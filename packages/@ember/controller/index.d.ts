@@ -7,6 +7,7 @@ export default class Controller {
   set<T>(key: string, value: T): void;
   setProperties(props: { [key: string]: any }): void;
   transitionToRoute(...args: unknown[]): unknown;
+  replaceRoute(...args: unknown[]): unknown;
   _qpDelegate: unknown;
 }
 

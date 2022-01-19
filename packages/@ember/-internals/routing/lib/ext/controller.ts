@@ -244,8 +244,13 @@ ControllerMixin.reopen({
   replaceRoute(...args: string[]) {
     deprecateTransitionMethods('controller', 'replaceRoute');
     // target may be either another controller or a router
-    let target = get(this, 'target') as any;
-    let method = target.replaceRoute || target.replaceWith;
+    let target = get(this, 'target');
+
+    // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
+    // mock out an object that only has the single method. Since this is deprecated, I think it's
+    // ok to be a little less than proper here.
+    let method = (target as Controller).replaceRoute ?? (target as Router).replaceWith;
+
     return method.apply(target, prefixRouteNameArg(this, args));
   },
 });
