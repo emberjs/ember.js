@@ -31,6 +31,12 @@ jobs:
         run: yarn install --frozen-lockfile --non-interactive
       - name: linting
         run: yarn lint
+      - name: check esplint
+        run: |
+          if [[ "$(git status --porcelain | grep .esplint.rec.json -c)" == "1" ]]; then
+            echo ".esplint.rec.json is out of date. Run \`yarn lint:eslint\` locally and commit."
+            exit 1
+          fi
 
   basic-test:
     name: Debug and Prebuilt (All Tests by Package + Canary Features + Optional Jquery)

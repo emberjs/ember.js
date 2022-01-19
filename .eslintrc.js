@@ -20,12 +20,13 @@ module.exports = {
     'no-throw-literal': 'error',
     'no-var': 'error',
 
-    'qunit/no-assert-equal': 'off',
-    'qunit/no-commented-tests': 'off',
-    'qunit/require-expect': 'off',
-
     'disable-features/disable-async-await': 'error',
     'disable-features/disable-generator-functions': 'error',
+
+    // Remove from esplintrc when no longer warning
+    'qunit/no-assert-equal': 'warn',
+    'qunit/no-commented-tests': 'warn',
+    'qunit/require-expect': 'warn',
   },
 
   settings: {
@@ -42,7 +43,10 @@ module.exports = {
     {
       files: ['*.ts'],
 
-      extends: ['plugin:@typescript-eslint/recommended'],
+      extends: [
+        'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
+      ],
 
       parserOptions: {
         sourceType: 'module',
@@ -51,17 +55,33 @@ module.exports = {
       },
 
       rules: {
-        '@typescript-eslint/ban-ts-comment': 'warn',
-        '@typescript-eslint/ban-types': 'off',
-        '@typescript-eslint/no-empty-function': 'off',
-        '@typescript-eslint/no-this-alias': 'off',
-        '@typescript-eslint/no-var-requires': 'warn',
+        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
 
-        // TODO: Enable and fix these rules
         // Typescript provides better types with these rules enabled
-        'prefer-spread': 'off',
-        'prefer-const': 'off',
-        'prefer-rest-params': 'off',
+        // Remove from esplintrc when no longer warning
+        'prefer-spread': 'warn',
+        'prefer-const': 'warn',
+        'prefer-rest-params': 'warn',
+
+        // Remove from esplintrc when no longer warning
+        '@typescript-eslint/ban-ts-comment': 'warn',
+        '@typescript-eslint/ban-types': 'warn',
+        '@typescript-eslint/no-empty-function': 'warn',
+        '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/no-implied-eval': 'warn',
+        '@typescript-eslint/no-floating-promises': 'warn',
+        '@typescript-eslint/no-misused-promises': 'warn',
+        '@typescript-eslint/no-this-alias': 'warn',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+        '@typescript-eslint/no-unsafe-argument': 'warn',
+        '@typescript-eslint/no-unsafe-assignment': 'warn',
+        '@typescript-eslint/no-unsafe-call': 'warn',
+        '@typescript-eslint/no-unsafe-member-access': 'warn',
+        '@typescript-eslint/no-unsafe-return': 'warn',
+        '@typescript-eslint/no-var-requires': 'warn',
+        '@typescript-eslint/restrict-plus-operands': 'warn',
+        '@typescript-eslint/restrict-template-expressions': 'warn',
+        '@typescript-eslint/unbound-method': 'warn',
       },
     },
     {
