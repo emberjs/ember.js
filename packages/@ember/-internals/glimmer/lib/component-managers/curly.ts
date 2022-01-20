@@ -126,6 +126,7 @@ export default class CurlyComponentManager
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
+    assert('Component is unexpectedly missing an owner', owner);
 
     let factory: TemplateFactory;
 

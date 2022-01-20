@@ -58,7 +58,9 @@ export default class RouterService extends Service {
     if (router !== undefined) {
       return router;
     }
-    const owner = getOwner(this);
+    let owner = getOwner(this);
+    assert('RouterService is unexpectedly missing an owner', owner);
+
     router = owner.lookup('router:main') as EmberRouter;
     return (this[ROUTER] = router);
   }
@@ -514,7 +516,9 @@ if (EMBER_ROUTING_ROUTER_SERVICE_REFRESH) {
         this.isActive(pivotRouteName)
       );
 
-      let pivotRoute = getOwner(this).lookup(`route:${pivotRouteName}`) as Route;
+      let owner = getOwner(this);
+      assert('RouterService is unexpectedly missing an owner', owner);
+      let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
 
       return this._router._routerMicrolib.refresh(pivotRoute);
     },

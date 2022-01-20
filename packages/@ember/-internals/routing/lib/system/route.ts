@@ -338,7 +338,9 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   _setRouteName(name: string) {
     this.routeName = name;
-    this.fullRouteName = getEngineRouteName(getOwner(this), name)!;
+    let owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
+    this.fullRouteName = getEngineRouteName(owner, name)!;
   }
 
   /**
@@ -446,7 +448,9 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   paramsFor(name: string) {
-    let route = getOwner(this).lookup<Route>(`route:${name}`);
+    let owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
+    let route = owner.lookup<Route>(`route:${name}`);
 
     if (route === undefined) {
       return {};
@@ -1535,6 +1539,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   controllerFor(name: string, _skipAssert: boolean): Controller {
     let owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
     let route = owner.lookup<Route>(`route:${name}`);
 
     if (route && route.controllerName) {
@@ -1577,6 +1582,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   generateController(name: string) {
     let owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
 
     return generateController(owner, name);
   }
@@ -1626,6 +1632,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   modelFor(_name: string) {
     let name;
     let owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
     let transition =
       this._router && this._router._routerMicrolib
         ? this._router._routerMicrolib.activeTransition
@@ -1758,7 +1765,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   */
   @computed
   protected get store() {
-    let owner = getOwner(this);
+    const owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
     let routeName = this.routeName;
 
     return {
@@ -1817,6 +1825,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
+    assert('Route is unexpectedly missing an owner', owner);
     let controller = owner.lookup<Controller>(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
@@ -2036,6 +2045,7 @@ function buildRenderOptions(
   );
 
   let owner = getOwner(route);
+  assert('Route is unexpectedly missing an owner', owner);
   let name, templateName, into, outlet, model;
   let controller: Controller | string | undefined = undefined;
 

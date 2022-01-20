@@ -82,8 +82,8 @@ export interface Owner {
   @since 2.3.0
   @public
 */
-export function getOwner(object: any): Owner {
-  return glimmerGetOwner(object) as Owner;
+export function getOwner(object: any): Owner | undefined {
+  return glimmerGetOwner(object);
 }
 
 /**

@@ -1,6 +1,7 @@
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
 import Component from './component';
 import Input from './components/input';
 import LinkTo from './components/link-to';
@@ -17,7 +18,9 @@ export function setupApplicationRegistry(registry: Registry): void {
   // association won't leak
   registry.register('service:-dom-builder', {
     create(props) {
-      let env = getOwner(props).lookup('-environment:main') as { _renderMode: string };
+      let owner = getOwner(props);
+      assert('DomBuilderService is unexpectedly missing an owner', owner);
+      let env = owner.lookup('-environment:main') as { _renderMode: string };
 
       switch (env._renderMode) {
         case 'serialize':
