@@ -2,6 +2,7 @@
 @module @ember/component
 */
 
+import { FactoryManager } from '@ember/-internals/container/lib/container';
 import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName, symbol } from '@ember/-internals/utils';
@@ -26,6 +27,8 @@ export interface HelperInstance<T = unknown> {
   compute(positional: unknown[], named: Dict<unknown>): T;
   destroy(): void;
 }
+
+const IS_CLASSIC_HELPER: unique symbol = Symbol('IS_CLASSIC_HELPER');
 
 export interface SimpleHelper<T = unknown> {
   compute: HelperFunction<T>;
@@ -76,11 +79,26 @@ export interface SimpleHelper<T = unknown> {
   @public
   @since 1.13.0
 */
-let Helper = FrameworkObject.extend({
+interface Helper {
+  /**
+    Override this function when writing a class-based helper.
+
+    @method compute
+    @param {Array} params The positional arguments to the helper
+    @param {Object} hash The named arguments to the helper
+    @public
+    @since 1.13.0
+  */
+  compute(params: unknown[], hash: object): unknown;
+}
+class Helper extends FrameworkObject {
+  static isHelperFactory = true;
+  static [IS_CLASSIC_HELPER] = true;
+
   init() {
-    this._super(...arguments);
+    super.init();
     this[RECOMPUTE_TAG] = createTag();
-  },
+  }
 
   /**
     On a class-based helper, it may be useful to force a recomputation of that
@@ -113,23 +131,8 @@ let Helper = FrameworkObject.extend({
   */
   recompute() {
     join(() => dirtyTag(this[RECOMPUTE_TAG]));
-  },
-
-  /**
-    Override this function when writing a class-based helper.
-
-    @method compute
-    @param {Array} params The positional arguments to the helper
-    @param {Object} hash The named arguments to the helper
-    @public
-    @since 1.13.0
-  */
-});
-
-const IS_CLASSIC_HELPER = symbol('IS_CLASSIC_HELPER');
-
-Helper.isHelperFactory = true;
-Helper[IS_CLASSIC_HELPER] = true;
+  }
+}
 
 export function isClassicHelper(obj: object): boolean {
   return obj[IS_CLASSIC_HELPER] === true;
@@ -154,9 +157,10 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
     this.ownerInjection = ownerInjection;
   }
 
-  createHelper(definition: typeof Helper, args: Arguments) {
-    let instance =
-      definition.class === undefined ? definition.create(this.ownerInjection) : definition.create();
+  createHelper<T, C>(definition: typeof Helper | FactoryManager<T, C>, args: Arguments) {
+    let instance = isFactoryManager<T, C>(definition)
+      ? definition.create()
+      : definition.create(this.ownerInjection);
 
     return {
       instance,
@@ -181,6 +185,10 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   getDebugName(definition: ClassHelperFactory) {
     return getDebugName!((definition.class || definition)!['prototype']);
   }
+}
+
+function isFactoryManager<T, C>(obj: unknown): obj is FactoryManager<T, C> {
+  return obj != null && 'class' in (obj as FactoryManager<T, C>);
 }
 
 setHelperManager((owner: Owner | undefined): ClassicHelperManager => {
@@ -252,4 +260,4 @@ export function helper(helperFn: HelperFunction): HelperFactory<SimpleHelper> {
   return new Wrapper(helperFn);
 }
 
-export default Helper as HelperFactory<HelperInstance>;
+export default Helper;
