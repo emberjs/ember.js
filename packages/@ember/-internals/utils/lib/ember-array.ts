@@ -1,13 +1,7 @@
+import { Array as EmberArray } from '@ember/-internals/runtime';
 import { _WeakSet } from '@glimmer/util';
 
 const EMBER_ARRAYS = new _WeakSet();
-
-export interface EmberArray<T> {
-  length: number;
-  objectAt(index: number): T | undefined;
-  replace(start: number, deleteCount: number, items: T[]): void;
-  splice(start: number, deleteCount: number, ...items: T[]): void;
-}
 
 export function setEmberArray(obj: object) {
   EMBER_ARRAYS.add(obj);

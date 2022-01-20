@@ -2177,9 +2177,11 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState) {
   return params;
 }
 
+// FIXME: This should probably actually return a `NativeArray` if the passed in value is an Array.
 function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
-    return emberA(value.slice());
+    // SAFETY: We lost the type data about the array if we don't cast.
+    return (emberA(value.slice()) as unknown) as T;
   }
   return value;
 }

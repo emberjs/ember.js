@@ -1,5 +1,6 @@
 import { objectAt } from '@ember/-internals/metal';
-import { EmberArray, isEmberArray, isObject } from '@ember/-internals/utils';
+import { Array as EmberArray } from '@ember/-internals/runtime';
+import { isEmberArray, isObject } from '@ember/-internals/utils';
 import { Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
