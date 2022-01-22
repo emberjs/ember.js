@@ -1,6 +1,6 @@
-import {getOwner as glimmerGetOwner, setOwner as glimmerSetOwner} from '@glimmer/owner';
-import {assert} from '@ember/debug';
-import {DEBUG} from '@glimmer/env';
+import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/owner';
+import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 
 /**
 @module @ember/application
@@ -20,7 +20,7 @@ export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
   name?: string;
   fullName?: string;
   normalizedName?: string;
-  create(props?: {[prop: string]: any}): T;
+  create(props?: { [prop: string]: any }): T;
 }
 
 export interface EngineInstanceOptions {
@@ -105,11 +105,22 @@ export function setOwner(object: any, owner: Owner): void {
     let publicApiType = owner as any;
 
     assert(`Expected owner to be truthy`, publicApiType);
-    assert('Passed owner must have a function, `lookup`', typeof publicApiType.lookup === 'function');
-    assert('Passed owner must have a function, `factoryFor`', typeof publicApiType.factoryFor === 'function');
-    assert('Passed owner must have a function, `register`', typeof publicApiType.register === 'function');
-    assert('Passed owner must have a function, `hasRegistration`', typeof publicApiType.hasRegistration === 'function');
-    assert(`Expected owner to match the Owner's buildChildEngineInstance`, typeof publicApiType.buildChildEngineInstance === 'function');
+    assert(
+      'Passed owner must have a function, `lookup`',
+      typeof publicApiType.lookup === 'function'
+    );
+    assert(
+      'Passed owner must have a function, `factoryFor`',
+      typeof publicApiType.factoryFor === 'function'
+    );
+    assert(
+      'Passed owner must have a function, `register`',
+      typeof publicApiType.register === 'function'
+    );
+    assert(
+      'Passed owner must have a function, `hasRegistration`',
+      typeof publicApiType.hasRegistration === 'function'
+    );
   }
 
   glimmerSetOwner(object, owner);
