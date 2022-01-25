@@ -252,7 +252,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     let key: object;
 
     if (pair.component === null) {
-      key = template = pair.layout!(owner);
+      key = template = pair.layout(owner);
     } else {
       key = pair.component;
     }

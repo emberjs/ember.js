@@ -596,7 +596,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     for (let i = 0; i < routeInfos.length; i++) {
       let route = routeInfos[i].route!;
-      let connections = ROUTE_CONNECTIONS.get(route!);
+      let connections = ROUTE_CONNECTIONS.get(route);
       let ownState: OutletState;
       if (connections.length === 0) {
         ownState = representEmptyRoute(liveRoutes, defaultParentState, route);
@@ -675,7 +675,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
         !this.isDestroying && !this.isDestroyed
       );
-      return this._doURLTransition('transitionTo', args[0] as string);
+      return this._doURLTransition('transitionTo', args[0]);
     }
     let { routeName, models, queryParams } = extractRouteArgs(args);
     assert(

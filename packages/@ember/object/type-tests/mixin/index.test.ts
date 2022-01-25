@@ -2,7 +2,7 @@ import { expectTypeOf } from 'expect-type';
 
 import Mixin from '@ember/object/mixin';
 
-let newMixin = Mixin.create({
+const newMixin = Mixin.create({
   foo: 'bar',
 });
 

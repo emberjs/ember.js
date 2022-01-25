@@ -16,7 +16,7 @@ import { DEBUG } from '@glimmer/env';
 */
 
 export function generateControllerFactory(owner: Owner, controllerName: string): Factory<{}> {
-  let Factory = owner.factoryFor<any, any>('controller:basic')!.class!;
+  let Factory = owner.factoryFor<any, any>('controller:basic')!.class;
 
   Factory = Factory.extend({
     toString() {

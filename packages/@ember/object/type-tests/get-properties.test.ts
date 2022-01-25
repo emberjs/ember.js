@@ -2,7 +2,7 @@ import { getProperties } from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';
 
-let foo = { baz: 1 };
+const foo = { baz: 1 };
 
 // We can't correctly infer CP types so just return unknown
 expectTypeOf(getProperties(foo, 'baz', 'missing')).toEqualTypeOf<{

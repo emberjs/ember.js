@@ -133,7 +133,7 @@ export function sendEvent(
 
   for (let i = actions.length - 3; i >= 0; i -= 3) {
     // looping in reverse for once listeners
-    let target = actions[i] as any | null;
+    let target = actions[i];
     let method = actions[i + 1] as string | Function;
     let once = actions[i + 2] as boolean;
 

@@ -2,8 +2,9 @@ import { observer } from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';
 
-let definition = {
+const definition = {
   dependentKeys: ['value1', 'value2', 'value3'],
+
   fn: () => {},
   sync: true,
 };
@@ -22,7 +23,7 @@ class Foo {
   extraKeysObserver = observer('extraKey', definition);
 }
 
-let foo = new Foo();
+const foo = new Foo();
 
 expectTypeOf(foo.valueObserver).toEqualTypeOf<() => void>();
 expectTypeOf(foo.definitionObserver).toEqualTypeOf<() => void>();

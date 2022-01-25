@@ -18,7 +18,7 @@ export function deprecatingAlias(
 
 export function empty(dependentKey: string): PropertyDecorator;
 
-export function equal(dependentKey: string, value: any): PropertyDecorator;
+export function equal(dependentKey: string, value: unknown): PropertyDecorator;
 
 export function filter(
   dependentKey: string,
@@ -30,7 +30,11 @@ export function filter(
   callback: (value: unknown, index: number, array: unknown[]) => boolean
 ): PropertyDecorator;
 
-export function filterBy(dependentKey: string, propertyKey: string, value?: any): PropertyDecorator;
+export function filterBy(
+  dependentKey: string,
+  propertyKey: string,
+  value?: unknown
+): PropertyDecorator;
 
 export function gt(dependentKey: string, value: number): PropertyDecorator;
 

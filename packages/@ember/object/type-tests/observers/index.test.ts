@@ -5,8 +5,10 @@ class MyComponent {
 
   constructor() {
     addObserver(this, 'foo', this, 'fooDidChange');
+
     addObserver(this, 'foo', this, this.fooDidChange);
     removeObserver(this, 'foo', this, 'fooDidChange');
+
     removeObserver(this, 'foo', this, this.fooDidChange);
     const lambda = () => {
       this.fooDidChange(this, 'foo');

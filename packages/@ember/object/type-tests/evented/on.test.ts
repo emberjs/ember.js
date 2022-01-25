@@ -9,7 +9,7 @@ class Job {
   });
 }
 
-let job = new Job();
+const job = new Job();
 
 sendEvent(job, 'completed'); // Logs 'Job completed!'
 

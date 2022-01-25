@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { symbol } from '@ember/-internals/utils';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -27,7 +27,7 @@ export default class RoutingService extends Service {
     if (router !== undefined) {
       return router;
     }
-    const owner = getOwner(this) as Owner;
+    const owner = getOwner(this);
     router = owner.lookup('router:main') as EmberRouter;
     router.setupRouter();
     return (this[ROUTER] = router);

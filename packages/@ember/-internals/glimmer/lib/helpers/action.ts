@@ -410,7 +410,7 @@ function makeClosureAction(
 
   if (typeofAction === 'string') {
     self = target;
-    fn = target.actions! && target.actions![action as string];
+    fn = (target.actions && target.actions[action as string])!;
 
     assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
   } else if (typeofAction === 'function') {

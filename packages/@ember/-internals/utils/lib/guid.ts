@@ -71,7 +71,7 @@ export const GUID_KEY = intern(`__ember${Date.now()}`);
   @return {String} the guid
 */
 export function generateGuid(obj: object, prefix = GUID_PREFIX): String {
-  let guid = prefix + uuid();
+  let guid = prefix + uuid().toString();
 
   if (isObject(obj)) {
     OBJECT_GUIDS.set(obj, guid);
@@ -101,7 +101,7 @@ export function guidFor(value: any | null | undefined): string {
     guid = OBJECT_GUIDS.get(value);
 
     if (guid === undefined) {
-      guid = GUID_PREFIX + uuid();
+      guid = `${GUID_PREFIX}${uuid()}`;
       OBJECT_GUIDS.set(value, guid);
     }
   } else {
@@ -111,13 +111,13 @@ export function guidFor(value: any | null | undefined): string {
       let type = typeof value;
 
       if (type === 'string') {
-        guid = 'st' + uuid();
+        guid = `st${uuid()}`;
       } else if (type === 'number') {
-        guid = 'nu' + uuid();
+        guid = `nu${uuid()}`;
       } else if (type === 'symbol') {
-        guid = 'sy' + uuid();
+        guid = `sy${uuid()}`;
       } else {
-        guid = '(' + value + ')';
+        guid = `(${value})`;
       }
 
       NON_OBJECT_GUIDS.set(value, guid);

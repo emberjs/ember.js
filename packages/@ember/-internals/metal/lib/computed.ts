@@ -344,7 +344,7 @@ export class ComputedProperty extends ComputedDescriptor {
           (typeof propertyDesc.get === 'function' || typeof propertyDesc.set === 'function')
       );
 
-      let { get, set } = propertyDesc!;
+      let { get, set } = propertyDesc;
 
       if (get !== undefined) {
         this._getter = get as ComputedPropertyGetterFunction;
@@ -414,7 +414,7 @@ export class ComputedProperty extends ComputedDescriptor {
       });
 
       if (_dependentKeys !== undefined) {
-        updateTag(propertyTag!, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
+        updateTag(propertyTag, getChainTagsForKeys(obj, _dependentKeys, tagMeta, meta));
 
         if (DEBUG) {
           ALLOW_CYCLES!.set(propertyTag, true);
@@ -427,7 +427,7 @@ export class ComputedProperty extends ComputedDescriptor {
       finishLazyChains(meta, keyName, ret);
     }
 
-    consumeTag(propertyTag!);
+    consumeTag(propertyTag);
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
@@ -573,7 +573,7 @@ class AutoComputedProperty extends ComputedProperty {
         ret = _getter!.call(obj, keyName);
       });
 
-      updateTag(propertyTag!, tag);
+      updateTag(propertyTag, tag);
 
       meta.setValueFor(keyName, ret);
       meta.setRevisionFor(keyName, valueForTag(propertyTag));
@@ -581,7 +581,7 @@ class AutoComputedProperty extends ComputedProperty {
       finishLazyChains(meta, keyName, ret);
     }
 
-    consumeTag(propertyTag!);
+    consumeTag(propertyTag);
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed

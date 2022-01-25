@@ -96,7 +96,7 @@ function inspectObject(obj: object, depth: number, seen: WeakSet<object>) {
     }
 
     let key = keys[i];
-    s += inspectKey(key) + ': ' + inspectValue(obj[key], depth, seen);
+    s += `${inspectKey(key)}: ${inspectValue(obj[key], depth, seen)}`;
   }
   s += ' }';
   return s;

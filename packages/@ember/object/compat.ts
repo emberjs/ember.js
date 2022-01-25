@@ -153,7 +153,7 @@ export function dependentKeyCompat(
           (typeof desc.get === 'function' || typeof desc.set === 'function')
       );
 
-      return wrapGetterSetter(target, key, desc!);
+      return wrapGetterSetter(target, key, desc);
     };
 
     setClassicDecorator(decorator);

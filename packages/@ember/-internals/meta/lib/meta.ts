@@ -383,7 +383,7 @@ export class Meta {
   ): void {
     let listeners = this.writableListeners();
 
-    let i = indexOfListener(listeners, event, target, method!);
+    let i = indexOfListener(listeners, event, target, method);
 
     // remove if found listener was inherited
     if (i !== -1 && i < this._inheritedEnd) {

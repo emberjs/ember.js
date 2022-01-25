@@ -153,7 +153,7 @@ function tryIsNamespace(lookup: { [k: string]: any }, prop: string): Namespace |
     let obj = lookup[prop];
     return (
       ((obj !== null && typeof obj === 'object') || typeof obj === 'function') &&
-      (obj as any).isNamespace &&
+      obj.isNamespace &&
       obj
     );
   } catch (e) {

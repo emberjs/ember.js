@@ -787,7 +787,7 @@ const Component = CoreView.extend(
         _element !== null
       );
 
-      let element = _element!;
+      let element = _element;
       let isSVG = element.namespaceURI === Namespace.SVG;
       let { type, normalized } = normalizeProperty(element, name);
 

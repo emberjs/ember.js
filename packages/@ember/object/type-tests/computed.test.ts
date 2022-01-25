@@ -22,7 +22,7 @@ class Foo {
   declare badFullName: string;
 
   // NOTE: This works, but is not recommended.
-  @computed('firstName', 'lastName', function () {
+  @computed('firstName', 'lastName', function (this: Foo) {
     return `${this.firstName} ${this.lastName}`;
   })
   declare altFullName: string;
