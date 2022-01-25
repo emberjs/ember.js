@@ -118,6 +118,7 @@ const CHILD_VIEW_IDS: WeakMap<View, Set<string>> = new WeakMap();
 */
 export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
+  assert('View is unexpectedly missing an owner', owner);
   let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
   return collectChildViews(view, registry);
 }

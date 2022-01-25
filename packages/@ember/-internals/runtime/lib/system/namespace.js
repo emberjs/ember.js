@@ -1,6 +1,7 @@
 /**
-@module ember
+@module @ember/application
 */
+
 import {
   NAMESPACES,
   NAMESPACES_BY_ID,
@@ -29,7 +30,6 @@ import EmberObject from './object';
   ```
 
   @class Namespace
-  @namespace Ember
   @extends EmberObject
   @public
 */

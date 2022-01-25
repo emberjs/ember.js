@@ -1,6 +1,6 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { deprecate } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
 import Router, { STATE_SYMBOL } from 'router_js';
 import Route from './system/route';
@@ -219,6 +219,8 @@ export function resemblesURL(str: unknown): str is string {
 export function prefixRouteNameArg(route: Route, args: any[]) {
   let routeName = args[0];
   let owner = getOwner(route);
+  assert('Route is unexpectedly missing an owner', owner);
+
   let prefix = owner.mountPoint;
 
   // only alter the routeName if it's actually referencing a route.

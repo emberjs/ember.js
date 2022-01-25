@@ -312,7 +312,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _initRouterJs(): void {
     let location = get(this, 'location') as IEmberLocation;
     let router = this;
-    let owner = getOwner(this);
+    const owner = getOwner(this);
+    assert('Router is unexpectedly missing an owner', owner);
     let seen = Object.create(null);
 
     class PrivateRouter extends Router<Route> {
@@ -329,6 +330,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         }
 
         let fullRouteName = `route:${routeName}`;
+
+        assert('Route is unexpectedly missing an owner', routeOwner);
 
         let route = routeOwner.lookup<Route>(fullRouteName);
 
@@ -500,7 +503,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _buildDSL(): DSL {
     let enableLoadingSubstates = this._hasModuleBasedResolver();
     let router = this;
-    let owner = getOwner(this);
+    const owner = getOwner(this);
+    assert('Router is unexpectedly missing an owner', owner);
     let options = {
       enableLoadingSubstates,
       resolveRouteMap(name: string) {
@@ -527,6 +531,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
+    assert('Router is unexpectedly missing an owner', owner);
     let resolver = get(owner, 'application.__registry__.resolver.moduleBasedResolver');
     return Boolean(resolver);
   }
@@ -624,6 +629,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     if (!this._toplevelView) {
       let owner = getOwner(this);
+      assert('Router is unexpectedly missing an owner', owner);
       let OutletView = owner.factoryFor<OutletView, FactoryClass>('view:-outlet')!;
       let application = owner.lookup('application:main');
       let environment = owner.lookup('-environment:main');
@@ -828,6 +834,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let location = this.location;
     let rootURL = this.rootURL;
     let owner = getOwner(this);
+    assert('Router is unexpectedly missing an owner', owner);
 
     if ('string' === typeof location) {
       let resolvedLocation = owner.lookup<IEmberLocation>(`location:${location}`);
@@ -1370,6 +1377,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     if (!engineInstance) {
       let owner = getOwner(this);
+      assert('Router is unexpectedly missing an owner', owner);
 
       assert(
         `You attempted to mount the engine '${name}' in your router map, but the engine can not be found.`,
@@ -1606,6 +1614,8 @@ function logError(_error: any, initialMessage: string) {
 */
 function findRouteSubstateName(route: Route, state: string) {
   let owner = getOwner(route);
+  assert('Route is unexpectedly missing an owner', owner);
+
   let { routeName, fullRouteName, _router: router } = route;
 
   let substateName = `${routeName}_${state}`;
@@ -1626,6 +1636,8 @@ function findRouteSubstateName(route: Route, state: string) {
 */
 function findRouteStateName(route: Route, state: string) {
   let owner = getOwner(route);
+  assert('Route is unexpectedly missing an owner', owner);
+
   let { routeName, fullRouteName, _router: router } = route;
 
   let stateName = routeName === 'application' ? state : `${routeName}.${state}`;
@@ -1745,7 +1757,9 @@ function updatePaths(router: EmberRouter) {
   set(router, 'currentRouteName', currentRouteName);
   set(router, 'currentURL', currentURL);
 
-  let appController = getOwner(router).lookup<Controller>('controller:application');
+  let owner = getOwner(router);
+  assert('Router is unexpectedly missing an owner', owner);
+  let appController = owner.lookup<Controller>('controller:application');
 
   if (!appController) {
     // appController might not exist when top-level loading/error

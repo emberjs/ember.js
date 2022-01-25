@@ -708,6 +708,8 @@ const Component = CoreView.extend(
     get _dispatcher(): EventDispatcher | null {
       if (this.__dispatcher === undefined) {
         let owner = getOwner(this);
+        assert('Component is unexpectedly missing an owner', owner);
+
         if (owner.lookup<Environment>('-environment:main')!.isInteractive) {
           this.__dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
         } else {
