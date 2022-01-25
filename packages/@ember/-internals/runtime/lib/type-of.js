@@ -77,7 +77,7 @@ const { toString } = Object.prototype;
 
   @method typeOf
   @for @ember/utils
-  @param {Object} item the item to check
+  @param item the item to check
   @return {String} the type
   @public
   @static

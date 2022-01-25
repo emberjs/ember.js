@@ -461,7 +461,7 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
   obj[INIT_FACTORY] = factory;
 }
 
-class FactoryManager<T, C> {
+export class FactoryManager<T, C> {
   readonly container: Container;
   readonly owner: Owner | null;
   readonly class: Factory<T, C> & DebugFactory<T, C>;

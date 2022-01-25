@@ -29,8 +29,7 @@ const { isArray } = Array;
  @return {Array}
  @private
  */
-function makeArray<T>(obj: T[]): T[];
-function makeArray<T>(obj: T): T[];
+function makeArray<T, TT>(obj: T): T extends TT[] ? T : T extends null | undefined ? [] : [T];
 function makeArray(obj: any | null | undefined): Array<any | null | undefined> {
   if (obj === null || obj === undefined) {
     return [];
