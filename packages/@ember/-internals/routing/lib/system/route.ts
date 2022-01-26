@@ -1421,7 +1421,7 @@ class Route<T extends IModel = {}>
     @since 1.0.0
     @public
   */
-  model(params: Record<string, unknown>, transition: Transition): T | Promise<T> | undefined {
+  model(params: Record<string, unknown>, transition: Transition): T | PromiseLike<T> | undefined {
     let name, sawParams, value;
     // SAFETY: Since `_qp` is protected we can't infer the type
     let queryParams = (get(this, '_qp') as Route<T>['_qp']).map;
@@ -1447,11 +1447,10 @@ class Route<T extends IModel = {}>
         if (transition.resolveIndex < 1) {
           return;
         }
-        // SAFETY: These return types should be equivalent but router.js doesn't have enough
-        // generics to infer it.
+        // SAFETY: This should be correct, but TS is unable to infer this.
         return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1]!.context as
           | T
-          | Promise<T>
+          | PromiseLike<T>
           | undefined;
       }
     }
