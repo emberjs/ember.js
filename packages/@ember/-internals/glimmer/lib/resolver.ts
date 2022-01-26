@@ -1,6 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
+import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
+import { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -56,16 +57,12 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function componentFor(
-  name: string,
-  owner: Owner,
-  options?: LookupOptions
-): Option<Factory<{}, {}>> {
+function componentFor(name: string, owner: Owner): Option<Factory<{}, {}>> {
   let fullName = `component:${name}`;
-  return owner.factoryFor(fullName, options) || null;
+  return owner.factoryFor(fullName) || null;
 }
 
-function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<Template> {
+function layoutFor(name: string, owner: Owner, options?: TypeOptions): Option<Template> {
   let templateFullName = `template:components/${name}`;
 
   return owner.lookup(templateFullName, options) || null;
@@ -88,9 +85,9 @@ type LookupResult =
 function lookupComponentPair(
   owner: Owner,
   name: string,
-  options?: LookupOptions
+  options?: TypeOptions
 ): Option<LookupResult> {
-  let component = componentFor(name, owner, options);
+  let component = componentFor(name, owner);
 
   if (component !== null && component.class !== undefined) {
     let layout = getComponentTemplate(component.class);

@@ -1,8 +1,8 @@
-import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
+import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { dictionary, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import Registry, { DebugRegistry } from './registry';
+import Registry, { DebugRegistry, TypeOptions } from './registry';
 
 interface LeakTracking {
   hasContainers(): boolean;
@@ -143,7 +143,7 @@ export default class Container {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  lookup(fullName: string, options: LookupOptions): any {
+  lookup<T>(fullName: string, options?: TypeOptions): T | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
@@ -206,8 +206,6 @@ export default class Container {
     @public
    @method factoryFor
    @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
   factoryFor<T, C>(fullName: string): Factory<T, C> | undefined {
@@ -261,7 +259,7 @@ function isInstantiatable(container: Container, fullName: string) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
-function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
+function lookup(container: Container, fullName: string, options: TypeOptions = {}) {
   let normalizedName = fullName;
 
   if (

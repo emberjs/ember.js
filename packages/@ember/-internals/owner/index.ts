@@ -4,11 +4,6 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
 @module @ember/application
 */
 
-export interface LookupOptions {
-  singleton?: boolean;
-  instantiate?: boolean;
-}
-
 export interface FactoryClass {
   positionalParams?: string | string[] | undefined | null;
 }
@@ -27,11 +22,12 @@ export interface EngineInstanceOptions {
 }
 
 import EngineInstance from '@ember/engine/instance';
+import { TypeOptions } from '../container/lib/registry';
 export interface Owner {
-  lookup<T>(fullName: string, options?: LookupOptions): T | undefined;
-  factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
-  register<T, C>(fullName: string, factory: Factory<T, C>, options?: LookupOptions): void;
-  hasRegistration(name: string, options?: LookupOptions): boolean;
+  lookup<T>(fullName: string, options?: TypeOptions): T | undefined;
+  factoryFor<T, C>(fullName: string): Factory<T, C> | undefined;
+  register<T, C>(fullName: string, factory: Factory<T, C>, options?: TypeOptions): void;
+  hasRegistration(name: string): boolean;
 
   /** @internal */
   mountPoint?: string;

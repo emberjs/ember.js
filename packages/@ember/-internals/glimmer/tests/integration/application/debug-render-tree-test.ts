@@ -198,7 +198,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             Resolver = ModuleBasedTestResolver;
 
             init() {
-              super.init(...arguments);
+              super.init();
               this.register(
                 'template:application',
                 compileTemplate(
@@ -234,7 +234,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             Resolver = ModuleBasedTestResolver;
 
             init() {
-              super.init(...arguments);
+              super.init();
               this.register(
                 'template:application',
                 compileTemplate(
@@ -579,7 +579,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             Resolver = ModuleBasedTestResolver;
 
             init() {
-              super.init(...arguments);
+              super.init();
               this.register(
                 'template:application',
                 compileTemplate(

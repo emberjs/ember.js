@@ -1,4 +1,4 @@
-import { EngineInstance } from '@ember/engine';
+import EngineInstance from '@ember/engine/instance';
 
 export class BootOptions {
   isBrowser: boolean;
@@ -19,8 +19,4 @@ export class BootOptions {
   toEnvironment(): Record<string, unknown>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface ApplicationInstance extends EngineInstance {}
-declare class ApplicationInstance {}
-
-export default ApplicationInstance;
+export default class ApplicationInstance extends EngineInstance {}

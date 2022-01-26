@@ -1,6 +1,6 @@
 import Application from '@ember/application';
 import ApplicationInstance, { BootOptions } from '@ember/application/instance';
-import { EngineInstance } from '@ember/engine';
+import EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';
@@ -25,9 +25,8 @@ expectTypeOf(
 ).toEqualTypeOf<Store | undefined>();
 
 expectTypeOf(instance.hasRegistration('service:store')).toEqualTypeOf<boolean>();
-expectTypeOf(
-  instance.hasRegistration('service:store', { singleton: true, instantiate: true })
-).toEqualTypeOf<boolean>();
+// @ts-expect-error requires name
+instance.hasRegistration();
 
 expectTypeOf(instance.boot()).toEqualTypeOf<void>();
 
