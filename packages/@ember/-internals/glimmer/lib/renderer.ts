@@ -205,8 +205,8 @@ function deregister(renderer: Renderer): void {
 }
 
 function loopBegin(): void {
-  for (let i = 0; i < renderers.length; i++) {
-    renderers[i]._scheduleRevalidate();
+  for (let renderer of renderers) {
+    renderer._scheduleRevalidate();
   }
 }
 
@@ -249,12 +249,12 @@ function resolveRenderPromise() {
 
 let loops = 0;
 function loopEnd() {
-  for (let i = 0; i < renderers.length; i++) {
-    if (!renderers[i]._isValid()) {
+  for (let renderer of renderers) {
+    if (!renderer._isValid()) {
       if (loops > ENV._RERENDER_LOOP_LIMIT) {
         loops = 0;
         // TODO: do something better
-        renderers[i].destroy();
+        renderer.destroy();
         throw new Error('infinite rendering invalidation detected');
       }
       loops++;
@@ -433,6 +433,7 @@ export class Renderer {
     let i = this._roots.length;
     while (i--) {
       let root = roots[i];
+      assert('has root', root);
       if (root.isFor(view)) {
         root.destroy();
         roots.splice(i, 1);
@@ -500,6 +501,7 @@ export class Renderer {
         // each root is processed
         for (let i = 0; i < roots.length; i++) {
           let root = roots[i];
+          assert('has root', root);
 
           if (root.destroyed) {
             // add to the list of roots to be removed
@@ -561,8 +563,7 @@ export class Renderer {
 
   _clearAllRoots(): void {
     let roots = this._roots;
-    for (let i = 0; i < roots.length; i++) {
-      let root = roots[i];
+    for (let root of roots) {
       root.destroy();
     }
 

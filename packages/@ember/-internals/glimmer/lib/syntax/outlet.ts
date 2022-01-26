@@ -54,7 +54,9 @@ export const outletHelper = internalHelper(
     if (args.positional.length === 0) {
       nameRef = createPrimitiveRef('main');
     } else {
-      nameRef = args.positional[0];
+      let maybeNameRef = args.positional[0];
+      assert('Expected at least one positional arg', maybeNameRef);
+      nameRef = maybeNameRef;
     }
 
     let outletRef = createComputeRef(() => {

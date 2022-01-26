@@ -24,7 +24,7 @@ export default function assertAgainstDynamicHelpersModifiers(
 
       MustacheStatement(node: AST.MustacheStatement) {
         if (isPath(node.path)) {
-          let name = node.path.parts[0];
+          let name = node.path.parts[0]!;
 
           assert(
             `${messageFor(name)} ${calculateLocationDisplay(moduleName, node.loc)}`,
@@ -35,7 +35,7 @@ export default function assertAgainstDynamicHelpersModifiers(
 
       SubExpression(node: AST.SubExpression) {
         if (isPath(node.path)) {
-          let name = node.path.parts[0];
+          let name = node.path.parts[0]!;
 
           assert(
             `${messageFor(name)} ${calculateLocationDisplay(moduleName, node.loc)}`,
@@ -48,7 +48,7 @@ export default function assertAgainstDynamicHelpersModifiers(
 }
 
 function isLocalVariable(node: AST.PathExpression, hasLocal: (k: string) => boolean): boolean {
-  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]);
+  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]!);
 }
 
 function messageFor(name: string): string {

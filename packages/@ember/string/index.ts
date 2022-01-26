@@ -39,9 +39,10 @@ const CLASSIFY_CACHE = new Cache<string, string>(1000, (str) => {
     initialChar + (chr ? chr.toUpperCase() : '');
   let parts = str.split('/');
   for (let i = 0; i < parts.length; i++) {
-    parts[i] = parts[i]
-      .replace(STRING_CLASSIFY_REGEXP_1, replace1)
-      .replace(STRING_CLASSIFY_REGEXP_2, replace2);
+    parts[i] = parts[i]!.replace(STRING_CLASSIFY_REGEXP_1, replace1).replace(
+      STRING_CLASSIFY_REGEXP_2,
+      replace2
+    );
   }
   return parts
     .join('/')

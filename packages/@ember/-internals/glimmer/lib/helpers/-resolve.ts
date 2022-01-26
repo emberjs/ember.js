@@ -19,7 +19,7 @@ export default internalHelper(({ positional }: CapturedArguments, owner: Owner |
 
   let fullNameRef = positional[0];
 
-  assert('[BUG] expecting a string literal as argument', isConstRef(fullNameRef));
+  assert('[BUG] expecting a string literal as argument', fullNameRef && isConstRef(fullNameRef));
 
   let fullName = valueForRef(fullNameRef);
 

@@ -28,8 +28,8 @@ export interface IRegistry {
     fullName: string,
     optionName: K
   ): TypeOptions[K] | undefined;
-  getOptions(fullName: string): TypeOptions;
-  getOptionsForType(type: string): TypeOptions;
+  getOptions(fullName: string): TypeOptions | undefined;
+  getOptionsForType(type: string): TypeOptions | undefined;
   knownForType(type: string): KnownForTypeResult;
   makeToString<T, C>(factory: Factory<T, C>, fullName: string): string;
   normalizeFullName(fullName: string): string;
@@ -396,7 +396,7 @@ export default class Registry implements IRegistry {
     this._typeOptions[type] = options;
   }
 
-  getOptionsForType(type: string): TypeOptions {
+  getOptionsForType(type: string): TypeOptions | undefined {
     let optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
@@ -415,7 +415,7 @@ export default class Registry implements IRegistry {
     this._options[normalizedName] = options;
   }
 
-  getOptions(fullName: string): TypeOptions {
+  getOptions(fullName: string): TypeOptions | undefined {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
@@ -436,6 +436,7 @@ export default class Registry implements IRegistry {
     }
 
     let type = fullName.split(':')[0];
+    assert('has type', type); // split always will have at least one value
     options = this._typeOptions[type];
 
     if (options && options[optionName] !== undefined) {
@@ -484,8 +485,7 @@ export default class Registry implements IRegistry {
   knownForType(type: string): KnownForTypeResult {
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
-    for (let index = 0; index < registeredNames.length; index++) {
-      let fullName = registeredNames[index];
+    for (let fullName of registeredNames) {
       let itemType = fullName.split(':')[0];
 
       if (itemType === type) {
@@ -522,7 +522,9 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (Object.prototype.hasOwnProperty.call(hash, key)) {
-        let { specifier } = hash[key];
+        let value = hash[key];
+        assert('has value', value);
+        let { specifier } = value;
         assert(
           `Expected a proper full name, given '${specifier}'`,
           this.isValidFullName(specifier)
@@ -543,9 +545,8 @@ if (DEBUG) {
       return;
     }
 
-    for (let i = 0; i < injections.length; i++) {
-      let { specifier } = injections[i];
-
+    for (let injection of injections) {
+      let { specifier } = injection;
       assert(`Attempting to inject an unknown injection: '${specifier}'`, this.has(specifier));
     }
   };
@@ -589,6 +590,8 @@ const privateNames: { [key: string]: string } = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
 export function privatize([fullName]: TemplateStringsArray): string {
+  assert('has a single string argument', arguments.length === 1 && fullName);
+
   let name = privateNames[fullName];
   if (name) {
     return name;

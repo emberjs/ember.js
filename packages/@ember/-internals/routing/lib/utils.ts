@@ -8,7 +8,10 @@ import EmberRouter, { PrivateRouteInfo } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-type ControllerQueryParam = string | Record<string, string> | { as?: string; scope?: string };
+export type ControllerQueryParam =
+  | string
+  | Record<string, string>
+  | { as?: string; scope?: string };
 type ExpandedControllerQueryParam = { as: string | null; scope: string };
 
 type ExtractedArgs = {
@@ -51,7 +54,9 @@ export function getActiveTargetName(router: Router<Route>): string {
   let routeInfos = router.activeTransition
     ? router.activeTransition[STATE_SYMBOL]!.routeInfos
     : router.state!.routeInfos;
-  return routeInfos[routeInfos.length - 1].name;
+  let lastRouteInfo = routeInfos[routeInfos.length - 1];
+  assert('has last route info', lastRouteInfo);
+  return lastRouteInfo.name;
 }
 
 export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInfo[]): void {
@@ -63,12 +68,15 @@ export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInf
   // keeps separate a routeInfo's list of parameter names depending
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
-  let targetRouteName = routeInfos[routeInfos.length - 1].name;
+  let routeInfo = routeInfos[routeInfos.length - 1];
+  assert('has route info', routeInfo);
+  let targetRouteName = routeInfo.name;
   let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
   let dynamicParent: PrivateRouteInfo;
 
   for (let i = 0; i < routeInfos.length; ++i) {
     let routeInfo = routeInfos[i];
+    assert('has route info', routeInfo);
     let names = recogHandlers[i].names;
 
     if (names.length) {
@@ -113,8 +121,7 @@ function _calculateCacheValuePrefix(prefix: string, part: string) {
 */
 export function calculateCacheKey(prefix: string, parts: string[] = [], values: {} | null): string {
   let suffixes = '';
-  for (let i = 0; i < parts.length; ++i) {
-    let part = parts[i];
+  for (let part of parts) {
     let cacheValuePrefix = _calculateCacheValuePrefix(prefix, part);
     let value;
     if (values) {
@@ -166,8 +173,8 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
 export function normalizeControllerQueryParams(queryParams: ControllerQueryParam[]) {
   let qpMap: Record<string, ExpandedControllerQueryParam> = {};
 
-  for (let i = 0; i < queryParams.length; ++i) {
-    accumulateQueryParamDescriptors(queryParams[i], qpMap);
+  for (let queryParam of queryParams) {
+    accumulateQueryParamDescriptors(queryParam, qpMap);
   }
 
   return qpMap;

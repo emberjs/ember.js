@@ -251,6 +251,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
   update(actionState: ActionState): void {
     let { positional } = actionState;
     let actionNameRef = positional[1];
+    assert('Expected at least one positional arg', actionNameRef);
 
     if (!isInvokableRef(actionNameRef)) {
       actionState.actionName = valueForRef(actionNameRef);

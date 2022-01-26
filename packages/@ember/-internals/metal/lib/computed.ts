@@ -379,8 +379,8 @@ export class ComputedProperty extends ComputedDescriptor {
       args.push(property);
     }
 
-    for (let i = 0; i < passedArgs.length; i++) {
-      expandProperties(passedArgs[i], addArg);
+    for (let arg of passedArgs) {
+      expandProperties(arg, addArg);
     }
 
     this._dependentKeys = args;

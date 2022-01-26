@@ -102,7 +102,7 @@ if (DEBUG) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
-      Object.defineProperty(obj, keyName, setters[keyName]);
+      Object.defineProperty(obj, keyName, setters[keyName]!);
 
       delete setters[keyName];
     }
@@ -112,7 +112,7 @@ if (DEBUG) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
-      let setter = setters[keyName];
+      let setter = setters[keyName]!;
 
       if (setter.set) {
         setter.set.call(obj, value);

@@ -185,12 +185,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
   // Set of QueryParam['urlKey']
   _qpUpdates: Set<string> = new Set();
-  _queuedQPChanges: { [key: string]: unknown } = {};
+  _queuedQPChanges: Record<string, unknown> = {};
 
   _bucketCache: BucketCache;
   _toplevelView: OutletView | null = null;
   _handledErrors = new Set();
-  _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
+  _engineInstances: Record<string, Record<string, EngineInstance>> = Object.create(null);
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService;
 
@@ -277,7 +277,9 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     let name, nameParts, oldNameParts;
     for (let i = 1; i < routeInfos.length; i++) {
-      name = routeInfos[i].name;
+      let routeInfo = routeInfos[i];
+      assert('has routeInfo', routeInfo);
+      name = routeInfo.name;
       nameParts = name.split('.');
       oldNameParts = slice.call(path);
 
@@ -599,8 +601,8 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let defaultParentState: OutletState | undefined;
     let liveRoutes = null;
 
-    for (let i = 0; i < routeInfos.length; i++) {
-      let route = routeInfos[i].route!;
+    for (let routeInfo of routeInfos) {
+      let route = routeInfo.route!;
       let connections = ROUTE_CONNECTIONS.get(route);
       let ownState: OutletState;
       if (connections.length === 0) {
@@ -648,7 +650,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   handleURL(url: string) {
     // Until we have an ember-idiomatic way of accessing #hashes, we need to
     // remove it because router.js doesn't know how to handle it.
-    let _url = url.split(/#(.+)?/)[0];
+    let _url = url.split(/#(.+)?/)[0]!;
     return this._doURLTransition('handleURL', _url);
   }
 
@@ -788,8 +790,10 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
     let instances = this._engineInstances;
     for (let name in instances) {
-      for (let id in instances[name]) {
-        run(instances[name][id], 'destroy');
+      let instance = instances[name];
+      assert('has instance', instance);
+      for (let id in instance) {
+        run(instance[id], 'destroy');
       }
     }
   }
@@ -922,7 +926,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       this,
       routeInfos,
       queryParams,
-      (key: string, value: unknown, qp: QueryParam) => {
+      (key: string, value: unknown, qp: QueryParam | undefined) => {
         if (qp) {
           delete queryParams[key];
           queryParams[qp.urlKey] = qp.route.serializeQueryParam(value, qp.urlKey, qp.type);
@@ -967,7 +971,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       this,
       routeInfos,
       queryParams,
-      (key: string, value: unknown, qp: QueryParam) => {
+      (key: string, value: unknown, qp: QueryParam | undefined) => {
         // If we don't have QP meta info for a given key, then we do nothing
         // because all values will be treated as strings
         if (qp) {
@@ -1137,7 +1141,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
    */
   _queryParamsFor(routeInfos: PrivateRouteInfo[]) {
     let routeInfoLength = routeInfos.length;
-    let leafRouteName = routeInfos[routeInfoLength - 1].name;
+    let leafRouteName = routeInfos[routeInfoLength - 1]!.name;
     let cached = this._qpCache[leafRouteName];
     if (cached !== undefined) {
       return cached;
@@ -1148,12 +1152,11 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let qps = [];
     let qpsByUrlKey = DEBUG ? {} : null;
     let qpMeta;
-    let qp;
     let urlKey;
     let qpOther;
 
-    for (let i = 0; i < routeInfoLength; ++i) {
-      qpMeta = this._getQPMeta(routeInfos[i]);
+    for (let routeInfo of routeInfos) {
+      qpMeta = this._getQPMeta(routeInfo);
 
       if (!qpMeta) {
         shouldCache = false;
@@ -1161,9 +1164,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       // Loop over each QP to make sure we don't have any collisions by urlKey
-      for (let i = 0; i < qpMeta.qps.length; i++) {
-        qp = qpMeta.qps[i];
-
+      for (let qp of qpMeta.qps) {
         if (DEBUG) {
           urlKey = qp.urlKey;
           qpOther = qpsByUrlKey![urlKey];
@@ -1206,19 +1207,15 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let state = calculatePostTransitionState(this, leafRouteName, contexts);
     let routeInfos = state.routeInfos;
     let qpMeta;
-    for (let i = 0, len = routeInfos.length; i < len; ++i) {
-      qpMeta = this._getQPMeta(routeInfos[i]);
+    for (let routeInfo of routeInfos) {
+      qpMeta = this._getQPMeta(routeInfo);
 
       if (!qpMeta) {
         continue;
       }
 
-      let qp;
-      let presentProp;
-      for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
-        qp = qpMeta.qps[j];
-
-        presentProp =
+      for (let qp of qpMeta.qps) {
+        let presentProp =
           (qp.prop in queryParams && qp.prop) ||
           (qp.scopedPropertyName in queryParams && qp.scopedPropertyName) ||
           (qp.urlKey in queryParams && qp.urlKey);
@@ -1255,15 +1252,17 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     let qp;
     let presentProp;
 
-    for (let i = 0; i < routeInfos.length; ++i) {
-      qpMeta = this._getQPMeta(routeInfos[i]);
+    for (let routeInfo of routeInfos) {
+      qpMeta = this._getQPMeta(routeInfo);
 
       if (!qpMeta) {
         continue;
       }
 
+      // Needs to stay for index loop to avoid throwIfClosureRequired
       for (let j = 0, qpLen = qpMeta.qps.length; j < qpLen; ++j) {
         qp = qpMeta.qps[j];
+        assert('expected qp', qp);
 
         presentProp =
           (qp.prop in queryParams && qp.prop) ||
@@ -1368,12 +1367,17 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     mountPoint: string;
   }) {
     let engineInstances = this._engineInstances;
+    let namedInstances = engineInstances[name];
 
-    if (!engineInstances[name]) {
-      engineInstances[name] = Object.create(null);
+    if (!namedInstances) {
+      namedInstances = Object.create(null);
+      engineInstances[name] = namedInstances!;
     }
 
-    let engineInstance = engineInstances[name][instanceId];
+    // We just set these!
+    assert('has namedInstances', namedInstances);
+
+    let engineInstance = namedInstances[instanceId];
 
     if (!engineInstance) {
       let owner = getOwner(this);
@@ -1391,7 +1395,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
 
       engineInstance.boot();
 
-      engineInstances[name][instanceId] = engineInstance;
+      namedInstances[instanceId] = engineInstance;
     }
 
     return engineInstance;
@@ -1479,6 +1483,8 @@ function forEachRouteAbove(
 ) {
   for (let i = routeInfos.length - 1; i >= 0; --i) {
     let routeInfo = routeInfos[i];
+    assert('has routeInfo', routeInfo);
+
     let route = routeInfo.route;
 
     // routeInfo.handler being `undefined` generally means either:
@@ -1686,6 +1692,7 @@ export function triggerEvent(
 
   for (let i = routeInfos.length - 1; i >= 0; i--) {
     routeInfo = routeInfos[i];
+    assert('has routeInfo', routeInfo);
     handler = routeInfo.route;
     actionHandler = handler && handler.actions && handler.actions[name];
     if (actionHandler) {
@@ -1722,9 +1729,7 @@ function calculatePostTransitionState(
   let state = emberRouter._routerMicrolib.applyIntent(leafRouteName, contexts);
   let { routeInfos, params } = state;
 
-  for (let i = 0; i < routeInfos.length; ++i) {
-    let routeInfo = routeInfos[i];
-
+  for (let routeInfo of routeInfos) {
     // If the routeInfo is not resolved, we serialize the context into params
     if (!routeInfo.isResolved) {
       params[routeInfo.name] = routeInfo.serialize(
@@ -1748,7 +1753,9 @@ function updatePaths(router: EmberRouter) {
   }
 
   let path = EmberRouter._routePath(infos);
-  let currentRouteName = infos[infos.length - 1].name;
+  let info = infos[infos.length - 1];
+  assert('expected info', info);
+  let currentRouteName = info.name;
   let location = router.location;
   assert('expected location to not be a string', typeof location !== 'string');
   let currentURL = location.getURL();
@@ -1790,7 +1797,7 @@ function forEachQueryParam(
   router: EmberRouter,
   routeInfos: PrivateRouteInfo[],
   queryParams: Record<string, unknown>,
-  callback: (key: string, value: unknown, qp: QueryParam) => void
+  callback: (key: string, value: unknown, qp: QueryParam | undefined) => void
 ) {
   let qpCache = router._queryParamsFor(routeInfos);
 
@@ -1817,7 +1824,7 @@ function findLiveRoute(liveRoutes: OutletState | null, name: string) {
     }
     let outlets = test.outlets;
     for (let outletName in outlets) {
-      stack.push(outlets[outletName]);
+      stack.push(outlets[outletName]!);
     }
   }
 

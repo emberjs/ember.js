@@ -37,6 +37,7 @@ import {
 } from 'router_js';
 import {
   calculateCacheKey,
+  ControllerQueryParam,
   deprecateTransitionMethods,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
@@ -75,6 +76,7 @@ export function defaultSerialize(
   let object = {};
   if (params.length === 1) {
     let [name] = params;
+    assert('has name', name);
     if (name in model) {
       object[name] = get(model, name);
     } else if (/_id$/.test(name)) {
@@ -367,8 +369,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       namePaths[a] = `${routeInfo.name}.${names[a]}`;
     }
 
-    for (let i = 0; i < qps.length; ++i) {
-      let qp = qps[i];
+    for (let qp of qps) {
       if (qp.scope === 'model') {
         qp.parts = namePaths;
       }
@@ -463,12 +464,12 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     let params = Object.assign({}, state!.params[fullName]);
     let queryParams = getQueryParamsFor(route, state!);
 
-    return Object.keys(queryParams).reduce((params, key) => {
+    return Object.entries(queryParams).reduce((params, [key, value]) => {
       assert(
         `The route '${this.routeName}' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
         !params[key]
       );
-      params[key] = queryParams[key];
+      params[key] = value;
       return params;
     }, params);
   }
@@ -1158,6 +1159,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
       allParams.forEach((prop: string) => {
         let aQp = queryParams.map[prop];
+        assert('expected aQp', aQp);
         aQp.values = params;
 
         let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
@@ -1405,7 +1407,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         if (transition.resolveIndex < 1) {
           return;
         }
-        return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1].context;
+        return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1]!.context;
       }
     }
 
@@ -1836,8 +1838,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       // merge in the query params for the route. As a mergedProperty,
       // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration =
-        (get(controller, 'queryParams') as any) || {};
+      let controllerDefinedQueryParameterConfiguration: ControllerQueryParam[] =
+        (get(controller, 'queryParams') as ControllerQueryParam[]) || [];
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
         controllerDefinedQueryParameterConfiguration
       );
@@ -1919,6 +1921,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         */
         inactive: (prop: string, value: unknown) => {
           let qp = map[prop];
+          assert('expected inactive callback to only be called for registered qps', qp);
           this._qpChanged(prop, value, qp);
         },
         /*
@@ -1928,6 +1931,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         */
         active: (prop: string, value: unknown) => {
           let qp = map[prop];
+          assert('expected active callback to only be called for registered qps', qp);
           this._qpChanged(prop, value, qp);
           return this._activeQPChanged(qp, value);
         },
@@ -1937,6 +1941,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         */
         allowOverrides: (prop: string, value: unknown) => {
           let qp = map[prop];
+          assert('expected allowOverrides callback to only be called for registered qps', qp);
           this._qpChanged(prop, value, qp);
           return this._updatingQPChanged(qp);
         },
@@ -2011,7 +2016,9 @@ function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offs
 
   let current: Route | undefined;
   for (let i = 0; i < routeInfos.length; i++) {
-    current = routeInfos[i].route;
+    let routeInfo = routeInfos[i];
+    assert('has current routeInfo', routeInfo);
+    current = routeInfo.route;
     if (current === route) {
       return routeInfos[i + offset];
     }
@@ -2159,12 +2166,13 @@ export function getFullQueryParams(router: EmberRouter, state: RouteTransitionSt
   return fullQueryParamsState;
 }
 
-function getQueryParamsFor(route: Route, state: RouteTransitionState) {
+function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<string, unknown> {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.fullRouteName;
 
-  if (state.queryParamsFor[name]) {
-    return state.queryParamsFor[name];
+  let existing = state.queryParamsFor[name];
+  if (existing) {
+    return existing;
   }
 
   let fullQueryParams = getFullQueryParams(route._router, state);
@@ -2174,10 +2182,8 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState) {
   // Copy over all the query params for this route/controller into params hash.
   // SAFETY: Since `_qp` is protected we can't infer the type
   let qps = (get(route, '_qp') as Route['_qp']).qps;
-  for (let i = 0; i < qps.length; ++i) {
+  for (let qp of qps) {
     // Put deserialized qp on params hash.
-    let qp = qps[i];
-
     let qpValueWasPassedIn = qp.prop in fullQueryParams;
     params[qp.prop] = qpValueWasPassedIn
       ? fullQueryParams[qp.prop]
@@ -2395,8 +2401,8 @@ Route.reopen({
       let qpMap = (get(this, '_qp') as Route['_qp']).map;
 
       let totalChanged = Object.keys(changed).concat(Object.keys(removed));
-      for (let i = 0; i < totalChanged.length; ++i) {
-        let qp = qpMap[totalChanged[i]];
+      for (let change of totalChanged) {
+        let qp = qpMap[change];
         if (qp) {
           let options = this._optionsForQueryParam(qp);
           assert('options exists', options && typeof options === 'object');
@@ -2429,8 +2435,7 @@ Route.reopen({
 
       stashParamNames(router, routeInfos);
 
-      for (let i = 0; i < qpMeta.qps.length; ++i) {
-        let qp = qpMeta.qps[i];
+      for (let qp of qpMeta.qps) {
         let route = qp.route;
         let controller = route.controller;
         let presentKey = qp.urlKey in params && qp.urlKey;

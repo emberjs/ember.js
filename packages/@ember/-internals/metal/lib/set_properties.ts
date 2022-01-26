@@ -36,11 +36,8 @@ export default function setProperties<TProperties extends { [key: string]: any }
   }
   changeProperties(() => {
     let props = Object.keys(properties);
-    let propertyName;
 
-    for (let i = 0; i < props.length; i++) {
-      propertyName = props[i];
-
+    for (let propertyName of props) {
       set(obj, propertyName, properties[propertyName]);
     }
   });
