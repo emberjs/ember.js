@@ -24,8 +24,7 @@ export function finishLazyChains(meta: Meta, key: string, value: any) {
   }
 
   if (isObject(value)) {
-    for (let i = 0; i < lazyTags.length; i++) {
-      let [tag, deps] = lazyTags[i];
+    for (let [tag, deps] of lazyTags) {
       updateTag(tag, getChainTagsForKey(value, deps as string, tagMetaFor(value), peekMeta(value)));
     }
   }
@@ -41,8 +40,8 @@ export function getChainTagsForKeys(
 ): Tag {
   let tags: Tag[] = [];
 
-  for (let i = 0; i < keys.length; i++) {
-    getChainTags(tags, obj, keys[i], tagMeta, meta);
+  for (let key of keys) {
+    getChainTags(tags, obj, key, tagMeta, meta);
   }
 
   return combine(tags);

@@ -407,9 +407,9 @@ function destroyDestroyables(container: Container): void {
   let cache = container.cache;
   let keys = Object.keys(cache);
 
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
+  for (let key of keys) {
     let value = cache[key];
+    assert('has cached value', value);
 
     if (value.destroy) {
       value.destroy();

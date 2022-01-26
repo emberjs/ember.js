@@ -4,6 +4,7 @@
 import { tagForObject } from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
 import { isProxy } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { consumeTag } from '@glimmer/validator';
@@ -167,7 +168,8 @@ export class EachInWrapper {
 }
 
 export default internalHelper(({ positional }: CapturedArguments) => {
-  let inner = positional[0];
+  const inner = positional[0];
+  assert('expected at least one positional arg', inner);
 
   return createComputeRef(() => {
     let iterable = valueForRef(inner);

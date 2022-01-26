@@ -148,7 +148,7 @@ export default function transformResolutions(env: EmberASTPluginEnvironment): AS
 }
 
 function isLocalVariable(node: AST.PathExpression, hasLocal: (k: string) => boolean): boolean {
-  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]);
+  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]!);
 }
 
 function transformParams(

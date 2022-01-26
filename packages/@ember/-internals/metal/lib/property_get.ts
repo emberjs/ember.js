@@ -137,12 +137,12 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
   let obj: any = root;
   let parts = typeof path === 'string' ? path.split('.') : path;
 
-  for (let i = 0; i < parts.length; i++) {
+  for (let part of parts) {
     if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {
       return undefined;
     }
 
-    obj = _getProp(obj, parts[i]);
+    obj = _getProp(obj, part);
   }
 
   return obj;

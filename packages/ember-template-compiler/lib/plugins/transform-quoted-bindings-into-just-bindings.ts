@@ -37,9 +37,9 @@ function validStyleAttr(attr: AST.AttrNode | undefined) {
 function getStyleAttr(node: AST.ElementNode): AST.AttrNode | undefined {
   let attributes = node.attributes;
 
-  for (let i = 0; i < attributes.length; i++) {
-    if (attributes[i].name === 'style') {
-      return attributes[i];
+  for (let attribute of attributes) {
+    if (attribute.name === 'style') {
+      return attribute;
     }
   }
   return undefined;

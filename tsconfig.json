@@ -17,6 +17,7 @@
     "allowUnreachableCode": false,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedParameters": true,
 
     "newLine": "LF",

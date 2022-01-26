@@ -2,6 +2,7 @@ import { symbol } from '@ember/-internals/utils';
 import { MUTABLE_CELL } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import { assert } from '@ember/debug';
 import { ARGS } from '../component-managers/curly';
 import { ACTIONS } from '../helpers/action';
 
@@ -16,6 +17,7 @@ export function processComponentArgs(namedArgs: CapturedNamedArguments) {
 
   for (let name in namedArgs) {
     let ref = namedArgs[name];
+    assert('expected ref', ref);
     let value = valueForRef(ref);
 
     let isAction = typeof value === 'function' && ACTIONS.has(value);

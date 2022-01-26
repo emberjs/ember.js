@@ -28,6 +28,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
 
   function updateBlockParamsStack(blockParams: string[]) {
     let parent = stack[stack.length - 1];
+    assert('has parent', parent);
     stack.push(parent.concat(blockParams));
   }
 
@@ -54,7 +55,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
       },
 
       PathExpression(node: AST.PathExpression): AST.Node | void {
-        if (isAttrs(node, stack[stack.length - 1])) {
+        if (isAttrs(node, stack[stack.length - 1]!)) {
           let path = b.path(node.original.substr(6));
 
           assert(
@@ -75,7 +76,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
 function isAttrs(node: AST.PathExpression, symbols: string[]) {
   let name = node.parts[0];
 
-  if (symbols.indexOf(name) !== -1) {
+  if (name && symbols.indexOf(name) !== -1) {
     return false;
   }
 

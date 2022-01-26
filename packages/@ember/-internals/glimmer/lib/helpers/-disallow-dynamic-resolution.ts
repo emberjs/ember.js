@@ -7,20 +7,20 @@ import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(({ positional, named }: CapturedArguments) => {
+  const nameOrValueRef = positional[0];
+
   assert(
     `[BUG] wrong number of positional arguments, expecting 1, got ${positional.length}`,
-    positional.length === 1
+    positional.length === 1 && nameOrValueRef
   );
-
-  let nameOrValueRef = positional[0];
-
-  assert(`[BUG] expecting \`type\` named argument`, 'type' in named);
-  assert(`[BUG] expecting \`loc\` named argument`, 'loc' in named);
-  assert(`[BUG] expecting \`original\` named argument`, 'original' in named);
 
   let typeRef = named.type;
   let locRef = named.loc;
   let originalRef = named.original;
+
+  assert(`[BUG] expecting \`type\` named argument`, typeRef);
+  assert(`[BUG] expecting \`loc\` named argument`, locRef);
+  assert(`[BUG] expecting \`original\` named argument`, originalRef);
 
   // Bug: why do these fail?
   // assert('[BUG] expecting a string literal for the `type` argument', isConstRef(typeRef));
