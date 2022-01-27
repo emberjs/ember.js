@@ -3,7 +3,7 @@ import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import { Transition } from 'router_js';
-import { Router } from '../..';
+import { Route, Router } from '../..';
 import { deprecateTransitionMethods, prefixRouteNameArg, RouteArgs } from '../utils';
 
 /**
@@ -168,7 +168,7 @@ ControllerMixin.reopen({
       attempted transition
     @public
   */
-  transitionToRoute(...args: RouteArgs): Transition {
+  transitionToRoute<R extends Route>(...args: RouteArgs<R>): Transition {
     deprecateTransitionMethods('controller', 'transitionToRoute');
 
     // target may be either another controller or a router
@@ -177,7 +177,7 @@ ControllerMixin.reopen({
     // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
     // mock out an object that only has the single method. Since this is deprecated, I think it's
     // ok to be a little less than proper here.
-    let method = (target as Controller).transitionToRoute ?? (target as Router).transitionTo;
+    let method = (target as Controller).transitionToRoute ?? (target as Router<R>).transitionTo;
 
     return method.apply(target, prefixRouteNameArg(this, args));
   },
@@ -245,7 +245,7 @@ ControllerMixin.reopen({
     @public
   */
 
-  replaceRoute(...args: RouteArgs): Transition {
+  replaceRoute<R extends Route>(...args: RouteArgs<R>): Transition {
     deprecateTransitionMethods('controller', 'replaceRoute');
     // target may be either another controller or a router
     let target = get(this, 'target');
@@ -253,7 +253,7 @@ ControllerMixin.reopen({
     // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
     // mock out an object that only has the single method. Since this is deprecated, I think it's
     // ok to be a little less than proper here.
-    let method = (target as Controller).replaceRoute ?? (target as Router).replaceWith;
+    let method = (target as Controller).replaceRoute ?? (target as Router<R>).replaceWith;
 
     return method.apply(target, prefixRouteNameArg(this, args));
   },

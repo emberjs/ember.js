@@ -1,3 +1,5 @@
+export { RouteInfo, RouteInfoWithAttributes } from 'router_js';
+
 /**
   A `RouteInfoWithAttributes` is an object that contains
   metadata, including the resolved value from the routes
@@ -54,7 +56,7 @@
 /**
   This is the resolved return value from the
   route's model hook.
-  @property {Object|Array|String} attributes
+  @property {Object|Array|String|undefined} attributes
   @public
 */
 

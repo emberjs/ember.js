@@ -1,7 +1,7 @@
 // ES6TODO: Cleanup modules with side-effects below
 import './lib/ext/controller';
 
-export { default as Location } from './lib/location/api';
+export { default as Location, EmberLocation } from './lib/location/api';
 export { default as NoneLocation } from './lib/location/none_location';
 export { default as HashLocation } from './lib/location/hash_location';
 export { default as HistoryLocation } from './lib/location/history_location';
@@ -17,6 +17,10 @@ export { default as Router, QueryParam } from './lib/system/router';
 export { default as Route } from './lib/system/route';
 export { default as QueryParams } from './lib/system/query_params';
 export { default as RoutingService } from './lib/services/routing';
-export { default as RouterService } from './lib/services/router';
+export {
+  default as RouterService,
+  RouteInfo,
+  RouteInfoWithAttributes,
+} from './lib/services/router';
 export { default as RouterState } from './lib/system/router_state';
 export { default as BucketCache } from './lib/system/cache';
