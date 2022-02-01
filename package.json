@@ -125,7 +125,7 @@
     "expect-type": "^0.13.0",
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^10.0.0",
     "git-repo-info": "^2.1.1",
     "github": "^0.2.3",
     "glob": "^7.2.0",
