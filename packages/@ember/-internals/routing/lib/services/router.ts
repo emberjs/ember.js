@@ -79,8 +79,6 @@ class RouterService extends Service.extend(Evented) {
      Transition the application into another route. The route may
      be either a single route or route path:
 
-     See [transitionTo](/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
-
      Calling `transitionTo` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `transitionTo` on a route or `transitionToRoute` on a controller.
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
@@ -150,8 +148,6 @@ class RouterService extends Service.extend(Evented) {
      When the user clicks the "back" button in the browser, there will be fewer steps.
      This is most commonly used to manage redirects in a way that does not cause confusing additions
      to the user's browsing history.
-
-     See [replaceWith](/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
      Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `replaceWith` on a route.
