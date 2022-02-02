@@ -4,10 +4,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry } from './registry';
 
-declare global {
-  export function gc(): void;
-}
-
 interface LeakTracking {
   hasContainers(): boolean;
   reset(): void;
@@ -31,6 +27,7 @@ if (DEBUG) {
         containers = new WeakSet<Container>();
         return {
           hasContainers() {
+            // @ts-expect-error We just checked if it is definied
             gc();
             return GetWeakSetValues(containers).length > 0;
           },
