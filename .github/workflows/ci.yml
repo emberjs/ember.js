@@ -210,10 +210,36 @@ jobs:
       - name: test
         run: yarn ember test -c testem.ci-browsers.js
 
+  external-partners:
+    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        partner:
+          [
+            ember-test-helpers,
+            ember-legacy-built-in-components,
+          ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12.x
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/download-artifact@v2.0.10
+        with:
+          name: dist
+          path: dist
+      - name: Run Tests
+        run: yarn test-external:${{ matrix.partner }}
+
   deploy-tag:
     name: Deploy tags to npm
     runs-on: ubuntu-latest
-    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test, external-partners]
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v2
@@ -234,7 +260,7 @@ jobs:
   publish:
     name: Publish channel to s3
     runs-on: ubuntu-latest
-    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test, external-partners]
     # Only run on pushes to branches that are not from the cron workflow
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
@@ -257,7 +283,7 @@ jobs:
   publish-alpha:
     name: Publish alpha from default branch
     runs-on: ubuntu-latest
-    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test, external-partners]
     # Only run on pushes to master
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:

@@ -42,7 +42,10 @@
     "test": "node bin/run-tests.js",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
-    "test:browserstack": "node bin/run-browserstack-tests.js"
+    "test:browserstack": "node bin/run-browserstack-tests.js",
+    "test-external:ember-test-helpers": "node ./bin/test-external-partner-project.js ember-test-helpers https://github.com/emberjs/ember-test-helpers",
+    "test-external:ember-string": "node ./bin/test-external-partner-project.js ember-string https://github.com/emberjs/ember-string",
+    "test-external:ember-legacy-built-in-components": "node ./bin/test-external-partner-project.js ember-legacy-built-in-components https://github.com/emberjs/ember-legacy-built-in-components"
   },
   "dependencies": {
     "@babel/helper-module-imports": "^7.16.7",
@@ -103,6 +106,7 @@
     "broccoli-string-replace": "^0.1.2",
     "broccoli-typescript-compiler": "^7.0.0",
     "broccoli-uglify-sourcemap": "^4.0.0",
+    "command-line-args": "^5.2.0",
     "common-tags": "^1.8.2",
     "core-js": "^2.6.5",
     "dag-map": "^2.0.2",
@@ -137,6 +141,7 @@
     "prettier": "^2.1.2",
     "puppeteer": "^3.0.4",
     "qunit": "^2.14.0",
+    "rimraf": "^3.0.2",
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.4",
     "route-recognizer": "^0.3.4",
