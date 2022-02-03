@@ -11,38 +11,52 @@ const ALL_PERIODS_REGEX = /\./g;
 type ControllerQueryParam = string | Record<string, string> | { as?: string; scope?: string };
 type ExpandedControllerQueryParam = { as: string | null; scope: string };
 
+type Model = object | string | number;
+
+export type NamedRouteArgs =
+  | [routeNameOrUrl: string, ...modelsAndOptions: [...Model[], RouteOptions]]
+  | [routeNameOrUrl: string, ...models: Model[]];
+
+export type UnnamedRouteArgs =
+  | [...modelsAndOptions: [...Model[], RouteOptions]]
+  | [...models: Model[]]
+  | [options: RouteOptions];
+
+export type RouteArgs = NamedRouteArgs | UnnamedRouteArgs;
+
 type ExtractedArgs = {
   routeName: string | undefined;
-  models: {}[];
+  models: Model[];
   queryParams: Record<string, unknown>;
 };
-type HasQueryParams = { queryParams: Record<string, unknown> };
 
-export function extractRouteArgs(
-  args:
-    | [routeNameOrURL: string, ...modelsAndOptions: [...any[], Record<string, unknown>]]
-    | [routeNameOrURL: string, ...models: any[]]
-    | [...modelsAndOptions: [...any[], Record<string, unknown>]]
-    | [...models: any[]]
-): ExtractedArgs {
+export type RouteOptions = { queryParams: Record<string, unknown> };
+
+export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   args = args.slice();
 
-  let possibleQueryParams = args.pop();
+  let possibleOptions = args.pop();
 
   let queryParams: Record<string, unknown>;
-  if (hasQueryParams(possibleQueryParams)) {
-    queryParams = possibleQueryParams.queryParams;
+  if (isRouteOptions(possibleOptions)) {
+    queryParams = possibleOptions.queryParams;
   } else {
     // Not query params so return to the array
-    args.push(possibleQueryParams);
+    if (possibleOptions !== undefined) {
+      args.push(possibleOptions);
+    }
     queryParams = {};
   }
 
-  // UNSAFE: these are simply assumed as the existing behavior of the system.
-  // However, this could break if upstream refactors change it, and the types
-  // here would not be able to tell us; we would lie to everything downstream.
-  let routeName = args.shift() as string | undefined;
-  let models = args as {}[];
+  let routeName;
+
+  if (typeof args[0] === 'string') {
+    routeName = args.shift();
+    // We just checked this!
+    assert('routeName is a string', typeof routeName === 'string');
+  }
+
+  let models = args;
 
   return { routeName, models, queryParams };
 }
@@ -216,15 +230,19 @@ export function resemblesURL(str: unknown): str is string {
 
   @private
 */
-export function prefixRouteNameArg(route: Route, args: any[]) {
-  let routeName = args[0];
+export function prefixRouteNameArg<T extends NamedRouteArgs | UnnamedRouteArgs>(
+  route: Route,
+  args: T
+): T {
+  let routeName: string;
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
 
   let prefix = owner.mountPoint;
 
   // only alter the routeName if it's actually referencing a route.
-  if (owner.routable && typeof routeName === 'string') {
+  if (owner.routable && typeof args[0] === 'string') {
+    routeName = args[0];
     if (resemblesURL(routeName)) {
       throw new EmberError(
         'Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.'
@@ -277,9 +295,9 @@ export function deprecateTransitionMethods(frameworkClass: string, methodName: s
   );
 }
 
-function hasQueryParams(value: unknown): value is HasQueryParams {
+function isRouteOptions(value: unknown): value is RouteOptions {
   if (value && typeof value === 'object') {
-    let qps = (value as HasQueryParams).queryParams;
+    let qps = (value as RouteOptions).queryParams;
     if (qps && typeof qps === 'object') {
       return Object.keys(qps).every((k) => typeof k === 'string');
     }

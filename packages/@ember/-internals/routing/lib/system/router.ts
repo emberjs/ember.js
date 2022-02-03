@@ -11,7 +11,13 @@ import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import EmberLocation, { EmberLocation as IEmberLocation } from '../location/api';
-import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
+import {
+  calculateCacheKey,
+  extractRouteArgs,
+  getActiveTargetName,
+  resemblesURL,
+  RouteArgs,
+} from '../utils';
 import DSL from './dsl';
 import Route, {
   defaultSerialize,
@@ -666,7 +672,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     See [transitionTo](/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
     @method transitionTo
-    @param {String} name the name of the route or a URL
+    @param {String} [name] the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used while
       transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
@@ -675,7 +681,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       attempted transition
     @public
   */
-  transitionTo(...args: unknown[]) {
+  transitionTo(...args: RouteArgs): Transition {
     if (resemblesURL(args[0])) {
       assert(
         `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
@@ -706,7 +712,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     }
   }
 
-  replaceWith(...args: any[]) {
+  replaceWith(...args: RouteArgs): Transition {
     return this.transitionTo(...args).method('replace');
   }
 
@@ -1027,7 +1033,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     models: {}[],
     _queryParams: Record<string, unknown>,
     _keepDefaultQueryParamValues?: boolean
-  ) {
+  ): Transition {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(
       `The route ${targetRouteName} was not found`,

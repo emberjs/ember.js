@@ -38,8 +38,10 @@ import {
 import {
   calculateCacheKey,
   deprecateTransitionMethods,
+  NamedRouteArgs,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
+  RouteArgs,
   stashParamNames,
 } from '../utils';
 import generateController from './generate_controller';
@@ -1015,7 +1017,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @deprecated Use transitionTo from the Router service instead.
     @public
   */
-  transitionTo(...args: any[]) {
+  transitionTo(...args: RouteArgs) {
     deprecateTransitionMethods('route', 'transitionTo');
     return this._router.transitionTo(...prefixRouteNameArg(this, args));
   }
@@ -1037,7 +1039,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.2.0
     @public
    */
-  intermediateTransitionTo(...args: any[]) {
+  intermediateTransitionTo(...args: NamedRouteArgs) {
     let [name, ...preparedArgs] = prefixRouteNameArg(this, args);
     this._router.intermediateTransitionTo(name, ...preparedArgs);
   }
