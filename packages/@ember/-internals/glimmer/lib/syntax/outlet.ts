@@ -38,7 +38,6 @@ import { OutletState } from '../utils/outlet';
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
   @method outlet
-  @param {String} [name]
   @for Ember.Templates.helpers
   @public
 */
