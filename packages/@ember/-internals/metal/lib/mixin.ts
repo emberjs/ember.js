@@ -39,10 +39,7 @@ const { isArray } = Array;
 
 function extractAccessors(properties: { [key: string]: any } | undefined) {
   if (properties !== undefined) {
-    let keys = Object.keys(properties);
-
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
+    for (let key of Object.keys(properties)) {
       let desc = Object.getOwnPropertyDescriptor(properties, key)!;
 
       if (desc.get !== undefined || desc.set !== undefined) {
@@ -138,6 +135,7 @@ function giveDecoratorSuper(
     newProperty._meta = property._meta;
     newProperty.enumerable = property.enumerable;
 
+    // SAFETY: We passed in the impl for this class
     return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
   }
 
@@ -205,8 +203,7 @@ function applyMergedProperties(
 
   let props = Object.keys(value);
 
-  for (let i = 0; i < props.length; i++) {
-    let prop = props[i];
+  for (let prop of props) {
     let propValue = value[prop];
 
     if (typeof propValue === 'function') {
@@ -296,8 +293,7 @@ function mergeProps(
 
   let propKeys = Object.keys(props);
 
-  for (let i = 0; i < propKeys.length; i++) {
-    let key = propKeys[i];
+  for (let key of propKeys) {
     let value = props[key];
 
     if (value === undefined) continue;
@@ -373,16 +369,16 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   if (observers !== undefined) {
     let updateObserver = add ? addObserver : removeObserver;
 
-    for (let i = 0; i < observers.paths.length; i++) {
-      updateObserver(obj, observers.paths[i], null, key, observers.sync);
+    for (let path of observers.paths) {
+      updateObserver(obj, path, null, key, observers.sync);
     }
   }
 
   if (listeners !== undefined) {
     let updateListener = add ? addListener : removeListener;
 
-    for (let i = 0; i < listeners.length; i++) {
-      updateListener(obj, listeners[i], null, key);
+    for (let listener of listeners) {
+      updateListener(obj, listener, null, key);
     }
   }
 }
@@ -405,8 +401,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], _hideKe
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta, descs, values, obj, keys, keysWithSuper);
 
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
+  for (let key of keys) {
     let value = values[key];
     let desc = descs[key];
 
@@ -830,8 +825,8 @@ export function observer<T extends (...args: any[]) => any>(
 
   let paths: string[] = [];
 
-  for (let i = 0; i < dependentKeys.length; ++i) {
-    expandProperties(dependentKeys[i], (path: string) => paths.push(path));
+  for (let dependentKey of dependentKeys) {
+    expandProperties(dependentKey, (path: string) => paths.push(path));
   }
 
   setObservers(func as Function, {

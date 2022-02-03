@@ -1,4 +1,5 @@
 import { AST, ASTPlugin } from '@glimmer/syntax';
+import { assert } from '@ember/debug';
 import { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
@@ -32,6 +33,7 @@ export default function transformEachTrackArray(env: EmberASTPluginEnvironment):
       BlockStatement(node: AST.BlockStatement): AST.Node | void {
         if (isPath(node.path) && node.path.original === 'each') {
           let firstParam = node.params[0];
+          assert('has firstParam', firstParam);
 
           if (
             firstParam.type === 'SubExpression' &&
@@ -41,7 +43,7 @@ export default function transformEachTrackArray(env: EmberASTPluginEnvironment):
             return;
           }
 
-          node.params[0] = b.sexpr(b.path('-track-array'), [node.params[0]]);
+          node.params[0] = b.sexpr(b.path('-track-array'), [firstParam]);
 
           return b.block(
             b.path('each'),

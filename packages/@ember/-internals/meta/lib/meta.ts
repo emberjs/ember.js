@@ -419,6 +419,7 @@ export class Meta {
       } as Listener);
     } else {
       let listener = listeners[i];
+      assert('has listener', listener);
 
       // If the listener is our own listener and we are trying to remove it, we
       // want to splice it out entirely so we don't hold onto a reference.
@@ -516,8 +517,7 @@ export class Meta {
               this._inheritedEnd = 0;
             }
 
-            for (let i = 0; i < parentListeners.length; i++) {
-              let listener = parentListeners[i];
+            for (let listener of parentListeners) {
               let index = indexOfListener(
                 listeners,
                 listener.event,
@@ -554,9 +554,7 @@ export class Meta {
     }
 
     if (listeners !== undefined) {
-      for (let index = 0; index < listeners.length; index++) {
-        let listener = listeners[index];
-
+      for (let listener of listeners) {
         // REMOVE listeners are placeholders that tell us not to
         // inherit, so they never match. Only ADD and ONCE can match.
         if (
@@ -587,9 +585,7 @@ export class Meta {
     }
 
     if (listeners !== undefined) {
-      for (let index = 0; index < listeners.length; index++) {
-        let listener = listeners[index];
-
+      for (let listener of listeners) {
         // REMOVE listeners are placeholders that tell us not to
         // inherit, so they never match. Only ADD and ONCE can match.
         if (
@@ -730,6 +726,7 @@ function indexOfListener(
 ) {
   for (let i = listeners.length - 1; i >= 0; i--) {
     let listener = listeners[i];
+    assert('has listener', listener);
 
     if (listener.event === event && listener.target === target && listener.method === method) {
       return i;

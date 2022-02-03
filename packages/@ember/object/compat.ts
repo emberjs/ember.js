@@ -1,6 +1,6 @@
 import { Meta } from '@ember/-internals/meta';
 import {
-  Decorator,
+  ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
   descriptorForProperty,
   isElementDescriptor,
@@ -126,8 +126,10 @@ export function dependentKeyCompat(
   key: ElementDescriptor[1],
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
-export function dependentKeyCompat(desc: PropertyDescriptor): Decorator;
-export function dependentKeyCompat(...args: ElementDescriptor | [PropertyDescriptor]) {
+export function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
+export function dependentKeyCompat(
+  ...args: ElementDescriptor | [PropertyDescriptor]
+): PropertyDescriptor | ExtendedMethodDecorator {
   if (isElementDescriptor(args)) {
     let [target, key, desc] = args;
 
@@ -162,7 +164,7 @@ export function dependentKeyCompat(...args: ElementDescriptor | [PropertyDescrip
       })(desc)
     );
 
-    let decorator: Decorator = function (
+    let decorator: ExtendedMethodDecorator = function (
       target: object,
       key: string,
       _desc?: DecoratorPropertyDescriptor,
@@ -188,4 +190,4 @@ export function dependentKeyCompat(...args: ElementDescriptor | [PropertyDescrip
   }
 }
 
-setClassicDecorator(dependentKeyCompat as Decorator);
+setClassicDecorator(dependentKeyCompat);

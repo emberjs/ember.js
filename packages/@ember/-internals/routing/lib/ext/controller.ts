@@ -2,8 +2,9 @@ import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
-import { Router } from '../..';
-import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
+import { Transition } from 'router_js';
+import { Route, Router } from '../..';
+import { deprecateTransitionMethods, prefixRouteNameArg, RouteArgs } from '../utils';
 
 /**
 @module ember
@@ -155,19 +156,19 @@ ControllerMixin.reopen({
 
     See also [replaceRoute](/ember/release/classes/Ember.ControllerMixin/methods/replaceRoute?anchor=replaceRoute).
 
-    @param {String} name the name of the route or a URL
+    @for Ember.ControllerMixin
+    @method transitionToRoute
+    @deprecated Use transitionTo from the Router service instead.
+    @param {String} [name] the name of the route or a URL
     @param {...Object} models the model(s) or identifier(s) to be used
       while transitioning to the route.
     @param {Object} [options] optional hash with a queryParams property
       containing a mapping of query parameters
-    @for Ember.ControllerMixin
-    @method transitionToRoute
     @return {Transition} the transition object associated with this
       attempted transition
-    @deprecated Use transitionTo from the Router service instead.
     @public
   */
-  transitionToRoute(...args: any[]) {
+  transitionToRoute<R extends Route>(...args: RouteArgs<R>): Transition {
     deprecateTransitionMethods('controller', 'transitionToRoute');
 
     // target may be either another controller or a router
@@ -176,7 +177,7 @@ ControllerMixin.reopen({
     // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
     // mock out an object that only has the single method. Since this is deprecated, I think it's
     // ok to be a little less than proper here.
-    let method = (target as Controller).transitionToRoute ?? (target as Router).transitionTo;
+    let method = (target as Controller).transitionToRoute ?? (target as Router<R>).transitionTo;
 
     return method.apply(target, prefixRouteNameArg(this, args));
   },
@@ -231,17 +232,20 @@ ControllerMixin.reopen({
     aController.replaceRoute('/blog/post/1/comment/13');
     ```
 
-    @param {String} name the name of the route or a URL
-    @param {...Object} models the model(s) or identifier(s) to be used
-    while transitioning to the route.
     @for Ember.ControllerMixin
     @method replaceRoute
+    @deprecated Use replaceWith from the Router service instead.
+    @param {String} [name] the name of the route or a URL
+    @param {...Object} models the model(s) or identifier(s) to be used
+    while transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+    containing a mapping of query parameters
     @return {Transition} the transition object associated with this
       attempted transition
-    @deprecated Use replaceWith from the Router service instead.
     @public
   */
-  replaceRoute(...args: string[]) {
+
+  replaceRoute<R extends Route>(...args: RouteArgs<R>): Transition {
     deprecateTransitionMethods('controller', 'replaceRoute');
     // target may be either another controller or a router
     let target = get(this, 'target');
@@ -249,7 +253,7 @@ ControllerMixin.reopen({
     // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
     // mock out an object that only has the single method. Since this is deprecated, I think it's
     // ok to be a little less than proper here.
-    let method = (target as Controller).replaceRoute ?? (target as Router).replaceWith;
+    let method = (target as Controller).replaceRoute ?? (target as Router<R>).replaceWith;
 
     return method.apply(target, prefixRouteNameArg(this, args));
   },

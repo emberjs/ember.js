@@ -116,15 +116,13 @@ class EmberArrayIterator extends BoundedIterator {
 class ObjectIterator extends BoundedIterator {
   static fromIndexable(obj: Indexable) {
     let keys = Object.keys(obj);
-    let { length } = keys;
 
-    if (length === 0) {
+    if (keys.length === 0) {
       return null;
     } else {
       let values: unknown[] = [];
-      for (let i = 0; i < length; i++) {
+      for (let key of keys) {
         let value: any;
-        let key = keys[i];
 
         value = obj[key];
 

@@ -8,7 +8,8 @@ let helper: Helper;
 
 if (DEBUG) {
   helper = (args: CapturedArguments) => {
-    let inner = args.positional[0];
+    const inner = args.positional[0];
+    assert('expected at least one positional arg', inner);
 
     return createComputeRef(() => {
       let value = valueForRef(inner);
@@ -22,7 +23,11 @@ if (DEBUG) {
     });
   };
 } else {
-  helper = (args: CapturedArguments) => args.positional[0];
+  helper = (args: CapturedArguments) => {
+    let arg = args.positional[0];
+    assert('expected at least one positional arg', arg);
+    return arg;
+  };
 }
 
 export default internalHelper(helper);

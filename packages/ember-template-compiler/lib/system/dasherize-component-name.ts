@@ -13,7 +13,7 @@ export default new Cache<string, string>(1000, (key) =>
       return '/';
     }
 
-    if (index === 0 || !ALPHA.test(key[index - 1])) {
+    if (index === 0 || !ALPHA.test(key[index - 1]!)) {
       return char.toLowerCase();
     }
 

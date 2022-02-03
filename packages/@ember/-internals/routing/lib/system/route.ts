@@ -29,6 +29,8 @@ import { DEBUG } from '@glimmer/env';
 import { Template, TemplateFactory } from '@glimmer/interfaces';
 import {
   InternalRouteInfo,
+  IModel,
+  ModelFor,
   PARAMS_SYMBOL,
   Route as IRoute,
   STATE_SYMBOL,
@@ -37,9 +39,12 @@ import {
 } from 'router_js';
 import {
   calculateCacheKey,
+  ControllerQueryParam,
   deprecateTransitionMethods,
+  NamedRouteArgs,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
+  RouteArgs,
   stashParamNames,
 } from '../utils';
 import generateController from './generate_controller';
@@ -56,42 +61,16 @@ export type QueryParamMeta = {
   };
 };
 
-type RouteTransitionState = TransitionState<Route> & {
+type RouteTransitionState<R extends Route> = TransitionState<R> & {
   fullQueryParams?: Record<string, unknown>;
   queryParamsFor?: Record<string, Record<string, unknown>>;
 };
 
+type MaybeParameters<T> = T extends (...args: any[]) => any ? Parameters<T> : unknown[];
+type MaybeReturnType<T> = T extends (...args: any[]) => any ? ReturnType<T> : unknown;
+
 export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = (symbol('render') as unknown) as string;
-
-export function defaultSerialize(
-  model: {},
-  params: string[]
-): { [key: string]: unknown } | undefined {
-  if (params.length < 1 || !model) {
-    return;
-  }
-
-  let object = {};
-  if (params.length === 1) {
-    let [name] = params;
-    if (name in model) {
-      object[name] = get(model, name);
-    } else if (/_id$/.test(name)) {
-      object[name] = get(model, 'id');
-    } else if (isProxy(model)) {
-      object[name] = get(model, name);
-    }
-  } else {
-    object = getProperties(model, params);
-  }
-
-  return object;
-}
-
-export function hasDefaultSerialize(route: Route): boolean {
-  return route.serialize === defaultSerialize;
-}
 
 /**
 @module @ember/routing
@@ -108,12 +87,184 @@ export function hasDefaultSerialize(route: Route): boolean {
   @since 1.0.0
   @public
 */
+interface Route<T extends IModel = {}> extends IRoute<T> {
+  /**
+    The `willTransition` action is fired at the beginning of any
+    attempted transition with a `Transition` object as the sole
+    argument. This action can be used for aborting, redirecting,
+    or decorating the transition from the currently active routes.
 
-class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute, Evented {
+    A good example is preventing navigation when a form is
+    half-filled out:
+
+    ```app/routes/contact-form.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class ContactFormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData')) {
+          this.controller.displayNavigationConfirm();
+          transition.abort();
+        }
+      }
+    }
+    ```
+
+    You can also redirect elsewhere by calling
+    `this.transitionTo('elsewhere')` from within `willTransition`.
+    Note that `willTransition` will not be fired for the
+    redirecting `transitionTo`, since `willTransition` doesn't
+    fire when there is already a transition underway. If you want
+    subsequent `willTransition` actions to fire for the redirecting
+    transition, you must first explicitly call
+    `transition.abort()`.
+
+    To allow the `willTransition` event to continue bubbling to the parent
+    route, use `return true;`. When the `willTransition` method has a
+    return value of `true` then the parent route's `willTransition` method
+    will be fired, enabling "bubbling" behavior for the event.
+
+    @event willTransition
+    @param {Transition} transition
+    @since 1.0.0
+    @public
+  */
+  willTransition?(transition: Transition): boolean | void;
+
+  /**
+    The `didTransition` action is fired after a transition has
+    successfully been completed. This occurs after the normal model
+    hooks (`beforeModel`, `model`, `afterModel`, `setupController`)
+    have resolved. The `didTransition` action has no arguments,
+    however, it can be useful for tracking page views or resetting
+    state on the controller.
+
+    ```app/routes/login.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class LoginRoute extends Route {
+      @action
+      didTransition() {
+        this.controller.get('errors.base').clear();
+        return true; // Bubble the didTransition event
+      }
+    }
+    ```
+
+    @event didTransition
+    @since 1.2.0
+    @public
+  */
+  didTransition?(): boolean | void;
+
+  /**
+    The `loading` action is fired on the route when a route's `model`
+    hook returns a promise that is not already resolved. The current
+    `Transition` object is the first parameter and the route that
+    triggered the loading event is the second parameter.
+
+    ```app/routes/application.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class ApplicationRoute extends Route {
+      @action
+      loading(transition, route) {
+        let controller = this.controllerFor('foo');
+
+        // The controller may not be instantiated when initially loading
+        if (controller) {
+          controller.currentlyLoading = true;
+
+          transition.finally(function() {
+            controller.currentlyLoading = false;
+          });
+        }
+      }
+    }
+    ```
+
+    @event loading
+    @param {Transition} transition
+    @param {Route} route The route that triggered the loading event
+    @since 1.2.0
+    @public
+  */
+  loading?(transition: Transition, route: Route): boolean | void;
+
+  /**
+    When attempting to transition into a route, any of the hooks
+    may return a promise that rejects, at which point an `error`
+    action will be fired on the partially-entered routes, allowing
+    for per-route error handling logic, or shared error handling
+    logic defined on a parent route.
+
+    Here is an example of an error handler that will be invoked
+    for rejected promises from the various hooks on the route,
+    as well as any unhandled errors from child routes:
+
+    ```app/routes/admin.js
+    import { reject } from 'rsvp';
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class AdminRoute extends Route {
+      beforeModel() {
+        return reject('bad things!');
+      }
+
+      @action
+      error(error, transition) {
+        // Assuming we got here due to the error in `beforeModel`,
+        // we can expect that error === "bad things!",
+        // but a promise model rejecting would also
+        // call this hook, as would any errors encountered
+        // in `afterModel`.
+
+        // The `error` hook is also provided the failed
+        // `transition`, which can be stored and later
+        // `.retry()`d if desired.
+
+        this.transitionTo('login');
+      }
+    }
+    ```
+
+    `error` actions that bubble up all the way to `ApplicationRoute`
+    will fire a default error handler that logs the error. You can
+    specify your own global default error handler by overriding the
+    `error` handler on `ApplicationRoute`:
+
+    ```app/routes/application.js
+    import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
+
+    export default class ApplicationRoute extends Route {
+      @action
+      error(error, transition) {
+        this.controllerFor('banner').displayError(error.message);
+      }
+    }
+    ```
+    @event error
+    @param {Error} error
+    @param {Transition} transition
+    @since 1.0.0
+    @public
+  */
+  error?(error: Error, transition: Transition): boolean | void;
+}
+
+class Route<T extends IModel = {}>
+  extends EmberObject.extend(ActionHandler, Evented)
+  implements IRoute, Evented {
   static isRouteFactory = true;
 
-  context: {} = {};
-  currentModel: unknown;
+  context = {} as T;
+  declare currentModel: T;
 
   _bucketCache!: BucketCache;
   _internalName!: string;
@@ -150,14 +301,73 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
   declare has: (name: string) => boolean;
 
-  serialize!: (
-    model: {},
-    params: string[]
-  ) =>
-    | {
-        [key: string]: unknown;
+  /**
+    A hook you can implement to convert the route's model into parameters
+    for the URL.
+
+    ```app/router.js
+    // ...
+
+    Router.map(function() {
+      this.route('post', { path: '/posts/:post_id' });
+    });
+
+    ```
+
+    ```app/routes/post.js
+    import Route from '@ember/routing/route';
+
+    export default class PostRoute extends Route {
+      model({ post_id }) {
+        // the server returns `{ id: 12 }`
+        return fetch(`/posts/${post_id}`;
       }
-    | undefined;
+
+      serialize(model) {
+        // this will make the URL `/posts/12`
+        return { post_id: model.id };
+      }
+    }
+    ```
+
+    The default `serialize` method will insert the model's `id` into the
+    route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
+    If the route has multiple dynamic segments or does not contain '_id', `serialize`
+    will return `getProperties(model, params)`
+
+    This method is called when `transitionTo` is called with a context
+    in order to populate the URL.
+
+    @method serialize
+    @param {Object} model the routes model
+    @param {Array} params an Array of parameter names for the current
+      route (in the example, `['post_id']`.
+    @return {Object} the serialized parameters
+    @since 1.0.0
+    @public
+  */
+  serialize(model: T | undefined, params: string[]): { [key: string]: unknown } | undefined {
+    if (params.length < 1 || !model) {
+      return;
+    }
+
+    let object = {};
+    if (params.length === 1) {
+      let [name] = params;
+      assert('has name', name);
+      if (name in model) {
+        object[name] = get(model, name);
+      } else if (/_id$/.test(name)) {
+        object[name] = get(model, 'id');
+      } else if (isProxy(model)) {
+        object[name] = get(model, name);
+      }
+    } else {
+      object = getProperties(model, params);
+    }
+
+    return object;
+  }
 
   /**
     Configuration hash for this route's queryParams. The possible
@@ -360,15 +570,14 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     }
 
     // SAFETY: Since `_qp` is protected we can't infer the type
-    let qps = (get(this, '_qp') as Route['_qp']).qps;
+    let qps = (get(this, '_qp') as Route<T>['_qp']).qps;
 
     let namePaths = new Array(names.length);
     for (let a = 0; a < names.length; ++a) {
       namePaths[a] = `${routeInfo.name}.${names[a]}`;
     }
 
-    for (let i = 0; i < qps.length; ++i) {
-      let qp = qps[i];
+    for (let qp of qps) {
       if (qp.scope === 'model') {
         qp.parts = namePaths;
       }
@@ -447,7 +656,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.4.0
     @public
   */
-  paramsFor(name: string) {
+  paramsFor(name: string): Record<string, unknown> {
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
     let route = owner.lookup<Route>(`route:${name}`);
@@ -463,12 +672,12 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     let params = Object.assign({}, state!.params[fullName]);
     let queryParams = getQueryParamsFor(route, state!);
 
-    return Object.keys(queryParams).reduce((params, key) => {
+    return Object.entries(queryParams).reduce((params, [key, value]) => {
       assert(
         `The route '${this.routeName}' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
         !params[key]
       );
-      params[key] = queryParams[key];
+      params[key] = value;
       return params;
     }, params);
   }
@@ -555,7 +764,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.7.0
     @public
   */
-  resetController(_controller: any, _isExiting: boolean, _transition: Transition) {
+  resetController(_controller: Controller, _isExiting: boolean, _transition: Transition) {
     return this;
   }
 
@@ -579,7 +788,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
   _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
     // SAFETY: Since `_qp` is protected we can't infer the type
-    controller['_qpDelegate'] = (get(this, '_qp') as Route['_qp']).states.inactive;
+    controller['_qpDelegate'] = (get(this, '_qp') as Route<T>['_qp']).states.inactive;
 
     this.resetController(controller, isExiting, transition);
   }
@@ -594,171 +803,6 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     this.activate(transition);
     this.trigger('activate', transition);
   }
-
-  /**
-    The `willTransition` action is fired at the beginning of any
-    attempted transition with a `Transition` object as the sole
-    argument. This action can be used for aborting, redirecting,
-    or decorating the transition from the currently active routes.
-
-    A good example is preventing navigation when a form is
-    half-filled out:
-
-    ```app/routes/contact-form.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class ContactFormRoute extends Route {
-      @action
-      willTransition(transition) {
-        if (this.controller.get('userHasEnteredData')) {
-          this.controller.displayNavigationConfirm();
-          transition.abort();
-        }
-      }
-    }
-    ```
-
-    You can also redirect elsewhere by calling
-    `this.transitionTo('elsewhere')` from within `willTransition`.
-    Note that `willTransition` will not be fired for the
-    redirecting `transitionTo`, since `willTransition` doesn't
-    fire when there is already a transition underway. If you want
-    subsequent `willTransition` actions to fire for the redirecting
-    transition, you must first explicitly call
-    `transition.abort()`.
-
-    To allow the `willTransition` event to continue bubbling to the parent
-    route, use `return true;`. When the `willTransition` method has a
-    return value of `true` then the parent route's `willTransition` method
-    will be fired, enabling "bubbling" behavior for the event.
-
-    @event willTransition
-    @param {Transition} transition
-    @since 1.0.0
-    @public
-  */
-
-  /**
-    The `didTransition` action is fired after a transition has
-    successfully been completed. This occurs after the normal model
-    hooks (`beforeModel`, `model`, `afterModel`, `setupController`)
-    have resolved. The `didTransition` action has no arguments,
-    however, it can be useful for tracking page views or resetting
-    state on the controller.
-
-    ```app/routes/login.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class LoginRoute extends Route {
-      @action
-      didTransition() {
-        this.controller.get('errors.base').clear();
-        return true; // Bubble the didTransition event
-      }
-    }
-    ```
-
-    @event didTransition
-    @since 1.2.0
-    @public
-  */
-
-  /**
-    The `loading` action is fired on the route when a route's `model`
-    hook returns a promise that is not already resolved. The current
-    `Transition` object is the first parameter and the route that
-    triggered the loading event is the second parameter.
-
-    ```app/routes/application.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class ApplicationRoute extends Route {
-      @action
-      loading(transition, route) {
-        let controller = this.controllerFor('foo');
-
-        // The controller may not be instantiated when initially loading
-        if (controller) {
-          controller.currentlyLoading = true;
-
-          transition.finally(function() {
-            controller.currentlyLoading = false;
-          });
-        }
-      }
-    }
-    ```
-
-    @event loading
-    @param {Transition} transition
-    @param {Route} route The route that triggered the loading event
-    @since 1.2.0
-    @public
-  */
-
-  /**
-    When attempting to transition into a route, any of the hooks
-    may return a promise that rejects, at which point an `error`
-    action will be fired on the partially-entered routes, allowing
-    for per-route error handling logic, or shared error handling
-    logic defined on a parent route.
-
-    Here is an example of an error handler that will be invoked
-    for rejected promises from the various hooks on the route,
-    as well as any unhandled errors from child routes:
-
-    ```app/routes/admin.js
-    import { reject } from 'rsvp';
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class AdminRoute extends Route {
-      beforeModel() {
-        return reject('bad things!');
-      }
-
-      @action
-      error(error, transition) {
-        // Assuming we got here due to the error in `beforeModel`,
-        // we can expect that error === "bad things!",
-        // but a promise model rejecting would also
-        // call this hook, as would any errors encountered
-        // in `afterModel`.
-
-        // The `error` hook is also provided the failed
-        // `transition`, which can be stored and later
-        // `.retry()`d if desired.
-
-        this.transitionTo('login');
-      }
-    }
-    ```
-
-    `error` actions that bubble up all the way to `ApplicationRoute`
-    will fire a default error handler that logs the error. You can
-    specify your own global default error handler by overriding the
-    `error` handler on `ApplicationRoute`:
-
-    ```app/routes/application.js
-    import Route from '@ember/routing/route';
-    import { action } from '@ember/object';
-
-    export default class ApplicationRoute extends Route {
-      @action
-      error(error, transition) {
-        this.controllerFor('banner').displayError(error.message);
-      }
-    }
-    ```
-    @event error
-    @param {Error} error
-    @param {Transition} transition
-    @since 1.0.0
-    @public
-  */
 
   /**
     This event is triggered when the router enters the route. It is
@@ -1015,7 +1059,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @deprecated Use transitionTo from the Router service instead.
     @public
   */
-  transitionTo(...args: any[]) {
+  transitionTo(...args: RouteArgs<this>): Transition {
     deprecateTransitionMethods('route', 'transitionTo');
     return this._router.transitionTo(...prefixRouteNameArg(this, args));
   }
@@ -1037,7 +1081,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.2.0
     @public
    */
-  intermediateTransitionTo(...args: any[]) {
+  intermediateTransitionTo(...args: NamedRouteArgs<this>): void {
     let [name, ...preparedArgs] = prefixRouteNameArg(this, args);
     this._router.intermediateTransitionTo(name, ...preparedArgs);
   }
@@ -1064,7 +1108,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.4.0
     @public
    */
-  refresh() {
+  refresh(): Transition {
     return this._router._routerMicrolib.refresh(this);
   }
 
@@ -1111,7 +1155,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @deprecated Use replaceWith from the Router service instead.
     @public
   */
-  replaceWith(...args: any[]) {
+  replaceWith(...args: any[]): Transition {
     deprecateTransitionMethods('route', 'replaceWith');
     return this._router.replaceWith(...prefixRouteNameArg(this, args));
   }
@@ -1122,19 +1166,13 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @private
     @method setup
   */
-  setup(context: {}, transition: Transition) {
+  setup(context: T | undefined, transition: Transition) {
     let controllerName = this.controllerName || this.routeName;
     let definedController = this.controllerFor(controllerName, true);
-
-    let controller: any;
-    if (definedController) {
-      controller = definedController;
-    } else {
-      controller = this.generateController(controllerName);
-    }
+    let controller = definedController ?? this.generateController(controllerName);
 
     // SAFETY: Since `_qp` is protected we can't infer the type
-    let queryParams = get(this, '_qp') as Route['_qp'];
+    let queryParams = get(this, '_qp') as Route<T>['_qp'];
 
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers. Side effects. Side effects everywhere.
@@ -1158,6 +1196,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
       allParams.forEach((prop: string) => {
         let aQp = queryParams.map[prop];
+        assert('expected aQp', aQp);
         aQp.values = params;
 
         let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
@@ -1228,7 +1267,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
   */
-  beforeModel() {}
+  beforeModel(_transition: Transition): unknown | Promise<unknown>;
+  beforeModel(_transition: Transition): void {}
 
   /**
     This hook is called after this route's model has resolved.
@@ -1265,7 +1305,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
    */
-  afterModel() {}
+  afterModel(_resolvedModel: T | undefined, _transition: Transition): unknown | Promise<unknown>;
+  afterModel(_resolvedModel: T | undefined, _transition: Transition): void {}
 
   /**
     A hook you can implement to optionally redirect to another route.
@@ -1290,7 +1331,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
   */
-  redirect() {}
+  redirect(_model: T, _transition: Transition) {}
 
   /**
     Called when the context is changed by router.js.
@@ -1380,10 +1421,10 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
   */
-  model(params: {}, transition: Transition) {
+  model(params: Record<string, unknown>, transition: Transition): T | Promise<T> | undefined {
     let name, sawParams, value;
     // SAFETY: Since `_qp` is protected we can't infer the type
-    let queryParams = (get(this, '_qp') as Route['_qp']).map;
+    let queryParams = (get(this, '_qp') as Route<T>['_qp']).map;
 
     for (let prop in params) {
       if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
@@ -1400,12 +1441,18 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
     if (!name) {
       if (sawParams) {
-        return Object.assign({}, params);
+        // SAFETY: This should be equivalent
+        return Object.assign({}, params) as T;
       } else {
         if (transition.resolveIndex < 1) {
           return;
         }
-        return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1].context;
+        // SAFETY: These return types should be equivalent but router.js doesn't have enough
+        // generics to infer it.
+        return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1]!.context as
+          | T
+          | Promise<T>
+          | undefined;
       }
     }
 
@@ -1506,7 +1553,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
   */
-  setupController(controller: Controller, context: {}, _transition?: Transition) {
+  setupController(controller: Controller, context: T | undefined, _transition?: Transition) {
     if (controller && context !== undefined) {
       set(controller, 'model', context);
     }
@@ -1533,11 +1580,13 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
 
     @method controllerFor
     @param {String} name the name of the route or controller
-    @return {Controller}
+    @return {Controller | undefined}
     @since 1.0.0
     @public
   */
-  controllerFor(name: string, _skipAssert: boolean): Controller {
+  controllerFor(name: string, _skipAssert: true): Controller | undefined;
+  controllerFor(name: string, _skipAssert?: false): Controller;
+  controllerFor(name: string, _skipAssert = false): Controller | undefined {
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
     let route = owner.lookup<Route>(`route:${name}`);
@@ -1556,7 +1605,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       controller !== undefined || _skipAssert === true
     );
 
-    return controller!;
+    return controller;
   }
 
   /**
@@ -1629,7 +1678,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 1.0.0
     @public
   */
-  modelFor(_name: string) {
+  modelFor(_name: string): unknown | undefined {
     let name;
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
@@ -1656,7 +1705,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       }
     }
 
-    return route && route.currentModel;
+    return route?.currentModel;
   }
 
   /**
@@ -1738,7 +1787,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @since 3.10.0
     @public
    */
-  buildRouteInfoMetadata() {}
+  buildRouteInfoMetadata(): unknown;
+  buildRouteInfoMetadata(): void {}
 
   private _paramsFor(routeName: string, params: {}) {
     let transition = this._router._routerMicrolib.activeTransition;
@@ -1836,8 +1886,8 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
       // merge in the query params for the route. As a mergedProperty,
       // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration =
-        (get(controller, 'queryParams') as any) || {};
+      let controllerDefinedQueryParameterConfiguration: ControllerQueryParam[] =
+        (get(controller, 'queryParams') as ControllerQueryParam[]) || [];
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
         controllerDefinedQueryParameterConfiguration
       );
@@ -1919,6 +1969,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         */
         inactive: (prop: string, value: unknown) => {
           let qp = map[prop];
+          assert('expected inactive callback to only be called for registered qps', qp);
           this._qpChanged(prop, value, qp);
         },
         /*
@@ -1928,6 +1979,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         */
         active: (prop: string, value: unknown) => {
           let qp = map[prop];
+          assert('expected active callback to only be called for registered qps', qp);
           this._qpChanged(prop, value, qp);
           return this._activeQPChanged(qp, value);
         },
@@ -1937,6 +1989,7 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
         */
         allowOverrides: (prop: string, value: unknown) => {
           let qp = map[prop];
+          assert('expected allowOverrides callback to only be called for registered qps', qp);
           this._qpChanged(prop, value, qp);
           return this._updatingQPChanged(qp);
         },
@@ -1996,7 +2049,14 @@ class Route extends EmberObject.extend(ActionHandler, Evented) implements IRoute
     @public
   */
   // Set with reopen to override parent behavior
-  declare send: (name: string, ...args: any[]) => unknown;
+  declare send: <K extends keyof this | keyof this['actions']>(
+    name: K,
+    ...args: MaybeParameters<
+      K extends keyof this ? this[K] : K extends keyof this['actions'] ? this['actions'][K] : never
+    >
+  ) => MaybeReturnType<
+    K extends keyof this ? this[K] : K extends keyof this['actions'] ? this['actions'][K] : never
+  >;
 }
 
 function parentRoute(route: Route) {
@@ -2011,7 +2071,9 @@ function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offs
 
   let current: Route | undefined;
   for (let i = 0; i < routeInfos.length; i++) {
-    current = routeInfos[i].route;
+    let routeInfo = routeInfos[i];
+    assert('has current routeInfo', routeInfo);
+    current = routeInfo.route;
     if (current === route) {
       return routeInfos[i + offset];
     }
@@ -2136,7 +2198,10 @@ type PartialRenderOptions = Partial<
   Pick<RenderOptions, 'into' | 'outlet' | 'controller' | 'model'>
 >;
 
-export function getFullQueryParams(router: EmberRouter, state: RouteTransitionState) {
+export function getFullQueryParams<R extends Route>(
+  router: EmberRouter<R>,
+  state: RouteTransitionState<R>
+) {
   if (state.fullQueryParams) {
     return state.fullQueryParams;
   }
@@ -2159,12 +2224,16 @@ export function getFullQueryParams(router: EmberRouter, state: RouteTransitionSt
   return fullQueryParamsState;
 }
 
-function getQueryParamsFor(route: Route, state: RouteTransitionState) {
+function getQueryParamsFor<R extends Route>(
+  route: R,
+  state: RouteTransitionState<R>
+): Record<string, unknown> {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.fullRouteName;
 
-  if (state.queryParamsFor[name]) {
-    return state.queryParamsFor[name];
+  let existing = state.queryParamsFor[name];
+  if (existing) {
+    return existing;
   }
 
   let fullQueryParams = getFullQueryParams(route._router, state);
@@ -2173,11 +2242,9 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState) {
 
   // Copy over all the query params for this route/controller into params hash.
   // SAFETY: Since `_qp` is protected we can't infer the type
-  let qps = (get(route, '_qp') as Route['_qp']).qps;
-  for (let i = 0; i < qps.length; ++i) {
+  let qps = (get(route, '_qp') as Route<ModelFor<R>>['_qp']).qps;
+  for (let qp of qps) {
     // Put deserialized qp on params hash.
-    let qp = qps[i];
-
     let qpValueWasPassedIn = qp.prop in fullQueryParams;
     params[qp.prop] = qpValueWasPassedIn
       ? fullQueryParams[qp.prop]
@@ -2279,52 +2346,13 @@ function getEngineRouteName(engine: Owner, routeName: string) {
   return routeName;
 }
 
-/**
-    A hook you can implement to convert the route's model into parameters
-    for the URL.
+const defaultSerialize = Route.prototype.serialize;
 
-    ```app/router.js
-    // ...
+export { defaultSerialize };
 
-    Router.map(function() {
-      this.route('post', { path: '/posts/:post_id' });
-    });
-
-    ```
-
-    ```app/routes/post.js
-    import Route from '@ember/routing/route';
-
-    export default class PostRoute extends Route {
-      model({ post_id }) {
-        // the server returns `{ id: 12 }`
-        return fetch(`/posts/${post_id}`;
-      }
-
-      serialize(model) {
-        // this will make the URL `/posts/12`
-        return { post_id: model.id };
-      }
-    }
-    ```
-
-    The default `serialize` method will insert the model's `id` into the
-    route's dynamic segment (in this case, `:post_id`) if the segment contains '_id'.
-    If the route has multiple dynamic segments or does not contain '_id', `serialize`
-    will return `getProperties(model, params)`
-
-    This method is called when `transitionTo` is called with a context
-    in order to populate the URL.
-
-    @method serialize
-    @param {Object} model the routes model
-    @param {Array} params an Array of parameter names for the current
-      route (in the example, `['post_id']`.
-    @return {Object} the serialized parameters
-    @since 1.0.0
-    @public
-  */
-Route.prototype.serialize = defaultSerialize;
+export function hasDefaultSerialize(route: Route): boolean {
+  return route.serialize === defaultSerialize;
+}
 
 // Set these here so they can be overridden with extend
 Route.reopen({
@@ -2390,13 +2418,13 @@ Route.reopen({
     @returns {boolean}
     @private
    */
-    queryParamsDidChange(this: Route, changed: {}, _totalPresent: unknown, removed: {}) {
+    queryParamsDidChange<T>(this: Route<T>, changed: {}, _totalPresent: unknown, removed: {}) {
       // SAFETY: Since `_qp` is protected we can't infer the type
-      let qpMap = (get(this, '_qp') as Route['_qp']).map;
+      let qpMap = (get(this, '_qp') as Route<T>['_qp']).map;
 
       let totalChanged = Object.keys(changed).concat(Object.keys(removed));
-      for (let i = 0; i < totalChanged.length; ++i) {
-        let qp = qpMap[totalChanged[i]];
+      for (let change of totalChanged) {
+        let qp = qpMap[change];
         if (qp) {
           let options = this._optionsForQueryParam(qp);
           assert('options exists', options && typeof options === 'object');
@@ -2410,7 +2438,12 @@ Route.reopen({
       return true;
     },
 
-    finalizeQueryParamChange(this: Route, params: {}, finalParams: {}[], transition: Transition) {
+    finalizeQueryParamChange<T>(
+      this: Route<T>,
+      params: {},
+      finalParams: {}[],
+      transition: Transition
+    ) {
       if (this.fullRouteName !== 'application') {
         return true;
       }
@@ -2429,8 +2462,7 @@ Route.reopen({
 
       stashParamNames(router, routeInfos);
 
-      for (let i = 0; i < qpMeta.qps.length; ++i) {
-        let qp = qpMeta.qps[i];
+      for (let qp of qpMeta.qps) {
         let route = qp.route;
         let controller = route.controller;
         let presentKey = qp.urlKey in params && qp.urlKey;
@@ -2459,7 +2491,7 @@ Route.reopen({
         }
 
         // SAFETY: Since `_qp` is protected we can't infer the type
-        controller._qpDelegate = (get(route, '_qp') as Route['_qp']).states.inactive;
+        controller._qpDelegate = (get(route, '_qp') as Route<T>['_qp']).states.inactive;
 
         let thisQueryParamChanged = svalue !== qp.serializedValue;
         if (thisQueryParamChanged) {
@@ -2504,7 +2536,7 @@ Route.reopen({
 
       qpMeta.qps.forEach((qp: QueryParam) => {
         // SAFETY: Since `_qp` is protected we can't infer the type
-        let routeQpMeta = get(qp.route, '_qp') as Route['_qp'];
+        let routeQpMeta = get(qp.route, '_qp') as Route<T>['_qp'];
         let finalizedController = qp.route.controller;
         finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
       });

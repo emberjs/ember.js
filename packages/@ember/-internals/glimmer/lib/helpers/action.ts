@@ -290,11 +290,12 @@ export default internalHelper(
     // pos[1] is the action name or function
     // Anything else is an action argument.
     let [context, action, ...restArgs] = positional;
+    assert('hash position arguments', context && action);
 
     let debugKey: string = action.debugLabel!;
 
-    let target = 'target' in named ? named.target : context;
-    let processArgs = makeArgsProcessor('value' in named && named.value, restArgs);
+    let target = 'target' in named && named.target ? named.target : context;
+    let processArgs = makeArgsProcessor(('value' in named && named.value) || false, restArgs);
 
     let fn: Function;
 

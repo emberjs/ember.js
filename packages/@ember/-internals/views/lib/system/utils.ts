@@ -50,6 +50,7 @@ export function getRootViews(owner: Owner): View[] {
 
   Object.keys(registry).forEach((id) => {
     let view = registry[id];
+    assert('expected view', view);
 
     if (view.parentView === null) {
       rootViews.push(view);

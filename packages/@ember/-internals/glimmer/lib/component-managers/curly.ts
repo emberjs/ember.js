@@ -85,6 +85,7 @@ function applyAttributeBindings(
 
   while (i !== -1) {
     let binding = attributeBindings[i];
+    assert('has binding', binding);
     let parsed: [string, string, boolean] = parseAttributeBinding(binding);
     let attribute = parsed[1];
 
@@ -174,6 +175,7 @@ export default class CurlyComponentManager
       );
 
       let { __ARGS__, ...rest } = args.named.capture();
+      assert('[BUG] unexpectedly missing __ARGS__ after check', __ARGS__);
 
       // does this need to be untracked?
       let __args__ = valueForRef(__ARGS__) as CapturedArguments;
@@ -215,14 +217,8 @@ export default class CurlyComponentManager
       Object.assign(named, args.named.capture());
 
       for (let i = 0; i < count; i++) {
-        // As of TS 3.7, tsc is giving us the following error on this line without the type annotation
-        //
-        //   TS7022: 'name' implicitly has type 'any' because it does not have a type annotation and is
-        //   referenced directly or indirectly in its own initializer.
-        //
-        // This is almost certainly a TypeScript bug, feel free to try and remove the annotation after
-        // upgrading if it is not needed anymore.
-        const name: string = positionalParams[i];
+        let name = positionalParams[i];
+        assert('Expected at least one positional param', name);
 
         assert(
           `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
@@ -495,8 +491,7 @@ export function processComponentInitializationAssertions(component: Component, p
     `classNameBindings must not have spaces in them: ${component}`,
     (() => {
       let { classNameBindings } = component;
-      for (let i = 0; i < classNameBindings.length; i++) {
-        let binding = classNameBindings[i];
+      for (let binding of classNameBindings) {
         if (binding.split(' ').length > 1) {
           return false;
         }

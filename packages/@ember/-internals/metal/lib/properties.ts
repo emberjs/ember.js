@@ -5,7 +5,7 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { setWithMandatorySetter } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
-import { Decorator, descriptorForProperty, isClassicDecorator } from './decorator';
+import { ExtendedMethodDecorator, descriptorForProperty, isClassicDecorator } from './decorator';
 import { revalidateObservers } from './observer';
 
 /**
@@ -59,7 +59,7 @@ import { revalidateObservers } from './observer';
 export function defineProperty(
   obj: object,
   keyName: string,
-  desc?: Decorator | PropertyDescriptor | undefined | null,
+  desc?: ExtendedMethodDecorator | PropertyDescriptor | undefined | null,
   data?: any | undefined | null,
   _meta?: Meta
 ): void {
@@ -87,7 +87,12 @@ export function defineProperty(
   }
 }
 
-export function defineDecorator(obj: object, keyName: string, desc: Decorator, meta: Meta) {
+export function defineDecorator(
+  obj: object,
+  keyName: string,
+  desc: ExtendedMethodDecorator,
+  meta: Meta
+) {
   let propertyDesc;
 
   if (DEBUG) {

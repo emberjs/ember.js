@@ -5,10 +5,11 @@ import { _WeakSet as WeakSet } from '@glimmer/util';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
-export type Decorator = (
+// Same as built-in MethodDecorator but with more arguments
+export type ExtendedMethodDecorator = (
   target: object,
   key: string,
-  desc?: DecoratorPropertyDescriptor,
+  desc: DecoratorPropertyDescriptor,
   maybeMeta?: Meta,
   isClassicDecorator?: boolean
 ) => DecoratorPropertyDescriptor;
@@ -16,7 +17,7 @@ export type Decorator = (
 export type ElementDescriptor = [
   target: object,
   propertyName: string,
-  descriptor: DecoratorPropertyDescriptor
+  descriptor?: DecoratorPropertyDescriptor
 ];
 
 export function isElementDescriptor(args: unknown[]): args is ElementDescriptor {
@@ -61,7 +62,7 @@ export abstract class ComputedDescriptor {
   setup(
     _obj: object,
     keyName: string,
-    _propertyDesc: DecoratorPropertyDescriptor,
+    _propertyDesc: DecoratorPropertyDescriptor | undefined,
     meta: Meta
   ): void {
     meta.writeDescriptors(keyName, this);
@@ -111,7 +112,7 @@ export const COMPUTED_SETTERS = new WeakSet();
 export function makeComputedDecorator(
   desc: ComputedDescriptor,
   DecoratorClass: { prototype: object }
-): Decorator {
+): ExtendedMethodDecorator {
   let decorator = function COMPUTED_DECORATOR(
     target: object,
     key: string,
@@ -149,7 +150,10 @@ export function makeComputedDecorator(
 
 /////////////
 
-const DECORATOR_DESCRIPTOR_MAP: WeakMap<Decorator, ComputedDescriptor | true> = new WeakMap();
+const DECORATOR_DESCRIPTOR_MAP: WeakMap<
+  ExtendedMethodDecorator,
+  ComputedDescriptor | true
+> = new WeakMap();
 
 /**
   Returns the CP descriptor associated with `obj` and `keyName`, if any.
@@ -176,7 +180,7 @@ export function descriptorForProperty(obj: object, keyName: string, _meta?: Meta
 }
 
 export function descriptorForDecorator(dec: Function): ComputedDescriptor | true | undefined {
-  return DECORATOR_DESCRIPTOR_MAP.get(dec as Decorator);
+  return DECORATOR_DESCRIPTOR_MAP.get(dec as ExtendedMethodDecorator);
 }
 
 /**
@@ -187,8 +191,8 @@ export function descriptorForDecorator(dec: Function): ComputedDescriptor | true
   @return {boolean}
   @private
 */
-export function isClassicDecorator(dec: unknown): dec is Decorator {
-  return typeof dec === 'function' && DECORATOR_DESCRIPTOR_MAP.has(dec as Decorator);
+export function isClassicDecorator(dec: unknown): dec is ExtendedMethodDecorator {
+  return typeof dec === 'function' && DECORATOR_DESCRIPTOR_MAP.has(dec as ExtendedMethodDecorator);
 }
 
 /**
@@ -198,6 +202,9 @@ export function isClassicDecorator(dec: unknown): dec is Decorator {
   @param {function} decorator the value to mark as a decorator
   @private
 */
-export function setClassicDecorator(dec: Decorator, value: ComputedDescriptor | true = true) {
+export function setClassicDecorator(
+  dec: ExtendedMethodDecorator,
+  value: ComputedDescriptor | true = true
+) {
   DECORATOR_DESCRIPTOR_MAP.set(dec, value);
 }

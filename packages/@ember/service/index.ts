@@ -1,5 +1,9 @@
 import { FrameworkObject } from '@ember/-internals/runtime';
-import { inject as metalInject } from '@ember/-internals/metal';
+import {
+  DecoratorPropertyDescriptor,
+  ElementDescriptor,
+  inject as metalInject,
+} from '@ember/-internals/metal';
 
 /**
  @module @ember/service
@@ -16,8 +20,14 @@ import { inject as metalInject } from '@ember/-internals/metal';
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject() {
-  return metalInject('service', ...arguments);
+export function inject(name: string): PropertyDecorator;
+export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
+export function inject(...args: ElementDescriptor): DecoratorPropertyDescriptor;
+export function inject(): PropertyDecorator;
+export function inject(
+  ...args: [] | [name: string] | ElementDescriptor
+): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  return metalInject('service', ...args);
 }
 
 /**
@@ -67,8 +77,14 @@ export function inject() {
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function service() {
-  return metalInject('service', ...arguments);
+export function service(name: string): PropertyDecorator;
+export function service(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
+export function service(...args: ElementDescriptor): DecoratorPropertyDescriptor;
+export function service(): PropertyDecorator;
+export function service(
+  ...args: [] | [name: string] | ElementDescriptor
+): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  return metalInject('service', ...args);
 }
 
 /**
@@ -77,10 +93,6 @@ export function service() {
   @since 1.10.0
   @public
 */
-const Service = FrameworkObject.extend();
-
-Service.reopenClass({
-  isServiceFactory: true,
-});
-
-export default Service;
+export default class Service extends FrameworkObject {
+  static isServiceFactory = true;
+}

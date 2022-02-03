@@ -19,7 +19,7 @@ import {
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
   ComputedDescriptor,
-  Decorator,
+  ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
   descriptorForDecorator,
   descriptorForProperty,
@@ -379,8 +379,8 @@ export class ComputedProperty extends ComputedDescriptor {
       args.push(property);
     }
 
-    for (let i = 0; i < passedArgs.length; i++) {
-      expandProperties(passedArgs[i], addArg);
+    for (let arg of passedArgs) {
+      expandProperties(arg, addArg);
     }
 
     this._dependentKeys = args;
@@ -593,7 +593,7 @@ class AutoComputedProperty extends ComputedProperty {
   }
 }
 
-export type ComputedDecorator = Decorator & PropertyDecorator & ComputedDecoratorImpl;
+export type ComputedDecorator = ExtendedMethodDecorator & PropertyDecorator & ComputedDecoratorImpl;
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class ComputedDecoratorImpl extends Function {
@@ -637,7 +637,7 @@ class ComputedDecoratorImpl extends Function {
     @chainable
     @public
   */
-  readOnly(this: Decorator) {
+  readOnly(this: ExtendedMethodDecorator) {
     let desc = descriptorForDecorator(this) as ComputedProperty;
     assert(
       'Computed properties that define a setter using the new syntax cannot be read-only',
@@ -693,7 +693,7 @@ class ComputedDecoratorImpl extends Function {
     @chainable
     @public
   */
-  meta(this: Decorator, meta?: unknown): unknown {
+  meta(this: ExtendedMethodDecorator, meta?: unknown): unknown {
     let prop = descriptorForDecorator(this) as ComputedProperty;
 
     if (arguments.length === 0) {
@@ -866,7 +866,7 @@ export function computed(
   target: object,
   propertyName: string,
   descriptor: DecoratorPropertyDescriptor
-): DecoratorPropertyDescriptor;
+): DecoratorPropertyDescriptor | void;
 // @computed with keys only
 export function computed(...dependentKeys: string[]): ComputedDecorator;
 // @computed with keys and config
@@ -875,13 +875,14 @@ export function computed(...args: ComputedDecoratorKeysAndConfig): ComputedDecor
 export function computed(callback: ComputedPropertyCallback): ComputedDecorator;
 export function computed(
   ...args: ElementDescriptor | string[] | ComputedDecoratorKeysAndConfig
-): ComputedDecorator | DecoratorPropertyDescriptor {
+): ComputedDecorator | DecoratorPropertyDescriptor | void {
   assert(
     `@computed can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: computed()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && (args[4] as unknown) === true)
   );
 
   if (isElementDescriptor(args)) {
+    // SAFETY: We passed in the impl for this class
     let decorator = makeComputedDecorator(
       new ComputedProperty([]),
       ComputedDecoratorImpl
@@ -890,6 +891,7 @@ export function computed(
     return decorator(args[0], args[1], args[2]);
   }
 
+  // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(
     new ComputedProperty(args as (string | ComputedPropertyObj)[]),
     ComputedDecoratorImpl
@@ -899,6 +901,7 @@ export function computed(
 export function autoComputed(
   ...config: [ComputedPropertyObj]
 ): ComputedDecorator | DecoratorPropertyDescriptor {
+  // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(
     new AutoComputedProperty(config),
     ComputedDecoratorImpl

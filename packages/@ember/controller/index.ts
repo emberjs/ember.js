@@ -1,18 +1,21 @@
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
 import ControllerMixin from './lib/controller_mixin';
+import { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 
 /**
 @module @ember/controller
 */
 
+// NOTE: This doesn't actually extend EmberObject.
 /**
   @class Controller
   @extends EmberObject
   @uses Ember.ControllerMixin
   @public
 */
-const Controller = FrameworkObject.extend(ControllerMixin);
+interface Controller<T = unknown> extends FrameworkObject, ControllerMixin<T> {}
+class Controller<T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.
@@ -55,8 +58,14 @@ const Controller = FrameworkObject.extend(ControllerMixin);
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject() {
-  return metalInject('controller', ...arguments);
+export function inject(name: string): PropertyDecorator;
+export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
+export function inject(...args: ElementDescriptor): DecoratorPropertyDescriptor;
+export function inject(): PropertyDecorator;
+export function inject(
+  ...args: [] | [name: string] | ElementDescriptor
+): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  return metalInject('controller', ...args);
 }
 
 export default Controller;
