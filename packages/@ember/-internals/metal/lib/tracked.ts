@@ -6,7 +6,7 @@ import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import {
   COMPUTED_SETTERS,
-  Decorator,
+  ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   setClassicDecorator,
@@ -75,14 +75,17 @@ import { SELF_TAG } from './tags';
 
   @param dependencies Optional dependents to be tracked.
 */
-export function tracked(propertyDesc: { value: any; initializer: () => any }): Decorator;
+export function tracked(propertyDesc: {
+  value: any;
+  initializer: () => any;
+}): ExtendedMethodDecorator;
 export function tracked(target: object, key: string): void;
 export function tracked(
   target: object,
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor {
+export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorPropertyDescriptor {
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)

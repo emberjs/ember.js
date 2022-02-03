@@ -2,7 +2,11 @@ import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
-import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
+import {
+  ExtendedMethodDecorator,
+  DecoratorPropertyDescriptor,
+  isElementDescriptor,
+} from './decorator';
 import { defineProperty } from './properties';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
@@ -27,14 +31,17 @@ if (DEBUG) {
          to the property's name
   @private
 */
-function inject(type: string, name: string): Decorator;
+function inject(type: string, name: string): ExtendedMethodDecorator | void;
 function inject(
   type: string,
   target: object,
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-function inject(type: string, ...args: any[]): Decorator | DecoratorPropertyDescriptor {
+function inject(
+  type: string,
+  ...args: any[]
+): ExtendedMethodDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
 
   let calledAsDecorator = isElementDescriptor(args);

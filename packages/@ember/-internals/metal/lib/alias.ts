@@ -15,7 +15,7 @@ import {
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import {
   ComputedDescriptor,
-  Decorator,
+  ExtendedMethodDecorator,
   descriptorForDecorator,
   isElementDescriptor,
   makeComputedDecorator,
@@ -24,7 +24,7 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 
-export type AliasDecorator = Decorator & PropertyDecorator & AliasDecoratorImpl;
+export type AliasDecorator = PropertyDecorator & AliasDecoratorImpl;
 
 export default function alias(altKey: string): AliasDecorator {
   assert(
@@ -37,17 +37,17 @@ export default function alias(altKey: string): AliasDecorator {
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class AliasDecoratorImpl extends Function {
-  readOnly(this: Decorator) {
+  readOnly(this: ExtendedMethodDecorator) {
     (descriptorForDecorator(this) as AliasedProperty).readOnly();
     return this;
   }
 
-  oneWay(this: Decorator) {
+  oneWay(this: ExtendedMethodDecorator) {
     (descriptorForDecorator(this) as AliasedProperty).oneWay();
     return this;
   }
 
-  meta(this: Decorator, meta?: any): any {
+  meta(this: ExtendedMethodDecorator, meta?: any): any {
     let prop = descriptorForDecorator(this) as AliasedProperty;
 
     if (arguments.length === 0) {

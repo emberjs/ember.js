@@ -127,7 +127,9 @@ export function dependentKeyCompat(
   desc: ElementDescriptor[2]
 ): PropertyDescriptor;
 export function dependentKeyCompat(desc: PropertyDescriptor): Decorator;
-export function dependentKeyCompat(...args: ElementDescriptor | [PropertyDescriptor]) {
+export function dependentKeyCompat(
+  ...args: ElementDescriptor | [PropertyDescriptor]
+): PropertyDescriptor | Decorator {
   if (isElementDescriptor(args)) {
     let [target, key, desc] = args;
 
@@ -188,4 +190,4 @@ export function dependentKeyCompat(...args: ElementDescriptor | [PropertyDescrip
   }
 }
 
-setClassicDecorator(dependentKeyCompat as Decorator);
+setClassicDecorator(dependentKeyCompat);
