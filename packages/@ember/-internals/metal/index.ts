@@ -30,6 +30,7 @@ export { defineProperty } from './lib/properties';
 export {
   ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
+  ElementDescriptor,
   isElementDescriptor,
   nativeDescDecorator,
   descriptorForDecorator,

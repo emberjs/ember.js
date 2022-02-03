@@ -24,7 +24,7 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 
-export type AliasDecorator = PropertyDecorator & AliasDecoratorImpl;
+export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & AliasDecoratorImpl;
 
 export default function alias(altKey: string): AliasDecorator {
   assert(
@@ -32,6 +32,7 @@ export default function alias(altKey: string): AliasDecorator {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
+  // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(new AliasedProperty(altKey), AliasDecoratorImpl) as AliasDecorator;
 }
 

@@ -52,7 +52,11 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-export default class RouterService extends Service {
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface RouterService extends Evented {}
+class RouterService extends Service.extend(Evented) {
+  declare rootURL: EmberRouter['rootURL'];
+
   get _router(): EmberRouter {
     let router = this[ROUTER];
     if (router !== undefined) {
@@ -66,7 +70,7 @@ export default class RouterService extends Service {
   }
 
   willDestroy() {
-    super.willDestroy(...arguments);
+    super.willDestroy();
 
     this[ROUTER] = null;
   }
@@ -525,7 +529,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE_REFRESH) {
   });
 }
 
-RouterService.reopen(Evented, {
+RouterService.reopen({
   /**
      Name of the current route.
 
@@ -681,3 +685,5 @@ RouterService.reopen(Evented, {
    */
   currentRoute: readOnly('_router.currentRoute'),
 });
+
+export default RouterService;

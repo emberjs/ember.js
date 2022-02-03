@@ -593,7 +593,7 @@ class AutoComputedProperty extends ComputedProperty {
   }
 }
 
-export type ComputedDecorator = ExtendedMethodDecorator & ComputedDecoratorImpl;
+export type ComputedDecorator = ExtendedMethodDecorator & PropertyDecorator & ComputedDecoratorImpl;
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class ComputedDecoratorImpl extends Function {
@@ -882,6 +882,7 @@ export function computed(
   );
 
   if (isElementDescriptor(args)) {
+    // SAFETY: We passed in the impl for this class
     let decorator = makeComputedDecorator(
       new ComputedProperty([]),
       ComputedDecoratorImpl
@@ -890,6 +891,7 @@ export function computed(
     return decorator(args[0], args[1], args[2]);
   }
 
+  // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(
     new ComputedProperty(args as (string | ComputedPropertyObj)[]),
     ComputedDecoratorImpl
@@ -899,6 +901,7 @@ export function computed(
 export function autoComputed(
   ...config: [ComputedPropertyObj]
 ): ComputedDecorator | DecoratorPropertyDescriptor {
+  // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(
     new AutoComputedProperty(config),
     ComputedDecoratorImpl

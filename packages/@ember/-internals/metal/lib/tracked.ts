@@ -3,6 +3,7 @@ import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import {
   COMPUTED_SETTERS,
@@ -120,7 +121,7 @@ export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorProp
     let decorator = function (
       target: object,
       key: string,
-      _desc: DecoratorPropertyDescriptor,
+      _desc?: DecoratorPropertyDescriptor,
       _meta?: any,
       isClassicDecorator?: boolean
     ): DecoratorPropertyDescriptor {
@@ -150,11 +151,7 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
-function descriptorForField([target, key, desc]: [
-  object,
-  string,
-  DecoratorPropertyDescriptor
-]): DecoratorPropertyDescriptor {
+function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPropertyDescriptor {
   assert(
     `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
     !desc || (!desc.value && !desc.get && !desc.set)

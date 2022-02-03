@@ -23,6 +23,11 @@ const ROUTER = (symbol('ROUTER') as unknown) as string;
   @class RoutingService
 */
 export default class RoutingService extends Service {
+  declare targetState: EmberRouter['targetState'];
+  declare currentState: EmberRouter['currentState'];
+  declare currentRouteName: EmberRouter['currentRouteName'];
+  declare currentPath: EmberRouter['currentPath'];
+
   get router(): EmberRouter {
     let router = this[ROUTER];
     if (router !== undefined) {

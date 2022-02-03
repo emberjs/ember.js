@@ -138,6 +138,7 @@ function giveDecoratorSuper(
     newProperty._meta = property._meta;
     newProperty.enumerable = property.enumerable;
 
+    // SAFETY: We passed in the impl for this class
     return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
   }
 

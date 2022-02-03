@@ -2,11 +2,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
-import {
-  ExtendedMethodDecorator,
-  DecoratorPropertyDescriptor,
-  isElementDescriptor,
-} from './decorator';
+import { DecoratorPropertyDescriptor, isElementDescriptor, ElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
@@ -31,22 +27,32 @@ if (DEBUG) {
          to the property's name
   @private
 */
-function inject(type: string, name: string): ExtendedMethodDecorator | void;
+// Decorator factory (with args)
+// (Also matches non-decorator form, types may be incorrect for this.)
+function inject(type: string, name: string): PropertyDecorator;
+// Non-decorator
+function inject(type: string): PropertyDecorator;
+// Decorator (without args)
+function inject(type: string, ...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
+function inject(type: string, ...args: ElementDescriptor): DecoratorPropertyDescriptor;
+// Catch-all for service and controller injections
 function inject(
   type: string,
-  target: object,
-  key: string,
-  desc: DecoratorPropertyDescriptor
-): DecoratorPropertyDescriptor;
+  ...args: [] | [name: string] | ElementDescriptor
+): PropertyDecorator | DecoratorPropertyDescriptor | void;
 function inject(
   type: string,
-  ...args: any[]
-): ExtendedMethodDecorator | DecoratorPropertyDescriptor | void {
+  ...args: [] | [name: string] | ElementDescriptor
+): PropertyDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
+  let elementDescriptor;
+  let name: string | undefined;
 
-  let calledAsDecorator = isElementDescriptor(args);
-
-  let name = calledAsDecorator ? undefined : args[0];
+  if (isElementDescriptor(args)) {
+    elementDescriptor = args;
+  } else if (typeof args[0] === 'string') {
+    name = args[0];
+  }
 
   let getInjection = function (this: any, propertyName: string) {
     let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
@@ -74,8 +80,8 @@ function inject(
     },
   });
 
-  if (calledAsDecorator) {
-    return decorator(args[0], args[1], args[2]);
+  if (elementDescriptor) {
+    return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
   } else {
     return decorator;
   }

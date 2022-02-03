@@ -17,7 +17,7 @@ export type ExtendedMethodDecorator = (
 export type ElementDescriptor = [
   target: object,
   propertyName: string,
-  descriptor: DecoratorPropertyDescriptor
+  descriptor?: DecoratorPropertyDescriptor
 ];
 
 export function isElementDescriptor(args: unknown[]): args is ElementDescriptor {
@@ -62,7 +62,7 @@ export abstract class ComputedDescriptor {
   setup(
     _obj: object,
     keyName: string,
-    _propertyDesc: DecoratorPropertyDescriptor,
+    _propertyDesc: DecoratorPropertyDescriptor | undefined,
     meta: Meta
   ): void {
     meta.writeDescriptors(keyName, this);
