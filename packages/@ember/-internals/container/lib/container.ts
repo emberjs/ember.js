@@ -145,7 +145,7 @@ export default class Container {
    */
   lookup(fullName: string, options: LookupOptions): any {
     if (this.isDestroyed) {
-      throw new Error(`Can not call \`.lookup\` after the owner has been destroyed`);
+      throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
@@ -212,7 +212,7 @@ export default class Container {
    */
   factoryFor<T, C>(fullName: string): Factory<T, C> | undefined {
     if (this.isDestroyed) {
-      throw new Error(`Can not call \`.factoryFor\` after the owner has been destroyed`);
+      throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
     let normalizedName = this.registry.normalize(fullName);
 
@@ -500,7 +500,7 @@ export class FactoryManager<T, C> {
 
     if (container.isDestroyed) {
       throw new Error(
-        `Can not create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
+        `Cannot create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
       );
     }
 
