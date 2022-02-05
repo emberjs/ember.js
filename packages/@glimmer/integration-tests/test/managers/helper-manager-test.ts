@@ -32,6 +32,153 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('hello');
   }
 
+  @test '(Default Helper Manager) plain functions work as helpers'(assert: Assert) {
+    let count = 0;
+
+    const hello = () => {
+      count++;
+      return 'plain function';
+    };
+
+    const Main = defineComponent({ hello }, '{{hello}}');
+
+    this.renderComponent(Main);
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('plain function');
+
+    this.rerender();
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('plain function');
+  }
+
+  @test '(Default Helper Manager) plain functions track positional args'(assert: Assert) {
+    let count = 0;
+
+    let obj = (x: string) => {
+      count++;
+      return x;
+    };
+    let args = trackedObj({ value: 'hello', unused: 'unused' });
+
+    this.renderComponent(defineComponent({ obj }, '{{obj @value @unused}}'), args);
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('hello');
+
+    args.value = 'there';
+    this.rerender();
+
+    assert.equal(count, 2, 'rendered twice');
+    this.assertHTML('there');
+
+    args.unused = 'unused2';
+    this.rerender();
+
+    assert.equal(count, 3, 'rendered thrice');
+    this.assertHTML('there');
+  }
+
+  @test '(Default Helper Manager) plain functions entangle with any tracked data'(assert: Assert) {
+    let count = 0;
+    let trackedState = trackedObj({ value: 'hello' });
+
+    let obj = () => {
+      count++;
+      return trackedState.value;
+    };
+
+    this.renderComponent(defineComponent({ obj }, '{{obj}}'));
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('hello');
+
+    trackedState.value = 'there';
+    this.rerender();
+    this.assertHTML('there');
+    assert.equal(count, 2, 'rendered twice');
+  }
+
+  @test '(Default Helper Manager) plain functions do not track unused named args'(assert: Assert) {
+    let count = 0;
+
+    let obj = (x: string, _options: Record<string, unknown>) => {
+      count++;
+      return x;
+    };
+    let args = trackedObj({ value: 'hello', unused: 'unused' });
+
+    this.renderComponent(defineComponent({ obj }, '{{obj @value namedOpt=@unused}}'), args);
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('hello');
+
+    args.unused = 'unused2';
+    this.rerender();
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('hello');
+  }
+
+  @test '(Default Helper Manager) plain functions tracked used named args'(assert: Assert) {
+    let count = 0;
+
+    let obj = (_x: string, options: Record<string, unknown>) => {
+      count++;
+      return options.namedOpt;
+    };
+
+    let args = trackedObj({ value: 'hello', used: 'used' });
+
+    this.renderComponent(defineComponent({ obj }, '{{obj @value namedOpt=@used}}'), args);
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('used');
+
+    args.used = 'there';
+    this.rerender();
+
+    assert.equal(count, 2, 'rendered twice');
+    this.assertHTML('there');
+  }
+
+  @test '(Default Helper Manager) plain function helpers can have default values (missing data)'(
+    assert: Assert
+  ) {
+    let count = 0;
+    let obj = (x = 'default value') => {
+      count++;
+      return x;
+    };
+
+    let args = trackedObj({});
+
+    this.renderComponent(defineComponent({ obj }, 'result: {{obj}}'), args);
+    this.assertHTML('result: default value');
+    assert.equal(count, 1, 'rendered once');
+  }
+
+  @test '(Default Helper Manager) plain function helpers can have overwritten default values'(
+    assert: Assert
+  ) {
+    let count = 0;
+    let obj = (x = 'default value') => {
+      count++;
+      return x;
+    };
+
+    let args = trackedObj({ value: undefined });
+
+    this.renderComponent(defineComponent({ obj }, 'result: {{obj @value}}'), args);
+    this.assertHTML('result: default value');
+    assert.equal(count, 1, 'rendered once');
+
+    args.value = 'value';
+    this.rerender();
+
+    this.assertHTML('result: value');
+    assert.equal(count, 2, 'rendered twice');
+  }
+
   @test 'tracks changes to named arguments'(assert: Assert) {
     let count = 0;
 
