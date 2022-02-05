@@ -7,6 +7,7 @@ import {
   Owner,
 } from '@glimmer/interfaces';
 import { CustomHelperManager } from '../public/helper';
+import { FunctionHelperManager } from './defaults';
 
 type InternalManager =
   | InternalComponentManager
@@ -119,6 +120,8 @@ export function setInternalHelperManager<T extends object, O extends Owner>(
   return setManager(HELPER_MANAGERS, manager, definition);
 }
 
+const DEFAULT_MANAGER = new CustomHelperManager(() => new FunctionHelperManager());
+
 export function getInternalHelperManager(definition: object): CustomHelperManager | Helper;
 export function getInternalHelperManager(
   definition: object,
@@ -138,7 +141,13 @@ export function getInternalHelperManager(
     );
   }
 
-  const manager = getManager(HELPER_MANAGERS, definition);
+  let manager = getManager(HELPER_MANAGERS, definition);
+
+  // Functions are special-cased because functions are defined
+  // as the "default" helper, per: https://github.com/emberjs/rfcs/pull/756
+  if (manager === undefined && typeof definition === 'function') {
+    manager = DEFAULT_MANAGER;
+  }
 
   if (manager) {
     return manager;
