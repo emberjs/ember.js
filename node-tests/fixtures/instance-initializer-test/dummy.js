@@ -13,11 +13,11 @@ module('Unit | Instance Initializer | foo', {
   afterEach() {
     run(this.appInstance, 'destroy');
     run(this.application, 'destroy');
-  }
+  },
 });
 
 // TODO: Replace this with your real tests.
-test('it works', function(assert) {
+test('it works', function (assert) {
   initialize(this.appInstance);
 
   // you would normally confirm the results of the initializer here

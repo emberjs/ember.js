@@ -2,11 +2,11 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { setupTest } from 'ember-mocha';
 
-describe('Unit | Service | foo', function() {
+describe('Unit | Service | foo', function () {
   setupTest();
 
   // TODO: Replace this with your real tests.
-  it('exists', function() {
+  it('exists', function () {
     let service = this.owner.lookup('service:foo');
     expect(service).to.be.ok;
   });

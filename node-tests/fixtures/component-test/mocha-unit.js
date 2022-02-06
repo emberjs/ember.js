@@ -1,14 +1,16 @@
 import { expect } from 'chai';
 import { describeComponent, it } from 'ember-mocha';
 
-describeComponent('x-foo', 'Unit | Component | x-foo',
+describeComponent(
+  'x-foo',
+  'Unit | Component | x-foo',
   {
     // Specify the other units that are required for this test
     // needs: ['component:foo', 'helper:bar'],
-    unit: true
+    unit: true,
   },
-  function() {
-    it('renders', function() {
+  function () {
+    it('renders', function () {
       // creates the component instance
       let component = this.subject();
       // renders the component on the page

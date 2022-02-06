@@ -4,11 +4,11 @@ import { setupRenderingTest } from 'ember-mocha';
 import { render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
-describe('Integration | Helper | foo/bar-baz', function() {
+describe('Integration | Helper | foo/bar-baz', function () {
   setupRenderingTest();
 
   // TODO: Replace this with your real tests.
-  it('renders', async function() {
+  it('renders', async function () {
     this.set('inputValue', '1234');
 
     await render(hbs`{{foo/bar-baz this.inputValue}}`);
