@@ -18,14 +18,12 @@ const enableOctane = setupTestEnvironment.enableOctane;
 
 const glimmerComponentContents = `import Component from '@glimmer/component';
 
-export default class FooComponent extends Component {
-}
+export default class FooComponent extends Component {}
 `;
 
 const emberComponentContents = `import Component from '@ember/component';
 
-export default Component.extend({
-});
+export default Component.extend({});
 `;
 
 const templateOnlyContents = `import templateOnly from '@ember/component/template-only';

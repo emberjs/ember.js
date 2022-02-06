@@ -5,7 +5,7 @@ moduleFor('route:<%= moduleName %>', '<%= friendlyTestDescription %>', {
   // needs: ['controller:foo']
 });
 
-test('it exists', function(assert) {
+test('it exists', function (assert) {
   let route = this.subject();
   assert.ok(route);
 });

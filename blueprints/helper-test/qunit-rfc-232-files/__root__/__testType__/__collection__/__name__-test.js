@@ -3,11 +3,11 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 <%= hbsImportStatement %>
 
-module('<%= friendlyTestName %>', function(hooks) {
+module('<%= friendlyTestName %>', function (hooks) {
   setupRenderingTest(hooks);
 
   // TODO: Replace this with your real tests.
-  test('it renders', async function(assert) {
+  test('it renders', async function (assert) {
     this.set('inputValue', '1234');
 
     await render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);

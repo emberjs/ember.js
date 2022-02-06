@@ -14,11 +14,11 @@ module('<%= friendlyTestName %>', {
   afterEach() {
     run(this.appInstance, 'destroy');
     <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
-  }
+  },
 });
 
 // TODO: Replace this with your real tests.
-test('it works', function(assert) {
+test('it works', function (assert) {
   initialize(this.appInstance);
 
   // you would normally confirm the results of the initializer here

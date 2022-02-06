@@ -4,10 +4,10 @@ import { setupRenderingTest } from 'ember-mocha';
 import { render } from '@ember/test-helpers';
 <%= hbsImportStatement %>
 
-describe('<%= friendlyTestDescription %>', function() {
+describe('<%= friendlyTestDescription %>', function () {
   setupRenderingTest();
 
-  it('renders', async function() {
+  it('renders', async function () {
     // Set any properties with this.set('myProperty', 'value');
     // Handle any actions with this.set('myAction', function(val) { ... });
 
@@ -28,10 +28,10 @@ describe('<%= friendlyTestDescription %>', function() {
 import { describe, it } from 'mocha';
 import { setupTest } from 'ember-mocha';
 
-describe('<%= friendlyTestDescription %>', function() {
+describe('<%= friendlyTestDescription %>', function () {
   setupTest();
 
-  it('exists', function() {
+  it('exists', function () {
     let component = this.owner.factoryFor('component:<%= componentPathName %>').create();
     expect(component).to.be.ok;
   });

@@ -151,12 +151,12 @@ module.exports = {
           importTemplate = `import layout from '${templatePath}';${EOL}`;
           defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
         } else {
-          defaultExport = `Component.extend({${EOL}});`;
+          defaultExport = `Component.extend({});`;
         }
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {\n}`;
+        defaultExport = `class ${classifiedModuleName}Component extends Component {}`;
         break;
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;

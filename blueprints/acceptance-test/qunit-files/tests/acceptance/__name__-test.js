@@ -3,10 +3,10 @@ import moduleForAcceptance from '<%= testFolderRoot %>/tests/helpers/module-for-
 
 moduleForAcceptance('<%= friendlyTestName %>');
 
-test('visiting /<%= dasherizedModuleName %>', function(assert) {
+test('visiting /<%= dasherizedModuleName %>', function (assert) {
   visit('/<%= dasherizedModuleName %>');
 
-  andThen(function() {
+  andThen(function () {
     assert.strictEqual(currentURL(), '/<%= dasherizedModuleName %>');
   });
 });
