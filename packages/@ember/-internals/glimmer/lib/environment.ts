@@ -41,7 +41,7 @@ setGlobalContext({
 
   warnIfStyleNotTrusted(value: unknown) {
     warn(
-      constructStyleDeprecationMessage(value),
+      constructStyleDeprecationMessage(String(value)),
       (() => {
         if (value === null || value === undefined || isHTMLSafe(value)) {
           return true;

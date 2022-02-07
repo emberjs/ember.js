@@ -1,5 +1,5 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
   ActionSupport,
@@ -13,7 +13,7 @@ import {
 } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Environment } from '@glimmer/interfaces';
+import { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
@@ -26,6 +26,7 @@ import {
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,
 } from './component-managers/curly';
+import { View } from './renderer';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -648,402 +649,431 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   @uses Ember.ViewStateSupport
   @public
 */
-const Component = CoreView.extend(
-  ChildViewsSupport,
-  ViewStateSupport,
-  ClassNamesSupport,
-  TargetActionSupport,
-  ActionSupport,
-  ViewMixin,
-  {
-    isComponent: true,
-
-    init() {
-      this._super(...arguments);
-      this[IS_DISPATCHING_ATTRS] = false;
-      this[DIRTY_TAG] = createTag();
-      this[BOUNDS] = null;
-
-      let eventDispatcher = this._dispatcher;
-      if (eventDispatcher) {
-        let lazyEventsProcessedForComponentClass = lazyEventsProcessed.get(eventDispatcher);
-        if (!lazyEventsProcessedForComponentClass) {
-          lazyEventsProcessedForComponentClass = new WeakSet<object>();
-          lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
-        }
-
-        let proto = Object.getPrototypeOf(this);
-        if (!lazyEventsProcessedForComponentClass.has(proto)) {
-          let lazyEvents = eventDispatcher.lazyEvents;
-
-          lazyEvents.forEach((mappedEventName: string, event: string) => {
-            if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
-              eventDispatcher.setupHandlerForBrowserEvent(event);
-            }
-          });
-
-          lazyEventsProcessedForComponentClass.add(proto);
-        }
-      }
-
-      if (DEBUG && eventDispatcher && this.renderer._isInteractive && this.tagName === '') {
-        let eventNames = [];
-        let events = eventDispatcher.finalEventNameMapping;
-
-        for (let key in events) {
-          let methodName = events[key];
-
-          if (typeof this[methodName] === 'function') {
-            eventNames.push(methodName);
-          }
-        }
-        // If in a tagless component, assert that no event handlers are defined
-        assert(
-          `You can not define \`${eventNames}\` function(s) to handle DOM event in the \`${this}\` tagless component since it doesn't have any DOM element.`,
-          !eventNames.length
-        );
-      }
-    },
-
-    get _dispatcher(): EventDispatcher | null {
-      if (this.__dispatcher === undefined) {
-        let owner = getOwner(this);
-        assert('Component is unexpectedly missing an owner', owner);
-
-        if ((owner.lookup('-environment:main') as Environment)!.isInteractive) {
-          this.__dispatcher = owner.lookup('event_dispatcher:main');
-          assert(
-            'Expected dispatcher to be an EventDispatcher',
-            this.__dispatcher instanceof EventDispatcher
-          );
-        } else {
-          // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
-          this.__dispatcher = null;
-        }
-      }
-
-      return this.__dispatcher;
-    },
-
-    on(eventName: string) {
-      this._dispatcher?.setupHandlerForEmberEvent(eventName);
-      return this._super(...arguments);
-    },
-
-    rerender() {
-      dirtyTag(this[DIRTY_TAG]);
-      this._super();
-    },
-
-    [PROPERTY_DID_CHANGE](key: string, value?: unknown) {
-      if (this[IS_DISPATCHING_ATTRS]) {
-        return;
-      }
-
-      let args = this[ARGS];
-      let reference = args !== undefined ? args[key] : undefined;
-
-      if (reference !== undefined && isUpdatableRef(reference)) {
-        updateRef(reference, arguments.length === 2 ? value : get(this, key));
-      }
-    },
-
-    getAttr(key: string) {
-      // TODO Intimate API should be deprecated
-      return this.get(key);
-    },
-
-    /**
-      Normally, Ember's component model is "write-only". The component takes a
-      bunch of attributes that it got passed in, and uses them to render its
-      template.
-
-      One nice thing about this model is that if you try to set a value to the
-      same thing as last time, Ember (through HTMLBars) will avoid doing any
-      work on the DOM.
-
-      This is not just a performance optimization. If an attribute has not
-      changed, it is important not to clobber the element's "hidden state".
-      For example, if you set an input's `value` to the same value as before,
-      it will clobber selection state and cursor position. In other words,
-      setting an attribute is not **always** idempotent.
-
-      This method provides a way to read an element's attribute and also
-      update the last value Ember knows about at the same time. This makes
-      setting an attribute idempotent.
-
-      In particular, what this means is that if you get an `<input>` element's
-      `value` attribute and then re-render the template with the same value,
-      it will avoid clobbering the cursor and selection position.
-      Since most attribute sets are idempotent in the browser, you typically
-      can get away with reading attributes using jQuery, but the most reliable
-      way to do so is through this method.
-      @method readDOMAttr
-
-      @param {String} name the name of the attribute
-      @return String
-      @public
-     */
-    readDOMAttr(name: string) {
-      // TODO revisit this
-      let _element = getViewElement(this);
-
-      assert(
-        `Cannot call \`readDOMAttr\` on ${this} which does not have an element`,
-        _element !== null
-      );
-
-      let element = _element;
-      let isSVG = element.namespaceURI === Namespace.SVG;
-      let { type, normalized } = normalizeProperty(element, name);
-
-      if (isSVG || type === 'attr') {
-        return element.getAttribute(normalized);
-      }
-
-      return element[normalized];
-    },
-
-    /**
-     The WAI-ARIA role of the control represented by this view. For example, a
-     button may have a role of type 'button', or a pane may have a role of
-     type 'alertdialog'. This property is used by assistive software to help
-     visually challenged users navigate rich web applications.
-
-     The full list of valid WAI-ARIA roles is available at:
-     [https://www.w3.org/TR/wai-aria/#roles_categorization](https://www.w3.org/TR/wai-aria/#roles_categorization)
-
-     @property ariaRole
-     @type String
-     @default null
-     @public
-     */
-
-    /**
-     Enables components to take a list of parameters as arguments.
-     For example, a component that takes two parameters with the names
-     `name` and `age`:
-
-     ```app/components/my-component.js
-     import Component from '@ember/component';
-
-     let MyComponent = Component.extend();
-
-     MyComponent.reopenClass({
-       positionalParams: ['name', 'age']
-     });
-
-     export default MyComponent;
-     ```
-
-     It can then be invoked like this:
-
-     ```hbs
-     {{my-component "John" 38}}
-     ```
-
-     The parameters can be referred to just like named parameters:
-
-     ```hbs
-     Name: {{name}}, Age: {{age}}.
-     ```
-
-     Using a string instead of an array allows for an arbitrary number of
-     parameters:
-
-     ```app/components/my-component.js
-     import Component from '@ember/component';
-
-     let MyComponent = Component.extend();
-
-     MyComponent.reopenClass({
-       positionalParams: 'names'
-     });
-
-     export default MyComponent;
-     ```
-
-     It can then be invoked like this:
-
-     ```hbs
-     {{my-component "John" "Michael" "Scott"}}
-     ```
-     The parameters can then be referred to by enumerating over the list:
-
-     ```hbs
-     {{#each names as |name|}}{{name}}{{/each}}
-     ```
-
-     @static
-     @public
-     @property positionalParams
-     @since 1.13.0
-     */
-
-    /**
-     Called when the attributes passed into the component have been updated.
-     Called both during the initial render of a container and during a rerender.
-     Can be used in place of an observer; code placed here will be executed
-     every time any attribute updates.
-     @method didReceiveAttrs
-     @public
-     @since 1.13.0
-     */
-    didReceiveAttrs() {},
-
-    /**
-     Called when the attributes passed into the component have been updated.
-     Called both during the initial render of a container and during a rerender.
-     Can be used in place of an observer; code placed here will be executed
-     every time any attribute updates.
-     @event didReceiveAttrs
-     @public
-     @since 1.13.0
-     */
-
-    /**
-     Called after a component has been rendered, both on initial render and
-     in subsequent rerenders.
-     @method didRender
-     @public
-     @since 1.13.0
-     */
-    didRender() {},
-
-    /**
-     Called after a component has been rendered, both on initial render and
-     in subsequent rerenders.
-     @event didRender
-     @public
-     @since 1.13.0
-     */
-
-    /**
-     Called before a component has been rendered, both on initial render and
-     in subsequent rerenders.
-     @method willRender
-     @public
-     @since 1.13.0
-     */
-    willRender() {},
-
-    /**
-     Called before a component has been rendered, both on initial render and
-     in subsequent rerenders.
-     @event willRender
-     @public
-     @since 1.13.0
-     */
-
-    /**
-     Called when the attributes passed into the component have been changed.
-     Called only during a rerender, not during an initial render.
-     @method didUpdateAttrs
-     @public
-     @since 1.13.0
-     */
-    didUpdateAttrs() {},
-
-    /**
-     Called when the attributes passed into the component have been changed.
-     Called only during a rerender, not during an initial render.
-     @event didUpdateAttrs
-     @public
-     @since 1.13.0
-     */
-
-    /**
-     Called when the component is about to update and rerender itself.
-     Called only during a rerender, not during an initial render.
-     @method willUpdate
-     @public
-     @since 1.13.0
-     */
-    willUpdate() {},
-
-    /**
-     Called when the component is about to update and rerender itself.
-     Called only during a rerender, not during an initial render.
-     @event willUpdate
-     @public
-     @since 1.13.0
-     */
-
-    /**
-     Called when the component has updated and rerendered itself.
-     Called only during a rerender, not during an initial render.
-     @method didUpdate
-     @public
-     @since 1.13.0
-     */
-    didUpdate() {},
-
-    /**
-     Called when the component has updated and rerendered itself.
-     Called only during a rerender, not during an initial render.
-     @event didUpdate
-     @public
-     @since 1.13.0
-     */
-
-    /**
-      Layout can be used to wrap content in a component.
-      @property layout
-      @type Function
-      @public
-    */
-
-    /**
-      The name of the layout to lookup if no layout is provided.
-      By default `Component` will lookup a template with this name in
-      `Ember.TEMPLATES` (a shared global object).
-      @property layoutName
-      @type String
-      @default null
-      @private
-    */
-
-    /**
-      The HTML `id` of the component's element in the DOM. You can provide this
-      value yourself but it must be unique (just as in HTML):
-
-      ```handlebars
-      {{my-component elementId="a-really-cool-id"}}
-      ```
-
-      ```handlebars
-      <MyComponent @elementId="a-really-cool-id" />
-      ```
-      If not manually set a default value will be provided by the framework.
-      Once rendered an element's `elementId` is considered immutable and you
-      should never change it. If you need to compute a dynamic value for the
-      `elementId`, you should do this when the component or element is being
-      instantiated:
-
-      ```javascript
-      export default Component.extend({
-        init() {
-          this._super(...arguments);
-
-          var index = this.get('index');
-          this.set('elementId', `component-id${index}`);
-        }
-      });
-      ```
-
-      @property elementId
-      @type String
-      @public
-    */
+interface Component
+  extends CoreView,
+    ChildViewsSupport,
+    ViewStateSupport,
+    ClassNamesSupport,
+    TargetActionSupport,
+    ActionSupport,
+    ViewMixin {
+  parentView: Component | null;
+
+  /**
+    Layout can be used to wrap content in a component.
+    @property layout
+    @type Function
+    @public
+  */
+  layout?: TemplateFactory | Template;
+
+  /**
+    The name of the layout to lookup if no layout is provided.
+    By default `Component` will lookup a template with this name in
+    `Ember.TEMPLATES` (a shared global object).
+    @property layoutName
+    @type String
+    @default undefined
+    @private
+  */
+  layoutName?: string;
+
+  attributeBindings?: Array<string>;
+}
+class Component
+  extends CoreView.extend(
+    ChildViewsSupport,
+    ViewStateSupport,
+    ClassNamesSupport,
+    TargetActionSupport,
+    ActionSupport,
+    ViewMixin
+  )
+  implements View {
+  static isComponentFactory = true;
+  static positionalParams = [];
+
+  static toString(): string {
+    return '@ember/component';
   }
-);
 
-Component.toString = () => '@ember/component';
+  isComponent = true;
 
-Component.reopenClass({
-  isComponentFactory: true,
-  positionalParams: [],
-});
+  private __dispatcher: EventDispatcher | null | undefined;
+
+  constructor(owner: Owner) {
+    super(owner);
+    this[IS_DISPATCHING_ATTRS] = false;
+    this[DIRTY_TAG] = createTag();
+    this[BOUNDS] = null;
+
+    const eventDispatcher = this._dispatcher;
+    if (eventDispatcher) {
+      let lazyEventsProcessedForComponentClass = lazyEventsProcessed.get(eventDispatcher);
+      if (!lazyEventsProcessedForComponentClass) {
+        lazyEventsProcessedForComponentClass = new WeakSet<object>();
+        lazyEventsProcessed.set(eventDispatcher, lazyEventsProcessedForComponentClass);
+      }
+
+      let proto = Object.getPrototypeOf(this);
+      if (!lazyEventsProcessedForComponentClass.has(proto)) {
+        let lazyEvents = eventDispatcher.lazyEvents;
+
+        lazyEvents.forEach((mappedEventName: string, event: string) => {
+          if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
+            eventDispatcher.setupHandlerForBrowserEvent(event);
+          }
+        });
+
+        lazyEventsProcessedForComponentClass.add(proto);
+      }
+    }
+
+    // @ts-expect-error _isInteractive is private
+    if (DEBUG && eventDispatcher && this.renderer._isInteractive && this.tagName === '') {
+      let eventNames = [];
+      let events = eventDispatcher.finalEventNameMapping;
+
+      for (let key in events) {
+        let methodName = events[key];
+
+        if (methodName && typeof this[methodName] === 'function') {
+          eventNames.push(methodName);
+        }
+      }
+      // If in a tagless component, assert that no event handlers are defined
+      assert(
+        `You can not define \`${eventNames}\` function(s) to handle DOM event in the \`${this}\` tagless component since it doesn't have any DOM element.`,
+        !eventNames.length
+      );
+    }
+  }
+
+  get _dispatcher(): EventDispatcher | null {
+    if (this.__dispatcher === undefined) {
+      let owner = getOwner(this);
+      assert('Component is unexpectedly missing an owner', owner);
+
+      if ((owner.lookup('-environment:main') as Environment)!.isInteractive) {
+        let dispatcher = owner.lookup('event_dispatcher:main');
+        assert(
+          'Expected dispatcher to be an EventDispatcher',
+          dispatcher instanceof EventDispatcher
+        );
+        this.__dispatcher = dispatcher;
+      } else {
+        // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
+        this.__dispatcher = null;
+      }
+    }
+
+    return this.__dispatcher;
+  }
+
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
+  on<Target>(
+    name: string,
+    ...args:
+      | [Target, string | ((this: Target, ...args: any[]) => void)]
+      | [((...args: any[]) => void) | string]
+  ): this {
+    this._dispatcher?.setupHandlerForEmberEvent(name);
+    return super.on(name, ...args);
+  }
+
+  rerender() {
+    dirtyTag(this[DIRTY_TAG]);
+  }
+
+  [PROPERTY_DID_CHANGE](key: string, value?: unknown) {
+    if (this[IS_DISPATCHING_ATTRS]) {
+      return;
+    }
+
+    let args = this[ARGS];
+    let reference = args !== undefined ? args[key] : undefined;
+
+    if (reference !== undefined && isUpdatableRef(reference)) {
+      updateRef(reference, arguments.length === 2 ? value : get(this, key));
+    }
+  }
+
+  getAttr(key: string) {
+    // TODO Intimate API should be deprecated
+    return this.get(key);
+  }
+
+  /**
+    Normally, Ember's component model is "write-only". The component takes a
+    bunch of attributes that it got passed in, and uses them to render its
+    template.
+
+    One nice thing about this model is that if you try to set a value to the
+    same thing as last time, Ember (through HTMLBars) will avoid doing any
+    work on the DOM.
+
+    This is not just a performance optimization. If an attribute has not
+    changed, it is important not to clobber the element's "hidden state".
+    For example, if you set an input's `value` to the same value as before,
+    it will clobber selection state and cursor position. In other words,
+    setting an attribute is not **always** idempotent.
+
+    This method provides a way to read an element's attribute and also
+    update the last value Ember knows about at the same time. This makes
+    setting an attribute idempotent.
+
+    In particular, what this means is that if you get an `<input>` element's
+    `value` attribute and then re-render the template with the same value,
+    it will avoid clobbering the cursor and selection position.
+    Since most attribute sets are idempotent in the browser, you typically
+    can get away with reading attributes using jQuery, but the most reliable
+    way to do so is through this method.
+    @method readDOMAttr
+
+    @param {String} name the name of the attribute
+    @return String
+    @public
+    */
+  readDOMAttr(name: string) {
+    // TODO revisit this
+    let _element = getViewElement(this);
+
+    assert(
+      `Cannot call \`readDOMAttr\` on ${this} which does not have an element`,
+      _element !== null
+    );
+
+    let element = _element;
+    let isSVG = element.namespaceURI === Namespace.SVG;
+    let { type, normalized } = normalizeProperty(element, name);
+
+    if (isSVG || type === 'attr') {
+      return element.getAttribute(normalized);
+    }
+
+    return element[normalized];
+  }
+
+  /**
+   The WAI-ARIA role of the control represented by this view. For example, a
+    button may have a role of type 'button', or a pane may have a role of
+    type 'alertdialog'. This property is used by assistive software to help
+    visually challenged users navigate rich web applications.
+
+    The full list of valid WAI-ARIA roles is available at:
+    [https://www.w3.org/TR/wai-aria/#roles_categorization](https://www.w3.org/TR/wai-aria/#roles_categorization)
+
+    @property ariaRole
+    @type String
+    @default null
+    @public
+    */
+
+  /**
+   Enables components to take a list of parameters as arguments.
+    For example, a component that takes two parameters with the names
+    `name` and `age`:
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    let MyComponent = Component.extend();
+
+    MyComponent.reopenClass({
+      positionalParams: ['name', 'age']
+    });
+
+    export default MyComponent;
+    ```
+
+    It can then be invoked like this:
+
+    ```hbs
+    {{my-component "John" 38}}
+    ```
+
+    The parameters can be referred to just like named parameters:
+
+    ```hbs
+    Name: {{name}}, Age: {{age}}.
+    ```
+
+    Using a string instead of an array allows for an arbitrary number of
+    parameters:
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    let MyComponent = Component.extend();
+
+    MyComponent.reopenClass({
+      positionalParams: 'names'
+    });
+
+    export default MyComponent;
+    ```
+
+    It can then be invoked like this:
+
+    ```hbs
+    {{my-component "John" "Michael" "Scott"}}
+    ```
+    The parameters can then be referred to by enumerating over the list:
+
+    ```hbs
+    {{#each names as |name|}}{{name}}{{/each}}
+    ```
+
+    @static
+    @public
+    @property positionalParams
+    @since 1.13.0
+    */
+
+  /**
+   Called when the attributes passed into the component have been updated.
+    Called both during the initial render of a container and during a rerender.
+    Can be used in place of an observer; code placed here will be executed
+    every time any attribute updates.
+    @method didReceiveAttrs
+    @public
+    @since 1.13.0
+    */
+  didReceiveAttrs() {}
+
+  /**
+   Called when the attributes passed into the component have been updated.
+    Called both during the initial render of a container and during a rerender.
+    Can be used in place of an observer; code placed here will be executed
+    every time any attribute updates.
+    @event didReceiveAttrs
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called after a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @method didRender
+    @public
+    @since 1.13.0
+    */
+  didRender() {}
+
+  /**
+   Called after a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @event didRender
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called before a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @method willRender
+    @public
+    @since 1.13.0
+    */
+  willRender() {}
+
+  /**
+   Called before a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @event willRender
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called when the attributes passed into the component have been changed.
+    Called only during a rerender, not during an initial render.
+    @method didUpdateAttrs
+    @public
+    @since 1.13.0
+    */
+  didUpdateAttrs() {}
+
+  /**
+   Called when the attributes passed into the component have been changed.
+    Called only during a rerender, not during an initial render.
+    @event didUpdateAttrs
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called when the component is about to update and rerender itself.
+    Called only during a rerender, not during an initial render.
+    @method willUpdate
+    @public
+    @since 1.13.0
+    */
+  willUpdate() {}
+
+  /**
+   Called when the component is about to update and rerender itself.
+    Called only during a rerender, not during an initial render.
+    @event willUpdate
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called when the component has updated and rerendered itself.
+    Called only during a rerender, not during an initial render.
+    @method didUpdate
+    @public
+    @since 1.13.0
+    */
+  didUpdate() {}
+
+  /**
+   Called when the component has updated and rerendered itself.
+    Called only during a rerender, not during an initial render.
+    @event didUpdate
+    @public
+    @since 1.13.0
+    */
+
+  /**
+    The HTML `id` of the component's element in the DOM. You can provide this
+    value yourself but it must be unique (just as in HTML):
+
+    ```handlebars
+    {{my-component elementId="a-really-cool-id"}}
+    ```
+
+    ```handlebars
+    <MyComponent @elementId="a-really-cool-id" />
+    ```
+    If not manually set a default value will be provided by the framework.
+    Once rendered an element's `elementId` is considered immutable and you
+    should never change it. If you need to compute a dynamic value for the
+    `elementId`, you should do this when the component or element is being
+    instantiated:
+
+    ```javascript
+    export default Component.extend({
+      init() {
+        this._super(...arguments);
+
+        var index = this.get('index');
+        this.set('elementId', `component-id${index}`);
+      }
+    });
+    ```
+
+    @property elementId
+    @type String
+    @public
+  */
+}
 
 setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
 
