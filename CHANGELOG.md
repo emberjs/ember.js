@@ -1,8 +1,8 @@
 # Ember Changelog
 
-### v4.2.0-beta.1 (December 28, 2021)
+### v4.2.0 (February 7, 2022)
 
-- [#19878](https://github.com/emberjs/ember.js/pull/19772) [BUGFIX] Allow class-based helpers to work in strict-mode.
+- [#19878](https://github.com/emberjs/ember.js/pull/19878) [BUGFIX] Allow class-based helpers to work in strict-mode.
 
 ### v4.1.0 (December 28, 2021)
 
