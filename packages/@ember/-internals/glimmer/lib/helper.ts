@@ -13,7 +13,11 @@ import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
-export type HelperFunction<T = unknown> = (positional: unknown[], named: Dict<unknown>) => T;
+export type HelperFunction<
+  T = unknown,
+  P extends unknown[] = unknown[],
+  N extends Dict<unknown> = Dict<unknown>
+> = (positional: P, named: N) => T;
 
 export type SimpleHelperFactory = Factory<SimpleHelper, HelperFactory<SimpleHelper>>;
 export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
@@ -30,8 +34,12 @@ export interface HelperInstance<T = unknown> {
 
 const IS_CLASSIC_HELPER: unique symbol = Symbol('IS_CLASSIC_HELPER');
 
-export interface SimpleHelper<T = unknown> {
-  compute: HelperFunction<T>;
+export interface SimpleHelper<
+  T = unknown,
+  P extends unknown[] = unknown[],
+  N extends Dict<unknown> = Dict<unknown>
+> {
+  compute: HelperFunction<T, P, N>;
 }
 
 /**
@@ -89,7 +97,7 @@ interface Helper {
     @public
     @since 1.13.0
   */
-  compute(params: unknown[], hash: object): unknown;
+  compute(params: unknown[], hash: Dict<unknown>): unknown;
 }
 class Helper extends FrameworkObject {
   static isHelperFactory = true;
@@ -199,10 +207,11 @@ export const CLASSIC_HELPER_MANAGER = getInternalHelperManager(Helper);
 
 ///////////
 
-class Wrapper implements HelperFactory<SimpleHelper> {
+class Wrapper<T = unknown, P extends unknown[] = unknown[], N extends Dict<unknown> = Dict<unknown>>
+  implements HelperFactory<SimpleHelper<T, P, N>> {
   isHelperFactory: true = true;
 
-  constructor(public compute: HelperFunction) {}
+  constructor(public compute: HelperFunction<T, P, N>) {}
 
   create() {
     // needs new instance or will leak containers
@@ -256,7 +265,11 @@ setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
   @public
   @since 1.13.0
 */
-export function helper(helperFn: HelperFunction): HelperFactory<SimpleHelper> {
+export function helper<
+  T = unknown,
+  P extends unknown[] = unknown[],
+  N extends Dict<unknown> = Dict<unknown>
+>(helperFn: HelperFunction<T, P, N>): HelperFactory<SimpleHelper<T, P, N>> {
   return new Wrapper(helperFn);
 }
 
