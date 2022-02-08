@@ -232,6 +232,8 @@ function templateCompilerBundle(emberPackages, transpileTree) {
           '@ember/-internals/*/tests/**' /* internal packages */,
           '*/*/tests/**' /* scoped packages */,
           '*/tests/**' /* packages */,
+          '*/*/type-tests/**' /* scoped packages */,
+          '*/type-tests/**' /* packages */,
         ],
       }),
       templateCompilerDependencies(),
