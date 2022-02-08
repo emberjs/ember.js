@@ -1,5 +1,6 @@
 import { typeOf } from './type-of';
 import Comparable from './mixins/comparable';
+import { assert } from '@ember/debug';
 
 const TYPE_ORDER = {
   undefined: 0,
@@ -14,6 +15,8 @@ const TYPE_ORDER = {
   class: 9,
   date: 10,
 };
+
+type Compare = -1 | 0 | 1;
 
 //
 // the spaceship operator
@@ -32,9 +35,10 @@ const TYPE_ORDER = {
 //                                |       `._    `.    \
 //                                `._________`-.   `.   `.___
 //                                              SSt  `------'`
-function spaceship(a, b) {
+function spaceship(a: number, b: number): Compare {
   let diff = a - b;
-  return (diff > 0) - (diff < 0);
+  // SAFETY: It will be one of the known values
+  return (Number(diff > 0) - Number(diff < 0)) as Compare;
 }
 
 /**
@@ -87,7 +91,7 @@ function spaceship(a, b) {
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
  @public
 */
-export default function compare(v, w) {
+export default function compare(v: unknown, w: unknown): Compare {
   if (v === w) {
     return 0;
   }
@@ -95,12 +99,13 @@ export default function compare(v, w) {
   let type1 = typeOf(v);
   let type2 = typeOf(w);
 
-  if (type1 === 'instance' && Comparable.detect(v) && v.constructor.compare) {
+  if (type1 === 'instance' && isComparable(v) && v.constructor.compare) {
     return v.constructor.compare(v, w);
   }
 
-  if (type2 === 'instance' && Comparable.detect(w) && w.constructor.compare) {
-    return w.constructor.compare(w, v) * -1;
+  if (type2 === 'instance' && isComparable(w) && w.constructor.compare) {
+    // SAFETY: Multiplying by a negative just changes the sign
+    return (w.constructor.compare(w, v) * -1) as Compare;
   }
 
   let res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);
@@ -112,13 +117,17 @@ export default function compare(v, w) {
   // types are equal - so we have to check values now
   switch (type1) {
     case 'boolean':
+      assert('both are boolean', typeof v === 'boolean' && typeof w === 'boolean');
+      return spaceship(Number(v), Number(w));
     case 'number':
+      assert('both are numbers', typeof v === 'number' && typeof w === 'number');
       return spaceship(v, w);
-
     case 'string':
+      assert('both are strings', typeof v === 'string' && typeof w === 'string');
       return spaceship(v.localeCompare(w), 0);
 
     case 'array': {
+      assert('both are arrays', Array.isArray(v) && Array.isArray(w));
       let vLen = v.length;
       let wLen = w.length;
       let len = Math.min(vLen, wLen);
@@ -135,15 +144,24 @@ export default function compare(v, w) {
       return spaceship(vLen, wLen);
     }
     case 'instance':
-      if (Comparable.detect(v)) {
+      if (isComparable(v) && v.compare) {
         return v.compare(v, w);
       }
       return 0;
 
     case 'date':
+      assert('both are dates', v instanceof Date && w instanceof Date);
       return spaceship(v.getTime(), w.getTime());
 
     default:
       return 0;
   }
+}
+
+interface ComparableConstructor {
+  constructor: Comparable;
+}
+
+function isComparable(value: unknown): value is Comparable & ComparableConstructor {
+  return Comparable.detect(value);
 }

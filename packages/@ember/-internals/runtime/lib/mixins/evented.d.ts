@@ -1,4 +1,4 @@
-import Mixin from '../../types/mixin';
+import { Mixin } from '@ember/-internals/metal';
 
 /**
  * This mixin allows for Ember objects to subscribe to and emit events.

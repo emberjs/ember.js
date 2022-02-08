@@ -1,9 +1,25 @@
 import CoreObject from './system/core_object';
 
+type TypeName =
+  | 'undefined'
+  | 'null'
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'function'
+  | 'array'
+  | 'regexp'
+  | 'date'
+  | 'filelist'
+  | 'class'
+  | 'instance'
+  | 'error'
+  | 'object';
+
 // ........................................
 // TYPING & ARRAY MESSAGING
 //
-const TYPE_MAP = {
+const TYPE_MAP: Record<string, TypeName> = {
   '[object Boolean]': 'boolean',
   '[object Number]': 'number',
   '[object String]': 'string',
@@ -14,7 +30,7 @@ const TYPE_MAP = {
   '[object RegExp]': 'regexp',
   '[object Object]': 'object',
   '[object FileList]': 'filelist',
-};
+} as const;
 
 const { toString } = Object.prototype;
 
@@ -82,7 +98,7 @@ const { toString } = Object.prototype;
   @public
   @static
 */
-export function typeOf(item) {
+export function typeOf(item: unknown): TypeName {
   if (item === null) {
     return 'null';
   }
