@@ -182,7 +182,7 @@ export default class Registry implements IRegistry {
    @param {Function} factory
    @param {Object} options
    */
-  register<T, C>(fullName: string, factory: Factory<T, C>, options: TypeOptions = {}): void {
+  register(fullName: string, factory: Factory<unknown>, options: TypeOptions = {}): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 

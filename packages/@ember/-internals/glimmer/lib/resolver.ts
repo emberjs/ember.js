@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
+import { Factory, Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -57,7 +57,7 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function componentFor(name: string, owner: Owner): Option<Factory<{}, {}>> {
+function componentFor(name: string, owner: Owner): Option<Factory<unknown>> {
   let fullName = `component:${name}`;
   return owner.factoryFor(fullName) || null;
 }
@@ -65,16 +65,16 @@ function componentFor(name: string, owner: Owner): Option<Factory<{}, {}>> {
 function layoutFor(name: string, owner: Owner, options?: TypeOptions): Option<Template> {
   let templateFullName = `template:components/${name}`;
 
-  return owner.lookup(templateFullName, options) || null;
+  return (owner.lookup(templateFullName, options) as Template) || null;
 }
 
 type LookupResult =
   | {
-      component: Factory<{}, {}>;
+      component: Factory<unknown>;
       layout: TemplateFactory;
     }
   | {
-      component: Factory<{}, {}>;
+      component: Factory<unknown>;
       layout: null;
     }
   | {
@@ -173,10 +173,9 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
       return helper;
     }
 
-    const factory = owner.factoryFor<
-      SimpleHelper | HelperInstance,
-      HelperFactory<SimpleHelper | HelperInstance>
-    >(`helper:${name}`);
+    const factory = owner.factoryFor(`helper:${name}`) as
+      | Factory<SimpleHelper, HelperFactory<SimpleHelper>>
+      | Factory<HelperInstance, HelperFactory<HelperInstance>>;
 
     if (factory === undefined) {
       return null;
@@ -221,7 +220,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
       return builtin;
     }
 
-    let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
+    let modifier = owner.factoryFor(`modifier:${name}`);
 
     if (modifier === undefined) {
       return null;

@@ -670,7 +670,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          let controller = instance!.lookup<Controller>('controller:application')!;
+          let controller = (instance!.lookup('controller:application') as Controller)!;
           controller.set('message', 'World');
         });
 
@@ -716,7 +716,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          let controller = instance!.lookup<Controller>('controller:application')!;
+          let controller = (instance!.lookup('controller:application') as Controller)!;
           controller.set('message', undefined);
         });
 

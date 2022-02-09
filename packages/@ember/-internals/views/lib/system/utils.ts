@@ -44,7 +44,7 @@ interface View {
   @param {Object} owner
 */
 export function getRootViews(owner: Owner): View[] {
-  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
+  let registry = owner.lookup('-view-registry:main') as Dict<View>;
 
   let rootViews: View[] = [];
 
@@ -120,7 +120,7 @@ const CHILD_VIEW_IDS: WeakMap<View, Set<string>> = new WeakMap();
 export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
   assert('View is unexpectedly missing an owner', owner);
-  let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
+  let registry = owner.lookup('-view-registry:main') as Dict<View>;
   return collectChildViews(view, registry);
 }
 

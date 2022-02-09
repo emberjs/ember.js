@@ -24,9 +24,9 @@ export interface EngineInstanceOptions {
 import EngineInstance from '@ember/engine/instance';
 import { TypeOptions } from '../container/lib/registry';
 export interface Owner {
-  lookup<T>(fullName: string, options?: TypeOptions): T | undefined;
-  factoryFor<T, C>(fullName: string): Factory<T, C> | undefined;
-  register<T, C>(fullName: string, factory: Factory<T, C>, options?: TypeOptions): void;
+  lookup(fullName: string, options?: TypeOptions): unknown;
+  factoryFor(fullName: string): Factory<unknown> | undefined;
+  register(fullName: string, factory: Factory<unknown>, options?: TypeOptions): void;
   hasRegistration(name: string): boolean;
 
   /** @internal */

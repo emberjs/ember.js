@@ -19,10 +19,10 @@ expectTypeOf(
   instance.register('service:store-singleton', Store, { singleton: true, instantiate: true })
 ).toEqualTypeOf<void>();
 
-expectTypeOf(instance.lookup<Store>('service:store')).toEqualTypeOf<Store | undefined>();
+expectTypeOf(instance.lookup('service:store')).toEqualTypeOf<unknown>();
 expectTypeOf(
-  instance.lookup<Store>('service:store', { singleton: true, instantiate: true })
-).toEqualTypeOf<Store | undefined>();
+  instance.lookup('service:store', { singleton: true, instantiate: true })
+).toEqualTypeOf<unknown>();
 
 expectTypeOf(instance.hasRegistration('service:store')).toEqualTypeOf<boolean>();
 // @ts-expect-error requires name
