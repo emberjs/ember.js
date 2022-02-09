@@ -1,4 +1,3 @@
-// @ts-ignore
 import { end, _cancelTimers, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 
 export function setupRunLoopCheck(hooks: NestedHooks) {

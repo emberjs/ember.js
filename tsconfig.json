@@ -27,8 +27,7 @@
     "checkJs": false,
 
     "paths": {
-      "@glimmer/*": ["../node_modules/@glimmer/*"],
-      "@ember/object/*": ["@ember/object/*", "@ember/object/types/*"]
+      "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"]
     }
   },
 
