@@ -38,7 +38,11 @@ export default class RoutingService<R extends Route> extends Service {
     let owner = getOwner(this);
     assert('RoutingService is unexpectedly missing an owner', owner);
 
-    router = owner.lookup('router:main') as EmberRouter<R>;
+    router = owner.lookup('router:main');
+    assert(
+      'ROUTING SERVICE BUG: Expected router to be an instance of EmberRouter',
+      router instanceof EmberRouter
+    );
     router.setupRouter();
     return (this[ROUTER] = router);
   }

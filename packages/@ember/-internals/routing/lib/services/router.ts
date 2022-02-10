@@ -64,7 +64,11 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     let owner = getOwner(this);
     assert('RouterService is unexpectedly missing an owner', owner);
 
-    router = owner.lookup('router:main') as EmberRouter<R>;
+    router = owner.lookup('router:main');
+    assert(
+      'ROUTER SERVICE BUG: Expected router to be an instance of EmberRouter',
+      router instanceof EmberRouter
+    );
     return (this[ROUTER] = router);
   }
 

@@ -265,7 +265,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
   }
 
   ensureEventSetup(actionState: ActionState): void {
-    let dispatcher = actionState.owner.lookup('event_dispatcher:main') as EventDispatcher;
+    let dispatcher = actionState.owner.lookup('event_dispatcher:main');
+    assert('Expected dispatcher to be an EventDispatcher', dispatcher instanceof EventDispatcher);
     dispatcher?.setupHandlerForEmberEvent(actionState.eventName);
   }
 
