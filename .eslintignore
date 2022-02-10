@@ -1,4 +1,5 @@
 blueprints/*/*files/**/*.js
+blueprints/*/*files/**/*.ts
 node-tests/fixtures/**/*.js
 /docs/
 dist/
