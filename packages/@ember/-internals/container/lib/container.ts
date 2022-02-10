@@ -1,8 +1,8 @@
-import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
+import { Factory, FactoryClass, Owner, setOwner } from '@ember/-internals/owner';
 import { dictionary, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import Registry, { DebugRegistry } from './registry';
+import Registry, { DebugRegistry, TypeOptions } from './registry';
 
 interface LeakTracking {
   hasContainers(): boolean;
@@ -143,7 +143,7 @@ export default class Container {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  lookup(fullName: string, options: LookupOptions): any {
+  lookup(fullName: string, options?: TypeOptions): unknown {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
@@ -206,11 +206,9 @@ export default class Container {
     @public
    @method factoryFor
    @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  factoryFor<T, C>(fullName: string): Factory<T, C> | undefined {
+  factoryFor(fullName: string): Factory<unknown> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
@@ -218,7 +216,9 @@ export default class Container {
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
 
-    return factoryFor<T, C>(this, normalizedName, fullName) as Factory<T, C> | undefined;
+    // TODO: This needs to return a Factory to be compatible with Owner.
+    // We should correctly the types so that this cast is not necessary.
+    return factoryFor(this, normalizedName, fullName) as Factory<unknown>;
   }
 }
 
@@ -261,7 +261,7 @@ function isInstantiatable(container: Container, fullName: string) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
-function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
+function lookup(container: Container, fullName: string, options: TypeOptions = {}) {
   let normalizedName = fullName;
 
   if (
@@ -277,14 +277,18 @@ function lookup(container: Container, fullName: string, options: LookupOptions =
   return instantiateFactory(container, normalizedName, fullName, options);
 }
 
-function factoryFor<T, C>(container: Container, normalizedName: string, fullName: string) {
+function factoryFor(
+  container: Container,
+  normalizedName: string,
+  fullName: string
+): FactoryManager<unknown> | undefined {
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
     return cached;
   }
 
-  let factory = container.registry.resolve(normalizedName) as DebugFactory<T, C> | undefined;
+  let factory = container.registry.resolve(normalizedName) as DebugFactory<unknown> | undefined;
 
   if (factory === undefined) {
     return;
@@ -442,7 +446,8 @@ export interface LazyInjection {
   specifier: string;
 }
 
-declare interface DebugFactory<T, C> extends Factory<T, C> {
+declare interface DebugFactory<T, C extends FactoryClass | object = FactoryClass>
+  extends Factory<T, C> {
   _onLookup?: (fullName: string) => void;
   _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
   _lazyInjections(): { [key: string]: LazyInjection };
@@ -458,7 +463,7 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
   obj[INIT_FACTORY] = factory;
 }
 
-export class FactoryManager<T, C> {
+export class FactoryManager<T, C extends FactoryClass | object = FactoryClass> {
   readonly container: Container;
   readonly owner: Owner | null;
   readonly class: Factory<T, C> & DebugFactory<T, C>;

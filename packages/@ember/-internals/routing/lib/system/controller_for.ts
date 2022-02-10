@@ -1,5 +1,5 @@
 import { Container } from '@ember/-internals/container';
-import { LookupOptions } from '@ember/-internals/owner';
+import { TypeOptions } from '@ember/-internals/container/lib/registry';
 /**
 @module ember
 */
@@ -14,7 +14,7 @@ import { LookupOptions } from '@ember/-internals/owner';
 export default function controllerFor(
   container: Container,
   controllerName: string,
-  lookupOptions: LookupOptions
+  lookupOptions: TypeOptions
 ) {
   return container.lookup(`controller:${controllerName}`, lookupOptions);
 }

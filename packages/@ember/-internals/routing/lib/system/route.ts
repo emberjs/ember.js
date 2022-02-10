@@ -278,8 +278,8 @@ class Route<T = unknown>
     super(owner);
 
     if (owner) {
-      let router = owner.lookup<EmberRouter>('router:main');
-      let bucketCache = owner.lookup<BucketCache>(P`-bucket-cache:main`);
+      let router = owner.lookup('router:main') as EmberRouter;
+      let bucketCache = owner.lookup(P`-bucket-cache:main`) as BucketCache;
 
       assert(
         'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
@@ -658,7 +658,7 @@ class Route<T = unknown>
   paramsFor(name: string): Record<string, unknown> {
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
-    let route = owner.lookup<Route>(`route:${name}`);
+    let route = owner.lookup(`route:${name}`) as Route;
 
     if (route === undefined) {
       return {};
@@ -1587,13 +1587,13 @@ class Route<T = unknown>
   controllerFor(name: string, _skipAssert = false): Controller | undefined {
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
-    let route = owner.lookup<Route>(`route:${name}`);
+    let route = owner.lookup(`route:${name}`) as Route;
 
     if (route && route.controllerName) {
       name = route.controllerName;
     }
 
-    let controller = owner.lookup<Controller>(`controller:${name}`);
+    let controller = owner.lookup(`controller:${name}`) as Controller;
 
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
@@ -1693,7 +1693,7 @@ class Route<T = unknown>
       name = _name;
     }
 
-    let route = owner.lookup<Route>(`route:${name}`);
+    let route = owner.lookup(`route:${name}`) as Route;
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
     if (transition !== undefined && transition !== null) {
@@ -1874,7 +1874,7 @@ class Route<T = unknown>
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
-    let controller = owner.lookup<Controller>(`controller:${controllerName}`);
+    let controller = owner.lookup(`controller:${controllerName}`) as Controller;
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
@@ -2127,16 +2127,18 @@ function buildRenderOptions(
 
   if (controller === undefined) {
     if (isDefaultRender) {
-      controller = route.controllerName || owner.lookup<Controller>(`controller:${name}`);
+      controller = route.controllerName || (owner.lookup(`controller:${name}`) as Controller);
     } else {
       controller =
-        owner.lookup<Controller>(`controller:${name}`) || route.controllerName || route.routeName;
+        (owner.lookup(`controller:${name}`) as Controller) ||
+        route.controllerName ||
+        route.routeName;
     }
   }
 
   if (typeof controller === 'string') {
     let controllerName = controller;
-    controller = owner.lookup<Controller>(`controller:${controllerName}`);
+    controller = owner.lookup(`controller:${controllerName}`) as Controller;
     assert(
       `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
       isDefaultRender || controller !== undefined
@@ -2149,7 +2151,7 @@ function buildRenderOptions(
     (controller! as any).set('model', model);
   }
 
-  let template = owner.lookup<TemplateFactory>(`template:${templateName}`);
+  let template = owner.lookup(`template:${templateName}`) as TemplateFactory;
   assert(
     `Could not find "${templateName}" template, view, or component.`,
     isDefaultRender || template !== undefined

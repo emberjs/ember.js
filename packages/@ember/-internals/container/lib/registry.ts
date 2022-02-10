@@ -79,12 +79,12 @@ export default class Registry implements IRegistry {
   readonly _failSet: Set<string>;
   resolver: Resolver | (Resolve & NotResolver) | null;
   readonly fallback: IRegistry | null;
-  readonly registrations: { [key: string]: object };
-  _localLookupCache: { [key: string]: object };
-  readonly _normalizeCache: { [key: string]: string };
-  readonly _options: { [key: string]: TypeOptions };
-  readonly _resolveCache: { [key: string]: object };
-  readonly _typeOptions: { [key: string]: TypeOptions };
+  readonly registrations: Record<string, object>;
+  _localLookupCache: Record<string, object>;
+  readonly _normalizeCache: Record<string, string>;
+  readonly _options: Record<string, TypeOptions>;
+  readonly _resolveCache: Record<string, object>;
+  readonly _typeOptions: Record<string, TypeOptions>;
 
   constructor(options: RegistryOptions = {}) {
     this.fallback = options.fallback || null;
@@ -182,7 +182,7 @@ export default class Registry implements IRegistry {
    @param {Function} factory
    @param {Object} options
    */
-  register<T, C>(fullName: string, factory: Factory<T, C>, options: object = {}): void {
+  register(fullName: string, factory: Factory<unknown>, options: TypeOptions = {}): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 

@@ -710,8 +710,8 @@ const Component = CoreView.extend(
         let owner = getOwner(this);
         assert('Component is unexpectedly missing an owner', owner);
 
-        if (owner.lookup<Environment>('-environment:main')!.isInteractive) {
-          this.__dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
+        if ((owner.lookup('-environment:main') as Environment)!.isInteractive) {
+          this.__dispatcher = owner.lookup('event_dispatcher:main') as EventDispatcher;
         } else {
           // In FastBoot we have no EventDispatcher. Set to null to not try again to look it up.
           this.__dispatcher = null;

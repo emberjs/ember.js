@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/-internals/metal';
-import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
+import { Factory, FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
@@ -312,11 +312,11 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     this._resetQueuedQueryParameterChanges();
     this.namespace = owner.lookup('application:main');
 
-    let bucketCache: BucketCache | undefined = owner.lookup(P`-bucket-cache:main`);
+    let bucketCache = owner.lookup(P`-bucket-cache:main`) as BucketCache | undefined;
     assert('BUG: BucketCache should always be present', bucketCache !== undefined);
     this._bucketCache = bucketCache;
 
-    let routerService: RouterService<R> | undefined = owner.lookup('service:router');
+    let routerService = owner.lookup('service:router') as RouterService<R> | undefined;
     assert('BUG: RouterService should always be present', routerService !== undefined);
     this._routerService = routerService;
   }
@@ -345,7 +345,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
         assert('Route is unexpectedly missing an owner', routeOwner);
 
-        let route = routeOwner.lookup<R>(fullRouteName);
+        let route = routeOwner.lookup(fullRouteName) as R;
 
         if (seen[name]) {
           assert('seen routes should exist', route);
@@ -357,7 +357,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
         if (!route) {
           let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
           routeOwner.register(fullRouteName, DefaultRoute.extend());
-          route = routeOwner.lookup(fullRouteName);
+          route = routeOwner.lookup(fullRouteName) as R;
 
           if (DEBUG) {
             if (router.namespace.LOG_ACTIVE_GENERATION) {
@@ -642,7 +642,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     if (!this._toplevelView) {
       let owner = getOwner(this);
       assert('Router is unexpectedly missing an owner', owner);
-      let OutletView = owner.factoryFor<OutletView, FactoryClass>('view:-outlet')!;
+      let OutletView = owner.factoryFor('view:-outlet') as Factory<OutletView, FactoryClass>;
       let application = owner.lookup('application:main');
       let environment = owner.lookup('-environment:main');
       let template = owner.lookup('template:-outlet');
@@ -866,7 +866,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     assert('Router is unexpectedly missing an owner', owner);
 
     if ('string' === typeof location) {
-      let resolvedLocation = owner.lookup<IEmberLocation>(`location:${location}`);
+      let resolvedLocation = owner.lookup(`location:${location}`) as IEmberLocation;
 
       if (location === 'auto') {
         deprecate(
@@ -1788,7 +1788,7 @@ function updatePaths(router: EmberRouter) {
 
   let owner = getOwner(router);
   assert('Router is unexpectedly missing an owner', owner);
-  let appController = owner.lookup<Controller>('controller:application');
+  let appController = owner.lookup('controller:application') as Controller;
 
   if (!appController) {
     // appController might not exist when top-level loading/error

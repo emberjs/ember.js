@@ -23,9 +23,9 @@ export default Mixin.create({
    @param {String} fullName
    @return {Function} fullName's factory
    */
-  resolveRegistration(fullName, options) {
+  resolveRegistration(fullName) {
     assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
-    return this.__registry__.resolve(fullName, options);
+    return this.__registry__.resolve(fullName);
   },
 
   /**

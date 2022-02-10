@@ -133,7 +133,7 @@ export default class CurlyComponentManager
 
     if (layout === undefined) {
       if (layoutName !== undefined) {
-        let _factory = owner.lookup<TemplateFactory>(`template:${layoutName}`);
+        let _factory = owner.lookup(`template:${layoutName}`) as TemplateFactory;
         assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
         factory = _factory;
       } else {

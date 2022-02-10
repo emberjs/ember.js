@@ -2,6 +2,7 @@
 @module @ember/engine
 */
 import { symbol } from '@ember/-internals/utils';
+import EngineInstance from '../instance';
 
 const ENGINE_PARENT = symbol('ENGINE_PARENT');
 
@@ -15,7 +16,7 @@ const ENGINE_PARENT = symbol('ENGINE_PARENT');
   @static
   @private
 */
-export function getEngineParent(engine) {
+export function getEngineParent(engine: EngineInstance): EngineInstance | undefined {
   return engine[ENGINE_PARENT];
 }
 
@@ -27,6 +28,6 @@ export function getEngineParent(engine) {
   @param {EngineInstance} parent The parent engine instance.
   @private
 */
-export function setEngineParent(engine, parent) {
+export function setEngineParent(engine: EngineInstance, parent: EngineInstance): void {
   engine[ENGINE_PARENT] = parent;
 }
