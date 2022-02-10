@@ -5,6 +5,8 @@ import { Owner } from '@ember/-internals/owner';
 
 import { expectTypeOf } from 'expect-type';
 
+let owner = {} as Owner;
+
 class App extends Application {
   rootElement = '#ember-application';
   customEvents = {
@@ -16,7 +18,7 @@ class App extends Application {
   }
 }
 
-const app = new App();
+const app = new App(owner);
 
 // You shouldn't really be setting this, so let's at least check that we can read it
 expectTypeOf(app.eventDispatcher).toEqualTypeOf<EventDispatcher>();
@@ -34,7 +36,7 @@ class App2 extends Application {
   rootElement = 1;
 }
 
-new App2();
+new App2(owner);
 
 expectTypeOf(getOwner('foo')).toEqualTypeOf<Owner | undefined>();
 

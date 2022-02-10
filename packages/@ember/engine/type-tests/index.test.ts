@@ -1,15 +1,18 @@
 import { TypeOptions } from '@ember/-internals/container/lib/registry';
-import { Factory } from '@ember/-internals/owner';
+import { Factory, Owner } from '@ember/-internals/owner';
 import Namespace from '@ember/application/namespace';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
+// Good enough for tests
+let owner = {} as Owner;
+
 class Foo extends EmberObject {}
 class Bar {}
 
-let engine = new Engine();
+let engine = new Engine(owner);
 
 expectTypeOf(engine).toMatchTypeOf<Namespace>();
 

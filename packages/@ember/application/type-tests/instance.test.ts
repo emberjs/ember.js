@@ -1,3 +1,4 @@
+import { Owner } from '@ember/-internals/owner';
 import Application from '@ember/application';
 import ApplicationInstance, { BootOptions } from '@ember/application/instance';
 import EngineInstance from '@ember/engine/instance';
@@ -5,7 +6,10 @@ import EmberObject from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';
 
-const app = new Application();
+// Good enough for tests
+let owner = {} as Owner;
+
+const app = new Application(owner);
 const instance = app.buildInstance();
 
 expectTypeOf(instance).toEqualTypeOf<ApplicationInstance>();
