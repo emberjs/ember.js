@@ -6,7 +6,6 @@ import {
   childRefFromParts,
   createComputeRef,
   createDebugAliasRef,
-  createPrimitiveRef,
   Reference,
   valueForRef,
 } from '@glimmer/reference';
@@ -38,32 +37,22 @@ import { OutletState } from '../utils/outlet';
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
   @method outlet
-  @param {String} [name]
   @for Ember.Templates.helpers
   @public
 */
 export const outletHelper = internalHelper(
-  (args: CapturedArguments, owner?: Owner, scope?: DynamicScope) => {
+  (_args: CapturedArguments, owner?: Owner, scope?: DynamicScope) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
       scope
     );
-    let nameRef: Reference<string>;
-
-    if (args.positional.length === 0) {
-      nameRef = createPrimitiveRef('main');
-    } else {
-      let maybeNameRef = args.positional[0];
-      assert('Expected at least one positional arg', maybeNameRef);
-      nameRef = maybeNameRef;
-    }
 
     let outletRef = createComputeRef(() => {
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
       let outlets = state !== undefined ? state.outlets : undefined;
 
-      return outlets !== undefined ? outlets[valueForRef(nameRef)] : undefined;
+      return outlets !== undefined ? outlets.main : undefined;
     });
 
     let lastState: OutletDefinitionState | null = null;
