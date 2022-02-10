@@ -29,7 +29,6 @@ import { DEBUG } from '@glimmer/env';
 import { Template, TemplateFactory } from '@glimmer/interfaces';
 import {
   InternalRouteInfo,
-  IModel,
   ModelFor,
   PARAMS_SYMBOL,
   Route as IRoute,
@@ -87,7 +86,7 @@ const RENDER = (symbol('render') as unknown) as string;
   @since 1.0.0
   @public
 */
-interface Route<T extends IModel = {}> extends IRoute<T> {
+interface Route<T = unknown> extends IRoute<T> {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -258,7 +257,7 @@ interface Route<T extends IModel = {}> extends IRoute<T> {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<T extends IModel = {}>
+class Route<T = unknown>
   extends EmberObject.extend(ActionHandler, Evented)
   implements IRoute, Evented {
   static isRouteFactory = true;
