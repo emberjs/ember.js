@@ -1,11 +1,36 @@
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { _backburner } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { dasherize } from '@ember/string';
-import { Namespace, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
+import {
+  Namespace,
+  Object as EmberObject,
+  A as emberA,
+  NativeArray,
+} from '@ember/-internals/runtime';
+import { consumeTag, createCache, getValue, tagFor, untrack, Cache } from '@glimmer/validator';
+import { ContainerDebugAdapter } from '..';
 
-function iterate(arr, fn) {
+type RecordColor = 'black' | 'red' | 'blue' | 'green';
+
+type WrappedType<N extends string = string> = {
+  name: N;
+  count: number;
+  columns: unknown[];
+  object: unknown;
+};
+
+type WrappedRecord<T> = {
+  object: T;
+  columnValues: object;
+  searchKeywords: NativeArray<unknown>;
+  filterValues: object;
+  color: RecordColor | null;
+};
+
+type RecordCallback<T> = (records: Array<{ columnValues: object; object: T }>) => void;
+
+function iterate<T>(arr: Array<T>, fn: (value: T) => void): void {
   if (Symbol.iterator in arr) {
     for (let item of arr) {
       fn(item);
@@ -15,14 +40,16 @@ function iterate(arr, fn) {
   }
 }
 
-class RecordsWatcher {
-  recordCaches = new Map();
+class RecordsWatcher<T> {
+  recordCaches: Map<T, Cache<void>> = new Map();
 
-  added = [];
-  updated = [];
-  removed = [];
+  added: WrappedRecord<T>[] = [];
+  updated: WrappedRecord<T>[] = [];
+  removed: WrappedRecord<T>[] = [];
 
-  getCacheForItem(record) {
+  declare recordArrayCache: Cache<void>;
+
+  getCacheForItem(record: T) {
     let recordCache = this.recordCaches.get(record);
 
     if (!recordCache) {
@@ -43,10 +70,14 @@ class RecordsWatcher {
     return recordCache;
   }
 
-  constructor(records, recordsAdded, recordsUpdated, recordsRemoved, wrapRecord, release) {
-    this.release = release;
-    this.wrapRecord = wrapRecord;
-
+  constructor(
+    records: NativeArray<T>,
+    recordsAdded: RecordCallback<T>,
+    recordsUpdated: RecordCallback<T>,
+    recordsRemoved: RecordCallback<T>,
+    public wrapRecord: (record: T) => WrappedRecord<T>,
+    public release: () => void
+  ) {
     this.recordArrayCache = createCache(() => {
       let seen = new Set();
 
@@ -61,7 +92,7 @@ class RecordsWatcher {
       // Untrack this operation because these records are being removed, they
       // should not be polled again in the future
       untrack(() => {
-        this.recordCaches.forEach((cache, record) => {
+        this.recordCaches.forEach((_cache, record) => {
           if (!seen.has(record)) {
             this.removed.push(wrapRecord(record));
             this.recordCaches.delete(record);
@@ -92,7 +123,9 @@ class RecordsWatcher {
 }
 
 class TypeWatcher {
-  constructor(records, onChange, release) {
+  declare cache: Cache<void>;
+
+  constructor(records: unknown[], onChange: () => void, public release: () => void) {
     let hasBeenAccessed = false;
 
     this.cache = createCache(() => {
@@ -162,17 +195,21 @@ class TypeWatcher {
   @extends EmberObject
   @public
 */
-export default EmberObject.extend({
-  init() {
-    this._super(...arguments);
+export default class DataAdapter<T> extends EmberObject {
+  releaseMethods = emberA<() => void>();
+  recordsWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
+  typeWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
+  flushWatchers: (() => void) | null = null;
 
-    this.containerDebugAdapter = getOwner(this).lookup('container-debug-adapter:main');
+  // TODO: Revisit this
+  declare containerDebugAdapter: ContainerDebugAdapter;
 
-    this.releaseMethods = emberA();
-    this.recordsWatchers = new Map();
-    this.typeWatchers = new Map();
-    this.flushWatchers = null;
-  },
+  constructor(owner: Owner) {
+    super(owner);
+    this.containerDebugAdapter = getOwner(this)!.lookup(
+      'container-debug-adapter:main'
+    ) as ContainerDebugAdapter;
+  }
 
   /**
     The container-debug-adapter which is used
@@ -194,7 +231,7 @@ export default EmberObject.extend({
     @default 3
     @since 1.3.0
   */
-  attributeLimit: 3,
+  attributeLimit = 3;
 
   /**
      Ember Data > v1.0.0-beta.18
@@ -208,7 +245,7 @@ export default EmberObject.extend({
      @public
      @property acceptsModelName
    */
-  acceptsModelName: true,
+  acceptsModelName = true;
 
   /**
      Map from records arrays to RecordsWatcher instances
@@ -257,7 +294,7 @@ export default EmberObject.extend({
   */
   getFilters() {
     return emberA();
-  },
+  }
 
   /**
     Fetch the model types and observe them for changes.
@@ -273,9 +310,12 @@ export default EmberObject.extend({
 
     @return {Function} Method to call to remove all observers
   */
-  watchModelTypes(typesAdded, typesUpdated) {
+  watchModelTypes(
+    typesAdded: (types: WrappedType[]) => void,
+    typesUpdated: (types: WrappedType[]) => void
+  ) {
     let modelTypes = this.getModelTypes();
-    let releaseMethods = emberA();
+    let releaseMethods = emberA<() => void>();
     let typesToSend;
 
     typesToSend = modelTypes.map((type) => {
@@ -293,16 +333,16 @@ export default EmberObject.extend({
     };
     this.releaseMethods.pushObject(release);
     return release;
-  },
+  }
 
-  _nameToClass(type) {
+  _nameToClass(type: unknown): unknown {
     if (typeof type === 'string') {
-      let owner = getOwner(this);
+      let owner = getOwner(this)!;
       let Factory = owner.factoryFor(`model:${type}`);
       type = Factory && Factory.class;
     }
     return type;
-  },
+  }
 
   /**
     Fetch the records of a given type and observe them for changes.
@@ -326,7 +366,12 @@ export default EmberObject.extend({
 
     @return {Function} Method to call to remove all observers.
   */
-  watchRecords(modelName, recordsAdded, recordsUpdated, recordsRemoved) {
+  watchRecords(
+    modelName: string,
+    recordsAdded: RecordCallback<T>,
+    recordsUpdated: RecordCallback<T>,
+    recordsRemoved: RecordCallback<T>
+  ) {
     let klass = this._nameToClass(modelName);
     let records = this.getRecords(klass, modelName);
     let { recordsWatchers } = this;
@@ -334,12 +379,12 @@ export default EmberObject.extend({
     let recordsWatcher = recordsWatchers.get(records);
 
     if (!recordsWatcher) {
-      recordsWatcher = new RecordsWatcher(
+      recordsWatcher = new RecordsWatcher<T>(
         records,
         recordsAdded,
         recordsUpdated,
         recordsRemoved,
-        (record) => this.wrapRecord(record),
+        (record: T) => this.wrapRecord(record),
         () => {
           recordsWatchers.delete(records);
           this.updateFlushWatchers();
@@ -353,7 +398,7 @@ export default EmberObject.extend({
     }
 
     return recordsWatcher.release;
-  },
+  }
 
   updateFlushWatchers() {
     if (this.flushWatchers === null) {
@@ -369,7 +414,7 @@ export default EmberObject.extend({
       _backburner.off('end', this.flushWatchers);
       this.flushWatchers = null;
     }
-  },
+  }
 
   /**
     Clear all observers before destruction
@@ -387,7 +432,7 @@ export default EmberObject.extend({
     if (this.flushWatchers) {
       _backburner.off('end', this.flushWatchers);
     }
-  },
+  }
 
   /**
     Detect whether a class is a model.
@@ -399,9 +444,9 @@ export default EmberObject.extend({
     @method detect
     @return boolean Whether the class is a model class or not.
   */
-  detect() {
+  detect(_klass: unknown): boolean {
     return false;
-  },
+  }
 
   /**
     Get the columns for a given model type.
@@ -412,9 +457,9 @@ export default EmberObject.extend({
      name: {String} The name of the column.
      desc: {String} Humanized description (what would show in a table column name).
   */
-  columnsForType() {
+  columnsForType(_klass: unknown) {
     return emberA();
-  },
+  }
 
   /**
     Adds observers to a model type class.
@@ -426,7 +471,7 @@ export default EmberObject.extend({
     @return {Function} The function to call to remove observers.
   */
 
-  observeModelType(modelName, typesUpdated) {
+  observeModelType(modelName: string, typesUpdated: (types: WrappedType[]) => void) {
     let klass = this._nameToClass(modelName);
     let records = this.getRecords(klass, modelName);
 
@@ -451,7 +496,7 @@ export default EmberObject.extend({
     }
 
     return typeWatcher.release;
-  },
+  }
 
   /**
     Wraps a given model type and observes changes to it.
@@ -460,29 +505,22 @@ export default EmberObject.extend({
     @method wrapModelType
     @param {Class} klass A model class.
     @param {String} modelName Name of the class.
-    @return {Object} Contains the wrapped type and the function to remove observers
-    Format:
-      type: {Object} The wrapped type.
-        The wrapped type has the following format:
-          name: {String} The name of the type.
-          count: {Integer} The number of records available.
-          columns: {Columns} An array of columns to describe the record.
-          object: {Class} The actual Model type class.
-      release: {Function} The function to remove observers.
+    @return {Object} The wrapped type has the following format:
+      name: {String} The name of the type.
+      count: {Integer} The number of records available.
+      columns: {Columns} An array of columns to describe the record.
+      object: {Class} The actual Model type class.
   */
-  wrapModelType(klass, name) {
+  wrapModelType<N extends string>(klass: unknown, name: N): WrappedType<N> {
     let records = this.getRecords(klass, name);
-    let typeToSend;
 
-    typeToSend = {
+    return {
       name,
       count: get(records, 'length'),
       columns: this.columnsForType(klass),
       object: klass,
     };
-
-    return typeToSend;
-  },
+  }
 
   /**
     Fetches all models defined in the application.
@@ -491,27 +529,23 @@ export default EmberObject.extend({
     @method getModelTypes
     @return {Array} Array of model types.
   */
-  getModelTypes() {
-    let containerDebugAdapter = this.get('containerDebugAdapter');
-    let types;
+  getModelTypes(): NativeArray<{ klass: unknown; name: string }> {
+    let containerDebugAdapter = this.containerDebugAdapter;
 
-    if (containerDebugAdapter.canCatalogEntriesByType('model')) {
-      types = containerDebugAdapter.catalogEntriesByType('model');
-    } else {
-      types = this._getObjectsOnNamespaces();
-    }
+    let stringTypes = containerDebugAdapter.canCatalogEntriesByType('model')
+      ? containerDebugAdapter.catalogEntriesByType('model')
+      : this._getObjectsOnNamespaces();
 
     // New adapters return strings instead of classes.
-    types = emberA(types).map((name) => {
+    let klassTypes = emberA(stringTypes).map((name) => {
       return {
         klass: this._nameToClass(name),
         name,
       };
     });
-    types = emberA(types).filter((type) => this.detect(type.klass));
 
-    return emberA(types);
-  },
+    return emberA(klassTypes).filter((type) => this.detect(type.klass));
+  }
 
   /**
     Loops over all namespaces and all objects
@@ -523,7 +557,7 @@ export default EmberObject.extend({
   */
   _getObjectsOnNamespaces() {
     let namespaces = emberA(Namespace.NAMESPACES);
-    let types = emberA();
+    let types = emberA<string>();
 
     namespaces.forEach((namespace) => {
       for (let key in namespace) {
@@ -540,7 +574,7 @@ export default EmberObject.extend({
       }
     });
     return types;
-  },
+  }
 
   /**
     Fetches all loaded records for a given type.
@@ -551,9 +585,9 @@ export default EmberObject.extend({
      This array will be observed for changes,
      so it should update when new records are added/removed.
   */
-  getRecords() {
+  getRecords(_klass: unknown, _name: string): NativeArray<T> {
     return emberA();
-  },
+  }
 
   /**
     Wraps a record and observers changes to it.
@@ -565,16 +599,15 @@ export default EmberObject.extend({
     columnValues: {Array}
     searchKeywords: {Array}
   */
-  wrapRecord(record) {
-    let recordToSend = { object: record };
-
-    recordToSend.columnValues = this.getRecordColumnValues(record);
-    recordToSend.searchKeywords = this.getRecordKeywords(record);
-    recordToSend.filterValues = this.getRecordFilterValues(record);
-    recordToSend.color = this.getRecordColor(record);
-
-    return recordToSend;
-  },
+  wrapRecord(record: T): WrappedRecord<T> {
+    return {
+      object: record,
+      columnValues: this.getRecordColumnValues(record),
+      searchKeywords: this.getRecordKeywords(record),
+      filterValues: this.getRecordFilterValues(record),
+      color: this.getRecordColor(record),
+    };
+  }
 
   /**
     Gets the values for each column.
@@ -584,9 +617,9 @@ export default EmberObject.extend({
     @return {Object} Keys should match column names defined
     by the model type.
   */
-  getRecordColumnValues() {
+  getRecordColumnValues(_record: T) {
     return {};
-  },
+  }
 
   /**
     Returns keywords to match when searching records.
@@ -595,9 +628,9 @@ export default EmberObject.extend({
     @method getRecordKeywords
     @return {Array} Relevant keywords for search.
   */
-  getRecordKeywords() {
+  getRecordKeywords(_record: T) {
     return emberA();
-  },
+  }
 
   /**
     Returns the values of filters defined by `getFilters`.
@@ -607,9 +640,9 @@ export default EmberObject.extend({
     @param {Object} record The record instance.
     @return {Object} The filter values.
   */
-  getRecordFilterValues() {
+  getRecordFilterValues(_record: T): object {
     return {};
-  },
+  }
 
   /**
     Each record can have a color that represents its state.
@@ -620,7 +653,7 @@ export default EmberObject.extend({
     @return {String} The records color.
       Possible options: black, red, blue, green.
   */
-  getRecordColor() {
+  getRecordColor(_record: T): RecordColor | null {
     return null;
-  },
-});
+  }
+}

@@ -1,6 +1,13 @@
 import { classify, dasherize } from '@ember/string';
-import { A as emberA, typeOf, Namespace, Object as EmberObject } from '@ember/-internals/runtime';
-import { getOwner } from '@ember/-internals/owner';
+import {
+  A as emberA,
+  typeOf,
+  Namespace,
+  Object as EmberObject,
+  NativeArray,
+} from '@ember/-internals/runtime';
+import { getOwner, Owner } from '@ember/-internals/owner';
+import { Resolver } from '@ember/-internals/container/lib/registry';
 
 /**
 @module @ember/debug
@@ -40,12 +47,12 @@ import { getOwner } from '@ember/-internals/owner';
   @since 1.5.0
   @public
 */
-export default EmberObject.extend({
-  init() {
-    this._super(...arguments);
+export default class ContainerDebugAdapter extends EmberObject {
+  constructor(owner: Owner) {
+    super(owner);
 
-    this.resolver = getOwner(this).lookup('resolver-for-debugging:main');
-  },
+    this.resolver = getOwner(this)!.lookup('resolver-for-debugging:main') as Resolver;
+  }
 
   /**
     The resolver instance of the application
@@ -53,10 +60,9 @@ export default EmberObject.extend({
     on creation.
 
     @property resolver
-    @default null
     @public
   */
-  resolver: null,
+  declare resolver: Resolver;
 
   /**
     Returns true if it is possible to catalog a list of available
@@ -67,13 +73,13 @@ export default EmberObject.extend({
     @return {boolean} whether a list is available for this type.
     @public
   */
-  canCatalogEntriesByType(type) {
+  canCatalogEntriesByType(type: string) {
     if (type === 'model' || type === 'template') {
       return false;
     }
 
     return true;
-  },
+  }
 
   /**
     Returns the available classes a given type.
@@ -83,9 +89,9 @@ export default EmberObject.extend({
     @return {Array} An array of strings.
     @public
   */
-  catalogEntriesByType(type) {
+  catalogEntriesByType(type: string): NativeArray<string> {
     let namespaces = emberA(Namespace.NAMESPACES);
-    let types = emberA();
+    let types = emberA<string>();
     let typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
     namespaces.forEach((namespace) => {
@@ -102,5 +108,5 @@ export default EmberObject.extend({
       }
     });
     return types;
-  },
-});
+  }
+}
