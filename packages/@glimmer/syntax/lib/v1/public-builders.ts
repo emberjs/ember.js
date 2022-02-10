@@ -202,7 +202,7 @@ export interface BuildElementOptions {
   loc?: SourceSpan;
 }
 
-function buildElement(tag: TagDescriptor, options: BuildElementOptions): ASTv1.ElementNode {
+function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): ASTv1.ElementNode {
   let { attrs, blockParams, modifiers, comments, children, loc } = options;
 
   let tagName: string;
