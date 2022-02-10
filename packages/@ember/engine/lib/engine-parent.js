@@ -13,7 +13,7 @@ const ENGINE_PARENT = symbol('ENGINE_PARENT');
   @return {EngineInstance} The parent engine instance.
   @for @ember/engine
   @static
-  @private
+  @public
 */
 export function getEngineParent(engine) {
   return engine[ENGINE_PARENT];
@@ -25,7 +25,8 @@ export function getEngineParent(engine) {
   @method setEngineParent
   @param {EngineInstance} engine An engine instance.
   @param {EngineInstance} parent The parent engine instance.
-  @private
+  @for @ember/engine
+  @public
 */
 export function setEngineParent(engine, parent) {
   engine[ENGINE_PARENT] = parent;
