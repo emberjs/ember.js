@@ -23,6 +23,7 @@ import {
 import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, info, isTesting } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -548,7 +549,7 @@ class Route<T = unknown>
   _setRouteName(name: string) {
     this.routeName = name;
     let owner = getOwner(this);
-    assert('Route is unexpectedly missing an owner', owner);
+    assert('Expected route to have EngineInstance as owner', owner instanceof EngineInstance);
     this.fullRouteName = getEngineRouteName(owner, name)!;
   }
 
@@ -1679,7 +1680,7 @@ class Route<T = unknown>
   modelFor(_name: string): unknown | undefined {
     let name;
     let owner = getOwner(this);
-    assert('Route is unexpectedly missing an owner', owner);
+    assert('Expected router owner to be an EngineInstance', owner instanceof EngineInstance);
     let transition =
       this._router && this._router._routerMicrolib
         ? this._router._routerMicrolib.activeTransition
@@ -2332,7 +2333,7 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
   });
 }
 
-function getEngineRouteName(engine: Owner, routeName: string) {
+function getEngineRouteName(engine: EngineInstance, routeName: string) {
   if (engine.routable) {
     let prefix = engine.mountPoint;
 

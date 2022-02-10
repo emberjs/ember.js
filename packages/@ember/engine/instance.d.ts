@@ -3,12 +3,18 @@ import { Owner } from '@ember/-internals/owner';
 import { BootOptions } from '@ember/application/instance';
 import EmberObject from '@ember/object';
 
+export interface EngineInstanceOptions {
+  mountPoint: string;
+  routable: boolean;
+}
+
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, Owner {}
 
 declare class EngineInstance extends EmberObject {
-  init(...args: unknown[]): void;
   boot(options?: BootOptions): void;
-  unregister(fullName: string): void;
+  mountPoint: string;
+  routable: boolean;
+  buildChildEngineInstance(name: string, options?: EngineInstanceOptions): EngineInstance;
 }
 
 export default EngineInstance;

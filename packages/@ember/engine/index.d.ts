@@ -1,5 +1,4 @@
-import EngineInstance from './instance';
-import { EngineInstanceOptions } from '@ember/-internals/owner';
+import EngineInstance, { EngineInstanceOptions } from './instance';
 import { Namespace, RegistryProxyMixin } from '@ember/-internals/runtime';
 
 export { getEngineParent } from '@ember/engine/lib/engine-parent';

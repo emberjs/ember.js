@@ -1,5 +1,6 @@
 import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
+import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import {
@@ -74,6 +75,7 @@ class MountManager
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
+    assert('Expected owner to be an EngineInstance', owner instanceof EngineInstance);
     let engine = owner.buildChildEngineInstance(name);
 
     engine.boot();

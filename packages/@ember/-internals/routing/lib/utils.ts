@@ -1,6 +1,7 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { assert, deprecate } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import EmberError from '@ember/error';
 import Router, { STATE_SYMBOL, InternalRouteInfo, ModelFor } from 'router_js';
 import Route from './system/route';
@@ -247,7 +248,7 @@ export function prefixRouteNameArg<T extends NamedRouteArgs<Route> | UnnamedRout
 ): T {
   let routeName: string;
   let owner = getOwner(route);
-  assert('Route is unexpectedly missing an owner', owner);
+  assert('Expected route to have EngineInstance as owner', owner instanceof EngineInstance);
 
   let prefix = owner.mountPoint;
 
