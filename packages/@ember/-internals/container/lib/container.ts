@@ -308,15 +308,10 @@ function factoryFor(
   return manager;
 }
 
-interface FactoryOptions {
-  instantiate?: boolean;
-  singleton?: boolean;
-}
-
 function isSingletonClass(
   container: Container,
   fullName: string,
-  { instantiate, singleton }: FactoryOptions
+  { instantiate, singleton }: TypeOptions
 ) {
   return (
     singleton !== false &&
@@ -329,7 +324,7 @@ function isSingletonClass(
 function isSingletonInstance(
   container: Container,
   fullName: string,
-  { instantiate, singleton }: FactoryOptions
+  { instantiate, singleton }: TypeOptions
 ) {
   return (
     singleton !== false &&
@@ -342,7 +337,7 @@ function isSingletonInstance(
 function isFactoryClass(
   container: Container,
   fullname: string,
-  { instantiate, singleton }: FactoryOptions
+  { instantiate, singleton }: TypeOptions
 ) {
   return (
     instantiate === false &&
@@ -354,7 +349,7 @@ function isFactoryClass(
 function isFactoryInstance(
   container: Container,
   fullName: string,
-  { instantiate, singleton }: FactoryOptions
+  { instantiate, singleton }: TypeOptions
 ) {
   return (
     instantiate !== false &&
@@ -367,7 +362,7 @@ function instantiateFactory(
   container: Container,
   normalizedName: string,
   fullName: string,
-  options: FactoryOptions
+  options: TypeOptions
 ) {
   let factoryManager = factoryFor(container, normalizedName, fullName);
 

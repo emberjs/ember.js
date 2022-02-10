@@ -1,9 +1,9 @@
 import { Factory } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
-
 export interface Injection {
   property: string;
   specifier: string;
@@ -46,6 +46,10 @@ export type NotResolver = {
 
 export type Resolve = <T, C>(name: string) => Factory<T, C> | undefined;
 
+export interface ResolverClass {
+  create(...args: unknown[]): Resolver;
+}
+
 export interface Resolver {
   knownForType?: (type: string) => KnownForTypeResult;
   lookupDescription?: (fullName: string) => string;
@@ -77,7 +81,7 @@ const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 */
 export default class Registry implements IRegistry {
   readonly _failSet: Set<string>;
-  resolver: Resolver | (Resolve & NotResolver) | null;
+  resolver: Resolver | null;
   readonly fallback: IRegistry | null;
   readonly registrations: Record<string, object>;
   _localLookupCache: Record<string, object>;
@@ -85,6 +89,8 @@ export default class Registry implements IRegistry {
   readonly _options: Record<string, TypeOptions>;
   readonly _resolveCache: Record<string, object>;
   readonly _typeOptions: Record<string, TypeOptions>;
+
+  set?: typeof set;
 
   constructor(options: RegistryOptions = {}) {
     this.fallback = options.fallback || null;
@@ -182,7 +188,9 @@ export default class Registry implements IRegistry {
    @param {Function} factory
    @param {Object} options
    */
-  register(fullName: string, factory: Factory<unknown>, options: TypeOptions = {}): void {
+  register(fullName: string, factory: object, options: TypeOptions & { instantiate: false }): void;
+  register(fullName: string, factory: Factory<unknown>, options?: TypeOptions): void;
+  register(fullName: string, factory: object, options: TypeOptions = {}): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 

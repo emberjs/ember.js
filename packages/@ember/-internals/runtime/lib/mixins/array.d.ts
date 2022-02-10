@@ -1,8 +1,10 @@
 import { Mixin } from '@ember/-internals/metal';
+import Enumerable from './enumerable';
+import MutableEnumerable from './mutable_enumerable';
 
 type Value<T, K extends string> = K extends keyof T ? T[K] : unknown;
 
-interface EmberArray<T> {
+interface EmberArray<T> extends Enumerable {
   length: number;
   objectAt(idx: number): T | undefined;
   objectsAt(indexes: number[]): Array<T | undefined>;
@@ -67,7 +69,7 @@ interface EmberArray<T> {
 declare const EmberArray: Mixin;
 export default EmberArray;
 
-interface MutableArray<T> extends EmberArray<T> {
+interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   replace(idx: number, amt: number, objects: T[]): void;
   clear(): this;
   insertAt(idx: number, object: T): this;

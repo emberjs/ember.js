@@ -1,6 +1,7 @@
 /**
 @module @ember/object
 */
+import ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
 import { isEmberArray, setProxy, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -159,7 +160,7 @@ _getProp({ unknownProperty() {} }, 1 as any);
 get({}, 'foo');
 get({}, 'foo.bar');
 
-let fakeProxy = {};
+let fakeProxy = {} as ProxyMixin<unknown>;
 setProxy(fakeProxy);
 
 track(() => _getProp({}, 'a'));

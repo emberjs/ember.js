@@ -1561,7 +1561,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     ```
 
     @method unshiftObjects
-    @param {Enumberable} objects the objects to add
+    @param {Enumerable} objects the objects to add
     @return {EmberArray} receiver
     @public
   */
