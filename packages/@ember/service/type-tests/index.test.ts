@@ -1,14 +1,18 @@
+import { Owner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import EmberObject from '@ember/object';
 import Service, { inject, service } from '@ember/service';
 import { expectTypeOf } from 'expect-type';
+
+// Good enough for tests
+let owner = {} as Owner;
 
 class MainService extends Service {}
 class FooService extends Service {}
 class BarService extends Service {}
 class BazService extends Service {}
 
-let mainService = new MainService();
+let mainService = new MainService(owner);
 
 expectTypeOf(mainService).toMatchTypeOf<FrameworkObject>();
 
@@ -23,7 +27,7 @@ class Foo extends EmberObject {
   @service('bar') declare bar: BarService;
   @service declare baz: BazService;
 }
-new Foo();
+new Foo(owner);
 
 const Legacy = EmberObject.extend({
   main: inject('main'),

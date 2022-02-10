@@ -1,11 +1,14 @@
+import { Owner } from '@ember/-internals/owner';
+import CoreObject from '@ember/object/core';
 import { expectTypeOf } from 'expect-type';
 
-import CoreObject from '@ember/object/core';
+// Good enough for tests
+let owner = {} as Owner;
 
 expectTypeOf(CoreObject.create()).toEqualTypeOf<CoreObject>();
 
 /** Newable tests */
-const co1 = new CoreObject();
+const co1 = new CoreObject(owner);
 
 expectTypeOf(co1.concatenatedProperties).toEqualTypeOf<string[]>();
 expectTypeOf(co1.isDestroyed).toEqualTypeOf<boolean>();

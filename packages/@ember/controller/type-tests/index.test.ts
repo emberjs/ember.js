@@ -1,13 +1,17 @@
+import { Owner } from '@ember/-internals/owner';
 import Controller, { inject } from '@ember/controller';
 
 import { expectTypeOf } from 'expect-type';
+
+// Good enough for tests
+let owner = {} as Owner;
 
 class Foo {}
 
 let foo = new Foo();
 let foo2 = new Foo();
 
-let controller = new Controller<Foo>();
+let controller = new Controller<Foo>(owner);
 
 expectTypeOf(controller).toEqualTypeOf<Controller<Foo>>();
 

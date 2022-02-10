@@ -1,15 +1,19 @@
 /* eslint-disable no-self-assign */
 
+import { Owner } from '@ember/-internals/owner';
 import { EmberLocation } from '@ember/-internals/routing';
 import Route from '@ember/routing/route';
 import RouterService, { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
 import { expectTypeOf } from 'expect-type';
 import { Transition } from 'router_js';
 
+// Good enough for tests
+let owner = {} as Owner;
+
 class Post {}
 class Comment {}
 
-let router = new RouterService<Route<Post | Comment>>();
+let router = new RouterService<Route<Post | Comment>>(owner);
 
 let aPost = new Post();
 let aComment = new Comment();
