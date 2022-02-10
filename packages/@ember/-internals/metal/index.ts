@@ -28,8 +28,9 @@ export {
 } from './lib/property_events';
 export { defineProperty } from './lib/properties';
 export {
-  Decorator,
+  ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
+  ElementDescriptor,
   isElementDescriptor,
   nativeDescDecorator,
   descriptorForDecorator,

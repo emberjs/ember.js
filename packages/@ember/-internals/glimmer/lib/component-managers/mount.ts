@@ -154,7 +154,7 @@ class MountManager
     let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', valueForRef(modelRef!));
+      controller.set('model', valueForRef(modelRef));
     }
   }
 }

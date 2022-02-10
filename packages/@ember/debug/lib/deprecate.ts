@@ -10,14 +10,20 @@ declare global {
   };
 }
 
-export type DeprecationStages = 'available' | 'enabled';
+interface Available {
+  available: string;
+}
+
+interface Enabled extends Available {
+  enabled: string;
+}
 
 export interface DeprecationOptions {
   id: string;
   until: string;
   url?: string;
   for: string;
-  since: Partial<Record<DeprecationStages, string>>;
+  since: Available | Enabled;
 }
 
 export type DeprecateFunc = (message: string, test?: boolean, options?: DeprecationOptions) => void;
@@ -72,7 +78,7 @@ let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
 
 if (DEBUG) {
-  registerHandler = function registerHandler(handler: HandlerCallback) {
+  registerHandler = function registerHandler(handler: HandlerCallback): void {
     genericRegisterHandler('deprecate', handler);
   };
 
@@ -95,7 +101,7 @@ if (DEBUG) {
     console.warn(`DEPRECATION: ${updatedMessage}`); // eslint-disable-line no-console
   });
 
-  let captureErrorForStack: () => Error;
+  let captureErrorForStack: () => unknown;
 
   if (new Error().stack) {
     captureErrorForStack = () => new Error();
@@ -115,24 +121,26 @@ if (DEBUG) {
       let error = captureErrorForStack();
       let stack;
 
-      if (error.stack) {
-        if (error['arguments']) {
-          // Chrome
-          stack = error.stack
-            .replace(/^\s+at\s+/gm, '')
-            .replace(/^([^(]+?)([\n$])/gm, '{anonymous}($1)$2')
-            .replace(/^Object.<anonymous>\s*\(([^)]+)\)/gm, '{anonymous}($1)')
-            .split('\n');
-          stack.shift();
-        } else {
-          // Firefox
-          stack = error.stack
-            .replace(/(?:\n@:0)?\s+$/m, '')
-            .replace(/^\(/gm, '{anonymous}(')
-            .split('\n');
-        }
+      if (error instanceof Error) {
+        if (error.stack) {
+          if (error['arguments']) {
+            // Chrome
+            stack = error.stack
+              .replace(/^\s+at\s+/gm, '')
+              .replace(/^([^(]+?)([\n$])/gm, '{anonymous}($1)$2')
+              .replace(/^Object.<anonymous>\s*\(([^)]+)\)/gm, '{anonymous}($1)')
+              .split('\n');
+            stack.shift();
+          } else {
+            // Firefox
+            stack = error.stack
+              .replace(/(?:\n@:0)?\s+$/m, '')
+              .replace(/^\(/gm, '{anonymous}(')
+              .split('\n');
+          }
 
-        stackStr = `\n    ${stack.slice(2).join('\n    ')}`;
+          stackStr = `\n    ${stack.slice(2).join('\n    ')}`;
+        }
       }
 
       let updatedMessage = formatMessage(message, options);
@@ -192,7 +200,11 @@ if (DEBUG) {
     @public
     @since 1.0.0
   */
-  deprecate = function deprecate(message, test, options) {
+  deprecate = function deprecate(
+    message: string,
+    test?: boolean,
+    options?: DeprecationOptions
+  ): void {
     assert(missingOptionsDeprecation, Boolean(options && (options.id || options.until)));
     assert(missingOptionsIdDeprecation, Boolean(options!.id));
     assert(missingOptionDeprecation(options!.id, 'until'), Boolean(options!.until));

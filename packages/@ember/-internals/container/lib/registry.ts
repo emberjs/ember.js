@@ -28,8 +28,8 @@ export interface IRegistry {
     fullName: string,
     optionName: K
   ): TypeOptions[K] | undefined;
-  getOptions(fullName: string): TypeOptions;
-  getOptionsForType(type: string): TypeOptions;
+  getOptions(fullName: string): TypeOptions | undefined;
+  getOptionsForType(type: string): TypeOptions | undefined;
   knownForType(type: string): KnownForTypeResult;
   makeToString<T, C>(factory: Factory<T, C>, fullName: string): string;
   normalizeFullName(fullName: string): string;
@@ -159,7 +159,7 @@ export default class Registry implements IRegistry {
    @param {Object} options
    @return {Container} created container
    */
-  container(options?: ContainerOptions) {
+  container(options?: ContainerOptions): Container {
     return new Container(this, options);
   }
 
@@ -355,7 +355,7 @@ export default class Registry implements IRegistry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName: string) {
+  has(fullName: string): boolean {
     if (!this.isValidFullName(fullName)) {
       return false;
     }
@@ -392,11 +392,11 @@ export default class Registry implements IRegistry {
    @param {String} type
    @param {Object} options
    */
-  optionsForType(type: string, options: TypeOptions) {
+  optionsForType(type: string, options: TypeOptions): void {
     this._typeOptions[type] = options;
   }
 
-  getOptionsForType(type: string): TypeOptions {
+  getOptionsForType(type: string): TypeOptions | undefined {
     let optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
@@ -410,12 +410,12 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName: string, options: TypeOptions) {
+  options(fullName: string, options: TypeOptions): void {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
 
-  getOptions(fullName: string): TypeOptions {
+  getOptions(fullName: string): TypeOptions | undefined {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
@@ -436,6 +436,7 @@ export default class Registry implements IRegistry {
     }
 
     let type = fullName.split(':')[0];
+    assert('has type', type); // split always will have at least one value
     options = this._typeOptions[type];
 
     if (options && options[optionName] !== undefined) {
@@ -459,7 +460,7 @@ export default class Registry implements IRegistry {
    @param {String} injectionName
    @deprecated
    */
-  injection(fullName: string, property: string) {
+  injection(fullName: string, property: string): void {
     deprecate(
       `As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject \`${property}\` on \`${fullName}\`, or look it up directly using the \`getOwner\` API.`,
       false,
@@ -469,6 +470,7 @@ export default class Registry implements IRegistry {
         url: 'https://deprecations.emberjs.com/v4.x#toc_implicit-injections',
         for: 'ember-source',
         since: {
+          available: '4.0.0',
           enabled: '4.0.0',
         },
       }
@@ -483,8 +485,7 @@ export default class Registry implements IRegistry {
   knownForType(type: string): KnownForTypeResult {
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
-    for (let index = 0; index < registeredNames.length; index++) {
-      let fullName = registeredNames[index];
+    for (let fullName of registeredNames) {
       let itemType = fullName.split(':')[0];
 
       if (itemType === type) {
@@ -521,7 +522,9 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (Object.prototype.hasOwnProperty.call(hash, key)) {
-        let { specifier } = hash[key];
+        let value = hash[key];
+        assert('has value', value);
+        let { specifier } = value;
         assert(
           `Expected a proper full name, given '${specifier}'`,
           this.isValidFullName(specifier)
@@ -542,9 +545,8 @@ if (DEBUG) {
       return;
     }
 
-    for (let i = 0; i < injections.length; i++) {
-      let { specifier } = injections[i];
-
+    for (let injection of injections) {
+      let { specifier } = injection;
       assert(`Attempting to inject an unknown injection: '${specifier}'`, this.has(specifier));
     }
   };
@@ -588,6 +590,8 @@ const privateNames: { [key: string]: string } = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
 export function privatize([fullName]: TemplateStringsArray): string {
+  assert('has a single string argument', arguments.length === 1 && fullName);
+
   let name = privateNames[fullName];
   if (name) {
     return name;

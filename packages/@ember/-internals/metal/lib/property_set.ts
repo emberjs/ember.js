@@ -5,7 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
-import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
+import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 
 interface ExtendedObject {
   isDestroyed?: boolean;
@@ -37,7 +37,7 @@ interface ExtendedObject {
   @return {Object} the passed value.
   @public
 */
-export function set<T = unknown>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
+export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -143,6 +143,6 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   @param {Object} value The value to set
   @public
 */
-export function trySet(root: object, path: string, value: any): any {
+export function trySet<T>(root: object, path: string, value: T): T | undefined {
   return set(root, path, value, true);
 }

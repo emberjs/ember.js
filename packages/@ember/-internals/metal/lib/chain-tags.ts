@@ -24,8 +24,7 @@ export function finishLazyChains(meta: Meta, key: string, value: any) {
   }
 
   if (isObject(value)) {
-    for (let i = 0; i < lazyTags.length; i++) {
-      let [tag, deps] = lazyTags[i];
+    for (let [tag, deps] of lazyTags) {
       updateTag(tag, getChainTagsForKey(value, deps as string, tagMetaFor(value), peekMeta(value)));
     }
   }
@@ -41,8 +40,8 @@ export function getChainTagsForKeys(
 ): Tag {
   let tags: Tag[] = [];
 
-  for (let i = 0; i < keys.length; i++) {
-    getChainTags(tags, obj, keys[i], tagMeta, meta);
+  for (let key of keys) {
+    getChainTags(tags, obj, key, tagMeta, meta);
   }
 
   return combine(tags);
@@ -129,7 +128,6 @@ function getChainTags(
 
           // If the key is an alias, we need to bootstrap it
           if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
-            // tslint:disable-next-line: no-unused-expression
             item[segment];
           }
         }
@@ -154,7 +152,6 @@ function getChainTags(
       // bootstrap the alias. This is because aliases, unlike other CPs, should
       // always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
-        // tslint:disable-next-line: no-unused-expression
         current[segment];
       }
       break;

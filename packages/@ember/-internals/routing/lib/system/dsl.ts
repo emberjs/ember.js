@@ -61,7 +61,6 @@ export default class DSLImpl implements DSL {
     this.options = options;
   }
 
-  /* eslint-disable no-dupe-class-members */
   route(name: string): void;
   route(name: string, callback: DSLCallback): void;
   route(name: string, options: RouteOptions): void;
@@ -78,7 +77,7 @@ export default class DSLImpl implements DSL {
     } else if (isCallback(_callback)) {
       assert('Unexpected arguments', arguments.length === 3);
       assert('Unexpected arguments', isOptions(_options));
-      options = _options as RouteOptions;
+      options = _options;
       callback = _callback;
     } else {
       options = _options || {};

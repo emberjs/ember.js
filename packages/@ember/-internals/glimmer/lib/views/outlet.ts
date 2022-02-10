@@ -1,4 +1,5 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import { Template } from '@glimmer/interfaces';
 import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
@@ -36,6 +37,7 @@ export default class OutletView {
   static create(options: any): OutletView {
     let { environment: _environment, application: namespace, template: templateFactory } = options;
     let owner = getOwner(options);
+    assert('OutletView is unexpectedly missing an owner', owner);
     let template = templateFactory(owner);
     return new OutletView(_environment, owner, template, namespace);
   }

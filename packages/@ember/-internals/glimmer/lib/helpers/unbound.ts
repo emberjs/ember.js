@@ -41,5 +41,5 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
     positional.length === 1 && Object.keys(named).length === 0
   );
 
-  return createUnboundRef(valueForRef(positional[0]), '(resurt of an `unbound` helper)');
+  return createUnboundRef(valueForRef(positional[0]!), '(result of an `unbound` helper)');
 });

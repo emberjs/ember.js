@@ -50,6 +50,7 @@ export function getRootViews(owner: Owner): View[] {
 
   Object.keys(registry).forEach((id) => {
     let view = registry[id];
+    assert('expected view', view);
 
     if (view.parentView === null) {
       rootViews.push(view);
@@ -118,6 +119,7 @@ const CHILD_VIEW_IDS: WeakMap<View, Set<string>> = new WeakMap();
 */
 export function getChildViews(view: View): View[] {
   let owner = getOwner(view);
+  assert('View is unexpectedly missing an owner', owner);
   let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
   return collectChildViews(view, registry);
 }
@@ -188,7 +190,7 @@ export function getViewRange(view: View): Range {
   @method getViewClientRects
   @param {Ember.View} view
 */
-export function getViewClientRects(view: View): ClientRectList | DOMRectList {
+export function getViewClientRects(view: View): DOMRectList {
   let range = getViewRange(view);
   return range.getClientRects();
 }
@@ -229,7 +231,7 @@ export const elMatches: typeof Element.prototype.matches | undefined =
 
 export function matches(el: Element, selector: string): boolean {
   assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
-  return elMatches!.call(el, selector);
+  return elMatches.call(el, selector);
 }
 
 export function contains(a: Node, b: Node): boolean {

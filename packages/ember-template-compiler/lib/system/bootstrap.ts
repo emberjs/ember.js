@@ -33,9 +33,7 @@ function bootstrap({ context, hasTemplate, setTemplate }: BootstrapOptions) {
 
   let elements = context.querySelectorAll(selector);
 
-  for (let i = 0; i < elements.length; i++) {
-    let script = elements[i];
-
+  for (let script of elements) {
     // Get the name of the script
     // First look for data-template-name attribute, then fall back to its
     // id if no name is found.

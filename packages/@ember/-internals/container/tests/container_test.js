@@ -608,7 +608,7 @@ moduleFor(
 
       assert.throws(() => {
         container.lookup('service:foo');
-      }, /Can not call `.lookup` after the owner has been destroyed/);
+      }, /Cannot call `.lookup` after the owner has been destroyed/);
     }
 
     [`@test assert when calling factoryFor after destroy on a container`](assert) {
@@ -626,7 +626,7 @@ moduleFor(
 
       assert.throws(() => {
         container.factoryFor('service:foo');
-      }, /Can not call `.factoryFor` after the owner has been destroyed/);
+      }, /Cannot call `.factoryFor` after the owner has been destroyed/);
     }
 
     // this is skipped until templates and the glimmer environment do not require `OWNER` to be
@@ -690,7 +690,7 @@ moduleFor(
 
       assert.throws(() => {
         Factory.create();
-      }, /Can not create new instances after the owner has been destroyed \(you attempted to create service:other\)/);
+      }, /Cannot create new instances after the owner has been destroyed \(you attempted to create service:other\)/);
     }
   }
 );

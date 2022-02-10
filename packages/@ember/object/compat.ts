@@ -1,11 +1,12 @@
 import { Meta } from '@ember/-internals/meta';
 import {
-  Decorator,
+  ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
   descriptorForProperty,
   isElementDescriptor,
   setClassicDecorator,
 } from '@ember/-internals/metal';
+import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
 import { assert } from '@ember/debug';
 import { consumeTag, tagFor, track, UpdatableTag, updateTag } from '@glimmer/validator';
 
@@ -121,23 +122,52 @@ let wrapGetterSetter = function (target: object, key: string, desc: PropertyDesc
   @return {PropertyDecorator} property decorator instance
  */
 export function dependentKeyCompat(
-  target: object,
-  key: string,
-  desc: PropertyDescriptor
+  target: ElementDescriptor[0],
+  key: ElementDescriptor[1],
+  desc: ElementDescriptor[2]
 ): PropertyDescriptor;
-export function dependentKeyCompat(desc: { get?: Function; set?: Function }): Decorator;
+export function dependentKeyCompat(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function dependentKeyCompat(
-  target: object | { get?: Function; set?: Function },
-  key?: string,
-  desc?: PropertyDescriptor
-) {
-  if (!isElementDescriptor([target, key, desc])) {
-    desc = target as PropertyDescriptor;
+  ...args: ElementDescriptor | [PropertyDescriptor]
+): PropertyDescriptor | ExtendedMethodDecorator {
+  if (isElementDescriptor(args)) {
+    let [target, key, desc] = args;
 
-    let decorator = function (
+    assert(
+      'The @dependentKeyCompat decorator must be applied to getters/setters when used in native classes',
+      desc != null && (typeof desc.get === 'function' || typeof desc.set === 'function')
+    );
+
+    return wrapGetterSetter(target, key, desc);
+  } else {
+    const desc = args[0];
+
+    assert(
+      'expected valid PropertyDescriptor',
+      ((value: unknown): value is PropertyDescriptor => {
+        if (value && typeof value === 'object') {
+          let cast = value as PropertyDescriptor;
+          return (
+            (cast.configurable === undefined ||
+              cast.configurable === false ||
+              cast.configurable === true) &&
+            (cast.enumerable === undefined ||
+              cast.enumerable === false ||
+              cast.enumerable === true) &&
+            (cast.writable === undefined || cast.writable === false || cast.writable === true) &&
+            (cast.get === undefined || typeof cast.get === 'function') &&
+            (cast.set === undefined || typeof cast.set === 'function')
+          );
+        }
+
+        return false;
+      })(desc)
+    );
+
+    let decorator: ExtendedMethodDecorator = function (
       target: object,
       key: string,
-      _desc: DecoratorPropertyDescriptor,
+      _desc?: DecoratorPropertyDescriptor,
       _meta?: Meta,
       isClassicDecorator?: boolean
     ) {
@@ -148,25 +178,16 @@ export function dependentKeyCompat(
 
       assert(
         'The dependentKeyCompat() decorator must be passed a getter or setter when used in classic classes',
-        desc !== null &&
-          typeof desc === 'object' &&
-          (typeof desc.get === 'function' || typeof desc.set === 'function')
+        typeof desc.get === 'function' || typeof desc.set === 'function'
       );
 
-      return wrapGetterSetter(target, key, desc!);
+      return wrapGetterSetter(target, key, desc);
     };
 
     setClassicDecorator(decorator);
 
-    return decorator as Decorator;
+    return decorator;
   }
-
-  assert(
-    'The @dependentKeyCompat decorator must be applied to getters/setters when used in native classes',
-    (desc !== null && typeof desc!.get === 'function') || typeof desc!.set === 'function'
-  );
-
-  return wrapGetterSetter(target, key!, desc!);
 }
 
-setClassicDecorator(dependentKeyCompat as Decorator);
+setClassicDecorator(dependentKeyCompat);

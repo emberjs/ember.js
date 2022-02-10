@@ -54,7 +54,7 @@ export default function setupQUnit() {
     expected?: RegExp | string,
     message?: string
   ) {
-    let error: Error;
+    let error: unknown;
     let prevOnError = Ember.onerror;
 
     Ember.onerror = (e: Error) => {

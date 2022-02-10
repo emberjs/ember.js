@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
+  reportUnusedDisableDirectives: true,
   extends: [
     'eslint:recommended',
     'plugin:import/errors',
@@ -12,13 +13,17 @@ module.exports = {
   ],
   plugins: ['ember-internal', 'import', 'qunit', 'disable-features'],
   rules: {
+    'no-console': 'error',
     'no-implicit-coercion': 'error',
     'no-new-wrappers': 'error',
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-var': 'error',
+
+    'qunit/no-assert-equal': 'off',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
+
     'disable-features/disable-async-await': 'error',
     'disable-features/disable-generator-functions': 'error',
   },
@@ -37,7 +42,7 @@ module.exports = {
     {
       files: ['*.ts'],
 
-      extends: ['plugin:@typescript-eslint/recommended', 'prettier/@typescript-eslint'],
+      extends: ['plugin:@typescript-eslint/recommended'],
 
       parserOptions: {
         sourceType: 'module',

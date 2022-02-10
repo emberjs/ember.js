@@ -3,8 +3,9 @@
 */
 
 /**
-  Dynamically look up a property on an object. The second argument to `{{get}}`
-  should have a string value, although it can be bound.
+  Dynamically look up a property on an object or an element in an array.
+  The second argument to `{{get}}` should have a string or number value,
+  although it can be bound.
 
   For example, these two usages are equivalent:
 
@@ -76,6 +77,19 @@
 
   Would allow the user to swap what fact is being displayed, and also edit
   that fact via a two-way mutable binding.
+
+  The `{{get}}` helper can also be used for array element access via index.
+  This would display the value of the first element in the array `this.names`:
+
+  ```handlebars
+  {{get this.names 0}}
+  ```
+
+  Array element access also works with a dynamic second argument:
+
+  ```handlebars
+  {{get this.names @index}}
+  ```
 
   @public
   @method get

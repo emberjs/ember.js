@@ -47,8 +47,7 @@ export function findNamespaces(): void {
   }
   let lookup = context.lookup;
   let keys = Object.keys(lookup);
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
+  for (let key of keys) {
     // Only process entities that start with uppercase A-Z
     if (!isUppercase(key.charCodeAt(0))) {
       continue;
@@ -81,8 +80,8 @@ export function processAllNamespaces(): void {
   if (unprocessedNamespaces || unprocessedMixins) {
     let namespaces = NAMESPACES;
 
-    for (let i = 0; i < namespaces.length; i++) {
-      processNamespace(namespaces[i]);
+    for (let namespace of namespaces) {
+      processNamespace(namespace);
     }
 
     unprocessedMixins = false;
@@ -153,7 +152,7 @@ function tryIsNamespace(lookup: { [k: string]: any }, prop: string): Namespace |
     let obj = lookup[prop];
     return (
       ((obj !== null && typeof obj === 'object') || typeof obj === 'function') &&
-      (obj as any).isNamespace &&
+      obj.isNamespace &&
       obj
     );
   } catch (e) {

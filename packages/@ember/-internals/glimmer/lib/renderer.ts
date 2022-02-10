@@ -61,7 +61,6 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 
   get(key: 'outletState'): Reference<OutletState | undefined> {
-    // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
@@ -70,7 +69,6 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 
   set(key: 'outletState', value: Reference<OutletState | undefined>) {
-    // tslint:disable-next-line:max-line-length
     assert(
       `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
@@ -96,6 +94,7 @@ function errorLoopTransaction(fn: () => void) {
           // Noop the function so that we won't keep calling it and causing
           // infinite looping failures;
           fn = () => {
+            // eslint-disable-next-line no-console
             console.warn(
               'Attempted to rerender, but the Ember application has had an unrecoverable error occur during render. You should reload the application after fixing the cause of the error.'
             );
@@ -206,8 +205,8 @@ function deregister(renderer: Renderer): void {
 }
 
 function loopBegin(): void {
-  for (let i = 0; i < renderers.length; i++) {
-    renderers[i]._scheduleRevalidate();
+  for (let renderer of renderers) {
+    renderer._scheduleRevalidate();
   }
 }
 
@@ -250,12 +249,12 @@ function resolveRenderPromise() {
 
 let loops = 0;
 function loopEnd() {
-  for (let i = 0; i < renderers.length; i++) {
-    if (!renderers[i]._isValid()) {
+  for (let renderer of renderers) {
+    if (!renderer._isValid()) {
       if (loops > ENV._RERENDER_LOOP_LIMIT) {
         loops = 0;
         // TODO: do something better
-        renderers[i].destroy();
+        renderer.destroy();
         throw new Error('infinite rendering invalidation detected');
       }
       loops++;
@@ -293,15 +292,16 @@ export class Renderer {
 
   static create(props: { _viewRegistry: any }): Renderer {
     let { _viewRegistry } = props;
-    let document = getOwner(props).lookup('service:-document') as SimpleDocument;
-    let env = getOwner(props).lookup('-environment:main') as {
+    let owner = getOwner(props);
+    assert('Renderer is unexpectedly missing an owner', owner);
+    let document = owner.lookup('service:-document') as SimpleDocument;
+    let env = owner.lookup('-environment:main') as {
       isInteractive: boolean;
       hasDOM: boolean;
     };
-    let owner = getOwner(props);
     let rootTemplate = owner.lookup(P`template:-root`) as TemplateFactory;
     let builder = owner.lookup('service:-dom-builder') as IBuilder;
-    return new this(getOwner(props), document, env, rootTemplate, _viewRegistry, builder);
+    return new this(owner, document, env, rootTemplate, _viewRegistry, builder);
   }
 
   constructor(
@@ -433,6 +433,7 @@ export class Renderer {
     let i = this._roots.length;
     while (i--) {
       let root = roots[i];
+      assert('has root', root);
       if (root.isFor(view)) {
         root.destroy();
         roots.splice(i, 1);
@@ -500,6 +501,7 @@ export class Renderer {
         // each root is processed
         for (let i = 0; i < roots.length; i++) {
           let root = roots[i];
+          assert('has root', root);
 
           if (root.destroyed) {
             // add to the list of roots to be removed
@@ -561,8 +563,7 @@ export class Renderer {
 
   _clearAllRoots(): void {
     let roots = this._roots;
-    for (let i = 0; i < roots.length; i++) {
-      let root = roots[i];
+    for (let root of roots) {
       root.destroy();
     }
 

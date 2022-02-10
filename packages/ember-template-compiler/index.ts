@@ -15,7 +15,6 @@ declare global {
 export let _Ember: unknown;
 
 try {
-  // tslint:disable-next-line: no-require-imports
   _Ember = require('ember');
 } catch (e) {
   _Ember = {

@@ -1,4 +1,4 @@
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { EMBER_ROUTING_ROUTER_SERVICE_REFRESH } from '@ember/canary-features';
@@ -6,9 +6,11 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
+import { ModelFor, Transition } from 'router_js';
 import Route from '../system/route';
-import EmberRouter, { QueryParam } from '../system/router';
-import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
+import EmberRouter from '../system/router';
+import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';
+import { extractRouteArgs, resemblesURL, RouteArgs, RouteOptions, shallowEqual } from '../utils';
 
 const ROUTER = (symbol('ROUTER') as unknown) as string;
 
@@ -51,19 +53,23 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-export default class RouterService extends Service {
-  get _router(): EmberRouter {
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface RouterService<R extends Route> extends Evented {}
+class RouterService<R extends Route> extends Service.extend(Evented) {
+  get _router(): EmberRouter<R> {
     let router = this[ROUTER];
     if (router !== undefined) {
       return router;
     }
-    const owner = getOwner(this) as Owner;
-    router = owner.lookup('router:main') as EmberRouter;
+    let owner = getOwner(this);
+    assert('RouterService is unexpectedly missing an owner', owner);
+
+    router = owner.lookup('router:main') as EmberRouter<R>;
     return (this[ROUTER] = router);
   }
 
   willDestroy() {
-    super.willDestroy(...arguments);
+    super.willDestroy();
 
     this[ROUTER] = null;
   }
@@ -71,8 +77,6 @@ export default class RouterService extends Service {
   /**
      Transition the application into another route. The route may
      be either a single route or route path:
-
-     See [transitionTo](/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
      Calling `transitionTo` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `transitionTo` on a route or `transitionToRoute` on a controller.
@@ -115,11 +119,11 @@ export default class RouterService extends Service {
        attempted transition
      @public
    */
-  transitionTo(...args: (string | object)[]) {
+  transitionTo(...args: RouteArgs<R>): Transition {
     if (resemblesURL(args[0])) {
       // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
       // in 3.6+, so it can be removed when TS is upgraded.
-      return this._router._doURLTransition('transitionTo', args[0] as string);
+      return this._router._doURLTransition('transitionTo', args[0]);
     }
 
     let { routeName, models, queryParams } = extractRouteArgs(args);
@@ -136,8 +140,6 @@ export default class RouterService extends Service {
      When the user clicks the "back" button in the browser, there will be fewer steps.
      This is most commonly used to manage redirects in a way that does not cause confusing additions
      to the user's browsing history.
-
-     See [replaceWith](/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
      Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `replaceWith` on a route.
@@ -167,8 +169,8 @@ export default class RouterService extends Service {
        attempted transition
      @public
    */
-  replaceWith(/* routeNameOrUrl, ...models, options */) {
-    return this.transitionTo(...arguments).method('replace');
+  replaceWith(...args: RouteArgs<R>): Transition {
+    return this.transitionTo(...args).method('replace');
   }
 
   /**
@@ -233,14 +235,13 @@ export default class RouterService extends Service {
 
      @method urlFor
      @param {String} routeName the name of the route
-     @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route.
+     @param {...Object} models the model(s) for the route.
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {String} the string representing the generated URL
      @public
    */
-  urlFor(routeName: string, ...args: any[]) {
+  urlFor(routeName: string, ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]) {
     this._router.setupRouter();
     return this._router.generate(routeName, ...args);
   }
@@ -292,7 +293,7 @@ export default class RouterService extends Service {
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
-  isActive(...args: any[]) {
+  isActive(...args: RouteArgs<R>) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
@@ -329,10 +330,7 @@ export default class RouterService extends Service {
         // *do not* account for this being `undefined`.
         routeName as string,
         models,
-        // UNSAFE: downstream consumers treat this as `QueryParam`, which the
-        // type system here *correctly* reports as incorrect, because it may be
-        // just an empty object.
-        queryParams as QueryParam,
+        queryParams,
         true /* fromRouterService */
       );
 
@@ -370,9 +368,10 @@ export default class RouterService extends Service {
 
       @method recognize
       @param {String} url
+      @return {RouteInfo | null}
       @public
     */
-  recognize(url: string) {
+  recognize(url: string): RouteInfo | null {
     assert(
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
       url.indexOf(this.rootURL) === 0
@@ -391,9 +390,10 @@ export default class RouterService extends Service {
 
       @method recognizeAndLoad
       @param {String} url
+      @return {RouteInfo}
       @public
    */
-  recognizeAndLoad(url: string) {
+  recognizeAndLoad(url: string): Promise<RouteInfoWithAttributes> {
     assert(
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
       url.indexOf(this.rootURL) === 0
@@ -480,99 +480,103 @@ export default class RouterService extends Service {
     @param {Transition} transition
     @public
   */
-}
 
-if (EMBER_ROUTING_ROUTER_SERVICE_REFRESH) {
-  RouterService.reopen({
-    /**
-     * Refreshes all currently active routes, doing a full transition.
-     * If a route name is provided and refers to a currently active route,
-     * it will refresh only that route and its descendents.
-     * Returns a promise that will be resolved once the refresh is complete.
-     * All resetController, beforeModel, model, afterModel, redirect, and setupController
-     * hooks will be called again. You will get new data from the model hook.
-     *
-     * @method refresh
-     * @param {String} [routeName] the route to refresh (along with all child routes)
-     * @return Transition
-     * @category EMBER_ROUTING_ROUTER_SERVICE_REFRESH
-     * @public
-     */
-    refresh(pivotRouteName?: string) {
-      if (!pivotRouteName) {
-        return this._router._routerMicrolib.refresh();
-      }
-
-      assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
-      assert(
-        `The route "${pivotRouteName}" is currently not active`,
-        this.isActive(pivotRouteName)
-      );
-
-      let pivotRoute = getOwner(this).lookup(`route:${pivotRouteName}`) as Route;
-
-      return this._router._routerMicrolib.refresh(pivotRoute);
-    },
-  });
-}
-
-RouterService.reopen(Evented, {
+  // Canary features
   /**
-     Name of the current route.
-
-     This property represents the logical name of the route,
-     which is comma separated.
-     For the following router:
-
-     ```app/router.js
-     Router.map(function() {
-       this.route('about');
-       this.route('blog', function () {
-         this.route('post', { path: ':post_id' });
-       });
-     });
-     ```
-
-     It will return:
-
-     * `index` when you visit `/`
-     * `about` when you visit `/about`
-     * `blog.index` when you visit `/blog`
-     * `blog.post` when you visit `/blog/some-post-id`
-
-     @property currentRouteName
-     @type String
-     @public
+   * Refreshes all currently active routes, doing a full transition.
+   * If a route name is provided and refers to a currently active route,
+   * it will refresh only that route and its descendents.
+   * Returns a promise that will be resolved once the refresh is complete.
+   * All resetController, beforeModel, model, afterModel, redirect, and setupController
+   * hooks will be called again. You will get new data from the model hook.
+   *
+   * @method refresh
+   * @param {String} [routeName] the route to refresh (along with all child routes)
+   * @return Transition
+   * @category EMBER_ROUTING_ROUTER_SERVICE_REFRESH
+   * @public
    */
-  currentRouteName: readOnly('_router.currentRouteName'),
+  refresh = EMBER_ROUTING_ROUTER_SERVICE_REFRESH
+    ? function (this: RouterService<Route>, pivotRouteName?: string): Transition {
+        if (!pivotRouteName) {
+          return this._router._routerMicrolib.refresh();
+        }
+
+        assert(
+          `The route "${pivotRouteName}" was not found`,
+          this._router.hasRoute(pivotRouteName)
+        );
+        assert(
+          `The route "${pivotRouteName}" is currently not active`,
+          this.isActive(pivotRouteName)
+        );
+
+        let owner = getOwner(this);
+        assert('RouterService is unexpectedly missing an owner', owner);
+        let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
+
+        return this._router._routerMicrolib.refresh(pivotRoute);
+      }
+    : undefined;
 
   /**
-     Current URL for the application.
+   Name of the current route.
 
-    This property represents the URL path for this route.
+    This property represents the logical name of the route,
+    which is comma separated.
     For the following router:
 
-     ```app/router.js
-     Router.map(function() {
-       this.route('about');
-       this.route('blog', function () {
-         this.route('post', { path: ':post_id' });
-       });
-     });
-     ```
+    ```app/router.js
+    Router.map(function() {
+      this.route('about');
+      this.route('blog', function () {
+        this.route('post', { path: ':post_id' });
+      });
+    });
+    ```
 
-     It will return:
+    It will return:
 
-     * `/` when you visit `/`
-     * `/about` when you visit `/about`
-     * `/blog` when you visit `/blog`
-     * `/blog/some-post-id` when you visit `/blog/some-post-id`
+    * `index` when you visit `/`
+    * `about` when you visit `/about`
+    * `blog.index` when you visit `/blog`
+    * `blog.post` when you visit `/blog/some-post-id`
 
-     @property currentURL
-     @type String
-     @public
-   */
-  currentURL: readOnly('_router.currentURL'),
+    @property currentRouteName
+    @type {String | null}
+    @public
+  */
+  @readOnly('_router.currentRouteName')
+  declare readonly currentRouteName: this['_router']['currentRouteName'];
+
+  /**
+   Current URL for the application.
+
+  This property represents the URL path for this route.
+  For the following router:
+
+    ```app/router.js
+    Router.map(function() {
+      this.route('about');
+      this.route('blog', function () {
+        this.route('post', { path: ':post_id' });
+      });
+    });
+    ```
+
+    It will return:
+
+    * `/` when you visit `/`
+    * `/about` when you visit `/about`
+    * `/blog` when you visit `/blog`
+    * `/blog/some-post-id` when you visit `/blog/some-post-id`
+
+    @property currentURL
+    @type String
+    @public
+  */
+  @readOnly('_router.currentURL')
+  declare readonly currentURL: this['_router']['currentURL'];
 
   /**
     The `location` property returns what implementation of the `location` API
@@ -611,7 +615,8 @@ RouterService.reopen(Evented, {
     @see {Location}
     @public
   */
-  location: readOnly('_router.location'),
+  @readOnly('_router.location')
+  declare readonly location: this['_router']['location'];
 
   /**
     The `rootURL` property represents the URL of the root of
@@ -640,7 +645,8 @@ RouterService.reopen(Evented, {
     @default '/'
     @public
   */
-  rootURL: readOnly('_router.rootURL'),
+  @readOnly('_router.rootURL')
+  declare readonly rootURL: this['_router']['rootURL'];
 
   /**
     The `currentRoute` property contains metadata about the current leaf route.
@@ -666,9 +672,12 @@ RouterService.reopen(Evented, {
       });
     ```
 
-     @property currentRoute
-     @type RouteInfo
-     @public
-   */
-  currentRoute: readOnly('_router.currentRoute'),
-});
+    @property currentRoute
+    @type RouteInfo
+    @public
+  */
+  @readOnly('_router.currentRoute')
+  declare readonly currentRoute: this['_router']['currentRoute'];
+}
+
+export { RouterService as default, RouteInfo, RouteInfoWithAttributes };

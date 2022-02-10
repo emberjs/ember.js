@@ -1,4 +1,4 @@
-import { EmberArray } from '@ember/-internals/utils';
+import { Array as EmberArray, MutableArray, NativeArray } from '@ember/-internals/runtime';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
 
@@ -17,7 +17,7 @@ export function objectAt<T>(array: T[] | EmberArray<T>, index: number): T | unde
 }
 
 export function replace<T>(
-  array: T[] | EmberArray<T>,
+  array: NativeArray<T> | MutableArray<T>,
   start: number,
   deleteCount: number,
   items = EMPTY_ARRAY
@@ -34,7 +34,7 @@ const CHUNK_SIZE = 60000;
 // To avoid overflowing the stack, we splice up to CHUNK_SIZE items at a time.
 // See https://code.google.com/p/chromium/issues/detail?id=56588 for more details.
 export function replaceInNativeArray<T>(
-  array: T[] | EmberArray<T>,
+  array: T[] | NativeArray<T>,
   start: number,
   deleteCount: number,
   items: ReadonlyArray<T>

@@ -4,10 +4,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry } from './registry';
 
-declare global {
-  export function gc(): void;
-}
-
 interface LeakTracking {
   hasContainers(): boolean;
   reset(): void;
@@ -31,6 +27,7 @@ if (DEBUG) {
         containers = new WeakSet<Container>();
         return {
           hasContainers() {
+            // @ts-expect-error We just checked if it is definied
             gc();
             return GetWeakSetValues(containers).length > 0;
           },
@@ -148,7 +145,7 @@ export default class Container {
    */
   lookup(fullName: string, options: LookupOptions): any {
     if (this.isDestroyed) {
-      throw new Error(`Can not call \`.lookup\` after the owner has been destroyed`);
+      throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
@@ -215,7 +212,7 @@ export default class Container {
    */
   factoryFor<T, C>(fullName: string): Factory<T, C> | undefined {
     if (this.isDestroyed) {
-      throw new Error(`Can not call \`.factoryFor\` after the owner has been destroyed`);
+      throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
     let normalizedName = this.registry.normalize(fullName);
 
@@ -410,9 +407,9 @@ function destroyDestroyables(container: Container): void {
   let cache = container.cache;
   let keys = Object.keys(cache);
 
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
+  for (let key of keys) {
     let value = cache[key];
+    assert('has cached value', value);
 
     if (value.destroy) {
       value.destroy();
@@ -461,7 +458,7 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
   obj[INIT_FACTORY] = factory;
 }
 
-class FactoryManager<T, C> {
+export class FactoryManager<T, C> {
   readonly container: Container;
   readonly owner: Owner | null;
   readonly class: Factory<T, C> & DebugFactory<T, C>;
@@ -503,7 +500,7 @@ class FactoryManager<T, C> {
 
     if (container.isDestroyed) {
       throw new Error(
-        `Can not create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
+        `Cannot create new instances after the owner has been destroyed (you attempted to create ${this.fullName})`
       );
     }
 

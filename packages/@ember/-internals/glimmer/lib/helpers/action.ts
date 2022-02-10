@@ -290,11 +290,12 @@ export default internalHelper(
     // pos[1] is the action name or function
     // Anything else is an action argument.
     let [context, action, ...restArgs] = positional;
+    assert('hash position arguments', context && action);
 
     let debugKey: string = action.debugLabel!;
 
-    let target = 'target' in named ? named.target : context;
-    let processArgs = makeArgsProcessor('value' in named && named.value, restArgs);
+    let target = 'target' in named && named.target ? named.target : context;
+    let processArgs = makeArgsProcessor(('value' in named && named.value) || false, restArgs);
 
     let fn: Function;
 
@@ -410,14 +411,13 @@ function makeClosureAction(
 
   if (typeofAction === 'string') {
     self = target;
-    fn = target.actions! && target.actions![action as string];
+    fn = (target.actions && target.actions[action as string])!;
 
     assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
   } else if (typeofAction === 'function') {
     self = context;
     fn = action as Function;
   } else {
-    // tslint:disable-next-line:max-line-length
     assert(
       `An action could not be made for \`${
         debugKey || action

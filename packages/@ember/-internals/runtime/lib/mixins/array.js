@@ -1101,6 +1101,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object} The reduced value.
     @public
   */
+  // FIXME: When called without initialValue, behavior does not match native behavior
   reduce(callback, initialValue) {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 

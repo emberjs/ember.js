@@ -1,48 +1,79 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { deprecate } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
-import Router, { STATE_SYMBOL } from 'router_js';
+import Router, { STATE_SYMBOL, InternalRouteInfo, ModelFor } from 'router_js';
 import Route from './system/route';
-import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
+import EmberRouter from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function extractRouteArgs(args: unknown[]) {
-  args = args.slice();
-  let possibleQueryParams = args[args.length - 1];
+export type ControllerQueryParam =
+  | string
+  | Record<string, string>
+  | { as?: string; scope?: string };
+type ExpandedControllerQueryParam = { as: string | null; scope: string };
 
-  let queryParams;
-  if (
-    possibleQueryParams &&
-    Object.prototype.hasOwnProperty.call(possibleQueryParams, 'queryParams')
-  ) {
-    // SAFETY: this cast is safe because we have just checked whether
-    // `possibleQueryParams` -- defined as the last item in args -- both exists
-    // and has the property `queryParams`. If either of these invariants change,
-    // ***this is unsafe and should be changed***.
-    queryParams = (args.pop() as { queryParams: object }).queryParams;
+export type NamedRouteArgs<R extends Route> =
+  | [routeNameOrUrl: string, ...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
+  | [routeNameOrUrl: string, ...models: ModelFor<R>[]];
+
+export type UnnamedRouteArgs<R extends Route> =
+  | [...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
+  | [...models: ModelFor<R>[]]
+  | [options: RouteOptions];
+
+export type RouteArgs<R extends Route> = NamedRouteArgs<R> | UnnamedRouteArgs<R>;
+
+type ExtractedArgs<R extends Route> = {
+  routeName: string | undefined;
+  models: ModelFor<R>[];
+  queryParams: Record<string, unknown>;
+};
+
+export type RouteOptions = { queryParams: Record<string, unknown> };
+
+export function extractRouteArgs<R extends Route>(args: RouteArgs<R>): ExtractedArgs<R> {
+  // SAFETY: This should just be the same thing
+  args = args.slice() as RouteArgs<R>;
+
+  let possibleOptions = args[args.length - 1];
+
+  let queryParams: Record<string, unknown>;
+  if (isRouteOptions(possibleOptions)) {
+    args.pop(); // Remove options
+    queryParams = possibleOptions.queryParams;
   } else {
     queryParams = {};
   }
 
-  // UNSAFE: these are simply assumed as the existing behavior of the system.
-  // However, this could break if upstream refactors change it, and the types
-  // here would not be able to tell us; we would lie to everything downstream.
-  let routeName = args.shift() as string | undefined;
-  let models = args as {}[];
+  let routeName;
+
+  if (typeof args[0] === 'string') {
+    routeName = args.shift();
+    // We just checked this!
+    assert('routeName is a string', typeof routeName === 'string');
+  }
+
+  // SAFTEY: We removed the name and options if they existed, only models left.
+  let models = args as ModelFor<R>[];
 
   return { routeName, models, queryParams };
 }
 
-export function getActiveTargetName(router: Router<Route>) {
+export function getActiveTargetName(router: Router<Route>): string {
   let routeInfos = router.activeTransition
     ? router.activeTransition[STATE_SYMBOL]!.routeInfos
     : router.state!.routeInfos;
-  return routeInfos[routeInfos.length - 1].name;
+  let lastRouteInfo = routeInfos[routeInfos.length - 1];
+  assert('has last route info', lastRouteInfo);
+  return lastRouteInfo.name;
 }
 
-export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInfo[]) {
+export function stashParamNames<R extends Route>(
+  router: EmberRouter<R>,
+  routeInfos: InternalRouteInfo<R>[]
+): void {
   if (routeInfos['_namesStashed']) {
     return;
   }
@@ -51,12 +82,15 @@ export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInf
   // keeps separate a routeInfo's list of parameter names depending
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
-  let targetRouteName = routeInfos[routeInfos.length - 1].name;
+  let routeInfo = routeInfos[routeInfos.length - 1];
+  assert('has route info', routeInfo);
+  let targetRouteName = routeInfo.name;
   let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
-  let dynamicParent: PrivateRouteInfo;
+  let dynamicParent: InternalRouteInfo<R>;
 
   for (let i = 0; i < routeInfos.length; ++i) {
     let routeInfo = routeInfos[i];
+    assert('has route info', routeInfo);
     let names = recogHandlers[i].names;
 
     if (names.length) {
@@ -66,7 +100,11 @@ export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInf
     routeInfo['_names'] = names;
 
     let route = routeInfo.route!;
-    route._stashNames(routeInfo, dynamicParent!);
+    // SAFETY: This cast should be idential. I don't understand why it is needed.
+    route._stashNames(
+      routeInfo as InternalRouteInfo<NonNullable<R>>,
+      dynamicParent! as InternalRouteInfo<NonNullable<R>>
+    );
   }
 
   routeInfos['_namesStashed'] = true;
@@ -99,10 +137,9 @@ function _calculateCacheValuePrefix(prefix: string, part: string) {
 /*
   Stolen from Controller
 */
-export function calculateCacheKey(prefix: string, parts: string[] = [], values: {}) {
+export function calculateCacheKey(prefix: string, parts: string[] = [], values: {} | null): string {
   let suffixes = '';
-  for (let i = 0; i < parts.length; ++i) {
-    let part = parts[i];
+  for (let part of parts) {
     let cacheValuePrefix = _calculateCacheValuePrefix(prefix, part);
     let value;
     if (values) {
@@ -151,17 +188,20 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
   This helper normalizes all three possible styles into the
   'Array of fully defined objects' style.
 */
-export function normalizeControllerQueryParams(queryParams: QueryParam[]) {
-  let qpMap = {};
+export function normalizeControllerQueryParams(queryParams: ControllerQueryParam[]) {
+  let qpMap: Record<string, ExpandedControllerQueryParam> = {};
 
-  for (let i = 0; i < queryParams.length; ++i) {
-    accumulateQueryParamDescriptors(queryParams[i], qpMap);
+  for (let queryParam of queryParams) {
+    accumulateQueryParamDescriptors(queryParam, qpMap);
   }
 
   return qpMap;
 }
 
-function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
+function accumulateQueryParamDescriptors(
+  _desc: ControllerQueryParam,
+  accum: Record<string, ExpandedControllerQueryParam>
+) {
   let desc: {} = _desc;
   let tmp: {};
   if (typeof desc === 'string') {
@@ -180,10 +220,10 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
       singleDesc = { as: singleDesc };
     }
 
-    tmp = accum[key] || { as: null, scope: 'model' };
-    Object.assign(tmp, singleDesc);
+    let val = accum[key] || { as: null, scope: 'model' };
+    Object.assign(val, singleDesc);
 
-    accum[key] = tmp;
+    accum[key] = val;
   }
 }
 
@@ -201,13 +241,19 @@ export function resemblesURL(str: unknown): str is string {
 
   @private
 */
-export function prefixRouteNameArg(route: Route, args: any[]) {
-  let routeName = args[0];
+export function prefixRouteNameArg<T extends NamedRouteArgs<Route> | UnnamedRouteArgs<Route>>(
+  route: Route,
+  args: T
+): T {
+  let routeName: string;
   let owner = getOwner(route);
+  assert('Route is unexpectedly missing an owner', owner);
+
   let prefix = owner.mountPoint;
 
   // only alter the routeName if it's actually referencing a route.
-  if (owner.routable && typeof routeName === 'string') {
+  if (owner.routable && typeof args[0] === 'string') {
+    routeName = args[0];
     if (resemblesURL(routeName)) {
       throw new EmberError(
         'Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.'
@@ -221,7 +267,7 @@ export function prefixRouteNameArg(route: Route, args: any[]) {
   return args;
 }
 
-export function shallowEqual(a: {}, b: {}) {
+export function shallowEqual(a: {}, b: {}): boolean {
   let k;
   let aCount = 0;
   let bCount = 0;
@@ -243,7 +289,7 @@ export function shallowEqual(a: {}, b: {}) {
   return aCount === bCount;
 }
 
-export function deprecateTransitionMethods(frameworkClass: string, methodName: string) {
+export function deprecateTransitionMethods(frameworkClass: string, methodName: string): void {
   deprecate(
     `Calling ${methodName} on a ${frameworkClass} is deprecated. Use the RouterService instead.`,
     false,
@@ -251,10 +297,21 @@ export function deprecateTransitionMethods(frameworkClass: string, methodName: s
       id: 'routing.transition-methods',
       for: 'ember-source',
       since: {
+        available: '3.26.0',
         enabled: '3.26.0',
       },
       until: '5.0.0',
       url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
     }
   );
+}
+
+function isRouteOptions(value: unknown): value is RouteOptions {
+  if (value && typeof value === 'object') {
+    let qps = (value as RouteOptions).queryParams;
+    if (qps && typeof qps === 'object') {
+      return Object.keys(qps).every((k) => typeof k === 'string');
+    }
+  }
+  return false;
 }

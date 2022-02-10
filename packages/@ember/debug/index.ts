@@ -194,7 +194,7 @@ if (DEBUG) {
     } else {
       console.log(`DEBUG: ${message}`);
     }
-    /* eslint-ensable no-console */
+    /* eslint-enable no-console */
   });
 
   /**

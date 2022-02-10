@@ -4,11 +4,13 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-
+const setupTestEnvironment = require('../helpers/setup-test-environment');
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
+const enableOctane = setupTestEnvironment.enableOctane;
 describe('Blueprint: component-class-addon', function () {
+  enableOctane();
   setupTestHooks(this);
 
   describe('in addon', function () {

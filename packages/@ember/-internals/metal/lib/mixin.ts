@@ -19,6 +19,7 @@ import {
   ComputedDecorator,
   ComputedProperty,
   ComputedPropertyGetter,
+  ComputedPropertyObj,
   ComputedPropertySetter,
 } from './computed';
 import {
@@ -38,10 +39,7 @@ const { isArray } = Array;
 
 function extractAccessors(properties: { [key: string]: any } | undefined) {
   if (properties !== undefined) {
-    let keys = Object.keys(properties);
-
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i];
+    for (let key of Object.keys(properties)) {
       let desc = Object.getOwnPropertyDescriptor(properties, key)!;
 
       if (desc.get !== undefined || desc.set !== undefined) {
@@ -130,13 +128,14 @@ function giveDecoratorSuper(
       {
         get,
         set,
-      },
+      } as ComputedPropertyObj,
     ]);
 
     newProperty._readOnly = property._readOnly;
     newProperty._meta = property._meta;
     newProperty.enumerable = property.enumerable;
 
+    // SAFETY: We passed in the impl for this class
     return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
   }
 
@@ -204,8 +203,7 @@ function applyMergedProperties(
 
   let props = Object.keys(value);
 
-  for (let i = 0; i < props.length; i++) {
-    let prop = props[i];
+  for (let prop of props) {
     let propValue = value[prop];
 
     if (typeof propValue === 'function') {
@@ -295,8 +293,7 @@ function mergeProps(
 
   let propKeys = Object.keys(props);
 
-  for (let i = 0; i < propKeys.length; i++) {
-    let key = propKeys[i];
+  for (let key of propKeys) {
     let value = props[key];
 
     if (value === undefined) continue;
@@ -372,16 +369,16 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   if (observers !== undefined) {
     let updateObserver = add ? addObserver : removeObserver;
 
-    for (let i = 0; i < observers.paths.length; i++) {
-      updateObserver(obj, observers.paths[i], null, key, observers.sync);
+    for (let path of observers.paths) {
+      updateObserver(obj, path, null, key, observers.sync);
     }
   }
 
   if (listeners !== undefined) {
     let updateListener = add ? addListener : removeListener;
 
-    for (let i = 0; i < listeners.length; i++) {
-      updateListener(obj, listeners[i], null, key);
+    for (let listener of listeners) {
+      updateListener(obj, listener, null, key);
     }
   }
 }
@@ -404,8 +401,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], _hideKe
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta, descs, values, obj, keys, keysWithSuper);
 
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
+  for (let key of keys) {
     let value = values[key];
     let desc = descs[key];
 
@@ -524,13 +520,22 @@ const MIXINS = new _WeakSet();
   @public
 */
 export default class Mixin {
+  /** @internal */
   declare static _disableDebugSeal?: boolean;
 
+  /** @internal */
   mixins: Mixin[] | undefined;
+
+  /** @internal */
   properties: { [key: string]: any } | undefined;
+
+  /** @internal */
   ownerConstructor: any;
+
+  /** @internal */
   _without: any[] | undefined;
 
+  /** @internal */
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     MIXINS.add(this);
     this.properties = extractAccessors(properties);
@@ -571,6 +576,7 @@ export default class Mixin {
 
   // returns the mixins currently applied to the specified object
   // TODO: Make `mixin`
+  /** @internal */
   static mixins(obj: object): Mixin[] {
     let meta = peekMeta(obj);
     let ret: Mixin[] = [];
@@ -592,6 +598,7 @@ export default class Mixin {
     @method reopen
     @param arguments*
     @private
+    @internal
   */
   reopen(...args: any[]) {
     if (args.length === 0) {
@@ -615,6 +622,7 @@ export default class Mixin {
     @param obj
     @return applied object
     @private
+    @internal
   */
   apply(obj: object, _hideKeys = false) {
     // Ember.NativeArray is a normal Ember.Mixin that we mix into `Array.prototype` when prototype extensions are enabled
@@ -625,6 +633,7 @@ export default class Mixin {
     return applyMixin(obj, [this], _hideKeys);
   }
 
+  /** @internal */
   applyPartial(obj: object) {
     return applyMixin(obj, [this]);
   }
@@ -634,6 +643,7 @@ export default class Mixin {
     @param obj
     @return {Boolean}
     @private
+    @internal
   */
   detect(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) {
@@ -649,16 +659,19 @@ export default class Mixin {
     return meta.hasMixin(this);
   }
 
+  /** @internal */
   without(...args: any[]) {
     let ret = new Mixin([this]);
     ret._without = args;
     return ret;
   }
 
+  /** @internal */
   keys() {
     return _keys(this);
   }
 
+  /** @internal */
   toString() {
     return '(unknown mixin)';
   }
@@ -744,7 +757,11 @@ function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
 // OBSERVER HELPER
 //
 
-type ObserverDefinition = { dependentKeys: string[]; fn: Function; sync: boolean };
+type ObserverDefinition<T extends (...args: any[]) => any> = {
+  dependentKeys: string[];
+  fn: T;
+  sync: boolean;
+};
 
 /**
   Specify a method that observes property changes.
@@ -771,9 +788,11 @@ type ObserverDefinition = { dependentKeys: string[]; fn: Function; sync: boolean
   @public
   @static
 */
-export function observer(...args: (string | Function)[]): Function;
-export function observer(definition: ObserverDefinition): Function;
-export function observer(...args: (string | Function | ObserverDefinition)[]) {
+export function observer<T extends (...args: any[]) => any>(
+  ...args:
+    | [propertyName: string, ...additionalPropertyNames: string[], func: T]
+    | [ObserverDefinition<T>]
+): T {
   let funcOrDef = args.pop();
 
   assert(
@@ -781,16 +800,18 @@ export function observer(...args: (string | Function | ObserverDefinition)[]) {
     typeof funcOrDef === 'function' || (typeof funcOrDef === 'object' && funcOrDef !== null)
   );
 
-  let func, dependentKeys, sync;
+  let func: T;
+  let dependentKeys: string[];
+  let sync: boolean;
 
   if (typeof funcOrDef === 'function') {
     func = funcOrDef;
-    dependentKeys = args;
+    dependentKeys = args as string[];
     sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
   } else {
-    func = (funcOrDef as ObserverDefinition).fn;
-    dependentKeys = (funcOrDef as ObserverDefinition).dependentKeys;
-    sync = (funcOrDef as ObserverDefinition).sync;
+    func = funcOrDef.fn;
+    dependentKeys = funcOrDef.dependentKeys;
+    sync = funcOrDef.sync;
   }
 
   assert('observer called without a function', typeof func === 'function');
@@ -804,8 +825,8 @@ export function observer(...args: (string | Function | ObserverDefinition)[]) {
 
   let paths: string[] = [];
 
-  for (let i = 0; i < dependentKeys.length; ++i) {
-    expandProperties(dependentKeys[i] as string, (path: string) => paths.push(path));
+  for (let dependentKey of dependentKeys) {
+    expandProperties(dependentKey, (path: string) => paths.push(path));
   }
 
   setObservers(func as Function, {

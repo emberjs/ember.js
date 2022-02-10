@@ -32,7 +32,6 @@ if (DEBUG) {
 
   let MANDATORY_SETTERS: WeakMap<
     object,
-    // @ts-ignore
     { [key: string | symbol]: PropertyDescriptorWithMeta }
   > = new WeakMap();
 
@@ -45,7 +44,7 @@ if (DEBUG) {
       return;
     }
 
-    SEEN_TAGS!.add(tag);
+    SEEN_TAGS.add(tag);
 
     if (Array.isArray(obj) && isElementKey(keyName)) {
       return;
@@ -103,9 +102,9 @@ if (DEBUG) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
-      Object.defineProperty(obj, keyName, setters[keyName]);
+      Object.defineProperty(obj, keyName, setters[keyName]!);
 
-      setters[keyName] = undefined;
+      delete setters[keyName];
     }
   };
 
@@ -113,7 +112,7 @@ if (DEBUG) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
-      let setter = setters[keyName];
+      let setter = setters[keyName]!;
 
       if (setter.set) {
         setter.set.call(obj, value);

@@ -20,7 +20,7 @@ function referenceForParts(rootRef: Reference<Component>, parts: string[]): Refe
     parts.shift();
 
     if (parts.length === 1) {
-      return childRefFor(rootRef, parts[0]);
+      return childRefFor(rootRef, parts[0]!);
     }
   }
 
@@ -62,8 +62,8 @@ export function installAttributeBinding(
     if (elementId === undefined || elementId === null) {
       elementId = component.elementId;
     }
-    elementId = createPrimitiveRef(elementId);
-    operations.setAttribute('id', elementId, true, null);
+    let elementIdRef = createPrimitiveRef(elementId);
+    operations.setAttribute('id', elementIdRef, true, null);
     return;
   }
 
@@ -83,7 +83,11 @@ export function createClassNameBindingRef(
   microsyntax: string,
   operations: ElementOperations
 ) {
-  let [prop, truthy, falsy] = microsyntax.split(':');
+  let parts = microsyntax.split(':');
+  let [prop, truthy, falsy] = parts;
+  // NOTE: This could be an empty string
+  assert('has prop', prop !== undefined); // Will always have at least one part
+
   let isStatic = prop === '';
 
   if (isStatic) {
@@ -116,7 +120,7 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
         path !== undefined
       );
 
-      return dasherizedPath || (dasherizedPath = dasherize(path!));
+      return dasherizedPath || (dasherizedPath = dasherize(path));
     } else if (value || value === 0) {
       return String(value);
     } else {
@@ -125,7 +129,11 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
   });
 }
 
-export function createColonClassNameBindingRef(inner: Reference, truthy: string, falsy: string) {
+export function createColonClassNameBindingRef(
+  inner: Reference,
+  truthy: string,
+  falsy: string | undefined
+) {
   return createComputeRef(() => {
     return valueForRef(inner) ? truthy : falsy;
   });

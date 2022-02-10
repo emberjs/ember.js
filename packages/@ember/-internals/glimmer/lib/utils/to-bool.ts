@@ -6,7 +6,7 @@ import { consumeTag } from '@glimmer/validator';
 
 export default function toBool(predicate: unknown): boolean {
   if (isProxy(predicate)) {
-    consumeTag(tagForProperty(predicate as object, 'content'));
+    consumeTag(tagForProperty(predicate, 'content'));
 
     return Boolean(get(predicate, 'isTruthy'));
   } else if (isArray(predicate)) {

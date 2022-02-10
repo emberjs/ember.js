@@ -1,5 +1,5 @@
 import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
-import { debug, warn } from '@ember/debug';
+import { assert, debug, warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { get } from './property_get';
@@ -32,11 +32,10 @@ export class Libraries {
 
   _getLibraryByName(name: string): Library | undefined {
     let libs = this._registry;
-    let count = libs.length;
 
-    for (let i = 0; i < count; i++) {
-      if (libs[i].name === name) {
-        return libs[i];
+    for (let lib of libs) {
+      if (lib.name === name) {
+        return lib;
       }
     }
     return undefined;
@@ -85,11 +84,14 @@ if (DEBUG) {
   Libraries.prototype.logVersions = function (): void {
     let libs = this._registry;
     let nameLengths = libs.map((item) => get(item, 'name.length'));
+    assert(
+      'nameLengths is number array',
+      nameLengths instanceof Array && nameLengths.every((n) => typeof n === 'number')
+    );
     let maxNameLength = Math.max.apply(null, nameLengths);
 
     debug('-------------------------------');
-    for (let i = 0; i < libs.length; i++) {
-      let lib = libs[i];
+    for (let lib of libs) {
       let spaces = new Array(maxNameLength - lib.name.length + 1).join(' ');
       debug([lib.name, spaces, ' : ', lib.version].join(''));
     }

@@ -690,7 +690,6 @@ const Component = CoreView.extend(
         let eventNames = [];
         let events = eventDispatcher.finalEventNameMapping;
 
-        // tslint:disable-next-line:forin
         for (let key in events) {
           let methodName = events[key];
 
@@ -700,7 +699,6 @@ const Component = CoreView.extend(
         }
         // If in a tagless component, assert that no event handlers are defined
         assert(
-          // tslint:disable-next-line:max-line-length
           `You can not define \`${eventNames}\` function(s) to handle DOM event in the \`${this}\` tagless component since it doesn't have any DOM element.`,
           !eventNames.length
         );
@@ -710,6 +708,8 @@ const Component = CoreView.extend(
     get _dispatcher(): EventDispatcher | null {
       if (this.__dispatcher === undefined) {
         let owner = getOwner(this);
+        assert('Component is unexpectedly missing an owner', owner);
+
         if (owner.lookup<Environment>('-environment:main')!.isInteractive) {
           this.__dispatcher = owner.lookup<EventDispatcher>('event_dispatcher:main');
         } else {
@@ -789,7 +789,7 @@ const Component = CoreView.extend(
         _element !== null
       );
 
-      let element = _element!;
+      let element = _element;
       let isSVG = element.namespaceURI === Namespace.SVG;
       let { type, normalized } = normalizeProperty(element, name);
 

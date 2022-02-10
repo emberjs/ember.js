@@ -1,4 +1,5 @@
 import { _WeakSet as WeakSet } from '@glimmer/util';
+import { assert } from '@ember/debug';
 const { toString: objectToString } = Object.prototype;
 const { toString: functionToString } = Function.prototype;
 const { isArray } = Array;
@@ -96,7 +97,8 @@ function inspectObject(obj: object, depth: number, seen: WeakSet<object>) {
     }
 
     let key = keys[i];
-    s += inspectKey(key) + ': ' + inspectValue(obj[key], depth, seen);
+    assert('has key', key); // Looping over array
+    s += `${inspectKey(key)}: ${inspectValue(obj[key], depth, seen)}`;
   }
   s += ' }';
   return s;

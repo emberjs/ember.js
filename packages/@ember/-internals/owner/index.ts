@@ -30,12 +30,15 @@ import EngineInstance from '@ember/engine/instance';
 export interface Owner {
   lookup<T>(fullName: string, options?: LookupOptions): T | undefined;
   factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
-  factoryFor(fullName: string, options?: LookupOptions): Factory<any, any> | undefined;
-  buildChildEngineInstance(name: string, options?: EngineInstanceOptions): EngineInstance;
-  register<T, C>(fullName: string, factory: Factory<T, C>, options?: object): void;
+  register<T, C>(fullName: string, factory: Factory<T, C>, options?: LookupOptions): void;
   hasRegistration(name: string, options?: LookupOptions): boolean;
+
+  /** @internal */
   mountPoint?: string;
+  /** @internal */
   routable?: boolean;
+  /** @internal */
+  buildChildEngineInstance(name: string, options?: EngineInstanceOptions): EngineInstance;
 }
 
 /**
@@ -82,8 +85,8 @@ export interface Owner {
   @since 2.3.0
   @public
 */
-export function getOwner(object: any): Owner {
-  return glimmerGetOwner(object) as Owner;
+export function getOwner(object: any): Owner | undefined {
+  return glimmerGetOwner(object);
 }
 
 /**

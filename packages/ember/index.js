@@ -76,7 +76,6 @@ import {
   Input,
   isSerializationFirstNode,
 } from '@ember/-internals/glimmer';
-// eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
 import * as routing from '@ember/-internals/routing';

@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { assert as emberAssert } from '@ember/debug';
 import { checkTest, DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
 
 type Actual = [string, boolean, DebugFunctionOptions];
@@ -74,7 +75,7 @@ export default class MethodCallTracker {
     let expectedMessages = this._expectedMessages;
     let expectedOptionLists = this._expectedOptionLists;
     let actuals = this._actuals;
-    let o, i, j;
+    let o, i;
 
     if (!isExpectingNoCalls && expectedMessages.length === 0 && actuals.length === 0) {
       return;
@@ -87,9 +88,9 @@ export default class MethodCallTracker {
 
     if (isExpectingNoCalls) {
       let actualMessages = [];
-      for (i = 0; i < actuals.length; i++) {
-        if (!actuals[i][1]) {
-          actualMessages.push(actuals[i][0]);
+      for (let actual in actuals) {
+        if (!actual[1]) {
+          actualMessages.push(actual[0]);
         }
       }
       assert.ok(
@@ -111,6 +112,7 @@ export default class MethodCallTracker {
         let matchesMessage = false;
         let matchesOptionList = false;
         actual = actuals[i];
+        emberAssert('has actual', actual); // We just checked the array
 
         if (actual[1] === true) {
           continue;
@@ -127,10 +129,9 @@ export default class MethodCallTracker {
         } else if (actual[2]) {
           matchesOptionList = true;
 
-          for (j = 0; j < expectedOptionList.length; j++) {
+          for (let expectedOption of expectedOptionList) {
             matchesOptionList =
-              matchesOptionList &&
-              Object.prototype.hasOwnProperty.call(actual[2], expectedOptionList[j]);
+              matchesOptionList && Object.prototype.hasOwnProperty.call(actual[2], expectedOption);
           }
         }
 
@@ -175,8 +176,8 @@ export default class MethodCallTracker {
     }
 
     for (i = 0; i < actuals.length; i++) {
-      if (!matched.has(i) && actuals[i][1] !== true) {
-        assert.ok(false, `Unexpected Ember.${methodName} call: ${actuals[i][0]}`);
+      if (!matched.has(i) && actuals[i]![1] !== true) {
+        assert.ok(false, `Unexpected Ember.${methodName} call: ${actuals[i]![0]}`);
       }
     }
   }

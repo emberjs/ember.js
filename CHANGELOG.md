@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### v4.3.0-beta.1 (February 7, 2022)
+
+No public API changes or bugfixes. 
+
+### v4.2.0 (February 7, 2022)
+
+- [#19878](https://github.com/emberjs/ember.js/pull/19878) [BUGFIX] Allow class-based helpers to work in strict-mode.
+
 ### v4.1.0 (December 28, 2021)
 
 - [#19772](https://github.com/emberjs/ember.js/pull/19772) / [#19826](https://github.com/emberjs/ember.js/pull/19826) [FEATURE] Add a `@cached` decorator per [RFC #0566](https://github.com/emberjs/rfcs/blob/af64915b5ecde010fce09309a47ee6d2447588d0/text/0566-memo-decorator.md).

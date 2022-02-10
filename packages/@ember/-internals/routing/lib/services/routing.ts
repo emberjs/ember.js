@@ -2,11 +2,14 @@
 @module ember
 */
 
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { symbol } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
-import EmberRouter, { QueryParam } from '../system/router';
+import { ModelFor } from 'router_js';
+import { Route } from '../..';
+import EmberRouter from '../system/router';
 import RouterState from '../system/router_state';
 
 const ROUTER = (symbol('ROUTER') as unknown) as string;
@@ -21,14 +24,21 @@ const ROUTER = (symbol('ROUTER') as unknown) as string;
   @private
   @class RoutingService
 */
-export default class RoutingService extends Service {
-  get router(): EmberRouter {
+export default class RoutingService<R extends Route> extends Service {
+  declare targetState: EmberRouter['targetState'];
+  declare currentState: EmberRouter['currentState'];
+  declare currentRouteName: EmberRouter['currentRouteName'];
+  declare currentPath: EmberRouter['currentPath'];
+
+  get router(): EmberRouter<R> {
     let router = this[ROUTER];
     if (router !== undefined) {
       return router;
     }
-    const owner = getOwner(this) as Owner;
-    router = owner.lookup('router:main') as EmberRouter;
+    let owner = getOwner(this);
+    assert('RoutingService is unexpectedly missing an owner', owner);
+
+    router = owner.lookup('router:main') as EmberRouter<R>;
     router.setupRouter();
     return (this[ROUTER] = router);
   }
@@ -37,7 +47,12 @@ export default class RoutingService extends Service {
     return this.router.hasRoute(routeName);
   }
 
-  transitionTo(routeName: string, models: {}[], queryParams: QueryParam, shouldReplace: boolean) {
+  transitionTo(
+    routeName: string,
+    models: ModelFor<R>[],
+    queryParams: Record<string, unknown>,
+    shouldReplace: boolean
+  ) {
     let transition = this.router._doTransition(routeName, models, queryParams);
 
     if (shouldReplace) {
@@ -47,15 +62,19 @@ export default class RoutingService extends Service {
     return transition;
   }
 
-  normalizeQueryParams(routeName: string, models: {}[], queryParams: QueryParam) {
+  normalizeQueryParams(
+    routeName: string,
+    models: ModelFor<R>[],
+    queryParams: Record<string, unknown>
+  ) {
     this.router._prepareQueryParams(routeName, models, queryParams);
   }
 
-  _generateURL(routeName: string, models: {}[], queryParams: {}) {
+  _generateURL(routeName: string, models: ModelFor<R>[], queryParams: Record<string, unknown>) {
     let visibleQueryParams = {};
     if (queryParams) {
       Object.assign(visibleQueryParams, queryParams);
-      this.normalizeQueryParams(routeName, models, visibleQueryParams as QueryParam);
+      this.normalizeQueryParams(routeName, models, visibleQueryParams);
     }
 
     return this.router.generate(routeName, ...models, {
@@ -63,7 +82,7 @@ export default class RoutingService extends Service {
     });
   }
 
-  generateURL(routeName: string, models: {}[], queryParams: {}) {
+  generateURL(routeName: string, models: ModelFor<R>[], queryParams: Record<string, unknown>) {
     if (this.router._initialTransitionStarted) {
       return this._generateURL(routeName, models, queryParams);
     } else {
@@ -78,10 +97,10 @@ export default class RoutingService extends Service {
   }
 
   isActiveForRoute(
-    contexts: {}[],
-    queryParams: QueryParam | undefined,
+    contexts: ModelFor<R>[],
+    queryParams: Record<string, unknown> | undefined,
     routeName: string,
-    routerState: RouterState
+    routerState: RouterState<R>
   ): boolean {
     let handlers = this.router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;
