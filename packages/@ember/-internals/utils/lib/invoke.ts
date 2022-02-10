@@ -16,8 +16,8 @@
   @return {Boolean}
   @private
 */
-export function canInvoke(obj: any | null | undefined, methodName: string): obj is Function {
-  return obj !== null && obj !== undefined && typeof obj[methodName] === 'function';
+export function canInvoke(obj: unknown, methodName: string): boolean {
+  return obj != null && typeof (obj as Record<string, unknown>)[methodName] === 'function';
 }
 
 /**
