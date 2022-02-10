@@ -46,7 +46,7 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
         `(You specified \`(${type} ${original})\` and \`${original}\` evaluated into "${nameOrValue}".) ` +
         `This ensures we can statically analyze the template and determine which ${type}s are used. ` +
         `If the ${type} name is always the same, use a string literal instead, i.e. \`(${type} "${nameOrValue}")\`. ` +
-        `Otherwise, import the ${type}s into JavaScript and pass them to the ${type} keyword. ` +
+        `Otherwise, import the ${type}s into JavaScript and pass them directly. ` +
         'See https://github.com/emberjs/rfcs/blob/master/text/0496-handlebars-strict-mode.md#4-no-dynamic-resolution for details. ' +
         loc,
       typeof nameOrValue !== 'string'
