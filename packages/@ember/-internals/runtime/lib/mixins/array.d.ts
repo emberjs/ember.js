@@ -96,7 +96,8 @@ interface NativeArray<T>
 declare const NativeArray: Array<unknown>;
 export { NativeArray };
 
-export function A<T>(arr?: T): T extends Array<infer V> ? NativeArray<V> : NativeArray<unknown>;
+export function A<A>(arr: A): A extends Array<infer V> ? NativeArray<V> : NativeArray<unknown>;
+export function A<T>(): NativeArray<T>;
 
 export function removeAt<T>(array: T[] | EmberArray<T>, start: number, len: number): EmberArray<T>;
 export function uniqBy<T>(array: T[], keyOrFunc: string | ((item: T) => unknown)): T[];
