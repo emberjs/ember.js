@@ -307,7 +307,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   }
 
   constructor(owner: Owner) {
-    super(...arguments);
+    super(owner);
 
     this._resetQueuedQueryParameterChanges();
     this.namespace = owner.lookup('application:main');

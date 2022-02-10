@@ -275,7 +275,7 @@ class Route<T = unknown>
   declare _environment: any;
 
   constructor(owner: Owner) {
-    super(...arguments);
+    super(owner);
 
     if (owner) {
       let router = owner.lookup<EmberRouter>('router:main');

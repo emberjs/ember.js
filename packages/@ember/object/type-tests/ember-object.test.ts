@@ -1,6 +1,10 @@
 import { expectTypeOf } from 'expect-type';
 
 import EmberObject from '@ember/object';
+import { Owner } from '@ember/-internals/owner';
+
+// Good enough for tests
+let owner = {} as Owner;
 
 expectTypeOf(EmberObject.create()).toEqualTypeOf<EmberObject>();
 
@@ -33,7 +37,7 @@ export class Person extends EmberObject {
   lastName!: string;
   age!: number;
 }
-const p = new Person();
+const p = new Person(owner);
 
 expectTypeOf(p.firstName).toEqualTypeOf<string>();
 
@@ -102,8 +106,9 @@ Person.reopenClass({ fullName: 6 });
 class MyComponent extends EmberObject {
   foo = 'bar';
 
-  constructor() {
-    super();
+  constructor(owner: Owner) {
+    super(owner);
+
     this.addObserver('foo', this, 'fooDidChange');
 
     this.addObserver('foo', this, this.fooDidChange);
