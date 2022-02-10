@@ -1,4 +1,3 @@
-import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
@@ -68,7 +67,12 @@ class MountManager
     return state.engine;
   }
 
-  create(owner: Owner, { name }: EngineDefinitionState, args: VMArguments, env: Environment) {
+  create(
+    owner: EngineInstance,
+    { name }: EngineDefinitionState,
+    args: VMArguments,
+    env: Environment
+  ) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper

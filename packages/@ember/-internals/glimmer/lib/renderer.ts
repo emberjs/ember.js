@@ -1,8 +1,9 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
@@ -117,7 +118,7 @@ class RootState {
     public root: Component | OutletView,
     public runtime: RuntimeContext,
     context: CompileTimeCompilationContext,
-    owner: Owner,
+    owner: EngineInstance,
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
@@ -280,7 +281,7 @@ export class Renderer {
   private _builder: IBuilder;
   private _inRenderTransaction = false;
 
-  private _owner: Owner;
+  private _owner: EngineInstance;
   private _context: CompileTimeCompilationContext;
   private _runtime: RuntimeContext;
 
@@ -305,7 +306,7 @@ export class Renderer {
   }
 
   constructor(
-    owner: Owner,
+    owner: EngineInstance,
     document: SimpleDocument,
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,

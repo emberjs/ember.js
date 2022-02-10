@@ -1,6 +1,7 @@
-import { Owner, setOwner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import {
   CapturedArguments,
   Destroyable,
@@ -27,7 +28,7 @@ export default class InternalComponent {
   }
 
   constructor(
-    protected owner: Owner,
+    protected owner: EngineInstance,
     protected readonly args: CapturedArguments,
     protected readonly caller: unknown
   ) {
@@ -103,7 +104,7 @@ export default class InternalComponent {
 }
 
 export interface InternalComponentConstructor<T extends InternalComponent = InternalComponent> {
-  new (owner: Owner, args: CapturedArguments, caller: unknown): T;
+  new (owner: EngineInstance, args: CapturedArguments, caller: unknown): T;
   prototype: T;
   toString(): string;
 }
@@ -180,7 +181,7 @@ class InternalManager
   }
 
   create(
-    owner: Owner,
+    owner: EngineInstance,
     definition: OpaqueInternalComponentConstructor,
     args: VMArguments,
     _env: Environment,

@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 
 /**
  * Used to infer the type of ember classes of type `T`.
@@ -11,7 +11,7 @@ import { Owner } from '@ember/-internals/owner';
  * Implementation is carefully chosen for the reasons described in
  * https://github.com/typed-ember/ember-typings/pull/29
  */
-type EmberClassConstructor<T> = new (owner: Owner) => T;
+type EmberClassConstructor<T> = new (owner: EngineInstance) => T;
 
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
@@ -33,7 +33,7 @@ export default class CoreObject {
   /**
    * CoreObject constructor takes owner.
    */
-  constructor(owner: Owner);
+  constructor(owner: EngineInstance);
 
   /** @internal */
   _super(...args: any[]): any;

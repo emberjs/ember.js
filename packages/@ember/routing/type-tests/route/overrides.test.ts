@@ -1,11 +1,11 @@
-import { Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
+import EngineInstance from '@ember/engine/instance';
 import { action } from '@ember/object';
 import Route from '@ember/routing/route';
 import { Transition } from 'router_js';
 
 // NOTE: This is invalid, but acceptable for type tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 class Foo {}
 
 class MyRoute extends Route<Foo> {

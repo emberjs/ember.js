@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 import { ComponentManager } from '@glimmer/interfaces';
 import {
   componentCapabilities as glimmerComponentCapabilities,
@@ -7,7 +7,7 @@ import {
 } from '@glimmer/manager';
 
 export function setComponentManager(
-  manager: (owner: Owner) => ComponentManager<unknown>,
+  manager: (owner: EngineInstance) => ComponentManager<unknown>,
   obj: object
 ): object {
   return glimmerSetComponentManager(manager, obj);

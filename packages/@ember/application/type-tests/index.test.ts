@@ -1,7 +1,7 @@
 import { EventDispatcher } from '@ember/-internals/views';
 import Application, { getOwner, setOwner } from '@ember/application';
 import ApplicationInstance, { BootOptions } from '@ember/application/instance';
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 
 import { expectTypeOf } from 'expect-type';
 
@@ -36,6 +36,6 @@ class App2 extends Application {
 
 new App2();
 
-expectTypeOf(getOwner('foo')).toEqualTypeOf<Owner | undefined>();
+expectTypeOf(getOwner('foo')).toEqualTypeOf<EngineInstance | undefined>();
 
-expectTypeOf(setOwner('foo', {} as Owner)).toEqualTypeOf<void>();
+expectTypeOf(setOwner('foo', {} as EngineInstance)).toEqualTypeOf<void>();

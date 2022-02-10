@@ -1,6 +1,6 @@
-import { EngineInstanceOptions } from '@ember/-internals/owner';
 import { EventDispatcher } from '@ember/-internals/views';
 import Engine from '@ember/engine';
+import { EngineInstanceOptions } from '@ember/engine/instance';
 import ApplicationInstance, { BootOptions } from '../instance';
 
 export default class Application extends Engine {

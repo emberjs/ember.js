@@ -2,10 +2,10 @@ import { ILocation } from '@ember/routing/location';
 import EmberObject from '@ember/object';
 import HashLocation from '@ember/routing/hash-location';
 import { expectTypeOf } from 'expect-type';
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 
 // Good enough for tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 
 // This doesn't have any public API
 

@@ -1,4 +1,4 @@
-import { EngineInstance } from '@ember/engine';
+import EngineInstance from '@ember/engine/instance';
 
 export class BootOptions {
   isBrowser: boolean;

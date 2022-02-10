@@ -1,8 +1,9 @@
 import { Renderer } from '@ember/-internals/glimmer';
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 /* globals Element */
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { Dict, Option } from '@glimmer/interfaces';
 
 /**
@@ -43,7 +44,7 @@ interface View {
   @method getRootViews
   @param {Object} owner
 */
-export function getRootViews(owner: Owner): View[] {
+export function getRootViews(owner: EngineInstance): View[] {
   let registry = owner.lookup<Dict<View>>('-view-registry:main')!;
 
   let rootViews: View[] = [];

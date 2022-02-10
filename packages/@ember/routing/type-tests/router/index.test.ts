@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 import Evented from '@ember/object/evented';
 import { ILocation } from '@ember/routing/location';
@@ -10,7 +10,7 @@ expectTypeOf<Router>().toMatchTypeOf<EmberObject>();
 expectTypeOf<Router>().toMatchTypeOf<Evented>();
 
 // NOTE: This is invalid, but acceptable for type tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 let router = new Router(owner);
 
 expectTypeOf(router.rootURL).toEqualTypeOf<string>();

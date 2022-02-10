@@ -1,5 +1,5 @@
-import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { Factory } from '@ember/engine/instance';
 import { Option } from '@glimmer/interfaces';
 import { MatchCallback } from 'route-recognizer';
 import { EngineInfo, EngineRouteInfo } from './engines';

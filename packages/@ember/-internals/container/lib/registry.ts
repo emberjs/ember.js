@@ -1,6 +1,6 @@
-import { Factory } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { Factory } from '@ember/engine/instance';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
 

@@ -11,7 +11,7 @@ import {
   set,
   setProperties,
 } from '@ember/-internals/metal';
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
 import {
   A as emberA,
@@ -23,6 +23,7 @@ import {
 import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { assert, info, isTesting } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -274,7 +275,7 @@ class Route<T = unknown>
   declare _topLevelViewTemplate: any;
   declare _environment: any;
 
-  constructor(owner: Owner) {
+  constructor(owner: EngineInstance) {
     super(owner);
 
     if (owner) {
@@ -2183,7 +2184,7 @@ function buildRenderOptions(
 }
 
 export interface RenderOptions {
-  owner: Owner;
+  owner: EngineInstance;
   into?: string;
   outlet: string;
   name: string;
@@ -2330,7 +2331,7 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
   });
 }
 
-function getEngineRouteName(engine: Owner, routeName: string) {
+function getEngineRouteName(engine: EngineInstance, routeName: string) {
   if (engine.routable) {
     let prefix = engine.mountPoint;
 

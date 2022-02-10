@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 import { Template, TemplateFactory } from '@glimmer/interfaces';
 
 export interface RenderState {
@@ -7,7 +7,7 @@ export interface RenderState {
    *
    * Maybe this is for the render helper?
    */
-  owner: Owner;
+  owner: EngineInstance;
 
   /**
    * The name of the parent outlet state.

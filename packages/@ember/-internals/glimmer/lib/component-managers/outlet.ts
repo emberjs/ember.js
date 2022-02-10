@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
@@ -72,7 +71,7 @@ class OutletComponentManager
     WithCreateInstance<OutletInstanceState>,
     WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
   create(
-    _owner: Owner,
+    _owner: EngineInstance,
     definition: OutletDefinitionState,
     _args: VMArguments,
     env: Environment,

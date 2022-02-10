@@ -1,14 +1,14 @@
 /* eslint-disable no-self-assign */
 
-import { Owner } from '@ember/-internals/owner';
 import { EmberLocation } from '@ember/-internals/routing';
+import EngineInstance from '@ember/engine/instance';
 import Route from '@ember/routing/route';
 import RouterService, { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
 import { expectTypeOf } from 'expect-type';
 import { Transition } from 'router_js';
 
 // Good enough for tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 
 class Post {}
 class Comment {}

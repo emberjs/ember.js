@@ -1,5 +1,5 @@
 import { Container } from '@ember/-internals/container';
-import { LookupOptions } from '@ember/-internals/owner';
+import { LookupOptions } from '@ember/engine/instance';
 /**
 @module ember
 */

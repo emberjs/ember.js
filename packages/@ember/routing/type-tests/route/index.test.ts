@@ -1,12 +1,12 @@
-import { Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
+import EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 import Route from '@ember/routing/route';
 import { expectTypeOf } from 'expect-type';
 import { Transition } from 'router_js';
 
 // NOTE: This is invalid, but acceptable for type tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 let route = new Route(owner);
 
 expectTypeOf(route).toMatchTypeOf<EmberObject>();

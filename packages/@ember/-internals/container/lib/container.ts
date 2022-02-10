@@ -1,6 +1,8 @@
-import { Factory, LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { dictionary, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
+import { Factory, LookupOptions } from '@ember/engine/instance';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry } from './registry';
 
@@ -46,7 +48,7 @@ if (DEBUG) {
 }
 
 export interface ContainerOptions {
-  owner?: Owner;
+  owner?: EngineInstance;
   cache?: { [key: string]: CacheMember };
   factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
   validationCache?: { [key: string]: boolean };
@@ -68,7 +70,7 @@ export interface ContainerOptions {
 export default class Container {
   static _leakTracking: LeakTracking;
 
-  readonly owner: Owner | null;
+  readonly owner: EngineInstance | null;
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: CacheMember };
   factoryManagerCache!: { [key: string]: FactoryManager<any, any> };
@@ -460,7 +462,7 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
 
 export class FactoryManager<T, C> {
   readonly container: Container;
-  readonly owner: Owner | null;
+  readonly owner: EngineInstance | null;
   readonly class: Factory<T, C> & DebugFactory<T, C>;
   readonly fullName: string;
   readonly normalizedName: string;

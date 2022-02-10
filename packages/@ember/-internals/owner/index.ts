@@ -1,45 +1,9 @@
+import EngineInstance from '@ember/engine/instance';
 import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/owner';
 
 /**
 @module @ember/application
 */
-
-export interface LookupOptions {
-  singleton?: boolean;
-  instantiate?: boolean;
-}
-
-export interface FactoryClass {
-  positionalParams?: string | string[] | undefined | null;
-}
-
-export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
-  class?: C;
-  name?: string;
-  fullName?: string;
-  normalizedName?: string;
-  create(props?: { [prop: string]: any }): T;
-}
-
-export interface EngineInstanceOptions {
-  mountPoint: string;
-  routable: boolean;
-}
-
-import EngineInstance from '@ember/engine/instance';
-export interface Owner {
-  lookup<T>(fullName: string, options?: LookupOptions): T | undefined;
-  factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
-  register<T, C>(fullName: string, factory: Factory<T, C>, options?: LookupOptions): void;
-  hasRegistration(name: string, options?: LookupOptions): boolean;
-
-  /** @internal */
-  mountPoint?: string;
-  /** @internal */
-  routable?: boolean;
-  /** @internal */
-  buildChildEngineInstance(name: string, options?: EngineInstanceOptions): EngineInstance;
-}
 
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
@@ -85,7 +49,7 @@ export interface Owner {
   @since 2.3.0
   @public
 */
-export function getOwner(object: any): Owner | undefined {
+export function getOwner(object: any): EngineInstance | undefined {
   return glimmerGetOwner(object);
 }
 
@@ -101,6 +65,6 @@ export function getOwner(object: any): Owner | undefined {
   @since 2.3.0
   @public
 */
-export function setOwner(object: any, owner: Owner): void {
+export function setOwner(object: any, owner: EngineInstance): void {
   glimmerSetOwner(object, owner);
 }

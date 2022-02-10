@@ -1,8 +1,7 @@
-import { Owner } from '@ember/-internals/owner';
 import { Route, RouterState, RoutingService } from '@ember/-internals/routing';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, debugFreeze, inspect, warn } from '@ember/debug';
-import { EngineInstance, getEngineParent } from '@ember/engine';
+import { getEngineParent } from '@ember/engine';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
 import { service } from '@ember/service';
@@ -489,11 +488,11 @@ class LinkTo extends InternalComponent {
   }
 
   private get isEngine(): boolean {
-    return getEngineParent(this.owner as EngineInstance) !== undefined;
+    return getEngineParent(this.owner) !== undefined;
   }
 
   private get engineMountPoint(): string | undefined {
-    return (this.owner as Owner | EngineInstance).mountPoint;
+    return this.owner.mountPoint;
   }
 
   private classFor(state: 'active' | 'loading' | 'disabled'): string {

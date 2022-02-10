@@ -1,6 +1,6 @@
 import Application from '@ember/application';
 import ApplicationInstance, { BootOptions } from '@ember/application/instance';
-import { EngineInstance } from '@ember/engine';
+import EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';

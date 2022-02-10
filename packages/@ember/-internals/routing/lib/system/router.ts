@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/-internals/metal';
-import { FactoryClass, getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
@@ -46,6 +46,8 @@ import Router, {
   TransitionState,
 } from 'router_js';
 import { EngineRouteInfo } from './engines';
+import EngineInstance from '@ember/engine/instance';
+import { FactoryClass } from '@ember/engine/instance';
 
 function defaultDidTransition<R extends Route>(
   this: EmberRouter<R>,
@@ -111,11 +113,6 @@ interface OutletState<T extends RenderOutletState = RenderOutletState> {
   render: T;
   outlets: NestedOutletState;
   wasUsed?: boolean;
-}
-
-interface EngineInstance extends Owner {
-  boot(): void;
-  destroy(): void;
 }
 
 export interface QueryParam {
@@ -306,7 +303,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     return path.join('.');
   }
 
-  constructor(owner: Owner) {
+  constructor(owner: EngineInstance) {
     super(owner);
 
     this._resetQueuedQueryParameterChanges();
@@ -1685,13 +1682,18 @@ function findRouteStateName(route: Route, state: string) {
   is in the Router's map and the owner has a registration for that route.
 
   @private
-  @param {Owner} owner
+  @param {EngineInstance} owner
   @param {Router} router
   @param {String} localName
   @param {String} fullName
   @return {Boolean}
 */
-function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullName: string) {
+function routeHasBeenDefined(
+  owner: EngineInstance,
+  router: any,
+  localName: string,
+  fullName: string
+) {
   let routerHasRoute = router.hasRoute(fullName);
   let ownerHasRoute =
     owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);

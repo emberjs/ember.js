@@ -1,7 +1,7 @@
 import { get } from '@ember/-internals/metal';
-import { Factory, Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import { info } from '@ember/debug';
+import EngineInstance, { Factory } from '@ember/engine/instance';
 import { DEBUG } from '@glimmer/env';
 /**
 @module ember
@@ -15,7 +15,10 @@ import { DEBUG } from '@glimmer/env';
   @private
 */
 
-export function generateControllerFactory(owner: Owner, controllerName: string): Factory<{}> {
+export function generateControllerFactory(
+  owner: EngineInstance,
+  controllerName: string
+): Factory<{}> {
   let Factory = owner.factoryFor<any, any>('controller:basic')!.class;
 
   Factory = Factory.extend({
@@ -40,7 +43,10 @@ export function generateControllerFactory(owner: Owner, controllerName: string):
   @private
   @since 1.3.0
 */
-export default function generateController(owner: Owner, controllerName: string): Controller {
+export default function generateController(
+  owner: EngineInstance,
+  controllerName: string
+): Controller {
   generateControllerFactory(owner, controllerName);
 
   let fullName = `controller:${controllerName}`;

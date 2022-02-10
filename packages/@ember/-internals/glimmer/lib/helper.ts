@@ -3,9 +3,10 @@
 */
 
 import { FactoryManager } from '@ember/-internals/container/lib/container';
-import { Factory, Owner, setOwner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName, symbol } from '@ember/-internals/utils';
+import EngineInstance, { Factory } from '@ember/engine/instance';
 import { join } from '@ember/runloop';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
@@ -151,7 +152,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
 
   private ownerInjection: object;
 
-  constructor(owner: Owner | undefined) {
+  constructor(owner: EngineInstance | undefined) {
     let ownerInjection = {};
     setOwner(ownerInjection, owner!);
     this.ownerInjection = ownerInjection;
@@ -191,7 +192,7 @@ function isFactoryManager<T, C>(obj: unknown): obj is FactoryManager<T, C> {
   return obj != null && 'class' in (obj as FactoryManager<T, C>);
 }
 
-setHelperManager((owner: Owner | undefined): ClassicHelperManager => {
+setHelperManager((owner: EngineInstance | undefined): ClassicHelperManager => {
   return new ClassicHelperManager(owner);
 }, Helper);
 

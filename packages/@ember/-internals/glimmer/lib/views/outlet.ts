@@ -1,5 +1,6 @@
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { schedule } from '@ember/runloop';
 import { Template } from '@glimmer/interfaces';
 import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
@@ -47,7 +48,7 @@ export default class OutletView {
 
   constructor(
     private _environment: BootEnvironment,
-    public owner: Owner,
+    public owner: EngineInstance,
     public template: Template,
     public namespace: any
   ) {

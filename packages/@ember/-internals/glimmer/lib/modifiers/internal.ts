@@ -1,6 +1,7 @@
-import { Owner, setOwner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { registerDestructor } from '@glimmer/destroyable';
 import {
   CapturedArguments,
@@ -17,7 +18,7 @@ export default class InternalModifier {
   }
 
   constructor(
-    protected owner: Owner,
+    protected owner: EngineInstance,
     protected readonly element: Element,
     protected readonly args: CapturedArguments
   ) {
@@ -56,7 +57,7 @@ export class InternalModifierManager
   constructor(private ModifierClass: typeof InternalModifier, private name: string) {}
 
   create(
-    owner: Owner,
+    owner: EngineInstance,
     element: SimpleElement,
     _definition: unknown,
     args: CapturedArguments

@@ -1,9 +1,9 @@
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 import CoreObject from '@ember/object/core';
 import { expectTypeOf } from 'expect-type';
 
 // Good enough for tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 
 expectTypeOf(CoreObject.create()).toEqualTypeOf<CoreObject>();
 

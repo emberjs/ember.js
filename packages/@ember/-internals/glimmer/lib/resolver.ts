@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import EngineInstance, { Factory, FactoryClass, LookupOptions } from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -58,14 +58,14 @@ function instrumentationPayload(name: string) {
 
 function componentFor(
   name: string,
-  owner: Owner,
+  owner: EngineInstance,
   options?: LookupOptions
 ): Option<Factory<{}, {}>> {
   let fullName = `component:${name}`;
   return owner.factoryFor(fullName, options) || null;
 }
 
-function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<Template> {
+function layoutFor(name: string, owner: EngineInstance, options?: LookupOptions): Option<Template> {
   let templateFullName = `template:components/${name}`;
 
   return owner.lookup(templateFullName, options) || null;
@@ -86,7 +86,7 @@ type LookupResult =
     };
 
 function lookupComponentPair(
-  owner: Owner,
+  owner: EngineInstance,
   name: string,
   options?: LookupOptions
 ): Option<LookupResult> {
@@ -158,14 +158,15 @@ const BUILTIN_MODIFIERS = {
 
 const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
 
-export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTimeResolver<Owner> {
+export default class ResolverImpl
+  implements RuntimeResolver<EngineInstance>, CompileTimeResolver<EngineInstance> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
   lookupPartial(): null {
     return null;
   }
 
-  lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
+  lookupHelper(name: string, owner: EngineInstance): Option<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
       !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
@@ -217,7 +218,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
-  lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
+  lookupModifier(name: string, owner: EngineInstance): Option<ModifierDefinitionState> {
     let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
@@ -237,7 +238,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
-  lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
+  lookupComponent(name: string, owner: EngineInstance): ResolvedComponentDefinition | null {
     let pair = lookupComponentPair(owner, name);
 
     if (pair === null) {

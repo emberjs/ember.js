@@ -1,8 +1,8 @@
-import { Owner } from '@ember/-internals/owner';
+import EngineInstance from '@ember/engine/instance';
 import Route from '@ember/routing/route';
 
 // NOTE: This is invalid, but acceptable for type tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 
 class MyRoute extends Route {
   queryParams = {

@@ -1,7 +1,8 @@
-import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
+import EngineInstance, { Factory } from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -241,7 +242,7 @@ export default class CurlyComponentManager
    * etc.
    */
   create(
-    owner: Owner,
+    owner: EngineInstance,
     ComponentClass: ComponentFactory,
     args: VMArguments,
     { isInteractive }: Environment,

@@ -1,10 +1,10 @@
-import { Owner } from '@ember/-internals/owner';
 import Controller, { inject } from '@ember/controller';
+import EngineInstance from '@ember/engine/instance';
 
 import { expectTypeOf } from 'expect-type';
 
 // Good enough for tests
-let owner = {} as Owner;
+let owner = {} as EngineInstance;
 
 class Foo {}
 
