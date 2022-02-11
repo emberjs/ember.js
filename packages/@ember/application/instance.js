@@ -335,12 +335,12 @@ class BootOptions {
       @default auto-detected
       @private
     */
-    this.isInteractive = environment.hasDOM; // This default is overridable below
+    this.isInteractive = Boolean(environment.hasDOM); // This default is overridable below
 
     /**
       @property _renderMode
       @type string
-      @default false
+      @default undefined
       @private
     */
     this._renderMode = options._renderMode;
@@ -372,7 +372,7 @@ class BootOptions {
     if (options.isBrowser !== undefined) {
       this.isBrowser = Boolean(options.isBrowser);
     } else {
-      this.isBrowser = environment.hasDOM;
+      this.isBrowser = Boolean(environment.hasDOM);
     }
 
     if (!this.isBrowser) {

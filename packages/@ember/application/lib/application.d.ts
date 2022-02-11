@@ -13,5 +13,5 @@ export default class Application extends Engine {
   boot(): void;
   ready(): void;
   reset(): void;
-  visit(url: string, options: BootOptions): Promise<ApplicationInstance>;
+  visit(url: string, options?: BootOptions): Promise<ApplicationInstance>;
 }

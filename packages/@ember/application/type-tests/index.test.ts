@@ -1,6 +1,6 @@
 import { EventDispatcher } from '@ember/-internals/views';
 import Application, { getOwner, setOwner } from '@ember/application';
-import ApplicationInstance, { BootOptions } from '@ember/application/instance';
+import ApplicationInstance from '@ember/application/instance';
 import { Owner } from '@ember/-internals/owner';
 
 import { expectTypeOf } from 'expect-type';
@@ -29,7 +29,29 @@ expectTypeOf(app.advanceReadiness()).toEqualTypeOf<void>();
 expectTypeOf(app.boot()).toEqualTypeOf<void>();
 expectTypeOf(app.ready()).toEqualTypeOf<void>();
 expectTypeOf(app.reset()).toEqualTypeOf<void>();
-expectTypeOf(app.visit('/my-app', new BootOptions())).toEqualTypeOf<Promise<ApplicationInstance>>();
+
+let bootOptions = {
+  isBrowser: true,
+  shouldRender: false,
+  document: window.document,
+  rootElement: '#ember-application',
+  location: 'history',
+};
+
+app.visit('/my-app', bootOptions);
+
+app.visit('/my-app', { isBrowser: true });
+
+// @ts-expect-error Incorrect type
+app.visit('/my-app', { isBrowser: 1 });
+// @ts-expect-error Incorrect type
+app.visit('/my-app', { shouldRender: 1 });
+// @ts-expect-error Incorrect type
+app.visit('/my-app', { document: window });
+// @ts-expect-error Incorrect type
+app.visit('/my-app', { rootElement: 1 });
+// @ts-expect-error Incorrect type
+app.visit('/my-app', { location: 1 });
 
 class App2 extends Application {
   // @ts-expect-error Doesn't allow number
