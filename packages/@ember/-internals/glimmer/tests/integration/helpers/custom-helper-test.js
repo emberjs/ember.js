@@ -713,7 +713,7 @@ moduleFor(
       this.assertText('huzza!');
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a helper'() {
+    '@test Can resolve a helper'() {
       this.registerHelper('hello-world', ([text]) => text ?? 'Hello, world!');
 
       this.render('[{{helper "hello-world"}}][{{helper (helper "hello-world") "wow"}}]');
@@ -721,7 +721,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a helper'(assert) {
+    '@test Cannot dynamically resolve a helper'(assert) {
       this.registerHelper('hello-world', () => 'Hello, world!');
 
       if (DEBUG) {
@@ -734,7 +734,7 @@ moduleFor(
       }
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+    '@test Can use a curried dynamic helper'() {
       let val = defineSimpleHelper((value) => value);
 
       this.registerComponent('foo', {
@@ -751,15 +751,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
-      expectAssertion(() => {
-        this.registerComponent('bar', {
-          template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
-        });
-      }, /Cannot use the \(helper\) keyword yet, as it has not been implemented/);
-    }
-
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic helper with nested helpers'() {
+    '@test Can use a dynamic helper with nested helpers'() {
       let foo = defineSimpleHelper(() => 'world!');
       let bar = defineSimpleHelper((value) => 'Hello, ' + value);
 

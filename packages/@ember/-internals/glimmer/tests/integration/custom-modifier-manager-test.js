@@ -459,7 +459,7 @@ moduleFor(
       assert.equal(updateCount, 1);
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a modifier'() {
+    '@test Can resolve a modifier'() {
       this.registerModifier(
         'replace',
         defineSimpleModifier((element, [text]) => (element.innerHTML = text ?? 'Hello, world!'))
@@ -476,7 +476,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a modifier'(assert) {
+    '@test Cannot dynamically resolve a modifier'(assert) {
       this.registerModifier(
         'replace',
         defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'))
@@ -498,7 +498,7 @@ moduleFor(
       }
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can be curried'() {
+    '@test Can be curried'() {
       let val = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
 
       this.registerComponent('foo', {
@@ -515,15 +515,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot be curried when flag is not enabled'() {
-      expectAssertion(() => {
-        this.registerComponent('bar', {
-          template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
-        });
-      }, /Cannot use the \(modifier\) keyword yet, as it has not been implemented/);
-    }
-
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic modifier with a nested dynamic helper'() {
+    '@test Can use a dynamic modifier with a nested dynamic helper'() {
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let bar = defineSimpleModifier((element, [value]) => (element.innerHTML = value));
 
