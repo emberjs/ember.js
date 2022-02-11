@@ -5,7 +5,6 @@ import { Factory, FactoryClass, getOwner, Owner } from '@ember/-internals/owner'
 import { BucketCache } from '@ember/-internals/routing';
 import RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
-import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
 import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
@@ -312,8 +311,8 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     this._resetQueuedQueryParameterChanges();
     this.namespace = owner.lookup('application:main');
 
-    let bucketCache = owner.lookup(P`-bucket-cache:main`) as BucketCache | undefined;
-    assert('BUG: BucketCache should always be present', bucketCache !== undefined);
+    let bucketCache = owner.lookup(P`-bucket-cache:main`);
+    assert('BUG: BucketCache should always be present', bucketCache instanceof BucketCache);
     this._bucketCache = bucketCache;
 
     let routerService = owner.lookup('service:router') as RouterService<R> | undefined;
@@ -323,7 +322,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
   _initRouterJs(): void {
     let location = get(this, 'location') as IEmberLocation;
-    let router = this as EmberRouter<R>;
+    let router = this;
     const owner = getOwner(this);
     assert('Router is unexpectedly missing an owner', owner);
     let seen = Object.create(null);
@@ -1785,17 +1784,6 @@ function updatePaths(router: EmberRouter) {
   set(router, 'currentPath', path);
   set(router, 'currentRouteName', currentRouteName);
   set(router, 'currentURL', currentURL);
-
-  let owner = getOwner(router);
-  assert('Router is unexpectedly missing an owner', owner);
-  let appController = owner.lookup('controller:application') as Controller;
-
-  if (!appController) {
-    // appController might not exist when top-level loading/error
-    // substates have been entered since ApplicationRoute hasn't
-    // actually been entered at that point.
-    return;
-  }
 }
 
 function didBeginTransition(transition: Transition, router: EmberRouter) {

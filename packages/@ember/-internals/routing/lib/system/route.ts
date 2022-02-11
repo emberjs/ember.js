@@ -278,12 +278,12 @@ class Route<T = unknown>
     super(owner);
 
     if (owner) {
-      let router = owner.lookup('router:main') as EmberRouter;
-      let bucketCache = owner.lookup(P`-bucket-cache:main`) as BucketCache;
+      let router = owner.lookup('router:main');
+      let bucketCache = owner.lookup(P`-bucket-cache:main`);
 
       assert(
         'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
-        router && bucketCache
+        router instanceof EmberRouter && bucketCache instanceof BucketCache
       );
 
       this._router = router;
@@ -1593,7 +1593,7 @@ class Route<T = unknown>
       name = route.controllerName;
     }
 
-    let controller = owner.lookup(`controller:${name}`) as Controller;
+    let controller = owner.lookup(`controller:${name}`);
 
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
@@ -1601,6 +1601,11 @@ class Route<T = unknown>
     assert(
       `The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`,
       controller !== undefined || _skipAssert === true
+    );
+
+    assert(
+      `Expected controller:${name} to be an instance of Controller`,
+      controller === undefined || controller instanceof Controller
     );
 
     return controller;
@@ -1874,11 +1879,13 @@ class Route<T = unknown>
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
-    let controller = owner.lookup(`controller:${controllerName}`) as Controller;
+    let controller = owner.lookup(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
     if (controller) {
+      assert('Expected an instance of controller', controller instanceof Controller);
+
       // the developer has authored a controller class in their application for
       // this route find its query params and normalize their object shape them
       // merge in the query params for the route. As a mergedProperty,
@@ -2107,7 +2114,7 @@ function buildRenderOptions(
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
   let name, templateName, into, outlet, model;
-  let controller: Controller | string | undefined = undefined;
+  let controller;
 
   if (options) {
     into = options.into && options.into.replace(/\//g, '.');
@@ -2127,28 +2134,27 @@ function buildRenderOptions(
 
   if (controller === undefined) {
     if (isDefaultRender) {
-      controller = route.controllerName || (owner.lookup(`controller:${name}`) as Controller);
+      controller = route.controllerName || owner.lookup(`controller:${name}`);
     } else {
-      controller =
-        (owner.lookup(`controller:${name}`) as Controller) ||
-        route.controllerName ||
-        route.routeName;
+      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
     }
   }
 
   if (typeof controller === 'string') {
     let controllerName = controller;
-    controller = owner.lookup(`controller:${controllerName}`) as Controller;
+    controller = owner.lookup(`controller:${controllerName}`);
     assert(
       `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
       isDefaultRender || controller !== undefined
     );
   }
 
+  assert('Expected an instance of controller', controller instanceof Controller);
+
   if (model === undefined) {
     model = route.currentModel;
   } else {
-    (controller! as any).set('model', model);
+    controller.set('model', model);
   }
 
   let template = owner.lookup(`template:${templateName}`) as TemplateFactory;

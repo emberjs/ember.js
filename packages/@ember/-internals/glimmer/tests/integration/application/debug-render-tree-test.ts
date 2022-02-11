@@ -670,7 +670,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          let controller = (instance!.lookup('controller:application') as Controller)!;
+          let controller = instance!.lookup('controller:application');
+          assert('Expected an instance of controller', controller instanceof Controller);
           controller.set('message', 'World');
         });
 
@@ -716,7 +717,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
 
         runTask(() => {
-          let controller = (instance!.lookup('controller:application') as Controller)!;
+          let controller = instance!.lookup('controller:application');
+          assert('Expected an instance of controller', controller instanceof Controller);
           controller.set('message', undefined);
         });
 

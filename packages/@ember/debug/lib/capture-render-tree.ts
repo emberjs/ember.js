@@ -20,6 +20,8 @@ import { expect } from '@glimmer/util';
   @since 3.14.0
 */
 export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
+  // SAFETY: Ideally we'd assert here but that causes awkward circular requires since this is also in @ember/debug.
+  // This is only for debug stuff so not very risky.
   let renderer = expect(app.lookup('renderer:-dom') as Renderer, `BUG: owner is missing renderer`);
 
   return renderer.debugRenderTree.capture();

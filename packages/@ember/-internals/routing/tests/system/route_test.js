@@ -4,6 +4,7 @@ import Service, { service } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberRoute from '../../lib/system/route';
 import ObjectProxy from '@ember/-internals/runtime/lib/system/object_proxy';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -321,6 +322,10 @@ moduleFor(
     constructor() {
       super();
 
+      // Disable assertions for these tests so we can use fake controllers
+      this.originalAssert = getDebugFunction('assert');
+      setDebugFunction('assert', () => {});
+
       let owner = {
         lookup(fullName) {
           return lookupHash[fullName];
@@ -342,6 +347,7 @@ moduleFor(
     teardown() {
       runDestroy(routeOne);
       runDestroy(routeTwo);
+      setDebugFunction('assert', this.originalAssert);
     }
 
     ['@test route._qp does not crash if the controller has no QP, or setProperties'](assert) {

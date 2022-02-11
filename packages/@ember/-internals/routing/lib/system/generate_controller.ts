@@ -1,7 +1,7 @@
 import { get } from '@ember/-internals/metal';
 import { Factory, Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
-import { info } from '@ember/debug';
+import { assert, info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 /**
 @module ember
@@ -44,7 +44,8 @@ export default function generateController(owner: Owner, controllerName: string)
   generateControllerFactory(owner, controllerName);
 
   let fullName = `controller:${controllerName}`;
-  let instance = (owner.lookup(fullName) as Controller)!;
+  let instance = owner.lookup(fullName);
+  assert('Expected an instance of controller', instance instanceof Controller);
 
   if (DEBUG) {
     if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
