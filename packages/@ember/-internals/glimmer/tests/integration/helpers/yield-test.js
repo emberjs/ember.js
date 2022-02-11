@@ -26,7 +26,7 @@ moduleFor(
       this.assertText('[In layout:] [In Block:] Seattle');
     }
 
-    ['@feature(EMBER_NAMED_BLOCKS) can yield to a named block']() {
+    ['@test can yield to a named block']() {
       // This test fails when the default Ember component backing class is used:
       this.registerComponent('yield-comp', {
         template: '[In layout:] {{yield to="block"}}',
@@ -53,7 +53,7 @@ moduleFor(
       this.assertText('[In layout:] [In block:] Seattle');
     }
 
-    ['@feature(EMBER_NAMED_BLOCKS) <:else> and <:inverse> named blocks']() {
+    ['@test <:else> and <:inverse> named blocks']() {
       this.registerComponent('yielder', {
         template:
           '[:else][{{has-block "else"}}][{{yield to="else"}}]' +
