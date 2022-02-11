@@ -1,4 +1,3 @@
-import { EMBER_STRICT_MODE } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from '../plugins/index';
 import { EmberPrecompileOptions, PluginFunc } from '../types';
@@ -30,11 +29,6 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
     }
   );
 
-  if (!EMBER_STRICT_MODE) {
-    options.strictMode = false;
-    options.locals = undefined;
-  }
-
   if ('locals' in options && !options.locals) {
     // Glimmer's precompile options declare `locals` like:
     //    locals?: string[]
@@ -55,9 +49,7 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
 }
 
 export function transformsFor(options: EmberPrecompileOptions): readonly PluginFunc[] {
-  return EMBER_STRICT_MODE && options.strictMode
-    ? STRICT_MODE_TRANSFORMS
-    : RESOLUTION_MODE_TRANSFORMS;
+  return options.strictMode ? STRICT_MODE_TRANSFORMS : RESOLUTION_MODE_TRANSFORMS;
 }
 
 export default function compileOptions(
