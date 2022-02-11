@@ -1,5 +1,4 @@
 import AssertAgainstAttrs from './assert-against-attrs';
-import AssertAgainstDynamicHelpersModifiers from './assert-against-dynamic-helpers-modifiers';
 import AssertAgainstNamedOutlets from './assert-against-named-outlets';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
@@ -11,8 +10,6 @@ import TransformInElement from './transform-in-element';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
-
-import { EMBER_DYNAMIC_HELPERS_AND_MODIFIERS } from '@ember/canary-features';
 
 // order of plugins is important
 export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
@@ -28,9 +25,7 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     TransformEachTrackArray,
     AssertAgainstNamedOutlets,
     TransformWrapMountAndOutlet,
-    EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
-      ? TransformResolutions
-      : AssertAgainstDynamicHelpersModifiers,
+    TransformResolutions,
   ].filter(notNull)
 );
 
@@ -45,7 +40,6 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze(
     TransformEachTrackArray,
     AssertAgainstNamedOutlets,
     TransformWrapMountAndOutlet,
-    !EMBER_DYNAMIC_HELPERS_AND_MODIFIERS ? AssertAgainstDynamicHelpersModifiers : null,
   ].filter(notNull)
 );
 
