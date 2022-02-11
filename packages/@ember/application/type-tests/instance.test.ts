@@ -34,35 +34,25 @@ instance.hasRegistration();
 
 expectTypeOf(instance.boot()).toEqualTypeOf<void>();
 
-const bootOptions = new BootOptions({
+const bootOptions: BootOptions = {
   isBrowser: true,
   shouldRender: false,
   document: window.document,
   rootElement: '#ember-application',
   location: 'history',
-});
+};
 
-expectTypeOf(bootOptions.isBrowser).toEqualTypeOf<boolean>();
-expectTypeOf(bootOptions.shouldRender).toEqualTypeOf<boolean>();
-expectTypeOf(bootOptions.document).toEqualTypeOf<Document | null>();
-expectTypeOf(bootOptions.rootElement).toEqualTypeOf<string | Element | null>();
-expectTypeOf(bootOptions.location).toEqualTypeOf<string | null>();
+instance.boot(bootOptions);
 
-new BootOptions({
-  // @ts-expect-error Incorrect type
-  isBrowser: 1,
-  // @ts-expect-error Incorrect type
-  shouldRender: 1,
-  // @ts-expect-error Incorrect type
-  document: window,
-  // @ts-expect-error Incorrect type
-  rootElement: 1,
-  // @ts-expect-error Incorrect type
-  location: 1,
-});
+instance.boot({ isBrowser: true });
 
-new BootOptions({
-  rootElement: window.document.createElement('div'),
-});
-
-new BootOptions();
+// @ts-expect-error Incorrect type
+instance.boot({ isBrowser: 1 });
+// @ts-expect-error Incorrect type
+instance.boot({ shouldRender: 1 });
+// @ts-expect-error Incorrect type
+instance.boot({ document: window });
+// @ts-expect-error Incorrect type
+instance.boot({ rootElement: 1 });
+// @ts-expect-error Incorrect type
+instance.boot({ location: 1 });
