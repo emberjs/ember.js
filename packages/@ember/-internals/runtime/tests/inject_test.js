@@ -2,7 +2,7 @@ import { inject } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../lib/system/object';
 import { buildOwner } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'inject',
@@ -18,6 +18,8 @@ moduleFor(
       expectAssertion(() => {
         owner.lookup('foo:main');
       }, /Attempting to inject an unknown injection: 'bar:baz'/);
+
+      runDestroy(owner);
     }
 
     ['@test factories should return a list of lazy injection full names'](assert) {

@@ -113,6 +113,8 @@ moduleFor(
       setOwner(controller, owner);
 
       controller.send('poke');
+
+      runDestroy(owner);
     }
 
     ["@test Action can be handled by a superclass' actions object"](assert) {
@@ -223,9 +225,9 @@ moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
     ['@test defining a controller on a non-controller should fail assertion']() {
-      expectAssertion(function () {
-        let owner = buildOwner();
+      let owner = buildOwner();
 
+      expectAssertion(function () {
         let AnObject = EmberObject.extend({
           foo: injectController('bar'),
         });
@@ -235,6 +237,8 @@ moduleFor(
 
         owner.lookup('foo:main');
       }, /Defining `foo` as an injected controller property on a non-controller \(`foo:main`\) is not allowed/);
+
+      runDestroy(owner);
     }
 
     ['@test controllers can be injected into controllers'](assert) {
@@ -257,6 +261,8 @@ moduleFor(
         postController.get('postsController'),
         'controller.posts is injected'
       );
+
+      runDestroy(owner);
     }
 
     ['@test services can be injected into controllers'](assert) {
@@ -275,6 +281,8 @@ moduleFor(
       let authService = owner.lookup('service:auth');
 
       assert.equal(authService, appController.get('authService'), 'service.auth is injected');
+
+      runDestroy(owner);
     }
   }
 );
@@ -297,6 +305,8 @@ moduleFor(
       let index = owner.lookup('controller:index');
 
       assert.ok(index.main instanceof Controller, 'controller injected correctly');
+
+      runDestroy(owner);
     }
 
     ['@test uses the decorated property key if not provided'](assert) {
@@ -314,6 +324,8 @@ moduleFor(
       let index = owner.lookup('controller:index');
 
       assert.ok(index.main instanceof Controller, 'controller injected correctly');
+
+      runDestroy(owner);
     }
   }
 );

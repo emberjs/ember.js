@@ -95,14 +95,14 @@ class OutletComponentManager
       let currentOwner = valueForRef(currentStateRef)!.render!.owner;
 
       if (parentOwner && parentOwner !== currentOwner) {
-        let engine = currentOwner as EngineInstance;
+        assert(
+          'Expected currentOwner to be an EngineInstance',
+          currentOwner instanceof EngineInstance
+        );
 
-        assert('invalid engine: missing mountPoint', typeof currentOwner.mountPoint === 'string');
-        assert('invalid engine: missing routable', currentOwner.routable === true);
+        let mountPoint = currentOwner.mountPoint;
 
-        let mountPoint = engine.mountPoint!;
-
-        state.engine = engine;
+        state.engine = currentOwner;
         state.engineBucket = { mountPoint };
       }
     }

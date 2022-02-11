@@ -391,6 +391,8 @@ moduleFor(
       let authService = owner.lookup('service:auth');
 
       assert.equal(authService, appRoute.get('authService'), 'service.auth is injected');
+
+      runDestroy(owner);
     }
   }
 );
@@ -454,6 +456,8 @@ moduleFor(
         { c: 'd' },
         'params match for `posts` route in engine'
       );
+
+      runDestroy(engineInstance);
     }
 
     ["@test modelFor considers an engine's mountPoint"](assert) {
@@ -503,6 +507,8 @@ moduleFor(
 
       assert.strictEqual(route.modelFor('application'), applicationModel);
       assert.strictEqual(route.modelFor('posts'), postsModel);
+
+      runDestroy(engineInstance);
     }
 
     ["@test transitionTo considers an engine's mountPoint"](assert) {
@@ -548,6 +554,8 @@ moduleFor(
           'passes query param only transitions through'
         );
       }, /Calling transitionTo on a route is deprecated/);
+
+      runDestroy(engineInstance);
     }
 
     ["@test intermediateTransitionTo considers an engine's mountPoint"](assert) {
@@ -582,6 +590,8 @@ moduleFor(
       let queryParams = {};
       route.intermediateTransitionTo(queryParams);
       assert.strictEqual(lastRoute, queryParams, 'passes query param only transitions through');
+
+      runDestroy(engineInstance);
     }
 
     ["@test replaceWith considers an engine's mountPoint"](assert) {
@@ -627,6 +637,8 @@ moduleFor(
           'passes query param only transitions through'
         );
       }, /Calling replaceWith on a route is deprecated/);
+
+      runDestroy(engineInstance);
     }
   }
 );

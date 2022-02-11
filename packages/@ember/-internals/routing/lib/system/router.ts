@@ -45,6 +45,7 @@ import Router, {
   TransitionState,
 } from 'router_js';
 import { EngineRouteInfo } from './engines';
+import EngineInstance from '@ember/engine/instance';
 
 function defaultDidTransition<R extends Route>(
   this: EmberRouter<R>,
@@ -110,11 +111,6 @@ interface OutletState<T extends RenderOutletState = RenderOutletState> {
   render: T;
   outlets: NestedOutletState;
   wasUsed?: boolean;
-}
-
-interface EngineInstance extends Owner {
-  boot(): void;
-  destroy(): void;
 }
 
 export interface QueryParam {
@@ -1408,7 +1404,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
     if (!engineInstance) {
       let owner = getOwner(this);
-      assert('Router is unexpectedly missing an owner', owner);
+      assert('Expected router to have EngineInstance as owner', owner instanceof EngineInstance);
 
       assert(
         `You attempted to mount the engine '${name}' in your router map, but the engine can not be found.`,

@@ -254,6 +254,7 @@ export default Mixin.create({
     @param  factoryNameOrType {String}
     @param  property {String}
     @param  injectionName {String}
+    @deprecated
   **/
   inject: registryAlias('injection'),
 });

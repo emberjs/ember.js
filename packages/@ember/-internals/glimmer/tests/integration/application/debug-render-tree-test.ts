@@ -7,12 +7,12 @@ import {
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
-import { EngineInstanceOptions, Owner } from '@ember/-internals/owner';
+import { Owner } from '@ember/-internals/owner';
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { assert, captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
-import EngineInstance from '@ember/engine/instance';
+import EngineInstance, { EngineInstanceOptions } from '@ember/engine/instance';
 import { CapturedRenderNode } from '@glimmer/interfaces';
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';

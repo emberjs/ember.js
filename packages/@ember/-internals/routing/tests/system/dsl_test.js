@@ -1,5 +1,5 @@
 import EmberRouter from '../../lib/system/router';
-import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Ember Router DSL',
@@ -8,19 +8,20 @@ moduleFor(
       super();
       this.Router = class extends EmberRouter {};
 
-      this.routerInstance = new this.Router(
-        buildOwner({
-          ownerOptions: { routable: true },
-        })
-      );
+      this.owner = buildOwner({
+        ownerOptions: { routable: true },
+      });
+      this.routerInstance = new this.Router(this.owner);
     }
 
     teardown() {
       this.Router = null;
       this.routerInstance = null;
+      runDestroy(this.owner);
     }
 
     ['@test should fail when using a reserved route name'](assert) {
+      let owners = [];
       let reservedNames = ['basic', 'application'];
 
       assert.expect(reservedNames.length);
@@ -33,9 +34,13 @@ moduleFor(
             this.route(reservedName);
           });
 
-          new Router(buildOwner())._initRouterJs();
+          let owner = buildOwner();
+          owners.push(owner);
+          new Router(owner)._initRouterJs();
         }, "'" + reservedName + "' cannot be used as a route name.");
       });
+
+      owners.forEach((o) => runDestroy(o));
     }
 
     ['@test [GH#16642] better error when using a colon in a route name']() {
@@ -186,14 +191,14 @@ moduleFor(
     constructor() {
       super();
       this.Router = class extends EmberRouter {};
-      this.routerInstance = new this.Router(
-        buildOwner({
-          ownerOptions: { routable: true },
-        })
-      );
+      this.owner = buildOwner({
+        ownerOptions: { routable: true },
+      });
+      this.routerInstance = new this.Router(this.owner);
     }
 
     teardown() {
+      runDestroy(this.owner);
       this.Router = null;
       this.routerInstance = null;
     }

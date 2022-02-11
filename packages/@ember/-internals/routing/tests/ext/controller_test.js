@@ -1,6 +1,6 @@
 import { setOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
-import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   '@ember/-internals/routing/ext/controller',
@@ -51,6 +51,8 @@ moduleFor(
           'passes query param only transitions through'
         );
       }, /Calling transitionToRoute on a controller is deprecated/);
+
+      runDestroy(engineInstance);
     }
 
     ["@test replaceRoute considers an engine's mountPoint"](assert) {
@@ -96,6 +98,8 @@ moduleFor(
           'passes query param only transitions through'
         );
       }, /Calling replaceRoute on a controller is deprecated/);
+
+      runDestroy(engineInstance);
     }
   }
 );

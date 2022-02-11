@@ -1,6 +1,6 @@
 import Service, { inject, service } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { buildOwner } from 'internal-test-helpers';
+import { buildOwner, runDestroy } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -21,6 +21,8 @@ moduleFor(
       let foo = owner.lookup('foo:main');
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
+
+      runDestroy(owner);
     }
 
     ['@test uses the decorated property key if not provided'](assert) {
@@ -38,6 +40,8 @@ moduleFor(
       let foo = owner.lookup('foo:main');
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
+
+      runDestroy(owner);
     }
   }
 );
@@ -60,6 +64,8 @@ moduleFor(
       let foo = owner.lookup('foo:main');
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
+
+      runDestroy(owner);
     }
 
     ['@test uses the decorated property key if not provided'](assert) {
@@ -77,6 +83,8 @@ moduleFor(
       let foo = owner.lookup('foo:main');
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
+
+      runDestroy(owner);
     }
   }
 );
