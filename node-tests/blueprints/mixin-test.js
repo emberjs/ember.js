@@ -5,7 +5,6 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const EOL = require('os').EOL;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
@@ -22,7 +21,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo'], (_file) => {
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-app/mixins/foo';"
@@ -37,7 +36,7 @@ describe('Blueprint: mixin', function () {
 
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-app/mixins/foo';"
@@ -49,7 +48,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo/bar'], (_file) => {
         expect(_file('app/mixins/foo/bar.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
           "import FooBarMixin from 'my-app/mixins/foo/bar';"
@@ -69,7 +68,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo', '--pod'], (_file) => {
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-app/mixins/foo';"
@@ -84,7 +83,7 @@ describe('Blueprint: mixin', function () {
 
         expect(_file('app/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-app/mixins/foo';"
@@ -96,7 +95,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo/bar', '--pod'], (_file) => {
         expect(_file('app/mixins/foo/bar.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
           "import FooBarMixin from 'my-app/mixins/foo/bar';"
@@ -121,7 +120,7 @@ describe('Blueprint: mixin', function () {
         return emberGenerateDestroy(['mixin', 'foo', '--pod'], (_file) => {
           expect(_file('app/mixins/foo.js'))
             .to.contain("import Mixin from '@ember/object/mixin';")
-            .to.contain(`export default Mixin.create({${EOL}});`);
+            .to.contain(`export default Mixin.create({});`);
 
           expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
             "import FooMixin from 'my-app/mixins/foo';"
@@ -136,7 +135,7 @@ describe('Blueprint: mixin', function () {
 
           expect(_file('app/mixins/foo.js'))
             .to.contain("import Mixin from '@ember/object/mixin';")
-            .to.contain(`export default Mixin.create({${EOL}});`);
+            .to.contain(`export default Mixin.create({});`);
 
           expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
             "import FooMixin from 'my-app/mixins/foo';"
@@ -148,7 +147,7 @@ describe('Blueprint: mixin', function () {
         return emberGenerateDestroy(['mixin', 'foo/bar', '--pod'], (_file) => {
           expect(_file('app/mixins/foo/bar.js'))
             .to.contain("import Mixin from '@ember/object/mixin';")
-            .to.contain(`export default Mixin.create({${EOL}});`);
+            .to.contain(`export default Mixin.create({});`);
 
           expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
             "import FooBarMixin from 'my-app/mixins/foo/bar';"
@@ -167,7 +166,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo'], (_file) => {
         expect(_file('addon/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-addon/mixins/foo';"
@@ -184,7 +183,7 @@ describe('Blueprint: mixin', function () {
 
         expect(_file('addon/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-addon/mixins/foo';"
@@ -198,7 +197,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo/bar'], (_file) => {
         expect(_file('addon/mixins/foo/bar.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
           "import FooBarMixin from 'my-addon/mixins/foo/bar';"
@@ -212,7 +211,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo/bar/baz'], (_file) => {
         expect(_file('addon/mixins/foo/bar/baz.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo/bar/baz-test.js')).to.contain(
           "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
@@ -226,7 +225,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo/bar/baz', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/mixins/foo/bar/baz.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('addon/mixins/foo/bar/baz.js')).to.not.exist;
       });
@@ -238,7 +237,7 @@ describe('Blueprint: mixin', function () {
 
         expect(_file('tests/dummy/app/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('addon/mixins/foo.js')).to.not.exist;
       });
@@ -254,7 +253,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-addon/mixins/foo';"
@@ -269,7 +268,7 @@ describe('Blueprint: mixin', function () {
 
         expect(_file('lib/my-addon/addon/mixins/foo.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
           "import FooMixin from 'my-addon/mixins/foo';"
@@ -281,7 +280,7 @@ describe('Blueprint: mixin', function () {
       return emberGenerateDestroy(['mixin', 'foo/bar', '--in-repo-addon=my-addon'], (_file) => {
         expect(_file('lib/my-addon/addon/mixins/foo/bar.js'))
           .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain(`export default Mixin.create({${EOL}});`);
+          .to.contain(`export default Mixin.create({});`);
 
         expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
           "import FooBarMixin from 'my-addon/mixins/foo/bar';"

@@ -7,5 +7,5 @@ export default class <%= classifiedModuleName %>Route extends Route {<% if (hasD
      * based on that dynamic segment here in the model hook.
      */
     return params;
-  }<%}%>
-}
+  }
+<%}%>}

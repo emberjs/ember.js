@@ -3,10 +3,10 @@ import moduleForAcceptance from 'my-app/tests/helpers/module-for-acceptance';
 
 moduleForAcceptance('Acceptance | foo');
 
-test('visiting /foo', function(assert) {
+test('visiting /foo', function (assert) {
   visit('/foo');
 
-  andThen(function() {
+  andThen(function () {
     assert.strictEqual(currentURL(), '/foo');
   });
 });

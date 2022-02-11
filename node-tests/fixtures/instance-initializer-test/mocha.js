@@ -5,23 +5,23 @@ import { run } from '@ember/runloop';
 import { initialize } from 'my-app/instance-initializers/foo';
 import destroyApp from '../../helpers/destroy-app';
 
-describe('Unit | Instance Initializer | foo', function() {
+describe('Unit | Instance Initializer | foo', function () {
   let application, appInstance;
 
-  beforeEach(function() {
-    run(function() {
+  beforeEach(function () {
+    run(function () {
       application = Application.create();
       appInstance = application.buildInstance();
     });
   });
 
-  afterEach(function() {
+  afterEach(function () {
     run(appInstance, 'destroy');
     destroyApp(application);
   });
 
   // TODO: Replace this with your real tests.
-  it('works', function() {
+  it('works', function () {
     initialize(appInstance);
 
     // you would normally confirm the results of the initializer here
