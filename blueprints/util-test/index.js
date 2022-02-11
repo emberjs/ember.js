@@ -8,6 +8,8 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 module.exports = useTestFrameworkDetector({
   description: 'Generates a util unit test.',
 
+  shouldTransformTypeScript: true,
+
   fileMapTokens() {
     return {
       __root__() {

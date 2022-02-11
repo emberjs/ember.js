@@ -2,6 +2,9 @@
 
 module.exports = {
   description: 'Generates a simple utility module/function.',
+
+  shouldTransformTypeScript: true,
+
   normalizeEntityName: function (entityName) {
     return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files
   },
