@@ -18,7 +18,9 @@ module('Unit | Initializer | foo', function (hooks) {
       initialize,
     });
 
-    this.application = this.TestApplication.create({ autoboot: false });
+    this.application = this.TestApplication.create({
+      autoboot: false,
+    });
   });
 
   hooks.afterEach(function () {

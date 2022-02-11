@@ -9,6 +9,8 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 module.exports = useTestFrameworkDetector({
   description: 'Generates an initializer unit test.',
 
+  shouldTransformTypeScript: true,
+
   fileMapTokens: function () {
     return {
       __root__() {
