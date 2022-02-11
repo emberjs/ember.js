@@ -13,6 +13,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     let bootOptions = this.getBootOptions();
 
     let owner = (this.owner = buildOwner({
+      ownerType: 'engine',
       ownerOptions: this.getOwnerOptions(),
       resolver: this.getResolver(),
       bootOptions,

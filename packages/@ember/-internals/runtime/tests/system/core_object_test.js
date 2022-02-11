@@ -1,7 +1,13 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { get, set, observer } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
-import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AbstractTestCase,
+  buildOwner,
+  runDestroy,
+  runLoopSettled,
+} from 'internal-test-helpers';
 import { track } from '@glimmer/validator';
 import { destroy } from '@glimmer/destroyable';
 import { run } from '@ember/runloop';
@@ -54,6 +60,8 @@ moduleFor(
       owner.register('thing:one', someProxyishThing, { instantiate: false });
 
       assert.equal(owner.lookup('thing:one'), someProxyishThing);
+
+      runDestroy(owner);
     }
 
     ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {

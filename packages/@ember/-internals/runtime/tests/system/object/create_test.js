@@ -4,7 +4,7 @@ import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
-import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
@@ -33,6 +33,8 @@ moduleFor(
 
       let obj = owner.lookup('foo:main');
       assert.equal(obj.foo.bar, 'foo');
+
+      runDestroy(owner);
     }
 
     ['@test implicit injections raises deprecation']() {
@@ -49,6 +51,8 @@ moduleFor(
         () => owner.inject('foo:main', 'foo', 'service:foo'),
         /As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject `foo` on `foo:main`, or look it up directly using the `getOwner` API./
       );
+
+      runDestroy(owner);
     }
 
     ['@test calls computed property setters'](assert) {
