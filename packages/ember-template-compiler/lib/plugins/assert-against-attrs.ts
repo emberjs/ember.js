@@ -55,12 +55,11 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
       },
 
       PathExpression(node: AST.PathExpression): AST.Node | void {
-        if (isAttrs(node, stack[stack.length - 1]!)) {
+        if (isAttrs(node, stack[stack.length - 1]!, moduleName)) {
           let path = b.path(node.original.substr(6));
 
           assert(
-            `Using {{attrs}} to reference named arguments is not supported. {{attrs.${
-              path.original
+            `Using {{attrs}} to reference named arguments is not supported. {{attrs.${path.original
             }}} should be updated to {{@${path.original}}}. ${calculateLocationDisplay(
               moduleName,
               node.loc
@@ -73,7 +72,20 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
   };
 }
 
-function isAttrs(node: AST.PathExpression, symbols: string[]) {
+function assertMessage(moduleName: string, node: AST.PathExpression): string {
+  let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
+
+  return `String "${node.original}" could not be used as a path. ${sourceInformation}`;
+}
+
+
+function isAttrs(node: AST.PathExpression, symbols: string[], moduleName: string = '') {
+
+  if (!Array.isArray(node.parts)) {
+    assert(assertMessage(moduleName, node));
+    return false;
+  }
+
   let name = node.parts[0];
 
   if (name && symbols.indexOf(name) !== -1) {
@@ -81,7 +93,7 @@ function isAttrs(node: AST.PathExpression, symbols: string[]) {
   }
 
   if (name === 'attrs') {
-    if (node.this === true) {
+    if (node.head.type === 'ThisHead') {
       node.parts.shift();
       node.original = node.original.slice(5);
     }

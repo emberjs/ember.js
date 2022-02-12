@@ -5,7 +5,10 @@ import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
 
 export default class extends AbstractTestCase {
-  assertTransformed(before: string, after: string): void {
+  assertTransformed(before: string, after: undefined | string): void {
+    if (typeof after === 'undefined') {
+      after = before;
+    }
     this.assert.deepEqual(deloc(ast(before)), deloc(ast(after)));
   }
 }
