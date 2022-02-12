@@ -55,12 +55,12 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
       },
 
       PathExpression(node: AST.PathExpression): AST.Node | void {
-        if (isAttrs(node, stack[stack.length - 1]!, moduleName)) {
+        if (isAttrs(node, stack[stack.length - 1] || [], moduleName)) {
           let path = b.path(node.original.substr(6));
+          let original = path.original;
 
           assert(
-            `Using {{attrs}} to reference named arguments is not supported. {{attrs.${path.original
-            }}} should be updated to {{@${path.original}}}. ${calculateLocationDisplay(
+            `Using {{attrs}} to reference named arguments is not supported. {{attrs.${original}}} should be updated to {{@${original}}}. ${calculateLocationDisplay(
               moduleName,
               node.loc
             )}`,
@@ -78,9 +78,7 @@ function assertMessage(moduleName: string, node: AST.PathExpression): string {
   return `String "${node.original}" could not be used as a path. ${sourceInformation}`;
 }
 
-
-function isAttrs(node: AST.PathExpression, symbols: string[], moduleName: string = '') {
-
+function isAttrs(node: AST.PathExpression, symbols: string[], moduleName = '') {
   if (!Array.isArray(node.parts)) {
     assert(assertMessage(moduleName, node));
     return false;
