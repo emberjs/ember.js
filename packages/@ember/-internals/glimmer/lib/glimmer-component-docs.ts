@@ -14,7 +14,7 @@
   Ember ships with two types of JavaScript classes for components:
 
   1. Glimmer components, imported from `@glimmer/component`, which are the
-     default component's for Ember Octane (3.15) and more recent editions.
+     default components for Ember Octane (3.15) and more recent editions.
   2. Classic components, imported from `@ember/component`, which were the
      default for older editions of Ember (pre 3.15).
 
@@ -240,7 +240,7 @@
   location as the template file, with the same name, and export a subclass
   of `Component` as the default value. For example, to add Javascript to the
   `PersonProfile` component which we defined above, we would create
-  `app/comopnents/person-profile.js` and export our class as the default, like
+  `app/components/person-profile.js` and export our class as the default, like
   so:
 
   ```app/components/person-profile.js
