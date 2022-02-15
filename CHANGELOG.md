@@ -1,3 +1,24 @@
+## v0.84.0 (2022-02-15)
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/manager`
+  * [#1348](https://github.com/glimmerjs/glimmer-vm/pull/1348) Implement Default Helper Manager (RFC #756) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1375](https://github.com/glimmerjs/glimmer-vm/pull/1375) fix: buildElement options should be optional ([@runspired](https://github.com/runspired))
+
+#### :memo: Documentation
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1346](https://github.com/glimmerjs/glimmer-vm/pull/1346) Fix comma splice in `on` modifier error message. ([@muziejus](https://github.com/muziejus))
+
+#### Committers: 5
+- Aaron Sikes ([@courajs](https://github.com/courajs))
+- Chris Thoburn ([@runspired](https://github.com/runspired))
+- James C. Davis ([@jamescdavis](https://github.com/jamescdavis))
+- Moacir P. de Sá Pereira ([@muziejus](https://github.com/muziejus))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.83.1 (2021-11-08)
 
 #### :bug: Bug Fix
