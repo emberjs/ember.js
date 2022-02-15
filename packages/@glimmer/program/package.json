@@ -1,16 +1,16 @@
 {
   "name": "@glimmer/program",
-  "version": "0.83.1",
+  "version": "0.84.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
     "@glimmer/env": "0.1.7",
-    "@glimmer/util": "0.83.1",
-    "@glimmer/opcode-compiler": "0.83.1",
-    "@glimmer/manager": "0.83.1",
-    "@glimmer/interfaces": "0.83.1",
-    "@glimmer/encoder": "0.83.1"
+    "@glimmer/util": "0.84.0",
+    "@glimmer/opcode-compiler": "0.84.0",
+    "@glimmer/manager": "0.84.0",
+    "@glimmer/interfaces": "0.84.0",
+    "@glimmer/encoder": "0.84.0"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "0.83.1"
+    "@glimmer/local-debug-flags": "0.84.0"
   }
 }
