@@ -238,7 +238,7 @@ moduleFor(
       this.assertText('much dynamicism');
     }
 
-    ['@test RouterService#transitionTo with basic query params does not remove query param defaults'](
+    ['@test RouterService#transitionTo with basic query params removes query param defaults'](
       assert
     ) {
       assert.expect(1);
@@ -258,7 +258,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          assert.equal(this.routerService.get('currentURL'), '/child');
         });
     }
 
@@ -302,14 +302,14 @@ moduleFor(
         })
       );
 
-      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+      let queryParams = this.buildQueryParams({ sort: 'DESC' });
 
       return this.visit('/')
         .then(() => {
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -328,14 +328,14 @@ moduleFor(
         })
       );
 
-      let queryParams = this.buildQueryParams({ url_sort: 'ASC' });
+      let queryParams = this.buildQueryParams({ url_sort: 'DESC' });
 
       return this.visit('/')
         .then(() => {
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=DESC');
         });
     }
 

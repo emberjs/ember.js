@@ -117,9 +117,10 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.ok(this.routerService.isActive('parent.child', queryParams));
+          assert.ok(this.routerService.isActive('parent.child', queryParams), 'route is active');
           assert.notOk(
-            this.routerService.isActive('parent.child', this.buildQueryParams({ sort: 'DESC' }))
+            this.routerService.isActive('parent.child', this.buildQueryParams({ sort: 'DESC' })),
+            'route with QPs is not active'
           );
         });
     }
