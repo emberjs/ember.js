@@ -1,7 +1,8 @@
 'use strict';
 
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
+
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 
 const path = require('path');
 
@@ -12,7 +13,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    typescriptBlueprintPolyfill(this);
+    maybePolyfillTypeScriptBlueprints(this);
   },
 
   filesPath() {

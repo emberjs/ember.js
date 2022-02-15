@@ -1,6 +1,6 @@
 'use strict';
 
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 
 module.exports = {
   description: 'Generates a controller.',
@@ -9,7 +9,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    typescriptBlueprintPolyfill(this);
+    maybePolyfillTypeScriptBlueprints(this);
   },
 
   normalizeEntityName: function (entityName) {

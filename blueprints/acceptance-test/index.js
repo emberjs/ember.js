@@ -5,8 +5,8 @@ const path = require('path');
 const pathUtil = require('ember-cli-path-utils');
 const stringUtils = require('ember-cli-string-utils');
 
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 const useTestFrameworkDetector = require('../test-framework-detector');
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates an acceptance test for a feature.',
@@ -15,7 +15,7 @@ module.exports = useTestFrameworkDetector({
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    typescriptBlueprintPolyfill(this);
+    maybePolyfillTypeScriptBlueprints(this);
   },
 
   locals: function (options) {

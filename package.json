@@ -42,7 +42,9 @@
     "lint:tsc": "tsc --noEmit",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
-    "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
+    "test:blueprints:js": "mocha node-tests/blueprints/**/*-test.js",
+    "test:blueprints:ts": "EMBER_TYPESCRIPT_BLUEPRINTS=true yarn test:blueprints:js",
+    "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js"
   },

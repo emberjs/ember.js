@@ -3,7 +3,8 @@
 const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const semver = require('semver');
-const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
+
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -14,7 +15,7 @@ module.exports = useTestFrameworkDetector({
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    typescriptBlueprintPolyfill(this);
+    maybePolyfillTypeScriptBlueprints(this);
   },
 
   fileMapTokens: function () {
