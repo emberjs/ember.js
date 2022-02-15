@@ -107,7 +107,7 @@ moduleFor(
         });
     }
 
-    ['@test RouterService#replaceWith with basic query params does not remove query param defaults'](
+    ['@test RouterService#replaceWith with basic query params removes query param defaults'](
       assert
     ) {
       assert.expect(1);
@@ -133,7 +133,7 @@ moduleFor(
           return this.routerService.replaceWith('parent.child', queryParams);
         })
         .then(() => {
-          assert.deepEqual(this.state, ['/', '/child?sort=ASC']);
+          assert.deepEqual(this.state, ['/', '/child']);
         });
     }
   }
