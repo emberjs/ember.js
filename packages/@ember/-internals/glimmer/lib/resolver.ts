@@ -1,6 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
+import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -147,8 +148,11 @@ const BUILTIN_HELPERS = {
   fn,
   get,
   hash,
-  'unique-id': uniqueId,
 };
+
+if (EMBER_UNIQUE_ID_HELPER) {
+  BUILTIN_HELPERS['unique-id'] = uniqueId;
+}
 
 const BUILTIN_KEYWORD_MODIFIERS = {
   action: actionModifier,
