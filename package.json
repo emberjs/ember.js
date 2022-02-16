@@ -1,8 +1,10 @@
 {
   "name": "ember-source",
-  "version": "4.4.0-alpha.1",
+  "version": "4.4.0-alpha.2",
   "description": "A JavaScript framework for creating ambitious web applications",
-  "keywords": ["ember-addon"],
+  "keywords": [
+    "ember-addon"
+  ],
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
