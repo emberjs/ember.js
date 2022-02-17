@@ -37,7 +37,7 @@ type Compare = -1 | 0 | 1;
 //                                              SSt  `------'`
 function spaceship(a: number, b: number): Compare {
   let diff = a - b;
-  // SAFETY: It will be one of the known values
+  // SAFETY: Number casts true into 1 and false into 0. Therefore, this must end up as one of the Compare values.
   return (Number(diff > 0) - Number(diff < 0)) as Compare;
 }
 

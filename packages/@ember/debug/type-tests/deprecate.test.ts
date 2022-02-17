@@ -59,5 +59,12 @@ deprecate('foo', true, {
   for: 'my-module',
 });
 
+deprecate('foo', true, {
+  id: 'foo',
+  until: '5.0.0',
+  // @ts-expect-error requires 'available' if 'enabled' present
+  since: { enabled: '1.0.0' },
+});
+
 // @ts-expect-error inverted order
 deprecate(typeof str === 'string', 'Must pass a string');
