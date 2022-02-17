@@ -31,6 +31,6 @@ import isBlank from './is_blank';
   @since 1.8.0
   @public
 */
-export default function isPresent<T>(obj: T): obj is Exclude<T, null | undefined> {
+export default function isPresent<T>(obj: T | null | undefined): obj is T {
   return !isBlank(obj);
 }
