@@ -21,7 +21,7 @@
 
   @method unique-id
   @for Ember.Templates.helpers
-  @since 4.1.0
+  @since 4.3.0
   @public
   */
 
