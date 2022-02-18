@@ -23,7 +23,7 @@ if (DEBUG) {
   };
 }
 
-interface MaybeHasUnknownProperty {
+export interface MaybeHasUnknownProperty {
   unknownProperty?: (keyName: string) => any;
 }
 

@@ -47,9 +47,9 @@
   @return {Boolean}
   @public
 */
-export default function isEqual(a, b) {
-  if (a && typeof a.isEqual === 'function') {
-    return a.isEqual(b);
+export default function isEqual(a: unknown, b: unknown): boolean {
+  if (a && typeof (a as IsEqual).isEqual === 'function') {
+    return (a as IsEqual).isEqual(b);
   }
 
   if (a instanceof Date && b instanceof Date) {
@@ -57,4 +57,8 @@ export default function isEqual(a, b) {
   }
 
   return a === b;
+}
+
+interface IsEqual {
+  isEqual(val: unknown): boolean;
 }

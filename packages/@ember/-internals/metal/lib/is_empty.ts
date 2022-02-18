@@ -1,4 +1,4 @@
-import { get } from './property_get';
+import { get, MaybeHasUnknownProperty } from './property_get';
 /**
  @module @ember/utils
 */
@@ -13,7 +13,6 @@ import { get } from './property_get';
   to check emptiness.
 
   ```javascript
-  isEmpty();                 // true
   isEmpty(null);             // true
   isEmpty(undefined);        // true
   isEmpty('');               // true
@@ -35,33 +34,40 @@ import { get } from './property_get';
   @return {Boolean}
   @public
 */
-export default function isEmpty(obj: any): boolean {
-  let none = obj === null || obj === undefined;
-  if (none) {
-    return none;
+export default function isEmpty(obj: unknown): boolean {
+  if (obj === null || obj === undefined) {
+    return true;
   }
 
-  if (typeof obj.unknownProperty !== 'function' && typeof obj.size === 'number') {
-    return !obj.size;
+  if (
+    typeof (obj as MaybeHasUnknownProperty).unknownProperty !== 'function' &&
+    typeof (obj as HasSize).size === 'number'
+  ) {
+    return !(obj as HasSize).size;
   }
 
-  let objectType = typeof obj;
-
-  if (objectType === 'object') {
+  if (typeof obj === 'object') {
     let size = get(obj, 'size');
     if (typeof size === 'number') {
       return !size;
     }
-
     let length = get(obj, 'length');
     if (typeof length === 'number') {
       return !length;
     }
   }
 
-  if (typeof obj.length === 'number' && objectType !== 'function') {
-    return !obj.length;
+  if (typeof (obj as HasLength).length === 'number' && typeof obj !== 'function') {
+    return !(obj as HasLength).length;
   }
 
   return false;
+}
+
+interface HasSize {
+  size: number;
+}
+
+interface HasLength {
+  length: number;
 }

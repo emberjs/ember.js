@@ -44,6 +44,7 @@ import Router, {
   TransitionError,
   TransitionState,
 } from 'router_js';
+import type { Timer } from 'backburner';
 import { EngineRouteInfo } from './engines';
 import EngineInstance from '@ember/engine/instance';
 
@@ -199,7 +200,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   _engineInfoByRoute = Object.create(null);
   _routerService: RouterService<R>;
 
-  _slowTransitionTimer: unknown;
+  _slowTransitionTimer: Timer | null = null;
 
   private namespace: any;
 
@@ -810,10 +811,12 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
     let instances = this._engineInstances;
     for (let name in instances) {
-      let instance = instances[name];
-      assert('has instance', instance);
-      for (let id in instance) {
-        run(instance[id], 'destroy');
+      let instanceMap = instances[name];
+      assert('has instanceMap', instanceMap);
+      for (let id in instanceMap) {
+        let instance = instanceMap[id];
+        assert('has instance', instance);
+        run(instance, 'destroy');
       }
     }
   }
@@ -1334,7 +1337,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     this._slowTransitionTimer = scheduleOnce(
       'routerTransitions',
       this,
-      '_handleSlowTransition',
+      this._handleSlowTransition,
       transition,
       originRoute
     );

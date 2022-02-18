@@ -1,24 +1,53 @@
 import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
-import Backburner from 'backburner';
+import Backburner, { DeferredActionQueues, Timer } from 'backburner';
 
-let currentRunLoop = null;
+export { Timer };
+
+// Partial types from https://medium.com/codex/currying-in-typescript-ca5226c85b85
+
+type PartialParams<P extends any[]> = P extends [infer First, ...infer Rest]
+  ? [] | [First] | [First, ...PartialParams<Rest>]
+  : // This is necessary to handle optional tuple values
+  Required<P> extends [infer First, ...infer Rest]
+  ? [] | [First | undefined] | [First | undefined, ...PartialParams<Partial<Rest>>]
+  : never;
+
+type RemainingParams<PartialParams extends any[], All extends any[]> = PartialParams extends [
+  infer First,
+  ...infer Rest
+]
+  ? All extends [infer AllFirst, ...infer AllRest]
+    ? First extends AllFirst
+      ? RemainingParams<Rest, AllRest>
+      : never
+    : // This is necessary to handle optional tuple values
+    Required<All> extends [infer AllFirst, ...infer AllRest]
+    ? First extends AllFirst | undefined
+      ? Partial<RemainingParams<Rest, AllRest>>
+      : never
+    : never
+  : PartialParams extends []
+  ? All
+  : never;
+
+let currentRunLoop: DeferredActionQueues | null = null;
 export function _getCurrentRunLoop() {
   return currentRunLoop;
 }
 
-function onBegin(current) {
+function onBegin(current: DeferredActionQueues) {
   currentRunLoop = current;
 }
 
-function onEnd(current, next) {
+function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
   flushAsyncObservers();
 }
 
-function flush(queueName, next) {
+function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
     flushAsyncObservers();
   }
@@ -99,8 +128,20 @@ export const _backburner = new Backburner(_queues, {
   @return {Object} return value from invoking the passed function.
   @public
 */
-export function run() {
-  return _backburner.run(...arguments);
+export function run<F extends (...args: any[]) => any>(method: F, ...args: Parameters<F>): void;
+export function run<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: Parameters<F>
+): void;
+export function run<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+): void;
+export function run(...args: any[]): void {
+  // @ts-expect-error TS doesn't like our spread args
+  return _backburner.run(...args);
 }
 
 /**
@@ -147,8 +188,22 @@ export function run() {
   when called within an existing loop, no return value is possible.
   @public
 */
-export function join() {
-  return _backburner.join(...arguments);
+export function join<F extends (...args: any[]) => any>(
+  method: F,
+  ...args: Parameters<F>
+): ReturnType<F> | void;
+export function join<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: Parameters<F>
+): ReturnType<F> | void;
+export function join<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+): T[U] extends (...args: any[]) => any ? ReturnType<T[U]> | void : void;
+export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: any[]): any {
+  return _backburner.join(methodOrTarget, methodOrArg, ...additionalArgs);
 }
 
 /**
@@ -213,7 +268,31 @@ export function join() {
   @since 1.4.0
   @public
 */
-export const bind = (...curried) => {
+export function bind<
+  T,
+  F extends (this: T, ...args: any[]) => any,
+  A extends PartialParams<Parameters<F>>
+>(
+  target: T,
+  method: F,
+  ...args: A
+): (...args: RemainingParams<A, Parameters<F>>) => ReturnType<F> | void;
+export function bind<F extends (...args: any[]) => any, A extends PartialParams<Parameters<F>>>(
+  method: F,
+  ...args: A
+): (...args: RemainingParams<A, Parameters<F>>) => ReturnType<F> | void;
+export function bind<
+  T,
+  U extends keyof T,
+  A extends T[U] extends (...args: any[]) => any ? PartialParams<Parameters<T[U]>> : []
+>(
+  target: T,
+  method: U,
+  ...args: A
+): T[U] extends (...args: any[]) => any
+  ? (...args: RemainingParams<A, Parameters<T[U]>>) => ReturnType<T[U]> | void
+  : never;
+export function bind(...curried: any[]): any {
   assert(
     'could not find a suitable method to bind',
     (function (methodOrTarget, methodOrArg) {
@@ -226,17 +305,20 @@ export const bind = (...curried) => {
       } else if (length === 1) {
         return typeof methodOrTarget === 'function';
       } else {
-        let type = typeof methodOrArg;
         return (
-          type === 'function' || // second argument is a function
-          (methodOrTarget !== null && type === 'string' && methodOrArg in methodOrTarget) || // second argument is the name of a method in first argument
+          typeof methodOrArg === 'function' || // second argument is a function
+          (methodOrTarget !== null &&
+            typeof methodOrArg === 'string' &&
+            methodOrArg in methodOrTarget) || // second argument is the name of a method in first argument
           typeof methodOrTarget === 'function' //first argument is a function
         );
       }
+      // @ts-expect-error TS doesn't like our spread args
     })(...curried)
   );
-  return (...args) => join(...curried.concat(args));
-};
+  // @ts-expect-error TS doesn't like our spread args
+  return (...args: any[]) => join(...curried.concat(args));
+}
 
 /**
   Begins a new RunLoop. Any deferred actions invoked after the begin will
@@ -325,8 +407,26 @@ export function end() {
   @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function schedule(/* queue, target, method */) {
-  return _backburner.schedule(...arguments);
+export function schedule<F extends (...args: any[]) => any>(
+  queueName: string,
+  method: F,
+  ...args: Parameters<F>
+): Timer;
+export function schedule<T, F extends (this: T, ...args: any[]) => any>(
+  queueName: string,
+  target: T,
+  method: F,
+  ...args: Parameters<F>
+): Timer;
+export function schedule<T, U extends keyof T>(
+  queueName: string,
+  target: T,
+  method: U,
+  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+): Timer;
+export function schedule(...args: any[]): Timer {
+  // @ts-expect-error TS doesn't like the rest args here
+  return _backburner.schedule(...args);
 }
 
 // Used by global test teardown
@@ -369,8 +469,25 @@ export function _cancelTimers() {
   @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function later(/*target, method*/) {
-  return _backburner.later(...arguments);
+export function later<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: [...args: Parameters<F>, wait: string | number]
+): Timer;
+export function later<F extends (...args: any[]) => any>(
+  method: F,
+  ...args: [...args: Parameters<F>, wait: string | number]
+): Timer;
+export function later<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: [
+    ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : [],
+    wait: string | number
+  ]
+): Timer;
+export function later(...args: any): Timer {
+  return _backburner.later(...args);
 }
 
 /**
@@ -388,9 +505,20 @@ export function later(/*target, method*/) {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function once(...args) {
-  args.unshift('actions');
-  return _backburner.scheduleOnce(...args);
+export function once<F extends (...args: any[]) => any>(method: F, ...args: Parameters<F>): Timer;
+export function once<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: Parameters<F>
+): Timer;
+export function once<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+): Timer;
+export function once(...args: any[]): Timer {
+  // @ts-expect-error TS doesn't like the rest args here
+  return _backburner.scheduleOnce('actions', ...args);
 }
 
 /**
@@ -465,8 +593,26 @@ export function once(...args) {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function scheduleOnce(/* queue, target, method*/) {
-  return _backburner.scheduleOnce(...arguments);
+export function scheduleOnce<F extends (...args: any[]) => any>(
+  queueName: string,
+  method: F,
+  ...args: Parameters<F>
+): Timer;
+export function scheduleOnce<T, F extends (this: T, ...args: any[]) => any>(
+  queueName: string,
+  target: T,
+  method: F,
+  ...args: Parameters<F>
+): Timer;
+export function scheduleOnce<T, U extends keyof T>(
+  queueName: string,
+  target: T,
+  method: U,
+  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+): Timer;
+export function scheduleOnce(...args: any[]): Timer {
+  // @ts-expect-error TS doesn't like the rest args here
+  return _backburner.scheduleOnce(...args);
 }
 
 /**
@@ -539,9 +685,19 @@ export function scheduleOnce(/* queue, target, method*/) {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function next(...args) {
-  args.push(1);
-  return _backburner.later(...args);
+export function next<F extends (...args: any[]) => any>(method: F, ...args: Parameters<F>): Timer;
+export function next<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: Parameters<F>
+): Timer;
+export function next<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+): Timer;
+export function next(...args: any[]) {
+  return _backburner.later(...args, 1);
 }
 
 /**
@@ -611,7 +767,7 @@ export function next(...args) {
   @return {Boolean} true if canceled or false/undefined if it wasn't found
   @public
 */
-export function cancel(timer) {
+export function cancel(timer: Timer): boolean {
   return _backburner.cancel(timer);
 }
 
@@ -689,8 +845,27 @@ export function cancel(timer) {
   @return {Array} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function debounce() {
-  return _backburner.debounce(...arguments);
+export function debounce<F extends (...args: any[]) => any>(
+  method: F,
+  ...args: [...args: Parameters<F>, wait: string | number, immediate?: boolean]
+): Timer;
+export function debounce<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: [...args: Parameters<F>, wait: string | number, immediate?: boolean]
+): Timer;
+export function debounce<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: [
+    ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : [],
+    wait: string | number,
+    immediate?: boolean
+  ]
+): Timer;
+export function debounce(...args: any[]) {
+  // @ts-expect-error TS doesn't like the rest args here
+  return _backburner.debounce(...args);
 }
 
 /**
@@ -736,6 +911,25 @@ export function debounce() {
   @return {Array} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function throttle() {
-  return _backburner.throttle(...arguments);
+export function throttle<F extends (...args: any[]) => any>(
+  method: F,
+  ...args: [...args: Parameters<F>, wait?: string | number, immediate?: boolean]
+): Timer;
+export function throttle<T, F extends (this: T, ...args: any[]) => any>(
+  target: T,
+  method: F,
+  ...args: [...args: Parameters<F>, wait?: string | number, immediate?: boolean]
+): Timer;
+export function throttle<T, U extends keyof T>(
+  target: T,
+  method: U,
+  ...args: [
+    ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : [],
+    wait?: string | number,
+    immediate?: boolean
+  ]
+): Timer;
+export function throttle(...args: any[]): Timer {
+  // @ts-expect-error TS doesn't like the rest args here
+  return _backburner.throttle(...args);
 }

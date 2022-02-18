@@ -1,11 +1,4 @@
-import {
-  // @ts-expect-error 'next' is not typed
-  next,
-  run,
-  _getCurrentRunLoop,
-  // @ts-expect-error '_hasScheduledTimers' is not typed
-  _hasScheduledTimers,
-} from '@ember/runloop';
+import { next, run, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 
 import { Promise } from 'rsvp';
@@ -20,19 +13,19 @@ export function runDestroy(toDestroy: any): void {
   }
 }
 
-export function runTask(callback: Function): Function {
+export function runTask(callback: (...args: any[]) => any): void {
   return run(callback);
 }
 
 export function runTaskNext(): Promise<void> {
-  return new Promise((resolve: Function) => {
+  return new Promise((resolve) => {
     return next(resolve);
   });
 }
 
 // TODO: Find a better name 😎
 export function runLoopSettled(event?: any): Promise<void> {
-  return new Promise(function (resolve: Function) {
+  return new Promise(function (resolve) {
     // Every 5ms, poll for the async thing to have finished
     let watcher = setInterval(() => {
       // If there are scheduled timers or we are inside of a run loop, keep polling

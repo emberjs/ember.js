@@ -71,14 +71,14 @@ export type MissingOptionDeprecateFunc = (id: string, missingOption: string) => 
   @param handler {Function} A function to handle deprecation calls.
   @since 2.1.0
 */
-let registerHandler: (handler: HandlerCallback) => void = () => {};
+let registerHandler: (handler: HandlerCallback<DeprecationOptions>) => void = () => {};
 let missingOptionsDeprecation: string;
 let missingOptionsIdDeprecation: string;
 let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
 
 if (DEBUG) {
-  registerHandler = function registerHandler(handler: HandlerCallback): void {
+  registerHandler = function registerHandler(handler: HandlerCallback<DeprecationOptions>): void {
     genericRegisterHandler('deprecate', handler);
   };
 

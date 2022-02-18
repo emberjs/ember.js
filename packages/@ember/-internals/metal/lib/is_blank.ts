@@ -8,7 +8,6 @@ import isEmpty from './is_empty';
   ```javascript
   import { isBlank } from '@ember/utils';
 
-  isBlank();                // true
   isBlank(null);            // true
   isBlank(undefined);       // true
   isBlank('');              // true
@@ -29,6 +28,6 @@ import isEmpty from './is_empty';
   @since 1.5.0
   @public
 */
-export default function isBlank(obj: any): boolean {
+export default function isBlank(obj: unknown): boolean {
   return isEmpty(obj) || (typeof obj === 'string' && /\S/.test(obj) === false);
 }

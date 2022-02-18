@@ -1,7 +1,7 @@
 import { Registry } from '@ember/-internals/container';
 import { TypeOptions } from '@ember/-internals/container/lib/registry';
+import { Mixin } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
-import Mixin from '../../types/mixin';
 
 interface RegistryProxyMixin {
   /** @internal */

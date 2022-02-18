@@ -7,7 +7,6 @@
   confusing.
 
   ```javascript
-  isNone();              // true
   isNone(null);          // true
   isNone(undefined);     // true
   isNone('');            // false

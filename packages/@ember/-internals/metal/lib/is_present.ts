@@ -6,7 +6,6 @@ import isBlank from './is_blank';
   A value is present if it not `isBlank`.
 
   ```javascript
-  isPresent();                // false
   isPresent(null);            // false
   isPresent(undefined);       // false
   isPresent('');              // false
@@ -32,6 +31,6 @@ import isBlank from './is_blank';
   @since 1.8.0
   @public
 */
-export default function isPresent(obj: object): boolean {
+export default function isPresent<T>(obj: T | null | undefined): obj is T {
   return !isBlank(obj);
 }
