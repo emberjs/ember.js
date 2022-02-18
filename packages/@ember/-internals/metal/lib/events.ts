@@ -158,7 +158,7 @@ export function sendEvent(
 }
 
 /**
-  @private
+  @public
   @method hasListeners
   @static
   @for @ember/object/events
