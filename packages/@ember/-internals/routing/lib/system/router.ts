@@ -1056,7 +1056,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     _targetRouteName: string | undefined,
     models: ModelFor<R>[],
     _queryParams: Record<string, unknown>,
-    _keepDefaultQueryParamValues?: boolean
+    _fromRouterService?: boolean
   ): Transition {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(
@@ -1072,12 +1072,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
     Object.assign(queryParams, _queryParams);
 
-    this._prepareQueryParams(
-      targetRouteName,
-      models,
-      queryParams,
-      Boolean(_keepDefaultQueryParamValues)
-    );
+    this._prepareQueryParams(targetRouteName, models, queryParams, Boolean(_fromRouterService));
 
     let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
 

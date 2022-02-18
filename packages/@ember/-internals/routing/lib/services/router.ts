@@ -133,7 +133,6 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
 
     let transition = this._router._doTransition(routeName, models, queryParams, true);
-    transition['_keepDefaultQueryParamValues'] = true;
 
     return transition;
   }
@@ -324,21 +323,31 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
+      // UNSAFE: casting `routeName as string` here encodes the existing
+      // assumption but may be wrong: `extractRouteArgs` correctly returns it
+      // as `string | undefined`. There may be bugs if `_prepareQueryParams`
+      // does not correctly account for `undefined` values for `routeName`.
+      //  Spoilers: under the hood this currently uses router.js APIs which
+      // *do not* account for this being `undefined`.
+      let targetRouteName = routeName as string;
+
       queryParams = Object.assign({}, queryParams);
       this._router._prepareQueryParams(
-        // UNSAFE: casting `routeName as string` here encodes the existing
-        // assumption but may be wrong: `extractRouteArgs` correctly returns it
-        // as `string | undefined`. There may be bugs if `_prepareQueryParams`
-        // does not correctly account for `undefined` values for `routeName`.
-        //  Spoilers: under the hood this currently uses router.js APIs which
-        // *do not* account for this being `undefined`.
-        routeName as string,
+        targetRouteName,
         models,
         queryParams,
         true /* fromRouterService */
       );
 
-      return shallowEqual(queryParams, routerMicrolib.state!.queryParams);
+      let currentQueryParams = Object.assign({}, routerMicrolib.state!.queryParams);
+      this._router._prepareQueryParams(
+        targetRouteName,
+        models,
+        currentQueryParams,
+        true /* fromRouterService */
+      );
+
+      return shallowEqual(queryParams, currentQueryParams);
     }
 
     return true;
