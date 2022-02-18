@@ -2,6 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
 import { Factory, Owner } from '@ember/-internals/owner';
+import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -49,6 +50,8 @@ import { default as eachIn } from './helpers/each-in';
 import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
+import { default as uniqueId } from './helpers/unique-id';
+
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -143,6 +146,10 @@ const BUILTIN_HELPERS = {
   get,
   hash,
 };
+
+if (EMBER_UNIQUE_ID_HELPER) {
+  BUILTIN_HELPERS['unique-id'] = uniqueId;
+}
 
 const BUILTIN_KEYWORD_MODIFIERS = {
   action: actionModifier,
