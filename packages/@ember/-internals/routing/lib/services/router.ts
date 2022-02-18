@@ -408,6 +408,65 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
   }
 
   /**
+    You can register a listener for events emitted by this service with `.on()`:
+
+    ```app/routes/contact-form.js
+    import Route from '@ember/routing';
+    import { service } from '@ember/service';
+
+    export default class extends Route {
+      @service router;
+
+      activate() {
+        this.router.on('routeWillChange', (transition) => {
+          if (!transition.to.find(route => route.name === this.routeName)) {
+            alert("Please save or cancel your changes.");
+            transition.abort();
+          }
+        })
+      }
+    }
+    ```
+
+    @method on
+    @param {String} eventName
+    @param {Function} callback
+    @public
+  */
+
+  /**
+    You can unregister a listener for events emitted by this service with `.off()`:
+
+    ```app/routes/contact-form.js
+    import Route from '@ember/routing';
+    import { service } from '@ember/service';
+
+    export default class extends Route {
+      @service router;
+
+      callback = (transition) =>  {
+        if (!transition.to.find(route => route.name === this.routeName)) {
+          alert("Please save or cancel your changes.");
+          transition.abort();
+        }
+      };
+
+      activate() {
+        this.router.on('routeWillChange', this.callback);
+      }
+
+      deactivate() {
+        this.router.off('routeWillChange', this.callback);
+    }
+    ```
+
+    @method off
+    @param {String} eventName
+    @param {Function} callback
+    @public
+  */
+
+  /**
     The `routeWillChange` event is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
     argument. This action can be used for aborting, redirecting,
@@ -423,9 +482,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     export default class extends Route {
       @service router;
 
-      constructor() {
-        super(...arguments);
-
+      activate() {
         this.router.on('routeWillChange', (transition) => {
           if (!transition.to.find(route => route.name === this.routeName)) {
             alert("Please save or cancel your changes.");
@@ -457,9 +514,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     export default class extends Route {
       @service router;
 
-      constructor() {
-        super(...arguments);
-
+      activate() {
         this.router.on('routeDidChange', (transition) => {
           ga.send('pageView', {
             current: transition.to.name,
