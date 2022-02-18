@@ -459,6 +459,7 @@ module.exports = {
     'service',
     'set',
     'setClassicDecorator',
+    'setComponentManager',
     'setDiff',
     'setEach',
     'setEngineParent',
