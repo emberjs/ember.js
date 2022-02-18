@@ -1,7 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, Owner } from '@ember/-internals/owner';
+import { Factory, isFactory, Owner } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -33,13 +33,7 @@ import {
 } from '@glimmer/runtime';
 import { _WeakSet } from '@glimmer/util';
 import { isCurlyManager } from './component-managers/curly';
-import {
-  CLASSIC_HELPER_MANAGER,
-  HelperFactory,
-  HelperInstance,
-  isClassicHelper,
-  SimpleHelper,
-} from './helper';
+import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -60,7 +54,7 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function componentFor(name: string, owner: Owner): Option<Factory<unknown>> {
+function componentFor(name: string, owner: Owner): Option<Factory<object> | object> {
   let fullName = `component:${name}`;
   return owner.factoryFor(fullName) || null;
 }
@@ -73,11 +67,11 @@ function layoutFor(name: string, owner: Owner, options?: TypeOptions): Option<Te
 
 type LookupResult =
   | {
-      component: Factory<unknown>;
+      component: Factory<object>;
       layout: TemplateFactory;
     }
   | {
-      component: Factory<unknown>;
+      component: Factory<object>;
       layout: null;
     }
   | {
@@ -92,7 +86,7 @@ function lookupComponentPair(
 ): Option<LookupResult> {
   let component = componentFor(name, owner);
 
-  if (component !== null && component.class !== undefined) {
+  if (isFactory(component) && component.class) {
     let layout = getComponentTemplate(component.class);
 
     if (layout !== undefined) {
@@ -175,17 +169,12 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
       !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
     );
 
-    const helper = BUILTIN_HELPERS[name];
+    let helper = BUILTIN_HELPERS[name];
     if (helper !== undefined) {
       return helper;
     }
 
-    const factory = owner.factoryFor(`helper:${name}`) as
-      | Factory<
-          SimpleHelper<unknown, unknown[], Record<string, unknown>>,
-          HelperFactory<SimpleHelper<unknown, unknown[], Record<string, unknown>>>
-        >
-      | Factory<HelperInstance, HelperFactory<HelperInstance>>;
+    let factory = owner.factoryFor(`helper:${name}`);
 
     if (factory === undefined) {
       return null;

@@ -1,4 +1,5 @@
 import { getOwner, Owner } from '@ember/-internals/owner';
+import { BootOptions } from '@ember/application/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import { Template } from '@glimmer/interfaces';
@@ -12,7 +13,8 @@ import { OutletState } from '../utils/outlet';
 export interface BootEnvironment {
   hasDOM: boolean;
   isInteractive: boolean;
-  options: any;
+  _renderMode?: string;
+  options: BootOptions;
 }
 
 const TOP_LEVEL_NAME = '-top-level';

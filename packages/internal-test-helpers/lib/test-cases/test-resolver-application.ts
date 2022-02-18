@@ -1,6 +1,7 @@
 import AbstractApplicationTestCase from './abstract-application';
 import Resolver, { ModuleBasedResolver } from '../test-resolver';
 import { Component } from '@ember/-internals/glimmer';
+import { Factory } from '@ember/-internals/owner';
 
 export default abstract class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   abstract resolver?: Resolver;
@@ -11,7 +12,7 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
     });
   }
 
-  add(specifier: string, factory: unknown) {
+  add(specifier: string, factory: Factory<object> | object) {
     this.resolver!.add(specifier, factory);
   }
 

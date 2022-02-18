@@ -2,18 +2,20 @@ export { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
-import { Namespace, RegistryProxyMixin } from '@ember/-internals/runtime';
+import { Namespace } from '@ember/-internals/runtime';
 import { Registry } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
-import EngineInstance from '@ember/engine/instance';
+import EngineInstance, { EngineInstanceOptions } from '@ember/engine/instance';
 import { RoutingService } from '@ember/-internals/routing';
 import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
+import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import { ResolverClass } from '@ember/-internals/container/lib/registry';
 
-function props(obj) {
+function props(obj: any) {
   let properties = [];
 
   for (let key in obj) {
@@ -21,6 +23,13 @@ function props(obj) {
   }
 
   return properties;
+}
+
+export interface Initializer<T> {
+  name: string;
+  initialize: (target: T) => void;
+  before?: string | string[];
+  after?: string | string[];
 }
 
 /**
@@ -40,120 +49,14 @@ function props(obj) {
 
   @class Engine
   @extends Ember.Namespace
-  @uses RegistryProxy
+  @uses RegistryProxyMixin
   @public
 */
-const Engine = Namespace.extend(RegistryProxyMixin, {
-  init() {
-    this._super(...arguments);
-
-    this.buildRegistry();
-  },
-
-  /**
-    A private flag indicating whether an engine's initializers have run yet.
-
-    @private
-    @property _initializersRan
-  */
-  _initializersRan: false,
-
-  /**
-    Ensure that initializers are run once, and only once, per engine.
-
-    @private
-    @method ensureInitializers
-  */
-  ensureInitializers() {
-    if (!this._initializersRan) {
-      this.runInitializers();
-      this._initializersRan = true;
-    }
-  },
-
-  /**
-    Create an EngineInstance for this engine.
-
-    @public
-    @method buildInstance
-    @return {EngineInstance} the engine instance
-  */
-  buildInstance(options = {}) {
-    this.ensureInitializers();
-    options.base = this;
-    return EngineInstance.create(options);
-  },
-
-  /**
-    Build and configure the registry for the current engine.
-
-    @private
-    @method buildRegistry
-    @return {Ember.Registry} the configured registry
-  */
-  buildRegistry() {
-    let registry = (this.__registry__ = this.constructor.buildRegistry(this));
-
-    return registry;
-  },
-
-  /**
-    @private
-    @method initializer
-  */
-  initializer(options) {
-    this.constructor.initializer(options);
-  },
-
-  /**
-    @private
-    @method instanceInitializer
-  */
-  instanceInitializer(options) {
-    this.constructor.instanceInitializer(options);
-  },
-
-  /**
-    @private
-    @method runInitializers
-  */
-  runInitializers() {
-    this._runInitializer('initializers', (name, initializer) => {
-      assert(`No application initializer named '${name}'`, Boolean(initializer));
-      initializer.initialize(this);
-    });
-  },
-
-  /**
-    @private
-    @since 1.12.0
-    @method runInstanceInitializers
-  */
-  runInstanceInitializers(instance) {
-    this._runInitializer('instanceInitializers', (name, initializer) => {
-      assert(`No instance initializer named '${name}'`, Boolean(initializer));
-      initializer.initialize(instance);
-    });
-  },
-
-  _runInitializer(bucketName, cb) {
-    let initializersByName = get(this.constructor, bucketName);
-    let initializers = props(initializersByName);
-    let graph = new DAG();
-    let initializer;
-
-    for (let i = 0; i < initializers.length; i++) {
-      initializer = initializersByName[initializers[i]];
-      graph.add(initializer.name, initializer, initializer.before, initializer.after);
-    }
-
-    graph.topsort(cb);
-  },
-});
-
-Engine.reopenClass({
-  initializers: Object.create(null),
-  instanceInitializers: Object.create(null),
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface Engine extends RegistryProxyMixin {}
+class Engine extends Namespace.extend(RegistryProxyMixin) {
+  static initializers: Record<string, Initializer<Engine>> = Object.create(null);
+  static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
   /**
     The goal of initializers should be to register dependencies and injections.
@@ -300,7 +203,7 @@ Engine.reopenClass({
     @public
   */
 
-  initializer: buildInitializerMethod('initializers', 'initializer'),
+  static initializer = buildInitializerMethod('initializers', 'initializer');
 
   /**
     Instance initializers run after all initializers have run. Because
@@ -373,7 +276,10 @@ Engine.reopenClass({
     @param instanceInitializer
     @public
   */
-  instanceInitializer: buildInitializerMethod('instanceInitializers', 'instance initializer'),
+  static instanceInitializer = buildInitializerMethod(
+    'instanceInitializers',
+    'instance initializer'
+  );
 
   /**
     This creates a registry with the default Ember naming conventions.
@@ -400,7 +306,7 @@ Engine.reopenClass({
     @return {Ember.Registry} the built registry
     @private
   */
-  buildRegistry(namespace) {
+  static buildRegistry(namespace: Engine) {
     let registry = new Registry({
       resolver: resolverFor(namespace),
     });
@@ -413,7 +319,7 @@ Engine.reopenClass({
     setupEngineRegistry(registry);
 
     return registry;
-  },
+  }
 
   /**
     Set this to provide an alternate class to `DefaultResolver`
@@ -421,8 +327,122 @@ Engine.reopenClass({
     @property resolver
     @public
   */
-  Resolver: null,
-});
+  declare Resolver: ResolverClass;
+
+  init(properties: object | undefined) {
+    super.init(properties);
+    this.buildRegistry();
+  }
+
+  /**
+    A private flag indicating whether an engine's initializers have run yet.
+
+    @private
+    @property _initializersRan
+  */
+  _initializersRan = false;
+
+  /**
+    Ensure that initializers are run once, and only once, per engine.
+
+    @private
+    @method ensureInitializers
+  */
+  ensureInitializers() {
+    if (!this._initializersRan) {
+      this.runInitializers();
+      this._initializersRan = true;
+    }
+  }
+
+  /**
+    Create an EngineInstance for this engine.
+
+    @public
+    @method buildInstance
+    @return {EngineInstance} the engine instance
+  */
+  buildInstance(options: EngineInstanceOptions = {}): EngineInstance {
+    this.ensureInitializers();
+    return EngineInstance.create({ ...options, base: this });
+  }
+
+  /**
+    Build and configure the registry for the current engine.
+
+    @private
+    @method buildRegistry
+    @return {Ember.Registry} the configured registry
+  */
+  buildRegistry() {
+    let registry = (this.__registry__ = (this.constructor as typeof Engine).buildRegistry(this));
+
+    return registry;
+  }
+
+  /**
+    @private
+    @method initializer
+  */
+  initializer(initializer: Initializer<Engine>) {
+    (this.constructor as typeof Engine).initializer(initializer);
+  }
+
+  /**
+    @private
+    @method instanceInitializer
+  */
+  instanceInitializer(initializer: Initializer<EngineInstance>) {
+    (this.constructor as typeof Engine).instanceInitializer(initializer);
+  }
+
+  /**
+    @private
+    @method runInitializers
+  */
+  runInitializers() {
+    this._runInitializer(
+      'initializers',
+      (name: string, initializer: Initializer<this> | undefined) => {
+        assert(`No application initializer named '${name}'`, initializer);
+        initializer.initialize(this);
+      }
+    );
+  }
+
+  /**
+    @private
+    @since 1.12.0
+    @method runInstanceInitializers
+  */
+  runInstanceInitializers<T extends EngineInstance>(instance: T) {
+    this._runInitializer(
+      'instanceInitializers',
+      (name: string, initializer: Initializer<T> | undefined) => {
+        assert(`No instance initializer named '${name}'`, initializer);
+        initializer.initialize(instance);
+      }
+    );
+  }
+
+  _runInitializer<
+    B extends 'initializers' | 'instanceInitializers',
+    T extends B extends 'initializers' ? Engine : EngineInstance
+  >(bucketName: B, cb: (name: string, initializer: Initializer<T> | undefined) => void) {
+    let initializersByName = get(this.constructor, bucketName) as Record<string, Initializer<T>>;
+    let initializers = props(initializersByName);
+    let graph = new DAG<Initializer<T>>();
+    let initializer;
+
+    for (let name of initializers) {
+      initializer = initializersByName[name];
+      assert(`missing ${bucketName}: ${name}`, initializer);
+      graph.add(initializer.name, initializer, initializer.before, initializer.after);
+    }
+
+    graph.topsort(cb);
+  }
+}
 
 /**
   This function defines the default lookup rules for container lookups:
@@ -437,27 +457,30 @@ Engine.reopenClass({
 
   @private
   @method resolverFor
-  @param {Ember.Namespace} namespace the namespace to look for classes
+  @param {Ember.Enginer} namespace the namespace to look for classes
   @return {*} the resolved value for a given lookup
 */
-function resolverFor(namespace) {
-  let ResolverClass = get(namespace, 'Resolver');
+function resolverFor(namespace: Engine) {
+  let ResolverClass = namespace.Resolver;
   let props = { namespace };
   return ResolverClass.create(props);
 }
 
-function buildInitializerMethod(bucketName, humanName) {
-  return function (initializer) {
+function buildInitializerMethod<
+  B extends 'initializers' | 'instanceInitializers',
+  T extends B extends 'initializers' ? Engine : EngineInstance
+>(bucketName: B, humanName: string) {
+  return function (this: typeof Engine, initializer: Initializer<T>) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class
     // to make sure we have a new `initializers` object, which extends from the parent class' using
     // prototypal inheritance. Without this, attempting to add initializers to the subclass would
     // pollute the parent class as well as other subclasses.
-    if (
-      this.superclass[bucketName] !== undefined &&
-      this.superclass[bucketName] === this[bucketName]
-    ) {
-      let attrs = {};
-      attrs[bucketName] = Object.create(this[bucketName]);
+    // SAFETY: The superclass may be an Engine, we don't call unless we confirmed it was ok.
+    let superclass = this.superclass as typeof Engine;
+    if (superclass[bucketName] !== undefined && superclass[bucketName] === this[bucketName]) {
+      let attrs = {
+        [bucketName]: Object.create(this[bucketName]),
+      };
       this.reopenClass(attrs);
     }
 
@@ -474,11 +497,12 @@ function buildInitializerMethod(bucketName, humanName) {
       initializer.name !== undefined
     );
 
-    this[bucketName][initializer.name] = initializer;
+    let initializers = (this as typeof Engine)[bucketName] as Record<string, Initializer<T>>;
+    initializers[initializer.name] = initializer;
   };
 }
 
-function commonSetupRegistry(registry) {
+function commonSetupRegistry(registry: Registry) {
   registry.optionsForType('component', { singleton: false });
   registry.optionsForType('view', { singleton: false });
 
@@ -488,7 +512,7 @@ function commonSetupRegistry(registry) {
   registry.register('service:-routing', RoutingService);
 
   // DEBUGGING
-  registry.register('resolver-for-debugging:main', registry.resolver, {
+  registry.register('resolver-for-debugging:main', registry.resolver!, {
     instantiate: false,
   });
 

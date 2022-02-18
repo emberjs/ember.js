@@ -19,7 +19,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
 
     this.add(
       'location:test',
-      NoneLocation.extend({
+      class extends NoneLocation {
         setURL(path: string) {
           if (testCase.expectedReplaceURL) {
             testCase.assert.ok(false, 'pushState occurred but a replaceState was expected');
@@ -31,7 +31,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
           }
 
           this.set('path', path);
-        },
+        }
 
         replaceURL(path: string) {
           if (testCase.expectedPushURL) {
@@ -48,8 +48,8 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
           }
 
           this.set('path', path);
-        },
-      })
+        }
+      }
     );
   }
 

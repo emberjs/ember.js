@@ -302,8 +302,10 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     return path.join('.');
   }
 
-  constructor(owner: Owner) {
+  constructor(owner?: Owner) {
     super(owner);
+
+    assert('BUG: Missing owner', owner);
 
     this._resetQueuedQueryParameterChanges();
     this.namespace = owner.lookup('application:main');

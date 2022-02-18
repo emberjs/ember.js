@@ -2,10 +2,27 @@
 @module @ember/application
 */
 
-import { get, set, computed } from '@ember/-internals/metal';
+import { get, set } from '@ember/-internals/metal';
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
+import Application from './lib/application';
 import { renderSettled } from '@ember/-internals/glimmer';
+import { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import { assert } from '@ember/debug';
+import { Router } from '@ember/-internals/routing';
+import { EventDispatcher, ViewMixin } from '@ember/-internals/views';
+import { Registry } from '@ember/-internals/container';
+
+export interface BootOptions {
+  isBrowser?: boolean;
+  shouldRender?: boolean;
+  document?: Document | null;
+  rootElement?: string | Element | null;
+  location?: string | null;
+  // Private?
+  isInteractive?: boolean;
+  _renderMode?: string;
+}
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -32,27 +49,14 @@ import { renderSettled } from '@ember/-internals/glimmer';
   @extends EngineInstance
 */
 
-const ApplicationInstance = EngineInstance.extend({
+class ApplicationInstance extends EngineInstance {
   /**
     The `Application` for which this is an instance.
 
     @property {Application} application
     @private
   */
-  application: null,
-
-  /**
-    The DOM events for which the event dispatcher should listen.
-
-    By default, the application's `Ember.EventDispatcher` listens
-    for a set of standard DOM events, such as `mousedown` and
-    `keyup`, and delegates them to your application's `Ember.View`
-    instances.
-
-    @private
-    @property {Object} customEvents
-  */
-  customEvents: null,
+  declare application: Application;
 
   /**
     The root DOM element of the Application as an element or a
@@ -61,10 +65,10 @@ const ApplicationInstance = EngineInstance.extend({
     @private
     @property {String|DOMElement} rootElement
   */
-  rootElement: null,
+  rootElement: string | Element | null = null;
 
-  init() {
-    this._super(...arguments);
+  init(properties: object | undefined) {
+    super.init(properties);
 
     this.application._watchInstance(this);
 
@@ -76,7 +80,7 @@ const ApplicationInstance = EngineInstance.extend({
     // appended to the rootElement, in the case of apps, to the fixture harness
     // in tests, or rendered to a string in the case of FastBoot.
     this.register('-application-instance:main', this, { instantiate: false });
-  },
+  }
 
   /**
     Overrides the base `EngineInstance._bootSync` method with concerns relevant
@@ -92,12 +96,12 @@ const ApplicationInstance = EngineInstance.extend({
 
     @private
   */
-  _bootSync(options) {
+  _bootSync(options?: BootOptions) {
     if (this._booted) {
       return this;
     }
 
-    options = new BootOptions(options);
+    options = new CBootOptions(options);
 
     this.setupRegistry(options);
 
@@ -120,15 +124,23 @@ const ApplicationInstance = EngineInstance.extend({
     this._booted = true;
 
     return this;
-  },
+  }
 
-  setupRegistry(options) {
-    this.constructor.setupRegistry(this.__registry__, options);
-  },
+  setupRegistry(options: BootOptions) {
+    (this.constructor as typeof ApplicationInstance).setupRegistry(this.__registry__, options);
+  }
 
-  router: computed(function () {
-    return this.lookup('router:main');
-  }).readOnly(),
+  _router?: Router;
+
+  get router() {
+    if (this._router) {
+      return this._router;
+    }
+
+    let router = this.lookup('router:main');
+    assert('expected an instance of Router', router instanceof Router);
+    return (this._router = router);
+  }
 
   /**
     This hook is called by the root-most Route (a.k.a. the ApplicationRoute)
@@ -143,9 +155,9 @@ const ApplicationInstance = EngineInstance.extend({
     @deprecated
     @private
   */
-  didCreateRootView(view) {
-    view.appendTo(this.rootElement);
-  },
+  didCreateRootView(view: ViewMixin) {
+    view.appendTo(this.rootElement!);
+  }
 
   /**
     Tells the router to start routing. The router will ask the location for the
@@ -156,7 +168,7 @@ const ApplicationInstance = EngineInstance.extend({
   */
   startRouting() {
     this.router.startRouting();
-  },
+  }
 
   /**
     Sets up the router, initializing the child router and configuring the
@@ -177,7 +189,7 @@ const ApplicationInstance = EngineInstance.extend({
   */
   setupRouter() {
     this.router.setupRouter();
-  },
+  }
 
   /**
     Directs the router to route to a particular URL. This is useful in tests,
@@ -186,16 +198,18 @@ const ApplicationInstance = EngineInstance.extend({
     @param url {String} the URL the router should route to
     @private
   */
-  handleURL(url) {
+  handleURL(url: string) {
     this.setupRouter();
     return this.router.handleURL(url);
-  },
+  }
 
   /**
     @private
   */
   setupEventDispatcher() {
     let dispatcher = this.lookup('event_dispatcher:main');
+    assert('expected EventDispatcher', dispatcher instanceof EventDispatcher);
+
     let applicationCustomEvents = get(this.application, 'customEvents');
     let instanceCustomEvents = get(this, 'customEvents');
 
@@ -203,7 +217,7 @@ const ApplicationInstance = EngineInstance.extend({
     dispatcher.setup(customEvents, this.rootElement);
 
     return dispatcher;
-  },
+  }
 
   /**
     Returns the current URL of the app instance. This is useful when your
@@ -215,7 +229,7 @@ const ApplicationInstance = EngineInstance.extend({
   */
   getURL() {
     return this.router.url;
-  },
+  }
 
   // `instance.visit(url)` should eventually replace `instance.handleURL()`;
   // the test helpers can probably be switched to use this implementation too
@@ -230,10 +244,10 @@ const ApplicationInstance = EngineInstance.extend({
     @param url {String} the destination URL
     @return {Promise<ApplicationInstance>}
   */
-  visit(url) {
+  visit(url: string) {
     this.setupRouter();
 
-    let bootOptions = this.__container__.lookup('-environment:main');
+    let bootOptions = this.__container__.lookup('-environment:main') as BootEnvironment;
 
     let router = this.router;
 
@@ -247,7 +261,7 @@ const ApplicationInstance = EngineInstance.extend({
       }
     };
 
-    let handleTransitionReject = (error) => {
+    let handleTransitionReject = (error: any): unknown => {
       if (error.error) {
         throw error.error;
       } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
@@ -263,6 +277,7 @@ const ApplicationInstance = EngineInstance.extend({
     };
 
     let location = get(router, 'location');
+    assert('location has been initialized', typeof location !== 'string');
 
     // Keeps the location adapter's internal URL in-sync
     location.setURL(url);
@@ -271,36 +286,32 @@ const ApplicationInstance = EngineInstance.extend({
     return router
       .handleURL(location.getURL())
       .then(handleTransitionResolve, handleTransitionReject);
-  },
+  }
 
   willDestroy() {
-    this._super(...arguments);
+    super.willDestroy();
     this.application._unwatchInstance(this);
-  },
-});
+  }
 
-ApplicationInstance.reopenClass({
   /**
    @private
    @method setupRegistry
    @param {Registry} registry
    @param {BootOptions} options
   */
-  setupRegistry(registry, options = {}) {
-    if (!options.toEnvironment) {
-      options = new BootOptions(options);
-    }
+  static setupRegistry(registry: Registry, options: BootOptions | CBootOptions = {}) {
+    let coptions = options instanceof CBootOptions ? options : new CBootOptions(options);
 
-    registry.register('-environment:main', options.toEnvironment(), {
+    registry.register('-environment:main', coptions.toEnvironment(), {
       instantiate: false,
     });
-    registry.register('service:-document', options.document, {
+    registry.register('service:-document', coptions.document!, {
       instantiate: false,
     });
 
-    this._super(registry, options);
-  },
-});
+    super.setupRegistry(registry, coptions);
+  }
+}
 
 /**
   A list of boot-time configuration options for customizing the behavior of
@@ -324,51 +335,124 @@ ApplicationInstance.reopenClass({
   @namespace ApplicationInstance
   @public
 */
-class BootOptions {
-  constructor(options = {}) {
-    /**
-      Interactive mode: whether we need to set up event delegation and invoke
-      lifecycle callbacks on Components.
+class CBootOptions {
+  /**
+    Interactive mode: whether we need to set up event delegation and invoke
+    lifecycle callbacks on Components.
 
-      @property isInteractive
-      @type boolean
-      @default auto-detected
-      @private
-    */
+    @property isInteractive
+    @type boolean
+    @default auto-detected
+    @private
+  */
+  readonly isInteractive: boolean;
+
+  /**
+    @property _renderMode
+    @type string
+    @default undefined
+    @private
+  */
+  readonly _renderMode?: string;
+
+  /**
+    Run in a full browser environment.
+
+    When this flag is set to `false`, it will disable most browser-specific
+    and interactive features. Specifically:
+
+    * It does not use `jQuery` to append the root view; the `rootElement`
+      (either specified as a subsequent option or on the application itself)
+      must already be an `Element` in the given `document` (as opposed to a
+      string selector).
+
+    * It does not set up an `EventDispatcher`.
+
+    * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
+
+    * It sets the `location` option to `"none"`. (If you would like to use
+      the location adapter specified in the app's router instead, you can also
+      specify `{ location: null }` to specifically opt-out.)
+
+    @property isBrowser
+    @type boolean
+    @default auto-detected
+    @public
+  */
+  readonly isBrowser: boolean;
+
+  /**
+    If present, overrides the router's `location` property with this
+    value. This is useful for environments where trying to modify the
+    URL would be inappropriate.
+
+    @property location
+    @type string
+    @default null
+    @public
+  */
+  readonly location: string | null = null;
+
+  /**
+    Disable rendering completely.
+
+    When this flag is set to `false`, it will disable the entire rendering
+    pipeline. Essentially, this puts the app into "routing-only" mode. No
+    templates will be rendered, and no Components will be created.
+
+    @property shouldRender
+    @type boolean
+    @default true
+    @public
+  */
+  readonly shouldRender: boolean;
+
+  /**
+    If present, render into the given `Document` object instead of the
+    global `window.document` object.
+
+    In practice, this is only useful in non-browser environment or in
+    non-interactive mode, because Ember's `jQuery` dependency is
+    implicitly bound to the current document, causing event delegation
+    to not work properly when the app is rendered into a foreign
+    document object (such as an iframe's `contentDocument`).
+
+    In non-browser mode, this could be a "`Document`-like" object as
+    Ember only interact with a small subset of the DOM API in non-
+    interactive mode. While the exact requirements have not yet been
+    formalized, the `SimpleDOM` library's implementation is known to
+    work.
+
+    @property document
+    @type Document
+    @default the global `document` object
+    @public
+  */
+  readonly document: Document | null;
+
+  /**
+    If present, overrides the application's `rootElement` property on
+    the instance. This is useful for testing environment, where you
+    might want to append the root view to a fixture area.
+
+    In non-browser mode, because Ember does not have access to jQuery,
+    this options must be specified as a DOM `Element` object instead of
+    a selector string.
+
+    See the documentation on `Application`'s `rootElement` for
+    details.
+
+    @property rootElement
+    @type String|Element
+    @default null
+    @public
+  */
+  readonly rootElement?: string | Element;
+
+  constructor(options: BootOptions = {}) {
     this.isInteractive = Boolean(environment.hasDOM); // This default is overridable below
-
-    /**
-      @property _renderMode
-      @type string
-      @default undefined
-      @private
-    */
     this._renderMode = options._renderMode;
 
-    /**
-      Run in a full browser environment.
-
-      When this flag is set to `false`, it will disable most browser-specific
-      and interactive features. Specifically:
-
-      * It does not use `jQuery` to append the root view; the `rootElement`
-        (either specified as a subsequent option or on the application itself)
-        must already be an `Element` in the given `document` (as opposed to a
-        string selector).
-
-      * It does not set up an `EventDispatcher`.
-
-      * It does not run any `Component` lifecycle hooks (such as `didInsertElement`).
-
-      * It sets the `location` option to `"none"`. (If you would like to use
-        the location adapter specified in the app's router instead, you can also
-        specify `{ location: null }` to specifically opt-out.)
-
-      @property isBrowser
-      @type boolean
-      @default auto-detected
-      @public
-    */
     if (options.isBrowser !== undefined) {
       this.isBrowser = Boolean(options.isBrowser);
     } else {
@@ -380,18 +464,6 @@ class BootOptions {
       this.location = 'none';
     }
 
-    /**
-      Disable rendering completely.
-
-      When this flag is set to `false`, it will disable the entire rendering
-      pipeline. Essentially, this puts the app into "routing-only" mode. No
-      templates will be rendered, and no Components will be created.
-
-      @property shouldRender
-      @type boolean
-      @default true
-      @public
-    */
     if (options.shouldRender !== undefined) {
       this.shouldRender = Boolean(options.shouldRender);
     } else {
@@ -402,50 +474,12 @@ class BootOptions {
       this.isInteractive = false;
     }
 
-    /**
-      If present, render into the given `Document` object instead of the
-      global `window.document` object.
-
-      In practice, this is only useful in non-browser environment or in
-      non-interactive mode, because Ember's `jQuery` dependency is
-      implicitly bound to the current document, causing event delegation
-      to not work properly when the app is rendered into a foreign
-      document object (such as an iframe's `contentDocument`).
-
-      In non-browser mode, this could be a "`Document`-like" object as
-      Ember only interact with a small subset of the DOM API in non-
-      interactive mode. While the exact requirements have not yet been
-      formalized, the `SimpleDOM` library's implementation is known to
-      work.
-
-      @property document
-      @type Document
-      @default the global `document` object
-      @public
-    */
     if (options.document) {
       this.document = options.document;
     } else {
       this.document = typeof document !== 'undefined' ? document : null;
     }
 
-    /**
-      If present, overrides the application's `rootElement` property on
-      the instance. This is useful for testing environment, where you
-      might want to append the root view to a fixture area.
-
-      In non-browser mode, because Ember does not have access to jQuery,
-      this options must be specified as a DOM `Element` object instead of
-      a selector string.
-
-      See the documentation on `Application`'s `rootElement` for
-      details.
-
-      @property rootElement
-      @type String|Element
-      @default null
-      @public
-     */
     if (options.rootElement) {
       this.rootElement = options.rootElement;
     }
@@ -454,16 +488,6 @@ class BootOptions {
     // defaults from the "combo" options like `isBrowser` (although in
     // practice, the resulting combination is probably invalid)
 
-    /**
-      If present, overrides the router's `location` property with this
-      value. This is useful for environments where trying to modify the
-      URL would be inappropriate.
-
-      @property location
-      @type string
-      @default null
-      @public
-    */
     if (options.location !== undefined) {
       this.location = options.location;
     }
@@ -473,15 +497,16 @@ class BootOptions {
     }
   }
 
-  toEnvironment() {
+  toEnvironment(): BootEnvironment {
     // Do we really want to assign all of this!?
-    let env = Object.assign({}, environment);
-    // For compatibility with existing code
-    env.hasDOM = this.isBrowser;
-    env.isInteractive = this.isInteractive;
-    env._renderMode = this._renderMode;
-    env.options = this;
-    return env;
+    return {
+      ...environment,
+      // For compatibility with existing code
+      hasDOM: this.isBrowser,
+      isInteractive: this.isInteractive,
+      _renderMode: this._renderMode,
+      options: this,
+    };
   }
 }
 

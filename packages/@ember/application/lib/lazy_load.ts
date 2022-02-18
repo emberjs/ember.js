@@ -8,7 +8,7 @@ import { window } from '@ember/-internals/browser-environment';
 */
 
 const loadHooks = ENV.EMBER_LOAD_HOOKS || {};
-const loaded = {};
+const loaded: Record<string, unknown> = {};
 export let _loaded = loaded;
 
 /**
@@ -33,11 +33,11 @@ export let _loaded = loaded;
   @param callback {Function} callback to be called
   @private
 */
-export function onLoad(name, callback) {
+export function onLoad(name: string, callback: (obj: unknown) => void) {
   let object = loaded[name];
 
-  loadHooks[name] = loadHooks[name] || [];
-  loadHooks[name].push(callback);
+  let hooks = (loadHooks[name] ??= []);
+  hooks.push(callback);
 
   if (object) {
     callback(object);
@@ -55,15 +55,13 @@ export function onLoad(name, callback) {
   @param object {Object} object to pass to callbacks
   @private
 */
-export function runLoadHooks(name, object) {
+export function runLoadHooks(name: string, object: unknown) {
   loaded[name] = object;
 
   if (window && typeof CustomEvent === 'function') {
-    let event = new CustomEvent(name, { detail: object, name });
+    let event = new CustomEvent(name, { detail: object });
     window.dispatchEvent(event);
   }
 
-  if (loadHooks[name]) {
-    loadHooks[name].forEach((callback) => callback(object));
-  }
+  loadHooks[name]?.forEach((callback) => callback(object));
 }

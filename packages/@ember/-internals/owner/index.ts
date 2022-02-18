@@ -1,5 +1,7 @@
 import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/owner';
 import { TypeOptions } from '../container/lib/registry';
+import { IContainer } from '../runtime/lib/mixins/container_proxy';
+import { IRegistry } from '../runtime/lib/mixins/registry_proxy';
 
 /**
 @module @ember/application
@@ -11,7 +13,7 @@ export interface FactoryClass {
   positionalParams?: string | string[] | undefined | null;
 }
 
-export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
+export interface Factory<T extends object, C extends FactoryClass | object = FactoryClass> {
   class?: C;
   name?: string;
   fullName?: string;
@@ -19,27 +21,12 @@ export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
   create(props?: { [prop: string]: any }): T;
 }
 
-// A combination of the public methods on ContainerProxyMixin and RegistryProxyMixin
-export interface Owner {
-  // From ContainerProxy
-  ownerInjection(): void;
-  lookup(fullName: string, options?: TypeOptions): unknown;
-  factoryFor(fullName: string): Factory<unknown> | undefined;
-
-  // From RegistryProxy
-  resolveRegistration<T, C>(fullName: string): Factory<T, C> | undefined;
-  register(fullName: string, factory: Factory<unknown>, options?: TypeOptions): void;
-  unregister(fullName: string): void;
-  hasRegistration(fullName: string): boolean;
-  registeredOption<K extends keyof TypeOptions>(
-    fullName: string,
-    optionName: K
-  ): TypeOptions[K] | undefined;
-  registerOptions(fullName: string, options: TypeOptions): void;
-  registeredOptions(fullName: string): TypeOptions | undefined;
-  registerOptionsForType(type: string, options: TypeOptions): void;
-  registeredOptionsForType(type: string): TypeOptions | undefined;
+export function isFactory(obj: unknown): obj is Factory<object> {
+  return obj != null && typeof (obj as Factory<object>).create === 'function';
 }
+
+// A combination of the public methods on ContainerProxyMixin and RegistryProxyMixin
+export interface Owner extends IRegistry, IContainer {}
 
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
