@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { setupApplicationTest } from 'ember-mocha';
+import { setupApplicationTest } from 'my-app/tests/helpers';
 import { visit, currentURL } from '@ember/test-helpers';
 
 describe('Acceptance | foo', function () {

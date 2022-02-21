@@ -1,6 +1,6 @@
 <% if (testType === 'integration') { %>import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { setupRenderingTest } from 'ember-mocha';
+import { setupRenderingTest } from '<%= dasherizedPackageName %>/tests/helpers';
 import { render } from '@ember/test-helpers';
 <%= hbsImportStatement %>
 
@@ -26,7 +26,7 @@ describe('<%= friendlyTestDescription %>', function () {
   });
 });<% } else if (testType === 'unit') { %>import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { setupTest } from 'ember-mocha';
+import { setupTest } from '<%= dasherizedPackageName %>/tests/helpers';
 
 describe('<%= friendlyTestDescription %>', function () {
   setupTest();
