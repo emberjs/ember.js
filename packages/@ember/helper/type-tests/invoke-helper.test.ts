@@ -14,12 +14,11 @@ class PlusOne extends Helper {
 }
 
 class PlusOneComponent extends Component {
-  // Glint would help with this
-  declare args: { number: number };
+  declare number: number;
 
   plusOne = invokeHelper(this, PlusOne, () => {
     return {
-      positional: [this.args.number],
+      positional: [this.number],
     };
   });
 
