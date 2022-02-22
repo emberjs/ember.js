@@ -1,5 +1,7 @@
+import { View } from '@ember/-internals/glimmer/lib/renderer';
 import { inject } from '@ember/-internals/metal';
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
+import { CoreObjectClass } from '@ember/-internals/runtime/lib/system/core_object';
 import states from './states';
 
 /**
@@ -18,7 +20,10 @@ import states from './states';
   @uses Ember.ActionHandler
   @private
 */
-const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface CoreViewClass extends CoreObjectClass<CoreView> {}
+interface CoreView extends FrameworkObject, Evented, ActionHandler, View {}
+const CoreView = (FrameworkObject.extend(Evented, ActionHandler, {
   isView: true,
 
   _states: states,
@@ -42,7 +47,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   */
   parentView: null,
 
-  instrumentDetails(hash) {
+  instrumentDetails(hash: any) {
     hash.object = this.toString();
     hash.containerKey = this._debugContainerKey;
     hash.view = this;
@@ -57,7 +62,7 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     @param name {String}
     @private
   */
-  trigger(name, ...args) {
+  trigger(name: string, ...args: any[]) {
     this._super(...arguments);
     let method = this[name];
     if (typeof method === 'function') {
@@ -65,10 +70,10 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     }
   },
 
-  has(name) {
+  has(name: string) {
     return typeof this[name] === 'function' || this._super(name);
   },
-});
+}) as unknown) as CoreViewClass;
 
 CoreView.reopenClass({
   isViewFactory: true,

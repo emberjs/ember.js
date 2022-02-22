@@ -11,18 +11,39 @@ import { Owner } from '@ember/-internals/owner';
  * Implementation is carefully chosen for the reasons described in
  * https://github.com/typed-ember/ember-typings/pull/29
  */
-type EmberClassConstructor<T> = new (owner: Owner) => T;
+export type EmberClassConstructor<T> = new (owner: Owner) => T;
 
-type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
+export type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
   : unknown; // TODO: Is this correct?
+
+/** @internal */
+export interface CoreObjectClass<Instance> extends EmberClassConstructor<Instance> {
+  /** @internal */
+  extend<Statics>(
+    this: EmberClassConstructor<Instance>,
+    ...args: any[]
+  ): CoreObjectClass<Statics & Instance>;
+
+  /** @internal */
+  reopen(...args: any[]): any;
+
+  /** @internal */
+  reopenClass(...args: any[]): any;
+
+  /** @internal */
+  create<Class extends EmberClassConstructor<Instance>, Args extends Array<Record<string, any>>>(
+    this: Class,
+    ...args: Args
+  ): InstanceType<Class> & MergeArray<Args>;
+}
 
 export default class CoreObject {
   /** @internal */
   static extend<Statics, Instance>(
     this: Statics & EmberClassConstructor<Instance>,
     ...args: any[]
-  ): Readonly<Statics> & EmberClassConstructor<Instance>;
+  ): Readonly<Statics> & CoreObjectClass<Instance>;
 
   /** @internal */
   static reopen(...args: any[]): any;
