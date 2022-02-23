@@ -294,8 +294,8 @@ export default internalHelper(
 
     let debugKey: string = action.debugLabel!;
 
-    let target = 'target' in named && named.target ? named.target : context;
-    let processArgs = makeArgsProcessor(('value' in named && named.value) || false, restArgs);
+    let target = 'target' in named ? named['target'] : context;
+    let processArgs = makeArgsProcessor(('value' in named && named['value']) || false, restArgs);
 
     let fn: Function;
 

@@ -52,7 +52,7 @@ export const outletHelper = internalHelper(
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
       let outlets = state !== undefined ? state.outlets : undefined;
 
-      return outlets !== undefined ? outlets.main : undefined;
+      return outlets !== undefined ? outlets['main'] : undefined;
     });
 
     let lastState: OutletDefinitionState | null = null;
@@ -80,7 +80,7 @@ export const outletHelper = internalHelper(
           // dynamic scope also changes, and so the original model ref would not
           // provide the correct updated value. So we stop updating and return
           // the _last_ model value for that outlet.
-          named.model = createComputeRef(() => {
+          named['model'] = createComputeRef(() => {
             if (lastState === state) {
               model = valueForRef(modelRef);
             }
@@ -89,7 +89,7 @@ export const outletHelper = internalHelper(
           });
 
           if (DEBUG) {
-            named.model = createDebugAliasRef!('@model', named.model);
+            named['model'] = createDebugAliasRef!('@model', named['model']);
           }
 
           let args = createCapturedArgs(named, EMPTY_POSITIONAL);

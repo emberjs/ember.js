@@ -14,9 +14,9 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
     positional.length === 1 && nameOrValueRef
   );
 
-  let typeRef = named.type;
-  let locRef = named.loc;
-  let originalRef = named.original;
+  let typeRef = named['type'];
+  let locRef = named['loc'];
+  let originalRef = named['original'];
 
   assert(`[BUG] expecting \`type\` named argument`, typeRef);
   assert(`[BUG] expecting \`loc\` named argument`, locRef);
