@@ -1,12 +1,34 @@
 import getAllPropertyNames from './get-all-property-names';
 
-function isGenerator(mixin) {
-  return Array.isArray(mixin.cases) && typeof mixin.generate === 'function';
+export interface Generator {
+  cases: unknown[];
+  generate: (...args: unknown[]) => unknown;
 }
 
-export default function applyMixins(TestClass, ...mixins) {
+export interface GeneratorClass<T extends Generator> extends Function {
+  new (): T;
+}
+
+export type Mixin<T extends Generator> = T | GeneratorClass<T> | Record<string, unknown>;
+
+function isGenerator(mixin: unknown): mixin is Generator {
+  if (mixin && typeof mixin === 'object') {
+    let cast = mixin as Generator;
+    return Array.isArray(cast.cases) && typeof cast.generate === 'function';
+  }
+  return false;
+}
+
+function isGeneratorClass<T extends Generator>(mixin: unknown): mixin is GeneratorClass<T> {
+  return typeof mixin === 'function';
+}
+
+export default function applyMixins<T extends Generator>(
+  TestClass: Function,
+  ...mixins: Mixin<T>[]
+) {
   mixins.forEach((mixinOrGenerator) => {
-    let mixin;
+    let mixin: object;
 
     if (isGenerator(mixinOrGenerator)) {
       let generator = mixinOrGenerator;
@@ -17,7 +39,7 @@ export default function applyMixins(TestClass, ...mixins) {
       });
 
       Object.assign(TestClass.prototype, mixin);
-    } else if (typeof mixinOrGenerator === 'function') {
+    } else if (isGeneratorClass(mixinOrGenerator)) {
       let properties = getAllPropertyNames(mixinOrGenerator);
       mixin = new mixinOrGenerator();
 

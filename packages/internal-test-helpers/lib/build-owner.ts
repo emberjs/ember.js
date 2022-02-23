@@ -2,9 +2,13 @@ import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import { registerDestructor } from '@ember/destroyable';
+import Resolver from './test-resolver';
+import { EngineInstanceOptions } from '@ember/engine/instance';
 
 class ResolverWrapper {
-  constructor(resolver) {
+  resolver: Resolver | undefined;
+
+  constructor(resolver: Resolver | undefined) {
     this.resolver = resolver;
   }
 
@@ -13,13 +17,20 @@ class ResolverWrapper {
   }
 }
 
-export default function buildOwner(options = {}) {
+export default function buildOwner(
+  options: {
+    ownerType?: 'application' | 'engine';
+    ownerOptions?: EngineInstanceOptions;
+    resolver?: Resolver;
+    bootOptions?: object;
+  } = {}
+) {
   let ownerType = options.ownerType || 'application';
   let ownerOptions = options.ownerOptions || {};
   let resolver = options.resolver;
   let bootOptions = options.bootOptions || {};
 
-  let namespace;
+  let namespace: Application | Engine;
   if (ownerType === 'application') {
     namespace = Application.create({
       autoboot: false,
@@ -27,7 +38,7 @@ export default function buildOwner(options = {}) {
     });
   } else {
     namespace = Engine.create({
-      buildRegistry() {
+      buildRegistry(this: Engine) {
         return (this.__registry__ = Application.buildRegistry(this));
       },
       Resolver: new ResolverWrapper(resolver),

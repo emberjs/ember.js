@@ -1,27 +1,32 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
 import { Router } from '@ember/-internals/routing';
+import Resolver from '../test-resolver';
+import { assert } from '@ember/debug';
+import ApplicationInstance from '@ember/application/instance';
 
-export default class AutobootApplicationTestCase extends TestResolverApplicationTestCase {
-  createApplication(options, MyApplication = Application) {
+export default abstract class AutobootApplicationTestCase extends TestResolverApplicationTestCase {
+  resolver?: Resolver;
+
+  createApplication(options: object, MyApplication = Application) {
     let myOptions = Object.assign(this.applicationOptions, options);
     let application = (this.application = MyApplication.create(myOptions));
-    this.resolver = application.__registry__.resolver;
+    let resolver = application.__registry__.resolver;
+    assert('expected a resolver', resolver instanceof Resolver);
+    this.resolver = resolver;
 
-    if (this.resolver) {
-      this.resolver.add('router:main', Router.extend(this.routerOptions));
-    }
+    resolver.add('router:main', Router.extend(this.routerOptions));
 
     return application;
   }
 
-  visit(url) {
+  visit(url: string) {
     return this.application.boot().then(() => {
-      return this.applicationInstance.visit(url);
+      return this.applicationInstance!.visit(url);
     });
   }
 
-  get applicationInstance() {
+  get applicationInstance(): ApplicationInstance | undefined {
     let { application } = this;
 
     if (!application) {

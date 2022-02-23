@@ -1,15 +1,22 @@
-import { compile } from 'ember-template-compiler';
+import { compile, EmberPrecompileOptions } from 'ember-template-compiler';
 import { EventDispatcher } from '@ember/-internals/views';
-import { Component, _resetRenderers } from '@ember/-internals/glimmer';
-import { ModuleBasedResolver } from '../test-resolver';
+import { Component, Renderer, _resetRenderers } from '@ember/-internals/glimmer';
+import Resolver, { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy } from '../run';
+import EngineInstance, { EngineInstanceOptions } from '@ember/engine/instance';
+import { BootOptions } from '@ember/application/instance';
 
 export default class RouterNonApplicationTestCase extends AbstractTestCase {
-  constructor() {
-    super(...arguments);
+  owner: EngineInstance;
+  renderer: Renderer;
+  element: HTMLElement;
+  component: any;
+
+  constructor(assert: QUnit['assert']) {
+    super(assert);
     let bootOptions = this.getBootOptions();
 
     let owner = (this.owner = buildOwner({
@@ -17,37 +24,46 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
       ownerOptions: this.getOwnerOptions(),
       resolver: this.getResolver(),
       bootOptions,
-      viewRegistry: Object.create(null),
     }));
 
     owner.register('-view-registry:main', Object.create(null), { instantiate: false });
     owner.register('event_dispatcher:main', EventDispatcher);
 
-    this.renderer = this.owner.lookup('renderer:-dom');
-    this.element = document.querySelector('#qunit-fixture');
+    this.renderer = this.owner.lookup('renderer:-dom') as Renderer;
+    this.element = document.querySelector('#qunit-fixture')!;
     this.component = null;
   }
 
-  compile() {
-    return compile(...arguments);
+  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
+    return compile(templateString, options);
   }
 
-  getOwnerOptions() {}
-  getBootOptions() {}
+  getOwnerOptions(): EngineInstanceOptions | undefined {
+    return undefined;
+  }
 
-  get resolver() {
-    return this.owner.__registry__.fallback.resolver;
+  getBootOptions(): (BootOptions & { skipEventDispatcher?: boolean }) | undefined {
+    return undefined;
+  }
+
+  get resolver(): Resolver {
+    return (this.owner.__registry__.fallback as any).resolver;
   }
 
   getResolver() {
     return new ModuleBasedResolver();
   }
 
-  add(specifier, factory) {
+  add(specifier: string, factory: unknown) {
     this.resolver.add(specifier, factory);
   }
 
-  addTemplate(templateName, templateString) {
+  addTemplate(
+    templateName:
+      | string
+      | { specifier: string; source: unknown; namespace: unknown; moduleName: string },
+    templateString: string
+  ) {
     if (typeof templateName === 'string') {
       this.resolver.add(
         `template:${templateName}`,
@@ -65,7 +81,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     }
   }
 
-  addComponent(name, { ComponentClass = null, template = null }) {
+  addComponent(name: string, { ComponentClass = null, template = null }) {
     if (ComponentClass) {
       this.resolver.add(`component:${name}`, ComponentClass);
     }
@@ -93,7 +109,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     }
   }
 
-  render(templateStr, context = {}) {
+  render(templateStr: string, context = {}) {
     let { owner } = this;
 
     owner.register(

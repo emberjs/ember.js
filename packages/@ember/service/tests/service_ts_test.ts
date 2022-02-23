@@ -18,7 +18,7 @@ moduleFor(
       owner.register('service:main', MainService);
       owner.register('foo:main', Foo);
 
-      let foo = owner.lookup('foo:main');
+      let foo = owner.lookup('foo:main') as Foo;
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
 
@@ -37,7 +37,7 @@ moduleFor(
       owner.register('service:main', MainService);
       owner.register('foo:main', Foo);
 
-      let foo = owner.lookup('foo:main');
+      let foo = owner.lookup('foo:main') as Foo;
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
 
@@ -61,7 +61,7 @@ moduleFor(
       owner.register('service:main', MainService);
       owner.register('foo:main', Foo);
 
-      let foo = owner.lookup('foo:main');
+      let foo = owner.lookup('foo:main') as Foo;
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
 
@@ -80,7 +80,7 @@ moduleFor(
       owner.register('service:main', MainService);
       owner.register('foo:main', Foo);
 
-      let foo = owner.lookup('foo:main');
+      let foo = owner.lookup('foo:main') as Foo;
 
       assert.ok(foo.main instanceof Service, 'service injected correctly');
 

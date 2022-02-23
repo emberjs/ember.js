@@ -1,4 +1,4 @@
-export default function strip([...strings], ...values) {
+export default function strip([...strings], ...values: unknown[]) {
   let str = strings
     .map((string, index) => {
       let interpolated = values[index];

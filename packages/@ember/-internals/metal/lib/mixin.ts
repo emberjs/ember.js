@@ -254,7 +254,7 @@ function mergeMixins(
       } else if (mixins !== undefined) {
         mergeMixins(mixins, meta, descs, values, base, keys, keysWithSuper);
 
-        if (currentMixin._without !== undefined) {
+        if (currentMixin instanceof Mixin && currentMixin._without !== undefined) {
           currentMixin._without.forEach((keyName: string) => {
             // deleting the key means we won't process the value
             let index = keys.indexOf(keyName);

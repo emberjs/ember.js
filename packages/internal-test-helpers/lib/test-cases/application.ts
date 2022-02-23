@@ -3,19 +3,28 @@ import Application from '@ember/application';
 import { Router } from '@ember/-internals/routing';
 
 import { runTask, runLoopSettled } from '../run';
+import Resolver from '../test-resolver';
+import { assert as emberAssert } from '@ember/debug';
+import Controller from '@ember/controller';
+import ApplicationInstance from '@ember/application/instance';
 
-export default class ApplicationTestCase extends TestResolverApplicationTestCase {
-  constructor() {
-    super(...arguments);
+export default abstract class ApplicationTestCase extends TestResolverApplicationTestCase {
+  application: Application;
+  applicationInstance?: ApplicationInstance;
+  resolver: Resolver;
+
+  constructor(assert: QUnit['assert']) {
+    super(assert);
 
     let { applicationOptions } = this;
     this.application = runTask(this.createApplication.bind(this, applicationOptions));
 
-    this.resolver = this.application.__registry__.resolver;
+    // TODO: Review this cast
+    let resolver = this.application.__registry__.resolver;
+    emberAssert('expected a resolver', resolver instanceof Resolver);
+    this.resolver = resolver;
 
-    if (this.resolver) {
-      this.resolver.add('router:main', Router.extend(this.routerOptions));
-    }
+    resolver.add('router:main', Router.extend(this.routerOptions));
   }
 
   createApplication(myOptions = {}, MyApplication = Application) {
@@ -29,7 +38,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
   }
 
   get appRouter() {
-    return this.applicationInstance.lookup('router:main');
+    return this.applicationInstance!.lookup('router:main') as Router;
   }
 
   get currentURL() {
@@ -41,7 +50,7 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     await runLoopSettled();
   }
 
-  controllerFor(name) {
-    return this.applicationInstance.lookup(`controller:${name}`);
+  controllerFor(name: string) {
+    return this.applicationInstance!.lookup(`controller:${name}`) as Controller | undefined;
   }
 }

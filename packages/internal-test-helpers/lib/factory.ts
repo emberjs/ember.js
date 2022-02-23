@@ -1,4 +1,4 @@
-function setProperties(object, properties) {
+function setProperties(object: object, properties: object) {
   for (let key in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
       object[key] = properties[key];
@@ -9,55 +9,38 @@ function setProperties(object, properties) {
 let guids = 0;
 
 export default function factory() {
-  function Klass(options) {
-    setProperties(this, options);
-    this._guid = guids++;
-    this.isDestroyed = false;
-  }
+  class TestFactory {
+    _guid: number;
+    isDestroyed: boolean;
 
-  Klass.prototype.constructor = Klass;
-  Klass.prototype.destroy = function () {
-    this.isDestroyed = true;
-  };
-
-  Klass.prototype.toString = function () {
-    return '<Factory:' + this._guid + '>';
-  };
-
-  Klass.create = create;
-  Klass.extend = extend;
-  Klass.reopen = extend;
-  Klass.reopenClass = reopenClass;
-
-  return Klass;
-
-  function create(options) {
-    return new this.prototype.constructor(options);
-  }
-
-  function reopenClass(options) {
-    setProperties(this, options);
-  }
-
-  function extend(options) {
-    function Child(options) {
-      Klass.call(this, options);
+    constructor(options: Partial<TestFactory>) {
+      setProperties(this, options);
+      this._guid = guids++;
+      this.isDestroyed = false;
     }
 
-    let Parent = this;
+    destroy() {
+      this.isDestroyed = true;
+    }
 
-    Child.prototype = new Parent();
-    Child.prototype.constructor = Child;
+    toString() {
+      return '<Factory:' + this._guid + '>';
+    }
 
-    setProperties(Child, Klass);
-    setProperties(Child.prototype, options);
+    static create(options: Partial<TestFactory>) {
+      return new TestFactory(options);
+    }
 
-    Child.create = create;
-    Child.extend = extend;
-    Child.reopen = extend;
+    static reopenClass(options: Partial<typeof TestFactory>) {
+      setProperties(this, options);
+    }
 
-    Child.reopenClass = reopenClass;
-
-    return Child;
+    static extend(options: object) {
+      class ChildTestFactory extends TestFactory {}
+      setProperties(ChildTestFactory, options);
+      return ChildTestFactory;
+    }
   }
+
+  return TestFactory;
 }

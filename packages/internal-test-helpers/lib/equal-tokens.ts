@@ -1,6 +1,6 @@
 import { tokenize } from 'simple-html-tokenizer';
 
-function generateTokens(containerOrHTML) {
+function generateTokens(containerOrHTML: string | Element) {
   if (typeof containerOrHTML === 'string') {
     return {
       tokens: tokenize(containerOrHTML),
@@ -14,7 +14,7 @@ function generateTokens(containerOrHTML) {
   }
 }
 
-function normalizeTokens(tokens) {
+function normalizeTokens(tokens: ReturnType<typeof tokenize>) {
   tokens.forEach((token) => {
     if (token.type === 'StartTag') {
       token.attributes = token.attributes.sort((a, b) => {
@@ -30,7 +30,11 @@ function normalizeTokens(tokens) {
   });
 }
 
-export default function equalTokens(actualContainer, expectedHTML, message = null) {
+export default function equalTokens(
+  actualContainer: string | Element,
+  expectedHTML: string,
+  message: string | null = null
+) {
   let actual = generateTokens(actualContainer);
   let expected = generateTokens(expectedHTML);
 

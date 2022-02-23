@@ -1,22 +1,29 @@
 import require from 'require';
 
-function getDescriptor(obj, path) {
+function getDescriptor(obj: Record<string, unknown>, path: string) {
   let parts = path.split('.');
-  let value = obj;
+  let value: unknown = obj;
   for (let i = 0; i < parts.length - 1; i++) {
-    let part = parts[i];
-    value = value[part];
+    let part = parts[i]!;
+    // NOTE: This isn't entirely safe since we could have a null!
+    value = (value as Record<string, unknown>)[part];
     if (!value) {
       return undefined;
     }
   }
-  let last = parts[parts.length - 1];
+  let last = parts[parts.length - 1]!;
   return Object.getOwnPropertyDescriptor(value, last);
 }
 
-export default function confirmExport(Ember, assert, path, moduleId, exportName) {
+export default function confirmExport(
+  Ember: Record<string, unknown>,
+  assert: QUnit['assert'],
+  path: string,
+  moduleId: string,
+  exportName: string | { value: unknown; get: string; set: string }
+) {
   try {
-    let desc;
+    let desc: PropertyDescriptor | null | undefined;
 
     if (path !== null) {
       desc = getDescriptor(Ember, path);
@@ -25,12 +32,16 @@ export default function confirmExport(Ember, assert, path, moduleId, exportName)
       desc = null;
     }
 
-    if (desc === null) {
+    if (desc == null) {
       let mod = require(moduleId);
-      assert.notEqual(mod[exportName], undefined, `${moduleId}#${exportName} is not \`undefined\``);
+      assert.notEqual(
+        mod[exportName as string],
+        undefined,
+        `${moduleId}#${exportName} is not \`undefined\``
+      );
     } else if (typeof exportName === 'string') {
       let mod = require(moduleId);
-      let value = 'value' in desc ? desc.value : desc.get.call(Ember);
+      let value = 'value' in desc ? desc.value : desc.get!.call(Ember);
       assert.equal(value, mod[exportName], `Ember.${path} is exported correctly`);
       assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
     } else if ('value' in desc) {
@@ -48,8 +59,9 @@ export default function confirmExport(Ember, assert, path, moduleId, exportName)
   } catch (error) {
     assert.pushResult({
       result: false,
-      message: `An error occurred while testing ${path} is exported from ${moduleId}.`,
-      source: error,
+      message: `An error occurred while testing ${path} is exported from ${moduleId}`,
+      actual: error,
+      expected: undefined,
     });
   }
 }

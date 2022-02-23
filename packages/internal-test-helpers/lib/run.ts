@@ -13,7 +13,7 @@ export function runDestroy(toDestroy: any): void {
   }
 }
 
-export function runTask(callback: (...args: any[]) => any): void {
+export function runTask<F extends () => any>(callback: F): ReturnType<F> {
   return run(callback);
 }
 

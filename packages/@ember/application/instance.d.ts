@@ -10,4 +10,6 @@ export interface BootOptions {
   isInteractive?: boolean;
 }
 
-export default class ApplicationInstance extends EngineInstance {}
+export default class ApplicationInstance extends EngineInstance {
+  visit(url: string): Promise<this>;
+}

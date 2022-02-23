@@ -2,7 +2,7 @@ import { compile } from 'ember-template-compiler';
 
 const DELIMITER = '%';
 
-function serializeKey(specifier, source, namespace) {
+function serializeKey(specifier: string, source?: unknown, namespace?: unknown) {
   let [type, name] = specifier.split(':');
   return `${type}://${[
     name,
@@ -12,13 +12,18 @@ function serializeKey(specifier, source, namespace) {
 }
 
 class Resolver {
+  _registered: Record<string, unknown>;
+
   constructor() {
     this._registered = {};
   }
-  resolve(specifier) {
+  resolve(specifier: string) {
     return this._registered[specifier] || this._registered[serializeKey(specifier)];
   }
-  add(lookup, factory) {
+  add(
+    lookup: string | { specifier: string; source: unknown; namespace: unknown },
+    factory: unknown
+  ) {
     let key;
     switch (typeof lookup) {
       case 'string':
@@ -36,7 +41,7 @@ class Resolver {
 
     return (this._registered[key] = factory);
   }
-  addTemplate(templateName, template) {
+  addTemplate(templateName: string, template: string) {
     let templateType = typeof template;
     if (templateType !== 'string') {
       throw new Error(
