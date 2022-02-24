@@ -36,16 +36,6 @@ export interface IRegistry {
   resolve<T, C>(fullName: string, options?: ResolveOptions): Factory<T, C> | undefined;
 }
 
-export type NotResolver = {
-  knownForType: never;
-  lookupDescription: never;
-  makeToString: never;
-  normalize: never;
-  resolve: never;
-};
-
-export type Resolve = <T, C>(name: string) => Factory<T, C> | undefined;
-
 export interface ResolverClass {
   create(...args: unknown[]): Resolver;
 }
@@ -55,13 +45,13 @@ export interface Resolver {
   lookupDescription?: (fullName: string) => string;
   makeToString?: <T, C>(factory: Factory<T, C>, fullName: string) => string;
   normalize?: (fullName: string) => string;
-  resolve: Resolve;
+  resolve<T, C>(name: string): Factory<T, C> | undefined;
 }
 
 export interface RegistryOptions {
   fallback?: IRegistry;
   registrations?: { [key: string]: object };
-  resolver?: Resolver | (Resolve & NotResolver);
+  resolver?: Resolver;
 }
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;

@@ -42,7 +42,7 @@ function errorFor(reason: unknown) {
   if (!reason) return;
 
   let withErrorThrown = reason as ReasonWithErrorThrown;
-  if (withErrorThrown?.errorThrown) {
+  if (withErrorThrown.errorThrown) {
     return unwrapErrorThrown(withErrorThrown);
   }
 

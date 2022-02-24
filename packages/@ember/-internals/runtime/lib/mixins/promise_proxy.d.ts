@@ -1,7 +1,7 @@
 import { Mixin } from '@ember/-internals/metal';
 
 interface PromiseProxyMixin<T> {
-  reason: null;
+  reason: unknown;
 
   readonly isPending: boolean;
 
