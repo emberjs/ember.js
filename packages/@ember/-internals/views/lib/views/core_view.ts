@@ -47,7 +47,7 @@ const CoreView = (FrameworkObject.extend(Evented, ActionHandler, {
   */
   parentView: null,
 
-  instrumentDetails(hash: any) {
+  instrumentDetails(hash: Record<string, unknown>) {
     hash.object = this.toString();
     hash.containerKey = this._debugContainerKey;
     hash.view = this;

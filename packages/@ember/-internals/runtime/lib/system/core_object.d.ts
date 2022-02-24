@@ -11,8 +11,10 @@ import { Owner } from '@ember/-internals/owner';
  * Implementation is carefully chosen for the reasons described in
  * https://github.com/typed-ember/ember-typings/pull/29
  */
+/** @internal */
 export type EmberClassConstructor<T> = new (owner: Owner) => T;
 
+/** @internal */
 export type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
   : unknown; // TODO: Is this correct?
