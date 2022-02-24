@@ -1003,7 +1003,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         );
 
         this.addComponent('hello-world', {
-          ComponentClass: Component.extend(),
+          ComponentClass: class extends Component {},
           template: 'Hello World',
         });
 
@@ -1498,11 +1498,12 @@ if (ENV._DEBUG_RENDER_TREE) {
         );
 
         this.addComponent('hello-world', {
-          ComponentClass: Component.extend({
-            init() {
+          ComponentClass: class extends Component {
+            constructor(owner: Owner) {
+              super(owner);
               throw new Error('oops!');
-            },
-          }),
+            }
+          },
           template: '{{@name}}',
         });
 

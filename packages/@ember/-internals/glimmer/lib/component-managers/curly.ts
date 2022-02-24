@@ -39,6 +39,7 @@ import {
   valueForTag,
 } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
+import Component from '../component';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
@@ -49,7 +50,7 @@ import {
   parseAttributeBinding,
 } from '../utils/bindings';
 
-import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
+import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 
 export const ARGS = enumerableSymbol('ARGS');

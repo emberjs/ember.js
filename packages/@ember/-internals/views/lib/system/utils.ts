@@ -1,15 +1,18 @@
-import { Renderer } from '@ember/-internals/glimmer';
+import { View } from '@ember/-internals/glimmer/lib/renderer';
 import { getOwner, Owner } from '@ember/-internals/owner';
-/* globals Element */
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { Dict, Option } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
 
 /**
 @module ember
 */
 
-export function isSimpleClick(event: MouseEvent): boolean {
+export function isSimpleClick(event: Event): boolean {
+  if (!(event instanceof MouseEvent)) {
+    return false;
+  }
   let modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey;
   let secondaryClick = event.which > 1; // IE9 may return undefined
 
@@ -27,15 +30,6 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
     affectedStyle +
     '"'
   );
-}
-
-interface View {
-  parentView: Option<View>;
-  renderer: Renderer;
-  tagName?: string;
-  elementId?: string;
-  isDestroying: boolean;
-  isDestroyed: boolean;
 }
 
 /**
@@ -73,10 +67,10 @@ export function getViewId(view: View): string {
   }
 }
 
-const ELEMENT_VIEW: WeakMap<Element, View> = new WeakMap();
-const VIEW_ELEMENT: WeakMap<View, Element> = new WeakMap();
+const ELEMENT_VIEW: WeakMap<SimpleElement, View> = new WeakMap();
+const VIEW_ELEMENT: WeakMap<View, SimpleElement> = new WeakMap();
 
-export function getElementView(element: Element): Option<View> {
+export function getElementView(element: SimpleElement): Option<View> {
   return ELEMENT_VIEW.get(element) || null;
 }
 
@@ -85,15 +79,15 @@ export function getElementView(element: Element): Option<View> {
   @method getViewElement
   @param {Ember.View} view
  */
-export function getViewElement(view: View): Option<Element> {
+export function getViewElement(view: View): Option<SimpleElement> {
   return VIEW_ELEMENT.get(view) || null;
 }
 
-export function setElementView(element: Element, view: View): void {
+export function setElementView(element: SimpleElement, view: View): void {
   ELEMENT_VIEW.set(element, view);
 }
 
-export function setViewElement(view: View, element: Element): void {
+export function setViewElement(view: View, element: SimpleElement): void {
   VIEW_ELEMENT.set(view, element);
 }
 
@@ -102,7 +96,7 @@ export function setViewElement(view: View, element: Element): void {
 // this case, we want to prevent access to the element (and vice verse) during
 // destruction.
 
-export function clearElementView(element: Element): void {
+export function clearElementView(element: SimpleElement): void {
   ELEMENT_VIEW.delete(element);
 }
 

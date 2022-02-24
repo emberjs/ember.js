@@ -1,27 +1,9 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { registerDestructor } from '@glimmer/destroyable';
-import { CapturedNamedArguments, Template, TemplateFactory } from '@glimmer/interfaces';
+import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
-import { Renderer } from '../renderer';
-
-export interface Component {
-  _debugContainerKey: string;
-  _transitionTo(name: string): void;
-  layout?: TemplateFactory | Template;
-  layoutName?: string;
-  attributeBindings: Array<string>;
-  classNames: Array<string>;
-  classNameBindings: Array<string>;
-  elementId: string;
-  tagName: string;
-  isDestroying: boolean;
-  appendChild(view: {}): void;
-  trigger(event: string): void;
-  destroy(): void;
-  setProperties(props: { [key: string]: any }): void;
-  renderer: Renderer;
-}
+import Component from '../component';
 
 type Finalizer = () => void;
 function NOOP() {}

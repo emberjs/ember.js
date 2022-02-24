@@ -10,7 +10,7 @@ import {
   Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { Component } from './curly-component-state-bucket';
+import Component from '../component';
 
 function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';

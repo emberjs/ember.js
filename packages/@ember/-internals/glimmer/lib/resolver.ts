@@ -181,7 +181,10 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     }
 
     const factory = owner.factoryFor(`helper:${name}`) as
-      | Factory<SimpleHelper, HelperFactory<SimpleHelper>>
+      | Factory<
+          SimpleHelper<unknown, unknown[], Record<string, unknown>>,
+          HelperFactory<SimpleHelper<unknown, unknown[], Record<string, unknown>>>
+        >
       | Factory<HelperInstance, HelperFactory<HelperInstance>>;
 
     if (factory === undefined) {

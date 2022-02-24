@@ -13,6 +13,13 @@ interface Evented {
     method: string | ((this: Target, ...args: any[]) => void)
   ): this;
   on(name: string, method: ((...args: any[]) => void) | string): this;
+  // Allow for easier super calls
+  on<Target>(
+    name: string,
+    ...args:
+      | [Target, string | ((this: Target, ...args: any[]) => void)]
+      | [((...args: any[]) => void) | string]
+  ): this;
   /**
    * Subscribes a function to a named event and then cancels the subscription
    * after the first time the event is triggered. It is good to use ``one`` when
