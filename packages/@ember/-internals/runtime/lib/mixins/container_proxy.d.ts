@@ -3,7 +3,7 @@ import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { Mixin } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 
-interface ContainerProxy {
+interface ContainerProxyMixin {
   /** @internal */
   __container__: Container;
 
@@ -11,6 +11,6 @@ interface ContainerProxy {
   lookup(fullName: string, options?: TypeOptions): unknown;
   factoryFor(fullName: string): Factory<unknown> | undefined;
 }
-declare const ContainerProxy: Mixin;
+declare const ContainerProxyMixin: Mixin;
 
-export default ContainerProxy;
+export default ContainerProxyMixin;

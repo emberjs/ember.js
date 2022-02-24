@@ -86,6 +86,7 @@ export default class CoreObject {
    */
   isDestroying: boolean;
 
+  // NOTE That the actual CoreObject#destroy returns `this`;
   /**
    * Destroys an object by setting the `isDestroyed` flag and removing its
    * metadata, which effectively destroys observers and bindings.
@@ -95,7 +96,7 @@ export default class CoreObject {
    * happen immediately.  It will set an isDestroying flag immediately.
    * @return receiver
    */
-  destroy(): CoreObject;
+  destroy(): void;
 
   /**
    * Override to implement teardown.
@@ -141,4 +142,7 @@ export default class CoreObject {
 
   /** @internal */
   static isMethod: boolean;
+
+  /** @internal */
+  static superclass: unknown;
 }
