@@ -40,7 +40,7 @@ export function addListener(
   obj: object,
   eventName: string,
   target: object | Function | null,
-  method?: Function | string,
+  method?: Function | string | Symbol,
   once?: boolean,
   sync = true
 ): void {

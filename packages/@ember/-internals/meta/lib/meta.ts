@@ -1,3 +1,4 @@
+import { ComputedProperty } from '@ember/-internals/metal';
 import { symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
@@ -330,7 +331,7 @@ export class Meta {
   }
 
   /** @internal */
-  forEachDescriptors(fn: Function) {
+  forEachDescriptors(fn: (key: string, value: ComputedProperty) => void) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
     while (pointer !== null) {
@@ -354,7 +355,7 @@ export class Meta {
   addToListeners(
     eventName: string,
     target: object | null,
-    method: Function | string,
+    method: Function | string | Symbol,
     once: boolean,
     sync: boolean
   ) {
@@ -377,7 +378,7 @@ export class Meta {
   private pushListener(
     event: string,
     target: object | null,
-    method: Function | string,
+    method: Function | string | Symbol,
     kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE,
     sync = false
   ): void {
@@ -722,7 +723,7 @@ function indexOfListener(
   listeners: Listener[],
   event: string,
   target: object | null,
-  method: Function | string | null
+  method: Function | string | Symbol | null
 ) {
   for (let i = listeners.length - 1; i >= 0; i--) {
     let listener = listeners[i];

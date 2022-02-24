@@ -1,7 +1,6 @@
-import { View } from '@ember/-internals/glimmer/lib/renderer';
+import { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import { inject } from '@ember/-internals/metal';
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
-import { CoreObjectClass } from '@ember/-internals/runtime/lib/system/core_object';
 import states from './states';
 
 /**
@@ -20,21 +19,33 @@ import states from './states';
   @uses Ember.ActionHandler
   @private
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface CoreViewClass extends CoreObjectClass<CoreView> {}
+
 interface CoreView extends FrameworkObject, Evented, ActionHandler, View {}
-const CoreView = (FrameworkObject.extend(Evented, ActionHandler, {
-  isView: true,
+class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+  isView = true;
 
-  _states: states,
+  _states = states;
+  _state: unknown;
+  _currentState: unknown;
 
-  init() {
-    this._super(...arguments);
+  _superTrigger?: Evented['trigger'];
+  _superHas?: Evented['has'];
+
+  init(properties: object | undefined) {
+    super.init(properties);
+
+    // Handle methods from Evented
+    this._superTrigger = this.trigger;
+    this.trigger = this._trigger;
+    this._superHas = this.has;
+    this.has = this._has;
+
     this._state = 'preRender';
     this._currentState = this._states.preRender;
-  },
+  }
 
-  renderer: inject('renderer', '-dom'),
+  @inject('renderer', '-dom')
+  declare renderer: Renderer;
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -45,14 +56,15 @@ const CoreView = (FrameworkObject.extend(Evented, ActionHandler, {
     @default null
     @private
   */
-  parentView: null,
+  // TODO: Make sure this shouldn't be overridable via extend/create
+  parentView = null;
 
   instrumentDetails(hash: Record<string, unknown>) {
     hash.object = this.toString();
     hash.containerKey = this._debugContainerKey;
     hash.view = this;
     return hash;
-  },
+  }
 
   /**
     Override the default event firing from `Evented` to
@@ -62,21 +74,21 @@ const CoreView = (FrameworkObject.extend(Evented, ActionHandler, {
     @param name {String}
     @private
   */
-  trigger(name: string, ...args: any[]) {
-    this._super(...arguments);
+  // Changed to `trigger` on init
+  _trigger(name: string, ...args: any[]) {
+    this._superTrigger!(name, ...args);
     let method = this[name];
     if (typeof method === 'function') {
       return method.apply(this, args);
     }
-  },
+  }
 
-  has(name: string) {
-    return typeof this[name] === 'function' || this._super(name);
-  },
-}) as unknown) as CoreViewClass;
+  // Changed to `has` on init
+  _has(name: string) {
+    return typeof this[name] === 'function' || this._superHas!(name);
+  }
 
-CoreView.reopenClass({
-  isViewFactory: true,
-});
+  static isViewFactory = true;
+}
 
 export default CoreView;

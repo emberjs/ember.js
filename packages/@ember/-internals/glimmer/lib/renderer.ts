@@ -293,7 +293,9 @@ export class Renderer {
 
   private _lastRevision = -1;
   private _destroyed = false;
-  private _isInteractive: boolean;
+
+  /** @private */
+  _isInteractive: boolean;
 
   readonly _runtimeResolver: ResolverImpl;
 

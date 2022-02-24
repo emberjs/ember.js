@@ -197,8 +197,8 @@ if (ENV._DEBUG_RENDER_TREE) {
             isFooEngine = true;
             Resolver = ModuleBasedTestResolver;
 
-            init() {
-              super.init();
+            init(properties: object | undefined) {
+              super.init(properties);
               this.register(
                 'template:application',
                 compileTemplate(
@@ -233,8 +233,8 @@ if (ENV._DEBUG_RENDER_TREE) {
           class extends Engine {
             Resolver = ModuleBasedTestResolver;
 
-            init() {
-              super.init();
+            init(properties: object | undefined) {
+              super.init(properties);
               this.register(
                 'template:application',
                 compileTemplate(
@@ -578,8 +578,8 @@ if (ENV._DEBUG_RENDER_TREE) {
             isFooEngine = true;
             Resolver = ModuleBasedTestResolver;
 
-            init() {
-              super.init();
+            init(properties: object | undefined) {
+              super.init(properties);
               this.register(
                 'template:application',
                 compileTemplate(
