@@ -1,4 +1,4 @@
-import { get, MaybeHasUnknownProperty } from './property_get';
+import { get, hasUnknownProperty } from './property_get';
 /**
  @module @ember/utils
 */
@@ -39,10 +39,7 @@ export default function isEmpty(obj: unknown): boolean {
     return true;
   }
 
-  if (
-    typeof (obj as MaybeHasUnknownProperty).unknownProperty !== 'function' &&
-    typeof (obj as HasSize).size === 'number'
-  ) {
+  if (!hasUnknownProperty(obj) && typeof (obj as HasSize).size === 'number') {
     return !(obj as HasSize).size;
   }
 

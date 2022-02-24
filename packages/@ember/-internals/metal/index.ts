@@ -2,7 +2,14 @@ export { default as computed, autoComputed, isComputed, ComputedProperty } from 
 export { getCachedValueFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
-export { PROXY_CONTENT, _getPath, get, _getProp } from './lib/property_get';
+export {
+  PROXY_CONTENT,
+  _getPath,
+  get,
+  _getProp,
+  HasUnknownProperty,
+  hasUnknownProperty,
+} from './lib/property_get';
 export { set, _setProp, trySet } from './lib/property_set';
 export {
   objectAt,

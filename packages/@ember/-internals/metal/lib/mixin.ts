@@ -383,7 +383,11 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   }
 }
 
-export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], _hideKeys = false) {
+export function applyMixin(
+  obj: { [key: string]: any },
+  mixins: Array<Mixin | Record<string, unknown>>,
+  _hideKeys = false
+) {
   let descs = Object.create(null);
   let values = Object.create(null);
   let meta = metaFor(obj);
@@ -600,7 +604,9 @@ export default class Mixin {
     @private
     @internal
   */
-  reopen(...args: any[]) {
+  // Args should be `Array<Mixin | Record<string, unknown>>` but this causes
+  // types to be overly strict.
+  reopen(...args: any[]): this | undefined {
     if (args.length === 0) {
       return;
     }

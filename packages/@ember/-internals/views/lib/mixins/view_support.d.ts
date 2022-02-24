@@ -1,7 +1,6 @@
 import Mixin from '@ember/object/mixin';
 
 interface ViewSupport {
-  concatenatedProperties: string[];
   rerender(): unknown;
   element: Element;
   appendTo(selector: string | Element): this;

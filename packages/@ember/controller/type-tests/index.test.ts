@@ -23,7 +23,7 @@ expectTypeOf(controller.target).toEqualTypeOf<unknown | undefined>();
 
 expectTypeOf(controller.model).toEqualTypeOf<Foo>();
 
-expectTypeOf(controller.concatenatedProperties).toEqualTypeOf<string[]>();
+expectTypeOf(controller.concatenatedProperties).toEqualTypeOf<string[] | string | undefined>();
 
 expectTypeOf(controller.queryParams).toEqualTypeOf<
   Array<string | Record<string, { type: 'boolean' | 'number' | 'array' | 'string' }>>

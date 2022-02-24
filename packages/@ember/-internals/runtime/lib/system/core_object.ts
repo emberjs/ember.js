@@ -3,7 +3,7 @@
 */
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, Owner } from '@ember/-internals/owner';
 import { guidFor, makeArray, isInternalSymbol } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
 import {
@@ -16,6 +16,9 @@ import {
   descriptorForProperty,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
+  ComputedProperty,
+  HasUnknownProperty,
+  hasUnknownProperty,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
@@ -24,6 +27,35 @@ import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
+type EmberClassConstructor<T> = new (owner: Owner) => T;
+
+type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
+  ? T & MergeArray<Rest>
+  : unknown; // TODO: Is this correct?
+
+interface HasSetUnknownProperty {
+  setUnknownProperty: (keyName: string, value: any) => any;
+}
+
+function hasSetUnknownProperty(val: unknown): val is HasSetUnknownProperty {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    typeof (val as HasSetUnknownProperty).setUnknownProperty === 'function'
+  );
+}
+
+interface HasToStringExtension {
+  toStringExtension: () => void;
+}
+
+function hasToStringExtension(val: unknown): val is HasToStringExtension {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    typeof (val as HasToStringExtension).toStringExtension === 'function'
+  );
+}
 const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
@@ -33,13 +65,13 @@ const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug buil
 
 const destroyCalled = new Set();
 
-function ensureDestroyCalled(instance) {
+function ensureDestroyCalled(instance: CoreObject) {
   if (!destroyCalled.has(instance)) {
     instance.destroy();
   }
 }
 
-function initialize(obj, properties) {
+function initialize(obj: CoreObject, properties?: unknown) {
   let m = meta(obj);
 
   if (properties !== undefined) {
@@ -56,14 +88,10 @@ function initialize(obj, properties) {
 
     let concatenatedProperties = obj.concatenatedProperties;
     let mergedProperties = obj.mergedProperties;
-    let hasConcatenatedProps =
-      concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-    let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
 
     let keyNames = Object.keys(properties);
 
-    for (let i = 0; i < keyNames.length; i++) {
-      let keyName = keyNames[i];
+    for (let keyName of keyNames) {
       let value = properties[keyName];
 
       assert(
@@ -86,7 +114,11 @@ function initialize(obj, properties) {
       let isDescriptor = possibleDesc !== undefined;
 
       if (!isDescriptor) {
-        if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+        if (
+          concatenatedProperties !== undefined &&
+          concatenatedProperties.length > 0 &&
+          concatenatedProperties.indexOf(keyName) > -1
+        ) {
           let baseValue = obj[keyName];
           if (baseValue) {
             value = makeArray(baseValue).concat(value);
@@ -95,7 +127,11 @@ function initialize(obj, properties) {
           }
         }
 
-        if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+        if (
+          mergedProperties !== undefined &&
+          mergedProperties.length > 0 &&
+          mergedProperties.indexOf(keyName) > -1
+        ) {
           let baseValue = obj[keyName];
           value = Object.assign({}, baseValue, value);
         }
@@ -103,7 +139,7 @@ function initialize(obj, properties) {
 
       if (isDescriptor) {
         possibleDesc.set(obj, keyName, value);
-      } else if (typeof obj.setUnknownProperty === 'function' && !(keyName in obj)) {
+      } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
         obj.setUnknownProperty(keyName, value);
       } else {
         if (DEBUG) {
@@ -117,7 +153,7 @@ function initialize(obj, properties) {
 
   // using DEBUG here to avoid the extraneous variable when not needed
   if (DEBUG) {
-    initCalled.add(obj);
+    initCalled!.add(obj);
   }
   obj.init(properties);
 
@@ -131,7 +167,7 @@ function initialize(obj, properties) {
     }
   }
 
-  sendEvent(obj, 'init', undefined, undefined, undefined, m);
+  sendEvent(obj, 'init', undefined, undefined, m);
 }
 
 /**
@@ -195,17 +231,20 @@ function initialize(obj, properties) {
   @class CoreObject
   @public
 */
+interface CoreObject {
+  /** @internal */
+  _super(...args: any[]): any;
+}
 class CoreObject {
-  constructor(owner) {
+  constructor(owner?: Owner) {
     this[OWNER] = owner;
 
     // prepare prototype...
-    this.constructor.proto();
+    (this.constructor as typeof CoreObject).proto();
 
-    let self = this;
-
-    if (DEBUG && typeof self.unknownProperty === 'function') {
-      let messageFor = (obj, property) => {
+    let self;
+    if (DEBUG && hasUnknownProperty(this)) {
+      let messageFor = (obj: unknown, property: unknown) => {
         return (
           `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
           `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
@@ -221,12 +260,12 @@ class CoreObject {
 
       /* globals Proxy Reflect */
       self = new Proxy(this, {
-        get(target, property, receiver) {
+        get(target: CoreObject & HasUnknownProperty, property, receiver) {
           if (property === PROXY_CONTENT) {
             return target;
           } else if (
             // init called will be set on the proxy, not the target, so get with the receiver
-            !initCalled.has(receiver) ||
+            !initCalled!.has(receiver) ||
             typeof property === 'symbol' ||
             isInternalSymbol(property) ||
             property === 'toJSON' ||
@@ -251,10 +290,13 @@ class CoreObject {
           }
         },
       });
+    } else {
+      self = this;
     }
 
+    const destroyable = self;
     registerDestructor(self, ensureDestroyCalled, true);
-    registerDestructor(self, () => self.willDestroy());
+    registerDestructor(self, () => destroyable.willDestroy());
 
     // disable chains
     let m = meta(self);
@@ -267,7 +309,7 @@ class CoreObject {
     }
   }
 
-  reopen(...args) {
+  reopen(...args: Array<Mixin | Record<string, unknown>>) {
     applyMixin(this, args);
     return this;
   }
@@ -304,7 +346,7 @@ class CoreObject {
     @method init
     @public
   */
-  init() {}
+  init(_properties: object | undefined) {}
 
   /**
     Defines the properties that will be concatenated from the superclass
@@ -469,7 +511,7 @@ class CoreObject {
     return isDestroyed(this);
   }
 
-  set isDestroyed(value) {
+  set isDestroyed(_value) {
     assert(`You cannot set \`${this}.isDestroyed\` directly, please use \`.destroy()\`.`, false);
   }
 
@@ -487,7 +529,7 @@ class CoreObject {
     return isDestroying(this);
   }
 
-  set isDestroying(value) {
+  set isDestroying(_value) {
     assert(`You cannot set \`${this}.isDestroying\` directly, please use \`.destroy()\`.`, false);
   }
 
@@ -566,8 +608,7 @@ class CoreObject {
     @public
   */
   toString() {
-    let hasToStringExtension = typeof this.toStringExtension === 'function';
-    let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
+    let extension = hasToStringExtension(this) ? `:${this.toStringExtension()}` : '';
 
     return `<${getFactoryFor(this) || '(unknown)'}:${guidFor(this)}${extension}>`;
   }
@@ -666,9 +707,15 @@ class CoreObject {
     @param {Object} [arguments]* Object containing values to use within the new class
     @public
   */
-  static extend() {
+  // Args should be `Array<Mixin | Record<string, unknown>>` but this causes
+  // types to be overly strict.
+  static extend<Statics, Instance>(
+    this: Statics & EmberClassConstructor<Instance>,
+    ...mixins: any[]
+  ): Readonly<Statics> & EmberClassConstructor<Instance>;
+  static extend(...mixins: any[]) {
     let Class = class extends this {};
-    reopen.apply(Class.PrototypeMixin, arguments);
+    reopen.apply(Class.PrototypeMixin, mixins);
     return Class;
   }
 
@@ -713,7 +760,12 @@ class CoreObject {
     @param [arguments]*
     @public
   */
-  static create(props, extra) {
+  static create<Class extends typeof CoreObject, Args extends Array<Record<string, any>>>(
+    this: Class,
+    ...args: Args
+  ): InstanceType<Class> & MergeArray<Args>;
+  static create(...args: Record<string, unknown>[]) {
+    let props = args[0];
     let instance;
 
     if (props !== undefined) {
@@ -723,10 +775,10 @@ class CoreObject {
       instance = new this();
     }
 
-    if (extra === undefined) {
+    if (args.length <= 1) {
       initialize(instance, props);
     } else {
-      initialize(instance, flattenProps.apply(this, arguments));
+      initialize(instance, flattenProps.apply(this, args));
     }
 
     return instance;
@@ -766,9 +818,11 @@ class CoreObject {
     @static
     @public
   */
-  static reopen() {
+  // Args should be `Array<Mixin | Record<string, unknown>>` but this causes
+  // types to be overly strict.
+  static reopen(...args: any[]) {
     this.willReopen();
-    reopen.apply(this.PrototypeMixin, arguments);
+    reopen.apply(this.PrototypeMixin, args);
     return this;
   }
 
@@ -847,12 +901,12 @@ class CoreObject {
     @static
     @public
   */
-  static reopenClass() {
-    applyMixin(this, arguments);
+  static reopenClass(...mixins: Array<Mixin | Record<string, unknown>>) {
+    applyMixin(this, mixins);
     return this;
   }
 
-  static detect(obj) {
+  static detect(obj: unknown) {
     if ('function' !== typeof obj) {
       return false;
     }
@@ -860,12 +914,12 @@ class CoreObject {
       if (obj === this) {
         return true;
       }
-      obj = obj.superclass;
+      obj = (obj as typeof CoreObject).superclass;
     }
     return false;
   }
 
-  static detectInstance(obj) {
+  static detectInstance(obj: unknown) {
     return obj instanceof this;
   }
 
@@ -900,7 +954,7 @@ class CoreObject {
     @param key {String} property name
     @private
   */
-  static metaForProperty(key) {
+  static metaForProperty(key: string) {
     let proto = this.proto(); // ensure prototype is initialized
     let possibleDesc = descriptorForProperty(proto, key);
 
@@ -922,11 +976,11 @@ class CoreObject {
     @param {Object} binding
     @private
   */
-  static eachComputedProperty(callback, binding = this) {
+  static eachComputedProperty(callback: (name: string, meta: unknown) => void, binding = this) {
     this.proto(); // ensure prototype is initialized
     let empty = {};
 
-    meta(this.prototype).forEachDescriptors((name, descriptor) => {
+    meta(this.prototype).forEachDescriptors((name: string, descriptor: ComputedProperty) => {
       if (descriptor.enumerable) {
         let meta = descriptor._meta || empty;
         callback.call(binding, name, meta);
@@ -970,22 +1024,21 @@ class CoreObject {
   static toString() {
     return `<${getFactoryFor(this) || '(unknown)'}:constructor>`;
   }
+
+  static isClass = true;
+  static isMethod = false;
+
+  static _onLookup?: (debugContainerKey: string) => void;
+  static _lazyInjections?: () => void;
+
+  declare concatenatedProperties?: string[] | string;
+  declare mergedProperties?: unknown[];
 }
 
-CoreObject.isClass = true;
-CoreObject.isMethod = false;
-
-function flattenProps(...props) {
-  let { concatenatedProperties, mergedProperties } = this;
-  let hasConcatenatedProps =
-    concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-  let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
-
+function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, unknown>>) {
   let initProperties = {};
 
-  for (let i = 0; i < props.length; i++) {
-    let properties = props[i];
-
+  for (let properties of props) {
     assert(
       'EmberObject.create no longer supports mixing in other ' +
         'definitions, use .extend & .create separately instead.',
@@ -995,25 +1048,8 @@ function flattenProps(...props) {
     let keyNames = Object.keys(properties);
 
     for (let j = 0, k = keyNames.length; j < k; j++) {
-      let keyName = keyNames[j];
+      let keyName = keyNames[j]!;
       let value = properties[keyName];
-
-      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-        let baseValue = initProperties[keyName];
-
-        if (baseValue) {
-          value = makeArray(baseValue).concat(value);
-        } else {
-          value = makeArray(value);
-        }
-      }
-
-      if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
-        let baseValue = initProperties[keyName];
-
-        value = Object.assign({}, baseValue, value);
-      }
-
       initProperties[keyName] = value;
     }
   }
@@ -1028,7 +1064,7 @@ if (DEBUG) {
     @private
     @method _onLookup
   */
-  CoreObject._onLookup = function injectedPropertyAssertion(debugContainerKey) {
+  CoreObject._onLookup = function injectedPropertyAssertion(debugContainerKey: string) {
     let [type] = debugContainerKey.split(':');
     let proto = this.proto();
 
