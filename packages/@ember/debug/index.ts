@@ -321,7 +321,7 @@ if (DEBUG && !isTesting()) {
         if (
           document.documentElement &&
           document.documentElement.dataset &&
-          !document.documentElement.dataset.emberExtension
+          !document.documentElement.dataset['emberExtension']
         ) {
           let downloadURL;
 

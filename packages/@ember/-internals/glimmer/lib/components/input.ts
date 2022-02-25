@@ -213,7 +213,7 @@ class Input extends AbstractInput {
     return this.named('type') === 'checkbox';
   }
 
-  private _checked = valueFrom(this.args.named.checked);
+  private _checked = valueFrom(this.args.named['checked']);
 
   get checked(): unknown {
     if (this.isCheckbox) {
@@ -223,9 +223,9 @@ class Input extends AbstractInput {
           'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
         untrack(
           () =>
-            this.args.named.checked !== undefined ||
-            this.args.named.value === undefined ||
-            typeof valueForRef(this.args.named.value) === 'string'
+            this.args.named['checked'] !== undefined ||
+            this.args.named['value'] === undefined ||
+            typeof valueForRef(this.args.named['value']) === 'string'
         ),
         { id: 'ember.built-in-components.input-checkbox-value' }
       );
@@ -243,9 +243,9 @@ class Input extends AbstractInput {
         'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
       untrack(
         () =>
-          this.args.named.checked !== undefined ||
-          this.args.named.value === undefined ||
-          typeof valueForRef(this.args.named.value) === 'string'
+          this.args.named['checked'] !== undefined ||
+          this.args.named['value'] === undefined ||
+          typeof valueForRef(this.args.named['value']) === 'string'
       ),
       { id: 'ember.built-in-components.input-checkbox-value' }
     );

@@ -108,7 +108,7 @@ export default abstract class AbstractInput extends InternalComponent {
     super.validateArguments();
   }
 
-  private _value = valueFrom(this.args.named.value);
+  private _value = valueFrom(this.args.named['value']);
 
   get value(): unknown {
     return this._value.get();

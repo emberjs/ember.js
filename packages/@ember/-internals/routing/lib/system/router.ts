@@ -1879,7 +1879,7 @@ function representEmptyRoute(
     // Create an entry to represent our default template name,
     // just so other routes can target it and inherit its place
     // in the outlet hierarchy.
-    defaultParentState!.outlets.main = {
+    defaultParentState!.outlets['main'] = {
       render: {
         name: routeName,
         outlet: 'main',

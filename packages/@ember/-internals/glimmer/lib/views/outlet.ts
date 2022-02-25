@@ -73,7 +73,7 @@ export default class OutletView {
       },
       (state: OutletState) => {
         dirtyTag(outletStateTag);
-        outletState.outlets.main = state;
+        outletState.outlets['main'] = state;
       }
     ));
 
