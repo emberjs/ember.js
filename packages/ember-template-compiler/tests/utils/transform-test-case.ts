@@ -4,8 +4,8 @@ import { AST, ASTPlugin } from '@glimmer/syntax';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
 
-export default class extends AbstractTestCase {
-  assertTransformed(before: string, after: string): void {
+export default abstract class extends AbstractTestCase {
+  assertTransformed(this: QUnit, before: string, after: string): void {
     this.assert.deepEqual(deloc(ast(before)), deloc(ast(after)));
   }
 }

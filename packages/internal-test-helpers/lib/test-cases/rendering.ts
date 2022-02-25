@@ -1,65 +1,86 @@
-import { compile } from 'ember-template-compiler';
+import { compile, EmberPrecompileOptions } from 'ember-template-compiler';
 import { EventDispatcher } from '@ember/-internals/views';
-import { helper, Helper, Component, _resetRenderers } from '@ember/-internals/glimmer';
-import { ModuleBasedResolver } from '../test-resolver';
+import { helper, Helper, Component, _resetRenderers, Renderer } from '@ember/-internals/glimmer';
+import Resolver, { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
-import { runAppend, runDestroy } from '../run';
+import { runAppend, runDestroy, runTask } from '../run';
+import { Factory } from '@ember/-internals/owner';
+import { BootOptions } from '@ember/application/instance';
+import EngineInstance, { EngineInstanceOptions } from '@ember/engine/instance';
+import { HelperFunction } from '@ember/-internals/glimmer/lib/helper';
 
 const TextNode = window.Text;
 
-export default class RenderingTestCase extends AbstractTestCase {
-  constructor() {
-    super(...arguments);
+export default abstract class RenderingTestCase extends AbstractTestCase {
+  owner: EngineInstance;
+  renderer: Renderer;
+  element: HTMLElement;
+  component: any;
+
+  constructor(assert: QUnit['assert']) {
+    super(assert);
     let bootOptions = this.getBootOptions();
 
     let owner = (this.owner = buildOwner({
       ownerOptions: this.getOwnerOptions(),
       resolver: this.getResolver(),
       bootOptions,
-      viewRegistry: Object.create(null),
     }));
 
     owner.register('-view-registry:main', Object.create(null), { instantiate: false });
     owner.register('event_dispatcher:main', EventDispatcher);
 
-    this.renderer = this.owner.lookup('renderer:-dom');
-    this.element = document.querySelector('#qunit-fixture');
+    this.renderer = this.owner.lookup('renderer:-dom') as Renderer;
+    this.element = document.querySelector('#qunit-fixture')!;
     this.component = null;
 
     if (
       !bootOptions ||
       (bootOptions.isInteractive !== false && bootOptions.skipEventDispatcher !== true)
     ) {
-      owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
+      (owner.lookup('event_dispatcher:main') as EventDispatcher).setup(
+        this.getCustomDispatcherEvents(),
+        this.element
+      );
     }
   }
 
-  compile() {
-    return compile(...arguments);
+  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
+    return compile(templateString, options);
   }
 
   getCustomDispatcherEvents() {
     return {};
   }
 
-  getOwnerOptions() {}
-  getBootOptions() {}
+  getOwnerOptions(): EngineInstanceOptions | undefined {
+    return undefined;
+  }
 
-  get resolver() {
-    return this.owner.__registry__.fallback.resolver;
+  getBootOptions(): (BootOptions & { skipEventDispatcher?: boolean }) | undefined {
+    return undefined;
+  }
+
+  get resolver(): Resolver {
+    return (this.owner.__registry__.fallback as any).resolver;
   }
 
   getResolver() {
     return new ModuleBasedResolver();
   }
 
-  add(specifier, factory) {
+  add(specifier: string, factory: unknown) {
     this.resolver.add(specifier, factory);
   }
 
-  addTemplate(templateName, templateString) {
+  addTemplate(
+    templateName:
+      | string
+      | { specifier: string; source: unknown; namespace: unknown; moduleName: string },
+    templateString: string
+  ) {
     if (typeof templateName === 'string') {
       this.resolver.add(
         `template:${templateName}`,
@@ -77,7 +98,7 @@ export default class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  addComponent(name, { ComponentClass = null, template = null }) {
+  addComponent(name: string, { ComponentClass = null, template = null }) {
     if (ComponentClass) {
       this.resolver.add(`component:${name}`, ComponentClass);
     }
@@ -109,7 +130,7 @@ export default class RenderingTestCase extends AbstractTestCase {
     return this.component;
   }
 
-  render(templateStr, context = {}) {
+  render(templateStr: string, context = {}) {
     let { owner } = this;
 
     owner.register(
@@ -132,26 +153,27 @@ export default class RenderingTestCase extends AbstractTestCase {
   }
 
   rerender() {
-    this.component.rerender();
+    this.component!.rerender();
   }
 
-  registerHelper(name, funcOrClassBody) {
-    let type = typeof funcOrClassBody;
-
-    if (type === 'function') {
+  registerHelper<T, P extends unknown[], N extends Record<string, unknown>>(
+    name: string,
+    funcOrClassBody: HelperFunction<T, P, N> | Record<string, unknown>
+  ) {
+    if (typeof funcOrClassBody === 'function') {
       this.owner.register(`helper:${name}`, helper(funcOrClassBody));
-    } else if (type === 'object' && type !== null) {
+    } else if (typeof funcOrClassBody === 'object' && funcOrClassBody !== null) {
       this.owner.register(`helper:${name}`, Helper.extend(funcOrClassBody));
     } else {
       throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
     }
   }
 
-  registerCustomHelper(name, definition) {
+  registerCustomHelper(name: string, definition: Factory<unknown>) {
     this.owner.register(`helper:${name}`, definition);
   }
 
-  registerComponent(name, { ComponentClass = Component, template = null }) {
+  registerComponent(name: string, { ComponentClass = Component, template = null }) {
     let { owner } = this;
 
     if (ComponentClass) {
@@ -168,18 +190,18 @@ export default class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerModifier(name, ModifierClass) {
+  registerModifier(name: string, ModifierClass: Factory<unknown>) {
     let { owner } = this;
 
     owner.register(`modifier:${name}`, ModifierClass);
   }
 
-  registerComponentManager(name, manager) {
+  registerComponentManager(name: string, manager: Factory<unknown>) {
     let owner = this.owner;
     owner.register(`component-manager:${name}`, manager);
   }
 
-  registerTemplate(name, template) {
+  registerTemplate(name: string, template: string) {
     let { owner } = this;
     if (typeof template === 'string') {
       owner.register(
@@ -193,15 +215,21 @@ export default class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerService(name, klass) {
+  registerService(name: string, klass: Factory<unknown>) {
     this.owner.register(`service:${name}`, klass);
   }
 
-  assertTextNode(node, text) {
+  assertTextNode(node: Node, text: string) {
     if (!(node instanceof TextNode)) {
       throw new Error(`Expecting a text node, but got ${node}`);
     }
 
     this.assert.strictEqual(node.textContent, text, 'node.textContent');
+  }
+
+  assertStableRerender() {
+    this.takeSnapshot();
+    runTask(() => this.rerender());
+    this.assertInvariants();
   }
 }

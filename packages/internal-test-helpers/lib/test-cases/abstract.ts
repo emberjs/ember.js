@@ -5,13 +5,14 @@ import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
-import { runLoopSettled, runTask } from '../run';
+import { runLoopSettled } from '../run';
+import { assert } from '@ember/debug';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
 const Comment = window.Comment;
 
-function isMarker(node) {
+function isMarker(node: unknown): node is Comment | typeof TextNode {
   if (node instanceof Comment && node.textContent === '') {
     return true;
   }
@@ -23,9 +24,15 @@ function isMarker(node) {
   return false;
 }
 
-export default class AbstractTestCase {
-  constructor(assert) {
-    this.element = null;
+export default abstract class AbstractTestCase {
+  snapshot: ChildNode[] | null;
+  assert: QUnit['assert'];
+
+  get fixture(): string | undefined {
+    return undefined;
+  }
+
+  constructor(assert: QUnit['assert']) {
     this.snapshot = null;
     this.assert = assert;
 
@@ -36,10 +43,11 @@ export default class AbstractTestCase {
   }
 
   teardown() {}
+  beforeEach(_assert: QUnit['assert']) {}
   afterEach() {}
 
-  setupFixture(innerHTML) {
-    let fixture = document.getElementById('qunit-fixture');
+  setupFixture(innerHTML: string) {
+    let fixture = document.getElementById('qunit-fixture')!;
     fixture.innerHTML = innerHTML;
   }
 
@@ -49,7 +57,7 @@ export default class AbstractTestCase {
     return this.nthChild(0);
   }
 
-  nthChild(n) {
+  nthChild(n: number) {
     let i = 0;
     let node = getElement().firstChild;
 
@@ -83,8 +91,8 @@ export default class AbstractTestCase {
     return count;
   }
 
-  $(sel) {
-    if (sel instanceof Element) {
+  $(sel?: string | HTMLElement) {
+    if (sel instanceof HTMLElement) {
       return NodeQuery.element(sel);
     } else if (typeof sel === 'string') {
       return NodeQuery.query(sel, getElement());
@@ -95,19 +103,19 @@ export default class AbstractTestCase {
     }
   }
 
-  wrap(element) {
+  wrap(element: HTMLElement) {
     return NodeQuery.element(element);
   }
 
-  click(selector) {
+  click(selector: HTMLElement | string) {
     let element;
     if (typeof selector === 'string') {
-      element = getElement().querySelector(selector);
+      element = getElement().querySelector(selector) as HTMLElement | null;
     } else {
       element = selector;
     }
 
-    let event = element.click();
+    let event = element!.click();
 
     return runLoopSettled(event);
   }
@@ -117,7 +125,7 @@ export default class AbstractTestCase {
   }
 
   takeSnapshot() {
-    let snapshot = (this.snapshot = []);
+    let snapshot: ChildNode[] = (this.snapshot = []);
 
     let node = getElement().firstChild;
 
@@ -132,7 +140,7 @@ export default class AbstractTestCase {
     return snapshot;
   }
 
-  assertText(text) {
+  assertText(text: string) {
     this.assert.strictEqual(
       this.textValue(),
       text,
@@ -140,25 +148,48 @@ export default class AbstractTestCase {
     );
   }
 
-  assertInnerHTML(html) {
+  assertInnerHTML(html: string) {
     equalInnerHTML(this.assert, getElement(), html);
   }
 
-  assertHTML(html) {
+  assertHTML(html: string) {
     equalTokens(getElement(), html, `#qunit-fixture content should be: \`${html}\``);
   }
 
-  assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
+  assertElement(
+    node: HTMLElement,
+    {
+      ElementType = HTMLElement,
+      tagName,
+      attrs = null,
+      content = null,
+    }: {
+      ElementType?: typeof HTMLElement;
+      tagName: string;
+      attrs?: Record<string, unknown> | null;
+      content?: unknown;
+    }
+  ) {
     if (!(node instanceof ElementType)) {
-      throw new Error(`Expecting a ${ElementType.name}, but got ${node}`);
+      throw new Error(`Expecting a ${ElementType.name}, but got ${String(node)}`);
     }
 
     equalsElement(this.assert, node, tagName, attrs, content);
   }
 
   assertComponentElement(
-    node,
-    { ElementType = HTMLElement, tagName = 'div', attrs = null, content = null }
+    node: HTMLElement,
+    {
+      ElementType = HTMLElement,
+      tagName = 'div',
+      attrs = {},
+      content = null,
+    }: {
+      ElementType?: typeof HTMLElement;
+      tagName: string;
+      attrs?: Record<string, unknown>;
+      content?: unknown;
+    }
   ) {
     attrs = Object.assign(
       {},
@@ -168,12 +199,17 @@ export default class AbstractTestCase {
     this.assertElement(node, { ElementType, tagName, attrs, content });
   }
 
-  assertSameNode(actual, expected) {
+  assertSameNode(actual: ChildNode | undefined, expected: ChildNode | undefined) {
     this.assert.strictEqual(actual, expected, 'DOM node stability');
   }
 
-  assertInvariants(oldSnapshot, newSnapshot) {
-    oldSnapshot = oldSnapshot || this.snapshot;
+  assertInvariants(): void;
+  assertInvariants(oldSnapshot: ChildNode[], newSnapshot: ChildNode[]): void;
+  assertInvariants(oldSnapshot?: ChildNode[], newSnapshot?: ChildNode[]): void {
+    if (!oldSnapshot) {
+      assert('expected an existing snapshot', this.snapshot);
+      oldSnapshot = this.snapshot;
+    }
     newSnapshot = newSnapshot || this.takeSnapshot();
 
     this.assert.strictEqual(newSnapshot.length, oldSnapshot.length, 'Same number of nodes');
@@ -183,13 +219,8 @@ export default class AbstractTestCase {
     }
   }
 
-  assertPartialInvariants(start, end) {
+  assertPartialInvariants(start: number, end: number) {
+    assert('expected an existing snapshot', this.snapshot);
     this.assertInvariants(this.snapshot, this.takeSnapshot().slice(start, end));
-  }
-
-  assertStableRerender() {
-    this.takeSnapshot();
-    runTask(() => this.rerender());
-    this.assertInvariants();
   }
 }

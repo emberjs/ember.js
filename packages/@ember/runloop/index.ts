@@ -128,18 +128,22 @@ export const _backburner = new Backburner(_queues, {
   @return {Object} return value from invoking the passed function.
   @public
 */
-export function run<F extends (...args: any[]) => any>(method: F, ...args: Parameters<F>): void;
+export function run<F extends () => any>(method: F): ReturnType<F>;
+export function run<F extends (...args: any[]) => any>(
+  method: F,
+  ...args: Parameters<F>
+): ReturnType<F>;
 export function run<T, F extends (this: T, ...args: any[]) => any>(
   target: T,
   method: F,
   ...args: Parameters<F>
-): void;
+): ReturnType<F>;
 export function run<T, U extends keyof T>(
   target: T,
   method: U,
   ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
-): void;
-export function run(...args: any[]): void {
+): T[U] extends (...args: any[]) => any ? ReturnType<T[U]> : unknown;
+export function run(...args: any[]): unknown {
   // @ts-expect-error TS doesn't like our spread args
   return _backburner.run(...args);
 }

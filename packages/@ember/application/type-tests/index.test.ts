@@ -26,7 +26,7 @@ expectTypeOf(app.eventDispatcher).toEqualTypeOf<EventDispatcher>();
 expectTypeOf(app.buildInstance()).toEqualTypeOf<ApplicationInstance>();
 expectTypeOf(app.deferReadiness()).toEqualTypeOf<void>();
 expectTypeOf(app.advanceReadiness()).toEqualTypeOf<void>();
-expectTypeOf(app.boot()).toEqualTypeOf<void>();
+expectTypeOf(app.boot()).toEqualTypeOf<Promise<Application>>();
 expectTypeOf(app.ready()).toEqualTypeOf<void>();
 expectTypeOf(app.reset()).toEqualTypeOf<void>();
 

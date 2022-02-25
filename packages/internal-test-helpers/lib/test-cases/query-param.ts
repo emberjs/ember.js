@@ -1,12 +1,17 @@
+import { BootOptions } from '@ember/application/instance';
 import Controller from '@ember/controller';
+import EmberObject from '@ember/object';
 import { NoneLocation } from '@ember/-internals/routing';
 
 import ApplicationTestCase from './application';
 import { runLoopSettled } from '../run';
 
-export default class QueryParamTestCase extends ApplicationTestCase {
-  constructor() {
-    super(...arguments);
+export default abstract class QueryParamTestCase extends ApplicationTestCase {
+  expectedPushURL: unknown;
+  expectedReplaceURL: unknown;
+
+  constructor(assert: QUnit['assert']) {
+    super(assert);
 
     let testCase = this;
     testCase.expectedPushURL = null;
@@ -15,7 +20,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     this.add(
       'location:test',
       NoneLocation.extend({
-        setURL(path) {
+        setURL(path: string) {
           if (testCase.expectedReplaceURL) {
             testCase.assert.ok(false, 'pushState occurred but a replaceState was expected');
           }
@@ -28,7 +33,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
           this.set('path', path);
         },
 
-        replaceURL(path) {
+        replaceURL(path: string) {
           if (testCase.expectedPushURL) {
             testCase.assert.ok(false, 'replaceState occurred but a pushState was expected');
           }
@@ -48,18 +53,18 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     );
   }
 
-  visitAndAssert(path) {
-    return this.visit(...arguments).then(() => {
+  visitAndAssert(path: string, options?: BootOptions) {
+    return this.visit(path, options).then(() => {
       this.assertCurrentPath(path);
     });
   }
 
-  getController(name) {
-    return this.applicationInstance.lookup(`controller:${name}`);
+  getController(name: string) {
+    return this.applicationInstance!.lookup(`controller:${name}`);
   }
 
-  getRoute(name) {
-    return this.applicationInstance.lookup(`route:${name}`);
+  getRoute(name: string) {
+    return this.applicationInstance!.lookup(`route:${name}`);
   }
 
   get routerOptions() {
@@ -68,7 +73,9 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     };
   }
 
-  async setAndFlush(obj, prop, value) {
+  async setAndFlush(obj: EmberObject, prop: Record<string, unknown>): Promise<void>;
+  async setAndFlush(obj: EmberObject, prop: string, value: unknown): Promise<void>;
+  async setAndFlush(obj: EmberObject, prop: Record<string, unknown> | string, value?: unknown) {
     if (typeof prop === 'object') {
       obj.setProperties(prop);
     } else {
@@ -78,7 +85,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     await runLoopSettled();
   }
 
-  assertCurrentPath(path, message = `current path equals '${path}'`) {
+  assertCurrentPath(path: string, message = `current path equals '${path}'`) {
     this.assert.equal(this.appRouter.get('location.path'), path, message);
   }
 
@@ -89,7 +96,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setSingleQPController
   */
-  setSingleQPController(routeName, param = 'foo', defaultValue = 'bar', options = {}) {
+  setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar', options = {}) {
     this.add(
       `controller:${routeName}`,
       Controller.extend(
@@ -109,7 +116,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     @method setMappedQPController
   */
   setMappedQPController(
-    routeName,
+    routeName: string,
     prop = 'page',
     urlKey = 'parentPage',
     defaultValue = 1,

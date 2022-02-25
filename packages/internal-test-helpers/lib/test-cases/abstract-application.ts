@@ -1,10 +1,19 @@
-import { compile } from 'ember-template-compiler';
+import { compile, EmberPrecompileOptions } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
+import Application from '@ember/application';
+import ApplicationInstance, { BootOptions } from '@ember/application/instance';
+import Router from '@ember/routing/router';
 
-export default class AbstractApplicationTestCase extends AbstractTestCase {
-  _ensureInstance(bootOptions) {
+export default abstract class AbstractApplicationTestCase extends AbstractTestCase {
+  _applicationInstancePromise?: Promise<ApplicationInstance>;
+
+  abstract application: Application;
+
+  abstract applicationInstance?: ApplicationInstance;
+
+  _ensureInstance(bootOptions?: BootOptions) {
     if (this._applicationInstancePromise) {
       return this._applicationInstancePromise;
     }
@@ -18,7 +27,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     ));
   }
 
-  async visit(url, options) {
+  async visit(url: string, options?: BootOptions) {
     // Create the instance
     let instance = await this._ensureInstance(options).then((instance) =>
       runTask(() => instance.visit(url))
@@ -30,17 +39,21 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
     return instance;
   }
 
-  get element() {
+  _element: Element | null = null;
+
+  get element(): Element | null {
     if (this._element) {
       return this._element;
-    } else if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-      return (this._element = document.querySelector('#qunit-fixture > div.ember-view'));
-    } else {
-      return (this._element = document.querySelector('#qunit-fixture'));
     }
+
+    let element = document.querySelector(
+      ENV._APPLICATION_TEMPLATE_WRAPPER ? '#qunit-fixture > div.ember-view' : '#qunit-fixture'
+    );
+
+    return (this._element = element);
   }
 
-  set element(element) {
+  set element(element: Element | null) {
     this._element = element;
   }
 
@@ -64,10 +77,10 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
   }
 
   get router() {
-    return this.application.resolveRegistration('router:main');
+    return this.application.resolveRegistration('router:main') as typeof Router;
   }
 
-  compile(/* string, options */) {
-    return compile(...arguments);
+  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}): unknown {
+    return compile(templateString, options);
   }
 }

@@ -1,6 +1,6 @@
-export default function getAllPropertyNames(Klass) {
+export default function getAllPropertyNames(Klass: Function) {
   let proto = Klass.prototype;
-  let properties = new Set();
+  let properties: Set<string> = new Set();
 
   while (proto !== Object.prototype) {
     let names = Object.getOwnPropertyNames(proto);

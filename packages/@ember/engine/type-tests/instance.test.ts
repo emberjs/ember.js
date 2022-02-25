@@ -10,9 +10,7 @@ expectTypeOf<EngineInstance>().toMatchTypeOf<Owner>();
 let owner = {} as Owner;
 let instance = new EngineInstance(owner);
 
-expectTypeOf(instance.boot()).toEqualTypeOf<void>();
-
-expectTypeOf(instance.boot()).toEqualTypeOf<void>();
+expectTypeOf(instance.boot()).toEqualTypeOf<Promise<EngineInstance>>();
 
 let bootOptions = {
   isBrowser: true,

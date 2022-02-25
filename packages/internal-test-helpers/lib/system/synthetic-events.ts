@@ -1,9 +1,9 @@
 import { run } from '@ember/runloop';
 /* globals Element */
 
-const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
-const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];
-const MOUSE_EVENT_TYPES = [
+export const DEFAULT_EVENT_OPTIONS = { bubbles: true, cancelable: true };
+export const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'] as const;
+export const MOUSE_EVENT_TYPES = [
   'click',
   'mousedown',
   'mouseup',
@@ -13,40 +13,31 @@ const MOUSE_EVENT_TYPES = [
   'mousemove',
   'mouseout',
   'mouseover',
-];
+] as const;
 
-export const elMatches =
-  typeof Element !== 'undefined' &&
-  (Element.prototype.matches ||
-    Element.prototype.matchesSelector ||
-    Element.prototype.mozMatchesSelector ||
-    Element.prototype.msMatchesSelector ||
-    Element.prototype.oMatchesSelector ||
-    Element.prototype.webkitMatchesSelector);
-
-export function matches(el, selector) {
-  return elMatches.call(el, selector);
+export function matches(el: Element, selector: string) {
+  return el.matches(selector);
 }
 
-function isFocusable(el) {
+function isFocusable(el: Element): el is HTMLElement {
   let focusableTags = ['INPUT', 'BUTTON', 'LINK', 'SELECT', 'A', 'TEXTAREA'];
-  let { tagName, type } = el;
+  let { tagName, type } = el as HTMLInputElement;
 
   if (type === 'hidden') {
     return false;
   }
 
-  return focusableTags.indexOf(tagName) > -1 || el.contentEditable === 'true';
+  return focusableTags.indexOf(tagName) > -1 || (el as HTMLElement).contentEditable === 'true';
 }
 
-export function click(el, options = {}) {
+export function click(el: HTMLElement | null | undefined, options = {}) {
   run(() => fireEvent(el, 'mousedown', options));
   focus(el);
   run(() => fireEvent(el, 'mouseup', options));
   run(() => fireEvent(el, 'click', options));
 }
 
-export function focus(el) {
+export function focus(el: Element | null | undefined) {
   if (!el) {
     return;
   }
@@ -72,7 +63,7 @@ export function focus(el) {
   }
 }
 
-export function blur(el) {
+export function blur(el: Element) {
   if (isFocusable(el)) {
     run(null, function () {
       let browserIsNotFocused = document.hasFocus && !document.hasFocus();
@@ -93,14 +84,33 @@ export function blur(el) {
   }
 }
 
-export function fireEvent(element, type, options = {}) {
+export function fireEvent<T extends keyof typeof KEYBOARD_EVENT_TYPES>(
+  element: Element | null | undefined,
+  type: T,
+  options?: KeyboardEventInit
+): void;
+export function fireEvent<T extends keyof typeof MOUSE_EVENT_TYPES>(
+  element: Element | null | undefined,
+  type: T,
+  options?: MouseEventInit
+): void;
+export function fireEvent(
+  element: Element | null | undefined,
+  type: string,
+  options?: EventInit
+): void;
+export function fireEvent(
+  element: Element | null | undefined,
+  type: string,
+  options: EventInit = {}
+) {
   if (!element) {
     return;
   }
   let event;
-  if (KEYBOARD_EVENT_TYPES.indexOf(type) > -1) {
+  if ((KEYBOARD_EVENT_TYPES as readonly string[]).indexOf(type) > -1) {
     event = buildKeyboardEvent(type, options);
-  } else if (MOUSE_EVENT_TYPES.indexOf(type) > -1) {
+  } else if ((MOUSE_EVENT_TYPES as readonly string[]).indexOf(type) > -1) {
     let rect = element.getBoundingClientRect();
     let x = rect.left + 1;
     let y = rect.top + 1;
@@ -119,59 +129,24 @@ export function fireEvent(element, type, options = {}) {
   return event;
 }
 
-function buildBasicEvent(type, options = {}) {
-  let event = document.createEvent('Events');
-  event.initEvent(type, true, true);
-  Object.assign(event, options);
-  return event;
+function buildBasicEvent(type: string, options: EventInit = {}) {
+  return new Event(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
 }
 
-function buildMouseEvent(type, options = {}) {
+function buildMouseEvent(type: string, options: MouseEventInit = {}) {
   let event;
   try {
-    event = document.createEvent('MouseEvents');
-    let eventOpts = Object.assign({}, DEFAULT_EVENT_OPTIONS, options);
-
-    event.initMouseEvent(
-      type,
-      eventOpts.canBubble,
-      eventOpts.cancelable,
-      window,
-      eventOpts.detail,
-      eventOpts.screenX,
-      eventOpts.screenY,
-      eventOpts.clientX,
-      eventOpts.clientY,
-      eventOpts.ctrlKey,
-      eventOpts.altKey,
-      eventOpts.shiftKey,
-      eventOpts.metaKey,
-      eventOpts.button,
-      eventOpts.relatedTarget
-    );
+    event = new MouseEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
   } catch (e) {
     event = buildBasicEvent(type, options);
   }
   return event;
 }
 
-function buildKeyboardEvent(type, options = {}) {
+function buildKeyboardEvent(type: string, options: KeyboardEventInit = {}) {
   let event;
   try {
-    event = document.createEvent('KeyEvents');
-    let eventOpts = Object.assign({}, DEFAULT_EVENT_OPTIONS, options);
-    event.initKeyEvent(
-      type,
-      eventOpts.canBubble,
-      eventOpts.cancelable,
-      window,
-      eventOpts.ctrlKey,
-      eventOpts.altKey,
-      eventOpts.shiftKey,
-      eventOpts.metaKey,
-      eventOpts.keyCode,
-      eventOpts.charCode
-    );
+    event = new KeyboardEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
   } catch (e) {
     event = buildBasicEvent(type, options);
   }

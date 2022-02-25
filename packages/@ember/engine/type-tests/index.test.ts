@@ -18,14 +18,13 @@ expectTypeOf(engine).toMatchTypeOf<Namespace>();
 
 expectTypeOf(engine.buildInstance()).toEqualTypeOf<EngineInstance>();
 engine.buildInstance({ mountPoint: 'foo', routable: true });
+engine.buildInstance({});
+engine.buildInstance({ mountPoint: 'foo' });
+
 // @ts-expect-error Invalid argument
 engine.buildInstance(1);
 // @ts-expect-error Invalid argument
-engine.buildInstance({});
-// @ts-expect-error Invalid argument
 engine.buildInstance({ mountPoint: 1, routable: true });
-// @ts-expect-error Invalid argument
-engine.buildInstance({ mountPoint: 'foo' });
 
 expectTypeOf(engine.initializer).toEqualTypeOf<(initializer: unknown) => void>();
 

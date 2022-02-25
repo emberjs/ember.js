@@ -1,8 +1,8 @@
 import ApplicationTestCase from './application';
 
-export default class RouterTestCase extends ApplicationTestCase {
-  constructor() {
-    super(...arguments);
+export default abstract class RouterTestCase extends ApplicationTestCase {
+  constructor(assert: QUnit['assert']) {
+    super(assert);
 
     this.router.map(function () {
       this.route('parent', { path: '/' }, function () {
@@ -18,10 +18,10 @@ export default class RouterTestCase extends ApplicationTestCase {
   }
 
   get routerService() {
-    return this.applicationInstance.lookup('service:router');
+    return this.applicationInstance!.lookup('service:router');
   }
 
-  buildQueryParams(queryParams) {
+  buildQueryParams(queryParams: object) {
     return {
       queryParams,
     };

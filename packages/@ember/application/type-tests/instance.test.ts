@@ -32,7 +32,7 @@ expectTypeOf(instance.hasRegistration('service:store')).toEqualTypeOf<boolean>()
 // @ts-expect-error requires name
 instance.hasRegistration();
 
-expectTypeOf(instance.boot()).toEqualTypeOf<void>();
+expectTypeOf(instance.boot()).toEqualTypeOf<Promise<ApplicationInstance>>();
 
 const bootOptions: BootOptions = {
   isBrowser: true,

@@ -310,7 +310,7 @@ export default internalHelper(
     } else {
       fn = makeDynamicClosureAction(
         valueForRef(context) as object,
-        target,
+        target!,
         action,
         processArgs,
         debugKey

@@ -6,11 +6,11 @@ let ieSVGInnerHTML = (() => {
   let div = document.createElement('div');
   let node = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   div.appendChild(node);
-  let clone = div.cloneNode(true);
+  let clone = div.cloneNode(true) as HTMLDivElement;
   return clone.innerHTML === '<svg xmlns="http://www.w3.org/2000/svg" />';
 })();
 
-function normalizeInnerHTML(actualHTML) {
+function normalizeInnerHTML(actualHTML: string) {
   if (ieSVGInnerHTML) {
     // Replace `<svg xmlns="http://www.w3.org/2000/svg" height="50%" />` with `<svg height="50%"></svg>`, etc.
     // drop namespace attribute
@@ -26,12 +26,17 @@ function normalizeInnerHTML(actualHTML) {
   return actualHTML;
 }
 
-export default function equalInnerHTML(assert, fragment, html) {
+export default function equalInnerHTML(
+  assert: QUnit['assert'],
+  fragment: HTMLElement,
+  html: string
+) {
   let actualHTML = normalizeInnerHTML(fragment.innerHTML);
 
   assert.pushResult({
     result: actualHTML === html,
     actual: actualHTML,
     expected: html,
+    message: "innerHTML doesn't match",
   });
 }
