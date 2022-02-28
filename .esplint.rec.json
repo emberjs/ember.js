@@ -1,0 +1,982 @@
+{
+  "recordVersion": 1,
+  "configHash": "abf3265644da132cd88858eeb0881c9b1e34a5c3",
+  "files": {
+    "packages/@ember/-internals/bootstrap/index.ts": {
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/container/lib/container.ts": {
+      "prefer-const": 20,
+      "@typescript-eslint/no-explicit-any": 15,
+      "@typescript-eslint/no-implied-eval": 1,
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-member-access": 5,
+      "@typescript-eslint/no-unsafe-return": 4,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/container/lib/registry.ts": {
+      "prefer-const": 18,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 3,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/environment/lib/context.ts": {
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/environment/lib/env.ts": {
+      "prefer-const": 8,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-unsafe-assignment": 6,
+      "@typescript-eslint/no-unsafe-member-access": 6
+    },
+    "packages/@ember/-internals/environment/lib/global.ts": {
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-implied-eval": 1,
+      "@typescript-eslint/no-unsafe-member-access": 2,
+      "@typescript-eslint/no-unsafe-return": 2
+    },
+    "packages/@ember/-internals/error-handling/index.ts": {
+      "@typescript-eslint/ban-types": 4
+    },
+    "packages/@ember/-internals/glimmer/lib/component-managers/curly.ts": {
+      "prefer-const": 37,
+      "@typescript-eslint/no-explicit-any": 7,
+      "@typescript-eslint/no-unsafe-argument": 4,
+      "@typescript-eslint/no-unsafe-assignment": 3,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 8,
+      "@typescript-eslint/restrict-template-expressions": 5
+    },
+    "packages/@ember/-internals/glimmer/lib/component-managers/mount.ts": {
+      "prefer-const": 7,
+      "@typescript-eslint/no-empty-function": 4,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-assignment": 4,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/component-managers/outlet.ts": {
+      "prefer-const": 10,
+      "@typescript-eslint/no-empty-function": 3
+    },
+    "packages/@ember/-internals/glimmer/lib/component-managers/root.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/no-unsafe-argument": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/component.ts": {
+      "prefer-const": 16,
+      "prefer-rest-params": 2,
+      "@typescript-eslint/no-empty-function": 6,
+      "@typescript-eslint/no-unsafe-argument": 7,
+      "@typescript-eslint/no-unsafe-assignment": 8,
+      "@typescript-eslint/no-unsafe-call": 9,
+      "@typescript-eslint/no-unsafe-member-access": 30,
+      "@typescript-eslint/no-unsafe-return": 4,
+      "@typescript-eslint/restrict-template-expressions": 3
+    },
+    "packages/@ember/-internals/glimmer/lib/components/abstract-input.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/components/input.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/no-unsafe-assignment": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/components/internal.ts": {
+      "prefer-const": 9,
+      "@typescript-eslint/no-empty-function": 6,
+      "@typescript-eslint/restrict-template-expressions": 3
+    },
+    "packages/@ember/-internals/glimmer/lib/components/link-to.ts": {
+      "prefer-const": 40,
+      "@typescript-eslint/ban-types": 8,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-return": 3,
+      "@typescript-eslint/unbound-method": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/components/textarea.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/environment.ts": {
+      "prefer-const": 5,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/restrict-template-expressions": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/helper.ts": {
+      "prefer-const": 6,
+      "@typescript-eslint/no-unsafe-argument": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/-disallow-dynamic-resolution.ts": {
+      "prefer-const": 5,
+      "@typescript-eslint/restrict-template-expressions": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/-in-element-null-check.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/-normalize-class.ts": {
+      "prefer-const": 3
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/-resolve.ts": {
+      "prefer-const": 4
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/-track-array.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/action.ts": {
+      "prefer-const": 11,
+      "@typescript-eslint/ban-types": 7,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-return": 3,
+      "@typescript-eslint/restrict-template-expressions": 6
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/each-in.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/helpers/mut.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/modifiers/action.ts": {
+      "prefer-spread": 1,
+      "prefer-const": 32,
+      "@typescript-eslint/no-explicit-any": 9,
+      "@typescript-eslint/no-unsafe-argument": 7,
+      "@typescript-eslint/no-unsafe-assignment": 12,
+      "@typescript-eslint/no-unsafe-call": 6,
+      "@typescript-eslint/no-unsafe-member-access": 16,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-plus-operands": 2,
+      "@typescript-eslint/restrict-template-expressions": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/modifiers/internal.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/no-empty-function": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/renderer.ts": {
+      "prefer-const": 38,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-explicit-any": 6,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 5,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-template-expressions": 1,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/resolver.ts": {
+      "prefer-const": 16,
+      "@typescript-eslint/ban-types": 6,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-return": 4
+    },
+    "packages/@ember/-internals/glimmer/lib/setup-registry.ts": {
+      "prefer-const": 2,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 3
+    },
+    "packages/@ember/-internals/glimmer/lib/syntax/mount.ts": {
+      "prefer-const": 5,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/syntax/outlet.ts": {
+      "prefer-const": 9
+    },
+    "packages/@ember/-internals/glimmer/lib/syntax/utils.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/utils/bindings.ts": {
+      "prefer-const": 18
+    },
+    "packages/@ember/-internals/glimmer/lib/utils/curly-component-state-bucket.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/utils/iterator.ts": {
+      "prefer-const": 20,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-member-access": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/utils/managers.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/glimmer/lib/utils/process-args.ts": {
+      "prefer-const": 6,
+      "@typescript-eslint/no-explicit-any": 4,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 5,
+      "@typescript-eslint/no-unsafe-member-access": 5,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/glimmer/lib/utils/string.ts": {
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 4,
+      "@typescript-eslint/no-unsafe-return": 3
+    },
+    "packages/@ember/-internals/glimmer/lib/views/outlet.ts": {
+      "prefer-const": 9,
+      "@typescript-eslint/no-explicit-any": 6,
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 1
+    },
+    "packages/@ember/-internals/glimmer/tests/integration/application/debug-render-tree-test.ts": {
+      "prefer-const": 13,
+      "prefer-rest-params": 4,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-explicit-any": 5,
+      "@typescript-eslint/no-unsafe-argument": 91,
+      "@typescript-eslint/no-unsafe-assignment": 6,
+      "@typescript-eslint/no-unsafe-call": 156,
+      "@typescript-eslint/no-unsafe-member-access": 103,
+      "@typescript-eslint/no-unsafe-return": 4,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/meta/lib/meta.ts": {
+      "prefer-const": 29,
+      "@typescript-eslint/ban-types": 7,
+      "@typescript-eslint/no-explicit-any": 13,
+      "@typescript-eslint/no-this-alias": 4,
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-assignment": 18,
+      "@typescript-eslint/no-unsafe-call": 3,
+      "@typescript-eslint/no-unsafe-member-access": 9,
+      "@typescript-eslint/no-unsafe-return": 6,
+      "@typescript-eslint/restrict-template-expressions": 2
+    },
+    "packages/@ember/-internals/metal/lib/alias.ts": {
+      "prefer-const": 5,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/no-explicit-any": 8,
+      "@typescript-eslint/no-unsafe-assignment": 1
+    },
+    "packages/@ember/-internals/metal/lib/array.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/ban-types": 4,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-argument": 1
+    },
+    "packages/@ember/-internals/metal/lib/array_events.ts": {
+      "prefer-const": 9
+    },
+    "packages/@ember/-internals/metal/lib/cached.ts": {
+      "@typescript-eslint/no-unsafe-argument": 6,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 4,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/metal/lib/chain-tags.ts": {
+      "prefer-const": 13,
+      "@typescript-eslint/no-explicit-any": 4,
+      "@typescript-eslint/no-unsafe-argument": 8,
+      "@typescript-eslint/no-unsafe-assignment": 7,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 9,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/metal/lib/computed.ts": {
+      "prefer-const": 28,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-explicit-any": 5,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-template-expressions": 2,
+      "@typescript-eslint/unbound-method": 6
+    },
+    "packages/@ember/-internals/metal/lib/computed_cache.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/-internals/metal/lib/decorator.ts": {
+      "prefer-const": 9,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-explicit-any": 7,
+      "@typescript-eslint/no-unsafe-return": 2,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/metal/lib/deprecate_property.ts": {
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 1
+    },
+    "packages/@ember/-internals/metal/lib/each_proxy_events.ts": {
+      "prefer-const": 2,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 2
+    },
+    "packages/@ember/-internals/metal/lib/events.ts": {
+      "prefer-const": 8,
+      "@typescript-eslint/ban-types": 7,
+      "@typescript-eslint/no-explicit-any": 4,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/metal/lib/expand_properties.ts": {
+      "prefer-const": 5
+    },
+    "packages/@ember/-internals/metal/lib/get_properties.ts": {
+      "prefer-const": 1,
+      "prefer-rest-params": 2,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/metal/lib/injected_property.ts": {
+      "prefer-const": 5,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-explicit-any": 5,
+      "@typescript-eslint/no-unsafe-argument": 4,
+      "@typescript-eslint/no-unsafe-assignment": 3,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 2,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/metal/lib/is_blank.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/metal/lib/is_empty.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-member-access": 5
+    },
+    "packages/@ember/-internals/metal/lib/is_none.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/metal/lib/libraries.ts": {
+      "prefer-const": 8,
+      "@typescript-eslint/no-unsafe-argument": 1
+    },
+    "packages/@ember/-internals/metal/lib/mixin.ts": {
+      "prefer-const": 56,
+      "@typescript-eslint/ban-types": 5,
+      "@typescript-eslint/no-explicit-any": 29,
+      "@typescript-eslint/no-this-alias": 1,
+      "@typescript-eslint/no-unsafe-argument": 15,
+      "@typescript-eslint/no-unsafe-assignment": 21,
+      "@typescript-eslint/no-unsafe-call": 5,
+      "@typescript-eslint/no-unsafe-member-access": 11,
+      "@typescript-eslint/no-unsafe-return": 3,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/metal/lib/namespace_search.ts": {
+      "prefer-const": 12,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-argument": 5,
+      "@typescript-eslint/no-unsafe-assignment": 3,
+      "@typescript-eslint/no-unsafe-member-access": 2,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/metal/lib/observer.ts": {
+      "prefer-const": 20,
+      "@typescript-eslint/ban-types": 4,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 8
+    },
+    "packages/@ember/-internals/metal/lib/path_cache.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/metal/lib/properties.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/metal/lib/property_events.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-unsafe-call": 2
+    },
+    "packages/@ember/-internals/metal/lib/property_get.ts": {
+      "prefer-const": 7,
+      "@typescript-eslint/no-empty-function": 2,
+      "@typescript-eslint/no-explicit-any": 11,
+      "@typescript-eslint/no-unsafe-argument": 8,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/metal/lib/property_set.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/no-explicit-any": 6,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 5,
+      "@typescript-eslint/no-unsafe-return": 3,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/metal/lib/set_properties.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/metal/lib/tags.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/metal/lib/tracked.ts": {
+      "prefer-const": 10,
+      "@typescript-eslint/no-explicit-any": 6,
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-assignment": 5,
+      "@typescript-eslint/no-unsafe-member-access": 4,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-template-expressions": 3
+    },
+    "packages/@ember/-internals/owner/index.ts": {
+      "@typescript-eslint/no-explicit-any": 3,
+      "@typescript-eslint/no-unsafe-argument": 2
+    },
+    "packages/@ember/-internals/routing/lib/ext/controller.ts": {
+      "prefer-const": 9,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 2,
+      "@typescript-eslint/no-unsafe-assignment": 6,
+      "@typescript-eslint/no-unsafe-call": 3,
+      "@typescript-eslint/no-unsafe-member-access": 5,
+      "@typescript-eslint/unbound-method": 4
+    },
+    "packages/@ember/-internals/routing/lib/location/api.ts": {
+      "prefer-const": 2,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/routing/lib/location/auto_location.ts": {
+      "prefer-const": 18,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/routing/lib/location/hash_location.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/routing/lib/location/history_location.ts": {
+      "prefer-const": 13,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 4,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 5
+    },
+    "packages/@ember/-internals/routing/lib/location/none_location.ts": {
+      "prefer-const": 2,
+      "prefer-rest-params": 1
+    },
+    "packages/@ember/-internals/routing/lib/services/router.ts": {
+      "prefer-const": 13,
+      "prefer-rest-params": 2,
+      "@typescript-eslint/no-explicit-any": 7,
+      "@typescript-eslint/no-unsafe-argument": 5,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 7,
+      "@typescript-eslint/no-unsafe-member-access": 5,
+      "@typescript-eslint/no-unsafe-return": 5,
+      "@typescript-eslint/restrict-template-expressions": 2
+    },
+    "packages/@ember/-internals/routing/lib/services/routing.ts": {
+      "prefer-const": 6,
+      "@typescript-eslint/ban-types": 5,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-floating-promises": 1,
+      "@typescript-eslint/no-unsafe-assignment": 4,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 4,
+      "@typescript-eslint/no-unsafe-return": 2
+    },
+    "packages/@ember/-internals/routing/lib/system/cache.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-explicit-any": 3,
+      "@typescript-eslint/no-unsafe-return": 3
+    },
+    "packages/@ember/-internals/routing/lib/system/controller_for.ts": {
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/routing/lib/system/dsl.ts": {
+      "prefer-const": 17,
+      "@typescript-eslint/ban-types": 3,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/routing/lib/system/engines.ts": {
+      "@typescript-eslint/ban-types": 1
+    },
+    "packages/@ember/-internals/routing/lib/system/generate_controller.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/ban-types": 2,
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/routing/lib/system/route.ts": {
+      "prefer-const": 109,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/ban-types": 15,
+      "@typescript-eslint/no-empty-function": 6,
+      "@typescript-eslint/no-explicit-any": 27,
+      "@typescript-eslint/no-floating-promises": 2,
+      "@typescript-eslint/no-misused-promises": 2,
+      "@typescript-eslint/no-unnecessary-type-assertion": 1,
+      "@typescript-eslint/no-unsafe-argument": 18,
+      "@typescript-eslint/no-unsafe-assignment": 25,
+      "@typescript-eslint/no-unsafe-call": 9,
+      "@typescript-eslint/no-unsafe-member-access": 30,
+      "@typescript-eslint/no-unsafe-return": 7,
+      "@typescript-eslint/restrict-template-expressions": 11,
+      "@typescript-eslint/unbound-method": 5
+    },
+    "packages/@ember/-internals/routing/lib/system/router.ts": {
+      "prefer-const": 125,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/ban-types": 11,
+      "@typescript-eslint/no-explicit-any": 19,
+      "@typescript-eslint/no-floating-promises": 2,
+      "@typescript-eslint/no-this-alias": 4,
+      "@typescript-eslint/no-unsafe-argument": 13,
+      "@typescript-eslint/no-unsafe-assignment": 24,
+      "@typescript-eslint/no-unsafe-call": 15,
+      "@typescript-eslint/no-unsafe-member-access": 42,
+      "@typescript-eslint/no-unsafe-return": 6,
+      "@typescript-eslint/restrict-template-expressions": 9,
+      "@typescript-eslint/unbound-method": 2
+    },
+    "packages/@ember/-internals/routing/lib/system/router_state.ts": {
+      "prefer-const": 2,
+      "@typescript-eslint/ban-types": 1
+    },
+    "packages/@ember/-internals/routing/lib/utils.ts": {
+      "prefer-const": 20,
+      "@typescript-eslint/ban-types": 7,
+      "@typescript-eslint/no-explicit-any": 5,
+      "@typescript-eslint/no-unsafe-assignment": 7,
+      "@typescript-eslint/no-unsafe-member-access": 2,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-template-expressions": 3
+    },
+    "packages/@ember/-internals/runtime/lib/copy.d.ts": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "packages/@ember/-internals/runtime/lib/mixins/array.d.ts": {
+      "@typescript-eslint/no-explicit-any": 4
+    },
+    "packages/@ember/-internals/runtime/lib/mixins/evented.d.ts": {
+      "@typescript-eslint/no-explicit-any": 8
+    },
+    "packages/@ember/-internals/runtime/lib/mixins/observable.d.ts": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "packages/@ember/-internals/runtime/lib/system/core_object.d.ts": {
+      "@typescript-eslint/ban-types": 2,
+      "@typescript-eslint/no-explicit-any": 14
+    },
+    "packages/@ember/-internals/runtime/tests/system/namespace/base_test.js": {
+      "qunit/no-commented-tests": 1
+    },
+    "packages/@ember/-internals/utils/lib/cache.ts": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 4,
+      "@typescript-eslint/no-unsafe-member-access": 4,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/utils/lib/dictionary.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-member-access": 2,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/utils/lib/get-debug-name.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-explicit-any": 3,
+      "@typescript-eslint/no-unsafe-argument": 2
+    },
+    "packages/@ember/-internals/utils/lib/guid.ts": {
+      "prefer-const": 2,
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/utils/lib/inspect.ts": {
+      "prefer-const": 2,
+      "@typescript-eslint/no-explicit-any": 4,
+      "@typescript-eslint/no-unsafe-argument": 4,
+      "@typescript-eslint/no-unsafe-call": 3,
+      "@typescript-eslint/no-unsafe-member-access": 8,
+      "@typescript-eslint/no-unsafe-return": 5,
+      "@typescript-eslint/restrict-template-expressions": 2,
+      "@typescript-eslint/unbound-method": 2
+    },
+    "packages/@ember/-internals/utils/lib/intern.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/utils/lib/invoke.ts": {
+      "@typescript-eslint/ban-types": 1,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/@ember/-internals/utils/lib/is_proxy.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/utils/lib/lookup-descriptor.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1
+    },
+    "packages/@ember/-internals/utils/lib/make-array.ts": {
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/-internals/utils/lib/mandatory-setter.ts": {
+      "prefer-const": 9,
+      "@typescript-eslint/no-explicit-any": 3,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-return": 2,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/-internals/utils/lib/spec.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/-internals/utils/lib/super.ts": {
+      "prefer-const": 6,
+      "prefer-rest-params": 1,
+      "@typescript-eslint/ban-types": 14,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-return": 3,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/utils/lib/symbol.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/-internals/utils/lib/to-string.ts": {
+      "@typescript-eslint/no-explicit-any": 2,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 2,
+      "@typescript-eslint/no-unsafe-return": 1,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/-internals/views/index.d.ts": {
+      "@typescript-eslint/no-explicit-any": 9
+    },
+    "packages/@ember/-internals/views/lib/system/utils.ts": {
+      "prefer-const": 15,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/application/lib/application.js": {
+      "qunit/no-commented-tests": 3
+    },
+    "packages/@ember/array/type-tests/index.ts": {
+      "prefer-const": 9
+    },
+    "packages/@ember/array/type-tests/mutable.ts": {
+      "prefer-const": 2
+    },
+    "packages/@ember/array/type-tests/proxy.ts": {
+      "prefer-const": 3
+    },
+    "packages/@ember/canary-features/index.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/controller/index.d.ts": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "packages/@ember/controller/lib/controller_mixin.d.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/debug/index.ts": {
+      "prefer-const": 5,
+      "prefer-rest-params": 3,
+      "@typescript-eslint/ban-types": 3,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-explicit-any": 10,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 5,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1,
+      "@typescript-eslint/no-unsafe-return": 3,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/debug/lib/capture-render-tree.ts": {
+      "prefer-const": 1
+    },
+    "packages/@ember/debug/lib/deprecate.ts": {
+      "prefer-const": 5,
+      "@typescript-eslint/no-empty-function": 2,
+      "@typescript-eslint/no-unsafe-argument": 4
+    },
+    "packages/@ember/debug/lib/handlers.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/no-empty-function": 3,
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "packages/@ember/debug/lib/warn.ts": {
+      "@typescript-eslint/no-empty-function": 2
+    },
+    "packages/@ember/engine/index.d.ts": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "packages/@ember/instrumentation/index.ts": {
+      "prefer-const": 16,
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-explicit-any": 7,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/@ember/object/compat.ts": {
+      "prefer-const": 9,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/unbound-method": 1
+    },
+    "packages/@ember/object/type-tests/action.test.ts": {
+      "@typescript-eslint/no-empty-function": 1
+    },
+    "packages/@ember/object/type-tests/ember-object.test.ts": {
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/unbound-method": 2
+    },
+    "packages/@ember/object/type-tests/events/index.test.ts": {
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/unbound-method": 3
+    },
+    "packages/@ember/object/type-tests/observer.test.ts": {
+      "@typescript-eslint/no-empty-function": 2
+    },
+    "packages/@ember/object/type-tests/observers/index.test.ts": {
+      "@typescript-eslint/unbound-method": 2
+    },
+    "packages/@ember/polyfills/lib/assign.ts": {
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/@ember/runloop/index.d.ts": {
+      "@typescript-eslint/ban-types": 5,
+      "@typescript-eslint/no-explicit-any": 4
+    },
+    "packages/@ember/runloop/tests/later_test.js": {
+      "qunit/no-commented-tests": 2
+    },
+    "packages/@ember/service/index.d.ts": {
+      "@typescript-eslint/no-explicit-any": 3
+    },
+    "packages/@ember/string/index.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-against-attrs.ts": {
+      "prefer-const": 6
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-against-dynamic-helpers-modifiers.ts": {
+      "prefer-const": 5
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-against-named-blocks.ts": {
+      "prefer-const": 4
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-against-named-outlets.ts": {
+      "prefer-const": 2
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-input-helper-without-block.ts": {
+      "prefer-const": 2
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-reserved-named-arguments.ts": {
+      "prefer-const": 1
+    },
+    "packages/ember-template-compiler/lib/plugins/assert-splattribute-expression.ts": {
+      "prefer-const": 1
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-action-syntax.ts": {
+      "prefer-const": 1
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-each-in-into-each.ts": {
+      "prefer-const": 3
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-each-track-array.ts": {
+      "prefer-const": 2
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-in-element.ts": {
+      "prefer-const": 3
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-quoted-bindings-into-just-bindings.ts": {
+      "prefer-const": 4
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-resolutions.ts": {
+      "prefer-const": 8
+    },
+    "packages/ember-template-compiler/lib/plugins/transform-wrap-mount-and-outlet.ts": {
+      "prefer-const": 4
+    },
+    "packages/ember-template-compiler/lib/plugins/utils.ts": {
+      "prefer-const": 6,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/restrict-plus-operands": 1
+    },
+    "packages/ember-template-compiler/lib/system/bootstrap.ts": {
+      "prefer-const": 5,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1
+    },
+    "packages/ember-template-compiler/lib/system/calculate-location-display.ts": {
+      "prefer-const": 2
+    },
+    "packages/ember-template-compiler/lib/system/compile-options.ts": {
+      "prefer-const": 8
+    },
+    "packages/ember-template-compiler/lib/system/compile.ts": {
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-implied-eval": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-member-access": 1
+    },
+    "packages/ember-template-compiler/lib/system/initializer.ts": {
+      "prefer-const": 7,
+      "@typescript-eslint/no-unsafe-assignment": 8,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 2
+    },
+    "packages/ember-template-compiler/tests/utils/transform-test-case.ts": {
+      "prefer-const": 7,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-assignment": 8,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 5,
+      "@typescript-eslint/no-unsafe-return": 2
+    },
+    "packages/ember/index.d.ts": {
+      "@typescript-eslint/no-explicit-any": 2
+    },
+    "packages/ember/tests/ember-test-helpers-test.js": {
+      "qunit/no-assert-equal": 1
+    },
+    "packages/internal-test-helpers/lib/compile.ts": {
+      "prefer-const": 4
+    },
+    "packages/internal-test-helpers/lib/define-template-values.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/ban-types": 4
+    },
+    "packages/internal-test-helpers/lib/element-helpers.ts": {
+      "prefer-const": 2,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-return": 1
+    },
+    "packages/internal-test-helpers/lib/ember-dev/assertion.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/internal-test-helpers/lib/ember-dev/containers.ts": {
+      "prefer-const": 4,
+      "@typescript-eslint/no-explicit-any": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 3,
+      "@typescript-eslint/restrict-template-expressions": 3
+    },
+    "packages/internal-test-helpers/lib/ember-dev/debug.ts": {
+      "@typescript-eslint/no-empty-function": 1,
+      "@typescript-eslint/no-floating-promises": 1
+    },
+    "packages/internal-test-helpers/lib/ember-dev/deprecation.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/restrict-template-expressions": 1
+    },
+    "packages/internal-test-helpers/lib/ember-dev/method-call-tracker.ts": {
+      "prefer-const": 11,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 8,
+      "@typescript-eslint/no-unsafe-member-access": 8,
+      "@typescript-eslint/restrict-template-expressions": 3
+    },
+    "packages/internal-test-helpers/lib/ember-dev/namespaces.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 2
+    },
+    "packages/internal-test-helpers/lib/ember-dev/observers.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-unsafe-assignment": 1,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-member-access": 2
+    },
+    "packages/internal-test-helpers/lib/ember-dev/run-loop.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/ban-ts-comment": 1,
+      "@typescript-eslint/no-unsafe-call": 4,
+      "@typescript-eslint/no-unsafe-member-access": 2
+    },
+    "packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts": {
+      "prefer-const": 3,
+      "@typescript-eslint/no-explicit-any": 11,
+      "@typescript-eslint/no-unsafe-assignment": 2,
+      "@typescript-eslint/no-unsafe-call": 1,
+      "@typescript-eslint/no-unsafe-member-access": 3
+    },
+    "packages/internal-test-helpers/lib/ember-dev/utils.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/no-empty-function": 1
+    },
+    "packages/internal-test-helpers/lib/ember-dev/warning.ts": {
+      "prefer-const": 4
+    },
+    "packages/internal-test-helpers/lib/module-for.js": {
+      "qunit/require-expect": 3
+    },
+    "packages/internal-test-helpers/lib/run.ts": {
+      "prefer-const": 1,
+      "@typescript-eslint/ban-types": 4,
+      "@typescript-eslint/no-explicit-any": 3,
+      "@typescript-eslint/no-unsafe-argument": 1,
+      "@typescript-eslint/no-unsafe-call": 2,
+      "@typescript-eslint/no-unsafe-return": 2
+    },
+    "packages/internal-test-helpers/lib/test-context.ts": {
+      "@typescript-eslint/no-explicit-any": 1
+    },
+    "tests/node/build-info-test.js": {
+      "qunit/no-assert-equal": 2
+    },
+    "tests/node/fastboot-sandbox-test.js": {
+      "qunit/no-assert-equal": 2
+    },
+    "tests/node/instrumentation-test.js": {
+      "qunit/no-assert-equal": 1
+    },
+    "tests/node/overrides-test.js": {
+      "qunit/no-assert-equal": 2,
+      "qunit/no-commented-tests": 8
+    },
+    "tests/node/sourcemap-test.js": {
+      "qunit/no-assert-equal": 1
+    },
+    "tests/node/template-compiler-test.js": {
+      "qunit/no-assert-equal": 3
+    },
+    "tests/node/visit-test.js": {
+      "qunit/no-assert-equal": 2,
+      "qunit/require-expect": 7
+    }
+  }
+}
