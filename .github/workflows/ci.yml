@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -64,7 +64,7 @@ jobs:
     needs: [basic-test, lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -90,7 +90,7 @@ jobs:
     needs: [basic-test, lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -110,7 +110,7 @@ jobs:
     needs: [basic-test, lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -131,7 +131,7 @@ jobs:
     needs: [basic-test, lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -152,7 +152,7 @@ jobs:
     needs: [basic-test, lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -173,7 +173,7 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -192,7 +192,7 @@ jobs:
     needs: [basic-test, lint]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -217,7 +217,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           registry-url: 'https://registry.npmjs.org'
@@ -239,7 +239,7 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
@@ -262,7 +262,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: yarn
