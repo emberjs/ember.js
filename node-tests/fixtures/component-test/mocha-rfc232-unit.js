@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { setupTest } from 'ember-mocha';
+import { setupTest } from 'my-app/tests/helpers';
 
 describe('Unit | Component | x-foo', function () {
   setupTest();

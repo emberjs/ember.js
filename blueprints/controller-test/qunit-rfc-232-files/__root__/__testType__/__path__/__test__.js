@@ -1,5 +1,5 @@
 import { module, test } from 'qunit';
-import { setupTest } from 'ember-qunit';
+import { setupTest } from '<%= dasherizedPackageName %>/tests/helpers';
 
 module('<%= friendlyTestDescription %>', function (hooks) {
   setupTest(hooks);
