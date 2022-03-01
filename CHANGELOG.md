@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.3.0-beta.2 (March 1, 2022)
+
+- [#19971](https://github.com/emberjs/ember.js/pull/19971) [BUGFIX] Don't serialize default Query Params on RouterService
+
 ### v4.3.0-beta.1 (February 7, 2022)
 
 No public API changes or bugfixes. 
