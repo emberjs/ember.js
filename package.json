@@ -57,7 +57,7 @@
     "broccoli-funnel": "^3.0.8",
     "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-auto-import": "^2.2.0",
+    "ember-auto-import": "^2.4.0",
     "ember-cli-babel": "^7.23.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.11",
-    "@glimmer/compiler": "0.83.1",
+    "@glimmer/compiler": "0.84.0",
     "@glimmer/destroyable": "0.83.1",
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.83.1",
