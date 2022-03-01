@@ -90,7 +90,7 @@
     "@types/qunit": "^2.11.3",
     "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
-    "@typescript-eslint/parser": "^5.10.0",
+    "@typescript-eslint/parser": "^5.13.0",
     "auto-dist-tag": "^2.1.1",
     "aws-sdk": "^2.1083.0",
     "babel-template": "^6.26.0",
