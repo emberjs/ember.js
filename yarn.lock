@@ -1185,6 +1185,13 @@
   dependencies:
     "@glimmer/util" "0.83.1"
 
+"@glimmer/owner@0.84.0":
+  version "0.84.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/owner/-/owner-0.84.0.tgz#71c6ebbd369c8c4a3cdf91bc53e445d2e92572fa"
+  integrity sha512-JH00K54PSQ14rsTLKj3bZ2fVS0n6OeHdd6rWWogWWA/RCvPPmHi9bRz9KeyVhXiebgy5p/0Fvc0xFcrmMdJwnw==
+  dependencies:
+    "@glimmer/util" "0.84.0"
+
 "@glimmer/program@0.83.1":
   version "0.83.1"
   resolved "https://registry.yarnpkg.com/@glimmer/program/-/program-0.83.1.tgz#2a589f369ce06a37b7a7ec7fd550db708ddc6ee5"
