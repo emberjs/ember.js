@@ -92,7 +92,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "auto-dist-tag": "^2.1.1",
-    "aws-sdk": "^2.1066.0",
+    "aws-sdk": "^2.1083.0",
     "babel-template": "^6.26.0",
     "backburner.js": "^2.7.0",
     "broccoli-babel-transpiler": "^7.8.0",
