@@ -1056,6 +1056,13 @@
   dependencies:
     "@simple-dom/interface" "^1.4.0"
 
+"@glimmer/interfaces@0.84.0":
+  version "0.84.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.84.0.tgz#fa5cb7189910c853d473db19133d2180d813c0b7"
+  integrity sha512-+2clm2821gP+LiA4w1GOQtjgLDoqFOYVw3uwTvmzKGislR5lzC9s0la3W7NCqYwApv2aeZry4CJ6um6/Q46mYw==
+  dependencies:
+    "@simple-dom/interface" "^1.4.0"
+
 "@glimmer/low-level@0.78.2":
   version "0.78.2"
   resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.78.2.tgz#bca5f666760ce98345e87c5b3e37096e772cb2de"
@@ -1103,6 +1110,13 @@
   integrity sha512-OrYPJsn/BZ3Bij17Nnno+GuBgLh7z31DRaRZEZbPCZ1i6FyZMOI1qqZo3taOeOTUTKxLaNhxG5BqyiJPFwxUyA==
   dependencies:
     "@glimmer/util" "0.83.1"
+
+"@glimmer/owner@0.84.0":
+  version "0.84.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/owner/-/owner-0.84.0.tgz#71c6ebbd369c8c4a3cdf91bc53e445d2e92572fa"
+  integrity sha512-JH00K54PSQ14rsTLKj3bZ2fVS0n6OeHdd6rWWogWWA/RCvPPmHi9bRz9KeyVhXiebgy5p/0Fvc0xFcrmMdJwnw==
+  dependencies:
+    "@glimmer/util" "0.84.0"
 
 "@glimmer/program@0.83.1":
   version "0.83.1"
@@ -1163,6 +1177,15 @@
   dependencies:
     "@glimmer/env" "0.1.7"
     "@glimmer/interfaces" "0.83.1"
+    "@simple-dom/interface" "^1.4.0"
+
+"@glimmer/util@0.84.0":
+  version "0.84.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.84.0.tgz#a9d3a9471678e5c80470646a70ea54c2cf1f8e2c"
+  integrity sha512-H5OjZXaroV821TLVHXox4t2GICwUA8HdijyAf+wouSfINmm+y4GbbEwoZM9ns8YSZGX7/gG0Z4Znwti0oFbHPw==
+  dependencies:
+    "@glimmer/env" "0.1.7"
+    "@glimmer/interfaces" "0.84.0"
     "@simple-dom/interface" "^1.4.0"
 
 "@glimmer/validator@0.83.1":
