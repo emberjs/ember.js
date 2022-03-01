@@ -56,7 +56,7 @@
     "broccoli-file-creator": "^2.1.1",
     "broccoli-funnel": "^3.0.8",
     "broccoli-merge-trees": "^4.2.0",
-    "chalk": "^4.0.0",
+    "chalk": "^5.0.0",
     "ember-auto-import": "^2.4.0",
     "ember-cli-babel": "^7.23.0",
     "ember-cli-get-component-path-option": "^1.0.0",
