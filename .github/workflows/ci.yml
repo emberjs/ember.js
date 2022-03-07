@@ -160,7 +160,7 @@ jobs:
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v2.1.0
+      - uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
@@ -202,7 +202,7 @@ jobs:
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v2.1.0
+      - uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
@@ -221,7 +221,7 @@ jobs:
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v2.1.0
+      - uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
