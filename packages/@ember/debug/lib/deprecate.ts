@@ -85,11 +85,15 @@ if (DEBUG) {
   let formatMessage = function formatMessage(_message: string, options?: DeprecationOptions) {
     let message = _message;
 
-    if (options && options.id) {
+    if (options?.id) {
       message = message + ` [deprecation id: ${options.id}]`;
     }
 
-    if (options && options.url) {
+    if (options?.until) {
+      message = message + ` This will be removed in Ember ${options.until}.`;
+    }
+
+    if (options?.url) {
       message += ` See ${options.url} for more details.`;
     }
 
