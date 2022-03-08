@@ -386,7 +386,8 @@ const Observable = Mixin.create({
       - the name of the function to invoke on the target object
         (as a string).
 
-    ```app/components/my-component.js
+    ```js
+    // app/components/my-component.js
     import Component from '@ember/component';
 
     export default Component.extend({
@@ -414,7 +415,8 @@ const Observable = Mixin.create({
 
     Observer methods have the following signature:
 
-    ```app/components/my-component.js
+    ```js
+    // app/components/my-component.js
     import Component from '@ember/component';
 
     export default Component.extend({

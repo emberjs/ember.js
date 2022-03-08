@@ -13,7 +13,8 @@ import {
 /**
   This mixin allows for Ember objects to subscribe to and emit events.
 
-  ```app/utils/person.js
+  ```js
+  // app/utils/person.js
   import EmberObject from '@ember/object';
   import Evented from '@ember/object/evented';
 

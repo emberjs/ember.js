@@ -24,7 +24,8 @@ import type { OutletState } from '../utils/outlet';
   your template. An important use of the `{{outlet}}` helper is in your
   application's `application.hbs` file:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <MyHeader />
 
   <div class="my-dynamic-content">

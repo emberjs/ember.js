@@ -1861,7 +1861,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 
   Example
 
-  ```app/components/my-component.js
+  ```js
+  // app/components/my-component.js
   import Component from '@ember/component';
   import { A } from '@ember/array';
 

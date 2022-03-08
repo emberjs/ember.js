@@ -33,7 +33,8 @@ export function inject(
 
   Example:
 
-  ```app/routes/application.js
+  ```js
+  // app/routes/application.js
   import Route from '@ember/routing/route';
   import { service } from '@ember/service';
 
@@ -48,7 +49,8 @@ export function inject(
 
   Classic Class Example:
 
-  ```app/routes/application.js
+  ```js
+  // app/routes/application.js
   import Route from '@ember/routing/route';
   import { service } from '@ember/service';
 

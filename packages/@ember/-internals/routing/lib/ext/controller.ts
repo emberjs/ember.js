@@ -121,7 +121,8 @@ ControllerMixin.reopen({
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```app/router.js
+    ```js
+    // app/router.js
     Router.map(function() {
       this.route('blogPost', { path: ':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });
@@ -212,7 +213,8 @@ ControllerMixin.reopen({
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```app/router.js
+    ```js
+    // app/router.js
     Router.map(function() {
       this.route('blogPost', { path: ':blogPostId' }, function() {
         this.route('blogComment', { path: ':blogCommentId', resetNamespace: true });

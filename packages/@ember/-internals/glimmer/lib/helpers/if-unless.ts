@@ -17,11 +17,13 @@
   using the block form to wrap the section of template you want to conditionally render.
   Like so:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Weather />
   ```
 
-  ```app/components/weather.hbs
+  ```hbs
+  {{! app/components/weather.hbs }}
   {{! will not render because greeting is undefined}}
   {{#if @isRaining}}
     Yes, grab an umbrella!
@@ -31,7 +33,8 @@
   You can also define what to show if the property is falsey by using
   the `else` helper.
 
-  ```app/components/weather.hbs
+  ```hbs
+  {{! app/components/weather.hbs }}
   {{#if @isRaining}}
     Yes, grab an umbrella!
   {{else}}
@@ -44,7 +47,8 @@
 
   For the following template:
 
-   ```app/components/weather.hbs
+   ```hbs
+   {{! app/components/weather.hbs }}
   {{#if @isRaining}}
     Yes, grab an umbrella!
   {{else if @isCold}}
@@ -56,7 +60,8 @@
 
   If you call it by saying `isCold` is true:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Weather @isCold={{true}} />
   ```
 
@@ -71,11 +76,13 @@
 
   For example, if `useLongGreeting` is truthy, the following:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Greeting @useLongGreeting={{true}} />
   ```
 
-  ```app/components/greeting.hbs
+  ```hbs
+  {{! app/components/greeting.hbs }}
   {{if @useLongGreeting "Hello" "Hi"}} Alex
   ```
 
@@ -108,11 +115,13 @@
 
   For example, if you pass a falsey `useLongGreeting` to the `Greeting` component:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Greeting @useLongGreeting={{false}} />
   ```
 
-  ```app/components/greeting.hbs
+  ```hbs
+  {{! app/components/greeting.hbs }}
   {{unless @useLongGreeting "Hi" "Hello"}} Ben
   ```
 
@@ -128,11 +137,13 @@
 
   The following will not render anything:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Greeting />
   ```
 
-  ```app/components/greeting.hbs
+  ```hbs
+  {{! app/components/greeting.hbs }}
   {{#unless @greeting}}
     No greeting was found. Why not set one?
   {{/unless}}
@@ -143,7 +154,8 @@
 
   If you have the following component:
 
-  ```app/components/logged-in.hbs
+  ```hbs
+  {{! app/components/logged-in.hbs }}
   {{#unless @userData}}
     Please login.
   {{else}}
@@ -153,7 +165,8 @@
 
   Calling it with a truthy `userData`:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <LoggedIn @userData={{hash username="Zoey"}} />
   ```
 
@@ -165,7 +178,8 @@
 
   and calling it with a falsey `userData`:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <LoggedIn @userData={{false}} />
   ```
 

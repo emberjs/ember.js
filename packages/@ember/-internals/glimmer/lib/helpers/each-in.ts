@@ -126,7 +126,8 @@ import { internalHelper } from './internal-helper';
 
   For example, given this component definition:
 
-  ```app/components/developer-details.js
+  ```js
+  // app/components/developer-details.js
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
@@ -141,7 +142,8 @@ import { internalHelper } from './internal-helper';
   This template would display all properties on the `developer`
   object in a list:
 
-  ```app/components/developer-details.hbs
+  ```hbs
+  {{! app/components/developer-details.hbs }}
   <ul>
     {{#each-in this.developer as |key value|}}
       <li>{{key}}: {{value}}</li>

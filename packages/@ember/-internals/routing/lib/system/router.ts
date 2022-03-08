@@ -236,7 +236,8 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     Nested routes, by default, will have the parent route tree's route name and
     path prepended to it's own.
 
-    ```app/router.js
+    ```js
+    // app/router.js
     Router.map(function(){
       this.route('post', { path: '/post/:post_id' }, function() {
         this.route('edit');

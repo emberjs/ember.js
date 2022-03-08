@@ -12,13 +12,15 @@
   to a component invoked within the loop. Here's how you could use the `fn`
   helper to pass both the function and its arguments together:
 
-    ```app/templates/components/items-listing.hbs
+    ```hbs
+    {{! app/templates/components/items-listing.hbs }}
   {{#each @items as |item|}}
     <DisplayItem @item=item @select={{fn this.handleSelected item}} />
   {{/each}}
   ```
 
-  ```app/components/items-list.js
+  ```js
+  // app/components/items-list.js
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -47,7 +49,8 @@
   properly bound to the `items-list`, but let's explore what happens if we
   left out `@action`:
 
-  ```app/components/items-list.js
+  ```js
+  // app/components/items-list.js
   import Component from '@glimmer/component';
 
   export default class ItemsList extends Component {

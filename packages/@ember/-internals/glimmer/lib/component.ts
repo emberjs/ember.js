@@ -67,7 +67,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   One example is to add computed properties to your component:
 
-  ```app/components/person-profile.js
+  ```js
+  // app/components/person-profile.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -85,7 +86,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   And then use it in the component's template:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{this.displayName}}</h1>
   {{yield}}
   ```
@@ -99,7 +101,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   Consider the following component class:
 
-  ```app/components/emphasized-paragraph.js
+  ```js
+  // app/components/emphasized-paragraph.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -119,7 +122,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   The HTML `class` attribute of a component's tag can be set by providing a
   `classNames` property that is set to an array of strings:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -138,7 +142,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   value of these properties will be added as part of the value for the
   components's `class` attribute. These properties can be computed properties:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
   import { computed } from '@ember/object';
 
@@ -177,7 +182,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   itself will be used as the class name if the property is true. The class name
   will not be added if the value is `false` or `undefined`.
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -199,7 +205,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   than the property name for use as the `class` HTML attribute by appending the
   preferred value after a ":" character when defining the binding:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -218,7 +225,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   Boolean value class name bindings whose property names are in a
   camelCase-style format will be converted to a dasherized format:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -237,7 +245,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   Class name bindings can also refer to object values that are found by
   traversing a path relative to the component itself:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
   import EmberObject from '@ember/object';
 
@@ -260,7 +269,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   and a different class name if it evaluates to false, you can pass a binding
   like this:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -283,7 +293,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   This syntax offers the convenience to add a class if a property is `false`:
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
@@ -323,7 +334,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   The return value of these properties will be used as the value of the component's
   HTML associated attribute:
 
-  ```app/components/my-anchor.js
+  ```js
+  // app/components/my-anchor.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -343,7 +355,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   One property can be mapped on to another by placing a ":" between
   the source property and the destination property:
 
-  ```app/components/my-anchor.js
+  ```js
+  // app/components/my-anchor.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -381,7 +394,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
   mapped, since `:` is not a valid character for properties in Javascript:
 
-  ```app/components/my-use.js
+  ```js
+  // app/components/my-use.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -401,7 +415,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   If the value of a property monitored by `attributeBindings` is a boolean, the
   attribute will be present or absent depending on the value:
 
-  ```app/components/my-text-input.js
+  ```js
+  // app/components/my-text-input.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -420,7 +435,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   `attributeBindings` can refer to computed properties:
 
-  ```app/components/my-text-input.js
+  ```js
+  // app/components/my-text-input.js
   import Component from '@ember/component';
   import { computed } from '@ember/object';
 
@@ -441,7 +457,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   To prevent setting an attribute altogether, use `null` or `undefined` as the
   value of the property used in `attributeBindings`:
 
-  ```app/components/my-text-input.js
+  ```js
+  // app/components/my-text-input.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -470,12 +487,14 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   The `layout` property should be set to the default export of a template
   module, which is the name of a template file without the `.hbs` extension.
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>Person's Title</h1>
   <div class='details'>{{yield}}</div>
   ```
 
-  ```app/components/person-profile.js
+  ```js
+  // app/components/person-profile.js
     import Component from '@ember/component';
     import layout from '../templates/components/person-profile';
 
@@ -544,7 +563,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   An event object will be passed as the argument to the event handler method.
 
-  ```app/components/my-widget.js
+  ```js
+  // app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -614,7 +634,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   For example, you could implement the action `hello` for the `person-profile`
   component:
 
-  ```app/components/person-profile.js
+  ```js
+  // app/components/person-profile.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -628,7 +649,8 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 
   And then use it in the component's template:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{@person.name}}</h1>
 
   <button {{action 'hello' @person.name}}>

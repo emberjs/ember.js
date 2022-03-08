@@ -37,7 +37,8 @@ const ActionHandler = Mixin.create({
     the `actions` hash defined on extended parent classes
     or mixins rather than just replace the entire hash, e.g.:
 
-    ```app/mixins/can-display-banner.js
+    ```js
+    // app/mixins/can-display-banner.js
     import Mixin from '@ember/mixin';
 
     export default Mixin.create({
@@ -49,7 +50,8 @@ const ActionHandler = Mixin.create({
     });
     ```
 
-    ```app/routes/welcome.js
+    ```js
+    // app/routes/welcome.js
     import Route from '@ember/routing/route';
     import CanDisplayBanner from '../mixins/can-display-banner';
 
@@ -72,7 +74,8 @@ const ActionHandler = Mixin.create({
     the value of the `this` context is the Controller, Route or
     Component object:
 
-    ```app/routes/song.js
+    ```js
+    // app/routes/song.js
     import Route from '@ember/routing/route';
 
     export default Route.extend({
@@ -92,7 +95,8 @@ const ActionHandler = Mixin.create({
 
     Take for example the following routes:
 
-    ```app/mixins/debug-route.js
+    ```js
+    // app/mixins/debug-route.js
     import Mixin from '@ember/mixin';
 
     export default Mixin.create({
@@ -104,7 +108,8 @@ const ActionHandler = Mixin.create({
     });
     ```
 
-    ```app/routes/annoying-debug.js
+    ```js
+    // app/routes/annoying-debug.js
     import Route from '@ember/routing/route';
     import DebugRoute from '../mixins/debug-route';
 
@@ -127,7 +132,8 @@ const ActionHandler = Mixin.create({
     on the `actions` hash handles it. To continue bubbling the action,
     you must return `true` from the handler:
 
-    ```app/router.js
+    ```js
+    // app/router.js
     Router.map(function() {
       this.route("album", function() {
         this.route("song");
@@ -135,7 +141,8 @@ const ActionHandler = Mixin.create({
     });
     ```
 
-    ```app/routes/album.js
+    ```js
+    // app/routes/album.js
     import Route from '@ember/routing/route';
 
     export default Route.extend({
@@ -146,7 +153,8 @@ const ActionHandler = Mixin.create({
     });
     ```
 
-    ```app/routes/album-song.js
+    ```js
+    // app/routes/album-song.js
     import Route from '@ember/routing/route';
 
     export default Route.extend({
@@ -180,7 +188,8 @@ const ActionHandler = Mixin.create({
 
     Example
 
-    ```app/routes/welcome.js
+    ```js
+    // app/routes/welcome.js
     import Route from '@ember/routing/route';
 
     export default Route.extend({

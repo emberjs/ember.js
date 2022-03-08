@@ -31,7 +31,8 @@ function cleanURL(url: string, rootURL: string) {
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
 
-   ```app/components/example.js
+   ```js
+   // app/components/example.js
    import Component from '@glimmer/component';
    import { action } from '@ember/object';
    import { service } from '@ember/service';
@@ -91,7 +92,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      specific model from a Component in the first action, and in the second we trigger
      a query-params only transition.
 
-     ```app/components/example.js
+     ```js
+     // app/components/example.js
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
      import { service } from '@ember/service';
@@ -151,7 +153,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
      Usage example:
 
-     ```app/routes/application.js
+     ```js
+     // app/routes/application.js
      import Route from '@ember/routing/route';
 
      export default class extends Route {
@@ -184,11 +187,13 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     In this example, the URL for the `author.books` route for a given author
     is copied to the clipboard.
 
-    ```app/templates/application.hbs
+    ```hbs
+    {{! app/templates/application.hbs }}
     <CopyLink @author={{hash id="tomster" name="Tomster"}} />
     ```
 
-    ```app/components/copy-link.js
+    ```js
+    // app/components/copy-link.js
     import Component from '@glimmer/component';
     import { service } from '@ember/service';
     import { action } from '@ember/object';
@@ -211,11 +216,13 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
     query parameters.
 
-    ```app/templates/application.hbs
+    ```hbs
+    {{! app/templates/application.hbs }}
     <CopyLink @author={{hash id="tomster" name="Tomster"}} />
     ```
 
-    ```app/components/copy-link.js
+    ```js
+    // app/components/copy-link.js
     import Component from '@glimmer/component';
     import { service } from '@ember/service';
     import { action } from '@ember/object';
@@ -257,7 +264,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
      In the following example, `isActive` will return `true` if the current route is `/posts`.
 
-     ```app/components/posts.js
+     ```js
+     // app/components/posts.js
      import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
@@ -273,7 +281,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      The next example includes a dynamic segment, and will return `true` if the current route is `/posts/1`,
      assuming the post has an id of 1:
 
-     ```app/components/posts.js
+     ```js
+     // app/components/posts.js
      import Component from '@glimmer/component';
      import { service } from '@ember/service';
 
@@ -420,7 +429,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
   /**
     You can register a listener for events emitted by this service with `.on()`:
 
-    ```app/routes/contact-form.js
+    ```js
+    // app/routes/contact-form.js
     import Route from '@ember/routing';
     import { service } from '@ember/service';
 
@@ -447,7 +457,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
   /**
     You can unregister a listener for events emitted by this service with `.off()`:
 
-    ```app/routes/contact-form.js
+    ```js
+    // app/routes/contact-form.js
     import Route from '@ember/routing';
     import { service } from '@ember/service';
 
@@ -485,7 +496,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     A good example is preventing navigation when a form is
     half-filled out:
 
-    ```app/routes/contact-form.js
+    ```js
+    // app/routes/contact-form.js
     import Route from '@ember/routing';
     import { service } from '@ember/service';
 
@@ -517,7 +529,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
     A good example is sending some analytics when the route has transitioned:
 
-    ```app/routes/contact-form.js
+    ```js
+    // app/routes/contact-form.js
     import Route from '@ember/routing';
     import { service } from '@ember/service';
 
@@ -587,7 +600,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     which is dot separated.
     For the following router:
 
-    ```app/router.js
+    ```js
+    // app/router.js
     Router.map(function() {
       this.route('about');
       this.route('blog', function () {
@@ -616,7 +630,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
   This property represents the URL path for this route.
   For the following router:
 
-    ```app/router.js
+    ```js
+    // app/router.js
     Router.map(function() {
       this.route('about');
       this.route('blog', function () {
@@ -649,7 +664,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     application you can set a location type on your `config/environment`.
     For example, to set the `history` type:
 
-    ```config/environment.js
+    ```js
+    // config/environment.js
     'use strict';
 
     module.exports = function(environment) {
@@ -687,7 +703,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     If you change the `rootURL` in your environment configuration
     like so:
 
-    ```config/environment.js
+    ```js
+    // config/environment.js
     'use strict';
 
     module.exports = function(environment) {
@@ -721,7 +738,8 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     and doesn't change the active route).
 
     Usage example:
-    ```app/components/header.js
+    ```js
+    // app/components/header.js
       import Component from '@glimmer/component';
       import { service } from '@ember/service';
       import { notEmpty } from '@ember/object/computed';

@@ -31,7 +31,8 @@ import { opaquify } from './internal';
   In the following example, the `writtenWords` property on the component will be updated as the user
   types 'Lots of text' into the text area of their browser's window.
 
-  ```app/components/word-editor.js
+  ```js
+  // app/components/word-editor.js
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 

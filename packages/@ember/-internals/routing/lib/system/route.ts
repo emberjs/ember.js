@@ -102,7 +102,8 @@ interface Route<T = unknown> extends IRoute<T> {
     A good example is preventing navigation when a form is
     half-filled out:
 
-    ```app/routes/contact-form.js
+    ```js
+    // app/routes/contact-form.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -146,7 +147,8 @@ interface Route<T = unknown> extends IRoute<T> {
     however, it can be useful for tracking page views or resetting
     state on the controller.
 
-    ```app/routes/login.js
+    ```js
+    // app/routes/login.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -171,7 +173,8 @@ interface Route<T = unknown> extends IRoute<T> {
     `Transition` object is the first parameter and the route that
     triggered the loading event is the second parameter.
 
-    ```app/routes/application.js
+    ```js
+    // app/routes/application.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -211,7 +214,8 @@ interface Route<T = unknown> extends IRoute<T> {
     for rejected promises from the various hooks on the route,
     as well as any unhandled errors from child routes:
 
-    ```app/routes/admin.js
+    ```js
+    // app/routes/admin.js
     import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
@@ -243,7 +247,8 @@ interface Route<T = unknown> extends IRoute<T> {
     specify your own global default error handler by overriding the
     `error` handler on `ApplicationRoute`:
 
-    ```app/routes/application.js
+    ```js
+    // app/routes/application.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -311,7 +316,8 @@ class Route<T = unknown>
     A hook you can implement to convert the route's model into parameters
     for the URL.
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -320,7 +326,8 @@ class Route<T = unknown>
 
     ```
 
-    ```app/routes/post.js
+    ```js
+    // app/routes/post.js
     import Route from '@ember/routing/route';
 
     export default class PostRoute extends Route {
@@ -432,7 +439,8 @@ class Route<T = unknown>
     The name of the template to use by default when rendering this route's
     template.
 
-    ```app/routes/posts/list.js
+    ```js
+    // app/routes/posts/list.js
     import Route from '@ember/routing/route';
 
     export default class PostsListRoute extends Route {
@@ -440,13 +448,15 @@ class Route<T = unknown>
     }
     ```
 
-    ```app/routes/posts/index.js
-    import PostsListRoute from '../posts/list';
+    ```js
+    // app/routes/posts/index.js
+    import PostsList from '../posts/list';
 
     export default class PostsIndexRoute extends PostsListRoute {};
     ```
 
-    ```app/routes/posts/archived.js
+    ```js
+    // app/routes/posts/archived.js
     import PostsListRoute from '../posts/list';
 
     export default class PostsArchivedRoute extends PostsListRoute {};
@@ -489,7 +499,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/routes/form.js
+    ```js
+    // app/routes/form.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -619,7 +630,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -629,7 +641,8 @@ class Route<T = unknown>
     });
     ```
 
-    ```app/routes/member.js
+    ```js
+    // app/routes/member.js
     import Route from '@ember/routing/route';
 
     export default class MemberRoute extends Route {
@@ -639,7 +652,8 @@ class Route<T = unknown>
     }
     ```
 
-    ```app/routes/member/interest.js
+    ```js
+    // app/routes/member/interest.js
     import Route from '@ember/routing/route';
 
     export default class MemberInterestRoute extends Route {
@@ -754,7 +768,8 @@ class Route<T = unknown>
     A hook you can use to reset controller values either when the model
     changes or the route is exiting.
 
-    ```app/routes/articles.js
+    ```js
+    // app/routes/articles.js
     import Route from '@ember/routing/route';
 
     export default class ArticlesRoute extends Route {
@@ -817,7 +832,8 @@ class Route<T = unknown>
     This event is triggered when the router enters the route. It is
     not executed when the model for the route changes.
 
-    ```app/routes/application.js
+    ```js
+    // app/routes/application.js
     import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
@@ -837,7 +853,8 @@ class Route<T = unknown>
     This event is triggered when the router completely exits this
     route. It is not executed when the model for the route changes.
 
-    ```app/routes/index.js
+    ```js
+    // app/routes/index.js
     import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
 
@@ -903,7 +920,8 @@ class Route<T = unknown>
     Multiple models will be applied last to first recursively up the
     route tree.
 
-    ```app/routes.js
+    ```js
+    // app/routes.js
     // ...
 
     Router.map(function() {
@@ -945,7 +963,8 @@ class Route<T = unknown>
 
     Simple Transition Example
 
-    ```app/routes.js
+    ```js
+    // app/routes.js
     // ...
 
     Router.map(function() {
@@ -957,7 +976,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/index.js
+    ```js
+    // app/routes/index.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -975,7 +995,8 @@ class Route<T = unknown>
 
     Transition to a nested route
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -987,7 +1008,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/index.js
+    ```js
+    // app/routes/index.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -1001,7 +1023,8 @@ class Route<T = unknown>
 
     Multiple Models Example
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -1015,7 +1038,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/index.js
+    ```js
+    // app/routes/index.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -1032,7 +1056,8 @@ class Route<T = unknown>
 
     Nested Route with Query String Example
 
-    ```app/routes.js
+    ```js
+    // app/routes.js
     // ...
 
     Router.map(function() {
@@ -1044,7 +1069,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/index.js
+    ```js
+    // app/routes/index.js
     import Route from '@ember/routing/route';
 
     export default class IndexRoute extends Route {
@@ -1129,7 +1155,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -1140,7 +1167,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/secret.js
+    ```js
+    // app/routes/secret.js
     import Route from '@ember/routing/route';
 
     export default class SecretRoute Route {
@@ -1287,7 +1315,8 @@ class Route<T = unknown>
     logic that can only take place after the model has already
     resolved.
 
-    ```app/routes/posts.js
+    ```js
+    // app/routes/posts.js
     import Route from '@ember/routing/route';
 
     export default class PostsRoute extends Route {
@@ -1356,7 +1385,8 @@ class Route<T = unknown>
     A hook you can implement to convert the URL into the model for
     this route.
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -1410,7 +1440,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/routes/post.js
+    ```js
+    // app/routes/post.js
     import Route from '@ember/routing/route';
 
     export default class PostRoute extends Route {
@@ -1505,7 +1536,8 @@ class Route<T = unknown>
     when implementing your `setupController` function, make sure to call
     `super`:
 
-    ```app/routes/photos.js
+    ```js
+    // app/routes/photos.js
     import Route from '@ember/routing/route';
 
     export default class PhotosRoute extends Route {
@@ -1528,7 +1560,8 @@ class Route<T = unknown>
 
     As an example, consider the router:
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -1544,7 +1577,8 @@ class Route<T = unknown>
 
     @example Behavior of a basic Controller
 
-    ```app/routes/post.js
+    ```js
+    // app/routes/post.js
     import Route from '@ember/routing/route';
 
     export default class PostRoute extends Route {
@@ -1574,7 +1608,8 @@ class Route<T = unknown>
     The controller instance must already have been created, either through entering the
     associated route or using `generateController`.
 
-    ```app/routes/post.js
+    ```js
+    // app/routes/post.js
     import Route from '@ember/routing/route';
 
     export default class PostRoute extends Route {
@@ -1626,7 +1661,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/routes/post.js
+    ```js
+    // app/routes/post.js
     import Route from '@ember/routing/route';
 
     export default class Post extends Route {
@@ -1661,7 +1697,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -1673,7 +1710,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/post/comments.js
+    ```js
+    // app/routes/post/comments.js
     import Route from '@ember/routing/route';
 
     export default class PostCommentsRoute extends Route {
@@ -1768,7 +1806,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/routes/posts/index.js
+    ```js
+    // app/routes/posts/index.js
     import Route from '@ember/routing/route';
 
     export default class PostsIndexRoute extends Route {
@@ -1778,7 +1817,8 @@ class Route<T = unknown>
     }
     ```
 
-    ```app/routes/application.js
+    ```js
+    // app/routes/application.js
     import Route from '@ember/routing/route';
     import { service } from '@ember/service';
 
@@ -2023,7 +2063,8 @@ class Route<T = unknown>
 
     Example
 
-    ```app/router.js
+    ```js
+    // app/router.js
     // ...
 
     Router.map(function() {
@@ -2033,7 +2074,8 @@ class Route<T = unknown>
     export default Router;
     ```
 
-    ```app/routes/application.js
+    ```js
+    // app/routes/application.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -2045,7 +2087,8 @@ class Route<T = unknown>
     }
     ```
 
-    ```app/routes/index.js
+    ```js
+    // app/routes/index.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
@@ -2407,7 +2450,8 @@ Route.reopen({
 
     Example
 
-    ```app/routes/form.js
+    ```js
+    // app/routes/form.js
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 

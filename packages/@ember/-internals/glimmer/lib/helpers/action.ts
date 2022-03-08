@@ -64,7 +64,8 @@ export const ACTIONS = new _WeakSet();
 
   Here is an example action handler on a component:
 
-  ```app/components/my-component.js
+  ```js
+  // app/components/my-component.js
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -96,7 +97,8 @@ export const ACTIONS = new _WeakSet();
 
   For example
 
-  ```app/components/update-name.js
+  ```js
+  // app/components/update-name.js
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -108,7 +110,8 @@ export const ACTIONS = new _WeakSet();
   }
   ```
 
-  ```app/components/update-name.hbs
+  ```hbs
+  {{! app/components/update-name.hbs }}
   {{input on-input=(action (action 'setName' @model) value="target.value")}}
   ```
 
@@ -120,7 +123,8 @@ export const ACTIONS = new _WeakSet();
   Actions invoked with `sendAction` have the same currying behavior as demonstrated
   with `on-input` above. For example:
 
-  ```app/components/my-input.js
+  ```js
+  // app/components/my-input.js
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
@@ -142,7 +146,8 @@ export const ACTIONS = new _WeakSet();
   {{my-input submit=(action 'setName' @model)}}
   ```
 
-  ```app/components/my-component.js
+  ```js
+  // app/components/my-component.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -200,7 +205,8 @@ export const ACTIONS = new _WeakSet();
   <div onclick={{disable-bubbling (action "sayHello")}}>Hello</div>
   ```
 
-  ```app/helpers/disable-bubbling.js
+  ```js
+  // app/helpers/disable-bubbling.js
   import { helper } from '@ember/component/helper';
 
   export function disableBubbling([action]) {
@@ -259,13 +265,15 @@ export const ACTIONS = new _WeakSet();
   which object will receive the method call. This option must be a path
   to an object, accessible in the current context:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <div {{action "anActionName" target=someService}}>
     click me
   </div>
   ```
 
-  ```app/controllers/application.js
+  ```js
+  // app/controllers/application.js
   import Controller from '@ember/controller';
   import { service } from '@ember/service';
 

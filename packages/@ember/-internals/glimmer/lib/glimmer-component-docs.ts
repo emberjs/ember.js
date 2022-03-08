@@ -29,7 +29,8 @@
   `app/templates/components`. For example, if you name a template
   `app/templates/components/person-profile.hbs`:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{@person.name}}</h1>
   <img src={{@person.avatar}}>
   <p class='signature'>{{@person.signature}}</p>
@@ -38,7 +39,8 @@
   You will be able to use `<PersonProfile />` to invoke this component elsewhere
   in your application:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <PersonProfile @person={{this.currentUser}} />
   ```
 
@@ -48,7 +50,8 @@
   While the angle bracket invocation form is generally preferred, it is also
   possible to invoke the same component with the `{{person-profile}}` syntax:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   {{person-profile person=this.currentUser}}
   ```
 
@@ -71,13 +74,15 @@
   `app/templates/components/person/short-profile.hbs`, we can invoke it as
   `<Person::ShortProfile />`:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Person::ShortProfile @person={{this.currentUser}} />
   ```
 
   Or equivalently, `{{person/short-profile}}`:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   {{person/short-profile person=this.currentUser}}
   ```
 
@@ -87,7 +92,8 @@
   attached to the component. For instance, if we added a `{{yield}}` to our
   component like so:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{@person.name}}</h1>
   {{yield}}
   ```
@@ -119,7 +125,8 @@
   You can also pass positional parameters to `{{yield}}`, which are then made
   available in the block:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{@person.name}}</h1>
   {{yield @person.signature}}
   ```
@@ -139,7 +146,8 @@
   we wanted to add a way for users to customize the title of our
   `<PersonProfile>` component, we could add a named block inside of the header:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{yield to="title"}}</h1>
   {{yield}}
   ```
@@ -162,7 +170,8 @@
 
   You can also pass parameters to named blocks:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{yield @person.name to="title"}}</h1>
   {{yield @person.signature}}
   ```
@@ -181,7 +190,8 @@
   You can also check to see if a block exists using the `(has-block)` keyword,
   and conditionally use it, or provide a default template instead.
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>
     {{#if (has-block "title")}}
       {{yield @person.name to="title"}}
@@ -226,7 +236,8 @@
   We can also check if a block receives parameters using the `(has-block-params)`
   keyword, and conditionally yield different values if so.
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   {{#if (has-block-params)}}
     {{yield @person.signature}}
   {{else}}
@@ -243,7 +254,8 @@
   `app/components/person-profile.js` and export our class as the default, like
   so:
 
-  ```app/components/person-profile.js
+  ```js
+  // app/components/person-profile.js
   import Component from '@glimmer/component';
 
   export default class PersonProfileComponent extends Component {
@@ -265,7 +277,8 @@
   `displayName` property of our `PersonProfile` component instance in the
   template like this:
 
-  ```app/templates/components/person-profile.hbs
+  ```hbs
+  {{! app/templates/components/person-profile.hbs }}
   <h1>{{this.displayName}}</h1>
   {{yield}}
   ```

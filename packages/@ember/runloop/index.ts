@@ -222,7 +222,8 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
   We can use that setup option to do some additional setup for our component.
   The component itself could look something like the following:
 
-  ```app/components/rich-text-editor.js
+  ```js
+  // app/components/rich-text-editor.js
   import Component from '@ember/component';
   import { on } from '@ember/object/evented';
   import { bind } from '@ember/runloop';
@@ -640,7 +641,8 @@ export function scheduleOnce(...args: any[]): Timer {
 
   Example:
 
-  ```app/components/my-component.js
+  ```js
+  // app/components/my-component.js
   import Component from '@ember/component';
   import { scheduleOnce } from '@ember/runloop';
 

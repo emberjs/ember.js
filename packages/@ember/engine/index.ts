@@ -75,7 +75,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     This must be a unique name, as trying to register two initializers with the
     same name will result in an error.
 
-    ```app/initializer/named-initializer.js
+    ```js
+    // app/initializer/named-initializer.js
     import { debug } from '@ember/debug';
 
     export function initialize() {
@@ -94,7 +95,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
     An example of ordering initializers, we create an initializer named `first`:
 
-    ```app/initializer/first.js
+    ```js
+    // app/initializer/first.js
     import { debug } from '@ember/debug';
 
     export function initialize() {
@@ -114,7 +116,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     We add another initializer named `second`, specifying that it should run
     after the initializer named `first`:
 
-    ```app/initializer/second.js
+    ```js
+    // app/initializer/second.js
     import { debug } from '@ember/debug';
 
     export function initialize() {
@@ -136,7 +139,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     Afterwards we add a further initializer named `pre`, this time specifying
     that it should run before the initializer named `first`:
 
-    ```app/initializer/pre.js
+    ```js
+    // app/initializer/pre.js
     import { debug } from '@ember/debug';
 
     export function initialize() {
@@ -159,7 +163,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     Finally we add an initializer named `post`, specifying it should run after
     both the `first` and the `second` initializers:
 
-    ```app/initializer/post.js
+    ```js
+    // app/initializer/post.js
     import { debug } from '@ember/debug';
 
     export function initialize() {
@@ -185,7 +190,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
     Example of using `application` to register an adapter:
 
-    ```app/initializer/api-adapter.js
+    ```js
+    // app/initializer/api-adapter.js
     import ApiAdapter from '../utils/api-adapter';
 
     export function initialize(application) {
@@ -220,7 +226,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     registered. This must be a unique name, as trying to register two
     instanceInitializer with the same name will result in an error.
 
-    ```app/initializer/named-instance-initializer.js
+    ```js
+    // app/initializer/named-instance-initializer.js
     import { debug } from '@ember/debug';
 
     export function initialize() {
@@ -242,7 +249,8 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
     Example instanceInitializer to preload data into the store.
 
-    ```app/initializer/preload-data.js
+    ```js
+    // app/initializer/preload-data.js
 
     export function initialize(application) {
         var userConfig, userConfigEncoded, store;

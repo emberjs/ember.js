@@ -41,7 +41,8 @@ export interface Owner extends IRegistry, IContainer {}
   For example, this component dynamically looks up a service based on the
   `audioType` passed as an argument:
 
-  ```app/components/play-audio.js
+  ```js
+  // app/components/play-audio.js
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
   import { getOwner } from '@ember/application';

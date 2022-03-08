@@ -15,13 +15,15 @@ import { internalHelper } from './internal-helper';
 
   To specify that a binding is read-only, when invoking the child `Component`:
 
-  ```app/components/my-parent.js
+  ```js
+  // app/components/my-parent.js
   export default Component.extend({
     totalClicks: 3
   });
   ```
 
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log totalClicks}} // -> 3
   <MyChild @childClickCount={{readonly totalClicks}} />
   ```
@@ -31,7 +33,8 @@ import { internalHelper } from './internal-helper';
 
   Now, when you update `childClickCount`:
 
-  ```app/components/my-child.js
+  ```js
+  // app/components/my-child.js
   export default Component.extend({
     click() {
       this.incrementProperty('childClickCount');
@@ -41,16 +44,19 @@ import { internalHelper } from './internal-helper';
 
   The value updates in the child component, but not the parent component:
 
-  ```app/templates/components/my-child.hbs
+  ```hbs
+  {{! app/templates/components/my-child.hbs }}
   {{log childClickCount}} //-> 4
   ```
 
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log totalClicks}} //-> 3
   <MyChild @childClickCount={{readonly totalClicks}} />
   ```
   or
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log totalClicks}} //-> 3
   {{my-child childClickCount=(readonly totalClicks)}}
   ```
@@ -66,7 +72,8 @@ import { internalHelper } from './internal-helper';
 
   First let's set up the parent component:
 
-  ```app/components/my-parent.js
+  ```js
+  // app/components/my-parent.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -79,18 +86,21 @@ import { internalHelper } from './internal-helper';
   });
   ```
 
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log clicks.total}} //-> 3
   <MyChild @childClicks={{readonly clicks}} />
   ```
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log clicks.total}} //-> 3
   {{my-child childClicks=(readonly clicks)}}
   ```
 
   Now, if you update the `total` property of `childClicks`:
 
-  ```app/components/my-child.js
+  ```js
+  // app/components/my-child.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -102,17 +112,20 @@ import { internalHelper } from './internal-helper';
 
   You will see the following happen:
 
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log clicks.total}} //-> 4
   <MyChild @childClicks={{readonly clicks}} />
   ```
   or
-  ```app/templates/components/my-parent.hbs
+  ```hbs
+  {{! app/templates/components/my-parent.hbs }}
   {{log clicks.total}} //-> 4
   {{my-child childClicks=(readonly clicks)}}
   ```
 
-  ```app/templates/components/my-child.hbs
+  ```hbs
+  {{! app/templates/components/my-child.hbs }}
   {{log childClicks.total}} //-> 4
   ```
 

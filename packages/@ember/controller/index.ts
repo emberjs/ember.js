@@ -23,7 +23,8 @@ class Controller<T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
 
   Example:
 
-  ```app/controllers/post.js
+  ```js
+  // app/controllers/post.js
   import Controller, {
     inject as controller
   } from '@ember/controller';
@@ -35,7 +36,8 @@ class Controller<T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
 
   Classic Class Example:
 
-  ```app/controllers/post.js
+  ```js
+  // app/controllers/post.js
   import Controller, {
     inject as controller
   } from '@ember/controller';

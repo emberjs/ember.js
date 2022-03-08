@@ -9,7 +9,8 @@
 
   For example, these two usages are equivalent:
 
-  ```app/components/developer-detail.js
+  ```js
+  // app/components/developer-detail.js
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
@@ -29,7 +30,8 @@
   If there were several facts about a person, the `{{get}}` helper can dynamically
   pick one:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <DeveloperDetail @factName="language" />
   ```
 
@@ -40,7 +42,8 @@
   For a more complex example, this template would allow the user to switch
   between showing the user's name and preferred coding language with a click:
 
-  ```app/components/developer-detail.js
+  ```js
+  // app/components/developer-detail.js
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
@@ -59,7 +62,8 @@
   }
   ```
 
-  ```app/components/developer-detail.js
+  ```js
+  // app/components/developer-detail.js
   {{get this.developer this.currentFact}}
 
   <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
@@ -68,7 +72,8 @@
 
   The `{{get}}` helper can also respect mutable values itself. For example:
 
-  ```app/components/developer-detail.js
+  ```js
+  // app/components/developer-detail.js
   <Input @value={{mut (get this.person this.currentFact)}} />
 
   <button {{on 'click' (fn this.showFact "name")}}>Show name</button>

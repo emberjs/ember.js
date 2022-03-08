@@ -38,7 +38,8 @@ const ViewMixin = Mixin.create({
 
    The following example creates a tag like `<div priority="high" />`.
 
-   ```app/components/my-component.js
+   ```js
+   // app/components/my-component.js
    import Component from '@ember/component';
 
    export default Component.extend({
@@ -53,7 +54,8 @@ const ViewMixin = Mixin.create({
 
    The following example creates markup like `<div visible />`.
 
-   ```app/components/my-component.js
+   ```js
+   // app/components/my-component.js
    import Component from '@ember/component';
 
    export default Component.extend({
@@ -66,7 +68,8 @@ const ViewMixin = Mixin.create({
    you can create the same markup as the last example with a binding like
    this:
 
-   ```app/components/my-component.js
+   ```js
+   // app/components/my-component.js
    import Component from '@ember/component';
 
    export default Component.extend({
@@ -278,7 +281,8 @@ const ViewMixin = Mixin.create({
    `elementId`, you should do this when the component or element is being
    instantiated:
 
-   ```app/components/my-component.js
+   ```js
+   // app/components/my-component.js
    import Component from '@ember/component';
 
    export default Component.extend({

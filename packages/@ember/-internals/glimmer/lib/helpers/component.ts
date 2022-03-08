@@ -14,13 +14,15 @@
 
   Given the following template:
 
-  ```app/application.hbs
+  ```hbs
+  {{! app/application.hbs }}
   {{component this.infographicComponentName}}
   ```
 
   And the following application code:
 
-  ```app/controllers/application.js
+  ```js
+  // app/controllers/application.js
   import Controller from '@ember/controller';
   import { tracked } from '@glimmer/tracking';
 
@@ -40,13 +42,15 @@
   Note: You should not use this helper when you are consistently rendering the same
   component. In that case, use standard component syntax, for example:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <LiveUpdatingChart />
   ```
 
   or
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   {{live-updating-chart}}
   ```
 
@@ -55,7 +59,8 @@
   Using the block form of this helper is similar to using the block form
   of a component. Given the following application template:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   {{#component this.infographicComponentName}}
     Last update: {{this.lastUpdateTimestamp}}
   {{/component}}
@@ -63,7 +68,8 @@
 
   The following controller code:
 
-  ```app/controllers/application.js
+  ```js
+  // app/controllers/application.js
   import Controller from '@ember/controller';
   import { computed } from '@ember/object';
   import { tracked } from '@glimmer/tracking';
@@ -83,7 +89,8 @@
 
   And the following component template:
 
-  ```app/templates/components/live-updating-chart.hbs
+  ```hbs
+  {{! app/templates/components/live-updating-chart.hbs }}
   {{! chart }}
   {{yield}}
   ```
@@ -96,7 +103,8 @@
   The included attrs can then be merged during the final invocation.
   For example, given a `person-form` component with the following template:
 
-  ```app/templates/components/person-form.hbs
+  ```hbs
+  {{! app/templates/components/person-form.hbs }}
   {{yield (hash
     nameInput=(component "my-input-component" value=@model.name placeholder="First Name")
   )}}

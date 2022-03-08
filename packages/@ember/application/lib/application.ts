@@ -42,7 +42,8 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   `Application` class, which will be run by Ember when the application is
   initialized.
 
-  ```app/app.js
+  ```js
+  // app/app.js
   const App = Application.extend({
     ready() {
       // your code here
@@ -81,7 +82,8 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   default, you can specify custom events and their corresponding view method
   names by setting the application's `customEvents` property:
 
-  ```app/app.js
+  ```js
+  // app/app.js
   import Application from '@ember/application';
 
   let App = Application.extend({
@@ -96,7 +98,8 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   specify the event name with a `null` value in the `customEvents`
   property:
 
-  ```app/app.js
+  ```js
+  // app/app.js
   import Application from '@ember/application';
 
   let App = Application.extend({
@@ -116,7 +119,8 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   For example, if only events inside a DOM element with the ID of `ember-app`
   should be delegated, set your application's `rootElement` property:
 
-  ```app/app.js
+  ```js
+  // app/app.js
   import Application from '@ember/application';
 
   let App = Application.extend({
@@ -278,7 +282,8 @@ class Application extends Engine {
 
     To add new events to be listened to:
 
-    ```app/app.js
+    ```js
+    // app/app.js
     import Application from '@ember/application';
 
     let App = Application.extend({
@@ -291,7 +296,8 @@ class Application extends Engine {
 
     To prevent default events from being listened to:
 
-    ```app/app.js
+    ```js
+    // app/app.js
     import Application from '@ember/application';
 
     let App = Application.extend({
@@ -1090,7 +1096,8 @@ class Application extends Engine {
     to simulate and discover the resources (i.e. AJAX requests) needed to fulfill
     a given request and eagerly "push" these resources to the client.
 
-    ```app/initializers/network-service.js
+    ```js
+    // app/initializers/network-service.js
     import BrowserNetworkService from 'app/services/network/browser';
     import NodeNetworkService from 'app/services/network/node';
 
@@ -1113,7 +1120,8 @@ class Application extends Engine {
     };
     ```
 
-    ```app/routes/post.js
+    ```js
+    // app/routes/post.js
     import Route from '@ember/routing/route';
     import { service } from '@ember/service';
 

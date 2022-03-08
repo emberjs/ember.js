@@ -7,7 +7,8 @@
   the DOM) to a user. For example, given a component with the property "name",
   that component's template can use the name in several ways:
 
-  ```app/components/person-profile.js
+  ```js
+  // app/components/person-profile.js
   import Component from '@ember/component';
 
   export default Component.extend({
@@ -15,7 +16,8 @@
   });
   ```
 
-  ```app/components/person-profile.hbs
+  ```hbs
+  {{! app/components/person-profile.hbs }}
   {{this.name}}
   <div>{{this.name}}</div>
   <span data-name={{this.name}}></span>
@@ -36,7 +38,8 @@
   When content is passed in mustaches `{{}}`, Ember will first try to find a helper
   or component with that name. For example, the `if` helper:
 
-  ```app/components/person-profile.hbs
+  ```hbs
+  {{! app/components/person-profile.hbs }}
   {{if this.name "I have a name" "I have no name"}}
   <span data-has-name={{if this.name true}}></span>
   ```
@@ -97,13 +100,15 @@
   When designing components `{{yield}}` is used to denote where, inside the component's
   template, an optional block passed to the component should render:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <LabeledTextfield @value={{@model.name}}>
     First name:
   </LabeledTextfield>
   ```
 
-  ```app/components/labeled-textfield.hbs
+  ```hbs
+  {{! app/components/labeled-textfield.hbs }}
   <label>
     {{yield}} <Input @value={{@value}} />
   </label>
@@ -119,7 +124,8 @@
 
   Additionally you can `yield` properties into the context for use by the consumer:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <LabeledTextfield @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
     {{#if validationError}}
       <p class="error">{{validationError}}</p>
@@ -128,7 +134,8 @@
   </LabeledTextfield>
   ```
 
-  ```app/components/labeled-textfield.hbs
+  ```hbs
+  {{! app/components/labeled-textfield.hbs }}
   <label>
     {{yield this.validationError}} <Input @value={{@value}} />
   </label>
@@ -179,7 +186,8 @@
   This is useful when you want to create a component that can optionally take a block
   and then render a default template when it is not invoked with a block.
 
-  ```app/templates/components/my-component.hbs
+  ```hbs
+  {{! app/templates/components/my-component.hbs }}
   {{#if (has-block)}}
     Welcome {{yield}}, we are happy you're here!
   {{else}}
@@ -232,7 +240,8 @@
   This is useful when you want to create a component that can render itself
   differently when it is not invoked with block params.
 
-  ```app/templates/components/my-component.hbs
+  ```hbs
+  {{! app/templates/components/my-component.hbs }}
   {{#if (has-block-params)}}
     Welcome {{yield this.favoriteFlavor}}, we're happy you're here and hope you
     enjoy your favorite ice cream flavor.

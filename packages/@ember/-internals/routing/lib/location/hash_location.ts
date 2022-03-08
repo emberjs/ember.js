@@ -18,7 +18,8 @@ import { getHash } from './util';
 
   Example:
 
-  ```app/router.js
+  ```js
+  // app/router.js
   Router.map(function() {
     this.route('posts', function() {
       this.route('new');

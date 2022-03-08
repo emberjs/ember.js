@@ -48,11 +48,13 @@ export interface SimpleHelper<T, P extends unknown[], N extends Dict<unknown>> {
   Ember Helpers are functions that can compute values, and are used in templates.
   For example, this code calls a helper named `format-currency`:
 
-  ```app/templates/application.hbs
+  ```hbs
+  {{! app/templates/application.hbs }}
   <Cost @cents={{230}} />
   ```
 
-  ```app/components/cost.hbs
+  ```hbs
+  {{! app/components/cost.hbs }}
   <div>{{format-currency @cents currency="$"}}</div>
   ```
 
@@ -66,7 +68,8 @@ export interface SimpleHelper<T, P extends unknown[], N extends Dict<unknown>> {
 
   Helpers defined using a class must provide a `compute` function. For example:
 
-  ```app/helpers/format-currency.js
+  ```js
+  // app/helpers/format-currency.js
   import Helper from '@ember/component/helper';
 
   export default class extends Helper {
@@ -121,7 +124,8 @@ class Helper extends FrameworkObject {
     For example, this component will rerender when the `currentUser` on a
     session service changes:
 
-    ```app/helpers/current-user-email.js
+    ```js
+    // app/helpers/current-user-email.js
     import Helper from '@ember/component/helper'
     import { service } from '@ember/service'
     import { observer } from '@ember/object'
@@ -271,7 +275,8 @@ setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
   The `helper` method create pure-function helpers without instances.
   For example:
 
-  ```app/helpers/format-currency.js
+  ```js
+  // app/helpers/format-currency.js
   import { helper } from '@ember/component/helper';
 
   export default helper(function([cents], {currency}) {
