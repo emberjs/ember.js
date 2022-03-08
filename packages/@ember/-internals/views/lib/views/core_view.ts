@@ -82,7 +82,7 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
   // Changed to `trigger` on init
   _trigger(name: string, ...args: any[]) {
     this._superTrigger!(name, ...args);
-    let method = this[name];
+    let method = (this as any)[name];
     if (typeof method === 'function') {
       return method.apply(this, args);
     }
@@ -90,7 +90,7 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
 
   // Changed to `has` on init
   _has(name: string) {
-    return typeof this[name] === 'function' || this._superHas!(name);
+    return typeof (this as any)[name] === 'function' || this._superHas!(name);
   }
 
   static isViewFactory = true;

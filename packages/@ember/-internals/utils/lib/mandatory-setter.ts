@@ -8,9 +8,7 @@ export let setupMandatorySetter:
   | ((tag: Tag, obj: object, keyName: string | symbol) => void)
   | undefined;
 export let teardownMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
-export let setWithMandatorySetter:
-  | ((obj: object, keyName: string | symbol, value: any) => void)
-  | undefined;
+export let setWithMandatorySetter: ((obj: object, keyName: string, value: any) => void) | undefined;
 
 type PropertyDescriptorWithMeta = PropertyDescriptor & { hadOwnProperty?: boolean };
 
@@ -106,7 +104,7 @@ if (DEBUG) {
     }
   };
 
-  setWithMandatorySetter = function (obj: object, keyName: string | symbol, value: any) {
+  setWithMandatorySetter = function (obj: object, keyName: string, value: any) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
@@ -127,7 +125,7 @@ if (DEBUG) {
         }
       }
     } else {
-      obj[keyName] = value;
+      (obj as any)[keyName] = value;
     }
   };
 }

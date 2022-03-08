@@ -1,19 +1,23 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
+import {
+  ControllerQueryParam,
+  ControllerQueryParamType,
+} from '@ember/controller/lib/controller_mixin';
 import { assert, deprecate } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import EmberError from '@ember/error';
 import Router, { STATE_SYMBOL, InternalRouteInfo, ModelFor } from 'router_js';
-import Route from './system/route';
+import Route, { ExtendedInternalRouteInfo } from './system/route';
 import EmberRouter from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export type ControllerQueryParam =
-  | string
-  | Record<string, string>
-  | { as?: string; scope?: string };
-type ExpandedControllerQueryParam = { as: string | null; scope: string };
+export type ExpandedControllerQueryParam = {
+  as: string | null;
+  scope: string;
+  type?: ControllerQueryParamType;
+};
 
 export type NamedRouteArgs<R extends Route> =
   | [routeNameOrUrl: string, ...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
@@ -73,7 +77,7 @@ export function getActiveTargetName(router: Router<Route>): string {
 
 export function stashParamNames<R extends Route>(
   router: EmberRouter<R>,
-  routeInfos: InternalRouteInfo<R>[]
+  routeInfos: Array<ExtendedInternalRouteInfo<R>> & { _namesStashed?: boolean }
 ): void {
   if (routeInfos['_namesStashed']) {
     return;
@@ -147,7 +151,7 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
       if (cacheValuePrefix && cacheValuePrefix in values) {
         let partRemovedPrefix =
           part.indexOf(cacheValuePrefix) === 0 ? part.substr(cacheValuePrefix.length + 1) : part;
-        value = get(values[cacheValuePrefix], partRemovedPrefix);
+        value = get((values as any)[cacheValuePrefix], partRemovedPrefix);
       } else {
         value = get(values, part);
       }
@@ -203,26 +207,18 @@ function accumulateQueryParamDescriptors(
   _desc: ControllerQueryParam,
   accum: Record<string, ExpandedControllerQueryParam>
 ) {
-  let desc: {} = _desc;
-  let tmp: {};
-  if (typeof desc === 'string') {
-    tmp = {};
-    tmp[desc] = { as: null };
-    desc = tmp;
-  }
+  let desc = typeof _desc === 'string' ? { [_desc]: { as: null } } : _desc;
 
   for (let key in desc) {
     if (!Object.prototype.hasOwnProperty.call(desc, key)) {
       return;
     }
 
-    let singleDesc = desc[key];
-    if (typeof singleDesc === 'string') {
-      singleDesc = { as: singleDesc };
-    }
+    let _singleDesc = desc[key];
+    let singleDesc = typeof _singleDesc === 'string' ? { as: _singleDesc } : _singleDesc;
 
-    let val = accum[key] || { as: null, scope: 'model' };
-    Object.assign(val, singleDesc);
+    let partialVal = accum[key] || { as: null, scope: 'model' };
+    let val = { ...partialVal, ...singleDesc };
 
     accum[key] = val;
   }
@@ -268,21 +264,20 @@ export function prefixRouteNameArg<T extends NamedRouteArgs<Route> | UnnamedRout
   return args;
 }
 
-export function shallowEqual(a: {}, b: {}): boolean {
-  let k;
+export function shallowEqual<A extends object, B extends object>(a: A, b: B): boolean {
   let aCount = 0;
   let bCount = 0;
-  for (k in a) {
-    if (Object.prototype.hasOwnProperty.call(a, k)) {
-      if (a[k] !== b[k]) {
+  for (let kA in a) {
+    if (Object.prototype.hasOwnProperty.call(a, kA)) {
+      if (a[kA] !== (b as any)[kA]) {
         return false;
       }
       aCount++;
     }
   }
 
-  for (k in b) {
-    if (Object.prototype.hasOwnProperty.call(b, k)) {
+  for (let kB in b) {
+    if (Object.prototype.hasOwnProperty.call(b, kB)) {
       bCount++;
     }
   }

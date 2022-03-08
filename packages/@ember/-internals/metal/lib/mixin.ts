@@ -539,6 +539,8 @@ export default class Mixin {
   /** @internal */
   _without: any[] | undefined;
 
+  declare [INIT_FACTORY]?: null;
+
   /** @internal */
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     MIXINS.add(this);

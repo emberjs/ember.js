@@ -34,7 +34,7 @@ function isAllowedEvent(event: Event, allowedKeys: any) {
   }
 
   for (let i = 0; i < MODIFIERS.length; i++) {
-    if (event[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
+    if ((event as any)[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
       return false;
     }
   }
@@ -50,7 +50,7 @@ export let ActionHelper = {
   registerAction(actionState: ActionState) {
     let { actionId } = actionState;
 
-    ActionManager.registeredActions[actionId] = actionState;
+    (ActionManager.registeredActions as Record<string, unknown>)[actionId] = actionState;
 
     return actionId;
   },
@@ -58,7 +58,7 @@ export let ActionHelper = {
   unregisterAction(actionState: ActionState) {
     let { actionId } = actionState;
 
-    delete ActionManager.registeredActions[actionId];
+    delete (ActionManager.registeredActions as Record<string, unknown>)[actionId];
   },
 };
 

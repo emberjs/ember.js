@@ -1,7 +1,9 @@
-function setProperties(object: object, properties: object) {
+function setProperties<T extends object>(object: T, properties: Partial<T>) {
   for (let key in properties) {
     if (Object.prototype.hasOwnProperty.call(properties, key)) {
-      object[key] = properties[key];
+      // SAFETY: we know that the property exists on `properties` because we
+      // just checked as much with `hasOwnProperty`.
+      object[key] = properties[key]!;
     }
   }
 }

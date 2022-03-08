@@ -3,6 +3,9 @@ import Mixin from '@ember/object/mixin';
 import Route from '@ember/routing/route';
 import { Transition } from 'router_js';
 
+export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
+export type ControllerQueryParam = string | Record<string, { type: ControllerQueryParamType }>;
+
 /* @internal */
 interface ControllerMixin<T> {
   /** @internal */
@@ -14,7 +17,7 @@ interface ControllerMixin<T> {
 
   // From routing/lib/ext/controller
 
-  queryParams: Array<string | Record<string, { type: 'boolean' | 'number' | 'array' | 'string' }>>;
+  queryParams: Array<ControllerQueryParam>;
 
   transitionToRoute(...args: RouteArgs<Route>): Transition;
 

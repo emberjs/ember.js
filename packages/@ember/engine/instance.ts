@@ -7,7 +7,7 @@ import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
-import { getEngineParent, setEngineParent } from './lib/engine-parent';
+import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
 import { isFactory } from '@ember/-internals/owner';
@@ -56,6 +56,8 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
 
   declare mountPoint?: string;
   declare routable?: boolean;
+
+  [ENGINE_PARENT]?: EngineInstance;
 
   _booted = false;
 

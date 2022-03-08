@@ -1,10 +1,9 @@
 /**
 @module @ember/engine
 */
-import { symbol } from '@ember/-internals/utils';
 import EngineInstance from '../instance';
 
-const ENGINE_PARENT = symbol('ENGINE_PARENT');
+export const ENGINE_PARENT = Symbol('ENGINE_PARENT');
 
 /**
   `getEngineParent` retrieves an engine instance's parent instance.

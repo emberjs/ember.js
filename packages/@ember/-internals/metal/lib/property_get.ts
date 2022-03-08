@@ -14,9 +14,9 @@ export let getPossibleMandatoryProxyValue: (obj: object, keyName: string) => any
 
 if (DEBUG) {
   getPossibleMandatoryProxyValue = function getPossibleMandatoryProxyValue(obj, keyName): any {
-    let content = obj[PROXY_CONTENT];
+    let content = (obj as any)[PROXY_CONTENT];
     if (content === undefined) {
-      return obj[keyName];
+      return (obj as any)[keyName];
     } else {
       /* global Reflect */
       return Reflect.get(content, keyName, obj);
@@ -112,7 +112,7 @@ export function _getProp(obj: unknown, keyName: string) {
     if (DEBUG) {
       value = getPossibleMandatoryProxyValue(obj, keyName);
     } else {
-      value = obj[keyName];
+      value = (obj as any)[keyName];
     }
 
     if (
@@ -135,7 +135,7 @@ export function _getProp(obj: unknown, keyName: string) {
     }
   } else {
     // SAFETY: It should be ok to access properties on any non-nullish value
-    value = (obj as object)[keyName];
+    value = (obj as any)[keyName];
   }
 
   return value;

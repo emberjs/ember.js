@@ -461,14 +461,14 @@ export class ComputedProperty extends ComputedDescriptor {
       this._dependentKeys !== undefined &&
       this._dependentKeys.length > 0 &&
       // These two properties are set on Ember.Component
-      typeof obj[PROPERTY_DID_CHANGE] === 'function' &&
+      typeof (obj as any)[PROPERTY_DID_CHANGE] === 'function' &&
       (obj as any).isComponent
     ) {
       addObserver(
         obj,
         keyName,
         () => {
-          obj[PROPERTY_DID_CHANGE](keyName);
+          (obj as any)[PROPERTY_DID_CHANGE](keyName);
         },
         undefined,
         true

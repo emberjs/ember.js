@@ -12,8 +12,8 @@ interface TestClass<T extends AbstractTestCase> {
   new (assert: QUnit['assert']): T;
 }
 
-interface TestContext {
-  instance: AbstractTestCase | null | undefined;
+interface TestContext<T extends AbstractTestCase> {
+  instance: T | null | undefined;
 }
 
 const ASSERT_DESTROYABLES = (() => {
@@ -50,7 +50,7 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
   TestClass: TestClass<T>,
   ...mixins: Mixin<G>[]
 ) {
-  hooks.beforeEach(function (this: TestContext, assert: QUnit['assert']) {
+  hooks.beforeEach(function (this: TestContext<T>, assert: QUnit['assert']) {
     if (DEBUG && ASSERT_DESTROYABLES) {
       enableDestroyableTracking!();
     }
@@ -65,7 +65,7 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
     }
   });
 
-  hooks.afterEach(function (this: TestContext) {
+  hooks.afterEach(function (this: TestContext<T>) {
     let promises = [];
     let instance = this.instance;
     this.instance = null;
@@ -98,8 +98,8 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
     applyMixins(TestClass, ...mixins);
   }
 
-  let properties = getAllPropertyNames(TestClass);
-  properties.forEach(generateTest);
+  let properties = getAllPropertyNames<T>(TestClass);
+  properties.forEach((name) => generateTest<T>(name));
 
   function shouldTest(features: string[]) {
     return features.every((feature) => {
@@ -111,19 +111,19 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
     });
   }
 
-  function generateTest(name: string) {
+  function generateTest<T extends AbstractTestCase>(name: keyof T & string) {
     if (name.indexOf('@test ') === 0) {
-      QUnit.test(name.slice(5), function (this: TestContext, assert) {
-        return this.instance![name](assert);
+      QUnit.test(name.slice(5), function (this: TestContext<T>, assert) {
+        return (this.instance![name] as any)(assert);
       });
     } else if (name.indexOf('@only ') === 0) {
       // eslint-disable-next-line qunit/no-only
-      QUnit.only(name.slice(5), function (this: TestContext, assert) {
-        return this.instance![name](assert);
+      QUnit.only(name.slice(5), function (this: TestContext<T>, assert) {
+        return (this.instance![name] as any)(assert);
       });
     } else if (name.indexOf('@skip ') === 0) {
-      QUnit.skip(name.slice(5), function (this: TestContext, assert) {
-        return this.instance![name](assert);
+      QUnit.skip(name.slice(5), function (this: TestContext<T>, assert) {
+        return (this.instance![name] as any)(assert);
       });
     } else {
       let match = /^@feature\(([A-Z_a-z-! ,]+)\) /.exec(name);
@@ -132,8 +132,8 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
         let features = match[1]!.replace(/ /g, '').split(',');
 
         if (shouldTest(features)) {
-          QUnit.test(name.slice(match[0]!.length), function (this: TestContext, assert) {
-            return this.instance![name](assert);
+          QUnit.test(name.slice(match[0]!.length), function (this: TestContext<T>, assert) {
+            return (this.instance![name] as any)(assert);
           });
         }
       }

@@ -21,8 +21,8 @@ function toEachInIterator(iterable: unknown) {
 
   if (Array.isArray(iterable) || isEmberArray(iterable)) {
     return ObjectIterator.fromIndexable(iterable);
-  } else if (isNativeIterable<[unknown, unknown]>(iterable)) {
-    return MapLikeNativeIterator.from(iterable);
+  } else if (isNativeIterable(iterable)) {
+    return MapLikeNativeIterator.from(iterable as Iterable<[unknown, unknown]>);
   } else if (hasForEach(iterable)) {
     return ObjectIterator.fromForEachable(iterable);
   } else {
@@ -251,12 +251,12 @@ interface ForEachable {
   forEach(callback: (item: unknown, key: unknown) => void): void;
 }
 
-function hasForEach(value: object): value is ForEachable {
-  return typeof value['forEach'] === 'function';
+function hasForEach(value: unknown): value is ForEachable {
+  return value != null && typeof (value as ForEachable)['forEach'] === 'function';
 }
 
-function isNativeIterable<T = unknown>(value: object): value is Iterable<T> {
-  return typeof value[Symbol.iterator] === 'function';
+function isNativeIterable(value: unknown): value is Iterable<unknown> {
+  return value != null && typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function';
 }
 
 interface Indexable {

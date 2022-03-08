@@ -12,7 +12,7 @@ function isMatcher(obj: unknown): obj is Matcher<unknown> {
   return typeof obj === 'object' && obj !== null && MATCHER_BRAND in obj;
 }
 
-function equalsAttr(expected: unknown) {
+function equalsAttr(expected: unknown): Matcher<unknown> {
   return {
     [MATCHER_BRAND]: true,
 
@@ -120,7 +120,7 @@ export function equalsElement(
     message: `expect tagName to be ${tagName}`,
   });
 
-  let expectedAttrs = {};
+  let expectedAttrs: Record<string, Matcher<unknown>> = {};
   let expectedCount = 0;
 
   for (let name in attributes) {
@@ -134,14 +134,14 @@ export function equalsElement(
     expectedAttrs[name] = matcher;
 
     assert.pushResult({
-      result: expectedAttrs[name].match(element.getAttribute(name)),
+      result: expectedAttrs[name]!.match(element.getAttribute(name)),
       actual: element.getAttribute(name),
       expected: matcher.expected(),
       message: `Element's ${name} attribute ${matcher.message()}`,
     });
   }
 
-  let actualAttributes = {};
+  let actualAttributes: Record<string, unknown> = {};
 
   for (let attribute of element.attributes) {
     actualAttributes[attribute.name] = attribute.value;

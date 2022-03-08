@@ -38,7 +38,7 @@
   @return {String} interned version of the provided string
 */
 export default function intern(str: string): string {
-  let obj = {};
+  let obj: Record<string, number> = {};
   obj[str] = 1;
   for (let key in obj) {
     if (key === str) {

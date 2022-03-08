@@ -127,7 +127,7 @@ if (DEBUG) {
 
       if (error instanceof Error) {
         if (error.stack) {
-          if (error['arguments']) {
+          if ((error as any)['arguments']) {
             // Chrome
             stack = error.stack
               .replace(/^\s+at\s+/gm, '')

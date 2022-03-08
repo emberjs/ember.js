@@ -118,8 +118,17 @@ const BUILTIN_KEYWORD_HELPERS = {
   '-in-el-null': inElementNullCheckHelper,
 };
 
+const BUILTIN_HELPERS: Record<string, object> = {
+  ...BUILTIN_KEYWORD_HELPERS,
+  array,
+  concat,
+  fn,
+  get,
+  hash,
+};
+
 if (DEBUG) {
-  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+  BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 } else {
   // Bug: this may be a quirk of our test setup?
   // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
@@ -129,17 +138,8 @@ if (DEBUG) {
   // not really harm anything, since it's just a no-op pass-through helper and the bytes
   // has to be included anyway. In the future, perhaps we can avoid the latter by using
   // `import(...)`?
-  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+  BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 }
-
-const BUILTIN_HELPERS = {
-  ...BUILTIN_KEYWORD_HELPERS,
-  array,
-  concat,
-  fn,
-  get,
-  hash,
-};
 
 if (EMBER_UNIQUE_ID_HELPER) {
   BUILTIN_HELPERS['unique-id'] = uniqueId;
@@ -149,7 +149,7 @@ const BUILTIN_KEYWORD_MODIFIERS = {
   action: actionModifier,
 };
 
-const BUILTIN_MODIFIERS = {
+const BUILTIN_MODIFIERS: Record<string, object> = {
   ...BUILTIN_KEYWORD_MODIFIERS,
   on,
 };
@@ -209,7 +209,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
   }
 
   lookupBuiltInHelper(name: string): HelperDefinitionState | null {
-    return BUILTIN_KEYWORD_HELPERS[name] ?? null;
+    return (BUILTIN_KEYWORD_HELPERS as Record<string, object>)[name] ?? null;
   }
 
   lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
@@ -228,8 +228,12 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return modifier.class || null;
   }
 
+  lookupBuiltInModifier<K extends keyof typeof BUILTIN_KEYWORD_MODIFIERS>(
+    name: K
+  ): typeof BUILTIN_KEYWORD_MODIFIERS[K];
+  lookupBuiltInModifier(name: string): null;
   lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
-    return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
+    return (BUILTIN_KEYWORD_MODIFIERS as Record<string, ModifierDefinitionState>)[name] ?? null;
   }
 
   lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {

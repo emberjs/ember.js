@@ -93,7 +93,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
     let keyNames = Object.keys(properties);
 
     for (let keyName of keyNames) {
-      let value = properties[keyName];
+      let value = (properties as any)[keyName];
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
@@ -120,7 +120,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
           concatenatedProperties.length > 0 &&
           concatenatedProperties.includes(keyName)
         ) {
-          let baseValue = obj[keyName];
+          let baseValue = (obj as any)[keyName];
           if (baseValue) {
             value = makeArray(baseValue).concat(value);
           } else {
@@ -133,7 +133,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
           mergedProperties.length > 0 &&
           mergedProperties.includes(keyName)
         ) {
-          let baseValue = obj[keyName];
+          let baseValue = (obj as any)[keyName];
           value = Object.assign({}, baseValue, value);
         }
       }
@@ -146,7 +146,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
         if (DEBUG) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
         } else {
-          obj[keyName] = value;
+          (obj as any)[keyName] = value;
         }
       }
     }
@@ -237,6 +237,8 @@ interface CoreObject {
   _super(...args: any[]): any;
 }
 class CoreObject {
+  [OWNER]?: Owner;
+
   constructor(owner?: Owner) {
     this[OWNER] = owner;
 
@@ -1033,7 +1035,7 @@ class CoreObject {
 }
 
 function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, unknown>>) {
-  let initProperties = {};
+  let initProperties: Record<string, unknown> = {};
 
   for (let properties of props) {
     assert(
@@ -1085,7 +1087,7 @@ if (DEBUG) {
     @private
   */
   CoreObject._lazyInjections = function () {
-    let injections = {};
+    let injections: Record<string, { namespace: unknown; source: unknown; specifier: string }> = {};
     let proto = this.proto();
     let key;
     let desc;

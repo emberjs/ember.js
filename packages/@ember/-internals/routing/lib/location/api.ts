@@ -100,16 +100,13 @@ export default {
     need.
     @private
   */
-  create(options: { implementation: string }): EmberLocation {
-    let implementation = options && options.implementation;
-    assert("Location.create: you must specify a 'implementation' option", Boolean(implementation));
+  create(options?: { implementation: string }): EmberLocation {
+    let implementation = options?.implementation;
+    assert("Location.create: you must specify a 'implementation' option", implementation);
 
     let implementationClass = this.implementations[implementation];
 
-    assert(
-      `Location.create: ${implementation} is not a valid implementation`,
-      Boolean(implementationClass)
-    );
+    assert(`Location.create: ${implementation} is not a valid implementation`, implementationClass);
 
     deprecate(
       "Calling `create` on Location class is deprecated. Instead, use `container.lookup('location:my-location')` to lookup the location you need.",
@@ -129,5 +126,5 @@ export default {
     return implementationClass.create(...arguments);
   },
 
-  implementations: {},
+  implementations: {} as Record<string, { create: (...args: any[]) => EmberLocation }>,
 };

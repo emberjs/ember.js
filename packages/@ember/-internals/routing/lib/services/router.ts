@@ -1,6 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
-import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -11,7 +10,7 @@ import EmberRouter from '../system/router';
 import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';
 import { extractRouteArgs, resemblesURL, RouteArgs, RouteOptions, shallowEqual } from '../utils';
 
-const ROUTER = symbol('ROUTER') as unknown as string;
+export const ROUTER = Symbol('ROUTER');
 
 function cleanURL(url: string, rootURL: string) {
   if (rootURL === '/') {
@@ -55,6 +54,8 @@ function cleanURL(url: string, rootURL: string) {
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface RouterService<R extends Route> extends Evented {}
 class RouterService<R extends Route> extends Service.extend(Evented) {
+  [ROUTER]?: EmberRouter<R>;
+
   get _router(): EmberRouter<R> {
     let router = this[ROUTER];
     if (router !== undefined) {
@@ -63,18 +64,18 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     let owner = getOwner(this);
     assert('RouterService is unexpectedly missing an owner', owner);
 
-    router = owner.lookup('router:main');
+    let _router = owner.lookup('router:main');
     assert(
       'ROUTER SERVICE BUG: Expected router to be an instance of EmberRouter',
-      router instanceof EmberRouter
+      _router instanceof EmberRouter
     );
-    return (this[ROUTER] = router);
+    return (this[ROUTER] = _router);
   }
 
   willDestroy() {
     super.willDestroy();
 
-    this[ROUTER] = null;
+    this[ROUTER] = undefined;
   }
 
   /**

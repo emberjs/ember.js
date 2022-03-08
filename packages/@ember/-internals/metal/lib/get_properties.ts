@@ -35,15 +35,18 @@ function getProperties<L extends string[]>(obj: unknown, list: L): Record<L[numb
 function getProperties<L extends string[]>(obj: unknown, ...list: L): Record<L[number], unknown>;
 function getProperties<L extends string[]>(obj: unknown, keys?: L): Record<L[number], unknown> {
   let ret = {} as Record<L[number], unknown>;
-  let propertyNames = arguments;
+  let propertyNames: string[];
   let i = 1;
 
   if (arguments.length === 2 && Array.isArray(keys)) {
     i = 0;
     propertyNames = arguments[1];
+  } else {
+    propertyNames = Array.from(arguments);
   }
+
   for (; i < propertyNames.length; i++) {
-    ret[propertyNames[i]] = get(obj, propertyNames[i]);
+    ret[propertyNames[i] as L[number]] = get(obj, propertyNames[i]!);
   }
   return ret;
 }

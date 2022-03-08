@@ -1,8 +1,8 @@
-import { typeOf } from './type-of';
+import { TypeName, typeOf } from './type-of';
 import Comparable from './mixins/comparable';
 import { assert } from '@ember/debug';
 
-const TYPE_ORDER = {
+const TYPE_ORDER: Record<TypeName, number> = {
   undefined: 0,
   null: 1,
   boolean: 2,
@@ -14,6 +14,9 @@ const TYPE_ORDER = {
   function: 8,
   class: 9,
   date: 10,
+  regexp: 11,
+  filelist: 12,
+  error: 13,
 };
 
 type Compare = -1 | 0 | 1;

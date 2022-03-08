@@ -57,9 +57,9 @@ function notifyPropertyChange(
     // that checks its arguments length, so we have to explicitly not call this with `value`
     // if it is not passed to `notifyPropertyChange`
     if (arguments.length === 4) {
-      obj[PROPERTY_DID_CHANGE](keyName, value);
+      (obj as any)[PROPERTY_DID_CHANGE](keyName, value);
     } else {
-      obj[PROPERTY_DID_CHANGE](keyName);
+      (obj as any)[PROPERTY_DID_CHANGE](keyName);
     }
   }
 }

@@ -214,14 +214,7 @@ export function getViewBoundingClientRect(view: View): ClientRect | DOMRect {
   @param {String} selector
 */
 export const elMatches: typeof Element.prototype.matches | undefined =
-  typeof Element !== 'undefined'
-    ? Element.prototype.matches ||
-      Element.prototype['matchesSelector'] ||
-      Element.prototype['mozMatchesSelector'] ||
-      Element.prototype['msMatchesSelector'] ||
-      Element.prototype['oMatchesSelector'] ||
-      Element.prototype['webkitMatchesSelector']
-    : undefined;
+  typeof Element !== 'undefined' ? Element.prototype.matches : undefined;
 
 export function matches(el: Element, selector: string): boolean {
   assert('cannot call `matches` in fastboot mode', elMatches !== undefined);

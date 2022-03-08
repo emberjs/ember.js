@@ -100,7 +100,7 @@ export default class ContainerDebugAdapter extends EmberObject {
           continue;
         }
         if (typeSuffixRegex.test(key)) {
-          let klass = namespace[key];
+          let klass = (namespace as any)[key];
           if (typeOf(klass) === 'class') {
             types.push(dasherize(key.replace(typeSuffixRegex, '')));
           }

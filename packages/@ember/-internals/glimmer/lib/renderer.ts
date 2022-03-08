@@ -58,6 +58,7 @@ export interface View {
   elementId: string | null;
   isDestroying: boolean;
   isDestroyed: boolean;
+  [BOUNDS]: Bounds | null;
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
@@ -468,14 +469,14 @@ export class Renderer {
     }
   }
 
-  getBounds(view: object): {
+  getBounds(view: View): {
     parentElement: SimpleElement;
     firstNode: SimpleNode;
     lastNode: SimpleNode;
   } {
-    let bounds: Bounds = view[BOUNDS];
+    let bounds: Bounds | null = view[BOUNDS];
 
-    assert('object passed to getBounds must have the BOUNDS symbol as a property', Boolean(bounds));
+    assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
 
     let parentElement = bounds.parentElement();
     let firstNode = bounds.firstNode();

@@ -1,5 +1,5 @@
 import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
-import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
+import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -56,9 +56,9 @@ import { processComponentArgs } from '../utils/process-args';
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
 
-export const DIRTY_TAG = symbol('DIRTY_TAG');
-export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = symbol('BOUNDS');
+export const DIRTY_TAG = Symbol('DIRTY_TAG');
+export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
+export const BOUNDS = Symbol('BOUNDS');
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 

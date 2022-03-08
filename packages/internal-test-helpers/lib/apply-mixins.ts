@@ -40,12 +40,13 @@ export default function applyMixins<T extends Generator>(
 
       Object.assign(TestClass.prototype, mixin);
     } else if (isGeneratorClass(mixinOrGenerator)) {
-      let properties = getAllPropertyNames(mixinOrGenerator);
-      mixin = new mixinOrGenerator();
+      let properties = getAllPropertyNames<T>(mixinOrGenerator);
+      let mOG = new mixinOrGenerator();
+      mixin = mOG;
 
       properties.forEach((name) => {
         TestClass.prototype[name] = function () {
-          return mixin[name].apply(mixin, arguments);
+          return (mOG[name] as any).apply(mixin, arguments);
         };
       });
     } else {

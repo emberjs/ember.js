@@ -35,10 +35,12 @@ interface FrameworkObject extends EmberObject {}
 let FrameworkObject = class FrameworkObject extends EmberObject {};
 
 if (DEBUG) {
-  let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
+  const INIT_WAS_CALLED = Symbol('INIT_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
 
   FrameworkObject = class DebugFrameworkObject extends EmberObject {
+    [INIT_WAS_CALLED] = false;
+
     init(properties: object | undefined) {
       super.init(properties);
       this[INIT_WAS_CALLED] = true;
