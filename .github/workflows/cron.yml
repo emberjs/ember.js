@@ -16,7 +16,7 @@ jobs:
           - beta
           - release
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           persist-credentials: false
           fetch-depth: 0
