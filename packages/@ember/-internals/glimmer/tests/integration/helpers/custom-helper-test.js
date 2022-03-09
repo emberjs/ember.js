@@ -156,6 +156,21 @@ moduleFor(
       assert.deepEqual(hooks, ['init', 'compute', 'compute', 'destroy', 'willDestroy']);
     }
 
+    ['@test warns if `this._super` is not called from `willDestory`']() {
+      this.registerHelper('hello-world', {
+        compute() {},
+        willDestroy() {},
+      });
+
+      this.render('{{#if this.show}}{{hello-world}}{{/if}}', {
+        show: true,
+      });
+
+      expectDeprecation(() => {
+        runTask(() => set(this.context, 'show', false));
+      }, /You must call `super.willDestroy\(...arguments\);` or `this._super\(...arguments\)` when overriding `willDestroy` on a framework object. Please update.*/);
+    }
+
     ['@test class-based helper with static arguments can recompute a new value'](assert) {
       let destroyCount = 0;
       let computeCount = 0;

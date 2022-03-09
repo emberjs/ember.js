@@ -254,7 +254,10 @@ class CoreObject {
     }
 
     registerDestructor(self, ensureDestroyCalled, true);
-    registerDestructor(self, () => self.willDestroy());
+    registerDestructor(self, () => {
+      self.willDestroy();
+      sendEvent(self, 'willDestroy');
+    });
 
     // disable chains
     let m = meta(self);
