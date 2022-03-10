@@ -376,7 +376,7 @@ class Route<T = unknown>
     (assuming a query param whose controller property is `page`):
 
     ```javascript
-    queryParams: {
+    queryParams = {
       page: {
         // By default, controller query param properties don't
         // cause a full transition when they are changed, but
@@ -404,7 +404,7 @@ class Route<T = unknown>
         // different URL key.
         as: 'page'
       }
-    }
+    };
     ```
 
     @property queryParams
