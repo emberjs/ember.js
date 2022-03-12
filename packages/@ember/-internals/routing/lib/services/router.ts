@@ -2,6 +2,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import { action } from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
@@ -122,6 +123,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
        attempted transition
      @public
    */
+  @action
   transitionTo(...args: RouteArgs<R>): Transition {
     if (resemblesURL(args[0])) {
       // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
@@ -171,6 +173,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
        attempted transition
      @public
    */
+  @action
   replaceWith(...args: RouteArgs<R>): Transition {
     return this.transitionTo(...args).method('replace');
   }
@@ -243,6 +246,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      @return {String} the string representing the generated URL
      @public
    */
+  @action
   urlFor(routeName: string, ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]) {
     this._router.setupRouter();
     return this._router.generate(routeName, ...args);
@@ -295,6 +299,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
+  @action
   isActive(...args: RouteArgs<R>) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
@@ -383,6 +388,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
       @return {RouteInfo | null}
       @public
     */
+  @action
   recognize(url: string): RouteInfo | null {
     assert(
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
@@ -405,6 +411,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
       @return {RouteInfo}
       @public
    */
+  @action
   recognizeAndLoad(url: string): Promise<RouteInfoWithAttributes> {
     assert(
       `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
@@ -561,6 +568,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
    * @return Transition
    * @public
    */
+  @action
   refresh(pivotRouteName?: string): Transition {
     if (!pivotRouteName) {
       return this._router._routerMicrolib.refresh();
