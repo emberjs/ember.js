@@ -3,11 +3,12 @@
   "version": "0.84.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
   "dependencies": {
-    "@glimmer/env": "0.1.7",
-    "@glimmer/interfaces": "0.84.0",
     "@glimmer/destroyable": "0.84.0",
+    "@glimmer/env": "0.1.7",
+    "@glimmer/global-context": "0.84.0",
+    "@glimmer/interfaces": "0.84.0",
     "@glimmer/reference": "0.84.0",
-    "@glimmer/validator": "0.84.0",
-    "@glimmer/util": "0.84.0"
+    "@glimmer/util": "0.84.0",
+    "@glimmer/validator": "0.84.0"
   }
 }
