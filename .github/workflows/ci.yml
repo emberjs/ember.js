@@ -33,7 +33,7 @@ jobs:
         run: yarn lint
 
   basic-test:
-    name: Debug and Prebuilt (All Tests by Package + Canary Features + Optional Jquery)
+    name: Debug and Prebuilt (All Tests by Package + Canary Features)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
