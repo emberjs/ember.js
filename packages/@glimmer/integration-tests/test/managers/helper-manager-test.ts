@@ -10,6 +10,9 @@ import {
   TestHelperManager,
 } from '../..';
 import { Arguments, Owner } from '@glimmer/interfaces';
+import { FEATURE_DEFAULT_HELPER_MANAGER } from '@glimmer/global-context';
+
+const SKIP_DEFAULT_HELPER_MANAGER_TESTS = !FEATURE_DEFAULT_HELPER_MANAGER;
 
 class HelperManagerTest extends RenderTest {
   static suiteName = 'Helper Managers';
@@ -32,7 +35,8 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('hello');
   }
 
-  @test '(Default Helper Manager) plain functions work as helpers'(assert: Assert) {
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions work as helpers'(assert: Assert) {
     let count = 0;
 
     const hello = () => {
@@ -53,7 +57,8 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('plain function');
   }
 
-  @test '(Default Helper Manager) plain functions track positional args'(assert: Assert) {
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions track positional args'(assert: Assert) {
     let count = 0;
 
     let obj = (x: string) => {
@@ -80,7 +85,8 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('there');
   }
 
-  @test '(Default Helper Manager) plain functions entangle with any tracked data'(assert: Assert) {
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions entangle with any tracked data'(assert: Assert) {
     let count = 0;
     let trackedState = trackedObj({ value: 'hello' });
 
@@ -100,7 +106,8 @@ class HelperManagerTest extends RenderTest {
     assert.equal(count, 2, 'rendered twice');
   }
 
-  @test '(Default Helper Manager) plain functions do not track unused named args'(assert: Assert) {
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions do not track unused named args'(assert: Assert) {
     let count = 0;
 
     let obj = (x: string, _options: Record<string, unknown>) => {
@@ -120,7 +127,8 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('hello');
   }
 
-  @test '(Default Helper Manager) plain functions tracked used named args'(assert: Assert) {
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions tracked used named args'(assert: Assert) {
     let count = 0;
 
     let obj = (_x: string, options: Record<string, unknown>) => {
@@ -141,7 +149,8 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('there');
   }
 
-  @test '(Default Helper Manager) plain function helpers can have default values (missing data)'(
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain function helpers can have default values (missing data)'(
     assert: Assert
   ) {
     let count = 0;
@@ -157,7 +166,8 @@ class HelperManagerTest extends RenderTest {
     assert.equal(count, 1, 'rendered once');
   }
 
-  @test '(Default Helper Manager) plain function helpers can have overwritten default values'(
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain function helpers can have overwritten default values'(
     assert: Assert
   ) {
     let count = 0;
