@@ -1,4 +1,8 @@
 /**
+ @module @ember/routing
+*/
+
+/**
   A Transition is a thennable (a promise-like object) that represents
   an attempt to transition to another route. It can be aborted, either
   explicitly via `abort` or by attempting another transition while a
