@@ -2,7 +2,9 @@
   "name": "ember-source",
   "version": "4.4.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
-  "keywords": ["ember-addon"],
+  "keywords": [
+    "ember-addon"
+  ],
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
@@ -40,7 +42,9 @@
     "lint:tsc": "tsc --noEmit",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
-    "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
+    "test:blueprints:js": "mocha node-tests/blueprints/**/*-test.js",
+    "test:blueprints:ts": "EMBER_TYPESCRIPT_BLUEPRINTS=true yarn test:blueprints:js",
+    "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js"
   },
@@ -64,6 +68,7 @@
     "ember-cli-normalize-entity-name": "^1.0.0",
     "ember-cli-path-utils": "^1.0.0",
     "ember-cli-string-utils": "^1.1.0",
+    "ember-cli-typescript-blueprint-polyfill": "^0.1.0",
     "ember-cli-version-checker": "^5.1.2",
     "ember-router-generator": "^2.0.0",
     "inflection": "^1.13.2",

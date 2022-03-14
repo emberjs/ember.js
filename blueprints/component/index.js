@@ -10,6 +10,8 @@ const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+
 const OCTANE = has('octane');
 
 // TODO: this should be reading from the @ember/canary-features module
@@ -20,6 +22,8 @@ const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 // intentionally avoiding use-edition-detector
 module.exports = {
   description: 'Generates a component.',
+
+  shouldTransformTypeScript: true,
 
   availableOptions: [
     {
@@ -51,6 +55,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
     let isOctane = has('octane');
 
     this.availableOptions.forEach((option) => {
@@ -203,7 +208,7 @@ module.exports = {
 
     if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
       files = files.filter((file) => {
-        if (file.endsWith('.js')) {
+        if (file.endsWith('.js') || file.endsWith('.ts')) {
           this.skippedJsFiles.add(file);
           return false;
         } else {

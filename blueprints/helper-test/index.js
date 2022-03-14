@@ -4,10 +4,19 @@ const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const semver = require('semver');
 
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a helper integration test.',
+
+  shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
+  },
 
   fileMapTokens: function () {
     return {

@@ -5,8 +5,18 @@ const stringUtil = require('ember-cli-string-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 const path = require('path');
 
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+
 module.exports = useTestFrameworkDetector({
   description: 'Generates a controller unit test.',
+
+  shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
+  },
+
   locals: function (options) {
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let controllerPathName = dasherizedModuleName;

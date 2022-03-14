@@ -13,11 +13,16 @@ module('Unit | Instance Initializer | foo', function (hooks) {
       podModulePrefix = config.podModulePrefix;
       Resolver = Resolver;
     };
+
     this.TestApplication.instanceInitializer({
       name: 'initializer under test',
       initialize,
     });
-    this.application = this.TestApplication.create({ autoboot: false });
+
+    this.application = this.TestApplication.create({
+      autoboot: false,
+    });
+
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function () {
