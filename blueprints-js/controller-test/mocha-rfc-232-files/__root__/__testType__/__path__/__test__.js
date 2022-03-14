@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { setupTest } from 'ember-mocha';
+import { setupTest } from '<%= dasherizedPackageName %>/tests/helpers';
 
 describe('<%= friendlyTestDescription %>', function () {
   setupTest();

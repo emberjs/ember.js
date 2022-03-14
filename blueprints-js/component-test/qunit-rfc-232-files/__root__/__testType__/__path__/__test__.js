@@ -1,5 +1,5 @@
 <% if (testType === 'integration') { %>import { module, test } from 'qunit';
-import { setupRenderingTest } from 'ember-qunit';
+import { setupRenderingTest } from '<%= dasherizedPackageName %>/tests/helpers';
 import { render } from '@ember/test-helpers';
 <%= hbsImportStatement %>
 
@@ -24,7 +24,7 @@ module('<%= friendlyTestDescription %>', function (hooks) {
     assert.dom(this.element).hasText('template block text');
   });
 });<% } else if (testType === 'unit') { %>import { module, test } from 'qunit';
-import { setupTest } from 'ember-qunit';
+import { setupTest } from '<%= dasherizedPackageName %>/tests/helpers';
 
 module('<%= friendlyTestDescription %>', function (hooks) {
   setupTest(hooks);

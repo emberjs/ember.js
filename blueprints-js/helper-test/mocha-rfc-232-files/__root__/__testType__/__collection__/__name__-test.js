@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { setupRenderingTest } from 'ember-mocha';
+import { setupRenderingTest } from '<%= dasherizedPackageName %>/tests/helpers';
 import { render } from '@ember/test-helpers';
 <%= hbsImportStatement %>
 
