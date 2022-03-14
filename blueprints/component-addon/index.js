@@ -8,6 +8,8 @@ const normalizeEntityName = require('ember-cli-normalize-entity-name');
 module.exports = {
   description: 'Generates a component.',
 
+  shouldTransformTypeScript: true,
+
   fileMapTokens: function () {
     return {
       __path__: function (options) {

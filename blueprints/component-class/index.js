@@ -20,6 +20,8 @@ const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 module.exports = {
   description: 'Generates a component class.',
 
+  shouldTransformTypeScript: true,
+
   availableOptions: [
     {
       name: 'path',

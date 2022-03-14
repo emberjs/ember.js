@@ -16,6 +16,8 @@ function invocationFor(options) {
 module.exports = useTestFrameworkDetector({
   description: 'Generates a component integration or unit test.',
 
+  shouldTransformTypeScript: true,
+
   availableOptions: [
     {
       name: 'test-type',

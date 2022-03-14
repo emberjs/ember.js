@@ -16,10 +16,10 @@ module('<%= friendlyTestDescription %>', function (hooks) {
 
     // Template block usage:
     await render(hbs`
-      <%= openComponent(componentName) %>
-        template block text
-      <%= closeComponent(componentName) %>
-    `);
+  <%= openComponent(componentName) %>
+    template block text
+  <%= closeComponent(componentName) %>
+`);
 
     assert.dom(this.element).hasText('template block text');
   });
@@ -33,4 +33,4 @@ module('<%= friendlyTestDescription %>', function (hooks) {
     let component = this.owner.factoryFor('component:<%= componentPathName %>').create();
     assert.ok(component);
   });
-});<% } %>
+}); <% } %>

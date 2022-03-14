@@ -21,6 +21,8 @@ const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 module.exports = {
   description: 'Generates a component.',
 
+  shouldTransformTypeScript: true,
+
   availableOptions: [
     {
       name: 'path',
@@ -203,7 +205,7 @@ module.exports = {
 
     if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
       files = files.filter((file) => {
-        if (file.endsWith('.js')) {
+        if (file.endsWith('.js') || file.endsWith('.ts')) {
           this.skippedJsFiles.add(file);
           return false;
         } else {
