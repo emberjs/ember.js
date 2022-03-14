@@ -5,6 +5,7 @@ const stringUtil = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const getPathOption = require('ember-cli-get-component-path-option');
 const semver = require('semver');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -17,6 +18,11 @@ module.exports = useTestFrameworkDetector({
   description: 'Generates a component integration or unit test.',
 
   shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
+  },
 
   availableOptions: [
     {

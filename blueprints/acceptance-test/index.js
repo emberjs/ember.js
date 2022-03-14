@@ -6,11 +6,17 @@ const pathUtil = require('ember-cli-path-utils');
 const stringUtils = require('ember-cli-string-utils');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates an acceptance test for a feature.',
 
   shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
+  },
 
   locals: function (options) {
     let testFolderRoot = stringUtils.dasherize(options.project.name());

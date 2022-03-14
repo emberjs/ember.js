@@ -3,11 +3,17 @@
 const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a route unit test.',
 
   shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
+  },
 
   availableOptions: [
     {

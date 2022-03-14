@@ -3,11 +3,17 @@
 const stringUtil = require('ember-cli-string-utils');
 const path = require('path');
 const inflector = require('inflection');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = {
   description: 'Generates an import wrapper.',
 
   shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
+  },
 
   fileMapTokens: function () {
     return {

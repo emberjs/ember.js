@@ -5,6 +5,7 @@ const path = require('path');
 const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = {
   description: 'Generates a route and a template, and registers the route with the router.',
@@ -27,6 +28,11 @@ module.exports = {
       type: Boolean,
     },
   ],
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
+  },
 
   fileMapTokens: function () {
     return {

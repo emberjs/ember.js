@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const stringUtils = require('ember-cli-string-utils');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -10,6 +11,11 @@ module.exports = useTestFrameworkDetector({
   description: 'Generates an initializer unit test.',
 
   shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
+  },
 
   fileMapTokens: function () {
     return {

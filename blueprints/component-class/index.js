@@ -8,6 +8,7 @@ const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 const OCTANE = has('octane');
 
@@ -49,6 +50,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
+    typescriptBlueprintPolyfill(this);
     let isOctane = has('octane');
 
     this.availableOptions.forEach((option) => {
