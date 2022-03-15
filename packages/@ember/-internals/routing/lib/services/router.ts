@@ -1,7 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
-import { EMBER_ROUTING_ROUTER_SERVICE_REFRESH } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -549,7 +548,6 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     @public
   */
 
-  // Canary features
   /**
    * Refreshes all currently active routes, doing a full transition.
    * If a route name is provided and refers to a currently active route,
@@ -561,31 +559,24 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
    * @method refresh
    * @param {String} [routeName] the route to refresh (along with all child routes)
    * @return Transition
-   * @category EMBER_ROUTING_ROUTER_SERVICE_REFRESH
    * @public
    */
-  refresh = EMBER_ROUTING_ROUTER_SERVICE_REFRESH
-    ? function (this: RouterService<Route>, pivotRouteName?: string): Transition {
-        if (!pivotRouteName) {
-          return this._router._routerMicrolib.refresh();
-        }
+  refresh(pivotRouteName?: string): Transition {
+    if (!pivotRouteName) {
+      return this._router._routerMicrolib.refresh();
+    }
 
-        assert(
-          `The route "${pivotRouteName}" was not found`,
-          this._router.hasRoute(pivotRouteName)
-        );
-        assert(
-          `The route "${pivotRouteName}" is currently not active`,
-          this.isActive(pivotRouteName)
-        );
+    assert(`The route "${pivotRouteName}" was not found`, this._router.hasRoute(pivotRouteName));
+    assert(`The route "${pivotRouteName}" is currently not active`, this.isActive(pivotRouteName));
 
-        let owner = getOwner(this);
-        assert('RouterService is unexpectedly missing an owner', owner);
-        let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
+    let owner = getOwner(this);
+    assert('RouterService is unexpectedly missing an owner', owner);
+    let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
 
-        return this._router._routerMicrolib.refresh(pivotRoute);
-      }
-    : undefined;
+    // R could be instantiated with a different sub-type
+    // @ts-ignore
+    return this._router._routerMicrolib.refresh(pivotRoute);
+  }
 
   /**
    Name of the current route.
