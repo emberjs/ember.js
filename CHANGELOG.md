@@ -1,3 +1,13 @@
+## v0.84.1 (2022-03-15)
+
+#### :rocket: Enhancement
+* `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/manager`
+  * [#1384](https://github.com/glimmerjs/glimmer-vm/pull/1384) Add a `DEFAULT_HELPER_MANAGER` feature flag ([@Windvis](https://github.com/Windvis))
+
+#### Committers: 1
+- Sam Van Campenhout ([@Windvis](https://github.com/Windvis))
+
+
 ## v0.84.0 (2022-02-15)
 
 #### :rocket: Enhancement
