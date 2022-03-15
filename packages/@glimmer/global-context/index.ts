@@ -17,6 +17,10 @@ import { DEBUG } from '@glimmer/env';
 
 //////////
 
+export let FEATURE_DEFAULT_HELPER_MANAGER = true;
+
+//////////
+
 /**
  * Interfaces
  *
@@ -154,6 +158,9 @@ export interface GlobalContext {
       id: string;
     }
   ) => void;
+  FEATURES?: {
+    DEFAULT_HELPER_MANAGER?: boolean;
+  };
 }
 
 let globalContextWasSet = false;
@@ -179,6 +186,10 @@ export default function setGlobalContext(context: GlobalContext) {
   warnIfStyleNotTrusted = context.warnIfStyleNotTrusted;
   assert = context.assert;
   deprecate = context.deprecate;
+
+  if (typeof context.FEATURES?.DEFAULT_HELPER_MANAGER === 'boolean') {
+    FEATURE_DEFAULT_HELPER_MANAGER = context.FEATURES.DEFAULT_HELPER_MANAGER;
+  }
 }
 
 export let assertGlobalContextWasSet: (() => void) | undefined;
