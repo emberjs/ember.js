@@ -12,7 +12,7 @@ import { Route } from '../..';
 import EmberRouter from '../system/router';
 import RouterState from '../system/router_state';
 
-const ROUTER = (symbol('ROUTER') as unknown) as string;
+const ROUTER = symbol('ROUTER');
 
 /**
   The Routing service is used by LinkTo, and provides facilities for
