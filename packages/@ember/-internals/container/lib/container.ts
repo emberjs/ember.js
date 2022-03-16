@@ -504,13 +504,9 @@ export class FactoryManager<T, C extends FactoryClass | object = FactoryClass> {
       );
     }
 
-    let props = {};
+    let props = options ? { ...options } : {};
     setOwner(props, container.owner!);
     setFactoryFor(props, this);
-
-    if (options !== undefined) {
-      props = Object.assign({}, props, options);
-    }
 
     if (DEBUG) {
       let lazyInjections;
