@@ -341,7 +341,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
         assert('Route is unexpectedly missing an owner', routeOwner);
 
-        let route = routeOwner.lookup(fullRouteName) as R;
+        let route = routeOwner.lookup(fullRouteName) as R | undefined;
 
         if (seen[name]) {
           assert('seen routes should exist', route);
@@ -351,6 +351,8 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
         seen[name] = true;
 
         if (!route) {
+          // SAFETY: this is configured in `commonSetupRegistry` in the
+          // `@ember/application/lib` package.
           let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
           routeOwner.register(fullRouteName, DefaultRoute.extend());
           route = routeOwner.lookup(fullRouteName) as R;
@@ -362,15 +364,15 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
           }
         }
 
-        route!._setRouteName(routeName);
+        route._setRouteName(routeName);
 
-        if (engineInfo && !hasDefaultSerialize(route!)) {
+        if (engineInfo && !hasDefaultSerialize(route)) {
           throw new Error(
             'Defining a custom serialize method on an Engine route is not supported.'
           );
         }
 
-        return route!;
+        return route;
       }
 
       getSerializer(name: string) {
