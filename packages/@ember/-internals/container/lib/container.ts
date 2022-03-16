@@ -480,10 +480,6 @@ export class FactoryManager<T, C> {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
-
-    if (isInstantiatable(container, fullName)) {
-      setFactoryFor(factory, this);
-    }
   }
 
   toString(): string {
