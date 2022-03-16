@@ -558,7 +558,6 @@ class FactoryManager<T, C> {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
-    setFactoryFor(this, this);
   }
 
   toString(): string {
