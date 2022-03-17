@@ -354,7 +354,7 @@ export class Meta {
   addToListeners(
     eventName: string,
     target: object | null,
-    method: Function | string,
+    method: Function | PropertyKey,
     once: boolean,
     sync: boolean
   ) {
@@ -377,7 +377,7 @@ export class Meta {
   private pushListener(
     event: string,
     target: object | null,
-    method: Function | string,
+    method: Function | PropertyKey,
     kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE,
     sync = false
   ): void {
@@ -429,7 +429,9 @@ export class Meta {
         assert(
           `You attempted to add an observer for the same method on '${
             event.split(':')[0]
-          }' twice to ${target} as both sync and async. Observers must be either sync or async, they cannot be both. This is likely a mistake, you should either remove the code that added the observer a second time, or update it to always be sync or async. The method was ${method}.`,
+          }' twice to ${target} as both sync and async. Observers must be either sync or async, they cannot be both. This is likely a mistake, you should either remove the code that added the observer a second time, or update it to always be sync or async. The method was ${String(
+            method
+          )}.`,
           !(
             listener.kind === ListenerKind.ADD &&
             kind === ListenerKind.ADD &&
@@ -722,7 +724,7 @@ function indexOfListener(
   listeners: Listener[],
   event: string,
   target: object | null,
-  method: Function | string | null
+  method: Function | PropertyKey | null
 ) {
   for (let i = listeners.length - 1; i >= 0; i--) {
     let listener = listeners[i];

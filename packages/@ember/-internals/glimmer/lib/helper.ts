@@ -101,8 +101,8 @@ class Helper extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
-  init() {
-    super.init();
+  init(properties: object | undefined) {
+    super.init(properties);
     this[RECOMPUTE_TAG] = createTag();
   }
 

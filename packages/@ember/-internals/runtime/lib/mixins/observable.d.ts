@@ -7,7 +7,7 @@ export type ObserverMethod<Target, Sender> =
 /**
  * This mixin provides properties and property observing functionality, core features of the Ember object model.
  */
-export interface Observable {
+interface Observable {
   /**
    * Retrieves the value of a property from the object.
    */
