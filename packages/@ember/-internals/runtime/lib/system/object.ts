@@ -20,33 +20,27 @@ import { DEBUG } from '@glimmer/env';
   @uses Observable
   @public
 */
-export default class EmberObject extends CoreObject {
+interface EmberObject extends CoreObject, Observable {}
+class EmberObject extends CoreObject.extend(Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
     return factory !== undefined && factory.fullName;
   }
 }
 
-Observable.apply(EmberObject.prototype);
+export default EmberObject;
 
-export let FrameworkObject;
-
-FrameworkObject = class FrameworkObject extends CoreObject {
-  get _debugContainerKey() {
-    let factory = getFactoryFor(this);
-    return factory !== undefined && factory.fullName;
-  }
-};
-
-Observable.apply(FrameworkObject.prototype);
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface FrameworkObject extends EmberObject {}
+let FrameworkObject = class FrameworkObject extends EmberObject {};
 
 if (DEBUG) {
   let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
 
   FrameworkObject = class DebugFrameworkObject extends EmberObject {
-    init() {
-      super.init(...arguments);
+    init(properties: object | undefined) {
+      super.init(properties);
       this[INIT_WAS_CALLED] = true;
     }
 
@@ -60,3 +54,5 @@ if (DEBUG) {
 
   addListener(FrameworkObject.prototype, 'init', null, ASSERT_INIT_WAS_CALLED);
 }
+
+export { FrameworkObject };
