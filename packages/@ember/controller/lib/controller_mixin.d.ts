@@ -14,8 +14,6 @@ interface ControllerMixin<T> {
 
   // From routing/lib/ext/controller
 
-  concatenatedProperties: string[];
-
   queryParams: Array<string | Record<string, { type: 'boolean' | 'number' | 'array' | 'string' }>>;
 
   transitionToRoute(...args: RouteArgs<Route>): Transition;

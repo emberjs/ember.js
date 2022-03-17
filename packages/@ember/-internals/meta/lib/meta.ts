@@ -1,3 +1,4 @@
+import { ComputedProperty } from '@ember/-internals/metal';
 import { symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
@@ -330,7 +331,7 @@ export class Meta {
   }
 
   /** @internal */
-  forEachDescriptors(fn: Function) {
+  forEachDescriptors(fn: (key: string, value: ComputedProperty) => void) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
     while (pointer !== null) {

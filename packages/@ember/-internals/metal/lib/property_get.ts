@@ -24,8 +24,16 @@ if (DEBUG) {
   };
 }
 
-export interface MaybeHasUnknownProperty {
-  unknownProperty?: (keyName: string) => any;
+export interface HasUnknownProperty {
+  unknownProperty: (keyName: string) => any;
+}
+
+export function hasUnknownProperty(val: unknown): val is HasUnknownProperty {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    typeof (val as HasUnknownProperty).unknownProperty === 'function'
+  );
 }
 
 interface MaybeHasIsDestroyed {
@@ -111,9 +119,9 @@ export function _getProp(obj: unknown, keyName: string) {
       value === undefined &&
       typeof obj === 'object' &&
       !(keyName in obj) &&
-      typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
+      hasUnknownProperty(obj)
     ) {
-      value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      value = obj.unknownProperty(keyName);
     }
 
     if (isTracking()) {
