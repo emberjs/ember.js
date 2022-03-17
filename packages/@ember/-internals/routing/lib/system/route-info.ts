@@ -1,6 +1,10 @@
 export { RouteInfo, RouteInfoWithAttributes } from 'router_js';
 
 /**
+ @module @ember/routing
+*/
+
+/**
   A `RouteInfoWithAttributes` is an object that contains
   metadata, including the resolved value from the routes
   `model` hook. Like `RouteInfo`, a `RouteInfoWithAttributes`
