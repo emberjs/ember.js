@@ -3,7 +3,8 @@
 */
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
-import { getOwner, Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import { guidFor, makeArray, isInternalSymbol } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
 import {
@@ -117,7 +118,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
         if (
           concatenatedProperties !== undefined &&
           concatenatedProperties.length > 0 &&
-          concatenatedProperties.indexOf(keyName) > -1
+          concatenatedProperties.includes(keyName)
         ) {
           let baseValue = obj[keyName];
           if (baseValue) {
@@ -130,7 +131,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
         if (
           mergedProperties !== undefined &&
           mergedProperties.length > 0 &&
-          mergedProperties.indexOf(keyName) > -1
+          mergedProperties.includes(keyName)
         ) {
           let baseValue = obj[keyName];
           value = Object.assign({}, baseValue, value);
@@ -707,8 +708,6 @@ class CoreObject {
     @param {Object} [arguments]* Object containing values to use within the new class
     @public
   */
-  // Args should be `Array<Mixin | Record<string, unknown>>` but this causes
-  // types to be overly strict.
   static extend<Statics, Instance>(
     this: Statics & EmberClassConstructor<Instance>,
     ...mixins: any[]
@@ -818,8 +817,6 @@ class CoreObject {
     @static
     @public
   */
-  // Args should be `Array<Mixin | Record<string, unknown>>` but this causes
-  // types to be overly strict.
   static reopen(...args: any[]) {
     this.willReopen();
     reopen.apply(this.PrototypeMixin, args);

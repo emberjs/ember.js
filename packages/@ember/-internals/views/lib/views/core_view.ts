@@ -21,10 +21,15 @@ import states from './states';
 */
 
 interface CoreView extends FrameworkObject, Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+class CoreView extends FrameworkObject.extend(Evented, ActionHandler, {
+  // Continue to declare `_states` here so that we have a single reference on the prototype
+  // instead of one on each instance.
+  _states: states,
+}) {
   isView = true;
 
-  _states = states;
+  declare _states: typeof states;
+
   _state: unknown;
   _currentState: unknown;
 
@@ -46,6 +51,9 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
     super.init(properties);
 
     // Handle methods from Evented
+    // The native class inheritance will not work for mixins. To work around this,
+    // we copy the existing trigger and has methods provided by the mixin and swap in the
+    // new ones from our class.
     this._superTrigger = this.trigger;
     this.trigger = this._trigger;
     this._superHas = this.has;

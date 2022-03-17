@@ -808,7 +808,8 @@ class Component extends CoreView.extend(
   ActionSupport,
   ViewMixin,
   {
-    // Make sure these are overrideable, but get a default
+    // These need to be overridable via extend/create but should still
+    // have a default. Defining them here is the best way to achieve that.
     didReceiveAttrs() {},
     didRender() {},
     didUpdate() {},
@@ -819,12 +820,16 @@ class Component extends CoreView.extend(
 ) {
   isComponent = true;
 
-  _superRerender?: ViewMixin['rerender'];
+  // SAFTEY: This is set in `init`.
+  declare _superRerender: ViewMixin['rerender'];
 
   init(properties: object | undefined) {
     super.init(properties);
 
-    // Handle methods from ViewMixin
+    // Handle methods from ViewMixin.
+    // The native class inheritance will not work for mixins. To work around this,
+    // we copy the existing rerender method provided by the mixin and swap in the
+    // new rerender method from our class.
     this._superRerender = this.rerender;
     this.rerender = this._rerender;
 
@@ -859,9 +864,9 @@ class Component extends CoreView.extend(
       let events = eventDispatcher.finalEventNameMapping;
 
       for (let key in events) {
-        let methodName = events[key]!;
+        let methodName = events[key];
 
-        if (typeof this[methodName] === 'function') {
+        if (methodName && typeof this[methodName] === 'function') {
           eventNames.push(methodName);
         }
       }
@@ -904,13 +909,16 @@ class Component extends CoreView.extend(
   on(name: string, method: ((...args: any[]) => void) | string): this;
   on(name: string, target: any, method?: any) {
     this._dispatcher?.setupHandlerForEmberEvent(name);
+    // The `on` method here comes from the Evented mixin. Since this mixin
+    // is applied to the parent of this class, however, we are still able
+    // to use `super`.
     return super.on(name, target, method);
   }
 
   // Changed to `rerender` on init
   _rerender() {
     dirtyTag(this[DIRTY_TAG]);
-    this._superRerender!();
+    this._superRerender();
   }
 
   [PROPERTY_DID_CHANGE](key: string, value?: unknown) {
@@ -982,6 +990,13 @@ class Component extends CoreView.extend(
     return element[normalized];
   }
 
+  // --- Declarations which support mixins ---
+  // We use `declare` on these properties, even though they are optional, so
+  // that they do not get created on the class *at all* when emitting the
+  // transpiled code. Otherwise, since declared class properties are equivalent
+  // to calling `defineProperty` in the class constructor, they would "stomp"
+  // the properties supplied by mixins.
+
   declare attributeBindings?: string[];
 
   /**
@@ -1026,6 +1041,7 @@ class Component extends CoreView.extend(
   }
 }
 
+// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
 Component.reopenClass({
   /**
    Enables components to take a list of parameters as arguments.

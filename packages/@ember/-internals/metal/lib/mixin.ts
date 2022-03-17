@@ -384,7 +384,7 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
 }
 
 export function applyMixin(
-  obj: { [key: string]: any },
+  obj: Record<string, any>,
   mixins: Array<Mixin | Record<string, unknown>>,
   _hideKeys = false
 ) {
@@ -604,8 +604,6 @@ export default class Mixin {
     @private
     @internal
   */
-  // Args should be `Array<Mixin | Record<string, unknown>>` but this causes
-  // types to be overly strict.
   reopen(...args: any[]): this | undefined {
     if (args.length === 0) {
       return;
