@@ -73,8 +73,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
       fastbootVisit(App, '/a').then(
         assertFastbootResult(assert, {
           url: '/a',
-          body:
-            '<h1>Hello world</h1>\n<h2>Welcome to <span id=".+" class="ember-view">Page A</span></h2>',
+          body: '<h1>Hello world</h1>\n<h2>Welcome to <span id=".+" class="ember-view">Page A</span></h2>',
         }),
         handleError(assert)
       ),

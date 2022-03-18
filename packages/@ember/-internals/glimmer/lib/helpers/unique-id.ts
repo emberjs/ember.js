@@ -28,11 +28,9 @@
 import { createConstRef, Reference } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
-export default internalHelper(
-  (): Reference<string> => {
-    return createConstRef(uniqueId(), 'unique-id');
-  }
-);
+export default internalHelper((): Reference<string> => {
+  return createConstRef(uniqueId(), 'unique-id');
+});
 
 // From https://gist.github.com/selfish/fef2c0ba6cdfe07af76e64cecd74888b
 //

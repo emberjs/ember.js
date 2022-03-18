@@ -468,9 +468,11 @@ export class Renderer {
     }
   }
 
-  getBounds(
-    view: object
-  ): { parentElement: SimpleElement; firstNode: SimpleNode; lastNode: SimpleNode } {
+  getBounds(view: object): {
+    parentElement: SimpleElement;
+    firstNode: SimpleNode;
+    lastNode: SimpleNode;
+  } {
     let bounds: Bounds = view[BOUNDS];
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', Boolean(bounds));

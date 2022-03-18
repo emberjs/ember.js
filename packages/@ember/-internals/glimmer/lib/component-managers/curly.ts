@@ -124,7 +124,8 @@ export default class CurlyComponentManager
   implements
     WithCreateInstance<ComponentStateBucket>,
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
-    WithDynamicTagName<ComponentStateBucket> {
+    WithDynamicTagName<ComponentStateBucket>
+{
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);

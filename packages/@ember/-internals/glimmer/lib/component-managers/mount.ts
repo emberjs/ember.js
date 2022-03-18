@@ -55,7 +55,8 @@ class MountManager
     WithCreateInstance<EngineState>,
     WithDynamicLayout<EngineState, RuntimeResolver>,
     WithCustomDebugRenderTree<EngineState, EngineDefinitionState>,
-    WithSubOwner<EngineState> {
+    WithSubOwner<EngineState>
+{
   getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     return unwrapTemplate(templateFactory(state.engine)).asLayout();

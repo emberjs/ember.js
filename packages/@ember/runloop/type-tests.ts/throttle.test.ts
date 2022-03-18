@@ -30,9 +30,9 @@ throttle(myContext, whoRan, 150, true);
 // the throttlee is no longer being watched
 
 // Method only
-expectTypeOf(throttle((_foo: number, _baz?: boolean): void => {}, 1, undefined, 1)).toEqualTypeOf<
-  Timer
->();
+expectTypeOf(
+  throttle((_foo: number, _baz?: boolean): void => {}, 1, undefined, 1)
+).toEqualTypeOf<Timer>();
 
 // Wait is optional
 throttle((_foo: number, _baz?: boolean): void => {}, 1, true);

@@ -174,7 +174,8 @@ const CAPABILITIES: InternalComponentCapabilities = {
 class InternalManager
   implements
     InternalComponentManager<InternalComponent, OpaqueInternalComponentConstructor>,
-    WithCreateInstance {
+    WithCreateInstance
+{
   getCapabilities(): InternalComponentCapabilities {
     return CAPABILITIES;
   }

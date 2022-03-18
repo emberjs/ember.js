@@ -214,24 +214,25 @@ QUnit.module('Overrides', function () {
       );
     });
 
-    QUnit.test('it returns old but compatible babel added by a dormant dependency', function (
-      assert
-    ) {
-      assert.deepEqual(
-        addonsInfoFor(Project.withDep({ emberCliBabel: '^7.0.0', hasJSFiles: false })),
-        [
-          {
-            parent: 'my-addon@1.0.0',
-            topLevel: 'my-addon',
-            version: '7.0.0',
-            requirement: '^7.0.0',
-            compatible: true,
-            dormant: true,
-            path: ['my-addon@1.0.0'],
-          },
-        ]
-      );
-    });
+    QUnit.test(
+      'it returns old but compatible babel added by a dormant dependency',
+      function (assert) {
+        assert.deepEqual(
+          addonsInfoFor(Project.withDep({ emberCliBabel: '^7.0.0', hasJSFiles: false })),
+          [
+            {
+              parent: 'my-addon@1.0.0',
+              topLevel: 'my-addon',
+              version: '7.0.0',
+              requirement: '^7.0.0',
+              compatible: true,
+              dormant: true,
+              path: ['my-addon@1.0.0'],
+            },
+          ]
+        );
+      }
+    );
 
     QUnit.test('it does not return new babel added by a dormant dependency', function (assert) {
       assert.deepEqual(
@@ -256,21 +257,22 @@ QUnit.module('Overrides', function () {
       ]);
     });
 
-    QUnit.test('it returns old but compatible babel added by a transient dependency', function (
-      assert
-    ) {
-      assert.deepEqual(addonsInfoFor(Project.withTransientDep({ emberCliBabel: '^7.0.0' })), [
-        {
-          parent: 'my-nested-addon@0.1.0',
-          topLevel: 'my-addon',
-          version: '7.0.0',
-          requirement: '^7.0.0',
-          compatible: true,
-          dormant: false,
-          path: ['my-addon@1.0.0', 'my-nested-addon@0.1.0'],
-        },
-      ]);
-    });
+    QUnit.test(
+      'it returns old but compatible babel added by a transient dependency',
+      function (assert) {
+        assert.deepEqual(addonsInfoFor(Project.withTransientDep({ emberCliBabel: '^7.0.0' })), [
+          {
+            parent: 'my-nested-addon@0.1.0',
+            topLevel: 'my-addon',
+            version: '7.0.0',
+            requirement: '^7.0.0',
+            compatible: true,
+            dormant: false,
+            path: ['my-addon@1.0.0', 'my-nested-addon@0.1.0'],
+          },
+        ]);
+      }
+    );
 
     QUnit.test('it does not return new babel added by a transient dependency', function (assert) {
       assert.deepEqual(addonsInfoFor(Project.withDep({ emberCliBabel: '^7.26.6' })), []);
@@ -315,14 +317,15 @@ QUnit.module('Overrides', function () {
       }
     );
 
-    QUnit.test('it does not return new babel added by a dormant transient dependency', function (
-      assert
-    ) {
-      assert.deepEqual(
-        addonsInfoFor(Project.withDep({ emberCliBabel: '^7.26.6', hasJSFiles: false })),
-        []
-      );
-    });
+    QUnit.test(
+      'it does not return new babel added by a dormant transient dependency',
+      function (assert) {
+        assert.deepEqual(
+          addonsInfoFor(Project.withDep({ emberCliBabel: '^7.26.6', hasJSFiles: false })),
+          []
+        );
+      }
+    );
 
     // transient dep through a dormant dep
 
@@ -411,36 +414,37 @@ QUnit.module('Overrides', function () {
       );
     });
 
-    QUnit.test('it returns old but compatible babel added by a linked dependency', function (
-      assert
-    ) {
-      assert.deepEqual(
-        addonsInfoFor(
-          new Project({
-            devDependencies: {
-              'ember-source': 'link:3.27.3',
-            },
-            addons: [
-              {
-                name: 'ember-source',
-                emberCliBabel: '^7.0.0',
+    QUnit.test(
+      'it returns old but compatible babel added by a linked dependency',
+      function (assert) {
+        assert.deepEqual(
+          addonsInfoFor(
+            new Project({
+              devDependencies: {
+                'ember-source': 'link:3.27.3',
               },
-            ],
-          })
-        ),
-        [
-          {
-            parent: 'ember-source@3.27.3',
-            topLevel: 'ember-source',
-            version: '7.0.0',
-            requirement: '^7.0.0',
-            compatible: true,
-            dormant: false,
-            path: ['ember-source@3.27.3'],
-          },
-        ]
-      );
-    });
+              addons: [
+                {
+                  name: 'ember-source',
+                  emberCliBabel: '^7.0.0',
+                },
+              ],
+            })
+          ),
+          [
+            {
+              parent: 'ember-source@3.27.3',
+              topLevel: 'ember-source',
+              version: '7.0.0',
+              requirement: '^7.0.0',
+              compatible: true,
+              dormant: false,
+              path: ['ember-source@3.27.3'],
+            },
+          ]
+        );
+      }
+    );
 
     QUnit.test('it does not return new babel added by a linked dependency', function (assert) {
       assert.deepEqual(

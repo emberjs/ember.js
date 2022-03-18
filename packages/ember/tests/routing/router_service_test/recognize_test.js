@@ -97,15 +97,8 @@ moduleFor(
         })
         .then((routeInfoWithAttributes) => {
           assert.ok(routeInfoWithAttributes);
-          let {
-            name,
-            localName,
-            parent,
-            attributes,
-            paramNames,
-            params,
-            queryParams,
-          } = routeInfoWithAttributes;
+          let { name, localName, parent, attributes, paramNames, params, queryParams } =
+            routeInfoWithAttributes;
           assert.equal(name, 'dynamicWithChild.child');
           assert.equal(localName, 'child');
           assert.equal(parent.name, 'dynamicWithChild');
