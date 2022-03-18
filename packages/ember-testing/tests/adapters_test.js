@@ -13,7 +13,12 @@ const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
 const originalDebug = getDebugFunction('debug');
 const noop = function () {};
 
-let App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
+let App,
+  originalAdapter,
+  originalQUnit,
+  originalWindowOnerror,
+  originalWindowUnhandledRejection,
+  originalQUnitUncaughtException;
 
 const originalConsoleError = console.error; // eslint-disable-line no-console
 
@@ -36,7 +41,8 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     originalAdapter = Test.adapter;
     originalQUnit = QUnit;
     originalWindowOnerror = window.onerror;
-    originalQUnitUnhandledRejection = QUnit.onUnhandledRejection;
+    originalWindowUnhandledRejection = window.onunhandledrejection;
+    originalQUnitUncaughtException = QUnit.onUncaughtException;
   }
 
   afterEach() {
@@ -53,8 +59,11 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     window.QUnit = originalQUnit;
     window.onerror = originalWindowOnerror;
     setOnerror(undefined);
+    if (HAS_UNHANDLED_REJECTION_HANDLER) {
+      window.onunhandledrejection = originalWindowUnhandledRejection;
+    }
     console.error = originalConsoleError; // eslint-disable-line no-console
-    QUnit.onUnhandledRejection = originalQUnitUnhandledRejection;
+    QUnit.onUncaughtException = originalQUnitUncaughtException;
   }
 }
 
@@ -262,7 +271,7 @@ function testAdapter(message, generatePromise, timeout = 10) {
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (rejection) {
         assert.pushResult({
