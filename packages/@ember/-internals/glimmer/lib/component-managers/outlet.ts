@@ -70,7 +70,8 @@ const CAPABILITIES: InternalComponentCapabilities = {
 class OutletComponentManager
   implements
     WithCreateInstance<OutletInstanceState>,
-    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
+    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
+{
   create(
     _owner: Owner,
     definition: OutletDefinitionState,
@@ -181,7 +182,8 @@ const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
   implements
-    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
+    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
+{
   // handle is not used by this custom definition
   public handle = -1;
 
@@ -212,7 +214,8 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
 
     const WrappedOutletComponentManager = class
       extends OutletComponentManager
-      implements WithDynamicTagName<OutletInstanceState> {
+      implements WithDynamicTagName<OutletInstanceState>
+    {
       getTagName() {
         return 'div';
       }

@@ -11,7 +11,7 @@ import EmberRouter from '../system/router';
 import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';
 import { extractRouteArgs, resemblesURL, RouteArgs, RouteOptions, shallowEqual } from '../utils';
 
-const ROUTER = (symbol('ROUTER') as unknown) as string;
+const ROUTER = symbol('ROUTER') as unknown as string;
 
 function cleanURL(url: string, rootURL: string) {
   if (rootURL === '/') {

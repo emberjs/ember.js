@@ -282,46 +282,38 @@ export const ACTIONS = new _WeakSet();
   @for Ember.Templates.helpers
   @public
 */
-export default internalHelper(
-  (args: CapturedArguments): Reference<Function> => {
-    let { named, positional } = args;
-    // The first two argument slots are reserved.
-    // pos[0] is the context (or `this`)
-    // pos[1] is the action name or function
-    // Anything else is an action argument.
-    let [context, action, ...restArgs] = positional;
-    assert('hash position arguments', context && action);
+export default internalHelper((args: CapturedArguments): Reference<Function> => {
+  let { named, positional } = args;
+  // The first two argument slots are reserved.
+  // pos[0] is the context (or `this`)
+  // pos[1] is the action name or function
+  // Anything else is an action argument.
+  let [context, action, ...restArgs] = positional;
+  assert('hash position arguments', context && action);
 
-    let debugKey: string = action.debugLabel!;
+  let debugKey: string = action.debugLabel!;
 
-    let target = 'target' in named ? named['target'] : context;
-    let processArgs = makeArgsProcessor(('value' in named && named['value']) || false, restArgs);
+  let target = 'target' in named ? named['target'] : context;
+  let processArgs = makeArgsProcessor(('value' in named && named['value']) || false, restArgs);
 
-    let fn: Function;
+  let fn: Function;
 
-    if (isInvokableRef(action)) {
-      fn = makeClosureAction(
-        action,
-        action as MaybeActionHandler,
-        invokeRef,
-        processArgs,
-        debugKey
-      );
-    } else {
-      fn = makeDynamicClosureAction(
-        valueForRef(context) as object,
-        target!,
-        action,
-        processArgs,
-        debugKey
-      );
-    }
-
-    ACTIONS.add(fn);
-
-    return createUnboundRef(fn, '(result of an `action` helper)');
+  if (isInvokableRef(action)) {
+    fn = makeClosureAction(action, action as MaybeActionHandler, invokeRef, processArgs, debugKey);
+  } else {
+    fn = makeDynamicClosureAction(
+      valueForRef(context) as object,
+      target!,
+      action,
+      processArgs,
+      debugKey
+    );
   }
-);
+
+  ACTIONS.add(fn);
+
+  return createUnboundRef(fn, '(result of an `action` helper)');
+});
 
 function NOOP(args: unknown[]) {
   return args;

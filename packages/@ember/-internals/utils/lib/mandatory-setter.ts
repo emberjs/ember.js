@@ -30,10 +30,8 @@ function isPositiveInt(num: number) {
 if (DEBUG) {
   let SEEN_TAGS = new WeakSet();
 
-  let MANDATORY_SETTERS: WeakMap<
-    object,
-    { [key: string | symbol]: PropertyDescriptorWithMeta }
-  > = new WeakMap();
+  let MANDATORY_SETTERS: WeakMap<object, { [key: string | symbol]: PropertyDescriptorWithMeta }> =
+    new WeakMap();
 
   let propertyIsEnumerable = function (obj: object, key: string | symbol) {
     return Object.prototype.propertyIsEnumerable.call(obj, key);

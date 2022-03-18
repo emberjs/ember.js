@@ -150,10 +150,8 @@ export function makeComputedDecorator(
 
 /////////////
 
-const DECORATOR_DESCRIPTOR_MAP: WeakMap<
-  ExtendedMethodDecorator,
-  ComputedDescriptor | true
-> = new WeakMap();
+const DECORATOR_DESCRIPTOR_MAP: WeakMap<ExtendedMethodDecorator, ComputedDescriptor | true> =
+  new WeakMap();
 
 /**
   Returns the CP descriptor associated with `obj` and `keyName`, if any.

@@ -301,9 +301,8 @@ moduleFor(
         this.assertInnerHTML('<h2>Foo Engine: Tagless Component</h2>');
 
         let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
-        let taglessComponentOwnerEventDispatcher = getOwner(component).lookup(
-          'event_dispatcher:main'
-        );
+        let taglessComponentOwnerEventDispatcher =
+          getOwner(component).lookup('event_dispatcher:main');
 
         this.assert.strictEqual(
           controllerOwnerEventDispatcher,

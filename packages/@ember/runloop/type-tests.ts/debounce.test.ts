@@ -30,9 +30,9 @@ debounce(myContext, whoRan, 150, true);
 // the debouncee is no longer being watched
 
 // Method only
-expectTypeOf(debounce((_foo: number, _baz?: boolean): void => {}, 1, undefined, 1)).toEqualTypeOf<
-  Timer
->();
+expectTypeOf(
+  debounce((_foo: number, _baz?: boolean): void => {}, 1, undefined, 1)
+).toEqualTypeOf<Timer>();
 
 // @ts-expect-error Requires wait
 debounce((_foo: number, _baz?: boolean): void => {}, 1, true);

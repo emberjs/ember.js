@@ -62,9 +62,8 @@ class DeprecationAssert extends DebugAssert {
 
   inject(): void {
     window.expectNoDeprecation = expectNoDeprecation = this.expectNoDeprecation.bind(this);
-    window.expectNoDeprecationAsync = expectNoDeprecationAsync = this.expectNoDeprecationAsync.bind(
-      this
-    );
+    window.expectNoDeprecationAsync = expectNoDeprecationAsync =
+      this.expectNoDeprecationAsync.bind(this);
     window.expectDeprecation = expectDeprecation = this.expectDeprecation.bind(this);
     window.expectDeprecationAsync = expectDeprecationAsync = this.expectDeprecationAsync.bind(this);
     window.ignoreDeprecation = ignoreDeprecation = this.ignoreDeprecation.bind(this);

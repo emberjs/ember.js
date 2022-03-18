@@ -70,7 +70,7 @@ type MaybeParameters<T> = T extends (...args: any[]) => any ? Parameters<T> : un
 type MaybeReturnType<T> = T extends (...args: any[]) => any ? ReturnType<T> : unknown;
 
 export const ROUTE_CONNECTIONS = new WeakMap();
-const RENDER = (symbol('render') as unknown) as string;
+const RENDER = symbol('render') as unknown as string;
 
 /**
 @module @ember/routing
@@ -260,7 +260,8 @@ interface Route<T = unknown> extends IRoute<T> {
 
 class Route<T = unknown>
   extends EmberObject.extend(ActionHandler, Evented)
-  implements IRoute, Evented {
+  implements IRoute, Evented
+{
   static isRouteFactory = true;
 
   context = {} as T;
@@ -2265,7 +2266,7 @@ function getQueryParamsFor<R extends Route>(
 function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
     // SAFETY: We lost the type data about the array if we don't cast.
-    return (emberA(value.slice()) as unknown) as T;
+    return emberA(value.slice()) as unknown as T;
   }
   return value;
 }

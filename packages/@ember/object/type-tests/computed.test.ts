@@ -12,7 +12,7 @@ class Foo {
     return `${this.firstName} ${this.lastName}`;
   }
 
-  @(computed('firstName', 'lastName').readOnly())
+  @computed('firstName', 'lastName').readOnly()
   get readonlyFullName() {
     return `${this.firstName} ${this.lastName}`;
   }

@@ -5,7 +5,7 @@ import RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
-let QUNIT_ON_UNHANDLED_REJECTION = QUnit.onUnhandledRejection;
+let QUNIT_ON_UNCAUGHT_EXCEPTION = QUnit.onUncaughtException;
 let WINDOW_ONERROR;
 
 function runThatThrowsSync(message = 'Error for testing error handling') {
@@ -28,7 +28,7 @@ moduleFor(
       window.onerror = WINDOW_ONERROR;
 
       setOnerror(undefined);
-      QUnit.onUnhandledRejection = QUNIT_ON_UNHANDLED_REJECTION;
+      QUnit.onUncaughtException = QUNIT_ON_UNCAUGHT_EXCEPTION;
     }
 
     ['@test by default there is no onerror - sync run'](assert) {
@@ -259,7 +259,7 @@ moduleFor(
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (event) {
         assert.pushResult({
@@ -326,7 +326,7 @@ moduleFor(
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (event) {
         assert.pushResult({
@@ -391,7 +391,7 @@ moduleFor(
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (event) {
         assert.pushResult({
@@ -458,7 +458,7 @@ moduleFor(
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (event) {
         assert.pushResult({
@@ -523,7 +523,7 @@ moduleFor(
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (event) {
         assert.pushResult({
@@ -589,7 +589,7 @@ moduleFor(
       });
 
       // prevent QUnit handler from failing test
-      QUnit.onUnhandledRejection = () => {};
+      QUnit.onUncaughtException = () => {};
 
       window.onunhandledrejection = function (event) {
         assert.pushResult({
