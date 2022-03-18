@@ -596,10 +596,10 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
     It will return:
 
-    * `index` when you visit `/`
-    * `about` when you visit `/about`
-    * `blog.index` when you visit `/blog`
-    * `blog.post` when you visit `/blog/some-post-id`
+    * `index` when you visit `index`
+    * `about` when you visit `about`
+    * `blog.index` when you visit `blog.index`
+    * `blog.post` when you visit `blog.post`
 
     @property currentRouteName
     @type {String | null}
