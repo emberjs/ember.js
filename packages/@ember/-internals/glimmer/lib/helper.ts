@@ -35,14 +35,6 @@ export interface HelperInstance<T = unknown> {
   destroy(): void;
 }
 
-export function isHelperInstance(obj: unknown): obj is HelperInstance {
-  if (obj !== null && typeof obj === 'object') {
-    let cast = obj as HelperInstance;
-    return typeof cast.compute === 'function' && typeof cast.destroy === 'function';
-  }
-  return false;
-}
-
 const IS_CLASSIC_HELPER: unique symbol = Symbol('IS_CLASSIC_HELPER');
 
 export interface SimpleHelper<T, P extends unknown[], N extends Dict<unknown>> {
@@ -182,7 +174,16 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
       ? definition.create()
       : definition.create(this.ownerInjection);
 
-    assert('expected HelperInstance', isHelperInstance(instance));
+    assert(
+      'expected HelperInstance',
+      (function (instance: unknown): instance is HelperInstance {
+        if (instance !== null && typeof instance === 'object') {
+          let cast = instance as HelperInstance;
+          return typeof cast.compute === 'function' && typeof cast.destroy === 'function';
+        }
+        return false;
+      })(instance)
+    );
 
     return {
       instance,

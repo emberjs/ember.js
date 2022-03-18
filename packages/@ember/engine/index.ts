@@ -15,7 +15,7 @@ import { setupEngineRegistry } from '@ember/-internals/glimmer';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import { ResolverClass } from '@ember/-internals/container/lib/registry';
 
-function props(obj: any) {
+function props(obj: object) {
   let properties = [];
 
   for (let key in obj) {

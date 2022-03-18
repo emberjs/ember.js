@@ -101,7 +101,7 @@ class ApplicationInstance extends EngineInstance {
       return this;
     }
 
-    options = new CBootOptions(options);
+    options = new _BootOptions(options);
 
     this.setupRegistry(options);
 
@@ -133,13 +133,13 @@ class ApplicationInstance extends EngineInstance {
   _router?: Router;
 
   get router() {
-    if (this._router) {
-      return this._router;
+    if (!this._router) {
+      let router = this.lookup('router:main');
+      assert('expected an instance of Router', router instanceof Router);
+      this._router = router;
     }
 
-    let router = this.lookup('router:main');
-    assert('expected an instance of Router', router instanceof Router);
-    return (this._router = router);
+    return this._router;
   }
 
   /**
@@ -299,8 +299,8 @@ class ApplicationInstance extends EngineInstance {
    @param {Registry} registry
    @param {BootOptions} options
   */
-  static setupRegistry(registry: Registry, options: BootOptions | CBootOptions = {}) {
-    let coptions = options instanceof CBootOptions ? options : new CBootOptions(options);
+  static setupRegistry(registry: Registry, options: BootOptions | _BootOptions = {}) {
+    let coptions = options instanceof _BootOptions ? options : new _BootOptions(options);
 
     registry.register('-environment:main', coptions.toEnvironment(), {
       instantiate: false,
@@ -335,7 +335,7 @@ class ApplicationInstance extends EngineInstance {
   @namespace ApplicationInstance
   @public
 */
-class CBootOptions {
+class _BootOptions {
   /**
     Interactive mode: whether we need to set up event delegation and invoke
     lifecycle callbacks on Components.

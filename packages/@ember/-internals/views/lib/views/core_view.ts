@@ -21,11 +21,7 @@ import states from './states';
 */
 
 interface CoreView extends FrameworkObject, Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler, {
-  // Continue to declare `_states` here so that we have a single reference on the prototype
-  // instead of one on each instance.
-  _states: states,
-}) {
+class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
   isView = true;
 
   declare _states: typeof states;
@@ -99,5 +95,8 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler, {
 
   static isViewFactory = true;
 }
+
+// Declare on the prototype to have a single shared value.
+CoreView.prototype._states = states;
 
 export default CoreView;

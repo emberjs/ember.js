@@ -34,18 +34,18 @@ import EmberObject from './object';
   @extends EmberObject
   @public
 */
-export default class Namespace extends EmberObject {
+class Namespace extends EmberObject {
   static NAMESPACES = NAMESPACES;
   static NAMESPACES_BY_ID = NAMESPACES_BY_ID;
   static processAll = processAllNamespaces;
   static byName = findNamespace;
 
+  declare isNamespace: true;
+
   init(properties: object | undefined) {
     super.init(properties);
     addNamespace(this);
   }
-
-  readonly isNamespace = true;
 
   toString(): string {
     let existing_name = get(this, 'name') || get(this, 'modulePrefix');
@@ -71,3 +71,8 @@ export default class Namespace extends EmberObject {
     return super.destroy();
   }
 }
+
+// Declare on the prototype to have a single shared value.
+Namespace.prototype.isNamespace = true;
+
+export default Namespace;
