@@ -40,7 +40,7 @@ export default function buildOwner(
     namespace = Engine.create({
       buildRegistry(this: Engine) {
         // SAFETY: This cast isn't that safe, but it should be ok for tests.
-        return (this.__registry__ = Application.buildRegistry((this as unknown) as Application));
+        return (this.__registry__ = Application.buildRegistry(this as unknown as Application));
       },
       Resolver: new ResolverWrapper(resolver),
     });
