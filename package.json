@@ -111,7 +111,7 @@
     "common-tags": "^1.8.2",
     "core-js": "^2.6.5",
     "dag-map": "^2.0.2",
-    "ember-cli": "^4.1.1",
+    "ember-cli": "^4.2.0",
     "ember-cli-blueprint-test-helpers": "^0.19.2",
     "ember-cli-browserstack": "^2.0.1",
     "ember-cli-dependency-checker": "^3.2.0",
