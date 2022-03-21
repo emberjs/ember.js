@@ -1,12 +1,10 @@
 # Ember Changelog
 
-### v4.3.0-beta.2 (March 1, 2022)
+### v4.3.0 (March 21, 2022)
 
+- [#20025](https://github.com/emberjs/ember.js/pull/20025) [BUGFIX] Fix a memory leak in the Router Service class
 - [#19971](https://github.com/emberjs/ember.js/pull/19971) [BUGFIX] Don't serialize default Query Params on RouterService
-
-### v4.3.0-beta.1 (February 7, 2022)
-
-No public API changes or bugfixes. 
+- [#20024](https://github.com/emberjs/ember.js/pull/20024) [BUGFIX] Correctly associate props with factory and owner in FactoryManager
 
 ### v4.2.0 (February 7, 2022)
 
