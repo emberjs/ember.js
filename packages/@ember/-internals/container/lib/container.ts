@@ -480,7 +480,6 @@ export class FactoryManager<T, C extends FactoryClass | object = FactoryClass> {
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
     this.injections = undefined;
-    setFactoryFor(this, this);
   }
 
   toString(): string {
