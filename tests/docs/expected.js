@@ -420,7 +420,6 @@ module.exports = {
     'removeObjects',
     'removeObserver',
     'removeTestHelpers',
-    'renderSettled',
     'reopen',
     'reopenClass',
     'replace',
