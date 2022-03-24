@@ -12,8 +12,8 @@ import { ENV } from '@ember/-internals/environment';
 */
 
 export const DEFAULT_FEATURES = {
-  EMBER_LIBRARIES_ISREGISTERED: null,
-  EMBER_IMPROVED_INSTRUMENTATION: null,
+  EMBER_LIBRARIES_ISREGISTERED: false,
+  EMBER_IMPROVED_INSTRUMENTATION: false,
   EMBER_UNIQUE_ID_HELPER: true,
 };
 
