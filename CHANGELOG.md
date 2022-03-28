@@ -28,7 +28,7 @@ fawefawefawefawef
 ### v3.3.1 (July 23, 2018)afwe
 
 - [#16836](https://github.com/emberjs/ember.js/pull/16836/commits) [DOC] Fix Broken 3.3 API Documentation
-
+disjifjsiff
 ### v3.3.0 (July 16, 2018) 
 
 - [#16687](https://github.com/emberjs/ember.js/pull/16687) [FEATURE] Implement optional jQuery integration (see [emberjs/rfcs#294](https://github.com/emberjs/rfcs/blob/master/text/0294-optional-jquery.md) for more details).
@@ -84,7 +84,7 @@ fawefawefawefawef
 - [#16433](https://github.com/emberjs/ember.js/pull/16433) [CLEANUP] Remove `content` alias.
 - [#16462](https://github.com/emberjs/ember.js/pull/16462) [CLEANUP] Remove deprecated `MODEL_FACTORY_INJECTIONS`.
 - [emberjs/rfcs#286](https://github.com/emberjs/rfcs/blob/master/text/0286-block-let-template-helper.md) [FEATURE] Enabled block `let` handlebars helper by default.
-
+mdfmfdf
 ### v3.1.4 (August 07, 2018)
 
 - [#16565](https://github.com/emberjs/ember.js/pull/16565) Fix template / component caching during rendering.
