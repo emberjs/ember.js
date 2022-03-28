@@ -130,7 +130,7 @@ class FnTest extends RenderTest {
         arg1: 'foo',
         arg2: 'bar',
       });
-    }, /You must pass a function as the `fn` helpers first argument./);
+    }, /You must pass a function as the `fn` helper's first argument./);
   }
 
   @test
@@ -141,7 +141,7 @@ class FnTest extends RenderTest {
         arg1: 'foo',
         arg2: 'bar',
       });
-    }, /You must pass a function as the `fn` helpers first argument, you passed undefined. While rendering:\n\nthis.myFunc/);
+    }, /You must pass a function as the `fn` helper's first argument, you passed undefined. While rendering:\n\nthis.myFunc/);
   }
 
   @test
@@ -152,7 +152,7 @@ class FnTest extends RenderTest {
         arg1: 'foo',
         arg2: 'bar',
       });
-    }, /You must pass a function as the `fn` helpers first argument, you passed null. While rendering:\n\nthis.myFunc/);
+    }, /You must pass a function as the `fn` helper's first argument, you passed null. While rendering:\n\nthis.myFunc/);
   }
 
   @test
