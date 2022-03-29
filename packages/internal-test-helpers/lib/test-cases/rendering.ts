@@ -71,7 +71,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     return new ModuleBasedResolver();
   }
 
-  add(specifier: string, factory: unknown) {
+  add(specifier: string, factory: Factory<object> | object) {
     this.resolver.add(specifier, factory);
   }
 
@@ -169,7 +169,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerCustomHelper(name: string, definition: Factory<unknown>) {
+  registerCustomHelper(name: string, definition: Factory<object>) {
     this.owner.register(`helper:${name}`, definition);
   }
 
@@ -190,13 +190,13 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerModifier(name: string, ModifierClass: Factory<unknown>) {
+  registerModifier(name: string, ModifierClass: Factory<object>) {
     let { owner } = this;
 
     owner.register(`modifier:${name}`, ModifierClass);
   }
 
-  registerComponentManager(name: string, manager: Factory<unknown>) {
+  registerComponentManager(name: string, manager: Factory<object>) {
     let owner = this.owner;
     owner.register(`component-manager:${name}`, manager);
   }
@@ -215,7 +215,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerService(name: string, klass: Factory<unknown>) {
+  registerService(name: string, klass: Factory<object>) {
     this.owner.register(`service:${name}`, klass);
   }
 

@@ -1,8 +1,8 @@
 import { run } from '@ember/runloop';
 import Controller from '@ember/controller';
 import { Router } from '@ember/-internals/routing';
+import { EventDispatcher } from '@ember/-internals/views';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
-import { CoreObject } from '@ember/-internals/runtime';
 
 moduleFor(
   'Application - resetting',
@@ -71,7 +71,7 @@ moduleFor(
       let eventDispatcherWasSetup = 0;
       let eventDispatcherWasDestroyed = 0;
 
-      class FakeEventDispatcher extends CoreObject {
+      class FakeEventDispatcher extends EventDispatcher {
         setup() {
           eventDispatcherWasSetup++;
         }

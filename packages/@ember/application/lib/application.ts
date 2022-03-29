@@ -21,11 +21,12 @@ import {
   NoneLocation,
   BucketCache,
 } from '@ember/-internals/routing';
-import ApplicationInstance from '../instance';
+import ApplicationInstance, { BootOptions } from '../instance';
 import Engine from '@ember/engine';
-import { privatize as P } from '@ember/-internals/container';
+import { Container, privatize as P, Registry } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
+import { EngineInstanceOptions } from '@ember/engine/instance';
 
 /**
   An instance of `Application` is the starting point for every Ember
@@ -177,11 +178,45 @@ import { RouterService } from '@ember/-internals/routing';
 
   @class Application
   @extends Engine
-  @uses RegistryProxyMixin
   @public
 */
 
-const Application = Engine.extend({
+class Application extends Engine {
+  /**
+    This creates a registry with the default Ember naming conventions.
+
+    It also configures the registry:
+
+    * registered views are created every time they are looked up (they are
+      not singletons)
+    * registered templates are not factories; the registered value is
+      returned directly.
+    * the router receives the application as its `namespace` property
+    * all controllers receive the router as their `target` and `controllers`
+      properties
+    * all controllers receive the application as their `namespace` property
+    * the application view receives the application controller as its
+      `controller` property
+    * the application view receives the application template as its
+      `defaultTemplate` property
+
+    @method buildRegistry
+    @static
+    @param {Application} namespace the application for which to
+      build the registry
+    @return {Ember.Registry} the built registry
+    @private
+  */
+  static buildRegistry(namespace: Application) {
+    let registry = super.buildRegistry(namespace);
+
+    commonSetupRegistry(registry);
+
+    setupApplicationRegistry(registry);
+
+    return registry;
+  }
+
   /**
     The root DOM element of the Application. This can be specified as an
     element or a [selector string](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors#reference_table_of_selectors).
@@ -195,7 +230,7 @@ const Application = Engine.extend({
     @default 'body'
     @public
   */
-  rootElement: 'body',
+  declare rootElement: Element | string;
 
   /**
 
@@ -204,7 +239,7 @@ const Application = Engine.extend({
     @default 'window.document'
     @private
   */
-  _document: hasDOM ? window.document : null,
+  declare _document: Document | null;
 
   /**
     The `Ember.EventDispatcher` responsible for delegating events to this
@@ -221,7 +256,7 @@ const Application = Engine.extend({
     @default null
     @public
   */
-  eventDispatcher: null,
+  declare eventDispatcher: EventDispatcher | null;
 
   /**
     The DOM events for which the event dispatcher should listen.
@@ -269,7 +304,7 @@ const Application = Engine.extend({
     @default null
     @public
   */
-  customEvents: null,
+  declare customEvents: Record<string, string | null> | null;
 
   /**
     Whether the application should automatically start routing and render
@@ -283,7 +318,7 @@ const Application = Engine.extend({
     @default true
     @private
   */
-  autoboot: true,
+  declare autoboot: boolean;
 
   /**
     Whether the application should be configured for the legacy "globals mode".
@@ -332,7 +367,7 @@ const Application = Engine.extend({
     @default true
     @private
   */
-  _globalsMode: true,
+  declare _globalsMode: boolean;
 
   /**
     An array of application instances created by `buildInstance()`. Used
@@ -340,19 +375,30 @@ const Application = Engine.extend({
 
     @property _applicationInstances
     @type Array
-    @default null
     @private
   */
-  _applicationInstances: null,
+  declare _applicationInstances: Set<ApplicationInstance>;
 
-  init() {
-    this._super(...arguments);
+  declare _readinessDeferrals: number;
+
+  declare _booted: boolean;
+
+  init(properties: object | undefined) {
+    super.init(properties);
+
+    this.rootElement ??= 'body';
+    this._document ??= null;
+    this.eventDispatcher ??= null;
+    this.customEvents ??= null;
+    this.autoboot ??= true;
+    this._document ??= hasDOM ? window.document : null;
+    this._globalsMode ??= true;
 
     if (DEBUG) {
       if (ENV.LOG_VERSION) {
         // we only need to see this once per Application#init
         ENV.LOG_VERSION = false;
-        libraries.logVersions();
+        libraries.logVersions?.();
       }
     }
 
@@ -371,7 +417,7 @@ const Application = Engine.extend({
     if (this.autoboot) {
       this.waitForDOMReady();
     }
-  },
+  }
 
   /**
     Create an ApplicationInstance for this application.
@@ -380,7 +426,7 @@ const Application = Engine.extend({
     @method buildInstance
     @return {ApplicationInstance} the application instance
   */
-  buildInstance(options = {}) {
+  buildInstance(options: EngineInstanceOptions = {}): ApplicationInstance {
     assert(
       'You cannot build new instances of this application since it has already been destroyed',
       !this.isDestroyed
@@ -391,10 +437,12 @@ const Application = Engine.extend({
       !this.isDestroying
     );
 
-    options.base = this;
-    options.application = this;
-    return ApplicationInstance.create(options);
-  },
+    return ApplicationInstance.create({
+      ...options,
+      base: this,
+      application: this,
+    });
+  }
 
   /**
     Start tracking an ApplicationInstance for this application.
@@ -403,9 +451,9 @@ const Application = Engine.extend({
     @private
     @method _watchInstance
   */
-  _watchInstance(instance) {
+  _watchInstance(instance: ApplicationInstance): void {
     this._applicationInstances.add(instance);
-  },
+  }
 
   /**
     Stop tracking an ApplicationInstance for this application.
@@ -414,9 +462,11 @@ const Application = Engine.extend({
     @private
     @method _unwatchInstance
   */
-  _unwatchInstance(instance) {
+  _unwatchInstance(instance: ApplicationInstance) {
     return this._applicationInstances.delete(instance);
-  },
+  }
+
+  Router?: typeof Router;
 
   /**
     Enable the legacy globals mode by allowing this application to act
@@ -429,14 +479,17 @@ const Application = Engine.extend({
     @private
     @method _prepareForGlobalsMode
   */
-  _prepareForGlobalsMode() {
+  _prepareForGlobalsMode(): void {
     // Create subclass of Router for this Application instance.
     // This is to ensure that someone reopening `App.Router` does not
     // tamper with the default `Router`.
-    this.Router = (this.Router || Router).extend();
+    this.Router = (this.Router || Router).extend() as typeof Router;
 
     this._buildDeprecatedInstance();
-  },
+  }
+
+  __deprecatedInstance__?: ApplicationInstance;
+  __container__?: Container;
 
   /*
     Build the deprecated instance for legacy globals mode support.
@@ -452,7 +505,7 @@ const Application = Engine.extend({
     @private
     @method _buildDeprecatedInstance
   */
-  _buildDeprecatedInstance() {
+  _buildDeprecatedInstance(): void {
     // Build a default instance
     let instance = this.buildInstance();
 
@@ -460,7 +513,7 @@ const Application = Engine.extend({
     // on App that rely on a single, default instance.
     this.__deprecatedInstance__ = instance;
     this.__container__ = instance.__container__;
-  },
+  }
 
   /**
     Automatically kick-off the boot process for the application once the
@@ -476,18 +529,20 @@ const Application = Engine.extend({
     @private
     @method waitForDOMReady
   */
-  waitForDOMReady() {
-    if (this._document === null || this._document.readyState !== 'loading') {
-      schedule('actions', this, 'domReady');
+  waitForDOMReady(): void {
+    const document = this._document;
+
+    if (document === null || document.readyState !== 'loading') {
+      schedule('actions', this, this.domReady);
     } else {
       let callback = () => {
-        this._document.removeEventListener('DOMContentLoaded', callback);
-        run(this, 'domReady');
+        document.removeEventListener('DOMContentLoaded', callback);
+        run(this, this.domReady);
       };
 
-      this._document.addEventListener('DOMContentLoaded', callback);
+      document.addEventListener('DOMContentLoaded', callback);
     }
-  },
+  }
 
   /**
     This is the autoboot flow:
@@ -524,7 +579,7 @@ const Application = Engine.extend({
     @private
     @method domReady
   */
-  domReady() {
+  domReady(): void {
     if (this.isDestroying || this.isDestroyed) {
       return;
     }
@@ -532,7 +587,7 @@ const Application = Engine.extend({
     this._bootSync();
 
     // Continues to `didBecomeReady`
-  },
+  }
 
   /**
     Use this to defer readiness until some condition is true.
@@ -563,7 +618,7 @@ const Application = Engine.extend({
     @method deferReadiness
     @public
   */
-  deferReadiness() {
+  deferReadiness(): void {
     assert(
       'You must call deferReadiness on an instance of Application',
       this instanceof Application
@@ -582,7 +637,7 @@ const Application = Engine.extend({
     );
 
     this._readinessDeferrals++;
-  },
+  }
 
   /**
     Call `advanceReadiness` after any asynchronous setup logic has completed.
@@ -619,7 +674,9 @@ const Application = Engine.extend({
     if (this._readinessDeferrals === 0) {
       once(this, this.didBecomeReady);
     }
-  },
+  }
+
+  _bootPromise: Promise<this> | null = null;
 
   /**
     Initialize the application and return a promise that resolves with the `Application`
@@ -637,7 +694,7 @@ const Application = Engine.extend({
     @method boot
     @return {Promise<Application,Error>}
   */
-  boot() {
+  boot(): Promise<this> {
     assert(
       'You cannot boot this application since it has already been destroyed',
       !this.isDestroyed
@@ -656,8 +713,12 @@ const Application = Engine.extend({
       // in the promise rejection
     }
 
+    assert('has boot promise', this._bootPromise);
+
     return this._bootPromise;
-  },
+  }
+
+  _bootResolver: ReturnType<typeof RSVP['defer']> | null = null;
 
   /**
     Unfortunately, a lot of existing code assumes the booting process is
@@ -682,7 +743,7 @@ const Application = Engine.extend({
     // the boot process, we need to store the error as a rejection on the boot
     // promise so that a future caller of `boot()` can tell what failed.
     let defer = (this._bootResolver = RSVP.defer());
-    this._bootPromise = defer.promise;
+    this._bootPromise = defer.promise as Promise<this>;
 
     try {
       this.runInitializers();
@@ -696,7 +757,7 @@ const Application = Engine.extend({
       // For the synchronous boot path
       throw error;
     }
-  },
+  }
 
   /**
     Reset the application. This is typically used only in tests. It cleans up
@@ -792,14 +853,15 @@ const Application = Engine.extend({
     this._bootResolver = null;
     this._booted = false;
 
-    function handleReset() {
+    function handleReset(this: Application) {
+      assert('expected instance', instance);
       run(instance, 'destroy');
       this._buildDeprecatedInstance();
       schedule('actions', this, '_bootSync');
     }
 
     join(this, handleReset);
-  },
+  }
 
   /**
     @private
@@ -809,6 +871,8 @@ const Application = Engine.extend({
     if (this.isDestroying || this.isDestroyed) {
       return;
     }
+
+    assert('expected _bootResolver', this._bootResolver);
 
     try {
       // TODO: Is this still needed for _globalsMode = false?
@@ -821,6 +885,7 @@ const Application = Engine.extend({
           // If we already have the __deprecatedInstance__ lying around, boot it to
           // avoid unnecessary work
           instance = this.__deprecatedInstance__;
+          assert('expected instance', instance);
         } else {
           // Otherwise, build an instance and boot it. This is currently unreachable,
           // because we forced _globalsMode to === autoboot; but having this branch
@@ -849,7 +914,7 @@ const Application = Engine.extend({
       // For the synchronous boot path
       throw error;
     }
-  },
+  }
 
   /**
     Called when the Application has become ready, immediately before routing
@@ -860,21 +925,21 @@ const Application = Engine.extend({
   */
   ready() {
     return this;
-  },
+  }
 
   // This method must be moved to the application instance object
   willDestroy() {
-    this._super(...arguments);
+    super.willDestroy();
 
-    if (_loaded.application === this) {
-      _loaded.application = undefined;
+    if (_loaded['application'] === this) {
+      _loaded['application'] = undefined;
     }
 
     if (this._applicationInstances.size) {
       this._applicationInstances.forEach((i) => i.destroy());
       this._applicationInstances.clear();
     }
-  },
+  }
 
   /**
     Boot a new instance of `ApplicationInstance` for the current
@@ -1074,7 +1139,7 @@ const Application = Engine.extend({
     @param options {ApplicationInstance.BootOptions}
     @return {Promise<ApplicationInstance, Error>}
   */
-  visit(url, options) {
+  visit(url: string, options: BootOptions) {
     assert(
       'You cannot visit this application since it has already been destroyed',
       !this.isDestroyed
@@ -1093,47 +1158,10 @@ const Application = Engine.extend({
           throw error;
         });
     });
-  },
-});
+  }
+}
 
-Application.reopenClass({
-  /**
-    This creates a registry with the default Ember naming conventions.
-
-    It also configures the registry:
-
-    * registered views are created every time they are looked up (they are
-      not singletons)
-    * registered templates are not factories; the registered value is
-      returned directly.
-    * the router receives the application as its `namespace` property
-    * all controllers receive the router as their `target` and `controllers`
-      properties
-    * all controllers receive the application as their `namespace` property
-    * the application view receives the application controller as its
-      `controller` property
-    * the application view receives the application template as its
-      `defaultTemplate` property
-
-    @method buildRegistry
-    @static
-    @param {Application} namespace the application for which to
-      build the registry
-    @return {Ember.Registry} the built registry
-    @private
-  */
-  buildRegistry() {
-    let registry = this._super(...arguments);
-
-    commonSetupRegistry(registry);
-
-    setupApplicationRegistry(registry);
-
-    return registry;
-  },
-});
-
-function commonSetupRegistry(registry) {
+function commonSetupRegistry(registry: Registry) {
   registry.register('router:main', Router);
   registry.register('-view-registry:main', {
     create() {

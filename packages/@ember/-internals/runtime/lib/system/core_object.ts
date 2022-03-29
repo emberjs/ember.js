@@ -28,7 +28,7 @@ import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
-type EmberClassConstructor<T> = new (owner: Owner) => T;
+type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>

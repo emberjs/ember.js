@@ -16,7 +16,8 @@ function buildEngineInstance(EngineClass) {
       return {};
     },
     resolveRegistration() {
-      return {};
+      // Implement Factory
+      return { isFake: true, create: () => {} };
     },
   });
   return engineInstance;

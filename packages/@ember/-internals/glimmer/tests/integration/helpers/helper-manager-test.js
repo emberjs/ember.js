@@ -43,6 +43,10 @@ class TestHelper {
   }
 
   willDestroy() {}
+
+  // HelperInstance
+  compute() {}
+  destroy() {}
 }
 
 setHelperManager((owner) => new TestHelperManager(owner), TestHelper);
@@ -319,7 +323,11 @@ moduleFor(
         };
       }
 
-      class TestHelper {}
+      class TestHelper {
+        // HelperInstance
+        compute() {}
+        destroy() {}
+      }
 
       setHelperManager((owner) => new OverrideTestHelperManager(owner), TestHelper);
       this.registerCustomHelper(

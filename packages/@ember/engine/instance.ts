@@ -2,17 +2,26 @@
 @module @ember/engine
 */
 
-import {
-  Object as EmberObject,
-  ContainerProxyMixin,
-  RegistryProxyMixin,
-  RSVP,
-} from '@ember/-internals/runtime';
+import { Object as EmberObject, RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { getEngineParent, setEngineParent } from './lib/engine-parent';
+import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
+import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
+import { isFactory } from '@ember/-internals/owner';
+import Engine from '.';
+import Application from '@ember/application';
+import { BootOptions } from '@ember/application/instance';
+import { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+
+const CEngine = Engine;
+
+export interface EngineInstanceOptions {
+  mountPoint?: string;
+  routable?: boolean;
+}
 
 /**
   The `EngineInstance` encapsulates all of the stateful aspects of a
@@ -25,39 +34,52 @@ import { getEngineParent, setEngineParent } from './lib/engine-parent';
   @uses ContainerProxyMixin
 */
 
-const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin, {
+interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin {}
+class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+  /**
+   @private
+   @method setupRegistry
+   @param {Registry} registry
+   @param {BootOptions} options
+   */
+  static setupRegistry(_registry: Registry, _options?: BootOptions) {}
+
   /**
     The base `Engine` for which this is an instance.
 
     @property {Engine} engine
     @private
   */
-  base: null,
+  declare base: Engine;
 
-  init() {
-    this._super(...arguments);
+  declare application: Application;
+
+  declare mountPoint?: string;
+  declare routable?: boolean;
+
+  _booted = false;
+
+  init(properties: object | undefined) {
+    super.init(properties);
 
     // Ensure the guid gets setup for this instance
     guidFor(this);
 
-    let base = this.base;
-
-    if (!base) {
-      base = this.application;
-      this.base = base;
-    }
+    this.base ??= this.application;
 
     // Create a per-instance registry that will use the application's registry
     // as a fallback for resolving registrations.
     let registry = (this.__registry__ = new Registry({
-      fallback: base.__registry__,
+      fallback: this.base.__registry__,
     }));
 
     // Create a per-instance container from the instance's registry
     this.__container__ = registry.container({ owner: this });
 
     this._booted = false;
-  },
+  }
+
+  _bootPromise: RSVP.Promise<this> | null = null;
 
   /**
     Initialize the `EngineInstance` and return a promise that resolves
@@ -72,15 +94,17 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @param options {Object}
     @return {Promise<EngineInstance,Error>}
   */
-  boot(options) {
+  boot(options?: BootOptions): Promise<this> {
     if (this._bootPromise) {
       return this._bootPromise;
     }
 
-    this._bootPromise = new RSVP.Promise((resolve) => resolve(this._bootSync(options)));
+    this._bootPromise = new RSVP.Promise((resolve) => {
+      resolve(this._bootSync(options));
+    });
 
     return this._bootPromise;
-  },
+  }
 
   /**
     Unfortunately, a lot of existing code assumes booting an instance is
@@ -96,7 +120,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     @private
   */
-  _bootSync(options) {
+  _bootSync(options?: BootOptions): this {
     if (this._booted) {
       return this;
     }
@@ -115,11 +139,13 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     this._booted = true;
 
     return this;
-  },
+  }
 
-  setupRegistry(options = this.__container__.lookup('-environment:main')) {
-    this.constructor.setupRegistry(this.__registry__, options);
-  },
+  setupRegistry(
+    options: BootOptions = this.__container__.lookup('-environment:main') as BootEnvironment
+  ) {
+    (this.constructor as typeof EngineInstance).setupRegistry(this.__registry__, options);
+  }
 
   /**
    Unregister a factory.
@@ -131,10 +157,12 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
    @method unregister
    @param {String} fullName
    */
-  unregister(fullName) {
+  unregister(fullName: string) {
     this.__container__.reset(fullName);
-    this._super(...arguments);
-  },
+
+    // We overwrote this method from RegistryProxyMixin.
+    this.__registry__.unregister(fullName);
+  }
 
   /**
     Build a new `EngineInstance` that's a child of this instance.
@@ -148,7 +176,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @param options {Object} options provided to the engine instance.
     @return {EngineInstance,Error}
   */
-  buildChildEngineInstance(name, options = {}) {
+  buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}) {
     let Engine = this.lookup(`engine:${name}`);
 
     if (!Engine) {
@@ -157,12 +185,14 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       );
     }
 
+    assert('expected an Engine', Engine instanceof CEngine);
+
     let engineInstance = Engine.buildInstance(options);
 
     setEngineParent(engineInstance, this);
 
     return engineInstance;
-  },
+  }
 
   /**
     Clone dependencies shared between an engine instance and its parent.
@@ -171,13 +201,19 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
     @method cloneParentDependencies
   */
   cloneParentDependencies() {
-    let parent = getEngineParent(this);
+    const parent = getEngineParent(this);
+
+    assert('expected parent', parent);
 
     let registrations = ['route:basic', 'service:-routing'];
 
-    registrations.forEach((key) => this.register(key, parent.resolveRegistration(key)));
+    registrations.forEach((key) => {
+      let registration = parent.resolveRegistration(key);
+      assert('expected registration to be a factory', isFactory(registration));
+      this.register(key, registration);
+    });
 
-    let env = parent.lookup('-environment:main');
+    let env = parent.lookup('-environment:main') as Record<string, unknown>;
     this.register('-environment:main', env, { instantiate: false });
 
     let singletons = [
@@ -188,27 +224,16 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       'service:-document',
     ];
 
-    if (env.isInteractive) {
+    if (env['isInteractive']) {
       singletons.push('event_dispatcher:main');
     }
 
-    singletons.forEach((key) => this.register(key, parent.lookup(key), { instantiate: false }));
-  },
-});
-
-EngineInstance.reopenClass({
-  /**
-   @private
-   @method setupRegistry
-   @param {Registry} registry
-   @param {BootOptions} options
-   */
-  setupRegistry(registry, options) {
-    // when no options/environment is present, do nothing
-    if (!options) {
-      return;
-    }
-  },
-});
+    singletons.forEach((key) => {
+      // SAFETY: We already expect this to be a singleton
+      let singleton = parent.lookup(key) as object;
+      this.register(key, singleton, { instantiate: false });
+    });
+  }
+}
 
 export default EngineInstance;

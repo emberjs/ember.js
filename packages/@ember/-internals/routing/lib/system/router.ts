@@ -302,8 +302,12 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     return path.join('.');
   }
 
-  constructor(owner: Owner) {
+  // Note that owner is actually required in this scenario, but since it is strictly
+  // optional in other contexts trying to make it required here confuses TS.
+  constructor(owner?: Owner) {
     super(owner);
+
+    assert('BUG: Missing owner', owner);
 
     this._resetQueuedQueryParameterChanges();
     this.namespace = owner.lookup('application:main');

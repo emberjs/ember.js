@@ -13,21 +13,22 @@ class App extends Application {
     mouseenter: null,
     paste: 'paste',
   };
-  ready() {
+  ready(): this {
     // I'm ready!
+    return this;
   }
 }
 
 const app = new App(owner);
 
 // You shouldn't really be setting this, so let's at least check that we can read it
-expectTypeOf(app.eventDispatcher).toEqualTypeOf<EventDispatcher>();
+expectTypeOf(app.eventDispatcher).toEqualTypeOf<EventDispatcher | null>();
 
 expectTypeOf(app.buildInstance()).toEqualTypeOf<ApplicationInstance>();
 expectTypeOf(app.deferReadiness()).toEqualTypeOf<void>();
 expectTypeOf(app.advanceReadiness()).toEqualTypeOf<void>();
-expectTypeOf(app.boot()).toEqualTypeOf<Promise<Application>>();
-expectTypeOf(app.ready()).toEqualTypeOf<void>();
+expectTypeOf(app.boot()).resolves.toEqualTypeOf<App>();
+expectTypeOf(app.ready()).toEqualTypeOf<App>();
 expectTypeOf(app.reset()).toEqualTypeOf<void>();
 
 let bootOptions = {

@@ -6,6 +6,7 @@ import { FactoryManager } from '@ember/-internals/container/lib/container';
 import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName, symbol } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
@@ -104,6 +105,8 @@ class Helper extends FrameworkObject {
   init(properties: object | undefined) {
     super.init(properties);
     this[RECOMPUTE_TAG] = createTag();
+
+    assert('expected compute to be defined', this.compute);
   }
 
   /**
@@ -163,10 +166,24 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
     this.ownerInjection = ownerInjection;
   }
 
-  createHelper<T, C>(definition: typeof Helper | FactoryManager<T, C>, args: Arguments) {
-    let instance = isFactoryManager<T, C>(definition)
+  createHelper(
+    definition: typeof Helper | FactoryManager<object>,
+    args: Arguments
+  ): ClassicHelperStateBucket {
+    let instance = isFactoryManager(definition)
       ? definition.create()
       : definition.create(this.ownerInjection);
+
+    assert(
+      'expected HelperInstance',
+      (function (instance: unknown): instance is HelperInstance {
+        if (instance !== null && typeof instance === 'object') {
+          let cast = instance as HelperInstance;
+          return typeof cast.compute === 'function' && typeof cast.destroy === 'function';
+        }
+        return false;
+      })(instance)
+    );
 
     return {
       instance,
@@ -193,8 +210,8 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-function isFactoryManager<T, C>(obj: unknown): obj is FactoryManager<T, C> {
-  return obj != null && 'class' in (obj as FactoryManager<T, C>);
+function isFactoryManager(obj: unknown): obj is FactoryManager<object> {
+  return obj != null && 'class' in (obj as FactoryManager<object>);
 }
 
 setHelperManager((owner: Owner | undefined): ClassicHelperManager => {

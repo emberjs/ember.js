@@ -9,8 +9,11 @@ export default abstract class AutobootApplicationTestCase extends TestResolverAp
   resolver?: Resolver;
 
   createApplication(options: object, MyApplication = Application) {
-    let myOptions = Object.assign(this.applicationOptions, options);
-    let application = (this.application = MyApplication.create(myOptions));
+    // SAFETY: Types for `create` are a bit flaky
+    let application = (this.application = MyApplication.create({
+      ...this.applicationOptions,
+      ...options,
+    }));
     let resolver = application.__registry__.resolver;
     assert('expected a resolver', resolver instanceof Resolver);
     this.resolver = resolver;

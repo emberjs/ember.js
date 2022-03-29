@@ -5,6 +5,7 @@ export default class EventDispatcher extends EmberObject {
   lazyEvents: Map<string, string>;
   setupHandlerForBrowserEvent(event: string): void;
   setupHandlerForEmberEvent(event: string): void;
+
   /** @private */
-  setup(addedEvents: Record<string, string | null>, _rootElement: Element): void;
+  setup(addedEvents: Record<string, string | null>, rootElement: string | Element | null): void;
 }

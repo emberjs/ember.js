@@ -347,6 +347,9 @@ moduleFor(
           super(...arguments);
           instance = this;
         }
+
+        // HelperInstance
+        compute() {}
       }
 
       let cache = invokeHelper(context, TestHelper);
@@ -373,6 +376,8 @@ moduleFor(
           super(...arguments);
           instance = this;
         }
+
+        compute() {}
       }
 
       let cache = invokeHelper(context, TestHelper);
@@ -414,7 +419,12 @@ moduleFor(
       }
 
       assert.throws(() => {
-        let helper = invokeHelper({}, class extends Helper {});
+        let helper = invokeHelper(
+          {},
+          class extends Helper {
+            compute() {}
+          }
+        );
 
         runTask(() => destroy(helper));
 
@@ -473,6 +483,10 @@ class TestHelper {
   }
 
   willDestroy() {}
+
+  // HelperInstance
+  compute() {}
+  destroy() {}
 }
 
 setHelperManager((owner) => new TestHelperManager(owner), TestHelper);

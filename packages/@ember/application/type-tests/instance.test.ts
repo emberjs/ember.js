@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import { Factory, Owner } from '@ember/-internals/owner';
 import Application from '@ember/application';
 import ApplicationInstance, { BootOptions } from '@ember/application/instance';
 import EngineInstance from '@ember/engine/instance';
@@ -23,16 +23,18 @@ expectTypeOf(
   instance.register('service:store-singleton', Store, { singleton: true, instantiate: true })
 ).toEqualTypeOf<void>();
 
-expectTypeOf(instance.lookup('service:store')).toEqualTypeOf<unknown>();
+expectTypeOf(instance.lookup('service:store')).toEqualTypeOf<
+  Factory<object> | object | undefined
+>();
 expectTypeOf(
   instance.lookup('service:store', { singleton: true, instantiate: true })
-).toEqualTypeOf<unknown>();
+).toEqualTypeOf<object | Factory<object> | undefined>();
 
 expectTypeOf(instance.hasRegistration('service:store')).toEqualTypeOf<boolean>();
 // @ts-expect-error requires name
 instance.hasRegistration();
 
-expectTypeOf(instance.boot()).toEqualTypeOf<Promise<ApplicationInstance>>();
+expectTypeOf(instance.boot()).resolves.toEqualTypeOf<ApplicationInstance>();
 
 const bootOptions: BootOptions = {
   isBrowser: true,

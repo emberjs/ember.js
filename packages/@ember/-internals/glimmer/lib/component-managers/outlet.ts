@@ -104,7 +104,10 @@ class OutletComponentManager
         let mountPoint = currentOwner.mountPoint;
 
         state.engine = currentOwner;
-        state.engineBucket = { mountPoint };
+
+        if (mountPoint) {
+          state.engineBucket = { mountPoint };
+        }
       }
     }
 

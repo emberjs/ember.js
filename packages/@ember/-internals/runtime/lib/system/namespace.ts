@@ -14,6 +14,7 @@ import {
   removeNamespace,
 } from '@ember/-internals/metal'; // Preloaded into namespaces
 import { getName, guidFor, setName } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 import EmberObject from './object';
 
 /**
@@ -33,18 +34,27 @@ import EmberObject from './object';
   @extends EmberObject
   @public
 */
-export default class Namespace extends EmberObject {
-  init() {
+class Namespace extends EmberObject {
+  static NAMESPACES = NAMESPACES;
+  static NAMESPACES_BY_ID = NAMESPACES_BY_ID;
+  static processAll = processAllNamespaces;
+  static byName = findNamespace;
+
+  declare isNamespace: true;
+
+  init(properties: object | undefined) {
+    super.init(properties);
     addNamespace(this);
   }
 
-  toString() {
-    let name = get(this, 'name') || get(this, 'modulePrefix');
-    if (name) {
-      return name;
+  toString(): string {
+    let existing_name = get(this, 'name') || get(this, 'modulePrefix');
+    if (existing_name) {
+      assert("name wasn't a string", typeof existing_name === 'string');
+      return existing_name;
     }
     findNamespaces();
-    name = getName(this);
+    let name = getName(this);
     if (name === undefined) {
       name = guidFor(this);
       setName(this, name);
@@ -58,12 +68,11 @@ export default class Namespace extends EmberObject {
 
   destroy() {
     removeNamespace(this);
-    super.destroy();
+    return super.destroy();
   }
 }
 
+// Declare on the prototype to have a single shared value.
 Namespace.prototype.isNamespace = true;
-Namespace.NAMESPACES = NAMESPACES;
-Namespace.NAMESPACES_BY_ID = NAMESPACES_BY_ID;
-Namespace.processAll = processAllNamespaces;
-Namespace.byName = findNamespace;
+
+export default Namespace;

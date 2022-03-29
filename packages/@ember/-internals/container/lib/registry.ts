@@ -4,14 +4,11 @@ import { assert, deprecate } from '@ember/debug';
 import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
+
 export interface Injection {
   property: string;
   specifier: string;
 }
-
-export type ResolveOptions = {
-  specifier?: string;
-};
 
 export interface TypeOptions {
   instantiate?: boolean;
@@ -31,9 +28,9 @@ export interface IRegistry {
   getOptions(fullName: string): TypeOptions | undefined;
   getOptionsForType(type: string): TypeOptions | undefined;
   knownForType(type: string): KnownForTypeResult;
-  makeToString<T, C>(factory: Factory<T, C>, fullName: string): string;
+  makeToString(factory: Factory<object>, fullName: string): string;
   normalizeFullName(fullName: string): string;
-  resolve<T, C>(fullName: string, options?: ResolveOptions): Factory<T, C> | undefined;
+  resolve(fullName: string): Factory<object> | object | undefined;
 }
 
 export interface ResolverClass {
@@ -43,9 +40,9 @@ export interface ResolverClass {
 export interface Resolver {
   knownForType?: (type: string) => KnownForTypeResult;
   lookupDescription?: (fullName: string) => string;
-  makeToString?: <T, C>(factory: Factory<T, C>, fullName: string) => string;
+  makeToString?: (factory: Factory<object>, fullName: string) => string;
   normalize?: (fullName: string) => string;
-  resolve<T, C>(name: string): Factory<T, C> | undefined;
+  resolve(name: string): Factory<object> | object | undefined;
 }
 
 export interface RegistryOptions {
@@ -73,11 +70,10 @@ export default class Registry implements IRegistry {
   readonly _failSet: Set<string>;
   resolver: Resolver | null;
   readonly fallback: IRegistry | null;
-  readonly registrations: Record<string, object>;
-  _localLookupCache: Record<string, object>;
+  readonly registrations: Record<string, Factory<object> | object>;
   readonly _normalizeCache: Record<string, string>;
   readonly _options: Record<string, TypeOptions>;
-  readonly _resolveCache: Record<string, object>;
+  readonly _resolveCache: Record<string, Factory<object> | object>;
   readonly _typeOptions: Record<string, TypeOptions>;
 
   set?: typeof set;
@@ -88,7 +84,6 @@ export default class Registry implements IRegistry {
 
     this.registrations = dictionary(options.registrations || null);
 
-    this._localLookupCache = Object.create(null);
     this._normalizeCache = dictionary(null);
     this._resolveCache = dictionary(null);
     this._failSet = new Set();
@@ -179,12 +174,13 @@ export default class Registry implements IRegistry {
    @param {Object} options
    */
   register(fullName: string, factory: object, options: TypeOptions & { instantiate: false }): void;
-  register(fullName: string, factory: Factory<unknown>, options?: TypeOptions): void;
-  register(fullName: string, factory: object, options: TypeOptions = {}): void {
+  register(fullName: string, factory: Factory<object>, options?: TypeOptions): void;
+  register(fullName: string, factory: object | Factory<object>, options: TypeOptions = {}): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
+
     assert(
       `Cannot re-register: '${fullName}', as it has already been resolved.`,
       !this._resolveCache[normalizedName]
@@ -216,8 +212,6 @@ export default class Registry implements IRegistry {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
-
-    this._localLookupCache = Object.create(null);
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
@@ -256,14 +250,12 @@ export default class Registry implements IRegistry {
    @private
    @method resolve
    @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Function} fullName's factory
    */
-  resolve<T, C>(fullName: string): Factory<T, C> | undefined {
-    let factory = resolve<T, C>(this, this.normalize(fullName));
+  resolve(fullName: string): Factory<object> | object | undefined {
+    let factory = resolve(this, this.normalize(fullName));
     if (factory === undefined && this.fallback !== null) {
-      factory = (this.fallback as any).resolve(...arguments);
+      factory = this.fallback.resolve(fullName);
     }
     return factory;
   }
@@ -332,7 +324,7 @@ export default class Registry implements IRegistry {
    @param {string} fullName
    @return {function} toString function
    */
-  makeToString<T, C>(factory: Factory<T, C>, fullName: string): string {
+  makeToString(factory: Factory<object>, fullName: string): string {
     if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
     } else if (this.fallback !== null) {
@@ -550,25 +542,28 @@ if (DEBUG) {
   };
 }
 
-function resolve<T, C>(registry: Registry, _normalizedName: string): Factory<T, C> | undefined {
+function resolve(
+  registry: Registry,
+  _normalizedName: string
+): Factory<object> | object | undefined {
   let normalizedName = _normalizedName;
 
   let cached = registry._resolveCache[normalizedName];
   if (cached !== undefined) {
-    return cached as Factory<T, C>;
+    return cached;
   }
   if (registry._failSet.has(normalizedName)) {
     return;
   }
 
-  let resolved: Factory<T, C> | undefined;
+  let resolved: Factory<object> | object | undefined;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve<T, C>(normalizedName);
+    resolved = registry.resolver.resolve(normalizedName);
   }
 
   if (resolved === undefined) {
-    resolved = registry.registrations[normalizedName] as Factory<T, C> | undefined;
+    resolved = registry.registrations[normalizedName];
   }
 
   if (resolved === undefined) {

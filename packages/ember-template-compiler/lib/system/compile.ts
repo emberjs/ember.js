@@ -4,12 +4,10 @@
 import require, { has } from 'require';
 import { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
+import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
+import type { templateFactory } from '@glimmer/opcode-compiler';
 
-// FIXME
-type StaticTemplate = unknown;
-type Factory = any;
-
-let template: (templateJS: StaticTemplate) => Factory;
+let template: typeof templateFactory;
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -22,7 +20,7 @@ let template: (templateJS: StaticTemplate) => Factory;
 export default function compile(
   templateString: string,
   options: Partial<EmberPrecompileOptions> = {}
-): Factory {
+): TemplateFactory {
   if (!template && has('@ember/-internals/glimmer')) {
     template = require('@ember/-internals/glimmer').template;
   }
@@ -36,6 +34,6 @@ export default function compile(
   return template(evaluate(precompile(templateString, options)));
 }
 
-function evaluate(precompiled: string): StaticTemplate {
+function evaluate(precompiled: string): SerializedTemplateWithLazyBlock {
   return new Function(`return ${precompiled}`)();
 }

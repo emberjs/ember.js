@@ -9,10 +9,6 @@ interface LeakTracking {
   reset(): void;
 }
 
-interface CacheMember {
-  destroy?: () => void;
-}
-
 let leakTracking: LeakTracking;
 let containers: WeakSet<Container>;
 if (DEBUG) {
@@ -47,7 +43,7 @@ if (DEBUG) {
 
 export interface ContainerOptions {
   owner?: Owner;
-  cache?: { [key: string]: CacheMember };
+  cache?: { [key: string]: object };
   factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
   validationCache?: { [key: string]: boolean };
 }
@@ -70,8 +66,8 @@ export default class Container {
 
   readonly owner: Owner | null;
   readonly registry: Registry & DebugRegistry;
-  cache: { [key: string]: CacheMember };
-  factoryManagerCache!: { [key: string]: FactoryManager<any, any> };
+  cache: { [key: string]: object };
+  factoryManagerCache!: { [key: string]: FactoryManager<object> };
   readonly validationCache!: { [key: string]: boolean };
   isDestroyed: boolean;
   isDestroying: boolean;
@@ -139,11 +135,10 @@ export default class Container {
     @private
    @method lookup
    @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] The fullname of the request source (used for local lookup)
+   @param {TypeOptions} [options]
    @return {any}
    */
-  lookup(fullName: string, options?: TypeOptions): unknown {
+  lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
@@ -208,7 +203,7 @@ export default class Container {
    @param {String} fullName
    @return {any}
    */
-  factoryFor(fullName: string): Factory<unknown> | undefined {
+  factoryFor(fullName: string): FactoryManager<object> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
@@ -216,9 +211,7 @@ export default class Container {
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
 
-    // TODO: This needs to return a Factory to be compatible with Owner.
-    // We should correctly the types so that this cast is not necessary.
-    return factoryFor(this, normalizedName, fullName) as Factory<unknown>;
+    return factoryFor(this, normalizedName, fullName);
   }
 }
 
@@ -230,7 +223,9 @@ if (DEBUG) {
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
  */
-function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>): FactoryManager<T, C> {
+function wrapManagerInDeprecationProxy<T extends object, C>(
+  manager: FactoryManager<T, C>
+): FactoryManager<T, C> {
   let validator = {
     set(_obj: T, prop: keyof T) {
       throw new Error(
@@ -261,7 +256,11 @@ function isInstantiatable(container: Container, fullName: string) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
-function lookup(container: Container, fullName: string, options: TypeOptions = {}) {
+function lookup(
+  container: Container,
+  fullName: string,
+  options: TypeOptions = {}
+): Factory<object> | object | undefined {
   let normalizedName = fullName;
 
   if (
@@ -281,14 +280,14 @@ function factoryFor(
   container: Container,
   normalizedName: string,
   fullName: string
-): FactoryManager<unknown> | undefined {
+): FactoryManager<object> | undefined {
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
     return cached;
   }
 
-  let factory = container.registry.resolve(normalizedName) as DebugFactory<unknown> | undefined;
+  let factory = container.registry.resolve(normalizedName) as DebugFactory<object> | undefined;
 
   if (factory === undefined) {
     return;
@@ -363,7 +362,7 @@ function instantiateFactory(
   normalizedName: string,
   fullName: string,
   options: TypeOptions
-) {
+): Factory<object> | object | undefined {
   let factoryManager = factoryFor(container, normalizedName, fullName);
 
   if (factoryManager === undefined) {
@@ -373,13 +372,13 @@ function instantiateFactory(
   // SomeClass { singleton: true, instantiate: true } | { singleton: true } | { instantiate: true } | {}
   // By default majority of objects fall into this case
   if (isSingletonInstance(container, fullName, options)) {
-    let instance = (container.cache[normalizedName] = factoryManager.create() as CacheMember);
+    let instance = (container.cache[normalizedName] = factoryManager.create());
 
     // if this lookup happened _during_ destruction (emits a deprecation, but
     // is still possible) ensure that it gets destroyed
     if (container.isDestroying) {
-      if (typeof instance.destroy === 'function') {
-        instance.destroy();
+      if (typeof (instance as any).destroy === 'function') {
+        (instance as any).destroy();
       }
     }
 
@@ -410,8 +409,8 @@ function destroyDestroyables(container: Container): void {
     let value = cache[key];
     assert('has cached value', value);
 
-    if (value.destroy) {
-      value.destroy();
+    if ((value as any).destroy) {
+      (value as any).destroy();
     }
   }
 }
@@ -429,8 +428,8 @@ function resetMember(container: Container, fullName: string) {
   if (member) {
     delete container.cache[fullName];
 
-    if (member.destroy) {
-      member.destroy();
+    if ((member as any).destroy) {
+      (member as any).destroy();
     }
   }
 }
@@ -441,7 +440,7 @@ export interface LazyInjection {
   specifier: string;
 }
 
-declare interface DebugFactory<T, C extends FactoryClass | object = FactoryClass>
+declare interface DebugFactory<T extends object, C extends FactoryClass | object = FactoryClass>
   extends Factory<T, C> {
   _onLookup?: (fullName: string) => void;
   _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
@@ -458,7 +457,7 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
   obj[INIT_FACTORY] = factory;
 }
 
-export class FactoryManager<T, C extends FactoryClass | object = FactoryClass> {
+export class FactoryManager<T extends object, C extends FactoryClass | object = FactoryClass> {
   readonly container: Container;
   readonly owner: Owner | null;
   readonly class: Factory<T, C> & DebugFactory<T, C>;
