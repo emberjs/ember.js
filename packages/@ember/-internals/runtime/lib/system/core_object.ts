@@ -244,21 +244,7 @@ class CoreObject {
     (this.constructor as typeof CoreObject).proto();
 
     let self;
-    if (DEBUG && hasUnknownProperty(this)) {
-      let messageFor = (obj: unknown, property: unknown) => {
-        return (
-          `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
-          `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
-          `to access computed properties. However, in this case, the object in question\n` +
-          `is a special kind of Ember object (a proxy). Therefore, it is still necessary\n` +
-          `to use \`.get('${String(property)}')\` in this case.\n\n` +
-          `If you encountered this error because of third-party code that you don't control,\n` +
-          `there is more information at https://github.com/emberjs/ember.js/issues/16148, and\n` +
-          `you can help us improve this error message by telling us more about what happened in\n` +
-          `this situation.`
-        );
-      };
-
+    if (hasUnknownProperty(this)) {
       /* globals Proxy Reflect */
       self = new Proxy(this, {
         get(target: CoreObject & HasUnknownProperty, property, receiver) {
@@ -282,12 +268,6 @@ class CoreObject {
             property in target
           ) {
             return Reflect.get(target, property, receiver);
-          }
-
-          let value = target.unknownProperty.call(receiver, property);
-
-          if (typeof value !== 'function') {
-            assert(messageFor(receiver, property), value === undefined || value === null);
           }
         },
       });
