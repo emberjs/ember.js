@@ -87,7 +87,6 @@ moduleFor(
       });
 
       assert.equal(get(proxy, 'foo'), 'FOO');
-      assert.equal(proxy.foo, 'FOO');
     }
 
     [`@test JSON.stringify doens't assert`](assert) {
