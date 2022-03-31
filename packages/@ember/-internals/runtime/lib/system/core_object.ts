@@ -244,7 +244,7 @@ class CoreObject {
     (this.constructor as typeof CoreObject).proto();
 
     let self;
-    if (hasUnknownProperty(this)) {
+    if (DEBUG && hasUnknownProperty(this)) {
       /* globals Proxy Reflect */
       self = new Proxy(this, {
         get(target: CoreObject & HasUnknownProperty, property, receiver) {
