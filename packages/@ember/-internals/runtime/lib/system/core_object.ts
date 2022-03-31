@@ -258,11 +258,6 @@ class CoreObject {
             property === 'toJSON' ||
             property === 'toString' ||
             property === 'toStringExtension' ||
-            property === 'didDefineProperty' ||
-            property === 'willWatchProperty' ||
-            property === 'didUnwatchProperty' ||
-            property === 'didAddListener' ||
-            property === 'didRemoveListener' ||
             property === 'isDescriptor' ||
             property === '_onLookup' ||
             property in target
