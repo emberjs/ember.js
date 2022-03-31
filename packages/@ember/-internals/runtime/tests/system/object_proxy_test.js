@@ -79,7 +79,7 @@ moduleFor(
       assert.equal(get(proxy, 'lastName'), 'Katz', 'proxy should reflect updated content');
     }
 
-    ['@test getting proxied properties with Ember.get should work'](assert) {
+    ['@test getting proxied properties work'](assert) {
       let proxy = ObjectProxy.create({
         content: {
           foo: 'FOO',
@@ -87,6 +87,7 @@ moduleFor(
       });
 
       assert.equal(get(proxy, 'foo'), 'FOO');
+      assert.equal(proxy.foo, 'FOO');
     }
 
     [`@test JSON.stringify doens't assert`](assert) {
@@ -149,20 +150,6 @@ moduleFor(
       });
 
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
-    }
-
-    ['@test getting proxied properties works'](assert) {
-      if (DEBUG) {
-        let proxy = ObjectProxy.create({
-          content: {
-            foo: 'FOO',
-          },
-        });
-
-        assert.expect(proxy.foo, 'FOO');
-      } else {
-        assert.expect(0);
-      }
     }
 
     async ['@test should work with watched properties'](assert) {
