@@ -151,20 +151,6 @@ moduleFor(
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: 'hello' }));
     }
 
-    ['@test getting proxied properties with [] should be an error'](assert) {
-      if (DEBUG) {
-        let proxy = ObjectProxy.create({
-          content: {
-            foo: 'FOO',
-          },
-        });
-
-        expectAssertion(() => proxy.foo, /\.get\('foo'\)/);
-      } else {
-        assert.expect(0);
-      }
-    }
-
     async ['@test should work with watched properties'](assert) {
       let content1 = { firstName: 'Tom', lastName: 'Dale' };
       let content2 = { firstName: 'Yehuda', lastName: 'Katz' };
