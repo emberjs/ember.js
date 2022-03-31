@@ -2,7 +2,6 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
@@ -511,7 +510,10 @@ RouterService.reopen(Evented, {
      @type String
      @public
    */
-  currentRouteName: readOnly('_router.currentRouteName'),
+  get currentRouteName() {
+    this._router.setupRouter();
+    return this._router.currentRouteName;
+  },
 
   /**
      Current URL for the application.
@@ -539,7 +541,10 @@ RouterService.reopen(Evented, {
      @type String
      @public
    */
-  currentURL: readOnly('_router.currentURL'),
+  get currentURL() {
+    this._router.setupRouter();
+    return this._router.currentURL;
+  },
 
   /**
     The `location` property returns what implementation of the `location` API
@@ -578,7 +583,10 @@ RouterService.reopen(Evented, {
     @see {Location}
     @public
   */
-  location: readOnly('_router.location'),
+  get location() {
+    this._router.setupRouter();
+    return this._router.location;
+  },
 
   /**
     The `rootURL` property represents the URL of the root of
@@ -607,7 +615,10 @@ RouterService.reopen(Evented, {
     @default '/'
     @public
   */
-  rootURL: readOnly('_router.rootURL'),
+  get rootURL() {
+    this._router.setupRouter();
+    return this._router.rootURL;
+  },
 
   /**
     The `currentRoute` property contains metadata about the current leaf route.
@@ -637,5 +648,8 @@ RouterService.reopen(Evented, {
      @type RouteInfo
      @public
    */
-  currentRoute: readOnly('_router.currentRoute'),
+  get currentRoute() {
+    this._router.setupRouter();
+    return this._router.currentRoute;
+  },
 });
