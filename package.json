@@ -85,7 +85,7 @@
     "@glimmer/interfaces": "0.83.1",
     "@glimmer/manager": "0.83.1",
     "@glimmer/node": "0.83.1",
-    "@glimmer/opcode-compiler": "0.83.1",
+    "@glimmer/opcode-compiler": "0.84.1",
     "@glimmer/owner": "0.84.0",
     "@glimmer/program": "0.83.1",
     "@glimmer/reference": "0.83.1",
