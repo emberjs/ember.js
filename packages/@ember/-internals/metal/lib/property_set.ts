@@ -2,7 +2,6 @@ import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-inte
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
 import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
@@ -69,7 +68,7 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
 export function _setProp(obj: object, keyName: string, value: any) {
   let descriptor = lookupDescriptor(obj, keyName);
 
-  if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
+  if (descriptor !== null) {
     obj[keyName] = value;
     return value;
   }
