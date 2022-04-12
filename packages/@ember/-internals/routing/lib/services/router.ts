@@ -582,7 +582,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
    Name of the current route.
 
     This property represents the logical name of the route,
-    which is comma separated.
+    which is dot separated.
     For the following router:
 
     ```app/router.js
