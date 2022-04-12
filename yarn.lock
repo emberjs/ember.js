@@ -8288,10 +8288,10 @@ quick-temp@^0.1.2, quick-temp@^0.1.3, quick-temp@^0.1.5, quick-temp@^0.1.8:
     rimraf "^2.5.4"
     underscore.string "~3.3.4"
 
-qunit@^2.18.0:
-  version "2.18.0"
-  resolved "https://registry.yarnpkg.com/qunit/-/qunit-2.18.0.tgz#5a3efc8ee609e9d8f207a1ad317a9b02bb14bc6b"
-  integrity sha512-Xw/zUm5t1JY8SNErki/qtw4fCuaaOZL+bPloZU+0kto+fO8j1JV9MQWqXO4kATfhEyJohlsKZpfg1HF7GOkpXw==
+qunit@^2.18.1:
+  version "2.18.1"
+  resolved "https://registry.yarnpkg.com/qunit/-/qunit-2.18.1.tgz#9e90e7798216f7275c351c88652816d491391397"
+  integrity sha512-A2Adgr/DeMQOJZFVllyQi2wiGJVVXGSRRwMe39fNfuuftUYHHpGRTWUhBa8wNblunCAOUCt+1uFcg1L7NaxQTA==
   dependencies:
     commander "7.2.0"
     node-watch "0.7.3"
