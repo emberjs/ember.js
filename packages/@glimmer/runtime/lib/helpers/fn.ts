@@ -110,7 +110,7 @@ function assertCallbackIsFn(callbackRef: Reference) {
     )
   ) {
     throw new Error(
-      `You must pass a function as the \`fn\` helpers first argument, you passed ${
+      `You must pass a function as the \`fn\` helper's first argument, you passed ${
         callbackRef ? valueForRef(callbackRef) : callbackRef
       }. While rendering:\n\n${callbackRef?.debugLabel}`
     );
