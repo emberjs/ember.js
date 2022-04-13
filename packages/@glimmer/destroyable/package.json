@@ -1,13 +1,13 @@
 {
   "name": "@glimmer/destroyable",
-  "version": "0.84.1",
+  "version": "0.84.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/destroyable",
   "description": "Utilities for creating and managing a destroyable hierarchy of objects",
   "license": "MIT",
   "dependencies": {
     "@glimmer/env": "0.1.7",
-    "@glimmer/global-context": "0.84.1",
-    "@glimmer/interfaces": "0.84.1",
-    "@glimmer/util": "0.84.1"
+    "@glimmer/global-context": "0.84.2",
+    "@glimmer/interfaces": "0.84.2",
+    "@glimmer/util": "0.84.2"
   }
 }

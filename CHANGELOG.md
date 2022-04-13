@@ -1,3 +1,19 @@
+## v0.84.2 (2022-04-13)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1380](https://github.com/glimmerjs/glimmer-vm/pull/1380) fix: #1379 - Unclear compiler error if literal used as a path ([@lifeart](https://github.com/lifeart))
+* `@glimmer/integration-tests`, `@glimmer/manager`
+  * [#1389](https://github.com/glimmerjs/glimmer-vm/pull/1389) Fix a problem where plain functions can't be used as helper if they are not passed through the strict mode context object ([@Windvis](https://github.com/Windvis))
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#1387](https://github.com/glimmerjs/glimmer-vm/pull/1387) Fix typo in `fn` helper error message ([@bertdeblock](https://github.com/bertdeblock))
+
+#### Committers: 3
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Bert De Block ([@bertdeblock](https://github.com/bertdeblock))
+- Sam Van Campenhout ([@Windvis](https://github.com/Windvis))
+
+
 ## v0.84.1 (2022-03-15)
 
 #### :rocket: Enhancement
