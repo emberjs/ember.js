@@ -3,6 +3,7 @@ import { helperCapabilities, setHelperManager } from '@glimmer/manager';
 import { Helper, helper, Component as EmberComponent } from '@ember/-internals/glimmer';
 import { tracked, set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
+import { EMBER_DEFAULT_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
@@ -444,7 +445,7 @@ moduleFor(
     }
 
     '@test asserts if no manager exists for the helper definition'(assert) {
-      if (!DEBUG) {
+      if (!DEBUG || EMBER_DEFAULT_HELPER_MANAGER) {
         assert.expect(0);
         return;
       }
