@@ -213,13 +213,36 @@ export function getInternalComponentManager(
 ///////////
 
 export function hasInternalComponentManager(definition: object): boolean {
-  return getManager(COMPONENT_MANAGERS, definition) !== undefined;
+  return (
+    hasDefaultComponentManager(definition) ||
+    getManager(COMPONENT_MANAGERS, definition) !== undefined
+  );
 }
 
 export function hasInternalHelperManager(definition: object): boolean {
-  return getManager(HELPER_MANAGERS, definition) !== undefined;
+  return (
+    hasDefaultHelperManager(definition) || getManager(HELPER_MANAGERS, definition) !== undefined
+  );
 }
 
 export function hasInternalModifierManager(definition: object): boolean {
-  return getManager(MODIFIER_MANAGERS, definition) !== undefined;
+  return (
+    hasDefaultModifierManager(definition) || getManager(MODIFIER_MANAGERS, definition) !== undefined
+  );
+}
+
+function hasDefaultComponentManager(_definition: object): boolean {
+  return false;
+}
+
+function hasDefaultHelperManager(definition: object): boolean {
+  if (FEATURE_DEFAULT_HELPER_MANAGER) {
+    return typeof definition === 'function';
+  }
+
+  return false;
+}
+
+function hasDefaultModifierManager(_definition: object): boolean {
+  return false;
 }

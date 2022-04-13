@@ -3,6 +3,7 @@ import {
   RenderTest,
   test,
   jitSuite,
+  GlimmerishComponent,
   tracked,
   defineComponent,
   trackedObj,
@@ -45,6 +46,58 @@ class HelperManagerTest extends RenderTest {
     };
 
     const Main = defineComponent({ hello }, '{{hello}}');
+
+    this.renderComponent(Main);
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('plain function');
+
+    this.rerender();
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('plain function');
+  }
+
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions passed as component arguments work as helpers'(
+    assert: Assert
+  ) {
+    let count = 0;
+
+    const hello = () => {
+      count++;
+      return 'plain function';
+    };
+
+    const Main = defineComponent({}, '{{(@hello)}}');
+
+    this.renderComponent(Main, {
+      hello,
+    });
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('plain function');
+
+    this.rerender();
+
+    assert.equal(count, 1, 'rendered once');
+    this.assertHTML('plain function');
+  }
+
+  @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
+  '(Default Helper Manager) plain functions stored on component class properties work as helpers'(
+    assert: Assert
+  ) {
+    let count = 0;
+
+    const Main = defineComponent({}, '{{(this.hello)}}', {
+      definition: class extends GlimmerishComponent {
+        hello = () => {
+          count++;
+          return 'plain function';
+        };
+      },
+    });
 
     this.renderComponent(Main);
 
