@@ -661,6 +661,36 @@ test('path expression with "dangling dot" throws error', function (assert) {
   }, syntaxErrorFor("'.' is not a supported path in Glimmer; check for a path with a trailing '.'", '.', 'test-module', 1, 8));
 });
 
+test('string literal as path throws error', function (assert) {
+  assert.throws(() => {
+    parse('{{("foo-baz")}}', { meta: { moduleName: 'test-module' } });
+  }, syntaxErrorFor(`StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`, '"foo-baz"', 'test-module', 1, 3));
+});
+
+test('boolean literal as path throws error', function (assert) {
+  assert.throws(() => {
+    parse('{{(true)}}', { meta: { moduleName: 'test-module' } });
+  }, syntaxErrorFor(`BooleanLiteral "true" cannot be called as a sub-expression, replace (true) with true`, 'true', 'test-module', 1, 3));
+});
+
+test('undefined literal as path throws error', function (assert) {
+  assert.throws(() => {
+    parse('{{(undefined)}}', { meta: { moduleName: 'test-module' } });
+  }, syntaxErrorFor(`UndefinedLiteral "undefined" cannot be called as a sub-expression, replace (undefined) with undefined`, 'undefined', 'test-module', 1, 3));
+});
+
+test('null literal as path throws error', function (assert) {
+  assert.throws(() => {
+    parse('{{(null)}}', { meta: { moduleName: 'test-module' } });
+  }, syntaxErrorFor(`NullLiteral "null" cannot be called as a sub-expression, replace (null) with null`, 'null', 'test-module', 1, 3));
+});
+
+test('number literal as path throws error', function (assert) {
+  assert.throws(() => {
+    parse('{{(42)}}', { meta: { moduleName: 'test-module' } });
+  }, syntaxErrorFor(`NumberLiteral "42" cannot be called as a sub-expression, replace (42) with 42`, '42', 'test-module', 1, 3));
+});
+
 export function strip(strings: TemplateStringsArray, ...args: string[]) {
   return strings
     .map((str: string, i: number) => {
