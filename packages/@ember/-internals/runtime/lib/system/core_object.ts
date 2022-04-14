@@ -264,6 +264,10 @@ class CoreObject {
           ) {
             return Reflect.get(target, property, receiver);
           }
+
+          let value = target.unknownProperty.call(receiver, property);
+
+          return value;
         },
       });
     } else {
