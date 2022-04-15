@@ -150,46 +150,75 @@
  */
 
 /**
-  `{{(has-block)}}` indicates if the component was invoked with a block.
+  `{{(has-block)}}` is used to check if the component was invoked with a block.
+  It can be used with the implicit default block, as well as explicit named blocks.
 
-  This component is invoked with a block:
+  ### Implicit default block
 
-  ```handlebars
-  {{#my-component}}
-    Hi Jen!
-  {{/my-component}}
+  The `Greeting` component will receive an optional block with a greeting:
+
+  ```app/templates/components/greeting.hbs
+  {{#if (has-block)}}
+    <p>{{yield}}</p>
+  {{else}}
+    <p>Hey you! You're great!</p>
+  {{/if}}
   ```
 
-  This component is invoked without a block:
+  If the component is invoked with a block:
 
-  ```handlebars
-  {{my-component}}
+  ```hbs
+  <Greeting>Hi Jen! So glad to have you here.</Greeting>
   ```
 
-  Using angle bracket invocation, this looks like:
+  It will render:
 
   ```html
-  <MyComponent>Hi Jen!</MyComponent> {{! with a block}}
+    <p>Hi Jen! So glad to have you here.</p>
   ```
+
+  If the component is invoked without a block:
 
   ```html
-  <MyComponent/> {{! without a block}}
+  <Greeting />
   ```
 
-  This is useful when you want to create a component that can optionally take a block
-  and then render a default template when it is not invoked with a block.
+  It will render:
+
+   ```html
+    <p>Hey you! You're great!</p>
+  ```
+
+  ### Named blocks
+
+  If we instead make the `Greeting` component receive a `message` named block, we would change the component's template to:
 
   ```app/templates/components/my-component.hbs
-  {{#if (has-block)}}
-    Welcome {{yield}}, we are happy you're here!
+  {{#if (has-block 'message')}}
+    {{yield to='message'}}
   {{else}}
     Hey you! You're great!
   {{/if}}
   ```
 
+  We then invoke with the message named block:
+
+  ```hbs
+    <MyComponent>
+      <:message>Hi Jen!</:message>
+    </MyComponent>
+  ```
+
+  Which would render:
+
+  ```html
+    <p>Hi Jen! So glad to have you here.</p>
+  ```
+  ```
+
   @method has-block
   @for Ember.Templates.helpers
-  @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
+  @param {[String]} name The name of the block. If no name is provided, `default` is assumed.
   @return {Boolean} `true` if the component was invoked with a block
   @public
  */
@@ -244,7 +273,7 @@
 
   @method has-block-params
   @for Ember.Templates.helpers
-  @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
+  @param {[String]} name The name of the block. If no name is provided, `default` is assumed.
   @return {Boolean} `true` if the component was invoked with block params
   @public
  */
