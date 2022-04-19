@@ -1,4 +1,8 @@
-# Ember Changelog
+# Ember Changelo
+
+## v3.28.9 (April 19, 2022)
+
+- [#20028](https://github.com/emberjs/ember.js/pull/20028) Fix a memory leak in the Router Service class
 
 ### v4.4.0-beta.1 (March 24, 2022)
 
