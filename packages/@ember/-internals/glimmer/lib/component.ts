@@ -1,4 +1,5 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
@@ -801,24 +802,27 @@ interface Component
     ViewMixin,
     ComponentMethods {}
 
-class Component extends CoreView.extend(
-  ChildViewsSupport,
-  ViewStateSupport,
-  ClassNamesSupport,
-  TargetActionSupport,
-  ActionSupport,
-  ViewMixin,
-  {
-    // These need to be overridable via extend/create but should still
-    // have a default. Defining them here is the best way to achieve that.
-    didReceiveAttrs() {},
-    didRender() {},
-    didUpdate() {},
-    didUpdateAttrs() {},
-    willRender() {},
-    willUpdate() {},
-  } as ComponentMethods
-) {
+class Component
+  extends CoreView.extend(
+    ChildViewsSupport,
+    ViewStateSupport,
+    ClassNamesSupport,
+    TargetActionSupport,
+    ActionSupport,
+    ViewMixin,
+    {
+      // These need to be overridable via extend/create but should still
+      // have a default. Defining them here is the best way to achieve that.
+      didReceiveAttrs() {},
+      didRender() {},
+      didUpdate() {},
+      didUpdateAttrs() {},
+      willRender() {},
+      willUpdate() {},
+    } as ComponentMethods
+  )
+  implements PropertyDidChange
+{
   isComponent = true;
 
   // SAFTEY: This is set in `init`.
