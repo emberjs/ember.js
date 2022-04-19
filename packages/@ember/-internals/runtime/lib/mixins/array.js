@@ -1360,7 +1360,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
       idx >= length, then append to the end of the array.
     @param {Number} amt Number of elements that should be removed from
       the array, starting at *idx*.
-    @param {EmberArray} objects An array of zero or more objects that should be
+    @param {EmberArray} [objects] An optional array of zero or more objects that should be
       inserted into the array at *idx*
     @public
   */

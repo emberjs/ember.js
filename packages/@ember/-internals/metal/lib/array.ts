@@ -20,12 +20,12 @@ export function replace<T>(
   array: NativeArray<T> | MutableArray<T>,
   start: number,
   deleteCount: number,
-  items = EMPTY_ARRAY
+  items: T[] = EMPTY_ARRAY as []
 ): void {
   if (Array.isArray(array)) {
     replaceInNativeArray(array, start, deleteCount, items);
   } else {
-    array.replace(start, deleteCount, items as any);
+    array.replace(start, deleteCount, items);
   }
 }
 
