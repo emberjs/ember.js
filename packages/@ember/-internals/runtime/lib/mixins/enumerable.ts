@@ -13,4 +13,8 @@ import { Mixin } from '@ember/-internals/metal';
   @class Enumerable
   @private
 */
-export default Mixin.create();
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface Enumerable {}
+const Enumerable = Mixin.create();
+
+export default Enumerable;

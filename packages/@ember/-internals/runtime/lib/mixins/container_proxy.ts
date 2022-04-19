@@ -2,7 +2,16 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
+import Container, { FactoryManager } from '@ember/-internals/container/lib/container';
+import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { Mixin } from '@ember/-internals/metal';
+import { Factory } from '@ember/-internals/owner';
+
+export interface IContainer {
+  ownerInjection(): void;
+  lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined;
+  factoryFor(fullName: string): FactoryManager<object> | undefined;
+}
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -11,7 +20,11 @@ import { Mixin } from '@ember/-internals/metal';
   @class ContainerProxyMixin
   @private
 */
-let containerProxyMixin = {
+interface ContainerProxyMixin extends IContainer {
+  /** @internal */
+  __container__: Container;
+}
+const ContainerProxyMixin = Mixin.create({
   /**
    The container stores state.
 
@@ -90,7 +103,7 @@ let containerProxyMixin = {
    @param {Object} options
    @return {any}
    */
-  lookup(fullName, options) {
+  lookup(fullName: string, options: object) {
     return this.__container__.lookup(fullName, options);
   },
 
@@ -150,9 +163,9 @@ let containerProxyMixin = {
   @param {Object} options
   @return {FactoryManager}
   */
-  factoryFor(fullName, options = {}) {
-    return this.__container__.factoryFor(fullName, options);
+  factoryFor(fullName: string) {
+    return this.__container__.factoryFor(fullName);
   },
-};
+});
 
-export default Mixin.create(containerProxyMixin);
+export default ContainerProxyMixin;

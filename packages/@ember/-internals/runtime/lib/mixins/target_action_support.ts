@@ -19,6 +19,16 @@ doing more complex event handling in Components.
 @extends Mixin
 @private
 */
+interface TargetActionSupport {
+  target: unknown;
+  action: string | null;
+  actionContext: unknown;
+  actionContextObject: unknown;
+  triggerAction(opts?: object): unknown;
+
+  /** @internal */
+  _target?: unknown;
+}
 const TargetActionSupport = Mixin.create({
   target: null,
   action: null,
@@ -95,7 +105,7 @@ const TargetActionSupport = Mixin.create({
   @return {Boolean} true if the action was sent successfully and did not return false
   @private
   */
-  triggerAction(opts = {}) {
+  triggerAction(opts: { action?: string; target?: unknown; actionContext?: unknown } = {}) {
     let { action, target, actionContext } = opts;
     action = action || get(this, 'action');
     target = target || getTarget(this);
@@ -104,17 +114,19 @@ const TargetActionSupport = Mixin.create({
       actionContext = get(this, 'actionContextObject') || this;
     }
 
+    let context = Array.isArray(actionContext) ? actionContext : [actionContext];
+
     if (target && action) {
       let ret;
 
-      if (target.send) {
-        ret = target.send(...[action].concat(actionContext));
+      if (isSendable(target)) {
+        ret = target.send(action, ...context);
       } else {
         assert(
           `The action '${action}' did not exist on ${target}`,
-          typeof target[action] === 'function'
+          typeof (target as any)[action] === 'function'
         );
-        ret = target[action](...[].concat(actionContext));
+        ret = (target as any)[action](...context);
       }
 
       if (ret !== false) {
@@ -126,7 +138,15 @@ const TargetActionSupport = Mixin.create({
   },
 });
 
-function getTarget(instance) {
+interface Sendable {
+  send(action: string, ...context: unknown[]): unknown;
+}
+
+function isSendable(obj: unknown): obj is Sendable {
+  return obj != null && typeof obj === 'object' && typeof (obj as Sendable).send === 'function';
+}
+
+function getTarget(instance: TargetActionSupport) {
   let target = get(instance, 'target');
   if (target) {
     if (typeof target === 'string') {

@@ -2,8 +2,35 @@
 @module ember
 */
 
-import { assert } from '@ember/debug';
+import { Registry } from '@ember/-internals/container';
+import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { Mixin } from '@ember/-internals/metal';
+import { Factory } from '@ember/-internals/owner';
+import { AnyFn } from '@ember/-internals/utils/types';
+import { assert } from '@ember/debug';
+
+export interface IRegistry {
+  resolveRegistration(fullName: string): Factory<object> | object | undefined;
+
+  register(fullName: string, factory: Factory<object> | object, options?: TypeOptions): void;
+
+  unregister(fullName: string): void;
+
+  hasRegistration(fullName: string): boolean;
+
+  registeredOption<K extends keyof TypeOptions>(
+    fullName: string,
+    optionName: K
+  ): TypeOptions[K] | undefined;
+
+  registerOptions(fullName: string, options: TypeOptions): void;
+
+  registeredOptions(fullName: string): TypeOptions | undefined;
+
+  registerOptionsForType(type: string, options: TypeOptions): void;
+
+  registeredOptionsForType(type: string): TypeOptions | undefined;
+}
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -12,7 +39,11 @@ import { Mixin } from '@ember/-internals/metal';
   @class RegistryProxyMixin
   @private
 */
-export default Mixin.create({
+interface RegistryProxyMixin extends IRegistry {
+  /** @internal */
+  __registry__: Registry;
+}
+const RegistryProxyMixin = Mixin.create({
   __registry__: null,
 
   /**
@@ -23,7 +54,7 @@ export default Mixin.create({
    @param {String} fullName
    @return {Function} fullName's factory
    */
-  resolveRegistration(fullName) {
+  resolveRegistration(fullName: string) {
     assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
     return this.__registry__.resolve(fullName);
   },
@@ -259,8 +290,25 @@ export default Mixin.create({
   inject: registryAlias('injection'),
 });
 
-function registryAlias(name) {
-  return function () {
-    return this.__registry__[name](...arguments);
+type AliasMethods =
+  | 'register'
+  | 'unregister'
+  | 'has'
+  | 'getOption'
+  | 'options'
+  | 'getOptions'
+  | 'optionsForType'
+  | 'getOptionsForType'
+  | 'injection';
+
+function registryAlias<N extends AliasMethods>(name: N) {
+  return function (this: RegistryProxyMixin, ...args: Parameters<Registry[N]>) {
+    // We need this cast because `Parameters` is deferred so that it is not
+    // possible for TS to see it will always produce the right type. However,
+    // since `AnyFn` has a rest type, it is allowed. See discussion on [this
+    // issue](https://github.com/microsoft/TypeScript/issues/47615).
+    return (this.__registry__[name] as AnyFn)(...args);
   };
 }
+
+export default RegistryProxyMixin;
