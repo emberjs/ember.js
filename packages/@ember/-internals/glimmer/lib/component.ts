@@ -857,7 +857,7 @@ class Component
       if (!lazyEventsProcessedForComponentClass.has(proto)) {
         let lazyEvents = eventDispatcher.lazyEvents;
 
-        lazyEvents.forEach((mappedEventName: string, event: string) => {
+        lazyEvents.forEach((mappedEventName: string | null, event: string) => {
           if (mappedEventName !== null && typeof (this as any)[mappedEventName] === 'function') {
             eventDispatcher.setupHandlerForBrowserEvent(event);
           }

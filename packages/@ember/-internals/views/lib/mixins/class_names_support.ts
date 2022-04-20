@@ -11,7 +11,11 @@ const EMPTY_ARRAY = Object.freeze([]);
   @namespace Ember
   @private
 */
-export default Mixin.create({
+interface ClassNamesSupport {
+  classNames: string[];
+  classNameBindings: string[];
+}
+const ClassNamesSupport = Mixin.create({
   concatenatedProperties: ['classNames', 'classNameBindings'],
 
   init() {
@@ -99,3 +103,5 @@ export default Mixin.create({
   */
   classNameBindings: EMPTY_ARRAY,
 });
+
+export default ClassNamesSupport;

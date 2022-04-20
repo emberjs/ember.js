@@ -27,6 +27,7 @@ import { Container, privatize as P, Registry } from '@ember/-internals/container
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
 import { EngineInstanceOptions } from '@ember/engine/instance';
+import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 
 /**
   An instance of `Application` is the starting point for every Ember
@@ -230,7 +231,7 @@ class Application extends Engine {
     @default 'body'
     @public
   */
-  declare rootElement: Element | string;
+  declare rootElement: SimpleElement | Element | string;
 
   /**
 
@@ -239,7 +240,7 @@ class Application extends Engine {
     @default 'window.document'
     @private
   */
-  declare _document: Document | null;
+  declare _document: SimpleDocument | Document | null;
 
   /**
     The `Ember.EventDispatcher` responsible for delegating events to this
@@ -532,9 +533,20 @@ class Application extends Engine {
   waitForDOMReady(): void {
     const document = this._document;
 
-    if (document === null || document.readyState !== 'loading') {
+    // SAFETY: Casting as Document should be safe since we're just reading a property.
+    // If it's not actually a Document then it will evaluate false which is fine for our
+    // purposes.
+    if (document === null || (document as Document).readyState !== 'loading') {
       schedule('actions', this, this.domReady);
     } else {
+      // Ideally we'd just check `document instanceof Document` but currently some tests pass a fake document.
+      assert(
+        '[BUG] Called waitForDOMReady with an invalid document',
+        (function (d: SimpleDocument | Document): d is Document {
+          return typeof (d as Document).removeEventListener === 'function';
+        })(document)
+      );
+
       let callback = () => {
         document.removeEventListener('DOMContentLoaded', callback);
         run(this, this.domReady);

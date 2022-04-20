@@ -1,3 +1,5 @@
+import type { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
+
 /**
 @module ember
 */
@@ -11,4 +13,4 @@ export default function ActionManager() {}
   @property registeredActions
   @type Object
 */
-ActionManager.registeredActions = {};
+ActionManager.registeredActions = {} as Record<string, ActionState>;

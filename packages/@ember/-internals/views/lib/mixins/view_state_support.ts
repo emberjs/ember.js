@@ -2,9 +2,15 @@
 @module ember
 */
 import { Mixin } from '@ember/-internals/metal';
+import type Component from '@ember/component';
+import type states from '../views/states';
 
-export default Mixin.create({
-  _transitionTo(state) {
+interface ViewStateSupport {
+  /** @internal */
+  _transitionTo(state: keyof typeof states): void;
+}
+const ViewStateSupport = Mixin.create({
+  _transitionTo(this: Component, state: keyof typeof states) {
     let priorState = this._currentState;
     let currentState = (this._currentState = this._states[state]);
     this._state = state;
@@ -17,3 +23,5 @@ export default Mixin.create({
     }
   },
 });
+
+export default ViewStateSupport;

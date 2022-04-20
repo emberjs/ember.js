@@ -6,6 +6,7 @@ import Component from '@ember/component';
 
 export interface ViewState {
   enter?(view: Component): void;
+  exit?(view: Component): void;
   appendChild(): void;
   handleEvent(view: Component, eventName: string, event: Event): boolean;
   rerender(view: Component): void;

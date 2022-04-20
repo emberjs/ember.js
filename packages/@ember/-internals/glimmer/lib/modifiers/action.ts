@@ -50,7 +50,7 @@ export let ActionHelper = {
   registerAction(actionState: ActionState) {
     let { actionId } = actionState;
 
-    (ActionManager.registeredActions as Record<string, unknown>)[actionId] = actionState;
+    ActionManager.registeredActions[actionId] = actionState;
 
     return actionId;
   },
@@ -58,7 +58,7 @@ export let ActionHelper = {
   unregisterAction(actionState: ActionState) {
     let { actionId } = actionState;
 
-    delete (ActionManager.registeredActions as Record<string, unknown>)[actionId];
+    delete ActionManager.registeredActions[actionId];
   },
 };
 

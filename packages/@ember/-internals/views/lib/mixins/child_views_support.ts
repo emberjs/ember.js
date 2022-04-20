@@ -1,10 +1,15 @@
 /**
 @module ember
 */
+import { View } from '@ember/-internals/glimmer/lib/renderer';
 import { Mixin, nativeDescDecorator } from '@ember/-internals/metal';
 import { getChildViews, addChildView } from '../system/utils';
 
-export default Mixin.create({
+interface ChildViewsSupport {
+  readonly childViews: View[];
+  appendChild(view: View): void;
+}
+const ChildViewsSupport = Mixin.create({
   /**
     Array of child views. You should never edit this array directly.
 
@@ -16,12 +21,14 @@ export default Mixin.create({
   childViews: nativeDescDecorator({
     configurable: false,
     enumerable: false,
-    get() {
+    get(this: View) {
       return getChildViews(this);
     },
   }),
 
-  appendChild(view) {
+  appendChild(view: View) {
     addChildView(this, view);
   },
 });
+
+export default ChildViewsSupport;
