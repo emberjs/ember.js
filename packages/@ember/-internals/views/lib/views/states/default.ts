@@ -1,6 +1,7 @@
 import EmberError from '@ember/error';
+import type { ViewState } from '../states';
 
-const _default = {
+const _default: ViewState = {
   // appendChild is only legal while rendering the buffer.
   appendChild() {
     throw new EmberError("You can't use appendChild outside of the rendering process");

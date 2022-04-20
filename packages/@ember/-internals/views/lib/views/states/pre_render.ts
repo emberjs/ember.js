@@ -1,5 +1,5 @@
 import _default from './default';
 
-const preRender = Object.assign({}, _default);
+const preRender = { ..._default };
 
 export default Object.freeze(preRender);

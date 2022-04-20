@@ -1,10 +1,15 @@
 import { teardownMandatorySetter } from '@ember/-internals/utils';
+import type Component from '@ember/component';
+import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
+import type { ViewState } from '../states';
 import hasElement from './has_element';
 
-const inDOM = Object.assign({}, hasElement, {
-  enter(view) {
+const inDOM: ViewState = {
+  ...hasElement,
+
+  enter(view: Component) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
     view.renderer.register(view);
@@ -12,6 +17,10 @@ const inDOM = Object.assign({}, hasElement, {
     if (DEBUG) {
       let elementId = view.elementId;
 
+      assert(
+        '[BUG] Expected teardownMandatorySetter to be set in DEBUG mode',
+        teardownMandatorySetter
+      );
       teardownMandatorySetter(view, 'elementId');
 
       Object.defineProperty(view, 'elementId', {
@@ -29,6 +38,6 @@ const inDOM = Object.assign({}, hasElement, {
       });
     }
   },
-});
+};
 
 export default Object.freeze(inDOM);
