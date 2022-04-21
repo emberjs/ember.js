@@ -103,7 +103,7 @@ function lookupComponentPair(
   }
 }
 
-const BUILTIN_KEYWORD_HELPERS = {
+const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   action,
   mut,
   readonly,
@@ -145,7 +145,7 @@ if (EMBER_UNIQUE_ID_HELPER) {
   BUILTIN_HELPERS['unique-id'] = uniqueId;
 }
 
-const BUILTIN_KEYWORD_MODIFIERS = {
+const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {
   action: actionModifier,
 };
 
@@ -209,7 +209,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
   }
 
   lookupBuiltInHelper(name: string): HelperDefinitionState | null {
-    return (BUILTIN_KEYWORD_HELPERS as Record<string, object>)[name] ?? null;
+    return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
   lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
@@ -233,7 +233,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
   ): typeof BUILTIN_KEYWORD_MODIFIERS[K];
   lookupBuiltInModifier(name: string): null;
   lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
-    return (BUILTIN_KEYWORD_MODIFIERS as Record<string, ModifierDefinitionState>)[name] ?? null;
+    return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
   lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
