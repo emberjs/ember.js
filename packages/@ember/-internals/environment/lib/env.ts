@@ -164,7 +164,13 @@ export const ENV = {
   },
 };
 
-((EmberENV) => {
+((
+  EmberENV: Record<string, unknown> & {
+    EXTEND_PROTOTYPES?: { Array?: boolean } | boolean;
+    EMBER_LOAD_HOOKS?: Record<string, unknown>;
+    FEATURES?: Record<string, unknown>;
+  }
+) => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
   for (let flag in EmberENV) {
@@ -174,11 +180,11 @@ export const ENV = {
       flag === 'EMBER_LOAD_HOOKS'
     )
       continue;
-    let defaultValue = ENV[flag];
+    let defaultValue = (ENV as Record<string, unknown>)[flag];
     if (defaultValue === true) {
-      ENV[flag] = EmberENV[flag] !== false;
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;
     } else if (defaultValue === false) {
-      ENV[flag] = EmberENV[flag] === true;
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
     }
   }
 

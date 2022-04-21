@@ -3,6 +3,7 @@
 */
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { setListeners } from '@ember/-internals/utils';
+import { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 
 /*
@@ -203,9 +204,7 @@ export function hasListeners(obj: object, eventName: string): boolean {
   @return {Function} the listener function, passed as last argument to on(...)
   @public
 */
-export function on<T extends (...args: any[]) => any>(
-  ...args: [...eventNames: string[], func: T]
-): T {
+export function on<T extends AnyFn>(...args: [...eventNames: string[], func: T]): T {
   let func = args.pop();
   let events = args as string[];
 

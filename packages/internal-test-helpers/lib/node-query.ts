@@ -24,12 +24,14 @@ export default class NodeQuery {
   nodes: Element[];
   length: number;
 
+  [index: number]: Element;
+
   constructor(nodes: Element[]) {
     assert('NodeQuery must be initialized with a literal array', Array.isArray(nodes));
     this.nodes = nodes;
 
     for (let i = 0; i < nodes.length; i++) {
-      this[i] = nodes[i];
+      this[i] = nodes[i]!;
     }
 
     this.length = nodes.length;
@@ -37,10 +39,13 @@ export default class NodeQuery {
     Object.freeze(this);
   }
 
-  find(selector: string | Element) {
+  find<K extends keyof HTMLElementTagNameMap>(selectors: K): HTMLElementTagNameMap[K] | null;
+  find<K extends keyof SVGElementTagNameMap>(selectors: K): SVGElementTagNameMap[K] | null;
+  find<E extends Element = Element>(selectors: string): E | null;
+  find(selector: string) {
     assertSingle(this);
 
-    return this[0].querySelector(selector);
+    return this[0]!.querySelector(selector);
   }
 
   findAll(selector: string): NodeQuery {
@@ -90,26 +95,28 @@ export default class NodeQuery {
   }
 
   prop(name: string): unknown;
-  prop(name: string, value: unknown): unknown;
-  prop(name: string, value?: unknown) {
+  prop(name: string, value: unknown): this;
+  prop(name: string, value?: unknown): this | unknown {
     if (arguments.length > 1) {
       return this.setProp(name, value);
     }
 
     assertSingle(this);
 
-    return this.nodes[0]![name];
+    // SAFETY: This is not safe. We don't know that the node accepts this key.
+    return (this.nodes[0] as any)[name];
   }
 
   setProp(name: string, value: unknown) {
-    this.nodes.forEach((node) => (node[name] = value));
+    // SAFETY: This is not safe. We don't know that the node accepts this key.
+    this.nodes.forEach((node) => ((node as any)[name] = value));
 
     return this;
   }
 
   val(): unknown;
-  val(value: unknown): unknown;
-  val(value?: unknown): unknown {
+  val(value: unknown): this;
+  val(value?: unknown): this | unknown {
     if (arguments.length === 1) {
       return this.setProp('value', value);
     }

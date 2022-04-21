@@ -1,3 +1,1 @@
-import { symbol } from '@ember/-internals/utils';
-
-export let MUTABLE_CELL = symbol('MUTABLE_CELL');
+export const MUTABLE_CELL = Symbol('MUTABLE_CELL');

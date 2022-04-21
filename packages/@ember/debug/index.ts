@@ -1,4 +1,5 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
+import { AnyFn } from '@ember/-internals/utils/types';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
@@ -243,7 +244,7 @@ if (DEBUG) {
   */
   setDebugFunction('deprecateFunc', function deprecateFunc(...args: any[]) {
     if (args.length === 3) {
-      let [message, options, func] = args as [string, DeprecationOptions, (...args: any[]) => any];
+      let [message, options, func] = args as [string, DeprecationOptions, AnyFn];
       return function (this: any, ...args: any[]) {
         deprecate(message, false, options);
         return func.apply(this, args);

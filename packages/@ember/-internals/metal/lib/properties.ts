@@ -125,7 +125,7 @@ export function defineValue(
     if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
-      obj[keyName] = value;
+      (obj as any)[keyName] = value;
     }
   }
 

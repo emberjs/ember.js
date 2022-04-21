@@ -20,8 +20,10 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import { isProxy, lookupDescriptor, symbol } from '@ember/-internals/utils';
+import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import { AnyFn } from '@ember/-internals/utils/types';
 import Controller from '@ember/controller';
+import { ControllerQueryParamType } from '@ember/controller/lib/controller_mixin';
 import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
@@ -39,8 +41,8 @@ import {
 } from 'router_js';
 import {
   calculateCacheKey,
-  ControllerQueryParam,
   deprecateTransitionMethods,
+  ExpandedControllerQueryParam,
   NamedRouteArgs,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
@@ -49,6 +51,10 @@ import {
 } from '../utils';
 import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
+
+export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
+  _names?: unknown[];
+}
 
 export type QueryParamMeta = {
   qps: QueryParam[];
@@ -66,11 +72,11 @@ type RouteTransitionState<R extends Route> = TransitionState<R> & {
   queryParamsFor?: Record<string, Record<string, unknown>>;
 };
 
-type MaybeParameters<T> = T extends (...args: any[]) => any ? Parameters<T> : unknown[];
-type MaybeReturnType<T> = T extends (...args: any[]) => any ? ReturnType<T> : unknown;
+type MaybeParameters<T> = T extends AnyFn ? Parameters<T> : unknown[];
+type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
 
 export const ROUTE_CONNECTIONS = new WeakMap();
-const RENDER = symbol('render') as unknown as string;
+const RENDER = Symbol('render');
 
 /**
 @module @ember/routing
@@ -352,7 +358,7 @@ class Route<T = unknown>
       return;
     }
 
-    let object = {};
+    let object: Record<string, unknown> = {};
     if (params.length === 1) {
       let [name] = params;
       assert('has name', name);
@@ -559,11 +565,14 @@ class Route<T = unknown>
 
     @method _stashNames
   */
-  _stashNames(routeInfo: InternalRouteInfo<this>, dynamicParent: InternalRouteInfo<this>) {
+  _stashNames(
+    routeInfo: ExtendedInternalRouteInfo<this>,
+    dynamicParent: ExtendedInternalRouteInfo<this>
+  ) {
     if (this._names) {
       return;
     }
-    let names = (this._names = routeInfo['_names']);
+    let names = (this._names = routeInfo['_names'])!;
 
     if (!names.length) {
       routeInfo = dynamicParent;
@@ -670,7 +679,7 @@ class Route<T = unknown>
     let state = transition ? transition[STATE_SYMBOL] : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
-    let params = Object.assign({}, state!.params[fullName]);
+    let params = { ...(state!.params[fullName] as Record<string, unknown>) };
     let queryParams = getQueryParamsFor(route, state!);
 
     return Object.entries(queryParams).reduce((params, [key, value]) => {
@@ -1876,7 +1885,7 @@ class Route<T = unknown>
     */
   @computed
   protected get _qp(): QueryParamMeta {
-    let combinedQueryParameterConfiguration;
+    let combinedQueryParameterConfiguration: ReturnType<typeof mergeEachQueryParams> = {};
 
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
@@ -1893,8 +1902,8 @@ class Route<T = unknown>
       // merge in the query params for the route. As a mergedProperty,
       // Route#queryParams is always at least `{}`
 
-      let controllerDefinedQueryParameterConfiguration: ControllerQueryParam[] =
-        (get(controller, 'queryParams') as ControllerQueryParam[]) || [];
+      let controllerDefinedQueryParameterConfiguration =
+        (get(controller, 'queryParams') as Controller['queryParams']) || [];
       let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
         controllerDefinedQueryParameterConfiguration
       );
@@ -1926,6 +1935,8 @@ class Route<T = unknown>
       }
 
       let desc = combinedQueryParameterConfiguration[propName];
+      assert(`[BUG] missing query parameter configuration for ${propName}`, desc);
+
       let scope = desc.scope || 'model';
       let parts: string[] | undefined = undefined;
 
@@ -2005,7 +2016,7 @@ class Route<T = unknown>
   }
 
   // Set in reopen
-  declare actions: Record<string, (...args: any[]) => any>;
+  declare actions: Record<string, AnyFn>;
 
   /**
     Sends an action to the router, which will delegate it to the currently
@@ -2276,9 +2287,21 @@ function copyDefaultValue<T>(value: T): T {
   a route, returning a new object and avoiding any mutations to
   the existing objects.
 */
-function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
-  let qps = {};
-  let keysAlreadyMergedOrSkippable = {
+function mergeEachQueryParams(
+  controllerQP: Record<string, ExpandedControllerQueryParam>,
+  routeQP: Route['queryParams']
+) {
+  let qps: Record<
+    string,
+    {
+      type?: ControllerQueryParamType;
+      as?: string | null;
+      replace?: boolean;
+      refreshModel?: boolean;
+      scope?: string;
+    }
+  > = {};
+  let keysAlreadyMergedOrSkippable: Record<string, true> = {
     defaultValue: true,
     type: true,
     scope: true,
@@ -2292,10 +2315,7 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
       continue;
     }
 
-    let newControllerParameterConfiguration = {};
-    Object.assign(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
-
-    qps[cqpName] = newControllerParameterConfiguration;
+    qps[cqpName] = { ...controllerQP[cqpName], ...routeQP[cqpName] };
 
     // allows us to skip this QP when we check route QPs.
     keysAlreadyMergedOrSkippable[cqpName] = true;
@@ -2311,9 +2331,7 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
       continue;
     }
 
-    let newRouteParameterConfiguration = {};
-    Object.assign(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
-    qps[rqpName] = newRouteParameterConfiguration;
+    qps[rqpName] = { ...routeQP[rqpName], ...controllerQP[rqpName] };
   }
 
   return qps;
@@ -2448,7 +2466,7 @@ Route.reopen({
 
     finalizeQueryParamChange<T>(
       this: Route<T>,
-      params: {},
+      params: Record<string, string | null | undefined>,
       finalParams: {}[],
       transition: Transition
     ) {

@@ -33,7 +33,9 @@ import { addObserver, setObserverSuspended } from './observer';
 import {
   beginPropertyChanges,
   endPropertyChanges,
+  hasPropertyDidChange,
   notifyPropertyChange,
+  PropertyDidChange,
   PROPERTY_DID_CHANGE,
 } from './property_events';
 
@@ -460,10 +462,12 @@ export class ComputedProperty extends ComputedDescriptor {
       meta.isInitializing() &&
       this._dependentKeys !== undefined &&
       this._dependentKeys.length > 0 &&
-      // These two properties are set on Ember.Component
-      typeof obj[PROPERTY_DID_CHANGE] === 'function' &&
+      typeof (obj as PropertyDidChange)[PROPERTY_DID_CHANGE] === 'function' &&
       (obj as any).isComponent
     ) {
+      // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
+      assert('property did change hook is invalid', hasPropertyDidChange(obj));
+
       addObserver(
         obj,
         keyName,

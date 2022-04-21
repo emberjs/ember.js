@@ -1,4 +1,5 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
@@ -17,7 +18,7 @@ import { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
-import { createTag, dirtyTag } from '@glimmer/validator';
+import { createTag, DirtyableTag, dirtyTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
 import {
   ARGS,
@@ -789,6 +790,7 @@ interface ComponentMethods {
     @type String
     @public
   */
+  layoutName?: string;
 }
 interface Component
   extends CoreView,
@@ -800,28 +802,34 @@ interface Component
     ViewMixin,
     ComponentMethods {}
 
-class Component extends CoreView.extend(
-  ChildViewsSupport,
-  ViewStateSupport,
-  ClassNamesSupport,
-  TargetActionSupport,
-  ActionSupport,
-  ViewMixin,
-  {
-    // These need to be overridable via extend/create but should still
-    // have a default. Defining them here is the best way to achieve that.
-    didReceiveAttrs() {},
-    didRender() {},
-    didUpdate() {},
-    didUpdateAttrs() {},
-    willRender() {},
-    willUpdate() {},
-  } as ComponentMethods
-) {
+class Component
+  extends CoreView.extend(
+    ChildViewsSupport,
+    ViewStateSupport,
+    ClassNamesSupport,
+    TargetActionSupport,
+    ActionSupport,
+    ViewMixin,
+    {
+      // These need to be overridable via extend/create but should still
+      // have a default. Defining them here is the best way to achieve that.
+      didReceiveAttrs() {},
+      didRender() {},
+      didUpdate() {},
+      didUpdateAttrs() {},
+      willRender() {},
+      willUpdate() {},
+    } as ComponentMethods
+  )
+  implements PropertyDidChange
+{
   isComponent = true;
 
   // SAFTEY: This is set in `init`.
   declare _superRerender: ViewMixin['rerender'];
+
+  declare [IS_DISPATCHING_ATTRS]: boolean;
+  declare [DIRTY_TAG]: DirtyableTag;
 
   init(properties: object | undefined) {
     super.init(properties);
@@ -850,7 +858,7 @@ class Component extends CoreView.extend(
         let lazyEvents = eventDispatcher.lazyEvents;
 
         lazyEvents.forEach((mappedEventName: string, event: string) => {
-          if (mappedEventName !== null && typeof this[mappedEventName] === 'function') {
+          if (mappedEventName !== null && typeof (this as any)[mappedEventName] === 'function') {
             eventDispatcher.setupHandlerForBrowserEvent(event);
           }
         });
@@ -866,7 +874,7 @@ class Component extends CoreView.extend(
       for (let key in events) {
         let methodName = events[key];
 
-        if (methodName && typeof this[methodName] === 'function') {
+        if (methodName && typeof (this as any)[methodName] === 'function') {
           eventNames.push(methodName);
         }
       }
@@ -926,7 +934,7 @@ class Component extends CoreView.extend(
       return;
     }
 
-    let args = this[ARGS];
+    let args = (this as any)[ARGS];
     let reference = args !== undefined ? args[key] : undefined;
 
     if (reference !== undefined && isUpdatableRef(reference)) {
@@ -987,7 +995,7 @@ class Component extends CoreView.extend(
       return element.getAttribute(normalized);
     }
 
-    return element[normalized];
+    return (element as any)[normalized];
   }
 
   // --- Declarations which support mixins ---

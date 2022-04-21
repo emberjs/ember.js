@@ -1,5 +1,5 @@
 import { Factory, FactoryClass, Owner, setOwner } from '@ember/-internals/owner';
-import { dictionary, symbol } from '@ember/-internals/utils';
+import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import Registry, { DebugRegistry, TypeOptions } from './registry';
@@ -447,7 +447,7 @@ declare interface DebugFactory<T extends object, C extends FactoryClass | object
   _lazyInjections(): { [key: string]: LazyInjection };
 }
 
-export const INIT_FACTORY = symbol('INIT_FACTORY');
+export const INIT_FACTORY = Symbol('INIT_FACTORY');
 
 export function getFactoryFor(obj: any): FactoryManager<any, any> {
   return obj[INIT_FACTORY];

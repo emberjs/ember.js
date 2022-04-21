@@ -82,12 +82,12 @@ function inspectKey(key: string) {
   return SAFE_KEY.test(key) ? key : stringify(key);
 }
 
-function inspectObject(obj: object, depth: number, seen: WeakSet<object>) {
+function inspectObject<T extends object>(obj: T, depth: number, seen: WeakSet<object>) {
   if (depth > DEPTH_LIMIT) {
     return '[Object]';
   }
   let s = '{';
-  let keys = objectKeys(obj);
+  let keys = objectKeys(obj) as Array<keyof T>;
   for (let i = 0; i < keys.length; i++) {
     s += i === 0 ? ' ' : ', ';
 
@@ -98,7 +98,7 @@ function inspectObject(obj: object, depth: number, seen: WeakSet<object>) {
 
     let key = keys[i];
     assert('has key', key); // Looping over array
-    s += `${inspectKey(key)}: ${inspectValue(obj[key], depth, seen)}`;
+    s += `${inspectKey(String(key))}: ${inspectValue(obj[key], depth, seen)}`;
   }
   s += ' }';
   return s;

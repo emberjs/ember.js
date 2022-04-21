@@ -169,17 +169,17 @@ export class Meta {
   }
 
   /** @internal */
-  _getOrCreateOwnMap(key: string) {
+  _getOrCreateOwnMap(key: '_values' | '_revisions' | '_lazyChains') {
     return this[key] || (this[key] = Object.create(null));
   }
 
   /** @internal */
-  _getOrCreateOwnSet(key: string) {
+  _getOrCreateOwnSet(key: '_mixins') {
     return this[key] || (this[key] = new Set());
   }
 
   /** @internal */
-  _findInheritedMap(key: string, subkey: string): any | undefined {
+  _findInheritedMap(key: keyof Meta, subkey: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let map: Map<string, any> = pointer[key];
@@ -194,7 +194,7 @@ export class Meta {
   }
 
   /** @internal */
-  _hasInInheritedSet(key: string, value: any) {
+  _hasInInheritedSet(key: keyof Meta, value: any) {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let set = pointer[key];

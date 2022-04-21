@@ -100,7 +100,11 @@ export function setUnprocessedMixins(): void {
   unprocessedMixins = true;
 }
 
-function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace>): void {
+function _processNamespace<N extends Namespace>(
+  paths: string[],
+  root: N,
+  seen: Set<Namespace>
+): void {
   let idx = paths.length;
 
   let id = paths.join('.');
@@ -113,7 +117,7 @@ function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace
     if (!hasOwnProperty.call(root, key)) {
       continue;
     }
-    let obj = root[key];
+    let obj: unknown = root[key];
 
     // If we are processing the `Ember` namespace, for example, the
     // `paths` will start with `["Ember"]`. Every iteration through
@@ -123,11 +127,11 @@ function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace
     paths[idx] = key;
 
     // If we have found an unprocessed class
-    if (obj && getName(obj) === void 0) {
+    if (obj && getName(obj as object) === void 0) {
       // Replace the class' `toString` with the dot-separated path
-      setName(obj, paths.join('.'));
+      setName(obj as object, paths.join('.'));
       // Support nested namespaces
-    } else if (obj && obj.isNamespace) {
+    } else if (obj && isNamespace(obj)) {
       // Skip aliased namespaces
       if (seen.has(obj)) {
         continue;
@@ -139,6 +143,10 @@ function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace
   }
 
   paths.length = idx; // cut out last item
+}
+
+function isNamespace(obj: unknown): obj is Namespace {
+  return obj != null && typeof obj === 'object' && (obj as Namespace).isNamespace;
 }
 
 function isUppercase(code: number): boolean {

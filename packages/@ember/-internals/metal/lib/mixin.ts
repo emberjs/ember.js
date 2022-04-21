@@ -12,6 +12,7 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
+import { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
@@ -539,6 +540,8 @@ export default class Mixin {
   /** @internal */
   _without: any[] | undefined;
 
+  declare [INIT_FACTORY]?: null;
+
   /** @internal */
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     MIXINS.add(this);
@@ -761,7 +764,7 @@ function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
 // OBSERVER HELPER
 //
 
-type ObserverDefinition<T extends (...args: any[]) => any> = {
+type ObserverDefinition<T extends AnyFn> = {
   dependentKeys: string[];
   fn: T;
   sync: boolean;
@@ -792,7 +795,7 @@ type ObserverDefinition<T extends (...args: any[]) => any> = {
   @public
   @static
 */
-export function observer<T extends (...args: any[]) => any>(
+export function observer<T extends AnyFn>(
   ...args:
     | [propertyName: string, ...additionalPropertyNames: string[], func: T]
     | [ObserverDefinition<T>]

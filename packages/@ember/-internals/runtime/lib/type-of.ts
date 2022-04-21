@@ -1,6 +1,6 @@
 import CoreObject from './system/core_object';
 
-type TypeName =
+export type TypeName =
   | 'undefined'
   | 'null'
   | 'string'

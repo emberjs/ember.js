@@ -2,6 +2,7 @@ import { history, location, userAgent, window } from '@ember/-internals/browser-
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { EmberLocation, UpdateCallback } from './api';
 import {
@@ -219,14 +220,21 @@ AutoLocation.reopen({
   cancelRouterSetup: false,
 });
 
-function delegateToConcreteImplementation(methodName: string) {
-  return function (this: AutoLocation, ...args: unknown[]) {
+function delegateToConcreteImplementation<N extends MethodNamesOf<Required<EmberLocation>>>(
+  methodName: N
+) {
+  return function (this: AutoLocation, ...args: Parameters<Required<EmberLocation>[N]>) {
     let { concreteImplementation } = this;
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
       concreteImplementation
     );
-    return concreteImplementation[methodName]?.(...args);
+
+    // We need this cast because `Parameters` is deferred so that it is not
+    // possible for TS to see it will always produce the right type. However,
+    // since `AnyFn` has a rest type, it is allowed. See discussion on [this
+    // issue](https://github.com/microsoft/TypeScript/issues/47615).
+    return (concreteImplementation[methodName] as AnyFn | undefined)?.(...args);
   };
 }
 

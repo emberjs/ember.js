@@ -70,7 +70,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
   let descriptor = lookupDescriptor(obj, keyName);
 
   if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
-    obj[keyName] = value;
+    (obj as any)[keyName] = value;
     return value;
   }
 
@@ -78,7 +78,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
   if (DEBUG) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
-    currentValue = obj[keyName];
+    currentValue = (obj as any)[keyName];
   }
 
   if (
@@ -93,7 +93,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
     if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
-      obj[keyName] = value;
+      (obj as any)[keyName] = value;
     }
 
     if (currentValue !== value) {

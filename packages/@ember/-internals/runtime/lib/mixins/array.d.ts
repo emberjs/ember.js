@@ -1,4 +1,5 @@
 import { Mixin } from '@ember/-internals/metal';
+import { AnyFn } from '@ember/-internals/utils/types';
 import Enumerable from './enumerable';
 import MutableEnumerable from './mutable_enumerable';
 
@@ -55,8 +56,8 @@ interface EmberArray<T> extends Enumerable {
   ): V;
   invoke<K extends string>(
     methodName: K,
-    ...args: Value<T, K> extends (...args: any[]) => any ? Parameters<Value<T, K>> : unknown[]
-  ): NativeArray<Value<T, K> extends (...args: any[]) => any ? ReturnType<Value<T, K>> : unknown>;
+    ...args: Value<T, K> extends AnyFn ? Parameters<Value<T, K>> : unknown[]
+  ): NativeArray<Value<T, K> extends AnyFn ? ReturnType<Value<T, K>> : unknown>;
   toArray(): T[];
   compact(): NativeArray<Exclude<T, null>>;
   includes(object: T, startAt?: number): boolean;

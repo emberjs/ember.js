@@ -3,12 +3,12 @@ import global from './global';
 export interface GlobalContext {
   imports: object;
   exports: object;
-  lookup: object;
+  lookup: Record<string, unknown>;
 }
 
 // legacy imports/exports/lookup stuff (should we keep this??)
 export const context = (function (
-  global: object,
+  global: Record<string, unknown>,
   Ember: Partial<GlobalContext> | undefined
 ): GlobalContext {
   return Ember === undefined
@@ -27,6 +27,6 @@ export function getLookup(): object {
   return context.lookup;
 }
 
-export function setLookup(value: object): void {
+export function setLookup(value: Record<string, unknown>): void {
   context.lookup = value;
 }

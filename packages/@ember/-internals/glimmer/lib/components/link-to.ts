@@ -33,7 +33,9 @@ interface QueryParams {
 }
 
 function isQueryParams(value: unknown): value is QueryParams {
-  return typeof value === 'object' && value !== null && value['isQueryParams'] === true;
+  return (
+    typeof value === 'object' && value !== null && (value as QueryParams)['isQueryParams'] === true
+  );
 }
 
 /**

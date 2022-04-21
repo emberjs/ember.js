@@ -566,7 +566,7 @@ export default class DataAdapter<T> extends EmberObject {
         }
         // Even though we will filter again in `getModelTypes`,
         // we should not call `lookupFactory` on non-models
-        if (!this.detect(namespace[key])) {
+        if (!this.detect((namespace as any)[key])) {
           continue;
         }
         let name = dasherize(key);

@@ -1,14 +1,15 @@
 import { end, _cancelTimers, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
 
 export function setupRunLoopCheck(hooks: NestedHooks) {
-  hooks.afterEach(function (assert) {
+  hooks.afterEach(function (assert: QUnit['assert']) {
     if (_getCurrentRunLoop() || _hasScheduledTimers()) {
       let done = assert.async();
       // use a setTimeout to allow the current run loop to flush via autorun
       setTimeout(() => {
         // increment expected assertion count for the assertions just below
-        if (assert['test'].expected !== null) {
-          assert['test'].expected += 2;
+        let test = (assert as any)['test'];
+        if (test.expected !== null) {
+          test.expected += 2;
         }
 
         // if it is _still_ not completed, we have a problem and the test should be fixed

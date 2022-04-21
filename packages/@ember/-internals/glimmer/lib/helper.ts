@@ -5,14 +5,14 @@
 import { FactoryManager } from '@ember/-internals/container/lib/container';
 import { Factory, Owner, setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
-import { getDebugName, symbol } from '@ember/-internals/utils';
+import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
 import { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { consumeTag, createTag, DirtyableTag, dirtyTag } from '@glimmer/validator';
 
-export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
+export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 
 export type HelperFunction<T, P extends unknown[], N extends Dict<unknown>> = (
   positional: P,
@@ -33,6 +33,7 @@ export interface HelperFactory<T> {
 export interface HelperInstance<T = unknown> {
   compute(positional: unknown[], named: Dict<unknown>): T;
   destroy(): void;
+  [RECOMPUTE_TAG]: DirtyableTag;
 }
 
 const IS_CLASSIC_HELPER: unique symbol = Symbol('IS_CLASSIC_HELPER');
@@ -102,6 +103,8 @@ class Helper extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
+  [RECOMPUTE_TAG]: DirtyableTag;
+
   init(properties: object | undefined) {
     super.init(properties);
     this[RECOMPUTE_TAG] = createTag();
@@ -144,7 +147,7 @@ class Helper extends FrameworkObject {
 }
 
 export function isClassicHelper(obj: object): boolean {
-  return obj[IS_CLASSIC_HELPER] === true;
+  return (obj as any)[IS_CLASSIC_HELPER] === true;
 }
 
 interface ClassicHelperStateBucket {
@@ -206,7 +209,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 
   getDebugName(definition: ClassHelperFactory) {
-    return getDebugName!((definition.class || definition)!['prototype']);
+    return getDebugName!(((definition.class || definition)! as any)['prototype']);
   }
 }
 

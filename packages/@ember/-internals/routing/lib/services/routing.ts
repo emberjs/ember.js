@@ -3,7 +3,6 @@
 */
 
 import { getOwner } from '@ember/-internals/owner';
-import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -11,8 +10,7 @@ import { ModelFor } from 'router_js';
 import { Route } from '../..';
 import EmberRouter from '../system/router';
 import RouterState from '../system/router_state';
-
-const ROUTER = symbol('ROUTER');
+import { ROUTER } from './router';
 
 /**
   The Routing service is used by LinkTo, and provides facilities for
@@ -30,6 +28,8 @@ export default class RoutingService<R extends Route> extends Service {
   declare currentRouteName: EmberRouter['currentRouteName'];
   declare currentPath: EmberRouter['currentPath'];
 
+  [ROUTER]?: EmberRouter<R>;
+
   get router(): EmberRouter<R> {
     let router = this[ROUTER];
     if (router !== undefined) {
@@ -38,13 +38,13 @@ export default class RoutingService<R extends Route> extends Service {
     let owner = getOwner(this);
     assert('RoutingService is unexpectedly missing an owner', owner);
 
-    router = owner.lookup('router:main');
+    let _router = owner.lookup('router:main');
     assert(
       'ROUTING SERVICE BUG: Expected router to be an instance of EmberRouter',
-      router instanceof EmberRouter
+      _router instanceof EmberRouter
     );
-    router.setupRouter();
-    return (this[ROUTER] = router);
+    _router.setupRouter();
+    return (this[ROUTER] = _router);
   }
 
   hasRoute(routeName: string) {
