@@ -2,6 +2,7 @@ import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner, { DeferredActionQueues, Timer } from 'backburner';
+import { AnyFn } from '@ember/-internals/utils/types';
 
 export { Timer };
 
@@ -129,10 +130,7 @@ export const _backburner = new Backburner(_queues, {
   @public
 */
 export function run<F extends () => any>(method: F): ReturnType<F>;
-export function run<F extends (...args: any[]) => any>(
-  method: F,
-  ...args: Parameters<F>
-): ReturnType<F>;
+export function run<F extends AnyFn>(method: F, ...args: Parameters<F>): ReturnType<F>;
 export function run<T, F extends (this: T, ...args: any[]) => any>(
   target: T,
   method: F,
@@ -141,8 +139,8 @@ export function run<T, F extends (this: T, ...args: any[]) => any>(
 export function run<T, U extends keyof T>(
   target: T,
   method: U,
-  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
-): T[U] extends (...args: any[]) => any ? ReturnType<T[U]> : unknown;
+  ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
+): T[U] extends AnyFn ? ReturnType<T[U]> : unknown;
 export function run(...args: any[]): unknown {
   // @ts-expect-error TS doesn't like our spread args
   return _backburner.run(...args);
@@ -192,10 +190,7 @@ export function run(...args: any[]): unknown {
   when called within an existing loop, no return value is possible.
   @public
 */
-export function join<F extends (...args: any[]) => any>(
-  method: F,
-  ...args: Parameters<F>
-): ReturnType<F> | void;
+export function join<F extends AnyFn>(method: F, ...args: Parameters<F>): ReturnType<F> | void;
 export function join<T, F extends (this: T, ...args: any[]) => any>(
   target: T,
   method: F,
@@ -204,8 +199,8 @@ export function join<T, F extends (this: T, ...args: any[]) => any>(
 export function join<T, U extends keyof T>(
   target: T,
   method: U,
-  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
-): T[U] extends (...args: any[]) => any ? ReturnType<T[U]> | void : void;
+  ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
+): T[U] extends AnyFn ? ReturnType<T[U]> | void : void;
 export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: any[]): any {
   return _backburner.join(methodOrTarget, methodOrArg, ...additionalArgs);
 }
@@ -281,19 +276,19 @@ export function bind<
   method: F,
   ...args: A
 ): (...args: RemainingParams<A, Parameters<F>>) => ReturnType<F> | void;
-export function bind<F extends (...args: any[]) => any, A extends PartialParams<Parameters<F>>>(
+export function bind<F extends AnyFn, A extends PartialParams<Parameters<F>>>(
   method: F,
   ...args: A
 ): (...args: RemainingParams<A, Parameters<F>>) => ReturnType<F> | void;
 export function bind<
   T,
   U extends keyof T,
-  A extends T[U] extends (...args: any[]) => any ? PartialParams<Parameters<T[U]>> : []
+  A extends T[U] extends AnyFn ? PartialParams<Parameters<T[U]>> : []
 >(
   target: T,
   method: U,
   ...args: A
-): T[U] extends (...args: any[]) => any
+): T[U] extends AnyFn
   ? (...args: RemainingParams<A, Parameters<T[U]>>) => ReturnType<T[U]> | void
   : never;
 export function bind(...curried: any[]): any {
@@ -411,7 +406,7 @@ export function end() {
   @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function schedule<F extends (...args: any[]) => any>(
+export function schedule<F extends AnyFn>(
   queueName: string,
   method: F,
   ...args: Parameters<F>
@@ -426,7 +421,7 @@ export function schedule<T, U extends keyof T>(
   queueName: string,
   target: T,
   method: U,
-  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+  ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function schedule(...args: any[]): Timer {
   // @ts-expect-error TS doesn't like the rest args here
@@ -478,17 +473,14 @@ export function later<T, F extends (this: T, ...args: any[]) => any>(
   method: F,
   ...args: [...args: Parameters<F>, wait: string | number]
 ): Timer;
-export function later<F extends (...args: any[]) => any>(
+export function later<F extends AnyFn>(
   method: F,
   ...args: [...args: Parameters<F>, wait: string | number]
 ): Timer;
 export function later<T, U extends keyof T>(
   target: T,
   method: U,
-  ...args: [
-    ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : [],
-    wait: string | number
-  ]
+  ...args: [...args: T[U] extends AnyFn ? Parameters<T[U]> : [], wait: string | number]
 ): Timer;
 export function later(...args: any): Timer {
   return _backburner.later(...args);
@@ -509,7 +501,7 @@ export function later(...args: any): Timer {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function once<F extends (...args: any[]) => any>(method: F, ...args: Parameters<F>): Timer;
+export function once<F extends AnyFn>(method: F, ...args: Parameters<F>): Timer;
 export function once<T, F extends (this: T, ...args: any[]) => any>(
   target: T,
   method: F,
@@ -518,7 +510,7 @@ export function once<T, F extends (this: T, ...args: any[]) => any>(
 export function once<T, U extends keyof T>(
   target: T,
   method: U,
-  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+  ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function once(...args: any[]): Timer {
   // @ts-expect-error TS doesn't like the rest args here
@@ -597,7 +589,7 @@ export function once(...args: any[]): Timer {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function scheduleOnce<F extends (...args: any[]) => any>(
+export function scheduleOnce<F extends AnyFn>(
   queueName: string,
   method: F,
   ...args: Parameters<F>
@@ -612,7 +604,7 @@ export function scheduleOnce<T, U extends keyof T>(
   queueName: string,
   target: T,
   method: U,
-  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+  ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function scheduleOnce(...args: any[]): Timer {
   // @ts-expect-error TS doesn't like the rest args here
@@ -689,7 +681,7 @@ export function scheduleOnce(...args: any[]): Timer {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function next<F extends (...args: any[]) => any>(method: F, ...args: Parameters<F>): Timer;
+export function next<F extends AnyFn>(method: F, ...args: Parameters<F>): Timer;
 export function next<T, F extends (this: T, ...args: any[]) => any>(
   target: T,
   method: F,
@@ -698,7 +690,7 @@ export function next<T, F extends (this: T, ...args: any[]) => any>(
 export function next<T, U extends keyof T>(
   target: T,
   method: U,
-  ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : []
+  ...args: T[U] extends AnyFn ? Parameters<T[U]> : []
 ): Timer;
 export function next(...args: any[]) {
   return _backburner.later(...args, 1);
@@ -849,7 +841,7 @@ export function cancel(timer: Timer): boolean {
   @return {Array} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function debounce<F extends (...args: any[]) => any>(
+export function debounce<F extends AnyFn>(
   method: F,
   ...args: [...args: Parameters<F>, wait: string | number, immediate?: boolean]
 ): Timer;
@@ -862,7 +854,7 @@ export function debounce<T, U extends keyof T>(
   target: T,
   method: U,
   ...args: [
-    ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : [],
+    ...args: T[U] extends AnyFn ? Parameters<T[U]> : [],
     wait: string | number,
     immediate?: boolean
   ]
@@ -915,7 +907,7 @@ export function debounce(...args: any[]) {
   @return {Array} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function throttle<F extends (...args: any[]) => any>(
+export function throttle<F extends AnyFn>(
   method: F,
   ...args: [...args: Parameters<F>, wait?: string | number, immediate?: boolean]
 ): Timer;
@@ -928,7 +920,7 @@ export function throttle<T, U extends keyof T>(
   target: T,
   method: U,
   ...args: [
-    ...args: T[U] extends (...args: any[]) => any ? Parameters<T[U]> : [],
+    ...args: T[U] extends AnyFn ? Parameters<T[U]> : [],
     wait?: string | number,
     immediate?: boolean
   ]

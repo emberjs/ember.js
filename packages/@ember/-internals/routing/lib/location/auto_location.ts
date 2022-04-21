@@ -2,6 +2,7 @@ import { history, location, userAgent, window } from '@ember/-internals/browser-
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { EmberLocation, UpdateCallback } from './api';
 import {
@@ -218,12 +219,6 @@ AutoLocation.reopen({
 
   cancelRouterSetup: false,
 });
-
-type AnyFn = (...args: any[]) => any;
-
-type MethodNamesOf<T> = {
-  [K in keyof T]: T[K] extends AnyFn ? K : never;
-}[keyof T];
 
 function delegateToConcreteImplementation<N extends MethodNamesOf<Required<EmberLocation>>>(
   methodName: N

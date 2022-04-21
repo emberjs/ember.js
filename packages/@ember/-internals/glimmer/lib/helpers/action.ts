@@ -2,6 +2,7 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
+import { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -354,7 +355,7 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 function makeDynamicClosureAction(
   context: object,
   targetRef: Reference<MaybeActionHandler>,
-  actionRef: Reference<string | ((...args: any[]) => any)>,
+  actionRef: Reference<string | AnyFn>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
@@ -381,18 +382,18 @@ function makeDynamicClosureAction(
 }
 
 interface MaybeActionHandler {
-  actions?: Record<string, (...args: any[]) => any>;
+  actions?: Record<string, AnyFn>;
 }
 
 function makeClosureAction(
   context: object,
   target: MaybeActionHandler,
-  action: string | ((...args: any[]) => any),
+  action: string | AnyFn,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
   let self: object;
-  let fn: (...args: any[]) => any;
+  let fn: AnyFn;
 
   assert(
     `Action passed is null or undefined in (action) from ${target}.`,

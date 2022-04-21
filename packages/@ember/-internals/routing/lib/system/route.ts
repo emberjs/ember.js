@@ -21,6 +21,7 @@ import {
   typeOf,
 } from '@ember/-internals/runtime';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import { AnyFn } from '@ember/-internals/utils/types';
 import Controller from '@ember/controller';
 import { ControllerQueryParamType } from '@ember/controller/lib/controller_mixin';
 import { assert, info, isTesting } from '@ember/debug';
@@ -71,8 +72,8 @@ type RouteTransitionState<R extends Route> = TransitionState<R> & {
   queryParamsFor?: Record<string, Record<string, unknown>>;
 };
 
-type MaybeParameters<T> = T extends (...args: any[]) => any ? Parameters<T> : unknown[];
-type MaybeReturnType<T> = T extends (...args: any[]) => any ? ReturnType<T> : unknown;
+type MaybeParameters<T> = T extends AnyFn ? Parameters<T> : unknown[];
+type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
 
 export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = Symbol('render');
@@ -2015,7 +2016,7 @@ class Route<T = unknown>
   }
 
   // Set in reopen
-  declare actions: Record<string, (...args: any[]) => any>;
+  declare actions: Record<string, AnyFn>;
 
   /**
     Sends an action to the router, which will delegate it to the currently

@@ -48,14 +48,7 @@ import type { Timer } from 'backburner';
 import { EngineRouteInfo } from './engines';
 import EngineInstance from '@ember/engine/instance';
 import { QueryParams } from 'route-recognizer';
-
-type AnyFn = (...args: any[]) => any;
-
-type MethodNamesOf<T> = {
-  [K in keyof T]: T[K] extends AnyFn ? K : never;
-}[keyof T];
-
-type OmitFirst<F> = F extends [any, ...infer R] ? R : [];
+import { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utils/types';
 
 function defaultDidTransition<R extends Route>(
   this: EmberRouter<R>,
