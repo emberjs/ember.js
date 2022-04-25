@@ -1,4 +1,4 @@
-# Ember Changelo
+# Ember Changelog
 
 ## v3.28.9 (April 19, 2022)
 
