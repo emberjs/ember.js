@@ -15,4 +15,8 @@ import { Mixin } from '@ember/-internals/metal';
   @uses Enumerable
   @private
 */
-export default Mixin.create(Enumerable);
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface MutableEnumerable extends Enumerable {}
+const MutableEnumerable = Mixin.create(Enumerable);
+
+export default MutableEnumerable;

@@ -16,6 +16,10 @@ import { assert } from '@ember/debug';
   @namespace Ember
   @private
 */
+interface ActionHandler {
+  actions?: Record<string, (...args: any[]) => unknown>;
+  send(actionName: string, ...args: unknown[]): void;
+}
 const ActionHandler = Mixin.create({
   mergedProperties: ['actions'],
 
@@ -196,7 +200,7 @@ const ActionHandler = Mixin.create({
     @param {*} context a context to send with the action
     @public
   */
-  send(actionName, ...args) {
+  send(actionName: string, ...args: any[]) {
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
       !this.isDestroying && !this.isDestroyed

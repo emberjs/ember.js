@@ -15,7 +15,10 @@ import { Mixin } from '@ember/-internals/metal';
   @since Ember 0.9
   @private
 */
-export default Mixin.create({
+interface Comparable {
+  compare: ((a: unknown, b: unknown) => -1 | 0 | 1) | null;
+}
+const Comparable = Mixin.create({
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -36,3 +39,5 @@ export default Mixin.create({
   */
   compare: null,
 });
+
+export default Comparable;

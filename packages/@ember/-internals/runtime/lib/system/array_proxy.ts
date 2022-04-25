@@ -16,25 +16,40 @@ import {
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
-import { isArray, MutableArray } from '../mixins/array';
+import EmberArray, { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
-import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
+import {
+  combine,
+  consumeTag,
+  validateTag,
+  valueForTag,
+  tagFor,
+  Tag,
+  Revision,
+} from '@glimmer/validator';
+import { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
+
+function isMutable<T>(obj: EmberArray<T>): obj is MutableArray<T> {
+  return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';
+}
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
   didChange: '_arrangedContentArrayDidChange',
 };
 
-function customTagForArrayProxy(proxy, key) {
+function customTagForArrayProxy(proxy: object, key: string) {
+  assert('[BUG] Expected a proxy', proxy instanceof ArrayProxy);
+
   if (key === '[]') {
     proxy._revalidate();
 
-    return proxy._arrTag;
+    return proxy._arrTag!;
   } else if (key === 'length') {
     proxy._revalidate();
 
-    return proxy._lengthTag;
+    return proxy._lengthTag!;
   }
 
   return tagFor(proxy, key);
@@ -100,32 +115,47 @@ function customTagForArrayProxy(proxy, key) {
   @uses MutableArray
   @public
 */
-export default class ArrayProxy extends EmberObject {
-  init() {
-    super.init(...arguments);
+// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars
+interface ArrayProxy<T, C extends EmberArray<T> = EmberArray<T>> extends MutableArray<T> {}
+class ArrayProxy<T, C extends EmberArray<T> = EmberArray<T>>
+  extends EmberObject
+  implements PropertyDidChange
+{
+  /*
+    `this._objectsDirtyIndex` determines which indexes in the `this._objects`
+    cache are dirty.
 
-    /*
-      `this._objectsDirtyIndex` determines which indexes in the `this._objects`
-      cache are dirty.
+    If `this._objectsDirtyIndex === -1` then no indexes are dirty.
+    Otherwise, an index `i` is dirty if `i >= this._objectsDirtyIndex`.
 
-      If `this._objectsDirtyIndex === -1` then no indexes are dirty.
-      Otherwise, an index `i` is dirty if `i >= this._objectsDirtyIndex`.
+    Calling `objectAt` with a dirty index will cause the `this._objects`
+    cache to be recomputed.
+  */
+  /** @internal */
+  _objectsDirtyIndex = 0;
+  /** @internal */
+  _objects: null | T[] = null;
 
-      Calling `objectAt` with a dirty index will cause the `this._objects`
-      cache to be recomputed.
-    */
-    this._objectsDirtyIndex = 0;
-    this._objects = null;
+  /** @internal */
+  _lengthDirty = true;
+  /** @internal */
+  _length = 0;
 
-    this._lengthDirty = true;
-    this._length = 0;
+  /** @internal */
+  _arrangedContent: C | null = null;
+  /** @internal */
+  _arrangedContentIsUpdating = false;
+  /** @internal */
+  _arrangedContentTag: Tag | null = null;
+  /** @internal */
+  _arrangedContentRevision: Revision | null = null;
+  /** @internal */
+  _lengthTag: Tag | null = null;
+  /** @internal */
+  _arrTag: Tag | null = null;
 
-    this._arrangedContent = null;
-    this._arrangedContentIsUpdating = false;
-    this._arrangedContentTag = null;
-    this._arrangedContentRevision = null;
-    this._lengthTag = null;
-    this._arrTag = null;
+  init(props: object | undefined) {
+    super.init(props);
 
     setCustomTagFor(this, customTagForArrayProxy);
   }
@@ -146,6 +176,9 @@ export default class ArrayProxy extends EmberObject {
     @type EmberArray
     @public
   */
+  declare content: C | null;
+
+  declare arrangedContent: C | null;
 
   /**
     Should actually retrieve the object at the specified index from the
@@ -159,13 +192,15 @@ export default class ArrayProxy extends EmberObject {
     @return {Object} the value or undefined if none found
     @public
   */
-  objectAtContent(idx) {
-    return objectAt(get(this, 'arrangedContent'), idx);
+  objectAtContent(idx: number) {
+    let arrangedContent = get(this, 'arrangedContent');
+    assert('[BUG] Called objectAtContent without content', arrangedContent);
+    return objectAt<T>(arrangedContent, idx);
   }
 
   // See additional docs for `replace` from `MutableArray`:
   // https://api.emberjs.com/ember/release/classes/MutableArray/methods/replace?anchor=replace
-  replace(idx, amt, objects) {
+  replace(idx: number, amt: number, objects?: T[]) {
     assert(
       'Mutating an arranged ArrayProxy is not allowed',
       get(this, 'arrangedContent') === get(this, 'content')
@@ -183,17 +218,19 @@ export default class ArrayProxy extends EmberObject {
     @method replaceContent
     @param {Number} idx The starting index
     @param {Number} amt The number of items to remove from the content.
-    @param {EmberArray} objects Optional array of objects to insert or null if no
-      objects.
+    @param {EmberArray} objects Optional array of objects to insert.
     @return {void}
     @public
   */
-  replaceContent(idx, amt, objects) {
-    get(this, 'content').replace(idx, amt, objects);
+  replaceContent(idx: number, amt: number, objects?: T[]) {
+    let content = get(this, 'content');
+    assert('[BUG] Called objectAtContent without content', content);
+    assert('Mutating a non-mutable array is not allowed', isMutable(content));
+    content.replace(idx, amt, objects);
   }
 
   // Overriding objectAt is not supported.
-  objectAt(idx) {
+  objectAt(idx: number) {
     this._revalidate();
 
     if (this._objects === null) {
@@ -201,12 +238,15 @@ export default class ArrayProxy extends EmberObject {
     }
 
     if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
-      let arrangedContent = get(this, 'arrangedContent');
+      let arrangedContent = get(this, 'arrangedContent') as C | null;
       if (arrangedContent) {
         let length = (this._objects.length = get(arrangedContent, 'length'));
 
         for (let i = this._objectsDirtyIndex; i < length; i++) {
-          this._objects[i] = this.objectAtContent(i);
+          // SAFETY: This is expected to only ever return an instance of T. In other words, there should
+          // be no gaps in the array. Unfortunately, we can't actually assert for it since T could include
+          // any types, including null or undefined.
+          this._objects[i] = this.objectAtContent(i)!;
         }
       } else {
         this._objects.length = 0;
@@ -222,11 +262,12 @@ export default class ArrayProxy extends EmberObject {
     this._revalidate();
 
     if (this._lengthDirty) {
-      let arrangedContent = get(this, 'arrangedContent');
+      let arrangedContent = get(this, 'arrangedContent') as C | null;
       this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
       this._lengthDirty = false;
     }
 
+    assert('[BUG] _lengthTag is not set', this._lengthTag);
     consumeTag(this._lengthTag);
 
     return this._length;
@@ -235,7 +276,7 @@ export default class ArrayProxy extends EmberObject {
   set length(value) {
     let length = this.length;
     let removedCount = length - value;
-    let added;
+    let added: T[] | undefined;
 
     if (removedCount === 0) {
       return;
@@ -244,15 +285,16 @@ export default class ArrayProxy extends EmberObject {
       removedCount = 0;
     }
 
-    let content = get(this, 'content');
+    let content = get(this, 'content') as C | null;
     if (content) {
-      replace(content, value, removedCount, added);
+      assert('Mutating a non-mutable array is not allowed', isMutable(content));
+      replace<T>(content, value, removedCount, added);
 
       this._invalidate();
     }
   }
 
-  _updateArrangedContentArray(arrangedContent) {
+  _updateArrangedContentArray(arrangedContent: C | null) {
     let oldLength = this._objects === null ? 0 : this._objects.length;
     let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
 
@@ -265,12 +307,13 @@ export default class ArrayProxy extends EmberObject {
     this._addArrangedContentArrayObserver(arrangedContent);
   }
 
-  _addArrangedContentArrayObserver(arrangedContent) {
-    if (arrangedContent && !arrangedContent.isDestroyed) {
+  _addArrangedContentArrayObserver(arrangedContent: C | null) {
+    if (arrangedContent && !(arrangedContent as any).isDestroyed) {
+      // @ts-expect-error This check is still good for ensuring correctness
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
         `ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
-        isArray(arrangedContent) || arrangedContent.isDestroyed
+        isArray(arrangedContent) || (arrangedContent as any).isDestroyed
       );
 
       addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING);
@@ -287,12 +330,17 @@ export default class ArrayProxy extends EmberObject {
 
   _arrangedContentArrayWillChange() {}
 
-  _arrangedContentArrayDidChange(proxy, idx, removedCnt, addedCnt) {
+  _arrangedContentArrayDidChange(
+    _proxy: unknown,
+    idx: number,
+    removedCnt: number,
+    addedCnt: number
+  ) {
     arrayContentWillChange(this, idx, removedCnt, addedCnt);
 
     let dirtyIndex = idx;
     if (dirtyIndex < 0) {
-      let length = get(this._arrangedContent, 'length');
+      let length = get(this._arrangedContent!, 'length');
       dirtyIndex += length + removedCnt - addedCnt;
     }
 
@@ -315,9 +363,9 @@ export default class ArrayProxy extends EmberObject {
 
     if (
       this._arrangedContentTag === null ||
-      !validateTag(this._arrangedContentTag, this._arrangedContentRevision)
+      !validateTag(this._arrangedContentTag, this._arrangedContentRevision!)
     ) {
-      let arrangedContent = this.get('arrangedContent');
+      let arrangedContent = this.get('arrangedContent') as C | null;
 
       if (this._arrangedContentTag === null) {
         // This is the first time the proxy has been setup, only add the observer
@@ -353,3 +401,5 @@ ArrayProxy.reopen(MutableArray, {
   */
   arrangedContent: alias('content'),
 });
+
+export default ArrayProxy;

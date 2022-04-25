@@ -71,7 +71,7 @@ declare const EmberArray: Mixin;
 export default EmberArray;
 
 interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
-  replace(idx: number, amt: number, objects: T[]): void;
+  replace(idx: number, amt: number, objects?: T[]): void;
   clear(): this;
   insertAt(idx: number, object: T): this;
   removeAt(start: number, len: number): this;

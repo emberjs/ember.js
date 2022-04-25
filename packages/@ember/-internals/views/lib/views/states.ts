@@ -2,6 +2,15 @@ import preRender from './states/pre_render';
 import hasElement from './states/has_element';
 import inDOM from './states/in_dom';
 import destroying from './states/destroying';
+import Component from '@ember/component';
+
+export interface ViewState {
+  enter?(view: Component): void;
+  appendChild(): void;
+  handleEvent(view: Component, eventName: string, event: Event): boolean;
+  rerender(view: Component): void;
+  destroy(view: Component): void;
+}
 
 /*
   Describe how the specified actions should behave in the various

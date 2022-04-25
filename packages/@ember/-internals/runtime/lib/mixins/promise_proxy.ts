@@ -1,11 +1,14 @@
 import { get, setProperties, computed, Mixin } from '@ember/-internals/metal';
+import { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import EmberError from '@ember/error';
+import RSVP from 'rsvp';
+import CoreObject from '../system/core_object';
 
 /**
   @module @ember/object
 */
 
-function tap(proxy, promise) {
+function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   setProperties(proxy, {
     isFulfilled: false,
     isRejected: false,
@@ -13,7 +16,10 @@ function tap(proxy, promise) {
 
   return promise.then(
     (value) => {
-      if (!proxy.isDestroyed && !proxy.isDestroying) {
+      if (
+        !(proxy as unknown as CoreObject).isDestroyed &&
+        !(proxy as unknown as CoreObject).isDestroying
+      ) {
         setProperties(proxy, {
           content: value,
           isFulfilled: true,
@@ -22,7 +28,10 @@ function tap(proxy, promise) {
       return value;
     },
     (reason) => {
-      if (!proxy.isDestroyed && !proxy.isDestroying) {
+      if (
+        !(proxy as unknown as CoreObject).isDestroyed &&
+        !(proxy as unknown as CoreObject).isDestroying
+      ) {
         setProperties(proxy, {
           reason,
           isRejected: true,
@@ -97,7 +106,22 @@ function tap(proxy, promise) {
   @class PromiseProxyMixin
   @public
 */
-export default Mixin.create({
+interface PromiseProxyMixin<T> {
+  reason: unknown;
+
+  readonly isPending: boolean;
+  readonly isSettled: boolean;
+
+  isRejected: boolean;
+  isFulfilled: boolean;
+
+  promise: Promise<T>;
+
+  then: this['promise']['then'];
+  catch: this['promise']['catch'];
+  finally: this['promise']['finally'];
+}
+const PromiseProxyMixin = Mixin.create({
   /**
     If the proxied promise is rejected this will contain the reason
     provided.
@@ -172,7 +196,7 @@ export default Mixin.create({
     get() {
       throw new EmberError("PromiseProxy's promise must be set");
     },
-    set(key, promise) {
+    set(_key, promise: RSVP.Promise<unknown>) {
       return tap(this, promise);
     },
   }),
@@ -216,9 +240,16 @@ export default Mixin.create({
   finally: promiseAlias('finally'),
 });
 
-function promiseAlias(name) {
-  return function () {
+function promiseAlias<T, N extends MethodNamesOf<Promise<T>>>(name: N) {
+  return function (this: PromiseProxyMixin<T>, ...args: Parameters<Promise<T>[N]>) {
     let promise = get(this, 'promise');
-    return promise[name](...arguments);
+
+    // We need this cast because `Parameters` is deferred so that it is not
+    // possible for TS to see it will always produce the right type. However,
+    // since `AnyFn` has a rest type, it is allowed. See discussion on [this
+    // issue](https://github.com/microsoft/TypeScript/issues/47615).
+    return (promise[name] as AnyFn)(...args);
   };
 }
+
+export default PromiseProxyMixin;

@@ -77,5 +77,9 @@ import _ProxyMixin from '../mixins/-proxy';
   @uses Ember.ProxyMixin
   @public
 */
-export default class ObjectProxy extends FrameworkObject {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface ObjectProxy extends _ProxyMixin {}
+class ObjectProxy extends FrameworkObject {}
 ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
+
+export default ObjectProxy;
