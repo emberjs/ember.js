@@ -1,4 +1,4 @@
-# Ember Changelo
+# Ember Changelog
 
 ### v4.4.0 (May 2, 2022)
 
