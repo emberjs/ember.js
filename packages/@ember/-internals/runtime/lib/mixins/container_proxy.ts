@@ -7,6 +7,8 @@ import { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { Mixin } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 
+// This is defined as a separate interface so that it can be used in the definition of
+// `Owner` without also including the `__container__` property.
 export interface IContainer {
   ownerInjection(): void;
   lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined;

@@ -9,6 +9,8 @@ import { Factory } from '@ember/-internals/owner';
 import { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 
+// This is defined as a separate interface so that it can be used in the definition of
+// `Owner` without also including the `__registry__` property.
 export interface IRegistry {
   resolveRegistration(fullName: string): Factory<object> | object | undefined;
 
