@@ -86,6 +86,8 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 }
 
+const NO_OP = () => {};
+
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,
 // and ensures that errors are not swallowed by subsequent follow on failures.
@@ -218,10 +220,6 @@ function loopBegin(): void {
   }
 }
 
-function K() {
-  /* noop */
-}
-
 let renderSettledDeferred: RSVP.Deferred<void> | null = null;
 /*
   Returns a promise which will resolve when rendering has settled. Settled in
@@ -239,7 +237,7 @@ export function renderSettled() {
     // a chance to resolve (because its resolved in backburner's "end" event)
     if (!_getCurrentRunLoop()) {
       // ensure a runloop has been kicked off
-      _backburner.schedule('actions', null, K);
+      _backburner.schedule('actions', null, NO_OP);
     }
   }
 
@@ -266,7 +264,7 @@ function loopEnd() {
         throw new Error('infinite rendering invalidation detected');
       }
       loops++;
-      return _backburner.join(null, K);
+      return _backburner.join(null, NO_OP);
     }
   }
   loops = 0;
