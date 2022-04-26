@@ -3,12 +3,34 @@ import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-inter
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
+import type Component from '@ember/component';
+import { View } from '@ember/-internals/glimmer/lib/renderer';
+import { SimpleElement } from '@simple-dom/interface';
 
-function K() {
+function K(this: unknown) {
   return this;
 }
 
-let mixin = {
+/**
+ @class ViewMixin
+ @namespace Ember
+ @private
+*/
+interface ViewMixin {
+  rerender(): unknown;
+  element: SimpleElement;
+  appendTo(selector: string | Element | SimpleElement): this;
+  append(): this;
+  elementId: string | null;
+  willInsertElement(): void;
+  didInsertElement(): void;
+  willClearRender(): void;
+  willDestroyElement(): void;
+  parentViewDidChange(): void;
+  tagName: string | null;
+  handleEvent(eventName: string, evt: Event): boolean;
+}
+const ViewMixin = Mixin.create({
   /**
    A list of properties of the view to apply as attributes. If the property
    is a string value, the value of that string will be applied as the value
@@ -78,12 +100,12 @@ let mixin = {
    @deprecated use `yield` and contextual components for composition instead.
    @private
    */
-  nearestOfType(klass) {
+  nearestOfType(this: Component, klass: any) {
     let view = this.parentView;
     let isOfType =
       klass instanceof Mixin
-        ? (view) => klass.detect(view)
-        : (view) => klass.detect(view.constructor);
+        ? (view: View) => klass.detect(view)
+        : (view: View) => klass.detect(view.constructor);
 
     while (view) {
       if (isOfType(view)) {
@@ -91,6 +113,8 @@ let mixin = {
       }
       view = view.parentView;
     }
+
+    return;
   },
 
   /**
@@ -102,7 +126,7 @@ let mixin = {
    @deprecated use `yield` and contextual components for composition instead.
    @private
    */
-  nearestWithProperty(property) {
+  nearestWithProperty(property: string) {
     let view = this.parentView;
 
     while (view) {
@@ -148,7 +172,7 @@ let mixin = {
   element: nativeDescDecorator({
     configurable: false,
     enumerable: false,
-    get() {
+    get(this: Component) {
       return this.renderer.getElement(this);
     },
   }),
@@ -170,10 +194,15 @@ let mixin = {
    @return {Ember.View} receiver
    @private
    */
-  appendTo(selector) {
+  appendTo(this: Component, selector: string | Element | SimpleElement) {
     let target;
 
     if (hasDOM) {
+      assert(
+        `Expected a selector or instance of Element`,
+        typeof selector === 'string' || selector instanceof Element
+      );
+
       target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
       assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
@@ -182,8 +211,8 @@ let mixin = {
         'You cannot append to an existing Ember.View.',
         (() => {
           let node = target.parentNode;
-          while (node) {
-            if (node.nodeType !== 9 && matches(node, '.ember-view')) {
+          while (node instanceof Element) {
+            if (matches(node, '.ember-view')) {
               return false;
             }
 
@@ -202,11 +231,13 @@ let mixin = {
       );
       assert(
         `You tried to append to a non-Element (${selector}) in an environment without a DOM`,
-        typeof selector.appendChild === 'function'
+        typeof target.appendChild === 'function'
       );
     }
 
-    this.renderer.appendTo(this, target);
+    // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
+    // However, the types are more specific in some places which necessitates the `as`.
+    this.renderer.appendTo(this, target as unknown as SimpleElement);
 
     return this;
   },
@@ -412,14 +443,9 @@ let mixin = {
    @param evt {Event}
    @private
    */
-  handleEvent(eventName, evt) {
+  handleEvent(this: Component, eventName: string, evt: Event) {
     return this._currentState.handleEvent(this, eventName, evt);
   },
-};
+});
 
-/**
- @class ViewMixin
- @namespace Ember
- @private
-*/
-export default Mixin.create(mixin);
+export default ViewMixin;

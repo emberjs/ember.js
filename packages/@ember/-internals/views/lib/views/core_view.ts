@@ -1,7 +1,7 @@
 import { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import { inject } from '@ember/-internals/metal';
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
-import states from './states';
+import states, { ViewState } from './states';
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
@@ -26,8 +26,8 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
 
   declare _states: typeof states;
 
-  _state: unknown;
-  _currentState: unknown;
+  declare _state: keyof typeof states;
+  declare _currentState: ViewState;
 
   _superTrigger?: Evented['trigger'];
   _superHas?: Evented['has'];

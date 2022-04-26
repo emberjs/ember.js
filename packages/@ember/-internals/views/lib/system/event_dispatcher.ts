@@ -4,6 +4,10 @@ import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { getElementView } from '@ember/-internals/views';
 import ActionManager from './action_manager';
+import { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type Component from '@ember/component';
+import { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
+import { SimpleElement } from '@simple-dom/interface';
 
 /**
 @module ember
@@ -23,7 +27,7 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
   @private
   @extends Ember.Object
 */
-export default EmberObject.extend({
+export default class EventDispatcher extends EmberObject {
   /**
     The set of events names (and associated handler function names) to be setup
     and dispatched by the `EventDispatcher`. Modifications to this list can be done
@@ -57,7 +61,7 @@ export default EmberObject.extend({
     @type Object
     @private
   */
-  events: {
+  events: Record<string, string> = {
     touchstart: 'touchStart',
     touchmove: 'touchMove',
     touchend: 'touchEnd',
@@ -82,7 +86,7 @@ export default EmberObject.extend({
     dragover: 'dragOver',
     drop: 'drop',
     dragend: 'dragEnd',
-  },
+  };
 
   /**
     The root DOM element to which event listeners should be attached. Event
@@ -98,16 +102,14 @@ export default EmberObject.extend({
     @type DOMElement
     @default 'body'
   */
-  rootElement: 'body',
+  rootElement: string | Element = 'body';
 
-  init() {
-    this._super();
-    this._eventHandlers = Object.create(null);
-    this._didSetup = false;
-    this.finalEventNameMapping = null;
-    this._sanitizedRootElement = null;
-    this.lazyEvents = new Map();
-  },
+  _eventHandlers = Object.create(null);
+  _didSetup = false;
+  finalEventNameMapping: Record<string, string> | null = null;
+  _sanitizedRootElement: Element | null = null;
+  lazyEvents: Map<string, string | null> = new Map();
+  _reverseEventNameMapping: Record<string, string> | null = null;
 
   /**
     Sets up event listeners for standard browser events.
@@ -121,53 +123,57 @@ export default EmberObject.extend({
     @method setup
     @param addedEvents {Object}
   */
-  setup(addedEvents, _rootElement) {
+  setup(addedEvents: Record<string, string | null>, _rootElement: string | Element | null): void {
     assert(
       'EventDispatcher should never be setup in fastboot mode. Please report this as an Ember bug.',
       (() => {
         let owner = getOwner(this);
-        let environment = owner.lookup('-environment:main');
+        assert('[BUG] Missing owner', owner);
+
+        // SAFETY: This is not guaranteed to be safe, but this is what we expect to be returned.
+        let environment = owner.lookup('-environment:main') as BootEnvironment;
 
         return environment.isInteractive;
       })()
     );
 
-    let events = (this.finalEventNameMapping = Object.assign({}, get(this, 'events'), addedEvents));
-    this._reverseEventNameMapping = Object.keys(events).reduce(
-      (result, key) => Object.assign(result, { [events[key]]: key }),
-      {}
-    );
+    let events: Record<string, string | null> = (this.finalEventNameMapping = {
+      ...get(this, 'events'),
+      ...addedEvents,
+    });
+    this._reverseEventNameMapping = Object.keys(events).reduce((result, key) => {
+      let eventName = events[key];
+      return eventName ? { ...result, [eventName]: key } : result;
+    }, {});
     let lazyEvents = this.lazyEvents;
 
     if (_rootElement !== undefined && _rootElement !== null) {
       set(this, 'rootElement', _rootElement);
     }
 
-    let rootElementSelector = get(this, 'rootElement');
-    let rootElement;
-    if (typeof rootElementSelector !== 'string') {
-      rootElement = rootElementSelector;
-    } else {
-      rootElement = document.querySelector(rootElementSelector);
-    }
+    let specifiedRootElement = get(this, 'rootElement');
 
+    let rootElement: Element | null =
+      typeof specifiedRootElement !== 'string'
+        ? specifiedRootElement
+        : document.querySelector(specifiedRootElement);
+
+    assert(`Could not find rootElement (${specifiedRootElement})`, rootElement);
     assert(
-      `You cannot use the same root element (${
-        get(this, 'rootElement') || rootElement.tagName
-      }) multiple times in an Ember.Application`,
+      `You cannot use the same root element (${specifiedRootElement}) multiple times in an Ember.Application`,
       !rootElement.classList.contains(ROOT_ELEMENT_CLASS)
     );
     assert(
       'You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application',
       (() => {
         let target = rootElement.parentNode;
-        do {
+        while (target instanceof Element) {
           if (target.classList.contains(ROOT_ELEMENT_CLASS)) {
             return false;
           }
 
           target = target.parentNode;
-        } while (target && target.nodeType === 1);
+        }
 
         return true;
       })()
@@ -192,12 +198,12 @@ export default EmberObject.extend({
     // setup event listeners for the non-lazily setup events
     for (let event in events) {
       if (Object.prototype.hasOwnProperty.call(events, event)) {
-        lazyEvents.set(event, events[event]);
+        lazyEvents.set(event, events[event] ?? null);
       }
     }
 
     this._didSetup = true;
-  },
+  }
 
   /**
     Setup event listeners for the given browser event name
@@ -206,9 +212,11 @@ export default EmberObject.extend({
     @method setupHandlerForBrowserEvent
     @param event the name of the event in the browser
   */
-  setupHandlerForBrowserEvent(event) {
-    this.setupHandler(this._sanitizedRootElement, event, this.finalEventNameMapping[event]);
-  },
+  setupHandlerForBrowserEvent(event: string) {
+    assert('[BUG] Expected finalEventNameMapping to be set', this.finalEventNameMapping);
+    assert('[BUG] Expected _santizedRootElement to be set', this._sanitizedRootElement);
+    this.setupHandler(this._sanitizedRootElement, event, this.finalEventNameMapping[event] ?? null);
+  }
 
   /**
     Setup event listeners for the given Ember event name (camel case)
@@ -217,13 +225,15 @@ export default EmberObject.extend({
     @method setupHandlerForEmberEvent
     @param eventName
   */
-  setupHandlerForEmberEvent(eventName) {
-    this.setupHandler(
-      this._sanitizedRootElement,
-      this._reverseEventNameMapping[eventName],
-      eventName
-    );
-  },
+  setupHandlerForEmberEvent(eventName: string) {
+    assert('[BUG] Expected _sanitizedRootElement to be set', this._sanitizedRootElement);
+
+    let event = this._reverseEventNameMapping?.[eventName];
+
+    if (event) {
+      this.setupHandler(this._sanitizedRootElement, event, eventName);
+    }
+  }
 
   /**
     Registers an event listener on the rootElement. If the given event is
@@ -239,43 +249,50 @@ export default EmberObject.extend({
     @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
   */
-  setupHandler(rootElement, event, eventName) {
+  setupHandler(rootElement: Element, event: string, eventName: string | null) {
     if (eventName === null || !this.lazyEvents.has(event)) {
       return; // nothing to do
     }
 
-    let viewHandler = (target, event) => {
-      let view = getElementView(target);
+    let viewHandler = (target: Element, event: Event) => {
+      // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
+      // However, the types are more specific in some places which necessitates the `as`.
+      let view = getElementView(target as unknown as SimpleElement);
       let result = true;
 
       if (view) {
-        result = view.handleEvent(eventName, event);
+        // SAFETY: As currently written, this is not safe. Though it seems to always be true.
+        result = (view as Component).handleEvent(eventName, event);
       }
 
       return result;
     };
 
-    let actionHandler = (target, event) => {
+    let actionHandler = (target: Element, event: Event) => {
       let actionId = target.getAttribute('data-ember-action');
-      let actions = ActionManager.registeredActions[actionId];
+      let actions: Array<ActionState> | undefined;
 
       // In Glimmer2 this attribute is set to an empty string and an additional
       // attribute it set for each action on a given element. In this case, the
       // attributes need to be read so that a proper set of action handlers can
       // be coalesced.
       if (actionId === '') {
-        let attributes = target.attributes;
-        let attributeCount = attributes.length;
-
         actions = [];
 
-        for (let i = 0; i < attributeCount; i++) {
-          let attr = attributes.item(i);
+        for (let attr of target.attributes) {
           let attrName = attr.name;
 
           if (attrName.indexOf('data-ember-action-') === 0) {
-            actions = actions.concat(ActionManager.registeredActions[attr.value]);
+            let action = ActionManager.registeredActions[attr.value];
+            assert('[BUG] Missing action', action);
+            actions.push(action);
           }
+        }
+      } else if (actionId) {
+        // FIXME: This branch is never called in tests. Improve tests or remove
+        let actionState = ActionManager.registeredActions[actionId];
+        if (actionState) {
+          actions = [actionState];
         }
       }
 
@@ -283,6 +300,7 @@ export default EmberObject.extend({
       // an event on `removeChild` (i.e. focusout) after we've already torn down the
       // action handlers for the view.
       if (!actions) {
+        // FIXME: This branch is never called in tests. Improve tests or remove
         return;
       }
 
@@ -298,11 +316,18 @@ export default EmberObject.extend({
       return result;
     };
 
-    let handleEvent = (this._eventHandlers[event] = (event) => {
+    let handleEvent = (this._eventHandlers[event] = (event: Event) => {
       let target = event.target;
 
+      assert(
+        `[BUG] Received event without an Element target: ${event.type}, ${target}`,
+        target instanceof Element
+      );
+
       do {
-        if (getElementView(target)) {
+        // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
+        // However, the types are more specific in some places which necessitates the `as`.
+        if (getElementView(target as unknown as SimpleElement)) {
           if (viewHandler(target, event) === false) {
             event.preventDefault();
             event.stopPropagation();
@@ -320,26 +345,20 @@ export default EmberObject.extend({
         }
 
         target = target.parentNode;
-      } while (target && target.nodeType === 1);
+      } while (target instanceof Element);
     });
 
     rootElement.addEventListener(event, handleEvent);
 
     this.lazyEvents.delete(event);
-  },
+  }
 
   destroy() {
     if (this._didSetup === false) {
       return;
     }
 
-    let rootElementSelector = get(this, 'rootElement');
-    let rootElement;
-    if (rootElementSelector.nodeType) {
-      rootElement = rootElementSelector;
-    } else {
-      rootElement = document.querySelector(rootElementSelector);
-    }
+    let rootElement = this._sanitizedRootElement;
 
     if (!rootElement) {
       return;
@@ -352,9 +371,9 @@ export default EmberObject.extend({
     rootElement.classList.remove(ROOT_ELEMENT_CLASS);
 
     return this._super(...arguments);
-  },
+  }
 
   toString() {
     return '(EventDispatcher)';
-  },
-});
+  }
+}

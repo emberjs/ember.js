@@ -5,8 +5,16 @@ import { inspect } from '@ember/-internals/utils';
 import { Mixin, get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
-const mixinObj = {
-  send(actionName, ...args) {
+/**
+ @class ActionSupport
+ @namespace Ember
+ @private
+*/
+interface ActionSupport {
+  send(actionName: string, ...args: unknown[]): void;
+}
+const ActionSupport = Mixin.create({
+  send(actionName: string, ...args: unknown[]) {
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
       !this.isDestroying && !this.isDestroyed
@@ -32,11 +40,6 @@ const mixinObj = {
       assert(`${inspect(this)} had no action handler for: ${actionName}`, action);
     }
   },
-};
+});
 
-/**
- @class ActionSupport
- @namespace Ember
- @private
-*/
-export default Mixin.create(mixinObj);
+export default ActionSupport;
