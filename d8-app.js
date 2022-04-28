@@ -7,6 +7,7 @@ let Router = Ember.Router.extend({
 });
 Router.map(function () {
   this.route('my-route', { path: '/my-route' }, function () {});
+  jingalala();
 });
 Ember.TEMPLATES['index'] = Ember.HTMLBars.template({
   id: null,
