@@ -430,27 +430,27 @@ class Route<T = unknown>
   >;
 
   /**
-    The name of the template to use by default when rendering this routes
+    The name of the template to use by default when rendering this route's
     template.
 
     ```app/routes/posts/list.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
-      templateName = 'posts/list'
-    });
+    export default class PostsListRoute extends Route {
+      templateName = 'posts/list';
+    }
     ```
 
     ```app/routes/posts/index.js
-    import PostsList from '../posts/list';
+    import PostsListRoute from '../posts/list';
 
-    export default class extends PostsList {};
+    export default class PostsIndexRoute extends PostsListRoute {};
     ```
 
     ```app/routes/posts/archived.js
-    import PostsList from '../posts/list';
+    import PostsListRoute from '../posts/list';
 
-    export default class extends PostsList {};
+    export default class PostsArchivedRoute extends PostsListRoute {};
     ```
 
     @property templateName
