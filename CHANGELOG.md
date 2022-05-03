@@ -1,16 +1,16 @@
 # Ember Changelo
 
-## v3.28.9 (April 19, 2022)
-
-- [#20028](https://github.com/emberjs/ember.js/pull/20028) Fix a memory leak in the Router Service class
-
-### v4.4.0-beta.1 (March 24, 2022)
+### v4.4.0 (May 2, 2022)
 
 - [#19882](https://github.com/emberjs/ember.js/pull/19882) / [#20005](https://github.com/emberjs/ember.js/pull/20005) [FEATURE] Implement the `unique-id` helper per [RFC #0659](https://github.com/emberjs/rfcs/blob/master/text/0659-unique-id-helper.md).
 - [#19981](https://github.com/emberjs/ember.js/pull/19981) [FEATURE] Facilitate custom test setups per [RFC #0637](https://github.com/emberjs/rfcs/blob/master/text/0637-customizable-test-setups.md).
 - [#16879](https://github.com/emberjs/ember.js/pull/16879) [BUGFIX] isEmpty on nested objects
 - [#17978](https://github.com/emberjs/ember.js/pull/17978) Make hasListeners public
 - [#20014](https://github.com/emberjs/ember.js/pull/20014) Log `until` for deprecations
+
+### v3.28.9 (April 19, 2022)
+
+- [#20028](https://github.com/emberjs/ember.js/pull/20028) Fix a memory leak in the Router Service class
 
 ### v4.3.0 (March 21, 2022)
 
