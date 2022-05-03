@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "4.5.0-alpha.1",
+  "version": "4.6.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -94,7 +94,7 @@
     "@simple-dom/document": "^1.4.0",
     "@types/qunit": "^2.11.3",
     "@types/rsvp": "^4.0.4",
-    "@typescript-eslint/eslint-plugin": "^5.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.15.0",
     "auto-dist-tag": "^2.1.1",
     "aws-sdk": "^2.1095.0",
