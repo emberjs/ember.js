@@ -14,6 +14,7 @@
   "files": [
     "build-metadata.json",
     "blueprints",
+    "blueprints-js",
     "dist/packages",
     "dist/dependencies",
     "dist/header",
