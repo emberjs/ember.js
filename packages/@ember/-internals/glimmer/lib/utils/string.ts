@@ -59,14 +59,25 @@ export function escapeExpression(string: any): string {
 }
 
 /**
-  Mark a string as safe for unescaped output with Ember templates. If you
-  return HTML from a helper, use this function to
-  ensure Ember's rendering layer does not escape the HTML.
+  Use this method to indicate that a string should be rendered as HTML
+  when the string is used in a template. To say this another way,
+  strings marked with `htmlSafe` will not be HTML escaped.
+
+  A word of warning -   The `htmlSafe` method does not make the string safe;
+  it only tells the framework to treat the string as if it is safe to render
+  as HTML. If a string contains user inputs or other untrusted
+  data, you must sanitize the string before using the `htmlSafe` method.
+  Otherwise your code is vulnerable to
+  [Cross-Site Scripting](https://owasp.org/www-community/attacks/DOM_Based_XSS).
+  There are many open source sanitization libraries to choose from,
+  both for front end and server-side sanitization.
 
   ```javascript
   import { htmlSafe } from '@ember/template';
 
-  htmlSafe('<div>someString</div>')
+  const someTrustedOrSanitizedString = "<div>Hello!</div>"
+
+  htmlSafe(someTrustedorSanitizedString)
   ```
 
   @method htmlSafe
