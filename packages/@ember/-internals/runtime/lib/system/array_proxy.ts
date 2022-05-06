@@ -16,15 +16,14 @@ import {
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
-import type EmberArray from '../mixins/array';
-import { isArray, MutableArray } from '../mixins/array';
+import EmberArray, { MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
 import type { Tag, Revision } from '@glimmer/validator';
 import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 
-function isMutable<T>(obj: EmberArray<T>): obj is MutableArray<T> {
+function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';
 }
 
@@ -110,8 +109,8 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @public
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars
-interface ArrayProxy<T, C extends EmberArray<T> = EmberArray<T>> extends MutableArray<T> {}
-class ArrayProxy<T, C extends EmberArray<T> = EmberArray<T>>
+interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArray<T> {}
+class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
   extends EmberObject
   implements PropertyDidChange
 {
@@ -212,15 +211,15 @@ class ArrayProxy<T, C extends EmberArray<T> = EmberArray<T>>
     @method replaceContent
     @param {Number} idx The starting index
     @param {Number} amt The number of items to remove from the content.
-    @param {EmberArray} objects Optional array of objects to insert.
+    @param {Array} objects Optional array of objects to insert.
     @return {void}
     @public
   */
   replaceContent(idx: number, amt: number, objects?: T[]) {
     let content = get(this, 'content');
-    assert('[BUG] Called objectAtContent without content', content);
+    assert('[BUG] Called replaceContent without content', content);
     assert('Mutating a non-mutable array is not allowed', isMutable(content));
-    content.replace(idx, amt, objects);
+    replace<T>(content, idx, amt, objects);
   }
 
   // Overriding objectAt is not supported.
@@ -306,8 +305,14 @@ class ArrayProxy<T, C extends EmberArray<T> = EmberArray<T>>
       // @ts-expect-error This check is still good for ensuring correctness
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
-        `ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
-        isArray(arrangedContent) || (arrangedContent as any).isDestroyed
+        `ArrayProxy expects a native Array, EmberArray, or ArrayProxy, but you passed ${typeof arrangedContent}`,
+        (function (arr: unknown): arr is EmberArray<unknown> {
+          return Array.isArray(arr) || EmberArray.detect(arr);
+        })(arrangedContent)
+      );
+      assert(
+        'ArrayProxy expected its contents to not be destroyed',
+        !(arrangedContent as any).isDestroyed
       );
 
       addArrayObserver(arrangedContent, this, ARRAY_OBSERVER_MAPPING);

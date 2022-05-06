@@ -966,7 +966,7 @@ export function setDiff(setAProperty: string, setBProperty: string) {
       return emberA();
     }
     if (!isNativeOrEmberArray(setB)) {
-      return emberA(setA);
+      return setA;
     }
 
     return setA.filter((x) => setB.indexOf(x) === -1);
