@@ -1,6 +1,12 @@
 import { Mixin, computed } from '@ember/-internals/metal';
+import { RouteArgs } from '@ember/-internals/routing/lib/utils';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
+import Route from '@ember/routing/route';
+import { Transition } from 'router_js';
+
+export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
+export type ControllerQueryParam = string | Record<string, { type: ControllerQueryParamType }>;
 
 const MODEL = symbol('MODEL');
 
@@ -14,7 +20,23 @@ const MODEL = symbol('MODEL');
   @uses Ember.ActionHandler
   @private
 */
-export default Mixin.create(ActionHandler, {
+interface ControllerMixin<T> extends ActionHandler {
+  /** @internal */
+  _qpDelegate: unknown | null;
+
+  isController: true;
+  target: unknown | null;
+  model: T;
+
+  // From routing/lib/ext/controller
+
+  queryParams: Array<ControllerQueryParam>;
+
+  transitionToRoute(...args: RouteArgs<Route>): Transition;
+
+  replaceRoute(...args: RouteArgs<Route>): Transition;
+}
+const ControllerMixin = Mixin.create(ActionHandler, {
   /* ducktype as a controller */
   isController: true,
 
@@ -50,8 +72,10 @@ export default Mixin.create(ActionHandler, {
       return this[MODEL];
     },
 
-    set(key, value) {
+    set(_key, value) {
       return (this[MODEL] = value);
     },
   }),
 });
+
+export default ControllerMixin;

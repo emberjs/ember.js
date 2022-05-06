@@ -6,7 +6,6 @@ expectTypeOf(uniq('foo')).toEqualTypeOf<PropertyDecorator>();
 class Foo {
   @uniq('foo') declare uniq: unknown[];
 
-  // @ts-expect-error only allows a single key
   @uniq('foo', 'bar') declare uniq2: unknown[];
 
   // @ts-expect-error it requires a key

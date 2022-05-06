@@ -1,3 +1,4 @@
+import EmberArray from '@ember/array';
 import { filter } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
 
@@ -7,7 +8,15 @@ class Foo {
   @filter('foo', (item: unknown) => Boolean(item))
   declare filter: unknown[];
 
-  @filter('foo', (item: unknown, index: number, array: unknown[]) => item === array[index])
+  @filter('foo', (item: unknown, index: number, array: unknown[] | EmberArray<unknown>) => {
+    let value;
+    if (Array.isArray(array)) {
+      value = array[index];
+    } else {
+      value = array.objectAt(index);
+    }
+    return item === value;
+  })
   declare filter2: unknown[];
 
   @filter('foo', ['baz', 'qux'], (item: unknown) => Boolean(item))
