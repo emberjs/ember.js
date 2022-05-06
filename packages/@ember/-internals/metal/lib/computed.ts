@@ -903,8 +903,8 @@ export function computed(
 }
 
 export function autoComputed(
-  ...config: [ComputedPropertyObj]
-): ComputedDecorator | DecoratorPropertyDescriptor {
+  ...config: [ComputedPropertyObj | ComputedPropertyGetterFunction]
+): ComputedDecorator {
   // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(
     new AutoComputedProperty(config),

@@ -4,9 +4,19 @@
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
 import { computed, autoComputed, get, isElementDescriptor } from '@ember/-internals/metal';
-import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
+import { compare, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
+import EmberArray, { NativeArray } from '@ember/-internals/runtime/lib/mixins/array';
 
-function reduceMacro(dependentKey, callback, initialValue, name) {
+function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
+  return Array.isArray(obj) || EmberArray.detect(obj);
+}
+
+function reduceMacro(
+  dependentKey: string,
+  callback: (result: number, item: number) => number,
+  initialValue: number,
+  name: string
+) {
   assert(
     `Dependent key passed to \`${name}\` computed macro shouldn't contain brace expanding pattern.`,
     !/[[\]{}]/g.test(dependentKey)
@@ -18,12 +28,16 @@ function reduceMacro(dependentKey, callback, initialValue, name) {
       return initialValue;
     }
     return arr.reduce(callback, initialValue, this);
-  }).readOnly();
+  }).readOnly() as PropertyDecorator;
 }
 
-function arrayMacro(dependentKey, additionalDependentKeys, callback) {
+function arrayMacro(
+  dependentKey: string,
+  additionalDependentKeys: string[],
+  callback: (value: unknown[] | EmberArray<unknown>) => unknown[] | NativeArray<unknown>
+) {
   // This is a bit ugly
-  let propertyName;
+  let propertyName: string;
   if (/@each/.test(dependentKey)) {
     propertyName = dependentKey.replace(/\.@each.*$/, '');
   } else {
@@ -33,15 +47,19 @@ function arrayMacro(dependentKey, additionalDependentKeys, callback) {
 
   return computed(dependentKey, ...additionalDependentKeys, function () {
     let value = get(this, propertyName);
-    if (isArray(value)) {
+    if (isNativeOrEmberArray(value)) {
       return emberA(callback.call(this, value));
     } else {
       return emberA();
     }
-  }).readOnly();
+  }).readOnly() as PropertyDecorator;
 }
 
-function multiArrayMacro(_dependentKeys, callback, name) {
+function multiArrayMacro(
+  _dependentKeys: string[],
+  callback: (dependentKeys: string[]) => unknown[],
+  name: string
+): PropertyDecorator {
   assert(
     `Dependent keys passed to \`${name}\` computed macro shouldn't contain brace expanding pattern.`,
     _dependentKeys.every((dependentKey) => !/[[\]{}]/g.test(dependentKey))
@@ -50,7 +68,7 @@ function multiArrayMacro(_dependentKeys, callback, name) {
 
   return computed(...dependentKeys, function () {
     return emberA(callback.call(this, _dependentKeys));
-  }).readOnly();
+  }).readOnly() as PropertyDecorator;
 }
 
 /**
@@ -81,13 +99,13 @@ function multiArrayMacro(_dependentKeys, callback, name) {
   @since 1.4.0
   @public
 */
-export function sum(dependentKey) {
+export function sum(dependentKey: string) {
   assert(
     'You attempted to use @sum as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  return reduceMacro(dependentKey, (sum, item) => sum + item, 0, 'sum');
+  return reduceMacro(dependentKey, (sum: number, item: number) => sum + item, 0, 'sum');
 }
 
 /**
@@ -145,7 +163,7 @@ export function sum(dependentKey) {
   array
   @public
 */
-export function max(dependentKey) {
+export function max(dependentKey: string) {
   assert(
     'You attempted to use @max as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -208,7 +226,7 @@ export function max(dependentKey) {
   @return {ComputedProperty} computes the smallest value in the dependentKey's array
   @public
 */
-export function min(dependentKey) {
+export function min(dependentKey: string) {
   assert(
     'You attempted to use @min as a decorator directly, but it requires a `dependentKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -292,29 +310,52 @@ export function min(dependentKey) {
   @return {ComputedProperty} an array mapped via the callback
   @public
 */
-export function map(dependentKey, additionalDependentKeys, callback) {
+export function map(
+  dependentKey: string,
+  callback: (value: unknown, index: number) => unknown
+): PropertyDecorator;
+export function map(
+  dependentKey: string,
+  additionalDependentKeys: string[],
+  callback: (value: unknown, index: number) => unknown
+): PropertyDecorator;
+export function map(
+  dependentKey: string,
+  additionalDependentKeysOrCallback: string[] | ((value: unknown, index: number) => unknown),
+  callback?: (value: unknown, index: number) => unknown
+): PropertyDecorator {
   assert(
     'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  if (callback === undefined && typeof additionalDependentKeys === 'function') {
-    callback = additionalDependentKeys;
-    additionalDependentKeys = [];
-  }
-
   assert(
     'The final parameter provided to map must be a callback function',
-    typeof callback === 'function'
+    typeof callback === 'function' ||
+      (callback === undefined && typeof additionalDependentKeysOrCallback === 'function')
   );
 
   assert(
     'The second parameter provided to map must either be the callback or an array of additional dependent keys',
-    Array.isArray(additionalDependentKeys)
+    Array.isArray(additionalDependentKeysOrCallback) ||
+      typeof additionalDependentKeysOrCallback === 'function'
   );
 
-  return arrayMacro(dependentKey, additionalDependentKeys, function (value) {
-    return value.map(callback, this);
+  let additionalDependentKeys: string[];
+
+  if (typeof additionalDependentKeysOrCallback === 'function') {
+    callback = additionalDependentKeysOrCallback;
+    additionalDependentKeys = [];
+  } else {
+    additionalDependentKeys = additionalDependentKeysOrCallback;
+  }
+
+  const cCallback = callback;
+  assert('[BUG] Missing callback', cCallback);
+
+  return arrayMacro(dependentKey, additionalDependentKeys, function (this: unknown, value) {
+    // This is so dumb...
+    return Array.isArray(value) ? value.map(cCallback, this) : value.map(cCallback, this);
   });
 }
 
@@ -366,7 +407,7 @@ export function map(dependentKey, additionalDependentKeys, callback) {
   @return {ComputedProperty} an array mapped to the specified key
   @public
 */
-export function mapBy(dependentKey, propertyKey) {
+export function mapBy(dependentKey: string, propertyKey: string) {
   assert(
     'You attempted to use @mapBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -490,30 +531,66 @@ export function mapBy(dependentKey, propertyKey) {
   @return {ComputedProperty} the filtered array
   @public
 */
-export function filter(dependentKey, additionalDependentKeys, callback) {
+export function filter(
+  dependentKey: string,
+  callback: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
+): PropertyDecorator;
+export function filter(
+  dependentKey: string,
+  additionalDependentKeys: string[],
+  callback: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
+): PropertyDecorator;
+export function filter(
+  dependentKey: string,
+  additionalDependentKeysOrCallback:
+    | string[]
+    | ((value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown),
+  callback?: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
+): PropertyDecorator {
   assert(
     'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
-  if (callback === undefined && typeof additionalDependentKeys === 'function') {
-    callback = additionalDependentKeys;
-    additionalDependentKeys = [];
-  }
-
   assert(
     'The final parameter provided to filter must be a callback function',
-    typeof callback === 'function'
+    typeof callback === 'function' ||
+      (callback === undefined && typeof additionalDependentKeysOrCallback === 'function')
   );
 
   assert(
     'The second parameter provided to filter must either be the callback or an array of additional dependent keys',
-    Array.isArray(additionalDependentKeys)
+    Array.isArray(additionalDependentKeysOrCallback) ||
+      typeof additionalDependentKeysOrCallback === 'function'
   );
 
-  return arrayMacro(dependentKey, additionalDependentKeys, function (value) {
-    return value.filter(callback, this);
-  });
+  let additionalDependentKeys: string[];
+
+  if (typeof additionalDependentKeysOrCallback === 'function') {
+    callback = additionalDependentKeysOrCallback;
+    additionalDependentKeys = [];
+  } else {
+    additionalDependentKeys = additionalDependentKeysOrCallback;
+  }
+
+  const cCallback = callback;
+
+  return arrayMacro(
+    dependentKey,
+    additionalDependentKeys,
+    function (this: unknown, value: unknown[] | EmberArray<unknown>) {
+      // This is a really silly way to keep TS happy
+      return Array.isArray(value)
+        ? value.filter(
+            cCallback as (value: unknown, index: number, array: unknown[]) => unknown,
+            this
+          )
+        : value.filter(
+            cCallback as (value: unknown, index: number, array: EmberArray<unknown>) => unknown,
+            this
+          );
+    }
+  );
 }
 
 /**
@@ -551,7 +628,7 @@ export function filter(dependentKey, additionalDependentKeys, callback) {
   @return {ComputedProperty} the filtered array
   @public
 */
-export function filterBy(dependentKey, propertyKey, value) {
+export function filterBy(dependentKey: string, propertyKey: string, value?: unknown) {
   assert(
     'You attempted to use @filterBy as a decorator directly, but it requires atleast `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -564,9 +641,9 @@ export function filterBy(dependentKey, propertyKey, value) {
 
   let callback;
   if (arguments.length === 2) {
-    callback = (item) => get(item, propertyKey);
+    callback = (item: unknown) => get(item, propertyKey);
   } else {
-    callback = (item) => get(item, propertyKey) === value;
+    callback = (item: unknown) => get(item, propertyKey) === value;
   }
 
   return filter(`${dependentKey}.@each.${propertyKey}`, callback);
@@ -608,22 +685,27 @@ export function filterBy(dependentKey, propertyKey, value) {
   unique elements from the dependent array
   @public
 */
-export function uniq(...args) {
+export function uniq(
+  dependentKey: string,
+  ...additionalDependentKeys: string[]
+): PropertyDecorator {
   assert(
     'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
+  let args = [dependentKey, ...additionalDependentKeys];
+
   return multiArrayMacro(
     args,
-    function (dependentKeys) {
+    function (this: unknown, dependentKeys) {
       let uniq = emberA();
       let seen = new Set();
 
       dependentKeys.forEach((dependentKey) => {
         let value = get(this, dependentKey);
-        if (isArray(value)) {
-          value.forEach((item) => {
+        if (isNativeOrEmberArray(value)) {
+          value.forEach((item: unknown) => {
             if (!seen.has(item)) {
               seen.add(item);
               uniq.push(item);
@@ -675,7 +757,7 @@ export function uniq(...args) {
   unique elements from the dependent array
   @public
 */
-export function uniqBy(dependentKey, propertyKey) {
+export function uniqBy(dependentKey: string, propertyKey: string) {
   assert(
     'You attempted to use @uniqBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -688,8 +770,8 @@ export function uniqBy(dependentKey, propertyKey) {
 
   return computed(`${dependentKey}.[]`, function () {
     let list = get(this, dependentKey);
-    return isArray(list) ? uniqByArray(list, propertyKey) : emberA();
-  }).readOnly();
+    return isNativeOrEmberArray(list) ? uniqByArray(list, propertyKey) : emberA();
+  }).readOnly() as PropertyDecorator;
 }
 
 /**
@@ -774,26 +856,33 @@ export let union = uniq;
   elements from the dependent arrays
   @public
 */
-export function intersect(...args) {
+export function intersect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
     'You attempted to use @intersect as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
+  let args = [dependentKey, ...additionalDependentKeys];
+
   return multiArrayMacro(
     args,
-    function (dependentKeys) {
-      let arrays = dependentKeys.map((dependentKey) => {
+    function (this: unknown, dependentKeys: string[]) {
+      let arrays = dependentKeys.map((dependentKey: string) => {
         let array = get(this, dependentKey);
-        return isArray(array) ? array : [];
+        return Array.isArray(array) ? array : [];
       });
 
-      let results = arrays.pop().filter((candidate) => {
-        for (let i = 0; i < arrays.length; i++) {
+      let firstArray = arrays.pop();
+      assert(
+        'Attempted to apply multiArrayMacro for intersect without any dependentKeys',
+        firstArray
+      );
+
+      let results = firstArray.filter((candidate: unknown) => {
+        for (let array of arrays) {
           let found = false;
-          let array = arrays[i];
-          for (let j = 0; j < array.length; j++) {
-            if (array[j] === candidate) {
+          for (let item of array) {
+            if (item === candidate) {
               found = true;
               break;
             }
@@ -856,7 +945,7 @@ export function intersect(...args) {
   first dependent array that are not in the second dependent array
   @public
 */
-export function setDiff(setAProperty, setBProperty) {
+export function setDiff(setAProperty: string, setBProperty: string) {
   assert(
     'You attempted to use @setDiff as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -872,15 +961,15 @@ export function setDiff(setAProperty, setBProperty) {
     let setA = get(this, setAProperty);
     let setB = get(this, setBProperty);
 
-    if (!isArray(setA)) {
+    if (!isNativeOrEmberArray(setA)) {
       return emberA();
     }
-    if (!isArray(setB)) {
+    if (!isNativeOrEmberArray(setB)) {
       return emberA(setA);
     }
 
     return setA.filter((x) => setB.indexOf(x) === -1);
-  }).readOnly();
+  }).readOnly() as PropertyDecorator;
 }
 
 /**
@@ -914,15 +1003,17 @@ export function setDiff(setAProperty, setBProperty) {
   in properties to an array.
   @public
 */
-export function collect(...dependentKeys) {
+export function collect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
     'You attempted to use @collect as a decorator directly, but it requires atleast one dependent key parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
+  let dependentKeys = [dependentKey, ...additionalDependentKeys];
+
   return multiArrayMacro(
     dependentKeys,
-    function () {
+    function (this: unknown) {
       let res = dependentKeys.map((key) => {
         let val = get(this, key);
         return val === undefined ? null : val;
@@ -933,6 +1024,8 @@ export function collect(...dependentKeys) {
     'collect'
   );
 }
+
+type SortDefinition = (itemA: unknown, itemB: unknown) => number;
 
 /**
   A computed property which returns a new array with all the properties from the
@@ -1073,7 +1166,17 @@ export function collect(...dependentKeys) {
   property array or callback function
   @public
 */
-export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
+export function sort(itemsKey: string, sortDefinition: SortDefinition | string): PropertyDecorator;
+export function sort(
+  itemsKey: string,
+  additionalDependentKeys: string[],
+  sortDefinition: SortDefinition
+): PropertyDecorator;
+export function sort(
+  itemsKey: string,
+  additionalDependentKeysOrDefinition: SortDefinition | string | string[],
+  sortDefinition?: SortDefinition
+): PropertyDecorator {
   assert(
     'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
     !isElementDescriptor(Array.prototype.slice.call(arguments))
@@ -1085,14 +1188,14 @@ export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
     if (arguments.length === 2) {
       argumentsValid =
         typeof itemsKey === 'string' &&
-        (typeof additionalDependentKeys === 'string' ||
-          typeof additionalDependentKeys === 'function');
+        (typeof additionalDependentKeysOrDefinition === 'string' ||
+          typeof additionalDependentKeysOrDefinition === 'function');
     }
 
     if (arguments.length === 3) {
       argumentsValid =
         typeof itemsKey === 'string' &&
-        Array.isArray(additionalDependentKeys) &&
+        Array.isArray(additionalDependentKeysOrDefinition) &&
         typeof sortDefinition === 'function';
     }
 
@@ -1102,40 +1205,52 @@ export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
     );
   }
 
-  if (sortDefinition === undefined && !Array.isArray(additionalDependentKeys)) {
-    sortDefinition = additionalDependentKeys;
+  let additionalDependentKeys: string[];
+  let sortDefinitionOrString: SortDefinition | string;
+
+  if (Array.isArray(additionalDependentKeysOrDefinition)) {
+    additionalDependentKeys = additionalDependentKeysOrDefinition;
+    sortDefinitionOrString = sortDefinition!;
+  } else {
     additionalDependentKeys = [];
+    sortDefinitionOrString = additionalDependentKeysOrDefinition;
   }
 
-  if (typeof sortDefinition === 'function') {
-    return customSort(itemsKey, additionalDependentKeys, sortDefinition);
+  if (typeof sortDefinitionOrString === 'function') {
+    return customSort(itemsKey, additionalDependentKeys, sortDefinitionOrString);
   } else {
-    return propertySort(itemsKey, sortDefinition);
+    return propertySort(itemsKey, sortDefinitionOrString);
   }
 }
 
-function customSort(itemsKey, additionalDependentKeys, comparator) {
-  return arrayMacro(itemsKey, additionalDependentKeys, function (value) {
+function customSort(
+  itemsKey: string,
+  additionalDependentKeys: string[],
+  comparator: SortDefinition
+) {
+  return arrayMacro(itemsKey, additionalDependentKeys, function (this: unknown, value) {
     return value.slice().sort((x, y) => comparator.call(this, x, y));
   });
 }
 
 // This one needs to dynamically set up and tear down observers on the itemsKey
 // depending on the sortProperties
-function propertySort(itemsKey, sortPropertiesKey) {
-  let cp = autoComputed(function (key) {
+function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDecorator {
+  let cp = autoComputed(function (this: unknown, key: string) {
     let sortProperties = get(this, sortPropertiesKey);
 
     assert(
       `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
-      isArray(sortProperties) && sortProperties.every((s) => typeof s === 'string')
+      (function (arr: unknown): arr is string[] | EmberArray<string> {
+        return isNativeOrEmberArray(arr) && arr.every((s) => typeof s === 'string');
+      })(sortProperties)
     );
 
     let itemsKeyIsAtThis = itemsKey === '@this';
     let normalizedSortProperties = normalizeSortProperties(sortProperties);
 
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
-    if (!isArray(items)) {
+    if (!isNativeOrEmberArray(items)) {
       return emberA();
     }
 
@@ -1146,23 +1261,30 @@ function propertySort(itemsKey, sortPropertiesKey) {
     }
   }).readOnly();
 
-  return cp;
+  return cp as PropertyDecorator;
 }
 
-function normalizeSortProperties(sortProperties) {
-  return sortProperties.map((p) => {
+function normalizeSortProperties(sortProperties: string[] | EmberArray<string>) {
+  let callback = (p: string): [prop: string, direction: string] => {
     let [prop, direction] = p.split(':');
     direction = direction || 'asc';
 
-    return [prop, direction];
-  });
+    // SAFETY: There will always be at least one value returned by split
+    return [prop!, direction];
+  };
+  // This nonsense is necessary since technically the two map implementations diverge.
+  return Array.isArray(sortProperties)
+    ? sortProperties.map(callback)
+    : sortProperties.map(callback);
 }
 
-function sortByNormalizedSortProperties(items, normalizedSortProperties) {
+function sortByNormalizedSortProperties(
+  items: unknown[] | EmberArray<unknown>,
+  normalizedSortProperties: [prop: string, direction: string][]
+) {
   return emberA(
-    items.slice().sort((itemA, itemB) => {
-      for (let i = 0; i < normalizedSortProperties.length; i++) {
-        let [prop, direction] = normalizedSortProperties[i];
+    items.slice().sort((itemA: unknown, itemB: unknown) => {
+      for (let [prop, direction] of normalizedSortProperties) {
         let result = compare(get(itemA, prop), get(itemB, prop));
         if (result !== 0) {
           return direction === 'desc' ? -1 * result : result;

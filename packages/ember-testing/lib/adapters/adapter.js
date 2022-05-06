@@ -1,9 +1,5 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
 
-function K() {
-  return this;
-}
-
 /**
  @module @ember/test
 */
@@ -25,7 +21,7 @@ export default EmberObject.extend({
     @public
     @method asyncStart
   */
-  asyncStart: K,
+  asyncStart() {},
 
   /**
     This callback will be called whenever an async operation has completed.
@@ -33,7 +29,7 @@ export default EmberObject.extend({
     @public
     @method asyncEnd
   */
-  asyncEnd: K,
+  asyncEnd() {},
 
   /**
     Override this method with your testing framework's false assertion.
