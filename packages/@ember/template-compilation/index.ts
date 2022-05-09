@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 
 export { compile as compileTemplate } from 'ember-template-compiler';
 
-export let precompileTemplate;
+export let precompileTemplate: (() => never) | undefined;
 
 if (DEBUG) {
   precompileTemplate = () => {
