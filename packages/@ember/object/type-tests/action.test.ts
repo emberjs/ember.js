@@ -1,8 +1,9 @@
 import { expectTypeOf } from 'expect-type';
 
 import { action } from '@ember/object';
+import type { ExtendedMethodDecorator } from '@ember/-internals/metal/lib/decorator';
 
-expectTypeOf(action).toEqualTypeOf<MethodDecorator>();
+expectTypeOf(action).toMatchTypeOf<ExtendedMethodDecorator>();
 
 class Foo {
   // @ts-expect-error action is a method decorator
