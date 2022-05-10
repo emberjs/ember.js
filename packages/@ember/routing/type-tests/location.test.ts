@@ -1,4 +1,5 @@
-import Location, { ILocation } from '@ember/routing/location';
+import type { ILocation } from '@ember/routing/location';
+import Location from '@ember/routing/location';
 import { expectTypeOf } from 'expect-type';
 
 // This is deprecated so let's not bother with more testing

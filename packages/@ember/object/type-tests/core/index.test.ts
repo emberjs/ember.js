@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import CoreObject from '@ember/object/core';
 import { expectTypeOf } from 'expect-type';
 

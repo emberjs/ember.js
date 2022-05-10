@@ -2,10 +2,11 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
-import Container, { FactoryManager } from '@ember/-internals/container/lib/container';
-import { TypeOptions } from '@ember/-internals/container/lib/registry';
+import type { FactoryManager } from '@ember/-internals/container/lib/container';
+import type Container from '@ember/-internals/container/lib/container';
+import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { Mixin } from '@ember/-internals/metal';
-import { Factory } from '@ember/-internals/owner';
+import type { Factory } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.

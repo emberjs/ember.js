@@ -1,9 +1,6 @@
 import { FrameworkObject } from '@ember/-internals/runtime';
-import {
-  DecoratorPropertyDescriptor,
-  ElementDescriptor,
-  inject as metalInject,
-} from '@ember/-internals/metal';
+import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
+import { inject as metalInject } from '@ember/-internals/metal';
 
 /**
  @module @ember/service

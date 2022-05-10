@@ -2,7 +2,7 @@ import preRender from './states/pre_render';
 import hasElement from './states/has_element';
 import inDOM from './states/in_dom';
 import destroying from './states/destroying';
-import Component from '@ember/component';
+import type Component from '@ember/component';
 
 export interface ViewState {
   enter?(view: Component): void;

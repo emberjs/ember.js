@@ -1,6 +1,6 @@
-import { BootOptions } from '@ember/application/instance';
+import type { BootOptions } from '@ember/application/instance';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import type EmberObject from '@ember/object';
 import { NoneLocation } from '@ember/-internals/routing';
 
 import ApplicationTestCase from './application';

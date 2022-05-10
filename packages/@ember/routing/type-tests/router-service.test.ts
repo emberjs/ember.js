@@ -1,11 +1,13 @@
 /* eslint-disable no-self-assign */
 
-import { Owner } from '@ember/-internals/owner';
-import { EmberLocation } from '@ember/-internals/routing';
-import Route from '@ember/routing/route';
-import RouterService, { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
+import type { Owner } from '@ember/-internals/owner';
+import type { EmberLocation } from '@ember/-internals/routing';
+import type Route from '@ember/routing/route';
+import type { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
+import RouterService from '@ember/routing/router-service';
 import { expectTypeOf } from 'expect-type';
-import { Transition } from 'router_js';
+
+import type { Transition } from 'router_js';
 
 // Good enough for tests
 let owner = {} as Owner;

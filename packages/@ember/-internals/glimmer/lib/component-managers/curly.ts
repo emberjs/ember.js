@@ -1,10 +1,11 @@
-import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
+import type { Factory, Owner } from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import {
+import type {
   Bounds,
   CapturedArguments,
   CompilableProgram,
@@ -20,13 +21,8 @@ import {
   WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
-import {
-  childRefFor,
-  createComputeRef,
-  createPrimitiveRef,
-  Reference,
-  valueForRef,
-} from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {
@@ -38,10 +34,10 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
-import Component from '../component';
-import { DynamicScope } from '../renderer';
-import RuntimeResolver from '../resolver';
+import type { SimpleElement } from '@simple-dom/interface';
+import type Component from '../component';
+import type { DynamicScope } from '../renderer';
+import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {
   createClassNameBindingRef,

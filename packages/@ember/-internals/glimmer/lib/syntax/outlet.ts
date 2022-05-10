@@ -1,20 +1,23 @@
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, CurriedType, DynamicScope } from '@glimmer/interfaces';
+import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
+import { CurriedType } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
 import {
   childRefFromParts,
   createComputeRef,
   createDebugAliasRef,
-  Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
+import type { CurriedValue } from '@glimmer/runtime';
+import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
+import type { OutletDefinitionState } from '../component-managers/outlet';
+import { OutletComponentDefinition } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';
 import { isTemplateFactory } from '../template';
-import { OutletState } from '../utils/outlet';
+import type { OutletState } from '../utils/outlet';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in

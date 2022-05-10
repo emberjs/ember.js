@@ -1,4 +1,5 @@
-import { privatize as P, Registry } from '@ember/-internals/container';
+import type { Registry } from '@ember/-internals/container';
+import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';

@@ -1,7 +1,8 @@
-import { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
+import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import { inject } from '@ember/-internals/metal';
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
-import states, { ViewState } from './states';
+import type { ViewState } from './states';
+import states from './states';
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior

@@ -1,8 +1,8 @@
 import { get, setProperties, computed, Mixin } from '@ember/-internals/metal';
-import { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
+import type { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import EmberError from '@ember/error';
-import RSVP from 'rsvp';
-import CoreObject from '../system/core_object';
+import type RSVP from 'rsvp';
+import type CoreObject from '../system/core_object';
 
 /**
   @module @ember/object

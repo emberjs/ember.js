@@ -1,4 +1,4 @@
-import EmberArray from '@ember/array';
+import type EmberArray from '@ember/array';
 import { filter } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
 

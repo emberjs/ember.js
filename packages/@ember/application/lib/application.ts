@@ -21,13 +21,15 @@ import {
   NoneLocation,
   BucketCache,
 } from '@ember/-internals/routing';
-import ApplicationInstance, { BootOptions } from '../instance';
+import type { BootOptions } from '../instance';
+import ApplicationInstance from '../instance';
 import Engine from '@ember/engine';
-import { Container, privatize as P, Registry } from '@ember/-internals/container';
+import type { Container, Registry } from '@ember/-internals/container';
+import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
-import { EngineInstanceOptions } from '@ember/engine/instance';
-import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import type { EngineInstanceOptions } from '@ember/engine/instance';
+import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 
 /**
   An instance of `Application` is the starting point for every Ember

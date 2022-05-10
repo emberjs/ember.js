@@ -1,7 +1,8 @@
-import Router, { ModelFor, TransitionState } from 'router_js';
+import type { ModelFor, TransitionState } from 'router_js';
+import type Router from 'router_js';
 import { shallowEqual } from '../utils';
-import Route from './route';
-import EmberRouter from './router';
+import type Route from './route';
+import type EmberRouter from './router';
 
 export default class RouterState<R extends Route> {
   router: Router<R>;

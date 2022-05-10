@@ -1,7 +1,8 @@
-import { Owner, setOwner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import {
+import type {
   CapturedArguments,
   Destroyable,
   DynamicScope,
@@ -13,7 +14,8 @@ import {
   WithCreateInstance,
 } from '@glimmer/interfaces';
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
-import { createConstRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
 function NOOP(): void {}

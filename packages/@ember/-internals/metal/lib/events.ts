@@ -1,9 +1,10 @@
 /**
 @module @ember/object
 */
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { setListeners } from '@ember/-internals/utils';
-import { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 
 /*

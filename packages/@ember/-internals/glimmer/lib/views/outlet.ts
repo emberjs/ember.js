@@ -1,14 +1,16 @@
-import { getOwner, Owner } from '@ember/-internals/owner';
-import { BootOptions } from '@ember/application/instance';
+import type { Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
+import type { BootOptions } from '@ember/application/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
-import { Template } from '@glimmer/interfaces';
-import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
+import type { Template } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import { createComputeRef, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
-import { OutletDefinitionState } from '../component-managers/outlet';
-import { Renderer } from '../renderer';
-import { OutletState } from '../utils/outlet';
+import type { SimpleElement } from '@simple-dom/interface';
+import type { OutletDefinitionState } from '../component-managers/outlet';
+import type { Renderer } from '../renderer';
+import type { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {
   hasDOM: boolean;

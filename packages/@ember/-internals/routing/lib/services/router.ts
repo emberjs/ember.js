@@ -4,11 +4,12 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
-import { ModelFor, Transition } from 'router_js';
-import Route from '../system/route';
+import type { ModelFor, Transition } from 'router_js';
+import type Route from '../system/route';
 import EmberRouter from '../system/router';
 import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';
-import { extractRouteArgs, resemblesURL, RouteArgs, RouteOptions, shallowEqual } from '../utils';
+import type { RouteArgs, RouteOptions } from '../utils';
+import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
 export const ROUTER = Symbol('ROUTER');
 

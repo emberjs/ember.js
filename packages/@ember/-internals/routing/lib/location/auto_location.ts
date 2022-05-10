@@ -2,9 +2,9 @@ import { history, location, userAgent, window } from '@ember/-internals/browser-
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
+import type { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
-import { EmberLocation, UpdateCallback } from './api';
+import type { EmberLocation, UpdateCallback } from './api';
 import {
   getFullPath,
   getHash,

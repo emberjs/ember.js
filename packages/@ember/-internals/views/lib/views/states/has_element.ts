@@ -1,7 +1,7 @@
 import _default from './default';
 import { join } from '@ember/runloop';
 import { flaggedInstrument } from '@ember/instrumentation';
-import Component from '@ember/component';
+import type Component from '@ember/component';
 import type { ViewState } from '../states';
 
 const hasElement: ViewState = {

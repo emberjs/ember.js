@@ -1,5 +1,6 @@
 import DebugAssert from './debug';
-import { callWithStub, DebugEnv, Message } from './utils';
+import type { DebugEnv, Message } from './utils';
+import { callWithStub } from './utils';
 
 type ExpectNoWarningFunc = (func?: (() => void) | undefined) => void;
 type ExpectWarningFunc = (

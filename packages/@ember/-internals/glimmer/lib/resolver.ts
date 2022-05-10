@@ -1,12 +1,13 @@
 import { privatize as P } from '@ember/-internals/container';
-import { TypeOptions } from '@ember/-internals/container/lib/registry';
+import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, isFactory, Owner } from '@ember/-internals/owner';
+import type { Factory, Owner } from '@ember/-internals/owner';
+import { isFactory } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import {
+import type {
   CompileTimeResolver,
   HelperDefinitionState,
   ModifierDefinitionState,

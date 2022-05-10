@@ -1,4 +1,4 @@
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import { action } from '@ember/object';
 import Route from '@ember/routing/route';
 

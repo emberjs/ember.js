@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 
 import { assert } from '../index';
-import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';
+import type { HandlerCallback } from './handlers';
+import { invoke, registerHandler as genericRegisterHandler } from './handlers';
 
 export interface WarnOptions {
   id: string;

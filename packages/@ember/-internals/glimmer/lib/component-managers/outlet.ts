@@ -1,10 +1,10 @@
 import { ENV } from '@ember/-internals/environment';
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
-import {
+import type {
   CapturedArguments,
   CompilableProgram,
   ComponentDefinition,
@@ -21,14 +21,15 @@ import {
   WithDynamicTagName,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 
-import { SimpleElement } from '@simple-dom/interface';
-import { DynamicScope } from '../renderer';
-import { OutletState } from '../utils/outlet';
-import OutletView from '../views/outlet';
+import type { SimpleElement } from '@simple-dom/interface';
+import type { DynamicScope } from '../renderer';
+import type { OutletState } from '../utils/outlet';
+import type OutletView from '../views/outlet';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   return { object: `${def.name}:${def.outlet}` };

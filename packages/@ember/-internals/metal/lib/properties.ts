@@ -2,10 +2,12 @@
 @module @ember/object
 */
 
-import { Meta, meta as metaFor } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor } from '@ember/-internals/meta';
 import { setWithMandatorySetter } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
-import { ExtendedMethodDecorator, descriptorForProperty, isClassicDecorator } from './decorator';
+import type { ExtendedMethodDecorator } from './decorator';
+import { descriptorForProperty, isClassicDecorator } from './decorator';
 import { revalidateObservers } from './observer';
 
 /**

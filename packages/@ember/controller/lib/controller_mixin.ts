@@ -1,9 +1,9 @@
 import { Mixin, computed } from '@ember/-internals/metal';
-import { RouteArgs } from '@ember/-internals/routing/lib/utils';
+import type { RouteArgs } from '@ember/-internals/routing/lib/utils';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
-import Route from '@ember/routing/route';
-import { Transition } from 'router_js';
+import type Route from '@ember/routing/route';
+import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam = string | Record<string, { type: ControllerQueryParamType }>;

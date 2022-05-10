@@ -7,13 +7,14 @@ import { Registry } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
-import EngineInstance, { EngineInstanceOptions } from '@ember/engine/instance';
+import type { EngineInstanceOptions } from '@ember/engine/instance';
+import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/-internals/routing';
 import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-import { ResolverClass } from '@ember/-internals/container/lib/registry';
+import type { ResolverClass } from '@ember/-internals/container/lib/registry';
 
 function props(obj: object) {
   let properties = [];

@@ -3,15 +3,10 @@ import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
-import { ElementDescriptor } from '..';
+import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
-import {
-  COMPUTED_SETTERS,
-  ExtendedMethodDecorator,
-  DecoratorPropertyDescriptor,
-  isElementDescriptor,
-  setClassicDecorator,
-} from './decorator';
+import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
+import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
 
 /**

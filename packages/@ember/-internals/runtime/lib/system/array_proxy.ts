@@ -16,19 +16,13 @@ import {
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from './object';
-import EmberArray, { isArray, MutableArray } from '../mixins/array';
+import type EmberArray from '../mixins/array';
+import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
-import {
-  combine,
-  consumeTag,
-  validateTag,
-  valueForTag,
-  tagFor,
-  Tag,
-  Revision,
-} from '@glimmer/validator';
-import { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
+import type { Tag, Revision } from '@glimmer/validator';
+import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
+import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 
 function isMutable<T>(obj: EmberArray<T>): obj is MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';

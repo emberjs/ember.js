@@ -1,9 +1,10 @@
-import { View } from '@ember/-internals/glimmer/lib/renderer';
-import { getOwner, Owner } from '@ember/-internals/owner';
+import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import type { Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { Dict, Option } from '@glimmer/interfaces';
-import { SimpleElement } from '@simple-dom/interface';
+import type { Dict, Option } from '@glimmer/interfaces';
+import type { SimpleElement } from '@simple-dom/interface';
 
 /**
 @module ember

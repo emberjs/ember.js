@@ -4,10 +4,10 @@ import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { getElementView } from '@ember/-internals/views';
 import ActionManager from './action_manager';
-import { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type Component from '@ember/component';
-import { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
-import { SimpleElement } from '@simple-dom/interface';
+import type { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
+import type { SimpleElement } from '@simple-dom/interface';
 
 /**
 @module ember

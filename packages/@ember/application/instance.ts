@@ -5,14 +5,15 @@
 import { get, set } from '@ember/-internals/metal';
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
-import Application from './lib/application';
+import type Application from './lib/application';
 import { renderSettled } from '@ember/-internals/glimmer';
-import { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import { assert } from '@ember/debug';
 import { Router } from '@ember/-internals/routing';
-import { EventDispatcher, ViewMixin } from '@ember/-internals/views';
-import { Registry } from '@ember/-internals/container';
-import { SimpleElement } from '@simple-dom/interface';
+import type { ViewMixin } from '@ember/-internals/views';
+import { EventDispatcher } from '@ember/-internals/views';
+import type { Registry } from '@ember/-internals/container';
+import type { SimpleElement } from '@simple-dom/interface';
 
 export interface BootOptions {
   isBrowser?: boolean;

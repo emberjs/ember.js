@@ -1,16 +1,16 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import { ElementOperations } from '@glimmer/interfaces';
+import type { ElementOperations } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
 import {
   childRefFor,
   childRefFromParts,
   createComputeRef,
   createPrimitiveRef,
-  Reference,
   valueForRef,
 } from '@glimmer/reference';
-import Component from '../component';
+import type Component from '../component';
 
 function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';

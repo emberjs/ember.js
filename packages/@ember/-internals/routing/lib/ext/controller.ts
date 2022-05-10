@@ -1,10 +1,11 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import Controller from '@ember/controller';
+import type Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
-import { Transition } from 'router_js';
-import { Route, Router } from '../..';
-import { deprecateTransitionMethods, prefixRouteNameArg, RouteArgs } from '../utils';
+import type { Transition } from 'router_js';
+import type { Route, Router } from '../..';
+import type { RouteArgs } from '../utils';
+import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
 
 /**
 @module ember

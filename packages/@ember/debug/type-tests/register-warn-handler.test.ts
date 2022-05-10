@@ -1,7 +1,7 @@
 import { registerWarnHandler } from '@ember/debug';
 import { expectTypeOf } from 'expect-type';
-import { Handler } from '../lib/handlers';
-import { WarnOptions } from '../lib/warn';
+import type { Handler } from '../lib/handlers';
+import type { WarnOptions } from '../lib/warn';
 
 let ret = registerWarnHandler((message, options, next) => {
   expectTypeOf(message).toEqualTypeOf<string>();

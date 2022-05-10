@@ -2,7 +2,7 @@
 @module ember
 */
 import { assert } from '@ember/debug';
-import { CapturedArguments } from '@glimmer/interfaces';
+import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 

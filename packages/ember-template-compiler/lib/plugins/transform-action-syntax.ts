@@ -1,5 +1,5 @@
-import { AST, ASTPlugin } from '@glimmer/syntax';
-import { Builders, EmberASTPluginEnvironment } from '../types';
+import type { AST, ASTPlugin } from '@glimmer/syntax';
+import type { Builders, EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 /**

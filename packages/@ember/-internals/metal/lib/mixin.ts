@@ -3,7 +3,8 @@
 */
 import { INIT_FACTORY } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
   guidFor,
   makeArray,
@@ -12,23 +13,19 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
-import { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
-import {
+import type {
   ComputedDecorator,
-  ComputedProperty,
   ComputedPropertyGetter,
   ComputedPropertyObj,
   ComputedPropertySetter,
 } from './computed';
-import {
-  ComputedDescriptor,
-  descriptorForDecorator,
-  makeComputedDecorator,
-  nativeDescDecorator,
-} from './decorator';
+import { ComputedProperty } from './computed';
+import type { ComputedDescriptor } from './decorator';
+import { descriptorForDecorator, makeComputedDecorator, nativeDescDecorator } from './decorator';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { setUnprocessedMixins } from './namespace_search';

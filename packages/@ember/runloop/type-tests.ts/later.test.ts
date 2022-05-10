@@ -1,4 +1,5 @@
-import { later, Timer } from '@ember/runloop';
+import type { Timer } from '@ember/runloop';
+import { later } from '@ember/runloop';
 import { expectTypeOf } from 'expect-type';
 
 class Foo {

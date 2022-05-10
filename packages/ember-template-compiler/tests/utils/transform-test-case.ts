@@ -1,6 +1,6 @@
 import { precompile } from '@glimmer/compiler';
-import { Option } from '@glimmer/interfaces';
-import { AST, ASTPlugin } from '@glimmer/syntax';
+import type { Option } from '@glimmer/interfaces';
+import type { AST, ASTPlugin } from '@glimmer/syntax';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
 

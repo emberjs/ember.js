@@ -1,6 +1,6 @@
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import EngineInstance from '@ember/engine/instance';
-import EmberObject from '@ember/object';
+import type EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 expectTypeOf<EngineInstance>().toMatchTypeOf<EmberObject>();

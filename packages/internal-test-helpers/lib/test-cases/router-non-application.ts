@@ -1,14 +1,18 @@
-import { compile, EmberPrecompileOptions } from 'ember-template-compiler';
+import type { EmberPrecompileOptions } from 'ember-template-compiler';
+import { compile } from 'ember-template-compiler';
 import { EventDispatcher } from '@ember/-internals/views';
-import { Component, Renderer, _resetRenderers } from '@ember/-internals/glimmer';
-import Resolver, { ModuleBasedResolver } from '../test-resolver';
+import type { Renderer } from '@ember/-internals/glimmer';
+import { Component, _resetRenderers } from '@ember/-internals/glimmer';
+import type Resolver from '../test-resolver';
+import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy } from '../run';
-import EngineInstance, { EngineInstanceOptions } from '@ember/engine/instance';
-import { BootOptions } from '@ember/application/instance';
-import { Factory } from '@ember/-internals/owner';
+import type { EngineInstanceOptions } from '@ember/engine/instance';
+import type EngineInstance from '@ember/engine/instance';
+import type { BootOptions } from '@ember/application/instance';
+import type { Factory } from '@ember/-internals/owner';
 
 export default class RouterNonApplicationTestCase extends AbstractTestCase {
   owner: EngineInstance;

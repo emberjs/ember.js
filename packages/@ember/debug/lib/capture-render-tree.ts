@@ -1,6 +1,6 @@
-import { Renderer } from '@ember/-internals/glimmer';
-import { Owner } from '@ember/-internals/owner';
-import { CapturedRenderNode } from '@glimmer/interfaces';
+import type { Renderer } from '@ember/-internals/glimmer';
+import type { Owner } from '@ember/-internals/owner';
+import type { CapturedRenderNode } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
 /**

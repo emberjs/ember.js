@@ -1,14 +1,8 @@
 /* global Node */
 
 import { assert } from '@ember/debug';
-import {
-  blur,
-  fireEvent,
-  focus,
-  KEYBOARD_EVENT_TYPES,
-  matches,
-  MOUSE_EVENT_TYPES,
-} from './system/synthetic-events';
+import type { KEYBOARD_EVENT_TYPES, MOUSE_EVENT_TYPES } from './system/synthetic-events';
+import { blur, fireEvent, focus, matches } from './system/synthetic-events';
 
 export default class NodeQuery {
   static query(selector: string, context: Document | DocumentFragment | Element = document) {
