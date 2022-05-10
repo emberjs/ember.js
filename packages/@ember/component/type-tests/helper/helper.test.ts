@@ -1,4 +1,4 @@
-import { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer/lib/helper';
+import type { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer/lib/helper';
 import { helper } from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
 

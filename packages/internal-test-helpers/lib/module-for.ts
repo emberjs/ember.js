@@ -1,12 +1,13 @@
 /* globals URLSearchParams */
 import { DEBUG } from '@glimmer/env';
 import { isEnabled } from '@ember/canary-features';
-import applyMixins, { Mixin, Generator } from './apply-mixins';
+import type { Mixin, Generator } from './apply-mixins';
+import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';
 import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/destroyable';
-import AbstractTestCase from './test-cases/abstract';
+import type AbstractTestCase from './test-cases/abstract';
 
 interface TestClass<T extends AbstractTestCase> {
   new (assert: QUnit['assert']): T;

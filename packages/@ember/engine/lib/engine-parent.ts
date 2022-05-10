@@ -1,7 +1,7 @@
 /**
 @module @ember/engine
 */
-import EngineInstance from '../instance';
+import type EngineInstance from '../instance';
 
 export const ENGINE_PARENT = Symbol('ENGINE_PARENT');
 

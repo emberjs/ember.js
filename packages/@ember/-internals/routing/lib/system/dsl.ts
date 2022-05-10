@@ -1,8 +1,8 @@
-import { Factory } from '@ember/-internals/owner';
+import type { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import { Option } from '@glimmer/interfaces';
-import { MatchCallback } from 'route-recognizer';
-import { EngineInfo, EngineRouteInfo } from './engines';
+import type { Option } from '@glimmer/interfaces';
+import type { MatchCallback } from 'route-recognizer';
+import type { EngineInfo, EngineRouteInfo } from './engines';
 
 let uuid = 0;
 

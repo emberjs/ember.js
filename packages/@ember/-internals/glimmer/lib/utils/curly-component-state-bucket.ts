@@ -1,9 +1,11 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { registerDestructor } from '@glimmer/destroyable';
-import { CapturedNamedArguments } from '@glimmer/interfaces';
-import { createConstRef, Reference } from '@glimmer/reference';
-import { beginUntrackFrame, endUntrackFrame, Revision, Tag, valueForTag } from '@glimmer/validator';
-import Component from '../component';
+import type { CapturedNamedArguments } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import { createConstRef } from '@glimmer/reference';
+import type { Revision, Tag } from '@glimmer/validator';
+import { beginUntrackFrame, endUntrackFrame, valueForTag } from '@glimmer/validator';
+import type Component from '../component';
 
 type Finalizer = () => void;
 function NOOP() {}

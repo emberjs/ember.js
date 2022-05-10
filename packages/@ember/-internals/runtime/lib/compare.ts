@@ -1,4 +1,5 @@
-import { TypeName, typeOf } from './type-of';
+import type { TypeName } from './type-of';
+import { typeOf } from './type-of';
 import Comparable from './mixins/comparable';
 import { assert } from '@ember/debug';
 

@@ -1,15 +1,13 @@
-import { getOwner, Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { _backburner } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { dasherize } from '@ember/string';
-import {
-  Namespace,
-  Object as EmberObject,
-  A as emberA,
-  NativeArray,
-} from '@ember/-internals/runtime';
-import { consumeTag, createCache, getValue, tagFor, untrack, Cache } from '@glimmer/validator';
-import { ContainerDebugAdapter } from '..';
+import type { NativeArray } from '@ember/-internals/runtime';
+import { Namespace, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import type { Cache } from '@glimmer/validator';
+import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
+import type { ContainerDebugAdapter } from '..';
 
 type RecordColor = 'black' | 'red' | 'blue' | 'green';
 

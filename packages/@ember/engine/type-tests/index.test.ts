@@ -1,8 +1,9 @@
-import { ResolverClass, TypeOptions } from '@ember/-internals/container/lib/registry';
-import { Factory, Owner } from '@ember/-internals/owner';
-import Namespace from '@ember/application/namespace';
-import Engine, { Initializer } from '@ember/engine';
-import EngineInstance from '@ember/engine/instance';
+import type { ResolverClass, TypeOptions } from '@ember/-internals/container/lib/registry';
+import type { Factory, Owner } from '@ember/-internals/owner';
+import type Namespace from '@ember/application/namespace';
+import type { Initializer } from '@ember/engine';
+import Engine from '@ember/engine';
+import type EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 

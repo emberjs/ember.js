@@ -1,9 +1,9 @@
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import {
+import type {
   CapturedArguments,
   ComponentDefinition,
   CustomRenderNode,
@@ -19,9 +19,10 @@ import {
   WithSubOwner,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference';
 import { unwrapTemplate } from '@glimmer/util';
-import RuntimeResolver from '../resolver';
+import type RuntimeResolver from '../resolver';
 
 interface EngineState {
   engine: EngineInstance;

@@ -2,7 +2,7 @@
 @module ember
 */
 import require, { has } from 'require';
-import { EmberPrecompileOptions } from '../types';
+import type { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
 import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
 import type { templateFactory } from '@glimmer/opcode-compiler';

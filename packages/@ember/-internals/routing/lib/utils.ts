@@ -1,15 +1,18 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import {
+import type {
   ControllerQueryParam,
   ControllerQueryParamType,
 } from '@ember/controller/lib/controller_mixin';
 import { assert, deprecate } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import EmberError from '@ember/error';
-import Router, { STATE_SYMBOL, InternalRouteInfo, ModelFor } from 'router_js';
-import Route, { ExtendedInternalRouteInfo } from './system/route';
-import EmberRouter from './system/router';
+import type { InternalRouteInfo, ModelFor } from 'router_js';
+import type Router from 'router_js';
+import { STATE_SYMBOL } from 'router_js';
+import type { ExtendedInternalRouteInfo } from './system/route';
+import type Route from './system/route';
+import type EmberRouter from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 

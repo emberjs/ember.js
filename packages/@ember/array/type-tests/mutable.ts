@@ -1,4 +1,4 @@
-import MutableArray from '@ember/array/mutable';
+import type MutableArray from '@ember/array/mutable';
 import { A } from '@ember/array';
 
 import { expectTypeOf } from 'expect-type';

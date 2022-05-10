@@ -1,9 +1,9 @@
-import { Owner } from '@ember/-internals/owner';
-import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import type { Owner } from '@ember/-internals/owner';
+import type Controller from '@ember/controller';
+import type EmberObject from '@ember/object';
 import Route from '@ember/routing/route';
 import { expectTypeOf } from 'expect-type';
-import { Transition } from 'router_js';
+import type { Transition } from 'router_js';
 
 // NOTE: This is invalid, but acceptable for type tests
 let owner = {} as Owner;

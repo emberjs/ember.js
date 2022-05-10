@@ -2,7 +2,7 @@ import Component from '@ember/-internals/glimmer/lib/component';
 import { getValue } from '@ember/-internals/metal';
 import Helper from '@ember/component/helper';
 import { invokeHelper } from '@ember/helper';
-import { Cache } from '@glimmer/validator';
+import type { Cache } from '@glimmer/validator';
 import { expectTypeOf } from 'expect-type';
 
 // NOTE: The types should probably be stricter, but they're from glimmer itself

@@ -1,7 +1,7 @@
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
 import ControllerMixin from './lib/controller_mixin';
-import { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
+import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 
 /**
 @module @ember/controller

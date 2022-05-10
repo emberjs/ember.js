@@ -7,7 +7,7 @@ import {
 } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 
-import {
+import type {
   Arguments,
   ComponentDefinitionState,
   HelperManager,

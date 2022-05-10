@@ -1,9 +1,10 @@
-import { Factory } from '@ember/-internals/owner';
+import type { Factory } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
-import { set } from '@ember/object';
+import type { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import Container, { ContainerOptions, LazyInjection } from './container';
+import type { ContainerOptions, LazyInjection } from './container';
+import Container from './container';
 
 export interface Injection {
   property: string;

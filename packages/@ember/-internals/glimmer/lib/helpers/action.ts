@@ -2,19 +2,14 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
-import { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments } from '@glimmer/interfaces';
-import {
-  createUnboundRef,
-  isInvokableRef,
-  Reference,
-  updateRef,
-  valueForRef,
-} from '@glimmer/reference';
+import type { CapturedArguments } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { _WeakSet } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 

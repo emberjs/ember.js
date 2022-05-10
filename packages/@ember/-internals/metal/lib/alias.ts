@@ -1,21 +1,22 @@
-import { Meta, meta as metaFor } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor } from '@ember/-internals/meta';
 import { inspect } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
+import type { UpdatableTag } from '@glimmer/validator';
 import {
   consumeTag,
   tagFor,
   tagMetaFor,
   untrack,
-  UpdatableTag,
   updateTag,
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
+import type { ExtendedMethodDecorator } from './decorator';
 import {
   ComputedDescriptor,
-  ExtendedMethodDecorator,
   descriptorForDecorator,
   isElementDescriptor,
   makeComputedDecorator,

@@ -1,4 +1,4 @@
-import { Owner, TypeOptions } from '@ember/-internals/owner';
+import type { Owner, TypeOptions } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 
 export default EmberObject.extend({

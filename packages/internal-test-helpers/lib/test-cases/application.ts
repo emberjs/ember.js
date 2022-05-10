@@ -5,8 +5,8 @@ import { Router } from '@ember/-internals/routing';
 import { runTask, runLoopSettled } from '../run';
 import Resolver from '../test-resolver';
 import { assert as emberAssert } from '@ember/debug';
-import Controller from '@ember/controller';
-import ApplicationInstance from '@ember/application/instance';
+import type Controller from '@ember/controller';
+import type ApplicationInstance from '@ember/application/instance';
 
 export default abstract class ApplicationTestCase extends TestResolverApplicationTestCase {
   application: Application;

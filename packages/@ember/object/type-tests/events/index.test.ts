@@ -2,7 +2,7 @@ import { addListener, removeListener, sendEvent } from '@ember/object/events';
 
 import EmberObject from '@ember/object';
 import { on } from '@ember/object/evented';
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 
 class Job extends EmberObject {
   logStartOrUpdate = on('started', 'updated', () => {

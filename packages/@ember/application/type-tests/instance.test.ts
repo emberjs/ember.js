@@ -1,7 +1,8 @@
-import { Factory, Owner } from '@ember/-internals/owner';
+import type { Factory, Owner } from '@ember/-internals/owner';
 import Application from '@ember/application';
-import ApplicationInstance, { BootOptions } from '@ember/application/instance';
-import EngineInstance from '@ember/engine/instance';
+import type { BootOptions } from '@ember/application/instance';
+import type ApplicationInstance from '@ember/application/instance';
+import type EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 
 import { expectTypeOf } from 'expect-type';

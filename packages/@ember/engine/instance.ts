@@ -12,9 +12,9 @@ import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_pr
 import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
 import { isFactory } from '@ember/-internals/owner';
 import Engine from '.';
-import Application from '@ember/application';
-import { BootOptions } from '@ember/application/instance';
-import { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type Application from '@ember/application';
+import type { BootOptions } from '@ember/application/instance';
+import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 
 const CEngine = Engine;
 

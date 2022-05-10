@@ -3,7 +3,7 @@ import Application from '@ember/application';
 import { Router } from '@ember/-internals/routing';
 import Resolver from '../test-resolver';
 import { assert } from '@ember/debug';
-import ApplicationInstance from '@ember/application/instance';
+import type ApplicationInstance from '@ember/application/instance';
 
 export default abstract class AutobootApplicationTestCase extends TestResolverApplicationTestCase {
   resolver?: Resolver;

@@ -7,6 +7,7 @@ import { getOwner } from '@ember/-internals/owner';
 import type { Owner } from '@ember/-internals/owner';
 import { guidFor, makeArray, isInternalSymbol } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
+import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';
 import {
   PROXY_CONTENT,
   sendEvent,
@@ -17,8 +18,6 @@ import {
   descriptorForProperty,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
-  ComputedProperty,
-  HasUnknownProperty,
   hasUnknownProperty,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';

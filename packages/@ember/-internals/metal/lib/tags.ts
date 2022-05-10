@@ -3,7 +3,8 @@ import { assert } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import { getCustomTagFor } from '@glimmer/manager';
-import { CONSTANT_TAG, dirtyTagFor, Tag, tagFor, TagMeta } from '@glimmer/validator';
+import type { Tag, TagMeta } from '@glimmer/validator';
+import { CONSTANT_TAG, dirtyTagFor, tagFor } from '@glimmer/validator';
 
 /////////
 

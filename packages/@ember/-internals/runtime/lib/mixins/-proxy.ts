@@ -16,7 +16,8 @@ import { setProxy, setupMandatorySetter, isObject, isProxy } from '@ember/-inter
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager';
-import { combine, updateTag, tagFor, tagMetaFor, UpdatableTag, Tag } from '@glimmer/validator';
+import type { UpdatableTag, Tag } from '@glimmer/validator';
+import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
 
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
   let content = get(proxy, 'content');

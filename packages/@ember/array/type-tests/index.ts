@@ -1,5 +1,7 @@
-import EmberArray, { A, NativeArray, isArray, makeArray } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
+import type { NativeArray } from '@ember/array';
+import type EmberArray from '@ember/array';
+import { A, isArray, makeArray } from '@ember/array';
+import type MutableArray from '@ember/array/mutable';
 
 import { expectTypeOf } from 'expect-type';
 

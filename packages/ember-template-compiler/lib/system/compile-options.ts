@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
 import { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from '../plugins/index';
-import { EmberPrecompileOptions, PluginFunc } from '../types';
+import type { EmberPrecompileOptions, PluginFunc } from '../types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 let USER_PLUGINS: PluginFunc[] = [];

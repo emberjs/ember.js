@@ -1,8 +1,8 @@
-import EmberObject from '@ember/object';
+import type EmberObject from '@ember/object';
 import NoneLocation from '@ember/routing/none-location';
-import { ILocation } from '@ember/routing/location';
+import type { ILocation } from '@ember/routing/location';
 import { expectTypeOf } from 'expect-type';
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 
 // Good enough for tests
 let owner = {} as Owner;

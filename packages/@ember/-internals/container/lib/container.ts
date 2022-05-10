@@ -1,8 +1,10 @@
-import { Factory, FactoryClass, Owner, setOwner } from '@ember/-internals/owner';
+import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import Registry, { DebugRegistry, TypeOptions } from './registry';
+import type { DebugRegistry, TypeOptions } from './registry';
+import type Registry from './registry';
 
 interface LeakTracking {
   hasContainers(): boolean;

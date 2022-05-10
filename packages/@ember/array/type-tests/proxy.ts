@@ -1,6 +1,8 @@
-import EmberArray, { A, NativeArray } from '@ember/array';
+import type { NativeArray } from '@ember/array';
+import type EmberArray from '@ember/array';
+import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
-import MutableArray from '@ember/array/mutable';
+import type MutableArray from '@ember/array/mutable';
 
 import { expectTypeOf } from 'expect-type';
 

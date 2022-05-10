@@ -1,7 +1,7 @@
 import { registerDeprecationHandler } from '@ember/debug';
 import { expectTypeOf } from 'expect-type';
-import { DeprecationOptions } from '../lib/deprecate';
-import { Handler } from '../lib/handlers';
+import type { DeprecationOptions } from '../lib/deprecate';
+import type { Handler } from '../lib/handlers';
 
 let ret = registerDeprecationHandler((message, options, next) => {
   expectTypeOf(message).toEqualTypeOf<string>();

@@ -1,10 +1,10 @@
 /**
 @module ember
 */
-import { Owner } from '@ember/-internals/owner';
+import type { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments } from '@glimmer/interfaces';
+import type { CapturedArguments } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 

@@ -1,10 +1,12 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
-import { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utils/types';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
+import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
+import _deprecate from './lib/deprecate';
 import { isTesting } from './lib/testing';
-import _warn, { WarnFunc } from './lib/warn';
+import type { WarnFunc } from './lib/warn';
+import _warn from './lib/warn';
 
 export { inspect } from '@ember/-internals/utils';
 export { registerHandler as registerWarnHandler } from './lib/warn';

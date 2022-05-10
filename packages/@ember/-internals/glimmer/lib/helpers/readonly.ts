@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { CapturedArguments } from '@glimmer/interfaces';
+import type { CapturedArguments } from '@glimmer/interfaces';
 import { createReadOnlyRef } from '@glimmer/reference';
 import { assert } from '@ember/debug';
 import { internalHelper } from './internal-helper';

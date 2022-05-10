@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
-import { AST, ASTPlugin } from '@glimmer/syntax';
+import type { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
-import { EmberASTPluginEnvironment } from '../types';
+import type { EmberASTPluginEnvironment } from '../types';
 
 /**
  @module ember

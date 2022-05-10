@@ -1,4 +1,4 @@
-import { AliasDecorator } from '@ember/-internals/metal/lib/alias';
+import type { AliasDecorator } from '@ember/-internals/metal/lib/alias';
 import { alias } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
 

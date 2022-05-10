@@ -1,7 +1,7 @@
-import { Mixin } from '@ember/-internals/metal';
-import { AnyFn } from '@ember/-internals/utils/types';
-import Enumerable from './enumerable';
-import MutableEnumerable from './mutable_enumerable';
+import type { Mixin } from '@ember/-internals/metal';
+import type { AnyFn } from '@ember/-internals/utils/types';
+import type Enumerable from './enumerable';
+import type MutableEnumerable from './mutable_enumerable';
 
 type Value<T, K extends string> = K extends keyof T ? T[K] : unknown;
 
