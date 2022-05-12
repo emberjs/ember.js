@@ -349,8 +349,6 @@ if (DEBUG) {
   setDebugFunction('warn', _warn);
 }
 
-let _warnIfUsingStrippedFeatureFlags;
-
 if (DEBUG && !isTesting()) {
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(
@@ -390,5 +388,4 @@ export {
   deprecateFunc,
   setDebugFunction,
   getDebugFunction,
-  _warnIfUsingStrippedFeatureFlags,
 };

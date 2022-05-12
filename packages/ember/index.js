@@ -19,7 +19,6 @@ import {
   capitalize,
   classify,
   decamelize,
-  loc,
   underscore,
   w,
 } from '@ember/string';
@@ -305,7 +304,6 @@ Ember._Backburner = Backburner;
 // ****@ember/-internals/runtime****
 Ember.A = A;
 Ember.String = {
-  loc,
   w,
   dasherize,
   decamelize,
