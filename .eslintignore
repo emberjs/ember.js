@@ -3,6 +3,8 @@ blueprints-js/*/*files/**/*.js
 blueprints/*/*files/**/*.ts
 node-tests/fixtures/**/*.js
 /docs/
+/docs-out/
 dist/
 tmp/
+/types
 smoke-tests/

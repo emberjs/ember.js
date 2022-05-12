@@ -22,6 +22,9 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": false,
 
+    // FIXME: Remove this
+    "suppressImplicitAnyIndexErrors": true,
+
     "newLine": "LF",
     "noEmit": true,
 
@@ -35,5 +38,5 @@
 
   "include": ["packages/**/*.ts"],
 
-  "exclude": ["dist", "node_modules", "tmp"]
+  "exclude": ["dist", "node_modules", "temp", "tmp"]
 }

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "backburner": ["node_modules/backburner.js/dist/backburner.d.ts"],
+      "*": ["types/untrimmed/*", "packages/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": ["types/**/*.ts"]
+}
