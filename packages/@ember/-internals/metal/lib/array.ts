@@ -1,10 +1,13 @@
-import type { Array as EmberArray, MutableArray, NativeArray } from '@ember/-internals/runtime';
+import type { Array as EmberArray, MutableArray } from '@ember/-internals/runtime';
+import { assert } from '@ember/debug';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
-interface ObservedObject<T> extends EmberArray<T> {
+type ObservedArray<T> = (T[] | EmberArray<T>) & ObservedObject;
+
+interface ObservedObject {
   _revalidate?: () => void;
 }
 
@@ -16,16 +19,23 @@ export function objectAt<T>(array: T[] | EmberArray<T>, index: number): T | unde
   }
 }
 
+// Ideally, we'd use MutableArray.detect but for unknown reasons this causes
+// the node tests to fail strangely.
+function isMutableArray<T>(obj: unknown): obj is MutableArray<T> {
+  return obj != null && typeof (obj as MutableArray<T>).replace === 'function';
+}
+
 export function replace<T>(
-  array: NativeArray<T> | MutableArray<T>,
+  array: T[] | MutableArray<T>,
   start: number,
   deleteCount: number,
-  items: T[] = EMPTY_ARRAY as []
+  items: readonly T[] = EMPTY_ARRAY as []
 ): void {
-  if (Array.isArray(array)) {
-    replaceInNativeArray(array, start, deleteCount, items);
-  } else {
+  if (isMutableArray(array)) {
     array.replace(start, deleteCount, items);
+  } else {
+    assert('Can only replace content of a native array or MutableArray', Array.isArray(array));
+    replaceInNativeArray(array, start, deleteCount, items);
   }
 }
 
@@ -34,7 +44,7 @@ const CHUNK_SIZE = 60000;
 // To avoid overflowing the stack, we splice up to CHUNK_SIZE items at a time.
 // See https://code.google.com/p/chromium/issues/detail?id=56588 for more details.
 export function replaceInNativeArray<T>(
-  array: T[] | NativeArray<T>,
+  array: T[],
   start: number,
   deleteCount: number,
   items: ReadonlyArray<T>
@@ -61,18 +71,18 @@ interface ArrayObserverOptions {
 }
 
 type Operation<T> = (
-  obj: ObservedObject<T>,
+  obj: ObservedArray<T>,
   eventName: string,
   target: object | Function | null,
   callbackName: string
 ) => void;
 
 function arrayObserversHelper<T>(
-  obj: ObservedObject<T>,
+  obj: ObservedArray<T>,
   target: object | Function | null,
   opts: ArrayObserverOptions,
   operation: Operation<T>
-): ObservedObject<T> {
+): ObservedArray<T> {
   let { willChange, didChange } = opts;
 
   operation(obj, '@array:before', target, willChange);
@@ -91,14 +101,14 @@ export function addArrayObserver<T>(
   array: EmberArray<T>,
   target: object | Function | null,
   opts: ArrayObserverOptions
-): ObservedObject<T> {
+): ObservedArray<T> {
   return arrayObserversHelper(array, target, opts, addListener);
 }
 
 export function removeArrayObserver<T>(
-  array: EmberArray<T>,
+  array: T[] | EmberArray<T>,
   target: object | Function | null,
   opts: ArrayObserverOptions
-): ObservedObject<T> {
+): ObservedArray<T> {
   return arrayObserversHelper(array, target, opts, removeListener);
 }

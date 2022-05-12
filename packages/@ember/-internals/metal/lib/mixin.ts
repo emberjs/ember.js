@@ -672,7 +672,9 @@ export default class Mixin {
 
   /** @internal */
   keys() {
-    return _keys(this);
+    let keys = _keys(this);
+    assert('[BUG] Missing keys for mixin!', keys);
+    return keys;
   }
 
   /** @internal */
@@ -739,7 +741,7 @@ function _detect(curMixin: Mixin, targetMixin: Mixin, seen = new Set()): boolean
   return false;
 }
 
-function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
+function _keys(mixin: Mixin, ret = new Set<string>(), seen = new Set()) {
   if (seen.has(mixin)) {
     return;
   }
@@ -747,8 +749,8 @@ function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
 
   if (mixin.properties) {
     let props = Object.keys(mixin.properties);
-    for (let i = 0; i < props.length; i++) {
-      ret.add(props[i]);
+    for (let prop of props) {
+      ret.add(prop);
     }
   } else if (mixin.mixins) {
     mixin.mixins.forEach((x: any) => _keys(x, ret, seen));
