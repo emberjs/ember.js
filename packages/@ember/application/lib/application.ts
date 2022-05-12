@@ -23,7 +23,7 @@ import {
 } from '@ember/-internals/routing';
 import type { BootOptions } from '../instance';
 import ApplicationInstance from '../instance';
-import Engine from '@ember/engine';
+import Engine, { buildInitializerMethod } from '@ember/engine';
 import type { Container, Registry } from '@ember/-internals/container';
 import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
@@ -219,6 +219,16 @@ class Application extends Engine {
 
     return registry;
   }
+
+  static initializer = buildInitializerMethod<'initializers', Application>(
+    'initializers',
+    'initializer'
+  );
+
+  static instanceInitializer = buildInitializerMethod<'instanceInitializers', ApplicationInstance>(
+    'instanceInitializers',
+    'instance initializer'
+  );
 
   /**
     The root DOM element of the Application. This can be specified as an

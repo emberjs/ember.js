@@ -23,6 +23,10 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    setAdapter(typeof self.QUnit === 'undefined' ? Adapter.create() : QUnitAdapter.create());
+    setAdapter(
+      typeof (self as any).QUnit === 'undefined'
+        ? (Adapter.create() as Adapter)
+        : (QUnitAdapter.create() as QUnitAdapter)
+    );
   }
 }

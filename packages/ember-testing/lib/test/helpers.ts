@@ -1,6 +1,13 @@
+import type { AnyFn } from '@ember/-internals/utils/types';
 import TestPromise from './promise';
 
-export const helpers = {};
+export const helpers: Record<
+  string,
+  {
+    method: AnyFn;
+    meta: { wait: boolean };
+  }
+> = {};
 /**
  @module @ember/test
 */
@@ -42,7 +49,7 @@ export const helpers = {};
   @param {Function} helperMethod
   @param options {Object}
 */
-export function registerHelper(name, helperMethod) {
+export function registerHelper(name: string, helperMethod: AnyFn) {
   helpers[name] = {
     method: helperMethod,
     meta: { wait: false },
@@ -95,7 +102,7 @@ export function registerHelper(name, helperMethod) {
   @param {Function} helperMethod
   @since 1.2.0
 */
-export function registerAsyncHelper(name, helperMethod) {
+export function registerAsyncHelper(name: string, helperMethod: AnyFn) {
   helpers[name] = {
     method: helperMethod,
     meta: { wait: true },
@@ -119,7 +126,9 @@ export function registerAsyncHelper(name, helperMethod) {
   @for @ember/test
   @param {String} name The helper to remove.
 */
-export function unregisterHelper(name) {
+export function unregisterHelper(name: string) {
   delete helpers[name];
-  delete TestPromise.prototype[name];
+  // SAFETY: This isn't necessarily a safe thing to do, but in terms of the immediate types here
+  // it won't error.
+  delete (TestPromise.prototype as any)[name];
 }

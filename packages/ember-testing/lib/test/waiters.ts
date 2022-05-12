@@ -1,8 +1,8 @@
 /**
  @module @ember/test
 */
-const contexts = [];
-const callbacks = [];
+const contexts: unknown[] = [];
+const callbacks: Array<() => unknown> = [];
 
 /**
    This allows ember-testing to play nicely with other asynchronous
@@ -40,16 +40,27 @@ const callbacks = [];
    @param {Function} callback
    @since 1.2.0
 */
-export function registerWaiter(context, callback) {
-  if (arguments.length === 1) {
-    callback = context;
-    context = null;
+export function registerWaiter<T>(context: T, callback: (this: T) => unknown): void;
+export function registerWaiter(callback: (this: null) => unknown): void;
+export function registerWaiter<T>(
+  ...args: [context: T, callback: (this: T) => unknown] | [callback: (this: null) => unknown]
+): void {
+  let checkedCallback: () => unknown;
+  let checkedContext: T | null;
+
+  if (args.length === 1) {
+    checkedContext = null;
+    checkedCallback = args[0];
+  } else {
+    checkedContext = args[0];
+    checkedCallback = args[1];
   }
-  if (indexOf(context, callback) > -1) {
+
+  if (indexOf(checkedContext, checkedCallback) > -1) {
     return;
   }
-  contexts.push(context);
-  callbacks.push(callback);
+  contexts.push(checkedContext);
+  callbacks.push(checkedCallback);
 }
 
 /**
@@ -64,7 +75,7 @@ export function registerWaiter(context, callback) {
    @param {Function} callback
    @since 1.2.0
 */
-export function unregisterWaiter(context, callback) {
+export function unregisterWaiter(context: unknown, callback: unknown) {
   if (!callbacks.length) {
     return;
   }
@@ -100,14 +111,15 @@ export function checkWaiters() {
   for (let i = 0; i < callbacks.length; i++) {
     let context = contexts[i];
     let callback = callbacks[i];
-    if (!callback.call(context)) {
+    // SAFETY: The loop ensures that this exists
+    if (!callback!.call(context)) {
       return true;
     }
   }
   return false;
 }
 
-function indexOf(context, callback) {
+function indexOf(context: unknown, callback: unknown) {
   for (let i = 0; i < callbacks.length; i++) {
     if (callbacks[i] === callback && contexts[i] === context) {
       return i;

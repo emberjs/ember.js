@@ -4,7 +4,7 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { assert, info } from '@ember/debug';
 
-let resume;
+let resume: undefined | ((value?: unknown) => void);
 
 /**
  Resumes a test paused by `pauseTest`.
