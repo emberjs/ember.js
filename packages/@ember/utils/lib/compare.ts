@@ -20,7 +20,7 @@ const TYPE_ORDER: Record<TypeName, number> = {
   error: 13,
 };
 
-type Compare = -1 | 0 | 1;
+type Comparison = -1 | 0 | 1;
 
 //
 // the spaceship operator
@@ -39,11 +39,10 @@ type Compare = -1 | 0 | 1;
 //                                |       `._    `.    \
 //                                `._________`-.   `.   `.___
 //                                              SSt  `------'`
-function spaceship(a: number, b: number): Compare {
-  // SAFETY: `Math.sign` always returns `-1` for negative, `0` for zero, and `1`
-  // for positive numbers. (The extra precision is useful for the way we use
-  // this in the context of `compare`.)
-  return Math.sign(a - b) as Compare;
+function spaceship(a: number, b: number): Comparison {
+  let diff = a - b;
+  // SAFETY: Number casts true into 1 and false into 0. Therefore, this must end up as one of the Comparison values.
+  return (Number(diff > 0) - Number(diff < 0)) as Comparison;
 }
 
 /**
@@ -96,7 +95,55 @@ function spaceship(a: number, b: number): Compare {
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
  @public
 */
-export default function compare(v: unknown, w: unknown): Compare {
+/**
+ * Compares two javascript values.
+ *
+ * @remarks
+ * Returns:
+ *
+ * - -1 if the first is smaller than the second,
+ * - 0 if both are equal,
+ * - 1 if the first is greater than the second.
+ *
+ * @example
+ * ```javascript
+ * import { compare } from '@ember/utils';
+ *
+ * compare('hello', 'hello');  // 0
+ * compare('abc', 'dfg');      // -1
+ * compare(2, 1);              // 1
+ * ```
+ *
+ * @example
+ * If the types of the two objects are different precedence occurs in the
+ * following order, with types earlier in the list considered `<` types
+ * later in the list:
+ *
+ * - undefined
+ * - null
+ * - boolean
+ * - number
+ * - string
+ * - array
+ * - object
+ * - instance
+ * - function
+ * - class
+ * - date
+ *
+ * ```javascript
+ * import { compare } from '@ember/utils';
+ *
+ * compare('hello', 50);       // 1
+ * compare(50, 'hello');       // -1
+ * ```
+ *
+ * @param v - First value to compare
+ * @param w - Second value to compare
+ * @return -1 if v < w, 0 if v = w and 1 if v > w.
+ * @public
+ */
+export default function compare(v: unknown, w: unknown): Comparison {
   if (v === w) {
     return 0;
   }
@@ -110,7 +157,7 @@ export default function compare(v: unknown, w: unknown): Compare {
 
   if (type2 === 'instance' && isComparable(w) && w.constructor.compare) {
     // SAFETY: Multiplying by a negative just changes the sign
-    return (w.constructor.compare(w, v) * -1) as Compare;
+    return (w.constructor.compare(w, v) * -1) as Comparison;
   }
 
   let res = spaceship(TYPE_ORDER[type1], TYPE_ORDER[type2]);

@@ -1474,6 +1474,24 @@ const EmberArray = Mixin.create(Enumerable, {
   @uses MutableEnumerable
   @public
 */
+/**
+ * This mixin defines the API for modifying array-like objects.
+ *
+ * @remarks
+ * These methods can be applied only to a collection that keeps its items in an
+ * ordered set. It builds upon the Array mixin and adds methods to modify the array.
+ * One concrete implementation of this class is {@link proxy.default | ArrayProxy}.
+ *
+ * It is important to use the methods in this class to modify arrays so that
+ * changes are observable. This allows the binding system in Ember to function
+ * correctly.
+ *
+ * Note that an Array can change even if it does not implement this mixin.
+ * For example, one might implement a SparseArray that cannot be directly
+ * modified, but if its underlying enumerable changes, it will change also.
+ *
+ * @public
+ */
 interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
   replace(idx: number, amt: number, objects?: readonly T[]): void;
   clear(): this;
@@ -1905,6 +1923,17 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   @uses Observable
   @public
 */
+/**
+ * The NativeArray mixin contains the properties needed to make the native
+ * Array support {@link mutable.default | MutableArray} and all of its dependent APIs.
+ *
+ * @remarks
+ * Unless you have `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Array`
+ * set to false, this will be applied automatically. Otherwise you can apply the mixin
+ * at anytime by calling `NativeArray.apply(Array.prototype)`.
+ *
+ * @public
+ */
 interface NativeArray<T>
   extends Omit<Array<T>, 'every' | 'filter' | 'find' | 'forEach' | 'map' | 'reduce' | 'slice'>,
     MutableArray<T> {}
@@ -1935,6 +1964,40 @@ NativeArray.keys().forEach((methodName) => {
 
 NativeArray = NativeArray.without(...ignore);
 
+/**
+ * Creates a {@link index.NativeArray | NativeArray} from an Array-like object.
+ *
+ * @remarks
+ * Does not modify the original object's contents. `A()` is not needed if
+ * `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
+ * it is recommended that you use `A()` when creating addons for
+ * ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
+ * will be `true`.
+ *
+ * @example
+ *
+ * # app/components/my-component.js
+ * ```js
+ * import Component from '@ember/component';
+ * import { A } from '@ember/array';
+ *
+ * export default Component.extend({
+ *   tagName: 'ul',
+ *   classNames: ['pagination'],
+ *
+ *   init() {
+ *     this._super(...arguments);
+ *
+ *     if (!this.get('content')) {
+ *       this.set('content', A());
+ *       this.set('otherContent', A([1,2,3]));
+ *     }
+ *   }
+ * });
+ * ```
+ *
+ * @public
+ */
 let A: <T>(arr?: Array<T>) => NativeArray<T>;
 
 if (ENV.EXTEND_PROTOTYPES.Array) {

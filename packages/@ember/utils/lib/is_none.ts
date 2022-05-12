@@ -21,6 +21,23 @@
   @return {Boolean}
   @public
 */
+/**
+ * Returns true if the passed value is null or undefined. This avoids errors
+ * from JSLint complaining about use of ==, which can be technically
+ * confusing.
+ *
+ * @example
+ * ```javascript
+ * isNone(null);          // true
+ * isNone(undefined);     // true
+ * isNone('');            // false
+ * isNone([]);            // false
+ * isNone(function() {}); // false
+ * ```
+ *
+ * @param obj - Value to test
+ * @public
+ */
 export default function isNone(obj: any): obj is null | undefined {
   return obj === null || obj === undefined;
 }

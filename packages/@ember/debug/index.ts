@@ -26,7 +26,6 @@ export type DebugFunctionType =
   | 'runInDebug'
   | 'deprecateFunc';
 
-export type AssertFunc = (desc: string, condition?: unknown) => asserts condition;
 export type DebugFunc = (message: string) => void;
 export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
@@ -39,7 +38,7 @@ export type DeprecateFuncFunc = (
 ) => Function;
 
 export type GetDebugFunction = {
-  (type: 'assert'): AssertFunc;
+  (type: 'assert'): typeof assert;
   (type: 'info'): InfoFunc;
   (type: 'warn'): WarnFunc;
   (type: 'debug'): DebugFunc;
@@ -51,7 +50,7 @@ export type GetDebugFunction = {
 };
 
 export type SetDebugFunction = {
-  (type: 'assert', func: AssertFunc): AssertFunc;
+  (type: 'assert', func: typeof assert): typeof assert;
   (type: 'info', func: InfoFunc): InfoFunc;
   (type: 'warn', func: WarnFunc): WarnFunc;
   (type: 'debug', func: DebugFunc): DebugFunc;
@@ -65,7 +64,43 @@ export type SetDebugFunction = {
 // These are the default production build versions:
 const noop = () => {};
 
-let assert: AssertFunc = noop;
+/**
+ * Verify that a certain expectation is met, or throw a exception otherwise.
+ *
+ * @remarks
+ * This is useful for communicating assumptions in the code to other human
+ * readers as well as catching bugs that accidentally violates these
+ * expectations.
+ *
+ * Assertions are removed from production builds, so they can be freely added
+ * for documentation and debugging purposes without worries of incuring any
+ * performance penalty. However, because of that, they should not be used for
+ * checks that could reasonably fail during normal usage. Furthermore, care
+ * should be taken to avoid accidentally relying on side-effects produced from
+ * evaluating the condition itself, since the code will not run in production.
+ *
+ * @param description - Describes the expectation. This will become the
+ *   text of the Error thrown if the assertion fails.
+ * @param condition - Must be truthy for the assertion to pass. If
+ *   falsy, an exception will be thrown.
+ *
+ * @public
+ * @since 1.0.0
+ *
+ * @example Testing for truthiness
+ *
+ * ```js
+ * // Test for truthiness
+ * assert('Must pass a string', typeof str === 'string');
+ * ```
+ *
+ * @example Failing unconditionally
+ *
+ * ```js
+ * assert('This code path should never be run');
+ * ```
+ */
+let assert: (desc: string, condition?: unknown) => asserts condition = noop;
 let info: InfoFunc = noop;
 let warn: WarnFunc = noop;
 let debug: DebugFunc = noop;
@@ -81,10 +116,44 @@ let deprecateFunc: DeprecateFuncFunc = function () {
 };
 
 if (DEBUG) {
+  /**
+    Verify that a certain expectation is met, or throw a exception otherwise.
+
+    This is useful for communicating assumptions in the code to other human
+    readers as well as catching bugs that accidentally violates these
+    expectations.
+
+    Assertions are removed from production builds, so they can be freely added
+    for documentation and debugging purposes without worries of incuring any
+    performance penalty. However, because of that, they should not be used for
+    checks that could reasonably fail during normal usage. Furthermore, care
+    should be taken to avoid accidentally relying on side-effects produced from
+    evaluating the condition itself, since the code will not run in production.
+
+    ```javascript
+    import { assert } from '@ember/debug';
+
+    // Test for truthiness
+    assert('Must pass a string', typeof str === 'string');
+
+    // Fail unconditionally
+    assert('This code path should never be run');
+    ```
+
+    @method assert
+    @static
+    @for @ember/debug
+    @param {String} description Describes the expectation. This will become the
+      text of the Error thrown if the assertion fails.
+    @param {any} condition Must be truthy for the assertion to pass. If
+      falsy, an exception will be thrown.
+    @public
+    @since 1.0.0
+  */
   setDebugFunction = function (type: DebugFunctionType, callback: Function) {
     switch (type) {
       case 'assert':
-        return (assert = callback as AssertFunc);
+        return (assert = callback as typeof assert);
       case 'info':
         return (info = callback as InfoFunc);
       case 'warn':
@@ -133,40 +202,6 @@ if (DEBUG) {
 */
 
 if (DEBUG) {
-  /**
-    Verify that a certain expectation is met, or throw a exception otherwise.
-
-    This is useful for communicating assumptions in the code to other human
-    readers as well as catching bugs that accidentally violates these
-    expectations.
-
-    Assertions are removed from production builds, so they can be freely added
-    for documentation and debugging purposes without worries of incuring any
-    performance penalty. However, because of that, they should not be used for
-    checks that could reasonably fail during normal usage. Furthermore, care
-    should be taken to avoid accidentally relying on side-effects produced from
-    evaluating the condition itself, since the code will not run in production.
-
-    ```javascript
-    import { assert } from '@ember/debug';
-
-    // Test for truthiness
-    assert('Must pass a string', typeof str === 'string');
-
-    // Fail unconditionally
-    assert('This code path should never be run');
-    ```
-
-    @method assert
-    @static
-    @for @ember/debug
-    @param {String} description Describes the expectation. This will become the
-      text of the Error thrown if the assertion fails.
-    @param {any} condition Must be truthy for the assertion to pass. If
-      falsy, an exception will be thrown.
-    @public
-    @since 1.0.0
-  */
   setDebugFunction('assert', function assert(desc, test) {
     if (!test) {
       throw new EmberError(`Assertion Failed: ${desc}`);

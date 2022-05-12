@@ -28,6 +28,28 @@ import isEmpty from './is_empty';
   @since 1.5.0
   @public
 */
+/**
+ * A value is blank if it is empty or a whitespace string.
+ *
+ * @example
+ * ```javascript
+ * import { isBlank } from '@ember/utils';
+ *
+ * isBlank(null);            // true
+ * isBlank(undefined);       // true
+ * isBlank('');              // true
+ * isBlank([]);              // true
+ * isBlank('\n\t');          // true
+ * isBlank('  ');            // true
+ * isBlank({});              // false
+ * isBlank('\n\t Hello');    // false
+ * isBlank('Hello world');   // false
+ * isBlank([1,2,3]);         // false
+ * ```
+ *
+ * @since 1.5.0
+ * @public
+ */
 export default function isBlank(obj: unknown): boolean {
   return isEmpty(obj) || (typeof obj === 'string' && /\S/.test(obj) === false);
 }

@@ -27,6 +27,7 @@ const MODEL = symbol('MODEL');
   @uses Ember.ActionHandler
   @private
 */
+/** @internal */
 interface ControllerMixin<T> extends ActionHandler {
   /** @internal */
   _qpDelegate: unknown | null;
