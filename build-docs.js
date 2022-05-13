@@ -7,7 +7,7 @@ const { rollup } = require('rollup');
 const typescript = require('@rollup/plugin-typescript');
 const { default: dts } = require('rollup-plugin-dts');
 const { existsSync } = require('fs');
-const { writeFile, mkdir, cp } = require('fs/promises');
+const { writeFile, mkdir, cp, rm } = require('fs/promises');
 const TypeDoc = require('typedoc');
 const { exit } = require('process');
 
@@ -52,6 +52,19 @@ class Package {
 }
 
 async function build(path) {
+  // HACKS
+  // To build we can't just rely on .d.ts files, we need actual .ts.
+  let createdFiles = [];
+  for await (const item of klaw('packages/@ember/-internals/glimmer/lib/templates')) {
+    if (item.stats.isFile()) {
+      if (item.path.endsWith('.d.ts')) {
+        let dest = item.path.replace('.d.ts', '.ts');
+        await cp(item.path, dest);
+        createdFiles.push(dest);
+      }
+    }
+  }
+
   let bundle = await rollup({
     input: path,
     plugins: [
@@ -77,6 +90,11 @@ async function build(path) {
       sourcemap: true,
     },
   });
+
+  // CLEANUP HACKS
+  for (let file of createdFiles) {
+    await rm(file);
+  }
 }
 
 async function rollupTypes(package) {
@@ -113,7 +131,7 @@ async function rollupTypes(package) {
       },
     });
   } catch (e) {
-    console.error('ERROR', e);
+    console.error('ROLLUP ERROR', e);
     exit(1);
   }
 }
@@ -150,7 +168,7 @@ function extract(package) {
       // showVerboseMessages: true,
     });
   } catch (e) {
-    console.log('ERROR', e);
+    console.log('EXTRACT ERROR', e);
     exit(1);
   }
 }
