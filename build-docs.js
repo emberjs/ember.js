@@ -9,6 +9,7 @@ const { default: dts } = require('rollup-plugin-dts');
 const { existsSync } = require('fs');
 const { writeFile, mkdir, cp } = require('fs/promises');
 const TypeDoc = require('typedoc');
+const { exit } = require('process');
 
 class Package {
   constructor(filePath) {
@@ -113,6 +114,7 @@ async function rollupTypes(package) {
     });
   } catch (e) {
     console.error('ERROR', e);
+    exit(1);
   }
 }
 
@@ -130,6 +132,9 @@ function extract(package) {
         },
         compiler: {
           tsconfigFilePath: '<projectFolder>/tsconfig.json',
+          overrideTsconfig: {
+            include: [`tmp/rollup-types/**/*.ts`],
+          },
         },
         projectFolder: __dirname,
       },
@@ -146,6 +151,7 @@ function extract(package) {
     });
   } catch (e) {
     console.log('ERROR', e);
+    exit(1);
   }
 }
 

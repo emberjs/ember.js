@@ -235,7 +235,8 @@ interface CoreObject {
   _super(...args: any[]): any;
 }
 class CoreObject {
-  [OWNER]?: Owner;
+  // Technically this should be here but it causes issue for type declaration exports.
+  // [OWNER]?: Owner;
 
   constructor(owner?: Owner) {
     this[OWNER] = owner;
