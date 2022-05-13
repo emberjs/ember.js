@@ -100,9 +100,6 @@ async function build(path) {
 async function rollupTypes(package) {
   console.log('TYPES', package.absolutePath);
 
-  let parts = package.outPath.dir.split('/');
-  let relativeTemp = Array(parts.length).fill('..').join('/');
-
   try {
     const bundle = await rollup({
       input: path.format({
@@ -113,11 +110,12 @@ async function rollupTypes(package) {
       plugins: [
         dts({
           compilerOptions: {
-            baseUrl: `tmp/build-types/${package.outPath.dir}`,
+            // Unless explicit, we don't want anything other than relative imports to be picked up
+            baseUrl: null,
             incremental: true,
             paths: {
-              [`${package.outPath.dir}/*`]: ['*'],
-              '@ember/-internals/*': [`${relativeTemp}/@ember/-internals/*`],
+              // We want to inline these types
+              '@ember/-internals/*': [`${__dirname}/tmp/build-types/@ember/-internals/*`],
             },
           },
         }),
@@ -151,7 +149,8 @@ function extract(package) {
         compiler: {
           tsconfigFilePath: '<projectFolder>/tsconfig.json',
           overrideTsconfig: {
-            include: [`tmp/rollup-types/**/*.ts`],
+            include: [],
+            files: [package.absolutePath],
           },
         },
         projectFolder: __dirname,
