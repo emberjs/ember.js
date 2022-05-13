@@ -14,7 +14,7 @@ import {
 } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
+import type { Bounds, Environment, Template, TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
@@ -28,6 +28,7 @@ import {
   DIRTY_TAG,
   IS_DISPATCHING_ATTRS,
 } from './component-managers/curly';
+import type { View } from './renderer';
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
@@ -822,15 +823,15 @@ class Component
       willUpdate() {},
     } as ComponentMethods
   )
-  implements PropertyDidChange
+  implements PropertyDidChange, View
 {
   isComponent = true;
 
-  // SAFTEY: This is set in `init`.
+  // SAFTEY: These are set in `init`.
   declare _superRerender: ViewMixin['rerender'];
-
   declare [IS_DISPATCHING_ATTRS]: boolean;
   declare [DIRTY_TAG]: DirtyableTag;
+  declare [BOUNDS]: Bounds | null;
 
   init(properties: object | undefined) {
     super.init(properties);

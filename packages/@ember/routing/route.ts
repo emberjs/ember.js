@@ -84,7 +84,7 @@ const RENDER = Symbol('render');
   @since 1.0.0
   @public
 */
-interface Route<T = unknown> extends IRoute<T> {
+interface Route<T = unknown> extends IRoute<T>, Evented {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -255,10 +255,7 @@ interface Route<T = unknown> extends IRoute<T> {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<T = unknown>
-  extends EmberObject.extend(ActionHandler, Evented)
-  implements IRoute, Evented
-{
+class Route<T = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute<T> {
   static isRouteFactory = true;
 
   context = {} as T;
@@ -291,13 +288,6 @@ class Route<T = unknown>
       this._environment = owner.lookup('-environment:main');
     }
   }
-
-  // Implement Evented
-  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
-  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare trigger: (name: string, ...args: any[]) => any;
-  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare has: (name: string) => boolean;
 
   /**
     A hook you can implement to convert the route's model into parameters

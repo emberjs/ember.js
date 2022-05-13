@@ -146,7 +146,8 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) implements Evented {
+interface EmberRouter<R extends Route = Route> extends EmberObject, Evented {}
+class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) {
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -204,14 +205,6 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   _slowTransitionTimer: Timer | null = null;
 
   private namespace: any;
-
-  // Begin Evented
-  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
-  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare trigger: (name: string, ...args: any[]) => unknown;
-  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare has: (name: string) => boolean;
-  // End Evented
 
   // Set with reopenClass
   private static dslCallbacks?: DSLCallback[];
