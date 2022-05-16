@@ -36,6 +36,9 @@ type Compare = -1 | 0 | 1;
 //                                `._________`-.   `.   `.___
 //                                              SSt  `------'`
 function spaceship(a: number, b: number): Compare {
+  // SAFETY: `Math.sign` always returns `-1` for negative, `0` for zero, and `1`
+  // for positive numbers. (The extra precision is useful for the way we use
+  // this in the context of `compare`.)
   return Math.sign(a - b) as Compare;
 }
 
