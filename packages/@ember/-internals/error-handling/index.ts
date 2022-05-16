@@ -14,12 +14,12 @@ export function setOnerror(handler: Function) {
   onerror = handler;
 }
 
-let dispatchOverride: Function | undefined;
+let dispatchOverride: Function | null = null;
 
 // allows testing adapter to override dispatch
 export function getDispatchOverride() {
   return dispatchOverride;
 }
-export function setDispatchOverride(handler: Function) {
+export function setDispatchOverride(handler: Function | null) {
   dispatchOverride = handler;
 }

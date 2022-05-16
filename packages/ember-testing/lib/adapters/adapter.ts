@@ -11,7 +11,12 @@ import { Object as EmberObject } from '@ember/-internals/runtime';
   @class TestAdapter
   @public
 */
-export default EmberObject.extend({
+interface Adapter extends EmberObject {
+  asyncStart(): void;
+  asyncEnd(): void;
+  exception(error: unknown): never;
+}
+const Adapter = EmberObject.extend({
   /**
     This callback will be called whenever an async operation is about to start.
 
@@ -48,7 +53,9 @@ export default EmberObject.extend({
     @method exception
     @param {String} error The exception to be raised.
   */
-  exception(error) {
+  exception(error: unknown) {
     throw error;
   },
 });
+
+export default Adapter;

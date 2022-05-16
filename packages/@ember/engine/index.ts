@@ -467,7 +467,8 @@ function resolverFor(namespace: Engine) {
   return ResolverClass.create(props);
 }
 
-function buildInitializerMethod<
+/** @internal */
+export function buildInitializerMethod<
   B extends 'initializers' | 'instanceInitializers',
   T extends B extends 'initializers' ? Engine : EngineInstance
 >(bucketName: B, humanName: string) {

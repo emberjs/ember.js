@@ -30,7 +30,7 @@ export type AssertFunc = (desc: string, condition?: unknown) => asserts conditio
 export type DebugFunc = (message: string) => void;
 export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
-export type InfoFunc = (message: string, options: object) => void;
+export type InfoFunc = (message: string, options?: object) => void;
 export type RunInDebugFunc = (func: () => void) => void;
 export type DeprecateFuncFunc = (
   message: string,

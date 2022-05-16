@@ -1,20 +1,31 @@
 import { RSVP } from '@ember/-internals/runtime';
 import run from './run';
 
-let lastPromise;
+let lastPromise: TestPromise<unknown> | null = null;
 
-export default class TestPromise extends RSVP.Promise {
-  constructor() {
-    super(...arguments);
+type Executor<T> = (
+  resolve: (value?: T | PromiseLike<T>) => void,
+  reject: (reason?: any) => void
+) => void;
+
+type OnFulfilled<T, TResult = T> = (value: T) => TResult | PromiseLike<TResult>;
+
+export default class TestPromise<T> extends RSVP.Promise<T> {
+  constructor(executor: Executor<T>, label?: string) {
+    super(executor, label);
     lastPromise = this;
   }
 
-  then(_onFulfillment, ...args) {
-    let onFulfillment =
-      typeof _onFulfillment === 'function'
-        ? (result) => isolate(_onFulfillment, result)
+  then<TResult1 = T, TResult2 = never>(
+    onFulfilled?: OnFulfilled<T, TResult1> | null,
+    onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
+    label?: string
+  ): RSVP.Promise<TResult1 | TResult2> {
+    let normalizedOnFulfilled =
+      typeof onFulfilled === 'function'
+        ? (result: T) => isolate<T, TResult1>(onFulfilled, result)
         : undefined;
-    return super.then(onFulfillment, ...args);
+    return super.then<TResult1, TResult2>(normalizedOnFulfilled, onRejected, label);
   }
 }
 
@@ -31,7 +42,7 @@ export default class TestPromise extends RSVP.Promise {
   @param {Function} resolver The function used to resolve the promise.
   @param {String} label An optional string for identifying the promise.
 */
-export function promise(resolver, label) {
+export function promise<T>(resolver: Executor<T>, label: string) {
   let fullLabel = `Ember.Test.promise: ${label || '<Unknown Promise>'}`;
   return new TestPromise(resolver, fullLabel);
 }
@@ -47,7 +58,7 @@ export function promise(resolver, label) {
   @param {Mixed} The value to resolve
   @since 1.2.0
 */
-export function resolve(result, label) {
+export function resolve(result: unknown, label?: string) {
   return TestPromise.resolve(result, label);
 }
 
@@ -61,11 +72,11 @@ export function getLastPromise() {
 // 1. Set `Ember.Test.lastPromise` to null
 // 2. Invoke method
 // 3. Return the last promise created during method
-function isolate(onFulfillment, result) {
+function isolate<T, TResult = T>(onFulfilled: OnFulfilled<T, TResult>, result: T) {
   // Reset lastPromise for nested helpers
   lastPromise = null;
 
-  let value = onFulfillment(result);
+  let value = onFulfilled(result);
 
   let promise = lastPromise;
   lastPromise = null;

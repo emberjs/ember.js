@@ -33,7 +33,7 @@ export let _loaded = loaded;
   @param callback {Function} callback to be called
   @private
 */
-export function onLoad(name: string, callback: (obj: unknown) => void) {
+export function onLoad(name: string, callback: (obj: any) => void) {
   let object = loaded[name];
 
   let hooks = (loadHooks[name] ??= []);

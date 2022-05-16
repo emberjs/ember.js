@@ -5,6 +5,19 @@ import TestPromise, { resolve, getLastPromise } from '../test/promise';
 import run from '../test/run';
 import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
 import { asyncStart, asyncEnd } from '../test/adapter';
+import type Application from '@ember/application';
+import type { AnyFn } from '@ember/-internals/utils/types';
+import { assert } from '@ember/debug';
+
+export interface TestableApp extends Application {
+  testing?: boolean;
+  testHelpers: Record<string, (...args: unknown[]) => unknown>;
+  originalMethods: Record<string, (...args: unknown[]) => unknown>;
+  setupForTesting(): void;
+  helperContainer: object | null;
+  injectTestHelpers(helperContainer: unknown): void;
+  removeTestHelpers(): void;
+}
 
 EmberApplication.reopen({
   /**
@@ -105,7 +118,7 @@ EmberApplication.reopen({
     @method injectTestHelpers
     @public
   */
-  injectTestHelpers(helperContainer) {
+  injectTestHelpers(this: TestableApp, helperContainer: object) {
     if (helperContainer) {
       this.helperContainer = helperContainer;
     } else {
@@ -113,7 +126,7 @@ EmberApplication.reopen({
     }
 
     this.reopen({
-      willDestroy() {
+      willDestroy(this: TestableApp) {
         this._super(...arguments);
         this.removeTestHelpers();
       },
@@ -121,9 +134,12 @@ EmberApplication.reopen({
 
     this.testHelpers = {};
     for (let name in helpers) {
-      this.originalMethods[name] = this.helperContainer[name];
-      this.testHelpers[name] = this.helperContainer[name] = helper(this, name);
-      protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name].meta.wait);
+      // SAFETY: It is safe to access a property on an object
+      this.originalMethods[name] = (this.helperContainer as any)[name];
+      // SAFETY: It is not quite as safe to do this, but it _seems_ to be ok.
+      this.testHelpers[name] = (this.helperContainer as any)[name] = helper(this, name);
+      // SAFETY: We checked that it exists
+      protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name]!.meta.wait);
     }
 
     invokeInjectHelpersCallbacks(this);
@@ -149,7 +165,8 @@ EmberApplication.reopen({
 
     for (let name in helpers) {
       this.helperContainer[name] = this.originalMethods[name];
-      delete TestPromise.prototype[name];
+      // SAFETY: This is a weird thing, but it's not technically unsafe here.
+      delete (TestPromise.prototype as any)[name];
       delete this.testHelpers[name];
       delete this.originalMethods[name];
     }
@@ -159,26 +176,30 @@ EmberApplication.reopen({
 // This method is no longer needed
 // But still here for backwards compatibility
 // of helper chaining
-function protoWrap(proto, name, callback, isAsync) {
-  proto[name] = function (...args) {
+function protoWrap(proto: TestPromise<unknown>, name: string, callback: AnyFn, isAsync: boolean) {
+  // SAFETY: This isn't entirely safe, but it _seems_ to be ok.
+  (proto as any)[name] = function (...args: unknown[]) {
     if (isAsync) {
       return callback.apply(this, args);
     } else {
-      return this.then(function () {
+      // SAFETY: This is not actually safe.
+      return (this as any).then(function (this: any) {
         return callback.apply(this, args);
       });
     }
   };
 }
 
-function helper(app, name) {
-  let fn = helpers[name].method;
-  let meta = helpers[name].meta;
+function helper(app: TestableApp, name: string) {
+  let helper = helpers[name];
+  assert(`[BUG] Missing helper: ${name}`, helper);
+  let fn = helper.method;
+  let meta = helper.meta;
   if (!meta.wait) {
-    return (...args) => fn.apply(app, [app, ...args]);
+    return (...args: unknown[]) => fn.apply(app, [app, ...args]);
   }
 
-  return (...args) => {
+  return (...args: unknown[]) => {
     let lastPromise = run(() => resolve(getLastPromise()));
 
     // wait for last helper's promise to resolve and then

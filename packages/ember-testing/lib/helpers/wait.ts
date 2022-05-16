@@ -5,6 +5,9 @@ import { checkWaiters } from '../test/waiters';
 import { RSVP } from '@ember/-internals/runtime';
 import { _getCurrentRunLoop, _hasScheduledTimers, run } from '@ember/runloop';
 import { pendingRequests } from '../test/pending_requests';
+import type Application from '@ember/application';
+import { assert } from '@ember/debug';
+import Router from '@ember/routing/router';
 
 /**
   Causes the run loop to process any pending events. This is used to ensure that
@@ -36,9 +39,12 @@ import { pendingRequests } from '../test/pending_requests';
   @public
   @since 1.0.0
 */
-export default function wait(app, value) {
+export default function wait<T>(app: Application, value: T): Promise<T> {
   return new RSVP.Promise(function (resolve) {
-    let router = app.__container__.lookup('router:main');
+    assert('[BUG] Missing container', app.__container__);
+
+    const router = app.__container__.lookup('router:main');
+    assert('[BUG] Expected router:main to be a subclass of Ember Router', router instanceof Router);
 
     // Every 10ms, poll for the async thing to have finished
     let watcher = setInterval(() => {

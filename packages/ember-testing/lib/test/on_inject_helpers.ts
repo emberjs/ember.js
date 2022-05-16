@@ -1,4 +1,6 @@
-export const callbacks = [];
+import type Application from '@ember/application';
+
+export const callbacks: Array<(app: Application) => void> = [];
 
 /**
   Used to register callbacks to be fired whenever `App.injectTestHelpers`
@@ -27,12 +29,12 @@ export const callbacks = [];
   @method onInjectHelpers
   @param {Function} callback The function to be called.
 */
-export function onInjectHelpers(callback) {
+export function onInjectHelpers(callback: (app: Application) => void) {
   callbacks.push(callback);
 }
 
-export function invokeInjectHelpersCallbacks(app) {
-  for (let i = 0; i < callbacks.length; i++) {
-    callbacks[i](app);
+export function invokeInjectHelpersCallbacks(app: Application) {
+  for (let callback of callbacks) {
+    callback(app);
   }
 }
