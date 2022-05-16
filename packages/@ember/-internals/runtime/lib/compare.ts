@@ -40,9 +40,10 @@ type Compare = -1 | 0 | 1;
 //                                `._________`-.   `.   `.___
 //                                              SSt  `------'`
 function spaceship(a: number, b: number): Compare {
-  let diff = a - b;
-  // SAFETY: Number casts true into 1 and false into 0. Therefore, this must end up as one of the Compare values.
-  return (Number(diff > 0) - Number(diff < 0)) as Compare;
+  // SAFETY: `Math.sign` always returns `-1` for negative, `0` for zero, and `1`
+  // for positive numbers. (The extra precision is useful for the way we use
+  // this in the context of `compare`.)
+  return Math.sign(a - b) as Compare;
 }
 
 /**
