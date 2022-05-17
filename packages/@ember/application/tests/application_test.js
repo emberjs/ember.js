@@ -5,7 +5,7 @@ import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import EmberRoute from '@ember/routing/route';
 import Router from '@ember/routing/router';
-import { NoneLocation } from '@ember/-internals/routing';
+import NoneLocation from '@ember/routing/none-location';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';

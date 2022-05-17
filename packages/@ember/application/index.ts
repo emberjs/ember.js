@@ -15,11 +15,11 @@ import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
+import NoneLocation from '@ember/routing/none-location';
 import {
   HashLocation,
   HistoryLocation,
   AutoLocation,
-  NoneLocation,
   BucketCache,
 } from '@ember/-internals/routing';
 import ApplicationInstance from '@ember/application/instance';

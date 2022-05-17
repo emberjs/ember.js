@@ -3,7 +3,8 @@ import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
 import Route from '@ember/routing/route';
-import { NoneLocation, HistoryLocation } from '@ember/-internals/routing';
+import NoneLocation from '@ember/routing/none-location';
+import { HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import {

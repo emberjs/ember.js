@@ -6,7 +6,7 @@ import AutoLocation from '../../lib/location/auto_location';
 import { getHistoryPath, getHashPath } from '../../lib/location/auto_location';
 import HistoryLocation from '../../lib/location/history_location';
 import HashLocation from '../../lib/location/hash_location';
-import NoneLocation from '../../lib/location/none_location';
+import NoneLocation from '@ember/routing/none-location';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {

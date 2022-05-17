@@ -1,6 +1,6 @@
 import { service } from '@ember/service';
 import Router from '@ember/routing/router';
-import { NoneLocation } from '@ember/-internals/routing';
+import NoneLocation from '@ember/routing/none-location';
 import { get } from '@ember/-internals/metal';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';

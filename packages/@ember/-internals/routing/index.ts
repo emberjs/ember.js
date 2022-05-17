@@ -1,5 +1,4 @@
-export { default as Location, EmberLocation } from './lib/location/api';
-export { default as NoneLocation } from './lib/location/none_location';
+export { default as Location, EmberLocation, UpdateCallback } from './lib/location/api';
 export { default as HashLocation } from './lib/location/hash_location';
 export { default as HistoryLocation } from './lib/location/history_location';
 export { default as AutoLocation } from './lib/location/auto_location';
