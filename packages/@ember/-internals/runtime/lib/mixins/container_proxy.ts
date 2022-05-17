@@ -5,7 +5,7 @@ import { schedule, join } from '@ember/runloop';
 import type { FactoryManager } from '@ember/-internals/container/lib/container';
 import type Container from '@ember/-internals/container/lib/container';
 import type { TypeOptions } from '@ember/-internals/container/lib/registry';
-import { Mixin } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import type { Factory } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of

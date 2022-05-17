@@ -1,5 +1,6 @@
 import { guidFor } from '@ember/-internals/utils';
-import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-internals/metal';
+import { descriptorForProperty, nativeDescDecorator } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';

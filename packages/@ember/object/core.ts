@@ -11,15 +11,14 @@ import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/met
 import {
   PROXY_CONTENT,
   sendEvent,
-  Mixin,
   activateObserver,
-  applyMixin,
   defineProperty,
   descriptorForProperty,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
   hasUnknownProperty,
 } from '@ember/-internals/metal';
+import Mixin, { applyMixin } from '@ember/object/mixin';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

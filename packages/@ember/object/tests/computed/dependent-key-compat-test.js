@@ -1,5 +1,5 @@
-import EmberObject from '@ember/object';
-import { computed, tracked, observer } from '@ember/-internals/metal';
+import EmberObject, { observer } from '@ember/object';
+import { computed, tracked } from '@ember/-internals/metal';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 

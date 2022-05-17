@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object';
-import { Mixin, defineProperty, nativeDescDecorator } from '..';
+import { defineProperty, nativeDescDecorator } from '..';
+import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let classes = [

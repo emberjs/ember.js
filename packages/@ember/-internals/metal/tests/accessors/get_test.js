@@ -1,6 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject from '@ember/object';
-import { get, Mixin, observer } from '../..';
+import EmberObject, { observer } from '@ember/object';
+import { get } from '../..';
+import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';

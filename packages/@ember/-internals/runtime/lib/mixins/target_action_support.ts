@@ -3,7 +3,8 @@
 */
 
 import { context } from '@ember/-internals/environment';
-import { get, Mixin, computed } from '@ember/-internals/metal';
+import { get, computed } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 

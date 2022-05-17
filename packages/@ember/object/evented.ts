@@ -1,10 +1,5 @@
-import {
-  Mixin,
-  addListener,
-  removeListener,
-  hasListeners,
-  sendEvent,
-} from '@ember/-internals/metal';
+import { addListener, removeListener, hasListeners, sendEvent } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 
 export { on } from '@ember/-internals/metal';
 

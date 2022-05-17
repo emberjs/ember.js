@@ -2,7 +2,8 @@
 @module ember
 */
 
-import { Mixin, get } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
+import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
 /**
@@ -38,7 +39,7 @@ const ActionHandler = Mixin.create({
     or mixins rather than just replace the entire hash, e.g.:
 
     ```app/mixins/can-display-banner.js
-    import Mixin from '@ember/mixin';
+    import Mixin from '@ember/object/mixin';
 
     export default Mixin.create({
       actions: {
@@ -93,7 +94,7 @@ const ActionHandler = Mixin.create({
     Take for example the following routes:
 
     ```app/mixins/debug-route.js
-    import Mixin from '@ember/mixin';
+    import Mixin from '@ember/object/mixin';
 
     export default Mixin.create({
       actions: {

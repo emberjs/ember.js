@@ -1,5 +1,5 @@
-import EmberObject from '@ember/object';
-import { get, Mixin } from '../..';
+import EmberObject, { get } from '@ember/object';
+import Mixin from '@ember/object/mixin';
 import { run } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

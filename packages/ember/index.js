@@ -25,7 +25,7 @@ import {
 } from '@ember/string';
 import Service, { service } from '@ember/service';
 
-import EmberObject, { action, computed } from '@ember/object';
+import EmberObject, { action, computed, observer } from '@ember/object';
 import { dependentKeyCompat } from '@ember/object/compat';
 
 import {
@@ -81,6 +81,7 @@ import EngineInstance from '@ember/engine/instance';
 import Enumerable from '@ember/enumerable';
 import CoreObject from '@ember/object/core';
 import Evented from '@ember/object/evented';
+import Mixin, { mixin } from '@ember/object/mixin';
 import Observable from '@ember/object/observable';
 import { assign } from '@ember/polyfills';
 
@@ -237,9 +238,9 @@ Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;
 Ember.addObserver = metal.addObserver;
 Ember.removeObserver = metal.removeObserver;
-Ember.observer = metal.observer;
-Ember.mixin = metal.mixin;
-Ember.Mixin = metal.Mixin;
+Ember.observer = observer;
+Ember.mixin = mixin;
+Ember.Mixin = Mixin;
 
 Ember._createCache = metal.createCache;
 Ember._cacheGetValue = metal.getValue;

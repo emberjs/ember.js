@@ -1,4 +1,5 @@
-import { get, set, Mixin, computed, defineProperty } from '../..';
+import { get, set, computed, defineProperty } from '@ember/object';
+import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {

@@ -14,7 +14,8 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, set, addObserver } from '@ember/-internals/metal';
+import { set, addObserver } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
 

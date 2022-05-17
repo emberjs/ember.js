@@ -11,10 +11,10 @@ import {
   replaceInNativeArray,
   replace,
   computed,
-  Mixin,
   beginPropertyChanges,
   endPropertyChanges,
 } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import compare from '../compare';
@@ -23,7 +23,7 @@ import Observable from '@ember/object/observable';
 import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
 import type { AnyFn } from '@ember/-internals/utils/types';
-import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
+import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 
 type Value<T, K extends string> = K extends keyof T ? T[K] : unknown;
 

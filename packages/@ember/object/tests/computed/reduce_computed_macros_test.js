@@ -6,10 +6,11 @@ import {
   set,
   addObserver,
   computed,
-  observer,
 } from '@ember/-internals/metal';
-import EmberObject from '@ember/object';
-import { ObjectProxy, isArray, A as emberA, removeAt } from '@ember/-internals/runtime';
+import { removeAt } from '@ember/-internals/runtime';
+import EmberObject, { observer } from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
+import { isArray, A as emberA } from '@ember/array';
 import {
   sum,
   min,

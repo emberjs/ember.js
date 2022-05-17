@@ -1,9 +1,7 @@
-import EmberObject from '@ember/object';
+import EmberObject, { observer } from '@ember/object';
 import {
-  Mixin,
   defineProperty,
   computed,
-  observer,
   on,
   addObserver,
   removeObserver,
@@ -11,6 +9,7 @@ import {
   removeListener,
   sendEvent,
 } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(

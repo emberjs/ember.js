@@ -5,14 +5,13 @@ import {
   notifyPropertyChange,
   defineProperty,
   computed,
-  Mixin,
-  mixin,
-  observer,
   beginPropertyChanges,
   endPropertyChanges,
   get,
   set,
 } from '..';
+import { observer } from '@ember/object';
+import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { meta as metaFor } from '@ember/-internals/meta';

@@ -1,8 +1,8 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import { get, computed, observer } from '@ember/-internals/metal';
+import { get, computed } from '@ember/-internals/metal';
 import { w } from '@ember/string';
-import EmberObject from '@ember/object';
+import EmberObject, { observer } from '@ember/object';
 import Observable from '@ember/object/observable';
 import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';

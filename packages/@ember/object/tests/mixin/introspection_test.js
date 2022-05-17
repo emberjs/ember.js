@@ -3,7 +3,7 @@
 // current impl doesn't care about the differences as much...
 
 import { guidFor } from '@ember/-internals/utils';
-import { mixin, Mixin } from '../..';
+import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const PrivateProperty = Mixin.create({

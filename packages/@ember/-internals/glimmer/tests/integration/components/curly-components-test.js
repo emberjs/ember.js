@@ -11,9 +11,9 @@ import {
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { alias, set, get, observer, on, computed, tracked } from '@ember/-internals/metal';
+import { alias, set, get, on, computed, tracked } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
-import EmberObject from '@ember/object';
+import EmberObject, { observer } from '@ember/object';
 import { A as emberA } from '@ember/-internals/runtime';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';

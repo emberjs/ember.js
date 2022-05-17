@@ -8,7 +8,6 @@ import {
   set,
   getProperties,
   setProperties,
-  Mixin,
   hasListeners,
   beginPropertyChanges,
   notifyPropertyChange,
@@ -16,6 +15,7 @@ import {
   addObserver,
   removeObserver,
 } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 
 export type ObserverMethod<Target, Sender> =

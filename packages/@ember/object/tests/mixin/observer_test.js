@@ -1,4 +1,5 @@
-import { set, get, observer, mixin, Mixin } from '../..';
+import { set, get, observer } from '@ember/object';
+import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
