@@ -43,7 +43,6 @@ import {
   RSVP,
   Comparable,
   ArrayProxy,
-  ObjectProxy,
   ActionHandler,
   NativeArray,
   A,
@@ -83,6 +82,7 @@ import CoreObject from '@ember/object/core';
 import Evented from '@ember/object/evented';
 import Mixin, { mixin } from '@ember/object/mixin';
 import Observable from '@ember/object/observable';
+import ObjectProxy from '@ember/object/proxy';
 import { assign } from '@ember/polyfills';
 
 import {

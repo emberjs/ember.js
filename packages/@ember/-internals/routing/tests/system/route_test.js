@@ -3,7 +3,7 @@ import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-te
 import Service, { service } from '@ember/service';
 import EmberObject from '@ember/object';
 import EmberRoute from '../../lib/system/route';
-import ObjectProxy from '@ember/-internals/runtime/lib/system/object_proxy';
+import ObjectProxy from '@ember/object/proxy';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 let route, routeOne, routeTwo, lookupHash;

@@ -1,6 +1,6 @@
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
-import ObjectProxy from '../../lib/system/object_proxy';
+import ObjectProxy from '@ember/object/proxy';
 import PromiseProxyMixin from '../../lib/mixins/promise_proxy';
 import EmberRSVP from '../../lib/ext/rsvp';
 import { onerrorDefault } from '../../lib/ext/rsvp';

@@ -6,7 +6,7 @@ import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
-import { ObjectProxy } from '@ember/-internals/runtime';
+import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 

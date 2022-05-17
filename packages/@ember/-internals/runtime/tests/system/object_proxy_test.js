@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { addObserver, computed, get, set, removeObserver } from '@ember/-internals/metal';
 import { observer } from '@ember/object';
-import ObjectProxy from '../../lib/system/object_proxy';
+import ObjectProxy from '@ember/object/proxy';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(

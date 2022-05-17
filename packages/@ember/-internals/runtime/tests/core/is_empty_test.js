@@ -1,6 +1,6 @@
 import { isEmpty } from '@ember/-internals/metal';
 import ArrayProxy from '../../lib/system/array_proxy';
-import ObjectProxy from '../../lib/system/object_proxy';
+import ObjectProxy from '@ember/object/proxy';
 import { A as emberA } from '../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

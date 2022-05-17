@@ -2,7 +2,7 @@ import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'inter
 
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
-import { ObjectProxy } from '@ember/-internals/runtime';
+import ObjectProxy from '@ember/object/proxy';
 
 import {
   FalsyGenerator,

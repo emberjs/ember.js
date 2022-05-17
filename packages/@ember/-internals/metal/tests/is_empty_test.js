@@ -1,6 +1,6 @@
 import { isEmpty } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import ObjectProxy from '../../runtime/lib/system/object_proxy';
+import ObjectProxy from '@ember/object/proxy';
 
 moduleFor(
   'isEmpty',
