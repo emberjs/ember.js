@@ -5,7 +5,7 @@
 import { get, set } from '@ember/-internals/metal';
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
-import type Application from './lib/application';
+import type Application from '@ember/application';
 import { renderSettled } from '@ember/-internals/glimmer';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import { assert } from '@ember/debug';
