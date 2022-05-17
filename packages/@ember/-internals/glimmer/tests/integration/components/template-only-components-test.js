@@ -3,7 +3,7 @@ import { ENV } from '@ember/-internals/environment';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 import { compile } from 'ember-template-compiler';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 

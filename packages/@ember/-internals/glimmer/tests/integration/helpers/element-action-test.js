@@ -6,7 +6,8 @@ import {
   reset as instrumentationReset,
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A as emberA } from '@ember/-internals/runtime';
 import { ActionManager } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';

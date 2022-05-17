@@ -4,7 +4,7 @@ import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,

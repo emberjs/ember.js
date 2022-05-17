@@ -1,4 +1,5 @@
-import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
 import {
   computed,
   get,

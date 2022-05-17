@@ -8,7 +8,8 @@ import {
   removeObserver,
   tagForProperty,
 } from '..';
-import { Object as EmberObject, A } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 import { valueForTag, validateTag } from '@glimmer/validator';

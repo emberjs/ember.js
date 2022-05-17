@@ -1,5 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
-import { FrameworkObject } from '@ember/-internals/runtime';
+import { FrameworkObject } from '@ember/object';
 import { inject as metalInject } from '@ember/-internals/metal';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 import { Mixin, computed, get } from '@ember/-internals/metal';

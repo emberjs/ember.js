@@ -3,7 +3,7 @@ import { getOwner, setOwner } from '@ember/-internals/owner';
 import { computed, Mixin, observer, addObserver, alias } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject from '../../../lib/system/object';
+import EmberObject from '@ember/object';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 

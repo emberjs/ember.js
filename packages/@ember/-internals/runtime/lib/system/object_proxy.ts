@@ -1,4 +1,4 @@
-import FrameworkObject from './object';
+import { FrameworkObject } from '@ember/object';
 import _ProxyMixin from '../mixins/-proxy';
 
 /**

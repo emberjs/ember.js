@@ -6,7 +6,7 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,

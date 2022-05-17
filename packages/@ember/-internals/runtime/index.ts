@@ -1,4 +1,3 @@
-export { default as Object, FrameworkObject } from './lib/system/object';
 export { default as RegistryProxyMixin } from './lib/mixins/registry_proxy';
 export { default as ContainerProxyMixin } from './lib/mixins/container_proxy';
 export { default as compare } from './lib/compare';
@@ -17,7 +16,6 @@ export { default as ArrayProxy } from './lib/system/array_proxy';
 export { default as ObjectProxy } from './lib/system/object_proxy';
 export { default as ActionHandler } from './lib/mixins/action_handler';
 export { default as _ProxyMixin, contentFor as _contentFor } from './lib/mixins/-proxy';
-export { default as Observable } from './lib/mixins/observable';
 export { default as MutableEnumerable } from './lib/mixins/mutable_enumerable';
 export { default as TargetActionSupport } from './lib/mixins/target_action_support';
 export { default as Evented } from './lib/mixins/evented';

@@ -2,7 +2,8 @@
 @module @ember/engine
 */
 
-import { Object as EmberObject, RSVP } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';

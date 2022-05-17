@@ -7,7 +7,7 @@ import {
   endPropertyChanges,
 } from '@ember/-internals/metal';
 import { peekMeta } from '@ember/-internals/meta';
-import EmberObject from '../../../lib/system/object';
+import EmberObject from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 

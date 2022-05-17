@@ -4,8 +4,9 @@ import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'int
 
 import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
-import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
+import { ObjectProxy } from '@ember/-internals/runtime';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 

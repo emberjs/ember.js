@@ -5,7 +5,8 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
-import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';

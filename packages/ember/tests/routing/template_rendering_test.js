@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';

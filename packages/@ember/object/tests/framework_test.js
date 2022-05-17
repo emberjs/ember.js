@@ -1,5 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
-import { FrameworkObject } from '../../../index';
+import { FrameworkObject } from '@ember/object';
 import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(

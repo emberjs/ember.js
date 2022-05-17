@@ -1,5 +1,5 @@
 import { context } from '@ember/-internals/environment';
-import EmberObject from '../../lib/system/object';
+import EmberObject from '@ember/object';
 import TargetActionSupport from '../../lib/mixins/target_action_support';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

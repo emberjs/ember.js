@@ -14,13 +14,8 @@ import {
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
-import {
-  A as emberA,
-  ActionHandler,
-  Evented,
-  Object as EmberObject,
-  typeOf,
-} from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A as emberA, ActionHandler, Evented, typeOf } from '@ember/-internals/runtime';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utils/types';
 import Controller from '@ember/controller';

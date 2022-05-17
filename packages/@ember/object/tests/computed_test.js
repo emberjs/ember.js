@@ -8,8 +8,8 @@ import {
   notifyPropertyChange,
 } from '@ember/-internals/metal';
 import { oneWay as reads } from '@ember/object/computed';
-import { A as EmberArray, isArray } from '../../..';
-import EmberObject from '../../../lib/system/object';
+import { A as emberA, isArray } from '@ember/array';
+import EmberObject from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {
@@ -415,7 +415,7 @@ moduleFor(
       n.set('options', { extra: 'wat', value: 'baz' });
       assert.deepEqual(n.normalized, ['baz']);
 
-      n.set('options', EmberArray([{ value: 'foo' }]));
+      n.set('options', emberA([{ value: 'foo' }]));
       assert.deepEqual(n.normalized, ['foo']);
 
       n.options.pushObject({ value: 'bar' });

@@ -19,7 +19,7 @@ import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import compare from '../compare';
 import { ENV } from '@ember/-internals/environment';
-import Observable from '../mixins/observable';
+import Observable from '@ember/object/observable';
 import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
 import type { AnyFn } from '@ember/-internals/utils/types';

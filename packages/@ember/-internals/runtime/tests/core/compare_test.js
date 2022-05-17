@@ -1,5 +1,5 @@
 import { typeOf } from '../../lib/type-of';
-import EmberObject from '../../lib/system/object';
+import EmberObject from '@ember/object';
 import compare from '../../lib/compare';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

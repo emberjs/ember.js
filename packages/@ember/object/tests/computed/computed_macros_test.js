@@ -17,7 +17,8 @@ import {
   or,
 } from '@ember/object/computed';
 
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

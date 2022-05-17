@@ -103,6 +103,7 @@ moduleFor(
       if (DEBUG) {
         let proxy = ObjectProxy.extend({
           init() {
+            this._super();
             if (!this.foobar) {
               this.foobar = function () {
                 let content = get(this, 'content');

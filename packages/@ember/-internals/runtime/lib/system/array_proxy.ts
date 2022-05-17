@@ -15,7 +15,7 @@ import {
   tagForProperty,
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
-import EmberObject from './object';
+import EmberObject from '@ember/object';
 import EmberArray, { MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';

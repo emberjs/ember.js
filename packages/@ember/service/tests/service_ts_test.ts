@@ -1,5 +1,5 @@
 import Service, { inject, service } from '@ember/service';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import { buildOwner, runDestroy } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

@@ -1,5 +1,5 @@
 import ArrayProxy from '../../../lib/system/array_proxy';
-import EmberObject from '../../../lib/system/object';
+import EmberObject from '@ember/object';
 import { observer } from '@ember/-internals/metal';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '../../../lib/mixins/array';

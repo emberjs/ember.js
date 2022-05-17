@@ -2,7 +2,7 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
-import EmberObject from '../../../lib/system/object';
+import EmberObject from '@ember/object';
 import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

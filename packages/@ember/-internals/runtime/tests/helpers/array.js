@@ -9,7 +9,7 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import EmberObject from '../../lib/system/object';
+import EmberObject from '@ember/object';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {

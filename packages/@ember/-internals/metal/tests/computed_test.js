@@ -1,4 +1,4 @@
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import { meta as metaFor } from '@ember/-internals/meta';
 import {
   computed,

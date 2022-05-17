@@ -25,11 +25,10 @@ import {
 } from '@ember/string';
 import Service, { service } from '@ember/service';
 
-import { action, computed } from '@ember/object';
+import EmberObject, { action, computed } from '@ember/object';
 import { dependentKeyCompat } from '@ember/object/compat';
 
 import {
-  Object as EmberObject,
   RegistryProxyMixin,
   ContainerProxyMixin,
   compare,
@@ -39,7 +38,6 @@ import {
   MutableArray,
   Evented,
   PromiseProxyMixin,
-  Observable,
   typeOf,
   isArray,
   _ProxyMixin,
@@ -83,6 +81,7 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import Enumerable from '@ember/enumerable';
 import CoreObject from '@ember/object/core';
+import Observable from '@ember/object/observable';
 import { assign } from '@ember/polyfills';
 
 import {
