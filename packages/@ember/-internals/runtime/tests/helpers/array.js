@@ -1,4 +1,4 @@
-import ArrayProxy from '../../lib/system/array_proxy';
+import ArrayProxy from '@ember/array/proxy';
 import EmberArray, { A as emberA } from '@ember/array'
 import MutableArray from '@ember/array/mutable';
 import { generateGuid, guidFor } from '@ember/-internals/utils';

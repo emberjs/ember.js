@@ -1,5 +1,5 @@
 import MutableEnumerable from '@ember/enumerable/mutable';
-import ArrayProxy from '../../lib/system/array_proxy';
+import ArrayProxy from '@ember/array/proxy';
 import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

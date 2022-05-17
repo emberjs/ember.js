@@ -1,4 +1,4 @@
-import ArrayProxy from '../../../lib/system/array_proxy';
+import ArrayProxy from '@ember/array/proxy';
 import EmberObject, { observer } from '@ember/object';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '@ember/array';

@@ -4,7 +4,6 @@ export { default as compare } from './lib/compare';
 export { default as isEqual } from './lib/is-equal';
 export { default as Comparable } from './lib/mixins/comparable';
 export { NativeArray } from '@ember/array';
-export { default as ArrayProxy } from './lib/system/array_proxy';
 export { default as ActionHandler } from './lib/mixins/action_handler';
 export { default as _ProxyMixin, contentFor as _contentFor } from './lib/mixins/-proxy';
 export { default as MutableEnumerable } from '@ember/enumerable/mutable';

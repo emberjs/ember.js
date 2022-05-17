@@ -7,7 +7,7 @@ import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 import { A as emberA, removeAt } from '@ember/array';
-import { ArrayProxy } from '@ember/-internals/runtime';
+import ArrayProxy from '@ember/array/proxy';
 
 import { Component } from './helpers';
 

@@ -41,6 +41,7 @@ export {
   changeProperties,
   endPropertyChanges,
   notifyPropertyChange,
+  PropertyDidChange,
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty, defineDecorator, defineValue } from './lib/properties';

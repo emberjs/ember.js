@@ -37,7 +37,6 @@ import {
   _ProxyMixin,
   RSVP,
   Comparable,
-  ArrayProxy,
   ActionHandler,
 } from '@ember/-internals/runtime';
 import {
@@ -67,6 +66,7 @@ import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import EmberArray, { A, NativeArray, isArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
+import ArrayProxy from '@ember/array/proxy';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Namespace from '@ember/application/namespace';
