@@ -11,7 +11,6 @@ export {
 export { default as controllerFor } from './lib/system/controller_for';
 export { default as RouterDSL } from './lib/system/dsl';
 export { default as Router, QueryParam } from './lib/system/router';
-export { default as Route } from './lib/system/route';
 export { default as QueryParams } from './lib/system/query_params';
 export { default as RoutingService } from './lib/services/routing';
 export {
@@ -21,4 +20,13 @@ export {
 } from './lib/services/router';
 export { default as RouterState } from './lib/system/router_state';
 export { default as BucketCache } from './lib/system/cache';
-export { deprecateTransitionMethods, prefixRouteNameArg, RouteArgs } from './lib/utils';
+export {
+  calculateCacheKey,
+  deprecateTransitionMethods,
+  normalizeControllerQueryParams,
+  prefixRouteNameArg,
+  stashParamNames,
+  ExpandedControllerQueryParam,
+  NamedRouteArgs,
+  RouteArgs,
+} from './lib/utils';

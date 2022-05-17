@@ -2,7 +2,7 @@ import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberObject from '@ember/object';
-import EmberRoute from '../../lib/system/route';
+import EmberRoute from '@ember/routing/route';
 import ObjectProxy from '@ember/object/proxy';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 

@@ -7,7 +7,7 @@ import {
 } from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';

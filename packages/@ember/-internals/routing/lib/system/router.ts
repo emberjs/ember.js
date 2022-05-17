@@ -18,14 +18,14 @@ import type { RouteArgs, RouteOptions } from '../utils';
 import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
 import type { DSLCallback } from './dsl';
 import DSL from './dsl';
-import type { QueryParamMeta, RenderOptions } from './route';
-import type Route from './route';
+import type { QueryParamMeta, RenderOptions } from '@ember/routing/route';
+import type Route from '@ember/routing/route';
 import {
   defaultSerialize,
   getFullQueryParams,
   hasDefaultSerialize,
   ROUTE_CONNECTIONS,
-} from './route';
+} from '@ember/routing/route';
 import RouterState from './router_state';
 
 /**

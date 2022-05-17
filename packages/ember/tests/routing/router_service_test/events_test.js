@@ -1,6 +1,6 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { service } from '@ember/service';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { later } from '@ember/runloop';
 
 moduleFor(

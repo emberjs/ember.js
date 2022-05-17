@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/-internals/runtime';

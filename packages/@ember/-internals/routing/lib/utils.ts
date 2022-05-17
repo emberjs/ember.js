@@ -7,8 +7,8 @@ import EmberError from '@ember/error';
 import type { InternalRouteInfo, ModelFor } from 'router_js';
 import type Router from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
-import type { ExtendedInternalRouteInfo } from './system/route';
-import type Route from './system/route';
+import type { ExtendedInternalRouteInfo } from '@ember/routing/route';
+import type Route from '@ember/routing/route';
 import type EmberRouter from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;

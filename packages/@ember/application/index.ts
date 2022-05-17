@@ -13,8 +13,8 @@ import { libraries } from '@ember/-internals/metal';
 import { _loaded, onLoad, runLoadHooks } from './lib/lazy_load';
 import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
+import Route from '@ember/routing/route';
 import {
-  Route,
   Router,
   HashLocation,
   HistoryLocation,

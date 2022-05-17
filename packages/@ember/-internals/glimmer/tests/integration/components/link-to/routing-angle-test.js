@@ -7,7 +7,8 @@ import {
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { subscribe, reset } from '@ember/instrumentation';
-import { Route, NoneLocation } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
+import { NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';

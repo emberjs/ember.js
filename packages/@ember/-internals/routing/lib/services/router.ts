@@ -5,7 +5,7 @@ import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
 import type { ModelFor, Transition } from 'router_js';
-import type Route from '../system/route';
+import type Route from '@ember/routing/route';
 import EmberRouter from '../system/router';
 import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';
 import type { RouteArgs, RouteOptions } from '../utils';

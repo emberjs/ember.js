@@ -1,5 +1,5 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 
 moduleFor(
   'Router Service - recognize',

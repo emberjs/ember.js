@@ -5,7 +5,7 @@ import { RSVP, A as emberA } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { get, computed, tracked } from '@ember/-internals/metal';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';

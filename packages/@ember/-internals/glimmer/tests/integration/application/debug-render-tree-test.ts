@@ -8,7 +8,7 @@ import {
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import type { Owner } from '@ember/-internals/owner';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { assert, captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';

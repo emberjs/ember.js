@@ -1,7 +1,7 @@
 import type { ModelFor, TransitionState } from 'router_js';
 import type Router from 'router_js';
 import { shallowEqual } from '../utils';
-import type Route from './route';
+import type Route from '@ember/routing/route';
 import type EmberRouter from './router';
 
 export default class RouterState<R extends Route> {

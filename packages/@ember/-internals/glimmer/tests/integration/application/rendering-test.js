@@ -2,7 +2,7 @@ import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { Component } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../../utils/debug-stack';

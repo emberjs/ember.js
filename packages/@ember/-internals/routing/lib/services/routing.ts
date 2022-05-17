@@ -7,7 +7,7 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import type { ModelFor } from 'router_js';
-import type { Route } from '../..';
+import type Route from '@ember/routing/route';
 import EmberRouter from '../system/router';
 import type RouterState from '../system/router_state';
 import { ROUTER } from './router';

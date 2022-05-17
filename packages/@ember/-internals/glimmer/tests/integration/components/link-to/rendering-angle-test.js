@@ -5,7 +5,8 @@ import {
   RouterNonApplicationTestCase,
   runTask,
 } from 'internal-test-helpers';
-import { Router, Route } from '@ember/-internals/routing';
+import { Router } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';

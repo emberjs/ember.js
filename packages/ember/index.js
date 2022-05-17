@@ -84,6 +84,7 @@ import Observable from '@ember/object/observable';
 import ObjectProxy from '@ember/object/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { assign } from '@ember/polyfills';
+import Route from '@ember/routing/route';
 
 import {
   templateOnlyComponent,
@@ -511,7 +512,7 @@ Ember.generateControllerFactory = routing.generateControllerFactory;
 Ember.generateController = routing.generateController;
 Ember.RouterDSL = routing.RouterDSL;
 Ember.Router = routing.Router;
-Ember.Route = routing.Route;
+Ember.Route = Route;
 
 runLoadHooks('Ember.Application', Application);
 
