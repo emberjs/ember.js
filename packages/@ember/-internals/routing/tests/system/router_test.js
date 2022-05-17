@@ -1,6 +1,6 @@
 import HashLocation from '../../lib/location/hash_location';
 import HistoryLocation from '../../lib/location/history_location';
-import AutoLocation from '../../lib/location/auto_location';
+import AutoLocation from '@ember/routing/auto-location';
 import NoneLocation from '@ember/routing/none-location';
 import Router, { triggerEvent } from '@ember/routing/router';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';

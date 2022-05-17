@@ -15,13 +15,9 @@ import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
+import AutoLocation from '@ember/routing/auto-location';
 import NoneLocation from '@ember/routing/none-location';
-import {
-  HashLocation,
-  HistoryLocation,
-  AutoLocation,
-  BucketCache,
-} from '@ember/-internals/routing';
+import { HashLocation, HistoryLocation, BucketCache } from '@ember/-internals/routing';
 import ApplicationInstance from '@ember/application/instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
 import type { BootOptions } from '@ember/engine/instance';

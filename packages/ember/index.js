@@ -84,6 +84,7 @@ import Observable from '@ember/object/observable';
 import ObjectProxy from '@ember/object/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { assign } from '@ember/polyfills';
+import AutoLocation from '@ember/routing/auto-location';
 import NoneLocation from '@ember/routing/none-location';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
@@ -505,7 +506,7 @@ Ember.EventDispatcher = views.EventDispatcher;
 
 // ****@ember/-internals/routing****
 Ember.Location = routing.Location;
-Ember.AutoLocation = routing.AutoLocation;
+Ember.AutoLocation = AutoLocation;
 Ember.HashLocation = routing.HashLocation;
 Ember.HistoryLocation = routing.HistoryLocation;
 Ember.NoneLocation = NoneLocation;
