@@ -72,7 +72,8 @@ import {
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
 import * as routing from '@ember/-internals/routing';
-import * as extensionSupport from '@ember/-internals/extension-support';
+import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
+import DataAdapter from '@ember/debug/data-adapter';
 import EmberError from '@ember/error';
 import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
@@ -514,8 +515,8 @@ Ember.Route = routing.Route;
 
 runLoadHooks('Ember.Application', Application);
 
-Ember.DataAdapter = extensionSupport.DataAdapter;
-Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
+Ember.DataAdapter = DataAdapter;
+Ember.ContainerDebugAdapter = ContainerDebugAdapter;
 
 let EmberHandlebars = {
   template,
