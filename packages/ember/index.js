@@ -88,6 +88,7 @@ import AutoLocation from '@ember/routing/auto-location';
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
+import EmberLocation from '@ember/routing/location';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 
@@ -507,7 +508,7 @@ Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
 // ****@ember/-internals/routing****
-Ember.Location = routing.Location;
+Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;
 Ember.HashLocation = HashLocation;
 Ember.HistoryLocation = HistoryLocation;

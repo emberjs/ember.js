@@ -1,7 +1,7 @@
 import { set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
-import type { EmberLocation, UpdateCallback } from '@ember/-internals/routing';
+import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
 
 /**
 @module @ember/routing

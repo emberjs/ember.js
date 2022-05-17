@@ -5,7 +5,6 @@ import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import {
   BucketCache,
-  Location as EmberLocation,
   RouterDSL as DSL,
   RouterState,
   calculateCacheKey,
@@ -15,11 +14,12 @@ import {
 } from '@ember/-internals/routing';
 import type {
   DSLCallback,
-  EmberLocation as IEmberLocation,
   EngineRouteInfo,
   RouteArgs,
   RouteOptions,
 } from '@ember/-internals/routing';
+import EmberLocation from '@ember/routing/location';
+import type { ILocation as IEmberLocation } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA, typeOf } from '@ember/-internals/runtime';

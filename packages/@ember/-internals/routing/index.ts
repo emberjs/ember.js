@@ -1,4 +1,3 @@
-export { default as Location, EmberLocation, UpdateCallback } from './lib/location/api';
 export {
   getFullPath,
   getHash,
