@@ -36,7 +36,6 @@ import {
   Array as EmberArray,
   MutableEnumerable,
   MutableArray,
-  Evented,
   PromiseProxyMixin,
   typeOf,
   isArray,
@@ -81,6 +80,7 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import Enumerable from '@ember/enumerable';
 import CoreObject from '@ember/object/core';
+import Evented from '@ember/object/evented';
 import Observable from '@ember/object/observable';
 import { assign } from '@ember/polyfills';
 

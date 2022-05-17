@@ -1,5 +1,5 @@
 import { getOwner } from '@ember/-internals/owner';
-import { Evented } from '@ember/-internals/runtime';
+import Evented from '@ember/object/evented';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
