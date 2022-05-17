@@ -24,7 +24,7 @@ import {
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utils/types';
 import Controller from '@ember/controller';
-import type { ControllerQueryParamType } from '@ember/controller/lib/controller_mixin';
+import type { ControllerQueryParamType } from '@ember/controller';
 import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';

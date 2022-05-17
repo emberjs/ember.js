@@ -1,6 +1,3 @@
-// ES6TODO: Cleanup modules with side-effects below
-import './lib/ext/controller';
-
 export { default as Location, EmberLocation } from './lib/location/api';
 export { default as NoneLocation } from './lib/location/none_location';
 export { default as HashLocation } from './lib/location/hash_location';
@@ -24,3 +21,4 @@ export {
 } from './lib/services/router';
 export { default as RouterState } from './lib/system/router_state';
 export { default as BucketCache } from './lib/system/cache';
+export { deprecateTransitionMethods, prefixRouteNameArg, RouteArgs } from './lib/utils';

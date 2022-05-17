@@ -1,9 +1,6 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import type {
-  ControllerQueryParam,
-  ControllerQueryParamType,
-} from '@ember/controller/lib/controller_mixin';
+import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
 import { assert, deprecate } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import EmberError from '@ember/error';

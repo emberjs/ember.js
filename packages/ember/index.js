@@ -10,8 +10,7 @@ import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
-import Controller, { inject as injectController } from '@ember/controller';
-import ControllerMixin from '@ember/controller/lib/controller_mixin';
+import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
 import {
   _getStrings,
   _setStrings,
