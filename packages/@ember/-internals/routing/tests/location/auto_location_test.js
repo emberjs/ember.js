@@ -3,7 +3,7 @@ import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { setOwner } from '@glimmer/owner';
 import AutoLocation, { getHistoryPath, getHashPath } from '@ember/routing/auto-location';
-import HistoryLocation from '../../lib/location/history_location';
+import HistoryLocation from '@ember/routing/history-location';
 import HashLocation from '@ember/routing/hash-location';
 import NoneLocation from '@ember/routing/none-location';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';

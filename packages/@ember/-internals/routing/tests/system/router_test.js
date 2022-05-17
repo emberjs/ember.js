@@ -1,5 +1,5 @@
 import HashLocation from '@ember/routing/hash-location';
-import HistoryLocation from '../../lib/location/history_location';
+import HistoryLocation from '@ember/routing/history-location';
 import AutoLocation from '@ember/routing/auto-location';
 import NoneLocation from '@ember/routing/none-location';
 import Router, { triggerEvent } from '@ember/routing/router';

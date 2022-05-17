@@ -1,6 +1,6 @@
 import { run } from '@ember/runloop';
 import { set } from '@ember/-internals/metal';
-import HistoryLocation from '../../lib/location/history_location';
+import HistoryLocation from '@ember/routing/history-location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let FakeHistory, HistoryTestLocation, location;
