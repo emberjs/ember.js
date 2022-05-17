@@ -38,9 +38,10 @@ import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type {
   ExpandedControllerQueryParam,
   NamedRouteArgs,
-  QueryParam,
   RouteArgs,
 } from '@ember/-internals/routing';
+import type { QueryParam } from '@ember/routing/router';
+import EmberRouter from '@ember/routing/router';
 import {
   calculateCacheKey,
   deprecateTransitionMethods,
@@ -48,7 +49,6 @@ import {
   normalizeControllerQueryParams,
   prefixRouteNameArg,
   stashParamNames,
-  Router as EmberRouter,
 } from '@ember/-internals/routing';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {

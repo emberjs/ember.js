@@ -2,7 +2,7 @@ import HashLocation from '../../lib/location/hash_location';
 import HistoryLocation from '../../lib/location/history_location';
 import AutoLocation from '../../lib/location/auto_location';
 import NoneLocation from '../../lib/location/none_location';
-import Router, { triggerEvent } from '../../lib/system/router';
+import Router, { triggerEvent } from '@ember/routing/router';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let owner;

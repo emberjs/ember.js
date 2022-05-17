@@ -1,7 +1,7 @@
 import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
 import Route from '@ember/routing/route';
-import { Router } from '@ember/-internals/routing';
+import Router from '@ember/routing/router';
 import { Component } from '@ember/-internals/glimmer';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 

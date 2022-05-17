@@ -5,7 +5,7 @@ import {
   RouterNonApplicationTestCase,
   runTask,
 } from 'internal-test-helpers';
-import { Router } from '@ember/-internals/routing';
+import Router from '@ember/routing/router';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';

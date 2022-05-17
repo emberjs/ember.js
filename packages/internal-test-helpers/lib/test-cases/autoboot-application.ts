@@ -1,6 +1,6 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
-import { Router } from '@ember/-internals/routing';
+import Router from '@ember/routing/router';
 import Resolver from '../test-resolver';
 import { assert } from '@ember/debug';
 import type ApplicationInstance from '@ember/application/instance';

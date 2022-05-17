@@ -9,8 +9,8 @@ export {
   generateControllerFactory,
 } from './lib/system/generate_controller';
 export { default as controllerFor } from './lib/system/controller_for';
-export { default as RouterDSL } from './lib/system/dsl';
-export { default as Router, QueryParam } from './lib/system/router';
+export { default as RouterDSL, DSLCallback } from './lib/system/dsl';
+export { EngineRouteInfo } from './lib/system/engines';
 export { default as QueryParams } from './lib/system/query_params';
 export { default as RoutingService } from './lib/services/routing';
 export {
@@ -23,10 +23,14 @@ export { default as BucketCache } from './lib/system/cache';
 export {
   calculateCacheKey,
   deprecateTransitionMethods,
+  extractRouteArgs,
+  getActiveTargetName,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
+  resemblesURL,
   stashParamNames,
   ExpandedControllerQueryParam,
   NamedRouteArgs,
   RouteArgs,
+  RouteOptions,
 } from './lib/utils';

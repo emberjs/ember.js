@@ -1,4 +1,4 @@
-import EmberRouter from '../../lib/system/router';
+import EmberRouter from '@ember/routing/router';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -9,7 +9,7 @@ import type Router from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
 import type { ExtendedInternalRouteInfo } from '@ember/routing/route';
 import type Route from '@ember/routing/route';
-import type EmberRouter from './system/router';
+import type EmberRouter from '@ember/routing/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
