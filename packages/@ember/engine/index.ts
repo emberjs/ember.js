@@ -2,7 +2,7 @@ export { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
-import { Namespace } from '@ember/-internals/runtime';
+import Namespace from '@ember/application/namespace';
 import { Registry } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';

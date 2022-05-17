@@ -3,7 +3,7 @@ import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
 import EmberObject from '../../../lib/system/object';
-import Namespace from '../../../lib/system/namespace';
+import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const originalLookup = context.lookup;

@@ -46,7 +46,6 @@ import {
   _ProxyMixin,
   RSVP,
   Comparable,
-  Namespace,
   Enumerable,
   ArrayProxy,
   ObjectProxy,
@@ -81,6 +80,7 @@ import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
+import Namespace from '@ember/application/namespace';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign } from '@ember/polyfills';

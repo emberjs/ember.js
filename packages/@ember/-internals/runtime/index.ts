@@ -13,7 +13,6 @@ export {
   isArray,
 } from './lib/mixins/array';
 export { default as Comparable } from './lib/mixins/comparable';
-export { default as Namespace } from './lib/system/namespace';
 export { default as ArrayProxy } from './lib/system/array_proxy';
 export { default as ObjectProxy } from './lib/system/object_proxy';
 export { default as CoreObject } from './lib/system/core_object';
