@@ -16,7 +16,7 @@ import {
   endPropertyChanges,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import Enumerable from './enumerable';
+import Enumerable from '@ember/enumerable';
 import compare from '../compare';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '../mixins/observable';

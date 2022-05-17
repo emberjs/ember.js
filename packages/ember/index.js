@@ -45,7 +45,6 @@ import {
   _ProxyMixin,
   RSVP,
   Comparable,
-  Enumerable,
   ArrayProxy,
   ObjectProxy,
   ActionHandler,
@@ -83,6 +82,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Namespace from '@ember/application/namespace';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
+import Enumerable from '@ember/enumerable';
 import { assign } from '@ember/polyfills';
 
 import {

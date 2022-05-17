@@ -1,4 +1,4 @@
-import Enumerable from './enumerable';
+import Enumerable from '@ember/enumerable';
 import { Mixin } from '@ember/-internals/metal';
 
 /**
