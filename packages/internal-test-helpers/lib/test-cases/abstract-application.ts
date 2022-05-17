@@ -3,8 +3,8 @@ import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
+import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
-import type { BootOptions } from '@ember/application/instance';
 import type ApplicationInstance from '@ember/application/instance';
 import type Router from '@ember/routing/router';
 

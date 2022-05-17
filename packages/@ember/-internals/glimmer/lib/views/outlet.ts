@@ -1,6 +1,6 @@
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import type { BootOptions } from '@ember/application/instance';
+import type { BootOptions } from '@ember/engine/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template } from '@glimmer/interfaces';

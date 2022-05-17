@@ -22,9 +22,9 @@ import {
   NoneLocation,
   BucketCache,
 } from '@ember/-internals/routing';
-import type { BootOptions } from '@ember/application/instance';
 import ApplicationInstance from '@ember/application/instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
+import type { BootOptions } from '@ember/engine/instance';
 import type { Container, Registry } from '@ember/-internals/container';
 import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';

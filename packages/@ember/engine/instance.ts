@@ -11,12 +11,23 @@ import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-pa
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
 import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
 import { isFactory } from '@ember/-internals/owner';
-import Engine from '.';
+import Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { BootOptions } from '@ember/application/instance';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { SimpleElement } from '@simple-dom/interface';
 
 const CEngine = Engine;
+
+export interface BootOptions {
+  isBrowser?: boolean;
+  shouldRender?: boolean;
+  document?: Document | null;
+  rootElement?: string | SimpleElement | null;
+  location?: string | null;
+  // Private?
+  isInteractive?: boolean;
+  _renderMode?: string;
+}
 
 export interface EngineInstanceOptions {
   mountPoint?: string;
