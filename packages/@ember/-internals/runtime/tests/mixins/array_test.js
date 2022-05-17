@@ -10,7 +10,7 @@ import {
   arrayContentWillChange,
 } from '@ember/-internals/metal';
 import EmberObject, { observer as emberObserver } from '@ember/object';
-import EmberArray, { A as emberA } from '../../lib/mixins/array';
+import EmberArray, { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*

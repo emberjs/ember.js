@@ -1,5 +1,5 @@
 import EmberObject from '@ember/object';
-import { NativeArray } from '../../index';
+import { NativeArray } from '@ember/array';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 

@@ -1,6 +1,6 @@
 import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
-import { removeAt } from '../../lib/mixins/array';
+import { removeAt } from '@ember/array';
 import { get } from '@ember/-internals/metal';
 
 class RemoveAtTests extends AbstractTestCase {

@@ -6,7 +6,8 @@ import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
-import { A as emberA, ArrayProxy, removeAt } from '@ember/-internals/runtime';
+import { A as emberA, removeAt } from '@ember/array';
+import { ArrayProxy } from '@ember/-internals/runtime';
 
 import { Component } from './helpers';
 

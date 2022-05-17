@@ -1,6 +1,6 @@
-import MutableEnumerable from '../../lib/mixins/mutable_enumerable';
+import MutableEnumerable from '@ember/enumerable/mutable';
 import ArrayProxy from '../../lib/system/array_proxy';
-import { A } from '../../lib/mixins/array';
+import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

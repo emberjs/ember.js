@@ -16,7 +16,8 @@ import {
 } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
-import EmberArray, { MutableArray } from '../mixins/array';
+import EmberArray from '@ember/array';
+import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
 import type { Tag, Revision } from '@glimmer/validator';

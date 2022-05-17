@@ -1,7 +1,8 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { get, set, notifyPropertyChange, computed, on } from '@ember/-internals/metal';
-import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
+import { A as emberA } from '@ember/array';
+import { ArrayProxy, RSVP } from '@ember/-internals/runtime';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 import {

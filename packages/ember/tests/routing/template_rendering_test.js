@@ -2,7 +2,7 @@
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/-internals/runtime';
+import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';

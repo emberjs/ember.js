@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object';
-import { A, MutableArray } from '@ember/-internals/runtime';
+import { A } from '@ember/array';
+import MutableArray from '@ember/array/mutable';
 import {
   tracked,
   nativeDescDecorator as descriptor,

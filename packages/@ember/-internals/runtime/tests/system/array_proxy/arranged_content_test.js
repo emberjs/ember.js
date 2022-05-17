@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 import { computed, objectAt } from '@ember/-internals/metal';
 import ArrayProxy from '../../../lib/system/array_proxy';
-import { A as emberA } from '../../../lib/mixins/array';
+import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let array;

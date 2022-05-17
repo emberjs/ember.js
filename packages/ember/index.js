@@ -33,18 +33,12 @@ import {
   ContainerProxyMixin,
   compare,
   isEqual,
-  Array as EmberArray,
-  MutableEnumerable,
-  MutableArray,
   typeOf,
-  isArray,
   _ProxyMixin,
   RSVP,
   Comparable,
   ArrayProxy,
   ActionHandler,
-  NativeArray,
-  A,
 } from '@ember/-internals/runtime';
 import {
   Component,
@@ -71,12 +65,15 @@ import EmberError from '@ember/error';
 import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
+import EmberArray, { A, NativeArray, isArray } from '@ember/array';
+import MutableArray from '@ember/array/mutable';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Namespace from '@ember/application/namespace';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import Enumerable from '@ember/enumerable';
+import MutableEnumerable from '@ember/enumerable/mutable';
 import CoreObject from '@ember/object/core';
 import Evented from '@ember/object/evented';
 import Mixin, { mixin } from '@ember/object/mixin';

@@ -14,7 +14,7 @@ import { DEBUG } from '@glimmer/env';
 import { alias, set, get, on, computed, tracked } from '@ember/-internals/metal';
 import Service, { service } from '@ember/service';
 import EmberObject, { observer } from '@ember/object';
-import { A as emberA } from '@ember/-internals/runtime';
+import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
