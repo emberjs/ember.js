@@ -19,8 +19,8 @@ import type {
   EngineRouteInfo,
   RouteArgs,
   RouteOptions,
-  RouterService,
 } from '@ember/-internals/routing';
+import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA, typeOf } from '@ember/-internals/runtime';
 import Evented from '@ember/object/evented';

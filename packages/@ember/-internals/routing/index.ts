@@ -12,12 +12,8 @@ export { default as controllerFor } from './lib/system/controller_for';
 export { default as RouterDSL, DSLCallback } from './lib/system/dsl';
 export { EngineRouteInfo } from './lib/system/engines';
 export { default as QueryParams } from './lib/system/query_params';
+export { RouteInfo, RouteInfoWithAttributes } from './lib/system/route-info';
 export { default as RoutingService } from './lib/services/routing';
-export {
-  default as RouterService,
-  RouteInfo,
-  RouteInfoWithAttributes,
-} from './lib/services/router';
 export { default as RouterState } from './lib/system/router_state';
 export { default as BucketCache } from './lib/system/cache';
 export {
@@ -28,6 +24,7 @@ export {
   normalizeControllerQueryParams,
   prefixRouteNameArg,
   resemblesURL,
+  shallowEqual,
   stashParamNames,
   ExpandedControllerQueryParam,
   NamedRouteArgs,
