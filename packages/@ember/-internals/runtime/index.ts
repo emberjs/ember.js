@@ -15,7 +15,6 @@ export {
 export { default as Comparable } from './lib/mixins/comparable';
 export { default as ArrayProxy } from './lib/system/array_proxy';
 export { default as ObjectProxy } from './lib/system/object_proxy';
-export { default as CoreObject } from './lib/system/core_object';
 export { default as ActionHandler } from './lib/mixins/action_handler';
 export { default as _ProxyMixin, contentFor as _contentFor } from './lib/mixins/-proxy';
 export { default as Observable } from './lib/mixins/observable';

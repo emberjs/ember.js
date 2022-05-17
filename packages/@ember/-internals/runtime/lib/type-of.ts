@@ -1,4 +1,4 @@
-import CoreObject from './system/core_object';
+import CoreObject from '@ember/object/core';
 
 export type TypeName =
   | 'undefined'

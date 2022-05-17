@@ -1,5 +1,5 @@
 import EventedMixin from '../../lib/mixins/evented';
-import CoreObject from '../../lib/system/core_object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

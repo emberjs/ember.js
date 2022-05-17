@@ -1,7 +1,7 @@
-import { get } from '@ember/-internals/metal';
-import EmberObject from '../../../lib/system/object';
+import EmberObject, { get } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
+// TODO: Update these tests (or the title) to match each other.
 moduleFor(
   'system/core_object/reopen',
   class extends AbstractTestCase {

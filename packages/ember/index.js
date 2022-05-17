@@ -48,7 +48,6 @@ import {
   ArrayProxy,
   ObjectProxy,
   ActionHandler,
-  CoreObject,
   NativeArray,
   A,
 } from '@ember/-internals/runtime';
@@ -83,6 +82,7 @@ import Namespace from '@ember/application/namespace';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import Enumerable from '@ember/enumerable';
+import CoreObject from '@ember/object/core';
 import { assign } from '@ember/polyfills';
 
 import {

@@ -5,7 +5,7 @@
 import { getFactoryFor } from '@ember/-internals/container';
 import { symbol } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
-import CoreObject from './core_object';
+import CoreObject from '@ember/object/core';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
