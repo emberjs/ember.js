@@ -17,7 +17,6 @@ export { default as ActionHandler } from './lib/mixins/action_handler';
 export { default as _ProxyMixin, contentFor as _contentFor } from './lib/mixins/-proxy';
 export { default as MutableEnumerable } from './lib/mixins/mutable_enumerable';
 export { default as TargetActionSupport } from './lib/mixins/target_action_support';
-export { default as PromiseProxyMixin } from './lib/mixins/promise_proxy';
 
 export { default as RSVP, onerrorDefault } from './lib/ext/rsvp'; // just for side effect of extending Ember.RSVP
 export { typeOf } from './lib/type-of';

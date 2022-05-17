@@ -36,7 +36,6 @@ import {
   Array as EmberArray,
   MutableEnumerable,
   MutableArray,
-  PromiseProxyMixin,
   typeOf,
   isArray,
   _ProxyMixin,
@@ -83,6 +82,7 @@ import Evented from '@ember/object/evented';
 import Mixin, { mixin } from '@ember/object/mixin';
 import Observable from '@ember/object/observable';
 import ObjectProxy from '@ember/object/proxy';
+import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { assign } from '@ember/polyfills';
 
 import {

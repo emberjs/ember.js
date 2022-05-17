@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import ObjectProxy from '@ember/object/proxy';
-import PromiseProxyMixin from '../../lib/mixins/promise_proxy';
+import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import EmberRSVP from '../../lib/ext/rsvp';
 import { onerrorDefault } from '../../lib/ext/rsvp';
 import * as RSVP from 'rsvp';
