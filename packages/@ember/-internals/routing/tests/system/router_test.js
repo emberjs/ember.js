@@ -1,4 +1,4 @@
-import HashLocation from '../../lib/location/hash_location';
+import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '../../lib/location/history_location';
 import AutoLocation from '@ember/routing/auto-location';
 import NoneLocation from '@ember/routing/none-location';
