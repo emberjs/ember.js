@@ -1,4 +1,4 @@
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';

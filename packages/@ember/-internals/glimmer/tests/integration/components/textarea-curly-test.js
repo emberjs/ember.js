@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, classes, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 
 class TextAreaRenderingTest extends RenderingTestCase {
   assertTextArea({ attrs, value } = {}) {

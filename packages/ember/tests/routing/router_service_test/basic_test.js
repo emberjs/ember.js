@@ -1,6 +1,6 @@
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { service } from '@ember/service';
 

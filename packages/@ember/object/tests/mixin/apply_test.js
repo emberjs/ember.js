@@ -1,4 +1,4 @@
-import { get } from '../..';
+import { get } from '@ember/object';
 import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

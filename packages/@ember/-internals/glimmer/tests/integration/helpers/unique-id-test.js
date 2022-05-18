@@ -1,5 +1,5 @@
 import { RenderingTestCase, strip, moduleFor, runTask } from 'internal-test-helpers';
-import { setProperties } from '@ember/-internals/metal';
+import { setProperties } from '@ember/object';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 
 if (EMBER_UNIQUE_ID_HELPER) {

@@ -1,6 +1,6 @@
 import { window } from '@ember/-internals/browser-environment';
 import { run } from '@ember/runloop';
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { setOwner } from '@glimmer/owner';
 import AutoLocation, { getHistoryPath, getHashPath } from '@ember/routing/auto-location';
 import HistoryLocation from '@ember/routing/history-location';

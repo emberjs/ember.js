@@ -4,7 +4,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 

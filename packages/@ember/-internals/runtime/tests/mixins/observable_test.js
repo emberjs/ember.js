@@ -1,5 +1,5 @@
-import { computed, addObserver, get } from '@ember/-internals/metal';
-import EmberObject from '@ember/object';
+import { addObserver } from '@ember/-internals/metal';
+import EmberObject, { computed, get } from '@ember/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(

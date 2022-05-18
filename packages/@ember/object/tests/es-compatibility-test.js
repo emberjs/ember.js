@@ -1,7 +1,6 @@
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { computed, observer } from '@ember/object';
 import {
   defineProperty,
-  computed,
   on,
   addObserver,
   removeObserver,

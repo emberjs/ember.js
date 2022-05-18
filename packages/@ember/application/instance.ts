@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-import { get, set } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';

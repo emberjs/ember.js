@@ -4,10 +4,6 @@
 
 import { peekMeta } from '@ember/-internals/meta';
 import {
-  get,
-  set,
-  getProperties,
-  setProperties,
   hasListeners,
   beginPropertyChanges,
   notifyPropertyChange,
@@ -15,6 +11,7 @@ import {
   addObserver,
   removeObserver,
 } from '@ember/-internals/metal';
+import { get, set, getProperties, setProperties } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 

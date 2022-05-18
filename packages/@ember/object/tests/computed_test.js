@@ -1,14 +1,7 @@
-import {
-  alias,
-  computed,
-  set,
-  get,
-  defineProperty,
-  notifyPropertyChange,
-} from '@ember/-internals/metal';
+import { alias, defineProperty, notifyPropertyChange } from '@ember/-internals/metal';
 import { oneWay as reads } from '@ember/object/computed';
 import { A as emberA, isArray } from '@ember/array';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { get, set, computed, observer } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {

@@ -1,8 +1,7 @@
 import { getOwner } from '@ember/-internals/owner';
-import { FrameworkObject } from '@ember/object';
+import { FrameworkObject, computed, get } from '@ember/object';
 import { inject as metalInject } from '@ember/-internals/metal';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
-import { computed, get } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/-internals/routing';
 import { deprecateTransitionMethods, prefixRouteNameArg } from '@ember/-internals/routing';

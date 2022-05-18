@@ -1,20 +1,15 @@
 import { privatize as P } from '@ember/-internals/container';
 import {
   addObserver,
-  computed,
   defineProperty,
   descriptorForProperty,
   flushAsyncObservers,
-  get,
-  getProperties,
   isEmpty,
-  set,
-  setProperties,
 } from '@ember/-internals/metal';
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
-import EmberObject from '@ember/object';
+import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { ActionHandler, typeOf } from '@ember/-internals/runtime';

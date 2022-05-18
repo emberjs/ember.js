@@ -5,7 +5,7 @@ import {
   unsubscribe as instrumentationUnsubscribe,
 } from '@ember/instrumentation';
 import { _getCurrentRunLoop } from '@ember/runloop';
-import { set, computed } from '@ember/-internals/metal';
+import { set, computed } from '@ember/object';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 import { Component } from '../../utils/helpers';

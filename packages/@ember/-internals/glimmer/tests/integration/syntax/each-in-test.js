@@ -1,6 +1,6 @@
 import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
-import { get, set } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 

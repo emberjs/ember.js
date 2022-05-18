@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';

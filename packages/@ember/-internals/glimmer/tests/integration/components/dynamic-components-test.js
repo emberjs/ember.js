@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { set, computed } from '@ember/-internals/metal';
+import { set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';

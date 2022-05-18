@@ -8,7 +8,7 @@ import {
   defineSimpleHelper,
 } from 'internal-test-helpers';
 import { Helper, Component } from '@ember/-internals/glimmer';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 
 moduleFor(
   'Helpers test: custom helpers',

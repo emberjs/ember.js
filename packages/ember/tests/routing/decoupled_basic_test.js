@@ -6,7 +6,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -16,7 +16,7 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { set, addObserver } from '@ember/-internals/metal';
+import { addObserver } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';

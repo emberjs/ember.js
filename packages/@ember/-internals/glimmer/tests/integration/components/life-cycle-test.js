@@ -1,7 +1,7 @@
 import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
-import { set, setProperties } from '@ember/-internals/metal';
+import { set, setProperties } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 

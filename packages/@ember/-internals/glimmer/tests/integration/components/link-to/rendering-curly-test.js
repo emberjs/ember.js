@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(

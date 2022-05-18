@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
-import { computed, get, set } from '@ember/-internals/metal';
+import { computed, get, set } from '@ember/object';
 import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import {

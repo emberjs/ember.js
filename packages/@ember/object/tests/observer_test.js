@@ -1,6 +1,6 @@
 import { run } from '@ember/runloop';
-import { alias, get, set } from '@ember/-internals/metal';
-import EmberObject, { observer } from '@ember/object';
+import { alias } from '@ember/-internals/metal';
+import EmberObject, { get, set, observer } from '@ember/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(

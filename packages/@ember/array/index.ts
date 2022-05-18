@@ -5,8 +5,6 @@ import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/-internals/utils';
 import {
-  get,
-  set,
   objectAt,
   replaceInNativeArray,
   replace,
@@ -14,6 +12,7 @@ import {
   beginPropertyChanges,
   endPropertyChanges,
 } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';

@@ -1,10 +1,10 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { computed, addObserver, alias } from '@ember/-internals/metal';
+import { addObserver, alias } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { computed, observer } from '@ember/object';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 

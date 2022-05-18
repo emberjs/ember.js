@@ -1,4 +1,4 @@
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import EmberObject from '@ember/object';
 import compare from '../../lib/compare';
 import Comparable from '../../lib/mixins/comparable';

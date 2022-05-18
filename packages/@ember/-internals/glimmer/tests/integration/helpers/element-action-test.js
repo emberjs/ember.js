@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,

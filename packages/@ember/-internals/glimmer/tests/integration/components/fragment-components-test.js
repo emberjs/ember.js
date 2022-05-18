@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 

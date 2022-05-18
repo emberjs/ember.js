@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { get, set } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import { A as emberA, removeAt } from '@ember/array';
 import ObjectProxy from '@ember/object/proxy';
 

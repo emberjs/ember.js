@@ -1,7 +1,6 @@
 import { history, location, userAgent, window } from '@ember/-internals/browser-environment';
-import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import EmberObject from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';

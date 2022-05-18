@@ -9,8 +9,8 @@ import {
 
 import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
-import EmberObject from '@ember/object';
-import { set, tracked } from '@ember/-internals/metal';
+import EmberObject, { set } from '@ember/object';
+import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {

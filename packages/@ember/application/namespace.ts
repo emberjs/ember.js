@@ -8,11 +8,11 @@ import {
   addNamespace,
   findNamespace,
   findNamespaces,
-  get,
   processNamespace,
   processAllNamespaces,
   removeNamespace,
 } from '@ember/-internals/metal'; // Preloaded into namespaces
+import { get } from '@ember/object';
 import { getName, guidFor, setName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberObject from '@ember/object';

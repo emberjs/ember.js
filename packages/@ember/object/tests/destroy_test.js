@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
-import { get, set, beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
+import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import { peekMeta } from '@ember/-internals/meta';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { get, set, observer } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 

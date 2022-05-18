@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import HistoryLocation from '@ember/routing/history-location';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

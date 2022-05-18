@@ -1,4 +1,4 @@
-import { get, setProperties, computed } from '@ember/-internals/metal';
+import { get, setProperties, computed } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
 import EmberError from '@ember/error';

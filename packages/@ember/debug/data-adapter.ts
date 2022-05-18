@@ -1,7 +1,7 @@
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { _backburner } from '@ember/runloop';
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { dasherize } from '@ember/string';
 import Namespace from '@ember/application/namespace';
 import type { NativeArray } from '@ember/array';

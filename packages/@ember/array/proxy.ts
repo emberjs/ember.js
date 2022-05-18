@@ -3,7 +3,6 @@
 */
 
 import {
-  get,
   objectAt,
   alias,
   PROPERTY_DID_CHANGE,
@@ -14,6 +13,7 @@ import {
   arrayContentWillChange,
   tagForProperty,
 } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import type { PropertyDidChange } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';

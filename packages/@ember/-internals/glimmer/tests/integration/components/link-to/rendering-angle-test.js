@@ -8,7 +8,7 @@ import {
 import Router from '@ember/routing/router';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(

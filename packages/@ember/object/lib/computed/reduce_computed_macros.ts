@@ -3,7 +3,8 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { computed, autoComputed, get, isElementDescriptor } from '@ember/-internals/metal';
+import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
+import { computed, get } from '@ember/object';
 import { compare } from '@ember/-internals/runtime';
 import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
 import type { NativeArray } from '@ember/array';

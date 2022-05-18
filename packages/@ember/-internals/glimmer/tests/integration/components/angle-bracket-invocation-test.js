@@ -3,7 +3,7 @@ import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { ENV } from '@ember/-internals/environment';
 import EmberObject from '@ember/object';
 
-import { set, setProperties } from '@ember/-internals/metal';
+import { set, setProperties } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 

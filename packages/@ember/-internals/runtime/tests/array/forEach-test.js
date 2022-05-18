@@ -1,5 +1,5 @@
 import { guidFor } from '@ember/-internals/utils';
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 

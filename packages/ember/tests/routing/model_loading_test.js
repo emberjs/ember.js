@@ -5,7 +5,7 @@ import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { computed, set } from '@ember/-internals/metal';
+import { computed, set } from '@ember/object';
 
 let originalConsoleError;
 

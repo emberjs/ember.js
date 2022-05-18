@@ -1,6 +1,4 @@
 import {
-  get,
-  set,
   computed,
   isElementDescriptor,
   isEmpty,
@@ -8,6 +6,7 @@ import {
   alias,
   expandProperties,
 } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import type { DeprecationOptions } from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
 

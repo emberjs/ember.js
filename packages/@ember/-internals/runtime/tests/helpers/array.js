@@ -1,16 +1,14 @@
 import ArrayProxy from '@ember/array/proxy';
-import EmberArray, { A as emberA } from '@ember/array'
+import EmberArray, { A as emberA } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
 import {
-  get,
-  computed,
   addArrayObserver,
   removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import EmberObject from '@ember/object';
+import EmberObject, { get, computed } from '@ember/object';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {

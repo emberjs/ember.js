@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import { get, computed } from '@ember/-internals/metal';
+import { get, computed } from '@ember/object';
 import { w } from '@ember/string';
 import EmberObject, { observer } from '@ember/object';
 import Observable from '@ember/object/observable';

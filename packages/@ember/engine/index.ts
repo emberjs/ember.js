@@ -8,7 +8,7 @@ import type { ResolverClass } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
-import { get, set } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/-internals/routing';
