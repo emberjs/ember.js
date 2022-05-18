@@ -31,21 +31,17 @@ import type {
   TransitionState,
 } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
-import type {
-  ExpandedControllerQueryParam,
-  NamedRouteArgs,
-  RouteArgs,
-} from '@ember/-internals/routing';
 import type { QueryParam } from '@ember/routing/router';
 import EmberRouter from '@ember/routing/router';
+import { generateController } from '@ember/-internals/routing';
+import type { ExpandedControllerQueryParam, NamedRouteArgs, RouteArgs } from './lib/utils';
 import {
   calculateCacheKey,
   deprecateTransitionMethods,
-  generateController,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
   stashParamNames,
-} from '@ember/-internals/routing';
+} from './lib/utils';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];

@@ -7,9 +7,9 @@ import { consumeTag, tagFor } from '@glimmer/validator';
 import type { ModelFor, Transition } from 'router_js';
 import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
-import type { RouteArgs, RouteOptions } from '@ember/-internals/routing';
 import { RouteInfo, RouteInfoWithAttributes } from '@ember/-internals/routing';
-import { extractRouteArgs, resemblesURL, shallowEqual } from '@ember/-internals/routing';
+import type { RouteArgs, RouteOptions } from './lib/utils';
+import { extractRouteArgs, resemblesURL, shallowEqual } from './lib/utils';
 
 export const ROUTER = Symbol('ROUTER');
 

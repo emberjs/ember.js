@@ -3,21 +3,16 @@ import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-inte
 import { computed, get, set } from '@ember/object';
 import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
+import { BucketCache, RouterDSL as DSL } from '@ember/-internals/routing';
+import type { DSLCallback, EngineRouteInfo } from '@ember/-internals/routing';
+import { RouterState } from '@ember/routing/internals';
 import {
-  BucketCache,
-  RouterDSL as DSL,
   calculateCacheKey,
   extractRouteArgs,
   getActiveTargetName,
   resemblesURL,
-} from '@ember/-internals/routing';
-import { RouterState } from '@ember/routing/internals';
-import type {
-  DSLCallback,
-  EngineRouteInfo,
-  RouteArgs,
-  RouteOptions,
-} from '@ember/-internals/routing';
+} from './lib/utils';
+import type { RouteArgs, RouteOptions } from './lib/utils';
 import EmberLocation from '@ember/routing/location';
 import type { ILocation as IEmberLocation } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';

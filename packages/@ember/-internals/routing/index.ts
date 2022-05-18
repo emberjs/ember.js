@@ -8,18 +8,3 @@ export { EngineRouteInfo } from './lib/system/engines';
 export { default as QueryParams } from './lib/system/query_params';
 export { RouteInfo, RouteInfoWithAttributes } from './lib/system/route-info';
 export { default as BucketCache } from './lib/system/cache';
-export {
-  calculateCacheKey,
-  deprecateTransitionMethods,
-  extractRouteArgs,
-  getActiveTargetName,
-  normalizeControllerQueryParams,
-  prefixRouteNameArg,
-  resemblesURL,
-  shallowEqual,
-  stashParamNames,
-  ExpandedControllerQueryParam,
-  NamedRouteArgs,
-  RouteArgs,
-  RouteOptions,
-} from './lib/utils';
