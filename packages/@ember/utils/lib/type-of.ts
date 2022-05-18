@@ -98,7 +98,7 @@ const { toString } = Object.prototype;
   @public
   @static
 */
-export function typeOf(item: unknown): TypeName {
+function typeOf(item: unknown): TypeName {
   if (item === null) {
     return 'null';
   }
@@ -123,3 +123,5 @@ export function typeOf(item: unknown): TypeName {
 
   return ret;
 }
+
+export default typeOf;

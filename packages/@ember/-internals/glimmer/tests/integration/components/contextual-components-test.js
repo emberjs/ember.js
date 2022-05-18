@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { isEmpty } from '@ember/-internals/metal';
+import { isEmpty } from '@ember/utils';
 import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';

@@ -1,4 +1,5 @@
-import { get, hasUnknownProperty } from './property_get';
+import { get } from '@ember/object';
+import { hasUnknownProperty } from '@ember/-internals/metal';
 /**
  @module @ember/utils
 */

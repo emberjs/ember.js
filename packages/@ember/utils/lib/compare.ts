@@ -1,6 +1,6 @@
 import type { TypeName } from './type-of';
-import { typeOf } from './type-of';
-import Comparable from './mixins/comparable';
+import typeOf from './type-of';
+import { Comparable } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 
 const TYPE_ORDER: Record<TypeName, number> = {

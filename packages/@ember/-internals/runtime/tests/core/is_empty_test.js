@@ -1,4 +1,4 @@
-import { isEmpty } from '@ember/-internals/metal';
+import { isEmpty } from '@ember/utils';
 import ArrayProxy from '@ember/array/proxy';
 import ObjectProxy from '@ember/object/proxy';
 import { A as emberA } from '@ember/array';

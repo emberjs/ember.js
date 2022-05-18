@@ -23,7 +23,7 @@ import type { ILocation as IEmberLocation } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { typeOf } from '@ember/-internals/runtime';
+import { typeOf } from '@ember/utils';
 import Evented from '@ember/object/evented';
 import { assert, deprecate, info } from '@ember/debug';
 import EmberError from '@ember/error';

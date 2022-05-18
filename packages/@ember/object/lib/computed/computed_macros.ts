@@ -1,14 +1,8 @@
-import {
-  computed,
-  isElementDescriptor,
-  isEmpty,
-  isNone,
-  alias,
-  expandProperties,
-} from '@ember/-internals/metal';
+import { computed, isElementDescriptor, alias, expandProperties } from '@ember/-internals/metal';
 import { get, set } from '@ember/object';
 import type { DeprecationOptions } from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
+import { isEmpty, isNone } from '@ember/utils';
 
 /**
 @module @ember/object

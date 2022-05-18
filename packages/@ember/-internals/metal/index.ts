@@ -32,10 +32,6 @@ export { arrayContentWillChange, arrayContentDidChange } from './lib/array_event
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
 export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
 
-export { default as isNone } from './lib/is_none';
-export { default as isEmpty } from './lib/is_empty';
-export { default as isBlank } from './lib/is_blank';
-export { default as isPresent } from './lib/is_present';
 export {
   beginPropertyChanges,
   changeProperties,

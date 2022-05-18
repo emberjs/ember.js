@@ -31,9 +31,6 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
-  compare,
-  isEqual,
-  typeOf,
   _ProxyMixin,
   RSVP,
   Comparable,
@@ -88,6 +85,7 @@ import NoneLocation from '@ember/routing/none-location';
 import EmberLocation from '@ember/routing/location';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
+import { isNone, isBlank, isEmpty, isPresent, isEqual, typeOf, compare } from '@ember/utils';
 
 import {
   templateOnlyComponent,
@@ -222,10 +220,10 @@ Ember.addListener = metal.addListener;
 Ember.removeListener = metal.removeListener;
 Ember.sendEvent = metal.sendEvent;
 Ember.hasListeners = metal.hasListeners;
-Ember.isNone = metal.isNone;
-Ember.isEmpty = metal.isEmpty;
-Ember.isBlank = metal.isBlank;
-Ember.isPresent = metal.isPresent;
+Ember.isNone = isNone;
+Ember.isEmpty = isEmpty;
+Ember.isBlank = isBlank;
+Ember.isPresent = isPresent;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;

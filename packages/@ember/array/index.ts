@@ -17,7 +17,7 @@ import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
-import { compare, typeOf } from '@ember/-internals/runtime';
+import { compare, typeOf } from '@ember/utils';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '@ember/object/observable';
 import type { AnyFn } from '@ember/-internals/utils/types';
