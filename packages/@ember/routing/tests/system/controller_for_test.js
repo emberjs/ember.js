@@ -1,6 +1,5 @@
 import Controller from '@ember/controller';
-import controllerFor from '../../lib/system/controller_for';
-import generateController from '../../lib/system/generate_controller';
+import { controllerFor, generateController } from '@ember/routing/internals';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 

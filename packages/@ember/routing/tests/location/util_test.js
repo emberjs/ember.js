@@ -1,5 +1,5 @@
-import { replacePath, getPath, getQuery, getFullPath } from '../../lib/location/util';
-import { supportsHistory, supportsHashChange } from '../../lib/location/util';
+import { replacePath, getPath, getQuery, getFullPath } from '../../lib/location-utils';
+import { supportsHistory, supportsHashChange } from '../../lib/location-utils';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function mockBrowserLocation(overrides, assert) {

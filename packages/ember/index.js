@@ -54,7 +54,6 @@ import {
 } from '@ember/-internals/glimmer';
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
-import * as routing from '@ember/-internals/routing';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import DataAdapter from '@ember/debug/data-adapter';
 import EmberError from '@ember/error';
@@ -85,6 +84,12 @@ import NoneLocation from '@ember/routing/none-location';
 import EmberLocation from '@ember/routing/location';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
+import {
+  controllerFor,
+  generateController,
+  generateControllerFactory,
+  DSL as RouterDSL,
+} from '@ember/routing/internals';
 import { isNone, isBlank, isEmpty, isPresent, isEqual, typeOf, compare } from '@ember/utils';
 
 import {
@@ -502,16 +507,15 @@ Ember.ViewUtils = {
 Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
-// ****@ember/-internals/routing****
 Ember.Location = EmberLocation;
 Ember.AutoLocation = AutoLocation;
 Ember.HashLocation = HashLocation;
 Ember.HistoryLocation = HistoryLocation;
 Ember.NoneLocation = NoneLocation;
-Ember.controllerFor = routing.controllerFor;
-Ember.generateControllerFactory = routing.generateControllerFactory;
-Ember.generateController = routing.generateController;
-Ember.RouterDSL = routing.RouterDSL;
+Ember.controllerFor = controllerFor;
+Ember.generateControllerFactory = generateControllerFactory;
+Ember.generateController = generateController;
+Ember.RouterDSL = RouterDSL;
 Ember.Router = Router;
 Ember.Route = Route;
 
