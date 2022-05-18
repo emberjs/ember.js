@@ -1,13 +1,4 @@
 export {
-  getFullPath,
-  getHash,
-  getPath,
-  getQuery,
-  replacePath,
-  supportsHashChange,
-  supportsHistory,
-} from './lib/location/util';
-export {
   default as generateController,
   generateControllerFactory,
 } from './lib/system/generate_controller';

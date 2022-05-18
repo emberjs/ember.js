@@ -12,7 +12,7 @@ import {
   replacePath,
   supportsHashChange,
   supportsHistory,
-} from '@ember/-internals/routing';
+} from './lib/location-utils';
 
 /**
 @module @ember/routing
