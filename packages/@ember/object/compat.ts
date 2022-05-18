@@ -5,7 +5,7 @@ import {
   isElementDescriptor,
   setClassicDecorator,
 } from '@ember/-internals/metal';
-import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import type { ElementDescriptor } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import type { UpdatableTag } from '@glimmer/validator';
 import { consumeTag, tagFor, track, updateTag } from '@glimmer/validator';

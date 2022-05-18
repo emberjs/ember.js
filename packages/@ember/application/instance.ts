@@ -8,7 +8,7 @@ import EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import type Application from '@ember/application';
 import { renderSettled } from '@ember/-internals/glimmer';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import type { ViewMixin } from '@ember/-internals/views';

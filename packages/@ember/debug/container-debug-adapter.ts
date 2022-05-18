@@ -5,7 +5,7 @@ import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/-internals/runtime';
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import type { Resolver } from '@ember/-internals/container/lib/registry';
+import type { Resolver } from '@ember/-internals/container';
 import Namespace from '@ember/application/namespace';
 
 /**
