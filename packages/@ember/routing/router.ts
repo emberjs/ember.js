@@ -6,12 +6,12 @@ import { getOwner } from '@ember/-internals/owner';
 import {
   BucketCache,
   RouterDSL as DSL,
-  RouterState,
   calculateCacheKey,
   extractRouteArgs,
   getActiveTargetName,
   resemblesURL,
 } from '@ember/-internals/routing';
+import { RouterState } from '@ember/routing/internals';
 import type {
   DSLCallback,
   EngineRouteInfo,
