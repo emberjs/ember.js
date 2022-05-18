@@ -33,6 +33,18 @@ export interface PrinterOptions {
   override?(ast: ASTv1.Node, options: PrinterOptions): void | string;
 }
 
+/**
+ * Examples when true:
+ *  - link
+ *  - liNK
+ *
+ * Examples when false:
+ *  - Link (component)
+ */
+function isVoidTag(tag: string): boolean {
+  return voidMap[tag.toLowerCase()] && tag[0].toLowerCase() === tag[0];
+}
+
 export default class Printer {
   private buffer = '';
   private options: PrinterOptions;
@@ -245,7 +257,7 @@ export default class Printer {
   }
 
   CloseElementNode(el: ASTv1.ElementNode): void {
-    if (el.selfClosing || voidMap[el.tag.toLowerCase()]) {
+    if (el.selfClosing || isVoidTag(el.tag)) {
       return;
     }
     this.buffer += `</${el.tag}>`;
