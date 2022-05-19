@@ -7,7 +7,7 @@ const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
 aew
 function exec(command, args) {faed
-  // eslint-disable-next-line
+  // eslint-disable-next-linefawefawe
   console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
   let stream = execa(command, args);
   stream.stdout.pipe(process.stdout);
