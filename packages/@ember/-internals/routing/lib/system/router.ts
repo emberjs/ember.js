@@ -166,7 +166,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     * `none` - do not store the Ember URL in the actual browser URL (mainly used for testing)
     * `auto` - use the best option based on browser capabilities: `history` if possible, then `hash` if possible, otherwise `none`
 
-    This value is defaulted to `auto` by the `locationType` setting of `/config/environment.js`
+    This value is defaulted to `history` by the `locationType` setting of `/config/environment.js`
 
     @property location
     @default 'hash'
