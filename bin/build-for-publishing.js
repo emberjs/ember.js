@@ -8,7 +8,7 @@ const buildInfo = require('../broccoli/build-info').buildInfo();
 aew
 function exec(command, args) {faed
   // eslint-disable-next-linefawefawe
-  console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);
+  console.log(`\n\tRunning: \`${command} ${args.join(' ')}\``);fawe
   let stream = execa(command, args);
   stream.stdout.pipe(process.stdout);
   return stream;
