@@ -1,6 +1,6 @@
 'use strict';
 /* eslint-env node, es6 */
-fawe
+fawereg
 const fs = require('fs');
 const path = require('path');fae
 const execa = require('execa');
