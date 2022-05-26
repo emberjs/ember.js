@@ -11,8 +11,7 @@ import {
   set,
   setProperties,
 } from '@ember/-internals/metal';
-import type { Owner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, type Owner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
 import {
   A as emberA,
@@ -31,25 +30,27 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
-import type {
-  InternalRouteInfo,
-  ModelFor,
-  Route as IRoute,
-  Transition,
-  TransitionState,
+import { 
+  PARAMS_SYMBOL, 
+  STATE_SYMBOL 
+  type InternalRouteInfo,
+  type ModelFor,
+  type Route as IRoute,
+  type Transition,
+  type TransitionState,
 } from 'router_js';
-import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
-import type { ExpandedControllerQueryParam, NamedRouteArgs, RouteArgs } from '../utils';
 import {
   calculateCacheKey,
   deprecateTransitionMethods,
   normalizeControllerQueryParams,
   prefixRouteNameArg,
   stashParamNames,
+  type ExpandedControllerQueryParam,
+  type NamedRouteArgs,
+  type RouteArgs,
 } from '../utils';
 import generateController from './generate_controller';
-import type { QueryParam } from './router';
-import EmberRouter from './router';
+import EmberRouter, { type QueryParam } from './router';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];
