@@ -30,9 +30,9 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
-import { 
-  PARAMS_SYMBOL, 
-  STATE_SYMBOL 
+import {
+  PARAMS_SYMBOL,
+  STATE_SYMBOL,
   type InternalRouteInfo,
   type ModelFor,
   type Route as IRoute,
