@@ -105,7 +105,7 @@ class Helper extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
-  [RECOMPUTE_TAG]: DirtyableTag;
+  [RECOMPUTE_TAG]!: DirtyableTag;
 
   init(properties: object | undefined) {
     super.init(properties);
