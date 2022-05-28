@@ -1,11 +1,9 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor } from '@ember/-internals/meta';
+import { meta as metaFor, type Meta } from '@ember/-internals/meta';
 import { inspect, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type { UpdatableTag } from '@glimmer/validator';
 import {
   ALLOW_CYCLES,
   consumeTag,
@@ -16,13 +14,9 @@ import {
   updateTag,
   validateTag,
   valueForTag,
+  type UpdatableTag,
 } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
-import type {
-  ExtendedMethodDecorator,
-  DecoratorPropertyDescriptor,
-  ElementDescriptor,
-} from './decorator';
 import {
   ComputedDescriptor,
   descriptorForDecorator,
@@ -30,16 +24,19 @@ import {
   isClassicDecorator,
   isElementDescriptor,
   makeComputedDecorator,
+  type ExtendedMethodDecorator,
+  type DecoratorPropertyDescriptor,
+  type ElementDescriptor,
 } from './decorator';
 import expandProperties from './expand_properties';
 import { addObserver, setObserverSuspended } from './observer';
-import type { PropertyDidChange } from './property_events';
 import {
   beginPropertyChanges,
   endPropertyChanges,
   hasPropertyDidChange,
   notifyPropertyChange,
   PROPERTY_DID_CHANGE,
+  type PropertyDidChange,
 } from './property_events';
 
 export type ComputedPropertyGetterFunction = (this: any, key: string) => unknown;

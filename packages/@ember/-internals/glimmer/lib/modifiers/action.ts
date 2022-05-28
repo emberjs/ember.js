@@ -14,8 +14,7 @@ import type {
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import type { UpdatableTag } from '@glimmer/validator';
-import { createUpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag, type UpdatableTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];

@@ -1,8 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
-import type { Factory, Owner } from '@ember/-internals/owner';
-import { isFactory } from '@ember/-internals/owner';
+import { isFactory, type Factory, type Owner } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';

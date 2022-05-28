@@ -25,8 +25,7 @@
   @public
   */
 
-import type { Reference } from '@glimmer/reference';
-import { createConstRef } from '@glimmer/reference';
+import { createConstRef, type Reference } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper((): Reference<string> => {

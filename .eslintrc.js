@@ -56,7 +56,13 @@ module.exports = {
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-this-alias': 'off',
         '@typescript-eslint/no-var-requires': 'warn',
-        '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          {
+            prefer: 'type-imports',
+            fixStyle: 'inline-type-imports',
+          },
+        ],
 
         // TODO: Enable and fix these rules
         // Typescript provides better types with these rules enabled

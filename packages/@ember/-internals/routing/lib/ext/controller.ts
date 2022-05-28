@@ -4,8 +4,7 @@ import type Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import type { Transition } from 'router_js';
 import type { Route, Router } from '../..';
-import type { RouteArgs } from '../utils';
-import { deprecateTransitionMethods, prefixRouteNameArg } from '../utils';
+import { deprecateTransitionMethods, prefixRouteNameArg, type RouteArgs } from '../utils';
 
 /**
 @module ember

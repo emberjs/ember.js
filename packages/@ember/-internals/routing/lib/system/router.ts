@@ -1,8 +1,7 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/-internals/metal';
-import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, type Factory, type FactoryClass, type Owner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
 import type RouterService from '@ember/-internals/routing/lib/services/router';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
@@ -10,19 +9,24 @@ import { assert, deprecate, info } from '@ember/debug';
 import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { EmberLocation as IEmberLocation } from '../location/api';
-import EmberLocation from '../location/api';
-import type { RouteArgs, RouteOptions } from '../utils';
-import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
-import type { DSLCallback } from './dsl';
-import DSL from './dsl';
-import type { QueryParamMeta, RenderOptions } from './route';
+import EmberLocation, { type EmberLocation as IEmberLocation } from '../location/api';
+import {
+  calculateCacheKey,
+  extractRouteArgs,
+  getActiveTargetName,
+  resemblesURL,
+  type RouteArgs,
+  type RouteOptions,
+} from '../utils';
+import DSL, { type DSLCallback } from './dsl';
 import type Route from './route';
 import {
   defaultSerialize,
   getFullQueryParams,
   hasDefaultSerialize,
   ROUTE_CONNECTIONS,
+  type QueryParamMeta,
+  type RenderOptions,
 } from './route';
 import RouterState from './router_state';
 
@@ -30,16 +34,17 @@ import RouterState from './router_state';
 @module @ember/routing
 */
 
-import type {
-  InternalRouteInfo,
-  ModelFor,
-  RouteInfo,
-  RouteInfoWithAttributes,
-  Transition,
-  TransitionError,
-  TransitionState,
+import Router, {
+  logAbort,
+  STATE_SYMBOL,
+  type InternalRouteInfo,
+  type ModelFor,
+  type RouteInfo,
+  type RouteInfoWithAttributes,
+  type Transition,
+  type TransitionError,
+  type TransitionState,
 } from 'router_js';
-import Router, { logAbort, STATE_SYMBOL } from 'router_js';
 import type { Timer } from 'backburner';
 import type { EngineRouteInfo } from './engines';
 import EngineInstance from '@ember/engine/instance';

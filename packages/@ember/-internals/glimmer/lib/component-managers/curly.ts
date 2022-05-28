@@ -1,5 +1,4 @@
-import type { Factory, Owner } from '@ember/-internals/owner';
-import { getOwner, setOwner } from '@ember/-internals/owner';
+import { getOwner, setOwner, type Factory, type Owner } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
@@ -21,8 +20,13 @@ import type {
   WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
+import {
+  childRefFor,
+  createComputeRef,
+  createPrimitiveRef,
+  valueForRef,
+  type Reference,
+} from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {

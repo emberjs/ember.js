@@ -3,8 +3,7 @@ import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import type { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import type { ContainerOptions, LazyInjection } from './container';
-import Container from './container';
+import Container, { type ContainerOptions, type LazyInjection } from './container';
 
 export interface Injection {
   property: string;

@@ -1,10 +1,14 @@
 import { tracked } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { action } from '@ember/object';
-import type { Reference } from '@glimmer/reference';
-import { isConstRef, isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
-import type { EventListener } from './internal';
-import InternalComponent from './internal';
+import {
+  isConstRef,
+  isUpdatableRef,
+  updateRef,
+  valueForRef,
+  type Reference,
+} from '@glimmer/reference';
+import InternalComponent, { type EventListener } from './internal';
 
 const UNINITIALIZED: unknown = Object.freeze({});
 

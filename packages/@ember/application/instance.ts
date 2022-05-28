@@ -10,8 +10,7 @@ import { renderSettled } from '@ember/-internals/glimmer';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import { assert } from '@ember/debug';
 import { Router } from '@ember/-internals/routing';
-import type { ViewMixin } from '@ember/-internals/views';
-import { EventDispatcher } from '@ember/-internals/views';
+import { EventDispatcher, type ViewMixin } from '@ember/-internals/views';
 import type { Registry } from '@ember/-internals/container';
 import type { SimpleElement } from '@simple-dom/interface';
 

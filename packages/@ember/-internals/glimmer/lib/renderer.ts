@@ -1,33 +1,35 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import type { Owner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, type Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type {
-  Bounds,
-  CompileTimeCompilationContext,
-  Cursor,
-  DebugRenderTree,
-  DynamicScope as GlimmerDynamicScope,
-  ElementBuilder,
-  Environment,
-  Option,
-  RenderResult,
-  RuntimeContext,
-  Template,
-  TemplateFactory,
+import {
+  CurriedType,
+  type Bounds,
+  type CompileTimeCompilationContext,
+  type Cursor,
+  type DebugRenderTree,
+  type DynamicScope as GlimmerDynamicScope,
+  type ElementBuilder,
+  type Environment,
+  type Option,
+  type RenderResult,
+  type RuntimeContext,
+  type Template,
+  type TemplateFactory,
 } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
+import {
+  createConstRef,
+  UNDEFINED_REFERENCE,
+  valueForRef,
+  type Reference,
+} from '@glimmer/reference';
 import {
   clientBuilder,
   curry,
@@ -36,6 +38,7 @@ import {
   inTransaction,
   renderMain,
   runtimeContext,
+  type CurriedValue,
 } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';

@@ -1,8 +1,7 @@
 /* globals URLSearchParams */
 import { DEBUG } from '@glimmer/env';
 import { isEnabled } from '@ember/canary-features';
-import type { Mixin, Generator } from './apply-mixins';
-import applyMixins from './apply-mixins';
+import applyMixins, { type Mixin, type Generator } from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';

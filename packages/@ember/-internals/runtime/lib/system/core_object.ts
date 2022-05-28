@@ -3,11 +3,9 @@
 */
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
-import { getOwner } from '@ember/-internals/owner';
-import type { Owner } from '@ember/-internals/owner';
+import { getOwner, type Owner } from '@ember/-internals/owner';
 import { guidFor, makeArray, isInternalSymbol } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
-import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';
 import {
   PROXY_CONTENT,
   sendEvent,
@@ -19,6 +17,8 @@ import {
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
   hasUnknownProperty,
+  type ComputedProperty,
+  type HasUnknownProperty,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';

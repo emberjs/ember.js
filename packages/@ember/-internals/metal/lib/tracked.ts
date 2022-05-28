@@ -5,8 +5,13 @@ import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
-import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
-import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
+import {
+  COMPUTED_SETTERS,
+  isElementDescriptor,
+  setClassicDecorator,
+  type ExtendedMethodDecorator,
+  type DecoratorPropertyDescriptor,
+} from './decorator';
 import { SELF_TAG } from './tags';
 
 /**

@@ -18,8 +18,7 @@ import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
-import type { DirtyableTag } from '@glimmer/validator';
-import { createTag, dirtyTag } from '@glimmer/validator';
+import { createTag, dirtyTag, type DirtyableTag } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
 import {
   ARGS,

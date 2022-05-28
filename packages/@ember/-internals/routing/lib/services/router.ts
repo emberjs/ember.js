@@ -8,8 +8,13 @@ import type { ModelFor, Transition } from 'router_js';
 import type Route from '../system/route';
 import EmberRouter from '../system/router';
 import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';
-import type { RouteArgs, RouteOptions } from '../utils';
-import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
+import {
+  extractRouteArgs,
+  resemblesURL,
+  shallowEqual,
+  type RouteArgs,
+  type RouteOptions,
+} from '../utils';
 
 export const ROUTER = Symbol('ROUTER');
 

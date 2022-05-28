@@ -4,12 +4,9 @@
 import type { Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, Option } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
-import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
+import { CurriedType, type CapturedArguments, type Option } from '@glimmer/interfaces';
+import { createComputeRef, valueForRef, type Reference } from '@glimmer/reference';
+import { createCapturedArgs, curry, EMPTY_POSITIONAL, type CurriedValue } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
 import { internalHelper } from '../helpers/internal-helper';
 

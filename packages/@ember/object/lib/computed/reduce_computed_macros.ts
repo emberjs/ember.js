@@ -5,8 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
 import { computed, autoComputed, get, isElementDescriptor } from '@ember/-internals/metal';
 import { compare, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
-import type { NativeArray } from '@ember/-internals/runtime/lib/mixins/array';
-import EmberArray from '@ember/-internals/runtime/lib/mixins/array';
+import EmberArray, { type NativeArray } from '@ember/-internals/runtime/lib/mixins/array';
 
 function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
   return Array.isArray(obj) || EmberArray.detect(obj);

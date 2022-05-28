@@ -1,6 +1,10 @@
 import { assert } from '@ember/debug';
-import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
-import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
+import {
+  isElementDescriptor,
+  setClassicDecorator,
+  type ElementDescriptor,
+  type ExtendedMethodDecorator,
+} from '@ember/-internals/metal';
 
 export { Object as default } from '@ember/-internals/runtime';
 

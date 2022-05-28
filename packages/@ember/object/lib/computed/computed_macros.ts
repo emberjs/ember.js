@@ -8,8 +8,7 @@ import {
   alias,
   expandProperties,
 } from '@ember/-internals/metal';
-import type { DeprecationOptions } from '@ember/debug';
-import { assert, deprecate } from '@ember/debug';
+import { assert, deprecate, type DeprecationOptions } from '@ember/debug';
 
 /**
 @module @ember/object

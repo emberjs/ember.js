@@ -19,8 +19,7 @@ import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/util';
 import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import { compile, type EmberPrecompileOptions } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
 
 interface CapturedBounds {

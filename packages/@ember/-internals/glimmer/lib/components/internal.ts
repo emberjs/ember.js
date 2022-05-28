@@ -1,5 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { setOwner, type Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import type {
@@ -14,8 +13,7 @@ import type {
   WithCreateInstance,
 } from '@glimmer/interfaces';
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+import { createConstRef, isConstRef, valueForRef, type Reference } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
 function NOOP(): void {}

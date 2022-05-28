@@ -3,8 +3,10 @@
 import type { Owner } from '@ember/-internals/owner';
 import type { EmberLocation } from '@ember/-internals/routing';
 import type Route from '@ember/routing/route';
-import type { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
-import RouterService from '@ember/routing/router-service';
+import RouterService, {
+  type RouteInfo,
+  type RouteInfoWithAttributes,
+} from '@ember/routing/router-service';
 import { expectTypeOf } from 'expect-type';
 
 import type { Transition } from 'router_js';

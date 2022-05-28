@@ -21,8 +21,7 @@ import type {
   WithDynamicTagName,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
+import { createConstRef, valueForRef, type Reference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 

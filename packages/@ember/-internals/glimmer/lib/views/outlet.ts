@@ -1,11 +1,9 @@
-import type { Owner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { getOwner, type Owner } from '@ember/-internals/owner';
 import type { BootOptions } from '@ember/application/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, updateRef } from '@glimmer/reference';
+import { createComputeRef, updateRef, type Reference } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';

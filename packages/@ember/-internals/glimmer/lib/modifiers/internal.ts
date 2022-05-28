@@ -1,5 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { setOwner, type Owner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@glimmer/destroyable';

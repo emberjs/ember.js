@@ -1,5 +1,4 @@
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import { compile, type EmberPrecompileOptions } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';

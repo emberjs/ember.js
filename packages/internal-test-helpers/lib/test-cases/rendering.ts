@@ -1,8 +1,12 @@
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import { compile, type EmberPrecompileOptions } from 'ember-template-compiler';
 import { EventDispatcher } from '@ember/-internals/views';
-import type { Renderer } from '@ember/-internals/glimmer';
-import { helper, Helper, Component, _resetRenderers } from '@ember/-internals/glimmer';
+import {
+  helper,
+  Helper,
+  Component,
+  _resetRenderers,
+  type Renderer,
+} from '@ember/-internals/glimmer';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 

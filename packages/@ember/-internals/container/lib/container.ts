@@ -1,5 +1,4 @@
-import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { setOwner, type Factory, type FactoryClass, type Owner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

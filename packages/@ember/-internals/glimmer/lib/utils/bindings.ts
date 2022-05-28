@@ -2,13 +2,13 @@ import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
 import type { ElementOperations } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
 import {
   childRefFor,
   childRefFromParts,
   createComputeRef,
   createPrimitiveRef,
   valueForRef,
+  type Reference,
 } from '@glimmer/reference';
 import type Component from '../component';
 

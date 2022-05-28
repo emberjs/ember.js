@@ -1,7 +1,6 @@
 import { assert } from '@ember/debug';
 import DebugAssert from './debug';
-import type { DebugEnv, Message } from './utils';
-import { callWithStub } from './utils';
+import { callWithStub, type DebugEnv, type Message } from './utils';
 declare global {
   interface Window {
     expectNoDeprecation: DeprecationAssert['expectNoDeprecation'] | undefined;

@@ -3,16 +3,14 @@
 */
 
 import type { FactoryManager } from '@ember/-internals/container/lib/container';
-import type { Factory, Owner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { setOwner, type Factory, type Owner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
 import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
-import type { DirtyableTag } from '@glimmer/validator';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { consumeTag, createTag, dirtyTag, type DirtyableTag } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 

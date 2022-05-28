@@ -21,11 +21,9 @@ import {
   NoneLocation,
   BucketCache,
 } from '@ember/-internals/routing';
-import type { BootOptions } from '../instance';
-import ApplicationInstance from '../instance';
+import ApplicationInstance, { type BootOptions } from '../instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
-import type { Container, Registry } from '@ember/-internals/container';
-import { privatize as P } from '@ember/-internals/container';
+import { privatize as P, type Container, type Registry } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
