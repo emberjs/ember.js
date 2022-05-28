@@ -60,7 +60,6 @@ module.exports = {
           'error',
           {
             prefer: 'type-imports',
-            fixStyle: 'inline-type-imports',
           },
         ],
 
