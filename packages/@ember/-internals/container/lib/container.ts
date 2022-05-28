@@ -231,7 +231,9 @@ function wrapManagerInDeprecationProxy<T extends object, C>(
   let validator = {
     set(_obj: T, prop: keyof T) {
       throw new Error(
-        `You attempted to set "${String(prop)}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
+        `You attempted to set "${String(
+          prop
+        )}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
       );
     },
   };
