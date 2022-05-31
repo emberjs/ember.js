@@ -8,6 +8,10 @@
 
 - [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprint generation
 
+### v4.4.1 (May 31, 2022)
+
+- [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprints publication
+
 ### v4.5.0-beta.1 (May 2, 2022)
 
 - [#20052](https://github.com/emberjs/ember.js/pull/20052) / [#20055](https://github.com/emberjs/ember.js/pull/20055) [FEATURE] Add the default helper manager to implement [RFC #0756](https://github.com/emberjs/rfcs/blob/master/text/0756-helper-default-manager.md).
