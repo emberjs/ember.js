@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.4.1 (May 31, 2022)
+
+- [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprints publication
+
 ### v4.4.0 (May 2, 2022)
 
 - [#19882](https://github.com/emberjs/ember.js/pull/19882) / [#20005](https://github.com/emberjs/ember.js/pull/20005) [FEATURE] Implement the `unique-id` helper per [RFC #0659](https://github.com/emberjs/rfcs/blob/master/text/0659-unique-id-helper.md).
