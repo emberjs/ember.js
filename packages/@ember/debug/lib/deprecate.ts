@@ -181,6 +181,25 @@ if (DEBUG) {
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
+    ```javascript
+    import { deprecate } from '@ember/debug';
+
+    deprecate(
+      'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.',
+      false,
+      {
+        id: 'ember-polyfills.deprecate-assign',
+        until: '5.0.0',
+        url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-polyfills-deprecate-assign',
+        for: 'ember-source',
+        since: {
+          available: '4.0.0',
+          enabled: '4.0.0',
+        },
+      }
+    );
+    ```
+
     @method deprecate
     @for @ember/debug
     @param {String} message A description of the deprecation.
