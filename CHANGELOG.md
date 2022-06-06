@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.5.0-beta.2 (June 6, 2022)
+
+- [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprint generation
+
 ### v4.4.1 (May 31, 2022)
 
 - [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprints publication
