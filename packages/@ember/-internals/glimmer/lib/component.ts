@@ -1,5 +1,5 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
-import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
+import { type PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
@@ -14,7 +14,7 @@ import {
 } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
+import { type Environment, type Template, type TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';

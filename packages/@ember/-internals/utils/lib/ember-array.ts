@@ -1,4 +1,4 @@
-import type { Array as EmberArray } from '@ember/-internals/runtime';
+import { type Array as EmberArray } from '@ember/-internals/runtime';
 import { _WeakSet } from '@glimmer/util';
 
 const EMBER_ARRAYS = new _WeakSet();

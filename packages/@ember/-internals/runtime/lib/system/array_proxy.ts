@@ -28,7 +28,7 @@ import {
   type Tag,
   type Revision,
 } from '@glimmer/validator';
-import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
+import { type PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';

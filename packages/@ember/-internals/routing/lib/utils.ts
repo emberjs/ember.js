@@ -1,15 +1,15 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import type {
-  ControllerQueryParam,
-  ControllerQueryParamType,
+import {
+  type ControllerQueryParam,
+  type ControllerQueryParamType,
 } from '@ember/controller/lib/controller_mixin';
 import { assert, deprecate } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import EmberError from '@ember/error';
 import type Router from 'router_js';
 import { STATE_SYMBOL, type InternalRouteInfo, type ModelFor } from 'router_js';
-import type { ExtendedInternalRouteInfo } from './system/route';
+import { type ExtendedInternalRouteInfo } from './system/route';
 import type Route from './system/route';
 import type EmberRouter from './system/router';
 

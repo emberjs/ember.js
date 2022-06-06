@@ -1,20 +1,20 @@
 import { privatize as P } from '@ember/-internals/container';
-import type { TypeOptions } from '@ember/-internals/container/lib/registry';
+import { type TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
 import { isFactory, type Factory, type Owner } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import type {
-  CompileTimeResolver,
-  HelperDefinitionState,
-  ModifierDefinitionState,
-  Option,
-  ResolvedComponentDefinition,
-  RuntimeResolver,
-  Template,
-  TemplateFactory,
+import {
+  type CompileTimeResolver,
+  type HelperDefinitionState,
+  type ModifierDefinitionState,
+  type Option,
+  type ResolvedComponentDefinition,
+  type RuntimeResolver,
+  type Template,
+  type TemplateFactory,
 } from '@glimmer/interfaces';
 import {
   getComponentTemplate,

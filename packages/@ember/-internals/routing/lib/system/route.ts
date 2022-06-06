@@ -21,15 +21,15 @@ import {
   typeOf,
 } from '@ember/-internals/runtime';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import { type AnyFn } from '@ember/-internals/utils/types';
 import Controller from '@ember/controller';
-import type { ControllerQueryParamType } from '@ember/controller/lib/controller_mixin';
+import { type ControllerQueryParamType } from '@ember/controller/lib/controller_mixin';
 import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { Template, TemplateFactory } from '@glimmer/interfaces';
+import { type Template, type TemplateFactory } from '@glimmer/interfaces';
 import {
   PARAMS_SYMBOL,
   STATE_SYMBOL,

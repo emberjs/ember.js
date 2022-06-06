@@ -1,5 +1,5 @@
 import EmberError from '@ember/error';
-import type { ViewState } from '../states';
+import { type ViewState } from '../states';
 import _default from './default';
 
 const destroying: ViewState = {

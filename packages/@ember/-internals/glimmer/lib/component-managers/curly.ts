@@ -4,21 +4,21 @@ import { addChildView, setElementView, setViewElement } from '@ember/-internals/
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import type {
-  Bounds,
-  CapturedArguments,
-  CompilableProgram,
-  Destroyable,
-  ElementOperations,
-  Environment,
-  InternalComponentCapabilities,
-  Option,
-  PreparedArguments,
-  TemplateFactory,
-  VMArguments,
-  WithCreateInstance,
-  WithDynamicLayout,
-  WithDynamicTagName,
+import {
+  type Bounds,
+  type CapturedArguments,
+  type CompilableProgram,
+  type Destroyable,
+  type ElementOperations,
+  type Environment,
+  type InternalComponentCapabilities,
+  type Option,
+  type PreparedArguments,
+  type TemplateFactory,
+  type VMArguments,
+  type WithCreateInstance,
+  type WithDynamicLayout,
+  type WithDynamicTagName,
 } from '@glimmer/interfaces';
 import {
   childRefFor,
@@ -38,9 +38,9 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import type { SimpleElement } from '@simple-dom/interface';
+import { type SimpleElement } from '@simple-dom/interface';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import { type DynamicScope } from '../renderer';
 import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {

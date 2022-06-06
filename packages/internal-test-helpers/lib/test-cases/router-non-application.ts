@@ -7,10 +7,10 @@ import { ModuleBasedResolver } from '../test-resolver';
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy } from '../run';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
+import { type EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { BootOptions } from '@ember/application/instance';
-import type { Factory } from '@ember/-internals/owner';
+import { type BootOptions } from '@ember/application/instance';
+import { type Factory } from '@ember/-internals/owner';
 
 export default class RouterNonApplicationTestCase extends AbstractTestCase {
   owner: EngineInstance;

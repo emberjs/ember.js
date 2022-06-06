@@ -1,7 +1,7 @@
 import { expectTypeOf } from 'expect-type';
 
 import { action } from '@ember/object';
-import type { ExtendedMethodDecorator } from '@ember/-internals/metal/lib/decorator';
+import { type ExtendedMethodDecorator } from '@ember/-internals/metal/lib/decorator';
 
 expectTypeOf(action).toMatchTypeOf<ExtendedMethodDecorator>();
 

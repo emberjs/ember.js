@@ -13,11 +13,11 @@ import { ModuleBasedResolver } from '../test-resolver';
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy, runTask } from '../run';
-import type { Factory } from '@ember/-internals/owner';
-import type { BootOptions } from '@ember/application/instance';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
+import { type Factory } from '@ember/-internals/owner';
+import { type BootOptions } from '@ember/application/instance';
+import { type EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { HelperFunction } from '@ember/-internals/glimmer/lib/helper';
+import { type HelperFunction } from '@ember/-internals/glimmer/lib/helper';
 
 const TextNode = window.Text;
 

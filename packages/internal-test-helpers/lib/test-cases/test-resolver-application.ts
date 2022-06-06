@@ -2,7 +2,7 @@ import AbstractApplicationTestCase from './abstract-application';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 import { Component } from '@ember/-internals/glimmer';
-import type { Factory } from '@ember/-internals/owner';
+import { type Factory } from '@ember/-internals/owner';
 
 export default abstract class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   abstract resolver?: Resolver;

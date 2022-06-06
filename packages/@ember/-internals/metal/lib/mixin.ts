@@ -12,7 +12,7 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import { type AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';

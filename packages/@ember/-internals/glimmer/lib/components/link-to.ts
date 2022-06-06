@@ -1,4 +1,4 @@
-import type { Route, RouterState, RoutingService } from '@ember/-internals/routing';
+import { type Route, type RouterState, type RoutingService } from '@ember/-internals/routing';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, debugFreeze, inspect, warn } from '@ember/debug';
 import { getEngineParent } from '@ember/engine';
@@ -7,9 +7,9 @@ import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
 import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import type { Maybe, Option } from '@glimmer/interfaces';
+import { type Maybe, type Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
-import type { Transition } from 'router_js';
+import { type Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { opaquify } from './internal';
 

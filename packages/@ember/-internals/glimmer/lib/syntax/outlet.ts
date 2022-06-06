@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CurriedType, type CapturedArguments, type DynamicScope } from '@glimmer/interfaces';
@@ -17,7 +17,7 @@ import {
 } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';
 import { isTemplateFactory } from '../template';
-import type { OutletState } from '../utils/outlet';
+import { type OutletState } from '../utils/outlet';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in

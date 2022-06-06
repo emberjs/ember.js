@@ -1,7 +1,7 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import type { ElementOperations } from '@glimmer/interfaces';
+import { type ElementOperations } from '@glimmer/interfaces';
 import {
   childRefFor,
   childRefFromParts,

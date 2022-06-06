@@ -13,8 +13,8 @@ import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_
 import { isFactory } from '@ember/-internals/owner';
 import Engine from '.';
 import type Application from '@ember/application';
-import type { BootOptions } from '@ember/application/instance';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import { type BootOptions } from '@ember/application/instance';
+import { type BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 
 const CEngine = Engine;
 

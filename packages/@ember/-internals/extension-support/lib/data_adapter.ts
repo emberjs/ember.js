@@ -9,7 +9,7 @@ import {
   type NativeArray,
 } from '@ember/-internals/runtime';
 import { consumeTag, createCache, getValue, tagFor, untrack, type Cache } from '@glimmer/validator';
-import type { ContainerDebugAdapter } from '..';
+import { type ContainerDebugAdapter } from '..';
 
 type RecordColor = 'black' | 'red' | 'blue' | 'green';
 

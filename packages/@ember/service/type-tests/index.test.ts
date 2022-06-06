@@ -1,5 +1,5 @@
-import type { Owner } from '@ember/-internals/owner';
-import type { FrameworkObject } from '@ember/-internals/runtime';
+import { type Owner } from '@ember/-internals/owner';
+import { type FrameworkObject } from '@ember/-internals/runtime';
 import EmberObject from '@ember/object';
 import Service, { inject, service } from '@ember/service';
 import { expectTypeOf } from 'expect-type';

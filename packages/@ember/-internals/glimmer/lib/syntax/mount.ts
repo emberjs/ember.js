@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CurriedType, type CapturedArguments, type Option } from '@glimmer/interfaces';

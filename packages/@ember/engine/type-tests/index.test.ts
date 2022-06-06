@@ -1,5 +1,5 @@
-import type { ResolverClass, TypeOptions } from '@ember/-internals/container/lib/registry';
-import type { Factory, Owner } from '@ember/-internals/owner';
+import { type ResolverClass, type TypeOptions } from '@ember/-internals/container/lib/registry';
+import { type Factory, type Owner } from '@ember/-internals/owner';
 import type Namespace from '@ember/application/namespace';
 import Engine, { type Initializer } from '@ember/engine';
 import type EngineInstance from '@ember/engine/instance';

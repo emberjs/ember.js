@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
@@ -6,16 +6,16 @@ import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type {
-  CapturedArguments,
-  CapturedNamedArguments,
-  CapturedPositionalArguments,
-  InternalModifierManager,
+import {
+  type CapturedArguments,
+  type CapturedNamedArguments,
+  type CapturedPositionalArguments,
+  type InternalModifierManager,
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { createUpdatableTag, type UpdatableTag } from '@glimmer/validator';
-import type { SimpleElement } from '@simple-dom/interface';
+import { type SimpleElement } from '@simple-dom/interface';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;

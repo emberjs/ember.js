@@ -1,6 +1,6 @@
 import { set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import type { EmberLocation, UpdateCallback } from './api';
+import { type EmberLocation, type UpdateCallback } from './api';
 import { getHash } from './util';
 
 /**

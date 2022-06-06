@@ -7,18 +7,18 @@ import {
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { assert, captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
+import { type EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { CapturedRenderNode } from '@glimmer/interfaces';
+import { type CapturedRenderNode } from '@glimmer/interfaces';
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/util';
-import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { type SimpleElement, type SimpleNode } from '@simple-dom/interface';
 import { compile, type EmberPrecompileOptions } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
 

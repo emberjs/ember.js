@@ -1,10 +1,10 @@
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 import type EmberObject from '@ember/object';
 import type Evented from '@ember/object/evented';
-import type { ILocation } from '@ember/routing/location';
+import { type ILocation } from '@ember/routing/location';
 import Router from '@ember/routing/router';
 import { expectTypeOf } from 'expect-type';
-import type { Transition } from 'router_js';
+import { type Transition } from 'router_js';
 
 expectTypeOf<Router>().toMatchTypeOf<EmberObject>();
 expectTypeOf<Router>().toMatchTypeOf<Evented>();

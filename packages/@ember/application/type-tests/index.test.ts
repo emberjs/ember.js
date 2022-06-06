@@ -1,7 +1,7 @@
-import type { EventDispatcher } from '@ember/-internals/views';
+import { type EventDispatcher } from '@ember/-internals/views';
 import Application, { getOwner, setOwner } from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 
 import { expectTypeOf } from 'expect-type';
 

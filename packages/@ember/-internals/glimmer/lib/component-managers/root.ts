@@ -1,18 +1,18 @@
 import { getFactoryFor } from '@ember/-internals/container';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import type {
-  ComponentDefinition,
-  Environment,
-  InternalComponentCapabilities,
-  Option,
-  Owner,
-  VMArguments,
+import {
+  type ComponentDefinition,
+  type Environment,
+  type InternalComponentCapabilities,
+  type Option,
+  type Owner,
+  type VMArguments,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import type Component from '../component';
-import type { DynamicScope } from '../renderer';
+import { type DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   DIRTY_TAG,

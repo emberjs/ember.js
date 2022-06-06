@@ -1,5 +1,5 @@
-import type { Owner } from '@ember/-internals/owner';
-import type { FrameworkObject } from '@ember/-internals/runtime';
+import { type Owner } from '@ember/-internals/owner';
+import { type FrameworkObject } from '@ember/-internals/runtime';
 import Helper from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
 

@@ -1,5 +1,5 @@
 import { debounce } from '@ember/runloop';
-import type { Timer } from 'backburner.js';
+import { type Timer } from 'backburner.js';
 import { expectTypeOf } from 'expect-type';
 
 // From Docs

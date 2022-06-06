@@ -2,7 +2,7 @@
 @module ember
 */
 import { precompileJSON } from '@glimmer/compiler';
-import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
+import { type SerializedTemplateWithLazyBlock, type TemplateFactory } from '@glimmer/interfaces';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { compileOptions, type EmberPrecompileOptions } from 'ember-template-compiler';
 

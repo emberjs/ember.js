@@ -1,6 +1,6 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { registerDestructor } from '@glimmer/destroyable';
-import type { CapturedNamedArguments } from '@glimmer/interfaces';
+import { type CapturedNamedArguments } from '@glimmer/interfaces';
 import { createConstRef, type Reference } from '@glimmer/reference';
 import {
   beginUntrackFrame,

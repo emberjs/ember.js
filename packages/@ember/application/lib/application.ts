@@ -26,8 +26,8 @@ import Engine, { buildInitializerMethod } from '@ember/engine';
 import { privatize as P, type Container, type Registry } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
-import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { type EngineInstanceOptions } from '@ember/engine/instance';
+import { type SimpleDocument, type SimpleElement } from '@simple-dom/interface';
 
 /**
   An instance of `Application` is the starting point for every Ember

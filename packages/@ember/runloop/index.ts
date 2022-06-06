@@ -2,7 +2,7 @@ import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner, { Timer, type DeferredActionQueues } from 'backburner';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import { type AnyFn } from '@ember/-internals/utils/types';
 
 export { Timer };
 

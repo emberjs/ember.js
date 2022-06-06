@@ -1,5 +1,5 @@
 import MethodCallTracker from './method-call-tracker';
-import type { DebugEnv } from './utils';
+import { type DebugEnv } from './utils';
 
 class DebugAssert {
   private tracker: MethodCallTracker | null;

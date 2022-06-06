@@ -1,6 +1,6 @@
 import { onLoad } from '@ember/application';
 import type Application from '@ember/application';
-import type { TestableApp } from './ext/application';
+import { type TestableApp } from './ext/application';
 
 let name = 'deferReadiness in `testing` mode';
 

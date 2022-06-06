@@ -1,4 +1,4 @@
-import type { Meta } from '@ember/-internals/meta';
+import { type Meta } from '@ember/-internals/meta';
 import {
   descriptorForProperty,
   isElementDescriptor,
@@ -6,7 +6,7 @@ import {
   type ExtendedMethodDecorator,
   type DecoratorPropertyDescriptor,
 } from '@ember/-internals/metal';
-import type { ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
+import { type ElementDescriptor } from '@ember/-internals/metal/lib/decorator';
 import { assert } from '@ember/debug';
 import { consumeTag, tagFor, track, updateTag, type UpdatableTag } from '@glimmer/validator';
 

@@ -1,6 +1,6 @@
-import type { Factory, Owner } from '@ember/-internals/owner';
+import { type Factory, type Owner } from '@ember/-internals/owner';
 import Application from '@ember/application';
-import type { BootOptions } from '@ember/application/instance';
+import { type BootOptions } from '@ember/application/instance';
 import type ApplicationInstance from '@ember/application/instance';
 import type EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';

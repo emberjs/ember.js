@@ -2,12 +2,12 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import { type AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments } from '@glimmer/interfaces';
+import { type CapturedArguments } from '@glimmer/interfaces';
 import {
   createUnboundRef,
   isInvokableRef,

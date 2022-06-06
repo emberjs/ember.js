@@ -1,4 +1,4 @@
-import type { SafeString } from '@ember/-internals/glimmer';
+import { type SafeString } from '@ember/-internals/glimmer';
 import { htmlSafe, isHTMLSafe } from '@ember/template';
 import { expectTypeOf } from 'expect-type';
 

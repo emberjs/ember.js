@@ -4,7 +4,7 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
-import type { ModelFor, Transition } from 'router_js';
+import { type ModelFor, type Transition } from 'router_js';
 import type Route from '../system/route';
 import EmberRouter from '../system/router';
 import { RouteInfo, RouteInfoWithAttributes } from '../system/route-info';

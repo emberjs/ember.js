@@ -3,7 +3,7 @@ import type Component from '@ember/component';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import type { ViewState } from '../states';
+import { type ViewState } from '../states';
 import hasElement from './has_element';
 
 const inDOM: ViewState = {

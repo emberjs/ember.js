@@ -42,7 +42,7 @@ import {
 } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { type SimpleDocument, type SimpleElement, type SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -51,7 +51,7 @@ import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
-import type { OutletState } from './utils/outlet';
+import { type OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;

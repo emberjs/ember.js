@@ -1,22 +1,22 @@
-import type { Owner } from '@ember/-internals/owner';
+import { type Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import type {
-  CapturedArguments,
-  ComponentDefinition,
-  CustomRenderNode,
-  Destroyable,
-  Environment,
-  InternalComponentCapabilities,
-  Option,
-  TemplateFactory,
-  VMArguments,
-  WithCreateInstance,
-  WithCustomDebugRenderTree,
-  WithDynamicLayout,
-  WithSubOwner,
+import {
+  type CapturedArguments,
+  type ComponentDefinition,
+  type CustomRenderNode,
+  type Destroyable,
+  type Environment,
+  type InternalComponentCapabilities,
+  type Option,
+  type TemplateFactory,
+  type VMArguments,
+  type WithCreateInstance,
+  type WithCustomDebugRenderTree,
+  type WithDynamicLayout,
+  type WithSubOwner,
 } from '@glimmer/interfaces';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { createConstRef, valueForRef, type Reference } from '@glimmer/reference';

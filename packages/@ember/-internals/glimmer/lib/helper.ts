@@ -2,13 +2,13 @@
 @module @ember/component
 */
 
-import type { FactoryManager } from '@ember/-internals/container/lib/container';
+import { type FactoryManager } from '@ember/-internals/container/lib/container';
 import { setOwner, type Factory, type Owner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/-internals/runtime';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
-import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
+import { type Arguments, type Dict, type HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
 import { consumeTag, createTag, dirtyTag, type DirtyableTag } from '@glimmer/validator';
 

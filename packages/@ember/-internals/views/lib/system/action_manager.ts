@@ -1,4 +1,4 @@
-import type { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
+import { type ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
 
 /**
 @module ember

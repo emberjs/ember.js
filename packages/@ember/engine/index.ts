@@ -13,7 +13,7 @@ import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
 import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-import type { ResolverClass } from '@ember/-internals/container/lib/registry';
+import { type ResolverClass } from '@ember/-internals/container/lib/registry';
 
 function props(obj: object) {
   let properties = [];

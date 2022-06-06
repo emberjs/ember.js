@@ -1,5 +1,5 @@
 import { MUTABLE_CELL } from '@ember/-internals/views';
-import type { CapturedNamedArguments } from '@glimmer/interfaces';
+import { type CapturedNamedArguments } from '@glimmer/interfaces';
 import { isUpdatableRef, updateRef, valueForRef, type Reference } from '@glimmer/reference';
 import { assert } from '@ember/debug';
 import { ARGS } from '../component-managers/curly';

@@ -1,4 +1,4 @@
-import type { ModelFor, TransitionState } from 'router_js';
+import { type ModelFor, type TransitionState } from 'router_js';
 import type Router from 'router_js';
 import { shallowEqual } from '../utils';
 import type Route from './route';

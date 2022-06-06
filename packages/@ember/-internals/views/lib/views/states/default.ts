@@ -1,5 +1,5 @@
 import EmberError from '@ember/error';
-import type { ViewState } from '../states';
+import { type ViewState } from '../states';
 
 const _default: ViewState = {
   // appendChild is only legal while rendering the buffer.

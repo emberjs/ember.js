@@ -1,4 +1,4 @@
-import type { OpaqueInternalComponentConstructor } from '@ember/-internals/glimmer/lib/components/internal';
+import { type OpaqueInternalComponentConstructor } from '@ember/-internals/glimmer/lib/components/internal';
 import { LinkTo } from '@ember/routing';
 import { expectTypeOf } from 'expect-type';
 

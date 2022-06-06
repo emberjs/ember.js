@@ -22,8 +22,8 @@ import { ENV } from '@ember/-internals/environment';
 import Observable from '../mixins/observable';
 import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
-import type { AnyFn } from '@ember/-internals/utils/types';
-import type { ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
+import { type AnyFn } from '@ember/-internals/utils/types';
+import { type ComputedPropertyCallback } from '@ember/-internals/metal/lib/computed';
 
 type Value<T, K extends string> = K extends keyof T ? T[K] : unknown;
 

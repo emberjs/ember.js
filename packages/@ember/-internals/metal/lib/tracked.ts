@@ -3,7 +3,7 @@ import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
-import type { ElementDescriptor } from '..';
+import { type ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import {
   COMPUTED_SETTERS,

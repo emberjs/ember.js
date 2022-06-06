@@ -2,8 +2,8 @@ import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import type Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
-import type { Transition } from 'router_js';
-import type { Route, Router } from '../..';
+import { type Transition } from 'router_js';
+import { type Route, type Router } from '../..';
 import { deprecateTransitionMethods, prefixRouteNameArg, type RouteArgs } from '../utils';
 
 /**

@@ -1,5 +1,5 @@
 import { privatize as P } from '@ember/-internals/container';
-import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
+import { type OutletState as GlimmerOutletState, type OutletView } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/-internals/metal';
 import { getOwner, type Factory, type FactoryClass, type Owner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/-internals/routing';
@@ -45,11 +45,11 @@ import Router, {
   type TransitionError,
   type TransitionState,
 } from 'router_js';
-import type { Timer } from 'backburner';
-import type { EngineRouteInfo } from './engines';
+import { type Timer } from 'backburner';
+import { type EngineRouteInfo } from './engines';
 import EngineInstance from '@ember/engine/instance';
-import type { QueryParams } from 'route-recognizer';
-import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utils/types';
+import { type QueryParams } from 'route-recognizer';
+import { type AnyFn, type MethodNamesOf, type OmitFirst } from '@ember/-internals/utils/types';
 
 function defaultDidTransition<R extends Route>(
   this: EmberRouter<R>,

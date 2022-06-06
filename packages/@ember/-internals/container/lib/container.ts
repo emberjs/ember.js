@@ -2,7 +2,7 @@ import { setOwner, type Factory, type FactoryClass, type Owner } from '@ember/-i
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { DebugRegistry, TypeOptions } from './registry';
+import { type DebugRegistry, type TypeOptions } from './registry';
 import type Registry from './registry';
 
 interface LeakTracking {
