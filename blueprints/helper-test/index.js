@@ -1,10 +1,10 @@
 'use strict';
 
-const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const semver = require('semver');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -34,15 +34,14 @@ module.exports = useTestFrameworkDetector({
 
   locals: function (options) {
     let friendlyTestName = ['Integration', 'Helper', options.entity.name].join(' | ');
-    let dasherizedModulePrefix = stringUtils.dasherize(options.project.config().modulePrefix);
 
     let hbsImportStatement = this._useNamedHbsImport()
       ? "import { hbs } from 'ember-cli-htmlbars';"
       : "import hbs from 'htmlbars-inline-precompile';";
 
     return {
+      modulePrefix: modulePrefixForProject(options.project),
       friendlyTestName,
-      dasherizedModulePrefix,
       hbsImportStatement,
     };
   },

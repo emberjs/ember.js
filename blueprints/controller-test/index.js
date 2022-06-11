@@ -6,6 +6,7 @@ const useTestFrameworkDetector = require('../test-framework-detector');
 const path = require('path');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a controller unit test.',
@@ -22,6 +23,7 @@ module.exports = useTestFrameworkDetector({
     let controllerPathName = dasherizedModuleName;
 
     return {
+      modulePrefix: modulePrefixForProject(options.project),
       controllerPathName: controllerPathName,
       friendlyTestDescription: ['Unit', 'Controller', dasherizedModuleName].join(' | '),
     };

@@ -107,19 +107,50 @@ describe('Blueprint: route-test', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
-    it('route-test foo', function () {
-      return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function () {
+      beforeEach(function () {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('route-test foo', function () {
+        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        });
+      });
+    });
+
+    describe('with ember-qunit (default)', function () {
+      it('route-test foo', function () {
+        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(
+            fixture('route-test/rfc232-addon.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-mocha@0.16.2', function () {
+      beforeEach(function () {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.16.2');
+      });
+
+      it('route-test foo', function () {
+        return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(
+            fixture('route-test/mocha-rfc232-addon.js')
+          );
+        });
       });
     });
   });
