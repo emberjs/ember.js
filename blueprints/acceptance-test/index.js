@@ -6,6 +6,7 @@ const pathUtil = require('ember-cli-path-utils');
 const stringUtils = require('ember-cli-string-utils');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
@@ -35,7 +36,8 @@ module.exports = useTestFrameworkDetector({
     ].join(' | ');
 
     return {
-      testFolderRoot: testFolderRoot,
+      modulePrefix: modulePrefixForProject(options.project),
+      testFolderRoot,
       friendlyTestName,
       destroyAppExists,
     };

@@ -144,5 +144,23 @@ describe('Blueprint: acceptance-test', function () {
         });
       });
     });
+
+    describe('with ember-mocha@0.16.2', function () {
+      beforeEach(function () {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.16.2');
+      });
+
+      it('acceptance-test foo', function () {
+        return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
+          expect(_file('tests/acceptance/foo-test.js')).to.equal(
+            fixture('acceptance-test/mocha-rfc268-addon.js')
+          );
+        });
+      });
+    });
   });
 });

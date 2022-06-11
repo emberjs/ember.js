@@ -151,5 +151,33 @@ describe('Blueprint: service-test', function () {
         });
       });
     });
+
+    describe('with ember-qunit (default)', function () {
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/services/foo-test.js')).to.equal(
+            fixture('service-test/rfc232-addon.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-mocha@0.16.2', function () {
+      beforeEach(function () {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.16.2');
+      });
+
+      it('service-test foo', function () {
+        return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
+          expect(_file('tests/unit/services/foo-test.js')).to.equal(
+            fixture('service-test/mocha-rfc232-addon.js')
+          );
+        });
+      });
+    });
   });
 });
