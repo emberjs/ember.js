@@ -1,5 +1,5 @@
 import { module, test } from 'qunit';
-import { setupTest } from '<%= dasherizedPackageName %>/tests/helpers';
+import { setupTest } from '<%= modulePrefix %>/tests/helpers';
 
 module('<%= friendlyTestDescription %>', function (hooks) {
   setupTest(hooks);

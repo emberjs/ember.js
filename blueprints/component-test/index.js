@@ -7,6 +7,7 @@ const getPathOption = require('ember-cli-get-component-path-option');
 const semver = require('semver');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 function invocationFor(options) {
@@ -81,6 +82,7 @@ module.exports = useTestFrameworkDetector({
     let selfCloseComponent = (descriptor) => `<${descriptor} />`;
 
     return {
+      modulePrefix: modulePrefixForProject(options.project),
       path: getPathOption(options),
       testType: testType,
       componentName,
