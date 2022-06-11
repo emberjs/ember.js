@@ -43,11 +43,11 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   initialized.
 
   ```app/app.js
-  const App = Application.extend({
+  export default class App extends Application {
     ready() {
       // your code here
     }
-  })
+  }
   ```
 
   Because `Application` ultimately inherits from `Ember.Namespace`, any classes
@@ -84,12 +84,12 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   ```app/app.js
   import Application from '@ember/application';
 
-  let App = Application.extend({
-    customEvents: {
+  export default class App extends Application {
+    customEvents = {
       // add support for the paste event
       paste: 'paste'
     }
-  });
+  }
   ```
 
   To prevent Ember from setting up a listener for a default event,
@@ -99,13 +99,13 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   ```app/app.js
   import Application from '@ember/application';
 
-  let App = Application.extend({
-    customEvents: {
+  export default class App extends Application {
+    customEvents = {
       // prevent listeners for mouseenter/mouseleave events
       mouseenter: null,
       mouseleave: null
     }
-  });
+  }
   ```
 
   By default, the application sets up these event listeners on the document
@@ -119,9 +119,9 @@ import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
   ```app/app.js
   import Application from '@ember/application';
 
-  let App = Application.extend({
-    rootElement: '#ember-app'
-  });
+  export default class App extends Application {
+    rootElement = '#ember-app'
+  }
   ```
 
   The `rootElement` can be either a DOM element or a CSS selector
