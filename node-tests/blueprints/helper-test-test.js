@@ -121,20 +121,52 @@ describe('Blueprint: helper-test', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' }).then(() => {
+      return emberNew({ target: 'addon' });
+    });
+
+    describe('with ember-cli-qunit@4.1.0', function () {
+      beforeEach(function () {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-qunit', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
+
+      it('helper-test foo/bar-baz', function () {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], (_file) => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
+      });
     });
 
-    it('helper-test foo/bar-baz', function () {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], (_file) => {
-        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+    describe('with ember-qunit (default)', function () {
+      it('helper-test foo', function () {
+        return emberGenerateDestroy(['helper-test', 'foo'], (_file) => {
+          expect(_file('tests/integration/helpers/foo-test.js')).to.equal(
+            fixture('helper-test/rfc232-addon.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-mocha@0.16.2', function () {
+      beforeEach(function () {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.16.2');
+      });
+
+      it('helper-test foo', function () {
+        return emberGenerateDestroy(['helper-test', 'foo'], (_file) => {
+          expect(_file('tests/integration/helpers/foo-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232-addon.js')
+          );
+        });
       });
     });
   });

@@ -1,6 +1,7 @@
 'use strict';
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
@@ -26,6 +27,7 @@ module.exports = useTestFrameworkDetector({
 
   locals(options) {
     return {
+      modulePrefix: modulePrefixForProject(options.project),
       friendlyTestDescription: ['Unit', 'Service', options.entity.name].join(' | '),
     };
   },
