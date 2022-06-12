@@ -1,9 +1,9 @@
 'use strict';
 
-const stringUtils = require('ember-cli-string-utils');
 const path = require('path');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
@@ -30,7 +30,7 @@ module.exports = useTestFrameworkDetector({
   locals: function (options) {
     return {
       friendlyTestName: ['Unit', 'Utility', options.entity.name].join(' | '),
-      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
+      modulePrefix: modulePrefixForProject(options.project),
     };
   },
 });

@@ -2,9 +2,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const stringUtils = require('ember-cli-string-utils');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
@@ -28,11 +28,9 @@ module.exports = useTestFrameworkDetector({
     };
   },
   locals: function (options) {
-    let modulePrefix = stringUtils.dasherize(options.project.config().modulePrefix);
-
     return {
       friendlyTestName: ['Unit', 'Instance Initializer', options.entity.name].join(' | '),
-      modulePrefix,
+      modulePrefix: modulePrefixForProject(options.project),
       destroyAppExists: fs.existsSync(
         path.join(this.project.root, '/tests/helpers/destroy-app.js')
       ),
