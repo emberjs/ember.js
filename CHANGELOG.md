@@ -1,21 +1,17 @@
 # Ember Changelog
 
+### v4.5.0 (June 13, 2022)
+
+- [#20052](https://github.com/emberjs/ember.js/pull/20052) / [#20055](https://github.com/emberjs/ember.js/pull/20055) [FEATURE] Add the default helper manager to implement [RFC #0756](https://github.com/emberjs/rfcs/blob/master/text/0756-helper-default-manager.md).
+- [#20053](https://github.com/emberjs/ember.js/pull/20053) [FEATURE] Expose `renderSettled` from `@ember/renderer` to enable implementation of [RFC #0785](https://github.com/emberjs/rfcs/blob/master/text/0785-remove-set-get-in-tests.md).
+
 ### v4.4.2 (June 13, 2022)
 
 - [#20114](https://github.com/emberjs/ember.js/pull/20114) [BUGFIX] Fix generated import paths for test setup functions in addons
 
-### v4.5.0-beta.2 (June 6, 2022)
-
-- [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprint generation
-
 ### v4.4.1 (May 31, 2022)
 
 - [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprints publication
-
-### v4.5.0-beta.1 (May 2, 2022)
-
-- [#20052](https://github.com/emberjs/ember.js/pull/20052) / [#20055](https://github.com/emberjs/ember.js/pull/20055) [FEATURE] Add the default helper manager to implement [RFC #0756](https://github.com/emberjs/rfcs/blob/master/text/0756-helper-default-manager.md).
-- [#20053](https://github.com/emberjs/ember.js/pull/20053) [FEATURE] Expose `renderSettled` from `@ember/renderer` to enable implementation of [RFC #0785](https://github.com/emberjs/rfcs/blob/master/text/0785-remove-set-get-in-tests.md).
 
 ### v4.4.0 (May 2, 2022)
 
