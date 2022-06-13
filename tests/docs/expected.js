@@ -335,6 +335,7 @@ module.exports = {
     'mixin',
     'model',
     'modelFor',
+    'modifier',
     'mount',
     'mut',
     'name',
