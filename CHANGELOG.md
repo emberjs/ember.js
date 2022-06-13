@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.4.2 (June 13, 2022)
+
+- [#20114](https://github.com/emberjs/ember.js/pull/20114) [BUGFIX] Fix generated import paths for test setup functions in addons
+
 ### v4.4.1 (May 31, 2022)
 
 - [#20082](https://github.com/emberjs/ember.js/pull/20082) [BUGFIX] Fix blueprints publication
