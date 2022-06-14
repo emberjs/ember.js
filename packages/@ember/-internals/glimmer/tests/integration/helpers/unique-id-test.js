@@ -102,6 +102,24 @@ if (EMBER_UNIQUE_ID_HELPER) {
         });
       }
 
+      ['@test it only generates valid selectors']() {
+        let iterations = 1000;
+        let reNumericStart = /^\d/;
+
+        let template = '<p>{{unique-id}}</p>'.repeat(iterations);
+        super.render(template);
+
+        for (let i = 0; i < iterations; i++) {
+          let textNode = this.nthChild(i).firstChild;
+          let text = textNode.data;
+
+          this.assert.false(
+            reNumericStart.test(text),
+            `{{unique-id}} should produce valid selectors` + text
+          );
+        }
+      }
+
       render(template, ...rest) {
         // If there are three parameters to `render`, the second parameter is the
         // template's arguments.
