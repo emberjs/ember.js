@@ -38,12 +38,14 @@ export default internalHelper((): Reference<string> => {
 // This code should be reasonably fast, and provide a unique value every time
 // it's called, which is what we need here. It produces a string formatted as a
 // standard UUID, which avoids accidentally turning Ember-specific
-// implementation details into an intimate API.
+// implementation details into an intimate API. It also ensures that the UUID
+// always starts with a letter, to avoid creating invalid IDs with a numeric
+// digit at the start.
 function uniqueId() {
   // @ts-expect-error this one-liner abuses weird JavaScript semantics that
   // TypeScript (legitimately) doesn't like, but they're nonetheless valid and
   // specced.
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (a) =>
-    (a ^ ((Math.random() * 16) >> (a / 4))).toString(16)
+  return ([3e7] + -1e3 + -4e3 + -2e3 + -1e11).replace(/[0-3]/g, (a) =>
+    ((a * 4) ^ ((Math.random() * 16) >> (a & 2))).toString(16)
   );
 }
