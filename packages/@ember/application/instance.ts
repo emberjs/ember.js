@@ -248,7 +248,7 @@ class ApplicationInstance extends EngineInstance {
     Navigate the instance to a particular URL. This is useful in tests, for
     example, or to tell the app to start at a particular URL. This method
     returns a promise that resolves with the app instance when the transition
-    is complete, or rejects if the transion was aborted due to an error.
+    is complete, or rejects if the transition was aborted due to an error.
 
     @public
     @param url {String} the destination URL
