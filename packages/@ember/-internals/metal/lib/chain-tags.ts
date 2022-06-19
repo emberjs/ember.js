@@ -182,7 +182,7 @@ function getChainTags(
       } else {
         // use metaFor here to ensure we have the meta for the instance
         let lazyChains = instanceMeta.writableLazyChainsFor(segment);
-        let rest = path.substr(segmentEnd + 1);
+        let rest = path.substring(segmentEnd + 1);
 
         let placeholderTag = createUpdatableTag();
 

@@ -275,7 +275,7 @@ function detectImplementation(options: DetectionOptions) {
     // the history location with no redirects.
     if (currentPath === historyPath) {
       implementation = 'history';
-    } else if (currentPath.substr(0, 2) === '/#') {
+    } else if (currentPath.substring(0, 2) === '/#') {
       history.replaceState({ path: historyPath }, '', historyPath);
       implementation = 'history';
     } else {
@@ -326,16 +326,16 @@ export function getHistoryPath(rootURL: string, location: Location): string {
   // By convention, Ember.js routes using HashLocation are required to start
   // with `#/`. Anything else should NOT be considered a route and should
   // be passed straight through, without transformation.
-  if (hash.substr(0, 2) === '#/') {
+  if (hash.substring(0, 2) === '#/') {
     // There could be extra hash segments after the route
-    hashParts = hash.substr(1).split('#');
+    hashParts = hash.substring(1).split('#');
     // The first one is always the route url
     routeHash = hashParts.shift() as string;
 
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
     if (path.charAt(path.length - 1) === '/') {
-      routeHash = routeHash.substr(1);
+      routeHash = routeHash.substring(1);
     }
 
     // This is the "expected" final order
@@ -362,7 +362,7 @@ export function getHistoryPath(rootURL: string, location: Location): string {
 export function getHashPath(rootURL: string, location: Location): string {
   let path = rootURL;
   let historyPath = getHistoryPath(rootURL, location);
-  let routePath = historyPath.substr(rootURL.length);
+  let routePath = historyPath.substring(rootURL.length);
 
   if (routePath !== '') {
     if (routePath[0] !== '/') {
