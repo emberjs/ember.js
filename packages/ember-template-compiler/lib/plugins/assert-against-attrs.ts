@@ -56,7 +56,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
 
       PathExpression(node: AST.PathExpression): AST.Node | void {
         if (isAttrs(node, stack[stack.length - 1]!)) {
-          let path = b.path(node.original.substr(6));
+          let path = b.path(node.original.substring(6));
 
           assert(
             `Using {{attrs}} to reference named arguments is not supported. {{attrs.${

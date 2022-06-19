@@ -72,7 +72,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method getURL
   */
   getURL(): string {
-    let originalPath = this.getHash().substr(1);
+    let originalPath = this.getHash().substring(1);
     let outPath = originalPath;
 
     if (outPath[0] !== '/') {
