@@ -18,7 +18,7 @@ function cleanURL(url: string, rootURL: string) {
     return url;
   }
 
-  return url.substr(rootURL.length, url.length);
+  return url.substring(rootURL.length);
 }
 
 /**

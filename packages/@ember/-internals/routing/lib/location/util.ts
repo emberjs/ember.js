@@ -29,7 +29,7 @@ export function getQuery(location: Location): string {
 */
 export function getHash(location: Location): string {
   if (location.hash !== undefined) {
-    return location.hash.substr(0);
+    return location.hash.substring(0);
   }
 
   return '';

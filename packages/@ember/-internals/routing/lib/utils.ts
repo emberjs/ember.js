@@ -153,7 +153,7 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
     if (values) {
       if (cacheValuePrefix && cacheValuePrefix in values) {
         let partRemovedPrefix =
-          part.indexOf(cacheValuePrefix) === 0 ? part.substr(cacheValuePrefix.length + 1) : part;
+          part.indexOf(cacheValuePrefix) === 0 ? part.substring(cacheValuePrefix.length + 1) : part;
         value = get((values as any)[cacheValuePrefix], partRemovedPrefix);
       } else {
         value = get(values, part);
