@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v4.6.0-beta.2 (June 27, 2022)
+
+- [#20125](https://github.com/emberjs/ember.js/pull/20125) [BUGFIX] Replace deprecated substr() method with substring() method.
+- [#20120](https://github.com/emberjs/ember.js/pull/20120) [BUGFIX] Adjust uniqueId() implementation to only generate valid selectors.
+
 ### v4.6.0-beta.1 (June 13, 2022)
 
 No new external changes.
