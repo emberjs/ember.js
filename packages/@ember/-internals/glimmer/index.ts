@@ -146,7 +146,7 @@
   `yield` can also be used with the `hash` helper:
 
   ```app/templates/application.hbs
-  <DateRanges @value={{@model.date}} |range|>
+  <DateRanges @value={{@model.date}} as |range|>
     Start date: {{range.start}}
     End date: {{range.end}}
   </DateRanges>
@@ -170,7 +170,7 @@
   Multiple values can be yielded as block params:
 
   ```app/templates/application.hbs
-  <Banner @value={{@model}} |title subtitle body|>
+  <Banner @value={{@model}} as |title subtitle body|>
     <h1>{{title}}</h1>
     <h2>{{subtitle}}</h2>
     {{body}}
@@ -198,7 +198,7 @@
   Multiple components can be yielded with the `hash` and `component` helper:
 
   ```app/templates/application.hbs
-  <Banner @value={{@model}} |banner|>
+  <Banner @value={{@model}} as |banner|>
     <banner.Title>Banner title</banner.Title>
     <banner.Subtitle>Banner subtitle</banner.Subtitle>
     <banner.Body>A load of body text</banner.Body>
@@ -240,7 +240,7 @@
   A benefit of using this pattern is that the user of the component can change the order the components are displayed.
 
   ```app/templates/application.hbs
-  <Banner @value={{@model}} |banner|>
+  <Banner @value={{@model}} as |banner|>
     <banner.Subtitle>Banner subtitle</banner.Subtitle>
     <banner.Title>Banner title</banner.Title>
     <banner.Body>A load of body text</banner.Body>
@@ -261,7 +261,7 @@
   is you can pass attributes and arguments to these components:
 
   ```app/templates/application.hbs
-  <Banner @value={{@model}} |banner|>
+  <Banner @value={{@model}} as |banner|>
     <banner.Subtitle class="mb-1">Banner subtitle</banner.Subtitle>
     <banner.Title @variant="loud">Banner title</banner.Title>
     <banner.Body>A load of body text</banner.Body>
