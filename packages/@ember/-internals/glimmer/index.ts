@@ -162,8 +162,8 @@
 
   ```html
   <div>
-    Start Date: July 1st
-    End Date: July 30th
+    Start date: July 1st
+    End date: July 30th
   </div>
   ```
 
@@ -177,7 +177,7 @@
   </Banner>
   ```
 
-  ```app/components/Banner.hbs
+  ```app/components/banner.hbs
   <div>
     {{yield "Hello title" "hello subtitle" "body text"}}
   </div>
@@ -205,10 +205,10 @@
   </Banner>
   ```
 
-  ```app/components/banner.ts
-  import Title from './title';
-  import Subtitle from './subtitle';
-  import Body from './body';
+  ```app/components/banner.js
+  import Title from './banner/title';
+  import Subtitle from './banner/subtitle';
+  import Body from './banner/body';
 
   export default class Banner extends Component {
     Title = Title;
@@ -270,13 +270,13 @@
 
   ```app/components/banner/subtitle.hbs
   {{!-- note the use of ..attributes --}}
-  <div ...attributes>
+  <h2 ...attributes>
     {{yield}}
-  </div>
+  </h2>
   ```
 
   ```app/components/banner/title.hbs
-  {{#if @variant "loud"}}
+  {{#if (eq @variant "loud")}}
       <h1 class="loud">{{yield}}</h1>
   {{else}}
       <h1 class="quiet">{{yield}}</h1>
