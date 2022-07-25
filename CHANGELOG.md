@@ -9,6 +9,10 @@
 
 No new external changes.
 
+### v4.5.1 (July 25, 2022)
+
+- [#20120](https://github.com/emberjs/ember.js/pull/20120) [BUGFIX] Adjust uniqueId() implementation to only generate valid selectors.
+
 ### v4.5.0 (June 13, 2022)
 
 - [#20052](https://github.com/emberjs/ember.js/pull/20052) / [#20055](https://github.com/emberjs/ember.js/pull/20055) [FEATURE] Add the default helper manager to implement [RFC #0756](https://github.com/emberjs/rfcs/blob/master/text/0756-helper-default-manager.md).
