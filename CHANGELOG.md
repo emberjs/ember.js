@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.7.0-beta.1 (July 25, 2022)
+
+- [#20126](https://github.com/emberjs/ember.js/pull/20126) [BUGFIX] Replacing Firefox detection that used a deprecated browser API
+
 ### v4.6.0 (July 25, 2022)
 
 - [#20125](https://github.com/emberjs/ember.js/pull/20125) [BUGFIX] Replace deprecated substr() method with substring() method.
