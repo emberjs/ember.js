@@ -161,7 +161,7 @@
   are invalidated. This is useful when a getter is expensive and
   used very often.
 
-  For instance, in this GuestList class, we have the sortedGuests
+  For instance, in this `GuestList` class, we have the `sortedGuests`
   getter that sorts the guests alphabetically:
 
   ```javascript
@@ -176,11 +176,11 @@
     }
   ```
 
-  Every time sortedGuests is accessed, a new array will be created and sorted,
+  Every time `sortedGuests` is accessed, a new array will be created and sorted,
   because JavaScript getters do not cache by default. When the guest list
   is small, like the one in the example, this is not a problem. However, if
   the guest list were to grow very large, it would mean that we would be doing
-  a large amount of work each time we accessed sortedGetters. With @cached,
+  a large amount of work each time we accessed `sortedGuests`. With `@cached`,
   we can cache the value instead:
 
   ```javascript
@@ -196,43 +196,46 @@
     }
   ```
 
-  Now the sortedGuests getter will be cached based on autotracking.
+  Now the `sortedGuests` getter will be cached based on autotracking.
   It will only rerun and create a new sorted array when the guests tracked
   property is updated.
+
 
   ### Tradeoffs
 
   Overuse is discouraged.
 
   In general, you should avoid using `@cached` unless you have confirmed that
-  the getter you are decorating is computationally expensive. `@cached` adds
-  a small amount of overhead to the getter, making it more expensive.
-  While this overhead is small, if `@cached` is overused it can add up to a
-  large impact overall in your app. Many getters and tracked properties
-  are only accessed once, rendered, and then never rerendered, so adding
-  `@cached` when it is unnecessary can negatively impact performance.
+  the getter you are decorating is computationally expensive, since `@cached`
+  adds a small amount of overhead to the getter.
+  While the individual costs are small, a systematic use of the `@cached`
+  decorator can add up to a large impact overall in your app.
+  Many getters and tracked properties are only accessed once during rendering,
+  and then never rerendered, so adding `@cached` when unnecessary can
+  negatively impact performance.
 
   Also, `@cached` may rerun even if the values themselves have not changed,
-  since tracked properties will always invalidate even if their underlying
-  value did not change.
-  For example updating an integer value from `5` to an other `5`.
+  since tracked properties will always invalidate.
+  For example updating an integer value from `5` to an other `5` will trigger
+  a rerun of the cached properties building from this integer.
 
   Avoiding a cache invalidation in this case is not something that can
   be achieved on the `@cached` decorator itself, but rather when updating
-  the underlying values, by applying a diff checking mecanism:
+  the underlying tracked values, by applying some diff checking mecanisms:
 
   ```javascript
-  if (newValue !== this.trackedProp) {
-    this.trackedProp = newValue;
+  if (nextValue !== this.trackedProp) {
+    this.trackedProp = nextValue;
   }
   ```
 
-  Here equal values won't update the property, therefore not triggering a
-  cache invalidation.
+  Here equal values won't update the property, therefore not triggering
+  the subsequent cache invalidations of the `@cached` properties who were
+  using this `trackedProp`.
 
   The cost of these edge-guards adds up to the tradoff calculation of using
-  a caching strategy, hence requiring a very sensitive approach regarding
-  performance.
+  a caching strategy, hence requiring a very sensitive and moderate approach
+  regarding performance.
 
   @method cached
   @static
