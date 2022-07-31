@@ -231,6 +231,88 @@ moduleFor(
       );
     }
 
+    ['@test should allow engine routes to be defined instead of options when mounting an engine'](
+      assert
+    ) {
+      assert.expect(4);
+
+      Router = Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
+            this.mount('chat', function chatRoutes() {
+              this.route('foobar');
+            });
+          });
+        });
+      });
+
+      let engineInstance = buildOwner({
+        ownerOptions: { routable: true },
+      });
+
+      let router = Router.create();
+      setOwner(router, engineInstance);
+      router._initRouterJs();
+
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep'],
+        'parent name was used as base of nested routes'
+      );
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep.bloop'],
+        'parent name was used as base of nested routes'
+      );
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep.bloop.chat'],
+        'parent name was used as base of mounted engine'
+      );
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep.bloop.chat.foobar'],
+        'engine route was passed in from mount'
+      );
+    }
+
+    ['@test should allow engine routes to be defined in addition to options when mounting an engine'](
+      assert
+    ) {
+      assert.expect(4);
+
+      Router = Router.map(function () {
+        this.route('bleep', function () {
+          this.route('bloop', function () {
+            this.mount('chat', {}, function chatRoutes() {
+              this.route('foobar');
+            });
+          });
+        });
+      });
+
+      let engineInstance = buildOwner({
+        ownerOptions: { routable: true },
+      });
+
+      let router = Router.create();
+      setOwner(router, engineInstance);
+      router._initRouterJs();
+
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep'],
+        'parent name was used as base of nested routes'
+      );
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep.bloop'],
+        'parent name was used as base of nested routes'
+      );
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep.bloop.chat'],
+        'parent name was used as base of mounted engine'
+      );
+      assert.ok(
+        router._routerMicrolib.recognizer.names['bleep.bloop.chat.foobar'],
+        'engine route was passed in from mount'
+      );
+    }
+
     ['@test should allow mounting of engines at a custom path'](assert) {
       assert.expect(1);
 

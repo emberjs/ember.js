@@ -30,7 +30,9 @@ export interface DSL {
   route(name: string, options: RouteOptions, callback: DSLCallback): void;
 
   mount(name: string): void;
+  mount(name: string, callback: DSLCallback): void;
   mount(name: string, options: MountOptions): void;
+  mount(name: string, options: MountOptions, callback: DSLCallback): void;
 }
 
 function isCallback(value?: RouteOptions | DSLCallback): value is DSLCallback {
@@ -171,9 +173,32 @@ export default class DSLImpl implements DSL {
     };
   }
 
-  mount(_name: string, options: MountOptions = {}): void {
-    let engineRouteMap = this.options.resolveRouteMap(_name);
+  mount(_name: string): void;
+  mount(_name: string, mountCallback: DSLCallback): void;
+  mount(_name: string, options: MountOptions): void;
+  mount(_name: string, options: MountOptions, mountCallback: DSLCallback): void;
+  mount(_name: string, _options?: MountOptions | DSLCallback, _mountCallback?: DSLCallback): void {
+    let engineRouteMap = null;
     let name = _name;
+    let options: MountOptions;
+    let mountCallback: Option<DSLCallback> = null;
+
+    if (isCallback(_options)) {
+      assert('Unexpected arguments', arguments.length === 2);
+      options = {};
+      mountCallback = _options;
+    } else if (isCallback(_mountCallback)) {
+      assert('Unexpected arguments', arguments.length === 3);
+      assert('Unexpected arguments', isOptions(_options));
+      options = _options;
+      mountCallback = _mountCallback;
+    } else {
+      options = _options || {};
+    }
+
+    if (!mountCallback) {
+      engineRouteMap = this.options.resolveRouteMap(name);
+    }
 
     if (options.as) {
       name = options.as;
@@ -196,7 +221,7 @@ export default class DSLImpl implements DSL {
 
     let callback;
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
-    if (engineRouteMap) {
+    if (engineRouteMap || mountCallback) {
       let shouldResetEngineInfo = false;
       let oldEngineInfo = this.options.engineInfo;
       if (oldEngineInfo) {
@@ -210,7 +235,11 @@ export default class DSLImpl implements DSL {
       createRoute(childDSL, 'loading');
       createRoute(childDSL, 'error', { path: dummyErrorRoute });
 
-      engineRouteMap.class.call(childDSL);
+      if (mountCallback) {
+        mountCallback.call(childDSL);
+      } else if (engineRouteMap) {
+        engineRouteMap.class.call(childDSL);
+      }
 
       callback = childDSL.generate();
 
