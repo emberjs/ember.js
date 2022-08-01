@@ -95,7 +95,7 @@
     "@simple-dom/document": "^1.4.0",
     "@types/qunit": "^2.11.3",
     "@types/rsvp": "^4.0.4",
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.15.0",
     "auto-dist-tag": "^2.1.1",
     "aws-sdk": "^2.1166.0",
