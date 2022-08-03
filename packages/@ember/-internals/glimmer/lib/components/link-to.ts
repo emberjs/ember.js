@@ -283,7 +283,7 @@ class LinkTo extends InternalComponent {
       'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
         'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
         'See https://ember-engines.com/docs/links for more info.',
-      !this.isEngine || this.engineMountPoint !== undefined
+      this.named('isExternal') ? true : !this.isEngine || this.engineMountPoint !== undefined
     );
 
     assert(
@@ -521,6 +521,8 @@ class LinkTo extends InternalComponent {
     let { engineMountPoint } = this;
 
     if (engineMountPoint === undefined) {
+      return route;
+    } else if (this.named('isExternal')) {
       return route;
     } else if (route === 'application') {
       return engineMountPoint;
