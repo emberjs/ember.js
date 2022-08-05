@@ -69,7 +69,7 @@ and the issue will be closed
 1. Ember has an RFC process for feature requests. To begin the discussion either
 [gather feedback](https://github.com/emberjs/rfcs/blob/master/README.md#gathering-feedback-before-submitting)
 on the emberjs/rfcs repository. Or, draft an [Ember RFC](https://github.com/emberjs/rfcs#ember-rfcs)
-   - Use RFC pull request for well formed ideas.
+   - Use RFC pull requests for well-formed ideas.
    - Use RFC issues to propose a rough idea, basically a great place to test
      the waters.
 
@@ -80,7 +80,7 @@ targeting a minority of users, consider writing an add-on library for Ember.
 
 3. If the feature is complex, consider writing an Ember RFC document. If we do
 end up accepting the feature, the RFC provides the needed documentation for
-contributors to develop the feature according the specification accepted by the core team.
+contributors to develop the feature according to the specification accepted by the core team.
 
 4. After discussing the feature you may choose to attempt a Pull Request. If
 you're at all able, start writing some code. We always have more work to do
@@ -266,7 +266,7 @@ If your build is failing on the 'production' suite, you may be relying on a debu
 
 There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
 
-If your tests can't aren't covered a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
+If your tests aren't covered by a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
 
 ```javascript
 import { DEBUG } from '@glimmer/env';
@@ -322,4 +322,4 @@ Security commits will be tagged as `[SECURITY cve]`. Please do not submit securi
 
 ### Other
 
-In general almost all commits should fall into one of these categories. In the cases where they don't please submit your PR untagged. An Ember contributor will let you know if tagging is required.
+In general, almost all commits should fall into one of these categories. In the cases where they don't please submit your PR untagged. An Ember contributor will let you know if tagging is required.
