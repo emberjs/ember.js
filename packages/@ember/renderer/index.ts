@@ -19,7 +19,7 @@
     `await settled()` in that location, but in some contexts you don't want to
     wait for full settledness (which includes test waiters, pending AJAX/fetch,
     run loops, etc) but instead only want to know when that updated value has
-    been rendered in the DOM. **THAT** is what `await rerender()` is _perfect_
+    been rendered in the DOM. **THAT** is what `await renderSettled()` is _perfect_
     for.
   @method renderSettled
   @returns {Promise<void>} a promise which fulfills when rendering has completed
