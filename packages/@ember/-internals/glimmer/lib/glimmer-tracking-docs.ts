@@ -230,7 +230,7 @@
   Here equal values won't update the property, therefore not triggering a
   cache invalidation.
 
-  The cost of these edge-guards adds up to the tradoff calculation of using
+  The cost of these edge-guards adds up to the trade-off calculation of using
   a caching strategy, hence requiring a very sensitive approach regarding
   performance.
 
