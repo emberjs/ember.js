@@ -219,7 +219,7 @@
 
   Avoiding a cache invalidation in this case is not something that can
   be achieved on the `@cached` decorator itself, but rather when updating
-  the underlying values, by applying a diff checking mecanism:
+  the underlying values, by applying a diff checking mechanism:
 
   ```javascript
   if (newValue !== this.trackedProp) {
