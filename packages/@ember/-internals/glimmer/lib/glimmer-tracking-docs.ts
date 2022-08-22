@@ -238,7 +238,7 @@
   property from a getter is not a good practice anyway, even with a caching
   mechanism reducing reruns.
 
-  The cost of these edge-guards adds up to the tradoff calculation of using
+  The cost of these edge-guards adds up to the trad-off calculation of using
   a caching strategy, hence requiring a very sensitive and moderate approach
   regarding performance.
 
