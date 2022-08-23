@@ -80,6 +80,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.16.11",
     "@glimmer/compiler": "0.84.2",
+    "@glimmer/component": "^1.1.2",
     "@glimmer/destroyable": "0.84.2",
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.84.2",
@@ -93,6 +94,7 @@
     "@glimmer/runtime": "0.84.2",
     "@glimmer/validator": "0.84.2",
     "@simple-dom/document": "^1.4.0",
+    "@tsconfig/ember": "^1.0.1",
     "@types/qunit": "^2.19.2",
     "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
@@ -153,6 +155,9 @@
     "testem": "^3.8.0",
     "testem-failure-only-reporter": "^1.0.0",
     "typescript": "~4.6.4"
+  },
+  "peerDependencies": {
+    "@glimmer/component": "^1.1.2"
   },
   "engines": {
     "node": ">= 12.*"

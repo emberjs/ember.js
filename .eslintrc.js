@@ -66,6 +66,27 @@ module.exports = {
       },
     },
     {
+      files: ['types/preview/**/*.ts'],
+
+      extends: ['plugin:@typescript-eslint/recommended'],
+
+      parserOptions: {
+        sourceType: 'module',
+        project: './types/preview/tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+
+      rules: {
+        'import/export': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        'import/no-unresolved': 'off',
+        '@typescript-eslint/no-this-alias': 'off',
+        '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/no-empty-function': 'off',
+      },
+    },
+    {
       // TODO: files: ['packages/**/*.[jt]s'],
       files: ['packages/**/*.js'],
 
