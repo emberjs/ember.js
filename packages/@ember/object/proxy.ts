@@ -1,4 +1,4 @@
-import { FrameworkObject } from '@ember/object';
+import { FrameworkObject } from '@ember/object/-internals';
 import { _ProxyMixin } from '@ember/-internals/runtime';
 
 /**

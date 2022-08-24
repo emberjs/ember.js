@@ -7,12 +7,10 @@ import {
   setClassicDecorator,
 } from '@ember/-internals/metal';
 import { getFactoryFor } from '@ember/-internals/container';
-import { setObservers, symbol } from '@ember/-internals/utils';
+import { setObservers } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utils/types';
-import { addListener } from '@ember/-internals/metal';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
-import { DEBUG } from '@glimmer/env';
 
 export {
   notifyPropertyChange,
@@ -48,35 +46,6 @@ class EmberObject extends CoreObject.extend(Observable) {
 }
 
 export default EmberObject;
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface FrameworkObject extends EmberObject {}
-let FrameworkObject = class FrameworkObject extends EmberObject {};
-
-if (DEBUG) {
-  const INIT_WAS_CALLED = Symbol('INIT_WAS_CALLED');
-  let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
-
-  FrameworkObject = class DebugFrameworkObject extends EmberObject {
-    [INIT_WAS_CALLED] = false;
-
-    init(properties: object | undefined) {
-      super.init(properties);
-      this[INIT_WAS_CALLED] = true;
-    }
-
-    [ASSERT_INIT_WAS_CALLED]() {
-      assert(
-        `You must call \`super.init(...arguments);\` or \`this._super(...arguments)\` when overriding \`init\` on a framework object. Please update ${this} to call \`super.init(...arguments);\` from \`init\` when using native classes or \`this._super(...arguments)\` when using \`EmberObject.extend()\`.`,
-        this[INIT_WAS_CALLED]
-      );
-    }
-  };
-
-  addListener(FrameworkObject.prototype, 'init', null, ASSERT_INIT_WAS_CALLED);
-}
-
-export { FrameworkObject };
 
 /**
   Decorator that turns the target function into an Action which can be accessed
