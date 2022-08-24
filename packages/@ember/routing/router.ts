@@ -46,7 +46,7 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utils/types';
 
 /**
-@module @ember/routing
+@module @ember/routing/router
 */
 
 function defaultDidTransition<R extends Route>(

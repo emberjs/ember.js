@@ -6,7 +6,7 @@ import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
 
 /**
-  @module @ember/object
+  @module @ember/object/promise-proxy-mixin
 */
 
 function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {

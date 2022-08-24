@@ -1,5 +1,5 @@
 /**
-@module @ember/array
+@module @ember/array/proxy
 */
 
 import {

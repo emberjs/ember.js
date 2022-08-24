@@ -11,6 +11,10 @@ import type { Cache } from '@glimmer/validator';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 
+/**
+@module @ember/debug/data-adapter
+*/
+
 type RecordColor = 'black' | 'red' | 'blue' | 'green';
 
 type WrappedType<N extends string = string> = {
@@ -150,10 +154,6 @@ class TypeWatcher {
     getValue(this.cache);
   }
 }
-
-/**
-@module @ember/debug
-*/
 
 /**
   The `DataAdapter` helps a data persistence library

@@ -1,5 +1,5 @@
 /**
-@module @ember/application
+@module @ember/application/namespace
 */
 
 import {

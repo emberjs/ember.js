@@ -1,5 +1,5 @@
 /**
-@module @ember/object
+@module @ember/object/mixin
 */
 import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';

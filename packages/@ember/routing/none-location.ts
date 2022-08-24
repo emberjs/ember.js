@@ -3,7 +3,7 @@ import { assert } from '@ember/debug';
 import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
 
 /**
-@module @ember/routing
+@module @ember/routing/none-location
 */
 
 /**

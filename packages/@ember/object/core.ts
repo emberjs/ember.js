@@ -1,5 +1,5 @@
 /**
-  @module @ember/object
+  @module @ember/object/core
 */
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';

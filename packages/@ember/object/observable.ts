@@ -1,5 +1,5 @@
 /**
-@module @ember/object
+@module @ember/object/observable
 */
 
 import { peekMeta } from '@ember/-internals/meta';

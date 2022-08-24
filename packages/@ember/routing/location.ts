@@ -15,7 +15,7 @@ export interface ILocation {
 
 export type UpdateCallback = (url: string) => void;
 /**
-@module @ember/routing
+@module @ember/routing/location
 */
 
 /**

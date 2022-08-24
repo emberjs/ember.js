@@ -3,7 +3,7 @@ import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/
 import { getHash } from './lib/location-utils';
 
 /**
-@module @ember/routing
+@module @ember/routing/history-location
 */
 
 let popstateFired = false;

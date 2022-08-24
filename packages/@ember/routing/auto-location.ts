@@ -15,7 +15,7 @@ import {
 } from './lib/location-utils';
 
 /**
-@module @ember/routing
+@module @ember/routing/auto-location
 */
 
 /**

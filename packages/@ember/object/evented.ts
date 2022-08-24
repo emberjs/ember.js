@@ -4,7 +4,7 @@ import Mixin from '@ember/object/mixin';
 export { on } from '@ember/-internals/metal';
 
 /**
-@module @ember/object
+@module @ember/object/evented
 */
 
 /**

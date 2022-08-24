@@ -70,7 +70,7 @@ export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = Symbol('render');
 
 /**
-@module @ember/routing
+@module @ember/routing/route
 */
 
 /**

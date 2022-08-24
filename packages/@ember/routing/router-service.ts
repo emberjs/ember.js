@@ -1,3 +1,6 @@
+/**
+ * @module @ember/routing/router-service
+ */
 import { getOwner } from '@ember/-internals/owner';
 import Evented from '@ember/object/evented';
 import { assert } from '@ember/debug';

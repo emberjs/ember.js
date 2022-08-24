@@ -9,7 +9,7 @@ import type { Resolver } from '@ember/-internals/container';
 import Namespace from '@ember/application/namespace';
 
 /**
-@module @ember/debug
+@module @ember/debug/container-debug-adapter
 */
 
 /**
