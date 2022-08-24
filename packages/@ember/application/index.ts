@@ -19,7 +19,7 @@ import AutoLocation from '@ember/routing/auto-location';
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
-import { BucketCache } from '@ember/routing/internals';
+import { BucketCache } from '@ember/routing/-internals';
 import ApplicationInstance from '@ember/application/instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
 import type { BootOptions } from '@ember/engine/instance';

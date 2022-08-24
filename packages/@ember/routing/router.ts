@@ -3,9 +3,8 @@ import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-inte
 import { computed, get, set } from '@ember/object';
 import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { BucketCache, DSL } from '@ember/routing/internals';
-import type { DSLCallback, EngineRouteInfo } from '@ember/routing/internals';
-import { RouterState } from '@ember/routing/internals';
+import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
+import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
 import {
   calculateCacheKey,
   extractRouteArgs,

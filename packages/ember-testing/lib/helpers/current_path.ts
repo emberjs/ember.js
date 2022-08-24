@@ -2,7 +2,7 @@
 @module ember
 */
 import { get } from '@ember/object';
-import { RoutingService } from '@ember/routing/internals';
+import { RoutingService } from '@ember/routing/-internals';
 import type Application from '@ember/application';
 import { assert } from '@ember/debug';
 

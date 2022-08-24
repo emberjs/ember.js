@@ -89,7 +89,7 @@ import {
   generateController,
   generateControllerFactory,
   DSL as RouterDSL,
-} from '@ember/routing/internals';
+} from '@ember/routing/-internals';
 import { isNone, isBlank, isEmpty, isPresent, isEqual, typeOf, compare } from '@ember/utils';
 
 import {

@@ -7,7 +7,7 @@ import {
 } from '@ember/-internals/metal';
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { BucketCache } from '@ember/routing/internals';
+import { BucketCache } from '@ember/routing/-internals';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
@@ -33,7 +33,7 @@ import type {
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { QueryParam } from '@ember/routing/router';
 import EmberRouter from '@ember/routing/router';
-import { generateController } from '@ember/routing/internals';
+import { generateController } from '@ember/routing/-internals';
 import type { ExpandedControllerQueryParam, NamedRouteArgs, RouteArgs } from './lib/utils';
 import {
   calculateCacheKey,

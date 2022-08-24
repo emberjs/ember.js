@@ -11,7 +11,7 @@ import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import { get, set } from '@ember/object';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
-import { RoutingService } from '@ember/routing/internals';
+import { RoutingService } from '@ember/routing/-internals';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
 import { RegistryProxyMixin } from '@ember/-internals/runtime';

@@ -3,4 +3,4 @@ export {
   generateController,
   generateControllerFactory,
   DSL as RouterDSL,
-} from '@ember/routing/internals';
+} from '@ember/routing/-internals';

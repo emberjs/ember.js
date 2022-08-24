@@ -1,4 +1,4 @@
-import { BucketCache } from '@ember/routing/internals';
+import { BucketCache } from '@ember/routing/-internals';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
