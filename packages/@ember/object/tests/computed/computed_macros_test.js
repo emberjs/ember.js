@@ -1,5 +1,5 @@
-import { alias, defineProperty } from '@ember/-internals/metal';
 import {
+  alias,
   empty,
   notEmpty,
   not,
@@ -16,8 +16,7 @@ import {
   and,
   or,
 } from '@ember/object/computed';
-
-import EmberObject, { get, set, computed } from '@ember/object';
+import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

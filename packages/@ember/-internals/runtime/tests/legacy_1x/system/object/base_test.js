@@ -1,5 +1,4 @@
-import { get, set } from '@ember/object';
-import EmberObject from '@ember/object';
+import EmberObject, { get, set } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*

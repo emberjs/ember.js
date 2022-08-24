@@ -1,8 +1,6 @@
 import { Component } from '@ember/-internals/glimmer';
-import EmberObject from '@ember/object';
+import EmberObject, { action } from '@ember/object';
 import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
-
-import { action } from '@ember/object';
 
 moduleFor(
   '@action decorator',

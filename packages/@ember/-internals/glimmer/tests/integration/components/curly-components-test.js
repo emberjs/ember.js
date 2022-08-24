@@ -11,10 +11,11 @@ import {
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { alias, on, tracked } from '@ember/-internals/metal';
-import { set, get, computed } from '@ember/object';
+import { tracked } from '@ember/-internals/metal';
+import { alias } from '@ember/object/computed';
+import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { set, get, computed, observer } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';

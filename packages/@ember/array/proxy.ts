@@ -21,8 +21,15 @@ import EmberArray from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
-import type { Tag, Revision } from '@glimmer/validator';
-import { combine, consumeTag, validateTag, valueForTag, tagFor } from '@glimmer/validator';
+import {
+  combine,
+  consumeTag,
+  validateTag,
+  valueForTag,
+  tagFor,
+  type Tag,
+  type Revision,
+} from '@glimmer/validator';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';

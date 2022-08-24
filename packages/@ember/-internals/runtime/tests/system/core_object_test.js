@@ -1,6 +1,5 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
-import { get, set } from '@ember/object';
-import { observer } from '@ember/object';
+import { get, set, observer } from '@ember/object';
 import CoreObject from '@ember/object/core';
 import {
   moduleFor,

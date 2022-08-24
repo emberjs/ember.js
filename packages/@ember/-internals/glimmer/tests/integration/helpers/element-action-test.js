@@ -1,12 +1,11 @@
 import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/object';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import EmberObject from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { ActionManager } from '@ember/-internals/views';
 
