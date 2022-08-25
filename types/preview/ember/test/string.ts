@@ -1,7 +1,8 @@
 import Ember from 'ember';
 import { SafeString } from '@ember/template/-private/handlebars';
 
-const { dasherize, camelize, capitalize, classify, decamelize, htmlSafe, underscore, w } = Ember.String;
+const { dasherize, camelize, capitalize, classify, decamelize, htmlSafe, underscore, w } =
+  Ember.String;
 
 // @ts-expect-error
 dasherize();

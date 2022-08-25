@@ -10,17 +10,21 @@ interface Observable {
    * Retrieves the value of a property from the object.
    */
   get<K extends keyof this>(key: K): this[K];
+  get(key: string): unknown;
   /**
    * To get the values of multiple properties at once, call `getProperties`
    * with a list of strings or an array:
    */
   getProperties<K extends keyof this>(list: K[]): Pick<this, K>;
   getProperties<K extends keyof this>(...list: K[]): Pick<this, K>;
+  getProperties(list: string[]): Record<string, unknown>;
+  getProperties(...list: string[]): Record<string, unknown>;
   /**
    * Sets the provided key or path to the value.
    */
   set<K extends keyof this>(key: K, value: this[K]): this[K];
   set<T>(key: keyof this, value: T): T;
+  set<T>(key: string, value: T): T;
   /**
    * Sets a list of properties at once. These properties are set inside
    * a single `beginPropertyChanges` and `endPropertyChanges` batch, so
@@ -28,6 +32,7 @@ interface Observable {
    */
   setProperties<K extends keyof this>(hash: Pick<this, K>): Pick<this, K>;
   setProperties<K extends keyof this>(hash: Record<K, unknown>): Pick<this, K>;
+  setProperties<R extends Record<string, unknown>>(hash: R): R;
   /**
    * Notify the observer system that a property has just changed.
    *

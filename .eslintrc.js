@@ -78,12 +78,15 @@ module.exports = {
 
       rules: {
         'import/export': 'off',
+        'disable-features/disable-async-await': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         'import/no-unresolved': 'off',
         '@typescript-eslint/no-this-alias': 'off',
-        '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/consistent-type-imports': 'off',
         '@typescript-eslint/no-empty-function': 'off',
+        'no-console': 'off',
       },
     },
     {

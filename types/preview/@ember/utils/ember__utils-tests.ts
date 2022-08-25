@@ -1,4 +1,5 @@
 /* eslint-disable no-new-wrappers */ // we have to test the new-wrappers!
+import { expectTypeOf } from 'expect-type';
 
 import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@ember/utils';
 
@@ -9,33 +10,33 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
     return;
   }
   const anotherString = maybeUndefined + 'another string';
-  isNone(); // $ExpectType boolean
-  isNone(null); // $ExpectType boolean
-  isNone(undefined); // $ExpectType boolean
-  isNone(''); // $ExpectType boolean
-  isNone([]); // $ExpectType boolean
-  isNone(function () {}); // $ExpectType boolean
+  expectTypeOf(isNone()).toEqualTypeOf<boolean>();
+  expectTypeOf(isNone(null)).toEqualTypeOf<boolean>();
+  expectTypeOf(isNone(undefined)).toEqualTypeOf<boolean>();
+  expectTypeOf(isNone('')).toEqualTypeOf<boolean>();
+  expectTypeOf(isNone([])).toEqualTypeOf<boolean>();
+  expectTypeOf(isNone(function () {})).toEqualTypeOf<boolean>();
 })();
 
 (function () {
   /** isPresent */
-  isPresent(); // $ExpectType boolean
-  isPresent(null); // $ExpectType boolean
-  isPresent(undefined); // $ExpectType boolean
-  isPresent(''); // $ExpectType boolean
-  isPresent('  '); // $ExpectType boolean
-  isPresent('\n\t'); // $ExpectType boolean
-  isPresent([]); // $ExpectType boolean
-  isPresent({ length: 0 }); // $ExpectType boolean
-  isPresent(false); // $ExpectType boolean
-  isPresent(true); // $ExpectType boolean
-  isPresent('string'); // $ExpectType boolean
-  isPresent(0); // $ExpectType boolean
-  isPresent(function () {}); // $ExpectType boolean
-  isPresent({}); // $ExpectType boolean
-  isPresent(false); // $ExpectType boolean
-  isPresent('\n\t Hello'); // $ExpectType boolean
-  isPresent([1, 2, 3]); // $ExpectType boolean
+  expectTypeOf(isPresent()).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(null)).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(undefined)).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent('')).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent('  ')).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent('\n\t')).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent([])).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent({ length: 0 })).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(false)).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(true)).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent('string')).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(0)).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(function () {})).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent({})).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent(false)).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent('\n\t Hello')).toEqualTypeOf<boolean>();
+  expectTypeOf(isPresent([1, 2, 3])).toEqualTypeOf<boolean>();
 })();
 
 (function () {
@@ -83,13 +84,15 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
 
 (function () {
   /** isEqual */
-  isEqual('foo', 'bar'); // $ExpectType boolean
-  isEqual(14, 37); // $ExpectType boolean
-  isEqual(14, '1'); // $ExpectType boolean
-  isEqual(
-    () => 4,
-    () => 37
-  ); // $ExpectType boolean
+  expectTypeOf(isEqual('foo', 'bar')).toEqualTypeOf<boolean>();
+  expectTypeOf(isEqual(14, 37)).toEqualTypeOf<boolean>();
+  expectTypeOf(isEqual(14, '1')).toEqualTypeOf<boolean>();
+  expectTypeOf(
+    isEqual(
+      () => 4,
+      () => 37
+    )
+  ).toEqualTypeOf<boolean>();
   // @ts-expect-error
   isEqual(14);
   // @ts-expect-error
@@ -113,33 +116,33 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
 (function () {
   /** isBlank */
 
-  isBlank(); // $ExpectType boolean
-  isBlank(null); // $ExpectType boolean
-  isBlank(undefined); // $ExpectType boolean
-  isBlank(''); // $ExpectType boolean
-  isBlank([]); // $ExpectType boolean
-  isBlank('\n\t'); // $ExpectType boolean
-  isBlank('  '); // $ExpectType boolean
-  isBlank({}); // $ExpectType boolean
-  isBlank('\n\t Hello'); // $ExpectType boolean
-  isBlank('Hello world'); // $ExpectType boolean
-  isBlank([1, 2, 3]); // $ExpectType boolean
+  expectTypeOf(isBlank()).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank(null)).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank(undefined)).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank('')).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank([])).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank('\n\t')).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank('  ')).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank({})).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank('\n\t Hello')).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank('Hello world')).toEqualTypeOf<boolean>();
+  expectTypeOf(isBlank([1, 2, 3])).toEqualTypeOf<boolean>();
 })();
 
 (function () {
   /** isEmpty */
 
-  isEmpty(); // $ExpectType boolean
-  isEmpty(null); // $ExpectType boolean
-  isEmpty(undefined); // $ExpectType boolean
-  isEmpty(''); // $ExpectType boolean
-  isEmpty([]); // $ExpectType boolean
-  isEmpty({ size: 0 }); // $ExpectType boolean
-  isEmpty({}); // $ExpectType boolean
-  isEmpty('Adam Hawkins'); // $ExpectType boolean
-  isEmpty([0, 1, 2]); // $ExpectType boolean
-  isEmpty('\n\t'); // $ExpectType boolean
-  isEmpty('  '); // $ExpectType boolean
-  isEmpty({ size: 1 }); // $ExpectType boolean
-  isEmpty({ size: () => 0 }); // $ExpectType boolean
+  expectTypeOf(isEmpty()).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty(null)).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty(undefined)).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty('')).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty([])).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty({ size: 0 })).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty({})).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty('Adam Hawkins')).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty([0, 1, 2])).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty('\n\t')).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty('  ')).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty({ size: 1 })).toEqualTypeOf<boolean>();
+  expectTypeOf(isEmpty({ size: () => 0 })).toEqualTypeOf<boolean>();
 })();

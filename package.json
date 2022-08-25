@@ -25,7 +25,8 @@
     "dist/ember-testing.js",
     "dist/ember-testing.map",
     "docs/data.json",
-    "lib"
+    "lib",
+    "types"
   ],
   "repository": {
     "type": "git",
@@ -40,7 +41,7 @@
     "lint:docs": "qunit tests/docs/coverage-test.js",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc": "tsc --noEmit && tsc --noEmit --project types/preview",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
     "test:blueprints:js": "mocha node-tests/blueprints/**/*-test.js",
