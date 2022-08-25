@@ -1,5 +1,6 @@
 import ApplicationInstance from '@ember/application/instance';
-import hbs from 'htmlbars-inline-precompile';
+
+declare function hbs(strings: TemplateStringsArray): object;
 
 const appInstance = ApplicationInstance.create();
 appInstance.register('some:injection', class Foo {});
@@ -23,8 +24,8 @@ appInstance.register('templates:foo/bar', hbs`<h1>Hello World</h1>`, {
   singleton: true,
   instantiate: true,
 });
-// @ts-expect-error
 appInstance.register('templates:foo/bar', hbs`<h1>Hello World</h1>`, {
+  // @ts-expect-error
   singleton: 'true',
   instantiate: true,
 });

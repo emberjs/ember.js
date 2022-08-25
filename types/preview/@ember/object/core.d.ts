@@ -59,6 +59,7 @@ export default class CoreObject {
   toString(): string;
 
   static create<Class extends typeof CoreObject>(
+    this: Class,
     ...initialValues: Array<Mixin | Record<string, unknown>>
   ): InstanceType<Class>;
 

@@ -35,5 +35,5 @@
 
   "include": ["packages/**/*.ts"],
 
-  "exclude": ["dist", "node_modules", "tmp"]
+  "exclude": ["dist", "node_modules", "tmp", "types"]
 }

@@ -10,9 +10,6 @@
 // the Ember namespace.
 import Rsvp from 'rsvp';
 
-import { TemplateFactory } from 'htmlbars-inline-precompile';
-
-import { Registry as ServiceRegistry } from '@ember/service';
 import type { Registry as ControllerRegistry } from '@ember/controller';
 import type * as EmberStringNs from '@ember/string';
 import type * as EmberTemplateNs from '@ember/template';
@@ -24,7 +21,6 @@ import type * as EmberUtilsNs from '@ember/utils';
 import type * as EmberRunloopNs from '@ember/runloop';
 import * as EmberObjectNs from '@ember/object';
 import type * as EmberObjectObserversNs from '@ember/object/observers';
-import * as EmberObjectMixinNs from '@ember/object/mixin';
 import * as EmberObjectProxyNs from '@ember/object/proxy';
 import type * as EmberObjectPromiseProxyNs from '@ember/object/promise-proxy-mixin';
 import type * as EmberObjectInternalsNs from '@ember/object/internals';
@@ -38,8 +34,6 @@ import EmberDataAdapter from '@ember/debug/data-adapter';
 // @ember/engine
 import * as EmberEngineNs from '@ember/engine';
 import * as EmberEngineInstanceNs from '@ember/engine/instance';
-import _ContainerProxyMixin from '@ember/engine/-private/container-proxy-mixin';
-import _RegistryProxyMixin from '@ember/engine/-private/registry-proxy-mixin';
 import EmberCoreObject from '@ember/object/core';
 import * as EmberApplicationNs from '@ember/application';
 import * as EmberApplicationInstanceNs from '@ember/application/instance';
@@ -68,10 +62,7 @@ import EmberHelper from '@ember/component/helper';
 // @ember/routing
 import EmberRoutingRouter from '@ember/routing/router';
 import EmberRoutingRoute from '@ember/routing/route';
-import EmberRoutingTransition from '@ember/routing/transition';
-import EmberRoutingRouterService from '@ember/routing/router-service';
 import EmberRoutingHashLocation from '@ember/routing/hash-location';
-import EmberRoutingAutoLocation from '@ember/routing/auto-location';
 import EmberRoutingHistoryLocation from '@ember/routing/history-location';
 import EmberRoutingNoneLocation from '@ember/routing/none-location';
 // @ember/application
@@ -81,45 +72,45 @@ import EmberRegistry from '@ember/application/-private/registry';
 import EmberTestAdapter from '@ember/test/adapter';
 
 export namespace Ember {
-  const A: typeof EmberArrayNs.A;
-  const isArray: typeof EmberArrayNs.isArray;
-  type Enumerable<T> = EmberEnumerable<T>;
-  const Enumerable: typeof EmberEnumerable;
-  class ArrayProxy<T> extends EmberArrayProxy<T> {}
-  type Array<T> = EmberArray<T>;
-  const Array: typeof EmberArrayNs.default;
-  type MutableArray<T> = EmberMutableArray<T>;
-  const MutableArray: typeof EmberMutableArray;
-  type NativeArray<T> = EmberNativeArray<T>;
-  const NativeArray: typeof EmberNativeArray;
-  type MutableEnumerable<T> = EmberMutableEnumerable<T>;
-  const MutableEnumerable: typeof EmberMutableEnumerable;
-  class Router extends EmberRoutingRouter {}
-  class Route extends EmberRoutingRoute {}
-  const ActionHandler: typeof EmberActionHandler;
-  class Controller extends EmberControllerNs.default {}
-  class Component extends EmberComponent {}
-  class Helper extends EmberHelper {}
+  export const A: typeof EmberArrayNs.A;
+  export const isArray: typeof EmberArrayNs.isArray;
+  export type Enumerable<T> = EmberEnumerable<T>;
+  export const Enumerable: typeof EmberEnumerable;
+  export class ArrayProxy<T> extends EmberArrayProxy<T> {}
+  export type Array<T> = EmberArray<T>;
+  export const Array: typeof EmberArrayNs.default;
+  export type MutableArray<T> = EmberMutableArray<T>;
+  export const MutableArray: typeof EmberMutableArray;
+  export type NativeArray<T> = EmberNativeArray<T>;
+  export const NativeArray: typeof EmberNativeArray;
+  export type MutableEnumerable<T> = EmberMutableEnumerable<T>;
+  export const MutableEnumerable: typeof EmberMutableEnumerable;
+  export class Router extends EmberRoutingRouter {}
+  export class Route extends EmberRoutingRoute {}
+  export const ActionHandler: typeof EmberActionHandler;
+  export class Controller extends EmberControllerNs.default {}
+  export class Component extends EmberComponent {}
+  export class Helper extends EmberHelper {}
 
-  class HashLocation extends EmberRoutingHashLocation {}
-  class NoneLocation extends EmberRoutingNoneLocation {}
-  class HistoryLocation extends EmberRoutingHistoryLocation {}
-  const deprecateFunc: typeof EmberApplicationDeprecateNs.deprecateFunc;
-  const deprecate: typeof EmberApplicationDeprecateNs.deprecate;
-  const getOwner: typeof EmberApplicationNs.getOwner;
-  const setOwner: typeof EmberApplicationNs.setOwner;
-  class EventDispatcher extends EmberEventDispatcher {}
-  class Registry extends EmberRegistry {}
-  interface ArrayPrototypeExtensions<T> extends EmberArrayProtoExtensions<T> {}
+  export class HashLocation extends EmberRoutingHashLocation {}
+  export class NoneLocation extends EmberRoutingNoneLocation {}
+  export class HistoryLocation extends EmberRoutingHistoryLocation {}
+  export const deprecateFunc: typeof EmberApplicationDeprecateNs.deprecateFunc;
+  export const deprecate: typeof EmberApplicationDeprecateNs.deprecate;
+  export const getOwner: typeof EmberApplicationNs.getOwner;
+  export const setOwner: typeof EmberApplicationNs.setOwner;
+  export class EventDispatcher extends EmberEventDispatcher {}
+  export class Registry extends EmberRegistry {}
+  export interface ArrayPrototypeExtensions<T> extends EmberArrayProtoExtensions<T> {}
 
   /**
    * Implements some standard methods for comparing objects. Add this mixin to
    * any class you create that can compare its instances.
    */
-  interface Comparable {
+  export interface Comparable {
     compare(a: unknown, b: unknown): number;
   }
-  const Comparable: EmberMixin<Comparable>;
+  const Comparable: EmberMixin;
   class ComputedProperty extends EmberObjectComputedNs.default {}
   /**
    * A container used to instantiate and cache objects.
