@@ -2,8 +2,8 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { componentCapabilities } from '@glimmer/manager';
-import { Object as EmberObject } from '@ember/-internals/runtime';
-import { set, setProperties, computed } from '@ember/-internals/metal';
+import EmberObject from '@ember/object';
+import { set, setProperties, computed } from '@ember/object';
 import { setComponentManager } from '@ember/-internals/glimmer';
 
 const BasicComponentManager = EmberObject.extend({

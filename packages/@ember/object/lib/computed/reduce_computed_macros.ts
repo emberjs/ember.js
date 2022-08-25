@@ -3,10 +3,11 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { computed, autoComputed, get, isElementDescriptor } from '@ember/-internals/metal';
-import { compare, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
-import type { NativeArray } from '@ember/-internals/runtime/lib/mixins/array';
-import EmberArray from '@ember/-internals/runtime/lib/mixins/array';
+import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
+import { computed, get } from '@ember/object';
+import { compare } from '@ember/utils';
+import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
+import type { NativeArray } from '@ember/array';
 
 function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
   return Array.isArray(obj) || EmberArray.detect(obj);

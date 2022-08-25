@@ -11,9 +11,12 @@ import {
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { alias, set, get, observer, on, computed, tracked } from '@ember/-internals/metal';
+import { tracked } from '@ember/-internals/metal';
+import { alias } from '@ember/object/computed';
+import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject, { set, get, computed, observer } from '@ember/object';
+import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';

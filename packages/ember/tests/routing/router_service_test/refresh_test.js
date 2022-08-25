@@ -1,4 +1,4 @@
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor(

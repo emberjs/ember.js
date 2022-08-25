@@ -1,4 +1,5 @@
-import type { Array as EmberArray, MutableArray } from '@ember/-internals/runtime';
+import type EmberArray from '@ember/array';
+import type MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';

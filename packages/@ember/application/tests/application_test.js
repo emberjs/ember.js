@@ -3,10 +3,12 @@ import VERSION from 'ember/version';
 import { ENV } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
+import EmberRoute from '@ember/routing/route';
+import Router from '@ember/routing/router';
+import NoneLocation from '@ember/routing/none-location';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,

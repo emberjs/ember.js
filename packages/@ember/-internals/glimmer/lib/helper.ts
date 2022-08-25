@@ -5,7 +5,7 @@
 import type { FactoryManager } from '@ember/-internals/container/lib/container';
 import type { Factory, Owner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
-import { FrameworkObject } from '@ember/-internals/runtime';
+import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';

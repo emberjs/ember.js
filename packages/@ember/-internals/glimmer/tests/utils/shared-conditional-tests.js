@@ -3,14 +3,11 @@
 import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
 import { htmlSafe } from '@ember/-internals/glimmer';
-import { get, set } from '@ember/-internals/metal';
-import {
-  Object as EmberObject,
-  ObjectProxy,
-  A as emberA,
-  ArrayProxy,
-  removeAt,
-} from '@ember/-internals/runtime';
+import { get, set } from '@ember/object';
+import EmberObject from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
+import { A as emberA, removeAt } from '@ember/array';
+import ArrayProxy from '@ember/array/proxy';
 
 import { Component } from './helpers';
 

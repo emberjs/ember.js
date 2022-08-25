@@ -2,21 +2,32 @@
 @module @ember/engine
 */
 
-import { Object as EmberObject, RSVP } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-import ContainerProxyMixin from '@ember/-internals/runtime/lib/mixins/container_proxy';
+import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
 import { isFactory } from '@ember/-internals/owner';
-import Engine from '.';
+import Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { BootOptions } from '@ember/application/instance';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer';
+import type { SimpleElement } from '@simple-dom/interface';
 
 const CEngine = Engine;
+
+export interface BootOptions {
+  isBrowser?: boolean;
+  shouldRender?: boolean;
+  document?: Document | null;
+  rootElement?: string | SimpleElement | null;
+  location?: string | null;
+  // Private?
+  isInteractive?: boolean;
+  _renderMode?: string;
+}
 
 export interface EngineInstanceOptions {
   mountPoint?: string;

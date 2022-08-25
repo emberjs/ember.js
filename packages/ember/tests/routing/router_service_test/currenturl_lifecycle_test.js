@@ -1,8 +1,8 @@
 import { service } from '@ember/service';
 import { readOnly } from '@ember/object/computed';
 import { Component } from '@ember/-internals/glimmer';
-import { Route } from '@ember/-internals/routing';
-import { get } from '@ember/-internals/metal';
+import Route from '@ember/routing/route';
+import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
 

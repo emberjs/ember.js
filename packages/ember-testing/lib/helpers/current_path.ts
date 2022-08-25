@@ -1,8 +1,8 @@
 /**
 @module ember
 */
-import { get } from '@ember/-internals/metal';
-import { RoutingService } from '@ember/-internals/routing';
+import { get } from '@ember/object';
+import { RoutingService } from '@ember/routing/-internals';
 import type Application from '@ember/application';
 import { assert } from '@ember/debug';
 

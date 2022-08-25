@@ -1,6 +1,6 @@
 import { expectTypeOf } from 'expect-type';
 
-import { cacheFor } from '@ember/object/internals';
+import { cacheFor } from '@ember/object/-internals';
 
 expectTypeOf(cacheFor).toEqualTypeOf<(obj: object, key: string) => unknown>();
 

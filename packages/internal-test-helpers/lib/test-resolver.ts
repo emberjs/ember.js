@@ -1,6 +1,6 @@
 import { compile } from 'ember-template-compiler';
 
-import type { Resolver as IResolver } from '@ember/-internals/container/lib/registry';
+import type { Resolver as IResolver } from '@ember/-internals/container';
 import type { Factory } from '@ember/-internals/owner';
 
 const DELIMITER = '%';

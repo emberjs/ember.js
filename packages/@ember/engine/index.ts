@@ -2,19 +2,19 @@ export { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
-import { Namespace } from '@ember/-internals/runtime';
+import Namespace from '@ember/application/namespace';
 import { Registry } from '@ember/-internals/container';
+import type { ResolverClass } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
-import { get, set } from '@ember/-internals/metal';
+import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
+import { get, set } from '@ember/object';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import EngineInstance from '@ember/engine/instance';
-import { RoutingService } from '@ember/-internals/routing';
-import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
+import { RoutingService } from '@ember/routing/-internals';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
-import RegistryProxyMixin from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-import type { ResolverClass } from '@ember/-internals/container/lib/registry';
+import { RegistryProxyMixin } from '@ember/-internals/runtime';
 
 function props(obj: object) {
   let properties = [];

@@ -1,5 +1,4 @@
-import { get, set } from '@ember/-internals/metal';
-import EmberObject from '../../../../lib/system/object';
+import EmberObject, { get, set } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*

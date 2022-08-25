@@ -3,7 +3,7 @@ import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { computed } from '@ember/-internals/metal';
+import { computed } from '@ember/object';
 
 moduleFor(
   'Service Injection',

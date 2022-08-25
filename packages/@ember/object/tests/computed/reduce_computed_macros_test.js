@@ -1,20 +1,15 @@
 import { run } from '@ember/runloop';
-import {
+import { addObserver } from '@ember/-internals/metal';
+import EmberObject, {
   defineProperty,
-  setProperties,
   get,
   set,
-  addObserver,
+  setProperties,
   computed,
   observer,
-} from '@ember/-internals/metal';
-import {
-  Object as EmberObject,
-  ObjectProxy,
-  isArray,
-  A as emberA,
-  removeAt,
-} from '@ember/-internals/runtime';
+} from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
+import { isArray, A as emberA, removeAt } from '@ember/array';
 import {
   sum,
   min,

@@ -2,9 +2,11 @@
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
+import NoneLocation from '@ember/routing/none-location';
+import HistoryLocation from '@ember/routing/history-location';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject, { set } from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -14,7 +16,8 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, set, addObserver } from '@ember/-internals/metal';
+import { addObserver } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
 

@@ -10,8 +10,7 @@ import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
-import Controller, { inject as injectController } from '@ember/controller';
-import ControllerMixin from '@ember/controller/lib/controller_mixin';
+import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
 import {
   _getStrings,
   _setStrings,
@@ -26,34 +25,16 @@ import {
 } from '@ember/string';
 import Service, { service } from '@ember/service';
 
-import { action, computed } from '@ember/object';
+import EmberObject, { action, computed, observer } from '@ember/object';
 import { dependentKeyCompat } from '@ember/object/compat';
 
 import {
-  Object as EmberObject,
   RegistryProxyMixin,
   ContainerProxyMixin,
-  compare,
-  isEqual,
-  Array as EmberArray,
-  MutableEnumerable,
-  MutableArray,
-  Evented,
-  PromiseProxyMixin,
-  Observable,
-  typeOf,
-  isArray,
   _ProxyMixin,
   RSVP,
   Comparable,
-  Namespace,
-  Enumerable,
-  ArrayProxy,
-  ObjectProxy,
   ActionHandler,
-  CoreObject,
-  NativeArray,
-  A,
 } from '@ember/-internals/runtime';
 import {
   Component,
@@ -73,17 +54,43 @@ import {
 } from '@ember/-internals/glimmer';
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
-import * as routing from '@ember/-internals/routing';
-import * as extensionSupport from '@ember/-internals/extension-support';
+import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
+import DataAdapter from '@ember/debug/data-adapter';
 import EmberError from '@ember/error';
 import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import { getOwner, setOwner } from '@ember/-internals/owner';
+import EmberArray, { A, NativeArray, isArray } from '@ember/array';
+import MutableArray from '@ember/array/mutable';
+import ArrayProxy from '@ember/array/proxy';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
+import Namespace from '@ember/application/namespace';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
+import Enumerable from '@ember/enumerable';
+import MutableEnumerable from '@ember/enumerable/mutable';
+import CoreObject from '@ember/object/core';
+import Evented from '@ember/object/evented';
+import Mixin, { mixin } from '@ember/object/mixin';
+import Observable from '@ember/object/observable';
+import ObjectProxy from '@ember/object/proxy';
+import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { assign } from '@ember/polyfills';
+import AutoLocation from '@ember/routing/auto-location';
+import HashLocation from '@ember/routing/hash-location';
+import HistoryLocation from '@ember/routing/history-location';
+import NoneLocation from '@ember/routing/none-location';
+import EmberLocation from '@ember/routing/location';
+import Route from '@ember/routing/route';
+import Router from '@ember/routing/router';
+import {
+  controllerFor,
+  generateController,
+  generateControllerFactory,
+  DSL as RouterDSL,
+} from '@ember/routing/-internals';
+import { isNone, isBlank, isEmpty, isPresent, isEqual, typeOf, compare } from '@ember/utils';
 
 import {
   templateOnlyComponent,
@@ -218,10 +225,10 @@ Ember.addListener = metal.addListener;
 Ember.removeListener = metal.removeListener;
 Ember.sendEvent = metal.sendEvent;
 Ember.hasListeners = metal.hasListeners;
-Ember.isNone = metal.isNone;
-Ember.isEmpty = metal.isEmpty;
-Ember.isBlank = metal.isBlank;
-Ember.isPresent = metal.isPresent;
+Ember.isNone = isNone;
+Ember.isEmpty = isEmpty;
+Ember.isBlank = isBlank;
+Ember.isPresent = isPresent;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
@@ -238,9 +245,9 @@ Ember.setProperties = metal.setProperties;
 Ember.expandProperties = metal.expandProperties;
 Ember.addObserver = metal.addObserver;
 Ember.removeObserver = metal.removeObserver;
-Ember.observer = metal.observer;
-Ember.mixin = metal.mixin;
-Ember.Mixin = metal.Mixin;
+Ember.observer = observer;
+Ember.mixin = mixin;
+Ember.Mixin = Mixin;
 
 Ember._createCache = metal.createCache;
 Ember._cacheGetValue = metal.getValue;
@@ -500,23 +507,22 @@ Ember.ViewUtils = {
 Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
-// ****@ember/-internals/routing****
-Ember.Location = routing.Location;
-Ember.AutoLocation = routing.AutoLocation;
-Ember.HashLocation = routing.HashLocation;
-Ember.HistoryLocation = routing.HistoryLocation;
-Ember.NoneLocation = routing.NoneLocation;
-Ember.controllerFor = routing.controllerFor;
-Ember.generateControllerFactory = routing.generateControllerFactory;
-Ember.generateController = routing.generateController;
-Ember.RouterDSL = routing.RouterDSL;
-Ember.Router = routing.Router;
-Ember.Route = routing.Route;
+Ember.Location = EmberLocation;
+Ember.AutoLocation = AutoLocation;
+Ember.HashLocation = HashLocation;
+Ember.HistoryLocation = HistoryLocation;
+Ember.NoneLocation = NoneLocation;
+Ember.controllerFor = controllerFor;
+Ember.generateControllerFactory = generateControllerFactory;
+Ember.generateController = generateController;
+Ember.RouterDSL = RouterDSL;
+Ember.Router = Router;
+Ember.Route = Route;
 
 runLoadHooks('Ember.Application', Application);
 
-Ember.DataAdapter = extensionSupport.DataAdapter;
-Ember.ContainerDebugAdapter = extensionSupport.ContainerDebugAdapter;
+Ember.DataAdapter = DataAdapter;
+Ember.ContainerDebugAdapter = ContainerDebugAdapter;
 
 let EmberHandlebars = {
   template,

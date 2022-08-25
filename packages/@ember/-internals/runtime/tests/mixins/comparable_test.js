@@ -1,6 +1,5 @@
-import { get } from '@ember/-internals/metal';
-import EmberObject from '../../lib/system/object';
-import compare from '../../lib/compare';
+import EmberObject, { get } from '@ember/object';
+import { compare } from '@ember/utils';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

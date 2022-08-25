@@ -101,6 +101,7 @@ let allExports = [
 
   // @ember/controller
   ['Controller', '@ember/controller', 'default'],
+  ['ControllerMixin', '@ember/controller', 'ControllerMixin'],
   ['inject.controller', '@ember/controller', 'inject'],
 
   // @ember/debug
@@ -368,7 +369,6 @@ let allExports = [
   ['ActionHandler', '@ember/-internals/runtime'],
   ['NativeArray', '@ember/-internals/runtime'],
   ['MutableEnumerable', '@ember/-internals/runtime'],
-  ['ControllerMixin', '@ember/controller/lib/controller_mixin', 'default'],
   ['_ProxyMixin', '@ember/-internals/runtime'],
 
   // @ember/-internals/routing

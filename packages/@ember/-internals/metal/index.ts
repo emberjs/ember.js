@@ -1,4 +1,14 @@
-export { default as computed, autoComputed, isComputed, ComputedProperty } from './lib/computed';
+export {
+  default as computed,
+  autoComputed,
+  isComputed,
+  ComputedProperty,
+  ComputedDecorator,
+  ComputedPropertyGetter,
+  ComputedPropertyObj,
+  ComputedPropertySetter,
+  ComputedPropertyCallback,
+} from './lib/computed';
 export { getCachedValueFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
@@ -22,21 +32,19 @@ export { arrayContentWillChange, arrayContentDidChange } from './lib/array_event
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
 export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
 
-export { default as isNone } from './lib/is_none';
-export { default as isEmpty } from './lib/is_empty';
-export { default as isBlank } from './lib/is_blank';
-export { default as isPresent } from './lib/is_present';
 export {
   beginPropertyChanges,
   changeProperties,
   endPropertyChanges,
   notifyPropertyChange,
+  PropertyDidChange,
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
-export { defineProperty } from './lib/properties';
+export { defineProperty, defineDecorator, defineValue } from './lib/properties';
 export {
   ExtendedMethodDecorator,
   DecoratorPropertyDescriptor,
+  ComputedDescriptor,
   ElementDescriptor,
   isElementDescriptor,
   nativeDescDecorator,
@@ -44,6 +52,7 @@ export {
   descriptorForProperty,
   isClassicDecorator,
   setClassicDecorator,
+  makeComputedDecorator,
 } from './lib/decorator';
 export { default as libraries, Libraries } from './lib/libraries';
 export { default as getProperties } from './lib/get_properties';
@@ -57,8 +66,8 @@ export {
   activateObserver,
   removeObserver,
   flushAsyncObservers,
+  revalidateObservers,
 } from './lib/observer';
-export { Mixin, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagForObject, markObjectAsDirty } from './lib/tags';
 export { tracked, TrackedDescriptor } from './lib/tracked';
@@ -76,4 +85,5 @@ export {
   removeNamespace,
   isSearchDisabled as isNamespaceSearchDisabled,
   setSearchDisabled as setNamespaceSearchDisabled,
+  setUnprocessedMixins,
 } from './lib/namespace_search';

@@ -1,7 +1,8 @@
 import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
-import { get, set } from '@ember/-internals/metal';
-import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
+import { get, set } from '@ember/object';
+import EmberObject from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
 
 import {
   FalsyGenerator,

@@ -1,7 +1,8 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { get, set } from '@ember/-internals/metal';
-import { A as emberA, ObjectProxy, removeAt } from '@ember/-internals/runtime';
+import { get, set } from '@ember/object';
+import { A as emberA, removeAt } from '@ember/array';
+import ObjectProxy from '@ember/object/proxy';
 
 moduleFor(
   'Syntax test: {{#let as}}',

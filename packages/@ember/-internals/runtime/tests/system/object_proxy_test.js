@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import { addObserver, observer, computed, get, set, removeObserver } from '@ember/-internals/metal';
-import ObjectProxy from '../../lib/system/object_proxy';
+import { addObserver, removeObserver } from '@ember/-internals/metal';
+import { computed, get, set, observer } from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -103,6 +104,7 @@ moduleFor(
       if (DEBUG) {
         let proxy = ObjectProxy.extend({
           init() {
+            this._super();
             if (!this.foobar) {
               this.foobar = function () {
                 let content = get(this, 'content');

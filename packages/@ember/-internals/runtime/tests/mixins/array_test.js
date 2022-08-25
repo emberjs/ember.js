@@ -1,17 +1,13 @@
 import {
-  get,
-  set,
   objectAt,
   addObserver,
-  observer as emberObserver,
-  computed,
   addArrayObserver,
   removeArrayObserver,
   arrayContentDidChange,
   arrayContentWillChange,
 } from '@ember/-internals/metal';
-import EmberObject from '../../lib/system/object';
-import EmberArray, { A as emberA } from '../../lib/mixins/array';
+import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
+import EmberArray, { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*

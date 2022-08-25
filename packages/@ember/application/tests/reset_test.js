@@ -1,6 +1,6 @@
 import { run } from '@ember/runloop';
 import Controller from '@ember/controller';
-import { Router } from '@ember/-internals/routing';
+import Router from '@ember/routing/router';
 import { EventDispatcher } from '@ember/-internals/views';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 

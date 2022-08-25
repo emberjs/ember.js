@@ -2,29 +2,19 @@
 @module @ember/application
 */
 
-import { get, set } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import * as environment from '@ember/-internals/browser-environment';
 import EngineInstance from '@ember/engine/instance';
-import type Application from './lib/application';
+import type { BootOptions } from '@ember/engine/instance';
+import type Application from '@ember/application';
 import { renderSettled } from '@ember/-internals/glimmer';
-import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
+import type { BootEnvironment } from '@ember/-internals/glimmer';
 import { assert } from '@ember/debug';
-import { Router } from '@ember/-internals/routing';
+import Router from '@ember/routing/router';
 import type { ViewMixin } from '@ember/-internals/views';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Registry } from '@ember/-internals/container';
 import type { SimpleElement } from '@simple-dom/interface';
-
-export interface BootOptions {
-  isBrowser?: boolean;
-  shouldRender?: boolean;
-  document?: Document | null;
-  rootElement?: string | SimpleElement | null;
-  location?: string | null;
-  // Private?
-  isInteractive?: boolean;
-  _renderMode?: string;
-}
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a

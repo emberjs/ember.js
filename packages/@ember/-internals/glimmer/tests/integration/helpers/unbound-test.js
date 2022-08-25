@@ -6,8 +6,8 @@ import {
   runLoopSettled,
 } from 'internal-test-helpers';
 
-import { set, get, setProperties } from '@ember/-internals/metal';
-import { A as emberA } from '@ember/-internals/runtime';
+import { set, get, setProperties } from '@ember/object';
+import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
 

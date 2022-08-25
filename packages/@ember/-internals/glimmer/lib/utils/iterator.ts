@@ -1,5 +1,5 @@
 import { objectAt } from '@ember/-internals/metal';
-import type { Array as EmberArray } from '@ember/-internals/runtime';
+import type EmberArray from '@ember/array';
 import { isEmberArray, isObject } from '@ember/-internals/utils';
 import type { Option } from '@glimmer/interfaces';
 import type { IteratorDelegate } from '@glimmer/reference';

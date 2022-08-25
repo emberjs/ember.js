@@ -1,7 +1,7 @@
 import Controller, { inject as injectController } from '@ember/controller';
 import Service, { service } from '@ember/service';
-import { Object as EmberObject } from '@ember/-internals/runtime';
-import { Mixin, get } from '@ember/-internals/metal';
+import EmberObject, { get } from '@ember/object';
+import Mixin from '@ember/object/mixin';
 import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';

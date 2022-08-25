@@ -1,7 +1,8 @@
 /**
 @module ember
 */
-import { descriptorForProperty, Mixin } from '@ember/-internals/metal';
+import { descriptorForProperty } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 
 const EMPTY_ARRAY = Object.freeze([]);

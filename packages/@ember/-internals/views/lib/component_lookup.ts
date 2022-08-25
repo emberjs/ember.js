@@ -1,5 +1,5 @@
 import type { Owner, TypeOptions } from '@ember/-internals/owner';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 
 export default EmberObject.extend({
   componentFor(name: string, owner: Owner) {

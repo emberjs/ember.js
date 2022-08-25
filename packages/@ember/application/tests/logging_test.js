@@ -3,7 +3,7 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 
 class LoggingApplicationTestCase extends ApplicationTestCase {
   constructor() {

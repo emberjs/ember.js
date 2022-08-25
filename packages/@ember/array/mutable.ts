@@ -1,1 +1,1 @@
-export { MutableArray as default } from '@ember/-internals/runtime';
+export { MutableArray as default } from '@ember/array';

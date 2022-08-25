@@ -1,7 +1,8 @@
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { helperCapabilities, setHelperManager } from '@glimmer/manager';
 import { Helper, helper, Component as EmberComponent } from '@ember/-internals/glimmer';
-import { tracked, set } from '@ember/-internals/metal';
+import { tracked } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import { EMBER_DEFAULT_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { service } from '@ember/service';

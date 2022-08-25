@@ -7,7 +7,7 @@ import {
 } from 'internal-test-helpers';
 
 import { DEBUG } from '@ember/debug';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';

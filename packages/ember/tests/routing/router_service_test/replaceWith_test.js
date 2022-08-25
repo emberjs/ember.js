@@ -1,4 +1,4 @@
-import { NoneLocation } from '@ember/-internals/routing';
+import NoneLocation from '@ember/routing/none-location';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 import Controller from '@ember/controller';

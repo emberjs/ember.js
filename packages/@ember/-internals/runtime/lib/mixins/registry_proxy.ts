@@ -4,7 +4,7 @@
 
 import type { Registry } from '@ember/-internals/container';
 import type { TypeOptions } from '@ember/-internals/container/lib/registry';
-import { Mixin } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import type { Factory } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';

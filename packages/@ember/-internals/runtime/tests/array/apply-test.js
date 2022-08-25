@@ -1,4 +1,4 @@
-import { NativeArray } from '../../lib/mixins/array';
+import { NativeArray } from '@ember/array';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 
 class ArrayPrototypeExtensionSelfReferenceTests extends AbstractTestCase {

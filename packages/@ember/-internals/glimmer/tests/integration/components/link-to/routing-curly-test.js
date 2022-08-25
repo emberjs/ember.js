@@ -5,9 +5,11 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA, RSVP } from '@ember/-internals/runtime';
+import { A as emberA } from '@ember/array';
+import { RSVP } from '@ember/-internals/runtime';
 import { subscribe, reset } from '@ember/instrumentation';
-import { Route, NoneLocation } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
+import NoneLocation from '@ember/routing/none-location';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';

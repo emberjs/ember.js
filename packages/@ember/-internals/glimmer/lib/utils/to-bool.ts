@@ -1,6 +1,6 @@
 import { isHTMLSafe } from '@ember/-internals/glimmer';
 import { get, tagForProperty } from '@ember/-internals/metal';
-import { isArray } from '@ember/-internals/runtime';
+import { isArray } from '@ember/array';
 import { isProxy } from '@ember/-internals/utils';
 import { consumeTag } from '@glimmer/validator';
 

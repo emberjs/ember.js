@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { capitalize } from '@ember/string';
-import { Route } from '@ember/-internals/routing';
-import { get } from '@ember/-internals/metal';
+import Route from '@ember/routing/route';
+import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 function setupController(app, name) {

@@ -1,7 +1,7 @@
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
-import { A as emberA } from '../../lib/mixins/array';
+import { A as emberA } from '@ember/array';
 import { destroy } from '@glimmer/destroyable';
 
 class RemoveObjectsTests extends AbstractTestCase {

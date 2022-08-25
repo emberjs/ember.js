@@ -1,6 +1,6 @@
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 

@@ -3,11 +3,11 @@
 */
 
 import { meta } from '@ember/-internals/meta';
+import Mixin from '@ember/object/mixin';
 import {
   get,
   set,
   defineProperty,
-  Mixin,
   tagForObject,
   computed,
   tagForProperty,

@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Mixin } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
 import type Component from '@ember/component';
 import type states from '../views/states';
 

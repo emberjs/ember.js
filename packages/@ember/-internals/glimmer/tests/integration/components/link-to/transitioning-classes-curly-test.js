@@ -1,5 +1,5 @@
 import { RSVP } from '@ember/-internals/runtime';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 function assertHasClass(assert, selector, label) {

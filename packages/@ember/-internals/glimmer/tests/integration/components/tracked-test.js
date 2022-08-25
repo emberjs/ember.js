@@ -1,11 +1,9 @@
-import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
-import {
-  computed,
-  get,
-  set,
-  tracked,
-  nativeDescDecorator as descriptor,
-} from '@ember/-internals/metal';
+import EmberObject from '@ember/object';
+import { A } from '@ember/array';
+import ArrayProxy from '@ember/array/proxy';
+import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';

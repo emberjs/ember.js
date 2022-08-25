@@ -1,10 +1,12 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/string';
-import { RSVP, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject, { get, computed } from '@ember/object';
+import { RSVP } from '@ember/-internals/runtime';
+import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
-import { get, computed, tracked } from '@ember/-internals/metal';
-import { Route } from '@ember/-internals/routing';
+import { tracked } from '@ember/-internals/metal';
+import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
