@@ -3,15 +3,17 @@ export default class Cache<T, V> {
   public misses = 0;
   public hits = 0;
 
-  constructor(private limit: number, private func: (obj: T) => V, private store?: any) {
-    this.store = store || new Map();
-  }
+  constructor(
+    private limit: number,
+    private func: (obj: T) => V,
+    private store: Map<T, V> = new Map()
+  ) {}
 
   get(key: T): V {
     if (this.store.has(key)) {
       this.hits++;
-
-      return this.store.get(key);
+      // SAFETY: we know the value is present because `.has(key)` was `true`.
+      return this.store.get(key) as V;
     } else {
       this.misses++;
       return this.set(key, this.func(key));
