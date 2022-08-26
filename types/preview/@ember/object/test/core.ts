@@ -28,11 +28,11 @@ co3.bar; // $ExpectType number
 
 /** .extend with a zero-argument .create()  */
 const co4 = CoreObject.extend({
-    foo: '123',
-    bar: 456,
-    baz(): [string, number] {
-        return [this.foo, this.bar];
-    },
+  foo: '123',
+  bar: 456,
+  baz(): [string, number] {
+    return [this.foo, this.bar];
+  },
 }).create();
 
 co4.foo; // $ExpectType string
@@ -41,11 +41,11 @@ co4.baz; // $ExpectType () => [string, number]
 
 /** .extend with inconsistent arguments passed into .create()  */
 const class05 = CoreObject.extend({
-    foo: '123' as string | boolean,
-    bar: 456,
-    baz() {
-        return [this.foo, this.bar];
-    },
+  foo: '123' as string | boolean,
+  bar: 456,
+  baz() {
+    return [this.foo, this.bar];
+  },
 });
 // @ts-expect-error
 const c05 = class05.create({ foo: 99 });
@@ -58,35 +58,35 @@ assertType<boolean>(c05c.foo);
 
 /** two .extend arguments with a zero-argument .create() */
 const co6 = CoreObject.extend(
-    {
-        foo: '123',
-        bar: 456,
-        baz() {
-            return [this.foo, this.bar];
-        },
-        func1() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            this.foo; // $ExpectType string
-            // this does not include stuff from later extend args
-            // @ts-expect-error
-            this.bee;
-        },
+  {
+    foo: '123',
+    bar: 456,
+    baz() {
+      return [this.foo, this.bar];
     },
-    {
-        foo: 99,
-        bee: 'honey',
-        func2() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            // TODO: switch to "$ExpectType number" in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
-            this.foo;
-            // this includes stuff from earlier extend-args
-            this.bar; // $ExpectType number
-        },
+    func1() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      this.foo; // $ExpectType string
+      // this does not include stuff from later extend args
+      // @ts-expect-error
+      this.bee;
     },
+  },
+  {
+    foo: 99,
+    bee: 'honey',
+    func2() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      // TODO: switch to "$ExpectType number" in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
+      this.foo;
+      // this includes stuff from earlier extend-args
+      this.bar; // $ExpectType number
+    },
+  }
 ).create();
 
 // TODO: enable in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
@@ -96,48 +96,48 @@ assertType<() => Array<string | number>>(co6.baz); // $ExpectType () => (string 
 
 /** three .extend arguments with a zero-argument .create() */
 const co7 = CoreObject.extend(
-    {
-        foo: '123',
-        bar: 456,
-        baz() {
-            return [this.foo, this.bar];
-        },
-        func1() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            this.foo; // $ExpectType string
-            // this does not include stuff from later extend args
-            // @ts-expect-error
-            this.bee;
-        },
+  {
+    foo: '123',
+    bar: 456,
+    baz() {
+      return [this.foo, this.bar];
     },
-    {
-        foo: 99,
-        bee: 'honey',
-        func2() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            // TODO: switch to "$ExpectType number" in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
-            this.foo;
-            // this includes stuff from earlier extend-args
-            this.bar; // $ExpectType number
-        },
+    func1() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      this.foo; // $ExpectType string
+      // this does not include stuff from later extend args
+      // @ts-expect-error
+      this.bee;
     },
-    {
-        foo: '99',
-        money: 'in the banana stand',
-        func3() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            this.money; // $ExpectType string
-            // this includes stuff from earlier extend-args
-            this.bee; // $ExpectType string
-            this.bar; // $ExpectType number
-        },
+  },
+  {
+    foo: 99,
+    bee: 'honey',
+    func2() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      // TODO: switch to "$ExpectType number" in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
+      this.foo;
+      // this includes stuff from earlier extend-args
+      this.bar; // $ExpectType number
     },
+  },
+  {
+    foo: '99',
+    money: 'in the banana stand',
+    func3() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      this.money; // $ExpectType string
+      // this includes stuff from earlier extend-args
+      this.bee; // $ExpectType string
+      this.bar; // $ExpectType number
+    },
+  }
 ).create();
 // TODO: enable in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
 // assertType<number>(co7.foo); // @ts-expect-error
@@ -147,68 +147,68 @@ assertType<() => Array<string | number>>(co7.baz); // $ExpectType () => (string 
 
 /** four .extend arguments with a zero-argument .create() */
 const co8 = CoreObject.extend(
-    {
-        foo: '123',
-        bar: 456,
-        baz() {
-            return [this.foo, this.bar];
-        },
-        func1() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            this.foo; // $ExpectType string
-            // this does not include stuff from later extend args
-            // @ts-expect-error
-            this.bee;
-        },
+  {
+    foo: '123',
+    bar: 456,
+    baz() {
+      return [this.foo, this.bar];
     },
-    {
-        foo: 99,
-        bee: 'honey',
-        func2() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            // TODO: switch to "$ExpectType number" in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
-            this.foo;
-            // this includes stuff from earlier extend-args
-            this.bar; // $ExpectType number
-            // this does not include stuff from later extend args
-            // @ts-expect-error
-            this.money;
-        },
+    func1() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      this.foo; // $ExpectType string
+      // this does not include stuff from later extend args
+      // @ts-expect-error
+      this.bee;
     },
-    {
-        foo: '99',
-        money: 'in the banana stand',
-        func3() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            this.money; // $ExpectType string
-            // this includes stuff from earlier extend-args
-            this.bee; // $ExpectType string
-            this.bar; // $ExpectType number
-            // this does not include stuff from later extend args
-            // @ts-expect-error
-            this.neighborhood;
-        },
+  },
+  {
+    foo: 99,
+    bee: 'honey',
+    func2() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      // TODO: switch to "$ExpectType number" in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291
+      this.foo;
+      // this includes stuff from earlier extend-args
+      this.bar; // $ExpectType number
+      // this does not include stuff from later extend args
+      // @ts-expect-error
+      this.money;
     },
-    {
-        foo: '99',
-        neighborhood: 'sudden valley',
-        func4() {
-            // this includes stuff from CoreObject
-            this.init; // $ExpectType () => void
-            // this includes stuff from this extend-arg
-            this.neighborhood; // $ExpectType string
-            // this includes stuff from earlier extend-args
-            this.bee; // $ExpectType string
-            this.bar; // $ExpectType number
-            this.money; // $ExpectType string
-        },
+  },
+  {
+    foo: '99',
+    money: 'in the banana stand',
+    func3() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      this.money; // $ExpectType string
+      // this includes stuff from earlier extend-args
+      this.bee; // $ExpectType string
+      this.bar; // $ExpectType number
+      // this does not include stuff from later extend args
+      // @ts-expect-error
+      this.neighborhood;
     },
+  },
+  {
+    foo: '99',
+    neighborhood: 'sudden valley',
+    func4() {
+      // this includes stuff from CoreObject
+      this.init; // $ExpectType () => void
+      // this includes stuff from this extend-arg
+      this.neighborhood; // $ExpectType string
+      // this includes stuff from earlier extend-args
+      this.bee; // $ExpectType string
+      this.bar; // $ExpectType number
+      this.money; // $ExpectType string
+    },
+  }
 ).create();
 
 // TODO: enable in TS 3.0  see: https://github.com/typed-ember/ember-cli-typescript/issues/291

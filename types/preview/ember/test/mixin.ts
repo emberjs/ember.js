@@ -1,36 +1,37 @@
 import Ember from 'ember';
 import { assertType } from './lib/assert';
 
-interface EditableMixin {
-    edit(): void;
-    isEditing: boolean;
+interface EditableMixin extends Ember.Mixin {
+  edit(): void;
+  isEditing: boolean;
 }
 
-const EditableMixin = Ember.Mixin.create<EditableMixin, Ember.Route>({
-    edit() {
-        this.get('controller');
-        console.log('starting to edit');
-        this.set('isEditing', true);
-    },
-    isEditing: false,
+const EditableMixin = Ember.Mixin.create({
+  edit(this: EditableMixin & Ember.Object) {
+    this.get('controller');
+    console.log('starting to edit');
+    this.set('isEditing', true);
+  },
+  isEditing: false,
 });
 
-const EditableComment = Ember.Route.extend(EditableMixin, {
-    postId: 0,
+interface EditableComment extends EditableMixin {}
+class EditableComment extends Ember.Route.extend(EditableMixin) {
+  postId = 0;
 
-    canEdit() {
-        return !this.isEditing;
-    },
+  canEdit() {
+    return !this.isEditing;
+  }
 
-    tryEdit() {
-        if (this.canEdit()) {
-            this.edit();
-        }
-    },
-});
+  tryEdit() {
+    if (this.canEdit()) {
+      this.edit();
+    }
+  }
+}
 
 const comment = EditableComment.create({
-    postId: 42,
+  postId: 42,
 });
 
 comment.edit();
@@ -39,18 +40,26 @@ comment.tryEdit();
 assertType<boolean>(comment.isEditing);
 assertType<number>(comment.postId);
 
+// We do not expect this to update the type; we do expect it to minimally check
 const LiteralMixins = Ember.Object.extend({ a: 1 }, { b: 2 }, { c: 3 });
 const obj = LiteralMixins.create();
-assertType<number>(obj.a);
-assertType<number>(obj.b);
-assertType<number>(obj.c);
+// @ts-expect-error
+obj.a;
+// @ts-expect-error
+obj.b;
+// @ts-expect-error
+obj.c;
 
 /* Test composition of mixins */
+interface EditableAndCancelableMixin extends EditableMixin {
+  cancelled: boolean;
+}
 const EditableAndCancelableMixin = Ember.Mixin.create(EditableMixin, {
-    cancelled: false,
+  cancelled: false,
 });
 
-const EditableAndCancelableComment = Ember.Route.extend(EditableAndCancelableMixin);
+interface EditableAndCancelableComment extends EditableAndCancelableMixin {}
+class EditableAndCancelableComment extends Ember.Route.extend(EditableAndCancelableMixin) {}
 
 const editableAndCancelable = EditableAndCancelableComment.create();
 assertType<boolean>(editableAndCancelable.isEditing);

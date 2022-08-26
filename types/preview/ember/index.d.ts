@@ -147,7 +147,7 @@ export namespace Ember {
 
   const Evented: typeof EmberObjectEventedNs.default;
 
-  class Mixin<T, Base = EmberObjectNs.default> extends EmberMixin<T, Base> {}
+  class Mixin extends EmberMixin {}
 
   /**
    * A Namespace is an object usually used to contain other objects or methods
@@ -162,7 +162,7 @@ export namespace Ember {
     target: unknown;
     actionContext: unknown;
   }
-  const ViewTargetActionSupport: Mixin<ViewTargetActionSupport>;
+  const ViewTargetActionSupport: Mixin;
   const ViewUtils: {
     isSimpleClick(event: Event): boolean;
   };
@@ -242,10 +242,8 @@ export namespace Ember {
      * Creates a property that lazily looks up another controller in the container.
      * Can only be used when defining another controller.
      */
-    function controller(): ComputedProperty<Controller>;
-    function controller<K extends keyof ControllerRegistry>(
-      name: K
-    ): ComputedProperty<ControllerRegistry[K]>;
+    function controller(): Controller;
+    function controller<K extends keyof ControllerRegistry>(name: K): ControllerRegistry[K];
     const service: typeof EmberServiceNs.inject;
   }
   namespace ENV {

@@ -1,14 +1,7 @@
 import ComputedProperty from '@ember/object/computed';
 import Mixin from '@ember/object/mixin';
 import NativeArray from '@ember/array/-private/native-array';
-import EmberArray from '@ember/array';
-import {
-  AnyFn,
-  MethodNamesOf,
-  MethodParams,
-  MethodReturns,
-  MethodsOf,
-} from 'ember/-private/type-utils';
+import { MethodNamesOf, MethodParams, MethodReturns } from 'ember/-private/type-utils';
 
 /**
  * This mixin defines the common interface implemented by enumerable objects
@@ -172,8 +165,8 @@ interface Enumerable<T> {
    * this property, it will return this. If you set this property to a new
    * array, it will replace the current content.
    */
-  '[]': ComputedProperty<this>;
+  '[]': ComputedProperty;
 }
 
-declare const Enumerable: Mixin<Enumerable<unknown>>;
+declare const Enumerable: Mixin;
 export default Enumerable;
