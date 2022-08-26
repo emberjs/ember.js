@@ -60,7 +60,7 @@ export default class CoreObject {
 
   static create<Class extends typeof CoreObject>(
     this: Class,
-    ...initialValues: Array<Mixin | Record<string, unknown>>
+    ...initialValues: Array<Mixin | MembersOf<Class>>
   ): InstanceType<Class>;
 
   static extend<Statics, Instance>(
@@ -81,3 +81,7 @@ export default class CoreObject {
   static isClass: boolean;
   static isMethod: boolean;
 }
+
+type MembersOf<Class extends typeof CoreObject> = {
+  [Key in keyof InstanceType<Class>]?: InstanceType<Class>[Key];
+};

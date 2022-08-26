@@ -1,192 +1,100 @@
 import Ember from 'ember';
-import Component from '@ember/component';
-import Computed, { alias, or } from '@ember/object/computed';
-import { assertType } from './lib/assert';
+import { expectTypeOf } from 'expect-type';
 
-const Person = Ember.Object.extend({
-    firstName: '',
-    lastName: '',
-    age: 0,
+function customMacro(message: string) {
+  return Ember.computed(() => {
+    return [message, message];
+  });
+}
 
-    noArgs: Ember.computed<string>(() => 'test'),
+class Person extends Ember.Object {
+  firstName = '';
+  lastName = '';
+  age = 0;
 
-    fullName: Ember.computed<string>('firstName', 'lastName', function () {
-        return `${this.get('firstName')} ${this.get('lastName')}`;
-    }),
+  // Equivalent to a per-instance `defineProperty` call.
+  @Ember.computed()
+  get noArgs() {
+    return 'test';
+  }
 
-    fullNameReadonly: Ember.computed<string>('fullName', function () {
-        return this.get('fullName');
-    }).readOnly(),
+  @Ember.computed('firstName', 'lastName')
+  get fullName(): string {
+    return `${this.get('firstName')} ${this.get('lastName')}`;
+  }
 
-    fullNameWritable: Ember.computed<string>('firstName', 'lastName', {
-        get() {
-            return this.get('fullName');
-        },
-        set(key, value) {
-            const [first, last] = value.split(' ');
-            this.set('firstName', first);
-            this.set('lastName', last);
-            return value;
-        },
-    }),
+  @Ember.computed('fullName').readOnly()
+  get fullNameReadonly() {
+    return this.get('fullName');
+  }
 
-    fullNameGetOnly: Ember.computed<string>('fullName', {
-        get() {
-            return this.get('fullName');
-        },
-    }),
+  @Ember.computed('firstName', 'lastName')
+  get fullNameWritable(): string {
+    return this.get('fullName');
+  }
 
-    fullNameSetOnly: Ember.computed<string>('firstName', 'lastName', {
-        set(key, value) {
-            const [first, last] = value.split(' ');
-            this.set('firstName', first);
-            this.set('lastName', last);
-            return value;
-        },
-    }),
+  set fullNameWritable(value: string) {
+    const [first, last] = value.split(' ');
+    this.set('firstName', first);
+    this.set('lastName', last);
+  }
 
-    combinators: Ember.computed<string>(function () {
-        return this.get('firstName');
-    })
-        .property('firstName')
-        .meta({ foo: 'bar' })
-        .volatile()
-        .readOnly(),
+  @Ember.computed().meta({ foo: 'bar' }).readOnly()
+  get combinators() {
+    return this.get('firstName');
+  }
 
-    explicitlyDeclared: alias('fullName') as Computed<string>,
-});
+  @customMacro('hi')
+  declare hiTwice: string[];
+}
 
 const person = Person.create({
-    firstName: 'Fred',
-    lastName: 'Smith',
-    age: 29,
+  firstName: 'Fred',
+  lastName: 'Smith',
+  age: 29,
 });
 
-assertType<string>(person.firstName);
-assertType<number>(person.age);
-assertType<Ember.ComputedProperty<string>>(person.noArgs);
-assertType<Ember.ComputedProperty<string>>(person.fullName);
-assertType<Ember.ComputedProperty<string>>(person.fullNameReadonly);
-assertType<Ember.ComputedProperty<string>>(person.fullNameWritable);
-assertType<Ember.ComputedProperty<string>>(person.fullNameGetOnly);
-assertType<Ember.ComputedProperty<string>>(person.fullNameSetOnly);
-assertType<Ember.ComputedProperty<string>>(person.combinators);
-assertType<Ember.ComputedProperty<string>>(person.explicitlyDeclared);
+expectTypeOf(person.firstName).toEqualTypeOf<string>();
+expectTypeOf(person.age).toEqualTypeOf<number>();
+expectTypeOf(person.noArgs).toEqualTypeOf<string>();
+expectTypeOf(person.fullName).toEqualTypeOf<string>();
+expectTypeOf(person.fullNameReadonly).toEqualTypeOf<string>();
+expectTypeOf(person.fullNameWritable).toEqualTypeOf<string>();
+expectTypeOf(person.combinators).toEqualTypeOf<string>();
 
-assertType<string>(person.get('firstName'));
-assertType<number>(person.get('age'));
-assertType<string>(person.get('noArgs'));
-assertType<string>(person.get('fullName'));
-assertType<string>(person.get('fullNameReadonly'));
-assertType<string>(person.get('fullNameWritable'));
-assertType<string>(person.get('fullNameGetOnly'));
-assertType<string>(person.get('fullNameSetOnly'));
-assertType<string>(person.get('combinators'));
-assertType<string>(person.get('explicitlyDeclared'));
+expectTypeOf(person.get('firstName')).toEqualTypeOf<string>();
+expectTypeOf(person.get('age')).toEqualTypeOf<number>();
+expectTypeOf(person.get('noArgs')).toEqualTypeOf<string>();
+expectTypeOf(person.get('fullName')).toEqualTypeOf<string>();
+expectTypeOf(person.get('fullNameReadonly')).toEqualTypeOf<string>();
+expectTypeOf(person.get('fullNameWritable')).toEqualTypeOf<string>();
+expectTypeOf(person.get('combinators')).toEqualTypeOf<string>();
 
-assertType<{ firstName: string; fullName: string; age: number }>(person.getProperties('firstName', 'fullName', 'age'));
+expectTypeOf(person.getProperties('firstName', 'fullName', 'age')).toMatchTypeOf<{
+  firstName: string;
+  fullName: string;
+  age: number;
+}>();
 
 const person2 = Person.create({
-    fullName: 'Fred Smith',
+  fullName: 'Fred Smith',
 });
 
-assertType<string>(person2.get('firstName'));
-assertType<string>(person2.get('fullName'));
+expectTypeOf(person2.get('firstName')).toEqualTypeOf<string>();
+expectTypeOf(person2.get('fullName')).toEqualTypeOf<string>();
 
 const person3 = Person.extend({
-    firstName: 'Fred',
-    fullName: 'Fred Smith',
+  firstName: 'Fred',
+  fullName: 'Fred Smith',
 }).create();
 
-assertType<string>(person3.get('firstName'));
-assertType<string>(person3.get('fullName'));
+expectTypeOf(person3.get('firstName')).toEqualTypeOf<string>();
+expectTypeOf(person3.get('fullName')).toEqualTypeOf<string>();
 
 const person4 = Person.extend({
-    firstName: Ember.computed(() => 'Fred'),
-    fullName: Ember.computed(() => 'Fred Smith'),
+  firstName: Ember.computed(() => 'Fred'),
+  fullName: Ember.computed(() => 'Fred Smith'),
 }).create();
 
-assertType<string>(person4.get('firstName'));
-assertType<string>(person4.get('fullName'));
-
-// computed property macros
-const objectWithComputedProperties = Ember.Object.extend({
-    alias: Ember.computed.alias('foo'),
-    and: Ember.computed.and('foo', 'bar', 'baz', 'qux'),
-    bool: Ember.computed.bool('foo'),
-    collect: Ember.computed.collect('foo', 'bar', 'baz', 'qux'),
-    deprecatingAlias: Ember.computed.deprecatingAlias('foo', {
-        id: 'hamster.deprecate-banana',
-        until: '3.0.0',
-    }),
-    empty: Ember.computed.empty('foo'),
-    equalNumber: Ember.computed.equal('foo', 1),
-    equalString: Ember.computed.equal('foo', 'bar'),
-    equalObject: Ember.computed.equal('foo', {}),
-    filter: Ember.computed.filter('foo', item => item === 'bar'),
-    filterBy1: Ember.computed.filterBy('foo', 'bar'),
-    filterBy2: Ember.computed.filterBy('foo', 'bar', false),
-    gt: Ember.computed.gt('foo', 3),
-    gte: Ember.computed.gte('foo', 3),
-    intersect: Ember.computed.intersect('foo', 'bar', 'baz', 'qux'),
-    lt: Ember.computed.lt('foo', 3),
-    lte: Ember.computed.lte('foo', 3),
-    map: Ember.computed.map('foo', (item, index) => item),
-    mapBy: Ember.computed.mapBy('foo', 'bar'),
-    match: Ember.computed.match('foo', /^tom.ter$/),
-    max: Ember.computed.max('foo'),
-    min: Ember.computed.min('foo'),
-    none: Ember.computed.none('foo'),
-    not: Ember.computed.not('foo'),
-    notEmpty: Ember.computed.notEmpty('foo'),
-    oneWay: Ember.computed.oneWay('foo'),
-    or: Ember.computed.or('foo', 'bar', 'baz', 'qux'),
-    readOnly: Ember.computed.readOnly('foo'),
-    reads: Ember.computed.reads('foo'),
-    setDiff: Ember.computed.setDiff('foo', 'bar'),
-    sort1: Ember.computed.sort('foo', 'bar'),
-    sort2: Ember.computed.sort('foo', (itemA, itemB) => {
-        return `${itemA}`.length - `${itemB}`.length;
-    }),
-    sum: Ember.computed.sum('foo'),
-    union: Ember.computed.union('foo', 'bar', 'baz', 'qux'),
-    uniq: Ember.computed.uniq('foo'),
-    uniqBy: Ember.computed.uniqBy('foo', 'bar'),
-}).create();
-
-assertType<unknown>(objectWithComputedProperties.get('alias'));
-assertType<unknown>(objectWithComputedProperties.get('and'));
-assertType<boolean>(objectWithComputedProperties.get('bool'));
-assertType<unknown[]>(objectWithComputedProperties.get('collect'));
-assertType<unknown>(objectWithComputedProperties.get('deprecatingAlias'));
-assertType<boolean>(objectWithComputedProperties.get('empty'));
-assertType<boolean>(objectWithComputedProperties.get('equalNumber'));
-assertType<boolean>(objectWithComputedProperties.get('equalString'));
-assertType<boolean>(objectWithComputedProperties.get('equalObject'));
-assertType<unknown[]>(objectWithComputedProperties.get('filter'));
-assertType<unknown[]>(objectWithComputedProperties.get('filterBy1'));
-assertType<unknown[]>(objectWithComputedProperties.get('filterBy2'));
-assertType<boolean>(objectWithComputedProperties.get('gt'));
-assertType<boolean>(objectWithComputedProperties.get('gte'));
-assertType<unknown[]>(objectWithComputedProperties.get('intersect'));
-assertType<boolean>(objectWithComputedProperties.get('lt'));
-assertType<boolean>(objectWithComputedProperties.get('lte'));
-assertType<unknown[]>(objectWithComputedProperties.get('map'));
-assertType<unknown[]>(objectWithComputedProperties.get('mapBy'));
-assertType<boolean>(objectWithComputedProperties.get('match'));
-assertType<number>(objectWithComputedProperties.get('max'));
-assertType<number>(objectWithComputedProperties.get('min'));
-assertType<boolean>(objectWithComputedProperties.get('none'));
-assertType<boolean>(objectWithComputedProperties.get('not'));
-assertType<boolean>(objectWithComputedProperties.get('notEmpty'));
-assertType<unknown>(objectWithComputedProperties.get('oneWay'));
-assertType<unknown>(objectWithComputedProperties.get('or'));
-assertType<unknown>(objectWithComputedProperties.get('readOnly'));
-assertType<unknown>(objectWithComputedProperties.get('reads'));
-assertType<unknown[]>(objectWithComputedProperties.get('setDiff'));
-assertType<unknown[]>(objectWithComputedProperties.get('sort1'));
-assertType<unknown[]>(objectWithComputedProperties.get('sort2'));
-assertType<number>(objectWithComputedProperties.get('sum'));
-assertType<unknown[]>(objectWithComputedProperties.get('union'));
-assertType<unknown[]>(objectWithComputedProperties.get('uniq'));
-assertType<unknown[]>(objectWithComputedProperties.get('uniqBy'));
+expectTypeOf(person4.get('firstName')).toEqualTypeOf<string>();
+expectTypeOf(person4.get('fullName')).toEqualTypeOf<string>();

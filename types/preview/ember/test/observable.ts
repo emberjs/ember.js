@@ -39,24 +39,30 @@ myComponent.addObserver('foo', null, () => {});
 myComponent.set('foo', 'baz');
 expectTypeOf(myComponent.get('foo')).toEqualTypeOf<string>();
 
-const person = Ember.Object.create({
+class Person extends Ember.Object {
+  name = '';
+  age = 0;
+
+  @Ember.computed()
+  get capitalized() {
+    return this.get('name').toUpperCase();
+  }
+}
+const person = Person.create({
   name: 'Fred',
   age: 29,
-  capitalized: Ember.computed<string>(function () {
-    return this.get('name').toUpperCase();
-  }),
 });
 
 const pojo = { name: 'Fred', age: 29 };
 
 function testGet() {
-  assertType<string>(Ember.get(person, 'name'));
-  assertType<number>(Ember.get(person, 'age'));
-  assertType<string>(Ember.get(person, 'capitalized'));
-  assertType<string>(person.get('name'));
-  assertType<number>(person.get('age'));
-  assertType<string>(person.get('capitalized'));
-  assertType<string>(Ember.get(pojo, 'name'));
+  expectTypeOf(Ember.get(person, 'name')).toEqualTypeOf<string>();
+  expectTypeOf(Ember.get(person, 'age')).toEqualTypeOf<number>();
+  expectTypeOf(Ember.get(person, 'capitalized')).toEqualTypeOf<string>();
+  expectTypeOf(person.get('name')).toEqualTypeOf<string>();
+  expectTypeOf(person.get('age')).toEqualTypeOf<number>();
+  expectTypeOf(person.get('capitalized')).toEqualTypeOf<string>();
+  expectTypeOf(Ember.get(pojo, 'name')).toEqualTypeOf<string>();
 }
 
 function testGetProperties() {
@@ -101,14 +107,14 @@ function testSetProperties() {
 
 function testDynamic() {
   const obj: Record<string, string> = {};
-  const dynamicKey: string = 'dummy'; // tslint:disable-line:no-inferrable-types
+  const dynamicKey = 'dummy' as string;
 
-  assertType<string | undefined>(Ember.get(obj, 'dummy'));
-  assertType<string | undefined>(Ember.get(obj, dynamicKey));
-  assertType<{ dummy: string | undefined }>(Ember.getProperties(obj, 'dummy'));
-  assertType<{ dummy: string | undefined }>(Ember.getProperties(obj, ['dummy']));
-  assertType<Record<string, string>>(Ember.getProperties(obj, dynamicKey));
-  assertType<Record<string, string>>(Ember.getProperties(obj, [dynamicKey]));
+  expectTypeOf(Ember.get(obj, 'dummy')).toEqualTypeOf<string | undefined>();
+  expectTypeOf(Ember.get(obj, dynamicKey)).toEqualTypeOf<string | undefined>();
+  expectTypeOf(Ember.getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string | undefined }>();
+  expectTypeOf(Ember.getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string | undefined }>();
+  expectTypeOf(Ember.getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(Ember.getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
   assertType<string | undefined>(Ember.set(obj, 'dummy', 'value'));
   assertType<string | undefined>(Ember.set(obj, dynamicKey, 'value'));
   assertType<{ dummy: string | undefined }>(Ember.setProperties(obj, { dummy: 'value ' }));
