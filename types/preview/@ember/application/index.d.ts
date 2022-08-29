@@ -1,11 +1,3 @@
-// Type definitions for non-npm package @ember/application 4.0
-// Project: https://emberjs.com/api/ember/4.0/modules/@ember%2Fapplication
-// Definitions by: Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.4
-
 import Engine from '@ember/engine';
 import ApplicationInstance from '@ember/application/instance';
 import EventDispatcher from '@ember/application/-private/event-dispatcher';

@@ -1,11 +1,3 @@
-// Type definitions for non-npm package @ember/runloop 4.0
-// Project: https://emberjs.com/api/ember/4.0/modules/@ember%2Frunloop
-// Definitions by: Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.4
-
 import {
   EmberMethod,
   EmberMethodParams,
