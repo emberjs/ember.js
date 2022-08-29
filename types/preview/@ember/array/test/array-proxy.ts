@@ -11,16 +11,16 @@ proxy.set('content', A(['amoeba', 'paramecium']));
 proxy.get('firstObject'); // 'amoeba'
 
 const overridden = ArrayProxy.create({
-    content: A(pets),
-    objectAtContent(idx: number): string | undefined {
-        return this.get('content').objectAt(idx)?.toUpperCase();
-    },
+  content: A(pets),
+  objectAtContent(this: ArrayProxy<string>, idx: number): string | undefined {
+    return this.get('content').objectAt(idx)?.toUpperCase();
+  },
 });
 
 overridden.get('firstObject'); // 'DOG'
 
 class MyNewProxy<T> extends ArrayProxy<T> {
-    isNew = true;
+  isNew = true;
 }
 
 const x = MyNewProxy.create({ content: A([1, 2, 3]) }) as MyNewProxy<number>;
@@ -29,20 +29,20 @@ assertType<boolean>(x.isNew);
 
 // Custom EmberArray
 class MyArray<T> extends EmberObject.extend(EmberArray) {
-    constructor(content: ArrayLike<T>) {
-        super();
-        this._content = content;
-    }
+  constructor(content: ArrayLike<T>) {
+    super();
+    this._content = content;
+  }
 
-    _content: ArrayLike<T>;
+  _content: ArrayLike<T>;
 
-    get length() {
-        return this._content.length;
-    }
+  get length() {
+    return this._content.length;
+  }
 
-    objectAt(idx: number) {
-        return this._content[idx];
-    }
+  objectAt(idx: number) {
+    return this._content[idx];
+  }
 }
 
 const customArrayProxy = ArrayProxy.create({ content: new MyArray(pets) });
