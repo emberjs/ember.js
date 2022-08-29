@@ -21,7 +21,7 @@ declare const Empty: unique symbol;
  *   themselves, so ***DO NOT RELY ON IT***.
  */
 export interface EmptyObject {
-    [Empty]?: true;
+  [Empty]?: true;
 }
 
 type DefaultPositional = unknown[];
@@ -33,24 +33,24 @@ type DefaultNamed = EmptyObject;
  *   "normal" signature shape: `Args: { Named: { ... }, Positional: [...] }`.
  */
 export interface HelperSignature {
-    NamedArgs?: DefaultNamed;
-    PositionalArgs?: DefaultPositional;
-    Return?: unknown;
+  NamedArgs?: DefaultNamed;
+  PositionalArgs?: DefaultPositional;
+  Return?: unknown;
 }
 
 type GetOrElse<Obj, K, Fallback> = K extends keyof Obj ? Obj[K] : Fallback;
 
 /** Given a signature `S`, get back the `Args` type. */
 type ArgsFor<S> = 'Args' extends keyof S
-    ? {
-          Named: GetOrElse<S['Args'], 'Named', DefaultNamed>;
-          Positional: GetOrElse<S['Args'], 'Positional', []>;
-      }
-    : { Named: DefaultNamed; Positional: [] };
+  ? {
+      Named: GetOrElse<S['Args'], 'Named', DefaultNamed>;
+      Positional: GetOrElse<S['Args'], 'Positional', []>;
+    }
+  : { Named: DefaultNamed; Positional: [] };
 
 interface LegacyArgsFor<T> {
-    Named: GetOrElse<T, 'NamedArgs', DefaultNamed>;
-    Positional: GetOrElse<T, 'PositionalArgs', DefaultPositional>;
+  Named: GetOrElse<T, 'NamedArgs', DefaultNamed>;
+  Positional: GetOrElse<T, 'PositionalArgs', DefaultPositional>;
 }
 
 // This type allows us to present a slightly-less-obtuse error message
@@ -58,12 +58,12 @@ interface LegacyArgsFor<T> {
 // one declared from within a tool like Glint.
 declare const BadType: unique symbol;
 interface BadType<Message> {
-    [BadType]: Message;
+  [BadType]: Message;
 }
 
 interface MissingSignatureArgs {
-    Named: BadType<'This helper is missing a signature'>;
-    Positional: unknown[];
+  Named: BadType<'This helper is missing a signature'>;
+  Positional: unknown[];
 }
 
 /**
@@ -84,19 +84,21 @@ interface MissingSignatureArgs {
 // all `ExpandSignature` types fully general to work with *any* invokable. But
 // "future" here probably means Ember v5. :sobbing:
 export interface ExpandSignature<T> {
-    Args: unknown extends T // Is this the default (i.e. unspecified) signature?
-        ? MissingSignatureArgs // Then return our special "missing signature" type
-        : keyof T extends 'Args' | 'Return' // Is this a `Signature`?
-        ? ArgsFor<T> // Then use `Signature` args
-        : LegacyArgsFor<T>; // Otherwise fall back to classic `Args`.
-    Return: 'Return' extends keyof T ? T['Return'] : unknown;
+  Args: unknown extends T // Is this the default (i.e. unspecified) signature?
+    ? MissingSignatureArgs // Then return our special "missing signature" type
+    : keyof T extends 'Args' | 'Return' // Is this a `Signature`?
+    ? ArgsFor<T> // Then use `Signature` args
+    : LegacyArgsFor<T>; // Otherwise fall back to classic `Args`.
+  Return: 'Return' extends keyof T ? T['Return'] : unknown;
 }
 
 // The `unknown extends S` checks on both of these are here to preserve backward
 // compatibility with the existing non-`Signature` definition. When migrating
 // into Ember or otherwise making a breaking change, we can drop the "default"
 // in favor of just using `ExpandSignature`.
-type NamedArgs<S> = unknown extends S ? Record<string, unknown> : ExpandSignature<S>['Args']['Named'];
+type NamedArgs<S> = unknown extends S
+  ? Record<string, unknown>
+  : ExpandSignature<S>['Args']['Named'];
 type PositionalArgs<S> = unknown extends S ? unknown[] : ExpandSignature<S>['Args']['Positional'];
 
 type Return<S> = GetOrElse<S, 'Return', unknown>;
@@ -106,23 +108,23 @@ type Return<S> = GetOrElse<S, 'Return', unknown>;
  * For example, this code calls a helper named `format-currency`:
  */
 export default class Helper<S = unknown> extends EmberObject {
-    /**
-     * In many cases, the ceremony of a full `Ember.Helper` class is not required.
-     * The `helper` method create pure-function helpers without instances. For
-     * example:
-     */
-    static helper<P extends DefaultPositional, N = EmptyObject, R = unknown>(
-        helper: (positional: P, named: N) => R,
-    ): Helper<{ Args: { Positional: P; Named: N }; Return: R }>;
-    /**
-     * Override this function when writing a class-based helper.
-     */
-    compute(positional: PositionalArgs<S>, named: NamedArgs<S>): Return<S>;
-    /**
-     * On a class-based helper, it may be useful to force a recomputation of that
-     * helpers value. This is akin to `rerender` on a component.
-     */
-    recompute(): void;
+  /**
+   * In many cases, the ceremony of a full `Ember.Helper` class is not required.
+   * The `helper` method create pure-function helpers without instances. For
+   * example:
+   */
+  static helper<P extends DefaultPositional, N = EmptyObject, R = unknown>(
+    helper: (positional: P, named: N) => R
+  ): Helper<{ Args: { Positional: P; Named: N }; Return: R }>;
+  /**
+   * Override this function when writing a class-based helper.
+   */
+  compute(positional: PositionalArgs<S>, named: NamedArgs<S>): Return<S>;
+  /**
+   * On a class-based helper, it may be useful to force a recomputation of that
+   * helpers value. This is akin to `rerender` on a component.
+   */
+  recompute(): void;
 }
 
 // The generic here is for a *signature: a way to hang information for tools
@@ -140,7 +142,7 @@ export default interface Helper<S> extends Opaque<S> {}
 // augmentations of the `Helper` type performed by tools like Glint will
 // also apply to function-based helpers as well.
 export abstract class FunctionBasedHelperInstance<S> extends Helper<S> {
-    protected abstract __concrete__: never;
+  protected abstract __concrete__: never;
 }
 
 /**
@@ -172,13 +174,13 @@ export type FunctionBasedHelper<S> = abstract new () => FunctionBasedHelperInsta
 // This overload allows users to write types directly on the callback passed to
 // the `helper` function and infer the resulting type correctly.
 export function helper<P extends DefaultPositional, N = EmptyObject, R = unknown>(
-    helperFn: (positional: P, named: N) => R,
+  helperFn: (positional: P, named: N) => R
 ): FunctionBasedHelper<{
-    Args: {
-        Positional: P;
-        Named: N;
-    };
-    Return: R;
+  Args: {
+    Positional: P;
+    Named: N;
+  };
+  Return: R;
 }>;
 
 // This overload allows users to provide a `Signature` type explicitly at the
@@ -186,13 +188,13 @@ export function helper<P extends DefaultPositional, N = EmptyObject, R = unknown
 // this overload must appear second, since TS' inference engine will not
 // correctly infer the type of `S` here from the types on the supplied callback.
 export function helper<S>(
-    helperFn: (positional: PositionalArgs<S>, named: NamedArgs<S>) => Return<S>,
+  helperFn: (positional: PositionalArgs<S>, named: NamedArgs<S>) => Return<S>
 ): FunctionBasedHelper<{
-    Args: {
-        Positional: PositionalArgs<S>;
-        Named: NamedArgs<S>;
-    };
-    Return: Return<S>;
+  Args: {
+    Positional: PositionalArgs<S>;
+    Named: NamedArgs<S>;
+  };
+  Return: Return<S>;
 }>;
 
 export {};
