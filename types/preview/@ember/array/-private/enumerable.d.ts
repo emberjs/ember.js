@@ -165,7 +165,8 @@ interface Enumerable<T> {
    * this property, it will return this. If you set this property to a new
    * array, it will replace the current content.
    */
-  '[]': ComputedProperty;
+  get '[]'(): this;
+  set '[]'(newValue: Enumerable<T>);
 }
 
 declare const Enumerable: Mixin;

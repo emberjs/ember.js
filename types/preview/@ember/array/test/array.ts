@@ -1,56 +1,62 @@
-import { assertType } from './lib/assert';
 import EmberObject from '@ember/object';
 import EmberArray, { A } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
+import { expectTypeOf } from 'expect-type';
 
-type Person = typeof Person.prototype;
-const Person = EmberObject.extend({
-    name: '',
-    isHappy: false,
-});
+class Person extends EmberObject {
+  name = '';
+  isHappy = false;
+}
 
-const people = A([Person.create({ name: 'Yehuda', isHappy: true }), Person.create({ name: 'Majd', isHappy: false })]);
+const people = A([
+  Person.create({ name: 'Yehuda', isHappy: true }),
+  Person.create({ name: 'Majd', isHappy: false }),
+]);
 
-assertType<number>(people.get('length'));
-assertType<Person>(people.get('lastObject'));
-assertType<Person>(people.get('firstObject'));
-assertType<boolean>(people.isAny('isHappy'));
-assertType<boolean>(people.isAny('isHappy', false));
+expectTypeOf(people.get('length')).toBeNumber();
+expectTypeOf(people.get('lastObject')).toEqualTypeOf<Person | undefined>();
+expectTypeOf(people.get('firstObject')).toEqualTypeOf<Person | undefined>();
+expectTypeOf(people.isAny('isHappy')).toBeBoolean();
+expectTypeOf(people.isAny('isHappy', false)).toBeBoolean();
 // @ts-expect-error
-assertType<boolean>(people.isAny('isHappy', "false"));
+people.isAny('isHappy', 'false');
 
-assertType<Person | undefined>(people.objectAt(0));
-assertType<EmberArray<Person | undefined>>(people.objectsAt([1, 2, 3]));
+expectTypeOf(people.objectAt(0)).toEqualTypeOf<Person | undefined>();
+expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<EmberArray<Person | undefined>>();
 
-const persons1: Person[] = people.filterBy('isHappy');
-const persons2: MutableArray<Person> = people.filterBy('isHappy');
-const persons3: Person[] = people.rejectBy('isHappy');
-const persons4: MutableArray<Person> = people.rejectBy('isHappy');
-const persons5: Person[] = people.filter(person => person.get('name') === 'Yehuda');
-const persons6: MutableArray<Person> = people.filter(person => person.get('name') === 'Yehuda');
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Person[]>();
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<MutableArray<Person>>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Person[]>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<MutableArray<Person>>();
+expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
+expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<
+  MutableArray<Person>
+>();
 
-assertType<typeof people>(people.get('[]'));
-assertType<Person>(people.get('[]').get('firstObject'));
+expectTypeOf(people.get('[]')).toEqualTypeOf<typeof people>();
+expectTypeOf(people.get('[]').get('firstObject')).toEqualTypeOf<Person | undefined>();
 
-assertType<boolean[]>(people.mapBy('isHappy'));
-assertType<unknown[]>(people.mapBy('name.length'));
+expectTypeOf(people.mapBy('isHappy')).toEqualTypeOf<boolean[]>();
+expectTypeOf(people.mapBy('name.length')).toEqualTypeOf<unknown[]>();
 
-const last = people.get('lastObject'); // $ExpectType ({ name: string; isHappy: boolean; } & EmberObject & { name: string; isHappy: boolean; }) | undefined
+const last = people.get('lastObject');
+expectTypeOf(last).toEqualTypeOf<Person | undefined>();
 if (last) {
-    assertType<string>(last.get('name'));
+  expectTypeOf(last.get('name')).toBeString();
 }
 
 const first = people.get('lastObject');
 if (first) {
-    assertType<boolean>(first.get('isHappy'));
+  expectTypeOf(first.get('isHappy')).toBeBoolean();
 }
 
 const letters: EmberArray<string> = A(['a', 'b', 'c']);
-const codes: number[] = letters.map((item, index, enumerable) => {
-    assertType<string>(item);
-    assertType<number>(index);
-    return item.charCodeAt(0);
+const codes = letters.map((item, index, enumerable) => {
+  expectTypeOf(item).toBeString();
+  expectTypeOf(index).toBeNumber();
+  return item.charCodeAt(0);
 });
+expectTypeOf(codes).toEqualTypeOf<number[]>();
 
 const value = '1,2,3';
 const filters = A(value.split(','));
@@ -58,8 +64,8 @@ filters.push('4');
 filters.sort();
 
 const multiSortArr = A([
-    { k: 'a', v: 'z' },
-    { k: 'a', v: 'y' },
-    { k: 'b', v: 'c' },
+  { k: 'a', v: 'z' },
+  { k: 'a', v: 'y' },
+  { k: 'b', v: 'c' },
 ]);
 multiSortArr.sortBy('k', 'v');
