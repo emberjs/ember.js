@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
-import { assertType } from './lib/assert';
 
 class Person extends Ember.Object {
   name = '';
