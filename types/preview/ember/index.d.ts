@@ -138,6 +138,7 @@ export namespace Ember {
   const Error: typeof EmberError;
 
   const Evented: typeof EmberObjectEventedNs.default;
+  interface Evented extends EmberObjectEventedNs.default {}
 
   class Mixin extends EmberMixin {}
 
