@@ -5,7 +5,7 @@ import CoreObject from './core';
 /**
  * This mixin provides properties and property observing functionality, core features of the Ember object model.
  */
-interface Observable {
+interface Observable extends CoreObject {
   /**
    * Retrieves the value of a property from the object.
    */
@@ -79,5 +79,5 @@ interface Observable {
    */
   cacheFor<K extends keyof this>(key: K): this[K] | undefined;
 }
-declare const Observable: Mixin<Observable, CoreObject>;
+declare const Observable: Mixin;
 export default Observable;

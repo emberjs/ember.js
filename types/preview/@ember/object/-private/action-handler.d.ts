@@ -1,7 +1,8 @@
+import { AnyFn } from 'ember/-private/type-utils';
 import type Mixin from '../mixin';
 
 interface ActionsHash {
-  [index: string]: (...params: any[]) => any;
+  [index: string]: AnyFn;
 }
 
 /**
@@ -24,5 +25,5 @@ interface ActionHandler {
    */
   actions: ActionsHash;
 }
-declare const ActionHandler: Mixin<ActionHandler>;
+declare const ActionHandler: Mixin;
 export default ActionHandler;

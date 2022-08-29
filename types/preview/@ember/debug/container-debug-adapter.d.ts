@@ -5,7 +5,7 @@ import Resolver from 'ember-resolver';
  * with tools that debug Ember such as the Ember Inspector for Chrome and Firefox.
  */
 export default class ContainerDebugAdapter extends Object {
-    resolver: Resolver;
-    canCatalogEntriesByType(type: string): boolean;
-    catalogEntriesByType(type: string): string[];
+  resolver: Resolver;
+  canCatalogEntriesByType(type: string): boolean;
+  catalogEntriesByType(type: string): string[];
 }
