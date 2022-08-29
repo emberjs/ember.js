@@ -52,6 +52,24 @@ class DemoObservable implements Observable {
     Ember.addObserver(this, 'foo', lambda);
     Ember.removeObserver(this, 'foo', lambda);
   }
+  _super(...args: any[]) {
+    throw new Error('Method not implemented.');
+  }
+  init(): void {
+    throw new Error('Method not implemented.');
+  }
+  declare concatenatedProperties: string[] | null;
+  declare isDestroyed: boolean;
+  declare isDestroying: boolean;
+  destroy(): this {
+    throw new Error('Method not implemented.');
+  }
+  willDestroy(): void {
+    throw new Error('Method not implemented.');
+  }
+  toString(): string {
+    throw new Error('Method not implemented.');
+  }
 
   fooDidChange(obj: this, propName: string) {}
   protected fooDidChangeProtected(obj: this, propName: string) {}
