@@ -1,14 +1,14 @@
 import Controller, { inject } from '@ember/controller';
 
-Controller.extend({
-    queryParams: ['category'],
-    category: null,
-    isExpanded: false,
+class MyController extends Controller {
+  queryParams = ['category'];
+  category = null;
+  isExpanded = false;
 
-    first: inject(),
-    second: inject('second'),
+  @inject declare first: Controller;
+  @inject('second') declare second: Controller;
 
-    toggleBody() {
-        this.toggleProperty('isExpanded');
-    },
-});
+  toggleBody() {
+    this.toggleProperty('isExpanded');
+  }
+}
