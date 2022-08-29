@@ -1,50 +1,69 @@
 import Ember from 'ember';
-import { assertType } from './lib/assert';
+import { expectTypeOf } from 'expect-type';
 
-type Person = typeof Person.prototype;
-const Person = Ember.Object.extend({
-    name: '',
-    isHappy: false,
-});
+class Person extends Ember.Object {
+  name = '';
+  isHappy = false;
+}
 
 const people = Ember.A([
-    Person.create({ name: 'Yehuda', isHappy: true }),
-    Person.create({ name: 'Majd', isHappy: false }),
+  Person.create({ name: 'Yehuda', isHappy: true }),
+  Person.create({ name: 'Majd', isHappy: false }),
 ]);
 
-assertType<number>(people.get('length'));
-assertType<Person>(people.get('lastObject'));
-assertType<boolean>(people.isAny('isHappy'));
+expectTypeOf(people.get('length')).toBeNumber();
+expectTypeOf(people.get('lastObject')).toEqualTypeOf<Person | undefined>();
+expectTypeOf(people.get('firstObject')).toEqualTypeOf<Person | undefined>();
+expectTypeOf(people.isAny('isHappy')).toBeBoolean();
+expectTypeOf(people.isAny('isHappy', false)).toBeBoolean();
 // @ts-expect-error
-assertType<boolean>(people.isAny('isHappy', 'false'));
-assertType<boolean>(people.isAny('isHappy', false));
-assertType<Ember.Enumerable<Person>>(people.filterBy('isHappy'));
-assertType<Ember.Enumerable<Person>>(people.rejectBy('isHappy'));
-assertType<Ember.Enumerable<Person>>(people.filter(person => person.get('name') === 'Yehuda'));
-assertType<typeof people>(people.get('[]'));
-assertType<Person>(people.get('[]').get('firstObject'));
+people.isAny('isHappy', 'false');
 
-assertType<Ember.Array<boolean>>(people.mapBy('isHappy'));
-assertType<unknown[]>(people.mapBy('name.length'));
+expectTypeOf(people.objectAt(0)).toEqualTypeOf<Person | undefined>();
+expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<Ember.Array<Person | undefined>>();
+
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Person[]>();
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Ember.MutableArray<Person>>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Person[]>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Ember.MutableArray<Person>>();
+expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
+expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<
+  Ember.MutableArray<Person>
+>();
+
+expectTypeOf(people.get('[]')).toEqualTypeOf<typeof people>();
+expectTypeOf(people.get('[]').get('firstObject')).toEqualTypeOf<Person | undefined>();
+
+expectTypeOf(people.mapBy('isHappy')).toEqualTypeOf<boolean[]>();
+expectTypeOf(people.mapBy('name.length')).toEqualTypeOf<unknown[]>();
 
 const last = people.get('lastObject');
+expectTypeOf(last).toEqualTypeOf<Person | undefined>();
 if (last) {
-    assertType<string>(last.get('name'));
+  expectTypeOf(last.get('name')).toBeString();
 }
 
 const first = people.get('lastObject');
 if (first) {
-    assertType<boolean>(first.get('isHappy'));
+  expectTypeOf(first.get('isHappy')).toBeBoolean();
 }
 
-const letters: Ember.Enumerable<string> = Ember.A(['a', 'b', 'c']);
-const codes: number[] = letters.map((item, index, enumerable) => {
-    assertType<string>(item);
-    assertType<number>(index);
-    return item.charCodeAt(0);
+const letters: Ember.Array<string> = Ember.A(['a', 'b', 'c']);
+const codes = letters.map((item, index, enumerable) => {
+  expectTypeOf(item).toBeString();
+  expectTypeOf(index).toBeNumber();
+  return item.charCodeAt(0);
 });
+expectTypeOf(codes).toEqualTypeOf<number[]>();
 
 const value = '1,2,3';
 const filters = Ember.A(value.split(','));
 filters.push('4');
 filters.sort();
+
+const multiSortArr = Ember.A([
+  { k: 'a', v: 'z' },
+  { k: 'a', v: 'y' },
+  { k: 'b', v: 'c' },
+]);
+multiSortArr.sortBy('k', 'v');
