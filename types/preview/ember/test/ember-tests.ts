@@ -2,23 +2,33 @@ import Ember from 'ember';
 import { AnyFn } from 'ember/-private/type-utils';
 import { assertType } from './lib/assert';
 
-let App: any;
+class President extends Ember.Object {
+  name = 'Barack Obama';
+}
 
-App = Ember.Application.create();
-App.president = Ember.Object.create({
-  name: 'Barack Obama',
-});
-App.country = Ember.Object.create({
-  presidentNameBinding: 'MyApp.president.name',
-});
-App.country.get('presidentName');
-App.president = Ember.Object.create({
-  firstName: 'Barack',
-  lastName: 'Obama',
-  fullName: Ember.computed(function () {
+class DetailedPresident extends President {
+  firstName = 'Barack';
+  lastName = 'Obama';
+  @Ember.computed()
+  get fullName() {
     return `${this.get('firstName')} ${this.get('lastName')}`;
-  }),
-});
+  }
+}
+
+class Country extends Ember.Object {
+  presidentNameBinding = 'MyApp.president.name';
+}
+
+class MyApp extends Ember.Application {
+  president = President.create();
+  country = Country.create();
+
+  todosController?: TodosController;
+}
+
+const App = MyApp.create();
+App.country.get('presidentName');
+App.president = DetailedPresident.create();
 App.president.get('fullName');
 
 declare class MyPerson extends Ember.Object {
@@ -26,72 +36,56 @@ declare class MyPerson extends Ember.Object {
 }
 MyPerson.createMan();
 
-const Person1 = Ember.Object.extend({
-  say: (thing: string) => {
+class Person1 extends Ember.Object {
+  name?: string;
+  say = (thing: string) => {
     alert(thing);
-  },
-});
+  };
+}
 
 declare class MyPerson2 extends Ember.Object {
   helloWorld(): void;
 }
 MyPerson2.create().helloWorld();
 
-const tom = Person1.create({
-  name: 'Tom Dale',
+class Tom extends Person1 {
+  name = 'Tom Dale';
   helloWorld() {
     this.say('Hi my name is ' + this.get('name'));
-  },
-});
+  }
+}
+const tom = Tom.create();
 tom.helloWorld();
 
 const PersonReopened = Person1.reopen({ isPerson: true });
 PersonReopened.create().get('isPerson');
 
-App.todosController = Ember.Object.create({
-  todos: [Ember.Object.create({ isDone: false })],
-  remaining: Ember.computed('todos.@each.isDone', function () {
+class Todo extends Ember.Object {
+  isDone = false;
+}
+
+class TodosController extends Ember.Object {
+  todos = [Todo.create()];
+
+  @Ember.computed('todos.@each.isDone')
+  get remaining() {
     const todos = this.get('todos');
-    return todos.filterProperty('isDone', false).get('length');
-  }),
-});
+    return todos.filterBy('isDone', false).get('length');
+  }
+}
+
+App.todosController = TodosController.create();
 
 const todos = App.todosController.get('todos');
 let todo = todos.objectAt(0);
-todo.set('isDone', true);
+todo?.set('isDone', true);
 App.todosController.get('remaining');
-todo = Ember.Object.create({ isDone: false });
+todo = Todo.create({ isDone: true });
 todos.pushObject(todo);
 App.todosController.get('remaining');
 
-App.wife = Ember.Object.create({
-  householdIncome: 80000,
-});
-App.husband = Ember.Object.create({
-  householdIncomeBinding: 'App.wife.householdIncome',
-});
-App.husband.get('householdIncome');
-App.husband.set('householdIncome', 90000);
-App.wife.get('householdIncome');
-
-App.user = Ember.Object.create({
-  fullName: 'Kara Gates',
-});
-App.user.set('fullName', 'Krang Gates');
-App.userView.set('userName', 'Truckasaurus Gates');
-App.user.get('fullName');
-
-App = Ember.Application.create({
+const NormalApp = Ember.Application.create({
   rootElement: '#sidebar',
-});
-
-App.userController = Ember.Object.create({
-  content: Ember.Object.create({
-    firstName: 'Albert',
-    lastName: 'Hofmann',
-    posts: 25,
-    hobbies: 'Riding bicycles',
-  }),
 });
 
 Ember.Handlebars.registerHelper(
@@ -100,14 +94,13 @@ Ember.Handlebars.registerHelper(
     new Ember.Handlebars.SafeString('<span class="highlight">' + 'some value' + '</span>')
 );
 
-const coolView = App.CoolView.create();
+class Person2 extends Ember.Object {
+  name = '';
 
-const Person2 = Ember.Object.extend({
-  name: '',
   sayHello() {
     console.log('Hello from ' + this.get('name'));
-  },
-});
+  }
+}
 const people = Ember.A([
   Person2.create({ name: 'Juan' }),
   Person2.create({ name: 'Charles' }),
@@ -131,16 +124,16 @@ arr.setEach('age', 123);
 // @ts-expect-error
 arr.getEach('age');
 
-const Person3 = Ember.Object.extend({
-  name: '',
-  isHappy: false,
-});
+class Person3 extends Ember.Object {
+  name?: string;
+  isHappy = false;
+}
 const people2 = Ember.A([
   Person3.create({ name: 'Yehuda', isHappy: true }),
   Person3.create({ name: 'Majd', isHappy: false }),
 ]);
-const isHappy = (person: typeof Person3.prototype): boolean => {
-  return !!person.get('isHappy');
+const isHappy = (person: Person3): boolean => {
+  return Boolean(person.get('isHappy'));
 };
 people2.every(isHappy);
 people2.any(isHappy);
