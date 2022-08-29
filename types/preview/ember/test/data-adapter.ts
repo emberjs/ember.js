@@ -1,52 +1,53 @@
 import Ember from 'ember';
+import { expectTypeOf } from 'expect-type';
 
 const da = Ember.DataAdapter.create();
 
 const filters = da.getFilters();
-filters.includes({ name: 'foo', desc: 'bar' }); // $ExpectType boolean
+expectTypeOf(filters.includes({ name: 'foo', desc: 'bar' })).toBeBoolean();
 // @ts-expect-error
 filters.includes({});
 
-filters[0].name; // $ExpectType string
-filters[0].desc; // $ExpectType string
+expectTypeOf(filters[0]?.name).toEqualTypeOf<string | undefined>();
+expectTypeOf(filters[0]?.desc).toEqualTypeOf<string | undefined>();
 
 // $ExpectType () => void
 da.watchModelTypes(
-    function added(wrappedTypes) {
-        wrappedTypes;
-        wrappedTypes[0].release; // $ExpectType () => void
-        wrappedTypes[0].type.columns[0].desc; // $ExpectType string
-        wrappedTypes[0].type.columns[0].name; // $ExpectType string
-        wrappedTypes[0].type.count; // $ExpectType number
-        wrappedTypes[0].type.name; // $ExpectType string
-    },
-    function updated(wrappedTypes) {
-        wrappedTypes;
-        wrappedTypes[0].release; // $ExpectType () => void
-        wrappedTypes[0].type.columns[0].desc; // $ExpectType string
-        wrappedTypes[0].type.columns[0].name; // $ExpectType string
-        wrappedTypes[0].type.count; // $ExpectType number
-        wrappedTypes[0].type.name; // $ExpectType string
-    },
+  function added(wrappedTypes) {
+    wrappedTypes;
+    expectTypeOf(wrappedTypes[0]?.release).toEqualTypeOf<(() => void) | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.columns[0]?.desc).toEqualTypeOf<string | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.columns[0]?.name).toEqualTypeOf<string | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.count).toEqualTypeOf<number | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.name).toEqualTypeOf<string | undefined>();
+  },
+  function updated(wrappedTypes) {
+    wrappedTypes;
+    expectTypeOf(wrappedTypes[0]?.release).toEqualTypeOf<(() => void) | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.columns[0]?.desc).toEqualTypeOf<string | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.columns[0]?.name).toEqualTypeOf<string | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.count).toEqualTypeOf<number | undefined>();
+    expectTypeOf(wrappedTypes[0]?.type.name).toEqualTypeOf<string | undefined>();
+  }
 );
 // @ts-expect-error
 da.watchModelTypes(() => {});
 
 // $ExpectType () => void
 da.watchRecords(
-    'house',
-    function added(records) {
-        records[0].object; // $ExpectType object
-        records[0].columnValues; // $ExpectType object
-    },
-    function updated(records) {
-        records[0].object; // $ExpectType object
-        records[0].columnValues; // $ExpectType object
-    },
-    function removed(idx, count) {
-        idx; // $ExpectType number
-        count; // $ExpectType number
-    },
+  'house',
+  function added(records) {
+    expectTypeOf(records[0]?.object).toEqualTypeOf<object | undefined>();
+    expectTypeOf(records[0]?.columnValues).toEqualTypeOf<object | undefined>();
+  },
+  function updated(records) {
+    expectTypeOf(records[0]?.object).toEqualTypeOf<object | undefined>();
+    expectTypeOf(records[0]?.columnValues).toEqualTypeOf<object | undefined>();
+  },
+  function removed(idx, count) {
+    idx; // $ExpectType number
+    count; // $ExpectType number
+  }
 );
 // @ts-expect-error
 da.watchRecords(() => {});
