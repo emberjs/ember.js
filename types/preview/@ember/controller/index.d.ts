@@ -1,7 +1,6 @@
 import ActionHandler from '@ember/object/-private/action-handler';
 import Mixin from '@ember/object/mixin';
 import EmberObject from '@ember/object';
-import ComputedProperty from '@ember/object/computed';
 
 type QueryParamTypes = 'boolean' | 'number' | 'array' | 'string';
 type QueryParamScopeTypes = 'controller' | 'model';
@@ -32,13 +31,13 @@ export interface ControllerMixin extends ActionHandler {
   queryParams: Array<string | Record<string, QueryParamConfig | string | undefined>>;
   target: object;
 }
-export const ControllerMixin: Mixin<ControllerMixin>;
+export const ControllerMixin: Mixin;
 
 export default class Controller extends EmberObject {}
 export default interface Controller extends ControllerMixin {}
 
-export function inject(): ComputedProperty<Controller>;
-export function inject<K extends keyof Registry>(name: K): ComputedProperty<Registry[K]>;
+export function inject(): Controller;
+export function inject<K extends keyof Registry>(name: K): Registry[K];
 export function inject(target: object, propertyKey: string | symbol): void;
 
 // A type registry for Ember `Controller`s. Meant to be declaration-merged
