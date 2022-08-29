@@ -1,124 +1,119 @@
 import Ember from 'ember';
-import Component from '@ember/component';
-import Object, { computed } from '@ember/object';
-import hbs from 'htmlbars-inline-precompile';
-import { assertType } from './lib/assert';
+import { expectTypeOf } from 'expect-type';
 
-Component.extend({
-    layout: hbs`
-        <div>
-          {{yield}}
-        </div>
-    `,
+Ember.Component.extend({
+  layout: 'my-layout',
 });
 
-Component.extend({
-    layout: 'my-layout',
-});
+const MyComponent = Ember.Component.extend();
+expectTypeOf(Ember.get(MyComponent, 'positionalParams')).toEqualTypeOf<string | string[]>();
 
-const MyComponent = Component.extend();
-assertType<string | string[]>(Ember.get(MyComponent, 'positionalParams'));
-
-const component1 = Component.extend({
-    actions: {
-        hello(name: string) {
-            console.log('Hello', name);
-        },
-    },
-});
-
-Component.extend({
-    name: '',
+const component1 = Ember.Component.extend({
+  actions: {
     hello(name: string) {
-        this.set('name', name);
+      console.log('Hello', name);
     },
+  },
 });
 
-Component.extend({
-    tagName: 'em',
+class AnotherComponent extends Ember.Component {
+  name = '';
+
+  hello(name: string) {
+    this.set('name', name);
+    this.name = name;
+  }
+}
+
+Ember.Component.extend({
+  tagName: 'em',
 });
 
-Component.extend({
-    classNames: ['my-class', 'my-other-class'],
+Ember.Component.extend({
+  classNames: ['my-class', 'my-other-class'],
 });
 
-Component.extend({
-    classNameBindings: ['propertyA', 'propertyB'],
-    propertyA: 'from-a',
-    propertyB: computed(function () {
-        if (!this.get('propertyA')) {
-            return 'from-b';
-        }
-    }),
+class Bindings extends Ember.Component {
+  classNameBindings = ['propertyA', 'propertyB'];
+  propertyA = 'from-a';
+
+  @Ember.computed()
+  get propertyB() {
+    if (!this.get('propertyA')) {
+      return 'from-b';
+    }
+  }
+}
+
+Ember.Component.extend({
+  classNameBindings: ['hovered'],
+  hovered: true,
 });
 
-Component.extend({
-    classNameBindings: ['hovered'],
-    hovered: true,
+class Message extends Ember.Object {
+  empty = false;
+}
+
+Ember.Component.extend({
+  classNameBindings: ['messages.empty'],
+  messages: Message.create({
+    empty: true,
+  }),
 });
 
-Component.extend({
-    classNameBindings: ['messages.empty'],
-    messages: Object.create({
-        empty: true,
-    }),
+Ember.Component.extend({
+  classNameBindings: ['isEnabled:enabled:disabled'],
+  isEnabled: true,
 });
 
-Component.extend({
-    classNameBindings: ['isEnabled:enabled:disabled'],
-    isEnabled: true,
+Ember.Component.extend({
+  classNameBindings: ['isEnabled::disabled'],
+  isEnabled: true,
 });
 
-Component.extend({
-    classNameBindings: ['isEnabled::disabled'],
-    isEnabled: true,
+Ember.Component.extend({
+  tagName: 'a',
+  attributeBindings: ['href'],
+  href: 'http://google.com',
 });
 
-Component.extend({
-    tagName: 'a',
-    attributeBindings: ['href'],
-    href: 'http://google.com',
+Ember.Component.extend({
+  tagName: 'a',
+  attributeBindings: ['url:href'],
+  url: 'http://google.com',
 });
 
-Component.extend({
-    tagName: 'a',
-    attributeBindings: ['url:href'],
-    url: 'http://google.com',
+Ember.Component.extend({
+  tagName: 'use',
+  attributeBindings: ['xlinkHref:xlink:href'],
+  xlinkHref: '#triangle',
 });
 
-Component.extend({
-    tagName: 'use',
-    attributeBindings: ['xlinkHref:xlink:href'],
-    xlinkHref: '#triangle',
+Ember.Component.extend({
+  tagName: 'input',
+  attributeBindings: ['disabled'],
+  disabled: false,
 });
 
-Component.extend({
-    tagName: 'input',
-    attributeBindings: ['disabled'],
-    disabled: false,
+Ember.Component.extend({
+  tagName: 'input',
+  attributeBindings: ['disabled'],
+  disabled: Ember.computed(() => {
+    return someLogic();
+  }),
 });
 
-Component.extend({
-    tagName: 'input',
-    attributeBindings: ['disabled'],
-    disabled: computed(() => {
-        if ('someLogic') {
-            return true;
-        } else {
-            return false;
-        }
-    }),
+declare function someLogic(): boolean;
+
+Ember.Component.extend({
+  tagName: 'form',
+  attributeBindings: ['novalidate'],
+  novalidate: null,
 });
 
-Component.extend({
-    tagName: 'form',
-    attributeBindings: ['novalidate'],
-    novalidate: null,
-});
-
-Component.extend({
-    click(event: object) {
-        // will be called when an instance's
-        // rendered element is clicked
-    },
+Ember.Component.extend({
+  click(event: object) {
+    // will be called when an instance's
+    // rendered element is clicked
+  },
 });

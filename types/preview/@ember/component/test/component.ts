@@ -1,141 +1,138 @@
 import Component from '@ember/component';
 import Object, { computed, get } from '@ember/object';
-import hbs from 'htmlbars-inline-precompile';
 import { assertType } from './lib/assert';
 
 Component.extend({
-    layout: hbs`
-        <div>
-          {{yield}}
-        </div>
-    `,
-});
-
-Component.extend({
-    layout: 'my-layout',
+  layout: 'my-layout',
 });
 
 const MyComponent = Component.extend();
 assertType<string | string[]>(get(MyComponent, 'positionalParams'));
 
 const component1 = Component.extend({
-    actions: {
-        hello(name: string) {
-            console.log('Hello', name);
-        },
-    },
-});
-
-Component.extend({
-    name: '',
+  actions: {
     hello(name: string) {
-        this.set('name', name);
+      console.log('Hello', name);
     },
+  },
+});
+
+class AnotherComponent extends Component {
+  name = '';
+
+  hello(name: string) {
+    this.set('name', name);
+    this.name = name;
+  }
+}
+
+Component.extend({
+  tagName: 'em',
 });
 
 Component.extend({
-    tagName: 'em',
+  classNames: ['my-class', 'my-other-class'],
+});
+
+class Bindings extends Component {
+  classNameBindings = ['propertyA', 'propertyB'];
+  propertyA = 'from-a';
+
+  @computed()
+  get propertyB() {
+    if (!this.get('propertyA')) {
+      return 'from-b';
+    }
+  }
+}
+
+Component.extend({
+  classNameBindings: ['hovered'],
+  hovered: true,
+});
+
+class Message extends Object {
+  empty = false;
+}
+
+Component.extend({
+  classNameBindings: ['messages.empty'],
+  messages: Message.create({
+    empty: true,
+  }),
 });
 
 Component.extend({
-    classNames: ['my-class', 'my-other-class'],
+  classNameBindings: ['isEnabled:enabled:disabled'],
+  isEnabled: true,
 });
 
 Component.extend({
-    classNameBindings: ['propertyA', 'propertyB'],
-    propertyA: 'from-a',
-    propertyB: computed(function () {
-        if (!this.get('propertyA')) {
-            return 'from-b';
-        }
-    }),
+  classNameBindings: ['isEnabled::disabled'],
+  isEnabled: true,
 });
 
 Component.extend({
-    classNameBindings: ['hovered'],
-    hovered: true,
+  tagName: 'a',
+  attributeBindings: ['href'],
+  href: 'http://google.com',
 });
 
 Component.extend({
-    classNameBindings: ['messages.empty'],
-    messages: Object.create({
-        empty: true,
-    }),
+  tagName: 'a',
+  attributeBindings: ['url:href'],
+  url: 'http://google.com',
 });
 
 Component.extend({
-    classNameBindings: ['isEnabled:enabled:disabled'],
-    isEnabled: true,
+  tagName: 'use',
+  attributeBindings: ['xlinkHref:xlink:href'],
+  xlinkHref: '#triangle',
 });
 
 Component.extend({
-    classNameBindings: ['isEnabled::disabled'],
-    isEnabled: true,
+  tagName: 'input',
+  attributeBindings: ['disabled'],
+  disabled: false,
 });
 
 Component.extend({
-    tagName: 'a',
-    attributeBindings: ['href'],
-    href: 'http://google.com',
+  tagName: 'input',
+  attributeBindings: ['disabled'],
+  disabled: computed(() => {
+    return someLogic();
+  }),
+});
+
+declare function someLogic(): boolean;
+
+Component.extend({
+  tagName: 'form',
+  attributeBindings: ['novalidate'],
+  novalidate: null,
 });
 
 Component.extend({
-    tagName: 'a',
-    attributeBindings: ['url:href'],
-    url: 'http://google.com',
-});
-
-Component.extend({
-    tagName: 'use',
-    attributeBindings: ['xlinkHref:xlink:href'],
-    xlinkHref: '#triangle',
-});
-
-Component.extend({
-    tagName: 'input',
-    attributeBindings: ['disabled'],
-    disabled: false,
-});
-
-Component.extend({
-    tagName: 'input',
-    attributeBindings: ['disabled'],
-    disabled: computed(() => {
-        if ('someLogic') {
-            return true;
-        } else {
-            return false;
-        }
-    }),
-});
-
-Component.extend({
-    tagName: 'form',
-    attributeBindings: ['novalidate'],
-    novalidate: null,
-});
-
-Component.extend({
-    click(event: object) {
-        // will be called when an instance's
-        // rendered element is clicked
-    },
+  click(event: object) {
+    // will be called when an instance's
+    // rendered element is clicked
+  },
 });
 
 // @ts-expect-error
 Component.reopen({
-    attributeBindings: ['metadata:data-my-metadata'],
-    metadata: '',
+  attributeBindings: ['metadata:data-my-metadata'],
+  metadata: '',
 });
 
 interface MySig {
-    Args: {
-        Named: {
-            name: string;
-            age: number;
-        };
-        Positional: [action: () => void];
+  Args: {
+    Named: {
+      name: string;
+      age: number;
     };
+    Positional: [action: () => void];
+  };
 }
 
 // These type helpers are stolen (and tweaked) from Glimmer and Glint internals
@@ -146,12 +143,12 @@ type NamedArgsFor<T> = GetWithFallback<GetWithFallback<T, 'Args', {}>, 'Named', 
 
 interface SigExample extends NamedArgsFor<MySig> {}
 class SigExample extends Component<MySig> {
-    get accessArgs() {
-        const {
-            name, // $ExpectType string
-            age, // $ExpectType number
-        } = this;
+  get accessArgs() {
+    const {
+      name, // $ExpectType string
+      age, // $ExpectType number
+    } = this;
 
-        return `${name} is ${age} years old`;
-    }
+    return `${name} is ${age} years old`;
+  }
 }
