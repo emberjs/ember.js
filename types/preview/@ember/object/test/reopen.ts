@@ -1,75 +1,79 @@
-import { assertType } from './lib/assert';
 import EmberObject from '@ember/object';
 import Mixin from '@ember/object/mixin';
+import { expectTypeOf } from 'expect-type';
 
-type Person = typeof Person.prototype;
-const Person = EmberObject.extend({
-    name: '',
-    sayHello() {
-        alert(`Hello. My name is ${this.get('name')}`);
-    },
-});
+class Person extends EmberObject {
+  name = '';
 
-assertType<Person>(Person.reopen());
+  sayHello() {
+    alert(`Hello. My name is ${this.get('name')}`);
+  }
+}
 
-assertType<string>(Person.create().name);
-// tslint:disable-next-line no-void-expression
-assertType<void>(Person.create().sayHello());
+expectTypeOf(Person.reopen()).toMatchTypeOf<typeof Person>();
 
+expectTypeOf(Person.create().name).toEqualTypeOf<string>();
+expectTypeOf(Person.create().sayHello()).toBeVoid();
+
+// Here, a basic check that `reopenClass` *works*, but we intentionally do not
+// provide types for how it changes the original class (as spec'd in RFC 0800).
 const Person2 = Person.reopenClass({
-    species: 'Homo sapiens',
+  species: 'Homo sapiens',
 
-    createPerson(name: string): Person {
-        return Person.create({ name });
-    },
+  createPerson(name: string): Person {
+    return Person.create({ name });
+  },
 });
 
-assertType<string>(Person2.create().name);
-// tslint:disable-next-line no-void-expression
-assertType<void>(Person2.create().sayHello());
-assertType<string>(Person2.species);
+// The original class types are carried along
+expectTypeOf(Person2.create().name).toEqualTypeOf<string>();
+expectTypeOf(Person2.create().sayHello()).toBeVoid();
+// But we aren't trying to merge in new classes anymore.
+// @ts-expect-error
+Person2.species;
 
 const tom = Person2.create({
-    name: 'Tom Dale',
+  name: 'Tom Dale',
 });
 
 // @ts-expect-error
 const badTom = Person2.create({ name: 99 });
 
+// @ts-expect-error
 const yehuda = Person2.createPerson('Yehuda Katz');
 
 tom.sayHello(); // "Hello. My name is Tom Dale"
 yehuda.sayHello(); // "Hello. My name is Yehuda Katz"
+// @ts-expect-error
 alert(Person2.species); // "Homo sapiens"
 
+// The same goes for `.reopen()`: it will "work" in a bare minimum sense, but it
+// will not try to change the types.
 const Person3 = Person2.reopen({
-    goodbyeMessage: 'goodbye',
+  goodbyeMessage: 'goodbye',
 
-    sayGoodbye() {
-        alert(`${this.get('goodbyeMessage')}, ${this.get('name')}`);
-    },
+  sayGoodbye(this: Person) {
+    alert(`${this.get('goodbyeMessage')}, ${this.get('name')}`);
+  },
 });
 
 const person3 = Person3.create();
 person3.get('name');
 person3.get('goodbyeMessage');
 person3.sayHello();
+// @ts-expect-error
 person3.sayGoodbye();
 
 interface AutoResizeMixin {
-    resizable: true;
+  resizable: true;
 }
-declare const AutoResizeMixin: Mixin<AutoResizeMixin>;
+const AutoResizeMixin = Mixin.create({ resizable: true });
 
-const ResizableTextArea = EmberObject.reopen(AutoResizeMixin, {
-    scaling: 1.0,
-});
-const text = ResizableTextArea.create();
-// TODO fix upstream
-// assertType<boolean>(text.resizable);
-assertType<number>(text.scaling);
-
+// And the same here.
 const Reopened = EmberObject.reopenClass({ a: 1 }, { b: 2 }, { c: 3 });
-assertType<number>(Reopened.a);
-assertType<number>(Reopened.b);
-assertType<number>(Reopened.c);
+// @ts-expect-error
+Reopened.a;
+// @ts-expect-error
+Reopened.b;
+// @ts-expect-error
+Reopened.c;
