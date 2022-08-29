@@ -110,19 +110,19 @@ function testSetProperties() {
 }
 
 function testDynamic() {
-  const obj: any = {};
-  const dynamicKey: string = 'dummy'; // eslint-disable-line @typescript-eslint/no-inferrable-types
+  const obj: Record<string, string> = {};
+  const dynamicKey = 'dummy' as string;
 
-  expectTypeOf(get(obj, 'dummy')).toBeAny();
-  expectTypeOf(get(obj, dynamicKey)).toBeAny();
-  expectTypeOf(getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: any }>();
-  expectTypeOf(getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: any }>();
-  expectTypeOf(getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, any>>();
-  expectTypeOf(getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, any>>();
-  expectTypeOf(set(obj, 'dummy', 'value')).toBeAny();
-  expectTypeOf(set(obj, dynamicKey, 'value')).toBeAny();
-  expectTypeOf(setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<Record<'dummy', any>>();
+  expectTypeOf(get(obj, 'dummy')).toEqualTypeOf<string | undefined>();
+  expectTypeOf(get(obj, dynamicKey)).toEqualTypeOf<string | undefined>();
+  expectTypeOf(getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string | undefined }>();
+  expectTypeOf(getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string | undefined }>();
+  expectTypeOf(getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(set(obj, 'dummy', 'value')).toBeString();
+  expectTypeOf(set(obj, dynamicKey, 'value')).toBeString();
+  expectTypeOf(setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<Record<'dummy', string>>();
   expectTypeOf(setProperties(obj, { [dynamicKey]: 'value' })).toEqualTypeOf<
-    Record<string | number, any>
+    Record<string, string>
   >();
 }
