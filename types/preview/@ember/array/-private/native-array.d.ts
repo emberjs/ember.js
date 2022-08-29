@@ -13,11 +13,11 @@ type GlobalArray<T> = T[];
  * at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
  */
 interface NativeArray<T> extends GlobalArray<T>, MutableArray<T>, Observable {
-    /**
-     * __Required.__ You must implement this method to apply this mixin.
-     */
-    length: number;
+  /**
+   * __Required.__ You must implement this method to apply this mixin.
+   */
+  length: number;
 }
 
-declare const NativeArray: Mixin<NativeArray<unknown>>;
+declare const NativeArray: Mixin;
 export default NativeArray;
