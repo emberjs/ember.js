@@ -11,6 +11,7 @@ import {
   get as glimmerGet,
   fn as glimmerFn,
 } from '@glimmer/runtime';
+import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
 import { type Opaque } from '@ember/-internals/utility-types';
 
 /**
@@ -468,4 +469,26 @@ export interface GetHelper extends Opaque<'helper:get'> {}
  */
 export const fn = glimmerFn as FnHelper;
 export interface FnHelper extends Opaque<'helper:fn'> {}
+
+/**
+ * Use the {{uniqueId}} helper to generate a unique ID string suitable for use as
+ * an ID attribute in the DOM.
+ *
+ * Each invocation of {{uniqueId}} will return a new, unique ID string.
+ * You can use the `let` helper to create an ID that can be reused within a template.
+ *
+ * ```js
+ * import { uniqueId } from '@ember/helper';
+ *
+ * <template>
+ *   {{#let (uniqueId) as |emailId|}}
+ *     <label for={{emailId}}>Email address</label>
+ *     <input id={{emailId}} type="email" />
+ *   {{/let}}
+ * </template>
+ * ```
+ */
+export const uniqueId = glimmerUniqueId;
+export type UniqueIdHelper = typeof uniqueId;
+
 /* eslint-enable @typescript-eslint/no-empty-interface */

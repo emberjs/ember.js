@@ -146,6 +146,7 @@ let allExports = [
   ['_hash', '@ember/helper', 'hash'],
   ['_get', '@ember/helper', 'get'],
   ['_concat', '@ember/helper', 'concat'],
+  ['_uniqueId', '@ember/helper', 'uniqueId'],
 
   // @ember/object
   ['Object', '@ember/object', 'default'],
