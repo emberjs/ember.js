@@ -1,11 +1,3 @@
-// Type definitions for non-npm package @ember/polyfills 4.0
-// Project: https://emberjs.com/api/ember/4.0/modules/@ember%2Fpolyfills
-// Definitions by: Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.4
-
 import type { Mix, Mix3, Mix4 } from './types';
 
 /**

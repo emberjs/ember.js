@@ -1,11 +1,3 @@
-// Type definitions for non-npm package @ember/test 4.0
-// Project: https://emberjs.com/api/ember/4.0/modules/@ember%2Ftest
-// Definitions by: Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.4
-
 import Application from '@ember/application';
 
 /**
@@ -13,17 +5,17 @@ import Application from '@ember/application';
  * when `App.injectTestHelpers` is called.
  */
 export function registerHelper(
-    name: string,
-    helperMethod: (app: Application, ...args: any[]) => unknown,
-    options?: object
+  name: string,
+  helperMethod: (app: Application, ...args: any[]) => unknown,
+  options?: object
 ): unknown;
 /**
  * `registerAsyncHelper` is used to register an async test helper that will be injected
  * when `App.injectTestHelpers` is called.
  */
 export function registerAsyncHelper(
-    name: string,
-    helperMethod: (app: Application, ...args: any[]) => unknown
+  name: string,
+  helperMethod: (app: Application, ...args: any[]) => unknown
 ): void;
 
 /**
@@ -41,8 +33,8 @@ export function unregisterHelper(name: string): void;
  */
 export function registerWaiter(callback: () => boolean): unknown;
 export function registerWaiter<Context>(
-    context: Context,
-    callback: (this: Context) => boolean
+  context: Context,
+  callback: (this: Context) => boolean
 ): unknown;
 /**
  * `unregisterWaiter` is used to unregister a callback that was
@@ -50,6 +42,6 @@ export function registerWaiter<Context>(
  */
 export function unregisterWaiter(callback: () => boolean): unknown;
 export function unregisterWaiter<Context>(
-    context: Context,
-    callback: (this: Context) => boolean
+  context: Context,
+  callback: (this: Context) => boolean
 ): unknown;

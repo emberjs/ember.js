@@ -1,11 +1,3 @@
-// Type definitions for non-npm package @ember/helper 4.0
-// Project: https://github.com/emberjs/ember.js
-// Definitions by: Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.4
-
 import type { Opaque } from 'ember/-private/type-utils';
 
 // In normal TypeScript, these helpers are essentially opaque tokens that just

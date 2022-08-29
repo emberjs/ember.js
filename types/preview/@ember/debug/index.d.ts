@@ -1,11 +1,3 @@
-// Type definitions for non-npm package @ember/debug 4.0
-// Project: https://emberjs.com/api/ember/4.0/modules/@ember%2Fdebug
-// Definitions by: Chris Krycho <https://github.com/chriskrycho>
-//                 Dan Freeman <https://github.com/dfreeman>
-//                 James C. Davis <https://github.com/jamescdavis>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 4.4
-
 /**
  * Define an assertion that will throw an exception if the condition is not met.
  */
@@ -24,11 +16,11 @@ export function debug(message: string): void;
  * message contains the word "should", otherwise defers to the default handler.
  */
 export function registerDeprecationHandler(
-    handler: (
-        message: string,
-        options: { id: string; until: string } | undefined,
-        next: (message: string, options?: { id: string; until: string }) => void,
-    ) => void,
+  handler: (
+    message: string,
+    options: { id: string; until: string } | undefined,
+    next: (message: string, options?: { id: string; until: string }) => void
+  ) => void
 ): void;
 /**
  * Allows for runtime registration of handler functions that override the default warning behavior.
@@ -37,11 +29,11 @@ export function registerDeprecationHandler(
  * default warning behavior.
  */
 export function registerWarnHandler(
-    handler: (
-        message: string,
-        options: { id: string } | undefined,
-        next: (message: string, options?: { id: string }) => void,
-    ) => void,
+  handler: (
+    message: string,
+    options: { id: string } | undefined,
+    next: (message: string, options?: { id: string }) => void
+  ) => void
 ): void;
 
 /**
@@ -67,34 +59,38 @@ export function warn(message: string, options: { id: string }): void;
  * @param options The deprecation options.
  */
 export function deprecate(
-    message: string,
-    test: boolean,
-    options: {
-        /**
-         * A unique id for this deprecation. The id can be used by Ember debugging
-         * tools to change the behavior (raise, log or silence) for that specific
-         * deprecation. The id should be namespaced by dots, e.g.
-         * `"view.helper.select"`.
-         */
-        id: string;
-        /**
-         * The version of Ember when this deprecation warning will be removed.
-         */
-        until: string;
-        /**
-         * An optional url to the transition guide on the emberjs.com website.
-         */
-        url?: string | undefined;
-        /**
-         * A namespace for the deprecation, usually the package name.
-         */
-        for: string;
-        /**
-         * Describes when the deprecation became available and enabled.
-         */
-        since: Available | Enabled;
-    },
+  message: string,
+  test: boolean,
+  options: {
+    /**
+     * A unique id for this deprecation. The id can be used by Ember debugging
+     * tools to change the behavior (raise, log or silence) for that specific
+     * deprecation. The id should be namespaced by dots, e.g.
+     * `"view.helper.select"`.
+     */
+    id: string;
+    /**
+     * The version of Ember when this deprecation warning will be removed.
+     */
+    until: string;
+    /**
+     * An optional url to the transition guide on the emberjs.com website.
+     */
+    url?: string | undefined;
+    /**
+     * A namespace for the deprecation, usually the package name.
+     */
+    for: string;
+    /**
+     * Describes when the deprecation became available and enabled.
+     */
+    since: Available | Enabled;
+  }
 ): void;
 
-export interface Available { available: string; }
-export interface Enabled extends Available { enabled: string; }
+export interface Available {
+  available: string;
+}
+export interface Enabled extends Available {
+  enabled: string;
+}
