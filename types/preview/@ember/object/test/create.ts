@@ -1,54 +1,57 @@
-import { assertType } from './lib/assert';
 import EmberObject, { computed } from '@ember/object';
-import ComputedProperty from '@ember/object/computed';
+import { expectTypeOf } from 'expect-type';
 
 /**
  * Zero-argument case
  */
 const o = EmberObject.create();
 // create returns an object
-assertType<object>(o);
-// object returned by create type-checks as an instance of Ember.Object
-assertType<boolean>(o.isDestroyed); // from instance
-assertType<boolean>(o.isDestroying); // from instance
-assertType<(key: keyof EmberObject) => any>(o.get); // from prototype
+expectTypeOf(o).toBeObject();
+// object returned by create type-checks as an instance of EmberObject
+expectTypeOf(o.isDestroyed).toBeBoolean();
+expectTypeOf(o.isDestroying).toBeBoolean();
+expectTypeOf(o.get).toMatchTypeOf<<K extends keyof EmberObject>(key: K) => EmberObject[K]>();
 
 /**
  * One-argument case
  */
-const o1 = EmberObject.create({ x: 9, y: 'hello', z: false });
-assertType<number>(o1.x);
-assertType<string>(o1.y);
-o1.y; // $ExpectType string
-o1.z; // $ExpectType boolean
+class O1 extends EmberObject {
+  declare x: number;
+  declare y: string;
+  declare z: boolean;
+}
 
-const obj = EmberObject.create({ a: 1 }, { b: 2 }, { c: 3 });
-assertType<number>(obj.b);
-assertType<number>(obj.a);
-assertType<number>(obj.c);
+const o1 = O1.create({ x: 9, y: 'hello', z: false });
+expectTypeOf(o1.x).toBeNumber();
+expectTypeOf(o1.y).toBeString();
+expectTypeOf(o1.z).toBeBoolean();
+
+class O2 extends EmberObject {
+  declare a: number;
+  declare b: number;
+  declare c: number;
+}
+const obj = O2.create({ a: 1 }, { b: 2 }, { c: 3 });
+expectTypeOf(obj.b).toBeNumber();
+expectTypeOf(obj.a).toBeNumber();
+expectTypeOf(obj.c).toBeNumber();
 
 export class Person extends EmberObject {
-    fullName = computed('firstName', 'lastName', function () {
-        return [this.firstName + this.lastName].join(' ');
-    });
-    declare firstName: string;
-    declare lastName: string;
-    declare age: number;
+  declare firstName: string;
+  declare lastName: string;
+  declare age: number;
+
+  @computed('firstName', 'lastName')
+  get fullName() {
+    return [this.firstName + this.lastName].join(' ');
+  }
 }
-const p = new Person();
+const p = Person.create();
 
-assertType<string>(p.firstName);
-assertType<ComputedProperty<string>>(p.fullName);
-assertType<string>(p.get('fullName'));
+expectTypeOf(p.firstName).toBeString();
+expectTypeOf(p.fullName).toBeString();
+expectTypeOf(p.get('fullName')).toBeString();
 
-const p2 = Person.create({ firstName: 'string' });
-const p2b = Person.create({}, { firstName: 'string' });
-const p2c = Person.create({}, {}, { firstName: 'string' });
-
-export class PersonWithNumberName extends Person.extend({
-    fullName: 6,
-}) {}
-
-const p4 = new PersonWithNumberName();
-assertType<string>(p4.firstName);
-assertType<number>(p4.fullName);
+Person.create({ firstName: 'string' });
+Person.create({}, { firstName: 'string' });
+Person.create({}, {}, { firstName: 'string' });
