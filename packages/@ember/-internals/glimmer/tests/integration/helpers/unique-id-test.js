@@ -24,7 +24,7 @@ if (EMBER_UNIQUE_ID_HELPER) {
         this.assert.notStrictEqual(
           first,
           second,
-          `different invocations of {{unique-id}} should produce different values`
+          `different invocations of uniqueId should produce different values`
         );
       }
     }
