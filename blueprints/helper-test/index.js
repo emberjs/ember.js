@@ -26,9 +26,6 @@ module.exports = useTestFrameworkDetector({
       __testType__() {
         return 'integration';
       },
-      __collection__() {
-        return 'helpers';
-      },
     };
   },
 
