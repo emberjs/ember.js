@@ -33,34 +33,12 @@ export function observer<Fn extends (target: any, key: string) => void>(
   ...args: [...propertyNames: string[], func: Fn]
 ): Fn;
 
-// Allows us to split apart `Record` types which have distinct keys (e.g. using
-// an enum or a union of specific keys) from those which just have an index type
-// and therefore to get the same behavior with `get` and friends as we would
-// when indexing directly with JS.
-// See https://stackoverflow.com/a/68261113/564181
-type RemoveIndex<T> = {
-  [K in keyof T as {} extends Record<K, 1> ? never : K]: T[K];
-};
-
-// Using `RemoveIndex` here then allows us to keep the desired behavior under
-// `noUncheckedIndexedAccess` as direct property access.
-type Get<T, K extends keyof T> = K extends keyof RemoveIndex<T> ? T[K] : T[K] | undefined;
-
-// We do the same here. Additionally, this uses an array type so that we can
-// distribute over each item in the list (accessing with `[number]`) instead of
-// over the list as a union, so that doing an index access gets the type for
-// that specific key rather then a union of the types associated with all the
-// keys.
-type GetProperties<T, Keys extends Array<keyof T>> = {
-  [K in Keys[number]]: Get<T, K>;
-};
-
 /**
  * Gets the value of a property on an object. If the property is computed,
  * the function will be invoked. If the property is not defined but the
  * object implements the `unknownProperty` method then that will be invoked.
  */
-export function get<T, K extends keyof T>(obj: T, key: K): Get<T, K>;
+export function get<T, K extends keyof T>(obj: T, key: K): T[K];
 export function get(obj: unknown, key: string): unknown;
 
 /**
@@ -69,14 +47,14 @@ export function get(obj: unknown, key: string): unknown;
  * property is not defined but the object implements the `setUnknownProperty`
  * method then that will be invoked as well.
  */
-export function set<T, K extends keyof T>(obj: T, key: K, value: T[K]): T[K];
+export function set<T, K extends keyof T, V extends T[K]>(obj: T, key: K, value: V): V;
 
 /**
  * To get multiple properties at once, call `getProperties` with an object
  * followed by a list of strings or an array.
  */
-export function getProperties<T, K extends Array<keyof T>>(obj: T, list: K): GetProperties<T, K>;
-export function getProperties<T, K extends Array<keyof T>>(obj: T, ...list: K): GetProperties<T, K>;
+export function getProperties<T, K extends keyof T>(obj: T, list: K[]): Pick<T, K>;
+export function getProperties<T, K extends keyof T>(obj: T, ...list: K[]): Pick<T, K>;
 
 /**
  * Set a list of properties on an object. These properties are set inside

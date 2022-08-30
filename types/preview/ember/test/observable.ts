@@ -109,16 +109,16 @@ function testDynamic() {
   const obj: Record<string, string> = {};
   const dynamicKey = 'dummy' as string;
 
-  expectTypeOf(Ember.get(obj, 'dummy')).toEqualTypeOf<string | undefined>();
-  expectTypeOf(Ember.get(obj, dynamicKey)).toEqualTypeOf<string | undefined>();
-  expectTypeOf(Ember.getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string | undefined }>();
-  expectTypeOf(Ember.getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string | undefined }>();
-  expectTypeOf(Ember.getProperties(obj, dynamicKey)).toEqualTypeOf<
-    Record<string, string | undefined>
-  >();
-  expectTypeOf(Ember.getProperties(obj, [dynamicKey])).toEqualTypeOf<
-    Record<string, string | undefined>
-  >();
+  // These all are "too loose" in `noUncheckedIndexedAccess`, but `get` has
+  // never properly supported that flag, and there is no path to doing so. If
+  // someone wants that support, they should switch to using direct property
+  // access instead of using `get` (which has many other advantages).
+  expectTypeOf(Ember.get(obj, 'dummy')).toEqualTypeOf<string>();
+  expectTypeOf(Ember.get(obj, dynamicKey)).toEqualTypeOf<string>();
+  expectTypeOf(Ember.getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string }>();
+  expectTypeOf(Ember.getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string }>();
+  expectTypeOf(Ember.getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(Ember.getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
   expectTypeOf(Ember.set(obj, 'dummy', 'value')).toBeString();
   expectTypeOf(Ember.set(obj, dynamicKey, 'value')).toBeString();
   expectTypeOf(Ember.setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<
