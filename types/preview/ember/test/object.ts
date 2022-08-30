@@ -60,29 +60,20 @@ export class Foo2 extends Ember.Object {
   name = '';
 
   changeName(name: string) {
-    // This is checking for assignability; `expectTypeOf` doesn't work correctly
-    // here because TS isn't resolving `this['name']` eagerly, and so it is not
-    // (currently) possible for the type utility to match it.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const x: string = Ember.set(this, 'name', name);
+    expectTypeOf(Ember.set(this, 'name', name)).toBeString();
 
-    // TODO: it would be nice if we can get this to work correctly; it is
-    // unclear why the version on the namespace does *not* work correctly but
-    // the standalone version *does*. However, the Ember namespace should be
-    // little used (and hopefully we will deprecate it soon), and `get` itself
-    // is in much the same bucket: 99% of cases are *either* totally unsafe deep
-    // key access like `get(foo, 'bar.baz.quux')` which we do not support at all
-    // *or* they can be trivially codemodded to direct property access.
-    // @ts-ignore
+    // For some reason, `this` type lookup does not resolve correctly here. Used
+    // outside a class, like `get(someFoo, 'name')`, this works correctly. Since
+    // there are basically no cases inside a class where you *have* to use `get`
+    // today, this is an acceptable workaround for now. It is assignable *or*
+    // castable.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const y: string = Ember.get(this, 'name');
+    const s: string = this.get('name');
+    expectTypeOf(Ember.get(this as Foo2, 'name')).toBeString();
+    expectTypeOf((this as Foo2).get('name')).toBeString();
 
-    this.setProperties({
-      name,
-    });
-    Ember.setProperties(this, {
-      name,
-    });
+    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<Pick<this, 'name'>>();
+    expectTypeOf(Ember.setProperties(this, { name })).toEqualTypeOf<Pick<this, 'name'>>();
   }
 
   bar() {

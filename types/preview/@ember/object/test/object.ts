@@ -40,9 +40,18 @@ class Foo extends Object {
   b = 5;
 
   baz() {
-    const y = this.b; // $ExpectType number
-    const z = this.a; // $ExpectType ComputedProperty<string, string>
+    expectTypeOf(this.b).toBeNumber();
+    expectTypeOf(this.a).toBeString();
     this.b = 10;
+
+    // For some reason, `this` type lookup does not resolve correctly here. Used
+    // outside a class, like `get(someFoo, 'name')`, this works correctly. Since
+    // there are basically no cases inside a class where you *have* to use `get`
+    // today, this is an acceptable workaround for now. It is assignable *or*
+    // castable.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const a: number = this.get('b');
+
     this.get('b').toFixed(4); // $ExpectType string
     this.set('a', 'abc').split(','); // $ExpectType string[]
     this.set('b', 10).toFixed(4); // $ExpectType string
@@ -60,20 +69,21 @@ export class Foo2 extends Object {
   name = '';
 
   changeName(name: string) {
-    expectTypeOf(this.set('name', name)).toEqualTypeOf<string>();
-    // This is checking for assignability; `expectTypeOf` doesn't work correctly
-    // here because TS isn't resolving `this['name']` eagerly, and so it is not
-    // (currently) possible for the type utility to match it.
+    expectTypeOf(this.set('name', name)).toBeString();
+    expectTypeOf(set(this, 'name', name)).toBeString();
+
+    // For some reason, `this` type lookup does not resolve correctly here. Used
+    // outside a class, like `get(someFoo, 'name')`, this works correctly. Since
+    // there are basically no cases inside a class where you *have* to use `get`
+    // today, this is an acceptable workaround for now. It is assignable *or*
+    // castable.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const x: string = set(this, 'name', name);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const y: string = get(this, 'name');
-    this.setProperties({
-      name,
-    });
-    setProperties(this, {
-      name,
-    });
+    const s: string = this.get('name');
+    expectTypeOf(get(this as Foo2, 'name')).toBeString();
+    expectTypeOf((this as Foo2).get('name')).toBeString();
+
+    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<Pick<this, 'name'>>();
+    expectTypeOf(setProperties(this, { name })).toEqualTypeOf<Pick<this, 'name'>>();
   }
 
   bar() {
