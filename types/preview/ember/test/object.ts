@@ -60,7 +60,6 @@ export class Foo2 extends Ember.Object {
   name = '';
 
   changeName(name: string) {
-    expectTypeOf(this.set('name', name)).toEqualTypeOf<string>();
     // This is checking for assignability; `expectTypeOf` doesn't work correctly
     // here because TS isn't resolving `this['name']` eagerly, and so it is not
     // (currently) possible for the type utility to match it.
