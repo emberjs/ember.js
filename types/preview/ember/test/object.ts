@@ -65,8 +65,18 @@ export class Foo2 extends Ember.Object {
     // (currently) possible for the type utility to match it.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const x: string = Ember.set(this, 'name', name);
+
+    // TODO: it would be nice if we can get this to work correctly; it is
+    // unclear why the version on the namespace does *not* work correctly but
+    // the standalone version *does*. However, the Ember namespace should be
+    // little used (and hopefully we will deprecate it soon), and `get` itself
+    // is in much the same bucket: 99% of cases are *either* totally unsafe deep
+    // key access like `get(foo, 'bar.baz.quux')` which we do not support at all
+    // *or* they can be trivially codemodded to direct property access.
+    // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const y: string = Ember.get(this, 'name');
+
     this.setProperties({
       name,
     });
