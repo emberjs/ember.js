@@ -314,4 +314,4 @@
 
 export { setHelperManager, helperCapabilities as capabilities } from '@glimmer/manager';
 export { invokeHelper, hash, array, concat, get, fn } from '@glimmer/runtime';
-export { default as uniqId} from "../-internals/glimmer/lib/helpers/unique-id";
+export { uniqueId } from "@ember/-internals/glimmer";

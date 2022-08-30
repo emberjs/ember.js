@@ -1,8 +1,34 @@
-import { RenderingTestCase, strip, moduleFor, runTask } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  RenderingTestCase,
+  strip,
+  moduleFor,
+  runTask,
+} from 'internal-test-helpers';
 import { setProperties } from '@ember/object';
+import { uniqueId } from '@ember/helper';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 
 if (EMBER_UNIQUE_ID_HELPER) {
+  moduleFor(
+    'Helpers test: {{unique-id}} JS',
+    class JSRenderingTest extends AbstractTestCase {
+      constructor(assert) {
+        super(assert);
+        this.assert = assert;
+      }
+      ['@test it can be invoked as a JS function']() {
+        let first = uniqueId();
+        let second = uniqueId();
+
+        this.assert.notStrictEqual(
+          first,
+          second,
+          `different invocations of {{unique-id}} should produce different values`
+        );
+      }
+    }
+  );
   moduleFor(
     'Helpers test: {{unique-id}}',
     class extends RenderingTestCase {

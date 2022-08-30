@@ -41,7 +41,7 @@ export default internalHelper((): Reference<string> => {
 // implementation details into an intimate API. It also ensures that the UUID
 // always starts with a letter, to avoid creating invalid IDs with a numeric
 // digit at the start.
-function uniqueId() {
+export function uniqueId() {
   // @ts-expect-error this one-liner abuses weird JavaScript semantics that
   // TypeScript (legitimately) doesn't like, but they're nonetheless valid and
   // specced.
