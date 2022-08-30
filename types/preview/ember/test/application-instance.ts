@@ -1,5 +1,4 @@
 import ApplicationInstance from '@ember/application/instance';
-import hbs from 'htmlbars-inline-precompile';
 
 const appInstance = ApplicationInstance.create();
 appInstance.register('some:injection', class Foo {});
@@ -12,7 +11,8 @@ appInstance.register('some:injection', class Foo {}, {
   instantiate: false,
 });
 
-appInstance.register('templates:foo/bar', hbs`<h1>Hello World</h1>`);
+// just check basic registration, doesn't yet have to be a template
+appInstance.register('templates:foo/bar', {});
 
 appInstance.register('some:injection', class Foo {}, {
   singleton: false,
