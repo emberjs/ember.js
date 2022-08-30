@@ -15,7 +15,7 @@ import {
   // private, supported via `declare module` below
   _backburner
 } from '@ember/runloop';
-import EmberObject from '@ember/object';
+import EmberObject, { action } from '@ember/object';
 import { Backburner, DebugInfo, QueueItem, DeferredActionQueues } from '@ember/runloop/-private/backburner';
 
 // It will be the responsibility of each consuming package that needs access to the backburner property
@@ -61,19 +61,21 @@ function testRun() {
     }
 }
 
-function testBind() {
-    EmberObject.extend({
-        init() {
-            const bound = bind(this, this.setupEditor);
-            bound();
-        },
+class TestBind extends EmberObject {
+  init() {
+      // NOTE: these don't actually preserve the underlying type. Critically,
+      // though, our types have *never* supported that for `bind`.
+      const bound = bind(this, this.setupEditor);
+      bound("hello");
+      const boundAgain = bind(this, 'setupEditor');
+      boundAgain("hello");
+  }
 
-        editor: null as string | null,
+  editor: string | null = null;
 
-        setupEditor(editor: string) {
-            this.set('editor', editor);
-        }
-    });
+  setupEditor(editor: string) {
+      this.set('editor', editor);
+  }
 }
 
 function testCancel() {
@@ -158,17 +160,23 @@ function testDebounce() {
     debounce(runIt, 150);
     debounce(myContext, runIt, 150);
     debounce(myContext, runIt, 150, true);
+    
+    class DebounceExample extends EmberObject {
+      searchValue = 'test';
+      fetchResults(value: string) {}
+      
+      @action
+      handleTyping() {
+          // the fetchResults function is passed into the component from its parent
+          debounce(this, this.fetchResults, this.searchValue, 250);
+      }
+    }
 
     EmberObject.extend({
         searchValue: 'test',
         fetchResults(value: string) {},
 
-        actions: {
-            handleTyping() {
-                // the fetchResults function is passed into the component from its parent
-                debounce(this, this.get('fetchResults'), this.get('searchValue'), 250);
-            }
-        }
+        
     });
 }
 
@@ -215,16 +223,16 @@ function testNext() {
     });
 }
 
-function testOnce() {
-    EmberObject.extend({
-        init() {
-            once(this, 'processFullName');
-        },
+class TestOnce extends EmberObject {
+  init() {
+      once(this as TestOnce, 'processFullName');
+      once(this, this.processFullName);
+  }
 
-        processFullName() {
-        }
-    });
+  processFullName() {
+  }
 }
+
 
 function testSchedule() {
     EmberObject.extend({

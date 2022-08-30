@@ -1,4 +1,4 @@
-import Resolver from 'ember-resolver';
+import type { Resolver} from '@ember/-internals/resolver';
 
 /**
  * The ContainerDebugAdapter helps the container and resolver interface

@@ -2,29 +2,7 @@ import EmberObject from '@ember/object';
 import type RegistryProxyMixin from '@ember/engine/-private/registry-proxy-mixin';
 import type Initializer from '@ember/engine/-private/types/initializer';
 import type EngineInstance from '@ember/engine/instance';
-import type { Factory, FullName } from '@ember/owner';
-
-export type KnownForTypeResult<Type extends string> = {
-  [fullName in `${Type}:${string}`]: boolean | undefined;
-};
-
-/**
- * A `Resolver` the mechanism responsible for looking up code in your
- * application and converting its naming conventions into the actual classes,
- * functions, and templates that Ember needs to resolve its dependencies, for
- * example, what template to render for a given route. It is a system that helps
- * the app resolve the lookup of JavaScript modules agnostic of what kind of
- * module system is used, which can be AMD, CommonJS or just plain globals. It
- * is used to lookup routes, models, components, templates, or anything that is
- * used in your Ember app.
- */
-export interface Resolver {
-  knownForType?: <TypeName extends string>(type: TypeName) => KnownForTypeResult<TypeName>;
-  lookupDescription?: (fullName: FullName) => string;
-  makeToString?: (factory: Factory<object>, fullName: FullName) => string;
-  normalize?: (fullName: FullName) => string;
-  resolve(name: string): Factory<object> | object | undefined;
-}
+import type { Resolver} from '@ember/-internals/resolver';
 
 /**
  * The `Engine` class contains core functionality for both applications and

@@ -123,6 +123,7 @@ export namespace Ember {
   class ObjectProxy extends EmberObjectProxyNs.default {}
   const Observable: typeof EmberObservable;
   const PromiseProxyMixin: typeof EmberObjectPromiseProxyNs.default;
+  interface PromiseProxyMixin<T> extends EmberObjectPromiseProxyNs.default<T> {}
   class CoreObject extends EmberCoreObject {}
   class DataAdapter extends EmberDataAdapter {}
   const Debug: {

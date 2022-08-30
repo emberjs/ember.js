@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { expectTypeOf } from 'expect-type';
 
 const top = (<T>(x?: T): T => x!)();
 type Top = typeof top;
@@ -75,43 +76,49 @@ Ember.isNone([]); // $ExpectType boolean
 Ember.isPresent(''); // $ExpectType boolean
 Ember.isPresent([]); // $ExpectType boolean
 // observer
-const o2 = Ember.Object.extend({
+class O2 extends Ember.Object {
+  name = 'foo'
+  age = 3;
+  
+  nameWatcher = Ember.observer('name', () => {});
+  nameWatcher2 = Ember.observer('name', 'fullName', () => {});
+}
+const o2 = O2.create({
   name: 'foo',
   age: 3,
-  nameWatcher: Ember.observer('name', () => {}),
-  nameWatcher2: Ember.observer('name', 'fullName', () => {}),
 });
 // on
-const o3 = Ember.Object.extend({
-  name: 'foo',
-  nameWatcher: Ember.on('init', () => {}),
-  nameWatcher2: Ember.on('destroy', () => {}),
-});
+class O3 extends Ember.Object {
+  name = 'foo';
+  nameWatcher = Ember.on('init', () => {});
+  nameWatcher2 = Ember.on('destroy', () => {});
+}
+const o3 = O3.create();
 // removeListener
-Ember.removeListener(o2, 'create', null, () => {});
-Ember.removeListener(o2, 'create', null, 'create');
+Ember.removeListener(O2, 'create', null, () => {});
+Ember.removeListener(O2, 'create', null, 'create');
 // @ts-expect-error
 Ember.removeListener({}, 'create', null, 'blah');
 // removeObserver
-Ember.removeObserver(o2, 'create', () => {});
+Ember.removeObserver(O2, 'create', () => {});
 // @ts-expect-error
 Ember.removeObserver({}, 'create', () => {});
 // runInDebug
 Ember.runInDebug(() => {});
 // sendEvent
-Ember.sendEvent(o2, 'clicked', [1, 2]); // $ExpectType boolean
+expectTypeOf(Ember.sendEvent(o2, 'clicked', [1, 2])).toBeBoolean();
 // set
-Ember.set(o2.create(), 'name', 'bar'); // $ExpectType string
-Ember.set(o2.create(), 'age', 4); // $ExpectType number
+Ember.set(O2.create(), 'name', 'bar'); // $ExpectType string
+Ember.set(O2.create(), 'age', 4); // $ExpectType number
 // @ts-expect-error
-Ember.set(o2.create(), 'nam', 'bar');
+Ember.set(O2.create(), 'nam', 'bar');
 // setOwner
 declare let app: Ember.ApplicationInstance;
-Ember.setOwner(o2.create(), app);
+Ember.setOwner(O2.create(), app);
 // setProperties
-Ember.setProperties(o2.create(), { name: 'bar' }).name; // $ExpectType string
+Ember.setProperties(O2.create(), { name: 'bar' }).name; // $ExpectType string
 // trySet
-Ember.trySet(o2, 'nam', ''); // $ExpectType any
+Ember.trySet(O2, 'nam', ''); // $ExpectType any
 // typeOf
 Ember.typeOf(''); // $ExpectType "string"
 Ember.typeOf(Ember.A()); // $ExpectType "array"
@@ -156,15 +163,20 @@ C1.create();
 C2.create();
 c1.didInsertElement();
 c2.didInsertElement();
-// Ember.ComputedProperty
-const cp: Ember.ComputedProperty<string, string> = Ember.computed('foo', {
-  get(): string {
-    return '';
-  },
-  set(_key: string, newVal: string): string {
-    return '';
-  },
-});
+
+class Foo {
+  foo = '';
+  
+  @Ember.computed('foo')
+  get wat(): string {
+    return this.foo
+  }
+  
+  set wat(newValue: string) {
+    this.foo = newValue;
+  }
+}
+
 // Ember.ContainerDebugAdapter
 const cda = new Ember.ContainerDebugAdapter(); // $ExpectType ContainerDebugAdapter
 // Ember.Controller
@@ -185,27 +197,33 @@ ei1.lookup('data:foo');
 // Ember.Error
 new Ember.Error('Halp!');
 // Ember.Evented
-const oe1 = Ember.Object.extend(Ember.Evented).create();
+interface OE1 extends Ember.Evented {}
+class OE1 extends Ember.Object.extend(Ember.Evented) {}
+const oe1 = OE1.create();
 oe1.trigger('foo');
 oe1.on('bar', () => {});
 oe1.on('bar', { foo() {} }, () => {});
 // Ember.HashLocation
 const hl = new Ember.HashLocation(); // $ExpectType HashLocation
 // Ember.Helper
-const h1 = Ember.Helper.extend({
+class H1 extends Ember.Helper {
   compute() {
     this.recompute();
     return '';
-  },
-});
+  }
+}
 // Ember.HistoryLocation
-const hil = new Ember.HistoryLocation(); // $ExpectType HistoryLocation
+const hil = Ember.HistoryLocation.create();
+expectTypeOf(hil).toEqualTypeOf<Ember.HistoryLocation>();
 // Ember.Mixin
-Ember.Object.extend(Ember.Mixin.create({ foo: 'bar' }), {
+interface UsesMixin {
+  foo: string
+}
+class UsesMixin extends Ember.Object {
   baz() {
-    this.foo; // $ExpectType string
-  },
-});
+    expectTypeOf(this.foo).toBeString();
+  }
+}
 // Ember.MutableArray
 const ma1: Ember.MutableArray<string> = ['money', 'in', 'the', 'bananna', 'stand'];
 ma1.addObject('!'); // $ExpectType string
@@ -237,12 +255,13 @@ new Ember.ObjectProxy(); // $ExpectType ObjectProxy
 // Ember.Observable
 Ember.Object.extend(Ember.Observable, {});
 // Ember.PromiseProxyMixin
-Ember.Object.extend(Ember.PromiseProxyMixin, {
+interface PPM<T> extends Ember.PromiseProxyMixin<T> {}
+class PPM<T> extends Ember.Object.extend(Ember.PromiseProxyMixin) {
   foo() {
     this.reason; // $ExpectType unknown
     this.isPending; // $ExpectType boolean
-  },
-});
+  }
+}
 // Ember.Route
 new Ember.Route();
 // Ember.Router
