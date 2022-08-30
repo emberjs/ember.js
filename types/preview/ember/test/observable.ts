@@ -113,8 +113,12 @@ function testDynamic() {
   expectTypeOf(Ember.get(obj, dynamicKey)).toEqualTypeOf<string | undefined>();
   expectTypeOf(Ember.getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string | undefined }>();
   expectTypeOf(Ember.getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string | undefined }>();
-  expectTypeOf(Ember.getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
-  expectTypeOf(Ember.getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(Ember.getProperties(obj, dynamicKey)).toEqualTypeOf<
+    Record<string, string | undefined>
+  >();
+  expectTypeOf(Ember.getProperties(obj, [dynamicKey])).toEqualTypeOf<
+    Record<string, string | undefined>
+  >();
   expectTypeOf(Ember.set(obj, 'dummy', 'value')).toBeString();
   expectTypeOf(Ember.set(obj, dynamicKey, 'value')).toBeString();
   expectTypeOf(Ember.setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<

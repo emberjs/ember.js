@@ -63,9 +63,11 @@ function testGetProperties() {
     name: string;
     age: number;
   }>();
-  expectTypeOf(getProperties(person, 'name', 'age', 'capitalized')).toEqualTypeOf<
-    Pick<Person, 'name' | 'age' | 'capitalized'>
-  >();
+  expectTypeOf(getProperties(person, 'name', 'age', 'capitalized')).toEqualTypeOf<{
+    name: string;
+    age: number;
+    capitalized: string;
+  }>();
   expectTypeOf(person.getProperties('name')).toEqualTypeOf<{ name: string }>();
   expectTypeOf(person.getProperties('name', 'age')).toEqualTypeOf<{ name: string; age: number }>();
   expectTypeOf(person.getProperties(['name', 'age'])).toEqualTypeOf<{
@@ -117,12 +119,24 @@ function testDynamic() {
   expectTypeOf(get(obj, dynamicKey)).toEqualTypeOf<string | undefined>();
   expectTypeOf(getProperties(obj, 'dummy')).toEqualTypeOf<{ dummy: string | undefined }>();
   expectTypeOf(getProperties(obj, ['dummy'])).toEqualTypeOf<{ dummy: string | undefined }>();
-  expectTypeOf(getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string>>();
-  expectTypeOf(getProperties(obj, [dynamicKey])).toEqualTypeOf<Record<string, string>>();
+  expectTypeOf(getProperties(obj, dynamicKey)).toEqualTypeOf<Record<string, string | undefined>>();
+  expectTypeOf(getProperties(obj, [dynamicKey])).toEqualTypeOf<
+    Record<string, string | undefined>
+  >();
   expectTypeOf(set(obj, 'dummy', 'value')).toBeString();
   expectTypeOf(set(obj, dynamicKey, 'value')).toBeString();
   expectTypeOf(setProperties(obj, { dummy: 'value ' })).toEqualTypeOf<Record<'dummy', string>>();
   expectTypeOf(setProperties(obj, { [dynamicKey]: 'value' })).toEqualTypeOf<
     Record<string, string>
   >();
+
+  // Test records with known types.
+  const x: Record<'a' | 'b', string> = {
+    a: 'a',
+    b: 'b',
+  };
+
+  expectTypeOf(get(x, 'a')).toBeString();
+  expectTypeOf(get(x, 'b')).toBeString();
+  expectTypeOf(get(x, 'anything else')).toBeUnknown();
 }
