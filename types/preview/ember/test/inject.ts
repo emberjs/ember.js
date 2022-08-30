@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { expectTypeOf } from 'expect-type';
 
 class AuthService extends Ember.Service {
   declare isAuthenticated: boolean;
@@ -18,13 +19,16 @@ declare module '@ember/service' {
 
 declare module '@ember/controller' {
   interface Registry {
-    application: ApplicationController;
+    emberApplication: ApplicationController;
   }
 }
 
 class LoginRoute extends Ember.Route {
-  auth = Ember.inject.service('auth');
-  application = Ember.inject.controller('application');
+  @Ember.inject.service('auth')
+  declare auth: AuthService;
+
+  @Ember.inject.controller('emberApplication')
+  declare application: ApplicationController;
 
   didTransition() {
     if (!this.get('auth').get('isAuthenticated')) {
@@ -34,24 +38,32 @@ class LoginRoute extends Ember.Route {
 
   anyOldMethod() {
     this.get('application').set('string', 'must be a string');
-    this.controllerFor('application'); // $ExpectType Controller
+    expectTypeOf(this.controllerFor('emberApplication')).toEqualTypeOf<Controller>();
   }
 }
 
 // New module injection style.
-import Controller, { inject as controller } from '@ember/controller';
-import Service, { inject as service } from '@ember/service';
 import { assertType } from './lib/assert';
+import RouterService from '@ember/routing/router-service';
+import Controller from '@ember/controller';
 
 class ComponentInjection extends Ember.Component {
-  applicationController = controller('application');
-  auth = service('auth');
-  router = service('router');
-  misc = service();
+  @Ember.inject.controller('emberApplication')
+  declare applicationController: ApplicationController;
+
+  @Ember.inject.service('auth')
+  declare auth: AuthService;
+
+  @Ember.inject.service('router')
+  declare router: RouterService;
+
+  @Ember.inject.service
+  declare misc: Ember.Service;
 
   testem() {
-    assertType<Ember.Service>(this.get('misc'));
-    const url = this.get('router').urlFor('some-route', 1, 2, 3, {
+    expectTypeOf(this.misc).toEqualTypeOf<Ember.Service>();
+
+    const url = this.router.urlFor('some-route', 1, 2, 3, {
       queryParams: { seriously: 'yes' },
     });
     assertType<string>(url);

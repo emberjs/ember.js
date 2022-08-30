@@ -34,8 +34,8 @@ Ember.compare('31', '114'); // $ExpectType number
 Ember.debug('some info for developers');
 // deprecate
 Ember.deprecate("you shouldn't use this anymore", 3 === 3, {
-    id: 'no-longer-allowed',
-    until: '99.0.0',
+  id: 'no-longer-allowed',
+  until: '99.0.0',
 });
 // get
 Ember.get({ z: 23 }, 'z'); // $ExpectType number
@@ -76,16 +76,16 @@ Ember.isPresent(''); // $ExpectType boolean
 Ember.isPresent([]); // $ExpectType boolean
 // observer
 const o2 = Ember.Object.extend({
-    name: 'foo',
-    age: 3,
-    nameWatcher: Ember.observer('name', () => {}),
-    nameWatcher2: Ember.observer('name', 'fullName', () => {}),
+  name: 'foo',
+  age: 3,
+  nameWatcher: Ember.observer('name', () => {}),
+  nameWatcher2: Ember.observer('name', 'fullName', () => {}),
 });
 // on
 const o3 = Ember.Object.extend({
-    name: 'foo',
-    nameWatcher: Ember.on('init', () => {}),
-    nameWatcher2: Ember.on('destroy', () => {}),
+  name: 'foo',
+  nameWatcher: Ember.on('init', () => {}),
+  nameWatcher2: Ember.on('destroy', () => {}),
 });
 // removeListener
 Ember.removeListener(o2, 'create', null, () => {});
@@ -148,7 +148,7 @@ new Ember.ArrayProxy<number>([3, 3, 2]); // $ExpectType ArrayProxy<number>
 // Ember.Component
 const C1 = Ember.Component.extend({ classNames: ['foo'] });
 class C2 extends Ember.Component {
-    classNames = ['foo'];
+  classNames = ['foo'];
 }
 const c1 = new C1();
 const c2 = new C2();
@@ -158,12 +158,12 @@ c1.didInsertElement();
 c2.didInsertElement();
 // Ember.ComputedProperty
 const cp: Ember.ComputedProperty<string, string> = Ember.computed('foo', {
-    get(): string {
-        return '';
-    },
-    set(_key: string, newVal: string): string {
-        return '';
-    },
+  get(): string {
+    return '';
+  },
+  set(_key: string, newVal: string): string {
+    return '';
+  },
 });
 // Ember.ContainerDebugAdapter
 const cda = new Ember.ContainerDebugAdapter(); // $ExpectType ContainerDebugAdapter
@@ -193,18 +193,18 @@ oe1.on('bar', { foo() {} }, () => {});
 const hl = new Ember.HashLocation(); // $ExpectType HashLocation
 // Ember.Helper
 const h1 = Ember.Helper.extend({
-    compute() {
-        this.recompute();
-        return '';
-    },
+  compute() {
+    this.recompute();
+    return '';
+  },
 });
 // Ember.HistoryLocation
 const hil = new Ember.HistoryLocation(); // $ExpectType HistoryLocation
 // Ember.Mixin
 Ember.Object.extend(Ember.Mixin.create({ foo: 'bar' }), {
-    baz() {
-        this.foo; // $ExpectType string
-    },
+  baz() {
+    this.foo; // $ExpectType string
+  },
 });
 // Ember.MutableArray
 const ma1: Ember.MutableArray<string> = ['money', 'in', 'the', 'bananna', 'stand'];
@@ -213,7 +213,11 @@ ma1.addObject('!'); // $ExpectType string
 ma1.filterBy('');
 ma1.firstObject; // $ExpectType string | undefined
 ma1.lastObject; // $ExpectType string | undefined
-const ma2: Ember.MutableArray<{ name: string }> = [{ name: 'chris' }, { name: 'dan' }, { name: 'james' }];
+const ma2: Ember.MutableArray<{ name: string }> = [
+  { name: 'chris' },
+  { name: 'dan' },
+  { name: 'james' },
+];
 ma2.filterBy('name', 'chris'); // $ExpectType NativeArray<{ name: string; }>
 // Ember.MutableEnumerable
 const me1: Ember.MutableEnumerable<string | null | undefined> = ['foo', undefined, null];
@@ -234,10 +238,10 @@ new Ember.ObjectProxy(); // $ExpectType ObjectProxy
 Ember.Object.extend(Ember.Observable, {});
 // Ember.PromiseProxyMixin
 Ember.Object.extend(Ember.PromiseProxyMixin, {
-    foo() {
-        this.reason; // $ExpectType unknown
-        this.isPending; // $ExpectType boolean
-    },
+  foo() {
+    this.reason; // $ExpectType unknown
+    this.isPending; // $ExpectType boolean
+  },
 });
 // Ember.Route
 new Ember.Route();

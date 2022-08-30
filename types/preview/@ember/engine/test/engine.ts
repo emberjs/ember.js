@@ -23,20 +23,20 @@ BaseEngine.instanceInitializer({
   },
 });
 
-const Engine1 = BaseEngine.create({
-  rootElement: '#engine-one',
-  customEvents: {
+class Engine1 extends BaseEngine {
+  rootElement = '#engine-one';
+  customEvents = {
     paste: 'paste',
-  },
-});
+  };
+}
 
-const Engine2 = BaseEngine.create({
-  rootElement: '#engine-two',
-  customEvents: {
+class Engine2 extends BaseEngine {
+  rootElement = '#engine-two';
+  customEvents = {
     mouseenter: null,
     mouseleave: null,
-  },
-});
+  };
+}
 
 const Engine3 = BaseEngine.create();
 
