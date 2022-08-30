@@ -1,13 +1,13 @@
 import { deprecate, deprecateFunc } from '@ember/application/deprecations';
 
 deprecate('this is no longer advised', false, {
-    id: 'no-longer-advised',
-    until: 'v4.0',
+  id: 'no-longer-advised',
+  until: 'v4.0',
 });
 deprecate('this is no longer advised', false, {
-    id: 'no-longer-advised',
-    until: 'v4.0',
-    url: 'https://emberjs.com',
+  id: 'no-longer-advised',
+  until: 'v4.0',
+  url: 'https://emberjs.com',
 });
 // @ts-expect-error
 deprecate('this is no longer advised', false);

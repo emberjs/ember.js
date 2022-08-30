@@ -9,7 +9,7 @@ getOwner({});
 
 // Confirm that random subclasses work as expected.
 declare class MyService extends Service {
-    withStuff: true;
+  withStuff: true;
 }
 declare let myService: MyService;
 // $ExpectType Owner

@@ -162,12 +162,11 @@ function testNext() {
 
 class TestOnce extends Ember.Object {
   init() {
-      Ember.run.once(this as TestOnce, 'processFullName');
-      Ember.run.once(this, this.processFullName);
+    Ember.run.once(this as TestOnce, 'processFullName');
+    Ember.run.once(this, this.processFullName);
   }
 
-  processFullName() {
-  }
+  processFullName() {}
 }
 
 {

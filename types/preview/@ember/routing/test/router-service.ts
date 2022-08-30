@@ -6,10 +6,10 @@ router.transitionTo('someRoute');
 router.transitionTo('someRoute', { withModel: true });
 router.transitionTo('someRoute', { withModel: true }, { queryParams: {} });
 router.transitionTo(
-    'someRoute',
-    { withModel: true },
-    { withMultipleModels: 'still checks correctly' },
-    { queryParams: {} },
+  'someRoute',
+  { withModel: true },
+  { withMultipleModels: 'still checks correctly' },
+  { queryParams: {} }
 );
 
 const routeWillChangeHandler = () => {};
@@ -36,7 +36,7 @@ transition.abort();
 
 // $ExpectType Promise<unknown>
 transition.catch();
-transition.catch(err => console.log(err), 'label');
+transition.catch((err) => console.log(err), 'label');
 
 // $ExpectType Promise<unknown>
 transition.finally();
@@ -56,9 +56,9 @@ transition.retry();
 // $ExpectType Promise<unknown>
 transition.then();
 transition.then(
-    result => console.log(result),
-    err => console.log(err),
-    'label',
+  (result) => console.log(result),
+  (err) => console.log(err),
+  'label'
 );
 
 // $ExpectType void

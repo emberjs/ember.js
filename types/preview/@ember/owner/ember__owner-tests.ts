@@ -2,7 +2,7 @@ import Owner, { Factory, FactoryManager, FullName, RegisterOptions } from '@embe
 
 // Just a class we can construct in the Factory and FactoryManager tests
 declare class ConstructThis {
-    hasProps: boolean;
+  hasProps: boolean;
 }
 
 // ----- RegisterOptions ----- //
@@ -17,10 +17,10 @@ declare let aFactory: Factory<ConstructThis>;
 aFactory.create();
 aFactory.create({});
 aFactory.create({
-    hasProps: true,
+  hasProps: true,
 });
 aFactory.create({
-    hasProps: false,
+  hasProps: false,
 });
 
 // These should be rejected by way of EPC
@@ -102,9 +102,9 @@ owner.lookup(aTypedName); // $ExpectType unknown
 // correct type.
 declare const justStrings: string[];
 // @ts-expect-error
-justStrings.map(aString => owner.lookup(aString));
+justStrings.map((aString) => owner.lookup(aString));
 declare let typedStrings: FullName[];
-typedStrings.map(aString => owner.lookup(aString));
+typedStrings.map((aString) => owner.lookup(aString));
 
 // Also make sure it keeps working with const bindings
 const aConstName = 'type:name';
@@ -113,23 +113,23 @@ owner.lookup(aConstName); // $ExpectType unknown
 // ----- Minimal further coverage for POJOs ----- //
 // `Factory` and `FactoryManager` don't have to deal in actual classes. :sigh:
 const Creatable = {
-    hasProps: true,
+  hasProps: true,
 };
 
 const pojoFactory: Factory<typeof Creatable> = {
-    create(initialValues?) {
-        const instance = Creatable;
-        if (initialValues) {
-            if (initialValues.hasProps) {
-                Object.defineProperty(instance, 'hasProps', {
-                    value: initialValues.hasProps,
-                    enumerable: true,
-                    writable: true,
-                });
-            }
-        }
-        return instance;
-    },
+  create(initialValues?) {
+    const instance = Creatable;
+    if (initialValues) {
+      if (initialValues.hasProps) {
+        Object.defineProperty(instance, 'hasProps', {
+          value: initialValues.hasProps,
+          enumerable: true,
+          writable: true,
+        });
+      }
+    }
+    return instance;
+  },
 };
 
 pojoFactory.create(); // $ExpectType { hasProps: boolean; }
