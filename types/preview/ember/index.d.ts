@@ -236,7 +236,9 @@ export namespace Ember {
      * Can only be used when defining another controller.
      */
     function controller(): Controller;
-    function controller<K extends keyof ControllerRegistry>(name: K): ControllerRegistry[K];
+    function controller<K extends keyof ControllerRegistry>(
+      name: K
+    ): ControllerRegistry[K] & EmberObjectComputedNs.BasicComputedProperty;
     const service: typeof EmberServiceNs.inject;
   }
   namespace ENV {

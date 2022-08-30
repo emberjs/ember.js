@@ -1,102 +1,88 @@
-import EmberObject, { computed, notifyPropertyChange } from '@ember/object';
+import Object, { computed, get, notifyPropertyChange, set, setProperties } from '@ember/object';
+import { expectTypeOf } from 'expect-type';
 
-const LifetimeHooks = EmberObject.extend({
-    resource: undefined as {} | undefined,
+class LifetimeHooks extends Object {
+  resource: {} | undefined;
 
-    init() {
-        this._super();
-        this.resource = {};
-    },
+  init() {
+    this._super();
+    this.resource = {};
+  }
 
-    willDestroy() {
-        this.resource = undefined;
-        this._super();
-    },
-});
-
-class MyObject30 extends EmberObject {
-    constructor() {
-        super();
-    }
+  willDestroy() {
+    this.resource = undefined;
+    this._super();
+  }
 }
 
-class MyObject31 extends EmberObject {
-    constructor(properties: object) {
-        super(properties);
-    }
+class MyObject30 extends Object {
+  constructor() {
+    super();
+  }
 }
 
-class Foo extends EmberObject {
-    a = computed({
-        get() {
-            return '';
-        },
-        set(key: string, newVal: string) {
-            return '';
-        },
+class MyObject31 extends Object {
+  constructor(properties: object) {
+    super(properties);
+  }
+}
+
+class Foo extends Object {
+  @computed()
+  get a() {
+    return '';
+  }
+
+  set a(newVal: string) {
+    /* no-op */
+  }
+
+  b = 5;
+
+  baz() {
+    const y = this.b; // $ExpectType number
+    const z = this.a; // $ExpectType ComputedProperty<string, string>
+    this.b = 10;
+    this.get('b').toFixed(4); // $ExpectType string
+    this.set('a', 'abc').split(','); // $ExpectType string[]
+    this.set('b', 10).toFixed(4); // $ExpectType string
+
+    this.setProperties({ b: 11 });
+    // this.setProperties({ b: '11' }); // @ts-expect-error
+    this.setProperties({
+      a: 'def',
+      b: 11,
     });
-    b = 5;
-    c = computed({
-        get() {
-            return '';
-        },
-        set(key: string, newVal: string | number) {
-            return '';
-        }
-    });
-    baz() {
-        const x = this.a; // $ExpectType ComputedProperty<string, string>
-        const y = this.b; // $ExpectType number
-        const z = this.c; // $ExpectType ComputedProperty<string, string | number>
-        this.b = 10;
-        this.get('b').toFixed(4); // $ExpectType string
-        this.set('a', 'abc').split(','); // $ExpectType string[]
-        this.set('b', 10).toFixed(4); // $ExpectType string
-        this.get('c').split(','); // $ExpectType string[]
-        this.set('c', '10').split(','); // $ExpectType string[]
-        this.set('c', 10);
-        // @ts-expect-error
-        this.set('c', 10).split(',');
-
-        this.setProperties({ b: 11 });
-        // this.setProperties({ b: '11' }); // @ts-expect-error
-        this.setProperties({
-            a: 'def',
-            b: 11,
-        });
-    }
-    bar() {
-        notifyPropertyChange(this, 'name');
-        // @ts-expect-error
-        notifyPropertyChange(this);
-        // @ts-expect-error
-        notifyPropertyChange('name');
-        // @ts-expect-error
-        notifyPropertyChange(this, 'name', 'bar');
-    }
+  }
 }
 
-// TODO: enable after TS 3.0 https://github.com/typed-ember/ember-cli-typescript/issues/291
-// class Foo extends EmberObject.extend({
-//     a: computed({
-//         get() { return ''; },
-//         set(key: string, newVal: string) { return ''; }
-//     })
-// }) {
-//     b = 5;
-//     baz() {
-//         const y = this.b; // $ExpectType number
-//         const z = this.a; // $ExpectType ComputedProperty<string, string>
-//         this.b = 10;
-//         this.get('b').toFixed(4); // $ExpectType string
-//         this.set('a', 'abc').split(','); // $ExpectType string[]
-//         this.set('b', 10).toFixed(4); // $ExpectType string
+export class Foo2 extends Object {
+  name = '';
 
-//         this.setProperties({ b: 11 });
-//         // this.setProperties({ b: '11' }); // @ts-expect-error
-//         this.setProperties({
-//             a: 'def',
-//             b: 11
-//         });
-//     }
-// }
+  changeName(name: string) {
+    expectTypeOf(this.set('name', name)).toEqualTypeOf<string>();
+    // This is checking for assignability; `expectTypeOf` doesn't work correctly
+    // here because TS isn't resolving `this['name']` eagerly, and so it is not
+    // (currently) possible for the type utility to match it.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const x: string = set(this, 'name', name);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const y: string = get(this, 'name');
+    this.setProperties({
+      name,
+    });
+    setProperties(this, {
+      name,
+    });
+  }
+
+  bar() {
+    notifyPropertyChange(this, 'name');
+    // @ts-expect-error
+    notifyPropertyChange(this);
+    // @ts-expect-error
+    notifyPropertyChange('name');
+    // @ts-expect-error
+    notifyPropertyChange(this, 'name', 'bar');
+  }
+}

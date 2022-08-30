@@ -1,11 +1,11 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-Controller.extend({
-    queryParams: ['category'],
-    category: null,
-    isExpanded: false,
+class MyController extends Ember.Controller {
+  queryParams = ['category'];
+  category = null;
+  isExpanded = false;
 
-    toggleBody() {
-        this.toggleProperty('isExpanded');
-    },
-});
+  toggleBody() {
+    this.toggleProperty('isExpanded');
+  }
+}

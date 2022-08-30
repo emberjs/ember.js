@@ -3,6 +3,7 @@ import {
   EmberMethodParams,
   AnyFn,
   EmberMethodReturn,
+  AnyMethod,
 } from 'ember/-private/type-utils';
 import { EmberRunQueues } from './-private/types';
 import { EmberRunTimer } from '@ember/runloop/types';
@@ -95,6 +96,12 @@ export function later<T, M extends EmberMethod<T>>(
  * to calling `scheduleOnce` with the "actions" queue.
  */
 export function once<T, M extends EmberMethod<T>>(
+  target: T,
+  method: M,
+  ...args: EmberMethodParams<T, M>
+): EmberRunTimer;
+
+export function once<T, M extends keyof T>(
   target: T,
   method: M,
   ...args: EmberMethodParams<T, M>

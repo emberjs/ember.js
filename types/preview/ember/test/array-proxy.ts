@@ -9,16 +9,16 @@ proxy.set('content', Ember.A(['amoeba', 'paramecium']));
 proxy.get('firstObject'); // 'amoeba'
 
 const overridden = Ember.ArrayProxy.create({
-    content: Ember.A(pets),
-    objectAtContent(idx: number): string {
-        return this.get('content').objectAt(idx)!.toUpperCase();
-    },
+  content: Ember.A(pets),
+  objectAtContent(this: Ember.ArrayProxy<string>, idx: number): string {
+    return this.get('content').objectAt(idx)!.toUpperCase();
+  },
 });
 
 overridden.get('firstObject'); // 'DOG'
 
 class MyNewProxy<T> extends Ember.ArrayProxy<T> {
-    isNew = true;
+  isNew = true;
 }
 
 const x = MyNewProxy.create({ content: Ember.A([1, 2, 3]) }) as MyNewProxy<number>;
