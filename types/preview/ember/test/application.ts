@@ -2,38 +2,38 @@ import EmberObject from '@ember/object';
 import Ember from 'ember';
 
 const BaseApp = Ember.Application.extend({
-    modulePrefix: 'my-app',
+  modulePrefix: 'my-app',
 });
 
 class Obj extends EmberObject.extend({ foo: 'bar' }) {}
 
 BaseApp.initializer({
-    name: 'my-initializer',
-    initialize(app) {
-        app.register('foo:bar', Obj);
-    },
+  name: 'my-initializer',
+  initialize(app) {
+    app.register('foo:bar', Obj);
+  },
 });
 
 BaseApp.instanceInitializer({
-    name: 'my-instance-initializer',
-    initialize(app) {
-        (app.lookup('foo:bar') as Obj).get('foo');
-    },
+  name: 'my-instance-initializer',
+  initialize(app) {
+    (app.lookup('foo:bar') as Obj).get('foo');
+  },
 });
 
 const App1 = BaseApp.create({
-    rootElement: '#app-one',
-    customEvents: {
-        paste: 'paste',
-    },
+  rootElement: '#app-one',
+  customEvents: {
+    paste: 'paste',
+  },
 });
 
 const App2 = BaseApp.create({
-    rootElement: '#app-two',
-    customEvents: {
-        mouseenter: null,
-        mouseleave: null,
-    },
+  rootElement: '#app-two',
+  customEvents: {
+    mouseenter: null,
+    mouseleave: null,
+  },
 });
 
 const App3 = BaseApp.create();

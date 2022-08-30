@@ -7,10 +7,10 @@ import { EventDispatcherEvents } from '@ember/application/types';
  * called.
  */
 export default class EventDispatcher extends Object {
-    /**
-     * The set of events names (and associated handler function names) to be setup
-     * and dispatched by the `EventDispatcher`. Modifications to this list can be done
-     * at setup time, generally via the `Ember.Application.customEvents` hash.
-     */
-    events: EventDispatcherEvents;
+  /**
+   * The set of events names (and associated handler function names) to be setup
+   * and dispatched by the `EventDispatcher`. Modifications to this list can be done
+   * at setup time, generally via the `Ember.Application.customEvents` hash.
+   */
+  events: EventDispatcherEvents;
 }

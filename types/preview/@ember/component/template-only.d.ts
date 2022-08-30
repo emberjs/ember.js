@@ -29,7 +29,7 @@ import { Opaque } from 'ember/-private/type-utils';
  * the template.
  */
 export interface TemplateOnlyComponent<S = unknown> extends Opaque<S> {
-    toString(): string;
+  toString(): string;
 }
 
 /**

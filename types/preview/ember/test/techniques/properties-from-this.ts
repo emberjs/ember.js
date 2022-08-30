@@ -5,8 +5,8 @@
  */
 
 class BoxedProperty<Get, Set = Get> {
-    declare private [GetType]: Get;
-    declare private [SetType]: Set;
+  private declare [GetType]: Get;
+  private declare [SetType]: Set;
 }
 
 declare const GetType: unique symbol;
@@ -16,30 +16,30 @@ type UnboxGetProperty<T> = T extends BoxedProperty<infer V, unknown> ? V : T;
 type UnboxSetProperty<T> = T extends BoxedProperty<unknown, infer V> ? V : T;
 
 class GetAndSet {
-    get<K extends keyof this>(key: K): UnboxGetProperty<this[K]> {
-        return this[key] as UnboxGetProperty<this[K]>;
+  get<K extends keyof this>(key: K): UnboxGetProperty<this[K]> {
+    return this[key] as UnboxGetProperty<this[K]>;
+  }
+  set<K extends keyof this>(key: K, newVal: UnboxSetProperty<this[K]>): UnboxSetProperty<this[K]> {
+    const rawVal = this[key];
+    if (rawVal instanceof BoxedProperty) {
+      rawVal[SetType] = newVal;
     }
-    set<K extends keyof this>(key: K, newVal: UnboxSetProperty<this[K]>): UnboxSetProperty<this[K]> {
-        const rawVal = this[key];
-        if (rawVal instanceof BoxedProperty) {
-            rawVal[SetType] = newVal;
-        }
-        this[key] = newVal as this[K];
-        return newVal;
-    }
+    this[key] = newVal as this[K];
+    return newVal;
+  }
 }
 
 class Foo123 extends GetAndSet {
-    a: number;
-    b: [boolean, boolean];
-    c: string;
-    cpA!: BoxedProperty<string>;
-    constructor() {
-        super();
-        this.a = 1;
-        this.b = [true, false];
-        this.c = 'hello';
-    }
+  a: number;
+  b: [boolean, boolean];
+  c: string;
+  cpA!: BoxedProperty<string>;
+  constructor() {
+    super();
+    this.a = 1;
+    this.b = [true, false];
+    this.c = 'hello';
+  }
 }
 
 let f = new Foo123();

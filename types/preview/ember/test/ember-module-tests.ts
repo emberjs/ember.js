@@ -77,9 +77,9 @@ Ember.isPresent(''); // $ExpectType boolean
 Ember.isPresent([]); // $ExpectType boolean
 // observer
 class O2 extends Ember.Object {
-  name = 'foo'
+  name = 'foo';
   age = 3;
-  
+
   nameWatcher = Ember.observer('name', () => {});
   nameWatcher2 = Ember.observer('name', 'fullName', () => {});
 }
@@ -166,12 +166,12 @@ c2.didInsertElement();
 
 class Foo {
   foo = '';
-  
+
   @Ember.computed('foo')
   get wat(): string {
-    return this.foo
+    return this.foo;
   }
-  
+
   set wat(newValue: string) {
     this.foo = newValue;
   }
@@ -217,7 +217,7 @@ const hil = Ember.HistoryLocation.create();
 expectTypeOf(hil).toEqualTypeOf<Ember.HistoryLocation>();
 // Ember.Mixin
 interface UsesMixin {
-  foo: string
+  foo: string;
 }
 class UsesMixin extends Ember.Object {
   baz() {

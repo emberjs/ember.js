@@ -9,11 +9,11 @@
 
 import EmberObject from '@ember/object';
 import type { Factory, FullName } from '@ember/owner';
- 
+
 export type KnownForTypeResult<Type extends string> = {
   [fullName in `${Type}:${string}`]: boolean | undefined;
 };
- 
+
 /**
  * A `Resolver` is the mechanism responsible for looking up code in your
  * application and converting its naming conventions into the actual classes,

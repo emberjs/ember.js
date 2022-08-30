@@ -1,12 +1,12 @@
 import {
-    assertDestroyablesDestroyed,
-    associateDestroyableChild,
-    destroy,
-    enableDestroyableTracking,
-    isDestroyed,
-    isDestroying,
-    registerDestructor,
-    unregisterDestructor
+  assertDestroyablesDestroyed,
+  associateDestroyableChild,
+  destroy,
+  enableDestroyableTracking,
+  isDestroyed,
+  isDestroying,
+  registerDestructor,
+  unregisterDestructor,
 } from '@ember/destroyable';
 
 import { assertType } from './lib/assert';
@@ -22,45 +22,45 @@ enableDestroyableTracking(1);
 enableDestroyableTracking();
 
 class Child {
-    state: boolean;
-    constructor() {
-        this.state = true;
-        // @ts-expect-error
-        registerDestructor();
-        // @ts-expect-error
-        registerDestructor(this);
-        // @ts-expect-error
-        registerDestructor(this.stateDestructor);
-        registerDestructor(this, this.stateDestructor);
-    }
+  state: boolean;
+  constructor() {
+    this.state = true;
+    // @ts-expect-error
+    registerDestructor();
+    // @ts-expect-error
+    registerDestructor(this);
+    // @ts-expect-error
+    registerDestructor(this.stateDestructor);
+    registerDestructor(this, this.stateDestructor);
+  }
 
-    stateDestructor() {
-        this.state = !this.state;
-    }
+  stateDestructor() {
+    this.state = !this.state;
+  }
 
-    keepForever() {
-        // @ts-expect-error
-        unregisterDestructor();
-        // @ts-expect-error
-        unregisterDestructor(this);
-        // @ts-expect-error
-        unregisterDestructor(this.stateDestructor);
-        unregisterDestructor(this, this.stateDestructor);
-    }
+  keepForever() {
+    // @ts-expect-error
+    unregisterDestructor();
+    // @ts-expect-error
+    unregisterDestructor(this);
+    // @ts-expect-error
+    unregisterDestructor(this.stateDestructor);
+    unregisterDestructor(this, this.stateDestructor);
+  }
 }
 
 class Parent {
-    child: object;
+  child: object;
 
-    constructor(child: object) {
-        // @ts-expect-error
-        this.child = associateDestroyableChild();
-        // @ts-expect-error
-        this.child = associateDestroyableChild(this);
-        // @ts-expect-error
-        this.child = associateDestroyableChild(child);
-        this.child = associateDestroyableChild(this, child);
-    }
+  constructor(child: object) {
+    // @ts-expect-error
+    this.child = associateDestroyableChild();
+    // @ts-expect-error
+    this.child = associateDestroyableChild(this);
+    // @ts-expect-error
+    this.child = associateDestroyableChild(child);
+    this.child = associateDestroyableChild(this, child);
+  }
 }
 
 const c = new Child();

@@ -8,14 +8,14 @@ to.toString(); // $ExpectType string
 new TemplateOnlyComponent();
 
 interface MySig {
-    Element: HTMLAnchorElement;
-    Args: {
-        name: string;
-        age: number;
-    };
-    Blocks: {
-        default: [(newName: string) => void];
-    };
+  Element: HTMLAnchorElement;
+  Args: {
+    name: string;
+    age: number;
+  };
+  Blocks: {
+    default: [(newName: string) => void];
+  };
 }
 
 // $ExpectType TemplateOnlyComponent<MySig>

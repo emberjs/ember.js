@@ -7,9 +7,9 @@ htmlSafe('lorem ipsum...'); // $ExpectType SafeString
 const regularString: string = htmlSafe('lorem ipsum...');
 
 function isSafeTest(a: string | SafeString) {
-    if (isHTMLSafe(a)) {
-        a = a.toString();
-    }
+  if (isHTMLSafe(a)) {
+    a = a.toString();
+  }
 
-    a.toLowerCase();
+  a.toLowerCase();
 }
