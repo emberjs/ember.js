@@ -1,1 +1,3 @@
-export { default as default } from '../transition';
+declare module '@ember/routing/-private/transition' {
+  export { default as default } from '@ember/routing/transition';
+}

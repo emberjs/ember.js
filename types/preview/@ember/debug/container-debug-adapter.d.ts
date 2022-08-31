@@ -1,11 +1,13 @@
-import type { Resolver } from '@ember/-internals/resolver';
+declare module '@ember/debug/container-debug-adapter' {
+  import type { Resolver } from '@ember/-internals/resolver';
 
-/**
- * The ContainerDebugAdapter helps the container and resolver interface
- * with tools that debug Ember such as the Ember Inspector for Chrome and Firefox.
- */
-export default class ContainerDebugAdapter extends Object {
-  resolver: Resolver;
-  canCatalogEntriesByType(type: string): boolean;
-  catalogEntriesByType(type: string): string[];
+  /**
+   * The ContainerDebugAdapter helps the container and resolver interface
+   * with tools that debug Ember such as the Ember Inspector for Chrome and Firefox.
+   */
+  export default class ContainerDebugAdapter extends Object {
+    resolver: Resolver;
+    canCatalogEntriesByType(type: string): boolean;
+    catalogEntriesByType(type: string): string[];
+  }
 }
