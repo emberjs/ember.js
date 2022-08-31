@@ -1,7 +1,9 @@
-import type { AnyFn } from 'ember/-private/type-utils';
+declare module '@ember/utils/-private/types' {
+  import type { AnyFn } from 'ember/-private/type-utils';
+  import NativeArray from '@ember/array/-private/native-array';
 
-// prettier-ignore
-type _KeysOfType<Key extends keyof TypeLookup, Type> =
+  // prettier-ignore
+  type _KeysOfType<Key extends keyof TypeLookup, Type> =
     // Checks non-`const` versions, and correctly resolves those types
     // constructed via e.g. the `Number` constructor.
     TypeLookup[Key] extends Type ? Key :
@@ -9,28 +11,29 @@ type _KeysOfType<Key extends keyof TypeLookup, Type> =
     // using a const-valued function like `const x = () => 4 as const`.
     Type extends TypeLookup[Key] ? Key : never;
 
-// prettier-ignore
-type KeysOfType<Type> =
+  // prettier-ignore
+  type KeysOfType<Type> =
     { [Key in keyof TypeLookup]: _KeysOfType<Key, Type> }[keyof TypeLookup];
 
-// Since `TypeLookup` resolves all *other* types, including `null` and
-// `undefined`, we can assume that if the type does *not* resolve from
-// `KeysOfType`, it is safe to treat it as 'object'.
-export type TypeOf<T> = KeysOfType<T> extends never ? 'object' : KeysOfType<T>;
+  // Since `TypeLookup` resolves all *other* types, including `null` and
+  // `undefined`, we can assume that if the type does *not* resolve from
+  // `KeysOfType`, it is safe to treat it as 'object'.
+  export type TypeOf<T> = KeysOfType<T> extends never ? 'object' : KeysOfType<T>;
 
-export interface TypeLookup {
-  string: string;
-  number: number;
-  boolean: boolean;
-  regexp: RegExp;
-  function: AnyFn;
-  array: unknown[];
-  error: Error;
-  filelist: FileList;
-  date: Date;
-  null: null;
-  undefined: undefined;
+  export interface TypeLookup {
+    string: string;
+    number: number;
+    boolean: boolean;
+    regexp: RegExp;
+    function: AnyFn;
+    array: Array<unknown> | NativeArray<unknown>;
+    error: Error;
+    filelist: FileList;
+    date: Date;
+    null: null;
+    undefined: undefined;
+  }
+
+  // Don't export anything but the required type util
+  export {};
 }
-
-// Don't export anything but the required type util
-export {};

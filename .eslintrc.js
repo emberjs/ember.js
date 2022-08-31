@@ -90,6 +90,30 @@ module.exports = {
       },
     },
     {
+      files: ['type-tests/preview/**/*.ts'],
+      parserOptions: {
+        sourceType: 'module',
+        project: './type-tests/preview/tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+      },
+    },
+    {
+      files: ['type-tests/preview-prototype-extensions/**/*.ts'],
+      parserOptions: {
+        sourceType: 'module',
+        project: './type-tests/preview-prototype-extensions/tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+      rules: {
+        'no-console': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+      },
+    },
+    {
       // TODO: files: ['packages/**/*.[jt]s'],
       files: ['packages/**/*.js'],
 

@@ -279,6 +279,10 @@ interface EmberArray<T> extends Enumerable {
   ): NativeArray<T>;
   filterBy(key: string, value?: unknown): NativeArray<T>;
   rejectBy(key: string, value?: unknown): NativeArray<T>;
+  find<S extends T, Target = void>(
+    predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
+    thisArg?: Target
+  ): S | undefined;
   find<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
     target?: Target
@@ -1907,7 +1911,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 */
 interface NativeArray<T>
   extends Omit<Array<T>, 'every' | 'filter' | 'find' | 'forEach' | 'map' | 'reduce' | 'slice'>,
-    MutableArray<T> {}
+    MutableArray<T>,
+    Observable {}
 
 let NativeArray = Mixin.create(MutableArray, Observable, {
   objectAt(idx: number) {
