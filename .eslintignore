@@ -6,3 +6,5 @@ node-tests/fixtures/**/*.js
 dist/
 tmp/
 smoke-tests/
+types/
+type-tests/preview
