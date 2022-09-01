@@ -66,54 +66,6 @@ module.exports = {
       },
     },
     {
-      files: ['types/preview/**/*.ts'],
-
-      extends: ['plugin:@typescript-eslint/recommended'],
-
-      parserOptions: {
-        sourceType: 'module',
-        project: './types/preview/tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
-
-      rules: {
-        'import/export': 'off',
-        'disable-features/disable-async-await': 'off',
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/ban-types': 'off',
-        '@typescript-eslint/no-empty-interface': 'off',
-        'import/no-unresolved': 'off',
-        '@typescript-eslint/no-this-alias': 'off',
-        '@typescript-eslint/consistent-type-imports': 'off',
-        '@typescript-eslint/no-empty-function': 'off',
-        'no-console': 'off',
-      },
-    },
-    {
-      files: ['type-tests/preview/**/*.ts'],
-      parserOptions: {
-        sourceType: 'module',
-        project: './type-tests/preview/tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
-      rules: {
-        'no-console': 'off',
-        '@typescript-eslint/no-empty-interface': 'off',
-      },
-    },
-    {
-      files: ['type-tests/preview-prototype-extensions/**/*.ts'],
-      parserOptions: {
-        sourceType: 'module',
-        project: './type-tests/preview-prototype-extensions/tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
-      rules: {
-        'no-console': 'off',
-        '@typescript-eslint/no-empty-interface': 'off',
-      },
-    },
-    {
       // TODO: files: ['packages/**/*.[jt]s'],
       files: ['packages/**/*.js'],
 
