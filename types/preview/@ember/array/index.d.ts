@@ -21,7 +21,6 @@ declare module '@ember/array' {
     /**
      * This returns the objects at the specified indexes, using `objectAt`.
      */
-    // tslint:disable-next-line:array-type
     objectsAt(indexes: number[]): Array<T | undefined>;
     /**
      * Helper method returns the first object from a collection. This is usually
