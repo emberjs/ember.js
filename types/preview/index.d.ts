@@ -4,13 +4,16 @@
   path from `ember-source`:
 
   ```ts
-  import 'ember-source/types/preview';
+  import 'ember-source/preview';
   ```
  */
 
 // This works because each of these modules presents `declare module` definition
 // of the module and *only* that, so importing this file in turn makes those
 // module declarations "visible" automatically throughout a consuming project.
+// Combined with use of `typesVersions` (or, in the future, possibly `exports`)
+// in `package.json`, this allows users to import the types without knowing the
+// exact layout details.
 //
 // Somewhat annoyingly, every single module in the graph must appear here. For
 // now, while we are publishing ambient types, that means we must maintain this
