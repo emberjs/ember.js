@@ -44,7 +44,6 @@ declare module 'ember' {
   import EmberArrayProxy from '@ember/array/proxy';
   import type EmberEnumerable from '@ember/array/-private/enumerable';
   import type EmberMutableEnumerable from '@ember/array/-private/mutable-enumerable';
-  import type EmberArrayProtoExtensions from '@ember/array/types/prototype-extensions';
   // @ember/error
   import type EmberError from '@ember/error';
 
@@ -94,7 +93,6 @@ declare module 'ember' {
     export const setOwner: typeof EmberApplicationNs.setOwner;
     export class EventDispatcher extends EmberEventDispatcher {}
     export class Registry extends EmberRegistry {}
-    export interface ArrayPrototypeExtensions<T> extends EmberArrayProtoExtensions<T> {}
 
     /**
      * Implements some standard methods for comparing objects. Add this mixin to
