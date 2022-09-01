@@ -6,7 +6,6 @@ declare module '@ember/routing/route' {
   import { RouteQueryParam } from '@ember/routing/types';
   import Controller from '@ember/controller';
 
-  // tslint:disable-next-line:strict-export-declare-modifiers
   type RouteModel = object | string | number;
 
   /**

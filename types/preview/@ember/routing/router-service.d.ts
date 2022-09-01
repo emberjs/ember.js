@@ -3,7 +3,6 @@ declare module '@ember/routing/router-service' {
   import Transition from '@ember/routing/transition';
   import Service from '@ember/service';
 
-  // tslint:disable-next-line:strict-export-declare-modifiers
   type RouteModel = object | string | number;
 
   // https://emberjs.com/api/ember/release/classes/RouterService

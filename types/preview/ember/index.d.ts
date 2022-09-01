@@ -7,7 +7,6 @@ declare module 'ember' {
   import type * as EmberStringNs from '@ember/string';
   import type * as EmberTemplateNs from '@ember/template';
   import * as EmberTemplateHandlebarsNs from '@ember/template/-private/handlebars';
-  // tslint:disable-next-line:no-duplicate-imports
   import type * as EmberServiceNs from '@ember/service';
   import type * as EmberPolyfillsNs from '@ember/polyfills';
   import type * as EmberUtilsNs from '@ember/utils';
@@ -32,9 +31,7 @@ declare module 'ember' {
   import * as EmberApplicationInstanceNs from '@ember/application/instance';
   import type * as EmberApplicationDeprecateNs from '@ember/application/deprecations';
   import type * as EmberTestNs from '@ember/test';
-  // tslint:disable-next-line:no-duplicate-imports
   import * as EmberControllerNs from '@ember/controller';
-  // tslint:disable-next-line:no-duplicate-imports
   import EmberMixin from '@ember/object/mixin';
   import type EmberObservable from '@ember/object/observable';
   // @ember/array

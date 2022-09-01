@@ -17,8 +17,7 @@ declare module '@ember/component' {
   // information supplied via this generic. While it may appear useless on this
   // class definition and extension, it is used by external tools and should not
   // be removed.
-  // tslint:disable-next-line:no-unnecessary-generics
-  export default interface Component<S = unknown> extends ViewMixin, ClassNamesSupport, Opaque<S> { }
+  export default interface Component<S = unknown> extends ViewMixin, ClassNamesSupport, Opaque<S> {}
   export default class Component<S = unknown> extends CoreView {
     // methods
     readDOMAttr(name: string): string;
@@ -111,8 +110,8 @@ declare module '@ember/component' {
   // that just need to be importable. Declaring them with unique interfaces
   // like this, however, gives tools like Glint (that DO have a richer
   // notion of what they are) a place to install more detailed type information.
-  export interface Input extends Opaque<'component:input'> { }
-  export interface Textarea extends Opaque<'component:textarea'> { }
+  export interface Input extends Opaque<'component:input'> {}
+  export interface Textarea extends Opaque<'component:textarea'> {}
 
   /**
    * The `Input` component lets you create an HTML `<input>` element.
@@ -129,5 +128,5 @@ declare module '@ember/component' {
   export const Textarea: Textarea;
 
   // Do not export anything but what we *explicitly* say to export.
-  export { };
+  export {};
 }
