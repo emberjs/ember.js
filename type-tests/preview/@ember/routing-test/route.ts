@@ -5,8 +5,7 @@ import type Array from '@ember/array';
 import EmberObject from '@ember/object';
 import Controller from '@ember/controller';
 import type Transition from '@ember/routing/transition';
-import type { RouteInfoWithAttributes } from '@ember/routing/route-info';
-import type RouteInfo from '@ember/routing/route-info';
+import { expectTypeOf } from 'expect-type';
 
 class Post extends EmberObject {}
 
@@ -207,25 +206,3 @@ class WithImplicitParams extends Route {
 
 type ImplicitParams = WithImplicitParams extends Route<any, infer T> ? T : never;
 expectTypeOf<ImplicitParams>().toEqualTypeOf<RouteParams>();
-
-// back-compat for existing users of these
-// NOTE: we will *not* migrate the private import locations when moving to
-// publish from Ember itself.
-import type PrivateTransition from '@ember/routing/-private/transition';
-declare let publicTransition: Transition;
-declare let oldPrivateTransition: PrivateTransition;
-publicTransition = oldPrivateTransition;
-oldPrivateTransition = publicTransition;
-
-import type PrivateRouteInfo from '@ember/routing/-private/route-info';
-declare let publicRouteInfo: RouteInfo;
-declare let privateRouteInfo: PrivateRouteInfo;
-publicRouteInfo = privateRouteInfo;
-privateRouteInfo = publicRouteInfo;
-
-import type PrivateRouteInfoWithAttributes from '@ember/routing/-private/route-info-with-attributes';
-import { expectTypeOf } from 'expect-type';
-declare let publicRouteInfoWithAttributes: RouteInfoWithAttributes;
-declare let privateRouteInfoWithAttributes: PrivateRouteInfoWithAttributes;
-publicRouteInfoWithAttributes = privateRouteInfoWithAttributes;
-privateRouteInfoWithAttributes = publicRouteInfoWithAttributes;
