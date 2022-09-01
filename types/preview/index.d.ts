@@ -35,7 +35,6 @@ import './@ember/array/-private/mutable-enumerable';
 import './@ember/array/-private/native-array';
 import './@ember/array/mutable';
 import './@ember/array/proxy';
-import './@ember/array/types/prototype-extensions';
 
 import './@ember/component';
 import './@ember/component/-private/class-names-support';

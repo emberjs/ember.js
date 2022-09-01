@@ -43,7 +43,6 @@
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
     "lint:tsc:stable": "tsc --noEmit",
     "lint:tsc:preview": "tsc --noEmit --project type-tests/preview",
-    "lint:tsc:preview-array-ext": "tsc --noEmit --project type-tests/preview-prototype-extensions",
     "lint:tsc": "npm-run-all lint:tsc:*",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
