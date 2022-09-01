@@ -30,7 +30,7 @@ let global = window as any;
 const isChrome = hasDom
   ? typeof global.chrome === 'object' && !(typeof global.opera === 'object')
   : false;
-const isFirefox = hasDom ? typeof global.InstallTrigger !== 'undefined' : false;
+const isFirefox = hasDom ? /Firefox|FxiOS/.test(navigator.userAgent) : false;
 const isIE11 = !global.ActiveXObject && 'ActiveXObject' in window;
 
 interface Counters {
