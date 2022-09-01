@@ -167,5 +167,12 @@
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
+  },
+  "typesVersions": {
+    "*": {
+      "preview": [
+        "./types/preview"
+      ]
+    }
   }
 }
