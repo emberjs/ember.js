@@ -3,7 +3,6 @@ import require, { has } from 'require';
 import { getENV, getLookup, setLookup } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from '@ember/-internals/container';
-import { uniqueId } from '@ember/-internals/glimmer';
 import * as instrumentation from '@ember/instrumentation';
 import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
@@ -428,7 +427,6 @@ Ember._concat = concat;
 Ember._get = get;
 Ember._on = on;
 Ember._fn = fn;
-Ember._uniqueId = uniqueId;
 
 Ember._helperManagerCapabilities = helperCapabilities;
 Ember._setHelperManager = setHelperManager;

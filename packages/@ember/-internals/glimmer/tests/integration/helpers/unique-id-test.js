@@ -6,8 +6,9 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { setProperties } from '@ember/object';
-import { uniqueId } from '@ember/helper';
+import { uniqueId, invokeHelper } from '@ember/helper';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
+import { getValue } from '@glimmer/validator';
 
 if (EMBER_UNIQUE_ID_HELPER) {
   moduleFor(
@@ -18,8 +19,8 @@ if (EMBER_UNIQUE_ID_HELPER) {
         this.assert = assert;
       }
       ['@test it can be invoked as a JS function']() {
-        let first = uniqueId();
-        let second = uniqueId();
+        let first = getValue(invokeHelper({}, uniqueId()));
+        let second = getValue(invokeHelper({}, uniqueId()));
 
         this.assert.notStrictEqual(
           first,
