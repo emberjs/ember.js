@@ -25,7 +25,8 @@
     "dist/ember-testing.js",
     "dist/ember-testing.map",
     "docs/data.json",
-    "lib"
+    "lib",
+    "types"
   ],
   "repository": {
     "type": "git",
@@ -40,7 +41,9 @@
     "lint:docs": "qunit tests/docs/coverage-test.js",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
-    "lint:tsc": "tsc --noEmit",
+    "lint:tsc:stable": "tsc --noEmit",
+    "lint:tsc:preview": "tsc --noEmit --project type-tests/preview",
+    "lint:tsc": "npm-run-all lint:tsc:*",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
     "test:blueprints:js": "mocha node-tests/blueprints/**/*-test.js",
@@ -80,6 +83,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.16.11",
     "@glimmer/compiler": "0.84.2",
+    "@glimmer/component": "^1.1.2",
     "@glimmer/destroyable": "0.84.2",
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.84.2",
@@ -93,6 +97,7 @@
     "@glimmer/runtime": "0.84.2",
     "@glimmer/validator": "0.84.2",
     "@simple-dom/document": "^1.4.0",
+    "@tsconfig/ember": "^1.0.1",
     "@types/qunit": "^2.19.2",
     "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
@@ -154,10 +159,20 @@
     "testem-failure-only-reporter": "^1.0.0",
     "typescript": "~4.6.4"
   },
+  "peerDependencies": {
+    "@glimmer/component": "^1.1.2"
+  },
   "engines": {
     "node": ">= 12.*"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
+  },
+  "typesVersions": {
+    "*": {
+      "preview": [
+        "./types/preview"
+      ]
+    }
   }
 }
