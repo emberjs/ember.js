@@ -1,8 +1,8 @@
 # Ember Changelog
 
-### v4.7.0-beta.1 (July 25, 2022)
+### v4.7.0 (September 6, 2022)
 
-- [#20126](https://github.com/emberjs/ember.js/pull/20126) [BUGFIX] Replacing Firefox detection that used a deprecated browser API
+- [#20126](https://github.com/emberjs/ember.js/pull/20126) [BUGFIX] Replace Firefox detection that used a deprecated browser API
 
 ### v4.6.0 (July 25, 2022)
 
