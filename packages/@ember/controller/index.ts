@@ -1,4 +1,4 @@
-import { getOwner } from '@ember/application';
+import { getOwner } from '@ember/-internals/owner'; // This is imported from -internals to avoid circularity
 import { computed, get } from '@ember/object';
 import { FrameworkObject } from '@ember/object/-internals';
 import { inject as metalInject } from '@ember/-internals/metal';
