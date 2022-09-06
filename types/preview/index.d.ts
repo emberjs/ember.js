@@ -89,10 +89,7 @@ import './@ember/polyfills';
 import './@ember/polyfills/types';
 
 import './@ember/routing';
-import './@ember/routing/-private/route-info'; // TODO: remove
-import './@ember/routing/-private/route-info-with-attributes'; // TODO: remove
 import './@ember/routing/-private/router-dsl';
-import './@ember/routing/-private/transition'; // TODO: remove
 import './@ember/routing/auto-location';
 import './@ember/routing/hash-location';
 import './@ember/routing/history-location';
