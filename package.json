@@ -157,7 +157,7 @@
     "simple-dom": "^1.4.0",
     "testem": "^3.8.0",
     "testem-failure-only-reporter": "^1.0.0",
-    "typescript": "~4.6.4"
+    "typescript": "~4.8.2"
   },
   "peerDependencies": {
     "@glimmer/component": "^1.1.2"
