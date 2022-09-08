@@ -49,8 +49,19 @@ export { on } from '@ember/-internals/metal';
  */
 interface Evented {
   /**
-   * Subscribes to a named event with given function.
-   */
+    Subscribes to a named event with given function.
+
+    ```javascript
+    person.on('didLoad', function() {
+      // fired once the person has loaded
+    });
+    ```
+
+    An optional target can be passed in as the 2nd argument that will
+    be set as the "this" for the callback. This is a good way to give your
+    function access to the object triggering the event. When the target
+    parameter is used the callback method becomes the third argument.
+  */
   on<Target>(
     name: string,
     target: Target,
@@ -58,10 +69,14 @@ interface Evented {
   ): this;
   on(name: string, method: ((...args: any[]) => void) | string): this;
   /**
-   * Subscribes a function to a named event and then cancels the subscription
-   * after the first time the event is triggered. It is good to use ``one`` when
-   * you only care about the first time an event has taken place.
-   */
+    Subscribes a function to a named event and then cancels the subscription
+    after the first time the event is triggered. It is good to use ``one`` when
+    you only care about the first time an event has taken place.
+
+    This function takes an optional 2nd argument that will become the "this"
+    value for the callback. When the target parameter is used the callback method
+    becomes the third argument.
+  */
   one<Target>(
     name: string,
     target: Target,
@@ -69,14 +84,24 @@ interface Evented {
   ): this;
   one(name: string, method: string | ((...args: any[]) => void)): this;
   /**
-   * Triggers a named event for the object. Any additional arguments
-   * will be passed as parameters to the functions that are subscribed to the
-   * event.
-   */
+    Triggers a named event for the object. Any additional arguments
+    will be passed as parameters to the functions that are subscribed to the
+    event.
+
+    ```javascript
+    person.on('didEat', function(food) {
+      console.log('person ate some ' + food);
+    });
+
+    person.trigger('didEat', 'broccoli');
+
+    // outputs: person ate some broccoli
+    ```
+  */
   trigger(name: string, ...args: any[]): any;
   /**
-   * Cancels subscription for given name, target, and method.
-   */
+    Cancels subscription for given name, target, and method.
+  */
   off<Target>(
     name: string,
     target: Target,
@@ -84,7 +109,7 @@ interface Evented {
   ): this;
   off(name: string, method: string | ((...args: any[]) => void)): this;
   /**
-   * Checks to see if object has any subscriptions for named event.
+    Checks to see if object has any subscriptions for named event.
    */
   has(name: string): boolean;
 }
