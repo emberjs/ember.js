@@ -64,6 +64,13 @@ expectTypeOf(owner.lookup('type:name')).toEqualTypeOf<unknown>();
 owner.lookup('non-namespace-string');
 expectTypeOf(owner.lookup('namespace@type:name')).toEqualTypeOf<unknown>();
 
+declare module '@ember/service' {
+  interface Registry {
+    'my-type-test-service': ConstructThis;
+  }
+}
+expectTypeOf(owner.lookup('service:my-type-test-service')).toEqualTypeOf<ConstructThis>();
+
 expectTypeOf(owner.register('type:name', aFactory)).toEqualTypeOf<void>();
 expectTypeOf(owner.register('type:name', aFactory, {})).toEqualTypeOf<void>();
 expectTypeOf(owner.register('type:name', aFactory, { instantiate: true })).toEqualTypeOf<void>();
