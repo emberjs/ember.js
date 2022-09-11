@@ -110,16 +110,60 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
 interface PromiseProxyMixin<T> {
   reason: unknown;
 
+  /**
+    Once the proxied promise has settled this will become `false`.
+  */
   readonly isPending: boolean;
+  /**
+    Once the proxied promise has settled this will become `true`.
+  */
   readonly isSettled: boolean;
 
+  /**
+    Will become `true` if the proxied promise is rejected.
+  */
   isRejected: boolean;
+  /**
+    Will become `true` if the proxied promise is fulfilled.
+  */
   isFulfilled: boolean;
 
+  /**
+    The promise whose fulfillment value is being proxied by this object.
+
+    This property must be specified upon creation, and should not be
+    changed once created.
+
+    Example:
+
+    ```javascript
+    import ObjectProxy from '@ember/object/proxy';
+    import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+
+    ObjectProxy.extend(PromiseProxyMixin).create({
+      promise: <thenable>
+    });
+    ```
+  */
   promise: Promise<T>;
 
+  /**
+    An alias to the proxied promise's `then`.
+
+    See RSVP.Promise.then.
+  */
   then: this['promise']['then'];
+  /**
+    An alias to the proxied promise's `catch`.
+
+    See RSVP.Promise.catch.
+  */
   catch: this['promise']['catch'];
+  /**
+    An alias to the proxied promise's `finally`.
+
+    See RSVP.Promise.finally.
+  */
   finally: this['promise']['finally'];
 }
 const PromiseProxyMixin = Mixin.create({
