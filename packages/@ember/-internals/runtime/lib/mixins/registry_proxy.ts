@@ -12,6 +12,14 @@ import { assert } from '@ember/debug';
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__registry__` property.
 export interface IRegistry {
+  /**
+   Given a fullName return the corresponding factory.
+
+   @public
+   @method resolveRegistration
+   @param {String} fullName
+   @return {Function} fullName's factory
+   */
   resolveRegistration(fullName: string): Factory<object> | object | undefined;
 
   register(fullName: string, factory: Factory<object> | object, options?: TypeOptions): void;
@@ -48,14 +56,6 @@ interface RegistryProxyMixin extends IRegistry {
 const RegistryProxyMixin = Mixin.create({
   __registry__: null,
 
-  /**
-   Given a fullName return the corresponding factory.
-
-   @public
-   @method resolveRegistration
-   @param {String} fullName
-   @return {Function} fullName's factory
-   */
   resolveRegistration(fullName: string) {
     assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
     return this.__registry__.resolve(fullName);
