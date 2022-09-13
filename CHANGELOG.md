@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v4.8.0-beta.2 (September 13, 2022)
+
+- [#20186](https://github.com/emberjs/ember.js/pull/20186) [BUGFIX] Fix `@ember/runloop` type tests folder name so that the tests are properly excluded from the build
+- [#20180](https://github.com/emberjs/ember.js/pull/20180) [FEATURE] Publish an opt-in preview of public types for Ember
+
 ### v4.8.0-beta.1 (September 6, 2022)
 
 - [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Upgrade router_js to fix Linked list of RouteInfos contains undefined object
