@@ -83,7 +83,7 @@ if (EMBER_LIBRARIES_ISREGISTERED) {
 if (DEBUG) {
   Libraries.prototype.logVersions = function (): void {
     let libs = this._registry;
-    let nameLengths = libs.map((item) => get(item, 'name.length'));
+    let nameLengths = libs.map((item) => get(item, 'name.length') as number);
     assert(
       'nameLengths is number array',
       nameLengths instanceof Array && nameLengths.every((n) => typeof n === 'number')

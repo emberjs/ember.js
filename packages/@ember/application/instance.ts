@@ -95,6 +95,9 @@ class ApplicationInstance extends EngineInstance {
       return this;
     }
 
+    console.log('bootSync', this.application.constructor.name);
+    debugger;
+
     options = new _BootOptions(options);
 
     this.setupRegistry(options);
@@ -111,7 +114,7 @@ class ApplicationInstance extends EngineInstance {
 
     this.application.runInstanceInitializers(this);
 
-    if (options.isInteractive) {
+    if (options.isInteractive && this.application.mode === 'classic') {
       this.setupEventDispatcher();
     }
 

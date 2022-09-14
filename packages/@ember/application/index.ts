@@ -30,6 +30,12 @@ import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 
+console.log('WE ARE HERE!');
+
+interface ApplicationCreate {
+  readonly mode?: 'classic' | 'federated';
+}
+
 /**
   An instance of `Application` is the starting point for every Ember
   application. It instantiates, initializes and coordinates the
@@ -395,18 +401,23 @@ class Application extends Engine {
 
   declare _booted: boolean;
 
-  init(properties: object | undefined) {
+  declare mode: 'classic' | 'federated';
+
+  init(properties: ApplicationCreate | undefined) {
     super.init(properties);
+
+    const mode = this.mode ?? properties?.mode ?? 'classic';
 
     this.rootElement ??= 'body';
     this._document ??= null;
     this.eventDispatcher ??= null;
     this.customEvents ??= null;
-    this.autoboot ??= true;
-    this._document ??= hasDOM ? window.document : null;
-    this._globalsMode ??= true;
 
-    if (DEBUG) {
+    this.autoboot ??= mode === 'classic' ? true : false;
+    this._document ??= hasDOM ? window.document : null;
+    this._globalsMode ??= mode === 'classic' ? true : false;
+
+    if (DEBUG && mode === 'classic') {
       if (ENV.LOG_VERSION) {
         // we only need to see this once per Application#init
         ENV.LOG_VERSION = false;
@@ -420,14 +431,16 @@ class Application extends Engine {
     this._booted = false;
     this._applicationInstances = new Set();
 
-    this.autoboot = this._globalsMode = Boolean(this.autoboot);
+    if (mode === 'classic') {
+      this.autoboot = this._globalsMode = Boolean(this.autoboot);
 
-    if (this._globalsMode) {
-      this._prepareForGlobalsMode();
-    }
+      if (this._globalsMode) {
+        this._prepareForGlobalsMode();
+      }
 
-    if (this.autoboot) {
-      this.waitForDOMReady();
+      if (this.autoboot) {
+        this.waitForDOMReady();
+      }
     }
   }
 
@@ -901,7 +914,7 @@ class Application extends Engine {
       // TODO: Is this still needed for _globalsMode = false?
 
       // See documentation on `_autoboot()` for details
-      if (this.autoboot) {
+      if (this.autoboot || this.mode === 'federated') {
         let instance;
 
         if (this._globalsMode) {
