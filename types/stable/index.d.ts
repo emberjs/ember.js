@@ -4,8 +4,8 @@
 // import we recommend--
 //
 // ```ts
-// import 'ember-source';
-// import 'ember-source/preview';
+// import 'ember-source/types';
+// import 'ember-source/types/preview';
 // ```
 //
 // --will not get warnings from TypeScript while we wait on putting actual
