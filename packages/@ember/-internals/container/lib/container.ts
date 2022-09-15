@@ -225,13 +225,15 @@ if (DEBUG) {
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
  */
-function wrapManagerInDeprecationProxy<T extends object, C>(
+function wrapManagerInDeprecationProxy<T extends object, C extends object | FactoryClass>(
   manager: FactoryManager<T, C>
 ): FactoryManager<T, C> {
   let validator = {
     set(_obj: T, prop: keyof T) {
       throw new Error(
-        `You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
+        `You attempted to set "${String(
+          prop
+        )}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
       );
     },
   };
