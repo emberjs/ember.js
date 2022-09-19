@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v4.8.0-beta.3 (September 19, 2022)
+
+- [#20194](https://github.com/emberjs/ember.js/pull/20194) [BUGFIX] Provide a `.d.ts` file at types/stable
+- [#20196](https://github.com/emberjs/ember.js/pull/20196) [BUGFIX] types imports are at 'ember-source/types'
+
 ### v4.8.0-beta.2 (September 13, 2022)
 
 - [#20186](https://github.com/emberjs/ember.js/pull/20186) [BUGFIX] Fix `@ember/runloop` type tests folder name so that the tests are properly excluded from the build
