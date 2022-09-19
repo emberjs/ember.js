@@ -1295,24 +1295,6 @@ const EmberArray = Mixin.create(Enumerable, {
   @public
 */
 interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
-  replace(idx: number, amt: number, objects?: readonly T[]): void;
-  clear(): this;
-  insertAt(idx: number, object: T): this;
-  removeAt(start: number, len?: number): this;
-  pushObject(obj: T): this;
-  pushObjects(objects: T[]): this;
-  popObject(): T | undefined;
-  shiftObject(): T | null | undefined;
-  unshiftObject(object: T): this;
-  unshiftObjects(objects: T[]): this;
-  reverseObjects(): this;
-  setObjects(object: T[]): this;
-  removeObject(object: T): this;
-  removeObjects(objects: T[]): this;
-  addObject(obj: T): this;
-  addObjects(objects: T[]): this;
-}
-const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1321,17 +1303,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     passed array.
 
     Note that this method is expected to validate the type(s) of objects that it expects.
-
-    @method replace
-    @param {Number} idx Starting index in the array to replace. If
-      idx >= length, then append to the end of the array.
-    @param {Number} amt Number of elements that should be removed from
-      the array, starting at *idx*.
-    @param {EmberArray} [objects] An optional array of zero or more objects that should be
-      inserted into the array at *idx*
-    @public
   */
-
+  replace(idx: number, amt: number, objects?: readonly T[]): void;
   /**
     Remove all elements from the array. This is useful if you
     want to reuse an existing array without having to recreate it.
@@ -1343,21 +1316,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     colors.clear(); // []
     colors.length;  // 0
     ```
-
-    @method clear
-    @return {Array} An empty Array.
-    @public
   */
-  clear() {
-    let len = this.length;
-    if (len === 0) {
-      return this;
-    }
-
-    this.replace(0, len, EMPTY_ARRAY);
-    return this;
-  },
-
+  clear(): this;
   /**
     This will use the primitive `replace()` method to insert an object at the
     specified index.
@@ -1368,18 +1328,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     colors.insertAt(2, 'yellow');  // ['red', 'green', 'yellow', 'blue']
     colors.insertAt(5, 'orange');  // Error: Index out of range
     ```
-
-    @method insertAt
-    @param {Number} idx index of insert the object at.
-    @param {Object} object object to insert
-    @return {EmberArray} receiver
-    @public
   */
-  insertAt(idx: number, object: unknown) {
-    insertAt(this, idx, object);
-    return this;
-  },
-
+  insertAt(idx: number, object: T): this;
   /**
     Remove an object at the specified index using the `replace()` primitive
     method. You can pass either a single index, or a start and a length.
@@ -1394,17 +1344,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     colors.removeAt(2, 2);  // ['green', 'blue']
     colors.removeAt(4, 2);  // Error: Index out of range
     ```
-
-    @method removeAt
-    @param {Number} start index, start of range
-    @param {Number} len length of passing range
-    @return {EmberArray} receiver
-    @public
   */
-  removeAt(start: number, len?: number) {
-    return removeAt(this, start, len);
-  },
-
+  removeAt(start: number, len?: number): this;
   /**
     Push the object onto the end of the array. Works just like `push()` but it
     is KVO-compliant.
@@ -1415,16 +1356,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     colors.pushObject('black');     // ['red', 'green', 'black']
     colors.pushObject(['yellow']);  // ['red', 'green', ['yellow']]
     ```
-
-    @method pushObject
-    @param {*} obj object to push
-    @return object same object passed as a param
-    @public
   */
-  pushObject<T>(this: MutableArray<T>, obj: T) {
-    return insertAt(this, this.length, obj);
-  },
-
+  pushObject(obj: T): this;
   /**
     Add the objects in the passed array to the end of the array. Defers
     notifying observers of the change until all objects are added.
@@ -1434,17 +1367,8 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 
     colors.pushObjects(['yellow', 'orange']);  // ['red', 'yellow', 'orange']
     ```
-
-    @method pushObjects
-    @param {Array} objects the objects to add
-    @return {MutableArray} receiver
-    @public
   */
-  pushObjects<T>(this: MutableArray<T>, objects: T[]) {
-    this.replace(this.length, 0, objects);
-    return this;
-  },
-
+  pushObjects(objects: T[]): this;
   /**
     Pop object from array or nil if none are left. Works just like `pop()` but
     it is KVO-compliant.
@@ -1455,11 +1379,123 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     colors.popObject();   // 'blue'
     console.log(colors);  // ['red', 'green']
     ```
-
-    @method popObject
-    @return object
-    @public
   */
+  popObject(): T | undefined;
+  /**
+    Shift an object from start of array or nil if none are left. Works just
+    like `shift()` but it is KVO-compliant.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.shiftObject();  // 'red'
+    console.log(colors);   // ['green', 'blue']
+    ```
+  */
+  shiftObject(): T | null | undefined;
+  /**
+    Unshift an object to start of array. Works just like `unshift()` but it is
+    KVO-compliant.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.unshiftObject('yellow');    // ['yellow', 'red']
+    colors.unshiftObject(['black']);   // [['black'], 'yellow', 'red']
+    ```
+  */
+  unshiftObject(object: T): this;
+  /**
+    Adds the named objects to the beginning of the array. Defers notifying
+    observers until all objects have been added.
+
+    ```javascript
+    let colors = ['red'];
+
+    colors.unshiftObjects(['black', 'white']);   // ['black', 'white', 'red']
+    colors.unshiftObjects('yellow'); // Type Error: 'undefined' is not a function
+    ```
+  */
+  unshiftObjects(objects: T[]): this;
+  /**
+    Reverse objects in the array. Works just like `reverse()` but it is
+    KVO-compliant.
+  */
+  reverseObjects(): this;
+  /**
+    Replace all the receiver's content with content of the argument.
+    If argument is an empty array receiver will be cleared.
+
+    ```javascript
+    let colors = ['red', 'green', 'blue'];
+
+    colors.setObjects(['black', 'white']);  // ['black', 'white']
+    colors.setObjects([]);                  // []
+    ```
+  */
+  setObjects(object: T[]): this;
+  /**
+    Remove all occurrences of an object in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin', 'Lima', 'Chicago'];
+
+    cities.removeObject('Chicago');  // ['Berlin', 'Lima']
+    cities.removeObject('Lima');     // ['Berlin']
+    cities.removeObject('Tokyo')     // ['Berlin']
+    ```
+  */
+  removeObject(object: T): this;
+  /**
+    Removes each object in the passed array from the receiver.
+  */
+  removeObjects(objects: T[]): this;
+  /**
+    Push the object onto the end of the array if it is not already
+    present in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin'];
+
+    cities.addObject('Lima');    // ['Chicago', 'Berlin', 'Lima']
+    cities.addObject('Berlin');  // ['Chicago', 'Berlin', 'Lima']
+    ```
+  */
+  addObject(obj: T): this;
+  /**
+    Adds each object in the passed array to the receiver.
+  */
+  addObjects(objects: T[]): this;
+}
+const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+  clear() {
+    let len = this.length;
+    if (len === 0) {
+      return this;
+    }
+
+    this.replace(0, len, EMPTY_ARRAY);
+    return this;
+  },
+
+  insertAt(idx: number, object: unknown) {
+    insertAt(this, idx, object);
+    return this;
+  },
+
+  removeAt(start: number, len?: number) {
+    return removeAt(this, start, len);
+  },
+
+  pushObject<T>(this: MutableArray<T>, obj: T) {
+    return insertAt(this, this.length, obj);
+  },
+
+  pushObjects<T>(this: MutableArray<T>, objects: T[]) {
+    this.replace(this.length, 0, objects);
+    return this;
+  },
+
   popObject() {
     let len = this.length;
     if (len === 0) {
@@ -1471,21 +1507,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return ret;
   },
 
-  /**
-    Shift an object from start of array or nil if none are left. Works just
-    like `shift()` but it is KVO-compliant.
-
-    ```javascript
-    let colors = ['red', 'green', 'blue'];
-
-    colors.shiftObject();  // 'red'
-    console.log(colors);   // ['green', 'blue']
-    ```
-
-    @method shiftObject
-    @return object
-    @public
-  */
   shiftObject() {
     if (this.length === 0) {
       return null;
@@ -1496,55 +1517,15 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return ret;
   },
 
-  /**
-    Unshift an object to start of array. Works just like `unshift()` but it is
-    KVO-compliant.
-
-    ```javascript
-    let colors = ['red'];
-
-    colors.unshiftObject('yellow');    // ['yellow', 'red']
-    colors.unshiftObject(['black']);   // [['black'], 'yellow', 'red']
-    ```
-
-    @method unshiftObject
-    @param {*} obj object to unshift
-    @return object same object passed as a param
-    @public
-  */
   unshiftObject<T>(this: MutableArray<T>, obj: T) {
     return insertAt(this, 0, obj);
   },
 
-  /**
-    Adds the named objects to the beginning of the array. Defers notifying
-    observers until all objects have been added.
-
-    ```javascript
-    let colors = ['red'];
-
-    colors.unshiftObjects(['black', 'white']);   // ['black', 'white', 'red']
-    colors.unshiftObjects('yellow'); // Type Error: 'undefined' is not a function
-    ```
-
-    @method unshiftObjects
-    @param {Enumerable} objects the objects to add
-    @return {EmberArray} receiver
-    @public
-  */
   unshiftObjects<T>(this: MutableArray<T>, objects: T[]) {
     this.replace(0, 0, objects);
     return this;
   },
 
-  /**
-    Reverse objects in the array. Works just like `reverse()` but it is
-    KVO-compliant.
-
-    @method reverseObjects
-    @return {EmberArray} receiver
-     @public
-  */
   reverseObjects() {
     let len = this.length;
     if (len === 0) {
@@ -1556,23 +1537,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  /**
-    Replace all the receiver's content with content of the argument.
-    If argument is an empty array receiver will be cleared.
-
-    ```javascript
-    let colors = ['red', 'green', 'blue'];
-
-    colors.setObjects(['black', 'white']);  // ['black', 'white']
-    colors.setObjects([]);                  // []
-    ```
-
-    @method setObjects
-    @param {EmberArray} objects array whose content will be used for replacing
-        the content of the receiver
-    @return {EmberArray} receiver with the new content
-    @public
-  */
   setObjects<T>(this: MutableArray<T>, objects: T[]) {
     if (objects.length === 0) {
       return this.clear();
@@ -1583,22 +1547,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  /**
-    Remove all occurrences of an object in the array.
-
-    ```javascript
-    let cities = ['Chicago', 'Berlin', 'Lima', 'Chicago'];
-
-    cities.removeObject('Chicago');  // ['Berlin', 'Lima']
-    cities.removeObject('Lima');     // ['Berlin']
-    cities.removeObject('Tokyo')     // ['Berlin']
-    ```
-
-    @method removeObject
-    @param {*} obj object to remove
-    @return {EmberArray} receiver
-    @public
-  */
   removeObject<T>(this: MutableArray<T>, obj: T) {
     let loc = this.length || 0;
     while (--loc >= 0) {
@@ -1611,14 +1559,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  /**
-    Removes each object in the passed array from the receiver.
-
-    @method removeObjects
-    @param {EmberArray} objects the objects to remove
-    @return {EmberArray} receiver
-    @public
-  */
   removeObjects<T>(this: MutableArray<T>, objects: T[]) {
     beginPropertyChanges();
     for (let i = objects.length - 1; i >= 0; i--) {
@@ -1629,22 +1569,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  /**
-    Push the object onto the end of the array if it is not already
-    present in the array.
-
-    ```javascript
-    let cities = ['Chicago', 'Berlin'];
-
-    cities.addObject('Lima');    // ['Chicago', 'Berlin', 'Lima']
-    cities.addObject('Berlin');  // ['Chicago', 'Berlin', 'Lima']
-    ```
-
-    @method addObject
-    @param {*} obj object to add, if not already present
-    @return {EmberArray} receiver
-    @public
-  */
   addObject<T>(this: MutableArray<T>, obj: T) {
     let included = this.includes(obj);
 
@@ -1655,14 +1579,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  /**
-    Adds each object in the passed array to the receiver.
-
-    @method addObjects
-    @param {EmberArray} objects the objects to add.
-    @return {EmberArray} receiver
-    @public
-  */
   addObjects<T>(this: MutableArray<T>, objects: T[]) {
     beginPropertyChanges();
     objects.forEach((obj) => this.addObject(obj));
