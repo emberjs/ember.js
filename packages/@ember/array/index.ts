@@ -255,9 +255,6 @@ interface EmberArray<T> extends Enumerable {
 
     Your array must support the `length` property. Your replace methods should
     set this property whenever it changes.
-
-    @property {Number} length
-    @public
   */
   length: number;
   /**
@@ -278,11 +275,6 @@ interface EmberArray<T> extends Enumerable {
     arr.objectAt(4);   // undefined
     arr.objectAt(5);   // undefined
     ```
-
-    @method objectAt
-    @param {Number} idx The index of the item to return.
-    @return {*} item at index or undefined
-    @public
   */
   objectAt(idx: number): T | undefined;
   /**
@@ -294,11 +286,6 @@ interface EmberArray<T> extends Enumerable {
     arr.objectsAt([0, 1, 2]);  // ['a', 'b', 'c']
     arr.objectsAt([2, 3, 4]);  // ['c', 'd', undefined]
     ```
-
-    @method objectsAt
-    @param {Array} indexes An array of indexes of items to return.
-    @return {Array}
-    @public
    */
   objectsAt(indexes: number[]): Array<T | undefined>;
   /**
@@ -314,10 +301,6 @@ interface EmberArray<T> extends Enumerable {
     peopleToMoon.set('[]', ['Collins']); // ['Collins']
     peopleToMoon.get('[]'); // ['Collins']
     ```
-
-    @property []
-    @return this
-    @public
   */
   '[]': this;
   /**
@@ -336,18 +319,10 @@ interface EmberArray<T> extends Enumerable {
     vowels.clear();
     vowels.firstObject; // undefined
     ```
-
-    @property firstObject
-    @return {Object | undefined} The first object in the array
-    @public
   */
   firstObject: T | undefined;
   /**
     The last object in the array, or `undefined` if the array is empty.
-
-    @property lastObject
-    @return {Object | undefined} The last object in the array
-    @public
   */
   lastObject: T | undefined;
   /**
@@ -362,12 +337,6 @@ interface EmberArray<T> extends Enumerable {
     arr.slice(0, 2);    // ['red', 'green']
     arr.slice(1, 100);  // ['green', 'blue']
     ```
-
-    @method slice
-    @param {Number} beginIndex (Optional) index to begin slicing from.
-    @param {Number} endIndex (Optional) index to end the slice at (but not included).
-    @return {Array} New array with specified slice
-    @public
   */
   slice(beginIndex?: number, endIndex?: number): NativeArray<T>;
   /**
@@ -400,12 +369,6 @@ interface EmberArray<T> extends Enumerable {
     people.indexOf(newPerson, -4); //  0
     people.indexOf(newPerson, 10); // -1
     ```
-
-    @method indexOf
-    @param {Object} object the item to search for
-    @param {Number} startAt optional starting location to search, default 0
-    @return {Number} index or -1 if not found
-    @public
   */
   indexOf(object: T, startAt?: number): number;
   /**
@@ -433,14 +396,6 @@ interface EmberArray<T> extends Enumerable {
     arr.lastIndexOf('b', 3);    //  1
     arr.lastIndexOf('a', 100);  //  4
     ```
-
-    @method lastIndexOf
-    @param {Object} object the item to search for
-    @param {Number} startAt optional starting location to search from
-    backwards, defaults to `(array.length - 1)`
-    @return {Number} The last index of the `object` in the array or -1
-    if not found
-    @public
   */
   lastIndexOf(object: T, startAt?: number): number;
   /**
@@ -483,12 +438,6 @@ interface EmberArray<T> extends Enumerable {
     // 2/3 banana
     // 3/3 carrot
     ```
-
-    @method forEach
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Object} receiver
-    @public
   */
   forEach<Target>(
     callback: (this: Target, item: T, index: number, arr: this) => void,
@@ -509,11 +458,6 @@ interface EmberArray<T> extends Enumerable {
     people.getEach('nonexistentProperty');
     // [undefined, undefined];
     ```
-
-    @method getEach
-    @param {String} key name of the property
-    @return {Array} The mapped array.
-    @public
   */
   getEach<K extends string>(key: K): NativeArray<Value<T, K>>;
   /**
@@ -528,12 +472,6 @@ interface EmberArray<T> extends Enumerable {
     people.setEach('zipCode', '10011');
     // [{name: 'Joe', zipCode: '10011'}, {name: 'Matt', zipCode: '10011'}];
     ```
-
-    @method setEach
-    @param {String} key The key to set
-    @param {Object} value The object to set
-    @return {Object} receiver
-    @public
   */
   setEach<K extends string>(key: K, value: Value<T, K>): this;
   /**
@@ -563,12 +501,6 @@ interface EmberArray<T> extends Enumerable {
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
-
-    @method map
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Array} The mapped array.
-    @public
   */
   map<U, Target>(
     callback: (this: Target, item: T, index: number, arr: this) => U,
@@ -587,11 +519,6 @@ interface EmberArray<T> extends Enumerable {
     people.mapBy('unknownProperty');
     // [undefined, undefined];
     ```
-
-    @method mapBy
-    @param {String} key name of the property
-    @return {Array} The mapped array.
-    @public
   */
   mapBy<K extends string>(key: K): NativeArray<Value<T, K>>;
   /**
@@ -646,12 +573,6 @@ interface EmberArray<T> extends Enumerable {
     let collection = new AdultsCollection({ engineering: true });
     collection.people.filter(isAdultAndEngineer, { target: collection });
     ```
-
-    @method filter
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Array} A filtered array.
-    @public
   */
   filter<Target>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -690,12 +611,6 @@ interface EmberArray<T> extends Enumerable {
       return thing.isFruit;
     }); // [{food: 'bread', isFruit: false}]
     ```
-
-    @method reject
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Array} A rejected array.
-    @public
   */
   reject<Target>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -714,12 +629,6 @@ interface EmberArray<T> extends Enumerable {
     things.filterBy('food', 'beans'); // [{ food: 'beans', isFruit: false }]
     things.filterBy('isFruit'); // [{ food: 'apple', isFruit: true }]
     ```
-
-    @method filterBy
-    @param {String} key the property to test
-    @param {*} [value] optional value to test against.
-    @return {Array} filtered array
-    @public
   */
   filterBy(key: string, value?: unknown): NativeArray<T>;
   /**
@@ -738,12 +647,6 @@ interface EmberArray<T> extends Enumerable {
       food.rejectBy('isFruit'); // [{ name: "carrot", isFruit: false }, { name: "bread", isFruit: false }]
       food.rejectBy('name', 'carrot'); // [{ name: "apple", isFruit: true }}, { name: "bread", isFruit: false }]
     ```
-
-    @method rejectBy
-    @param {String} key the property to test
-    @param {*} [value] optional value to test against.
-    @return {Array} rejected array
-    @public
   */
   rejectBy(key: string, value?: unknown): NativeArray<T>;
   find<S extends T, Target = void>(
@@ -785,12 +688,6 @@ interface EmberArray<T> extends Enumerable {
     users.find((user) => user.name == 'Tom'); // [{ id: 2, name: 'Tom' }]
     users.find(({ id }) => id == 3); // [{ id: 3, name: 'Melanie' }]
     ```
-
-    @method find
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Object} Found item or `undefined`.
-    @public
   */
   find<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -817,12 +714,6 @@ interface EmberArray<T> extends Enumerable {
     users.findBy('name', 'Melanie'); // { id: 3, name: 'Melanie', isTom: false }
     users.findBy('isTom'); // { id: 2, name: 'Tom', isTom: true }
     ```
-
-    @method findBy
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against.
-    @return {Object} found item or `undefined`
-    @public
   */
   findBy<K extends string>(key: K, value?: Value<T, K>): T | undefined;
   /**
@@ -855,12 +746,6 @@ interface EmberArray<T> extends Enumerable {
     const people = Ember.A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
     const areAllAdults = people.every(isAdult);
     ```
-
-    @method every
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Boolean}
-    @public
   */
   every<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -896,13 +781,6 @@ interface EmberArray<T> extends Enumerable {
     compiledLanguages.isEvery('programmingLanguage'); // true
     languagesKnownByMe.isEvery('programmingLanguage'); // false
     ```
-
-    @method isEvery
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against. Defaults to `true`
-    @return {Boolean}
-    @since 1.3.0
-    @public
   */
   isEvery<K extends string>(key: K, value?: Value<T, K>): boolean;
   /**
@@ -937,12 +815,6 @@ interface EmberArray<T> extends Enumerable {
       Paychecks.addBiggerBonus();
     }
     ```
-
-    @method any
-    @param {Function} callback The callback to execute
-    @param {Object} [target] The target object to use
-    @return {Boolean} `true` if the passed function returns `true` for any item
-    @public
   */
   any<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
@@ -964,13 +836,6 @@ interface EmberArray<T> extends Enumerable {
 
     food.isAny('isFruit'); // true
     ```
-
-    @method isAny
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against. Defaults to `true`
-    @return {Boolean}
-    @since 1.3.0
-    @public
   */
   isAny<K extends string>(key: K, value?: Value<T, K>): boolean;
   /**
@@ -1020,12 +885,6 @@ interface EmberArray<T> extends Enumerable {
         return truthValue && current;
       }); // false (true && false && false)
     ```
-
-    @method reduce
-    @param {Function} callback The callback to execute
-    @param {Object} initialValue Initial value for the reduce
-    @return {Object} The reduced value.
-    @public
   */
   reduce<V>(
     callback: (summation: V, current: T, index: number, arr: this) => V,
@@ -1054,12 +913,6 @@ interface EmberArray<T> extends Enumerable {
     people.invoke('greet'); // ['Hello Joe', 'Hello Matt']
     people.invoke('greet', 'Bonjour'); // ['Bonjour Joe', 'Bonjour Matt']
     ```
-
-    @method invoke
-    @param {String} methodName the name of the method
-    @param {Object...} args optional arguments to pass as well.
-    @return {Array} return values from calling invoke.
-    @public
   */
   invoke<K extends string>(
     methodName: K,
@@ -1068,10 +921,6 @@ interface EmberArray<T> extends Enumerable {
   /**
     Simply converts the object into a genuine array. The order is not
     guaranteed. Corresponds to the method implemented by Prototype.
-
-    @method toArray
-    @return {Array} the object as an array.
-    @public
   */
   toArray(): T[];
   /**
@@ -1081,10 +930,6 @@ interface EmberArray<T> extends Enumerable {
     let arr = ['a', null, 'c', undefined];
     arr.compact();  // ['a', 'c']
     ```
-
-    @method compact
-    @return {Array} the array without null and undefined elements.
-    @public
   */
   compact(): NativeArray<Exclude<T, null>>;
   /**
@@ -1109,12 +954,6 @@ interface EmberArray<T> extends Enumerable {
     [1, 2, 3].includes(1, -4); // true
     [1, 2, NaN].includes(NaN); // true
     ```
-
-    @method includes
-    @param {Object} object The object to search for.
-    @param {Number} startAt optional starting location to search, default 0
-    @return {Boolean} `true` if object is found in the array.
-    @public
   */
   includes(object: T, startAt?: number): boolean;
   /**
@@ -1135,12 +974,6 @@ interface EmberArray<T> extends Enumerable {
    colors.sortBy('weight', 'name');
    // [{name: 'blue', weight: 500}, {name: 'red', weight: 500}, {name: 'green', weight: 600}]
    ```
-
-    @method sortBy
-    @param {String} property name(s) to sort on
-    @return {Array} The sorted array.
-    @since 1.2.0
-    @public
   */
   sortBy(key: string): T[];
   /**
@@ -1153,10 +986,6 @@ interface EmberArray<T> extends Enumerable {
     ```
 
     This only works on primitive data types, e.g. Strings, Numbers, etc.
-
-    @method uniq
-    @return {EmberArray}
-    @public
   */
   uniq(): NativeArray<T>;
   /**
@@ -1170,11 +999,6 @@ interface EmberArray<T> extends Enumerable {
     let arr = [2.2, 2.1, 3.2, 3.3];
     arr.uniqBy(Math.floor);  // [2.2, 3.2];
     ```
-
-    @method uniqBy
-    @param {String,Function} key
-    @return {EmberArray}
-    @public
   */
   uniqBy(key: string): NativeArray<T>;
   /**
@@ -1186,11 +1010,6 @@ interface EmberArray<T> extends Enumerable {
     let arr = ['a', 'b', 'a', 'c'];
     arr.without('a');  // ['b', 'c']
     ```
-
-    @method without
-    @param {Object} value
-    @return {EmberArray}
-    @public
   */
   without(value: T): NativeArray<T>;
 }
