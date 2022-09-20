@@ -171,18 +171,38 @@ interface PromiseProxyMixin<T> {
   finally: this['promise']['finally'];
 }
 const PromiseProxyMixin = Mixin.create({
+  /**
+    @property reason
+    @public
+  */
   reason: null,
 
+  /**
+    @property isPending
+    @public
+  */
   isPending: computed('isSettled', function () {
     return !get(this, 'isSettled');
   }).readOnly(),
 
+  /**
+    @property isSettled
+    @public
+  */
   isSettled: computed('isRejected', 'isFulfilled', function () {
     return get(this, 'isRejected') || get(this, 'isFulfilled');
   }).readOnly(),
 
+  /**
+    @property isRejected
+    @public
+  */
   isRejected: false,
 
+  /**
+    @property isFulfilled
+    @public
+  */
   isFulfilled: false,
 
   promise: computed({
