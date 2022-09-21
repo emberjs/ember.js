@@ -8,14 +8,13 @@ declare module '@ember/routing/route' {
 
   type RouteModel = object | string | number;
 
+  export default interface Route<Model, Params extends object> extends ActionHandler, Evented {}
+
   /**
    * The `Ember.Route` class is used to define individual routes. Refer to
    * the [routing guide](http://emberjs.com/guides/routing/) for documentation.
    */
-  export default class Route<
-    Model = unknown,
-    Params extends object = object
-  > extends EmberObject.extend(ActionHandler, Evented) {
+  export default class Route<Model = unknown, Params extends object = object> extends EmberObject {
     // methods
     /**
      * This hook is called after this route's model has resolved. It follows
