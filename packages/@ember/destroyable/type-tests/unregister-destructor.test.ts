@@ -2,7 +2,7 @@ import { registerDestructor, unregisterDestructor } from '@ember/destroyable';
 import { expectTypeOf } from 'expect-type';
 
 class Foo {
-  type: 'foo' = 'foo';
+  readonly type = 'foo';
 }
 let obj = new Foo();
 
@@ -22,7 +22,7 @@ unregisterDestructor(obj);
 unregisterDestructor(destructor);
 
 class Bar {
-  type: 'blah' = 'blah';
+  readonly type = 'blah';
 }
 let obj2 = new Bar();
 
