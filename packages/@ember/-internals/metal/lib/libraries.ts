@@ -86,7 +86,7 @@ if (DEBUG) {
     let nameLengths = libs.map((item) => get(item, 'name.length'));
     assert(
       'nameLengths is number array',
-      nameLengths instanceof Array && nameLengths.every((n) => typeof n === 'number')
+      nameLengths instanceof Array && nameLengths.every((n): n is number => typeof n === 'number')
     );
     let maxNameLength = Math.max.apply(null, nameLengths);
 

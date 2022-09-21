@@ -105,7 +105,10 @@ class Helper extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
 
-  [RECOMPUTE_TAG]: DirtyableTag;
+  // SAFETY: this is initialized in `init`, rather than `constructor`. It is
+  // safe to `declare` like this *if and only if* nothing uses the constructor
+  // directly in this class, since nothing else can run before `init`.
+  declare [RECOMPUTE_TAG]: DirtyableTag;
 
   init(properties: object | undefined) {
     super.init(properties);
