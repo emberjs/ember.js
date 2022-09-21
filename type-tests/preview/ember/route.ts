@@ -2,6 +2,8 @@ import Route from '@ember/routing/route';
 import Array from '@ember/array';
 import Ember from 'ember'; // currently needed for Transition
 import Transition from '@ember/routing/transition';
+import { expectTypeOf } from 'expect-type';
+import { AnyFn } from 'ember/-private/type-utils';
 
 // Ensure that Ember.Transition is private
 // @ts-expect-error
@@ -82,5 +84,21 @@ class WithBadReturningBeforeAndModelHooks extends Route {
   afterModel(resolvedModel: unknown, transition: Transition): void {
     // @ts-expect-error
     return "returning anything else is nonsensical (if 'legal')";
+  }
+}
+
+class HasEvented extends Route {
+  methodUsingEvented() {
+    this.on('some-event', this, 'aMethod');
+  }
+
+  aMethod() {}
+}
+
+class HasActionHandler extends Route {
+  methodUsingActionHandler() {
+    expectTypeOf(this.actions).toEqualTypeOf<{
+      [index: string]: AnyFn;
+    }>();
   }
 }
