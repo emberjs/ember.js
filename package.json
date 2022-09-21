@@ -41,16 +41,16 @@
     "lint:docs": "qunit tests/docs/coverage-test.js",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
-    "lint:tsc:stable": "tsc --noEmit",
-    "lint:tsc:preview": "tsc --noEmit --project type-tests/preview",
-    "lint:tsc": "npm-run-all lint:tsc:*",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
     "test:blueprints:js": "mocha node-tests/blueprints/**/*-test.js",
     "test:blueprints:ts": "EMBER_TYPESCRIPT_BLUEPRINTS=true yarn test:blueprints:js",
     "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
-    "test:browserstack": "node bin/run-browserstack-tests.js"
+    "test:browserstack": "node bin/run-browserstack-tests.js",
+    "type-check:stable": "tsc --noEmit",
+    "type-check:preview": "tsc --noEmit --project type-tests/preview",
+    "type-check": "npm-run-all type-check:*"
   },
   "dependencies": {
     "@babel/helper-module-imports": "^7.16.7",
