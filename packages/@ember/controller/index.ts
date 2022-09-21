@@ -32,20 +32,6 @@ interface ControllerMixin<T> extends ActionHandler {
   _qpDelegate: unknown | null;
 
   isController: true;
-  target: unknown | null;
-  model: T;
-
-  queryParams: Array<ControllerQueryParam>;
-
-  transitionToRoute(...args: RouteArgs<Route>): Transition;
-
-  replaceRoute(...args: RouteArgs<Route>): Transition;
-}
-const ControllerMixin = Mixin.create(ActionHandler, {
-  /* ducktype as a controller */
-  isController: true,
-
-  concatenatedProperties: ['queryParams'],
 
   /**
     The object to which actions from the view should be sent.
@@ -58,40 +44,14 @@ const ControllerMixin = Mixin.create(ActionHandler, {
     as part of the application's initialization process. In most cases the
     `target` property will automatically be set to the logical consumer of
     actions for the controller.
-
-    @property target
-    @default null
-    @public
   */
-  target: null,
-
-  store: null,
-
-  init() {
-    this._super(...arguments);
-    let owner = getOwner(this);
-    if (owner) {
-      this.namespace = owner.lookup('application:main');
-      this.target = owner.lookup('router:main');
-    }
-  },
+  target: unknown | null;
 
   /**
     The controller's current model. When retrieving or modifying a controller's
     model, this property should be used instead of the `content` property.
-
-    @property model
-    @public
   */
-  model: computed({
-    get() {
-      return this[MODEL];
-    },
-
-    set(_key, value) {
-      return (this[MODEL] = value);
-    },
-  }),
+  model: T;
 
   /**
     Defines which query parameters the controller accepts.
@@ -114,54 +74,8 @@ const ControllerMixin = Mixin.create(ActionHandler, {
     ```
     Available values for the `type` parameter are `'boolean'`, `'number'`, `'array'`, and `'string'`.
     If query param type is not specified, it will default to `'string'`.
-
-    @for Ember.ControllerMixin
-    @property queryParams
-    @public
   */
-  queryParams: null,
-
-  /**
-   This property is updated to various different callback functions depending on
-   the current "state" of the backing route. It is used by
-   `Controller.prototype._qpChanged`.
-
-   The methods backing each state can be found in the `Route.prototype._qp` computed
-   property return value (the `.states` property). The current values are listed here for
-   the sanity of future travelers:
-
-   * `inactive` - This state is used when this controller instance is not part of the active
-     route hierarchy. Set in `Route.prototype._reset` (a `router.js` microlib hook) and
-     `Route.prototype.actions.finalizeQueryParamChange`.
-   * `active` - This state is used when this controller instance is part of the active
-     route hierarchy. Set in `Route.prototype.actions.finalizeQueryParamChange`.
-   * `allowOverrides` - This state is used in `Route.prototype.setup` (`route.js` microlib hook).
-
-    @method _qpDelegate
-    @private
-  */
-  _qpDelegate: null, // set by route
-
-  /**
-   During `Route#setup` observers are created to invoke this method
-   when any of the query params declared in `Controller#queryParams` property
-   are changed.
-
-   When invoked this method uses the currently active query param update delegate
-   (see `Controller.prototype._qpDelegate` for details) and invokes it with
-   the QP key/value being changed.
-
-    @method _qpChanged
-    @private
-  */
-  _qpChanged(controller: any, _prop: string) {
-    let dotIndex = _prop.indexOf('.[]');
-    let prop = dotIndex === -1 ? _prop : _prop.slice(0, dotIndex);
-
-    let delegate = controller._qpDelegate;
-    let value = get(controller, prop);
-    delegate(prop, value);
-  },
+  queryParams: Array<ControllerQueryParam>;
 
   /**
     Transition the application into another route. The route may
@@ -226,32 +140,8 @@ const ControllerMixin = Mixin.create(ActionHandler, {
     ```
 
     See also [replaceRoute](/ember/release/classes/Ember.ControllerMixin/methods/replaceRoute?anchor=replaceRoute).
-
-    @for Ember.ControllerMixin
-    @method transitionToRoute
-    @deprecated Use transitionTo from the Router service instead.
-    @param {String} [name] the name of the route or a URL
-    @param {...Object} models the model(s) or identifier(s) to be used
-      while transitioning to the route.
-    @param {Object} [options] optional hash with a queryParams property
-      containing a mapping of query parameters
-    @return {Transition} the transition object associated with this
-      attempted transition
-    @public
   */
-  transitionToRoute<R extends Route>(...args: RouteArgs<R>): Transition {
-    deprecateTransitionMethods('controller', 'transitionToRoute');
-
-    // target may be either another controller or a router
-    let target = get(this, 'target');
-
-    // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
-    // mock out an object that only has the single method. Since this is deprecated, I think it's
-    // ok to be a little less than proper here.
-    let method = (target as Controller).transitionToRoute ?? (target as Router<R>).transitionTo;
-
-    return method.apply(target, prefixRouteNameArg(this, args));
-  },
+  transitionToRoute(...args: RouteArgs<Route>): Transition;
 
   /**
     Transition into another route while replacing the current URL, if possible.
@@ -302,19 +192,95 @@ const ControllerMixin = Mixin.create(ActionHandler, {
     aController.replaceRoute('/');
     aController.replaceRoute('/blog/post/1/comment/13');
     ```
-
-    @for Ember.ControllerMixin
-    @method replaceRoute
-    @deprecated Use replaceWith from the Router service instead.
-    @param {String} [name] the name of the route or a URL
-    @param {...Object} models the model(s) or identifier(s) to be used
-    while transitioning to the route.
-    @param {Object} [options] optional hash with a queryParams property
-    containing a mapping of query parameters
-    @return {Transition} the transition object associated with this
-      attempted transition
-    @public
   */
+  replaceRoute(...args: RouteArgs<Route>): Transition;
+}
+const ControllerMixin = Mixin.create(ActionHandler, {
+  /* ducktype as a controller */
+  isController: true,
+
+  concatenatedProperties: ['queryParams'],
+
+  target: null,
+
+  store: null,
+
+  init() {
+    this._super(...arguments);
+    let owner = getOwner(this);
+    if (owner) {
+      this.namespace = owner.lookup('application:main');
+      this.target = owner.lookup('router:main');
+    }
+  },
+
+  model: computed({
+    get() {
+      return this[MODEL];
+    },
+
+    set(_key, value) {
+      return (this[MODEL] = value);
+    },
+  }),
+
+  queryParams: null,
+
+  /**
+   This property is updated to various different callback functions depending on
+   the current "state" of the backing route. It is used by
+   `Controller.prototype._qpChanged`.
+
+   The methods backing each state can be found in the `Route.prototype._qp` computed
+   property return value (the `.states` property). The current values are listed here for
+   the sanity of future travelers:
+
+   * `inactive` - This state is used when this controller instance is not part of the active
+     route hierarchy. Set in `Route.prototype._reset` (a `router.js` microlib hook) and
+     `Route.prototype.actions.finalizeQueryParamChange`.
+   * `active` - This state is used when this controller instance is part of the active
+     route hierarchy. Set in `Route.prototype.actions.finalizeQueryParamChange`.
+   * `allowOverrides` - This state is used in `Route.prototype.setup` (`route.js` microlib hook).
+
+    @method _qpDelegate
+    @private
+  */
+  _qpDelegate: null, // set by route
+
+  /**
+   During `Route#setup` observers are created to invoke this method
+   when any of the query params declared in `Controller#queryParams` property
+   are changed.
+
+   When invoked this method uses the currently active query param update delegate
+   (see `Controller.prototype._qpDelegate` for details) and invokes it with
+   the QP key/value being changed.
+
+    @method _qpChanged
+    @private
+  */
+  _qpChanged(controller: any, _prop: string) {
+    let dotIndex = _prop.indexOf('.[]');
+    let prop = dotIndex === -1 ? _prop : _prop.slice(0, dotIndex);
+
+    let delegate = controller._qpDelegate;
+    let value = get(controller, prop);
+    delegate(prop, value);
+  },
+
+  transitionToRoute<R extends Route>(...args: RouteArgs<R>): Transition {
+    deprecateTransitionMethods('controller', 'transitionToRoute');
+
+    // target may be either another controller or a router
+    let target = get(this, 'target');
+
+    // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
+    // mock out an object that only has the single method. Since this is deprecated, I think it's
+    // ok to be a little less than proper here.
+    let method = (target as Controller).transitionToRoute ?? (target as Router<R>).transitionTo;
+
+    return method.apply(target, prefixRouteNameArg(this, args));
+  },
 
   replaceRoute<R extends Route>(...args: RouteArgs<R>): Transition {
     deprecateTransitionMethods('controller', 'replaceRoute');
