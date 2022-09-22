@@ -44,6 +44,9 @@ interface ControllerMixin<T> extends ActionHandler {
     as part of the application's initialization process. In most cases the
     `target` property will automatically be set to the logical consumer of
     actions for the controller.
+    
+    @property target
+    @default null
     @public
   */
   target: unknown | null;
@@ -51,6 +54,8 @@ interface ControllerMixin<T> extends ActionHandler {
   /**
     The controller's current model. When retrieving or modifying a controller's
     model, this property should be used instead of the `content` property.
+    
+    @property model
     @public
   */
   model: T;
@@ -76,6 +81,9 @@ interface ControllerMixin<T> extends ActionHandler {
     ```
     Available values for the `type` parameter are `'boolean'`, `'number'`, `'array'`, and `'string'`.
     If query param type is not specified, it will default to `'string'`.
+    
+    @for Ember.ControllerMixin
+    @property queryParams
     @public
   */
   queryParams: Array<ControllerQueryParam>;
@@ -143,6 +151,17 @@ interface ControllerMixin<T> extends ActionHandler {
     ```
 
     See also [replaceRoute](/ember/release/classes/Ember.ControllerMixin/methods/replaceRoute?anchor=replaceRoute).
+    
+    @for Ember.ControllerMixin
+    @method transitionToRoute
+    @deprecated Use transitionTo from the Router service instead.
+    @param {String} [name] the name of the route or a URL
+    @param {...Object} models the model(s) or identifier(s) to be used
+      while transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+      containing a mapping of query parameters
+    @return {Transition} the transition object associated with this
+      attempted transition
     @public
   */
   transitionToRoute(...args: RouteArgs<Route>): Transition;
@@ -196,6 +215,17 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.replaceRoute('/');
     aController.replaceRoute('/blog/post/1/comment/13');
     ```
+    
+    @for Ember.ControllerMixin
+    @method replaceRoute
+    @deprecated Use replaceWith from the Router service instead.
+    @param {String} [name] the name of the route or a URL
+    @param {...Object} models the model(s) or identifier(s) to be used
+    while transitioning to the route.
+    @param {Object} [options] optional hash with a queryParams property
+    containing a mapping of query parameters
+    @return {Transition} the transition object associated with this
+      attempted transition
     @public
   */
   replaceRoute(...args: RouteArgs<Route>): Transition;
