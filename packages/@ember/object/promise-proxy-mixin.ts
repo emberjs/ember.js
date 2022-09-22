@@ -111,24 +111,44 @@ interface PromiseProxyMixin<T> {
   /**
     If the proxied promise is rejected this will contain the reason
     provided.
+
+    @property reason
+    @default null
+    @public
   */
   reason: unknown;
 
   /**
     Once the proxied promise has settled this will become `false`.
+
+    @property isPending
+    @default true
+    @public
   */
   readonly isPending: boolean;
   /**
     Once the proxied promise has settled this will become `true`.
+
+    @property isSettled
+    @default false
+    @public
   */
   readonly isSettled: boolean;
 
   /**
     Will become `true` if the proxied promise is rejected.
+
+    @property isRejected
+    @default false
+    @public
   */
   isRejected: boolean;
   /**
     Will become `true` if the proxied promise is fulfilled.
+
+    @property isFulfilled
+    @default false
+    @public
   */
   isFulfilled: boolean;
 
@@ -148,6 +168,9 @@ interface PromiseProxyMixin<T> {
       promise: <thenable>
     });
     ```
+
+    @property promise
+    @public
   */
   promise: Promise<T>;
 
@@ -155,54 +178,51 @@ interface PromiseProxyMixin<T> {
     An alias to the proxied promise's `then`.
 
     See RSVP.Promise.then.
+
+    @method then
+    @param {Function} callback
+    @return {RSVP.Promise}
+    @public
   */
   then: this['promise']['then'];
   /**
     An alias to the proxied promise's `catch`.
 
     See RSVP.Promise.catch.
+
+    @method catch
+    @param {Function} callback
+    @return {RSVP.Promise}
+    @since 1.3.0
+    @public
   */
   catch: this['promise']['catch'];
   /**
     An alias to the proxied promise's `finally`.
 
     See RSVP.Promise.finally.
+
+    @method finally
+    @param {Function} callback
+    @return {RSVP.Promise}
+    @since 1.3.0
+    @public
   */
   finally: this['promise']['finally'];
 }
 const PromiseProxyMixin = Mixin.create({
-  /**
-    @property reason
-    @public
-  */
   reason: null,
 
-  /**
-    @property isPending
-    @public
-  */
   isPending: computed('isSettled', function () {
     return !get(this, 'isSettled');
   }).readOnly(),
 
-  /**
-    @property isSettled
-    @public
-  */
   isSettled: computed('isRejected', 'isFulfilled', function () {
     return get(this, 'isRejected') || get(this, 'isFulfilled');
   }).readOnly(),
 
-  /**
-    @property isRejected
-    @public
-  */
   isRejected: false,
 
-  /**
-    @property isFulfilled
-    @public
-  */
   isFulfilled: false,
 
   promise: computed({
