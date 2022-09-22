@@ -11,7 +11,7 @@ import { expectTypeOf } from 'expect-type';
 class Wrapper<T = unknown, P extends unknown[] = unknown[], N extends Dict<unknown> = Dict<unknown>>
   implements HelperFactory<SimpleHelper<T, P, N>>
 {
-  isHelperFactory: true = true;
+  readonly isHelperFactory = true;
 
   constructor(public compute: HelperFunction<T, P, N>) {}
 
