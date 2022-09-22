@@ -44,12 +44,14 @@ interface ControllerMixin<T> extends ActionHandler {
     as part of the application's initialization process. In most cases the
     `target` property will automatically be set to the logical consumer of
     actions for the controller.
+    @public
   */
   target: unknown | null;
 
   /**
     The controller's current model. When retrieving or modifying a controller's
     model, this property should be used instead of the `content` property.
+    @public
   */
   model: T;
 
@@ -74,6 +76,7 @@ interface ControllerMixin<T> extends ActionHandler {
     ```
     Available values for the `type` parameter are `'boolean'`, `'number'`, `'array'`, and `'string'`.
     If query param type is not specified, it will default to `'string'`.
+    @public
   */
   queryParams: Array<ControllerQueryParam>;
 
@@ -140,6 +143,7 @@ interface ControllerMixin<T> extends ActionHandler {
     ```
 
     See also [replaceRoute](/ember/release/classes/Ember.ControllerMixin/methods/replaceRoute?anchor=replaceRoute).
+    @public
   */
   transitionToRoute(...args: RouteArgs<Route>): Transition;
 
@@ -192,6 +196,7 @@ interface ControllerMixin<T> extends ActionHandler {
     aController.replaceRoute('/');
     aController.replaceRoute('/blog/post/1/comment/13');
     ```
+    @public
   */
   replaceRoute(...args: RouteArgs<Route>): Transition;
 }
