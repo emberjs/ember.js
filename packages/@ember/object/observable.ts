@@ -125,6 +125,11 @@ interface Observable {
     If this method returns any value other than `undefined`, it will be returned
     instead. This allows you to implement "virtual" properties that are
     not defined upfront.
+
+    @method get
+    @param {String} keyName The property to retrieve
+    @return {Object} The property value or undefined.
+    @public
   */
   get(key: string): unknown;
 
@@ -143,6 +148,11 @@ interface Observable {
     record.getProperties(['firstName', 'lastName', 'zipCode']);
     // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
     ```
+
+    @method getProperties
+    @param {String...|Array} list of keys to get
+    @return {Object}
+    @public
   */
   getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
   getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
@@ -185,6 +195,12 @@ interface Observable {
     immediately. Any "remote" observers (i.e. observer methods declared on
     another object) will be placed in a queue and called at a later time in a
     coalesced manner.
+
+    @method set
+    @param {String} keyName The property to set
+    @param {Object} value The value to set or `null`.
+    @return {Object} The passed value
+    @public
   */
   set<T>(key: string, value: T): T;
 
@@ -197,6 +213,11 @@ interface Observable {
     ```javascript
     record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
     ```
+
+    @method setProperties
+    @param {Object} hash the hash of keys and values to set
+    @return {Object} The passed in hash
+    @public
   */
   setProperties<T extends Record<string, any>>(hash: T): T;
 
@@ -210,6 +231,11 @@ interface Observable {
     actually calling `get()` or `set()` on it. In this case, you can use this
     method instead. Calling this method will notify all observers that the
     property has potentially changed value.
+
+    @method notifyPropertyChange
+    @param {String} keyName The property key to be notified about.
+    @return {Observable}
+    @public
   */
   notifyPropertyChange(keyName: string): this;
 
@@ -287,14 +313,30 @@ interface Observable {
     the end. In this case, it is common to write observer methods that take
     only a sender and key value as parameters or, if you aren't interested in
     any of these values, to write an observer that has no parameters at all.
+
+    @method addObserver
+    @param {String} key The key to observe
+    @param {Object} target The target object to invoke
+    @param {String|Function} method The method to invoke
+    @param {Boolean} sync Whether the observer is sync or not
+    @return {Observable}
+    @public
   */
   addObserver<Target>(key: keyof this, target: Target, method: ObserverMethod<Target, this>): this;
   addObserver(key: keyof this, method: ObserverMethod<this, this>): this;
 
   /**
-   * Remove an observer you have previously registered on this object. Pass
-   * the same key, target, and method you passed to `addObserver()` and your
-   * target will no longer receive notifications.
+    Remove an observer you have previously registered on this object. Pass
+    the same key, target, and method you passed to `addObserver()` and your
+    target will no longer receive notifications.
+    
+    @method removeObserver
+    @param {String} key The key to observe
+    @param {Object} target The target object to invoke
+    @param {String|Function} method The method to invoke
+    @param {Boolean} sync Whether the observer is async or not
+    @return {Observable}
+    @public
    */
   removeObserver<Target>(
     key: keyof this,
@@ -311,6 +353,12 @@ interface Observable {
     person.incrementProperty('age');
     team.incrementProperty('score', 2);
     ```
+
+    @method incrementProperty
+    @param {String} keyName The name of the property to increment
+    @param {Number} increment The amount to increment by. Defaults to 1
+    @return {Number} The new property value
+    @public
   */
   incrementProperty(keyName: keyof this, increment?: number): number;
 
@@ -322,6 +370,12 @@ interface Observable {
     player.decrementProperty('lives');
     orc.decrementProperty('health', 5);
     ```
+
+    @method decrementProperty
+    @param {String} keyName The name of the property to decrement
+    @param {Number} decrement The amount to decrement by. Defaults to 1
+    @return {Number} The new property value
+    @public
   */
   decrementProperty(keyName: keyof this, decrement?: number): number;
 
@@ -333,15 +387,25 @@ interface Observable {
     ```javascript
     starship.toggleProperty('warpDriveEngaged');
     ```
+
+    @method toggleProperty
+    @param {String} keyName The name of the property to toggle
+    @return {Boolean} The new property value
+    @public
   */
   toggleProperty(keyName: keyof this): boolean;
 
   /**
-   * Returns the cached value of a computed property, if it exists.
-   * This allows you to inspect the value of a computed property
-   * without accidentally invoking it if it is intended to be
-   * generated lazily.
-   */
+    Returns the cached value of a computed property, if it exists.
+    This allows you to inspect the value of a computed property
+    without accidentally invoking it if it is intended to be
+    generated lazily.
+    
+    @method cacheFor
+    @param {String} keyName
+    @return {Object} The cached value of the computed property, if any
+    @public
+  */
   cacheFor<K extends keyof this>(key: K): unknown;
 }
 const Observable = Mixin.create({
