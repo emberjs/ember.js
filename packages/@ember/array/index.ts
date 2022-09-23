@@ -1021,11 +1021,10 @@ interface EmberArray<T> extends Enumerable {
       }); // false (true && false && false)
     ```
 
-    @method isAny
-    @param {String} key the property to test
-    @param {String} [value] optional value to test against. Defaults to `true`
-    @return {Boolean}
-    @since 1.3.0
+    @method reduce
+    @param {Function} callback The callback to execute
+    @param {Object} initialValue Initial value for the reduce
+    @return {Object} The reduced value.
     @public
   */
   reduce<V>(
