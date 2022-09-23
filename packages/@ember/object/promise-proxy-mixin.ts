@@ -108,21 +108,6 @@ function tap<T>(proxy: PromiseProxyMixin<T>, promise: RSVP.Promise<T>) {
   @public
 */
 interface PromiseProxyMixin<T> {
-  reason: unknown;
-
-  readonly isPending: boolean;
-  readonly isSettled: boolean;
-
-  isRejected: boolean;
-  isFulfilled: boolean;
-
-  promise: Promise<T>;
-
-  then: this['promise']['then'];
-  catch: this['promise']['catch'];
-  finally: this['promise']['finally'];
-}
-const PromiseProxyMixin = Mixin.create({
   /**
     If the proxied promise is rejected this will contain the reason
     provided.
@@ -131,7 +116,7 @@ const PromiseProxyMixin = Mixin.create({
     @default null
     @public
   */
-  reason: null,
+  reason: unknown;
 
   /**
     Once the proxied promise has settled this will become `false`.
@@ -140,10 +125,7 @@ const PromiseProxyMixin = Mixin.create({
     @default true
     @public
   */
-  isPending: computed('isSettled', function () {
-    return !get(this, 'isSettled');
-  }).readOnly(),
-
+  readonly isPending: boolean;
   /**
     Once the proxied promise has settled this will become `true`.
 
@@ -151,9 +133,7 @@ const PromiseProxyMixin = Mixin.create({
     @default false
     @public
   */
-  isSettled: computed('isRejected', 'isFulfilled', function () {
-    return get(this, 'isRejected') || get(this, 'isFulfilled');
-  }).readOnly(),
+  readonly isSettled: boolean;
 
   /**
     Will become `true` if the proxied promise is rejected.
@@ -162,8 +142,7 @@ const PromiseProxyMixin = Mixin.create({
     @default false
     @public
   */
-  isRejected: false,
-
+  isRejected: boolean;
   /**
     Will become `true` if the proxied promise is fulfilled.
 
@@ -171,7 +150,7 @@ const PromiseProxyMixin = Mixin.create({
     @default false
     @public
   */
-  isFulfilled: false,
+  isFulfilled: boolean;
 
   /**
     The promise whose fulfillment value is being proxied by this object.
@@ -193,14 +172,7 @@ const PromiseProxyMixin = Mixin.create({
     @property promise
     @public
   */
-  promise: computed({
-    get() {
-      throw new EmberError("PromiseProxy's promise must be set");
-    },
-    set(_key, promise: RSVP.Promise<unknown>) {
-      return tap(this, promise);
-    },
-  }),
+  promise: Promise<T>;
 
   /**
     An alias to the proxied promise's `then`.
@@ -212,8 +184,7 @@ const PromiseProxyMixin = Mixin.create({
     @return {RSVP.Promise}
     @public
   */
-  then: promiseAlias('then'),
-
+  then: this['promise']['then'];
   /**
     An alias to the proxied promise's `catch`.
 
@@ -225,8 +196,7 @@ const PromiseProxyMixin = Mixin.create({
     @since 1.3.0
     @public
   */
-  catch: promiseAlias('catch'),
-
+  catch: this['promise']['catch'];
   /**
     An alias to the proxied promise's `finally`.
 
@@ -238,6 +208,36 @@ const PromiseProxyMixin = Mixin.create({
     @since 1.3.0
     @public
   */
+  finally: this['promise']['finally'];
+}
+const PromiseProxyMixin = Mixin.create({
+  reason: null,
+
+  isPending: computed('isSettled', function () {
+    return !get(this, 'isSettled');
+  }).readOnly(),
+
+  isSettled: computed('isRejected', 'isFulfilled', function () {
+    return get(this, 'isRejected') || get(this, 'isFulfilled');
+  }).readOnly(),
+
+  isRejected: false,
+
+  isFulfilled: false,
+
+  promise: computed({
+    get() {
+      throw new EmberError("PromiseProxy's promise must be set");
+    },
+    set(_key, promise: RSVP.Promise<unknown>) {
+      return tap(this, promise);
+    },
+  }),
+
+  then: promiseAlias('then'),
+
+  catch: promiseAlias('catch'),
+
   finally: promiseAlias('finally'),
 });
 
