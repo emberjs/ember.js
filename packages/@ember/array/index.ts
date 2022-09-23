@@ -964,6 +964,13 @@ interface EmberArray<T> extends Enumerable {
 
     food.isAny('isFruit'); // true
     ```
+
+    @method isAny
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against. Defaults to `true`
+    @return {Boolean}
+    @since 1.3.0
+    @public
   */
   isAny<K extends string>(key: K, value?: Value<T, K>): boolean;
   /**

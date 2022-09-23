@@ -120,12 +120,19 @@ interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArra
   /**
     The content array. Must be an object that implements `Array` and/or
     `MutableArray.`
+
+    @property content
+    @type EmberArray
+    @public
   */
   content: C | null;
   /**
     The array that the proxy pretends to be. In the default `ArrayProxy`
     implementation, this and `content` are the same. Subclasses of `ArrayProxy`
     can override this property to provide things like sorting and filtering.
+
+    @property arrangedContent
+    @public
   */
   arrangedContent: C | null;
   /**
@@ -134,6 +141,11 @@ interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArra
     content item to something new.
 
     This method will only be called if content is non-`null`.
+
+    @method objectAtContent
+    @param {Number} idx The index to retrieve.
+    @return {Object} the value or undefined if none found
+    @public
   */
   objectAtContent(idx: number): T | undefined;
   /**
@@ -142,6 +154,13 @@ interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArra
     into something new.
 
     This method will only be called if content is non-`null`.
+
+    @method replaceContent
+    @param {Number} idx The starting index
+    @param {Number} amt The number of items to remove from the content.
+    @param {Array} objects Optional array of objects to insert.
+    @return {void}
+    @public
   */
   replaceContent(idx: number, amt: number, objects?: T[]): void;
 }
