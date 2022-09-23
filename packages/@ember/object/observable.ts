@@ -91,84 +91,6 @@ export type ObserverMethod<Target, Sender> =
 */
 interface Observable {
   /**
-   * Retrieves the value of a property from the object.
-   */
-  get(key: string): unknown;
-
-  /**
-   * To get the values of multiple properties at once, call `getProperties`
-   * with a list of strings or an array:
-   */
-  getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
-  getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
-
-  // NOT TYPE SAFE!
-  /**
-   * Sets the provided key or path to the value.
-   */
-  set<T>(key: string, value: T): T;
-
-  // NOT TYPE SAFE!
-  /**
-   * Sets a list of properties at once. These properties are set inside
-   * a single `beginPropertyChanges` and `endPropertyChanges` batch, so
-   * observers will be buffered.
-   */
-  setProperties<T extends Record<string, any>>(hash: T): T;
-
-  /**
-   * Convenience method to call `propertyWillChange` and `propertyDidChange` in
-   * succession.
-   */
-  notifyPropertyChange(keyName: string): this;
-
-  /**
-   * Adds an observer on a property.
-   */
-  addObserver<Target>(key: keyof this, target: Target, method: ObserverMethod<Target, this>): this;
-  addObserver(key: keyof this, method: ObserverMethod<this, this>): this;
-
-  /**
-   * Remove an observer you have previously registered on this object. Pass
-   * the same key, target, and method you passed to `addObserver()` and your
-   * target will no longer receive notifications.
-   */
-  removeObserver<Target>(
-    key: keyof this,
-    target: Target,
-    method: ObserverMethod<Target, this>
-  ): this;
-  removeObserver(key: keyof this, method: ObserverMethod<this, this>): this;
-
-  // NOT TYPE SAFE!
-  /**
-   * Set the value of a property to the current value plus some amount.
-   */
-  incrementProperty(keyName: keyof this, increment?: number): number;
-
-  // NOT TYPE SAFE!
-  /**
-   * Set the value of a property to the current value minus some amount.
-   */
-  decrementProperty(keyName: keyof this, decrement?: number): number;
-
-  // NOT TYPE SAFE!
-  /**
-   * Set the value of a boolean property to the opposite of its
-   * current value.
-   */
-  toggleProperty(keyName: keyof this): boolean;
-
-  /**
-   * Returns the cached value of a computed property, if it exists.
-   * This allows you to inspect the value of a computed property
-   * without accidentally invoking it if it is intended to be
-   * generated lazily.
-   */
-  cacheFor<K extends keyof this>(key: K): unknown;
-}
-const Observable = Mixin.create({
-  /**
     Retrieves the value of a property from the object.
 
     This method is usually similar to using `object[keyName]` or `object.keyName`,
@@ -209,9 +131,7 @@ const Observable = Mixin.create({
     @return {Object} The property value or undefined.
     @public
   */
-  get(keyName: string) {
-    return get(this, keyName);
-  },
+  get(key: string): unknown;
 
   /**
     To get the values of multiple properties at once, call `getProperties`
@@ -234,10 +154,10 @@ const Observable = Mixin.create({
     @return {Object}
     @public
   */
-  getProperties(...args: string[]) {
-    return getProperties(this, ...args);
-  },
+  getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
+  getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
 
+  // NOT TYPE SAFE!
   /**
     Sets the provided key or path to the value.
 
@@ -282,10 +202,9 @@ const Observable = Mixin.create({
     @return {Object} The passed value
     @public
   */
-  set(keyName: string, value: unknown) {
-    return set(this, keyName, value);
-  },
+  set<T>(key: string, value: T): T;
 
+  // NOT TYPE SAFE!
   /**
     Sets a list of properties at once. These properties are set inside
     a single `beginPropertyChanges` and `endPropertyChanges` batch, so
@@ -300,50 +219,12 @@ const Observable = Mixin.create({
     @return {Object} The passed in hash
     @public
   */
-  setProperties(hash: object) {
-    return setProperties(this, hash);
-  },
+  setProperties<T extends Record<string, any>>(hash: T): T;
 
   /**
-    Begins a grouping of property changes.
+    Convenience method to call `propertyWillChange` and `propertyDidChange` in
+    succession.
 
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call this
-    method at the beginning of the changes to begin deferring change
-    notifications. When you are done making changes, call
-    `endPropertyChanges()` to deliver the deferred change notifications and end
-    deferring.
-
-    @method beginPropertyChanges
-    @return {Observable}
-    @private
-  */
-  beginPropertyChanges() {
-    beginPropertyChanges();
-    return this;
-  },
-
-  /**
-    Ends a grouping of property changes.
-
-    You can use this method to group property changes so that notifications
-    will not be sent until the changes are finished. If you plan to make a
-    large number of changes to an object at one time, you should call
-    `beginPropertyChanges()` at the beginning of the changes to defer change
-    notifications. When you are done making changes, call this method to
-    deliver the deferred change notifications and end deferring.
-
-    @method endPropertyChanges
-    @return {Observable}
-    @private
-  */
-  endPropertyChanges() {
-    endPropertyChanges();
-    return this;
-  },
-
-  /**
     Notify the observer system that a property has just changed.
 
     Sometimes you need to change a value directly or indirectly without
@@ -356,10 +237,7 @@ const Observable = Mixin.create({
     @return {Observable}
     @public
   */
-  notifyPropertyChange(keyName: string) {
-    notifyPropertyChange(this, keyName);
-    return this;
-  },
+  notifyPropertyChange(keyName: string): this;
 
   /**
     Adds an observer on a property.
@@ -444,6 +322,153 @@ const Observable = Mixin.create({
     @return {Observable}
     @public
   */
+  addObserver<Target>(key: keyof this, target: Target, method: ObserverMethod<Target, this>): this;
+  addObserver(key: keyof this, method: ObserverMethod<this, this>): this;
+
+  /**
+    Remove an observer you have previously registered on this object. Pass
+    the same key, target, and method you passed to `addObserver()` and your
+    target will no longer receive notifications.
+    
+    @method removeObserver
+    @param {String} key The key to observe
+    @param {Object} target The target object to invoke
+    @param {String|Function} method The method to invoke
+    @param {Boolean} sync Whether the observer is async or not
+    @return {Observable}
+    @public
+   */
+  removeObserver<Target>(
+    key: keyof this,
+    target: Target,
+    method: ObserverMethod<Target, this>
+  ): this;
+  removeObserver(key: keyof this, method: ObserverMethod<this, this>): this;
+
+  // NOT TYPE SAFE!
+  /**
+    Set the value of a property to the current value plus some amount.
+
+    ```javascript
+    person.incrementProperty('age');
+    team.incrementProperty('score', 2);
+    ```
+
+    @method incrementProperty
+    @param {String} keyName The name of the property to increment
+    @param {Number} increment The amount to increment by. Defaults to 1
+    @return {Number} The new property value
+    @public
+  */
+  incrementProperty(keyName: keyof this, increment?: number): number;
+
+  // NOT TYPE SAFE!
+  /**
+    Set the value of a property to the current value minus some amount.
+
+    ```javascript
+    player.decrementProperty('lives');
+    orc.decrementProperty('health', 5);
+    ```
+
+    @method decrementProperty
+    @param {String} keyName The name of the property to decrement
+    @param {Number} decrement The amount to decrement by. Defaults to 1
+    @return {Number} The new property value
+    @public
+  */
+  decrementProperty(keyName: keyof this, decrement?: number): number;
+
+  // NOT TYPE SAFE!
+  /**
+    Set the value of a boolean property to the opposite of its
+    current value.
+
+    ```javascript
+    starship.toggleProperty('warpDriveEngaged');
+    ```
+
+    @method toggleProperty
+    @param {String} keyName The name of the property to toggle
+    @return {Boolean} The new property value
+    @public
+  */
+  toggleProperty(keyName: keyof this): boolean;
+
+  /**
+    Returns the cached value of a computed property, if it exists.
+    This allows you to inspect the value of a computed property
+    without accidentally invoking it if it is intended to be
+    generated lazily.
+    
+    @method cacheFor
+    @param {String} keyName
+    @return {Object} The cached value of the computed property, if any
+    @public
+  */
+  cacheFor<K extends keyof this>(key: K): unknown;
+}
+const Observable = Mixin.create({
+  get(keyName: string) {
+    return get(this, keyName);
+  },
+
+  getProperties(...args: string[]) {
+    return getProperties(this, ...args);
+  },
+
+  set(keyName: string, value: unknown) {
+    return set(this, keyName, value);
+  },
+
+  setProperties(hash: object) {
+    return setProperties(this, hash);
+  },
+
+  /**
+    Begins a grouping of property changes.
+
+    You can use this method to group property changes so that notifications
+    will not be sent until the changes are finished. If you plan to make a
+    large number of changes to an object at one time, you should call this
+    method at the beginning of the changes to begin deferring change
+    notifications. When you are done making changes, call
+    `endPropertyChanges()` to deliver the deferred change notifications and end
+    deferring.
+
+    @method beginPropertyChanges
+    @return {Observable}
+    @private
+  */
+  beginPropertyChanges() {
+    beginPropertyChanges();
+    return this;
+  },
+
+  /**
+    Ends a grouping of property changes.
+
+    You can use this method to group property changes so that notifications
+    will not be sent until the changes are finished. If you plan to make a
+    large number of changes to an object at one time, you should call
+    `beginPropertyChanges()` at the beginning of the changes to defer change
+    notifications. When you are done making changes, call this method to
+    deliver the deferred change notifications and end deferring.
+
+    @method endPropertyChanges
+    @return {Observable}
+    @private
+  */
+  endPropertyChanges() {
+    endPropertyChanges();
+    return this;
+  },
+
+  notifyPropertyChange(keyName: string) {
+    notifyPropertyChange(this, keyName);
+    return this;
+  },
+
   addObserver(
     key: string,
     target: object | Function | null,
@@ -454,19 +479,6 @@ const Observable = Mixin.create({
     return this;
   },
 
-  /**
-    Remove an observer you have previously registered on this object. Pass
-    the same key, target, and method you passed to `addObserver()` and your
-    target will no longer receive notifications.
-
-    @method removeObserver
-    @param {String} key The key to observe
-    @param {Object} target The target object to invoke
-    @param {String|Function} method The method to invoke
-    @param {Boolean} sync Whether the observer is async or not
-    @return {Observable}
-    @public
-  */
   removeObserver(
     key: string,
     target: object | Function | null,
@@ -492,20 +504,6 @@ const Observable = Mixin.create({
     return hasListeners(this, `${key}:change`);
   },
 
-  /**
-    Set the value of a property to the current value plus some amount.
-
-    ```javascript
-    person.incrementProperty('age');
-    team.incrementProperty('score', 2);
-    ```
-
-    @method incrementProperty
-    @param {String} keyName The name of the property to increment
-    @param {Number} increment The amount to increment by. Defaults to 1
-    @return {Number} The new property value
-    @public
-  */
   incrementProperty(keyName: string, increment = 1) {
     assert(
       'Must pass a numeric value to incrementProperty',
@@ -514,20 +512,6 @@ const Observable = Mixin.create({
     return set(this, keyName, (parseFloat(get(this, keyName)) || 0) + increment);
   },
 
-  /**
-    Set the value of a property to the current value minus some amount.
-
-    ```javascript
-    player.decrementProperty('lives');
-    orc.decrementProperty('health', 5);
-    ```
-
-    @method decrementProperty
-    @param {String} keyName The name of the property to decrement
-    @param {Number} decrement The amount to decrement by. Defaults to 1
-    @return {Number} The new property value
-    @public
-  */
   decrementProperty(keyName: string, decrement = 1) {
     assert(
       'Must pass a numeric value to decrementProperty',
@@ -536,34 +520,10 @@ const Observable = Mixin.create({
     return set(this, keyName, (get(this, keyName) || 0) - decrement);
   },
 
-  /**
-    Set the value of a boolean property to the opposite of its
-    current value.
-
-    ```javascript
-    starship.toggleProperty('warpDriveEngaged');
-    ```
-
-    @method toggleProperty
-    @param {String} keyName The name of the property to toggle
-    @return {Boolean} The new property value
-    @public
-  */
   toggleProperty(keyName: string) {
     return set(this, keyName, !get(this, keyName));
   },
 
-  /**
-    Returns the cached value of a computed property, if it exists.
-    This allows you to inspect the value of a computed property
-    without accidentally invoking it if it is intended to be
-    generated lazily.
-
-    @method cacheFor
-    @param {String} keyName
-    @return {Object} The cached value of the computed property, if any
-    @public
-  */
   cacheFor(keyName: string) {
     let meta = peekMeta(this);
 
