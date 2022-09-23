@@ -250,76 +250,6 @@ function mapBy<T>(this: EmberArray<T>, key: string) {
   @public
 */
 interface EmberArray<T> extends Enumerable {
-  length: number;
-  objectAt(idx: number): T | undefined;
-  objectsAt(indexes: number[]): Array<T | undefined>;
-  firstObject: T | undefined;
-  lastObject: T | undefined;
-  slice(beginIndex?: number, endIndex?: number): NativeArray<T>;
-  indexOf(object: T, startAt?: number): number;
-  lastIndexOf(object: T, startAt?: number): number;
-  forEach<Target>(
-    callback: (this: Target, item: T, index: number, arr: this) => void,
-    target?: Target
-  ): this;
-  getEach<K extends string>(key: K): NativeArray<Value<T, K>>;
-  setEach<K extends string>(key: K, value: Value<T, K>): this;
-  map<U, Target>(
-    callback: (this: Target, item: T, index: number, arr: this) => U,
-    target?: Target
-  ): NativeArray<U>;
-  mapBy<K extends string>(key: K): NativeArray<Value<T, K>>;
-  filter<Target>(
-    callback: (this: Target, item: T, index: number, arr: this) => unknown,
-    target?: Target
-  ): NativeArray<T>;
-  reject<Target>(
-    callback: (this: Target, item: T, index: number, arr: this) => unknown,
-    target?: Target
-  ): NativeArray<T>;
-  filterBy(key: string, value?: unknown): NativeArray<T>;
-  rejectBy(key: string, value?: unknown): NativeArray<T>;
-  find<S extends T, Target = void>(
-    predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
-    thisArg?: Target
-  ): S | undefined;
-  find<Target = void>(
-    callback: (this: Target, item: T, index: number, arr: this) => unknown,
-    target?: Target
-  ): T | undefined;
-  findBy<K extends string>(key: K, value?: Value<T, K>): T | undefined;
-  every<Target = void>(
-    callback: (this: Target, item: T, index: number, arr: this) => unknown,
-    target?: Target
-  ): boolean;
-  isEvery<K extends string>(key: K, value?: Value<T, K>): boolean;
-  any<Target = void>(
-    callback: (this: Target, item: T, index: number, arr: this) => unknown,
-    target?: Target
-  ): boolean;
-  isAny<K extends string>(key: K, value?: Value<T, K>): boolean;
-  reduce<V>(
-    callback: (summation: V, current: T, index: number, arr: this) => V,
-    initialValue?: V
-  ): V;
-  invoke<K extends string>(
-    methodName: K,
-    ...args: Value<T, K> extends AnyFn ? Parameters<Value<T, K>> : unknown[]
-  ): NativeArray<Value<T, K> extends AnyFn ? ReturnType<Value<T, K>> : unknown>;
-  toArray(): T[];
-  compact(): NativeArray<Exclude<T, null>>;
-  includes(object: T, startAt?: number): boolean;
-  sortBy(key: string): T[];
-  uniq(): NativeArray<T>;
-  uniqBy(key: string): NativeArray<T>;
-  without(value: T): NativeArray<T>;
-}
-const EmberArray = Mixin.create(Enumerable, {
-  init() {
-    this._super(...arguments);
-    setEmberArray(this);
-  },
-
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -329,7 +259,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @property {Number} length
     @public
   */
-
+  length: number;
   /**
     Returns the object at the given `index`. If the given `index` is negative
     or is greater or equal than the array length, returns `undefined`.
@@ -354,7 +284,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {*} item at index or undefined
     @public
   */
-
+  objectAt(idx: number): T | undefined;
   /**
     This returns the objects at the specified indexes, using `objectAt`.
 
@@ -370,10 +300,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array}
     @public
    */
-  objectsAt(indexes: number[]) {
-    return indexes.map((idx) => objectAt(this, idx));
-  },
-
+  objectsAt(indexes: number[]): Array<T | undefined>;
   /**
     This is the handler for the special array content property. If you get
     this property, it will return this. If you set this property to a new
@@ -392,16 +319,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return this
     @public
   */
-  '[]': nonEnumerableComputed({
-    get() {
-      return this;
-    },
-    set(_key, value) {
-      this.replace(0, this.length, value);
-      return this;
-    },
-  }),
-
+  '[]': this;
   /**
     The first object in the array, or `undefined` if the array is empty.
 
@@ -423,10 +341,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object | undefined} The first object in the array
     @public
   */
-  firstObject: nonEnumerableComputed(function () {
-    return objectAt(this, 0);
-  }).readOnly(),
-
+  firstObject: T | undefined;
   /**
     The last object in the array, or `undefined` if the array is empty.
 
@@ -434,11 +349,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object | undefined} The last object in the array
     @public
   */
-  lastObject: nonEnumerableComputed(function () {
-    return objectAt(this, this.length - 1);
-  }).readOnly(),
-
-  // Add any extra methods to EmberArray that are native to the built-in Array.
+  lastObject: T | undefined;
   /**
     Returns a new array that is a slice of the receiver. This implementation
     uses the observable array methods to retrieve the objects for the new
@@ -458,30 +369,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} New array with specified slice
     @public
   */
-  slice(beginIndex = 0, endIndex?: number) {
-    let ret = A();
-    let length = this.length;
-
-    if (beginIndex < 0) {
-      beginIndex = length + beginIndex;
-    }
-
-    let validatedEndIndex: number;
-    if (endIndex === undefined || endIndex > length) {
-      validatedEndIndex = length;
-    } else if (endIndex < 0) {
-      validatedEndIndex = length + endIndex;
-    } else {
-      validatedEndIndex = endIndex;
-    }
-
-    while (beginIndex < validatedEndIndex) {
-      ret[ret.length] = objectAt(this, beginIndex++);
-    }
-
-    return ret;
-  },
-
+  slice(beginIndex?: number, endIndex?: number): NativeArray<T>;
   /**
     Used to determine the passed object's first occurrence in the array.
     Returns the index if found, -1 if no match is found.
@@ -519,11 +407,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Number} index or -1 if not found
     @public
   */
-
-  indexOf<T>(object: T, startAt?: number) {
-    return indexOf(this, object, startAt, false);
-  },
-
+  indexOf(object: T, startAt?: number): number;
   /**
     Returns the index of the given `object`'s last occurrence.
 
@@ -558,26 +442,7 @@ const EmberArray = Mixin.create(Enumerable, {
     if not found
     @public
   */
-  lastIndexOf<T>(object: T, startAt?: number) {
-    let len = this.length;
-
-    if (startAt === undefined || startAt >= len) {
-      startAt = len - 1;
-    }
-
-    if (startAt < 0) {
-      startAt += len;
-    }
-
-    for (let idx = startAt; idx >= 0; idx--) {
-      if (objectAt(this, idx) === object) {
-        return idx;
-      }
-    }
-
-    return -1;
-  },
-
+  lastIndexOf(object: T, startAt?: number): number;
   /**
     Iterates through the array, calling the passed function on each
     item. This method corresponds to the `forEach()` method defined in
@@ -625,19 +490,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object} receiver
     @public
   */
-  forEach(callback: <T>(item: T, index: number, arr: EmberArray<T>) => void, target = null) {
-    assert('`forEach` expects a function as first argument.', typeof callback === 'function');
-
-    let length = this.length;
-
-    for (let index = 0; index < length; index++) {
-      let item = this.objectAt(index);
-      callback.call(target, item, index, this);
-    }
-
-    return this;
-  },
-
+  forEach<Target>(
+    callback: (this: Target, item: T, index: number, arr: this) => void,
+    target?: Target
+  ): this;
   /**
     Alias for `mapBy`.
 
@@ -659,8 +515,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} The mapped array.
     @public
   */
-  getEach: mapBy,
-
+  getEach<K extends string>(key: K): NativeArray<Value<T, K>>;
   /**
     Sets the value on the named property for each member. This is more
     ergonomic than using other methods defined on this helper. If the object
@@ -680,10 +535,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object} receiver
     @public
   */
-  setEach(key: string, value: unknown) {
-    return this.forEach((item: object) => set(item, key, value));
-  },
-
+  setEach<K extends string>(key: K, value: Value<T, K>): this;
   /**
     Maps all of the items in the enumeration to another value, returning
     a new array. This method corresponds to `map()` defined in JavaScript 1.6.
@@ -718,20 +570,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} The mapped array.
     @public
   */
-  map<T>(
-    this: EmberArray<T>,
-    callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
-    target = null
-  ) {
-    assert('`map` expects a function as first argument.', typeof callback === 'function');
-
-    let ret = A();
-
-    this.forEach((x, idx, i) => (ret[idx] = callback.call(target, x, idx, i)));
-
-    return ret;
-  },
-
+  map<U, Target>(
+    callback: (this: Target, item: T, index: number, arr: this) => U,
+    target?: Target
+  ): NativeArray<U>;
   /**
     Similar to map, this specialized function returns the value of the named
     property on all items in the enumeration.
@@ -751,8 +593,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} The mapped array.
     @public
   */
-  mapBy,
-
+  mapBy<K extends string>(key: K): NativeArray<Value<T, K>>;
   /**
     Returns a new array with all of the items in the enumeration that the provided
     callback function returns true for. This method corresponds to [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter).
@@ -812,24 +653,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} A filtered array.
     @public
   */
-  filter<T>(
-    this: EmberArray<T>,
-    callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
-    target = null
-  ) {
-    assert('`filter` expects a function as first argument.', typeof callback === 'function');
-
-    let ret = A();
-
-    this.forEach((x, idx, i) => {
-      if (callback.call(target, x, idx, i)) {
-        ret.push(x);
-      }
-    });
-
-    return ret;
-  },
-
+  filter<Target>(
+    callback: (this: Target, item: T, index: number, arr: this) => unknown,
+    target?: Target
+  ): NativeArray<T>;
   /**
     Returns an array with all of the items in the enumeration where the passed
     function returns false. This method is the inverse of filter().
@@ -870,18 +697,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} A rejected array.
     @public
   */
-  reject<T>(
-    this: EmberArray<T>,
-    callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
-    target = null
-  ) {
-    assert('`reject` expects a function as first argument.', typeof callback === 'function');
-    return this.filter(function () {
-      // @ts-expect-error TS doesn't like us using arguments like this
-      return !callback.apply(target, arguments);
-    });
-  },
-
+  reject<Target>(
+    callback: (this: Target, item: T, index: number, arr: this) => unknown,
+    target?: Target
+  ): NativeArray<T>;
   /**
     Filters the array by the property and an optional value. If a value is given, it returns
     the items that have said value for the property. If not, it returns all the items that
@@ -902,11 +721,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} filtered array
     @public
   */
-  filterBy() {
-    // @ts-expect-error TS doesn't like the ...arguments spread here.
-    return this.filter(iter(...arguments));
-  },
-
+  filterBy(key: string, value?: unknown): NativeArray<T>;
   /**
     Returns an array with the items that do not have truthy values for the provided key.
     You can pass an optional second argument with a target value to reject for the key.
@@ -930,11 +745,11 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} rejected array
     @public
   */
-  rejectBy() {
-    // @ts-expect-error TS doesn't like the ...arguments spread here.
-    return this.reject(iter(...arguments));
-  },
-
+  rejectBy(key: string, value?: unknown): NativeArray<T>;
+  find<S extends T, Target = void>(
+    predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
+    thisArg?: Target
+  ): S | undefined;
   /**
     Returns the first item in the array for which the callback returns true.
     This method is similar to the `find()` method defined in ECMAScript 2015.
@@ -977,11 +792,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object} Found item or `undefined`.
     @public
   */
-  find(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
-    assert('`find` expects a function as first argument.', typeof callback === 'function');
-    return find(this, callback, target);
-  },
-
+  find<Target = void>(
+    callback: (this: Target, item: T, index: number, arr: this) => unknown,
+    target?: Target
+  ): T | undefined;
   /**
     Returns the first item with a property matching the passed value. You
     can pass an optional second argument with the target value. Otherwise
@@ -1010,12 +824,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object} found item or `undefined`
     @public
   */
-  findBy() {
-    // @ts-expect-error TS doesn't like the ...arguments spread here.
-    let callback = iter(...arguments);
-    return find(this, callback);
-  },
-
+  findBy<K extends string>(key: K, value?: Value<T, K>): T | undefined;
   /**
     Returns `true` if the passed function returns true for every item in the
     enumeration. This corresponds with the `Array.prototype.every()` method defined in ES5.
@@ -1053,11 +862,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Boolean}
     @public
   */
-  every(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
-    assert('`every` expects a function as first argument.', typeof callback === 'function');
-    return every(this, callback, target);
-  },
-
+  every<Target = void>(
+    callback: (this: Target, item: T, index: number, arr: this) => unknown,
+    target?: Target
+  ): boolean;
   /**
     Returns `true` if the passed property resolves to the value of the second
     argument for all items in the array. This method is often simpler/faster
@@ -1096,12 +904,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isEvery() {
-    // @ts-expect-error TS doesn't like the ...arguments spread here.
-    let callback = iter(...arguments);
-    return every(this, callback);
-  },
-
+  isEvery<K extends string>(key: K, value?: Value<T, K>): boolean;
   /**
     The any() method executes the callback function once for each element
     present in the array until it finds the one where callback returns a truthy
@@ -1141,11 +944,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Boolean} `true` if the passed function returns `true` for any item
     @public
   */
-  any(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
-    assert('`any` expects a function as first argument.', typeof callback === 'function');
-    return any(this, callback, target);
-  },
-
+  any<Target = void>(
+    callback: (this: Target, item: T, index: number, arr: this) => unknown,
+    target?: Target
+  ): boolean;
   /**
     Returns `true` if the passed property resolves to the value of the second
     argument for any item in the array. This method is often simpler/faster
@@ -1170,12 +972,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @since 1.3.0
     @public
   */
-  isAny() {
-    // @ts-expect-error TS doesn't like us using arguments like this
-    let callback = iter(...arguments);
-    return any(this, callback);
-  },
-
+  isAny<K extends string>(key: K, value?: Value<T, K>): boolean;
   /**
     This will combine the values of the array into a single value. It
     is a useful way to collect a summary value from an array. This
@@ -1230,23 +1027,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Object} The reduced value.
     @public
   */
-  // FIXME: When called without initialValue, behavior does not match native behavior
-  reduce<T, V>(
-    this: EmberArray<T>,
-    callback: (summation: V, current: T, index: number, arr: EmberArray<T>) => V,
-    initialValue: V
-  ) {
-    assert('`reduce` expects a function as first argument.', typeof callback === 'function');
-
-    let ret = initialValue;
-
-    this.forEach(function (item, i) {
-      ret = callback(ret, item, i, this);
-    }, this);
-
-    return ret;
-  },
-
+  reduce<V>(
+    callback: (summation: V, current: T, index: number, arr: this) => V,
+    initialValue?: V
+  ): V;
   /**
     Invokes the named method on every object in the receiver that
     implements it. This method corresponds to the implementation in
@@ -1277,15 +1061,10 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} return values from calling invoke.
     @public
   */
-  invoke<T>(this: EmberArray<T>, methodName: string, ...args: unknown[]) {
-    let ret = A();
-
-    // SAFETY: This is not entirely safe and the code will not work with Ember proxies
-    this.forEach((item: T) => ret.push((item as any)[methodName]?.(...args)));
-
-    return ret;
-  },
-
+  invoke<K extends string>(
+    methodName: K,
+    ...args: Value<T, K> extends AnyFn ? Parameters<Value<T, K>> : unknown[]
+  ): NativeArray<Value<T, K> extends AnyFn ? ReturnType<Value<T, K>> : unknown>;
   /**
     Simply converts the object into a genuine array. The order is not
     guaranteed. Corresponds to the method implemented by Prototype.
@@ -1294,10 +1073,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} the object as an array.
     @public
   */
-  toArray<T>(this: EmberArray<T>) {
-    return this.map((item: T) => item);
-  },
-
+  toArray(): T[];
   /**
     Returns a copy of the array with all `null` and `undefined` elements removed.
 
@@ -1310,10 +1086,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Array} the array without null and undefined elements.
     @public
   */
-  compact<T>(this: EmberArray<T>) {
-    return this.filter((value: T) => value != null);
-  },
-
+  compact(): NativeArray<Exclude<T, null>>;
   /**
     Used to determine if the array contains the passed object.
     Returns `true` if found, `false` otherwise.
@@ -1343,10 +1116,7 @@ const EmberArray = Mixin.create(Enumerable, {
     @return {Boolean} `true` if object is found in the array.
     @public
   */
-  includes<T>(this: EmberArray<T>, object: T, startAt?: number) {
-    return indexOf(this, object, startAt, true) !== -1;
-  },
-
+  includes(object: T, startAt?: number): boolean;
   /**
     Sorts the array by the keys specified in the argument.
 
@@ -1365,13 +1135,287 @@ const EmberArray = Mixin.create(Enumerable, {
    colors.sortBy('weight', 'name');
    // [{name: 'blue', weight: 500}, {name: 'red', weight: 500}, {name: 'green', weight: 600}]
    ```
-
     @method sortBy
     @param {String} property name(s) to sort on
     @return {Array} The sorted array.
     @since 1.2.0
     @public
   */
+  sortBy(key: string): T[];
+  /**
+    Returns a new array that contains only unique values. The default
+    implementation returns an array regardless of the receiver type.
+
+    ```javascript
+    let arr = ['a', 'a', 'b', 'b'];
+    arr.uniq();  // ['a', 'b']
+    ```
+
+    This only works on primitive data types, e.g. Strings, Numbers, etc.
+
+    @method uniq
+    @return {EmberArray}
+    @public
+  */
+  uniq(): NativeArray<T>;
+  /**
+    Returns a new array that contains only items containing a unique property value.
+    The default implementation returns an array regardless of the receiver type.
+
+    ```javascript
+    let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
+    arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
+
+    let arr = [2.2, 2.1, 3.2, 3.3];
+    arr.uniqBy(Math.floor);  // [2.2, 3.2];
+    ```
+
+    @method uniqBy
+    @param {String,Function} key
+    @return {EmberArray}
+    @public
+  */
+  uniqBy(key: string): NativeArray<T>;
+  /**
+    Returns a new array that excludes the passed value. The default
+    implementation returns an array regardless of the receiver type.
+    If the receiver does not contain the value it returns the original array.
+
+    ```javascript
+    let arr = ['a', 'b', 'a', 'c'];
+    arr.without('a');  // ['b', 'c']
+    ```
+
+    @method without
+    @param {Object} value
+    @return {EmberArray}
+    @public
+  */
+  without(value: T): NativeArray<T>;
+}
+const EmberArray = Mixin.create(Enumerable, {
+  init() {
+    this._super(...arguments);
+    setEmberArray(this);
+  },
+
+  objectsAt(indexes: number[]) {
+    return indexes.map((idx) => objectAt(this, idx));
+  },
+
+  '[]': nonEnumerableComputed({
+    get() {
+      return this;
+    },
+    set(_key, value) {
+      this.replace(0, this.length, value);
+      return this;
+    },
+  }),
+
+  firstObject: nonEnumerableComputed(function () {
+    return objectAt(this, 0);
+  }).readOnly(),
+
+  lastObject: nonEnumerableComputed(function () {
+    return objectAt(this, this.length - 1);
+  }).readOnly(),
+
+  // Add any extra methods to EmberArray that are native to the built-in Array.
+  slice(beginIndex = 0, endIndex?: number) {
+    let ret = A();
+    let length = this.length;
+
+    if (beginIndex < 0) {
+      beginIndex = length + beginIndex;
+    }
+
+    let validatedEndIndex: number;
+    if (endIndex === undefined || endIndex > length) {
+      validatedEndIndex = length;
+    } else if (endIndex < 0) {
+      validatedEndIndex = length + endIndex;
+    } else {
+      validatedEndIndex = endIndex;
+    }
+
+    while (beginIndex < validatedEndIndex) {
+      ret[ret.length] = objectAt(this, beginIndex++);
+    }
+
+    return ret;
+  },
+
+  indexOf<T>(object: T, startAt?: number) {
+    return indexOf(this, object, startAt, false);
+  },
+
+  lastIndexOf<T>(object: T, startAt?: number) {
+    let len = this.length;
+
+    if (startAt === undefined || startAt >= len) {
+      startAt = len - 1;
+    }
+
+    if (startAt < 0) {
+      startAt += len;
+    }
+
+    for (let idx = startAt; idx >= 0; idx--) {
+      if (objectAt(this, idx) === object) {
+        return idx;
+      }
+    }
+
+    return -1;
+  },
+
+  forEach(callback: <T>(item: T, index: number, arr: EmberArray<T>) => void, target = null) {
+    assert('`forEach` expects a function as first argument.', typeof callback === 'function');
+
+    let length = this.length;
+
+    for (let index = 0; index < length; index++) {
+      let item = this.objectAt(index);
+      callback.call(target, item, index, this);
+    }
+
+    return this;
+  },
+
+  getEach: mapBy,
+
+  setEach(key: string, value: unknown) {
+    return this.forEach((item: object) => set(item, key, value));
+  },
+
+  map<T>(
+    this: EmberArray<T>,
+    callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
+    target = null
+  ) {
+    assert('`map` expects a function as first argument.', typeof callback === 'function');
+
+    let ret = A();
+
+    this.forEach((x, idx, i) => (ret[idx] = callback.call(target, x, idx, i)));
+
+    return ret;
+  },
+
+  mapBy,
+
+  filter<T>(
+    this: EmberArray<T>,
+    callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
+    target = null
+  ) {
+    assert('`filter` expects a function as first argument.', typeof callback === 'function');
+
+    let ret = A();
+
+    this.forEach((x, idx, i) => {
+      if (callback.call(target, x, idx, i)) {
+        ret.push(x);
+      }
+    });
+
+    return ret;
+  },
+
+  reject<T>(
+    this: EmberArray<T>,
+    callback: (item: T, index: number, arr: EmberArray<T>) => unknown,
+    target = null
+  ) {
+    assert('`reject` expects a function as first argument.', typeof callback === 'function');
+    return this.filter(function () {
+      // @ts-expect-error TS doesn't like us using arguments like this
+      return !callback.apply(target, arguments);
+    });
+  },
+
+  filterBy() {
+    // @ts-expect-error TS doesn't like the ...arguments spread here.
+    return this.filter(iter(...arguments));
+  },
+
+  rejectBy() {
+    // @ts-expect-error TS doesn't like the ...arguments spread here.
+    return this.reject(iter(...arguments));
+  },
+
+  find(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
+    assert('`find` expects a function as first argument.', typeof callback === 'function');
+    return find(this, callback, target);
+  },
+
+  findBy() {
+    // @ts-expect-error TS doesn't like the ...arguments spread here.
+    let callback = iter(...arguments);
+    return find(this, callback);
+  },
+
+  every(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
+    assert('`every` expects a function as first argument.', typeof callback === 'function');
+    return every(this, callback, target);
+  },
+
+  isEvery() {
+    // @ts-expect-error TS doesn't like the ...arguments spread here.
+    let callback = iter(...arguments);
+    return every(this, callback);
+  },
+
+  any(callback: <T>(item: T, index: number, arr: EmberArray<T>) => unknown, target = null) {
+    assert('`any` expects a function as first argument.', typeof callback === 'function');
+    return any(this, callback, target);
+  },
+
+  isAny() {
+    // @ts-expect-error TS doesn't like us using arguments like this
+    let callback = iter(...arguments);
+    return any(this, callback);
+  },
+
+  // FIXME: When called without initialValue, behavior does not match native behavior
+  reduce<T, V>(
+    this: EmberArray<T>,
+    callback: (summation: V, current: T, index: number, arr: EmberArray<T>) => V,
+    initialValue: V
+  ) {
+    assert('`reduce` expects a function as first argument.', typeof callback === 'function');
+
+    let ret = initialValue;
+
+    this.forEach(function (item, i) {
+      ret = callback(ret, item, i, this);
+    }, this);
+
+    return ret;
+  },
+
+  invoke<T>(this: EmberArray<T>, methodName: string, ...args: unknown[]) {
+    let ret = A();
+
+    // SAFETY: This is not entirely safe and the code will not work with Ember proxies
+    this.forEach((item: T) => ret.push((item as any)[methodName]?.(...args)));
+
+    return ret;
+  },
+
+  toArray<T>(this: EmberArray<T>) {
+    return this.map((item: T) => item);
+  },
+
+  compact<T>(this: EmberArray<T>) {
+    return this.filter((value: T) => value != null);
+  },
+
+  includes<T>(this: EmberArray<T>, object: T, startAt?: number) {
+    return indexOf(this, object, startAt, true) !== -1;
+  },
+
   sortBy<T>(this: EmberArray<T>) {
     let sortKeys = arguments;
 
@@ -1391,62 +1435,14 @@ const EmberArray = Mixin.create(Enumerable, {
     });
   },
 
-  /**
-    Returns a new array that contains only unique values. The default
-    implementation returns an array regardless of the receiver type.
-
-    ```javascript
-    let arr = ['a', 'a', 'b', 'b'];
-    arr.uniq();  // ['a', 'b']
-    ```
-
-    This only works on primitive data types, e.g. Strings, Numbers, etc.
-
-    @method uniq
-    @return {EmberArray}
-    @public
-  */
   uniq() {
     return uniqBy(this);
   },
-
-  /**
-    Returns a new array that contains only items containing a unique property value.
-    The default implementation returns an array regardless of the receiver type.
-
-    ```javascript
-    let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
-    arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
-
-    let arr = [2.2, 2.1, 3.2, 3.3];
-    arr.uniqBy(Math.floor);  // [2.2, 3.2];
-    ```
-
-    @method uniqBy
-    @param {String,Function} key
-    @return {EmberArray}
-    @public
-  */
 
   uniqBy(key: string) {
     return uniqBy(this, key);
   },
 
-  /**
-    Returns a new array that excludes the passed value. The default
-    implementation returns an array regardless of the receiver type.
-    If the receiver does not contain the value it returns the original array.
-
-    ```javascript
-    let arr = ['a', 'b', 'a', 'c'];
-    arr.without('a');  // ['b', 'c']
-    ```
-
-    @method without
-    @param {Object} value
-    @return {EmberArray}
-    @public
-  */
   without<T>(this: EmberArray<T>, value: T) {
     if (!this.includes(value)) {
       return this; // nothing to do
@@ -1479,24 +1475,6 @@ const EmberArray = Mixin.create(Enumerable, {
   @public
 */
 interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
-  replace(idx: number, amt: number, objects?: readonly T[]): void;
-  clear(): this;
-  insertAt(idx: number, object: T): this;
-  removeAt(start: number, len?: number): this;
-  pushObject(obj: T): this;
-  pushObjects(objects: T[]): this;
-  popObject(): T | undefined;
-  shiftObject(): T | null | undefined;
-  unshiftObject(object: T): this;
-  unshiftObjects(objects: T[]): this;
-  reverseObjects(): this;
-  setObjects(object: T[]): this;
-  removeObject(object: T): this;
-  removeObjects(objects: T[]): this;
-  addObject(obj: T): this;
-  addObjects(objects: T[]): this;
-}
-const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   /**
     __Required.__ You must implement this method to apply this mixin.
 
@@ -1515,7 +1493,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
       inserted into the array at *idx*
     @public
   */
-
+  replace(idx: number, amt: number, objects?: readonly T[]): void;
   /**
     Remove all elements from the array. This is useful if you
     want to reuse an existing array without having to recreate it.
@@ -1532,16 +1510,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {Array} An empty Array.
     @public
   */
-  clear() {
-    let len = this.length;
-    if (len === 0) {
-      return this;
-    }
-
-    this.replace(0, len, EMPTY_ARRAY);
-    return this;
-  },
-
+  clear(): this;
   /**
     This will use the primitive `replace()` method to insert an object at the
     specified index.
@@ -1559,11 +1528,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver
     @public
   */
-  insertAt(idx: number, object: unknown) {
-    insertAt(this, idx, object);
-    return this;
-  },
-
+  insertAt(idx: number, object: T): this;
   /**
     Remove an object at the specified index using the `replace()` primitive
     method. You can pass either a single index, or a start and a length.
@@ -1585,10 +1550,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver
     @public
   */
-  removeAt(start: number, len?: number) {
-    return removeAt(this, start, len);
-  },
-
+  removeAt(start: number, len?: number): this;
   /**
     Push the object onto the end of the array. Works just like `push()` but it
     is KVO-compliant.
@@ -1605,10 +1567,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return object same object passed as a param
     @public
   */
-  pushObject<T>(this: MutableArray<T>, obj: T) {
-    return insertAt(this, this.length, obj);
-  },
-
+  pushObject(obj: T): this;
   /**
     Add the objects in the passed array to the end of the array. Defers
     notifying observers of the change until all objects are added.
@@ -1624,11 +1583,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {MutableArray} receiver
     @public
   */
-  pushObjects<T>(this: MutableArray<T>, objects: T[]) {
-    this.replace(this.length, 0, objects);
-    return this;
-  },
-
+  pushObjects(objects: T[]): this;
   /**
     Pop object from array or nil if none are left. Works just like `pop()` but
     it is KVO-compliant.
@@ -1644,17 +1599,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return object
     @public
   */
-  popObject() {
-    let len = this.length;
-    if (len === 0) {
-      return null;
-    }
-
-    let ret = objectAt(this, len - 1);
-    this.removeAt(len - 1, 1);
-    return ret;
-  },
-
+  popObject(): T | undefined;
   /**
     Shift an object from start of array or nil if none are left. Works just
     like `shift()` but it is KVO-compliant.
@@ -1670,16 +1615,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return object
     @public
   */
-  shiftObject() {
-    if (this.length === 0) {
-      return null;
-    }
-
-    let ret = objectAt(this, 0);
-    this.removeAt(0);
-    return ret;
-  },
-
+  shiftObject(): T | null | undefined;
   /**
     Unshift an object to start of array. Works just like `unshift()` but it is
     KVO-compliant.
@@ -1696,10 +1632,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return object same object passed as a param
     @public
   */
-  unshiftObject<T>(this: MutableArray<T>, obj: T) {
-    return insertAt(this, 0, obj);
-  },
-
+  unshiftObject(object: T): this;
   /**
     Adds the named objects to the beginning of the array. Defers notifying
     observers until all objects have been added.
@@ -1716,30 +1649,16 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver
     @public
   */
-  unshiftObjects<T>(this: MutableArray<T>, objects: T[]) {
-    this.replace(0, 0, objects);
-    return this;
-  },
-
+  unshiftObjects(objects: T[]): this;
   /**
     Reverse objects in the array. Works just like `reverse()` but it is
     KVO-compliant.
 
     @method reverseObjects
     @return {EmberArray} receiver
-     @public
+    @public
   */
-  reverseObjects() {
-    let len = this.length;
-    if (len === 0) {
-      return this;
-    }
-
-    let objects = this.toArray().reverse();
-    this.replace(0, len, objects);
-    return this;
-  },
-
+  reverseObjects(): this;
   /**
     Replace all the receiver's content with content of the argument.
     If argument is an empty array receiver will be cleared.
@@ -1757,16 +1676,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver with the new content
     @public
   */
-  setObjects<T>(this: MutableArray<T>, objects: T[]) {
-    if (objects.length === 0) {
-      return this.clear();
-    }
-
-    let len = this.length;
-    this.replace(0, len, objects);
-    return this;
-  },
-
+  setObjects(object: T[]): this;
   /**
     Remove all occurrences of an object in the array.
 
@@ -1783,18 +1693,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver
     @public
   */
-  removeObject<T>(this: MutableArray<T>, obj: T) {
-    let loc = this.length || 0;
-    while (--loc >= 0) {
-      let curObject = objectAt(this, loc);
-
-      if (curObject === obj) {
-        this.removeAt(loc);
-      }
-    }
-    return this;
-  },
-
+  removeObject(object: T): this;
   /**
     Removes each object in the passed array from the receiver.
 
@@ -1803,16 +1702,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver
     @public
   */
-  removeObjects<T>(this: MutableArray<T>, objects: T[]) {
-    beginPropertyChanges();
-    for (let i = objects.length - 1; i >= 0; i--) {
-      // SAFETY: Due to the loop structure we know this will always exist.
-      this.removeObject(objects[i]!);
-    }
-    endPropertyChanges();
-    return this;
-  },
-
+  removeObjects(objects: T[]): this;
   /**
     Push the object onto the end of the array if it is not already
     present in the array.
@@ -1829,6 +1719,119 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     @return {EmberArray} receiver
     @public
   */
+  addObject(obj: T): this;
+  /**
+    Adds each object in the passed array to the receiver.
+
+    @method addObjects
+    @param {EmberArray} objects the objects to add.
+    @return {EmberArray} receiver
+    @public
+  */
+  addObjects(objects: T[]): this;
+}
+const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
+  clear() {
+    let len = this.length;
+    if (len === 0) {
+      return this;
+    }
+
+    this.replace(0, len, EMPTY_ARRAY);
+    return this;
+  },
+
+  insertAt(idx: number, object: unknown) {
+    insertAt(this, idx, object);
+    return this;
+  },
+
+  removeAt(start: number, len?: number) {
+    return removeAt(this, start, len);
+  },
+
+  pushObject<T>(this: MutableArray<T>, obj: T) {
+    return insertAt(this, this.length, obj);
+  },
+
+  pushObjects<T>(this: MutableArray<T>, objects: T[]) {
+    this.replace(this.length, 0, objects);
+    return this;
+  },
+
+  popObject() {
+    let len = this.length;
+    if (len === 0) {
+      return null;
+    }
+
+    let ret = objectAt(this, len - 1);
+    this.removeAt(len - 1, 1);
+    return ret;
+  },
+
+  shiftObject() {
+    if (this.length === 0) {
+      return null;
+    }
+
+    let ret = objectAt(this, 0);
+    this.removeAt(0);
+    return ret;
+  },
+
+  unshiftObject<T>(this: MutableArray<T>, obj: T) {
+    return insertAt(this, 0, obj);
+  },
+
+  unshiftObjects<T>(this: MutableArray<T>, objects: T[]) {
+    this.replace(0, 0, objects);
+    return this;
+  },
+
+  reverseObjects() {
+    let len = this.length;
+    if (len === 0) {
+      return this;
+    }
+
+    let objects = this.toArray().reverse();
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  setObjects<T>(this: MutableArray<T>, objects: T[]) {
+    if (objects.length === 0) {
+      return this.clear();
+    }
+
+    let len = this.length;
+    this.replace(0, len, objects);
+    return this;
+  },
+
+  removeObject<T>(this: MutableArray<T>, obj: T) {
+    let loc = this.length || 0;
+    while (--loc >= 0) {
+      let curObject = objectAt(this, loc);
+
+      if (curObject === obj) {
+        this.removeAt(loc);
+      }
+    }
+    return this;
+  },
+
+  removeObjects<T>(this: MutableArray<T>, objects: T[]) {
+    beginPropertyChanges();
+    for (let i = objects.length - 1; i >= 0; i--) {
+      // SAFETY: Due to the loop structure we know this will always exist.
+      this.removeObject(objects[i]!);
+    }
+    endPropertyChanges();
+    return this;
+  },
+
   addObject<T>(this: MutableArray<T>, obj: T) {
     let included = this.includes(obj);
 
@@ -1839,14 +1842,6 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     return this;
   },
 
-  /**
-    Adds each object in the passed array to the receiver.
-
-    @method addObjects
-    @param {EmberArray} objects the objects to add.
-    @return {EmberArray} receiver
-    @public
-  */
   addObjects<T>(this: MutableArray<T>, objects: T[]) {
     beginPropertyChanges();
     objects.forEach((obj) => this.addObject(obj));

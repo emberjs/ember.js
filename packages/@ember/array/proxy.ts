@@ -116,8 +116,54 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @uses MutableArray
   @public
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-unused-vars
-interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArray<T> {}
+interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArray<T> {
+  /**
+    The content array. Must be an object that implements `Array` and/or
+    `MutableArray.`
+
+    @property content
+    @type EmberArray
+    @public
+  */
+  content: C | null;
+  /**
+    The array that the proxy pretends to be. In the default `ArrayProxy`
+    implementation, this and `content` are the same. Subclasses of `ArrayProxy`
+    can override this property to provide things like sorting and filtering.
+
+    @property arrangedContent
+    @public
+  */
+  arrangedContent: C | null;
+  /**
+    Should actually retrieve the object at the specified index from the
+    content. You can override this method in subclasses to transform the
+    content item to something new.
+
+    This method will only be called if content is non-`null`.
+
+    @method objectAtContent
+    @param {Number} idx The index to retrieve.
+    @return {Object} the value or undefined if none found
+    @public
+  */
+  objectAtContent(idx: number): T | undefined;
+  /**
+    Should actually replace the specified objects on the content array.
+    You can override this method in subclasses to transform the content item
+    into something new.
+
+    This method will only be called if content is non-`null`.
+
+    @method replaceContent
+    @param {Number} idx The starting index
+    @param {Number} amt The number of items to remove from the content.
+    @param {Array} objects Optional array of objects to insert.
+    @return {void}
+    @public
+  */
+  replaceContent(idx: number, amt: number, objects?: T[]): void;
+}
 class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
   extends EmberObject
   implements PropertyDidChange
@@ -169,30 +215,10 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     this._removeArrangedContentArrayObserver();
   }
 
-  /**
-    The content array. Must be an object that implements `Array` and/or
-    `MutableArray.`
-
-    @property content
-    @type EmberArray
-    @public
-  */
   declare content: C | null;
 
   declare arrangedContent: C | null;
 
-  /**
-    Should actually retrieve the object at the specified index from the
-    content. You can override this method in subclasses to transform the
-    content item to something new.
-
-    This method will only be called if content is non-`null`.
-
-    @method objectAtContent
-    @param {Number} idx The index to retrieve.
-    @return {Object} the value or undefined if none found
-    @public
-  */
   objectAtContent(idx: number) {
     let arrangedContent = get(this, 'arrangedContent');
     assert('[BUG] Called objectAtContent without content', arrangedContent);
@@ -209,20 +235,6 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     this.replaceContent(idx, amt, objects);
   }
 
-  /**
-    Should actually replace the specified objects on the content array.
-    You can override this method in subclasses to transform the content item
-    into something new.
-
-    This method will only be called if content is non-`null`.
-
-    @method replaceContent
-    @param {Number} idx The starting index
-    @param {Number} amt The number of items to remove from the content.
-    @param {Array} objects Optional array of objects to insert.
-    @return {void}
-    @public
-  */
   replaceContent(idx: number, amt: number, objects?: T[]) {
     let content = get(this, 'content');
     assert('[BUG] Called replaceContent without content', content);
@@ -398,14 +410,6 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
 }
 
 ArrayProxy.reopen(MutableArray, {
-  /**
-    The array that the proxy pretends to be. In the default `ArrayProxy`
-    implementation, this and `content` are the same. Subclasses of `ArrayProxy`
-    can override this property to provide things like sorting and filtering.
-
-    @property arrangedContent
-    @public
-  */
   arrangedContent: alias('content'),
 });
 
