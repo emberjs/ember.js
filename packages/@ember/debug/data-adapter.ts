@@ -1,6 +1,6 @@
 import type { Owner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { _backburner } from '@ember/runloop';
+import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/object';
 import { dasherize } from '@ember/string';
 import Namespace from '@ember/application/namespace';
@@ -141,7 +141,7 @@ class TypeWatcher {
       consumeTag(tagFor(records, '[]'));
 
       if (hasBeenAccessed === true) {
-        onChange();
+        next(onChange);
       } else {
         hasBeenAccessed = true;
       }
