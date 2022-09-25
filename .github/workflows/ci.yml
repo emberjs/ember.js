@@ -17,6 +17,9 @@ on:
       - 'CHANGELOG.md'
   pull_request:
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   lint:
     name: Linting
