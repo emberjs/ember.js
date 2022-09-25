@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: '0 20 * * 3' # weekly (Wednesday)
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   test:
     name: Basic Test
@@ -22,6 +25,9 @@ jobs:
         run: pnpm test
 
   release:
+    permissions:
+      contents: write # to push tag
+
     name: Tag + Release
     runs-on: ubuntu-latest
     needs: [test]
