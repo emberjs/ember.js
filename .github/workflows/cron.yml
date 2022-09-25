@@ -5,8 +5,15 @@ on:
     - cron:  '0 7 * * *' # daily, 7am
   workflow_dispatch:
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   trigger-ci:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+      checks: read # to list check suites
+
     name: Trigger cron build
     runs-on: ubuntu-latest
     strategy:
