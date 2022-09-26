@@ -10,6 +10,7 @@ import { A as emberA } from '@ember/array';
 import type { Cache } from '@glimmer/validator';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
+import { assert } from '.';
 
 /**
 @module @ember/debug/data-adapter
@@ -34,13 +35,27 @@ type WrappedRecord<T> = {
 
 type RecordCallback<T> = (records: Array<{ columnValues: object; object: T }>) => void;
 
+// Represents the base contract for iterables as understood in the GLimmer VM
+// historically. This is *not* the public API for it, because there *is* no
+// public API for it. Recent versions of Glimmer simply use `Symbol.iterator`,
+// but some older consumers still use this basic shape.
+interface GlimmerIterable<T> {
+  length: number;
+  forEach(fn: (value: T) => void): void;
+}
+
 function iterate<T>(arr: Array<T>, fn: (value: T) => void): void {
   if (Symbol.iterator in arr) {
     for (let item of arr) {
       fn(item);
     }
   } else {
-    arr.forEach(fn);
+    // SAFETY: this cast required to work this way to interop between TS 4.8
+    // and 4.9. When we drop support for 4.8, it will narrow correctly via the
+    // use of the `in` operator above. (Preferably we will solve this by just
+    // switching to require `Symbol.iterator` instead.)
+    assert('', typeof (arr as unknown as GlimmerIterable<T>).forEach === 'function');
+    (arr as unknown as GlimmerIterable<T>).forEach(fn);
   }
 }
 
