@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.8.0-beta.4 (September 26, 2022)
+
+- [#20201](https://github.com/emberjs/ember.js/pull/20201) [BUGFIX] Fix type definition for `Route`
+
 ### v4.8.0-beta.3 (September 19, 2022)
 
 - [#20194](https://github.com/emberjs/ember.js/pull/20194) [BUGFIX] Provide a `.d.ts` file at types/stable
