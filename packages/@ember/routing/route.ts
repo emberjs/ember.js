@@ -353,7 +353,7 @@ class Route<T = unknown>
     if (params.length === 1) {
       let [name] = params;
       assert('has name', name);
-      if (name in model) {
+      if (typeof model === 'object' && name in model) {
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
         object[name] = get(model, 'id');
