@@ -61,6 +61,13 @@ interface Evented {
     be set as the "this" for the callback. This is a good way to give your
     function access to the object triggering the event. When the target
     parameter is used the callback method becomes the third argument.
+
+    @method on
+    @param {String} name The name of the event
+    @param {Object} [target] The "this" binding for the callback
+    @param {Function|String} method A function or the name of a function to be called on `target`
+    @return this
+    @public
   */
   on<Target>(
     name: string,
@@ -76,6 +83,13 @@ interface Evented {
     This function takes an optional 2nd argument that will become the "this"
     value for the callback. When the target parameter is used the callback method
     becomes the third argument.
+
+    @method one
+    @param {String} name The name of the event
+    @param {Object} [target] The "this" binding for the callback
+    @param {Function|String} method A function or the name of a function to be called on `target`
+    @return this
+    @public
   */
   one<Target>(
     name: string,
@@ -97,10 +111,22 @@ interface Evented {
 
     // outputs: person ate some broccoli
     ```
+
+    @method trigger
+    @param {String} name The name of the event
+    @param {Object...} args Optional arguments to pass on
+    @public
   */
   trigger(name: string, ...args: any[]): any;
   /**
     Cancels subscription for given name, target, and method.
+
+    @method off
+    @param {String} name The name of the event
+    @param {Object} target The target of the subscription
+    @param {Function|String} method The function or the name of a function of the subscription
+    @return this
+    @public
   */
   off<Target>(
     name: string,
@@ -110,6 +136,11 @@ interface Evented {
   off(name: string, method: string | ((...args: any[]) => void)): this;
   /**
     Checks to see if object has any subscriptions for named event.
+
+    @method has
+    @param {String} name The name of the event
+    @return {Boolean} does the object have a subscription for event
+    @public
    */
   has(name: string): boolean;
 }
