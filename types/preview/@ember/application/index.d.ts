@@ -3,7 +3,7 @@ declare module '@ember/application' {
   import ApplicationInstance from '@ember/application/instance';
   import EventDispatcher from '@ember/application/-private/event-dispatcher';
   import { EventDispatcherEvents } from '@ember/application/types';
-  import { Router } from '@ember/routing';
+  import Router from '@ember/routing/router';
   import Registry from '@ember/application/-private/registry';
   import type { Resolver } from '@ember/-internals/resolver';
   import { AnyFn } from 'ember/-private/type-utils';
