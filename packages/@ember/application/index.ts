@@ -784,7 +784,13 @@ class Application extends Engine {
     try {
       this.runInitializers();
       runLoadHooks('application', this);
-      this.advanceReadiness();
+
+      if (this.mode !== 'federated') {
+        this.advanceReadiness();
+      } else {
+        this._bootResolver.resolve(this);
+        this._booted = true;
+      }
       // Continues to `didBecomeReady`
     } catch (error) {
       // For the asynchronous boot path
@@ -910,11 +916,13 @@ class Application extends Engine {
 
     assert('expected _bootResolver', this._bootResolver);
 
+    debugger;
+
     try {
       // TODO: Is this still needed for _globalsMode = false?
 
       // See documentation on `_autoboot()` for details
-      if (this.autoboot || this.mode === 'federated') {
+      if (this.autoboot) {
         let instance;
 
         if (this._globalsMode) {
@@ -936,13 +944,13 @@ class Application extends Engine {
         this.ready();
 
         instance.startRouting();
+
+        // For the asynchronous boot path
+        this._bootResolver.resolve(this);
+
+        // For the synchronous boot path
+        this._booted = true;
       }
-
-      // For the asynchronous boot path
-      this._bootResolver.resolve(this);
-
-      // For the synchronous boot path
-      this._booted = true;
     } catch (error) {
       // For the asynchronous boot path
       this._bootResolver.reject(error);
@@ -1188,7 +1196,13 @@ class Application extends Engine {
 
       return instance
         .boot(options)
-        .then(() => instance.visit(url))
+        .then(() => {
+          if (this.mode === 'federated') {
+            instance.startRouting();
+          }
+
+          return instance.visit(url);
+        })
         .catch((error) => {
           run(instance, 'destroy');
           throw error;

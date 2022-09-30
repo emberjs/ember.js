@@ -141,6 +141,7 @@ export default class Container {
    @return {any}
    */
   lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined {
+
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }

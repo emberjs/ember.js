@@ -96,7 +96,6 @@ class ApplicationInstance extends EngineInstance {
     }
 
     console.log('bootSync', this.application.constructor.name);
-    debugger;
 
     options = new _BootOptions(options);
 

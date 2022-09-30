@@ -94,6 +94,8 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
 
   _bootPromise: RSVP.Promise<this> | null = null;
 
+  _startedBooting = false;
+
   /**
     Initialize the `EngineInstance` and return a promise that resolves
     with the instance itself when the boot process is complete.

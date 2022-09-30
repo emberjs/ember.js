@@ -4,6 +4,8 @@
 var define, require;
 
 (function () {
+  console.log('linked from ember');
+
   var globalObj =
     typeof globalThis !== 'undefined'
       ? globalThis
