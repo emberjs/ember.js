@@ -49,47 +49,6 @@ export { on } from '@ember/-internals/metal';
  */
 interface Evented {
   /**
-   * Subscribes to a named event with given function.
-   */
-  on<Target>(
-    name: string,
-    target: Target,
-    method: string | ((this: Target, ...args: any[]) => void)
-  ): this;
-  on(name: string, method: ((...args: any[]) => void) | string): this;
-  /**
-   * Subscribes a function to a named event and then cancels the subscription
-   * after the first time the event is triggered. It is good to use ``one`` when
-   * you only care about the first time an event has taken place.
-   */
-  one<Target>(
-    name: string,
-    target: Target,
-    method: string | ((this: Target, ...args: any[]) => void)
-  ): this;
-  one(name: string, method: string | ((...args: any[]) => void)): this;
-  /**
-   * Triggers a named event for the object. Any additional arguments
-   * will be passed as parameters to the functions that are subscribed to the
-   * event.
-   */
-  trigger(name: string, ...args: any[]): any;
-  /**
-   * Cancels subscription for given name, target, and method.
-   */
-  off<Target>(
-    name: string,
-    target: Target,
-    method: string | ((this: Target, ...args: any[]) => void)
-  ): this;
-  off(name: string, method: string | ((...args: any[]) => void)): this;
-  /**
-   * Checks to see if object has any subscriptions for named event.
-   */
-  has(name: string): boolean;
-}
-const Evented = Mixin.create({
-  /**
     Subscribes to a named event with given function.
 
     ```javascript
@@ -110,11 +69,12 @@ const Evented = Mixin.create({
     @return this
     @public
   */
-  on(name: string, target: object, method?: string | Function) {
-    addListener(this, name, target, method);
-    return this;
-  },
-
+  on<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  on(name: string, method: ((...args: any[]) => void) | string): this;
   /**
     Subscribes a function to a named event and then cancels the subscription
     after the first time the event is triggered. It is good to use ``one`` when
@@ -131,11 +91,12 @@ const Evented = Mixin.create({
     @return this
     @public
   */
-  one(name: string, target: object, method?: string | Function) {
-    addListener(this, name, target, method, true);
-    return this;
-  },
-
+  one<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  one(name: string, method: string | ((...args: any[]) => void)): this;
   /**
     Triggers a named event for the object. Any additional arguments
     will be passed as parameters to the functions that are subscribed to the
@@ -150,15 +111,13 @@ const Evented = Mixin.create({
 
     // outputs: person ate some broccoli
     ```
+
     @method trigger
     @param {String} name The name of the event
     @param {Object...} args Optional arguments to pass on
     @public
   */
-  trigger(name: string, ...args: any[]) {
-    sendEvent(this, name, args);
-  },
-
+  trigger(name: string, ...args: any[]): any;
   /**
     Cancels subscription for given name, target, and method.
 
@@ -169,11 +128,12 @@ const Evented = Mixin.create({
     @return this
     @public
   */
-  off(name: string, target: object, method?: string | Function) {
-    removeListener(this, name, target, method);
-    return this;
-  },
-
+  off<Target>(
+    name: string,
+    target: Target,
+    method: string | ((this: Target, ...args: any[]) => void)
+  ): this;
+  off(name: string, method: string | ((...args: any[]) => void)): this;
   /**
     Checks to see if object has any subscriptions for named event.
 
@@ -182,6 +142,28 @@ const Evented = Mixin.create({
     @return {Boolean} does the object have a subscription for event
     @public
    */
+  has(name: string): boolean;
+}
+const Evented = Mixin.create({
+  on(name: string, target: object, method?: string | Function) {
+    addListener(this, name, target, method);
+    return this;
+  },
+
+  one(name: string, target: object, method?: string | Function) {
+    addListener(this, name, target, method, true);
+    return this;
+  },
+
+  trigger(name: string, ...args: any[]) {
+    sendEvent(this, name, args);
+  },
+
+  off(name: string, target: object, method?: string | Function) {
+    removeListener(this, name, target, method);
+    return this;
+  },
+
   has(name: string) {
     return hasListeners(this, name);
   },
