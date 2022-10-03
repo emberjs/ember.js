@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.8.0-beta.5 (October 3, 2022)
+
+- [#20212](https://github.com/emberjs/ember.js/pull/20212) [BUGFIX] Remove incorrect exports from preview routing types
+
 ### v4.8.0-beta.4 (September 26, 2022)
 
 - [#20201](https://github.com/emberjs/ember.js/pull/20201) [BUGFIX] Fix type definition for `Route`
