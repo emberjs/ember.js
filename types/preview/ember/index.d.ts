@@ -238,10 +238,8 @@ declare module 'ember' {
       const service: typeof EmberServiceNs.inject;
     }
     namespace ENV {
-      const EXTEND_PROTOTYPES: {
+      const EXTEND_PROTOTYPES: boolean | {
         Array: boolean;
-        Function: boolean;
-        String: boolean;
       };
       const LOG_BINDINGS: boolean;
       const LOG_STACKTRACE_ON_DEPRECATION: boolean;
