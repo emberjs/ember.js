@@ -183,8 +183,45 @@ if (DEBUG) {
     Display a deprecation warning with the provided message and a stack trace
     (Chrome and Firefox only).
 
+    Ember itself leverages [Semantic Versioning](https://semver.org) to aid
+    projects in keeping up with changes to the framework. Before any
+    functionality or API is removed, it first flows linearly through a
+    deprecation staging process. The staging process currently contains two
+    stages: available and enabled.
+
+    Deprecations are initially released into the 'available' stage.
+    Deprecations will stay in this stage until the replacement API has been
+    marked as a recommended practice via the RFC process and the addon
+    ecosystem has generally adopted the change.
+
+    Once a deprecation meets the above criteria, it will move into the
+    'enabled' stage where it will remain until the functionality or API is
+    eventually removed.
+
+    For application and addon developers, "available" deprecations are not
+    urgent and "enabled" deprecations require action.
+
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
+
+    ```javascript
+    import { deprecate } from '@ember/debug';
+
+    deprecate(
+      'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.',
+      false,
+      {
+        id: 'ember-polyfills.deprecate-assign',
+        until: '5.0.0',
+        url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-polyfills-deprecate-assign',
+        for: 'ember-source',
+        since: {
+          available: '4.0.0',
+          enabled: '4.0.0',
+        },
+      }
+    );
+    ```
 
     @method deprecate
     @for @ember/debug
