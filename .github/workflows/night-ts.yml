@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: volta-cli/action@v1
+      - uses: volta-cli/action@v4
       - run: yarn install --frozen-lockfile --non-interactive
       - run: yarn add -D typescript@next
       - run: yarn type-check
