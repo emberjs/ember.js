@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.7.1 (October 12, 2022)
+
+- [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
+
 ### v4.7.0 (September 6, 2022)
 
 - [#20126](https://github.com/emberjs/ember.js/pull/20126) [BUGFIX] Replace Firefox detection that used a deprecated browser API
