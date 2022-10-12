@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.7.1 (October 12, 2022)
+
+- [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
+
 ### v4.8.0-beta.5 (October 3, 2022)
 
 - [#20212](https://github.com/emberjs/ember.js/pull/20212) [BUGFIX] Remove incorrect exports from preview routing types
