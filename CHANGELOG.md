@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.4.3 (October 12, 2022)
+
+- [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
+
 ### v4.7.1 (October 12, 2022)
 
 - [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
