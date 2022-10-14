@@ -93,10 +93,11 @@ if (DEBUG) {
     @for @ember/debug
     @static
     @param {String} message A warning to display.
-    @param {Boolean} test An optional boolean. If falsy, the warning
-      will be displayed.
-    @param {Object} options An object that can be used to pass a unique
-      `id` for this warning.  The `id` can be used by Ember debugging tools
+    @param {Boolean|Object} test An optional boolean. If falsy, the warning
+      will be displayed. If `test` is an object, the `test` parameter can
+      be used as the `options` parameter and the warning is displayed.
+    @param {Object} options
+    @param {String} options.id The `id` can be used by Ember debugging tools
       to change the behavior (raise, log, or silence) for that specific warning.
       The `id` should be namespaced by dots, e.g. "ember-debug.feature-flag-with-features-stripped"
     @public
