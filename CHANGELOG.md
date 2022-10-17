@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.9.0-beta.1 (October 17, 2022) 
+
+- [#20203](https://github.com/emberjs/ember.js/pull/20203) / [#20204](https://github.com/emberjs/ember.js/pull/20204) [FEATURE] Preview types: Update to Typescript 4.8
+
 ### v4.8.0 (October 17, 2022)
 
 - [#20180](https://github.com/emberjs/ember.js/pull/20180) [FEATURE] Publish an opt-in preview of public types for Ember
