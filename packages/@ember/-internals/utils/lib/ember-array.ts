@@ -1,4 +1,4 @@
-import EmberArray from '@ember/array';
+import type EmberArray from '@ember/array';
 import { _WeakSet } from '@glimmer/util';
 
 const EMBER_ARRAYS = new _WeakSet();
@@ -8,9 +8,5 @@ export function setEmberArray(obj: object) {
 }
 
 export function isEmberArray(obj: unknown): obj is EmberArray<unknown> {
-  if (EMBER_ARRAYS.has(obj as object)) {
-    return true;
-  }
-
-  return EmberArray.detect(obj);
+  return EMBER_ARRAYS.has(obj as object);
 }

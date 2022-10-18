@@ -1950,11 +1950,20 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
     return (arr || []) as NativeArray<T>;
   };
 } else {
-  A = function <T>(this: unknown, arr?: Array<T>) {
+  interface IsEmberAAble {
+    preventEmberA(): boolean;
+  }
+  A = function <T>(this: unknown, arr?: Array<T> | IsEmberAAble) {
     assert(
       'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
       !(this instanceof A)
     );
+
+    if (typeof (arr as IsEmberAAble)?.preventEmberA === 'function') {
+      if ((arr as IsEmberAAble).preventEmberA()) {
+        return arr as NativeArray<T>;
+      }
+    }
 
     if (isEmberArray(arr)) {
       // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
