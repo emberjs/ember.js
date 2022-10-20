@@ -141,12 +141,16 @@ export function _getProp(obj: unknown, keyName: string) {
   return value;
 }
 
-export function _getPath(obj: unknown, path: string | string[]): any {
+export function _getPath(obj: unknown, path: string | string[], forSet?: boolean): any {
   let parts = typeof path === 'string' ? path.split('.') : path;
 
   for (let part of parts) {
     if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {
       return undefined;
+    }
+
+    if (forSet && (part === '__proto__' || part === 'constructor')) {
+      return;
     }
 
     obj = _getProp(obj, part);
