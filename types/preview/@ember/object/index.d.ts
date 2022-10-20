@@ -27,6 +27,10 @@ declare module '@ember/object' {
     ...args: [...dependentKeys: string[], callback: AnyFunction]
   ): BasicComputedProperty;
 
+  export function computed(
+    ...args: [...dependentKeys: string[], callback: { readonly get: AnyFunction; readonly set: AnyFunction }]
+  ): BasicComputedProperty;
+
   /**
    * Specify a method that observes property changes.
    */
