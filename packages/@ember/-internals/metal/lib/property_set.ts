@@ -110,7 +110,7 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
 
   assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
 
-  let newRoot = getPath(root, parts);
+  let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
     return set(newRoot, keyName, value);
