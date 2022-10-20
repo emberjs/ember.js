@@ -143,7 +143,11 @@ export function _getProp(obj: object, keyName: string) {
   return value;
 }
 
-export function _getPath<T extends object>(root: T, path: string | string[]): any {
+export function _getPath<T extends object>(
+  root: T,
+  path: string | string[],
+  forSet?: boolean
+): any {
   let obj: any = root;
   let parts = typeof path === 'string' ? path.split('.') : path;
 
@@ -151,8 +155,12 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
     if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {
       return undefined;
     }
+    let part = parts[i];
+    if (forSet && (part === '__proto__' || part === 'constructor')) {
+      return;
+    }
 
-    obj = _getProp(obj, parts[i]);
+    obj = _getProp(obj, part);
   }
 
   return obj;
