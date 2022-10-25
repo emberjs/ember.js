@@ -91,8 +91,7 @@ if (DEBUG) {
     }
 
     if (options?.until) {
-      let namespace = options?.for ? options.for : "Ember";
-      message = message + ` This will be removed in ${namespace} ${options.until}.`;
+      message = message + ` This will be removed in ${options.for} ${options.until}.`;
     }
 
     if (options?.url) {
