@@ -91,7 +91,8 @@ if (DEBUG) {
     }
 
     if (options?.until) {
-      message = message + ` This will be removed in Ember ${options.until}.`;
+      let namespace = options?.for ? options.for : "Ember";
+      message = message + ` This will be removed in ${namespace} ${options.until}.`;
     }
 
     if (options?.url) {
