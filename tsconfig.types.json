@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "declarationDir": "types/stable"
+  },
+  "include": [
+    // Note: these will also pull on all their transitive dependencies, so we
+    // will end up publishing the (private!) types for packages not named here
+    // until we update the actual internals to avoid referencing them!
+    "packages/@ember/**/*",
+    "packages/ember/**/*",
+    "packages/@glimmer/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types",
+    "packages/ember-template-compiler",
+    "packages/ember-testing",
+    "packages/internal-test-helpers"
+  ]
+}

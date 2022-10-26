@@ -26,6 +26,11 @@ import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
+export {
+  /** @internal */
+  OWNER,
+};
+
 type EmberClassConstructor<T> = new (owner?: Owner) => T;
 
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
@@ -235,6 +240,7 @@ interface CoreObject {
   _super(...args: any[]): any;
 }
 class CoreObject {
+  /** @internal */
   [OWNER]?: Owner;
 
   constructor(owner?: Owner) {

@@ -35,6 +35,7 @@
   "scripts": {
     "build": "ember build --environment production",
     "docs": "ember ember-cli-yuidoc",
+    "types": "tsc --project tsconfig.types.json && node generate-tsconfigs.mjs",
     "link:glimmer": "node bin/yarn-link-glimmer.js",
     "start": "ember serve",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
