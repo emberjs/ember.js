@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.9.0-beta.2 (October 25, 2022)
+- [#20227](https://github.com/emberjs/ember.js/pull/20227) [BUGFIX] Fix unsafe internal cast for NativeArray
+- [#20228](https://github.com/emberjs/ember.js/pull/20228) [BUGFIX] Remove type export for ControllerMixin
+
 ### v4.9.0-beta.1 (October 17, 2022) 
 
 - [#20203](https://github.com/emberjs/ember.js/pull/20203) / [#20204](https://github.com/emberjs/ember.js/pull/20204) [FEATURE] Preview types: Update to Typescript 4.8
