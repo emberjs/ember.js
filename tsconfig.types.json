@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.compiler-options.json",
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
@@ -17,12 +17,6 @@
     "packages/@glimmer/**/*"
   ],
   "exclude": [
-    "dist",
-    "node_modules",
-    "tmp",
-    "types",
-    "packages/ember-template-compiler",
-    "packages/ember-testing",
-    "packages/internal-test-helpers"
+    "**/type-tests"
   ]
 }
