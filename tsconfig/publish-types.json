@@ -1,22 +1,22 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "./tsconfig.compiler-options.json",
+  "extends": "./compiler-options.json",
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
     "emitDeclarationOnly": true,
     "declarationMap": true,
-    "declarationDir": "types/stable"
+    "declarationDir": "../types/stable"
   },
   "include": [
     // Note: these will also pull on all their transitive dependencies, so we
     // will end up publishing the (private!) types for packages not named here
     // until we update the actual internals to avoid referencing them!
-    "packages/@ember/**/*",
-    "packages/ember/**/*",
-    "packages/@glimmer/**/*"
+    "../packages/@ember/**/*",
+    "../packages/ember/**/*",
+    "../packages/@glimmer/**/*"
   ],
   "exclude": [
-    "**/type-tests"
+    "../**/type-tests"
   ]
 }

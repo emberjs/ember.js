@@ -1,10 +1,11 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2019",
     "sourceMap": true,
-    "baseUrl": "packages",
-    "rootDir": "packages",
+    "baseUrl": "../packages",
+    "rootDir": "../packages",
 
     // Environment Configuration
     "experimentalDecorators": true,
@@ -26,9 +27,7 @@
     "allowJs": true,
     "checkJs": false,
     "paths": {
-      "backburner": [
-        "../node_modules/backburner.js/dist/backburner.d.ts"
-      ]
+      "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"]
     }
   }
 }

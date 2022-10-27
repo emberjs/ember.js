@@ -1,2 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
+
+# Treat all tsconfig files as JSONC.
+tsconfig/*.json linguist-language=JSON-with-Comments

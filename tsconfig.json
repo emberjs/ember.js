@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.compiler-options.json",
+  "extends": "./tsconfig/compiler-options.json",
   "compilerOptions": {
     "noEmit": true,
   },
