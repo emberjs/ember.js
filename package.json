@@ -155,7 +155,7 @@
     "typescript": "~4.6.0"
   },
   "engines": {
-    "node": ">= 12.*"
+    "node": ">= 14.*"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"

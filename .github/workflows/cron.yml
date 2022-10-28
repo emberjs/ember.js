@@ -2,7 +2,7 @@ name: Cron
 
 on:
   schedule:
-    - cron:  '0 7 * * *' # daily, 7am
+    - cron: '0 7 * * *' # daily, 7am
 
 jobs:
   trigger-ci:
@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         branch:
-          - master
+          - main
           - beta
           - release
     steps:
