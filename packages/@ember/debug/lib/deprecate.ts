@@ -91,7 +91,7 @@ if (DEBUG) {
     }
 
     if (options?.until) {
-      message = message + ` This will be removed in Ember ${options.until}.`;
+      message = message + ` This will be removed in ${options.for} ${options.until}.`;
     }
 
     if (options?.url) {
