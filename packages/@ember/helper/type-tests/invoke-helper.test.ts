@@ -1,4 +1,4 @@
-import Component from '@ember/-internals/glimmer/lib/component';
+import Component from '@ember/component';
 import { getValue } from '@ember/-internals/metal';
 import Helper from '@ember/component/helper';
 import { invokeHelper } from '@ember/helper';

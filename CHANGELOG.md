@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### v4.9.0-beta.2 (October 25, 2022)
+- [#20227](https://github.com/emberjs/ember.js/pull/20227) [BUGFIX] Fix unsafe internal cast for NativeArray
+- [#20228](https://github.com/emberjs/ember.js/pull/20228) [BUGFIX] Remove type export for ControllerMixin
+
+### v4.9.0-beta.1 (October 17, 2022) 
+
+- [#20203](https://github.com/emberjs/ember.js/pull/20203) / [#20204](https://github.com/emberjs/ember.js/pull/20204) [FEATURE] Preview types: Update to Typescript 4.8
+
+### v4.8.0 (October 17, 2022)
+
+- [#20180](https://github.com/emberjs/ember.js/pull/20180) [FEATURE] Publish an opt-in preview of public types for Ember
+- [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Upgrade router_js to fix Linked list of RouteInfos contains undefined object
+
 ### v4.4.3 (October 12, 2022)
 
 - [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
@@ -7,28 +20,6 @@
 ### v4.7.1 (October 12, 2022)
 
 - [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
-
-### v4.8.0-beta.5 (October 3, 2022)
-
-- [#20212](https://github.com/emberjs/ember.js/pull/20212) [BUGFIX] Remove incorrect exports from preview routing types
-
-### v4.8.0-beta.4 (September 26, 2022)
-
-- [#20201](https://github.com/emberjs/ember.js/pull/20201) [BUGFIX] Fix type definition for `Route`
-
-### v4.8.0-beta.3 (September 19, 2022)
-
-- [#20194](https://github.com/emberjs/ember.js/pull/20194) [BUGFIX] Provide a `.d.ts` file at types/stable
-- [#20196](https://github.com/emberjs/ember.js/pull/20196) [BUGFIX] types imports are at 'ember-source/types'
-
-### v4.8.0-beta.2 (September 13, 2022)
-
-- [#20186](https://github.com/emberjs/ember.js/pull/20186) [BUGFIX] Fix `@ember/runloop` type tests folder name so that the tests are properly excluded from the build
-- [#20180](https://github.com/emberjs/ember.js/pull/20180) [FEATURE] Publish an opt-in preview of public types for Ember
-
-### v4.8.0-beta.1 (September 6, 2022)
-
-- [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Upgrade router_js to fix Linked list of RouteInfos contains undefined object
 
 ### v4.7.0 (September 6, 2022)
 

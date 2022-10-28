@@ -459,6 +459,7 @@ export {
   hasTemplate,
   getTemplates,
   setTemplates,
+  TemplatesRegistry,
 } from './lib/template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';

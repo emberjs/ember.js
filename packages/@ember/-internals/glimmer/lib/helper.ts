@@ -45,6 +45,32 @@ export interface SimpleHelper<T, P extends unknown[], N extends Dict<unknown>> {
 }
 
 /**
+  In many cases it is not necessary to use the full `Helper` class.
+  The `helper` method create pure-function helpers without instances.
+  For example:
+
+  ```app/helpers/format-currency.js
+  import { helper } from '@ember/component/helper';
+
+  export default helper(function([cents], {currency}) {
+    return `${currency}${cents * 0.01}`;
+  });
+  ```
+
+  @static
+  @param {Function} helper The helper function
+  @method helper
+  @for @ember/component/helper
+  @public
+  @since 1.13.0
+*/
+export function helper<T, P extends unknown[], N extends Dict<unknown>>(
+  helperFn: HelperFunction<T, P, N>
+): HelperFactory<SimpleHelper<T, P, N>> {
+  return new Wrapper(helperFn);
+}
+
+/**
   Ember Helpers are functions that can compute values, and are used in templates.
   For example, this code calls a helper named `format-currency`:
 
@@ -104,6 +130,12 @@ interface Helper {
 class Helper extends FrameworkObject {
   static isHelperFactory = true;
   static [IS_CLASSIC_HELPER] = true;
+
+  // `packages/ember/index.js` was setting `Helper.helper`. This seems like
+  // a bad idea and probably not something we want. We've moved that definition
+  // here, but it should definitely be reviewed and probably removed.
+  /** @deprecated */
+  static helper = helper;
 
   // SAFETY: this is initialized in `init`, rather than `constructor`. It is
   // safe to `declare` like this *if and only if* nothing uses the constructor
@@ -268,31 +300,5 @@ class SimpleClassicHelperManager implements HelperManager<() => unknown> {
 export const SIMPLE_CLASSIC_HELPER_MANAGER = new SimpleClassicHelperManager();
 
 setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
-
-/**
-  In many cases it is not necessary to use the full `Helper` class.
-  The `helper` method create pure-function helpers without instances.
-  For example:
-
-  ```app/helpers/format-currency.js
-  import { helper } from '@ember/component/helper';
-
-  export default helper(function([cents], {currency}) {
-    return `${currency}${cents * 0.01}`;
-  });
-  ```
-
-  @static
-  @param {Function} helper The helper function
-  @method helper
-  @for @ember/component/helper
-  @public
-  @since 1.13.0
-*/
-export function helper<T, P extends unknown[], N extends Dict<unknown>>(
-  helperFn: HelperFunction<T, P, N>
-): HelperFactory<SimpleHelper<T, P, N>> {
-  return new Wrapper(helperFn);
-}
 
 export default Helper;

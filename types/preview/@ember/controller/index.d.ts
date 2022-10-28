@@ -16,7 +16,7 @@ declare module '@ember/controller' {
   /**
    * Additional methods for the Controller.
    */
-  export interface ControllerMixin extends ActionHandler {
+  interface ControllerMixin extends ActionHandler {
     /**
      * @deprecated until 5.0. Use `RouterService.replaceWith` instead.
      */
@@ -33,7 +33,6 @@ declare module '@ember/controller' {
     queryParams: Array<string | Record<string, QueryParamConfig | string | undefined>>;
     target: object;
   }
-  export const ControllerMixin: Mixin;
 
   export default class Controller extends EmberObject {}
   export default interface Controller extends ControllerMixin {}

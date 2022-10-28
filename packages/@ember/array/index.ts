@@ -1958,7 +1958,7 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
 
     if (isEmberArray(arr)) {
       // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
-      return arr as NativeArray<T>;
+      return arr as unknown as NativeArray<T>;
     } else {
       // SAFETY: This will return an NativeArray but TS can't infer that.
       return NativeArray.apply(arr ?? []) as NativeArray<T>;

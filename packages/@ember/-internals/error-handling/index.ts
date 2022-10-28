@@ -10,7 +10,7 @@ export function getOnerror() {
   return onerror;
 }
 // Ember.onerror setter
-export function setOnerror(handler: Function) {
+export function setOnerror(handler: Function | undefined) {
   onerror = handler;
 }
 
