@@ -99,7 +99,7 @@
     "@glimmer/validator": "0.84.2",
     "@simple-dom/document": "^1.4.0",
     "@tsconfig/ember": "^1.0.1",
-    "@types/node": "^18.7.23",
+    "@types/node": "^18.11.7",
     "@types/qunit": "^2.19.2",
     "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^5.38.0",

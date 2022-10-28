@@ -23,7 +23,7 @@ export const context = (function (
       };
 })(global, global.Ember);
 
-export function getLookup(): object {
+export function getLookup(): Record<string, unknown> {
   return context.lookup;
 }
 
