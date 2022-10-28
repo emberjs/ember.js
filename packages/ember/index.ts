@@ -12,7 +12,7 @@ import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, captureRenderTree } from '@ember/debug';
+import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
 import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
 import {
@@ -59,9 +59,12 @@ import {
   setComponentManager,
   escapeExpression,
   getTemplates,
+  htmlSafe,
+  isHTMLSafe,
   setTemplates,
   template,
   isSerializationFirstNode,
+  type TemplatesRegistry,
 } from '@ember/-internals/glimmer';
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
@@ -233,7 +236,7 @@ const PartialEmber = {
   ArrayProxy,
 
   // ****@ember/canary-features****
-  Features: { isEnabled, ...FEATURES },
+  FEATURES: { isEnabled, ...FEATURES },
 
   // ****@ember/component****
   _Input: Input,
@@ -472,10 +475,30 @@ const PartialEmber = {
     // @ts-expect-error These properties don't appear as being defined
     registry: typeof requirejs !== 'undefined' ? requirejs.entries : require.entries,
   },
+} as const;
 
-  get ENV() {
-    return getENV();
-  },
+interface EmberHandlebars {
+  template: typeof template;
+  Utils: {
+    escapeExpression: typeof escapeExpression;
+  };
+  compile?: typeof compile;
+  precompile?: typeof precompile;
+}
+
+interface EmberHTMLBars {
+  template: typeof template;
+  compile?: typeof compile;
+  precompile?: typeof precompile;
+}
+
+type PartialEmber = typeof PartialEmber;
+interface Ember extends PartialEmber {
+  get ENV(): object;
+
+  // ****@ember/-internals/environment****
+  get lookup(): Record<string, unknown>;
+  set lookup(value: Record<string, unknown>);
 
   /**
     A function may be assigned to `Ember.onerror` to be called when Ember
@@ -505,31 +528,11 @@ const PartialEmber = {
     @public
   */
   // ****@ember/-internals/error-handling****
-  get onerror(): Function | undefined {
-    return getOnerror();
-  },
+  get onerror(): Function | undefined;
+  set onerror(handler: Function | undefined);
 
-  set onerror(handler: Function | undefined) {
-    setOnerror(handler);
-  },
-
-  // ****@ember/debug****
-  get testing(): boolean {
-    return EmberDebug.isTesting();
-  },
-
-  set testing(value: boolean) {
-    EmberDebug.setTesting(value);
-  },
-
-  // ****@ember/-internals/environment****
-  get lookup() {
-    return getLookup();
-  },
-
-  set lookup(value) {
-    setLookup(value);
-  },
+  get testing(): boolean;
+  set testing(value: boolean);
 
   /**
     Defines the hash of localized strings for the current language. Used by
@@ -542,13 +545,10 @@ const PartialEmber = {
     @private
   */
   // ****@ember/string****
-  get STRINGS() {
-    return _getStrings();
-  },
-
-  set STRINGS(value) {
-    _setStrings(value);
-  },
+  get STRINGS(): {
+    [key: string]: string;
+  };
+  set STRINGS(value: { [key: string]: string });
 
   /**
     Whether searching on the global for new Namespace instances is enabled.
@@ -564,13 +564,8 @@ const PartialEmber = {
     @type Boolean
     @private
   */
-  get BOOTED() {
-    return metal.isNamespaceSearchDisabled();
-  },
-
-  set BOOTED(value) {
-    metal.setNamespaceSearchDisabled(value);
-  },
+  get BOOTED(): boolean;
+  set BOOTED(flag: boolean);
 
   /**
     Global hash of shared templates. This will automatically be populated
@@ -582,32 +577,9 @@ const PartialEmber = {
     @type Object
     @private
   */
-  get TEMPLATES() {
-    return getTemplates();
-  },
+  get TEMPLATES(): TemplatesRegistry;
+  set TEMPLATES(registry: TemplatesRegistry);
 
-  set TEMPLATES(value) {
-    setTemplates(value);
-  },
-} as const;
-
-interface EmberHandlebars {
-  template: typeof template;
-  Utils: {
-    escapeExpression: typeof escapeExpression;
-  };
-  compile?: typeof compile;
-  precompile?: typeof precompile;
-}
-
-interface EmberHTMLBars {
-  template: typeof template;
-  compile?: typeof compile;
-  precompile?: typeof precompile;
-}
-
-type PartialEmber = typeof PartialEmber;
-interface Ember extends PartialEmber {
   HTMLBars: EmberHTMLBars;
   Handlebars: EmberHandlebars;
   Test?: typeof EmberTesting['Test'] & {
@@ -617,6 +589,101 @@ interface Ember extends PartialEmber {
   setupForTesting?: typeof EmberTesting['setupForTesting'];
 }
 const Ember = PartialEmber as Ember;
+
+Object.defineProperty(Ember, 'ENV', {
+  get: getENV,
+  enumerable: false,
+});
+
+Object.defineProperty(Ember, 'lookup', {
+  get: getLookup,
+  set: setLookup,
+  enumerable: false,
+});
+
+Object.defineProperty(Ember, 'onerror', {
+  get: getOnerror,
+  set: setOnerror,
+  enumerable: false,
+});
+
+Object.defineProperty(Ember, 'testing', {
+  get: EmberDebug.isTesting,
+  set: EmberDebug.setTesting,
+  enumerable: false,
+});
+
+Object.defineProperty(Ember, 'STRINGS', {
+  configurable: false,
+  get: _getStrings,
+  set: _setStrings,
+});
+
+Object.defineProperty(Ember, 'BOOTED', {
+  configurable: false,
+  enumerable: false,
+  get: metal.isNamespaceSearchDisabled,
+  set: metal.setNamespaceSearchDisabled,
+});
+
+Object.defineProperty(Ember, 'TEMPLATES', {
+  get: getTemplates,
+  set: setTemplates,
+  configurable: false,
+  enumerable: false,
+});
+
+const deprecateImportFromString = function (
+  name: string,
+  message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
+) {
+  // Disabling this deprecation due to unintended errors in 3.25
+  // See https://github.com/emberjs/ember.js/issues/19393 fo more information.
+  deprecate(message, true, {
+    id: 'ember-string.htmlsafe-ishtmlsafe',
+    for: 'ember-source',
+    since: {
+      available: '3.25',
+      enabled: '3.25',
+    },
+    until: '4.0.0',
+    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
+  });
+};
+// NOTE: these are expressly *not* in the public API, because they were
+// deprecated and removed. TODO: remove them after we land the TS conversion,
+// and after confirming doing so is safe -- the state of the `@ember/string`
+// conversion remains confused.
+Object.defineProperty(Ember.String, 'htmlSafe', {
+  enumerable: true,
+  configurable: true,
+  get() {
+    deprecateImportFromString('htmlSafe');
+    return htmlSafe;
+  },
+});
+Object.defineProperty(Ember.String, 'isHTMLSafe', {
+  enumerable: true,
+  configurable: true,
+  get() {
+    deprecateImportFromString('isHTMLSafe');
+    return isHTMLSafe;
+  },
+});
+
+Object.defineProperty(Ember, 'TEMPLATES', {
+  get: getTemplates,
+  set: setTemplates,
+  configurable: false,
+  enumerable: false,
+});
+
+// ****@ember/debug****
+Object.defineProperty(Ember, 'testing', {
+  get: EmberDebug.isTesting,
+  set: EmberDebug.setTesting,
+  enumerable: false,
+});
 
 runLoadHooks('Ember.Application', Application);
 
