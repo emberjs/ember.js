@@ -191,13 +191,7 @@ if (DEBUG) {
     @public
   */
   setDebugFunction('debug', function debug(message) {
-    /* eslint-disable no-console */
-    if (console.debug) {
-      console.debug(`DEBUG: ${message}`);
-    } else {
-      console.log(`DEBUG: ${message}`);
-    }
-    /* eslint-enable no-console */
+    console.debug(`DEBUG: ${message}`); /* eslint-disable-line no-console */
   });
 
   /**
