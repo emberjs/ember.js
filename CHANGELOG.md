@@ -548,7 +548,7 @@
 
 ### v3.16.8 (April 24, 2020)
 
-- [#18879](https://github.com/emberjs/ember.js/pull/18879) Ensure errors thrown during component construction do not cause (unrelated) errors during application teardown (fixes a common issue when using `setupOnerror` with components asserting during `constructor`/`init`/`didInssertElement`).
+- [#18879](https://github.com/emberjs/ember.js/pull/18879) Ensure errors thrown during component construction do not cause (unrelated) errors during application teardown (fixes a common issue when using `setupOnerror` with components asserting during `constructor`/`init`/`didInsertElement`).
 
 ### v3.16.7 (April 13, 2020)
 
@@ -1141,7 +1141,7 @@ Fixes a few issues:
 - [#15849](https://github.com/emberjs/ember.js/pull/15849) [BUGFIX] Fix issue when observing a computed property that is clobbered during creation.
 - [#15797](https://github.com/emberjs/ember.js/pull/15797) [BUGFIX] Fix issues with using partials nested within other partials.
 - [#15808](https://github.com/emberjs/ember.js/pull/15808) [BUGFIX] Fix a memory leak in certain testing scenarios.
-- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
+- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initially `null`.
 - [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
 - [#15606](https://github.com/emberjs/ember.js/pull/15606) [BUGFIX] Add fs-extra to deps
 - [#15697](https://github.com/emberjs/ember.js/pull/15697) [BUGFIX] Move accessing meta out of the loop
@@ -1167,7 +1167,7 @@ Fixes a few issues:
 ### 2.16.1 (October 29, 2017)
 
 - [#15722](https://github.com/emberjs/ember.js/pull/15722) [BUGFIX] Avoid assertion when using `(get` helper with empty paths.
-- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
+- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initially `null`.
 - [#15613](https://github.com/emberjs/ember.js/pull/15613) [BUGFIX] Prevent an error from being thrown when partial set of query params are passed to the router service.
 - [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
 
@@ -1436,7 +1436,7 @@ Fixes a few issues:
 - [#13920](https://github.com/emberjs/ember.js/pull/13920) [BUGFIX] Add more info to the `Ember.Binding` deprecation.
 - [#13757](https://github.com/emberjs/ember.js/pull/13757) / [#13773](https://github.com/emberjs/ember.js/pull/13773) [CLEANUP] Remove legacy view layer features.
 - [#13819](https://github.com/emberjs/ember.js/pull/13819) [DOC] Add documentation for container (getOwner, etc.)
-- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-string-ishtmlsafe] Enable by defaut.
+- [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-string-ishtmlsafe] Enable by default.
 - [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-application-engines] Enable by default.
 - [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-runtime-enumerable-includes] Enable by default.
 - [#13855](https://github.com/emberjs/ember.js/pull/13855) [FEATURE ember-testing-check-waiters] Enable by default.
@@ -1690,7 +1690,7 @@ Fixes a few issues:
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [BUGFIX] Move `View#currentState` to `View#_currentState`.
 - [#12163](https://github.com/emberjs/ember.js/pull/12163) [DEPRECATION] Deprecate using the private `currentState` property on views/components.
 - [#12132](https://github.com/emberjs/ember.js/pull/12132) [BUGFIX] Fix stack overflow issue in `_super` wrapper updates.
-- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require `this._super(...arguments)` when components implement `didRecieveAttrs`.
+- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require `this._super(...arguments)` when components implement `didReceiveAttrs`.
 - [#12170](https://github.com/emberjs/ember.js/pull/12170) [BUGFIX release] Ensure `Ember.computed.sum` returns `0` if the array to be operated on is `null` or `undefined`.
 - [#12176](https://github.com/emberjs/ember.js/pull/12176) [BUGFIX] Enable extending `Ember.LinkComponent` for customizations.
 - [#10173](https://github.com/emberjs/ember.js/pull/10173) [BUGFIX] Ensure non-singleton injections are not cached incorrectly.
@@ -1859,7 +1859,7 @@ Fixes a few issues:
 
 ### 1.13.9 (August 22, 2015)
 
-- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require calling `this._super(...arguments)` in views/components when implementing `didRecieveAttrs`.
+- [#12138](https://github.com/emberjs/ember.js/pull/12138) [BUGFIX] Do not require calling `this._super(...arguments)` in views/components when implementing `didReceiveAttrs`.
 - [#12164](https://github.com/emberjs/ember.js/pull/12164) [BUGFIX] Properly handle block-less usage of a component without a template or layout specified in the component definition.
 
 ### 1.13.8 (August 13, 2015)
@@ -2868,7 +2868,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * [Fixes #2840] - textfield binding issue with null
 * Update Backburner.js
 * Make sure we are inside a run loop before syncing
-* Inline helper function, remove uneeded function call.
+* Inline helper function, remove unneeded function call.
 * Remove unnecessary function call from `Ember.normalizeTuple`
 * Ember.SortableMixin: new option sortFunction
 * Update docs so that `Ember.View.$` is a method, not a property.
@@ -3046,7 +3046,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 ### Ember 1.0.0-rc.3 _(April 19, 2013)_
 
 * fn.call is wasteful when the thisArg is not needed.
-* dont needlessly close-over and rebuild insertViewCollection
+* don't needlessly close-over and rebuild insertViewCollection
 * Don't apply href to LinkView that isn't using 'a' tag
 * Documents {{linkTo}}
 * Include ember-testing in full build
@@ -3089,7 +3089,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * s/nexts/these (nexts is not a word)
 * More verbose error message on failed linkTo routing attempts
 * viewName is a property
-* remove uneeded closures
+* remove unneeded closures
 * JSDoc should use {*} for mixed types instead of {anything} and {any}
 * add an "includeSelf" parameter to "invokeRecursively"
 * Fix ArrayController#length when content is not explicitly set
@@ -3112,7 +3112,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 * Use a string instead of an array in RenderBuffer
 * Convert a for in loop to a plain for loop
 * Improve view container lookup performance
-* remove uneeded asynchrony from Ember.Deferred tests
+* remove unneeded asynchrony from Ember.Deferred tests
 * remove unneeded asynchrony from routing tests
 * Add {{text area}}
 * Default text input action to 'enter'
@@ -3599,7 +3599,7 @@ Clearly, `component-a` has subscribed to `some-other-component`'s `action`. Prev
 
 * Significant internal performance improvements
 * Improved performance of RenderBuffer
-* Avoid unneceesary ping-ponging in binding updates
+* Avoid unnecessary ping-ponging in binding updates
 * Fix infinite loop caused by jQuery.extend with array in older browsers
 * Added ENV.SHIM_ES5 option to improve compatibility with Prototype.js
 * Added Ember.Evented mixin for internal events
