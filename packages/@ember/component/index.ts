@@ -1,18 +1,15 @@
-import {
-  setComponentTemplate as _setComponentTemplate,
-  getComponentTemplate as _getComponentTemplate,
-} from '@glimmer/manager';
-import {
-  componentCapabilities,
-  setComponentManager as _setComponentManager,
-} from '@ember/-internals/glimmer';
+export { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
+export { componentCapabilities, setComponentManager } from '@ember/-internals/glimmer';
 
 export { Component as default, Input, Textarea } from '@ember/-internals/glimmer';
 
 /**
  * Assigns a TemplateFactory to a component class.
  *
+ * @method setComponentTemplate
  * @module @ember/component
+ * @sttic
+ * @for @ember/component
  * @public
  *
  * ```js
@@ -32,12 +29,14 @@ export { Component as default, Input, Textarea } from '@ember/-internals/glimmer
  * @param {TemplateFactory} templateFactory
  * @param {object} componentDefinition
  */
-export const setComponentTemplate = _setComponentTemplate;
 
 /**
  * Returns the TemplateFactory associated with a component
  *
+ * @method getComponentTemplate
  * @module @ember/component
+ * @static
+ * @for @ember/component
  * @public
  *
  * ```js
@@ -55,7 +54,6 @@ export const setComponentTemplate = _setComponentTemplate;
  * @param {object} componentDefinition
  * @returns {TemplateFactory}
  */
-export const getComponentTemplate = _getComponentTemplate;
 
 /**
  * Tell the VM how manage a type of object / class when encountered
@@ -68,7 +66,10 @@ export const getComponentTemplate = _getComponentTemplate;
  * - destroyComponent()
  * - getContext()
  *
+ * @method setComponentManager
  * @module @ember/component
+ * @static
+ * @for @ember/component
  * @public
  *
  *
@@ -99,13 +100,14 @@ export const getComponentTemplate = _getComponentTemplate;
  * @param {object} object that will be managed by the return value of `managerFactory`
  *
  */
-export const setComponentManager = _setComponentManager;
 
 /**
  * Tells Glimmer what capabilities a Component Manager will have
  *
  * @module @ember/component
  * @method capabilities
+ * @static
+ * @for @ember/component
  * @public
  *
  * ```js
@@ -138,4 +140,3 @@ export const setComponentManager = _setComponentManager;
  * @property {boolean} hasSubOwner
  *
  */
-export const capabilities = componentCapabilities;
