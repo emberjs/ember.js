@@ -141,14 +141,6 @@ if (hasDOM) {
     onto the element. If you wanted a one-way binding, use `<input type="checkbox">` with
     `checked` and the `input` event instead.
 
-  ### Extending `TextField`
-
-  Internally, `<Input @type="text" />` creates an instance of `TextField`, passing arguments from
-  the helper to `TextField`'s `create` method. Subclassing `TextField` is supported but not
-  recommended.
-
-  See [TextField](/ember/release/classes/TextField)
-
   ### Checkbox
 
   To create an `<input type="checkbox">`:
@@ -161,17 +153,8 @@ if (hasDOM) {
   This will bind the checked state of this checkbox to the value of `isEmberized` -- if either one
   changes, it will be reflected in the other.
 
-  ### Extending `Checkbox`
-
-  Internally, `<Input @type="checkbox" />` creates an instance of `Checkbox`. Subclassing
-  `TextField` is supported but not recommended.
-
-  See [Checkbox](/ember/release/classes/Checkbox)
-
   @method Input
   @for Ember.Templates.components
-  @see {TextField}
-  @see {Checkbox}
   @param {Hash} options
   @public
 */
