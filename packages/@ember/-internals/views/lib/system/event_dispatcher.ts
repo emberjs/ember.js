@@ -25,7 +25,7 @@ const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
   @class EventDispatcher
   @namespace Ember
   @private
-  @extends Ember.Object
+  @extends EmberObject
 */
 export default class EventDispatcher extends EmberObject {
   /**
