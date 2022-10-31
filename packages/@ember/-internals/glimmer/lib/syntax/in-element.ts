@@ -27,8 +27,17 @@
  It also supports an optional named argument:
 
  - `insertBefore` -- by default the DOM element's content is replaced when used as
- `destinationElement`. Passing `null` changes the behaviour to appended at the end
- of any existing content. Any other value than `null` is currently not supported.
+ `destinationElement`. Passing `null` to `insertBefore` changes the behaviour to
+ append the block content to the end of any existing content. Any other value than
+ `null` is currently not supported.
+
+     For example:
+
+     ```handlebars
+     {{#in-element this.destinationElement insertBefore=null}}
+       <div>Some content</div>
+     {{/in-element}}
+     ```
 
  @method in-element
  @for Ember.Templates.helpers
