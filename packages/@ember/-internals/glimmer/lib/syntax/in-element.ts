@@ -31,12 +31,13 @@
  append the block content to the end of any existing content. Any other value than
  `null` is currently not supported.
 
- For example:
- ```handlebars
- {{#in-element this.destinationElement insertBefore=null}}
-  <div>Some content</div>
- {{/in-element}}
- ```
+     For example:
+
+     ```handlebars
+     {{#in-element this.destinationElement insertBefore=null}}
+       <div>Some content</div>
+     {{/in-element}}
+     ```
 
  @method in-element
  @for Ember.Templates.helpers
