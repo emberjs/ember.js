@@ -429,8 +429,7 @@ export function mapBy(dependentKey: string, propertyKey: string) {
 }
 
 /**
-  Filters the array down to the elements that pass the test implemented by the
-  callback.
+  Filters the array by the callback, like the `Array.prototype.filter` method.
 
   The callback method you provide should have the following signature:
   - `item` is the current item in the iteration.
@@ -441,8 +440,8 @@ export function mapBy(dependentKey: string, propertyKey: string) {
   function filterCallback(item, index, array);
   ```
 
-  In the callback method, return a value that coerces to true to keep the
-  element, or to false otherwise.
+  In the callback, return a truthy value that coerces to true to keep the
+  element, or a falsy to reject it.
 
   Example:
 
