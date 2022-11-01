@@ -124,7 +124,7 @@
     "ember-cli-dependency-checker": "^3.2.0",
     "ember-cli-yuidoc": "^0.9.1",
     "ember-publisher": "0.0.7",
-    "eslint": "^8.11.0",
+    "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-plugin-disable-features": "^0.1.3",
