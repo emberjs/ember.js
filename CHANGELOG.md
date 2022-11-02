@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.8.1 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
+
 ### v4.8.0 (October 17, 2022)
 
 - [#20180](https://github.com/emberjs/ember.js/pull/20180) [FEATURE] Publish an opt-in preview of public types for Ember
