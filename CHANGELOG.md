@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### v4.9.0-beta.3 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
+- [#20233](https://github.com/emberjs/ember.js/pull/20233) [BUGFIX] Include package name in deprecation error message
+- [#20235](https://github.com/emberjs/ember.js/pull/20235) [BUGFIX] Update `@types/node` for TS 4.9 issue
+- [#20238](https://github.com/emberjs/ember.js/pull/20238) [BUGFIX] Update Node.js versions to match support policy
+- [#20244](https://github.com/emberjs/ember.js/pull/20244) [BUGFIX] Expose getComponentTemplate type
+
 ### v4.8.1 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
