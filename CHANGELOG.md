@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.4.4 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties
+
 ## v3.28.10 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
