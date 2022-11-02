@@ -97,6 +97,36 @@ declare module '@ember/owner' {
     readonly class: Factory<T>;
   }
 
+  /**
+   * A record mapping all known items of a given type: if the item is known it
+   * will be `true`; otherwise it will be `false` or `undefined`.
+   */
+  export type KnownForTypeResult<Type extends string> = {
+    [FullName in `${Type}:${string}`]: boolean | undefined;
+  };
+
+  /**
+   * A `Resolver` is the mechanism responsible for looking up code in your
+   * application and converting its naming conventions into the actual classes,
+   * functions, and templates that Ember needs to resolve its dependencies, for
+   * example, what template to render for a given route. It is a system that helps
+   * the app resolve the lookup of JavaScript modules agnostic of what kind of
+   * module system is used, which can be AMD, CommonJS or just plain globals. It
+   * is used to lookup routes, models, components, templates, or anything that is
+   * used in your Ember app.
+   *
+   * This interface represents the contract a custom resolver must implement. Most
+   * apps never need to think about this: the application's resolver is supplied by
+   * `ember-resolver` in the default blueprint.
+   */
+  export interface Resolver {
+    resolve: (name: string) => Factory<object> | object | undefined;
+    knownForType?: <Type extends string>(type: Type) => KnownForTypeResult<Type>;
+    lookupDescription?: (fullName: FullName) => string;
+    makeToString?: (factory: Factory<object>, fullName: FullName) => string;
+    normalize?: (fullName: FullName) => string;
+  }
+
   // Don't export things unless we *intend* to.
   export {};
 }

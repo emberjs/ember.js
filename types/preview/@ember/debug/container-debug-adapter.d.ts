@@ -1,5 +1,5 @@
 declare module '@ember/debug/container-debug-adapter' {
-  import type { Resolver } from '@ember/-internals/resolver';
+  import type { Resolver } from '@ember/owner';
 
   /**
    * The ContainerDebugAdapter helps the container and resolver interface

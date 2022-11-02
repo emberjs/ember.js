@@ -3,7 +3,7 @@ declare module '@ember/engine' {
   import type RegistryProxyMixin from '@ember/engine/-private/registry-proxy-mixin';
   import type Initializer from '@ember/engine/-private/types/initializer';
   import type EngineInstance from '@ember/engine/instance';
-  import type { Resolver } from '@ember/-internals/resolver';
+  import type { Resolver } from '@ember/owner';
 
   /**
    * The `Engine` class contains core functionality for both applications and
