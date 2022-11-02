@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.4.4 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties
+
 ### v4.4.3 (October 12, 2022)
 
 - [#20166](https://github.com/emberjs/ember.js/pull/20166) [BUGFIX] Fix missing `RouteInfo` entries
