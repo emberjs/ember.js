@@ -13,6 +13,18 @@
 - [#20238](https://github.com/emberjs/ember.js/pull/20238) [BUGFIX] Update Node.js versions to match support policy
 - [#20244](https://github.com/emberjs/ember.js/pull/20244) [BUGFIX] Expose getComponentTemplate type
 
+### v4.4.4 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties
+
+## v3.28.10 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
+
+### v3.24.7 (November 2, 2022)
+
+- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
+
 ### v4.9.0-beta.2 (October 25, 2022)
 
 - [#20227](https://github.com/emberjs/ember.js/pull/20227) [BUGFIX] Fix unsafe internal cast for NativeArray
