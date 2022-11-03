@@ -5,9 +5,8 @@ declare module '@ember/application' {
   import { EventDispatcherEvents } from '@ember/application/types';
   import Router from '@ember/routing/router';
   import Registry from '@ember/application/-private/registry';
-  import type { Resolver } from '@ember/-internals/resolver';
   import { AnyFn } from 'ember/-private/type-utils';
-  import Owner from '@ember/owner';
+  import Owner, { Resolver } from '@ember/owner';
   import type GlimmerComponent from '@glimmer/component';
   import EmberObject from '@ember/object';
 

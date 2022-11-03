@@ -1,4 +1,11 @@
-import Owner, { Factory, FactoryManager, FullName, RegisterOptions } from '@ember/owner';
+import Owner, {
+  Factory,
+  FactoryManager,
+  FullName,
+  RegisterOptions,
+  Resolver,
+  KnownForTypeResult,
+} from '@ember/owner';
 import { expectTypeOf } from 'expect-type';
 
 // Just a class we can construct in the Factory and FactoryManager tests
@@ -52,6 +59,19 @@ aFactoryManager.create({ hasProps: true, otherStuff: 'nope' });
 expectTypeOf(aFactoryManager.create(goodPojo)).toEqualTypeOf<ConstructThis>();
 // @ts-expect-error
 aFactoryManager.create(badPojo);
+
+// ----- Resolver ----- //
+declare let resolver: Resolver;
+expectTypeOf<Resolver['normalize']>().toEqualTypeOf<((fullName: FullName) => string) | undefined>();
+expectTypeOf<Resolver['lookupDescription']>().toEqualTypeOf<
+  ((fullName: FullName) => string) | undefined
+>();
+expectTypeOf(resolver.resolve('some-name')).toEqualTypeOf<object | Factory<object> | undefined>();
+const knownForFoo = resolver.knownForType?.('foo');
+expectTypeOf(knownForFoo).toEqualTypeOf<KnownForTypeResult<'foo'> | undefined>();
+expectTypeOf(knownForFoo?.['foo:bar']).toEqualTypeOf<boolean | undefined>();
+// @ts-expect-error
+knownForFoo?.['blah'];
 
 // This one is last so it can reuse the bits from above!
 // ----- Owner ----- //

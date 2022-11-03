@@ -23,8 +23,6 @@
 import './ember';
 import './ember/-private/type-utils';
 
-import './@ember/-internals/resolver';
-
 import './@ember/application';
 import './@ember/application/-private/event-dispatcher';
 import './@ember/application/-private/registry';
