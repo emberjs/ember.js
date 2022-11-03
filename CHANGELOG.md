@@ -5,6 +5,10 @@
 - [#20256](https://github.com/emberjs/ember.js/pull/20256) [BUGFIX] Correct types for Ember Arrays
 - [#20257](https://github.com/emberjs/ember.js/pull/20257) [BUGFIX] Fix types for `getOwner` and GlimmerComponent
 
+### v4.8.2 (November 3, 2022)
+
+- [#20244](https://github.com/emberjs/ember.js/pull/20244) Add missing type for `getComponentTemplate` to preview types
+
 ### v4.9.0-beta.3 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
