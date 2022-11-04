@@ -7,15 +7,11 @@ declare module 'ember/-private/type-utils' {
 
   export type AnyMethod<Target> = (this: Target, ...args: any[]) => unknown;
 
-  export type MethodsOf<O> = {
-    [K in keyof O]: O[K] extends AnyFn ? O[K] : never;
-  };
-
-  // Not just `keyof MethodsOf<O>` because that doesn't correctly exclude all the
-  // `never` fields.
   export type MethodNamesOf<O> = {
     [K in keyof O]: O[K] extends AnyFn ? K : never;
   }[keyof O];
+
+  export type MethodsOf<O> = Pick<O, MethodNamesOf<O>>;
 
   export type MethodParams<T, M extends MethodNamesOf<T>> = Parameters<MethodsOf<T>[M]>;
 

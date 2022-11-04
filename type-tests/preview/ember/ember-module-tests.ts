@@ -153,7 +153,7 @@ expectTypeOf(Ember.Application.create()).toEqualTypeOf<Ember.Application>();
 expectTypeOf(new Ember.ApplicationInstance()).toEqualTypeOf<Ember.ApplicationInstance>();
 expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.ApplicationInstance>();
 // Ember.Array
-const a1: Ember.Array<string> = Ember.A([]);
+const a1: Ember.NativeArray<string> = Ember.A([]);
 // @ts-expect-error
 const a2: Ember.Array<string> = {};
 // Ember.ArrayProxy
@@ -232,13 +232,13 @@ class UsesMixin extends Ember.Object {
   }
 }
 // Ember.MutableArray
-const ma1: Ember.MutableArray<string> = Ember.A(['money', 'in', 'the', 'bananna', 'stand']);
-expectTypeOf(ma1.addObject('!')).toBeString();
-// @ts-expect-error
+const ma1: Ember.NativeArray<string> = Ember.A(['money', 'in', 'the', 'bananna', 'stand']);
+expectTypeOf(ma1.addObject('!')).toMatchTypeOf(ma1);
+// TODO: Ideally we'd mark the value as being invalid
 ma1.filterBy('');
 expectTypeOf(ma1.firstObject).toEqualTypeOf<string | undefined>();
 expectTypeOf(ma1.lastObject).toEqualTypeOf<string | undefined>();
-const ma2: Ember.MutableArray<{ name: string }> = Ember.A([
+const ma2: Ember.NativeArray<{ name: string }> = Ember.A([
   { name: 'chris' },
   { name: 'dan' },
   { name: 'james' },
