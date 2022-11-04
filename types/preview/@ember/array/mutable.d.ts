@@ -15,7 +15,7 @@ declare module '@ember/array/mutable' {
     /**
      * __Required.__ You must implement this method to apply this mixin.
      */
-    replace(idx: number, amt: number, objects: T[]): this;
+    replace(idx: number, amt: number, objects: T[]): void;
     /**
      * Remove all elements from the array. This is useful if you
      * want to reuse an existing array without having to recreate it.
@@ -45,12 +45,12 @@ declare module '@ember/array/mutable' {
      * Pop object from array or nil if none are left. Works just like `pop()` but
      * it is KVO-compliant.
      */
-    popObject(): T;
+    popObject(): T | null | undefined;
     /**
      * Shift an object from start of array or nil if none are left. Works just
      * like `shift()` but it is KVO-compliant.
      */
-    shiftObject(): T;
+    shiftObject(): T | null | undefined;
     /**
      * Unshift an object to start of array. Works just like `unshift()` but it is
      * KVO-compliant.
@@ -82,7 +82,7 @@ declare module '@ember/array/mutable' {
     /**
      * __Required.__ You must implement this method to apply this mixin.
      */
-    addObject(object: T): T;
+    addObject(object: T): this;
     /**
      * Adds each object in the passed enumerable to the receiver.
      */

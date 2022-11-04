@@ -16,20 +16,18 @@ expectTypeOf(people.get('lastObject')).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.get('firstObject')).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.isAny('isHappy')).toBeBoolean();
 expectTypeOf(people.isAny('isHappy', false)).toBeBoolean();
-// @ts-expect-error
+// TODO: Ideally we'd mark the value as being invalid
 people.isAny('isHappy', 'false');
 
 expectTypeOf(people.objectAt(0)).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<Ember.Array<Person | undefined>>();
 
 expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Ember.MutableArray<Person>>();
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Ember.NativeArray<Person>>();
 expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Ember.MutableArray<Person>>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Ember.NativeArray<Person>>();
 expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<
-  Ember.MutableArray<Person>
->();
+expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
 
 expectTypeOf(people.get('[]')).toEqualTypeOf<typeof people>();
 expectTypeOf(people.get('[]').get('firstObject')).toEqualTypeOf<Person | undefined>();
@@ -48,15 +46,14 @@ if (first) {
   expectTypeOf(first.get('isHappy')).toBeBoolean();
 }
 
-const letters: Ember.Array<string> = Ember.A(['a', 'b', 'c']);
+const letters: Ember.NativeArray<string> = Ember.A(['a', 'b', 'c']);
 const codes = letters.map((item, index, array) => {
   expectTypeOf(item).toBeString();
   expectTypeOf(index).toBeNumber();
-  expectTypeOf(array).toEqualTypeOf<Ember.Array<string>>();
+  expectTypeOf(array).toEqualTypeOf<string[]>();
   return item.charCodeAt(0);
 });
-expectTypeOf(codes).toMatchTypeOf<number[]>();
-expectTypeOf(codes).toEqualTypeOf<Ember.NativeArray<number>>();
+expectTypeOf(codes).toEqualTypeOf<number[]>();
 
 const value = '1,2,3';
 const filters = Ember.A(value.split(','));

@@ -544,7 +544,7 @@ export default class DataAdapter<T> extends EmberObject {
     @method getModelTypes
     @return {Array} Array of model types.
   */
-  getModelTypes(): NativeArray<{ klass: unknown; name: string }> {
+  getModelTypes(): Array<{ klass: unknown; name: string }> {
     let containerDebugAdapter = this.containerDebugAdapter;
 
     let stringTypes = containerDebugAdapter.canCatalogEntriesByType('model')
