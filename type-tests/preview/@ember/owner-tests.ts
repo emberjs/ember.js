@@ -1,5 +1,9 @@
 import Owner, { Factory, FactoryManager, FullName, RegisterOptions } from '@ember/owner';
+import Component from '@glimmer/component';
 import { expectTypeOf } from 'expect-type';
+// TODO: once we move the runtime export to `@ember/owner`, update this import
+// as well. (That's why it's tested in this module!)
+import { getOwner } from '@ember/application';
 
 // Just a class we can construct in the Factory and FactoryManager tests
 declare class ConstructThis {
@@ -122,6 +126,30 @@ typedStrings.map((aString) => owner.lookup(aString));
 // Also make sure it keeps working with const bindings
 const aConstName = 'type:name';
 expectTypeOf(owner.lookup(aConstName)).toBeUnknown();
+
+// Check handling with Glimmer components carrying a Signature: they should
+// properly resolve to `Owner`, *not* `Owner | undefined`.
+interface Sig<T> {
+  Args: {
+    name: string;
+    age: number;
+    extra: T;
+  };
+  Element: HTMLParagraphElement;
+  Blocks: {
+    default: [greeting: string];
+    extra: [T];
+  };
+}
+
+class ExampleComponent<T> extends Component<Sig<T>> {
+  checkThis() {
+    expectTypeOf(getOwner(this)).toEqualTypeOf<Owner>();
+  }
+}
+
+declare let example: ExampleComponent<string>;
+expectTypeOf(getOwner(example)).toEqualTypeOf<Owner>();
 
 // ----- Minimal further coverage for POJOs ----- //
 // `Factory` and `FactoryManager` don't have to deal in actual classes. :sigh:
