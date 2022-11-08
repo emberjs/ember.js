@@ -136,7 +136,14 @@ declare module '@ember/application' {
    * objects is the responsibility of an "owner", which handled its
    * instantiation and manages its lifetime.
    */
-  export function getOwner(object: FrameworkObject): Owner;
+  // SAFETY: this first overload is, strictly speaking, *unsafe*. It is possible
+  // to do `let x = EmberObject.create(); getOwner(x);` and the result will *not*
+  // be `Owner` but instead `undefined`. However, that's quite unusual at this
+  // point, and more to the point we cannot actually distinguish a `Service`
+  // subclass from `EmberObject` at this point: `Service` subclasses `EmberObject`
+  // and adds nothing to it. Accordingly, if we want to catch `Service`s with this
+  // (and `getOwner(this)` for some service will definitely be defined!), it has
+  // to be this way. :sigh:
   export function getOwner(object: KnownFrameworkObject): Owner;
   export function getOwner(object: unknown): Owner | undefined;
   /**
