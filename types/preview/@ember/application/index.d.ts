@@ -122,7 +122,13 @@ declare module '@ember/application' {
   // whenever we add new base classes to the framework. For example, if we
   // introduce a standalone `Service` or `Route` base class which *does not*
   // extend from `EmberObject`, it will need to be added here.
-  type FrameworkObject = EmberObject | GlimmerComponent;
+  //
+  // NOTE: we use `any` here because we need to make sure *not* to fix the
+  // actual GlimmerComponent type; using `unknown` or `{}` or `never` (the
+  // obvious alternatives here) results in a version which is too narrow, such
+  // that any subclass which applies a signature does not get resolved by the
+  // definition of `getOwner()` below.
+  type KnownFrameworkObject = EmberObject | GlimmerComponent<any>;
 
   /**
    * Framework objects in an Ember application (components, services, routes, etc.)
@@ -131,6 +137,7 @@ declare module '@ember/application' {
    * instantiation and manages its lifetime.
    */
   export function getOwner(object: FrameworkObject): Owner;
+  export function getOwner(object: KnownFrameworkObject): Owner;
   export function getOwner(object: unknown): Owner | undefined;
   /**
    * `setOwner` forces a new owner on a given object instance. This is primarily
