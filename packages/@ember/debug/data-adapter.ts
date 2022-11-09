@@ -552,14 +552,14 @@ export default class DataAdapter<T> extends EmberObject {
       : this._getObjectsOnNamespaces();
 
     // New adapters return strings instead of classes.
-    let klassTypes = emberA(stringTypes).map((name) => {
+    let klassTypes = stringTypes.map((name) => {
       return {
         klass: this._nameToClass(name),
         name,
       };
     });
 
-    return emberA(klassTypes).filter((type) => this.detect(type.klass));
+    return klassTypes.filter((type) => this.detect(type.klass));
   }
 
   /**
@@ -571,8 +571,8 @@ export default class DataAdapter<T> extends EmberObject {
     @return {Array} Array of model type strings.
   */
   _getObjectsOnNamespaces() {
-    let namespaces = emberA(Namespace.NAMESPACES);
-    let types = emberA<string>();
+    let namespaces = Namespace.NAMESPACES;
+    let types: string[] = [];
 
     namespaces.forEach((namespace) => {
       for (let key in namespace) {
