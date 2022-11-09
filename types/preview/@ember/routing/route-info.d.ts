@@ -1,5 +1,4 @@
 declare module '@ember/routing/route-info' {
-  // https://api.emberjs.com/ember/4.0/classes/RouteInfo
   /**
    * A `RouteInfo` is an object that contains metadata about a specific route within a `Transition`.
    * It is read-only and internally immutable.
