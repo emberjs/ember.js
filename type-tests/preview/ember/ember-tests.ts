@@ -112,14 +112,13 @@ people.invoke('sayHello');
 // @ts-expect-error
 people.invoke('name');
 
-type Arr = Ember.NativeArray<
-  Ember.Object & {
-    name?: string;
-  }
->;
-const arr: Arr = Ember.A([Ember.Object.create(), Ember.Object.create()]);
-expectTypeOf(arr.setEach('name', 'unknown')).toEqualTypeOf<void>();
-expectTypeOf(arr.setEach('name', undefined)).toEqualTypeOf<void>();
+class Obj extends Ember.Object {
+  name?: string;
+}
+
+const arr: Ember.NativeArray<Obj> = Ember.A([Ember.Object.create(), Ember.Object.create()]);
+expectTypeOf(arr.setEach('name', 'unknown')).toEqualTypeOf(arr);
+expectTypeOf(arr.setEach('name', undefined)).toEqualTypeOf(arr);
 expectTypeOf(arr.getEach('name')).toEqualTypeOf<Ember.NativeArray<string | undefined>>();
 // @ts-expect-error
 arr.setEach('age', 123);
@@ -141,7 +140,7 @@ people2.every(isHappy);
 people2.any(isHappy);
 people2.isEvery('isHappy');
 people2.isEvery('isHappy', true);
-// @ts-expect-error
+// TODO: Ideally we'd mark the value as being invalid
 people2.isAny('isHappy', 'true');
 people2.isAny('isHappy', true);
 people2.isAny('isHappy');

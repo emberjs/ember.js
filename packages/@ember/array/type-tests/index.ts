@@ -25,8 +25,11 @@ class Target {
 
 let target = new Target();
 
-expectTypeOf(arr).toMatchTypeOf<EmberArray<Foo>>();
-expectTypeOf(arr).toMatchTypeOf<MutableArray<Foo>>();
+// NativeArray does not exactly extend the interface of EmberArray and MutableArray,
+// since native methods are not overwritten.
+expectTypeOf(arr).not.toMatchTypeOf<EmberArray<Foo>>();
+expectTypeOf(arr).not.toMatchTypeOf<MutableArray<Foo>>();
+
 expectTypeOf(arr).toEqualTypeOf<NativeArray<Foo>>();
 
 expectTypeOf(arr.length).toEqualTypeOf<number>();
@@ -37,9 +40,9 @@ expectTypeOf(arr.firstObject).toEqualTypeOf<Foo | undefined>();
 
 expectTypeOf(arr.lastObject).toEqualTypeOf<Foo | undefined>();
 
-expectTypeOf(arr.slice()).toEqualTypeOf<NativeArray<Foo>>();
-expectTypeOf(arr.slice(1)).toEqualTypeOf<NativeArray<Foo>>();
-expectTypeOf(arr.slice(1, 2)).toEqualTypeOf<NativeArray<Foo>>();
+expectTypeOf(arr.slice()).toEqualTypeOf<Foo[]>();
+expectTypeOf(arr.slice(1)).toEqualTypeOf<Foo[]>();
+expectTypeOf(arr.slice(1, 2)).toEqualTypeOf<Foo[]>();
 
 expectTypeOf(arr.indexOf(new Foo())).toEqualTypeOf<number>();
 // @ts-expect-error checks param type
@@ -49,7 +52,7 @@ expectTypeOf(arr.lastIndexOf(new Foo())).toEqualTypeOf<number>();
 // @ts-expect-error checks param type
 arr.lastIndexOf('invalid');
 
-expectTypeOf(arr.forEach((item: Foo) => String(item))).toEqualTypeOf(arr);
+expectTypeOf(arr.forEach((item: Foo) => String(item))).toEqualTypeOf<void>();
 
 arr.forEach((item, index, arr) => {
   expectTypeOf(this).toEqualTypeOf<undefined>();
@@ -58,18 +61,19 @@ arr.forEach((item, index, arr) => {
   expectTypeOf(arr).toEqualTypeOf(arr);
 });
 arr.forEach(function (_item) {
-  expectTypeOf(this).toEqualTypeOf(target);
+  // No-op
 }, target);
 
 expectTypeOf(arr.getEach('bar')).toEqualTypeOf<NativeArray<number>>();
-expectTypeOf(arr.getEach('missing')).toEqualTypeOf<NativeArray<unknown>>();
+// @ts-expect-error Unknown property
+arr.getEach('missing');
 
 expectTypeOf(arr.setEach('bar', 2)).toEqualTypeOf(arr);
-// @ts-expect-error string is not assignable to bar
+// @ts-expect-error Invalid value
 arr.setEach('bar', 'string');
 
-// Can set unknown property
-expectTypeOf(arr.setEach('missing', 'anything')).toEqualTypeOf(arr);
+// @ts-expect-error Unknown property
+arr.setEach('missing', 'anything');
 
 let mapped = arr.map((item, index, arr) => {
   expectTypeOf(item).toEqualTypeOf<Foo>();
@@ -77,10 +81,10 @@ let mapped = arr.map((item, index, arr) => {
   expectTypeOf(arr).toEqualTypeOf(arr);
   return 1;
 });
-expectTypeOf(mapped).toEqualTypeOf<NativeArray<number>>();
+expectTypeOf(mapped).toEqualTypeOf<number[]>();
 
 arr.map(function (_item) {
-  expectTypeOf(this).toEqualTypeOf(target);
+  return true;
 }, target);
 
 expectTypeOf(arr.mapBy('bar')).toEqualTypeOf<NativeArray<number>>();
@@ -92,9 +96,8 @@ let filtered = arr.filter((item, index, arr) => {
   expectTypeOf(arr).toEqualTypeOf(arr);
   return true;
 });
-expectTypeOf(filtered).toEqualTypeOf<NativeArray<Foo>>();
+expectTypeOf(filtered).toEqualTypeOf<Foo[]>();
 arr.filter(function (_item) {
-  expectTypeOf(this).toEqualTypeOf(target);
   return true;
 }, target);
 
@@ -118,9 +121,11 @@ expectTypeOf(arr.rejectBy('missing')).toEqualTypeOf<NativeArray<Foo>>();
 
 expectTypeOf(arr.findBy('bar')).toEqualTypeOf<Foo | undefined>();
 arr.findBy('bar', 1);
-// @ts-expect-error value has incorrect type
+// TODO: Ideally we'd mark the value as being invalid
 arr.findBy('bar', 'invalid');
-arr.findBy('missing', 'whatever');
+// Allows any value to be passed to an unkown property
+expectTypeOf(arr.findBy('missing', 'whatever')).toEqualTypeOf<Foo | undefined>();
+expectTypeOf(arr.findBy('bar')).toEqualTypeOf<Foo | undefined>();
 
 let isEvery = arr.every((item, index, arr) => {
   expectTypeOf(item).toEqualTypeOf<Foo>();
@@ -130,15 +135,15 @@ let isEvery = arr.every((item, index, arr) => {
 });
 expectTypeOf(isEvery).toEqualTypeOf<boolean>();
 arr.every(function (_item) {
-  expectTypeOf(this).toEqualTypeOf(target);
   return true;
 }, target);
 
 expectTypeOf(arr.isEvery('bar')).toEqualTypeOf<boolean>();
 arr.isEvery('bar', 1);
-// @ts-expect-error value has incorrect type
+// TODO: Ideally we'd mark the value as being invalid
 arr.isEvery('bar', 'invalid');
-arr.isEvery('missing', 'whatever');
+// Allows any value to be passed to an unknown property
+expectTypeOf(arr.isEvery('missing', 'whatever')).toEqualTypeOf<boolean>();
 
 let isAny = arr.any((item, index, arr) => {
   expectTypeOf(item).toEqualTypeOf<Foo>();
@@ -154,9 +159,10 @@ arr.any(function (_item) {
 
 expectTypeOf(arr.isAny('bar')).toEqualTypeOf<boolean>();
 arr.isAny('bar', 1);
-// @ts-expect-error value has incorrect type
+// TODO: Ideally we'd mark the value as being invalid
 arr.isAny('bar', 'invalid');
-arr.isAny('missing', 'whatever');
+// Allows any value to be passed to an unknown property
+expectTypeOf(arr.isAny('missing', 'whatever')).toEqualTypeOf<boolean>();
 
 let reduced = arr.reduce((summation, item, index, arr) => {
   expectTypeOf(summation).toEqualTypeOf<number>();
@@ -166,16 +172,14 @@ let reduced = arr.reduce((summation, item, index, arr) => {
   return 1;
 }, 1);
 expectTypeOf(reduced).toEqualTypeOf<number>();
-// NOTE: This doesn't match native behavior and is a bit weird
-expectTypeOf(arr.reduce((summation, _item) => summation)).toEqualTypeOf<unknown>();
+expectTypeOf(arr.reduce((summation, _item) => summation)).toEqualTypeOf<Foo>();
 
 expectTypeOf(arr.invoke('hi')).toEqualTypeOf<NativeArray<string>>();
 expectTypeOf(arr.invoke('withArgs', 1, 'two')).toEqualTypeOf<NativeArray<string>>();
 // @ts-expect-error Doesn't allow calling with invalid args
 arr.invoke('withArgs', 'invalid');
-expectTypeOf(arr.invoke('missing')).toEqualTypeOf<NativeArray<unknown>>();
-// Currently, args passed to unrecognized methods are ignored
-arr.invoke('missing', 'invalid');
+// @ts-expect-error Doesn't allow calling with invalid method
+arr.invoke('missing');
 
 expectTypeOf(arr.toArray()).toEqualTypeOf<Foo[]>();
 

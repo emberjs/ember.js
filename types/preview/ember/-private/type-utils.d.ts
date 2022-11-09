@@ -7,15 +7,19 @@ declare module 'ember/-private/type-utils' {
 
   export type AnyMethod<Target> = (this: Target, ...args: any[]) => unknown;
 
-  export type MethodsOf<O> = {
-    [K in keyof O]: O[K] extends AnyFn ? O[K] : never;
+  // The formatting here is designed to help make this type actually be
+  // comprehensible to mortals, including the mortals who came up with it.
+  // prettier-ignore
+  export type MethodsOf<T> = {
+    // This `keyof` check is the thing which gives us *only* these keys, and no
+    // `foo: never` appears in the final type.
+    [K in keyof T as T[K] extends AnyFn ? K : never]:
+      // While this makes sure the resolved type only has `AnyFn` in it, so that
+      // the resulting type is known to be only function types.
+      T[K] extends AnyFn ? T[K] : never;
   };
 
-  // Not just `keyof MethodsOf<O>` because that doesn't correctly exclude all the
-  // `never` fields.
-  export type MethodNamesOf<O> = {
-    [K in keyof O]: O[K] extends AnyFn ? K : never;
-  }[keyof O];
+  export type MethodNamesOf<T> = keyof MethodsOf<T>;
 
   export type MethodParams<T, M extends MethodNamesOf<T>> = Parameters<MethodsOf<T>[M]>;
 
@@ -24,16 +28,15 @@ declare module 'ember/-private/type-utils' {
   // prettier-ignore
   /** Get the return value of a method string name or a function. */
   export type EmberMethodParams<T, M extends EmberMethod<T>> =
-  M extends AnyMethod<T> ? Parameters<M> :
-  M extends keyof T ? T[M] extends AnyMethod<T> ? Parameters<MethodsOf<T>[M]> : never :
-  never;
+    // For a basic method, we can just use the direct accessor.
+    M extends AnyMethod<T> ? Parameters<M> :
+    M extends MethodNamesOf<T> ? Parameters<MethodsOf<T>[M]> : never;
 
   // prettier-ignore
   /** Get the return value of a method string name or a function. */
   export type EmberMethodReturn<T, M extends EmberMethod<T>> =
-  M extends AnyMethod<T> ? ReturnType<M> :
-  M extends keyof T ? T[M] extends AnyMethod<T> ? ReturnType<MethodsOf<T>[M]> : never :
-  never;
+    M extends AnyMethod<T> ? ReturnType<M> :
+    M extends MethodNamesOf<T> ? ReturnType<MethodsOf<T>[M]> : never;
 
   /**
    * A type utility for Ember's common name-of-object-on-target-or-function

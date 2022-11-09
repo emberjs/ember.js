@@ -20,12 +20,12 @@ import MutableEnumerable from '@ember/enumerable/mutable';
 import { compare, typeOf } from '@ember/utils';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '@ember/object/observable';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utils/types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 
 export { makeArray } from '@ember/-internals/utils';
 
-type Value<T, K extends string> = K extends keyof T ? T[K] : unknown;
+export type EmberArrayLike<T> = EmberArray<T> | NativeArray<T>;
 
 const EMPTY_ARRAY = Object.freeze([] as const);
 
@@ -319,7 +319,8 @@ interface EmberArray<T> extends Enumerable {
     @return this
     @public
   */
-  '[]': this;
+  get '[]'(): this;
+  set '[]'(newValue: T[] | EmberArray<T>);
   /**
     The first object in the array, or `undefined` if the array is empty.
 
@@ -515,7 +516,7 @@ interface EmberArray<T> extends Enumerable {
     @return {Array} The mapped array.
     @public
   */
-  getEach<K extends string>(key: K): NativeArray<Value<T, K>>;
+  getEach<K extends keyof T>(key: K): NativeArray<T[K]>;
   /**
     Sets the value on the named property for each member. This is more
     ergonomic than using other methods defined on this helper. If the object
@@ -535,7 +536,7 @@ interface EmberArray<T> extends Enumerable {
     @return {Object} receiver
     @public
   */
-  setEach<K extends string>(key: K, value: Value<T, K>): this;
+  setEach<K extends keyof T>(key: K, value: T[K]): this;
   /**
     Maps all of the items in the enumeration to another value, returning
     a new array. This method corresponds to `map()` defined in JavaScript 1.6.
@@ -593,7 +594,8 @@ interface EmberArray<T> extends Enumerable {
     @return {Array} The mapped array.
     @public
   */
-  mapBy<K extends string>(key: K): NativeArray<Value<T, K>>;
+  mapBy<K extends keyof T>(key: K): NativeArray<T[K]>;
+  mapBy(key: string): NativeArray<unknown>;
   /**
     Returns a new array with all of the items in the enumeration that the provided
     callback function returns true for. This method corresponds to [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter).
@@ -746,10 +748,6 @@ interface EmberArray<T> extends Enumerable {
     @public
   */
   rejectBy(key: string, value?: unknown): NativeArray<T>;
-  find<S extends T, Target = void>(
-    predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
-    thisArg?: Target
-  ): S | undefined;
   /**
     Returns the first item in the array for which the callback returns true.
     This method is similar to the `find()` method defined in ECMAScript 2015.
@@ -792,6 +790,10 @@ interface EmberArray<T> extends Enumerable {
     @return {Object} Found item or `undefined`.
     @public
   */
+  find<S extends T, Target = void>(
+    predicate: (this: void, value: T, index: number, obj: T[]) => value is S,
+    thisArg?: Target
+  ): S | undefined;
   find<Target = void>(
     callback: (this: Target, item: T, index: number, arr: this) => unknown,
     target?: Target
@@ -824,7 +826,8 @@ interface EmberArray<T> extends Enumerable {
     @return {Object} found item or `undefined`
     @public
   */
-  findBy<K extends string>(key: K, value?: Value<T, K>): T | undefined;
+  findBy<K extends keyof T>(key: K, value?: T[K]): T | undefined;
+  findBy(key: string, value?: unknown): T | undefined;
   /**
     Returns `true` if the passed function returns true for every item in the
     enumeration. This corresponds with the `Array.prototype.every()` method defined in ES5.
@@ -904,7 +907,8 @@ interface EmberArray<T> extends Enumerable {
     @since 1.3.0
     @public
   */
-  isEvery<K extends string>(key: K, value?: Value<T, K>): boolean;
+  isEvery<K extends keyof T>(key: K, value?: T[K]): boolean;
+  isEvery(key: string, value?: unknown): boolean;
   /**
     The any() method executes the callback function once for each element
     present in the array until it finds the one where callback returns a truthy
@@ -972,7 +976,8 @@ interface EmberArray<T> extends Enumerable {
     @since 1.3.0
     @public
   */
-  isAny<K extends string>(key: K, value?: Value<T, K>): boolean;
+  isAny<K extends keyof T>(key: K, value?: T[K]): boolean;
+  isAny(key: string, value?: unknown): boolean;
   /**
     This will combine the values of the array into a single value. It
     is a useful way to collect a summary value from an array. This
@@ -1061,10 +1066,10 @@ interface EmberArray<T> extends Enumerable {
     @return {Array} return values from calling invoke.
     @public
   */
-  invoke<K extends string>(
-    methodName: K,
-    ...args: Value<T, K> extends AnyFn ? Parameters<Value<T, K>> : unknown[]
-  ): NativeArray<Value<T, K> extends AnyFn ? ReturnType<Value<T, K>> : unknown>;
+  invoke<M extends MethodNamesOf<T>>(
+    methodName: M,
+    ...args: MethodParams<T, M>
+  ): NativeArray<MethodReturns<T, M>>;
   /**
     Simply converts the object into a genuine array. The order is not
     guaranteed. Corresponds to the method implemented by Prototype.
@@ -1086,7 +1091,7 @@ interface EmberArray<T> extends Enumerable {
     @return {Array} the array without null and undefined elements.
     @public
   */
-  compact(): NativeArray<Exclude<T, null>>;
+  compact(): NativeArray<NonNullable<T>>;
   /**
     Used to determine if the array contains the passed object.
     Returns `true` if found, `false` otherwise.
@@ -1176,6 +1181,7 @@ interface EmberArray<T> extends Enumerable {
     @public
   */
   uniqBy(key: string): NativeArray<T>;
+  uniqBy(callback: (value: T) => unknown): NativeArray<T>;
   /**
     Returns a new array that excludes the passed value. The default
     implementation returns an array regardless of the receiver type.
@@ -1567,7 +1573,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
     @return object same object passed as a param
     @public
   */
-  pushObject(obj: T): this;
+  pushObject(obj: T): T;
   /**
     Add the objects in the passed array to the end of the array. Defers
     notifying observers of the change until all objects are added.
@@ -1599,7 +1605,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
     @return object
     @public
   */
-  popObject(): T | undefined;
+  popObject(): T | null | undefined;
   /**
     Shift an object from start of array or nil if none are left. Works just
     like `shift()` but it is KVO-compliant.
@@ -1632,7 +1638,7 @@ interface MutableArray<T> extends EmberArray<T>, MutableEnumerable {
     @return object same object passed as a param
     @public
   */
-  unshiftObject(object: T): this;
+  unshiftObject(object: T): T;
   /**
     Adds the named objects to the beginning of the array. Defers notifying
     observers until all objects have been added.
@@ -1892,6 +1898,167 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 /**
 @module ember
 */
+
+type AnyArray<T> = EmberArray<T> | Array<T>;
+
+/**
+ * The final definition of NativeArray removes all native methods. This is the list of removed methods
+ * when run in Chrome 106.
+ */
+type IGNORED_MUTABLE_ARRAY_METHODS =
+  | 'length'
+  | 'slice'
+  | 'indexOf'
+  | 'lastIndexOf'
+  | 'forEach'
+  | 'map'
+  | 'filter'
+  | 'find'
+  | 'every'
+  | 'reduce'
+  | 'includes';
+
+/**
+ * These additional items must be redefined since `Omit` causes methods that return `this` to return the
+ * type at the time of the Omit.
+ */
+type RETURN_SELF_ARRAY_METHODS =
+  | '[]'
+  | 'clear'
+  | 'insertAt'
+  | 'removeAt'
+  | 'pushObjects'
+  | 'unshiftObjects'
+  | 'reverseObjects'
+  | 'setObjects'
+  | 'removeObject'
+  | 'removeObjects'
+  | 'addObject'
+  | 'addObjects'
+  | 'setEach';
+
+// This is the same as MutableArray, but removes the actual native methods that exist on Array.prototype.
+interface MutableArrayWithoutNative<T>
+  extends Omit<MutableArray<T>, IGNORED_MUTABLE_ARRAY_METHODS | RETURN_SELF_ARRAY_METHODS> {
+  /**
+   * Remove all elements from the array. This is useful if you
+   * want to reuse an existing array without having to recreate it.
+   */
+  clear(): this;
+  /**
+   * This will use the primitive `replace()` method to insert an object at the
+   * specified index.
+   */
+  insertAt(idx: number, object: T): this;
+  /**
+   * Remove an object at the specified index using the `replace()` primitive
+   * method. You can pass either a single index, or a start and a length.
+   */
+  removeAt(start: number, len?: number): this;
+  /**
+   * Add the objects in the passed numerable to the end of the array. Defers
+   * notifying observers of the change until all objects are added.
+   */
+  pushObjects(objects: AnyArray<T>): this;
+  /**
+   * Adds the named objects to the beginning of the array. Defers notifying
+   * observers until all objects have been added.
+   */
+  unshiftObjects(objects: AnyArray<T>): this;
+  /**
+   * Reverse objects in the array. Works just like `reverse()` but it is
+   * KVO-compliant.
+   */
+  reverseObjects(): this;
+  /**
+   * Replace all the receiver's content with content of the argument.
+   * If argument is an empty array receiver will be cleared.
+   */
+  setObjects(objects: AnyArray<T>): this;
+  /**
+    Remove all occurrences of an object in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin', 'Lima', 'Chicago'];
+
+    cities.removeObject('Chicago');  // ['Berlin', 'Lima']
+    cities.removeObject('Lima');     // ['Berlin']
+    cities.removeObject('Tokyo')     // ['Berlin']
+    ```
+
+    @method removeObject
+    @param {*} obj object to remove
+    @return {EmberArray} receiver
+    @public
+  */
+  removeObject(object: T): this;
+  /**
+   * Removes each object in the passed array from the receiver.
+   */
+  removeObjects(objects: AnyArray<T>): this;
+  /**
+    Push the object onto the end of the array if it is not already
+    present in the array.
+
+    ```javascript
+    let cities = ['Chicago', 'Berlin'];
+
+    cities.addObject('Lima');    // ['Chicago', 'Berlin', 'Lima']
+    cities.addObject('Berlin');  // ['Chicago', 'Berlin', 'Lima']
+    ```
+
+    @method addObject
+    @param {*} obj object to add, if not already present
+    @return {EmberArray} receiver
+    @public
+  */
+  addObject(obj: T): this;
+  /**
+   * Adds each object in the passed enumerable to the receiver.
+   */
+  addObjects(objects: AnyArray<T>): this;
+  /**
+    Sets the value on the named property for each member. This is more
+    ergonomic than using other methods defined on this helper. If the object
+    implements Observable, the value will be changed to `set(),` otherwise
+    it will be set directly. `null` objects are skipped.
+
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+
+    people.setEach('zipCode', '10011');
+    // [{name: 'Joe', zipCode: '10011'}, {name: 'Matt', zipCode: '10011'}];
+    ```
+
+    @method setEach
+    @param {String} key The key to set
+    @param {Object} value The object to set
+    @return {Object} receiver
+    @public
+  */
+  setEach<K extends keyof T>(key: K, value: T[K]): this;
+  /**
+    This is the handler for the special array content property. If you get
+    this property, it will return this. If you set this property to a new
+    array, it will replace the current content.
+
+    ```javascript
+    let peopleToMoon = ['Armstrong', 'Aldrin'];
+
+    peopleToMoon.get('[]'); // ['Armstrong', 'Aldrin']
+
+    peopleToMoon.set('[]', ['Collins']); // ['Collins']
+    peopleToMoon.get('[]'); // ['Collins']
+    ```
+
+    @property []
+    @return this
+    @public
+  */
+  get '[]'(): this;
+  set '[]'(newValue: T[] | this);
+}
+
 /**
   The NativeArray mixin contains the properties needed to make the native
   Array support MutableArray and all of its dependent APIs. Unless you
@@ -1904,10 +2071,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
   @uses Observable
   @public
 */
-interface NativeArray<T>
-  extends Omit<Array<T>, 'every' | 'filter' | 'find' | 'forEach' | 'map' | 'reduce' | 'slice'>,
-    MutableArray<T>,
-    Observable {}
+interface NativeArray<T> extends Array<T>, Observable, MutableArrayWithoutNative<T> {}
 
 let NativeArray = Mixin.create(MutableArray, Observable, {
   objectAt(idx: number) {

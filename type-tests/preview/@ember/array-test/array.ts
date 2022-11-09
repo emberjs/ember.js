@@ -3,6 +3,7 @@ import type Array from '@ember/array';
 import { A } from '@ember/array';
 import type MutableArray from '@ember/array/mutable';
 import { expectTypeOf } from 'expect-type';
+import NativeArray from '@ember/array/-private/native-array';
 
 class Person extends EmberObject {
   name = '';
@@ -19,20 +20,18 @@ expectTypeOf(people.get('lastObject')).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.get('firstObject')).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.isAny('isHappy')).toBeBoolean();
 expectTypeOf(people.isAny('isHappy', false)).toBeBoolean();
-// @ts-expect-error -- string != boolean
+// TODO: Ideally we'd mark the value as being invalid
 people.isAny('isHappy', 'false');
 
 expectTypeOf(people.objectAt(0)).toEqualTypeOf<Person | undefined>();
 expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<Array<Person | undefined>>();
 
 expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<MutableArray<Person>>();
+expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<NativeArray<Person>>();
 expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<MutableArray<Person>>();
+expectTypeOf(people.rejectBy('isHappy')).toMatchTypeOf<NativeArray<Person>>();
 expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
-expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<
-  MutableArray<Person>
->();
+expectTypeOf(people.filter((person) => person.get('name') === 'Yehuda')).toMatchTypeOf<Person[]>();
 
 expectTypeOf(people.get('[]')).toEqualTypeOf<typeof people>();
 expectTypeOf(people.get('[]').get('firstObject')).toEqualTypeOf<Person | undefined>();

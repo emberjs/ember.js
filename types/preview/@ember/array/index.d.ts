@@ -73,7 +73,7 @@ declare module '@ember/array' {
      * implements Ember.Observable, the value will be changed to `set(),` otherwise
      * it will be set directly. `null` objects are skipped.
      */
-    setEach<K extends keyof T>(key: K, value: T[K]): void;
+    setEach<K extends keyof T>(key: K, value: T[K]): this;
     /**
      * Maps all of the items in the enumeration to another value, returning
      * a new array. This method corresponds to `map()` defined in JavaScript 1.6.
@@ -111,12 +111,14 @@ declare module '@ember/array' {
      * this will match any property that evaluates to `true`.
      */
     filterBy<K extends keyof T>(key: K, value?: T[K]): NativeArray<T>;
+    filterBy(key: string, value?: unknown): NativeArray<T>;
     /**
      * Returns an array with the items that do not have truthy values for
      * key.  You can pass an optional second argument with the target value.  Otherwise
      * this will match any property that evaluates to false.
      */
     rejectBy<K extends keyof T>(key: K, value?: T[K]): NativeArray<T>;
+    rejectBy(key: string, value?: unknown): NativeArray<T>;
     /**
      * Returns the first item in the array for which the callback returns true.
      * This method works similar to the `filter()` method defined in JavaScript 1.6
@@ -136,6 +138,7 @@ declare module '@ember/array' {
      * this will match any property that evaluates to `true`.
      */
     findBy<K extends keyof T>(key: K, value?: T[K]): T | undefined;
+    findBy(key: string, value?: unknown): T | undefined;
     /**
      * Returns `true` if the passed function returns true for every item in the
      * enumeration. This corresponds with the `every()` method in JavaScript 1.6.
@@ -150,6 +153,7 @@ declare module '@ember/array' {
      * than using a callback.
      */
     isEvery<K extends keyof T>(key: K, value?: T[K]): boolean;
+    isEvery(key: string, value?: unknown): boolean;
     /**
      * Returns `true` if the passed function returns true for any item in the
      * enumeration.
@@ -164,12 +168,16 @@ declare module '@ember/array' {
      * than using a callback.
      */
     isAny<K extends keyof T>(key: K, value?: T[K]): boolean;
+    isAny(key: string, value?: unknown): boolean;
     /**
      * This will combine the values of the enumerator into a single value. It
      * is a useful way to collect a summary value from an enumeration. This
      * corresponds to the `reduce()` method defined in JavaScript 1.8.
      */
-    reduce: T[]['reduce'];
+    reduce<V>(
+      callback: (summation: V, current: T, index: number, arr: this) => V,
+      initialValue?: V
+    ): V;
     /**
      * Invokes the named method on every object in the receiver that
      * implements it. This method corresponds to the implementation in
@@ -178,7 +186,7 @@ declare module '@ember/array' {
     invoke<M extends MethodNamesOf<T>>(
       methodName: M,
       ...args: MethodParams<T, M>
-    ): Array<MethodReturns<T, M>>;
+    ): NativeArray<MethodReturns<T, M>>;
     /**
      * Simply converts the enumerable into a genuine array. The order is not
      * guaranteed. Corresponds to the method implemented by Prototype.
@@ -196,7 +204,7 @@ declare module '@ember/array' {
      * Converts the enumerable into an array and sorts by the keys
      * specified in the argument.
      */
-    sortBy(...properties: string[]): NativeArray<T>;
+    sortBy(...properties: string[]): T[];
     /**
      * Returns a new enumerable that excludes the passed value. The default
      * implementation returns an array regardless of the receiver type.
@@ -219,8 +227,8 @@ declare module '@ember/array' {
      * this property, it will return this. If you set this property to a new
      * array, it will replace the current content.
      */
-    get '[]'(): NativeArray<T>;
-    set '[]'(newValue: NativeArray<T>);
+    get '[]'(): this;
+    set '[]'(newValue: T[] | Array<T>);
   }
   // Ember.Array rather than Array because the `array-type` lint rule doesn't realize the global is shadowed
   const Array: Mixin;

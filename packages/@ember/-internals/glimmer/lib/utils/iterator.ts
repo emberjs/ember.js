@@ -5,6 +5,7 @@ import type { Option } from '@glimmer/interfaces';
 import type { IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
+import type { NativeArray } from '@ember/array';
 
 export default function toIterator(iterable: unknown): Option<IteratorDelegate> {
   if (iterable instanceof EachInWrapper) {
@@ -100,11 +101,11 @@ class ArrayIterator extends BoundedIterator {
 }
 
 class EmberArrayIterator extends BoundedIterator {
-  static from(iterable: EmberArray<unknown>) {
+  static from(iterable: EmberArray<unknown> | NativeArray<unknown>) {
     return iterable.length > 0 ? new this(iterable) : null;
   }
 
-  constructor(private array: EmberArray<unknown>) {
+  constructor(private array: EmberArray<unknown> | NativeArray<unknown>) {
     super(array.length);
   }
 
