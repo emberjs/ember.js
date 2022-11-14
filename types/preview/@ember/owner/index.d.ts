@@ -1,13 +1,12 @@
 declare module '@ember/owner' {
+  import type { Registry } from '@ember/service';
+
   /**
    * The name for a factory consists of a namespace and the name of a specific
    * type within that namespace, like `'service:session'`.
    */
   export type FullName = `${string}:${string}`;
 
-  // TODO: when migrating into Ember proper, evaluate whether we should introduce
-  // a registry which users can provide to resolve known types, so e.g.
-  // `owner.lookup('service:session')` can return the right thing.
   /**
    * Framework objects in an Ember application (components, services, routes,
    * etc.) are created via a factory and dependency injection system. Each of
@@ -18,6 +17,7 @@ declare module '@ember/owner' {
     /**
      * Given a {@linkcode FullName} return a corresponding instance.
      */
+    lookup<Name extends keyof Registry>(fullName: `service:${Name}`): Registry[Name];
     lookup(fullName: FullName): unknown;
 
     /**
