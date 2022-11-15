@@ -3,7 +3,7 @@
 */
 
 import type { Registry } from '@ember/-internals/container';
-import type { RegistryMixin } from '@ember/-internals/owner';
+import type { RegistryProxy } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utils/types';
 
 import { assert } from '@ember/debug';
@@ -16,7 +16,7 @@ import Mixin from '@ember/object/mixin';
   @class RegistryProxyMixin
   @private
 */
-interface RegistryProxyMixin extends RegistryMixin {
+interface RegistryProxyMixin extends RegistryProxy {
   /** @internal */
   __registry__: Registry;
 }
@@ -28,181 +28,13 @@ const RegistryProxyMixin = Mixin.create({
     return this.__registry__.resolve(fullName);
   },
 
-  /**
-    Registers a factory that can be used for dependency injection (with
-    `inject`) or for service lookup. Each factory is registered with
-    a full name including two parts: `type:name`.
-
-    A simple example:
-
-    ```javascript
-    import Application from '@ember/application';
-    import EmberObject from '@ember/object';
-
-    let App = Application.create();
-
-    App.Orange = EmberObject.extend();
-    App.register('fruit:favorite', App.Orange);
-    ```
-
-    Ember will resolve factories from the `App` namespace automatically.
-    For example `App.CarsController` will be discovered and returned if
-    an application requests `controller:cars`.
-
-    An example of registering a controller with a non-standard name:
-
-    ```javascript
-    import Application from '@ember/application';
-    import Controller from '@ember/controller';
-
-    let App = Application.create();
-    let Session = Controller.extend();
-
-    App.register('controller:session', Session);
-
-    // The Session controller can now be treated like a normal controller,
-    // despite its non-standard name.
-    App.ApplicationController = Controller.extend({
-      needs: ['session']
-    });
-    ```
-
-    Registered factories are **instantiated** by having `create`
-    called on them. Additionally they are **singletons**, each time
-    they are looked up they return the same instance.
-
-    Some examples modifying that default behavior:
-
-    ```javascript
-    import Application from '@ember/application';
-    import EmberObject from '@ember/object';
-
-    let App = Application.create();
-
-    App.Person = EmberObject.extend();
-    App.Orange = EmberObject.extend();
-    App.Email = EmberObject.extend();
-    App.session = EmberObject.create();
-
-    App.register('model:user', App.Person, { singleton: false });
-    App.register('fruit:favorite', App.Orange);
-    App.register('communication:main', App.Email, { singleton: false });
-    App.register('session', App.session, { instantiate: false });
-    ```
-
-    @method register
-    @param  fullName {String} type:name (e.g., 'model:user')
-    @param  factory {any} (e.g., App.Person)
-    @param  options {Object} (optional) disable instantiation or singleton usage
-    @public
-   */
   register: registryAlias('register'),
-
-  /**
-   Unregister a factory.
-
-   ```javascript
-   import Application from '@ember/application';
-   import EmberObject from '@ember/object';
-
-   let App = Application.create();
-   let User = EmberObject.extend();
-   App.register('model:user', User);
-
-   App.resolveRegistration('model:user').create() instanceof User //=> true
-
-   App.unregister('model:user')
-   App.resolveRegistration('model:user') === undefined //=> true
-   ```
-
-   @public
-   @method unregister
-   @param {String} fullName
-   */
   unregister: registryAlias('unregister'),
-
-  /**
-   Check if a factory is registered.
-
-   @public
-   @method hasRegistration
-   @param {String} fullName
-   @return {Boolean}
-   */
   hasRegistration: registryAlias('has'),
-
-  /**
-   Return a specific registered option for a particular factory.
-
-   @public
-   @method registeredOption
-   @param  {String} fullName
-   @param  {String} optionName
-   @return {Object} options
-   */
   registeredOption: registryAlias('getOption'),
-
-  /**
-   Register options for a particular factory.
-
-   @public
-   @method registerOptions
-   @param {String} fullName
-   @param {Object} options
-   */
   registerOptions: registryAlias('options'),
-
-  /**
-   Return registered options for a particular factory.
-
-   @public
-   @method registeredOptions
-   @param  {String} fullName
-   @return {Object} options
-   */
   registeredOptions: registryAlias('getOptions'),
-
-  /**
-   Allow registering options for all factories of a type.
-
-   ```javascript
-   import Application from '@ember/application';
-
-   let App = Application.create();
-   let appInstance = App.buildInstance();
-
-   // if all of type `connection` must not be singletons
-   appInstance.registerOptionsForType('connection', { singleton: false });
-
-   appInstance.register('connection:twitter', TwitterConnection);
-   appInstance.register('connection:facebook', FacebookConnection);
-
-   let twitter = appInstance.lookup('connection:twitter');
-   let twitter2 = appInstance.lookup('connection:twitter');
-
-   twitter === twitter2; // => false
-
-   let facebook = appInstance.lookup('connection:facebook');
-   let facebook2 = appInstance.lookup('connection:facebook');
-
-   facebook === facebook2; // => false
-   ```
-
-   @public
-   @method registerOptionsForType
-   @param {String} type
-   @param {Object} options
-   */
   registerOptionsForType: registryAlias('optionsForType'),
-
-  /**
-   Return the registered options for all factories of a type.
-
-   @public
-   @method registeredOptionsForType
-   @param {String} type
-   @return {Object} options
-   */
   registeredOptionsForType: registryAlias('getOptionsForType'),
 
   /**
