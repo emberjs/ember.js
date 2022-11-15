@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v4.9.0-beta.4 (November 15, 2022)
+
+- [#20256](https://github.com/emberjs/ember.js/pull/20256) [BUGFIX] Correct types for Ember Arrays
+- [#20257](https://github.com/emberjs/ember.js/pull/20257) [BUGFIX] Fix types for `getOwner` and GlimmerComponent
+
 ### v4.9.0-beta.3 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
