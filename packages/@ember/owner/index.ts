@@ -27,16 +27,9 @@
 // various bits of private API.
 import Owner, { getOwner as internalGetOwner } from '../-internals/owner';
 
-interface GetOwner {
-  (object: object): Owner | undefined;
-}
-
-// SAFETY: this is *only* safe for public API, because we are promising more
-// than we can actually *totally* guarantee we uphold otherwise. Specifically,
-// users *can* do things (including abusing the `ReliablyHasOwner` type or
-// corresponding interface) to get types which violate this contract. However,
-// doing so is only possible if they break the public API contract! Notably, for
-// our internals, we should *not* provide this.
+// NOTE: this documentation appears here instead of at the definition site so
+// it can appear correctly in both API docs and for TS, while providing a richer
+// internal representation for Ember's own usage.
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
   are created via a factory and dependency injection system. Each of these
@@ -61,14 +54,12 @@ interface GetOwner {
   //
   export default class extends Component {
     get audioService() {
-      let owner = getOwner(this);
-      return owner.lookup(`service:${this.args.audioType}`);
+      return getOwner(this)?.lookup(`service:${this.args.audioType}`);
     }
 
     @action
     onPlay() {
-      let player = this.audioService;
-      player.play(this.args.audioFile);
+      this.audioService?.play(this.args.audioFile);
     }
   }
   ```
@@ -81,10 +72,14 @@ interface GetOwner {
   @since 2.3.0
   @public
 */
-const getOwner: GetOwner = internalGetOwner;
+// SAFETY: the cast here is necessary, instead of using an assignment, because
+// TS (not incorrectly! Nothing expressly relates them) does not see that the
+// `InternalOwner` and `Owner` do actually have identical constraints on their
+// relations to the `DIRegistry`.
+const getOwner = internalGetOwner as (object: object) => Owner | undefined;
 export { getOwner };
 
-// Everything else, we can directly re-export.
+// Everything else which is part of the public API, we can directly re-export.
 export default Owner;
 
 export {
@@ -95,4 +90,5 @@ export {
   FactoryManager,
   KnownForTypeResult,
   Resolver,
+  DIRegistry,
 } from '../-internals/owner';

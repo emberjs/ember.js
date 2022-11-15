@@ -10,7 +10,165 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
  *
  * @for @ember/owner
  */
-export type FullName = `${string}:${string}`;
+export type FullName<
+  Type extends string = string,
+  Name extends string = string
+> = `${Type}:${Name}`;
+
+/**
+ * A type registry for the DI system, which other participants in the DI system
+ * can register themselves into with declaration merging. The contract for this
+ * type is that its keys are the `Type` from a `FullName`, and each value for a
+ * `Type` is another registry whose keys are the `Name` from a `FullName`. The
+ * mechanic for providing a registry is [declaration merging][handbook].
+ *
+ * [handbook]: https://www.typescriptlang.org/docs/handbook/declaration-merging.html
+ *
+ * For example, a (non-existent!) "singleton" type might do this in :
+ *
+ * ```ts
+ * abstract class Singleton {
+ *   abstract requiredHook();
+ * }
+ *
+ * // For concrete singleton classes to be merged into.
+ * interface Registry extends Record<string, Singleton> {}
+ *
+ * declare module '@ember/owner' {
+ *   singleton: Registry;
+ * }
+ * ```
+ *
+ * Then users of the `Owner` API will be able to reliably do things like this,
+ * assuming a `some-class` registration exists:
+ *
+ * ```ts
+ * getOwner(this)?.lookup('singleton:some-class').requiredHook();
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface DIRegistry extends Record<string, Record<string, unknown>> {}
+
+// Convenience utilities for pulling a specific factory manager off `DIRegistry`
+// if one exists, or falling back to the default definition otherwise.
+type ResolveFactoryManager<
+  Type extends string,
+  Name extends string
+> = DIRegistry[Type][Name] extends object
+  ? FactoryManager<DIRegistry[Type][Name]>
+  : FactoryManager<object> | undefined;
+
+type ResolveFactory<
+  Type extends string,
+  Name extends string
+> = DIRegistry[Type][Name] extends object
+  ? Factory<DIRegistry[Type][Name]>
+  : Factory<object> | object | undefined;
+
+interface BasicRegistry {
+  /**
+    Registers a factory that can be used for dependency injection (with
+    `inject`) or for service lookup. Each factory is registered with
+    a full name including two parts: `type:name`.
+
+    A simple example:
+
+    ```javascript
+    import Application from '@ember/application';
+    import EmberObject from '@ember/object';
+
+    let App = Application.create();
+
+    App.Orange = EmberObject.extend();
+    App.register('fruit:favorite', App.Orange);
+    ```
+
+    Ember will resolve factories from the `App` namespace automatically.
+    For example `App.CarsController` will be discovered and returned if
+    an application requests `controller:cars`.
+
+    An example of registering a controller with a non-standard name:
+
+    ```javascript
+    import Application from '@ember/application';
+    import Controller from '@ember/controller';
+
+    let App = Application.create();
+    let Session = Controller.extend();
+
+    App.register('controller:session', Session);
+
+    // The Session controller can now be treated like a normal controller,
+    // despite its non-standard name.
+    App.ApplicationController = Controller.extend({
+      needs: ['session']
+    });
+    ```
+
+    Registered factories are **instantiated** by having `create`
+    called on them. Additionally they are **singletons**, each time
+    they are looked up they return the same instance.
+
+    Some examples modifying that default behavior:
+
+    ```javascript
+    import Application from '@ember/application';
+    import EmberObject from '@ember/object';
+
+    let App = Application.create();
+
+    App.Person = EmberObject.extend();
+    App.Orange = EmberObject.extend();
+    App.Email = EmberObject.extend();
+    App.session = EmberObject.create();
+
+    App.register('model:user', App.Person, { singleton: false });
+    App.register('fruit:favorite', App.Orange);
+    App.register('communication:main', App.Email, { singleton: false });
+    App.register('session', App.session, { instantiate: false });
+    ```
+
+    @method register
+    @param  fullName {String} type:name (e.g., 'model:user')
+    @param  factory {any} (e.g., App.Person)
+    @param  options {Object} (optional) disable instantiation or singleton usage
+    @public
+   */
+  // Dear future maintainer: yes, `Factory<object> | object` is an exceedingly
+  // weird type here. We actually allow more or less *anything* to be passed
+  // here. In the future, we may possibly be able to update this to actually
+  // take advantage of the `FullName` here to require that the registered
+  // factory and corresponding options do the right thing (passing an *actual*
+  // factory, not needing `create` if `options.instantiate` is `false`, etc.)
+  // but doing so will require rationalizing Ember's own internals and may need
+  // a full Ember RFC.
+  register(fullName: FullName, factory: Factory<object> | object, options?: RegisterOptions): void;
+}
+
+type ValidType = keyof DIRegistry & string;
+type ValidName<Type extends ValidType> = keyof DIRegistry[Type] & string;
+
+interface BasicContainer {
+  /**
+   * Given a {@linkcode FullName} return a corresponding instance.
+   */
+  lookup<Type extends ValidType, Name extends ValidName<Type>>(
+    fullName: FullName<Type, Name>,
+    options?: RegisterOptions
+  ): DIRegistry[Type][Name];
+
+  /**
+   * Given a fullName of the form `'type:name'`, like `'route:application'`,
+   * return a corresponding factory manager.
+   *
+   * Any instances created via the factory's `.create()` method must be
+   * destroyed manually by the caller of `.create()`. Typically, this is done
+   * during the creating objects own `destroy` or `willDestroy` methods.
+   */
+  factoryFor<Type extends ValidType, Name extends ValidName<Type>>(
+    fullName: FullName<Type, Name>
+  ): ResolveFactoryManager<Type, Name>;
+}
 
 /**
  * Framework objects in an Ember application (components, services, routes,
@@ -26,43 +184,7 @@ export type FullName = `${string}:${string}`;
  * @since 4.10.0
  * @public
  */
-export default interface Owner {
-  /**
-   * Given a {@linkcode FullName} return a corresponding instance.
-   */
-  lookup(fullName: FullName, options?: RegisterOptions): unknown;
-
-  /**
-   * Registers a factory or value that can be used for dependency injection
-   * (with `inject`) or for service lookup. Each factory is registered with a
-   * full name including two parts: `'type:name'`.
-   *
-   * - To override the default of instantiating the class on the `Factory`,
-   *   pass the `{ instantiate: false }` option. This is useful when you have
-   *   already instantiated the class to use with this factory.
-   * - To override the default singleton behavior and instead create multiple
-   *   instances, pass the `{ singleton: false }` option.
-   */
-  // Dear future maintainer: yes, `Factory<object> | object` is an exceedingly
-  // weird type here. We actually allow more or less *anything* to be passed
-  // here. In the future, we may possibly be able to update this to actually
-  // take advantage of the `FullName` here to require that the registered
-  // factory and corresponding options do the right thing (passing an *actual*
-  // factory, not needing `create` if `options.instantiate` is `false`, etc.)
-  // but doing so will require rationalizing Ember's own internals and may need
-  // a full Ember RFC.
-  register(fullName: FullName, factory: Factory<object> | object, options?: RegisterOptions): void;
-
-  /**
-   * Given a fullName of the form `'type:name'`, like `'route:application'`,
-   * return a corresponding factory manager.
-   *
-   * Any instances created via the factory's `.create()` method must be
-   * destroyed manually by the caller of `.create()`. Typically, this is done
-   * during the creating objects own `destroy` or `willDestroy` methods.
-   */
-  factoryFor(fullName: FullName): FactoryManager<object> | undefined;
-}
+export default interface Owner extends BasicRegistry, BasicContainer {}
 
 export interface RegisterOptions {
   instantiate?: boolean | undefined;
@@ -117,7 +239,7 @@ export interface FactoryManager<T extends object> extends Factory<T> {
  * will be `true`; otherwise it will be `false` or `undefined`.
  */
 export type KnownForTypeResult<Type extends string> = {
-  [FullName in `${Type}:${string}`]: boolean | undefined;
+  [Key in FullName<Type, string>]: boolean | undefined;
 };
 
 /**
@@ -135,8 +257,10 @@ export type KnownForTypeResult<Type extends string> = {
  * `ember-resolver` in the default blueprint.
  */
 export interface Resolver {
-  resolve: (name: FullName) => Factory<object> | object | undefined;
-  knownForType?: <T extends string>(type: T) => KnownForTypeResult<T>;
+  resolve: <Type extends string, Name extends string>(
+    name: FullName<Type, Name>
+  ) => ResolveFactory<Type, Name>;
+  knownForType?: <Type extends string>(type: Type) => KnownForTypeResult<Type>;
   lookupDescription?: (fullName: FullName) => string;
   makeToString?: (factory: Factory<object>, fullName: FullName) => string;
   normalize?: (fullName: FullName) => FullName;
@@ -158,50 +282,9 @@ export function isFactory(obj: unknown): obj is InternalFactory<object> {
   return obj != null && typeof (obj as InternalFactory<object>).create === 'function';
 }
 
-/**
-  Framework objects in an Ember application (components, services, routes, etc.)
-  are created via a factory and dependency injection system. Each of these
-  objects is the responsibility of an "owner", which handled its
-  instantiation and manages its lifetime.
-
-  `getOwner` fetches the owner object responsible for an instance. This can
-  be used to lookup or resolve other class instances, or register new factories
-  into the owner.
-
-  For example, this component dynamically looks up a service based on the
-  `audioType` passed as an argument:
-
-  ```app/components/play-audio.js
-  import Component from '@glimmer/component';
-  import { action } from '@ember/object';
-  import { getOwner } from '@ember/application';
-
-  // Usage:
-  //
-  //   <PlayAudio @audioType={{@model.audioType}} @audioFile={{@model.file}}/>
-  //
-  export default class extends Component {
-    get audioService() {
-      let owner = getOwner(this);
-      return owner.lookup(`service:${this.args.audioType}`);
-    }
-
-    @action
-    onPlay() {
-      let player = this.audioService;
-      player.play(this.args.audioFile);
-    }
-  }
-  ```
-
-  @method getOwner
-  @static
-  @for @ember/owner
-  @param {Object} object An object with an owner.
-  @return {Object} An owner object.
-  @since 2.3.0
-  @public
-*/
+// NOTE: For docs, see the definition at the public API site in `@ember/owner`;
+// we document it there for the sake of public API docs and for TS consumption,
+// while having the richer `InternalOwner` representation for Ember itself.
 export function getOwner(object: object): InternalOwner | undefined {
   return glimmerGetOwner(object);
 }
@@ -222,37 +305,162 @@ export function setOwner(object: object, owner: Owner): void {
   glimmerSetOwner(object, owner);
 }
 
-export interface ContainerMixin extends Owner {
-  ownerInjection(): void;
-}
-
-export interface RegistryMixin extends Pick<Owner, 'register'> {
+// Defines the type for the ContainerProxyMixin. When we rationalize our Owner
+// *not* to work via mixins, we will be able to delete this entirely: this
+// overload for `lookup()` and all of `ownerInjection()` will go away.
+export interface ContainerProxy extends BasicContainer {
   /**
-   Given a fullName return the corresponding factory.
+   Returns an object that can be used to provide an owner to a
+   manually created instance.
+
+   Example:
+
+   ```
+   import { getOwner } from '@ember/application';
+
+   let owner = getOwner(this);
+
+   User.create(
+     owner.ownerInjection(),
+     { username: 'rwjblue' }
+   )
+   ```
 
    @public
-   @method resolveRegistration
-   @param {String} fullName
-   @return {Function} fullName's factory
+   @method ownerInjection
+   @since 2.3.0
+   @return {Object}
+  */
+  ownerInjection(): object;
+}
+
+export interface RegistryProxy extends BasicRegistry {
+  /**
+    Given a fullName return the corresponding factory.
+
+    @public
+    @method resolveRegistration
+    @param {String} fullName
+    @return {Function} fullName's factory
    */
   resolveRegistration(fullName: FullName): Factory<object> | object | undefined;
 
+  /**
+    Unregister a factory.
+
+    ```javascript
+    import Application from '@ember/application';
+    import EmberObject from '@ember/object';
+
+    let App = Application.create();
+    let User = EmberObject.extend();
+    App.register('model:user', User);
+
+    App.resolveRegistration('model:user').create() instanceof User //=> true
+
+    App.unregister('model:user')
+    App.resolveRegistration('model:user') === undefined //=> true
+    ```
+
+    @public
+    @method unregister
+    @param {String} fullName
+   */
   unregister(fullName: FullName): void;
 
+  /**
+    Check if a factory is registered.
+
+    @public
+    @method hasRegistration
+    @param {String} fullName
+    @return {Boolean}
+   */
   hasRegistration(fullName: FullName): boolean;
 
+  /**
+    Return a specific registered option for a particular factory.
+
+    @public
+    @method registeredOption
+    @param  {String} fullName
+    @param  {String} optionName
+    @return {Object} options
+   */
   registeredOption<K extends keyof RegisterOptions>(
     fullName: FullName,
     optionName: K
   ): RegisterOptions[K] | undefined;
 
+  /**
+    Register options for a particular factory.
+
+    @public
+    @method registerOptions
+    @param {String} fullName
+    @param {Object} options
+   */
   registerOptions(fullName: FullName, options: RegisterOptions): void;
 
+  /**
+    Return registered options for a particular factory.
+
+    @public
+    @method registeredOptions
+    @param  {String} fullName
+    @return {Object} options
+   */
   registeredOptions(fullName: FullName): RegisterOptions | undefined;
 
+  /**
+    Allow registering options for all factories of a type.
+
+    ```javascript
+    import Application from '@ember/application';
+
+    let App = Application.create();
+    let appInstance = App.buildInstance();
+
+    // if all of type `connection` must not be singletons
+    appInstance.registerOptionsForType('connection', { singleton: false });
+
+    appInstance.register('connection:twitter', TwitterConnection);
+    appInstance.register('connection:facebook', FacebookConnection);
+
+    let twitter = appInstance.lookup('connection:twitter');
+    let twitter2 = appInstance.lookup('connection:twitter');
+
+    twitter === twitter2; // => false
+
+    let facebook = appInstance.lookup('connection:facebook');
+    let facebook2 = appInstance.lookup('connection:facebook');
+
+    facebook === facebook2; // => false
+    ```
+
+    @public
+    @method registerOptionsForType
+    @param {String} type
+    @param {Object} options
+   */
   registerOptionsForType(type: string, options: RegisterOptions): void;
 
+  /**
+    Return the registered options for all factories of a type.
+
+    @public
+    @method registeredOptionsForType
+    @param {String} type
+    @return {Object} options
+   */
   registeredOptionsForType(type: string): RegisterOptions | undefined;
 }
 
-export interface InternalOwner extends RegistryMixin, ContainerMixin {}
+/**
+ * @internal This is the same basic interface which is implemented (via the
+ *   mixins) by `EngineInstance` and therefore `ApplicationInstance`, which are
+ *   the normal interfaces to an `Owner` for end user applications now. However,
+ *   going forward, we expect to progressively deprecate and remove the "extra"
+ *   APIs which are not exposed on `Owner` itself.
+ */
+export interface InternalOwner extends RegistryProxy, ContainerProxy {}

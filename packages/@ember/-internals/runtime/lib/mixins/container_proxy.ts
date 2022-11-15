@@ -4,7 +4,7 @@ import { schedule, join } from '@ember/runloop';
 */
 import type Container from '@ember/-internals/container/lib/container';
 import Mixin from '@ember/object/mixin';
-import type { ContainerMixin } from '@ember/-internals/owner';
+import type { ContainerProxy } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.
@@ -16,7 +16,7 @@ import type { ContainerMixin } from '@ember/-internals/owner';
   @class ContainerProxyMixin
   @private
 */
-interface ContainerProxyMixin extends ContainerMixin {
+interface ContainerProxyMixin extends ContainerProxy {
   /** @internal */
   __container__: Container;
 }
@@ -29,28 +29,6 @@ const ContainerProxyMixin = Mixin.create({
    */
   __container__: null,
 
-  /**
-   Returns an object that can be used to provide an owner to a
-   manually created instance.
-
-   Example:
-
-   ```
-   import { getOwner } from '@ember/application';
-
-   let owner = getOwner(this);
-
-   User.create(
-     owner.ownerInjection(),
-     { username: 'rwjblue' }
-   )
-   ```
-
-   @public
-   @method ownerInjection
-   @since 2.3.0
-   @return {Object}
-  */
   ownerInjection() {
     return this.__container__.ownerInjection();
   },
