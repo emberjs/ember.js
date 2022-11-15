@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-export { getOwner, setOwner } from '@ember/-internals/owner';
+import { getOwner as actualGetOwner, setOwner as actualSetOwner } from '@ember/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
@@ -29,6 +29,16 @@ import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import RouterService from '@ember/routing/router-service';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
 import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+
+/**
+ * @deprecated Use `import { getOwner } from '@ember/owner';` instead.
+ */
+export const getOwner = actualGetOwner;
+
+/**
+ * @deprecated Use `import { setOwner } from '@ember/owner';` instead.
+ */
+export const setOwner = actualSetOwner;
 
 /**
   An instance of `Application` is the starting point for every Ember
