@@ -3,6 +3,7 @@ import type {
   FactoryClass,
   InternalOwner,
   RegisterOptions,
+  FullName,
 } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
@@ -180,7 +181,7 @@ export default class Container {
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
   */
-  reset(fullName: string) {
+  reset(fullName: FullName) {
     if (this.isDestroyed) return;
     if (fullName === undefined) {
       destroyDestroyables(this);
@@ -213,7 +214,7 @@ export default class Container {
    @param {String} fullName
    @return {any}
    */
-  factoryFor(fullName: string): FactoryManager<object> | undefined {
+  factoryFor(fullName: FullName): FactoryManager<object> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
@@ -260,17 +261,17 @@ function wrapManagerInDeprecationProxy<T extends object, C extends object | Fact
   return new Proxy(proxiedManager, validator as any) as any;
 }
 
-function isSingleton(container: Container, fullName: string) {
+function isSingleton(container: Container, fullName: FullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function isInstantiatable(container: Container, fullName: string) {
+function isInstantiatable(container: Container, fullName: FullName) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
 function lookup(
   container: Container,
-  fullName: string,
+  fullName: FullName,
   options: RegisterOptions = {}
 ): InternalFactory<object> | object | undefined {
   let normalizedName = fullName;
@@ -290,9 +291,9 @@ function lookup(
 
 function factoryFor(
   container: Container,
-  normalizedName: string,
-  fullName: string
 ): FactoryManager<object> | undefined {
+  normalizedName: FullName,
+  fullName: FullName
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
@@ -321,7 +322,7 @@ function factoryFor(
 
 function isSingletonClass(
   container: Container,
-  fullName: string,
+  fullName: FullName,
   { instantiate, singleton }: RegisterOptions
 ) {
   return (
@@ -334,7 +335,7 @@ function isSingletonClass(
 
 function isSingletonInstance(
   container: Container,
-  fullName: string,
+  fullName: FullName,
   { instantiate, singleton }: RegisterOptions
 ) {
   return (
@@ -347,7 +348,7 @@ function isSingletonInstance(
 
 function isFactoryClass(
   container: Container,
-  fullname: string,
+  fullname: FullName,
   { instantiate, singleton }: RegisterOptions
 ) {
   return (
@@ -359,7 +360,7 @@ function isFactoryClass(
 
 function isFactoryInstance(
   container: Container,
-  fullName: string,
+  fullName: FullName,
   { instantiate, singleton }: RegisterOptions
 ) {
   return (
@@ -371,8 +372,8 @@ function isFactoryInstance(
 
 function instantiateFactory(
   container: Container,
-  normalizedName: string,
-  fullName: string,
+  normalizedName: FullName,
+  fullName: FullName,
   options: RegisterOptions
 ): InternalFactory<object> | object | undefined {
   let factoryManager = factoryFor(container, normalizedName, fullName);
@@ -472,8 +473,8 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
 export class FactoryManager<T extends object, C extends FactoryClass | object = FactoryClass> {
   readonly container: Container;
   readonly class: Factory<T, C> & DebugFactory<T, C>;
-  readonly fullName: string;
   readonly owner: InternalOwner | null;
+  readonly fullName: FullName;
   readonly normalizedName: string;
   private madeToString: string | undefined;
   injections: { [key: string]: unknown } | undefined;
@@ -481,7 +482,7 @@ export class FactoryManager<T extends object, C extends FactoryClass | object = 
   constructor(
     container: Container,
     factory: InternalFactory<T, C>,
-    fullName: string,
+    fullName: FullName,
     normalizedName: string
   ) {
     this.container = container;

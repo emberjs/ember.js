@@ -10,7 +10,7 @@ import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
 import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
-import { isFactory } from '@ember/-internals/owner';
+import { type FullName, isFactory } from '@ember/-internals/owner';
 import Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer';
@@ -170,7 +170,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
    @method unregister
    @param {String} fullName
    */
-  unregister(fullName: string) {
+  unregister(fullName: FullName) {
     this.__container__.reset(fullName);
 
     // We overwrote this method from RegistryProxyMixin.
@@ -218,7 +218,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
 
     assert('expected parent', parent);
 
-    let registrations = ['route:basic', 'service:-routing'];
+    let registrations = ['route:basic', 'service:-routing'] as const;
 
     registrations.forEach((key) => {
       let registration = parent.resolveRegistration(key);
@@ -229,7 +229,9 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     let env = parent.lookup('-environment:main') as Record<string, unknown>;
     this.register('-environment:main', env, { instantiate: false });
 
-    let singletons = [
+    // The type annotation forces TS to (a) validate that these match and (b)
+    // *notice* that they match, e.g. below on the `singletons.push()`.
+    let singletons: FullName[] = [
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',

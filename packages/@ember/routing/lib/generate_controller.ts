@@ -38,7 +38,7 @@ export function generateControllerFactory(
     },
   });
 
-  let fullName = `controller:${controllerName}`;
+  let fullName = `controller:${controllerName}` as const;
 
   owner.register(fullName, Factory);
 
@@ -57,7 +57,7 @@ export function generateControllerFactory(
 export default function generateController(owner: Owner, controllerName: string): Controller {
   generateControllerFactory(owner, controllerName);
 
-  let fullName = `controller:${controllerName}`;
+  let fullName = `controller:${controllerName}` as const;
   let instance = owner.lookup(fullName);
   assert('Expected an instance of controller', instance instanceof Controller);
 

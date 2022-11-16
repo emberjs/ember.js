@@ -1,4 +1,4 @@
-import type { InternalFactory, Resolver, RegisterOptions } from '@ember/-internals/owner';
+import type { FullName, InternalFactory, Resolver, RegisterOptions } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import type { set } from '@ember/object';
@@ -8,7 +8,6 @@ import Container from './container';
 
 export interface Injection {
   property: string;
-  specifier: string;
 }
 
 export interface KnownForTypeResult {
@@ -27,6 +26,7 @@ export interface IRegistry {
   makeToString(factory: Factory<object>, fullName: string): string;
   normalizeFullName(fullName: string): string;
   resolve(fullName: string): Factory<object> | object | undefined;
+  specifier: FullName;
 }
 
 export interface ResolverClass {
@@ -58,8 +58,8 @@ export default class Registry implements IRegistry {
   readonly _failSet: Set<string>;
   resolver: Resolver | null;
   readonly fallback: IRegistry | null;
-  readonly _normalizeCache: Record<string, string>;
   readonly registrations: Record<string, InternalFactory<object> | object>;
+  readonly _normalizeCache: Record<FullName, FullName>;
   readonly _options: Record<string, RegisterOptions>;
   readonly _resolveCache: Record<string, InternalFactory<object> | object>;
   readonly _typeOptions: Record<string, RegisterOptions>;
@@ -162,17 +162,17 @@ export default class Registry implements IRegistry {
    @param {Object} options
    */
   register(
-    fullName: string,
+    fullName: FullName,
     factory: object,
     options: RegisterOptions & { instantiate: false }
   ): void;
   register<T extends object, C extends FactoryClass | object>(
-    fullName: string,
+    fullName: FullName,
     factory: InternalFactory<T, C>,
     options?: RegisterOptions
   ): void;
   register(
-    fullName: string,
+    fullName: FullName,
     factory: object | InternalFactory<object>,
     options: RegisterOptions = {}
   ): void {
@@ -208,7 +208,7 @@ export default class Registry implements IRegistry {
    @method unregister
    @param {String} fullName
    */
-  unregister(fullName: string): void {
+  unregister(fullName: FullName): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
@@ -252,7 +252,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {Function} fullName's factory
    */
-  resolve(fullName: string): InternalFactory<object> | object | undefined {
+  resolve(fullName: FullName): InternalFactory<object> | object | undefined {
     let factory = resolve(this, this.normalize(fullName));
     if (factory === undefined && this.fallback !== null) {
       factory = this.fallback.resolve(fullName);
@@ -273,7 +273,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {string} described fullName
    */
-  describe(fullName: string): string {
+  describe(fullName: FullName): string {
     if (this.resolver !== null && this.resolver.lookupDescription) {
       return this.resolver.lookupDescription(fullName);
     } else if (this.fallback !== null) {
@@ -291,7 +291,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalizeFullName(fullName: string): string {
+  normalizeFullName(fullName: FullName): FullName {
     if (this.resolver !== null && this.resolver.normalize) {
       return this.resolver.normalize(fullName);
     } else if (this.fallback !== null) {
@@ -309,7 +309,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalize(fullName: string): string {
+  normalize(fullName: FullName): FullName {
     return (
       this._normalizeCache[fullName] ||
       (this._normalizeCache[fullName] = this.normalizeFullName(fullName))
@@ -324,7 +324,7 @@ export default class Registry implements IRegistry {
    @param {string} fullName
    @return {function} toString function
    */
-  makeToString(factory: InternalFactory<object>, fullName: string): string {
+  makeToString(factory: InternalFactory<object>, fullName: FullName): string {
     if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
     } else if (this.fallback !== null) {
@@ -345,7 +345,7 @@ export default class Registry implements IRegistry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName: string): boolean {
+  has(fullName: FullName): boolean {
     if (!this.isValidFullName(fullName)) {
       return false;
     }
@@ -400,12 +400,12 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName: string, options: RegisterOptions): void {
+  options(fullName: FullName, options: RegisterOptions): void {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
 
-  getOptions(fullName: string): RegisterOptions | undefined {
+  getOptions(fullName: FullName): RegisterOptions | undefined {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
@@ -415,8 +415,8 @@ export default class Registry implements IRegistry {
     return options;
   }
 
-    fullName: string,
   getOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
     optionName: K
   ): RegisterOptions[K] | undefined {
     let options = this._options[fullName];
@@ -445,12 +445,11 @@ export default class Registry implements IRegistry {
 
    @private
    @method injection
-   @param {String} factoryName
+   @param {String} fullName
    @param {String} property
-   @param {String} injectionName
    @deprecated
    */
-  injection(fullName: string, property: string): void {
+  injection(fullName: FullName, property: string): void {
     deprecate(
       `As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject \`${property}\` on \`${fullName}\`, or look it up directly using the \`getOwner\` API.`,
       false,
@@ -495,7 +494,7 @@ export default class Registry implements IRegistry {
     return Object.assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
-  isValidFullName(fullName: string): boolean {
+  isValidFullName(fullName: string): fullName is FullName {
     return VALID_FULL_NAME_REGEXP.test(fullName);
   }
 }
@@ -544,7 +543,7 @@ if (DEBUG) {
 
 function resolve(
   registry: Registry,
-  _normalizedName: string
+  _normalizedName: FullName
 ): InternalFactory<object> | object | undefined {
   let normalizedName = _normalizedName;
 
@@ -575,14 +574,14 @@ function resolve(
   return resolved;
 }
 
-function has(registry: Registry, fullName: string) {
+function has(registry: Registry, fullName: FullName): boolean {
   return registry.resolve(fullName) !== undefined;
 }
 
-const privateNames: { [key: string]: string } = dictionary(null);
+const privateNames: Record<string, FullName> = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
-export function privatize([fullName]: TemplateStringsArray): string {
+export function privatize([fullName]: TemplateStringsArray): FullName {
   assert('has a single string argument', arguments.length === 1 && fullName);
 
   let name = privateNames[fullName];
