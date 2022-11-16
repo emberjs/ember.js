@@ -1,7 +1,11 @@
 import { privatize as P } from '@ember/-internals/container';
-import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
+import type {
+  BootEnvironment,
+  OutletState as GlimmerOutletState,
+  OutletView,
+} from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/object';
-import type { Factory, FactoryClass, default as Owner } from '@ember/-internals/owner';
+import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner, type InternalOwner } from '@ember/-internals/owner';
 import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
 import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
@@ -44,6 +48,8 @@ import type { Timer } from 'backburner';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utils/types';
+import type { Template } from '@glimmer/interfaces';
+import type ApplicationInstance from '@ember/application/instance';
 
 /**
 @module @ember/routing/router
@@ -645,15 +651,34 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     if (!this._toplevelView) {
       let owner = getOwner(this);
       assert('Router is unexpectedly missing an owner', owner);
-      let OutletView = owner.factoryFor('view:-outlet') as Factory<OutletView, FactoryClass>;
-      let application = owner.lookup('application:main');
-      let environment = owner.lookup('-environment:main');
-      let template = owner.lookup('template:-outlet');
+
+      // SAFETY: we don't presently have any type registries internally to make
+      // this safe, so in each of these cases we assume that nothing *else* is
+      // registered at this `FullName`, and simply check to make sure that
+      // *something* is.
+      let OutletView = owner.factoryFor('view:-outlet') as FactoryManager<OutletView> | undefined;
+      assert('[BUG] unexpectedly missing `view:-outlet`', OutletView !== undefined);
+
+      let application = owner.lookup('application:main') as Owner | undefined;
+      assert('[BUG] unexpectedly missing `application:-main`', application !== undefined);
+
+      let environment = owner.lookup('-environment:main') as BootEnvironment | undefined;
+      assert('[BUG] unexpectedly missing `-environment:main`', environment !== undefined);
+
+      let template = owner.lookup('template:-outlet') as Template | undefined;
+      assert('[BUG] unexpectedly missing `template:-outlet`', template !== undefined);
+
       this._toplevelView = OutletView.create({ environment, template, application });
       this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
-      let instance: any = owner.lookup('-application-instance:main');
+
+      let instance = owner.lookup('-application-instance:main') as ApplicationInstance | undefined;
+      assert('[BUG] unexpectedly missing `-application-instance:main`', instance !== undefined);
+
       if (instance) {
-        instance.didCreateRootView(this._toplevelView);
+        // SAFETY: LOL. This is calling a deprecated API with a type that we
+        // cannot actually confirm at a type level *is* a `ViewMixin`. Seems:
+        // not great on multiple fronts!
+        instance.didCreateRootView(this._toplevelView as any);
       }
     } else {
       this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);

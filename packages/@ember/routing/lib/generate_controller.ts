@@ -17,7 +17,17 @@ import { DEBUG } from '@glimmer/env';
 */
 
 export function generateControllerFactory(owner: Owner, controllerName: string): Factory<{}> {
-  let Factory = (owner.factoryFor('controller:basic') as Factory<any, any>).class;
+  let factoryManager = owner.factoryFor('controller:basic');
+  assert(
+    '[BUG] unexpectedly missing a factoryManager for `controller:basic`',
+    factoryManager !== undefined
+  );
+
+  let Factory = factoryManager.class;
+  assert(
+    '[BUG] factory for `controller:main` is unexpectedly not a Controller',
+    ((factory): factory is typeof Controller => factory === Controller)(Factory)
+  );
 
   Factory = Factory.extend({
     toString() {

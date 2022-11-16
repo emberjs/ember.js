@@ -293,10 +293,9 @@ export default class ResolverImpl
         };
       }
     } else {
-      assert(`missing component class ${name}`, pair.component.class !== undefined);
-
       let factory = pair.component;
-      let ComponentClass = factory.class!;
+      assert(`missing component class ${name}`, factory.class !== undefined);
+      let ComponentClass = factory.class;
       let manager = getInternalComponentManager(ComponentClass);
 
       definition = {

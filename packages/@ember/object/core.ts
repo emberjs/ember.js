@@ -260,7 +260,7 @@ class CoreObject {
 
       /* globals Proxy Reflect */
       self = new Proxy(this, {
-        get(target: typeof this & HasUnknownProperty, property, receiver) {
+        get(target: CoreObject & HasUnknownProperty, property, receiver) {
           if (property === PROXY_CONTENT) {
             return target;
           } else if (
@@ -768,7 +768,9 @@ class CoreObject {
 
     if (props !== undefined) {
       instance = new this(getOwner(props));
-      setFactoryFor(instance, getFactoryFor(props));
+      let factory = getFactoryFor(props);
+      assert(`missing factory when creating object ${instance}`, factory !== undefined);
+      setFactoryFor(instance, factory);
     } else {
       instance = new this();
     }
