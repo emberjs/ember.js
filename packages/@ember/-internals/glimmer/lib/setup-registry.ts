@@ -18,7 +18,9 @@ export function setupApplicationRegistry(registry: Registry): void {
   // we need to use bind() to copy the function so factory for
   // association won't leak
   registry.register('service:-dom-builder', {
-    create(props) {
+    // Additionally, we *must* constrain this to require `props` on create, else
+    // we *know* it cannot have an owner.
+    create(props: object) {
       let owner = getOwner(props);
       assert('DomBuilderService is unexpectedly missing an owner', owner);
       let env = owner.lookup('-environment:main') as { _renderMode: string };

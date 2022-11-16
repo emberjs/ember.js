@@ -254,7 +254,7 @@ function wrapManagerInDeprecationProxy<T extends object, C extends object | Fact
   let m = manager;
   let proxiedManager = {
     class: m.class,
-    create(props?: { [prop: string]: any }) {
+    create(props?: Partial<T>) {
       return m.create(props);
     },
   };
@@ -522,7 +522,7 @@ export class InternalFactoryManager<
     return this.madeToString;
   }
 
-  create(options?: { [prop: string]: any }) {
+  create(options?: Partial<T>) {
     let { container } = this;
 
     if (container.isDestroyed) {
