@@ -3,7 +3,7 @@ import type { BootOptions } from '@ember/engine/instance';
 import Application from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
 import EmberObject from '@ember/object';
-import Owner from '@ember/owner';
+import type Owner from '@ember/owner';
 
 import { expectTypeOf } from 'expect-type';
 
