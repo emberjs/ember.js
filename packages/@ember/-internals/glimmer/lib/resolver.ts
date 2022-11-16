@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import type { Factory, Owner, RegisterOptions } from '@ember/-internals/owner';
+import type { Factory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
@@ -54,13 +54,17 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-function componentFor(name: string, owner: Owner): Option<Factory<object> | object> {
   let fullName = `component:${name}`;
+function componentFor(name: string, owner: InternalOwner): Option<Factory<object> | object> {
   return owner.factoryFor(fullName) || null;
 }
 
   let templateFullName = `template:components/${name}`;
-function layoutFor(name: string, owner: Owner, options?: RegisterOptions): Option<Template> {
+function layoutFor(
+  name: string,
+  owner: InternalOwner,
+  options?: RegisterOptions
+): Option<Template> {
 
   return (owner.lookup(templateFullName, options) as Template) || null;
 }
@@ -80,7 +84,7 @@ type LookupResult =
     };
 
 function lookupComponentPair(
-  owner: Owner,
+  owner: InternalOwner,
   name: string,
   options?: RegisterOptions
 ): Option<LookupResult> {
@@ -156,14 +160,16 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
 
 const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
 
-export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTimeResolver<Owner> {
+export default class ResolverImpl
+  implements RuntimeResolver<InternalOwner>, CompileTimeResolver<InternalOwner>
+{
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
   lookupPartial(): null {
     return null;
   }
 
-  lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
+  lookupHelper(name: string, owner: InternalOwner): Option<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
       !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
@@ -212,7 +218,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
-  lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
+  lookupModifier(name: string, owner: InternalOwner): Option<ModifierDefinitionState> {
     let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
@@ -236,7 +242,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
-  lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
+  lookupComponent(name: string, owner: InternalOwner): ResolvedComponentDefinition | null {
     let pair = lookupComponentPair(owner, name);
 
     if (pair === null) {

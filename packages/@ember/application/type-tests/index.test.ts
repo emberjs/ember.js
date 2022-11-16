@@ -1,11 +1,11 @@
 import type { EventDispatcher } from '@ember/-internals/views';
 import Application, { getOwner, setOwner } from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 
 import { expectTypeOf } from 'expect-type';
 
-let owner = {} as Owner;
+let owner = {} as InternalOwner;
 
 class App extends Application {
   rootElement = '#ember-application';
@@ -61,6 +61,6 @@ class App2 extends Application {
 
 new App2(owner);
 
-expectTypeOf(getOwner('foo')).toEqualTypeOf<Owner | undefined>();
+expectTypeOf(getOwner({})).toEqualTypeOf<InternalOwner | undefined>();
 
-expectTypeOf(setOwner('foo', {} as Owner)).toEqualTypeOf<void>();
+expectTypeOf(setOwner({}, {} as InternalOwner)).toEqualTypeOf<void>();

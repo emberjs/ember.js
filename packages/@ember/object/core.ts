@@ -3,8 +3,7 @@
 */
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
-import { getOwner } from '@ember/-internals/owner';
-import type { Owner } from '@ember/-internals/owner';
+import { type default as Owner, getOwner } from '@ember/-internals/owner';
 import { guidFor, makeArray, isInternalSymbol } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
 import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';

@@ -3,7 +3,7 @@
 */
 
 import type { FactoryManager } from '@ember/-internals/container/lib/container';
-import type { Factory, Owner } from '@ember/-internals/owner';
+import type { Factory, InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
@@ -200,7 +200,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
 
   private ownerInjection: object;
 
-  constructor(owner: Owner | undefined) {
+  constructor(owner: InternalOwner | undefined) {
     let ownerInjection = {};
     setOwner(ownerInjection, owner!);
     this.ownerInjection = ownerInjection;
@@ -254,7 +254,7 @@ function isFactoryManager(obj: unknown): obj is FactoryManager<object> {
   return obj != null && 'class' in (obj as FactoryManager<object>);
 }
 
-setHelperManager((owner: Owner | undefined): ClassicHelperManager => {
+setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
   return new ClassicHelperManager(owner);
 }, Helper);
 

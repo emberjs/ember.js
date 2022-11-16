@@ -14,6 +14,24 @@ import type { IRegistry } from '../runtime/lib/mixins/registry_proxy';
  */
 export type FullName = `${string}:${string}`;
 
+/**
+ * Framework objects in an Ember application (components, services, routes,
+ * etc.) are created via a factory and dependency injection system. Each of
+ * these objects is the responsibility of an "owner", which handles its
+ * instantiation and manages its lifetime.
+ *
+ * An `Owner` is not a class you construct; it is one the framework constructs
+ * for you. The normal way to get access to the relevant `Owner` is using the
+ * `getOwner` function.
+ *
+ * @for @ember/owner
+ * @since 4.10.0
+ * @public
+ */
+export default interface Owner {
+  // TODO: expand this to the public API
+}
+
 export interface RegisterOptions {
   instantiate?: boolean | undefined;
   singleton?: boolean | undefined;
@@ -56,9 +74,6 @@ export interface Factory<T extends object, C extends FactoryClass | object = Fac
 export function isFactory(obj: unknown): obj is Factory<object> {
   return obj != null && typeof (obj as Factory<object>).create === 'function';
 }
-
-// A combination of the public methods on ContainerProxyMixin and RegistryProxyMixin
-export interface Owner extends IRegistry, IContainer {}
 
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
@@ -104,7 +119,7 @@ export interface Owner extends IRegistry, IContainer {}
   @since 2.3.0
   @public
 */
-export function getOwner(object: any): Owner | undefined {
+export function getOwner(object: object): InternalOwner | undefined {
   return glimmerGetOwner(object);
 }
 
@@ -123,3 +138,5 @@ export function getOwner(object: any): Owner | undefined {
 export function setOwner(object: any, owner: Owner): void {
   glimmerSetOwner(object, owner);
 }
+
+export interface InternalOwner extends IRegistry, IContainer {}

@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import type { ComponentManager } from '@glimmer/interfaces';
 import {
   componentCapabilities as glimmerComponentCapabilities,
@@ -18,7 +18,7 @@ import {
    @public
   */
 export function setComponentManager<T extends object>(
-  manager: (owner: Owner) => ComponentManager<unknown>,
+  manager: (owner: InternalOwner) => ComponentManager<unknown>,
   obj: T
 ): T {
   return glimmerSetComponentManager(manager, obj);

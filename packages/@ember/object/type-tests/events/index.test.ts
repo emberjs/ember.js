@@ -2,7 +2,7 @@ import { addListener, removeListener, sendEvent } from '@ember/object/events';
 
 import EmberObject from '@ember/object';
 import { on } from '@ember/object/evented';
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 
 class Job extends EmberObject {
   logStartOrUpdate = on('started', 'updated', () => {
@@ -23,7 +23,7 @@ sendEvent(job, 'updated'); // Logs 'Job updated!'
 sendEvent(job, 'completed'); // Logs 'Job completed!'
 
 class MyClass extends EmberObject {
-  constructor(owner: Owner) {
+  constructor(owner: InternalOwner) {
     super(owner);
     addListener(this, 'willDestroy', this, 'willDestroyListener');
     addListener(this, 'willDestroy', this, 'willDestroyListener', true);

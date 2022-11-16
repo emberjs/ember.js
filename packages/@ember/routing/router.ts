@@ -1,8 +1,8 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/object';
-import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+import type { Factory, FactoryClass, default as Owner } from '@ember/-internals/owner';
+import { getOwner, type InternalOwner } from '@ember/-internals/owner';
 import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
 import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
 import {
@@ -1694,16 +1694,22 @@ function findRouteStateName(route: Route, state: string) {
   is in the Router's map and the owner has a registration for that route.
 
   @private
-  @param {Owner} owner
+  @param {InternalOwner} owner
   @param {Router} router
   @param {String} localName
   @param {String} fullName
   @return {Boolean}
 */
-function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullName: string) {
+function routeHasBeenDefined(
+  owner: InternalOwner,
+  router: any,
+  localName: string,
+  fullName: string
+) {
   let routerHasRoute = router.hasRoute(fullName);
   let ownerHasRoute =
-    owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
+    owner.hasRegistration(`template:${localName}` as const) ||
+    owner.hasRegistration(`route:${localName}` as const);
   return routerHasRoute && ownerHasRoute;
 }
 

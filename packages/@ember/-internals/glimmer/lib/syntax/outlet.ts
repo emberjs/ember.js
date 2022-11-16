@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
@@ -44,7 +44,7 @@ import type { OutletState } from '../utils/outlet';
   @public
 */
 export const outletHelper = internalHelper(
-  (_args: CapturedArguments, owner?: Owner, scope?: DynamicScope) => {
+  (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',

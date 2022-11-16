@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
@@ -65,7 +65,7 @@ export let ActionHelper = {
 
 export class ActionState {
   public element: SimpleElement;
-  public owner: Owner;
+  public owner: InternalOwner;
   public actionId: number;
   public actionName: any;
   public actionArgs: any;
@@ -77,7 +77,7 @@ export class ActionState {
 
   constructor(
     element: SimpleElement,
-    owner: Owner,
+    owner: InternalOwner,
     actionId: number,
     actionArgs: any[],
     namedArgs: CapturedNamedArguments,
@@ -182,7 +182,7 @@ export class ActionState {
 
 class ActionModifierManager implements InternalModifierManager<ActionState, object> {
   create(
-    owner: Owner,
+    owner: InternalOwner,
     element: SimpleElement,
     _state: object,
     { named, positional }: CapturedArguments

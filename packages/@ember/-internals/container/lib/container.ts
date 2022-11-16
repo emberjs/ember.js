@@ -1,4 +1,9 @@
-import type { Factory, FactoryClass, Owner, RegisterOptions } from '@ember/-internals/owner';
+import type {
+  Factory,
+  FactoryClass,
+  InternalOwner,
+  RegisterOptions,
+} from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
@@ -44,7 +49,7 @@ if (DEBUG) {
 }
 
 export interface ContainerOptions {
-  owner?: Owner;
+  owner?: InternalOwner;
   cache?: { [key: string]: object };
   factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
   validationCache?: { [key: string]: boolean };
@@ -66,7 +71,7 @@ export interface ContainerOptions {
 export default class Container {
   static _leakTracking: LeakTracking;
 
-  readonly owner: Owner | null;
+  readonly owner: InternalOwner | null;
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: object };
   factoryManagerCache!: { [key: string]: FactoryManager<object> };
@@ -463,9 +468,9 @@ export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void
 
 export class FactoryManager<T extends object, C extends FactoryClass | object = FactoryClass> {
   readonly container: Container;
-  readonly owner: Owner | null;
   readonly class: Factory<T, C> & DebugFactory<T, C>;
   readonly fullName: string;
+  readonly owner: InternalOwner | null;
   readonly normalizedName: string;
   private madeToString: string | undefined;
   injections: { [key: string]: unknown } | undefined;

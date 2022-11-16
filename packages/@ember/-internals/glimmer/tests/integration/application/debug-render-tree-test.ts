@@ -7,7 +7,7 @@ import {
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { assert, captureRenderTree } from '@ember/debug';
@@ -1352,7 +1352,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      get owner(): Owner {
+      get owner(): InternalOwner {
         return this.applicationInstance!;
       }
 
@@ -1516,7 +1516,7 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         this.addComponent('hello-world', {
           ComponentClass: class extends Component {
-            constructor(owner: Owner) {
+            constructor(owner: InternalOwner) {
               super(owner);
               throw new Error('oops!');
             }

@@ -1,9 +1,12 @@
-import type { Owner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+// We use the `InternalOwner` notion here because we actually need all of its
+// API for using with renderers (normally, it will be `EngineInstance`).
+// We use `getOwner` from our internal home for it rather than the narrower
+// public API for the same reason.
+import { type InternalOwner, getOwner } from '@ember/-internals/owner';
 import type { BootOptions } from '@ember/engine/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
-import type { Template } from '@glimmer/interfaces';
+import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createComputeRef, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
@@ -39,7 +42,11 @@ export default class OutletView {
     Object.assign(this, injections);
   }
 
-  static create(options: any): OutletView {
+  static create(options: {
+    environment: BootEnvironment;
+    application: InternalOwner;
+    template: TemplateFactory;
+  }): OutletView {
     let { environment: _environment, application: namespace, template: templateFactory } = options;
     let owner = getOwner(options);
     assert('OutletView is unexpectedly missing an owner', owner);
@@ -52,7 +59,7 @@ export default class OutletView {
 
   constructor(
     private _environment: BootEnvironment,
-    public owner: Owner,
+    public owner: InternalOwner,
     public template: Template,
     public namespace: any
   ) {

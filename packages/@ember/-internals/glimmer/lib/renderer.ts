@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
@@ -129,7 +129,7 @@ class RootState {
     public root: Component | OutletView,
     public runtime: RuntimeContext,
     context: CompileTimeCompilationContext,
-    owner: Owner,
+    owner: InternalOwner,
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
@@ -288,7 +288,7 @@ export class Renderer {
   private _builder: IBuilder;
   private _inRenderTransaction = false;
 
-  private _owner: Owner;
+  private _owner: InternalOwner;
   private _context: CompileTimeCompilationContext;
   private _runtime: RuntimeContext;
 
@@ -315,7 +315,7 @@ export class Renderer {
   }
 
   constructor(
-    owner: Owner,
+    owner: InternalOwner,
     document: SimpleDocument,
     env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
