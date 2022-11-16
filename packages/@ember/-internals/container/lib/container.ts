@@ -457,7 +457,7 @@ export interface LazyInjection {
 declare interface DebugFactory<T extends object, C extends FactoryClass | object = FactoryClass>
   extends InternalFactory<T, C> {
   _onLookup?: (fullName: string) => void;
-  _lazyInjections(): { [key: string]: LazyInjection };
+  _lazyInjections?: () => { [key: string]: LazyInjection };
   _initFactory?: (factoryManager: InternalFactoryManager<T, C>) => void;
 }
 
@@ -492,8 +492,8 @@ export class InternalFactoryManager<
 > implements FactoryManager<T>
 {
   readonly container: Container;
-  readonly class: Factory<T, C> & DebugFactory<T, C>;
   readonly owner: InternalOwner | null;
+  readonly class: DebugFactory<T, C>;
   readonly fullName: FullName;
   readonly normalizedName: string;
   private madeToString: string | undefined;
@@ -507,7 +507,7 @@ export class InternalFactoryManager<
   ) {
     this.container = container;
     this.owner = container.owner;
-    this.class = factory as Factory<T, C> & DebugFactory<T, C>;
+    this.class = factory;
     this.fullName = fullName;
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
