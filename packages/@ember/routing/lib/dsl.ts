@@ -1,4 +1,4 @@
-import type { Factory } from '@ember/-internals/owner';
+import type { InternalFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import type { Option } from '@glimmer/interfaces';
 import type { MatchCallback } from 'route-recognizer';
@@ -44,7 +44,7 @@ export interface DSLImplOptions {
   enableLoadingSubstates: boolean;
   engineInfo?: EngineInfo;
   addRouteForEngine(name: string, routeOptions: EngineRouteInfo): void;
-  resolveRouteMap(name: string): Factory<any, any>;
+  resolveRouteMap(name: string): InternalFactory<any, any>;
 }
 
 export default class DSLImpl implements DSL {

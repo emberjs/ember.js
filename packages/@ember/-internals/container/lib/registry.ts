@@ -1,4 +1,4 @@
-import type { Factory, Resolver, RegisterOptions } from '@ember/-internals/owner';
+import type { InternalFactory, Resolver, RegisterOptions } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import type { set } from '@ember/object';
@@ -58,10 +58,10 @@ export default class Registry implements IRegistry {
   readonly _failSet: Set<string>;
   resolver: Resolver | null;
   readonly fallback: IRegistry | null;
-  readonly registrations: Record<string, Factory<object> | object>;
   readonly _normalizeCache: Record<string, string>;
-  readonly _resolveCache: Record<string, Factory<object> | object>;
+  readonly registrations: Record<string, InternalFactory<object> | object>;
   readonly _options: Record<string, RegisterOptions>;
+  readonly _resolveCache: Record<string, InternalFactory<object> | object>;
   readonly _typeOptions: Record<string, RegisterOptions>;
 
   set?: typeof set;
@@ -168,12 +168,12 @@ export default class Registry implements IRegistry {
   ): void;
   register<T extends object, C extends FactoryClass | object>(
     fullName: string,
-    factory: Factory<T, C>,
+    factory: InternalFactory<T, C>,
     options?: RegisterOptions
   ): void;
   register(
     fullName: string,
-    factory: object | Factory<object>,
+    factory: object | InternalFactory<object>,
     options: RegisterOptions = {}
   ): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
@@ -252,7 +252,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {Function} fullName's factory
    */
-  resolve(fullName: string): Factory<object> | object | undefined {
+  resolve(fullName: string): InternalFactory<object> | object | undefined {
     let factory = resolve(this, this.normalize(fullName));
     if (factory === undefined && this.fallback !== null) {
       factory = this.fallback.resolve(fullName);
@@ -324,7 +324,7 @@ export default class Registry implements IRegistry {
    @param {string} fullName
    @return {function} toString function
    */
-  makeToString(factory: Factory<object>, fullName: string): string {
+  makeToString(factory: InternalFactory<object>, fullName: string): string {
     if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
     } else if (this.fallback !== null) {
@@ -545,7 +545,7 @@ if (DEBUG) {
 function resolve(
   registry: Registry,
   _normalizedName: string
-): Factory<object> | object | undefined {
+): InternalFactory<object> | object | undefined {
   let normalizedName = _normalizedName;
 
   let cached = registry._resolveCache[normalizedName];
@@ -556,7 +556,7 @@ function resolve(
     return;
   }
 
-  let resolved: Factory<object> | object | undefined;
+  let resolved: InternalFactory<object> | object | undefined;
 
   if (registry.resolver) {
     resolved = registry.resolver.resolve(normalizedName);

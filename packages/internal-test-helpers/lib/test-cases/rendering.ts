@@ -10,7 +10,7 @@ import { ModuleBasedResolver } from '../test-resolver';
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy, runTask } from '../run';
-import type { Factory } from '@ember/-internals/owner';
+import type { InternalFactory } from '@ember/-internals/owner';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import type { HelperFunction } from '@ember/-internals/glimmer/lib/helper';
@@ -75,7 +75,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     return new ModuleBasedResolver();
   }
 
-  add(specifier: string, factory: Factory<object> | object) {
+  add(specifier: string, factory: InternalFactory<object> | object) {
     this.resolver.add(specifier, factory);
   }
 
@@ -173,7 +173,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerCustomHelper(name: string, definition: Factory<object>) {
+  registerCustomHelper(name: string, definition: InternalFactory<object>) {
     this.owner.register(`helper:${name}`, definition);
   }
 
@@ -194,13 +194,13 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerModifier(name: string, ModifierClass: Factory<object>) {
+  registerModifier(name: string, ModifierClass: InternalFactory<object>) {
     let { owner } = this;
 
     owner.register(`modifier:${name}`, ModifierClass);
   }
 
-  registerComponentManager(name: string, manager: Factory<object>) {
+  registerComponentManager(name: string, manager: InternalFactory<object>) {
     let owner = this.owner;
     owner.register(`component-manager:${name}`, manager);
   }
@@ -219,7 +219,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  registerService(name: string, klass: Factory<object>) {
+  registerService(name: string, klass: InternalFactory<object>) {
     this.owner.register(`service:${name}`, klass);
   }
 

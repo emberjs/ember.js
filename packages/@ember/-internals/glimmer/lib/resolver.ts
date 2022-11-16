@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import type { Factory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
+import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
@@ -55,7 +55,10 @@ function instrumentationPayload(name: string) {
 }
 
   let fullName = `component:${name}`;
-function componentFor(name: string, owner: InternalOwner): Option<Factory<object> | object> {
+function componentFor(
+  name: string,
+  owner: InternalOwner
+): Option<InternalFactory<object> | object> {
   return owner.factoryFor(fullName) || null;
 }
 
@@ -71,11 +74,11 @@ function layoutFor(
 
 type LookupResult =
   | {
-      component: Factory<object>;
+      component: InternalFactory<object>;
       layout: TemplateFactory;
     }
   | {
-      component: Factory<object>;
+      component: InternalFactory<object>;
       layout: null;
     }
   | {

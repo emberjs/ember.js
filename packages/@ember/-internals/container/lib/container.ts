@@ -1,5 +1,5 @@
 import type {
-  Factory,
+  InternalFactory,
   FactoryClass,
   InternalOwner,
   RegisterOptions,
@@ -145,7 +145,10 @@ export default class Container {
    @param {RegisterOptions} [options]
    @return {any}
    */
-  lookup(fullName: string, options?: RegisterOptions): Factory<object> | object | undefined {
+  lookup(
+    fullName: string,
+    options?: RegisterOptions
+  ): InternalFactory<object> | object | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
@@ -268,8 +271,8 @@ function isInstantiatable(container: Container, fullName: string) {
 function lookup(
   container: Container,
   fullName: string,
-): Factory<object> | object | undefined {
   options: RegisterOptions = {}
+): InternalFactory<object> | object | undefined {
   let normalizedName = fullName;
 
   if (
@@ -370,8 +373,8 @@ function instantiateFactory(
   container: Container,
   normalizedName: string,
   fullName: string,
-): Factory<object> | object | undefined {
   options: RegisterOptions
+): InternalFactory<object> | object | undefined {
   let factoryManager = factoryFor(container, normalizedName, fullName);
 
   if (factoryManager === undefined) {
@@ -450,7 +453,7 @@ export interface LazyInjection {
 }
 
 declare interface DebugFactory<T extends object, C extends FactoryClass | object = FactoryClass>
-  extends Factory<T, C> {
+  extends InternalFactory<T, C> {
   _onLookup?: (fullName: string) => void;
   _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
   _lazyInjections(): { [key: string]: LazyInjection };
@@ -477,7 +480,7 @@ export class FactoryManager<T extends object, C extends FactoryClass | object = 
 
   constructor(
     container: Container,
-    factory: Factory<T, C>,
+    factory: InternalFactory<T, C>,
     fullName: string,
     normalizedName: string
   ) {
