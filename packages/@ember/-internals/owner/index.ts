@@ -64,6 +64,23 @@ export interface Factory<T extends object> {
 }
 
 /**
+ * A manager which can be used for introspection of the factory's class or for
+ * the creation of factory instances with initial properties. The manager is an
+ * object with the following properties:
+ *
+ * - `class` - The registered or resolved class.
+ * - `create` - A function that will create an instance of the class with any
+ *   dependencies injected.
+ *
+ * @note `FactoryManager` is *not* user-constructible; the only legal way to get
+ *   a `FactoryManager` is via {@linkcode Owner.factoryFor}.
+ */
+export interface FactoryManager<T extends object> extends Factory<T> {
+  /** The registered or resolved class. */
+  readonly class: Factory<T>;
+}
+
+/**
  * A `Resolver` is the mechanism responsible for looking up code in your
  * application and converting its naming conventions into the actual classes,
  * functions, and templates that Ember needs to resolve its dependencies, for
