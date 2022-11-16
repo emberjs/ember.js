@@ -48,7 +48,7 @@ expectTypeOf(
   Ember.getEngineParent(new Ember.EngineInstance())
 ).toEqualTypeOf<Ember.EngineInstance>();
 // getOwner
-expectTypeOf(Ember.getOwner(new Ember.Component())).toEqualTypeOf<Owner>();
+expectTypeOf(Ember.getOwner(new Ember.Component())).toEqualTypeOf<Owner | undefined>();
 // getProperties
 expectTypeOf(Ember.getProperties({ z: 23 }, 'z').z).toEqualTypeOf<number>();
 expectTypeOf(Ember.getProperties({ z: 23 }, 'z', 'z').z).toEqualTypeOf<number>();
