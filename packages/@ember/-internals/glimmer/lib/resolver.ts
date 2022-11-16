@@ -54,20 +54,20 @@ function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
 }
 
-  let fullName = `component:${name}`;
 function componentFor(
   name: string,
   owner: InternalOwner
 ): Option<InternalFactory<object> | object> {
+  let fullName = `component:${name}` as const;
   return owner.factoryFor(fullName) || null;
 }
 
-  let templateFullName = `template:components/${name}`;
 function layoutFor(
   name: string,
   owner: InternalOwner,
   options?: RegisterOptions
 ): Option<Template> {
+  let templateFullName = `template:components/${name}` as const;
 
   return (owner.lookup(templateFullName, options) as Template) || null;
 }

@@ -348,7 +348,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
           routeName = engineInfo.localFullName;
         }
 
-        let fullRouteName = `route:${routeName}`;
+        let fullRouteName = `route:${routeName}` as const;
 
         assert('Route is unexpectedly missing an owner', routeOwner);
 

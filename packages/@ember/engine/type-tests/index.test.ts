@@ -36,7 +36,7 @@ expectTypeOf(engine.Resolver).toEqualTypeOf<ResolverClass>();
 
 // RegistryProxy
 
-expectTypeOf(engine.resolveRegistration('foo')).toEqualTypeOf<
+expectTypeOf(engine.resolveRegistration('foo:bar')).toEqualTypeOf<
   Factory<object> | object | undefined
 >();
 // @ts-expect-error Requires name
