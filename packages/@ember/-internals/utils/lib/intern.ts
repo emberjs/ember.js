@@ -37,8 +37,8 @@
   @private
   @return {String} interned version of the provided string
 */
-export default function intern(str: string): string {
-  let obj: Record<string, number> = {};
+export default function intern<S extends string>(str: S): S {
+  let obj: Record<S, number> = Object.create(null);
   obj[str] = 1;
   for (let key in obj) {
     if (key === str) {
