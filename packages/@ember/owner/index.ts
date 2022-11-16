@@ -43,5 +43,6 @@ export {
   RegisterOptions,
   Factory,
   FactoryManager,
+  KnownForTypeResult,
   Resolver,
 } from '../-internals/owner';
