@@ -81,6 +81,14 @@ export interface FactoryManager<T extends object> extends Factory<T> {
 }
 
 /**
+ * A record mapping all known items of a given type: if the item is known it
+ * will be `true`; otherwise it will be `false` or `undefined`.
+ */
+export type KnownForTypeResult<Type extends string> = {
+  [FullName in `${Type}:${string}`]: boolean | undefined;
+};
+
+/**
  * A `Resolver` is the mechanism responsible for looking up code in your
  * application and converting its naming conventions into the actual classes,
  * functions, and templates that Ember needs to resolve its dependencies, for
