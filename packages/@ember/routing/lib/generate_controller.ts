@@ -3,8 +3,9 @@ import type { Factory, Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import { assert, info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+
 /**
-@module ember
+ @module ember/routing
 */
 
 /**

@@ -1,7 +1,8 @@
 import type { Container } from '@ember/-internals/container';
 import type { RegisterOptions } from '@ember/owner';
+
 /**
-@module ember
+  @module ember/routing
 */
 
 /**
