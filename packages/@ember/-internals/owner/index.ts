@@ -38,6 +38,32 @@ export interface RegisterOptions {
 }
 
 /**
+ * Registered factories are instantiated by having create called on them.
+ * Additionally they are singletons by default, so each time they are looked up
+ * they return the same instance.
+ *
+ * However, that behavior can be modified with the `instantiate` and `singleton`
+ * options to the {@linkcode Owner.register} method.
+ */
+export interface Factory<T extends object> {
+  // NOTE: this does not check against the types of the target object in any
+  // way, unfortunately. However, we actually *cannot* constrain it further than
+  // this without going down a *very* deep rabbit hole (see the historic types
+  // for `.create()` on DefinitelyTyped if you're curious), because we need (for
+  // historical reasons) to support classes which implement this contract to be
+  // able to provide a *narrower* interface than "exactly the public fields on
+  // the class" while still falling back to the "exactly the public fields on
+  // the class" for the general case. :sigh:
+  /**
+   * A function that will create an instance of the class with any
+   * dependencies injected.
+   *
+   * @param initialValues Any values to set on an instance of the class
+   */
+  create(initialValues?: object): T;
+}
+
+/**
  * A `Resolver` is the mechanism responsible for looking up code in your
  * application and converting its naming conventions into the actual classes,
  * functions, and templates that Ember needs to resolve its dependencies, for
@@ -63,16 +89,16 @@ export interface FactoryClass {
   positionalParams?: string | string[] | undefined | null;
 }
 
-export interface Factory<T extends object, C extends FactoryClass | object = FactoryClass> {
+export interface InternalFactory<T extends object, C extends FactoryClass | object = FactoryClass>
+  extends Factory<T> {
   class?: C;
   name?: string;
-  fullName?: string;
+  fullName?: FullName;
   normalizedName?: string;
-  create(props?: { [prop: string]: any }): T;
 }
 
-export function isFactory(obj: unknown): obj is Factory<object> {
-  return obj != null && typeof (obj as Factory<object>).create === 'function';
+export function isFactory(obj: unknown): obj is InternalFactory<object> {
+  return obj != null && typeof (obj as InternalFactory<object>).create === 'function';
 }
 
 /**

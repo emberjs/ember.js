@@ -1,5 +1,5 @@
 import { get } from '@ember/-internals/metal';
-import type { Factory, default as Owner } from '@ember/-internals/owner';
+import type { InternalFactory, default as Owner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import { assert, info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -16,7 +16,10 @@ import { DEBUG } from '@glimmer/env';
   @private
 */
 
-export function generateControllerFactory(owner: Owner, controllerName: string): Factory<{}> {
+export function generateControllerFactory(
+  owner: Owner,
+  controllerName: string
+): InternalFactory<{}> {
   let factoryManager = owner.factoryFor('controller:basic');
   assert(
     '[BUG] unexpectedly missing a factoryManager for `controller:basic`',
@@ -39,7 +42,7 @@ export function generateControllerFactory(owner: Owner, controllerName: string):
 
   owner.register(fullName, Factory);
 
-  return owner.factoryFor(fullName) as Factory<{}>;
+  return owner.factoryFor(fullName) as InternalFactory<{}>;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { compile } from 'ember-template-compiler';
 
-import type { Factory, Resolver as IResolver } from '@ember/-internals/owner';
+import type { InternalFactory, Resolver as IResolver } from '@ember/-internals/owner';
 
 const DELIMITER = '%';
 
@@ -14,17 +14,17 @@ function serializeKey(specifier: string, source?: unknown, namespace?: unknown) 
 }
 
 class Resolver implements IResolver {
-  _registered: Record<string, Factory<object> | object>;
+  _registered: Record<string, InternalFactory<object> | object>;
 
   constructor() {
     this._registered = {};
   }
-  resolve(specifier: string): Factory<object> | object | undefined {
+  resolve(specifier: string): InternalFactory<object> | object | undefined {
     return this._registered[specifier] || this._registered[serializeKey(specifier)];
   }
   add(
     lookup: string | { specifier: string; source: unknown; namespace: unknown },
-    factory: Factory<object> | object
+    factory: InternalFactory<object> | object
   ) {
     let key;
     switch (typeof lookup) {

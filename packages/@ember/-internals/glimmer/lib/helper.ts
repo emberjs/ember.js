@@ -3,7 +3,7 @@
 */
 
 import type { FactoryManager } from '@ember/-internals/container/lib/container';
-import type { Factory, InternalOwner } from '@ember/-internals/owner';
+import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
@@ -21,11 +21,11 @@ export type HelperFunction<T, P extends unknown[], N extends Dict<unknown>> = (
   named: N
 ) => T;
 
-export type SimpleHelperFactory<T, P extends unknown[], N extends Dict<unknown>> = Factory<
+export type SimpleHelperFactory<T, P extends unknown[], N extends Dict<unknown>> = InternalFactory<
   SimpleHelper<T, P, N>,
   HelperFactory<SimpleHelper<T, P, N>>
 >;
-export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
+export type ClassHelperFactory = InternalFactory<HelperInstance, HelperFactory<HelperInstance>>;
 
 export interface HelperFactory<T> {
   isHelperFactory: true;

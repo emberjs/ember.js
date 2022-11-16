@@ -2,7 +2,7 @@ import AbstractApplicationTestCase from './abstract-application';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 import Component from '@ember/component';
-import type { Factory } from '@ember/-internals/owner';
+import type { InternalFactory } from '@ember/-internals/owner';
 
 export default abstract class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   abstract resolver?: Resolver;
@@ -13,7 +13,7 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
     });
   }
 
-  add(specifier: string, factory: Factory<object> | object) {
+  add(specifier: string, factory: InternalFactory<object> | object) {
     this.resolver!.add(specifier, factory);
   }
 

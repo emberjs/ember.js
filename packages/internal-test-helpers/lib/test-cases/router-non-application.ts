@@ -12,7 +12,7 @@ import buildOwner from '../build-owner';
 import { runAppend, runDestroy } from '../run';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { Factory } from '@ember/-internals/owner';
+import type { InternalFactory } from '@ember/-internals/owner';
 
 export default class RouterNonApplicationTestCase extends AbstractTestCase {
   owner: EngineInstance;
@@ -59,7 +59,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     return new ModuleBasedResolver();
   }
 
-  add(specifier: string, factory: Factory<object> | object) {
+  add(specifier: string, factory: InternalFactory<object> | object) {
     this.resolver.add(specifier, factory);
   }
 
