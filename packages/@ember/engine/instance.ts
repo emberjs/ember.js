@@ -45,6 +45,10 @@ export interface EngineInstanceOptions {
   @uses ContainerProxyMixin
 */
 
+// Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
+// `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
+// and `ContainerMixin` types used to define `InternalOwner`, this is the same
+// type as `InternalOwner` from TS's POV.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin {}
 class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
   /**
@@ -53,6 +57,10 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
    @param {Registry} registry
    @param {BootOptions} options
    */
+  // This is effectively an "abstract" method: it defines the contract a
+  // subclass (e.g. `ApplicationInstance`) must follow to implement this
+  // behavior, but an `EngineInstance` has no behavior of its own here.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static setupRegistry(_registry: Registry, _options?: BootOptions) {}
 
   /**
@@ -189,7 +197,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     @param options {Object} options provided to the engine instance.
     @return {EngineInstance,Error}
   */
-  buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}) {
+  buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}): EngineInstance {
     let Engine = this.lookup(`engine:${name}`);
 
     if (!Engine) {
