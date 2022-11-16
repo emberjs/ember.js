@@ -1,5 +1,9 @@
-import { getOwner, setOwner } from '@ember/-internals/owner';
-import type { InternalFactory, default as Owner } from '@ember/-internals/owner';
+import {
+  type default as Owner,
+  type InternalFactory,
+  getOwner,
+  setOwner,
+} from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
