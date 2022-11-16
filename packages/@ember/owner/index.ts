@@ -39,6 +39,8 @@ export default Owner;
 
 export {
   setOwner,
+  FullName,
   Factory,
   FactoryManager,
+  Resolver,
 } from '../-internals/owner';

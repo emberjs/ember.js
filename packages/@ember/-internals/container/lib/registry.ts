@@ -1,4 +1,4 @@
-import type { Factory } from '@ember/-internals/owner';
+import type { Factory, Resolver } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import type { set } from '@ember/object';
@@ -36,14 +36,6 @@ export interface IRegistry {
 
 export interface ResolverClass {
   create(...args: unknown[]): Resolver;
-}
-
-export interface Resolver {
-  knownForType?: (type: string) => KnownForTypeResult;
-  lookupDescription?: (fullName: string) => string;
-  makeToString?: (factory: Factory<object>, fullName: string) => string;
-  normalize?: (fullName: string) => string;
-  resolve(name: string): Factory<object> | object | undefined;
 }
 
 export interface RegistryOptions {
