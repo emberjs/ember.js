@@ -5,12 +5,18 @@ import Owner, {
   RegisterOptions,
   Resolver,
   KnownForTypeResult,
+  getOwner,
+  setOwner,
 } from '@ember/owner';
 import Component from '@glimmer/component';
 import { expectTypeOf } from 'expect-type';
-// TODO: once we move the runtime export to `@ember/owner`, update this import
-// as well. (That's why it's tested in this module!)
-import { getOwner } from '@ember/application';
+import {
+  getOwner as getOwnerApplication,
+  setOwner as setOwnerApplication,
+} from '@ember/application';
+
+expectTypeOf(getOwnerApplication).toEqualTypeOf(getOwner);
+expectTypeOf(setOwnerApplication).toEqualTypeOf(setOwner);
 
 // Just a class we can construct in the Factory and FactoryManager tests
 declare class ConstructThis {
@@ -35,19 +41,19 @@ aFactory.create({
   hasProps: false,
 });
 
-// These should be rejected by way of EPC
-// @ts-expect-error
+// NOTE: it would be nice if these could be rejected by way of EPC, but alas: it
+// cannot, because the public contract for `create` allows implementors to
+// define their `create` config object basically however they like. :-/
 aFactory.create({ unrelatedNonsense: 'yep yep yep' });
-// @ts-expect-error
 aFactory.create({ hasProps: true, unrelatedNonsense: 'yep yep yep' });
 
 // But this should be legal.
 const goodPojo = { hasProps: true, unrelatedNonsense: 'also true' };
 aFactory.create(goodPojo);
 
-// while this should be rejected for *type error* reasons, not EPC
+// This should also be rejected, though for *type error* reasons, not EPC; alas,
+// it cannot, for the same reason.
 const badPojo = { hasProps: 'huzzah', unrelatedNonsense: 'also true' };
-// @ts-expect-error
 aFactory.create(badPojo);
 
 // ----- FactoryManager ----- //
@@ -56,26 +62,29 @@ expectTypeOf(aFactoryManager.class).toEqualTypeOf<Factory<ConstructThis>>();
 expectTypeOf(aFactoryManager.create({})).toEqualTypeOf<ConstructThis>();
 expectTypeOf(aFactoryManager.create({ hasProps: true })).toEqualTypeOf<ConstructThis>();
 expectTypeOf(aFactoryManager.create({ hasProps: false })).toEqualTypeOf<ConstructThis>();
-// @ts-expect-error
+
+// Likewise with these.
 aFactoryManager.create({ otherStuff: 'nope' });
-// @ts-expect-error
 aFactoryManager.create({ hasProps: true, otherStuff: 'nope' });
 expectTypeOf(aFactoryManager.create(goodPojo)).toEqualTypeOf<ConstructThis>();
-// @ts-expect-error
 aFactoryManager.create(badPojo);
 
 // ----- Resolver ----- //
 declare let resolver: Resolver;
-expectTypeOf<Resolver['normalize']>().toEqualTypeOf<((fullName: FullName) => string) | undefined>();
+expectTypeOf<Resolver['normalize']>().toEqualTypeOf<
+  ((fullName: FullName) => FullName) | undefined
+>();
 expectTypeOf<Resolver['lookupDescription']>().toEqualTypeOf<
   ((fullName: FullName) => string) | undefined
 >();
-expectTypeOf(resolver.resolve('some-name')).toEqualTypeOf<object | Factory<object> | undefined>();
+expectTypeOf(resolver.resolve('random:some-name')).toEqualTypeOf<
+  object | Factory<object> | undefined
+>();
 const knownForFoo = resolver.knownForType?.('foo');
 expectTypeOf(knownForFoo).toEqualTypeOf<KnownForTypeResult<'foo'> | undefined>();
 expectTypeOf(knownForFoo?.['foo:bar']).toEqualTypeOf<boolean | undefined>();
-// @ts-expect-error
-knownForFoo?.['blah'];
+// @ts-expect-error -- there is no `blah` on `knownForFoo`, *only* `foo`.
+knownForFoo?.blah;
 
 // This one is last so it can reuse the bits from above!
 // ----- Owner ----- //
@@ -88,12 +97,16 @@ expectTypeOf(owner.lookup('type:name')).toEqualTypeOf<unknown>();
 owner.lookup('non-namespace-string');
 expectTypeOf(owner.lookup('namespace@type:name')).toEqualTypeOf<unknown>();
 
-declare module '@ember/service' {
-  interface Registry {
-    'my-type-test-service': ConstructThis;
+// Arbitrary registration patterns work, as here.
+declare module '@ember/owner' {
+  export interface DIRegistry {
+    etc: {
+      'my-type-test': ConstructThis;
+    };
   }
 }
-expectTypeOf(owner.lookup('service:my-type-test-service')).toEqualTypeOf<ConstructThis>();
+
+expectTypeOf(owner.lookup('etc:my-type-test')).toEqualTypeOf<ConstructThis>();
 
 expectTypeOf(owner.register('type:name', aFactory)).toEqualTypeOf<void>();
 expectTypeOf(owner.register('type:name', aFactory, {})).toEqualTypeOf<void>();
@@ -117,17 +130,17 @@ expectTypeOf(
 owner.register('non-namespace-string', aFactory);
 expectTypeOf(owner.register('namespace@type:name', aFactory)).toEqualTypeOf<void>();
 
-expectTypeOf(owner.factoryFor('type:name')).toEqualTypeOf<FactoryManager<unknown> | undefined>();
-expectTypeOf(owner.factoryFor('type:name')?.class).toEqualTypeOf<Factory<unknown> | undefined>();
-expectTypeOf(owner.factoryFor('type:name')?.create()).toEqualTypeOf<unknown>();
-expectTypeOf(owner.factoryFor('type:name')?.create({})).toEqualTypeOf<unknown>();
-expectTypeOf(
-  owner.factoryFor('type:name')?.create({ anythingGoes: true })
-).toEqualTypeOf<unknown>();
+expectTypeOf(owner.factoryFor('type:name')).toEqualTypeOf<FactoryManager<object> | undefined>();
+expectTypeOf(owner.factoryFor('type:name')?.class).toEqualTypeOf<Factory<object> | undefined>();
+expectTypeOf(owner.factoryFor('type:name')?.create()).toEqualTypeOf<object | undefined>();
+expectTypeOf(owner.factoryFor('type:name')?.create({})).toEqualTypeOf<object | undefined>();
+expectTypeOf(owner.factoryFor('type:name')?.create({ anythingGoes: true })).toEqualTypeOf<
+  object | undefined
+>();
 // @ts-expect-error
 owner.factoryFor('non-namespace-string');
 expectTypeOf(owner.factoryFor('namespace@type:name')).toEqualTypeOf<
-  FactoryManager<unknown> | undefined
+  FactoryManager<object> | undefined
 >();
 
 // Tests deal with the fact that string literals are a special case! `let`
@@ -171,12 +184,12 @@ interface Sig<T> {
 
 class ExampleComponent<T> extends Component<Sig<T>> {
   checkThis() {
-    expectTypeOf(getOwner(this)).toEqualTypeOf<Owner>();
+    expectTypeOf(getOwner(this)).toEqualTypeOf<Owner | undefined>();
   }
 }
 
 declare let example: ExampleComponent<string>;
-expectTypeOf(getOwner(example)).toEqualTypeOf<Owner>();
+expectTypeOf(getOwner(example)).toEqualTypeOf<Owner | undefined>();
 
 // ----- Minimal further coverage for POJOs ----- //
 // `Factory` and `FactoryManager` don't have to deal in actual classes. :sigh:
@@ -185,7 +198,14 @@ const Creatable = {
 };
 
 const pojoFactory: Factory<typeof Creatable> = {
-  create(initialValues?) {
+  // If you want *real* safety here, alas: you cannot have it. The public
+  // contract for `create` allows implementors to define their `create` config
+  // object basically however they like. As a result, this is the safest version
+  // possible: Making it be `Partial<Thing>` is *compatible* with `object`, and
+  // requires full checking *inside* the function body. It does not, alas, give
+  // any safety *outside* the class. A future rationalization of this would be
+  // very welcome.
+  create(initialValues?: Partial<typeof Creatable>) {
     const instance = Creatable;
     if (initialValues) {
       if (initialValues.hasProps) {

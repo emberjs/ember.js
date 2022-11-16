@@ -21,5 +21,12 @@ declare module '@ember/service' {
 
   // A type registry for Ember `Service`s. Meant to be declaration-merged so
   // string lookups resolve to the correct type.
-  interface Registry {}
+  export interface Registry extends Record<string, Service> {}
+}
+
+declare module '@ember/owner' {
+  import { Registry } from '@ember/service';
+  export interface DIRegistry {
+    service: Registry;
+  }
 }

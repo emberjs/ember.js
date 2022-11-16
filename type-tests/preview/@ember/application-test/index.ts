@@ -12,7 +12,7 @@ declare class MyService extends Service {
   withStuff: true;
 }
 declare let myService: MyService;
-expectTypeOf(getOwner(myService)).toEqualTypeOf<Owner>();
+expectTypeOf(getOwner(myService)).toEqualTypeOf<Owner | undefined>();
 
 // @ts-expect-error
 getOwner();

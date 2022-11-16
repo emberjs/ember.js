@@ -1,4 +1,5 @@
 declare module '@ember/engine/instance' {
+  import { FullName } from '@ember/owner';
   import ContainerProxyMixin from '@ember/engine/-private/container-proxy-mixin';
   import RegistryProxyMixin from '@ember/engine/-private/registry-proxy-mixin';
   import EmberObject from '@ember/object';
@@ -11,7 +12,7 @@ declare module '@ember/engine/instance' {
     /**
      * Unregister a factory.
      */
-    unregister(fullName: string): unknown;
+    unregister(fullName: FullName): unknown;
 
     /**
      *  Initialize the `EngineInstance` and return a promise that resolves

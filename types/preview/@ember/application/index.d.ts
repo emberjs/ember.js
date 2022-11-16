@@ -116,41 +116,23 @@ declare module '@ember/application' {
     buildInstance(options?: object): ApplicationInstance;
   }
 
-  // Known framework objects, so that `getOwner` can always, accurately, return
-  // `Owner` when working with one of these classes, which the framework *does*
-  // guarantee will always have an `Owner`. NOTE: this must be kept up to date
-  // whenever we add new base classes to the framework. For example, if we
-  // introduce a standalone `Service` or `Route` base class which *does not*
-  // extend from `EmberObject`, it will need to be added here.
-  //
-  // NOTE: we use `any` here because we need to make sure *not* to fix the
-  // actual GlimmerComponent type; using `unknown` or `{}` or `never` (the
-  // obvious alternatives here) results in a version which is too narrow, such
-  // that any subclass which applies a signature does not get resolved by the
-  // definition of `getOwner()` below.
-  type KnownFrameworkObject = EmberObject | GlimmerComponent<any>;
-
   /**
    * Framework objects in an Ember application (components, services, routes, etc.)
    * are created via a factory and dependency injection system. Each of these
    * objects is the responsibility of an "owner", which handled its
    * instantiation and manages its lifetime.
+   *
+   * @deprecated Use `import { getOwner } from '@ember/owner';` instead.
    */
-  // SAFETY: this first overload is, strictly speaking, *unsafe*. It is possible
-  // to do `let x = EmberObject.create(); getOwner(x);` and the result will *not*
-  // be `Owner` but instead `undefined`. However, that's quite unusual at this
-  // point, and more to the point we cannot actually distinguish a `Service`
-  // subclass from `EmberObject` at this point: `Service` subclasses `EmberObject`
-  // and adds nothing to it. Accordingly, if we want to catch `Service`s with this
-  // (and `getOwner(this)` for some service will definitely be defined!), it has
-  // to be this way. :sigh:
-  export function getOwner(object: KnownFrameworkObject): Owner;
-  export function getOwner(object: unknown): Owner | undefined;
+  export function getOwner(object: object): Owner | undefined;
+
   /**
    * `setOwner` forces a new owner on a given object instance. This is primarily
    * useful in some testing cases.
+   *
+   * @deprecated Use `import { setOwner } from '@ember/owner';` instead.
    */
-  export function setOwner(object: unknown, owner: Owner): void;
+  export function setOwner(object: object, owner: Owner): void;
 
   /**
    * Detects when a specific package of Ember (e.g. 'Ember.Application')
