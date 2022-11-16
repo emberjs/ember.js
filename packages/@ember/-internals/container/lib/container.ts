@@ -3,6 +3,7 @@ import type {
   FactoryClass,
   InternalOwner,
   RegisterOptions,
+  FactoryManager,
   FullName,
 } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
@@ -52,7 +53,7 @@ if (DEBUG) {
 export interface ContainerOptions {
   owner?: InternalOwner;
   cache?: { [key: string]: object };
-  factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
+  factoryManagerCache?: { [key: string]: InternalFactoryManager<any, any> };
   validationCache?: { [key: string]: boolean };
 }
 
@@ -75,7 +76,7 @@ export default class Container {
   readonly owner: InternalOwner | null;
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: object };
-  factoryManagerCache!: { [key: string]: FactoryManager<object> };
+  factoryManagerCache!: { [key: string]: InternalFactoryManager<object> };
   readonly validationCache!: { [key: string]: boolean };
   isDestroyed: boolean;
   isDestroying: boolean;
@@ -214,7 +215,7 @@ export default class Container {
    @param {String} fullName
    @return {any}
    */
-  factoryFor(fullName: FullName): FactoryManager<object> | undefined {
+  factoryFor(fullName: FullName): InternalFactoryManager<object> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
@@ -235,8 +236,8 @@ if (DEBUG) {
  * set on the manager.
  */
 function wrapManagerInDeprecationProxy<T extends object, C extends object | FactoryClass>(
-  manager: FactoryManager<T, C>
-): FactoryManager<T, C> {
+  manager: InternalFactoryManager<T, C>
+): InternalFactoryManager<T, C> {
   let validator = {
     set(_obj: T, prop: keyof T) {
       throw new Error(
@@ -291,9 +292,9 @@ function lookup(
 
 function factoryFor(
   container: Container,
-): FactoryManager<object> | undefined {
   normalizedName: FullName,
   fullName: FullName
+): InternalFactoryManager<object> | undefined {
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
@@ -310,7 +311,7 @@ function factoryFor(
     factory._onLookup(fullName);
   }
 
-  let manager = new FactoryManager(container, factory, fullName, normalizedName);
+  let manager = new InternalFactoryManager(container, factory, fullName, normalizedName);
 
   if (DEBUG) {
     manager = wrapManagerInDeprecationProxy(manager);
@@ -456,21 +457,40 @@ export interface LazyInjection {
 declare interface DebugFactory<T extends object, C extends FactoryClass | object = FactoryClass>
   extends InternalFactory<T, C> {
   _onLookup?: (fullName: string) => void;
-  _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
   _lazyInjections(): { [key: string]: LazyInjection };
+  _initFactory?: (factoryManager: InternalFactoryManager<T, C>) => void;
 }
 
 export const INIT_FACTORY = Symbol('INIT_FACTORY');
 
-export function getFactoryFor(obj: any): FactoryManager<any, any> {
-  return obj[INIT_FACTORY];
+interface MaybeHasInitFactory {
+  [INIT_FACTORY]?: InternalFactoryManager<object, FactoryClass | object>;
 }
 
-export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void {
-  obj[INIT_FACTORY] = factory;
+export function getFactoryFor(
+  obj: object
+): InternalFactoryManager<object, FactoryClass | object> | undefined {
+  // SAFETY: since we know `obj` is an `object`, we also know we can safely ask
+  // whether a key is set on it.
+  return (obj as MaybeHasInitFactory)[INIT_FACTORY];
 }
 
-export class FactoryManager<T extends object, C extends FactoryClass | object = FactoryClass> {
+export function setFactoryFor<T extends object, C extends FactoryClass | object>(
+  obj: object,
+  factory: InternalFactoryManager<T, C>
+): void {
+  // SAFETY: since we know `obj` is an `object`, we also know we can safely set
+  // a key it safely at this location. (The only way this could be blocked is if
+  // someone has gone out of their way to use `Object.defineProperty()` with our
+  // internal-only symbol and made it `writable: false`.)
+  (obj as MaybeHasInitFactory)[INIT_FACTORY] = factory;
+}
+
+export class InternalFactoryManager<
+  T extends object,
+  C extends FactoryClass | object = FactoryClass
+> implements FactoryManager<T>
+{
   readonly container: Container;
   readonly class: Factory<T, C> & DebugFactory<T, C>;
   readonly owner: InternalOwner | null;

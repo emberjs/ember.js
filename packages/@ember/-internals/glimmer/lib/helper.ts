@@ -2,7 +2,7 @@
 @module @ember/component
 */
 
-import type { FactoryManager } from '@ember/-internals/container/lib/container';
+import type { InternalFactoryManager } from '@ember/-internals/container/lib/container';
 import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
@@ -207,7 +207,7 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 
   createHelper(
-    definition: typeof Helper | FactoryManager<object>,
+    definition: typeof Helper | InternalFactoryManager<object>,
     args: Arguments
   ): ClassicHelperStateBucket {
     let instance = isFactoryManager(definition)
@@ -250,8 +250,8 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-function isFactoryManager(obj: unknown): obj is FactoryManager<object> {
-  return obj != null && 'class' in (obj as FactoryManager<object>);
+function isFactoryManager(obj: unknown): obj is InternalFactoryManager<object> {
+  return obj != null && 'class' in (obj as InternalFactoryManager<object>);
 }
 
 setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
