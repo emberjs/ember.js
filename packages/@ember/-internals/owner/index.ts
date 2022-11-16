@@ -5,10 +5,10 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
 */
 
 /**
- * The name for a factory consists of a namespace and the name of a specific
- * type within that namespace, like `'service:session'`.
- *
- * @for @ember/owner
+  The name for a factory consists of a namespace and the name of a specific
+  type within that namespace, like `'service:session'`.
+
+  @for @ember/owner
  */
 export type FullName<
   Type extends string = string,
@@ -16,54 +16,64 @@ export type FullName<
 > = `${Type}:${Name}`;
 
 /**
- * A type registry for the DI system, which other participants in the DI system
- * can register themselves into with declaration merging. The contract for this
- * type is that its keys are the `Type` from a `FullName`, and each value for a
- * `Type` is another registry whose keys are the `Name` from a `FullName`. The
- * mechanic for providing a registry is [declaration merging][handbook].
- *
- * [handbook]: https://www.typescriptlang.org/docs/handbook/declaration-merging.html
- *
- * For example, a (non-existent!) "singleton" type might do this in :
- *
- * ```ts
- * abstract class Singleton {
- *   abstract requiredHook();
- * }
- *
- * // For concrete singleton classes to be merged into.
- * interface Registry extends Record<string, Singleton> {}
- *
- * declare module '@ember/owner' {
- *   singleton: Registry;
- * }
- * ```
- *
- * Then users of the `Owner` API will be able to reliably do things like this,
- * assuming a `some-class` registration exists:
- *
- * ```ts
- * getOwner(this)?.lookup('singleton:some-class').requiredHook();
- * ```
+  A type registry for the DI system, which other participants in the DI system
+  can register themselves into with declaration merging. The contract for this
+  type is that its keys are the `Type` from a `FullName`, and each value for a
+  `Type` is another registry whose keys are the `Name` from a `FullName`. The
+  mechanic for providing a registry is [declaration merging][handbook].
+
+  [handbook]: https://www.typescriptlang.org/docs/handbook/declaration-merging.html
+
+  For example, Ember's `@ember/service` module includes this set of definitions:
+
+  ```ts
+  export default class Service extends EmberObject {}
+
+  // For concrete singleton classes to be merged into.
+  interface Registry extends Record<string, Service> {}
+
+  declare module '@ember/owner' {
+    service: Registry;
+  }
+  ```
+
+  Declarations of services can then include the registry:
+
+  ```ts
+  import Service from '@ember/service';
+
+  export default class Session extends Service {
+    login(username: string, password: string) {
+      // ...
+    }
+  }
+
+  declare module '@ember/service' {
+    interface Registry {
+      session: Session;
+    }
+  }
+  ```
+
+  Then users of the `Owner` API will be able to do things like this with strong
+  type safety guarantees:
+
+  ```ts
+  getOwner(this)?.lookup('service:session').login("hello", "1234abcd");
+  ```
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface DIRegistry extends Record<string, Record<string, unknown>> {}
 
-// Convenience utilities for pulling a specific factory manager off `DIRegistry`
+// Convenience utility for pulling a specific factory manager off `DIRegistry`
 // if one exists, or falling back to the default definition otherwise.
+/** @internal */
 type ResolveFactoryManager<
   Type extends string,
   Name extends string
 > = DIRegistry[Type][Name] extends object
   ? FactoryManager<DIRegistry[Type][Name]>
   : FactoryManager<object> | undefined;
-
-type ResolveFactory<
-  Type extends string,
-  Name extends string
-> = DIRegistry[Type][Name] extends object
-  ? Factory<DIRegistry[Type][Name]>
-  : Factory<object> | object | undefined;
 
 interface BasicRegistry {
   /**
@@ -197,7 +207,7 @@ export interface RegisterOptions {
  * they return the same instance.
  *
  * However, that behavior can be modified with the `instantiate` and `singleton`
- * options to the {@linkcode Owner.register} method.
+ * options to the {@linkcode BasicRegistry.register Owner.register} method.
  */
 export interface Factory<T extends object> {
   // NOTE: this does not check against the types of the target object in any
@@ -208,12 +218,18 @@ export interface Factory<T extends object> {
   // able to provide a *narrower* interface than "exactly the public fields on
   // the class" while still falling back to the "exactly the public fields on
   // the class" for the general case. :sigh:
+  //
+  // We stills upply both signatures because even though the second one means
+  // literally anything will *type check*, the first one means that the normal
+  // case of calling `.create()` for most implementors of the contract will at
+  // least get useful autocomplete.
   /**
    * A function that will create an instance of the class with any
    * dependencies injected.
    *
    * @param initialValues Any values to set on an instance of the class
    */
+  create(initialValues?: Partial<T>): T;
   create(initialValues?: object): T;
 }
 
@@ -257,9 +273,7 @@ export type KnownForTypeResult<Type extends string> = {
  * `ember-resolver` in the default blueprint.
  */
 export interface Resolver {
-  resolve: <Type extends string, Name extends string>(
-    name: FullName<Type, Name>
-  ) => ResolveFactory<Type, Name>;
+  resolve: (name: string) => Factory<object> | object | undefined;
   knownForType?: <Type extends string>(type: Type) => KnownForTypeResult<Type>;
   lookupDescription?: (fullName: FullName) => string;
   makeToString?: (factory: Factory<object>, fullName: FullName) => string;

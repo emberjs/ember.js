@@ -1,11 +1,11 @@
 import type { EventDispatcher } from '@ember/-internals/views';
+import type Owner from '@ember/owner';
 import Application, { getOwner, setOwner } from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
-import type { InternalOwner } from '@ember/-internals/owner';
 
 import { expectTypeOf } from 'expect-type';
 
-let owner = {} as InternalOwner;
+declare let owner: Owner;
 
 class App extends Application {
   rootElement = '#ember-application';
@@ -61,6 +61,10 @@ class App2 extends Application {
 
 new App2(owner);
 
-expectTypeOf(getOwner({})).toEqualTypeOf<InternalOwner | undefined>();
+// getOwner and setOwner should work with explicit `owner` when imported here.
+expectTypeOf(getOwner({})).toEqualTypeOf<Owner | undefined>();
+expectTypeOf(setOwner({}, owner)).toEqualTypeOf<void>();
 
-expectTypeOf(setOwner({}, {} as InternalOwner)).toEqualTypeOf<void>();
+// `setOwner` should also work with `ApplicationInstance`s.
+declare let appInstance: ApplicationInstance;
+expectTypeOf(setOwner({}, appInstance)).toEqualTypeOf<void>();
