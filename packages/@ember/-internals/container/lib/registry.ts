@@ -1,4 +1,11 @@
-import type { FullName, InternalFactory, Resolver, RegisterOptions } from '@ember/-internals/owner';
+import type {
+  FactoryClass,
+  FullName,
+  InternalFactory,
+  KnownForTypeResult,
+  RegisterOptions,
+  Resolver,
+} from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import type { set } from '@ember/object';
@@ -8,24 +15,6 @@ import Container from './container';
 
 export interface Injection {
   property: string;
-}
-
-export interface KnownForTypeResult {
-  [fullName: string]: boolean;
-}
-
-export interface IRegistry {
-  describe(fullName: string): string;
-  getOption<K extends keyof RegisterOptions>(
-    fullName: string,
-    optionName: K
-  ): RegisterOptions[K] | undefined;
-  getOptions(fullName: string): RegisterOptions | undefined;
-  getOptionsForType(type: string): RegisterOptions | undefined;
-  knownForType(type: string): KnownForTypeResult;
-  makeToString(factory: Factory<object>, fullName: string): string;
-  normalizeFullName(fullName: string): string;
-  resolve(fullName: string): Factory<object> | object | undefined;
   specifier: FullName;
 }
 
@@ -34,7 +23,7 @@ export interface ResolverClass {
 }
 
 export interface RegistryOptions {
-  fallback?: IRegistry;
+  fallback?: Registry;
   registrations?: { [key: string]: object };
   resolver?: Resolver;
 }
@@ -54,10 +43,10 @@ const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
  @class Registry
  @since 1.11.0
 */
-export default class Registry implements IRegistry {
+export default class Registry {
   readonly _failSet: Set<string>;
   resolver: Resolver | null;
-  readonly fallback: IRegistry | null;
+  readonly fallback: Registry | null;
   readonly registrations: Record<string, InternalFactory<object> | object>;
   readonly _normalizeCache: Record<FullName, FullName>;
   readonly _options: Record<string, RegisterOptions>;
@@ -471,7 +460,7 @@ export default class Registry implements IRegistry {
    @method knownForType
    @param {String} type the type to iterate over
   */
-  knownForType(type: string): KnownForTypeResult {
+  knownForType<T extends string>(type: T): KnownForTypeResult<T> {
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
     for (let fullName of registeredNames) {
