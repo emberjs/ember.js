@@ -1,9 +1,9 @@
-import type { Factory, Owner } from '@ember/-internals/owner';
 import type EngineInstance from '@ember/engine/instance';
 import type { BootOptions } from '@ember/engine/instance';
 import Application from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
 import EmberObject from '@ember/object';
+import Owner from '@ember/owner';
 
 import { expectTypeOf } from 'expect-type';
 
@@ -24,12 +24,10 @@ expectTypeOf(
   instance.register('service:store-singleton', Store, { singleton: true, instantiate: true })
 ).toEqualTypeOf<void>();
 
-expectTypeOf(instance.lookup('service:store')).toEqualTypeOf<
-  Factory<object> | object | undefined
->();
+expectTypeOf(instance.lookup('service:store')).toBeUnknown();
 expectTypeOf(
   instance.lookup('service:store', { singleton: true, instantiate: true })
-).toEqualTypeOf<object | Factory<object> | undefined>();
+).toBeUnknown();
 
 expectTypeOf(instance.hasRegistration('service:store')).toEqualTypeOf<boolean>();
 // @ts-expect-error requires name
