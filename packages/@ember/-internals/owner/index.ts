@@ -4,7 +4,7 @@ import type { IContainer } from '../runtime/lib/mixins/container_proxy';
 import type { IRegistry } from '../runtime/lib/mixins/registry_proxy';
 
 /**
-@module @ember/application
+  @module @ember/owner
 */
 
 export { TypeOptions };
