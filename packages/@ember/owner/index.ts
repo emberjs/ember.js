@@ -40,6 +40,7 @@ export default Owner;
 export {
   setOwner,
   FullName,
+  RegisterOptions,
   Factory,
   FactoryManager,
   Resolver,

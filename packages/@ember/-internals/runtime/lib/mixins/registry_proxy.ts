@@ -3,9 +3,8 @@
 */
 
 import type { Registry } from '@ember/-internals/container';
-import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import Mixin from '@ember/object/mixin';
-import type { Factory } from '@ember/-internals/owner';
+import type { Factory, RegisterOptions } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utils/types';
 import { assert } from '@ember/debug';
 
@@ -22,24 +21,24 @@ export interface IRegistry {
    */
   resolveRegistration(fullName: string): Factory<object> | object | undefined;
 
-  register(fullName: string, factory: Factory<object> | object, options?: TypeOptions): void;
+  register(fullName: string, factory: Factory<object> | object, options?: RegisterOptions): void;
 
   unregister(fullName: string): void;
 
   hasRegistration(fullName: string): boolean;
 
-  registeredOption<K extends keyof TypeOptions>(
+  registeredOption<K extends keyof RegisterOptions>(
     fullName: string,
     optionName: K
-  ): TypeOptions[K] | undefined;
+  ): RegisterOptions[K] | undefined;
 
-  registerOptions(fullName: string, options: TypeOptions): void;
+  registerOptions(fullName: string, options: RegisterOptions): void;
 
-  registeredOptions(fullName: string): TypeOptions | undefined;
+  registeredOptions(fullName: string): RegisterOptions | undefined;
 
-  registerOptionsForType(type: string, options: TypeOptions): void;
+  registerOptionsForType(type: string, options: RegisterOptions): void;
 
-  registeredOptionsForType(type: string): TypeOptions | undefined;
+  registeredOptionsForType(type: string): RegisterOptions | undefined;
 }
 
 /**

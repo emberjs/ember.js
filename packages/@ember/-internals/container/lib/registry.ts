@@ -1,4 +1,4 @@
-import type { Factory, Resolver } from '@ember/-internals/owner';
+import type { Factory, Resolver, RegisterOptions } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import type { set } from '@ember/object';
@@ -11,23 +11,18 @@ export interface Injection {
   specifier: string;
 }
 
-export interface TypeOptions {
-  instantiate?: boolean;
-  singleton?: boolean;
-}
-
 export interface KnownForTypeResult {
   [fullName: string]: boolean;
 }
 
 export interface IRegistry {
   describe(fullName: string): string;
-  getOption<K extends keyof TypeOptions>(
+  getOption<K extends keyof RegisterOptions>(
     fullName: string,
     optionName: K
-  ): TypeOptions[K] | undefined;
-  getOptions(fullName: string): TypeOptions | undefined;
-  getOptionsForType(type: string): TypeOptions | undefined;
+  ): RegisterOptions[K] | undefined;
+  getOptions(fullName: string): RegisterOptions | undefined;
+  getOptionsForType(type: string): RegisterOptions | undefined;
   knownForType(type: string): KnownForTypeResult;
   makeToString(factory: Factory<object>, fullName: string): string;
   normalizeFullName(fullName: string): string;
@@ -65,9 +60,9 @@ export default class Registry implements IRegistry {
   readonly fallback: IRegistry | null;
   readonly registrations: Record<string, Factory<object> | object>;
   readonly _normalizeCache: Record<string, string>;
-  readonly _options: Record<string, TypeOptions>;
   readonly _resolveCache: Record<string, Factory<object> | object>;
-  readonly _typeOptions: Record<string, TypeOptions>;
+  readonly _options: Record<string, RegisterOptions>;
+  readonly _typeOptions: Record<string, RegisterOptions>;
 
   set?: typeof set;
 
@@ -166,9 +161,21 @@ export default class Registry implements IRegistry {
    @param {Function} factory
    @param {Object} options
    */
-  register(fullName: string, factory: object, options: TypeOptions & { instantiate: false }): void;
-  register(fullName: string, factory: Factory<object>, options?: TypeOptions): void;
-  register(fullName: string, factory: object | Factory<object>, options: TypeOptions = {}): void {
+  register(
+    fullName: string,
+    factory: object,
+    options: RegisterOptions & { instantiate: false }
+  ): void;
+  register<T extends object, C extends FactoryClass | object>(
+    fullName: string,
+    factory: Factory<T, C>,
+    options?: RegisterOptions
+  ): void;
+  register(
+    fullName: string,
+    factory: object | Factory<object>,
+    options: RegisterOptions = {}
+  ): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
@@ -375,11 +382,11 @@ export default class Registry implements IRegistry {
    @param {String} type
    @param {Object} options
    */
-  optionsForType(type: string, options: TypeOptions): void {
+  optionsForType(type: string, options: RegisterOptions): void {
     this._typeOptions[type] = options;
   }
 
-  getOptionsForType(type: string): TypeOptions | undefined {
+  getOptionsForType(type: string): RegisterOptions | undefined {
     let optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
@@ -393,12 +400,12 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName: string, options: TypeOptions): void {
+  options(fullName: string, options: RegisterOptions): void {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
 
-  getOptions(fullName: string): TypeOptions | undefined {
+  getOptions(fullName: string): RegisterOptions | undefined {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
@@ -408,10 +415,10 @@ export default class Registry implements IRegistry {
     return options;
   }
 
-  getOption<K extends keyof TypeOptions>(
     fullName: string,
+  getOption<K extends keyof RegisterOptions>(
     optionName: K
-  ): TypeOptions[K] | undefined {
+  ): RegisterOptions[K] | undefined {
     let options = this._options[fullName];
 
     if (options !== undefined && options[optionName] !== undefined) {

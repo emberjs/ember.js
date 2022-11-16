@@ -1,9 +1,9 @@
-import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
+import type { Factory, FactoryClass, Owner, RegisterOptions } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { DebugRegistry, TypeOptions } from './registry';
+import type { DebugRegistry } from './registry';
 import type Registry from './registry';
 
 interface LeakTracking {
@@ -137,10 +137,10 @@ export default class Container {
     @private
    @method lookup
    @param {String} fullName
-   @param {TypeOptions} [options]
+   @param {RegisterOptions} [options]
    @return {any}
    */
-  lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined {
+  lookup(fullName: string, options?: RegisterOptions): Factory<object> | object | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
@@ -263,8 +263,8 @@ function isInstantiatable(container: Container, fullName: string) {
 function lookup(
   container: Container,
   fullName: string,
-  options: TypeOptions = {}
 ): Factory<object> | object | undefined {
+  options: RegisterOptions = {}
   let normalizedName = fullName;
 
   if (
@@ -314,7 +314,7 @@ function factoryFor(
 function isSingletonClass(
   container: Container,
   fullName: string,
-  { instantiate, singleton }: TypeOptions
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     singleton !== false &&
@@ -327,7 +327,7 @@ function isSingletonClass(
 function isSingletonInstance(
   container: Container,
   fullName: string,
-  { instantiate, singleton }: TypeOptions
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     singleton !== false &&
@@ -340,7 +340,7 @@ function isSingletonInstance(
 function isFactoryClass(
   container: Container,
   fullname: string,
-  { instantiate, singleton }: TypeOptions
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     instantiate === false &&
@@ -352,7 +352,7 @@ function isFactoryClass(
 function isFactoryInstance(
   container: Container,
   fullName: string,
-  { instantiate, singleton }: TypeOptions
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     instantiate !== false &&
@@ -365,8 +365,8 @@ function instantiateFactory(
   container: Container,
   normalizedName: string,
   fullName: string,
-  options: TypeOptions
 ): Factory<object> | object | undefined {
+  options: RegisterOptions
   let factoryManager = factoryFor(container, normalizedName, fullName);
 
   if (factoryManager === undefined) {

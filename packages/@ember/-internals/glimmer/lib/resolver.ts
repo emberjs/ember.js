@@ -1,7 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
-import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import { ENV } from '@ember/-internals/environment';
-import type { Factory, Owner } from '@ember/-internals/owner';
+import type { Factory, Owner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
@@ -60,8 +59,8 @@ function componentFor(name: string, owner: Owner): Option<Factory<object> | obje
   return owner.factoryFor(fullName) || null;
 }
 
-function layoutFor(name: string, owner: Owner, options?: TypeOptions): Option<Template> {
   let templateFullName = `template:components/${name}`;
+function layoutFor(name: string, owner: Owner, options?: RegisterOptions): Option<Template> {
 
   return (owner.lookup(templateFullName, options) as Template) || null;
 }
@@ -83,7 +82,7 @@ type LookupResult =
 function lookupComponentPair(
   owner: Owner,
   name: string,
-  options?: TypeOptions
+  options?: RegisterOptions
 ): Option<LookupResult> {
   let component = componentFor(name, owner);
 

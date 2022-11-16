@@ -1,5 +1,4 @@
 import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/owner';
-import { TypeOptions } from '../container/lib/registry';
 import type { IContainer } from '../runtime/lib/mixins/container_proxy';
 import type { IRegistry } from '../runtime/lib/mixins/registry_proxy';
 
@@ -15,7 +14,11 @@ import type { IRegistry } from '../runtime/lib/mixins/registry_proxy';
  */
 export type FullName = `${string}:${string}`;
 
-export { TypeOptions };
+export interface RegisterOptions {
+  instantiate?: boolean | undefined;
+  singleton?: boolean | undefined;
+}
+
 /**
  * A `Resolver` is the mechanism responsible for looking up code in your
  * application and converting its naming conventions into the actual classes,

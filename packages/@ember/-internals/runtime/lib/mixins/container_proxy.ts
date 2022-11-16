@@ -4,15 +4,14 @@ import { schedule, join } from '@ember/runloop';
 */
 import type { FactoryManager } from '@ember/-internals/container/lib/container';
 import type Container from '@ember/-internals/container/lib/container';
-import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import Mixin from '@ember/object/mixin';
-import type { Factory } from '@ember/-internals/owner';
+import type { Factory, RegisterOptions } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.
 export interface IContainer {
   ownerInjection(): void;
-  lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined;
+  lookup(fullName: string, options?: RegisterOptions): Factory<object> | object | undefined;
   factoryFor(fullName: string): FactoryManager<object> | undefined;
 }
 

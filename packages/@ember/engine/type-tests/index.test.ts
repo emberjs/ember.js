@@ -1,5 +1,4 @@
-import type { ResolverClass, TypeOptions } from '@ember/-internals/container/lib/registry';
-import type { Factory, Owner } from '@ember/-internals/owner';
+import type { Factory, Owner, RegisterOptions } from '@ember/-internals/owner';
 import type Namespace from '@ember/application/namespace';
 import type { Initializer } from '@ember/engine';
 import Engine from '@ember/engine';
@@ -78,7 +77,9 @@ engine.registerOptions('fruit:favorite', 1);
 // @ts-expect-error requires valid options
 engine.registerOptions('fruit:favorite', { singleton: 1 });
 
-expectTypeOf(engine.registeredOptions('fruit:favorite')).toEqualTypeOf<TypeOptions | undefined>();
+expectTypeOf(engine.registeredOptions('fruit:favorite')).toEqualTypeOf<
+  RegisterOptions | undefined
+>();
 // @ts-expect-error requires string name
 engine.registeredOption(1);
 
@@ -92,6 +93,8 @@ engine.registerOptionsForType('fruit:favorite', 1);
 // @ts-expect-error requires valid options
 engine.registerOptionsForType('fruit:favorite', { singleton: 1 });
 
-expectTypeOf(engine.registeredOptionsForType('my-type')).toEqualTypeOf<TypeOptions | undefined>();
+expectTypeOf(engine.registeredOptionsForType('my-type')).toEqualTypeOf<
+  RegisterOptions | undefined
+>();
 // @ts-expect-error requires type
 engine.registeredOptionsForType();

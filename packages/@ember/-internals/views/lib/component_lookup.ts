@@ -1,4 +1,4 @@
-import type { Owner, TypeOptions } from '@ember/-internals/owner';
+import type { InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({
@@ -7,8 +7,8 @@ export default EmberObject.extend({
     return owner.factoryFor(fullName);
   },
 
-  layoutFor(name: string, owner: Owner, options: TypeOptions) {
     let templateFullName = `template:components/${name}`;
+  layoutFor(name: string, owner: Owner, options: RegisterOptions) {
     return owner.lookup(templateFullName, options);
   },
 });
