@@ -3,43 +3,11 @@
 */
 
 import type { Registry } from '@ember/-internals/container';
-import Mixin from '@ember/object/mixin';
-import type { Factory, RegisterOptions } from '@ember/-internals/owner';
+import type { RegistryMixin } from '@ember/-internals/owner';
 import type { AnyFn } from '@ember/-internals/utils/types';
+
 import { assert } from '@ember/debug';
-
-// This is defined as a separate interface so that it can be used in the definition of
-// `Owner` without also including the `__registry__` property.
-export interface IRegistry {
-  /**
-   Given a fullName return the corresponding factory.
-
-   @public
-   @method resolveRegistration
-   @param {String} fullName
-   @return {Function} fullName's factory
-   */
-  resolveRegistration(fullName: string): Factory<object> | object | undefined;
-
-  register(fullName: string, factory: Factory<object> | object, options?: RegisterOptions): void;
-
-  unregister(fullName: string): void;
-
-  hasRegistration(fullName: string): boolean;
-
-  registeredOption<K extends keyof RegisterOptions>(
-    fullName: string,
-    optionName: K
-  ): RegisterOptions[K] | undefined;
-
-  registerOptions(fullName: string, options: RegisterOptions): void;
-
-  registeredOptions(fullName: string): RegisterOptions | undefined;
-
-  registerOptionsForType(type: string, options: RegisterOptions): void;
-
-  registeredOptionsForType(type: string): RegisterOptions | undefined;
-}
+import Mixin from '@ember/object/mixin';
 
 /**
   RegistryProxyMixin is used to provide public access to specific
@@ -48,7 +16,7 @@ export interface IRegistry {
   @class RegistryProxyMixin
   @private
 */
-interface RegistryProxyMixin extends IRegistry {
+interface RegistryProxyMixin extends RegistryMixin {
   /** @internal */
   __registry__: Registry;
 }

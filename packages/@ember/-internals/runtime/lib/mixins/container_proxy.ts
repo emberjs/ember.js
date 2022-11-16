@@ -2,18 +2,12 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
-import type { FactoryManager } from '@ember/-internals/container/lib/container';
 import type Container from '@ember/-internals/container/lib/container';
 import Mixin from '@ember/object/mixin';
-import type { Factory, RegisterOptions } from '@ember/-internals/owner';
+import type { ContainerMixin } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.
-export interface IContainer {
-  ownerInjection(): void;
-  lookup(fullName: string, options?: RegisterOptions): Factory<object> | object | undefined;
-  factoryFor(fullName: string): FactoryManager<object> | undefined;
-}
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -22,7 +16,7 @@ export interface IContainer {
   @class ContainerProxyMixin
   @private
 */
-interface ContainerProxyMixin extends IContainer {
+interface ContainerProxyMixin extends ContainerMixin {
   /** @internal */
   __container__: Container;
 }

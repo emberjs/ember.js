@@ -1,6 +1,4 @@
 import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimmer/owner';
-import type { IContainer } from '../runtime/lib/mixins/container_proxy';
-import type { IRegistry } from '../runtime/lib/mixins/registry_proxy';
 
 /**
   @module @ember/owner
@@ -29,7 +27,41 @@ export type FullName = `${string}:${string}`;
  * @public
  */
 export default interface Owner {
-  // TODO: expand this to the public API
+  /**
+   * Given a {@linkcode FullName} return a corresponding instance.
+   */
+  lookup(fullName: FullName, options?: RegisterOptions): unknown;
+
+  /**
+   * Registers a factory or value that can be used for dependency injection
+   * (with `inject`) or for service lookup. Each factory is registered with a
+   * full name including two parts: `'type:name'`.
+   *
+   * - To override the default of instantiating the class on the `Factory`,
+   *   pass the `{ instantiate: false }` option. This is useful when you have
+   *   already instantiated the class to use with this factory.
+   * - To override the default singleton behavior and instead create multiple
+   *   instances, pass the `{ singleton: false }` option.
+   */
+  // Dear future maintainer: yes, `Factory<object> | object` is an exceedingly
+  // weird type here. We actually allow more or less *anything* to be passed
+  // here. In the future, we may possibly be able to update this to actually
+  // take advantage of the `FullName` here to require that the registered
+  // factory and corresponding options do the right thing (passing an *actual*
+  // factory, not needing `create` if `options.instantiate` is `false`, etc.)
+  // but doing so will require rationalizing Ember's own internals and may need
+  // a full Ember RFC.
+  register(fullName: FullName, factory: Factory<object> | object, options?: RegisterOptions): void;
+
+  /**
+   * Given a fullName of the form `'type:name'`, like `'route:application'`,
+   * return a corresponding factory manager.
+   *
+   * Any instances created via the factory's `.create()` method must be
+   * destroyed manually by the caller of `.create()`. Typically, this is done
+   * during the creating objects own `destroy` or `willDestroy` methods.
+   */
+  factoryFor(fullName: FullName): FactoryManager<object> | undefined;
 }
 
 export interface RegisterOptions {
@@ -164,7 +196,7 @@ export function isFactory(obj: unknown): obj is InternalFactory<object> {
 
   @method getOwner
   @static
-  @for @ember/application
+  @for @ember/owner
   @param {Object} object An object with an owner.
   @return {Object} An owner object.
   @since 2.3.0
@@ -180,14 +212,47 @@ export function getOwner(object: object): InternalOwner | undefined {
 
   @method setOwner
   @static
-  @for @ember/application
+  @for @ember/owner
   @param {Object} object An object instance.
-  @param {Object} object The new owner object of the object instance.
+  @param {Owner} object The new owner object of the object instance.
   @since 2.3.0
   @public
 */
-export function setOwner(object: any, owner: Owner): void {
+export function setOwner(object: object, owner: Owner): void {
   glimmerSetOwner(object, owner);
 }
 
-export interface InternalOwner extends IRegistry, IContainer {}
+export interface ContainerMixin extends Owner {
+  ownerInjection(): void;
+}
+
+export interface RegistryMixin extends Pick<Owner, 'register'> {
+  /**
+   Given a fullName return the corresponding factory.
+
+   @public
+   @method resolveRegistration
+   @param {String} fullName
+   @return {Function} fullName's factory
+   */
+  resolveRegistration(fullName: FullName): Factory<object> | object | undefined;
+
+  unregister(fullName: FullName): void;
+
+  hasRegistration(fullName: FullName): boolean;
+
+  registeredOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
+    optionName: K
+  ): RegisterOptions[K] | undefined;
+
+  registerOptions(fullName: FullName, options: RegisterOptions): void;
+
+  registeredOptions(fullName: FullName): RegisterOptions | undefined;
+
+  registerOptionsForType(type: string, options: RegisterOptions): void;
+
+  registeredOptionsForType(type: string): RegisterOptions | undefined;
+}
+
+export interface InternalOwner extends RegistryMixin, ContainerMixin {}
