@@ -212,18 +212,12 @@ declare module '@ember/owner' {
     // able to provide a *narrower* interface than "exactly the public fields on
     // the class" while still falling back to the "exactly the public fields on
     // the class" for the general case. :sigh:
-    //
-    // We stills upply both signatures because even though the second one means
-    // literally anything will *type check*, the first one means that the normal
-    // case of calling `.create()` for most implementors of the contract will at
-    // least get useful autocomplete.
     /**
      * A function that will create an instance of the class with any
      * dependencies injected.
      *
      * @param initialValues Any values to set on an instance of the class
      */
-    create(initialValues?: Partial<T>): T;
     create(initialValues?: object): T;
   }
 
