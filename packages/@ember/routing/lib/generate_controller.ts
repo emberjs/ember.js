@@ -26,11 +26,15 @@ export function generateControllerFactory(
     factoryManager !== undefined
   );
 
-  let Factory = factoryManager.class;
-  assert(
-    '[BUG] factory for `controller:main` is unexpectedly not a Controller',
-    ((factory): factory is typeof Controller => factory === Controller)(Factory)
-  );
+  // SAFETY: This is *not* safe, and the cast should be removed in favor of the
+  // `assert()` below after altering *tests*. It is left in this state for the
+  // moment in the interest of keeping type-only changes separate from changes
+  // to the runtime behavior of the system, even for tests.
+  let Factory = factoryManager.class as typeof Controller<unknown>;
+  // assert(
+  //   '[BUG] factory for `controller:main` is unexpectedly not a Controller',
+  //   ((factory): factory is typeof Controller => factory === Controller)(Factory)
+  // );
 
   Factory = Factory.extend({
     toString() {
