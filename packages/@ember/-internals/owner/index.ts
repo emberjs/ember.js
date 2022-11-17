@@ -229,7 +229,6 @@ export interface Factory<T extends object> {
    *
    * @param initialValues Any values to set on an instance of the class
    */
-  create(initialValues?: Partial<T>): T;
   create(initialValues?: object): T;
 }
 
