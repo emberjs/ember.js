@@ -260,7 +260,7 @@ class CoreObject {
 
       /* globals Proxy Reflect */
       self = new Proxy(this, {
-        get(target: CoreObject & HasUnknownProperty, property, receiver) {
+        get(target: typeof this & HasUnknownProperty, property, receiver) {
           if (property === PROXY_CONTENT) {
             return target;
           } else if (
