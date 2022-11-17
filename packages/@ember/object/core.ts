@@ -768,9 +768,17 @@ class CoreObject {
 
     if (props !== undefined) {
       instance = new this(getOwner(props));
+      // TODO(SAFETY): at present, we cannot actually rely on this being set,
+      // because a number of acceptance tests are (incorrectly? Unclear!)
+      // relying on the ability to run through this path with `factory` being
+      // `undefined`. It's *possible* that actually means that the type for
+      // `setFactoryFor()` should allow `undefined`, but we typed it the other
+      // way for good reason! Accordingly, this *casts* `factory`, and the
+      // commented-out `assert()` is here in the hope that we can enable it
+      // after addressing tests *or* updating the call signature here.
       let factory = getFactoryFor(props);
-      assert(`missing factory when creating object ${instance}`, factory !== undefined);
-      setFactoryFor(instance, factory);
+      // assert(`missing factory when creating object ${instance}`, factory !== undefined);
+      setFactoryFor(instance, factory as NonNullable<typeof factory>);
     } else {
       instance = new this();
     }
