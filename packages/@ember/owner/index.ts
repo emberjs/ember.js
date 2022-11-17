@@ -17,7 +17,9 @@
   - `Resolver`, an interface defining the contract for the object responsible
     for mapping string names to the corresponding classes. For example, when
     you write `@service('session')`, a resolver is responsible to map that back
-    to the `Session` service class in your codebase. Normally
+    to the `Session` service class in your codebase. Normally, this is handled
+    for you automatically with `ember-resolver`, which is the main implementor
+    of this interface.
 
   For more details on each, see their per-item docs!
 */

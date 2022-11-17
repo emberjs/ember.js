@@ -314,8 +314,8 @@ export function setOwner(object: object, owner: Owner): void {
 }
 
 // Defines the type for the ContainerProxyMixin. When we rationalize our Owner
-// *not* to work via mixins, we will be able to delete this entirely: this
-// overload for `lookup()` and all of `ownerInjection()` will go away.
+// *not* to work via mixins, we will be able to delete this entirely, in favor
+// of just using the Owner class itself.
 export interface ContainerProxy extends BasicContainer {
   /**
    Returns an object that can be used to provide an owner to a
