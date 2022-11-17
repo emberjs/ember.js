@@ -1,5 +1,5 @@
 declare module '@ember/engine/instance' {
-  import { FullName } from '@ember/owner';
+  import Owner, { FullName } from '@ember/owner';
   import ContainerProxyMixin from '@ember/engine/-private/container-proxy-mixin';
   import RegistryProxyMixin from '@ember/engine/-private/registry-proxy-mixin';
   import EmberObject from '@ember/object';
@@ -21,5 +21,5 @@ declare module '@ember/engine/instance' {
     boot(): Promise<EngineInstance>;
   }
 
-  export default interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin {}
+  export default interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, Owner {}
 }

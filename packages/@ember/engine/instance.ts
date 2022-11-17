@@ -10,7 +10,7 @@ import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
 import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
-import { type FullName, isFactory } from '@ember/-internals/owner';
+import Owner, { type FullName, isFactory, InternalOwner } from '@ember/-internals/owner';
 import Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer';
@@ -49,7 +49,7 @@ export interface EngineInstanceOptions {
 // `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
 // and `ContainerMixin` types used to define `InternalOwner`, this is the same
 // type as `InternalOwner` from TS's POV.
-interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin {}
+interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
 class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
   /**
    @private
