@@ -1,9 +1,16 @@
-import type { Factory, FactoryClass, Owner } from '@ember/-internals/owner';
+import type {
+  InternalFactory,
+  FactoryClass,
+  InternalOwner,
+  RegisterOptions,
+  FactoryManager,
+  FullName,
+} from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { DebugRegistry, TypeOptions } from './registry';
+import type { DebugRegistry } from './registry';
 import type Registry from './registry';
 
 interface LeakTracking {
@@ -44,9 +51,9 @@ if (DEBUG) {
 }
 
 export interface ContainerOptions {
-  owner?: Owner;
+  owner?: InternalOwner;
   cache?: { [key: string]: object };
-  factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
+  factoryManagerCache?: { [key: string]: InternalFactoryManager<any, any> };
   validationCache?: { [key: string]: boolean };
 }
 
@@ -66,10 +73,10 @@ export interface ContainerOptions {
 export default class Container {
   static _leakTracking: LeakTracking;
 
-  readonly owner: Owner | null;
+  readonly owner: InternalOwner | null;
   readonly registry: Registry & DebugRegistry;
   cache: { [key: string]: object };
-  factoryManagerCache!: { [key: string]: FactoryManager<object> };
+  factoryManagerCache!: { [key: string]: InternalFactoryManager<object> };
   readonly validationCache!: { [key: string]: boolean };
   isDestroyed: boolean;
   isDestroying: boolean;
@@ -137,10 +144,13 @@ export default class Container {
     @private
    @method lookup
    @param {String} fullName
-   @param {TypeOptions} [options]
+   @param {RegisterOptions} [options]
    @return {any}
    */
-  lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined {
+  lookup(
+    fullName: string,
+    options?: RegisterOptions
+  ): InternalFactory<object> | object | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
     }
@@ -172,7 +182,7 @@ export default class Container {
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
   */
-  reset(fullName: string) {
+  reset(fullName: FullName) {
     if (this.isDestroyed) return;
     if (fullName === undefined) {
       destroyDestroyables(this);
@@ -205,7 +215,7 @@ export default class Container {
    @param {String} fullName
    @return {any}
    */
-  factoryFor(fullName: string): FactoryManager<object> | undefined {
+  factoryFor(fullName: FullName): InternalFactoryManager<object> | undefined {
     if (this.isDestroyed) {
       throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
     }
@@ -226,8 +236,8 @@ if (DEBUG) {
  * set on the manager.
  */
 function wrapManagerInDeprecationProxy<T extends object, C extends object | FactoryClass>(
-  manager: FactoryManager<T, C>
-): FactoryManager<T, C> {
+  manager: InternalFactoryManager<T, C>
+): InternalFactoryManager<T, C> {
   let validator = {
     set(_obj: T, prop: keyof T) {
       throw new Error(
@@ -244,7 +254,7 @@ function wrapManagerInDeprecationProxy<T extends object, C extends object | Fact
   let m = manager;
   let proxiedManager = {
     class: m.class,
-    create(props?: { [prop: string]: any }) {
+    create(props?: Partial<T>) {
       return m.create(props);
     },
   };
@@ -252,19 +262,19 @@ function wrapManagerInDeprecationProxy<T extends object, C extends object | Fact
   return new Proxy(proxiedManager, validator as any) as any;
 }
 
-function isSingleton(container: Container, fullName: string) {
+function isSingleton(container: Container, fullName: FullName) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function isInstantiatable(container: Container, fullName: string) {
+function isInstantiatable(container: Container, fullName: FullName) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
 function lookup(
   container: Container,
-  fullName: string,
-  options: TypeOptions = {}
-): Factory<object> | object | undefined {
+  fullName: FullName,
+  options: RegisterOptions = {}
+): InternalFactory<object> | object | undefined {
   let normalizedName = fullName;
 
   if (
@@ -282,9 +292,9 @@ function lookup(
 
 function factoryFor(
   container: Container,
-  normalizedName: string,
-  fullName: string
-): FactoryManager<object> | undefined {
+  normalizedName: FullName,
+  fullName: FullName
+): InternalFactoryManager<object> | undefined {
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
@@ -301,7 +311,7 @@ function factoryFor(
     factory._onLookup(fullName);
   }
 
-  let manager = new FactoryManager(container, factory, fullName, normalizedName);
+  let manager = new InternalFactoryManager(container, factory, fullName, normalizedName);
 
   if (DEBUG) {
     manager = wrapManagerInDeprecationProxy(manager);
@@ -313,8 +323,8 @@ function factoryFor(
 
 function isSingletonClass(
   container: Container,
-  fullName: string,
-  { instantiate, singleton }: TypeOptions
+  fullName: FullName,
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     singleton !== false &&
@@ -326,8 +336,8 @@ function isSingletonClass(
 
 function isSingletonInstance(
   container: Container,
-  fullName: string,
-  { instantiate, singleton }: TypeOptions
+  fullName: FullName,
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     singleton !== false &&
@@ -339,8 +349,8 @@ function isSingletonInstance(
 
 function isFactoryClass(
   container: Container,
-  fullname: string,
-  { instantiate, singleton }: TypeOptions
+  fullname: FullName,
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     instantiate === false &&
@@ -351,8 +361,8 @@ function isFactoryClass(
 
 function isFactoryInstance(
   container: Container,
-  fullName: string,
-  { instantiate, singleton }: TypeOptions
+  fullName: FullName,
+  { instantiate, singleton }: RegisterOptions
 ) {
   return (
     instantiate !== false &&
@@ -363,10 +373,10 @@ function isFactoryInstance(
 
 function instantiateFactory(
   container: Container,
-  normalizedName: string,
-  fullName: string,
-  options: TypeOptions
-): Factory<object> | object | undefined {
+  normalizedName: FullName,
+  fullName: FullName,
+  options: RegisterOptions
+): InternalFactory<object> | object | undefined {
   let factoryManager = factoryFor(container, normalizedName, fullName);
 
   if (factoryManager === undefined) {
@@ -445,40 +455,59 @@ export interface LazyInjection {
 }
 
 declare interface DebugFactory<T extends object, C extends FactoryClass | object = FactoryClass>
-  extends Factory<T, C> {
+  extends InternalFactory<T, C> {
   _onLookup?: (fullName: string) => void;
-  _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
-  _lazyInjections(): { [key: string]: LazyInjection };
+  _lazyInjections?: () => { [key: string]: LazyInjection };
+  _initFactory?: (factoryManager: InternalFactoryManager<T, C>) => void;
 }
 
 export const INIT_FACTORY = Symbol('INIT_FACTORY');
 
-export function getFactoryFor(obj: any): FactoryManager<any, any> {
-  return obj[INIT_FACTORY];
+interface MaybeHasInitFactory {
+  [INIT_FACTORY]?: InternalFactoryManager<object, FactoryClass | object>;
 }
 
-export function setFactoryFor(obj: any, factory: FactoryManager<any, any>): void {
-  obj[INIT_FACTORY] = factory;
+export function getFactoryFor(
+  obj: object
+): InternalFactoryManager<object, FactoryClass | object> | undefined {
+  // SAFETY: since we know `obj` is an `object`, we also know we can safely ask
+  // whether a key is set on it.
+  return (obj as MaybeHasInitFactory)[INIT_FACTORY];
 }
 
-export class FactoryManager<T extends object, C extends FactoryClass | object = FactoryClass> {
+export function setFactoryFor<T extends object, C extends FactoryClass | object>(
+  obj: object,
+  factory: InternalFactoryManager<T, C>
+): void {
+  // SAFETY: since we know `obj` is an `object`, we also know we can safely set
+  // a key it safely at this location. (The only way this could be blocked is if
+  // someone has gone out of their way to use `Object.defineProperty()` with our
+  // internal-only symbol and made it `writable: false`.)
+  (obj as MaybeHasInitFactory)[INIT_FACTORY] = factory;
+}
+
+export class InternalFactoryManager<
+  T extends object,
+  C extends FactoryClass | object = FactoryClass
+> implements FactoryManager<T>
+{
   readonly container: Container;
-  readonly owner: Owner | null;
-  readonly class: Factory<T, C> & DebugFactory<T, C>;
-  readonly fullName: string;
+  readonly owner: InternalOwner | null;
+  readonly class: DebugFactory<T, C>;
+  readonly fullName: FullName;
   readonly normalizedName: string;
   private madeToString: string | undefined;
   injections: { [key: string]: unknown } | undefined;
 
   constructor(
     container: Container,
-    factory: Factory<T, C>,
-    fullName: string,
+    factory: InternalFactory<T, C>,
+    fullName: FullName,
     normalizedName: string
   ) {
     this.container = container;
     this.owner = container.owner;
-    this.class = factory as Factory<T, C> & DebugFactory<T, C>;
+    this.class = factory;
     this.fullName = fullName;
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
@@ -493,7 +522,7 @@ export class FactoryManager<T extends object, C extends FactoryClass | object = 
     return this.madeToString;
   }
 
-  create(options?: { [prop: string]: any }) {
+  create(options?: Partial<T>) {
     let { container } = this;
 
     if (container.isDestroyed) {

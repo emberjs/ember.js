@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, Option } from '@glimmer/interfaces';
@@ -54,7 +54,7 @@ import { internalHelper } from '../helpers/internal-helper';
   @public
 */
 export const mountHelper = internalHelper(
-  (args: CapturedArguments, owner?: Owner): Reference<CurriedValue | null> => {
+  (args: CapturedArguments, owner?: InternalOwner): Reference<CurriedValue | null> => {
     assert('{{mount}} must be used within a component that has an owner', owner);
     let nameRef = args.positional[0] as Reference<Option<string>>;
     let captured: CapturedArguments | null;

@@ -1,19 +1,21 @@
-import Owner, {
-  Factory,
-  FactoryManager,
-  FullName,
-  RegisterOptions,
-  Resolver,
-  KnownForTypeResult,
+import {
   getOwner,
   setOwner,
+  type default as Owner,
+  type Factory,
+  type FactoryManager,
+  type FullName,
+  type RegisterOptions,
+  type Resolver,
+  type KnownForTypeResult,
 } from '@ember/owner';
 import Component from '@glimmer/component';
-import { expectTypeOf } from 'expect-type';
 import {
   getOwner as getOwnerApplication,
   setOwner as setOwnerApplication,
 } from '@ember/application';
+
+import { expectTypeOf } from 'expect-type';
 
 expectTypeOf(getOwnerApplication).toEqualTypeOf(getOwner);
 expectTypeOf(setOwnerApplication).toEqualTypeOf(setOwner);

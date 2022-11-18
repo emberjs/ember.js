@@ -1,13 +1,13 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import EngineInstance from '@ember/engine/instance';
 import type EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
 expectTypeOf<EngineInstance>().toMatchTypeOf<EmberObject>();
-expectTypeOf<EngineInstance>().toMatchTypeOf<Owner>();
+expectTypeOf<EngineInstance>().toMatchTypeOf<InternalOwner>();
 
 // Good enough for tests
-let owner = {} as Owner;
+let owner = {} as InternalOwner;
 let instance = new EngineInstance(owner);
 
 expectTypeOf(instance.boot()).resolves.toEqualTypeOf<EngineInstance>();

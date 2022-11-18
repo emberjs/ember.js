@@ -2,8 +2,8 @@
 @module @ember/component
 */
 
-import type { FactoryManager } from '@ember/-internals/container/lib/container';
-import type { Factory, Owner } from '@ember/-internals/owner';
+import type { InternalFactoryManager } from '@ember/-internals/container/lib/container';
+import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
@@ -21,11 +21,11 @@ export type HelperFunction<T, P extends unknown[], N extends Dict<unknown>> = (
   named: N
 ) => T;
 
-export type SimpleHelperFactory<T, P extends unknown[], N extends Dict<unknown>> = Factory<
+export type SimpleHelperFactory<T, P extends unknown[], N extends Dict<unknown>> = InternalFactory<
   SimpleHelper<T, P, N>,
   HelperFactory<SimpleHelper<T, P, N>>
 >;
-export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
+export type ClassHelperFactory = InternalFactory<HelperInstance, HelperFactory<HelperInstance>>;
 
 export interface HelperFactory<T> {
   isHelperFactory: true;
@@ -200,14 +200,14 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
 
   private ownerInjection: object;
 
-  constructor(owner: Owner | undefined) {
+  constructor(owner: InternalOwner | undefined) {
     let ownerInjection = {};
     setOwner(ownerInjection, owner!);
     this.ownerInjection = ownerInjection;
   }
 
   createHelper(
-    definition: typeof Helper | FactoryManager<object>,
+    definition: typeof Helper | InternalFactoryManager<object>,
     args: Arguments
   ): ClassicHelperStateBucket {
     let instance = isFactoryManager(definition)
@@ -250,11 +250,11 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
   }
 }
 
-function isFactoryManager(obj: unknown): obj is FactoryManager<object> {
-  return obj != null && 'class' in (obj as FactoryManager<object>);
+function isFactoryManager(obj: unknown): obj is InternalFactoryManager<object> {
+  return obj != null && 'class' in (obj as InternalFactoryManager<object>);
 }
 
-setHelperManager((owner: Owner | undefined): ClassicHelperManager => {
+setHelperManager((owner: InternalOwner | undefined): ClassicHelperManager => {
   return new ClassicHelperManager(owner);
 }, Helper);
 

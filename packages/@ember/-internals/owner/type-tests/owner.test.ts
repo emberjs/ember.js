@@ -1,13 +1,14 @@
-import Owner, {
+import type {
   Factory,
   FactoryManager,
   FullName,
   RegisterOptions,
   Resolver,
   KnownForTypeResult,
-  getOwner,
-  setOwner,
-} from '@ember/owner';
+  InternalOwner,
+} from '@ember/-internals/owner';
+import type Owner from '@ember/-internals/owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import Component from '@glimmer/component';
 import { expectTypeOf } from 'expect-type';
 import {
@@ -15,7 +16,7 @@ import {
   setOwner as setOwnerApplication,
 } from '@ember/application';
 
-expectTypeOf(getOwnerApplication).toEqualTypeOf(getOwner);
+expectTypeOf(getOwner).toMatchTypeOf(getOwnerApplication);
 expectTypeOf(setOwnerApplication).toEqualTypeOf(setOwner);
 
 // Just a class we can construct in the Factory and FactoryManager tests
@@ -98,7 +99,7 @@ owner.lookup('non-namespace-string');
 expectTypeOf(owner.lookup('namespace@type:name')).toEqualTypeOf<unknown>();
 
 // Arbitrary registration patterns work, as here.
-declare module '@ember/owner' {
+declare module '@ember/-internals/owner' {
   export interface DIRegistry {
     etc: {
       'my-type-test': ConstructThis;
@@ -184,12 +185,12 @@ interface Sig<T> {
 
 class ExampleComponent<T> extends Component<Sig<T>> {
   checkThis() {
-    expectTypeOf(getOwner(this)).toEqualTypeOf<Owner | undefined>();
+    expectTypeOf(getOwner(this)).toEqualTypeOf<InternalOwner | undefined>();
   }
 }
 
 declare let example: ExampleComponent<string>;
-expectTypeOf(getOwner(example)).toEqualTypeOf<Owner | undefined>();
+expectTypeOf(getOwner(example)).toEqualTypeOf<InternalOwner | undefined>();
 
 // ----- Minimal further coverage for POJOs ----- //
 // `Factory` and `FactoryManager` don't have to deal in actual classes. :sigh:

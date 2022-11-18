@@ -2,19 +2,12 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
-import type { FactoryManager } from '@ember/-internals/container/lib/container';
 import type Container from '@ember/-internals/container/lib/container';
-import type { TypeOptions } from '@ember/-internals/container/lib/registry';
 import Mixin from '@ember/object/mixin';
-import type { Factory } from '@ember/-internals/owner';
+import type { ContainerProxy } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.
-export interface IContainer {
-  ownerInjection(): void;
-  lookup(fullName: string, options?: TypeOptions): Factory<object> | object | undefined;
-  factoryFor(fullName: string): FactoryManager<object> | undefined;
-}
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -23,7 +16,7 @@ export interface IContainer {
   @class ContainerProxyMixin
   @private
 */
-interface ContainerProxyMixin extends IContainer {
+interface ContainerProxyMixin extends ContainerProxy {
   /** @internal */
   __container__: Container;
 }
@@ -36,28 +29,6 @@ const ContainerProxyMixin = Mixin.create({
    */
   __container__: null,
 
-  /**
-   Returns an object that can be used to provide an owner to a
-   manually created instance.
-
-   Example:
-
-   ```
-   import { getOwner } from '@ember/application';
-
-   let owner = getOwner(this);
-
-   User.create(
-     owner.ownerInjection(),
-     { username: 'rwjblue' }
-   )
-   ```
-
-   @public
-   @method ownerInjection
-   @since 2.3.0
-   @return {Object}
-  */
   ownerInjection() {
     return this.__container__.ownerInjection();
   },

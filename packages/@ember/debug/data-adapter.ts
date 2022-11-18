@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/object';
@@ -219,7 +219,7 @@ export default class DataAdapter<T> extends EmberObject {
   // TODO: Revisit this
   declare containerDebugAdapter: ContainerDebugAdapter;
 
-  constructor(owner: Owner) {
+  constructor(owner: InternalOwner) {
     super(owner);
     this.containerDebugAdapter = getOwner(this)!.lookup(
       'container-debug-adapter:main'

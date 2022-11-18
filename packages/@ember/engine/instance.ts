@@ -10,7 +10,9 @@ import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
 import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
-import { isFactory } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/-internals/owner';
+import { type FullName, isFactory } from '@ember/-internals/owner';
 import Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer';
@@ -45,7 +47,11 @@ export interface EngineInstanceOptions {
   @uses ContainerProxyMixin
 */
 
-interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin {}
+// Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
+// `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
+// and `ContainerMixin` types used to define `InternalOwner`, this is the same
+// type as `InternalOwner` from TS's POV.
+interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
 class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
   /**
    @private
@@ -53,6 +59,10 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
    @param {Registry} registry
    @param {BootOptions} options
    */
+  // This is effectively an "abstract" method: it defines the contract a
+  // subclass (e.g. `ApplicationInstance`) must follow to implement this
+  // behavior, but an `EngineInstance` has no behavior of its own here.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static setupRegistry(_registry: Registry, _options?: BootOptions) {}
 
   /**
@@ -170,7 +180,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
    @method unregister
    @param {String} fullName
    */
-  unregister(fullName: string) {
+  unregister(fullName: FullName) {
     this.__container__.reset(fullName);
 
     // We overwrote this method from RegistryProxyMixin.
@@ -189,7 +199,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     @param options {Object} options provided to the engine instance.
     @return {EngineInstance,Error}
   */
-  buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}) {
+  buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}): EngineInstance {
     let Engine = this.lookup(`engine:${name}`);
 
     if (!Engine) {
@@ -218,7 +228,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
 
     assert('expected parent', parent);
 
-    let registrations = ['route:basic', 'service:-routing'];
+    let registrations = ['route:basic', 'service:-routing'] as const;
 
     registrations.forEach((key) => {
       let registration = parent.resolveRegistration(key);
@@ -229,7 +239,9 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     let env = parent.lookup('-environment:main') as Record<string, unknown>;
     this.register('-environment:main', env, { instantiate: false });
 
-    let singletons = [
+    // The type annotation forces TS to (a) validate that these match and (b)
+    // *notice* that they match, e.g. below on the `singletons.push()`.
+    let singletons: FullName[] = [
       'router:main',
       P`-bucket-cache:main`,
       '-view-registry:main',

@@ -1,5 +1,5 @@
-import type { ResolverClass, TypeOptions } from '@ember/-internals/container/lib/registry';
-import type { Factory, Owner } from '@ember/-internals/owner';
+import type { ResolverClass } from '@ember/-internals/container/lib/registry';
+import type { default as Owner, RegisterOptions, Factory } from '@ember/owner';
 import type Namespace from '@ember/application/namespace';
 import type { Initializer } from '@ember/engine';
 import Engine from '@ember/engine';
@@ -7,8 +7,7 @@ import type EngineInstance from '@ember/engine/instance';
 import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
-// Good enough for tests
-let owner = {} as Owner;
+declare let owner: Owner;
 
 class Foo extends EmberObject {}
 class Bar {}
@@ -37,7 +36,7 @@ expectTypeOf(engine.Resolver).toEqualTypeOf<ResolverClass>();
 
 // RegistryProxy
 
-expectTypeOf(engine.resolveRegistration('foo')).toEqualTypeOf<
+expectTypeOf(engine.resolveRegistration('foo:bar')).toEqualTypeOf<
   Factory<object> | object | undefined
 >();
 // @ts-expect-error Requires name
@@ -78,7 +77,9 @@ engine.registerOptions('fruit:favorite', 1);
 // @ts-expect-error requires valid options
 engine.registerOptions('fruit:favorite', { singleton: 1 });
 
-expectTypeOf(engine.registeredOptions('fruit:favorite')).toEqualTypeOf<TypeOptions | undefined>();
+expectTypeOf(engine.registeredOptions('fruit:favorite')).toEqualTypeOf<
+  RegisterOptions | undefined
+>();
 // @ts-expect-error requires string name
 engine.registeredOption(1);
 
@@ -92,6 +93,8 @@ engine.registerOptionsForType('fruit:favorite', 1);
 // @ts-expect-error requires valid options
 engine.registerOptionsForType('fruit:favorite', { singleton: 1 });
 
-expectTypeOf(engine.registeredOptionsForType('my-type')).toEqualTypeOf<TypeOptions | undefined>();
+expectTypeOf(engine.registeredOptionsForType('my-type')).toEqualTypeOf<
+  RegisterOptions | undefined
+>();
 // @ts-expect-error requires type
 engine.registeredOptionsForType();

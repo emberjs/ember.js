@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { setComponentManager } from '@ember/component';
 import type { ComponentManager } from '@glimmer/interfaces';
 import { expectTypeOf } from 'expect-type';
@@ -9,7 +9,7 @@ let manager = {} as ComponentManager<unknown>;
 class Foo {}
 let foo = new Foo();
 
-expectTypeOf(setComponentManager((_owner: Owner) => manager, foo)).toEqualTypeOf<Foo>();
+expectTypeOf(setComponentManager((_owner: InternalOwner) => manager, foo)).toEqualTypeOf<Foo>();
 
 // @ts-expect-error invalid callback
 setComponentManager(() => {

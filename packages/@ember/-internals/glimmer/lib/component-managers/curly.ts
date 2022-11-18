@@ -1,5 +1,9 @@
-import type { Factory, Owner } from '@ember/-internals/owner';
-import { getOwner, setOwner } from '@ember/-internals/owner';
+import {
+  type default as Owner,
+  type InternalFactory,
+  getOwner,
+  setOwner,
+} from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
@@ -104,7 +108,7 @@ const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
-type ComponentFactory = Factory<
+type ComponentFactory = InternalFactory<
   Component,
   {
     create(props?: any): Component;

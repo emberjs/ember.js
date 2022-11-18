@@ -1,4 +1,5 @@
 import { getFactoryFor } from '@ember/-internals/container';
+import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {
@@ -105,6 +106,8 @@ export class RootComponentDefinition implements ComponentDefinition {
 
   constructor(component: Component) {
     this.manager = new RootComponentManager(component);
-    this.state = getFactoryFor(component);
+    let factory = getFactoryFor(component);
+    assert('missing factory for component', factory !== undefined);
+    this.state = factory;
   }
 }

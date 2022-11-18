@@ -1,5 +1,5 @@
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
@@ -38,7 +38,7 @@ export function constructStyleDeprecationMessage(affectedStyle: string): string 
   @method getRootViews
   @param {Object} owner
 */
-export function getRootViews(owner: Owner): View[] {
+export function getRootViews(owner: InternalOwner): View[] {
   let registry = owner.lookup('-view-registry:main') as Dict<View>;
 
   let rootViews: View[] = [];

@@ -1,4 +1,4 @@
-import type { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { action } from '@ember/object';
 import Route from '@ember/routing/route';
 
@@ -12,7 +12,7 @@ class MyRoute extends Route {
 }
 
 // NOTE: This is invalid, but acceptable for type tests
-let owner = {} as Owner;
+let owner = {} as InternalOwner;
 let route = new MyRoute(owner);
 
 route.send('topLevel', 1);
