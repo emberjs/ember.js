@@ -1,13 +1,16 @@
 /**
-  @module @ember/owner
+  Ember’s dependency injection system is built on the idea of an "owner": an
+  object responsible for managing items which can be registered and looked up
+  with the system.
 
-  An `Owner` is the main object responsible for managing Ember's dependency
-  injection system. In normal app code, you will encounter `Owner`s via an
-  `ApplicationInstance` or its superclass, `EngineInstance`, which are the two
-  major implementers of the `Owner` type.
+  This module does not provide any concrete instances of owners. Instead, it
+  defines the core type, `Owner`, which specifies the public API contract for an
+  owner. The primary concrete implementations of `Owner` are `EngineInstance`,
+  from `@ember/engine/instance`, and its `ApplicationInstance` subclass, from
+  `@ember/application/instance`.
 
-  Along with the `Owner` itself, this module provides a number of supporting
-  types related to Ember's DI system:
+  Along with `Owner` itself, this module provides a number of supporting types
+  related to Ember's DI system:
 
   - `Factory`, Ember's primary interface for something which can create class
     instances registered with the DI system.
@@ -15,13 +18,16 @@
   - `FactoryManager`, an interface for inspecting a `Factory`'s class.
 
   - `Resolver`, an interface defining the contract for the object responsible
-    for mapping string names to the corresponding classes. For example, when
-    you write `@service('session')`, a resolver is responsible to map that back
-    to the `Session` service class in your codebase. Normally, this is handled
-    for you automatically with `ember-resolver`, which is the main implementor
-    of this interface.
+    for mapping string names to the corresponding classes. For example, when you
+    write `@service('session')`, a resolver is responsible to map that back to
+    the `Session` service class in your codebase. Normally, this is handled for
+    you automatically with `ember-resolver`, which is the main implementor of
+    this interface.
 
-  For more details on each, see their per-item docs!
+  For more details on each, see their per-item docs.
+
+  @module @ember/owner
+  @public
 */
 
 // We need to provide a narrower public interface to `getOwner` so that we only
