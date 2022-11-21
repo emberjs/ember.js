@@ -151,17 +151,5 @@ declare module '@ember/application' {
    * `setOwner` forces a new owner on a given object instance. This is primarily
    * useful in some testing cases.
    */
-  export function setOwner(object: unknown, owner: Owner): void;
-
-  /**
-   * Detects when a specific package of Ember (e.g. 'Ember.Application')
-   * has fully loaded and is available for extension.
-   */
-  export function onLoad(name: string, callback: AnyFn): unknown;
-
-  /**
-   * Called when an Ember.js package (e.g Ember.Application) has finished
-   * loading. Triggers any callbacks registered for this event.
-   */
-  export function runLoadHooks(name: string, object?: {}): unknown;
+  export function setOwner(object: object, owner: Owner): void;
 }
