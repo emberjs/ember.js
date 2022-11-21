@@ -169,10 +169,10 @@ export class RenderTest implements IRenderTest {
 
     invocation.push(`<${name}`);
 
-    let componetArgs = this.buildArgs(args);
+    let componentArgs = this.buildArgs(args);
 
-    if (componetArgs !== '') {
-      invocation.push(componetArgs);
+    if (componentArgs !== '') {
+      invocation.push(componentArgs);
     }
 
     let attrs = this.buildAttributes(attributes);
