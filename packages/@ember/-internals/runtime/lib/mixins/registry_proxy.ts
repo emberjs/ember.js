@@ -14,6 +14,7 @@ import Mixin from '@ember/object/mixin';
   registry functionality.
 
   @class RegistryProxyMixin
+  @extends RegistryProxy
   @private
 */
 interface RegistryProxyMixin extends RegistryProxy {
