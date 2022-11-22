@@ -369,7 +369,7 @@ const BASE_INDEX_D_TS = `\
 // same work, but automatically.
 
 // STATUS NOTE: this does not yet include Ember's full public API, only the
-// subset of it for which we have determined
+// subset of it for which we have determined the types are ready to stabilize.
 //
 // Over time, it will come to include *all* of Ember's types, and the matching
 // \`preview\` types will become empty. This is means that someone who writes the
