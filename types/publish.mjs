@@ -401,8 +401,12 @@ async function main() {
     cwd: TYPES_DIR,
   });
 
+  let status = 'success';
   for (let moduleName of moduleNames) {
-    wrapInDeclareModule(moduleName);
+    let result = wrapInDeclareModule(moduleName);
+    if (result !== 'success') {
+      status = result;
+    }
   }
 
   let sideEffectModules = moduleNames
@@ -412,10 +416,13 @@ async function main() {
 
   let stableIndexDTsContents = BASE_INDEX_D_TS.replace(MODULES_PLACEHOLDER, sideEffectModules);
   fs.writeFileSync(path.join(TYPES_DIR, 'index.d.ts'), stableIndexDTsContents);
+
+  process.exit(status === 'success' ? 0 : 1);
 }
 
 /**
  * @param {string} moduleName
+ * @return {'success' | 'failure'}
  */
 function wrapInDeclareModule(moduleName) {
   let modulePath = path.join(TYPES_DIR, moduleName);
@@ -426,7 +433,7 @@ function wrapInDeclareModule(moduleName) {
     contents = fs.readFileSync(modulePath, { encoding: 'utf-8' });
   } catch (e) {
     console.error(`Error reading ${modulePath}: ${e}`);
-    return;
+    return 'failure';
   }
 
   let moduleNameForDeclaration = moduleName.replace('/index.d.ts', '');
@@ -438,7 +445,10 @@ function wrapInDeclareModule(moduleName) {
     fs.writeFileSync(modulePath, string.toString());
   } catch (e) {
     console.error(`Error writing ${modulePath}: ${e}`);
+    return 'failure';
   }
+
+  return 'success';
 }
 
 // Run it!
