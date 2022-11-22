@@ -234,6 +234,7 @@ interface CoreObject {
   _super(...args: any[]): any;
 }
 class CoreObject {
+  /** @internal */
   [OWNER]?: Owner;
 
   constructor(owner?: Owner) {
