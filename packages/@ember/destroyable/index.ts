@@ -19,7 +19,7 @@ import {
 
   This destroyables API exposes the basic building blocks for destruction:
 
-  * registering a function to be ran when an object is destroyyed
+  * registering a function to be ran when an object is destroyed
   * checking if an object is in a destroying state
   * associate an object as a child of another so that the child object will be destroyed
     when the associated parent object is destroyed.
