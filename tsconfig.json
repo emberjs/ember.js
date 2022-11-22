@@ -1,39 +1,9 @@
 {
+  "extends": "./tsconfig/compiler-options.json",
   "compilerOptions": {
-    // Compilation Configuration
-    "target": "es2017",
-    "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": "packages",
-    "rootDir": "packages",
-
-    // Environment Configuration
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-
-    // Enhance Strictness
-    "strict": true,
-    "noImplicitReturns": true,
-    "allowUnreachableCode": false,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUnusedLocals": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedParameters": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": false,
-
-    "newLine": "LF",
-    "noEmit": true,
-
-    "allowJs": true,
-    "checkJs": false,
-
-    "paths": {
-      "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"]
-    }
+    "noEmit": true
   },
-
   "include": ["packages/**/*.ts"],
-
   "exclude": ["dist", "node_modules", "tmp", "types"]
 }

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Compilation Configuration
+    "target": "es2019",
+    "sourceMap": true,
+    "baseUrl": "../packages",
+    "rootDir": "../packages",
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "strict": true,
+    "noImplicitReturns": true,
+    "allowUnreachableCode": false,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": false,
+
+    "newLine": "LF",
+
+    "allowJs": true,
+    "checkJs": false,
+
+    "paths": {
+      "backburner": ["../node_modules/backburner.js/dist/backburner.d.ts"],
+      "require": ["./loader/lib/index.d.ts"]
+    }
+  }
+}

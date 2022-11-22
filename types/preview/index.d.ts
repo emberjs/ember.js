@@ -1,11 +1,22 @@
 /**
-  @module
-  Makes Ember's types for the packages it publishes available by importing this
-  path from `ember-source`:
+  *Provides **preview** type definitions for Ember.js.*
+
+  These types are maintained by hand and the types provided here are unstable
+  and subject to change without warning, though we make a best effort to keep
+  churn to a minimum while we work to stabilize Ember's types.
+
+  To use these type definitions, add these import to any TypeScript file in your
+  Ember app or addon:
 
   ```ts
-  import 'ember-source/preview';
+  import 'ember-source/types';
+  import 'ember-source/types/preview';
   ```
+
+  As Ember's types become more stable, this will automatically give you the
+  latest mix of stable and preview types, with no effort from you.
+
+  @module
  */
 
 // This works because each of these modules presents `declare module` definition
