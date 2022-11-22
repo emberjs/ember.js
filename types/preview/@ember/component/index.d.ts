@@ -106,14 +106,37 @@ declare module '@ember/component' {
     object: T
   ): T;
 
-/**
- * Takes a component class and returns the template associated with the given component class,
- * if any, or one of its superclasses, if any, or undefined if no template association was found.
- *
- * @param object the component object
- * @return the template factory of the given component
- */
- export function getComponentTemplate(obj: object): TemplateFactory | undefined;
+  /**
+   * Takes a component class and returns the template associated with the given component class,
+   * if any, or one of its superclasses, if any, or undefined if no template association was found.
+   *
+   * @param object the component object
+   * @return the template factory of the given component
+   */
+  export function getComponentTemplate(obj: object): TemplateFactory | undefined;
+
+  export function setComponentTemplate(factory: TemplateFactory, obj: object): object;
+
+  interface ComponentCapabilitiesVersions {
+    '3.4': {
+      asyncLifecycleCallbacks?: boolean;
+      destructor?: boolean;
+    };
+
+    '3.13': {
+      asyncLifecycleCallbacks?: boolean;
+      destructor?: boolean;
+      updateHook?: boolean;
+    };
+  }
+
+  interface ComponentCapabilities extends Capabilities {
+    asyncLifeCycleCallbacks: boolean;
+    destructor: boolean;
+    updateHook: boolean;
+  }
+
+  export function capabilities<Version extends keyof ComponentCapabilitiesVersions>(managerAPI: Version, options?: ComponentCapabilitiesVersions[Version]): ComponentCapabilities;
 
   // In normal TypeScript, these built-in components are essentially opaque tokens
   // that just need to be importable. Declaring them with unique interfaces

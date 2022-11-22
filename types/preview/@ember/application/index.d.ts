@@ -133,16 +133,4 @@ declare module '@ember/application' {
    * @deprecated Use `import { setOwner } from '@ember/owner';` instead.
    */
   export function setOwner(object: object, owner: Owner): void;
-
-  /**
-   * Detects when a specific package of Ember (e.g. 'Ember.Application')
-   * has fully loaded and is available for extension.
-   */
-  export function onLoad(name: string, callback: AnyFn): unknown;
-
-  /**
-   * Called when an Ember.js package (e.g Ember.Application) has finished
-   * loading. Triggers any callbacks registered for this event.
-   */
-  export function runLoadHooks(name: string, object?: {}): unknown;
 }
