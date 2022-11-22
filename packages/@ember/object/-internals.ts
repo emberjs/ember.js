@@ -13,7 +13,7 @@ import EmberObject from '.';
 // binding below for `FrameworkObject`, TS gets stuck because this creates
 // `FrameworkObject` with a class expression (rather than the usual class
 // declaration form). That in turn means TS needs to be able to fully name the
-// type produced by the clsas expression, which includes the `OWNER` symbol from
+// type produced by the class expression, which includes the `OWNER` symbol from
 // `@glimmer/owner`.
 //
 // By explicitly giving the declaration a type when assigning it the class
