@@ -454,12 +454,12 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     import Route from '@ember/routing';
     import { service } from '@ember/service';
 
-    export default class extends Route {
+    export default class ContactFormRoute extends Route {
       @service router;
 
-      callback = (transition) =>  {
+      callback = (transition) => {
         if (!transition.to.find(route => route.name === this.routeName)) {
-          alert("Please save or cancel your changes.");
+          alert('Please save or cancel your changes.');
           transition.abort();
         }
       };
@@ -470,6 +470,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
       deactivate() {
         this.router.off('routeWillChange', this.callback);
+      }
     }
     ```
 
