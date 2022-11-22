@@ -340,8 +340,10 @@ const MODULES_PLACEHOLDER = '~~~MODULES GO HERE~~~';
 
 const BASE_INDEX_D_TS = `\
 /**
-  Provides stable type definitions for Ember.js. It is generated automatically
-  as part of Ember's publishing process and should never be edited manually.
+  *Provides **stable** type definitions for Ember.js.*
+
+  This module is generated automatically as part of Ember's publishing process and
+  should never be edited manually.
 
   To use these type definitions, add this import to any TypeScript file in your
   Ember app or addon:
