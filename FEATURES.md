@@ -10,3 +10,6 @@ for a detailed explanation.
 
   Flag description here.
 -->
+* `EMBER_A_NON_MODIFYING`
+
+  Corrects Ember.A to no longer modify the source array. This brings it more in line with documented behavior.

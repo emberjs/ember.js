@@ -22,6 +22,7 @@ import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
+import { EMBER_A_NON_MODIFYING } from '@ember/canary-features';
 
 export { default as makeArray } from './lib/make-array';
 
@@ -2252,13 +2253,18 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
       // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
       return arr as unknown as NativeArray<T>;
     } else {
-      // Remove this in Ember 5.0.
-      if (DEBUG) {
-        if (arr) {
-          ModifiedNativeArray.apply(arr);
+      if (EMBER_A_NON_MODIFYING) {
+        // Remove this in Ember 5.0.
+        if (DEBUG) {
+          if (arr) {
+            ModifiedNativeArray.apply(arr);
+          }
         }
+        return new EmberAProxy(arr ?? []);
+      } else {
+        // SAFETY: This will return an NativeArray but TS can't infer that.
+        return NativeArray.apply(arr ?? []) as NativeArray<T>;
       }
-      return new EmberAProxy(arr ?? []);
     }
   };
 }

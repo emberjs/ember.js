@@ -12,7 +12,7 @@ import { ENV } from '@ember/-internals/environment';
 */
 
 export const DEFAULT_FEATURES = {
-  // FLAG_NAME: true/false
+  EMBER_A_NON_MODIFYING: null,
 };
 
 /**
@@ -53,14 +53,12 @@ export function isEnabled(feature: string): boolean {
   }
 }
 
-// Uncomment the below when features are present:
+function featureValue(value: boolean | null) {
+  if (ENV.ENABLE_OPTIONAL_FEATURES && value === null) {
+    return true;
+  }
 
-// function featureValue(value: null | boolean) {
-//   if (ENV.ENABLE_OPTIONAL_FEATURES && value === null) {
-//     return true;
-//   }
+  return value;
+}
 
-//   return value;
-// }
-
-// export const FLAG_NAME = featureValue(FEATURES.FLAG_NAME);
+export const EMBER_A_NON_MODIFYING = featureValue(FEATURES.EMBER_A_NON_MODIFYING);
