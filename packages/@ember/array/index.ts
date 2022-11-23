@@ -1199,6 +1199,25 @@ interface EmberArray<T> extends Enumerable {
   */
   without(value: T): NativeArray<T>;
 }
+
+const emberArrayBrackets = nonEnumerableComputed({
+  get() {
+    return this;
+  },
+  set(_key, value) {
+    this.replace(0, this.length, value);
+    return this;
+  },
+});
+
+const emberArrayFirstObject = nonEnumerableComputed(function () {
+  return objectAt(this, 0);
+}).readOnly();
+
+const emberArrayLastObject = nonEnumerableComputed(function () {
+  return objectAt(this, this.length - 1);
+}).readOnly();
+
 const EmberArray = Mixin.create(Enumerable, {
   init() {
     this._super(...arguments);
@@ -1209,23 +1228,11 @@ const EmberArray = Mixin.create(Enumerable, {
     return indexes.map((idx) => objectAt(this, idx));
   },
 
-  '[]': nonEnumerableComputed({
-    get() {
-      return this;
-    },
-    set(_key, value) {
-      this.replace(0, this.length, value);
-      return this;
-    },
-  }),
+  '[]': emberArrayBrackets,
 
-  firstObject: nonEnumerableComputed(function () {
-    return objectAt(this, 0);
-  }).readOnly(),
+  firstObject: emberArrayFirstObject,
 
-  lastObject: nonEnumerableComputed(function () {
-    return objectAt(this, this.length - 1);
-  }).readOnly(),
+  lastObject: emberArrayLastObject,
 
   // Add any extra methods to EmberArray that are native to the built-in Array.
   slice(beginIndex = 0, endIndex?: number) {
@@ -2099,6 +2106,127 @@ NativeArray.keys().forEach((methodName) => {
 
 NativeArray = NativeArray.without(...ignore);
 
+const NATIVE_ARRAY_METHODS = Object.freeze(NativeArray.keys());
+
+function getCP(decorator: Function) {
+  let desc = descriptorForDecorator(decorator);
+  assert('[BUG] Expected descriptor with getter', desc instanceof ComputedProperty);
+  return desc;
+}
+
+// NOTE: This code borrows heavily from https://github.com/tracked-tools/tracked-built-ins/blob/master/addon/src/-private/array.ts
+
+// Unfortunately, TypeScript's ability to do inference *or* type-checking in a
+// `Proxy`'s body is very limited, so we have to use a number of casts `as any`
+// to make the internal accesses work. The type safety of these is guaranteed at
+// the *call site* instead of within the body: you cannot do `Array.blah` in TS,
+// and it will blow up in JS in exactly the same way, so it is safe to assume
+// that properties within the getter have the correct type in TS.
+class EmberAProxy<T = unknown> {
+  /**
+   * Creates an array from an iterable object.
+   * @param iterable An iterable object to convert to an array.
+   */
+  static from<T>(iterable: Iterable<T> | ArrayLike<T>): EmberAProxy<T> {
+    return new EmberAProxy(Array.from(iterable));
+  }
+
+  static of<T>(...arr: T[]): EmberAProxy<T> {
+    return new EmberAProxy(arr);
+  }
+
+  constructor(arr: T[] = []) {
+    let self = this;
+
+    let proxy = new Proxy(arr, {
+      get(target, prop /*, _receiver */) {
+        // These nonEnumerableComputed properties need special handling
+        if (prop === '[]') {
+          return self.#bracketsCP.get(proxy, prop);
+        } else if (prop === 'firstObject') {
+          return self.#firstObjectCP.get(proxy, prop);
+        } else if (prop === 'lastObject') {
+          return self.#lastObjectCP.get(proxy, prop);
+        } else if (
+          typeof prop === 'string' &&
+          (NATIVE_ARRAY_METHODS.has(prop) || prop === '_super')
+        ) {
+          // If it's a NativeArray method, call it with the proxy as the target
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return (self as any)[prop].bind(proxy);
+        }
+
+        // Pass through every other property
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (target as any)[prop];
+      },
+
+      set(target, prop, value /*, _receiver */) {
+        // These nonEnumerableComputed properties need special handling
+        if (prop === '[]') {
+          self.#bracketsCP.set(proxy, prop, value);
+        } else if (prop === 'firstObject') {
+          self.#firstObjectCP.set(proxy, prop, value);
+        } else if (prop === 'lastObject') {
+          self.#lastObjectCP.set(proxy, prop, value);
+        } else {
+          // Pass through every other property
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (target as any)[prop] = value;
+        }
+
+        return true;
+      },
+
+      getPrototypeOf() {
+        return EmberAProxy.prototype;
+      },
+    }) as EmberAProxy<T>;
+
+    // Call init so it's properly registered
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (self as any).init.call(proxy);
+
+    return proxy;
+  }
+
+  #bracketsCP = getCP(emberArrayBrackets);
+  #firstObjectCP = getCP(emberArrayFirstObject);
+  #lastObjectCP = getCP(emberArrayLastObject);
+}
+
+// Apply NativeArray to the the EmberAProxy so that it appears as a NativeArray
+// and so that the correct methods are available.
+NativeArray.apply(EmberAProxy.prototype);
+
+// This rule is correctly in the general case, but it doesn't understand
+// declaration merging, which is how we're using the interface here. This
+// declaration says that `EmberAProxy` acts just like `Array<T>`, but also has
+// the properties declared via the `class` declaration above -- but without the
+// cost of a subclass, which is much slower that the proxied array behavior.
+// That is: a `EmberAProxy` *is* an `Array`, just with a proxy in front of
+// accessors and setters, rather than a subclass of an `Array` which would be
+// de-optimized by the browsers.
+//
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface EmberAProxy<T = unknown> extends NativeArray<T> {}
+
+// Ensure instanceof works correctly
+Object.setPrototypeOf(EmberAProxy.prototype, Array.prototype);
+
+const nativeArrayThrowers = Object.fromEntries(
+  Array.from(NativeArray.keys()).map((key) => {
+    return [
+      key,
+      () =>
+        assert(
+          `Ember.A was incorrectly modifying the original array. Do not call the EmberArray function ${key} on the original array. Instead, call it on the value returned by Ember.A.`
+        ),
+    ];
+  })
+);
+const ModifiedNativeArray = Mixin.create(nativeArrayThrowers);
+
 let A: <T>(arr?: Array<T>) => NativeArray<T>;
 
 if (ENV.EXTEND_PROTOTYPES.Array) {
@@ -2124,8 +2252,13 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
       // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
       return arr as unknown as NativeArray<T>;
     } else {
-      // SAFETY: This will return an NativeArray but TS can't infer that.
-      return NativeArray.apply(arr ?? []) as NativeArray<T>;
+      // Remove this in Ember 5.0.
+      if (DEBUG) {
+        if (arr) {
+          ModifiedNativeArray.apply(arr);
+        }
+      }
+      return new EmberAProxy(arr ?? []);
     }
   };
 }
