@@ -172,12 +172,12 @@
     "after": "ember-cli-legacy-blueprints"
   },
   "typesVersions": {
-    "types/*": {
-      "stable": [
-        "./types/stable"
+    "*": {
+      "types": [
+        "types/stable"
       ],
-      "preview": [
-        "./types/preview"
+      "types/preview": [
+        "types/preview"
       ]
     }
   }
