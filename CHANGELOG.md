@@ -1,21 +1,20 @@
 # Ember Changelog
 
-### v4.9.0-beta.4 (November 15, 2022)
+### v4.9.0 (November 28, 2022)
 
+- [#20274](https://github.com/emberjs/ember.js/pull/20274) [BUGFIX] Add some missing types to preview types
 - [#20256](https://github.com/emberjs/ember.js/pull/20256) [BUGFIX] Correct types for Ember Arrays
 - [#20257](https://github.com/emberjs/ember.js/pull/20257) [BUGFIX] Fix types for `getOwner` and GlimmerComponent
+- [#20233](https://github.com/emberjs/ember.js/pull/20233) [BUGFIX] Include package name in deprecation error message
+- [#20235](https://github.com/emberjs/ember.js/pull/20235) [BUGFIX] Update `@types/node` for TS 4.9 issue
+- [#20238](https://github.com/emberjs/ember.js/pull/20238) [BUGFIX] Update Node.js versions to match support policy
+- [#20227](https://github.com/emberjs/ember.js/pull/20227) [BUGFIX] Fix unsafe internal cast for NativeArray
+- [#20228](https://github.com/emberjs/ember.js/pull/20228) [BUGFIX] Remove type export for ControllerMixin
+- [#20203](https://github.com/emberjs/ember.js/pull/20203) / [#20204](https://github.com/emberjs/ember.js/pull/20204) [FEATURE] Preview types: Update to Typescript 4.8
 
 ### v4.8.2 (November 3, 2022)
 
 - [#20244](https://github.com/emberjs/ember.js/pull/20244) Add missing type for `getComponentTemplate` to preview types
-
-### v4.9.0-beta.3 (November 2, 2022)
-
-- [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
-- [#20233](https://github.com/emberjs/ember.js/pull/20233) [BUGFIX] Include package name in deprecation error message
-- [#20235](https://github.com/emberjs/ember.js/pull/20235) [BUGFIX] Update `@types/node` for TS 4.9 issue
-- [#20238](https://github.com/emberjs/ember.js/pull/20238) [BUGFIX] Update Node.js versions to match support policy
-- [#20244](https://github.com/emberjs/ember.js/pull/20244) [BUGFIX] Expose getComponentTemplate type
 
 ### v4.8.1 (November 2, 2022)
 
@@ -32,15 +31,6 @@
 ### v3.24.7 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
-
-### v4.9.0-beta.2 (October 25, 2022)
-
-- [#20227](https://github.com/emberjs/ember.js/pull/20227) [BUGFIX] Fix unsafe internal cast for NativeArray
-- [#20228](https://github.com/emberjs/ember.js/pull/20228) [BUGFIX] Remove type export for ControllerMixin
-
-### v4.9.0-beta.1 (October 17, 2022) 
-
-- [#20203](https://github.com/emberjs/ember.js/pull/20203) / [#20204](https://github.com/emberjs/ember.js/pull/20204) [FEATURE] Preview types: Update to Typescript 4.8
 
 ### v4.8.0 (October 17, 2022)
 
