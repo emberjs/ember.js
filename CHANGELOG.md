@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v4.10.0-beta.1 (November 28, 2022)
+
+- [#20253](https://github.com/emberjs/ember.js/pull/20253) [FEATURE] Add the `Resolver` type to preview types
+- [#20270](https://github.com/emberjs/ember.js/pull/20270) / [#20271](https://github.com/emberjs/ember.js/pull/20271) [FEATURE] Add new imports for `getOwner` and `setOwner` from `@ember/owner` and introduce new `@ember/routing` sub-modules as part of [RFC #821](https://rfcs.emberjs.com/id/0821-public-types).
+
 ### v4.9.0 (November 28, 2022)
 
 - [#20274](https://github.com/emberjs/ember.js/pull/20274) [BUGFIX] Add some missing types to preview types
