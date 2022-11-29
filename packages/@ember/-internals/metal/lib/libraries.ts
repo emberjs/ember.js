@@ -1,4 +1,3 @@
-import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
 import { assert, debug, warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
@@ -72,12 +71,6 @@ export class Libraries {
 
   isRegistered?: (name: string) => boolean;
   logVersions?: () => void;
-}
-
-if (EMBER_LIBRARIES_ISREGISTERED) {
-  Libraries.prototype.isRegistered = function (name: string): boolean {
-    return Boolean(this._getLibraryByName(name));
-  };
 }
 
 if (DEBUG) {

@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Libraries } from '..';
-import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let libs, registry;
@@ -44,22 +43,6 @@ moduleFor(
       assert.equal(registry[0].name, 'magic');
       assert.equal(registry[0].version, 1.23);
       assert.equal(registry.length, 1);
-    }
-
-    ['@test isRegistered returns correct value'](assert) {
-      if (EMBER_LIBRARIES_ISREGISTERED) {
-        assert.expect(3);
-
-        assert.equal(libs.isRegistered('magic'), false);
-
-        libs.register('magic', 1.23);
-        assert.equal(libs.isRegistered('magic'), true);
-
-        libs.deRegister('magic');
-        assert.equal(libs.isRegistered('magic'), false);
-      } else {
-        assert.expect(0);
-      }
     }
 
     ['@test attempting to register a library that is already registered warns you'](assert) {

@@ -12,8 +12,6 @@ import { ENV } from '@ember/-internals/environment';
 */
 
 export const DEFAULT_FEATURES = {
-  EMBER_LIBRARIES_ISREGISTERED: null,
-  EMBER_IMPROVED_INSTRUMENTATION: null,
   EMBER_UNIQUE_ID_HELPER: true,
   EMBER_DEFAULT_HELPER_MANAGER: true,
 };
@@ -64,7 +62,5 @@ function featureValue(value: null | boolean) {
   return value;
 }
 
-export const EMBER_LIBRARIES_ISREGISTERED = featureValue(FEATURES.EMBER_LIBRARIES_ISREGISTERED);
-export const EMBER_IMPROVED_INSTRUMENTATION = featureValue(FEATURES.EMBER_IMPROVED_INSTRUMENTATION);
 export const EMBER_UNIQUE_ID_HELPER = featureValue(FEATURES.EMBER_UNIQUE_ID_HELPER);
 export const EMBER_DEFAULT_HELPER_MANAGER = featureValue(FEATURES.EMBER_DEFAULT_HELPER_MANAGER);
