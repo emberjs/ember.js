@@ -373,6 +373,11 @@ function isFactoryInstance(
   );
 }
 
+// TODO: if/when we have tooling which supports it, this might be good to inline
+function isDestroyable(item: object): item is { destroy(): void } {
+  return 'destroy' in item && typeof item.destroy === 'function';
+}
+
 function instantiateFactory(
   container: Container,
   normalizedName: FullName,
@@ -393,8 +398,8 @@ function instantiateFactory(
     // if this lookup happened _during_ destruction (emits a deprecation, but
     // is still possible) ensure that it gets destroyed
     if (container.isDestroying) {
-      if (typeof (instance as any).destroy === 'function') {
-        (instance as any).destroy();
+      if (isDestroyable(instance)) {
+        instance.destroy();
       }
     }
 
@@ -425,8 +430,8 @@ function destroyDestroyables(container: Container): void {
     let value = cache[key];
     assert('has cached value', value);
 
-    if ((value as any).destroy) {
-      (value as any).destroy();
+    if (isDestroyable(value)) {
+      value.destroy();
     }
   }
 }
@@ -444,8 +449,8 @@ function resetMember(container: Container, fullName: string) {
   if (member) {
     delete container.cache[fullName];
 
-    if ((member as any).destroy) {
-      (member as any).destroy();
+    if (isDestroyable(member)) {
+      member.destroy();
     }
   }
 }
