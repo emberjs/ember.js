@@ -39,6 +39,8 @@ Ember.debug('some info for developers');
 Ember.deprecate("you shouldn't use this anymore", 3 === 3, {
   id: 'no-longer-allowed',
   until: '99.0.0',
+  for: 'Ember',
+  since: { available: '4.0.0', enabled: '4.1.1' },
 });
 // get
 expectTypeOf(Ember.get({ z: 23 }, 'z')).toEqualTypeOf<number>();

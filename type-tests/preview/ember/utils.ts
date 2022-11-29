@@ -64,20 +64,6 @@ function testOnError() {
   };
 }
 
-function testDeprecateFunc() {
-  function newMethod(first: string, second: number): string {
-    return '';
-  }
-
-  const oldMethod = Ember.deprecateFunc(
-    'Please use the new method',
-    { id: 'deprecated.id', until: '6.0' },
-    newMethod
-  );
-  expectTypeOf(newMethod('first', 123)).toEqualTypeOf<string>();
-  expectTypeOf(oldMethod('first', 123)).toEqualTypeOf<string>();
-}
-
 function testDefineProperty() {
   type Contact = { firstName?: string; lastName?: string };
   const contact: Contact = {};
