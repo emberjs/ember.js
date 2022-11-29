@@ -4,6 +4,10 @@ import Owner from '@ember/owner';
 import ApplicationInstance from '@ember/application/instance';
 import Service from '@ember/service';
 import { expectTypeOf } from 'expect-type';
+import { getOwner as getOwnerProper, setOwner as setOwnerProper } from '@ember/owner';
+
+expectTypeOf(getOwner).toEqualTypeOf(getOwnerProper);
+expectTypeOf(setOwner).toEqualTypeOf(setOwnerProper);
 
 expectTypeOf(getOwner({})).toEqualTypeOf<Owner | undefined>();
 

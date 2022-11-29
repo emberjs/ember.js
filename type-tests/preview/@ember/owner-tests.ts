@@ -10,13 +10,6 @@ import Owner, {
 } from '@ember/owner';
 import Component from '@glimmer/component';
 import { expectTypeOf } from 'expect-type';
-import {
-  getOwner as getOwnerApplication,
-  setOwner as setOwnerApplication,
-} from '@ember/application';
-
-expectTypeOf(getOwnerApplication).toEqualTypeOf(getOwner);
-expectTypeOf(setOwnerApplication).toEqualTypeOf(setOwner);
 
 // Just a class we can construct in the Factory and FactoryManager tests
 declare class ConstructThis {
