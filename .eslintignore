@@ -7,4 +7,4 @@ dist/
 tmp/
 smoke-tests/
 types/
-type-tests/preview
+type-tests/
