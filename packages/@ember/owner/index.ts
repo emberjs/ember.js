@@ -33,7 +33,7 @@
 // We need to provide a narrower public interface to `getOwner` so that we only
 // expose the `Owner` type, *not* our richer `InternalOwner` type and its
 // various bits of private API.
-import Owner, { getOwner as internalGetOwner } from '../-internals/owner';
+import Owner, { getOwner as internalGetOwner } from '@ember/-internals/owner';
 
 // NOTE: this documentation appears here instead of at the definition site so
 // it can appear correctly in both API docs and for TS, while providing a richer
@@ -99,4 +99,4 @@ export {
   KnownForTypeResult,
   Resolver,
   DIRegistry,
-} from '../-internals/owner';
+} from '@ember/-internals/owner';

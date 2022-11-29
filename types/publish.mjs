@@ -149,7 +149,6 @@ const PREVIEW_MODULES = [
   '@ember/-internals/metal/lib/tags.d.ts',
   '@ember/-internals/metal/lib/tracked.d.ts',
   '@ember/-internals/overrides/index.d.ts',
-  '@ember/-internals/owner/index.d.ts',
   '@ember/-internals/routing/index.d.ts',
   '@ember/-internals/runtime/index.d.ts',
   '@ember/-internals/runtime/lib/ext/rsvp.d.ts',
@@ -243,7 +242,6 @@ const PREVIEW_MODULES = [
   '@ember/object/observers.d.ts',
   '@ember/object/promise-proxy-mixin.d.ts',
   '@ember/object/proxy.d.ts',
-  '@ember/owner/index.d.ts',
   '@ember/polyfills/index.d.ts',
   '@ember/polyfills/lib/assign.d.ts',
   '@ember/renderer/index.d.ts',
@@ -457,8 +455,8 @@ function wrapInDeclareModule(moduleName) {
   // that will be, it will be *way* more reliable.
   let string = new MagicString(contents);
   string
-    .replaceAll(/^export declare /gm, 'export ') // g for global, m for multiline
-    .replaceAll(/^declare /gm, '') // g for global, m for multiline
+    .replace(/^export declare /gm, 'export ') // g for global, m for multiline
+    .replace(/^declare /gm, '') // g for global, m for multiline
     .indent('  ')
     .prepend(`declare module '${moduleNameForDeclaration}' {\n`)
     .append('}\n');

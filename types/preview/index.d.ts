@@ -91,8 +91,6 @@ import './@ember/object/observers';
 import './@ember/object/promise-proxy-mixin';
 import './@ember/object/proxy';
 
-import './@ember/owner';
-
 import './@ember/polyfills';
 import './@ember/polyfills/types';
 
