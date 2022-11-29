@@ -37,7 +37,6 @@ import './ember/-private/type-utils';
 import './@ember/application';
 import './@ember/application/-private/event-dispatcher';
 import './@ember/application/-private/registry';
-import './@ember/application/deprecations';
 import './@ember/application/instance';
 import './@ember/application/types';
 

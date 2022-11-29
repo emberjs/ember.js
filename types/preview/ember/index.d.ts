@@ -29,7 +29,6 @@ declare module 'ember' {
   import EmberCoreObject from '@ember/object/core';
   import * as EmberApplicationNs from '@ember/application';
   import * as EmberApplicationInstanceNs from '@ember/application/instance';
-  import type * as EmberApplicationDeprecateNs from '@ember/application/deprecations';
   import type * as EmberTestNs from '@ember/test';
   import * as EmberControllerNs from '@ember/controller';
   import EmberMixin from '@ember/object/mixin';
@@ -84,8 +83,7 @@ declare module 'ember' {
     export class HashLocation extends EmberRoutingHashLocation {}
     export class NoneLocation extends EmberRoutingNoneLocation {}
     export class HistoryLocation extends EmberRoutingHistoryLocation {}
-    export const deprecateFunc: typeof EmberApplicationDeprecateNs.deprecateFunc;
-    export const deprecate: typeof EmberApplicationDeprecateNs.deprecate;
+    export const deprecate: typeof EmberDebugNs.deprecate;
     export const getOwner: typeof EmberApplicationNs.getOwner;
     export const setOwner: typeof EmberApplicationNs.setOwner;
     export class EventDispatcher extends EmberEventDispatcher {}
@@ -238,9 +236,11 @@ declare module 'ember' {
       const service: typeof EmberServiceNs.inject;
     }
     namespace ENV {
-      const EXTEND_PROTOTYPES: boolean | {
-        Array: boolean;
-      };
+      const EXTEND_PROTOTYPES:
+        | boolean
+        | {
+            Array: boolean;
+          };
       const LOG_BINDINGS: boolean;
       const LOG_STACKTRACE_ON_DEPRECATION: boolean;
       const LOG_VERSION: boolean;
