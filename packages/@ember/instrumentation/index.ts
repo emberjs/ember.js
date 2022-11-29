@@ -2,7 +2,6 @@
 /* global console */
 
 import { ENV } from '@ember/-internals/environment';
-import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 
 export interface Listener<T> {
@@ -186,21 +185,13 @@ export function instrument<Binding, Result>(
   }
 }
 
-let flaggedInstrument: <Result>(name: string, payload: object, callback: () => Result) => Result;
-
-if (EMBER_IMPROVED_INSTRUMENTATION) {
-  flaggedInstrument = instrument;
-} else {
-  flaggedInstrument = function instrument<Result>(
-    _name: string,
-    _payload: object,
-    callback: () => Result
-  ): Result {
-    return callback();
-  };
+export function flaggedInstrument<Result>(
+  _name: string,
+  _payload: object,
+  callback: () => Result
+): Result {
+  return callback();
 }
-
-export { flaggedInstrument };
 
 function withFinalizer<Binding, Result>(
   callback: InstrumentCallback<Binding, Result>,

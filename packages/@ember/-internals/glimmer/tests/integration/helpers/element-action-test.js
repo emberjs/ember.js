@@ -1,10 +1,5 @@
 import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import {
-  subscribe as instrumentationSubscribe,
-  reset as instrumentationReset,
-} from '@ember/instrumentation';
-import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import EmberObject, { set } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { ActionManager } from '@ember/-internals/views';
@@ -29,59 +24,6 @@ function getActionAttributes(element) {
 function getActionIds(element) {
   return getActionAttributes(element).map((attribute) =>
     attribute.slice('data-ember-action-'.length)
-  );
-}
-
-if (EMBER_IMPROVED_INSTRUMENTATION) {
-  moduleFor(
-    'Helpers test: element action instrumentation',
-    class extends RenderingTestCase {
-      teardown() {
-        super.teardown();
-        instrumentationReset();
-      }
-
-      ['@test action should fire interaction event with proper params']() {
-        let subscriberCallCount = 0;
-        let subscriberPayload = null;
-
-        let ExampleComponent = Component.extend({
-          actions: {
-            foo() {},
-          },
-        });
-
-        this.registerComponent('example-component', {
-          ComponentClass: ExampleComponent,
-          template: '<button {{action "foo" "bar"}}>Click me</button>',
-        });
-
-        instrumentationSubscribe('interaction.ember-action', {
-          before() {
-            subscriberCallCount++;
-          },
-          after(name, time, payload) {
-            subscriberPayload = payload;
-          },
-        });
-
-        this.render('{{example-component}}');
-
-        this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
-
-        runTask(() => this.rerender());
-
-        this.assert.equal(subscriberCallCount, 0, 'subscriber has not been called');
-
-        runTask(() => {
-          this.$('button').click();
-        });
-
-        this.assert.equal(subscriberCallCount, 1, 'subscriber has been called 1 time');
-        this.assert.equal(subscriberPayload.name, 'foo', 'subscriber called with correct name');
-        this.assert.equal(subscriberPayload.args[0], 'bar', 'subscriber called with correct args');
-      }
-    }
   );
 }
 

@@ -2,11 +2,6 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
-import {
-  reset as instrumentationReset,
-  subscribe as instrumentationSubscribe,
-} from '@ember/instrumentation';
-import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
 
@@ -348,65 +343,6 @@ moduleFor(
     }
   }
 );
-
-if (EMBER_IMPROVED_INSTRUMENTATION) {
-  moduleFor(
-    'EventDispatcher - Instrumentation',
-    class extends RenderingTestCase {
-      teardown() {
-        super.teardown();
-        instrumentationReset();
-      }
-
-      ['@test instruments triggered events'](assert) {
-        let clicked = 0;
-
-        this.registerComponent('x-foo', {
-          ComponentClass: Component.extend({
-            click() {
-              clicked++;
-            },
-          }),
-          template: `<p>hello</p>`,
-        });
-
-        this.render(`{{x-foo}}`);
-
-        this.$('div').trigger('click');
-
-        assert.equal(clicked, 1, 'precond - the click handler was invoked');
-
-        let clickInstrumented = 0;
-        instrumentationSubscribe('interaction.click', {
-          before() {
-            clickInstrumented++;
-            assert.equal(clicked, 1, 'invoked before event is handled');
-          },
-          after() {
-            clickInstrumented++;
-            assert.equal(clicked, 2, 'invoked after event is handled');
-          },
-        });
-
-        let keypressInstrumented = 0;
-        instrumentationSubscribe('interaction.keypress', {
-          before() {
-            keypressInstrumented++;
-          },
-          after() {
-            keypressInstrumented++;
-          },
-        });
-
-        this.$('div').trigger('click');
-        this.$('div').trigger('change');
-        assert.equal(clicked, 2, 'precond - The click handler was invoked');
-        assert.equal(clickInstrumented, 2, 'The click was instrumented');
-        assert.strictEqual(keypressInstrumented, 0, 'The keypress was not instrumented');
-      }
-    }
-  );
-}
 
 if (canDataTransfer) {
   moduleFor(
