@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2019",
+    "target": "es2017",
     "sourceMap": true,
     "baseUrl": "../packages",
     "rootDir": "../packages",
