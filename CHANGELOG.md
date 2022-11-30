@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.9.1 (November 30, 2022)
+
+- [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
+
 ## v4.10.0-beta.2
 
 - [#20283](https://github.com/emberjs/ember.js/pull/20283) [BUGFIX] revert TS `compilerOptions.target` to ES2017
