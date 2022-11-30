@@ -33,9 +33,10 @@
     "url": "git+https://github.com/emberjs/ember.js.git"
   },
   "scripts": {
-    "build": "ember build --environment production",
+    "build:js": "ember build --environment production",
+    "build:types": "node types/publish.mjs",
+    "build": "npm-run-all build:*",
     "docs": "ember ember-cli-yuidoc",
-    "types": "node types/publish.mjs",
     "link:glimmer": "node bin/yarn-link-glimmer.js",
     "start": "ember serve",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
@@ -49,8 +50,8 @@
     "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
-    "type-check:stable": "tsc --noEmit",
-    "type-check:preview": "tsc --noEmit --project type-tests/preview",
+    "type-check:internals": "tsc --noEmit",
+    "type-check:types": "tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },
   "dependencies": {

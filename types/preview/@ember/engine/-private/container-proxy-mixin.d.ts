@@ -1,5 +1,5 @@
 declare module '@ember/engine/-private/container-proxy-mixin' {
-  import { ContainerProxy } from '@ember/owner';
+  import { ContainerProxy } from '@ember/-internals/owner';
   import Mixin from '@ember/object/mixin';
 
   /**
