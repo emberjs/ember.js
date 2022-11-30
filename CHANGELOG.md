@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.28.11 (November 30, 2022)
+
+- [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX LTS] Allow class-based helpers in strict-mode
+
 ## v3.28.10 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties`
