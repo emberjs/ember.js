@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.9.1 (November 30, 2022)
+
+- [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
+
 ## v3.28.11 (November 30, 2022)
 
 - [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX LTS] Allow class-based helpers in strict-mode
