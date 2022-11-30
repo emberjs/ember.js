@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.28.11 (November 30, 2022)
+
+- [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX LTS] Allow class-based helpers in strict-mode
+
 ### v4.10.0-beta.1 (November 28, 2022)
 
 - [#20253](https://github.com/emberjs/ember.js/pull/20253) [FEATURE] Add the `Resolver` type to preview types
