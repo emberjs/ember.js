@@ -50,9 +50,8 @@
     "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
-    "type-check:packages": "tsc --noEmit",
-    "type-check:stable": "tsc --noEmit --project type-tests/stable",
-    "type-check:preview": "tsc --noEmit --project type-tests/preview",
+    "type-check:internals": "tsc --noEmit",
+    "type-check:types": "tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },
   "dependencies": {

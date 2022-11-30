@@ -1,5 +1,5 @@
 declare module '@ember/engine/-private/registry-proxy-mixin' {
-  import { RegistryProxy } from '@ember/owner';
+  import { RegistryProxy } from '@ember/-internals/owner';
   import Mixin from '@ember/object/mixin';
 
   /**
