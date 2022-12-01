@@ -86,7 +86,7 @@ interface ControllerMixin<T> extends ActionHandler {
     @property queryParams
     @public
   */
-  queryParams: Array<ControllerQueryParam>;
+  queryParams: Readonly<Array<ControllerQueryParam>>;
 
   /**
     Transition the application into another route. The route may
