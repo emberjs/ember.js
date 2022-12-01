@@ -35,7 +35,7 @@ interface ControllerMixin<T> extends ActionHandler {
   target: unknown | null;
   model: T;
 
-  queryParams: Array<ControllerQueryParam>;
+  queryParams: ReadonlyArray<ControllerQueryParam>;
 
   transitionToRoute(...args: RouteArgs<Route>): Transition;
 

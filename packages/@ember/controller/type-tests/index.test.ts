@@ -26,7 +26,7 @@ expectTypeOf(controller.model).toEqualTypeOf<Foo>();
 expectTypeOf(controller.concatenatedProperties).toEqualTypeOf<string[] | string | undefined>();
 
 expectTypeOf(controller.queryParams).toEqualTypeOf<
-  Array<string | Record<string, { type: 'boolean' | 'number' | 'array' | 'string' }>>
+  Readonly<Array<string | Record<string, { type: 'boolean' | 'number' | 'array' | 'string' }>>>
 >();
 
 controller.transitionToRoute('blogPosts');

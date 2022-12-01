@@ -193,7 +193,7 @@ export function calculateCacheKey(prefix: string, parts: string[] = [], values: 
   This helper normalizes all three possible styles into the
   'Array of fully defined objects' style.
 */
-export function normalizeControllerQueryParams(queryParams: ControllerQueryParam[]) {
+export function normalizeControllerQueryParams(queryParams: Readonly<ControllerQueryParam[]>) {
   let qpMap: Record<string, ExpandedControllerQueryParam> = {};
 
   for (let queryParam of queryParams) {
