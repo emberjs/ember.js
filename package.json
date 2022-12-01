@@ -139,7 +139,7 @@
     "expect-type": "^0.13.0",
     "express": "^4.18.1",
     "finalhandler": "^1.1.2",
-    "fs-extra": "^10.0.1",
+    "fs-extra": "^11.1.0",
     "git-repo-info": "^2.1.1",
     "github": "^0.2.3",
     "glob": "^8.0.3",
