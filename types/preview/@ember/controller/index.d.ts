@@ -30,7 +30,7 @@ declare module '@ember/controller' {
      */
     transitionToRoute(...args: any[]): void;
     model: unknown;
-    queryParams: Array<string | Record<string, QueryParamConfig | string | undefined>>;
+    queryParams: Readonly<Array<string | Record<string, QueryParamConfig | string | undefined>>>;
     target: object;
   }
 
