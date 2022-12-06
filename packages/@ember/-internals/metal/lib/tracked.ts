@@ -1,5 +1,5 @@
 import { meta as metaFor } from '@ember/-internals/meta';
-import { isEmberArray } from '@ember/-internals/utils';
+import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';

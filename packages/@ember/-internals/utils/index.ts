@@ -30,7 +30,6 @@ export { default as toString } from './lib/to-string';
 export { isObject } from './lib/spec';
 export { isProxy, setProxy } from './lib/is_proxy';
 export { default as Cache } from './lib/cache';
-export { setEmberArray, isEmberArray } from './lib/ember-array';
 export {
   setupMandatorySetter,
   teardownMandatorySetter,
