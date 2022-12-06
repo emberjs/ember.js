@@ -1,10 +1,10 @@
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import type { FrameworkObject } from '@ember/object/-internals';
 import Helper from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
 
 // Good enough for tests
-let owner = {} as InternalOwner;
+let owner = {} as Owner;
 
 // NOTE: The types for `compute` are not actually safe. Glint helps with this.
 

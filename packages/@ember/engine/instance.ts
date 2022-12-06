@@ -49,7 +49,10 @@ export interface EngineInstanceOptions {
 // Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
 // `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
 // and `ContainerMixin` types used to define `InternalOwner`, this is the same
-// type as `InternalOwner` from TS's POV.
+// type as `InternalOwner` from TS's POV. The point of the explicit `extends`
+// clauses for `InternalOwner` and `Owner` is to keep us honest: if this stops
+// type checking, we have broken part of our public API contract. Medium-term,
+// the goal here is to `EngineInstance` simple be `Owner`.
 interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
 class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
   /**

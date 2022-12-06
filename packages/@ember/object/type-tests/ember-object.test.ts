@@ -1,10 +1,10 @@
 import { expectTypeOf } from 'expect-type';
 
 import EmberObject from '@ember/object';
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 
 // Good enough for tests
-let owner = {} as InternalOwner;
+let owner = {} as Owner;
 
 expectTypeOf(EmberObject.create()).toEqualTypeOf<EmberObject>();
 
@@ -106,7 +106,7 @@ Person.reopenClass({ fullName: 6 });
 class MyComponent extends EmberObject {
   foo = 'bar';
 
-  constructor(owner: InternalOwner) {
+  constructor(owner: Owner) {
     super(owner);
 
     this.addObserver('foo', this, 'fooDidChange');
