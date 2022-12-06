@@ -26,9 +26,12 @@ QUnit.module('App Boot', function (hooks) {
       hasExistence: true,
     });
 
-    this.template('components/foo-bar', '\
+    this.template(
+      'components/foo-bar',
+      '\
       <p>The files are *inside* the computer?!</p>\
-    ');
+    '
+    );
 
     return this.renderToHTML('/').then(function (html) {
       assert.htmlMatches(
