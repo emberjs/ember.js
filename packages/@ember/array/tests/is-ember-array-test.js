@@ -1,4 +1,4 @@
-import { setEmberArray, isEmberArray } from '..';
+import { setEmberArray, isEmberArray } from '@ember/array/-internals';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

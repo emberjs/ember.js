@@ -73,7 +73,7 @@ import DataAdapter from '@ember/debug/data-adapter';
 import EmberError from '@ember/error';
 import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
-import EmberArray, { A, NativeArray, isArray } from '@ember/array';
+import EmberArray, { A, NativeArray, isArray, makeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import ArrayProxy from '@ember/array/proxy';
 import Application, { getOwner, setOwner, onLoad, runLoadHooks } from '@ember/application';
@@ -205,7 +205,6 @@ const PartialEmber = {
   canInvoke: utils.canInvoke,
   generateGuid: utils.generateGuid,
   guidFor: utils.guidFor,
-  makeArray: utils.makeArray,
   uuid: utils.uuid,
   wrap: utils.wrap,
 
@@ -227,6 +226,7 @@ const PartialEmber = {
   Array: EmberArray,
   NativeArray,
   isArray,
+  makeArray,
 
   // ****@ember/array/mutable****
   MutableArray,
