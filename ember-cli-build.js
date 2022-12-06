@@ -5,7 +5,6 @@ const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
 const concatBundle = require('./lib/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
-const testPolyfills = require('./broccoli/test-polyfills');
 const rollupPackage = require('./broccoli/rollup-package');
 const minify = require('./broccoli/minify');
 const debugTree = require('broccoli-debug').buildDebugCallback('ember-source:ember-cli-build');
@@ -250,7 +249,7 @@ function templateCompilerBundle(emberPackages, transpileTree) {
 }
 
 function testHarness() {
-  return new MergeTrees([emptyTestem(), testPolyfills(), testIndexHTML(), loader(), qunit()]);
+  return new MergeTrees([emptyTestem(), testIndexHTML(), loader(), qunit()]);
 }
 
 function emptyTestem() {
