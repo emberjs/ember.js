@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig/compiler-options.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": [
+    "**/*"
+  ],
+  "exclude": [
+    "**/tests",
+    "**/type-tests"
+  ]
+}

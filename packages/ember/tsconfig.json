@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig/publish-types.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "files": [
+    "index.ts",
+    "version.d.ts"
+  ],
+  "references": []
+}

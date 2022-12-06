@@ -2,7 +2,7 @@
   "extends": "./tsconfig/compiler-options.json",
   "compilerOptions": {
     "outDir": "dist",
-    "noEmit": true
+    "noEmit": true,
   },
   "include": ["packages/**/*.ts"],
   "exclude": ["dist", "node_modules", "tmp", "types"]

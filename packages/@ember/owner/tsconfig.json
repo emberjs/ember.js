@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig/compiler-options.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "files": ["index.ts"],
+  "references": [
+    { "path": "../-internals" }
+  ]
+}

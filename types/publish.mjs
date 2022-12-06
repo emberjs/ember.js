@@ -393,7 +393,7 @@ async function main() {
   fs.rmSync(TYPES_DIR, { recursive: true, force: true });
   fs.mkdirSync(TYPES_DIR, { recursive: true });
 
-  spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']);
+  spawnSync('yarn', ['tsc', '--build', 'tsconfig/publish-types.json']);
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above.

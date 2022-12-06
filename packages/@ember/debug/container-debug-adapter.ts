@@ -1,7 +1,7 @@
 import { classify, dasherize } from '@ember/string';
 import EmberObject from '@ember/object';
 import { typeOf } from '@ember/utils';
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { Resolver } from '@ember/owner';
 import Namespace from '@ember/application/namespace';
@@ -45,10 +45,10 @@ import Namespace from '@ember/application/namespace';
   @public
 */
 export default class ContainerDebugAdapter extends EmberObject {
-  constructor(owner: InternalOwner) {
+  constructor(owner: Owner) {
     super(owner);
 
-    this.resolver = getOwner(this)!.lookup('resolver-for-debugging:main') as Resolver;
+    this.resolver = owner.lookup('resolver-for-debugging:main') as Resolver;
   }
 
   /**
