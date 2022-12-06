@@ -2,7 +2,6 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor } from '@ember/-internals/meta';
 import { inspect } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
 import type { UpdatableTag } from '@glimmer/validator';
 import {
   consumeTag,
@@ -115,7 +114,7 @@ export class AliasedProperty extends ComputedDescriptor {
 }
 
 function AliasedProperty_readOnlySet(obj: object, keyName: string): never {
-  throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
+  throw new Error(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
 }
 
 function AliasedProperty_oneWaySet(obj: object, keyName: string, value: any): any {

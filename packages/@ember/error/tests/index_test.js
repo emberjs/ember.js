@@ -1,4 +1,3 @@
-import EmberError from '@ember/error';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -7,7 +6,7 @@ moduleFor(
     ['@test new EmberError displays provided message'](assert) {
       assert.throws(
         () => {
-          throw new EmberError('A Message');
+          throw new Error('A Message');
         },
         function (e) {
           return e.message === 'A Message';

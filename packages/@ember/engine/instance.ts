@@ -5,7 +5,6 @@
 import EmberObject from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
@@ -203,7 +202,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     let Engine = this.lookup(`engine:${name}`);
 
     if (!Engine) {
-      throw new EmberError(
+      throw new Error(
         `You attempted to mount the engine '${name}', but it is not registered with its parent.`
       );
     }
