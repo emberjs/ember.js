@@ -23,7 +23,6 @@ import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/utils';
 import Evented from '@ember/object/evented';
 import { assert, deprecate, info } from '@ember/debug';
-import EmberError from '@ember/error';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { QueryParamMeta, RenderOptions } from '@ember/routing/route';
@@ -1757,7 +1756,7 @@ export function triggerEvent<
       return;
     }
     // TODO: update?
-    throw new EmberError(
+    throw new Error(
       `Can't trigger action '${name}' because your app hasn't finished transitioning into its first route. To trigger an action on destination routes during a transition, you can call \`.send()\` on the \`Transition\` object passed to the \`model/beforeModel/afterModel\` hooks.`
     );
   }
@@ -1791,7 +1790,7 @@ export function triggerEvent<
   }
 
   if (!eventWasHandled && !ignoreFailure) {
-    throw new EmberError(
+    throw new Error(
       `Nothing handled the action '${name}'. If you did handle the action, this error can be caused by returning true from an action handler in a controller, causing the action to bubble.`
     );
   }

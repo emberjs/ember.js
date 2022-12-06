@@ -129,7 +129,7 @@ declare module 'ember' {
     /**
      * A subclass of the JavaScript Error object for use in Ember.
      */
-    const Error: typeof EmberError;
+    const Error: ErrorConstructor;
 
     const Evented: typeof EmberObjectEventedNs.default;
     interface Evented extends EmberObjectEventedNs.default {}

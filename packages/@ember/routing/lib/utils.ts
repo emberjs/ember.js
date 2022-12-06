@@ -3,7 +3,6 @@ import { getOwner } from '@ember/-internals/owner';
 import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
 import { assert, deprecate } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import EmberError from '@ember/error';
 import type { InternalRouteInfo, ModelFor } from 'router_js';
 import type Router from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
@@ -252,7 +251,7 @@ export function prefixRouteNameArg<T extends NamedRouteArgs<Route> | UnnamedRout
   if (owner.routable && typeof args[0] === 'string') {
     routeName = args[0];
     if (resemblesURL(routeName)) {
-      throw new EmberError(
+      throw new Error(
         'Programmatic transitions by URL cannot be used within an Engine. Please use the route name instead.'
       );
     } else {

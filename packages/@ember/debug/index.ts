@@ -1,6 +1,5 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import type { AnyFn } from '@ember/-internals/utils/types';
-import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import _deprecate from './lib/deprecate';
@@ -169,7 +168,7 @@ if (DEBUG) {
   */
   setDebugFunction('assert', function assert(desc, test) {
     if (!test) {
-      throw new EmberError(`Assertion Failed: ${desc}`);
+      throw new Error(`Assertion Failed: ${desc}`);
     }
   });
 

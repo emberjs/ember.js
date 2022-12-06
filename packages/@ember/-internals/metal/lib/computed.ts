@@ -2,7 +2,6 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor } from '@ember/-internals/meta';
 import { inspect, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/validator';
@@ -513,7 +512,7 @@ export class ComputedProperty extends ComputedDescriptor {
   }
 
   _throwReadOnlyError(obj: object, keyName: string): never {
-    throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
+    throw new Error(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
   }
 
   _set(obj: object, keyName: string, value: unknown, meta: Meta): unknown {

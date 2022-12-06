@@ -1,6 +1,6 @@
 declare module '@ember/error' {
   /**
-   * A subclass of the JavaScript Error object for use in Ember.
+   * The native JavaScript Error class.
    */
-  export default class EmberError extends Error {}
+  export default Error;
 }
