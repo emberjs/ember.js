@@ -4,7 +4,7 @@
 
 import type { Registry } from '@ember/-internals/container';
 import type { RegistryProxy } from '@ember/-internals/owner';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utility-types';
 
 import { assert } from '@ember/debug';
 import Mixin from '@ember/object/mixin';

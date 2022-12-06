@@ -19,7 +19,7 @@ import MutableEnumerable from '@ember/enumerable/mutable';
 import { compare, typeOf } from '@ember/utils';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '@ember/object/observable';
-import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utils/types';
+import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 

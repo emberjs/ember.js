@@ -1,5 +1,5 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
 import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import _deprecate from './lib/deprecate';

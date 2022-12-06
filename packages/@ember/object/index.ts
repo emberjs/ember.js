@@ -8,7 +8,7 @@ import {
 } from '@ember/-internals/metal';
 import { getFactoryFor } from '@ember/-internals/container';
 import { setObservers } from '@ember/-internals/utils';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
 

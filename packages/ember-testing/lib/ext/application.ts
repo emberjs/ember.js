@@ -6,7 +6,7 @@ import run from '../test/run';
 import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
 import { asyncStart, asyncEnd } from '../test/adapter';
 import type Application from '@ember/application';
-import type { AnyFn } from '@ember/-internals/utils/types';
+import type { AnyFn } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
 
 export interface TestableApp extends Application {
