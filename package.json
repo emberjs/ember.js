@@ -51,7 +51,7 @@
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "tsc --noEmit --project type-tests",
+    "type-check:types": "yarn build:types && tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },
   "dependencies": {
