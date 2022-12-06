@@ -4,7 +4,8 @@
 import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { guidFor, makeArray, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
+import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
+import { makeArray } from '@ember/array';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';

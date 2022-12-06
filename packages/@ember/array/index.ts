@@ -23,7 +23,7 @@ import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-interna
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 
-export { makeArray } from '@ember/-internals/utils';
+export { default as makeArray } from './lib/make-array';
 
 export type EmberArrayLike<T> = EmberArray<T> | NativeArray<T>;
 

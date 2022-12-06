@@ -4,7 +4,7 @@
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
 import { type default as Owner, getOwner } from '@ember/-internals/owner';
-import { guidFor, makeArray, isInternalSymbol } from '@ember/-internals/utils';
+import { guidFor, isInternalSymbol } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
 import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@ember/-internals/metal';
 import Mixin, { applyMixin } from '@ember/object/mixin';
 import { ActionHandler } from '@ember/-internals/runtime';
+import { makeArray } from '@ember/array';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet as WeakSet } from '@glimmer/util';

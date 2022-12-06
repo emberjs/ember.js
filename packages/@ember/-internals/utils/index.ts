@@ -24,7 +24,6 @@ export {
 export { default as inspect } from './lib/inspect';
 export { default as lookupDescriptor } from './lib/lookup-descriptor';
 export { canInvoke } from './lib/invoke';
-export { default as makeArray } from './lib/make-array';
 export { getName, setName } from './lib/name';
 export { default as toString } from './lib/to-string';
 export { isObject } from './lib/spec';
