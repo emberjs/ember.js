@@ -173,7 +173,7 @@ const PREVIEW_MODULES = [
   '@ember/-internals/utils/lib/super.d.ts',
   '@ember/-internals/utils/lib/symbol.d.ts',
   '@ember/-internals/utils/lib/to-string.d.ts',
-  '@ember/-internals/utils/types.d.ts',
+  '@ember/-internals/utility-types.d.ts',
   '@ember/-internals/views/index.d.ts',
   '@ember/-internals/views/lib/compat/attrs.d.ts',
   '@ember/-internals/views/lib/compat/fallback-view-registry.d.ts',

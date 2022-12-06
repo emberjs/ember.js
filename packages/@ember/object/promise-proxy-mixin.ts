@@ -1,6 +1,6 @@
 import { get, setProperties, computed } from '@ember/object';
 import Mixin from '@ember/object/mixin';
-import type { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
+import type { AnyFn, MethodNamesOf } from '@ember/-internals/utility-types';
 import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
 
