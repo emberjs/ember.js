@@ -5,7 +5,7 @@ import {
   descriptorForProperty,
   flushAsyncObservers,
 } from '@ember/-internals/metal';
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { BucketCache } from '@ember/routing/-internals';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
@@ -273,7 +273,7 @@ class Route<T = unknown>
   declare _topLevelViewTemplate: any;
   declare _environment: any;
 
-  constructor(owner: InternalOwner) {
+  constructor(owner: Owner) {
     super(owner);
 
     if (owner) {
@@ -2195,7 +2195,7 @@ function buildRenderOptions(
 }
 
 export interface RenderOptions {
-  owner: InternalOwner;
+  owner: Owner;
   into?: string;
   outlet: string;
   name: string;

@@ -1717,6 +1717,7 @@ function findRouteStateName(route: Route, state: string) {
   return routeHasBeenDefined(owner, router, stateName, stateNameFull) ? stateNameFull : '';
 }
 
+// TODO: rewrite `InternalOwner` to `Owner` by switching to `factoryFor`.
 /**
   Determines whether or not a route has been defined by checking that the route
   is in the Router's map and the owner has a registration for that route.
@@ -1736,8 +1737,7 @@ function routeHasBeenDefined(
 ) {
   let routerHasRoute = router.hasRoute(fullName);
   let ownerHasRoute =
-    owner.hasRegistration(`template:${localName}` as const) ||
-    owner.hasRegistration(`route:${localName}` as const);
+    owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
   return routerHasRoute && ownerHasRoute;
 }
 

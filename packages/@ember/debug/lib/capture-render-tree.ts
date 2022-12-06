@@ -1,5 +1,5 @@
 import type { Renderer } from '@ember/-internals/glimmer';
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
@@ -19,7 +19,7 @@ import { expect } from '@glimmer/util';
   @param app {ApplicationInstance} An `ApplicationInstance`.
   @since 3.14.0
 */
-export default function captureRenderTree(app: InternalOwner): CapturedRenderNode[] {
+export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
   // SAFETY: Ideally we'd assert here but that causes awkward circular requires since this is also in @ember/debug.
   // This is only for debug stuff so not very risky.
   let renderer = expect(app.lookup('renderer:-dom') as Renderer, `BUG: owner is missing renderer`);

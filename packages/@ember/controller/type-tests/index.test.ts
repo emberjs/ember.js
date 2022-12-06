@@ -1,10 +1,10 @@
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import Controller, { inject } from '@ember/controller';
 
 import { expectTypeOf } from 'expect-type';
 
 // Good enough for tests
-let owner = {} as InternalOwner;
+let owner = {} as Owner;
 
 class Foo {}
 

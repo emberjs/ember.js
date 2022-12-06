@@ -1,11 +1,11 @@
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import type { FrameworkObject } from '@ember/object/-internals';
 import EmberObject from '@ember/object';
 import Service, { inject, service } from '@ember/service';
 import { expectTypeOf } from 'expect-type';
 
 // Good enough for tests
-let owner = {} as InternalOwner;
+let owner = {} as Owner;
 
 class MainService extends Service {}
 class FooService extends Service {}

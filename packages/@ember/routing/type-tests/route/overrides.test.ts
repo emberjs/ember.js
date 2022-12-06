@@ -1,11 +1,11 @@
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import type Controller from '@ember/controller';
 import { action } from '@ember/object';
 import Route from '@ember/routing/route';
 import type { Transition } from 'router_js';
 
 // NOTE: This is invalid, but acceptable for type tests
-let owner = {} as InternalOwner;
+let owner = {} as Owner;
 class Foo {}
 
 class MyRoute extends Route<Foo> {

@@ -1,6 +1,6 @@
 /* eslint-disable no-self-assign */
 
-import type { InternalOwner } from '@ember/-internals/owner';
+import type Owner from '@ember/owner';
 import type { ILocation as EmberLocation } from '@ember/routing/location';
 import type Route from '@ember/routing/route';
 import type { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
@@ -10,7 +10,7 @@ import { expectTypeOf } from 'expect-type';
 import type { Transition } from 'router_js';
 
 // Good enough for tests
-let owner = {} as InternalOwner;
+let owner = {} as Owner;
 
 class Post {}
 class Comment {}
