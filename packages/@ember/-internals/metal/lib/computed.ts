@@ -1,7 +1,7 @@
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor } from '@ember/-internals/meta';
-import { inspect, toString } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { toString } from '@ember/-internals/utils';
+import { assert, inspect } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type { UpdatableTag } from '@glimmer/validator';

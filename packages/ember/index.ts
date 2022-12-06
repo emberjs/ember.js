@@ -203,7 +203,6 @@ const PartialEmber = {
   _Cache: utils.Cache,
   GUID_KEY: utils.GUID_KEY,
   canInvoke: utils.canInvoke,
-  inspect: utils.inspect,
   generateGuid: utils.generateGuid,
   guidFor: utils.guidFor,
   makeArray: utils.makeArray,
@@ -257,6 +256,7 @@ const PartialEmber = {
   deprecate: EmberDebug.deprecate,
   deprecateFunc: EmberDebug.deprecateFunc,
   runInDebug: EmberDebug.runInDebug,
+  inspect: EmberDebug.inspect,
 
   Debug: {
     registerDeprecationHandler: EmberDebug.registerDeprecationHandler,

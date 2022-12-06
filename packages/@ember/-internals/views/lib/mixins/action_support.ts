@@ -1,10 +1,9 @@
 /**
  @module ember
 */
-import { inspect } from '@ember/-internals/utils';
 import { get } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
-import { assert } from '@ember/debug';
+import { assert, inspect } from '@ember/debug';
 
 /**
  @class ActionSupport
