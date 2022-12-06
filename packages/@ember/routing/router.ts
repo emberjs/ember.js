@@ -6,7 +6,7 @@ import type {
 } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
-import { getOwner, type InternalOwner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/owner';
 import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
 import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
 import {
@@ -1717,27 +1717,21 @@ function findRouteStateName(route: Route, state: string) {
   return routeHasBeenDefined(owner, router, stateName, stateNameFull) ? stateNameFull : '';
 }
 
-// TODO: rewrite `InternalOwner` to `Owner` by switching to `factoryFor`.
 /**
   Determines whether or not a route has been defined by checking that the route
   is in the Router's map and the owner has a registration for that route.
 
   @private
-  @param {InternalOwner} owner
+  @param {Owner} owner
   @param {Router} router
   @param {String} localName
   @param {String} fullName
   @return {Boolean}
 */
-function routeHasBeenDefined(
-  owner: InternalOwner,
-  router: any,
-  localName: string,
-  fullName: string
-) {
+function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullName: string) {
   let routerHasRoute = router.hasRoute(fullName);
   let ownerHasRoute =
-    owner.hasRegistration(`template:${localName}`) || owner.hasRegistration(`route:${localName}`);
+    owner.factoryFor(`template:${localName}`) || owner.factoryFor(`route:${localName}`);
   return routerHasRoute && ownerHasRoute;
 }
 
