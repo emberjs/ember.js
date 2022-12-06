@@ -1,7 +1,7 @@
 import { isHTMLSafe } from '@ember/-internals/glimmer';
 import { get, tagForProperty } from '@ember/-internals/metal';
 import { isArray } from '@ember/array';
-import { isProxy } from '@ember/-internals/utils';
+import { isProxy } from '@ember/-internals/runtime';
 import { consumeTag } from '@glimmer/validator';
 
 export default function toBool(predicate: unknown): boolean {
