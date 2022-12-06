@@ -13,10 +13,6 @@ updates:
   - dependency-name: ember-cli
     versions:
     - 3.25.0
-  - dependency-name: core-js
-    versions:
-    - 3.8.1
-    - 3.8.3
   - dependency-name: broccoli-rollup
     versions:
     - 4.1.1
