@@ -5,7 +5,7 @@ import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { EMBER_DEFAULT_HELPER_MANAGER } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
-import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
+import type { DeprecationOptions } from '@ember/debug';
 import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
