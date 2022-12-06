@@ -7,12 +7,11 @@ import { isTesting } from './lib/testing';
 import type { WarnFunc } from './lib/warn';
 import _warn from './lib/warn';
 
-export { inspect } from '@ember/-internals/utils';
 export { registerHandler as registerWarnHandler } from './lib/warn';
-export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
+export { registerHandler as registerDeprecationHandler, DeprecationOptions } from './lib/deprecate';
+export { default as inspect } from './lib/inspect';
 export { isTesting, setTesting } from './lib/testing';
 export { default as captureRenderTree } from './lib/capture-render-tree';
-export { DeprecationOptions } from './lib/deprecate';
 
 export type DebugFunctionType =
   | 'assert'

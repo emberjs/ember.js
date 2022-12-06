@@ -1,6 +1,6 @@
 /* globals QUnit */
 
-import { inspect } from '@ember/-internals/utils';
+import { inspect } from '@ember/debug';
 import Adapter from './adapter';
 
 interface VeryOldQunit {
