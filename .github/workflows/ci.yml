@@ -43,8 +43,6 @@ jobs:
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - name: build stable type definitions
-        run: yarn build:types
       - name: Check published types
         run: yarn type-check:types
 
