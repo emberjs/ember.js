@@ -220,6 +220,7 @@ const PREVIEW_MODULES = [
   '@ember/component/index.d.ts',
   '@ember/component/template-only.d.ts',
   '@ember/controller/index.d.ts',
+  '@ember/debug/-basic.d.ts',
   '@ember/debug/container-debug-adapter.d.ts',
   '@ember/debug/data-adapter.d.ts',
   '@ember/debug/index.d.ts',

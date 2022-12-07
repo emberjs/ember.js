@@ -1,4 +1,4 @@
-import { deprecate } from '@ember/debug';
+import { deprecate } from '@ember/debug/-basic';
 import { expectTypeOf } from 'expect-type';
 
 let str: unknown;

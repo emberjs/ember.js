@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug';
+import { assert } from '@ember/debug/-basic';
 import { expectTypeOf } from 'expect-type';
 
 let str: unknown;

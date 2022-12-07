@@ -1,4 +1,4 @@
-import { warn } from '@ember/debug';
+import { warn } from '@ember/debug/-basic';
 import { expectTypeOf } from 'expect-type';
 
 let foo = true;
