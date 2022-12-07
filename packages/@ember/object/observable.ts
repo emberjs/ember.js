@@ -329,7 +329,7 @@ interface Observable {
     Remove an observer you have previously registered on this object. Pass
     the same key, target, and method you passed to `addObserver()` and your
     target will no longer receive notifications.
-    
+
     @method removeObserver
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
@@ -400,7 +400,7 @@ interface Observable {
     This allows you to inspect the value of a computed property
     without accidentally invoking it if it is intended to be
     generated lazily.
-    
+
     @method cacheFor
     @param {String} keyName
     @return {Object} The cached value of the computed property, if any

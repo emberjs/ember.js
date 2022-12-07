@@ -1,7 +1,7 @@
 import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
 import { isSimpleClick } from '@ember/-internals/views';
-import { assert, debugFreeze, inspect, warn } from '@ember/debug';
+import { assert, debugFreeze, inspect, warn } from '@ember/debug/-basic';
 import { getEngineParent } from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { flaggedInstrument } from '@ember/instrumentation';

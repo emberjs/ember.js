@@ -1,5 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/debug/-basic';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
 import { CurriedType } from '@glimmer/interfaces';

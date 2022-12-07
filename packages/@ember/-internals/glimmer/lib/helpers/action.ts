@@ -3,7 +3,7 @@
 */
 import { get } from '@ember/-internals/metal';
 import type { AnyFn } from '@ember/-internals/utility-types';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/debug/-basic';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';

@@ -12,7 +12,8 @@ import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, captureRenderTree, deprecate } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
+import { captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner';
 import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
 import {

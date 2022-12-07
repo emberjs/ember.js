@@ -4,7 +4,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/debug/-basic';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';

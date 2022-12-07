@@ -7,7 +7,7 @@ import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/debug/-basic';
 import { join } from '@ember/runloop';
 import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';

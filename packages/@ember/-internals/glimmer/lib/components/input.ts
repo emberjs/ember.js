@@ -2,7 +2,7 @@
 @module @ember/component
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { assert, warn } from '@ember/debug';
+import { assert, warn } from '@ember/debug/-basic';
 import { action } from '@ember/object';
 import { valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
