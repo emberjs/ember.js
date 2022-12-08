@@ -93,3 +93,16 @@ export function service(
 export default class Service extends FrameworkObject {
   static isServiceFactory = true;
 }
+
+/**
+  A type registry for Ember `Service`s. Meant to be declaration-merged so string
+  lookups resolve to the correct type.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Registry extends Record<string, Service> {}
+
+declare module '@ember/owner' {
+  export interface DIRegistry {
+    service: Registry;
+  }
+}
