@@ -500,7 +500,7 @@ function processModule(moduleName) {
     statement.
       - Remove all `declare` modifiers from items in the module itself.
       - Update all `import` specifiers to be absolute in terms of the package
-        name (which means )
+        name, which means handling both `./` and `../` correctly.
   - Preserve existing `declare module` statements, so that anything using e.g.
     declaration merging continues to work correctly.
 
