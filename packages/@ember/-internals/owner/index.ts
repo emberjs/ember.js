@@ -82,8 +82,8 @@ export interface DIRegistry extends Record<string, Record<string, unknown>> {}
 type ResolveFactoryManager<
   Type extends string,
   Name extends string
-> = DIRegistry[Type][Name] extends object
-  ? FactoryManager<DIRegistry[Type][Name]>
+> = DIRegistry[Type][Name] extends infer RegistryEntry extends object
+  ? FactoryManager<RegistryEntry>
   : FactoryManager<object> | undefined;
 
 /**

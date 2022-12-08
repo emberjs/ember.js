@@ -5,23 +5,27 @@
   This script is used to publish Ember's type definitions. The basic workflow
   is:
 
-  1. Run `tsc` against the Ember packages which make up its public API, with
-     the output being `/types/stable`.
+  1. Run `tsc` against the Ember packages which make up its public API, with the
+     output being `/types/stable`.
 
-  2. Wrap each emitted module in a `declare module` statement. While doing so,
-     keep track of the full list of emitted modules.
+  2. Wrap each emitted module in a `declare module` statement. This requires
+     replacing all relative imports with absolute imports and removing all
+     `declare` statements from the body of the module.
 
-  3. Check that each module emitted is included in `types/stable/index.d.ts`,
-     if and only if it also appears in a list of stable types modules defined
-     in this script, so that they all "show up" to end users. That list will
+     While doing so, keep track of the full list of emitted modules for the sake
+     of step (3).
+
+  3. Check that each module emitted is included in `types/stable/index.d.ts`, if
+     and only if it also appears in a list of stable types modules defined in
+     this script, so that they all "show up" to end users. That list will
      eventually be the list of *all* modules, but this allows us to publish
      iteratively as we gain confidence in the stability of the types.
 
   This is *not* an optimal long-term publishing strategy. We would prefer to
   generate per-package roll-ups, using a Rollup plugin or some such, but we are
-  currently blocked on a number of internal circular dependencies as well as
-  the difficulty of avoiding multiple definitions of the same types reused
-  across many rollups.
+  currently blocked on a number of internal circular dependencies as well as the
+  difficulty of avoiding multiple definitions of the same types reused across
+  many rollups.
 
   @packageDocumentation
  */
@@ -30,7 +34,15 @@ import glob from 'glob';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import MagicString from 'magic-string';
+import * as parser from 'recast/parsers/babel-ts.js';
+import {
+  isClassDeclaration,
+  isStringLiteral,
+  isVariableDeclaration,
+  isTSDeclareFunction,
+} from '@babel/types';
+import { builders as b, visit } from 'ast-types';
+import { parse, print } from 'recast';
 
 /**
   Modules we know we are not ready to expose yet, mostly because they do not
@@ -404,7 +416,7 @@ async function main() {
 
   let status = 'success';
   for (let moduleName of moduleNames) {
-    let result = wrapInDeclareModule(moduleName);
+    let result = processModule(moduleName);
     if (result !== 'success') {
       status = result;
     }
@@ -416,8 +428,16 @@ async function main() {
       // We need to import "package root" types as such, *not* via the actual
       // module which provides them, or TS does not see them correctly via the
       // side effect imports, so transform them accordingly:
-      // `@ember/owner/index.d.ts` -> `@ember/owner`
-      let moduleOrPackagePath = moduleName.replace(/\/index.d.ts$/, '');
+      //
+      //     `@ember/owner/index.d.ts` -> `@ember/owner`
+      //
+      // We also need to replace `.d.ts` entirely:
+      //
+      //     `@ember/utils/lib/compare.d.ts` -> `@ember/utils/lib/compare`
+      //
+      // Otherwise, the modules won't be resolved correctly via the side-effect
+      // imports.
+      let moduleOrPackagePath = moduleName.replace(/\/index.d.ts$/, '').replace('.d.ts', '');
 
       // Then create a relative path *to* the path on disk so that the
       // side-effect import is e.g. `import './@ember/owner';`, which makes it
@@ -429,14 +449,19 @@ async function main() {
   let stableIndexDTsContents = BASE_INDEX_D_TS.replace(MODULES_PLACEHOLDER, sideEffectModules);
   fs.writeFileSync(path.join(TYPES_DIR, 'index.d.ts'), stableIndexDTsContents);
 
+  // Make the generated types easier to read!
+  spawnSync('prettier', ['--write', 'types/stable/**/*.ts']);
+
   process.exit(status === 'success' ? 0 : 1);
 }
 
 /**
- * @param {string} moduleName
- * @return {'success' | 'failure'}
+  Load the module, rewrite it, and write it back to disk.
+
+  @param {string} moduleName
+  @return {'success' | 'failure'}
  */
-function wrapInDeclareModule(moduleName) {
+function processModule(moduleName) {
   let modulePath = path.join(TYPES_DIR, moduleName);
 
   /** @type {string} */
@@ -450,25 +475,192 @@ function wrapInDeclareModule(moduleName) {
 
   let moduleNameForDeclaration = moduleName.replace('/index.d.ts', '');
 
-  // This is a horrible nightmare of a hack; in a later PR I'm going to just
-  // replace all of this by going ahead and using recast or such. As annoying as
-  // that will be, it will be *way* more reliable.
-  let string = new MagicString(contents);
-  string
-    .replace(/^export declare /gm, 'export ') // g for global, m for multiline
-    .replace(/^declare /gm, '') // g for global, m for multiline
-    .indent('  ')
-    .prepend(`declare module '${moduleNameForDeclaration}' {\n`)
-    .append('}\n');
+  let rewrittenModule;
+  try {
+    rewrittenModule = rewriteModule(contents, moduleNameForDeclaration);
+  } catch (e) {
+    console.error(`Error rewriting ${moduleName}`, e);
+    return 'failure';
+  }
 
   try {
-    fs.writeFileSync(modulePath, string.toString());
+    fs.writeFileSync(modulePath, rewrittenModule);
   } catch (e) {
     console.error(`Error writing ${modulePath}: ${e}`);
     return 'failure';
   }
 
   return 'success';
+}
+
+/**
+  Rewrite a given module declaration:
+
+  - Tranform the main body of the module into a new top-level `declare module`
+    statement.
+      - Remove all `declare` modifiers from items in the module itself.
+      - Update all `import` specifiers to be absolute in terms of the package
+        name (which means )
+  - Preserve existing `declare module` statements, so that anything using e.g.
+    declaration merging continues to work correctly.
+
+  @param {string} code The initial code to rewrite.
+  @param {string} moduleName The name of the module to use.
+  @returns {string}
+ */
+export function rewriteModule(code, moduleName) {
+  let ast = parse(code, { parser });
+
+  /** @type {Array<import("ast-types/gen/namedTypes").namedTypes.TSModuleDeclaration>} */
+  let otherModuleDeclarations = [];
+
+  visit(ast, {
+    // We need to preserve existing `declare module { ... }` blocks so that
+    // things which rely on declaration merging can work, but they need to be
+    // emitted *outside* the `declare module` we are introducing.
+    visitTSModuleDeclaration(path) {
+      otherModuleDeclarations.push(path.node);
+      path.prune(path.node);
+      this.traverse(path);
+    },
+
+    // Remove `declare` from `declare (let|const|var)` in the top-level module.
+    visitVariableDeclaration(path) {
+      if (isVariableDeclaration(path.node) && !hasParentModuleDeclarationBlock(path)) {
+        path.node.declare = false;
+      }
+      this.traverse(path);
+    },
+
+    // Remove `declare` from `declare class` in the top-level module.
+    visitClassDeclaration(path) {
+      if (isClassDeclaration(path.node) && !hasParentModuleDeclarationBlock(path)) {
+        path.node.declare = false;
+      }
+      this.traverse(path);
+    },
+
+    // Remove `declare` from `declare function` in the top-level module.
+    visitTSDeclareFunction(path) {
+      if (isTSDeclareFunction(path.node) && !hasParentModuleDeclarationBlock(path)) {
+        path.node.declare = false;
+      }
+      this.traverse(path);
+    },
+
+    // For any relative imports like `import { something } from './somewhere';`,
+    // rewrite as `import { something } from '@ember/some-package/somewhere';`
+    // since relative imports are not allowed in `declare module { }` blocks.
+    visitImportDeclaration(path) {
+      let source = path.node.source;
+      if (isStringLiteral(source)) {
+        source.value = normalizeSpecifier(moduleName, source.value);
+      }
+      this.traverse(path);
+    },
+
+    // Do the same for `export ... from './relative-path'`.
+    visitExportNamedDeclaration(path) {
+      let source = path.node.source;
+      if (isStringLiteral(source)) {
+        if (source.value.startsWith('./') || source.value.startsWith('../')) {
+          source.value = normalizeSpecifier(moduleName, source.value);
+        }
+      }
+      this.traverse(path);
+    },
+  });
+
+  let newAST = b.file(
+    b.program([
+      b.declareModule(
+        b.identifier(`'${moduleName.replace('.d.ts', '')}'`),
+        b.blockStatement(ast.program.body)
+      ),
+      ...otherModuleDeclarations,
+    ])
+  );
+
+  return print(newAST).code;
+}
+
+/**
+  Is this declaration in a `declare module { }` block?
+
+  @param {import('ast-types/lib/node-path').NodePath} path
+  @return boolean
+ */
+function hasParentModuleDeclarationBlock(path) {
+  /** @type {import('ast-types/lib/node-path').NodePath} */
+  let parentPath = path;
+  while ((parentPath = parentPath.parent)) {
+    if (parentPath.node.type === 'ModuleDeclaration') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const TERMINAL_MODULE_RE = /\/[\w-_]+\.d\.ts$/;
+const NEIGHBOR_PATH_RE = /^(\.)\//;
+
+/**
+  Given a relative path, `./` or `(../)+`, rewrite it as an absolute path.
+
+  @param {string} moduleName The name of the host module we are declaring.
+  @param {string} specifier The name of the module it is importing.
+  @return {string}
+ */
+function normalizeSpecifier(moduleName, specifier) {
+  if (specifier.startsWith('./')) {
+    let parentModuleName = moduleName.replace(TERMINAL_MODULE_RE, '');
+    let sansLeadingDot = specifier.replace(NEIGHBOR_PATH_RE, '');
+    let newImportName = `${parentModuleName}/${sansLeadingDot}`;
+    return newImportName;
+  } else if (specifier.startsWith('../')) {
+    // Reverse it so we can just `pop` from `parentPathChunks` as we go: walking
+    // backward through the specifier means as soon as we hit the `..` we can
+    // start using the chunks from the end of the hosting module.
+    let reversedSpecifierChunks = specifier.split('/').reverse();
+    let parentPathChunks = moduleName.split('/');
+
+    // To make that logic work, though, we need to drop the last item from the
+    // chunks comprising host module, because we need to *not* treat the current
+    // module itself as a parent. If we're not in a "root" module, we need to
+    // do it an extra time to get rid of the terminal `foo.d.ts` as well.
+    let terminal = parentPathChunks.pop();
+    if (terminal?.endsWith('.d.ts')) {
+      parentPathChunks.pop();
+    }
+
+    // Walk back from the end of the specifier, replacing `..` with chunks from
+    // the parent paths.
+    /** @type {string[]} */
+    let merged = [];
+    for (let chunk of reversedSpecifierChunks) {
+      if (chunk === '..') {
+        let parent = parentPathChunks.pop();
+        if (!parent) {
+          throw new Error(
+            `Could not generate a valid path for relative path specifier ${specifier} in ${moduleName}`
+          );
+        }
+        merged.push(parent);
+      } else {
+        merged.push(chunk);
+      }
+    }
+
+    // Reverse them again so we have the correct ordering.
+    merged.reverse();
+    // Then incorporate the rest of the parent path chunks.
+    merged.unshift(...parentPathChunks);
+
+    return merged.join('/');
+  } else {
+    return specifier;
+  }
 }
 
 // Run it!
