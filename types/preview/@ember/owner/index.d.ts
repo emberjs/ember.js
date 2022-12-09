@@ -3,7 +3,10 @@ declare module '@ember/owner' {
    * The name for a factory consists of a namespace and the name of a specific
    * type within that namespace, like `'service:session'`.
    */
-  export type FullName = `${string}:${string}`;
+  export type FullName<
+    Type extends string = string,
+    Name extends string = string
+  > = `${Type}:${Name}`;
 
   // TODO: when migrating into Ember proper, evaluate whether we should introduce
   // a registry which users can provide to resolve known types, so e.g.
@@ -95,6 +98,40 @@ declare module '@ember/owner' {
   export interface FactoryManager<T> extends Factory<T> {
     /** The registered or resolved class. */
     readonly class: Factory<T>;
+  }
+
+  /**
+    A record mapping all known items of a given type: if the item is known it
+    will be `true`; otherwise it will be `false` or `undefined`.
+   */
+  export type KnownForTypeResult<Type extends string> = {
+    [Key in FullName<Type, string>]: boolean | undefined;
+  };
+
+  /**
+    A `Resolver` is the mechanism responsible for looking up code in your
+    application and converting its naming conventions into the actual classes,
+    functions, and templates that Ember needs to resolve its dependencies, for
+    example, what template to render for a given route. It is a system that helps
+    the app resolve the lookup of JavaScript modules agnostic of what kind of
+    module system is used, which can be AMD, CommonJS or just plain globals. It
+    is used to lookup routes, models, components, templates, or anything that is
+    used in your Ember app.
+
+    This interface is not a concrete class; instead, it represents the contract a
+    custom resolver must implement. Most apps never need to think about this: in
+    the default blueprint, this is supplied by the `ember-resolver` package.
+   */
+  export interface Resolver {
+    /**
+      The one required method for a `Resolver`. Given a string, resolve it to a
+      `Factory`, if one exists.
+     */
+    resolve: (name: string) => Factory<object> | object | undefined;
+    knownForType?: <Type extends string>(type: Type) => KnownForTypeResult<Type>;
+    lookupDescription?: (fullName: FullName) => string;
+    makeToString?: (factory: Factory<object>, fullName: FullName) => string;
+    normalize?: (fullName: FullName) => FullName;
   }
 
   // Don't export things unless we *intend* to.
