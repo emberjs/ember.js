@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v4.8.3 (December 12, 2022)
+
+- [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
+- [#20318](https://github.com/emberjs/ember.js/pull/20318) Backport `Resolver` to preview types
+
 ## v4.9.1 (November 30, 2022)
 
 - [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
