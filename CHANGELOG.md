@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v4.8.3 (December 12, 2022)
+
+- [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
+- [#20318](https://github.com/emberjs/ember.js/pull/20318) Backport `Resolver` to preview types
+
 ### v4.8.2 (November 3, 2022)
 
 - [#20244](https://github.com/emberjs/ember.js/pull/20244) Add missing type for `getComponentTemplate` to preview types
