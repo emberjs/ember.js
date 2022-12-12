@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v4.10.0-beta.3 (December 12, 2022)
+
+- [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
+- [#20319](https://github.com/emberjs/ember.js/pull/20319) Types: resolve services with `Owner.lookup`
+
 ## v4.8.3 (December 12, 2022)
 
 - [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
