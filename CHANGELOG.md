@@ -4,6 +4,10 @@
 
 - [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] types: `ContainerDebugAdapter` extends `EmberObject`, not `Object`
 
+## v4.9.3 (December 13, 2022)
+
+- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] ContainerDebugAdapter extends EmberObject
+
 ## v4.8.4 (December 13, 2022)
 
 - [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] ContainerDebugAdapter extends EmberObject
