@@ -4,6 +4,10 @@
 
 - [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] types: `ContainerDebugAdapter` extends `EmberObject`, not `Object`
 
+## v4.8.4 (December 13, 2022)
+
+- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] ContainerDebugAdapter extends EmberObject
+
 ## v4.9.2 (December 12, 2022)
 
 - [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
