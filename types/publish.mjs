@@ -40,6 +40,7 @@ import {
   isStringLiteral,
   isVariableDeclaration,
   isTSDeclareFunction,
+  isTSEnumDeclaration,
 } from '@babel/types';
 import { builders as b, visit } from 'ast-types';
 import { parse, print } from 'recast';
@@ -547,6 +548,14 @@ export function rewriteModule(code, moduleName) {
       this.traverse(path);
     },
 
+    // Remove `declare` from `declare enum` in the top-level module.
+    visitTSEnumDeclaration(path) {
+      if (isTSEnumDeclaration(path.node) && !hasParentModuleDeclarationBlock(path)) {
+        path.node.declare = false;
+      }
+      this.traverse(path);
+    },
+
     // For any relative imports like `import { something } from './somewhere';`,
     // rewrite as `import { something } from '@ember/some-package/somewhere';`
     // since relative imports are not allowed in `declare module { }` blocks.
@@ -560,12 +569,18 @@ export function rewriteModule(code, moduleName) {
 
     // Do the same for `export ... from './relative-path'`.
     visitExportNamedDeclaration(path) {
-      let source = path.node.source;
-      if (isStringLiteral(source)) {
-        if (source.value.startsWith('./') || source.value.startsWith('../')) {
-          source.value = normalizeSpecifier(moduleName, source.value);
-        }
+      let specifier = path.node.source;
+      if (isStringLiteral(specifier)) {
+        specifier.value = normalizeSpecifier(moduleName, specifier.value);
       }
+      this.traverse(path);
+    },
+
+    // We need to rewrite annotations like `export const: import('./foo').foo`
+    // to use relative paths, as well.
+    visitTSImportType(path) {
+      let specifier = path.node.argument.value;
+      path.node.argument.value = normalizeSpecifier(moduleName, specifier);
       this.traverse(path);
     },
   });
@@ -603,16 +618,32 @@ function hasParentModuleDeclarationBlock(path) {
 
 const TERMINAL_MODULE_RE = /\/[\w-_]+\.d\.ts$/;
 const NEIGHBOR_PATH_RE = /^(\.)\//;
+const SHOULD_BE_ABSOLUTE = /(\.\.\/)+(@.*)/;
 
 /**
-  Given a relative path, `./` or `(../)+`, rewrite it as an absolute path.
+  Given a relative path, `'.'`, `./`, or `(../)+`, rewrite it as an absolute path.
 
   @param {string} moduleName The name of the host module we are declaring.
   @param {string} specifier The name of the module it is importing.
   @return {string}
  */
 function normalizeSpecifier(moduleName, specifier) {
-  if (specifier.startsWith('./')) {
+  // One particularly degenerate case is `import()` type annotations which TS
+  // generates as relative paths, e.g. `'../../@ember/object'`, since we cannot
+  // yet use project references and therefore also cannot use dependencies
+  // properly and therefore also cannot get TS to understand that it should be
+  // writing that as an absolute specifier.
+  let nonsensicalRelativePath = specifier.match(SHOULD_BE_ABSOLUTE);
+  // First match is the whole string, second match is the (last) leading `../`,
+  // third match is the package we care about.
+  if (nonsensicalRelativePath && nonsensicalRelativePath[2]) {
+    return nonsensicalRelativePath[2];
+  }
+
+  // The other cases are more normal: we replace
+  if (specifier === '.') {
+    return moduleName.replace(TERMINAL_MODULE_RE, '');
+  } else if (specifier.startsWith('./')) {
     let parentModuleName = moduleName.replace(TERMINAL_MODULE_RE, '');
     let sansLeadingDot = specifier.replace(NEIGHBOR_PATH_RE, '');
     let newImportName = `${parentModuleName}/${sansLeadingDot}`;

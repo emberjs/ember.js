@@ -5,12 +5,11 @@ import { callWithStub, checkTest } from './utils';
 type ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => void;
 type IgnoreAssertionFunc = (func: () => void) => void;
 
-declare global {
-  interface Window {
+type ExtendedWindow = Window &
+  typeof globalThis & {
     expectAssertion: ExpectAssertionFunc | null;
     ignoreAssertion: IgnoreAssertionFunc | null;
-  }
-}
+  };
 
 const BREAK = {};
 
@@ -68,8 +67,9 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv): void {
       callWithStub(env, 'assert', func);
     };
 
-    window.expectAssertion = expectAssertion;
-    window.ignoreAssertion = ignoreAssertion;
+    let w = window as ExtendedWindow;
+    w.expectAssertion = expectAssertion;
+    w.ignoreAssertion = ignoreAssertion;
   });
 
   hooks.afterEach(function () {
@@ -77,8 +77,9 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv): void {
     // sure we restore the original assert function
     env.setDebugFunction('assert', originalAssertFunc);
 
-    window.expectAssertion = null;
-    window.ignoreAssertion = null;
+    let w = window as ExtendedWindow;
+    w.expectAssertion = null;
+    w.ignoreAssertion = null;
   });
 }
 

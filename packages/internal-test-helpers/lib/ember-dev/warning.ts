@@ -9,13 +9,12 @@ type ExpectWarningFunc = (
 ) => void;
 type IgnoreWarningFunc = (func: () => void) => void;
 
-declare global {
-  interface Window {
+type ExtendedWindow = Window &
+  typeof globalThis & {
     expectNoWarning: ExpectNoWarningFunc | null;
     expectWarning: ExpectWarningFunc | null;
     ignoreWarning: IgnoreWarningFunc | null;
-  }
-}
+  };
 
 export function setupWarningHelpers(hooks: NestedHooks, env: DebugEnv) {
   let assertion = new WarningAssert(env);
@@ -95,16 +94,19 @@ class WarningAssert extends DebugAssert {
       callWithStub(this.env, 'warn', func);
     };
 
-    window.expectNoWarning = expectNoWarning;
-    window.expectWarning = expectWarning;
-    window.ignoreWarning = ignoreWarning;
+    let w = window as ExtendedWindow;
+
+    w.expectNoWarning = expectNoWarning;
+    w.expectWarning = expectWarning;
+    w.ignoreWarning = ignoreWarning;
   }
 
   restore() {
     super.restore();
-    window.expectWarning = null;
-    window.expectNoWarning = null;
-    window.ignoreWarning = null;
+    let w = window as ExtendedWindow;
+    w.expectWarning = null;
+    w.expectNoWarning = null;
+    w.ignoreWarning = null;
   }
 }
 
