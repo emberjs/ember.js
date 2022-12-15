@@ -70,8 +70,6 @@ import './@ember/engine/-private/registry-proxy-mixin';
 import './@ember/engine/-private/types/initializer';
 import './@ember/engine/instance';
 
-import './@ember/error';
-
 import './@ember/helper';
 
 import './@ember/modifier';

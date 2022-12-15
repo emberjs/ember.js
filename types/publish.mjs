@@ -235,7 +235,6 @@ const PREVIEW_MODULES = [
   '@ember/engine/lib/engine-parent.d.ts',
   '@ember/enumerable/index.d.ts',
   '@ember/enumerable/mutable.d.ts',
-  '@ember/error/index.d.ts',
   '@ember/helper/index.d.ts',
   '@ember/instrumentation/index.d.ts',
   '@ember/modifier/index.d.ts',
