@@ -5,11 +5,13 @@ import { assert } from '../index';
 import type { HandlerCallback } from './handlers';
 import { invoke, registerHandler as genericRegisterHandler } from './handlers';
 
-declare global {
-  const __fail__: {
-    fail(): void;
-  };
-}
+// This is a "global", but instead of declaring it as `declare global`, which
+// will expose it to all other modules, declare it *locally* (and don't export
+// it) so that it has the desired "private global" semantics -- however odd that
+// particular notion is.
+declare const __fail__: {
+  fail(): void;
+};
 
 interface Available {
   available: string;

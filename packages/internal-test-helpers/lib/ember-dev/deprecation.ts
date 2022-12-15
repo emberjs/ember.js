@@ -2,15 +2,15 @@ import { assert } from '@ember/debug';
 import DebugAssert from './debug';
 import type { DebugEnv, Message } from './utils';
 import { callWithStub } from './utils';
-declare global {
-  interface Window {
+
+type ExtendedWindow = Window &
+  typeof globalThis & {
     expectNoDeprecation: DeprecationAssert['expectNoDeprecation'] | undefined;
     expectNoDeprecationAsync: DeprecationAssert['expectNoDeprecationAsync'] | undefined;
     expectDeprecation: DeprecationAssert['expectDeprecation'] | undefined;
     expectDeprecationAsync: DeprecationAssert['expectDeprecationAsync'] | undefined;
     ignoreDeprecation: DeprecationAssert['ignoreDeprecation'] | undefined;
-  }
-}
+  };
 
 export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv): void {
   let assertion = new DeprecationAssert(env);
@@ -62,22 +62,24 @@ class DeprecationAssert extends DebugAssert {
   }
 
   inject(): void {
-    window.expectNoDeprecation = expectNoDeprecation = this.expectNoDeprecation.bind(this);
-    window.expectNoDeprecationAsync = expectNoDeprecationAsync =
+    let w = window as ExtendedWindow;
+    w.expectNoDeprecation = expectNoDeprecation = this.expectNoDeprecation.bind(this);
+    w.expectNoDeprecationAsync = expectNoDeprecationAsync =
       this.expectNoDeprecationAsync.bind(this);
-    window.expectDeprecation = expectDeprecation = this.expectDeprecation.bind(this);
-    window.expectDeprecationAsync = expectDeprecationAsync = this.expectDeprecationAsync.bind(this);
-    window.ignoreDeprecation = ignoreDeprecation = this.ignoreDeprecation.bind(this);
+    w.expectDeprecation = expectDeprecation = this.expectDeprecation.bind(this);
+    w.expectDeprecationAsync = expectDeprecationAsync = this.expectDeprecationAsync.bind(this);
+    w.ignoreDeprecation = ignoreDeprecation = this.ignoreDeprecation.bind(this);
     super.inject();
   }
 
   restore(): void {
     super.restore();
-    window.expectNoDeprecation = undefined;
-    window.expectNoDeprecationAsync = undefined;
-    window.expectDeprecation = undefined;
-    window.expectDeprecationAsync = undefined;
-    window.ignoreDeprecation = undefined;
+    let w = window as ExtendedWindow;
+    w.expectNoDeprecation = undefined;
+    w.expectNoDeprecationAsync = undefined;
+    w.expectDeprecation = undefined;
+    w.expectDeprecationAsync = undefined;
+    w.ignoreDeprecation = undefined;
   }
 
   // Expects no deprecation to happen within a function, or if no function is
