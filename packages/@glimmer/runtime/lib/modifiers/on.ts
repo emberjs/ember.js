@@ -83,7 +83,9 @@ export class OnModifierState {
     }
 
     let options: AddEventListenerOptions;
-    if (once || passive || capture) {
+    // we want to handle both `true` and `false` because both have a meaning:
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
+    if (once !== undefined || passive !== undefined || capture !== undefined) {
       options = this.options = { once, passive, capture };
     } else {
       this.options = undefined;
