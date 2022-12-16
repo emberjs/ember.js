@@ -153,13 +153,14 @@ module.exports = {
       },
 
       plugins: ['node'],
-      rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
+      extends: ['plugin:node/recommended'],
+      rules: {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
         'no-throw-literal': 'error',
         'disable-features/disable-async-await': 'off',
         'disable-features/disable-generator-functions': 'off',
-      }),
+      },
     },
     {
       files: ['node-tests/**/*.js'],
