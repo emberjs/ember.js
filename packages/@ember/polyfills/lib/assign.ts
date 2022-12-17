@@ -7,7 +7,7 @@ import { deprecate } from '@ember/debug';
 export function assign<T, U>(target: T, source: U): T & U;
 export function assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
 export function assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
-export function assign(target: object, ...sources: object[]): object;
+export function assign(target: object, ...sources: any[]): any;
 /**
   Copy properties from a source object to a target object. Source arguments remain unchanged.
 
@@ -29,7 +29,7 @@ export function assign(target: object, ...sources: object[]): object;
   @public
   @static
 */
-export function assign(target: object, ...rest: object[]): object {
+export function assign(target: object, ...sources: any[]): any {
   deprecate(
     'Use of `assign` has been deprecated. Please use `Object.assign` or the spread operator instead.',
     false,
@@ -45,5 +45,5 @@ export function assign(target: object, ...rest: object[]): object {
     }
   );
 
-  return Object.assign(target, ...rest);
+  return Object.assign(target, ...sources);
 }
