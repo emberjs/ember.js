@@ -542,10 +542,17 @@ export function rewriteModule(code, moduleName) {
 
     // Remove `declare` from `declare function` in the top-level module.
     visitTSDeclareFunction(path) {
-      if (isTSDeclareFunction(path.node) && !hasParentModuleDeclarationBlock(path)) {
+      if (!hasParentModuleDeclarationBlock(path)) {
         path.node.declare = false;
       }
       this.traverse(path);
+    },
+
+    visitTSInterfaceDeclaration(path) {
+      if (!hasParentModuleDeclarationBlock(path)) {
+        path.node.declare = false;
+      }
+      this.traverse(false);
     },
 
     // Remove `declare` from `declare enum` in the top-level module.
@@ -577,6 +584,14 @@ export function rewriteModule(code, moduleName) {
 
     // Do the same for `export ... from './relative-path'`.
     visitExportNamedDeclaration(path) {
+      let specifier = path.node.source;
+      if (isStringLiteral(specifier)) {
+        specifier.value = normalizeSpecifier(moduleName, specifier.value);
+      }
+      this.traverse(path);
+    },
+
+    visitExportAllDeclaration(path) {
       let specifier = path.node.source;
       if (isStringLiteral(specifier)) {
         specifier.value = normalizeSpecifier(moduleName, specifier.value);
