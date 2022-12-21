@@ -13,7 +13,7 @@ import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
-import Backburner from 'backburner';
+import Backburner from 'backburner.js';
 import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
 import {
   _getStrings,

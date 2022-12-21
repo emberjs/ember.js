@@ -43,7 +43,7 @@ import type {
   TransitionState,
 } from 'router_js';
 import Router, { logAbort, STATE_SYMBOL } from 'router_js';
-import type { Timer } from 'backburner';
+import type { Timer } from 'backburner.js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
