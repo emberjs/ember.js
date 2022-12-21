@@ -1,8 +1,9 @@
-import preRender from './states/pre_render';
-import hasElement from './states/has_element';
-import inDOM from './states/in_dom';
-import destroying from './states/destroying';
+import { teardownMandatorySetter } from '@ember/-internals/utils';
 import type Component from '@ember/component';
+import { assert } from '@ember/debug';
+import { flaggedInstrument } from '@ember/instrumentation';
+import { join } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 
 export interface ViewState {
   enter?(view: Component): void;
@@ -12,6 +13,95 @@ export interface ViewState {
   rerender(view: Component): void;
   destroy(view: Component): void;
 }
+
+const DEFAULT: Readonly<ViewState> = Object.freeze({
+  // appendChild is only legal while rendering the buffer.
+  appendChild() {
+    throw new Error("You can't use appendChild outside of the rendering process");
+  },
+
+  // Handle events from `Ember.EventDispatcher`
+  handleEvent() {
+    return true; // continue event propagation
+  },
+
+  rerender() {},
+
+  destroy() {},
+});
+
+const PRE_RENDER: Readonly<ViewState> = Object.freeze({ ...DEFAULT });
+
+const HAS_ELEMENT: Readonly<ViewState> = Object.freeze({
+  ...DEFAULT,
+
+  rerender(view: Component) {
+    view.renderer.rerender();
+  },
+
+  destroy(view: Component) {
+    view.renderer.remove(view);
+  },
+
+  // Handle events from `Ember.EventDispatcher`
+  handleEvent(view: Component, eventName: string, event: Event) {
+    if (view.has(eventName)) {
+      // Handler should be able to re-dispatch events, so we don't
+      // preventDefault or stopPropagation.
+      return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {
+        return join(view, view.trigger, eventName, event);
+      });
+    } else {
+      return true; // continue event propagation
+    }
+  },
+});
+
+const IN_DOM: Readonly<ViewState> = Object.freeze({
+  ...HAS_ELEMENT,
+
+  enter(view: Component) {
+    // Register the view for event handling. This hash is used by
+    // Ember.EventDispatcher to dispatch incoming events.
+    view.renderer.register(view);
+
+    if (DEBUG) {
+      let elementId = view.elementId;
+
+      assert(
+        '[BUG] Expected teardownMandatorySetter to be set in DEBUG mode',
+        teardownMandatorySetter
+      );
+      teardownMandatorySetter(view, 'elementId');
+
+      Object.defineProperty(view, 'elementId', {
+        configurable: true,
+        enumerable: true,
+
+        get() {
+          return elementId;
+        },
+        set(value) {
+          if (value !== elementId) {
+            throw new Error("Changing a view's elementId after creation is not allowed");
+          }
+        },
+      });
+    }
+  },
+});
+
+const DESTROYING: Readonly<ViewState> = Object.freeze({
+  ...DEFAULT,
+
+  appendChild() {
+    throw new Error("You can't call appendChild on a view being destroyed");
+  },
+
+  rerender() {
+    throw new Error("You can't call rerender on a view being destroyed");
+  },
+});
 
 /*
   Describe how the specified actions should behave in the various
@@ -29,10 +119,10 @@ export interface ViewState {
     on a destroyed view.
 */
 const states = Object.freeze({
-  preRender,
-  inDOM,
-  hasElement,
-  destroying,
+  preRender: PRE_RENDER,
+  inDOM: IN_DOM,
+  hasElement: HAS_ELEMENT,
+  destroying: DESTROYING,
 });
 
 export default states;
