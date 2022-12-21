@@ -7,7 +7,7 @@ declare module '@ember/array/-private/native-array' {
   // Get an alias to the global Array type to use in inner scope below.
   type Array<T> = T[];
 
-  type AnyArray<T> = EmberArray<T> | Array<T>;
+  type AnyArray<T> = EmberArray<T> | Array<T> | ReadonlyArray<T>;
 
   /**
    * The final definition of NativeArray removes all native methods. This is the list of removed methods
