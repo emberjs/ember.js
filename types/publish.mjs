@@ -563,6 +563,14 @@ export function rewriteModule(code, moduleName) {
       let source = path.node.source;
       if (isStringLiteral(source)) {
         source.value = normalizeSpecifier(moduleName, source.value);
+
+        // This makes it so that the types we publish point to the types defined
+        // by `backburner.js`, basically doing the type-time equivalent of the
+        // no good, very bad runtime shenanigans Ember does... *somewhere*... in
+        // the build to make `import Backburner from 'backburner'` work.
+        if (source.value === 'backburner') {
+          source.value = 'backburner.js';
+        }
       }
       this.traverse(path);
     },
