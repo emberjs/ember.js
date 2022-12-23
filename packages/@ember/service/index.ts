@@ -1,6 +1,7 @@
 import { FrameworkObject } from '@ember/object/-internals';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 import { inject as metalInject } from '@ember/-internals/metal';
+import Owner from '@ember/owner';
 
 /**
  @module @ember/service
@@ -97,12 +98,25 @@ export default class Service extends FrameworkObject {
 /**
   A type registry for Ember `Service`s. Meant to be declaration-merged so string
   lookups resolve to the correct type.
+
+  Blueprints should include such a declaration merge for TypeScript:
+
+  ```ts
+  import Service from '@ember/service';
+
+  export default class ExampleService extends Service {
+    // ...
+  }
+
+  declare module '@ember/service' {
+    export interface Registry {
+      example: ExampleService;
+    }
+  }
+  ```
+
+  Then `@service` can check that the service is registered correctly, and APIs
+  like `owner.lookup('service:example')` can return `ExampleService`.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Registry {}
-
-declare module '@ember/owner' {
-  export interface DIRegistry {
-    service: Registry;
-  }
-}
+export interface Registry extends Record<string, Service | undefined> {}

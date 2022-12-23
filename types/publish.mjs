@@ -110,6 +110,10 @@ const MANUALLY_COPIED_D_TS_MODULES = [
     input: 'packages/ember/version.d.ts',
     output: path.join(TYPES_DIR, 'ember/version.d.ts'),
   },
+  {
+    input: 'packages/@ember/service/owner-ext.d.ts',
+    output: path.join(TYPES_DIR, '@ember/service/owner-ext.d.ts'),
+  },
 ];
 
 async function main() {
