@@ -4,14 +4,6 @@ import * as _GlimmerSyntax from '@glimmer/syntax';
 import VERSION from 'ember/version';
 import require from 'require';
 
-declare global {
-  interface NodeRequire {
-    has(name: string): boolean;
-  }
-
-  function define(path: string, deps: string[], module: () => void): void;
-}
-
 export let _Ember: unknown;
 
 try {

@@ -34,6 +34,14 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import ComputedProperty, { expandProperties } from '@ember/object/computed';
 import { addListener, removeListener, sendEvent } from '@ember/object/events';
 
+// This is available in global scope courtesy of `loader/lib/index.js`, but that
+// "module" is created as a runtime-only module and makes `define` available as
+// a global as one of the side effects of executing the script. Since our type
+// publishing infrastructure does not handle `declare global { }` blocks at this
+// point, we "just" define it here, which is the only place it is actually used
+// in Ember's own public or intimate APIs.
+declare function define(path: string, deps: string[], module: () => void): void;
+
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
