@@ -277,7 +277,7 @@ export function rewriteModule(code, moduleName) {
         // This makes it so that the types we publish point to the types defined
         // by `backburner.js`, basically doing the type-time equivalent of the
         // no good, very bad runtime shenanigans Ember does... *somewhere*... in
-        // the build to make `import Backburner from 'backburner'` work.
+        // the build to make `import Backburner from 'backburner.js'` work.
         if (source.value === 'backburner') {
           source.value = 'backburner.js';
         }
