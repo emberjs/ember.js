@@ -23,7 +23,7 @@ export {
   buildCompileOptions as _buildCompileOptions,
   transformsFor as _transformsFor,
 } from './lib/system/compile-options';
-export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins/index';
+export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins';
 export { EmberPrecompileOptions } from './lib/types';
 
 export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';
