@@ -748,7 +748,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 export { RouterService as default, RouteInfo, RouteInfoWithAttributes };
 
 declare module '@ember/service' {
-  interface Registry {
+  export interface Registry {
     router: RouterService<Route>;
   }
 }
