@@ -1,16 +1,20 @@
 # Ember Changelog
 
+## v4.10.0-beta.5 (December 28, 2022)
+
+- [#20327](https://github.com/emberjs/ember.js/pull/20327) [BUGFIX] Fix the types for the mutation-methods of `NativeArray`
+
 ## v4.10.0-beta.4 (December 13, 2022)
 
-- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] types: `ContainerDebugAdapter` extends `EmberObject`, not `Object`
+- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX] types: `ContainerDebugAdapter` extends `EmberObject`, not `Object`
 
 ## v4.9.3 (December 13, 2022)
 
-- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] ContainerDebugAdapter extends EmberObject
+- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX] ContainerDebugAdapter extends EmberObject
 
 ## v4.8.4 (December 13, 2022)
 
-- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] ContainerDebugAdapter extends EmberObject
+- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX] ContainerDebugAdapter extends EmberObject
 
 ## v4.9.2 (December 12, 2022)
 
@@ -38,7 +42,7 @@
 
 ## v3.28.11 (November 30, 2022)
 
-- [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX LTS] Allow class-based helpers in strict-mode
+- [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX] Allow class-based helpers in strict-mode
 
 ## v4.10.0-beta.1 (November 28, 2022)
 
