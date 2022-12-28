@@ -552,7 +552,7 @@ export function rewriteModule(code, moduleName) {
       if (!hasParentModuleDeclarationBlock(path)) {
         path.node.declare = false;
       }
-      this.traverse(false);
+      this.traverse(path);
     },
 
     // Remove `declare` from `declare enum` in the top-level module.
