@@ -31,7 +31,7 @@ if (!ENV.EXTEND_PROTOTYPES.Array) {
   moduleFor(
     'Ember.A without Extended Prototypes',
     class extends AbstractTestCase {
-      ['@test Ember.A does not modify original'](assert) {
+      ['@feature(EMBER_A_NON_MODIFYING) Ember.A does not modify original'](assert) {
         let original = [1, 2];
         let proxy = A(original);
 
@@ -55,7 +55,7 @@ if (!ENV.EXTEND_PROTOTYPES.Array) {
         assert.deepEqual(original, [1, 2, 3, 4, 5], 'pushObjects works');
       }
 
-      ['@test Ember.A adds warnings about modification to original']() {
+      ['@feature(EMBER_A_NON_MODIFYING) Ember.A adds warnings about modification to original']() {
         let original = [1, 2];
         A(original);
 
