@@ -1,5 +1,5 @@
 import { tracked } from '@ember/-internals/metal';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { action } from '@ember/object';
 import type { Reference } from '@glimmer/reference';
 import { isConstRef, isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';

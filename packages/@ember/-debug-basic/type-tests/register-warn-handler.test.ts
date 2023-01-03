@@ -1,4 +1,4 @@
-import { registerWarnHandler } from '@ember/debug/-basic';
+import { registerWarnHandler } from '@ember/-debug-basic';
 import { expectTypeOf } from 'expect-type';
 import type { Handler } from '../lib/handlers';
 import type { WarnOptions } from '../lib/warn';

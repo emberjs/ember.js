@@ -1,6 +1,6 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/routing/-internals';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import type {

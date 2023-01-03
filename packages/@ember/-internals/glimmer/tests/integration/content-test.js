@@ -3,7 +3,7 @@ import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
-import { getDebugFunction, setDebugFunction } from '@ember/debug/-basic';
+import { getDebugFunction, setDebugFunction } from '@ember/-debug-basic';
 import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import ObjectProxy from '@ember/object/proxy';

@@ -8,7 +8,7 @@ import type {
 } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { dictionary } from '@ember/-internals/utils';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { DEBUG } from '@glimmer/env';
 import type { DebugRegistry } from './registry';
 import type Registry from './registry';

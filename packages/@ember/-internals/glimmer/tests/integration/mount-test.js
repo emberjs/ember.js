@@ -6,7 +6,7 @@ import {
   runTask,
 } from 'internal-test-helpers';
 
-import { DEBUG } from '@ember/debug/-basic';
+import { DEBUG } from '@ember/-debug-basic';
 import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';

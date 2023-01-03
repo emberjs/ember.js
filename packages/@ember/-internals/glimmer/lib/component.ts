@@ -12,7 +12,7 @@ import {
   ViewMixin,
   ViewStateSupport,
 } from '@ember/-internals/views';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { DEBUG } from '@glimmer/env';
 import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';

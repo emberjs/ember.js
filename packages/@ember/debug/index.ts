@@ -1,33 +1,3 @@
 export { default as captureRenderTree } from './lib/capture-render-tree';
 
-// Unfortunately export * doesn't appear to work.
-export {
-  registerWarnHandler,
-  registerDeprecationHandler,
-  inspect,
-  isTesting,
-  setTesting,
-  assert,
-  info,
-  warn,
-  debug,
-  deprecate,
-  debugSeal,
-  debugFreeze,
-  runInDebug,
-  deprecateFunc,
-  setDebugFunction,
-  getDebugFunction,
-  _warnIfUsingStrippedFeatureFlags,
-  DeprecationOptions,
-  DebugFunctionType,
-  AssertFunc,
-  DebugFunc,
-  DebugSealFunc,
-  DebugFreezeFunc,
-  InfoFunc,
-  RunInDebugFunc,
-  DeprecateFuncFunc,
-  GetDebugFunction,
-  SetDebugFunction,
-} from '@ember/debug/-basic';
+export * from '@ember/-debug-basic';

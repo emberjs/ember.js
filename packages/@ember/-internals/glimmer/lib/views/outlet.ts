@@ -4,7 +4,7 @@
 // public API for the same reason.
 import { type InternalOwner, getOwner } from '@ember/-internals/owner';
 import type { BootOptions } from '@ember/engine/instance';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';

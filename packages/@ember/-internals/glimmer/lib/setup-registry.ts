@@ -2,7 +2,7 @@ import type { Registry } from '@ember/-internals/container';
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import Component from './component';
 import Input from './components/input';
 import LinkTo from './components/link-to';

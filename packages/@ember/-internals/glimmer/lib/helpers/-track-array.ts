@@ -3,7 +3,7 @@
 */
 import { tagForProperty } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { consumeTag } from '@glimmer/validator';

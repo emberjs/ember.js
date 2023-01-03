@@ -2,7 +2,7 @@
 @module ember
 */
 import type { InternalOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, Option } from '@glimmer/interfaces';
 import { CurriedType } from '@glimmer/interfaces';

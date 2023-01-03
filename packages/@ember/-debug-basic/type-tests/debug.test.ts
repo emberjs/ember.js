@@ -1,4 +1,4 @@
-import { debug } from '@ember/debug/-basic';
+import { debug } from '@ember/-debug-basic';
 import { expectTypeOf } from 'expect-type';
 
 expectTypeOf(debug("I'm a debug notice!")).toEqualTypeOf<void>();

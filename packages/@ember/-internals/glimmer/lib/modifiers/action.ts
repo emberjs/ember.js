@@ -1,7 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';

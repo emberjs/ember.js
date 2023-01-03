@@ -1,5 +1,5 @@
 import { get } from '@ember/-internals/metal';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { dasherize } from '@ember/-internals/string';
 import type { ElementOperations } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';

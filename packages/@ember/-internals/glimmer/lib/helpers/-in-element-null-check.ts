@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, Helper } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';

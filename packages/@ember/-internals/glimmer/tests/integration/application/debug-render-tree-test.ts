@@ -10,7 +10,7 @@ import { Component, setComponentManager } from '@ember/-internals/glimmer';
 import type { InternalOwner } from '@ember/-internals/owner';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import { assert } from '@ember/debug/-basic';
+import { assert } from '@ember/-debug-basic';
 import { captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
