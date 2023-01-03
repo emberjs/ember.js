@@ -1,8 +1,8 @@
 import Ember from '../index';
-import require from 'require';
 import { FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
+import require from 'require';
 
 moduleFor(
   'ember reexports',
@@ -20,7 +20,7 @@ moduleFor(
       });
     }
 
-    ['@skip Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
+    ['@test Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
         assert.equal(
@@ -32,7 +32,7 @@ moduleFor(
       assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
     }
 
-    ['@skip Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
+    ['@test Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
       let glimmer = require('@ember/-internals/glimmer');
       expectDeprecation(() => {
         assert.equal(
@@ -260,15 +260,13 @@ let allExports = [
   ['String.classify', '@ember/string', 'classify'],
   ['String.dasherize', '@ember/string', 'dasherize'],
   ['String.decamelize', '@ember/string', 'decamelize'],
-  ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
-  ['String.isHTMLSafe', '@ember/-internals/glimmer', 'isHTMLSafe'],
   ['String.underscore', '@ember/string', 'underscore'],
   ['String.w', '@ember/string', 'w'],
   ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],
 
   // @ember/template
-  ['String.htmlSafe', '@ember/template', 'htmlSafe'],
-  ['String.isHTMLSafe', '@ember/template', 'isHTMLSafe'],
+  [null, '@ember/template', 'htmlSafe'],
+  [null, '@ember/template', 'isHTMLSafe'],
 
   // @ember/template-compilation
   ['HTMLBars.compile', '@ember/template-compilation', 'compileTemplate'],
