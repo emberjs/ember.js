@@ -1,7 +1,7 @@
 import EmberArray, { NativeArray } from '@ember/array';
 import { A } from '@ember/array';
 import { ENV } from '@ember/-internals/environment';
-import { isEmberArray } from '@ember/-internals/utils';
+import { isEmberArray } from '@ember/array/-internals';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -2,7 +2,7 @@
 @module @ember/array
 */
 import { DEBUG } from '@glimmer/env';
-import { PROXY_CONTENT } from '@ember/-internals/metal';
+import { ComputedProperty, descriptorForDecorator, PROXY_CONTENT } from '@ember/-internals/metal';
 import {
   objectAt,
   replaceInNativeArray,
