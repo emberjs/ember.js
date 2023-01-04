@@ -214,6 +214,7 @@ function templateCompilerBundle(emberPackages, transpileTree) {
     new MergeTrees([
       new Funnel(emberPackages, {
         include: [
+          '@ember/-debug-basic/**',
           '@ember/-internals/utils/**',
           '@ember/-internals/environment/**',
           '@ember/-internals/browser-environment/**',
