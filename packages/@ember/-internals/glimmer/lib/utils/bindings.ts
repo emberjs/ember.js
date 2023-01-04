@@ -1,6 +1,6 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import { dasherize } from '@ember/string';
+import { dasherize } from '@ember/-internals/string';
 import type { ElementOperations } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
