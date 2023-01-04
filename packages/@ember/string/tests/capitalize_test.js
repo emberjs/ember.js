@@ -3,7 +3,9 @@ import { capitalize } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
-  assert.deepEqual(capitalize(given), expected, description);
+  expectDeprecation(() => {
+    assert.deepEqual(capitalize(given), expected, description);
+  }, 'Importing from `@ember/string` without having the `@ember/string` package in your project is deprecated. Please add `@ember/string` to your `package.json');
 }
 
 moduleFor(

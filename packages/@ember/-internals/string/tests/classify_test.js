@@ -1,15 +1,13 @@
 /* eslint-disable qunit/no-test-expect-argument */
-import { classify } from '@ember/string';
+import { classify } from '@ember/-internals/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
-  expectDeprecation(() => {
-    assert.deepEqual(classify(given), expected, description);
-  }, 'Importing from `@ember/string` without having the `@ember/string` package in your project is deprecated. Please add `@ember/string` to your `package.json');
+  assert.deepEqual(classify(given), expected, description);
 }
 
 moduleFor(
-  'EmberStringUtils.classify',
+  'EmberInternalsString.classify',
   class extends AbstractTestCase {
     ['@test String classify tests'](assert) {
       test(assert, 'my favorite items', 'MyFavoriteItems', 'classify normal string');

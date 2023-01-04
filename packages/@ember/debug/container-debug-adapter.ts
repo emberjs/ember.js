@@ -1,4 +1,4 @@
-import { classify, dasherize } from '@ember/string';
+import { classify, dasherize } from '@ember/-internals/string';
 import EmberObject from '@ember/object';
 import { typeOf } from '@ember/utils';
 import type { InternalOwner } from '@ember/-internals/owner';

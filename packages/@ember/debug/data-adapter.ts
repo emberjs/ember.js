@@ -2,7 +2,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/object';
-import { dasherize } from '@ember/string';
+import { dasherize } from '@ember/-internals/string';
 import Namespace from '@ember/application/namespace';
 import type { NativeArray } from '@ember/array';
 import EmberObject from '@ember/object';
