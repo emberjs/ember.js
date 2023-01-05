@@ -633,39 +633,40 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   enumerable: false,
 });
 
-const deprecateImportFromString = function (
-  name: string,
-  message = `Importing ${name} from '@ember/string' is deprecated. Please import ${name} from '@ember/template' instead.`
-) {
-  deprecate(message, false, {
-    id: 'ember-string.htmlsafe-ishtmlsafe',
-    for: 'ember-source',
-    since: {
-      available: '4.10',
-      enabled: '4.10',
-    },
-    until: '5.0.0',
-    url: 'https://deprecations.emberjs.com/v3.x/#toc_ember-string-htmlsafe-ishtmlsafe',
-  });
-};
-// NOTE: these are expressly *not* in the public API, because they were
-// deprecated and removed. TODO: remove them after we land the TS conversion,
-// and after confirming doing so is safe -- the state of the `@ember/string`
-// conversion remains confused.
-Object.defineProperty(Ember.String, 'htmlSafe', {
+function deprecateStringUseOnEmberModule() {
+  deprecate(
+    'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.',
+    false,
+    {
+      id: 'ember-string.from-ember-module',
+      for: 'ember-source',
+      since: {
+        available: '4.10',
+        enabled: '4.10.',
+      },
+      until: '5.0.0',
+      url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-string-from-ember-module',
+    }
+  );
+}
+
+Object.defineProperty(Ember, 'String', {
   enumerable: true,
   configurable: true,
   get() {
-    deprecateImportFromString('htmlSafe');
-    return htmlSafe;
-  },
-});
-Object.defineProperty(Ember.String, 'isHTMLSafe', {
-  enumerable: true,
-  configurable: true,
-  get() {
-    deprecateImportFromString('isHTMLSafe');
-    return isHTMLSafe;
+    deprecateStringUseOnEmberModule();
+
+    return {
+      camelize,
+      capitalize,
+      classify,
+      dasherize,
+      decamelize,
+      underscore,
+      w,
+      htmlSafe,
+      isHTMLSafe,
+    };
   },
 });
 

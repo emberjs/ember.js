@@ -28,7 +28,7 @@ moduleFor(
           glimmer.htmlSafe,
           'Ember.String.htmlSafe is exported correctly'
         );
-      }, /Importing htmlSafe from '@ember\/string' is deprecated/);
+      }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
       assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
     }
 
@@ -40,8 +40,31 @@ moduleFor(
           glimmer.isHTMLSafe,
           'Ember.String.isHTMLSafe is exported correctly'
         );
-      }, /Importing isHTMLSafe from '@ember\/string' is deprecated/);
+      }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
       assert.notEqual(glimmer.isHTMLSafe, undefined, 'Ember.String.isHTMLSafe is not `undefined`');
+    }
+
+    ['@test Ember.String methods export correctly (but deprecated)'](assert) {
+      let string = require('@ember/string');
+      let methods = [
+        'camelize',
+        'capitalize',
+        'classify',
+        'dasherize',
+        'decamelize',
+        'underscore',
+        'w',
+      ];
+      methods.forEach((method) => {
+        expectDeprecation(() => {
+          assert.equal(
+            Ember.String[method],
+            string[method],
+            `Ember.String.${method} is exported correctly`
+          );
+        }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
+        assert.notEqual(string[method], undefined, `Ember.String.${method} is not \`undefined\``);
+      });
     }
 
     '@test Ember.FEATURES is exported'(assert) {
@@ -255,13 +278,6 @@ let allExports = [
   ['inject.service', '@ember/service', 'service'],
 
   // @ember/string
-  ['String.camelize', '@ember/string', 'camelize'],
-  ['String.capitalize', '@ember/string', 'capitalize'],
-  ['String.classify', '@ember/string', 'classify'],
-  ['String.dasherize', '@ember/string', 'dasherize'],
-  ['String.decamelize', '@ember/string', 'decamelize'],
-  ['String.underscore', '@ember/string', 'underscore'],
-  ['String.w', '@ember/string', 'w'],
   ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],
 
   // @ember/template
