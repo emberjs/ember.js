@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import { dasherize } from '@ember/string';
+import { dasherize } from '@ember/-internals/string';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';

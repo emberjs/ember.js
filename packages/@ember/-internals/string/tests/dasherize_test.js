@@ -1,15 +1,13 @@
 /* eslint-disable qunit/no-test-expect-argument */
-import { dasherize } from '@ember/string';
+import { dasherize } from '@ember/-internals/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {
-  expectDeprecation(() => {
-    assert.deepEqual(dasherize(given), expected, description);
-  }, 'Importing from `@ember/string` without having the `@ember/string` package in your project is deprecated. Please add `@ember/string` to your `package.json');
+  assert.deepEqual(dasherize(given), expected, description);
 }
 
 moduleFor(
-  'EmberStringUtils.dasherize',
+  'EmberInternalsString.dasherize',
   class extends AbstractTestCase {
     ['@test String dasherize tests'](assert) {
       test(assert, 'my favorite items', 'my-favorite-items', 'dasherize normal string');

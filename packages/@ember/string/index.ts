@@ -76,6 +76,7 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
 
   @class String
   @public
+  @deprecated Add the package `@ember/string` to your project to use in place of this module.
 */
 
 /**
@@ -98,8 +99,10 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
   @param {String} str The string to split
   @return {Array} array containing the split strings
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function w(str: string): string[] {
+  deprecateImportFromInternalString();
   return str.split(/\s+/);
 }
 
@@ -119,8 +122,10 @@ export function w(str: string): string[] {
   @param {String} str The string to decamelize.
   @return {String} the decamelized string.
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function decamelize(str: string): string {
+  deprecateImportFromInternalString();
   return DECAMELIZE_CACHE.get(str);
 }
 
@@ -141,8 +146,10 @@ export function decamelize(str: string): string {
   @param {String} str The string to dasherize.
   @return {String} the dasherized string.
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function dasherize(str: string): string {
+  deprecateImportFromInternalString();
   return STRING_DASHERIZE_CACHE.get(str);
 }
 
@@ -164,8 +171,10 @@ export function dasherize(str: string): string {
   @param {String} str The string to camelize.
   @return {String} the camelized string.
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function camelize(str: string): string {
+  deprecateImportFromInternalString();
   return CAMELIZE_CACHE.get(str);
 }
 
@@ -186,8 +195,10 @@ export function camelize(str: string): string {
   @param {String} str the string to classify
   @return {String} the classified string
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function classify(str: string): string {
+  deprecateImportFromInternalString();
   return CLASSIFY_CACHE.get(str);
 }
 
@@ -209,8 +220,10 @@ export function classify(str: string): string {
   @param {String} str The string to underscore.
   @return {String} the underscored string.
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function underscore(str: string): string {
+  deprecateImportFromInternalString();
   return UNDERSCORE_CACHE.get(str);
 }
 
@@ -231,9 +244,28 @@ export function underscore(str: string): string {
   @param {String} str The string to capitalize.
   @return {String} The capitalized string.
   @public
+  @deprecated Add `@ember/string` to your package.json
 */
 export function capitalize(str: string): string {
+  deprecateImportFromInternalString();
   return CAPITALIZE_CACHE.get(str);
+}
+
+function deprecateImportFromInternalString() {
+  deprecate(
+    'Importing from `@ember/string` without having the `@ember/string` package in your project is deprecated. Please add `@ember/string` to your `package.json',
+    false,
+    {
+      id: 'ember-string.add-package',
+      for: 'ember-source',
+      since: {
+        available: '4.10',
+        enabled: '4.10',
+      },
+      until: '5.0.0',
+      url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-string-add-package',
+    }
+  );
 }
 
 function deprecateImportFromString(

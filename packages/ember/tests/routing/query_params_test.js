@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { dasherize } from '@ember/string';
+import { dasherize } from '@ember/-internals/string';
 import EmberObject, { get, computed } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import { A as emberA } from '@ember/array';

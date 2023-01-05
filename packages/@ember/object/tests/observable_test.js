@@ -1,7 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, computed } from '@ember/object';
-import { w } from '@ember/string';
 import EmberObject, { observer } from '@ember/object';
 import Observable from '@ember/object/observable';
 import { A as emberA } from '@ember/array';
@@ -359,7 +358,7 @@ moduleFor(
 
     ['@test getting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      let keys = w('computed dependent');
+      let keys = ['computed', 'dependent'];
 
       keys.forEach(function (key) {
         assert.equal(object.get(key), key, `Try #1: object.get(${key}) should run function`);
@@ -367,15 +366,15 @@ moduleFor(
       });
 
       // verify each call count. cached should only be called once
-      w('computedCalls dependentCalls').forEach((key) => {
+      ['computedCalls', 'dependentCalls'].forEach((key) => {
         assert.equal(object[key].length, 1, `non-cached property ${key} should be called 1x`);
       });
     }
 
     ['@test setting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      let keys = w('computed dependent');
-      let values = w('value1 value2');
+      let keys = ['computed', 'dependent'];
+      let values = ['value1', 'value2'];
 
       keys.forEach((key) => {
         assert.equal(

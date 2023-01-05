@@ -1,11 +1,10 @@
 import Controller from '@ember/controller';
-import { capitalize } from '@ember/string';
 import Route from '@ember/routing/route';
 import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 function setupController(app, name) {
-  let controllerName = `${capitalize(name)}Controller`;
+  let controllerName = `${name}Controller`;
 
   Object.defineProperty(app, controllerName, {
     get() {
@@ -30,7 +29,7 @@ moduleFor(
     ['@test RouterService#urlFor returns URL for simple route with dynamic segments'](assert) {
       assert.expect(1);
 
-      setupController(this.application, 'dynamic');
+      setupController(this.application, 'Dynamic');
 
       let dynamicModel = { id: 1, contents: 'much dynamicism' };
 
