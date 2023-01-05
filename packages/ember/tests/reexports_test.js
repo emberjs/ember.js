@@ -67,6 +67,16 @@ moduleFor(
       });
     }
 
+    ['@test Ember.STRINGS is deprecated'](assert) {
+      expectDeprecation(() => {
+        assert.ok(Ember.STRINGS);
+      }, 'Ember.STRINGS is deprecated. It is no longer used by Ember.');
+
+      expectDeprecation(() => {
+        Ember.STRINGS = {};
+      }, 'Ember.STRINGS is deprecated. It is no longer used by Ember.');
+    }
+
     '@test Ember.FEATURES is exported'(assert) {
       for (let feature in FEATURES) {
         assert.equal(
