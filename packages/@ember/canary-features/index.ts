@@ -12,7 +12,6 @@ import { ENV } from '@ember/-internals/environment';
 */
 
 export const DEFAULT_FEATURES = {
-  EMBER_UNIQUE_ID_HELPER: true,
   EMBER_DEFAULT_HELPER_MANAGER: true,
 };
 
@@ -62,5 +61,4 @@ function featureValue(value: null | boolean) {
   return value;
 }
 
-export const EMBER_UNIQUE_ID_HELPER = featureValue(FEATURES.EMBER_UNIQUE_ID_HELPER);
 export const EMBER_DEFAULT_HELPER_MANAGER = featureValue(FEATURES.EMBER_DEFAULT_HELPER_MANAGER);
