@@ -4,7 +4,6 @@ import { Helper, helper, Component as EmberComponent } from '@ember/-internals/g
 import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_DEFAULT_HELPER_MANAGER } from '@ember/canary-features';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { getValue } from '@glimmer/validator';
@@ -443,17 +442,6 @@ moduleFor(
       assert.throws(() => {
         invokeHelper(undefined, class extends Helper {});
       }, /Expected a context object to be passed as the first parameter to invokeHelper, got undefined/);
-    }
-
-    '@test asserts if no manager exists for the helper definition'(assert) {
-      if (!DEBUG || EMBER_DEFAULT_HELPER_MANAGER) {
-        assert.expect(0);
-        return;
-      }
-
-      assert.throws(() => {
-        invokeHelper({}, class {});
-      }, /Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was:/);
     }
   }
 );

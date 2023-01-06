@@ -3,7 +3,6 @@ import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
-import { EMBER_DEFAULT_HELPER_MANAGER } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import type { DeprecationOptions } from '@ember/debug';
 import { schedule, _backburner } from '@ember/runloop';
@@ -21,7 +20,7 @@ import toBool from './utils/to-bool';
 
 setGlobalContext({
   FEATURES: {
-    DEFAULT_HELPER_MANAGER: Boolean(EMBER_DEFAULT_HELPER_MANAGER),
+    DEFAULT_HELPER_MANAGER: true,
   },
 
   scheduleRevalidate() {

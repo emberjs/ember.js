@@ -12,7 +12,7 @@ import { ENV } from '@ember/-internals/environment';
 */
 
 export const DEFAULT_FEATURES = {
-  EMBER_DEFAULT_HELPER_MANAGER: true,
+  // FLAG_NAME: true/false
 };
 
 /**
@@ -61,4 +61,4 @@ function featureValue(value: null | boolean) {
   return value;
 }
 
-export const EMBER_DEFAULT_HELPER_MANAGER = featureValue(FEATURES.EMBER_DEFAULT_HELPER_MANAGER);
+// export const FLAG_NAME = featureValue(FEATURES.FLAG_NAME);

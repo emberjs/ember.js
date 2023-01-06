@@ -5,7 +5,8 @@ for a detailed explanation.
 
 ## Feature Flags
 
-* `EMBER_DEFAULT_HELPER_MANAGER`
+<!--
+* `FLAG_NAME_HERE`
 
-  Provides a default manager for unrecognized helpers as specified in
-  [RFC-756](https://github.com/emberjs/rfcs/blob/master/text/0756-helper-default-manager.md).
+  Flag description here.
+-->

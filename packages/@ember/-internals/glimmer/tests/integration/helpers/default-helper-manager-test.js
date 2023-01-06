@@ -6,7 +6,7 @@ import { action } from '@ember/object';
 moduleFor(
   'Helpers test: default helper manager',
   class extends RenderingTestCase {
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) plain functions can be used as helpers'() {
+    '@test plain functions can be used as helpers'() {
       function hello() {
         return 'hello';
       }
@@ -20,9 +20,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) positional arguments are passed as function arguments'(
-      assert
-    ) {
+    '@test positional arguments are passed as function arguments'(assert) {
       function hello(...args) {
         assert.deepEqual(args, [1, 2, 3]);
         return args.length;
@@ -34,7 +32,7 @@ moduleFor(
       this.assertText('3');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) tracks changes to positional arguments'(assert) {
+    '@test tracks changes to positional arguments'(assert) {
       let count = 0;
 
       function hello(firstArgument) {
@@ -60,9 +58,7 @@ moduleFor(
       this.assertText('456');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) named arguments are passed as the last function argument'(
-      assert
-    ) {
+    '@test named arguments are passed as the last function argument'(assert) {
       function hello(positional, named) {
         assert.strictEqual(positional, 'foo');
 
@@ -75,7 +71,7 @@ moduleFor(
       this.assertText('bar');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) tracks changes to named arguments'(assert) {
+    '@test tracks changes to named arguments'(assert) {
       let count = 0;
 
       function hello(named) {
@@ -101,7 +97,7 @@ moduleFor(
       this.assertText('456');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) plain functions passed as component arguments can be used as helpers'() {
+    '@test plain functions passed as component arguments can be used as helpers'() {
       function hello() {
         return 'hello';
       }
@@ -114,7 +110,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) plain functions stored as class properties can be used as helpers'() {
+    '@test plain functions stored as class properties can be used as helpers'() {
       this.registerComponent('foo-bar', {
         template: '{{(this.hello)}}',
         ComponentClass: class extends Component {
@@ -128,7 +124,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) class methods can be used as helpers'() {
+    '@test class methods can be used as helpers'() {
       this.registerComponent('foo-bar', {
         template: '{{(this.hello)}}',
         ComponentClass: class extends Component {
@@ -142,7 +138,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    '@feature(EMBER_DEFAULT_HELPER_MANAGER) actions can be used as helpers'() {
+    '@test actions can be used as helpers'() {
       this.registerComponent('foo-bar', {
         template: '{{(this.hello)}}',
         ComponentClass: class extends Component {
