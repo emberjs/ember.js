@@ -18,7 +18,7 @@ export type ControllerQueryParam = string | Record<string, { type: ControllerQue
 const MODEL = symbol('MODEL');
 
 /**
-@module ember/controller
+@module @ember/controller
 */
 
 /**
