@@ -58,8 +58,16 @@ function withTargets(project, fn) {
 
 module.exports = function ({ project }) {
   let emberSource = project.addons.find((a) => a.name === 'ember-source');
+  let emberCliBabel = project.addons.find((a) => a.name === 'ember-cli-babel');
 
-  let transpileTree = withTargets(project, emberSource.transpileTree.bind(emberSource));
+  let transpileTree = withTargets(project, function transpileTree(tree) {
+    let options = emberSource._addBabelConfig({
+      'ember-cli-babel': {
+        compileModules: true,
+      },
+    });
+    return emberCliBabel.transpileTree(tree, options);
+  });
 
   let packages = debugTree(
     new MergeTrees([
