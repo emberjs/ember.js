@@ -78,6 +78,10 @@ moduleFor(
     }
 
     '@test Ember.FEATURES is exported'(assert) {
+      if (Object.keys(FEATURES).length === 0) {
+        assert.expect(0);
+      }
+
       for (let feature in FEATURES) {
         assert.equal(
           Ember.FEATURES[feature],

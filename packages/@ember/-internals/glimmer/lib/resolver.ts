@@ -2,7 +2,6 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
-import { EMBER_UNIQUE_ID_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -132,6 +131,7 @@ const BUILTIN_HELPERS: Record<string, object> = {
   fn,
   get,
   hash,
+  'unique-id': uniqueId,
 };
 
 if (DEBUG) {
@@ -146,10 +146,6 @@ if (DEBUG) {
   // has to be included anyway. In the future, perhaps we can avoid the latter by using
   // `import(...)`?
   BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
-}
-
-if (EMBER_UNIQUE_ID_HELPER) {
-  BUILTIN_HELPERS['unique-id'] = uniqueId;
 }
 
 const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {
