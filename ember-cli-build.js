@@ -6,7 +6,6 @@ const babelHelpers = require('./broccoli/babel-helpers');
 const concatBundle = require('./lib/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
 const rollupPackage = require('./broccoli/rollup-package');
-const minify = require('./broccoli/minify');
 const debugTree = require('broccoli-debug').buildDebugCallback('ember-source:ember-cli-build');
 
 Error.stackTraceLimit = Infinity;
@@ -28,11 +27,10 @@ const {
   getPackagesES,
 } = require('./broccoli/packages');
 
-const { allSupportedBrowsers, modernBrowsers } = require('./config/browserlists');
+const { allSupportedBrowsers } = require('./config/browserlists');
 
 const ENV = process.env.EMBER_ENV || 'development';
 const SHOULD_ROLLUP = process.env.SHOULD_ROLLUP !== 'false';
-const SHOULD_MINIFY = Boolean(process.env.SHOULD_MINIFY);
 
 /**
  * There isn't a way for us to override targets through ember-cli-babel, and we
@@ -62,7 +60,6 @@ module.exports = function ({ project }) {
   let emberSource = project.addons.find((a) => a.name === 'ember-source');
 
   let transpileTree = withTargets(project, emberSource.transpileTree.bind(emberSource));
-  let emberBundles = withTargets(project, emberSource.buildEmberBundles.bind(emberSource));
 
   let packages = debugTree(
     new MergeTrees([
@@ -133,38 +130,17 @@ module.exports = function ({ project }) {
 
   // Test builds, tests, and test harness
   let testFiles = debugTree(
-    new Funnel(
-      new MergeTrees([
-        emberBundles(dist),
-        testsBundle(packages, ENV, transpileTree),
-        testHarness(),
-      ]),
-      {
-        destDir: 'tests',
-      }
-    ),
+    new Funnel(new MergeTrees([testsBundle(packages, ENV, transpileTree), testHarness()]), {
+      destDir: 'tests',
+    }),
     'testFiles'
   );
-
-  let preBuilt = debugTree(
-    new Funnel(emberBundles(dist, false, { targets: modernBrowsers, loose: false }), {
-      getDestinationPath(path) {
-        return path.replace('ember.', 'ember.debug.');
-      },
-    }),
-    'preBuilt'
-  );
-
-  if (SHOULD_MINIFY) {
-    preBuilt = minify(preBuilt);
-  }
 
   return new MergeTrees([
     // Distributed files
     dist,
 
     // Pre-built bundles
-    preBuilt,
     debugTree(templateCompilerBundle(packages, transpileTree), 'template-compiler'),
 
     testFiles,
