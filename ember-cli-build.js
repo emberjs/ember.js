@@ -117,7 +117,7 @@ module.exports = function ({ project }) {
   let dist = debugTree(
     new MergeTrees([
       new Funnel(packages, {
-        destDir: 'packages',
+        destDir: 'addon',
         exclude: [
           '**/package.json',
           '@ember/-internals/*/tests/**' /* internal packages */,
@@ -128,10 +128,14 @@ module.exports = function ({ project }) {
           '*/type-tests/**' /* packages */,
           'ember-template-compiler/**',
           'internal-test-helpers/**',
+          'ember-testing/**' /* goes in the test-support tree instead */,
         ],
       }),
-      new Funnel(emberHeaderFiles(), { destDir: 'header' }),
-      new Funnel(emberDependencies(ENV), { destDir: 'dependencies' }),
+      new Funnel(packages, {
+        destDir: 'test-support',
+        include: ['ember-testing/index.js', 'ember-testing/lib/**'],
+      }),
+      new Funnel(emberDependencies(ENV), { destDir: 'addon' }),
     ]),
     'dist'
   );
@@ -226,7 +230,7 @@ function templateCompilerBundle(emberPackages, transpileTree) {
   );
 
   return concatBundle(new MergeTrees([templateCompilerFiles, emberHeaderFiles()]), {
-    outputFile: 'ember-template-compiler.js',
+    outputFile: 'vendor/ember-template-compiler.js',
     footer:
       '(function (m) { if (typeof module === "object" && module.exports) { module.exports = m } }(require("ember-template-compiler")));',
   });
