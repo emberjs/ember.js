@@ -1,6 +1,5 @@
 import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
@@ -115,9 +114,7 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   if (newRoot !== null && newRoot !== undefined) {
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
-    throw new EmberError(
-      `Property set failed: object in path "${parts.join('.')}" could not be found.`
-    );
+    throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
   }
 }
 

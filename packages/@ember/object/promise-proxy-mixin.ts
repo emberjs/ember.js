@@ -1,7 +1,6 @@
 import { get, setProperties, computed } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import type { AnyFn, MethodNamesOf } from '@ember/-internals/utils/types';
-import EmberError from '@ember/error';
 import type RSVP from 'rsvp';
 import type CoreObject from '@ember/object/core';
 
@@ -227,7 +226,7 @@ const PromiseProxyMixin = Mixin.create({
 
   promise: computed({
     get() {
-      throw new EmberError("PromiseProxy's promise must be set");
+      throw new Error("PromiseProxy's promise must be set");
     },
     set(_key, promise: RSVP.Promise<unknown>) {
       return tap(this, promise);
