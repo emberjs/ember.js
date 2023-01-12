@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v4.11.0-beta.1 (January 12, 2023)
+
+- [#20288](https://github.com/emberjs/ember.js/pull/20288) [FEATURE] Stable types for `@ember/owner`
+- [#20323](https://github.com/emberjs/ember.js/pull/20323) [FEATURE] Introduce stable types for `@ember/error`
+- [#20345](https://github.com/emberjs/ember.js/pull/20345) [CLEANUP] Remove flags for released features
+- [#20285](https://github.com/emberjs/ember.js/pull/20285) Update to TS v4.9
+
 ## v4.10.0 (January 11, 2023)
 
 - [#20270](https://github.com/emberjs/ember.js/pull/20270) / [#20271](https://github.com/emberjs/ember.js/pull/20271) [FEATURE] Add new imports for `getOwner` and `setOwner` from `@ember/owner` and introduce new `@ember/routing` sub-modules as part of [RFC #821](https://rfcs.emberjs.com/id/0821-public-types).
