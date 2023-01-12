@@ -1,7 +1,6 @@
 import { teardownMandatorySetter } from '@ember/-internals/utils';
 import type Component from '@ember/component';
 import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import type { ViewState } from '../states';
 import hasElement from './has_element';
@@ -32,7 +31,7 @@ const inDOM: ViewState = {
         },
         set(value) {
           if (value !== elementId) {
-            throw new EmberError("Changing a view's elementId after creation is not allowed");
+            throw new Error("Changing a view's elementId after creation is not allowed");
           }
         },
       });
