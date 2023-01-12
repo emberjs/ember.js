@@ -1,12 +1,15 @@
 # Ember Changelog
 
-## v4.10.0-beta.5 (December 28, 2022)
+## v4.10.0 (January 11, 2023)
 
+- [#20270](https://github.com/emberjs/ember.js/pull/20270) / [#20271](https://github.com/emberjs/ember.js/pull/20271) [FEATURE] Add new imports for `getOwner` and `setOwner` from `@ember/owner` and introduce new `@ember/routing` sub-modules as part of [RFC #821](https://rfcs.emberjs.com/id/0821-public-types).
+- [#20341](https://github.com/emberjs/ember.js/pull/20341) [DEPRECATION] Deprecations for importing `htmlSafe` and `isHTMLSafe` from `@ember/string`. They have moved to `@ember/template`. From [RFC #236](https://rfcs.emberjs.com/id/0236-deprecation-ember-string).
+- [#20344](https://github.com/emberjs/ember.js/pull/20344) [DEPRECATION] Deprecate @ember/string when used from ember-source; point users to add the `@ember/string` addon per [RFC #236](https://rfcs.emberjs.com/id/0236-deprecation-ember-string).
+- [#20342](https://github.com/emberjs/ember.js/pull/20342) [DEPRECATION] Deprecate @ember/error per [RFC #889](https://rfcs.emberjs.com/id/0889-deprecate-ember-error).
 - [#20327](https://github.com/emberjs/ember.js/pull/20327) [BUGFIX] Fix the types for the mutation-methods of `NativeArray`
-
-## v4.10.0-beta.4 (December 13, 2022)
-
-- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX] types: `ContainerDebugAdapter` extends `EmberObject`, not `Object`
+- [#20283](https://github.com/emberjs/ember.js/pull/20283) [BUGFIX] revert TS `compilerOptions.target` to ES2017
+- [#20253](https://github.com/emberjs/ember.js/pull/20253) Types: Add the `Resolver` type to preview types
+- [#20319](https://github.com/emberjs/ember.js/pull/20319) Types: resolve services with `Owner.lookup`
 
 ## v4.9.3 (December 13, 2022)
 
@@ -21,11 +24,6 @@
 - [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
 - [#20318](https://github.com/emberjs/ember.js/pull/20318) Backport `Resolver` to preview types
 
-## v4.10.0-beta.3 (December 12, 2022)
-
-- [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
-- [#20319](https://github.com/emberjs/ember.js/pull/20319) Types: resolve services with `Owner.lookup`
-
 ## v4.8.3 (December 12, 2022)
 
 - [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
@@ -35,19 +33,9 @@
 
 - [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
 
-## v4.10.0-beta.2 (November 30, 2022)
-
-- [#20283](https://github.com/emberjs/ember.js/pull/20283) [BUGFIX] revert TS `compilerOptions.target` to ES2017
-- [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
-
 ## v3.28.11 (November 30, 2022)
 
 - [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX] Allow class-based helpers in strict-mode
-
-## v4.10.0-beta.1 (November 28, 2022)
-
-- [#20253](https://github.com/emberjs/ember.js/pull/20253) [FEATURE] Add the `Resolver` type to preview types
-- [#20270](https://github.com/emberjs/ember.js/pull/20270) / [#20271](https://github.com/emberjs/ember.js/pull/20271) [FEATURE] Add new imports for `getOwner` and `setOwner` from `@ember/owner` and introduce new `@ember/routing` sub-modules as part of [RFC #821](https://rfcs.emberjs.com/id/0821-public-types).
 
 ## v4.9.0 (November 28, 2022)
 
