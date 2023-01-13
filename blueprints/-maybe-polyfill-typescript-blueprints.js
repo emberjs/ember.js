@@ -1,9 +1,9 @@
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-const EMBER_TYPESCRIPT_BLUEPRINTS = false;
+const EMBER_TYPESCRIPT_BLUEPRINTS = true;
 
 function canEmitTypeScript() {
   return 'EMBER_TYPESCRIPT_BLUEPRINTS' in process.env
-    ? process.env.EMBER_TYPESCRIPT_BLUEPRINTS
+    ? process.env.EMBER_TYPESCRIPT_BLUEPRINTS === 'true'
     : EMBER_TYPESCRIPT_BLUEPRINTS;
 }
 
