@@ -9899,10 +9899,10 @@ testem-failure-only-reporter@^1.0.0:
   dependencies:
     testem "^3.0.0"
 
-testem@^3.0.0, testem@^3.10.0, testem@^3.8.0:
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.10.0.tgz#df3f43839892c17f35f4c5994c50c99aa8242bb0"
-  integrity sha512-2BMbPkAJT5xNojNxQGKT8CU9ix4EYDmHjjKFpUeeSW6tBVfFVgOi2vfrpJ5Hwdq4HsfnOALNAWN8/yjuFTgQfA==
+testem@^3.0.0, testem@^3.10.1, testem@^3.8.0:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.10.1.tgz#bab8a83bec11e975f7d1e47e924eed6135957e5b"
+  integrity sha512-42c4e7qlAelwMd8O3ogtVGRbgbr6fJnX6H51ACOIG1V1IjsKPlcQtxPyOwaL4iikH22Dfh+EyIuJnMG4yxieBQ==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
