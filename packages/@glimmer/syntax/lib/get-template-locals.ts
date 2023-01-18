@@ -64,14 +64,17 @@ function addTokens(
 
   (Array.isArray(maybeTokens) ? maybeTokens : [maybeTokens]).forEach((maybeToken) => {
     if (maybeToken !== undefined && maybeToken[0] !== '@') {
-      tokensSet.add(maybeToken.split('.')[0]);
+      const maybeTokenFirstSegment = maybeToken.split('.')[0];
+      if (!scopedTokens.includes(maybeTokenFirstSegment)) {
+        tokensSet.add(maybeToken.split('.')[0]);
+      }
     }
   });
 }
 
 /**
  * Parses and traverses a given handlebars html template to extract all template locals
- * referenced that could possible come from the praent scope. Can exclude known keywords
+ * referenced that could possible come from the parent scope. Can exclude known keywords
  * optionally.
  */
 export function getTemplateLocals(

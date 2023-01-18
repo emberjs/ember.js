@@ -35,6 +35,13 @@ QUnit.test('it works', function (assert) {
 
     <this.dynamicAngleComponent>
     </this.dynamicAngleComponent>
+
+    <ComponentYieldingContextual as |hash|>
+      <hash.some as |some|>
+        <some.other/>
+        {{some.value}}
+      </hash.some>
+    </ComponentYieldingContextual>
   `);
 
   assert.deepEqual(locals, [
@@ -45,6 +52,7 @@ QUnit.test('it works', function (assert) {
     'global-value',
     'some',
     'someOther',
+    'ComponentYieldingContextual',
   ]);
 });
 
