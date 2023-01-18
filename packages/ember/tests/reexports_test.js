@@ -110,6 +110,7 @@ let allExports = [
   // @ember/array
   ['Array', '@ember/array', 'default'],
   ['A', '@ember/array', 'A'],
+  ['NativeArray', '@ember/array', 'NativeArray'],
   ['isArray', '@ember/array', 'isArray'],
   ['makeArray', '@ember/array', 'makeArray'],
 
@@ -395,7 +396,6 @@ let allExports = [
   ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin'],
   ['Comparable', '@ember/-internals/runtime'],
   ['ActionHandler', '@ember/-internals/runtime'],
-  ['NativeArray', '@ember/-internals/runtime'],
   ['MutableEnumerable', '@ember/-internals/runtime'],
   ['_ProxyMixin', '@ember/-internals/runtime'],
 
