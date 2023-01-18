@@ -37,7 +37,9 @@ QUnit.test('it works', function (assert) {
     </this.dynamicAngleComponent>
 
     <ComponentYieldingContextual as |hash|>
+      <InsideHash />
       <hash.some as |some|>
+        {{inside-another-hash}}
         <some.other/>
         {{some.value}}
       </hash.some>
@@ -53,6 +55,8 @@ QUnit.test('it works', function (assert) {
     'some',
     'someOther',
     'ComponentYieldingContextual',
+    'InsideHash',
+    'inside-another-hash',
   ]);
 });
 
