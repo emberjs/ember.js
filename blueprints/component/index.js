@@ -227,15 +227,8 @@ module.exports = {
   },
 
   locals(options) {
-    let sanitizedModuleName = options.entity.name.replace(/\//g, '-');
-    let classifiedModuleName = stringUtil.classify(sanitizedModuleName);
-
-    let templatePath = '';
-    let importComponent = '';
-    let importTemplate = '';
-    let defaultExport = '';
-
     // if we're in an addon, build import statement
+    let templatePath = '';
     if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
       if (options.pod) {
         templatePath = './template';
@@ -251,6 +244,14 @@ module.exports = {
       ? options.componentClass
       : '@ember/component';
 
+    let sanitizedModuleName = options.entity.name.replace(/\//g, '-');
+    let classifiedModuleName = stringUtil.classify(sanitizedModuleName);
+
+    let importComponent = '';
+    let importTemplate = '';
+    let defaultExport = '';
+    let componentSignature = '';
+
     switch (componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
@@ -263,20 +264,45 @@ module.exports = {
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {}`;
+        componentSignature = signatureFor(classifiedModuleName);
+        defaultExport = `class ${classifiedModuleName}Component extends Component<${classifiedModuleName}Signature> {}`;
         break;
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
-        defaultExport = `templateOnly();`;
+        componentSignature = signatureFor(classifiedModuleName);
+        defaultExport = `templateOnly<${classifiedModuleName}Signature>();`;
         break;
     }
 
     return {
       importTemplate,
       importComponent,
+      componentSignature,
       defaultExport,
       path: getPathOption(options),
       componentClass: options.componentClass,
     };
   },
 };
+
+function signatureFor(classifiedModuleName) {
+  let args = `  // The arguments accepted by the component${EOL}  Args: {};`;
+
+  let blocks =
+    `  // Any blocks yielded by the component${EOL}` +
+    `  Blocks: {${EOL}` +
+    `    default: []${EOL}` +
+    `  };`;
+
+  let element =
+    `  // The element to which \`...attributes\` is applied in the component template${EOL}` +
+    `  Element: null;`;
+
+  return (
+    `interface ${classifiedModuleName}Signature {${EOL}` +
+    `${args}${EOL}` +
+    `${blocks}${EOL}` +
+    `${element}${EOL}` +
+    `}${EOL}`
+  );
+}
