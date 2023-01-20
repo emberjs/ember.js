@@ -53,9 +53,17 @@ module.exports = {
     },
   ],
 
+  /**
+    Flag to let us correctly handle the case where we are running against a
+    version of Ember CLI which does not support TS-based emit, and where we
+    therefore *must* not emit a `defaultExport` local which includes a type
+    parameter in the exported function call or class definition.
+   */
+  _isUsingTS: false,
+
   init() {
     this._super && this._super.init.apply(this, arguments);
-    maybePolyfillTypeScriptBlueprints(this);
+    this._isUsingTS = maybePolyfillTypeScriptBlueprints(this);
     let isOctane = has('octane');
 
     this.availableOptions.forEach((option) => {
@@ -264,13 +272,21 @@ module.exports = {
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        componentSignature = signatureFor(classifiedModuleName);
-        defaultExport = `class ${classifiedModuleName}Component extends Component<${classifiedModuleName}Signature> {}`;
+        if (this._isUsingTS) {
+          componentSignature = signatureFor(classifiedModuleName);
+          defaultExport = `class ${classifiedModuleName}Component extends Component<${classifiedModuleName}Signature> {}`;
+        } else {
+          defaultExport = `class ${classifiedModuleName}Component extends Component {}`;
+        }
         break;
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
-        componentSignature = signatureFor(classifiedModuleName);
-        defaultExport = `templateOnly<${classifiedModuleName}Signature>();`;
+        if (this._isUsingTS) {
+          componentSignature = signatureFor(classifiedModuleName);
+          defaultExport = `templateOnly<${classifiedModuleName}Signature>();`;
+        } else {
+          defaultExport = `templateOnly();`;
+        }
         break;
     }
 

@@ -8,10 +8,12 @@ function canEmitTypeScript() {
 }
 
 module.exports = function (context) {
-  if (canEmitTypeScript()) {
+  let canUseTypeScript = canEmitTypeScript();
+  if (canUseTypeScript) {
     typescriptBlueprintPolyfill(context);
   } else {
     // Use the plain old JS templates from before
     context.path = context.path.replace('blueprints', 'blueprints-js');
   }
+  return canUseTypeScript;
 };
