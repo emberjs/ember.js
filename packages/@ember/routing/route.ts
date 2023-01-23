@@ -145,7 +145,7 @@ interface Route<T = unknown> extends IRoute<T> {
     export default class LoginRoute extends Route {
       @action
       didTransition() {
-        this.controller.get('errors.base').clear();
+        // your code there
         return true; // Bubble the didTransition event
       }
     }
