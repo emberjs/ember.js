@@ -57,7 +57,6 @@ import {
   componentCapabilities,
   modifierCapabilities,
   setComponentManager,
-  escapeExpression,
   getTemplates,
   htmlSafe,
   isHTMLSafe,
@@ -479,9 +478,6 @@ const PartialEmber = {
 
 interface EmberHandlebars {
   template: typeof template;
-  Utils: {
-    escapeExpression: typeof escapeExpression;
-  };
   compile?: typeof compile;
   precompile?: typeof precompile;
 }
@@ -688,9 +684,6 @@ runLoadHooks('Ember.Application', Application);
 
 let EmberHandlebars: EmberHandlebars = {
   template,
-  Utils: {
-    escapeExpression,
-  },
 };
 
 let EmberHTMLBars: EmberHTMLBars = {

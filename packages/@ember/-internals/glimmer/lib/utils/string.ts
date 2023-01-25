@@ -3,7 +3,7 @@
 */
 
 export class SafeString {
-  public string: string;
+  private readonly string: string;
 
   constructor(string: string) {
     this.string = string;
@@ -16,46 +16,6 @@ export class SafeString {
   toHTML(): string {
     return this.toString();
   }
-}
-
-const escape = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#x27;',
-  '`': '&#x60;',
-  '=': '&#x3D;',
-};
-
-const possible = /[&<>"'`=]/;
-const badChars = /[&<>"'`=]/g;
-
-function escapeChar(chr: keyof typeof escape) {
-  return escape[chr];
-}
-
-export function escapeExpression(string: any): string {
-  if (typeof string !== 'string') {
-    // don't escape SafeStrings, since they're already safe
-    if (string && string.toHTML) {
-      return string.toHTML();
-    } else if (string === null || string === undefined) {
-      return '';
-    } else if (!string) {
-      return String(string);
-    }
-
-    // Force a string conversion as this will be done by the append regardless and
-    // the regex test will do this transparently behind the scenes, causing issues if
-    // an object's to string has escaped characters in it.
-    string = String(string);
-  }
-
-  if (!possible.test(string)) {
-    return string;
-  }
-  return string.replace(badChars, escapeChar);
 }
 
 /**
@@ -114,6 +74,12 @@ export function htmlSafe(str: string): SafeString {
   @return {Boolean} `true` if the string was decorated with `htmlSafe`, `false` otherwise.
   @public
 */
-export function isHTMLSafe(str: any | null | undefined): str is SafeString {
-  return str !== null && typeof str === 'object' && typeof str.toHTML === 'function';
+export function isHTMLSafe(str: unknown): str is SafeString {
+  return (
+    // SAFETY: cast `as SafeString` only present to make this check "legal"; we
+    // can further improve this by changing the behavior to do an `in` check
+    // instead, but that's worth landing as a separate change for bisecting if
+    // it happens to have an impact on e.g. perf.
+    str !== null && typeof str === 'object' && typeof (str as SafeString).toHTML === 'function'
+  );
 }

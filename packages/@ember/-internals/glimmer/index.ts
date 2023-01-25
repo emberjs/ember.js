@@ -451,7 +451,7 @@ export { default as LinkTo } from './lib/components/link-to';
 export { default as Textarea } from './lib/components/textarea';
 export { default as Component } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
-export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
+export { SafeString, htmlSafe, isHTMLSafe } from './lib/utils/string';
 export { Renderer, _resetRenderers, renderSettled } from './lib/renderer';
 export {
   getTemplate,

@@ -388,7 +388,6 @@ let allExports = [
 
   // @ember/-internals/glimmer
   ['TEMPLATES', '@ember/-internals/glimmer', { get: 'getTemplates', set: 'setTemplates' }],
-  ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
   ['_Input', '@ember/-internals/glimmer', 'Input'],
 
   // @ember/-internals/runtime
