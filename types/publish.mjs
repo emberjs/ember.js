@@ -110,6 +110,10 @@ const MANUALLY_COPIED_D_TS_MODULES = [
     input: 'packages/@ember/service/owner-ext.d.ts',
     output: '@ember/service/owner-ext.d.ts',
   },
+  {
+    input: 'packages/@ember/routing/service-ext.d.ts',
+    output: '@ember/routing/service-ext.d.ts',
+  },
 ];
 
 async function main() {
