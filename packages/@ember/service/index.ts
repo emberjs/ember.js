@@ -117,5 +117,9 @@ export default class Service extends FrameworkObject {
   Then `@service` can check that the service is registered correctly, and APIs
   like `owner.lookup('service:example')` can return `ExampleService`.
  */
+// NOTE: this cannot be `Record<string, Service | undefined>`, convenient as
+// that would be for end users, because there is no actual contract to that
+// effect with Ember -- and in the future this choice would allow us to have
+// registered services which have no base class.
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Registry extends Record<string, Service | undefined> {}
+export interface Registry extends Record<string, object | undefined> {}
