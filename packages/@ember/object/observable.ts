@@ -131,6 +131,7 @@ interface Observable {
     @return {Object} The property value or undefined.
     @public
   */
+  get<K extends keyof this>(key: K): this[K];
   get(key: string): unknown;
 
   /**
@@ -154,6 +155,7 @@ interface Observable {
     @return {Object}
     @public
   */
+  getProperties<L extends Array<keyof this>>(list: L): { [Key in L[number]]: this[Key] };
   getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
   getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
 
@@ -202,6 +204,7 @@ interface Observable {
     @return {Object} The passed value
     @public
   */
+  set<K extends keyof this, T extends this[K]>(key: K, value: T): T;
   set<T>(key: string, value: T): T;
 
   // NOT TYPE SAFE!
@@ -219,7 +222,8 @@ interface Observable {
     @return {Object} The passed in hash
     @public
   */
-  setProperties<T extends Record<string, any>>(hash: T): T;
+  setProperties<K extends keyof this, P extends { [Key in K]: this[Key] }>(hash: P): P;
+  setProperties<T extends Record<string, unknown>>(hash: T): T;
 
   /**
     Convenience method to call `propertyWillChange` and `propertyDidChange` in
