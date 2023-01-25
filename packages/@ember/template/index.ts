@@ -1,1 +1,8 @@
-export { htmlSafe, isHTMLSafe } from '@ember/-internals/glimmer';
+export {
+  htmlSafe,
+  isHTMLSafe,
+  isTrustedString,
+  unsafelyTrustString,
+  toHTML,
+  type TrustedString,
+} from '@ember/-internals/glimmer';

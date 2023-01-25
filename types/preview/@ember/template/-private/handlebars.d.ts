@@ -1,7 +1,12 @@
 declare module '@ember/template/-private/handlebars' {
-  export class SafeString {
+  import { SafeString } from '@glimmer/runtime';
+  import { Opaque } from 'ember/-private/type-utils';
+
+  class _TrustedString implements SafeString {
     constructor(str: string);
-    toString(): string;
+    private toString(): string;
     toHTML(): string;
   }
+
+  export interface TrustedString extends _TrustedString, Opaque<'@ember/template:SafeString'> {}
 }

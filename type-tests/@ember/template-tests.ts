@@ -1,18 +1,24 @@
-import { SafeString } from '@ember/template/-private/handlebars';
-import { htmlSafe, isHTMLSafe } from '@ember/template';
+import {
+  htmlSafe,
+  isHTMLSafe,
+  isTrustedString,
+  unsafelyTrustString,
+  type TrustedString,
+} from '@ember/template';
 import { expectTypeOf } from 'expect-type';
 
-const handlebarsSafeString: SafeString = htmlSafe('lorem ipsum...');
-expectTypeOf(htmlSafe('lorem ipsum...')).toEqualTypeOf<SafeString>();
-// @ts-expect-error
-const regularString: string = htmlSafe('lorem ipsum...');
+expectTypeOf(unsafelyTrustString('lorem ipsum...')).toEqualTypeOf<TrustedString>();
+expectTypeOf(isTrustedString).guards.toEqualTypeOf<TrustedString>();
 
-expectTypeOf(isHTMLSafe).guards.toEqualTypeOf<SafeString>();
+expectTypeOf(unsafelyTrustString('lorem ipsum...')).not.toBeString();
 
-function isSafeTest(a: string | SafeString) {
-  if (isHTMLSafe(a)) {
-    a = a.toString();
+expectTypeOf(htmlSafe).toEqualTypeOf(unsafelyTrustString);
+expectTypeOf(isHTMLSafe).toEqualTypeOf(isTrustedString);
+
+function isSafeTest(s: string | TrustedString) {
+  if (isTrustedString(s)) {
+    s = s.toHTML();
   }
 
-  a.toLowerCase();
+  s.toLowerCase();
 }
