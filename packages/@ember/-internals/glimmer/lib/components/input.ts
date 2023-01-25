@@ -158,7 +158,7 @@ if (hasDOM) {
   @param {Hash} options
   @public
 */
-class Input extends AbstractInput {
+class _Input extends AbstractInput {
   static toString(): string {
     return 'Input';
   }
@@ -270,4 +270,6 @@ class Input extends AbstractInput {
   }
 }
 
-export default opaquify(Input, InputTemplate);
+const Input = opaquify(_Input, InputTemplate);
+type Input = typeof Input;
+export default Input;

@@ -139,7 +139,7 @@ import { opaquify } from './internal';
   @see {Ember.Templates.components.Textarea}
   @public
 **/
-class Textarea extends AbstractInput {
+class _Textarea extends AbstractInput {
   static toString(): string {
     return 'Textarea';
   }
@@ -164,4 +164,6 @@ class Textarea extends AbstractInput {
   }
 }
 
-export default opaquify(Textarea, TextareaTemplate);
+const Textarea = opaquify(_Textarea, TextareaTemplate);
+type Textarea = typeof Textarea;
+export default Textarea;
