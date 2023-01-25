@@ -110,7 +110,7 @@ interface Route<T = unknown> extends IRoute<T> {
     ```
 
     You can also redirect elsewhere by calling
-    `this.transitionTo('elsewhere')` from within `willTransition`.
+    `router.transitionTo('elsewhere')` from within `willTransition`.
     Note that `willTransition` will not be fired for the
     redirecting `transitionTo`, since `willTransition` doesn't
     fire when there is already a transition underway. If you want
@@ -207,8 +207,11 @@ interface Route<T = unknown> extends IRoute<T> {
     import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
+    import { service } from '@ember/service';
 
     export default class AdminRoute extends Route {
+      @service router;
+
       beforeModel() {
         return reject('bad things!');
       }
@@ -225,7 +228,7 @@ interface Route<T = unknown> extends IRoute<T> {
         // `transition`, which can be stored and later
         // `.retry()`d if desired.
 
-        this.transitionTo('login');
+        this.router.transitionTo('login');
       }
     }
     ```
@@ -1039,7 +1042,7 @@ class Route<T = unknown>
     ```app/routes/index.js
     import Route from '@ember/routing/route';
 
-    export default class IndexRoute extends Route {
+    export default class IndexRoute extends Route {      
       @action
       transitionToApples() {
         this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
@@ -1251,7 +1254,7 @@ class Route<T = unknown>
     as a parameter, which can be used to `.abort()` the transition,
     save it for a later `.retry()`, or retrieve values set
     on it from a previous hook. You can also just call
-    `this.transitionTo` to another route to implicitly
+    `router.transitionTo` to another route to implicitly
     abort the `transition`.
 
     You can return a promise from this hook to pause the
@@ -1281,11 +1284,14 @@ class Route<T = unknown>
 
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
+    import { service } from '@ember/service';
 
     export default class PostsRoute extends Route {
+      @service router;
+
       afterModel(posts, transition) {
         if (posts.get('length') === 1) {
-          this.transitionTo('post.show', posts.get('firstObject'));
+          this.router.transitionTo('post.show', posts.get('firstObject'));
         }
       }
     }
@@ -1312,12 +1318,12 @@ class Route<T = unknown>
   /**
     A hook you can implement to optionally redirect to another route.
 
-    Calling `this.transitionTo` from inside of the `redirect` hook will
+    Calling `router.transitionTo` from inside of the `redirect` hook will
     abort the current transition (into the route that has implemented `redirect`).
 
     `redirect` and `afterModel` behave very similarly and are
     called almost at the same time, but they have an important
-    distinction when calling `this.transitionTo` to a child route
+    distinction when calling `router.transitionTo` to a child route
     of the current route. From `afterModel`, this new transition
     invalidates the current transition, causing `beforeModel`,
     `model`, and `afterModel` hooks to be called again. But the
@@ -1380,19 +1386,19 @@ class Route<T = unknown>
 
     ```javascript
     // no dynamic segment, model hook always called
-    this.transitionTo('posts');
+    router.transitionTo('posts');
 
     // model passed in, so model hook not called
     thePost = store.findRecord('post', 1);
-    this.transitionTo('post', thePost);
+    router.transitionTo('post', thePost);
 
     // integer passed in, model hook is called
-    this.transitionTo('post', 1);
+    router.transitionTo('post', 1);
 
     // model id passed in, model hook is called
     // useful for forcing the hook to execute
     thePost = store.findRecord('post', 1);
-    this.transitionTo('post', thePost.id);
+    router.transitionTo('post', thePost.id);
     ```
 
     This hook follows the asynchronous/promise semantics
