@@ -103,10 +103,6 @@ const MANUALLY_COPIED_D_TS_MODULES = [
     output: 'require.d.ts',
   },
   {
-    input: 'packages/ember-template-compiler/lib/types.d.ts',
-    output: 'ember-template-compiler/lib/types.d.ts',
-  },
-  {
     input: 'packages/ember/version.d.ts',
     output: 'ember/version.d.ts',
   },
