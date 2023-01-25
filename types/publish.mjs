@@ -100,19 +100,19 @@ const TYPES_DIR = path.join('types', 'stable');
 const MANUALLY_COPIED_D_TS_MODULES = [
   {
     input: 'packages/loader/lib/index.d.ts',
-    output: path.join(TYPES_DIR, 'require.d.ts'),
+    output: 'require.d.ts',
   },
   {
     input: 'packages/ember-template-compiler/lib/types.d.ts',
-    output: path.join(TYPES_DIR, 'ember-template-compiler/lib/types.d.ts'),
+    output: 'ember-template-compiler/lib/types.d.ts',
   },
   {
     input: 'packages/ember/version.d.ts',
-    output: path.join(TYPES_DIR, 'ember/version.d.ts'),
+    output: 'ember/version.d.ts',
   },
   {
     input: 'packages/@ember/service/owner-ext.d.ts',
-    output: path.join(TYPES_DIR, '@ember/service/owner-ext.d.ts'),
+    output: '@ember/service/owner-ext.d.ts',
   },
 ];
 
@@ -120,11 +120,21 @@ async function main() {
   fs.rmSync(TYPES_DIR, { recursive: true, force: true });
   fs.mkdirSync(TYPES_DIR, { recursive: true });
 
-  for (let { input, output } of MANUALLY_COPIED_D_TS_MODULES) {
-    fs.copyFileSync(input, output);
-  }
-
   spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']);
+
+  /** @type {Array<string>} */
+  let excludes = [];
+  for (let { input, output } of MANUALLY_COPIED_D_TS_MODULES) {
+    try {
+      let outputPath = path.join(TYPES_DIR, output);
+      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+      fs.copyFileSync(input, outputPath);
+      excludes.push(output);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    }
+  }
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above.
@@ -135,6 +145,10 @@ async function main() {
 
   let status = 'success';
   for (let moduleName of moduleNames) {
+    if (excludes.includes(moduleName)) {
+      continue;
+    }
+
     let result = processModule(moduleName);
     if (result !== 'success') {
       status = result;
