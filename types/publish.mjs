@@ -32,14 +32,13 @@
 
 import glob from 'glob';
 import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import * as parser from 'recast/parsers/babel-ts.js';
 import {
   isClassDeclaration,
   isStringLiteral,
   isVariableDeclaration,
-  isTSDeclareFunction,
   isTSEnumDeclaration,
 } from '@babel/types';
 import { builders as b, visit } from 'ast-types';
@@ -97,74 +96,41 @@ ${MODULES_PLACEHOLDER}
 
 const TYPES_DIR = path.join('types', 'stable');
 
-const MANUALLY_COPIED_D_TS_MODULES = [
-  {
-    input: 'packages/loader/lib/index.d.ts',
-    output: 'require.d.ts',
-  },
-  {
-    input: 'packages/ember/version.d.ts',
-    output: 'ember/version.d.ts',
-  },
-  {
-    input: 'packages/@ember/service/owner-ext.d.ts',
-    output: '@ember/service/owner-ext.d.ts',
-  },
-  {
-    input: 'packages/@ember/routing/service-ext.d.ts',
-    output: '@ember/routing/service-ext.d.ts',
-  },
-];
-
 async function main() {
-  fs.rmSync(TYPES_DIR, { recursive: true, force: true });
-  fs.mkdirSync(TYPES_DIR, { recursive: true });
+  await fs.rm(TYPES_DIR, { recursive: true, force: true });
+  await fs.mkdir(TYPES_DIR, { recursive: true });
 
-  spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']);
+  doOrDie(() => spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']));
 
-  /** @type {Array<string>} */
-  let excludes = [];
-  for (let { input, output } of MANUALLY_COPIED_D_TS_MODULES) {
-    try {
-      let outputPath = path.join(TYPES_DIR, output);
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-      fs.copyFileSync(input, outputPath);
-      excludes.push(output);
-    } catch (e) {
-      console.error(e);
-      process.exit(1);
-    }
-  }
+  await doOrDie(copyHandwrittenDefinitions);
+  let excludes = await doOrDie(copySideEffectModules);
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
-  // the modules, as generated directly from the tsconfig above.
-  let moduleNames = glob.sync('**/*.d.ts', {
+  // the modules, as generated directly from the tsconfig above. These must
+  // *all* appear in the final set of `/// <reference ...>`s we emit.
+  let allModules = glob.sync('**/*.d.ts', {
     ignore: 'index.d.ts', // ignore the root file itself if it somehow exists
     cwd: TYPES_DIR,
   });
 
-  let status = 'success';
-  for (let moduleName of moduleNames) {
-    if (excludes.includes(moduleName)) {
-      continue;
-    }
-
-    let result = processModule(moduleName);
-    if (result !== 'success') {
-      status = result;
-    }
-  }
+  // However, we only want to process (i.e. rewrite) a subset of the modules.
+  let modulesToProcess = allModules.filter((moduleName) => !excludes.includes(moduleName));
+  let status = await doOrDie(() =>
+    Promise.all(modulesToProcess.map(processModule)).then((values) =>
+      values.some((value) => value === 'failure') ? 'failure' : 'success'
+    )
+  );
 
   // Only publish the types we actually *want* to provide public API for, or
   // which are necessary support paths (e.g. all the `-internal` paths, whose
   // types are used in the public APIs). Use `/// <reference path="..." />`
   // directives to make it clear that these are type-only references.
-  let sideEffectModules = moduleNames
+  let moduleReferences = allModules
     .map((moduleName) => `/// <reference path="./${moduleName}" />`)
     .join('\n');
 
-  let stableIndexDTsContents = BASE_INDEX_D_TS.replace(MODULES_PLACEHOLDER, sideEffectModules);
-  fs.writeFileSync(path.join(TYPES_DIR, 'index.d.ts'), stableIndexDTsContents);
+  let stableIndexDTsContents = BASE_INDEX_D_TS.replace(MODULES_PLACEHOLDER, moduleReferences);
+  await fs.writeFile(path.join(TYPES_DIR, 'index.d.ts'), stableIndexDTsContents);
 
   // Make the generated types easier to read!
   spawnSync('prettier', ['--write', 'types/stable/**/*.ts']);
@@ -173,18 +139,93 @@ async function main() {
 }
 
 /**
+  "Emit" hand-authored `.d.ts` modules for two cases:
+
+  - modules which need to live in a different location in the output than in the
+    input tree, e.g. for the loader, which creates runtime modules at a
+    different location than
+
+  - modules which exist to augment other modules, e.g. for the DI registry, in a
+    way that works *without modification* in both source and distributed types
+
+  In both cases, these represent modules which need to be copied over and then
+  *left exactly as they are*.
+
+  @returns {Promise<string[]>} an array of module names to exclude from the rest of the
+    post-processing steps
+ */
+async function copySideEffectModules() {
+  let sideEffectModules = [
+    {
+      input: 'packages/loader/lib/index.d.ts',
+      output: 'require.d.ts',
+    },
+    {
+      input: 'packages/@ember/service/owner-ext.d.ts',
+      output: '@ember/service/owner-ext.d.ts',
+    },
+    {
+      input: 'packages/@ember/routing/service-ext.d.ts',
+      output: '@ember/routing/service-ext.d.ts',
+    },
+  ];
+
+  return doOrDie(async () => {
+    /** @type {string[]} */
+    let excludes = [];
+
+    await Promise.all(
+      sideEffectModules.map(async ({ input, output }) => {
+        let outputPath = path.join(TYPES_DIR, output);
+        // Cannot use fs.cp() until we require Node 16
+        await fs.mkdir(path.dirname(output), { recursive: true });
+        await fs.copyFile(input, outputPath);
+        excludes.push(output);
+      })
+    );
+
+    return excludes;
+  });
+}
+
+/**
+  "Emit" hand-authored `.d.ts` file representing runtime JS modules which are
+  generated by the build system, like the `.d.ts` files for templates. Since
+  `tsc` ignores loose `.d.ts` files in the source of a project, these must
+  simply be copied over manually.
+ */
+async function copyHandwrittenDefinitions() {
+  let inputDir = 'packages';
+  let definitionModules = glob.sync('**/*.d.ts', {
+    cwd: inputDir,
+  });
+
+  await doOrDie(() =>
+    Promise.all(
+      definitionModules.map(async (moduleName) => {
+        let input = path.join(inputDir, moduleName);
+        let output = path.join(TYPES_DIR, moduleName);
+        // Cannot use fs.cp() until we require Node 16
+        await fs.mkdir(path.dirname(output), { recursive: true });
+        await fs.copyFile(input, output);
+      })
+    )
+  );
+}
+
+/**
   Load the module, rewrite it, and write it back to disk.
 
   @param {string} moduleName
-  @return {'success' | 'failure'}
+  @return {Promise<'success' | 'failure'>}
  */
-function processModule(moduleName) {
+async function processModule(moduleName) {
   let modulePath = path.join(TYPES_DIR, moduleName);
 
   /** @type {string} */
   let contents;
   try {
-    contents = fs.readFileSync(modulePath, { encoding: 'utf-8' });
+    contents = await fs.readFile(modulePath, { encoding: 'utf-8' });
   } catch (e) {
     console.error(`Error reading ${modulePath}: ${e}`);
     return 'failure';
@@ -201,7 +242,7 @@ function processModule(moduleName) {
   }
 
   try {
-    fs.writeFileSync(modulePath, rewrittenModule);
+    await fs.writeFile(modulePath, rewrittenModule);
   } catch (e) {
     console.error(`Error writing ${modulePath}: ${e}`);
     return 'failure';
@@ -399,10 +440,7 @@ function normalizeSpecifier(moduleName, specifier) {
     // chunks comprising host module, because we need to *not* treat the current
     // module itself as a parent. If we're not in a "root" module, we need to
     // do it an extra time to get rid of the terminal `foo.d.ts` as well.
-    let terminal = parentPathChunks.pop();
-    if (terminal?.endsWith('.d.ts')) {
-      parentPathChunks.pop();
-    }
+    parentPathChunks.pop();
 
     // Walk back from the end of the specifier, replacing `..` with chunks from
     // the parent paths.
@@ -416,7 +454,6 @@ function normalizeSpecifier(moduleName, specifier) {
             `Could not generate a valid path for relative path specifier ${specifier} in ${moduleName}`
           );
         }
-        merged.push(parent);
       } else {
         merged.push(chunk);
       }
@@ -433,5 +470,19 @@ function normalizeSpecifier(moduleName, specifier) {
   }
 }
 
-// Run it!
+/**
+ * @template T
+ * @param {() => T} fn
+ * @returns {T}
+ */
+function doOrDie(fn) {
+  try {
+    return fn();
+  } catch (e) {
+    console.log(e);
+    process.exit(1);
+  }
+}
+
+// --- Actually execute the program! --- //
 main();
