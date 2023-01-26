@@ -1146,7 +1146,7 @@ interface EmberArray<T> extends Enumerable {
     @since 1.2.0
     @public
   */
-  sortBy(key: string): T[];
+  sortBy(...keys: string[]): T[];
   /**
     Returns a new array that contains only unique values. The default
     implementation returns an array regardless of the receiver type.

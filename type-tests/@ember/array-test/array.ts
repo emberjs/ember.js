@@ -1,9 +1,6 @@
 import EmberObject from '@ember/object';
-import type Array from '@ember/array';
-import { A } from '@ember/array';
-import type MutableArray from '@ember/array/mutable';
+import { A, NativeArray } from '@ember/array';
 import { expectTypeOf } from 'expect-type';
-import NativeArray from '@ember/array/-private/native-array';
 
 class Person extends EmberObject {
   name = '';
