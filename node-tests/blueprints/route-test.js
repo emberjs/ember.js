@@ -301,6 +301,32 @@ describe('Blueprint: route', function () {
         });
       });
     });
+
+    it('using a `router.ts` file', async function () {
+      fs.moveSync('app/router.js', 'app/router.ts');
+
+      await emberGenerate(['route', 'foo']);
+      expect(file('app/router.ts')).to.contain("this.route('foo')");
+
+      await emberDestroy(['route', 'foo']);
+      expect(file('app/router.ts')).to.not.contain("this.route('foo')");
+    });
+
+    it('throws a helpful error if a router file could not be found', async function () {
+      fs.removeSync('app/router.js');
+
+      await expect(emberGenerate(['route', 'foo'])).to.be.rejectedWith(
+        'Could not find a router file. Please make sure your project has a `router.js` or `router.ts` file.'
+      );
+    });
+
+    it('throws a helpful error if both a `router.ts` and `router.js` file are found', async function () {
+      fs.copySync('app/router.js', 'app/router.ts');
+
+      await expect(emberGenerate(['route', 'foo'])).to.be.rejectedWith(
+        'Found both a `router.js` and `router.ts` file. Please make sure your project only has one or the other.'
+      );
+    });
   });
 
   describe('in addon - octane', function () {
@@ -513,6 +539,32 @@ describe('Blueprint: route', function () {
           expect(_file('addon/templates/foo/bar.hbs')).to.equal('{{outlet}}');
         });
       });
+    });
+
+    it('using a `router.ts` file', async function () {
+      fs.moveSync('tests/dummy/app/router.js', 'tests/dummy/app/router.ts');
+
+      await emberGenerate(['route', 'foo', '--dummy']);
+      expect(file('tests/dummy/app/router.ts')).to.contain("this.route('foo')");
+
+      await emberDestroy(['route', 'foo', '--dummy']);
+      expect(file('tests/dummy/app/router.ts')).to.not.contain("this.route('foo')");
+    });
+
+    it('throws a helpful error if a router file could not be found', async function () {
+      fs.removeSync('tests/dummy/app/router.js');
+
+      await expect(emberGenerate(['route', 'foo', '--dummy'])).to.be.rejectedWith(
+        'Could not find a router file. Please make sure your project has a `router.js` or `router.ts` file.'
+      );
+    });
+
+    it('throws a helpful error if both a `router.ts` and `router.js` file are found', async function () {
+      fs.copySync('tests/dummy/app/router.js', 'tests/dummy/app/router.ts');
+
+      await expect(emberGenerate(['route', 'foo', '--dummy'])).to.be.rejectedWith(
+        'Found both a `router.js` and `router.ts` file. Please make sure your project only has one or the other.'
+      );
     });
   });
 
