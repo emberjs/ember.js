@@ -1042,7 +1042,7 @@ class Route<T = unknown>
     ```app/routes/index.js
     import Route from '@ember/routing/route';
 
-    export default class IndexRoute extends Route {      
+    export default class IndexRoute extends Route {
       @action
       transitionToApples() {
         this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
