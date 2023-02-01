@@ -104,7 +104,7 @@
     "@types/qunit": "^2.19.2",
     "@types/rsvp": "^4.0.4",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
-    "@typescript-eslint/parser": "^5.48.2",
+    "@typescript-eslint/parser": "^5.50.0",
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
     "aws-sdk": "^2.1286.0",
