@@ -238,10 +238,6 @@ jobs:
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist
       - name: test
         run: yarn test:blueprints
 
