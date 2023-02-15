@@ -4,6 +4,38 @@
 
 import type { SafeString as GlimmerSafeString } from '@glimmer/runtime';
 
+/**
+  A wrapper around a string that has been marked as safe ("trusted"). **When
+  rendered in HTML, Ember will not perform any escaping.**
+
+  Note:
+
+  1. This does not *make* the string safe; it means that some code in your
+     application has *marked* it as safe using the `htmlSafe()` function.
+
+  2. The only public API for getting a `SafeString` is calling `htmlSafe()`. It
+     is *not* user-constructible.
+
+  If a string contains user inputs or other untrusted data, you must sanitize
+  the string before using the `htmlSafe` method. Otherwise your code is
+  vulnerable to [Cross-Site Scripting][xss]. There are many open source
+  sanitization libraries to choose from, both for front end and server-side
+  sanitization.
+
+  [xss]: https://owasp.org/www-community/attacks/DOM_Based_XSS
+
+  ```javascript
+  import { htmlSafe } from '@ember/template';
+
+  let someTrustedOrSanitizedString = "<div>Hello!</div>"
+
+  htmlSafe(someTrustedorSanitizedString);
+  ```
+
+  @public
+  @since 4.12.0
+  @class SafeString
+ */
 export class SafeString implements GlimmerSafeString {
   private __string: string;
 
@@ -11,10 +43,24 @@ export class SafeString implements GlimmerSafeString {
     this.__string = string;
   }
 
+  /**
+    Get the string back to use as a string.
+
+    @public
+    @method toString
+    @returns The string marked as trusted
+   */
   toString(): string {
     return `${this.__string}`;
   }
 
+  /**
+    Get the wrapped string as HTML to use without escaping.
+
+    @public
+    @method toHTML
+    @returns string
+   */
   toHTML(): string {
     return this.toString();
   }
@@ -115,8 +161,8 @@ export function htmlSafe(str: string): SafeString {
   ```javascript
   import { htmlSafe, isHTMLSafe } from '@ember/template';
 
-  var plainString = 'plain string',
-      safeString = htmlSafe('<div>someValue</div>');
+  let plainString = 'plain string';
+  let safeString = htmlSafe('<div>someValue</div>');
 
   isHTMLSafe(plainString); // false
   isHTMLSafe(safeString);  // true

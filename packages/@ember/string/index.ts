@@ -290,7 +290,7 @@ export function htmlSafe(str: string): SafeString {
   return internalHtmlSafe(str);
 }
 
-export function isHTMLSafe(str: any | null | undefined): str is SafeString {
+export function isHTMLSafe(str: unknown): str is SafeString {
   deprecateImportFromString('isHTMLSafe');
 
   return internalIsHtmlSafe(str);
