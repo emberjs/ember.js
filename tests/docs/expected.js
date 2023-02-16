@@ -509,6 +509,7 @@ module.exports = {
     'toArray',
     'toggleProperty',
     'toString',
+    'toHTML',
     'tracked',
     'transitionTo',
     'transitionToRoute',

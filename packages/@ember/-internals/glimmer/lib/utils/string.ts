@@ -32,9 +32,10 @@ import type { SafeString as GlimmerSafeString } from '@glimmer/runtime';
   htmlSafe(someTrustedorSanitizedString);
   ```
 
-  @public
-  @since 4.12.0
+  @for @ember/template
   @class SafeString
+  @since 4.12.0
+  @public
  */
 export class SafeString implements GlimmerSafeString {
   private __string: string;
@@ -48,7 +49,7 @@ export class SafeString implements GlimmerSafeString {
 
     @public
     @method toString
-    @returns The string marked as trusted
+    @returns {String} The string marked as trusted
    */
   toString(): string {
     return `${this.__string}`;
@@ -59,7 +60,7 @@ export class SafeString implements GlimmerSafeString {
 
     @public
     @method toHTML
-    @returns string
+    @returns {String} the trusted string, without any escaping applied
    */
   toHTML(): string {
     return this.toString();
