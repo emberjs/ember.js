@@ -131,17 +131,29 @@ moduleFor(
 
       this.add('model:menu_item', MenuItem);
 
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+
+      this.add('route:special', SpecialRoute);
+
       this.addTemplate('special', '<p>{{@model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
-      let visited = runTask(() => this.visit('/specials/1'));
-      this.assertText('LOADING!', 'The app is in the loading state');
+      let promise;
+      ignoreDeprecation(() => {
+        let visited = runTask(() => this.visit('/specials/1'));
+        this.assertText('LOADING!', 'The app is in the loading state');
 
-      resolve(menuItem);
+        resolve(menuItem);
 
-      return visited.then(() => {
-        this.assertText('1', 'The app is now in the specials state');
+        promise = visited.then(() => {
+          this.assertText('1', 'The app is now in the specials state');
+        });
       });
+      return promise;
     }
 
     [`@test The loading state doesn't get entered for promises that resolve on the same run loop`](
@@ -160,6 +172,14 @@ moduleFor(
       });
 
       this.add('model:menu_item', MenuItem);
+
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+
+      this.add('route:special', SpecialRoute);
 
       this.add(
         'route:loading',
@@ -219,7 +239,9 @@ moduleFor(
         })
       );
 
-      runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
+      ignoreDeprecation(() => {
+        runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
+      });
 
       resolve(menuItem);
     }
@@ -263,6 +285,10 @@ moduleFor(
       this.add(
         'route:special',
         Route.extend({
+          model({ menu_item_id }) {
+            return MenuItem.find(menu_item_id);
+          },
+
           setup() {
             throw new Error('Setup error');
           },
