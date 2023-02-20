@@ -7,12 +7,17 @@ import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { consumeTag, tagFor } from '@glimmer/validator';
-import type { ModelFor, Transition } from 'router_js';
+import { type ModelFor, type Transition } from 'router_js';
 import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
 import { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/-internals';
-import type { RouteArgs, RouteOptions } from './lib/utils';
-import { extractRouteArgs, resemblesURL, shallowEqual } from './lib/utils';
+import {
+  type RouteArgs,
+  type RouteOptions,
+  extractRouteArgs,
+  resemblesURL,
+  shallowEqual,
+} from './lib/utils';
 
 export const ROUTER = Symbol('ROUTER');
 

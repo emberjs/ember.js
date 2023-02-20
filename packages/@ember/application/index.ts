@@ -22,13 +22,12 @@ import NoneLocation from '@ember/routing/none-location';
 import { BucketCache } from '@ember/routing/-internals';
 import ApplicationInstance from '@ember/application/instance';
 import Engine, { buildInitializerMethod } from '@ember/engine';
-import type { BootOptions } from '@ember/engine/instance';
-import type { Container, Registry } from '@ember/-internals/container';
-import { privatize as P } from '@ember/-internals/container';
+import { type BootOptions, type EngineInstanceOptions } from '@ember/engine/instance';
+import { type Container, type Registry, P } from '@ember/-internals/container';
+
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import RouterService from '@ember/routing/router-service';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
-import type { SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { type SimpleDocument, type SimpleElement } from '@simple-dom/interface';
 
 /**
  * @deprecated Use `import { getOwner } from '@ember/owner';` instead.

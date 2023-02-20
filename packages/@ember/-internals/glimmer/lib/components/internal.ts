@@ -1,21 +1,21 @@
-import type { InternalOwner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { type InternalOwner, setOwner } from '@ember/-internals/owner';
+
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import type {
-  CapturedArguments,
-  Destroyable,
-  DynamicScope,
-  Environment,
-  InternalComponentCapabilities,
-  InternalComponentManager,
-  TemplateFactory,
-  VMArguments,
-  WithCreateInstance,
+import {
+  type CapturedArguments,
+  type Destroyable,
+  type DynamicScope,
+  type Environment,
+  type InternalComponentCapabilities,
+  type InternalComponentManager,
+  type TemplateFactory,
+  type VMArguments,
+  type WithCreateInstance,
 } from '@glimmer/interfaces';
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+import { type Reference, createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+
 import { untrack } from '@glimmer/validator';
 
 function NOOP(): void {}

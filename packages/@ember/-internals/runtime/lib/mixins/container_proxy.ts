@@ -4,7 +4,7 @@ import { schedule, join } from '@ember/runloop';
 */
 import type Container from '@ember/-internals/container/lib/container';
 import Mixin from '@ember/object/mixin';
-import type { ContainerProxy } from '@ember/-internals/owner';
+import { type ContainerProxy } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.

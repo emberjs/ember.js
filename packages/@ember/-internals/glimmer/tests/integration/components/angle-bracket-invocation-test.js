@@ -1,9 +1,7 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { ENV } from '@ember/-internals/environment';
-import EmberObject from '@ember/object';
-
-import { set, setProperties } from '@ember/object';
+import EmberObject, { set, setProperties } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 

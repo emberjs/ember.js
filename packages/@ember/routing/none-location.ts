@@ -1,6 +1,6 @@
 import EmberObject, { set } from '@ember/object';
 import { assert } from '@ember/debug';
-import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import { type ILocation as EmberLocation, type UpdateCallback } from '@ember/routing/location';
 
 /**
 @module @ember/routing/none-location

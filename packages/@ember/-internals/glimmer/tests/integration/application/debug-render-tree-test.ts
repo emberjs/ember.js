@@ -7,20 +7,20 @@ import {
 
 import { ENV } from '@ember/-internals/environment';
 import { Component, setComponentManager } from '@ember/-internals/glimmer';
-import type { InternalOwner } from '@ember/-internals/owner';
+import { type InternalOwner } from '@ember/-internals/owner';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
 import { assert, captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
+import { type EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { CapturedRenderNode } from '@glimmer/interfaces';
+import { type CapturedRenderNode } from '@glimmer/interfaces';
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 import { expect } from '@glimmer/util';
-import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import { type SimpleElement, type SimpleNode } from '@simple-dom/interface';
+import { type EmberPrecompileOptions, compile } from 'ember-template-compiler';
+
 import { runTask } from 'internal-test-helpers/lib/run';
 
 interface CapturedBounds {

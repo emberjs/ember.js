@@ -2,8 +2,7 @@
 @module ember
 */
 
-import { deprecate } from '@ember/debug';
-import type { DeprecationOptions } from '@ember/debug';
+import { type DeprecationOptions, deprecate } from '@ember/debug';
 import { get } from './property_get';
 import { set } from './property_set';
 

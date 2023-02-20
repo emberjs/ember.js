@@ -1,4 +1,4 @@
-import type { InternalOwner, RegisterOptions } from '@ember/-internals/owner';
+import { type InternalOwner, type RegisterOptions } from '@ember/-internals/owner';
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({

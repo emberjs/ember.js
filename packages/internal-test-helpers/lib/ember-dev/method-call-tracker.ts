@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { assert as emberAssert } from '@ember/debug';
-import type { DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
-import { checkTest } from './utils';
+import { type DebugEnv, type DebugFunction, type DebugFunctionOptions, checkTest } from './utils';
 
 type Actual = [string, boolean, DebugFunctionOptions];
 type Message = string | RegExp;

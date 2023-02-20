@@ -1,7 +1,7 @@
-import type {
-  SerializedTemplateWithLazyBlock,
-  Template,
-  TemplateFactory,
+import {
+  type SerializedTemplateWithLazyBlock,
+  type Template,
+  type TemplateFactory,
 } from '@glimmer/interfaces';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock;

@@ -7,11 +7,7 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 import { Cache } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
 
-import type { SafeString } from '@ember/-internals/glimmer';
-import {
-  htmlSafe as internalHtmlSafe,
-  isHTMLSafe as internalIsHtmlSafe,
-} from '@ember/-internals/glimmer';
+import { type SafeString, internalHtmlSafe, internalIsHtmlSafe } from '@ember/-internals/glimmer';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 

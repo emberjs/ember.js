@@ -2,8 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { DEBUG } from '@glimmer/env';
 
 import { assert } from '../index';
-import type { HandlerCallback } from './handlers';
-import { invoke, registerHandler as genericRegisterHandler } from './handlers';
+import { type HandlerCallback, invoke, genericRegisterHandler } from './handlers';
 
 // This is a "global", but instead of declaring it as `declare global`, which
 // will expose it to all other modules, declare it *locally* (and don't export

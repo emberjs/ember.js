@@ -1,11 +1,11 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
-import type { AnyFn } from '@ember/-internals/utility-types';
+import { type AnyFn } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
-import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
-import _deprecate from './lib/deprecate';
+
+import _deprecate, { type DeprecateFunc, type DeprecationOptions } from './lib/deprecate';
 import { isTesting } from './lib/testing';
-import type { WarnFunc } from './lib/warn';
-import _warn from './lib/warn';
+
+import _warn, { type WarnFunc } from './lib/warn';
 
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler, DeprecationOptions } from './lib/deprecate';

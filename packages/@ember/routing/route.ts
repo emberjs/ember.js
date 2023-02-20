@@ -7,35 +7,37 @@ import {
 } from '@ember/-internals/metal';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { BucketCache } from '@ember/routing/-internals';
+import { BucketCache, generateController } from '@ember/routing/-internals';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { isEmpty, typeOf } from '@ember/utils';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
-import type { AnyFn } from '@ember/-internals/utility-types';
-import Controller from '@ember/controller';
-import type { ControllerQueryParamType } from '@ember/controller';
+import { type AnyFn } from '@ember/-internals/utility-types';
+import Controller, { type ControllerQueryParamType } from '@ember/controller';
+
 import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { Template, TemplateFactory } from '@glimmer/interfaces';
-import type {
-  InternalRouteInfo,
-  ModelFor,
-  Route as IRoute,
-  Transition,
-  TransitionState,
-} from 'router_js';
-import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
-import type { QueryParam } from '@ember/routing/router';
-import EmberRouter from '@ember/routing/router';
-import { generateController } from '@ember/routing/-internals';
-import type { ExpandedControllerQueryParam, NamedRouteArgs, RouteArgs } from './lib/utils';
+import { type Template, type TemplateFactory } from '@glimmer/interfaces';
 import {
+  type InternalRouteInfo,
+  type ModelFor,
+  type Route as IRoute,
+  type Transition,
+  type TransitionState,
+  PARAMS_SYMBOL,
+  STATE_SYMBOL,
+} from 'router_js';
+
+import EmberRouter, { type QueryParam } from '@ember/routing/router';
+import {
+  type ExpandedControllerQueryParam,
+  type NamedRouteArgs,
+  type RouteArgs,
   calculateCacheKey,
   deprecateTransitionMethods,
   normalizeControllerQueryParams,

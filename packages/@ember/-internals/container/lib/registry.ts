@@ -1,17 +1,17 @@
-import type {
-  FactoryClass,
-  FullName,
-  InternalFactory,
-  KnownForTypeResult,
-  RegisterOptions,
-  Resolver,
+import {
+  type FactoryClass,
+  type FullName,
+  type InternalFactory,
+  type KnownForTypeResult,
+  type RegisterOptions,
+  type Resolver,
 } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
-import type { set } from '@ember/object';
+import { type set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import type { ContainerOptions, LazyInjection } from './container';
-import Container from './container';
+
+import Container, { type ContainerOptions, type LazyInjection } from './container';
 
 export interface Injection {
   property: string;

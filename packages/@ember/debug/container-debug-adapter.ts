@@ -3,7 +3,7 @@ import EmberObject from '@ember/object';
 import { typeOf } from '@ember/utils';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
-import type { Resolver } from '@ember/owner';
+import { type Resolver } from '@ember/owner';
 import Namespace from '@ember/application/namespace';
 
 /**

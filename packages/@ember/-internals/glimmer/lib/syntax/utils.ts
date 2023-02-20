@@ -1,4 +1,4 @@
-import type { Core, Option, PresentArray } from '@glimmer/interfaces';
+import { type Core, type Option, type PresentArray } from '@glimmer/interfaces';
 
 export function hashToArgs(hash: Option<Core.Hash>): Option<Core.Hash> {
   if (hash === null) return null;

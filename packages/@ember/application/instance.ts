@@ -4,17 +4,17 @@
 
 import { get, set } from '@ember/object';
 import * as environment from '@ember/-internals/browser-environment';
-import EngineInstance from '@ember/engine/instance';
-import type { BootOptions } from '@ember/engine/instance';
+import EngineInstance, { type BootOptions } from '@ember/engine/instance';
+
 import type Application from '@ember/application';
-import { renderSettled } from '@ember/-internals/glimmer';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
+
+import { type BootEnvironment, renderSettled } from '@ember/-internals/glimmer';
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
-import type { ViewMixin } from '@ember/-internals/views';
-import { EventDispatcher } from '@ember/-internals/views';
-import type { Registry } from '@ember/-internals/container';
-import type { SimpleElement } from '@simple-dom/interface';
+import { type ViewMixin, EventDispatcher } from '@ember/-internals/views';
+
+import { type Registry } from '@ember/-internals/container';
+import { type SimpleElement } from '@simple-dom/interface';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a

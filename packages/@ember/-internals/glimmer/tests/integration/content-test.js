@@ -2,9 +2,8 @@ import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
 
-import { set, computed } from '@ember/object';
+import EmberObject, { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';

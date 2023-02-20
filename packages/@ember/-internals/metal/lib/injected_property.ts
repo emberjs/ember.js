@@ -2,8 +2,12 @@ import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
-import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
-import { isElementDescriptor } from './decorator';
+import {
+  type DecoratorPropertyDescriptor,
+  type ElementDescriptor,
+  isElementDescriptor,
+} from './decorator';
+
 import { defineProperty } from './properties';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;

@@ -1,8 +1,7 @@
 import { inject } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '@ember/object';
-import { buildOwner } from 'internal-test-helpers';
-import { runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'inject',

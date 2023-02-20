@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import type { TestableApp } from '../ext/application';
+import { type TestableApp } from '../ext/application';
 
 export default function andThen(app: TestableApp, callback: (app: TestableApp) => unknown) {
   let wait = app.testHelpers['wait'];

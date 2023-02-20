@@ -2,17 +2,16 @@
 @module @ember/component
 */
 
-import type { InternalFactoryManager } from '@ember/-internals/container/lib/container';
-import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+import { type InternalFactoryManager } from '@ember/-internals/container/lib/container';
+import { type InternalFactory, type InternalOwner, setOwner } from '@ember/-internals/owner';
+
 import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
-import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
+import { type Arguments, type Dict, type HelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
-import type { DirtyableTag } from '@glimmer/validator';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import { type DirtyableTag, consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 

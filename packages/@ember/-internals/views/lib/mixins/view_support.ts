@@ -5,8 +5,8 @@ import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
 import type Component from '@ember/component';
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
-import type { SimpleElement } from '@simple-dom/interface';
+import { type View } from '@ember/-internals/glimmer/lib/renderer';
+import { type SimpleElement } from '@simple-dom/interface';
 
 function K(this: unknown) {
   return this;

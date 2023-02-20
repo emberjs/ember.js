@@ -1,8 +1,8 @@
-import type {
-  ASTPluginBuilder,
-  ASTPluginEnvironment,
-  builders,
-  PrecompileOptions,
+import {
+  type ASTPluginBuilder,
+  type ASTPluginEnvironment,
+  type builders,
+  type PrecompileOptions,
 } from '@glimmer/syntax';
 
 export type Builders = typeof builders;

@@ -2,15 +2,7 @@
 @module @ember/array
 */
 import { DEBUG } from '@glimmer/env';
-import { PROXY_CONTENT } from '@ember/-internals/metal';
-import {
-  objectAt,
-  replaceInNativeArray,
-  replace,
-  computed,
-  beginPropertyChanges,
-  endPropertyChanges,
-} from '@ember/-internals/metal';
+
 import { get, set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
@@ -19,8 +11,21 @@ import MutableEnumerable from '@ember/enumerable/mutable';
 import { compare, typeOf } from '@ember/utils';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '@ember/object/observable';
-import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
-import type { ComputedPropertyCallback } from '@ember/-internals/metal';
+import {
+  type MethodNamesOf,
+  type MethodParams,
+  type MethodReturns,
+} from '@ember/-internals/utility-types';
+import {
+  type ComputedPropertyCallback,
+  PROXY_CONTENT,
+  objectAt,
+  replaceInNativeArray,
+  replace,
+  computed,
+  beginPropertyChanges,
+  endPropertyChanges,
+} from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 
 export { default as makeArray } from './lib/make-array';

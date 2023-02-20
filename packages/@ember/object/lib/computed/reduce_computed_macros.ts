@@ -6,8 +6,7 @@ import { assert } from '@ember/debug';
 import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
 import { computed, get } from '@ember/object';
 import { compare } from '@ember/utils';
-import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
-import type { NativeArray } from '@ember/array';
+import EmberArray, { A as emberA, uniqBy as uniqByArray, type NativeArray } from '@ember/array';
 
 function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
   return Array.isArray(obj) || EmberArray.detect(obj);

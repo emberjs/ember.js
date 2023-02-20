@@ -3,7 +3,7 @@
 */
 
 import { precompile as glimmerPrecompile } from '@glimmer/compiler';
-import type { EmberPrecompileOptions } from '../types';
+import { type EmberPrecompileOptions } from '../types';
 import compileOptions from './compile-options';
 
 /**

@@ -3,13 +3,13 @@ import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';
 import { privatize as P } from '@ember/-internals/container';
-import { factory } from 'internal-test-helpers';
-import EmberObject from '@ember/object';
 import {
+  factory,
   moduleFor,
   ModuleBasedTestResolver,
   AbstractTestCase as TestCase,
 } from 'internal-test-helpers';
+import EmberObject from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');

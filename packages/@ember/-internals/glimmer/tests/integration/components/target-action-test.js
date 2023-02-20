@@ -1,9 +1,8 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/object';
+import EmberObject, { set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
