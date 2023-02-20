@@ -1,5 +1,11 @@
 # Ember Changelog
 
+## v4.12.0-beta.1 (February 20, 2023)
+
+- [#20352](https://github.com/emberjs/ember.js/pull/20352) [FEATURE] Enable generating Typescript blueprints when `isTypeScriptProject` is true without additional environment variables per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20355](https://github.com/emberjs/ember.js/pull/20355) [FEATURE] Enhance the Typescript blueprint for generated services per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20356](https://github.com/emberjs/ember.js/pull/20356) [FEATURE] Generate signature in Typescript component blueprints per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+
 ## v4.11.0 (February 20, 2023)
 
 - [#20288](https://github.com/emberjs/ember.js/pull/20288) [FEATURE] Stable types for `@ember/owner`
