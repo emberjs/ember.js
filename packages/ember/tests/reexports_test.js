@@ -124,9 +124,6 @@ let allExports = [
   // @ember/enumerable
   ['Enumerable', '@ember/enumerable', 'default'],
 
-  // @ember/error
-  ['Error', '@ember/error', 'default'],
-
   // @ember/instrumentation
   ['instrument', '@ember/instrumentation', 'instrument'],
   ['subscribe', '@ember/instrumentation', 'subscribe'],
