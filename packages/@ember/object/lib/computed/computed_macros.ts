@@ -770,7 +770,7 @@ export function oneWay(dependentKey: string) {
   teddy.nickName; // 'Teddy'
 
   set(teddy, 'nickName', 'TeddyBear'); // throws Exception
-  // throw new EmberError('Cannot Set: nickName on: <User:ember27288>' );`
+  // throw new Error('Cannot Set: nickName on: <User:ember27288>' );`
 
   teddy.firstName; // 'Teddy'
   ```

@@ -40,13 +40,6 @@ moduleFor(
       owner = null;
     }
 
-    ['@test [GH#15237] EmberError is imported correctly'](assert) {
-      // If we get the right message it means Error is being imported correctly.
-      assert.throws(function () {
-        triggerEvent(null, false, []);
-      }, /because your app hasn't finished transitioning/);
-    }
-
     ['@test should not create a router.js instance upon init'](assert) {
       let router = createRouter({ options: { disableSetup: true } });
 

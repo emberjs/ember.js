@@ -40,8 +40,6 @@ declare module 'ember' {
   import EmberArrayProxy from '@ember/array/proxy';
   import type EmberEnumerable from '@ember/array/-private/enumerable';
   import type EmberMutableEnumerable from '@ember/array/-private/mutable-enumerable';
-  // @ember/error
-  import type EmberError from '@ember/error';
 
   type EmberArray<T> = EmberArrayNs.default<T>;
   import type EmberActionHandler from '@ember/object/-private/action-handler';
