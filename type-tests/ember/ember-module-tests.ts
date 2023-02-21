@@ -286,12 +286,6 @@ new Ember.Test.QUnitAdapter();
 // Ember.Helper
 // helper
 Ember.Helper.helper(([a, b]: [number, number]) => a + b);
-// Ember.String
-Ember.String;
-// htmlSafe
-expectTypeOf(Ember.String.htmlSafe('foo')).toEqualTypeOf<SafeString>();
-// isHTMLSafe
-expectTypeOf(Ember.String.isHTMLSafe('foo')).toEqualTypeOf<boolean>();
 // Ember.Test
 expectTypeOf(Ember.Test.checkWaiters()).toEqualTypeOf<boolean>();
 // checkWaiters
