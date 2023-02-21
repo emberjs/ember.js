@@ -608,7 +608,7 @@ moduleFor(
 
       assert.throws(() => {
         container.lookup('service:foo');
-      }, /Cannot call `.lookup` after the owner has been destroyed/);
+      }, "Cannot call `.lookup('service:foo')` after the owner has been destroyed");
     }
 
     [`@test assert when calling factoryFor after destroy on a container`](assert) {
@@ -626,7 +626,7 @@ moduleFor(
 
       assert.throws(() => {
         container.factoryFor('service:foo');
-      }, /Cannot call `.factoryFor` after the owner has been destroyed/);
+      }, "Cannot call `.factoryFor('service:foo')` after the owner has been destroyed");
     }
 
     // this is skipped until templates and the glimmer environment do not require `OWNER` to be
