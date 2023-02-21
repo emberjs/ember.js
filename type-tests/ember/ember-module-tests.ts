@@ -21,11 +21,6 @@ Ember.addObserver({ a: 'foo' }, 'a', {}, () => {});
 // assert
 Ember.assert('2+2 should always be 4', 2 + 2 === 4);
 // assign
-const o1 = Ember.assign({ a: 1 }, { b: 2 });
-expectTypeOf(o1.a).toBeNumber();
-expectTypeOf(o1.b).toBeNumber();
-// @ts-expect-error
-o1.c;
 // Ember.bind // @ts-expect-error
 // cacheFor
 expectTypeOf(Ember.cacheFor({ a: 123 }, 'a')).toEqualTypeOf<number | undefined>();

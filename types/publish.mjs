@@ -254,8 +254,6 @@ const PREVIEW_MODULES = [
   '@ember/object/observers.d.ts',
   '@ember/object/promise-proxy-mixin.d.ts',
   '@ember/object/proxy.d.ts',
-  '@ember/polyfills/index.d.ts',
-  '@ember/polyfills/lib/assign.d.ts',
   '@ember/renderer/index.d.ts',
   '@ember/routing/-internals.d.ts',
   '@ember/routing/auto-location.d.ts',

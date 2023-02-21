@@ -89,9 +89,6 @@ import './@ember/object/observers';
 import './@ember/object/promise-proxy-mixin';
 import './@ember/object/proxy';
 
-import './@ember/polyfills';
-import './@ember/polyfills/types';
-
 import './@ember/routing';
 import './@ember/routing/-private/router-dsl';
 import './@ember/routing/auto-location';

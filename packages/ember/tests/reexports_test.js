@@ -260,10 +260,6 @@ let allExports = [
   // @ember/object/proxy
   ['ObjectProxy', '@ember/object/proxy', 'default'],
 
-  // @ember/polyfills
-  ['assign', '@ember/polyfills', 'assign'],
-  ['platform.hasPropertyAccessors', '@ember/polyfills', 'hasPropertyAccessors'],
-
   // @ember/routing/hash-location
   ['HashLocation', '@ember/routing/hash-location', 'default'],
 
@@ -418,7 +414,4 @@ let allExports = [
   [null, 'rsvp', 'race'],
   [null, 'rsvp', 'reject'],
   [null, 'rsvp', 'resolve'],
-
-  // misc.
-  ['platform.defineProperty', null, { value: true }],
 ].filter(Boolean);

@@ -44,14 +44,6 @@ function testIsNone() {
   Ember.isNone('', '');
 }
 
-function testAssign() {
-  expectTypeOf(Ember.assign({ first: 'Tom' }, { middle: 'M' }, { last: 'Dale' })).toEqualTypeOf<{
-    first: string;
-    middle: string;
-    last: string;
-  }>();
-}
-
 function testOnError() {
   Ember.onerror = (error) => {
     fetch('/report-error', {
@@ -119,22 +111,4 @@ declare const fileList: FileList;
   expectTypeOf(Ember.typeOf(new Error('teamocil'))).toEqualTypeOf<'error'>();
   expectTypeOf(Ember.typeOf(new Date() as RegExp | Date)).toEqualTypeOf<'regexp' | 'date'>();
   expectTypeOf(Ember.typeOf({ randomObject: true })).toEqualTypeOf<'object'>();
-})();
-
-(() => {
-  /* assign */
-  Ember.assign({}, { a: 'b' });
-  expectTypeOf(Ember.assign({}, { a: 'b' }).a).toBeString();
-  expectTypeOf(Ember.assign({ a: 6 }, { a: 'b' }).a).toBeString();
-  expectTypeOf(Ember.assign({ a: 6 }, {}).a).toBeNumber();
-  // @ts-expect-error
-  Ember.assign({ b: 6 }, {}).a;
-  expectTypeOf(Ember.assign({}, { b: 6 }, {}).b).toBeNumber();
-  expectTypeOf(Ember.assign({ a: 'hello' }, { b: 6 }, {}).a).toBeString();
-  expectTypeOf(Ember.assign({ a: 'hello' }, { b: 6 }, { a: true }).a).toBeBoolean();
-  // @ts-expect-error
-  Ember.assign({ a: 'hello' }, '', { a: true }).a;
-  expectTypeOf(
-    Ember.assign({ d: ['gobias industries'] }, { a: 'hello' }, { b: 6 }, { a: true }).d
-  ).toEqualTypeOf<string[]>();
 })();
