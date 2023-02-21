@@ -152,7 +152,7 @@ export default class Container {
     options?: RegisterOptions
   ): InternalFactory<object> | object | undefined {
     if (this.isDestroyed) {
-      throw new Error(`Cannot call \`.lookup\` after the owner has been destroyed`);
+      throw new Error(`Cannot call \`.lookup('${fullName}')\` after the owner has been destroyed`);
     }
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
@@ -217,7 +217,9 @@ export default class Container {
    */
   factoryFor(fullName: FullName): InternalFactoryManager<object> | undefined {
     if (this.isDestroyed) {
-      throw new Error(`Cannot call \`.factoryFor\` after the owner has been destroyed`);
+      throw new Error(
+        `Cannot call \`.factoryFor('${fullName}')\` after the owner has been destroyed`
+      );
     }
     let normalizedName = this.registry.normalize(fullName);
 
