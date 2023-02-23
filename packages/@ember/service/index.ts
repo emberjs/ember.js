@@ -99,7 +99,7 @@ export default class Service extends FrameworkObject {
   lookups resolve to the correct type.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Registry extends Record<string, Service> {}
+export interface Registry {}
 
 declare module '@ember/owner' {
   export interface DIRegistry {

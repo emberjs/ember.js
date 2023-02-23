@@ -93,11 +93,9 @@ import { addObserver, removeObserver } from '@ember/object/observers';
 import ObjectProxy from '@ember/object/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { assign } from '@ember/polyfills';
-import AutoLocation from '@ember/routing/auto-location';
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
-import EmberLocation from '@ember/routing/location';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import {
@@ -368,17 +366,11 @@ const PartialEmber = {
   generateController,
   generateControllerFactory,
 
-  // ****@ember/routing/auto-location****
-  AutoLocation,
-
   // ****@ember/routing/hash-location****
   HashLocation,
 
   // ****@ember/routing/history-location****
   HistoryLocation,
-
-  // ****@ember/routing/location****
-  Location: EmberLocation,
 
   // ****@ember/routing/none-location****
   NoneLocation,

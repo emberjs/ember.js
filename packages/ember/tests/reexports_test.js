@@ -264,17 +264,11 @@ let allExports = [
   ['assign', '@ember/polyfills', 'assign'],
   ['platform.hasPropertyAccessors', '@ember/polyfills', 'hasPropertyAccessors'],
 
-  // @ember/routing/auto-location
-  ['AutoLocation', '@ember/routing/auto-location', 'default'],
-
   // @ember/routing/hash-location
   ['HashLocation', '@ember/routing/hash-location', 'default'],
 
   // @ember/routing/history-location
   ['HistoryLocation', '@ember/routing/history-location', 'default'],
-
-  // @ember/routing/location
-  ['Location', '@ember/routing/location', 'default'],
 
   // @ember/routing/none-location
   ['NoneLocation', '@ember/routing/none-location', 'default'],

@@ -668,12 +668,11 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     ```
 
     The following location types are available by default:
-    `auto`, `hash`, `history`, `none`.
+    `hash`, `history`, `none`.
 
     See [HashLocation](/ember/release/classes/HashLocation).
     See [HistoryLocation](/ember/release/classes/HistoryLocation).
     See [NoneLocation](/ember/release/classes/NoneLocation).
-    See [AutoLocation](/ember/release/classes/AutoLocation).
 
     @property location
     @default 'hash'
@@ -746,3 +745,9 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 }
 
 export { RouterService as default, RouteInfo, RouteInfoWithAttributes };
+
+declare module '@ember/service' {
+  interface Registry {
+    router: RouterService<Route>;
+  }
+}

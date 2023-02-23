@@ -1,5 +1,5 @@
 import EmberObject, { set } from '@ember/object';
-import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
 
 /**
@@ -277,5 +277,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     if (this._popstateHandler) {
       window.removeEventListener('popstate', this._popstateHandler);
     }
+  }
+}
+
+declare module '@ember/routing/location' {
+  export interface Registry {
+    history: HistoryLocation;
   }
 }

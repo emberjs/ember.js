@@ -1,6 +1,6 @@
 import type EmberObject from '@ember/object';
 import NoneLocation from '@ember/routing/none-location';
-import type { ILocation } from '@ember/routing/location';
+import type { Location } from '@ember/routing/location';
 import { expectTypeOf } from 'expect-type';
 import type Owner from '@ember/owner';
 
@@ -11,4 +11,4 @@ let owner = {} as Owner;
 
 let location = new NoneLocation(owner);
 expectTypeOf(location).toMatchTypeOf<EmberObject>();
-expectTypeOf(location).toMatchTypeOf<ILocation>();
+expectTypeOf(location).toMatchTypeOf<Location>();

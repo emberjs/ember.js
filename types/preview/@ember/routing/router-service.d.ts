@@ -349,3 +349,11 @@ declare module '@ember/routing/router-service' {
     refresh(pivotRouteName?: string): Transition;
   }
 }
+
+declare module '@ember/service' {
+  import RouterService from '@ember/routing/router-service';
+
+  interface Registry {
+    router: RouterService;
+  }
+}

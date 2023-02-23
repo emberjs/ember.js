@@ -1,53 +1,37 @@
-import { assert, deprecate } from '@ember/debug';
-
-export interface ILocation {
-  implementation: string;
-  cancelRouterSetup?: boolean;
-  getURL(): string;
-  setURL(url: string): void;
-  replaceURL?(url: string): void;
-  onUpdateURL(callback: UpdateCallback): void;
-  formatURL(url: string): string;
-  detect?(): void;
-  initState?(): void;
-  destroy(): void;
-}
-
-export type UpdateCallback = (url: string) => void;
 /**
-@module @ember/routing/location
+  @module @ember/routing/location
 */
 
 /**
-  Location returns an instance of the correct implementation of
-  the `location` API.
+  `Location` defines an interface to be implemented by `location` APIs. It is
+  not user-constructible; the only valid way to get a `Location` is via one of
+  its concrete implementations.
 
   ## Implementations
 
-  You can pass an implementation name (`hash`, `history`, `none`, `auto`) to force a
+  You can pass an implementation name (`hash`, `history`, `none`) to force a
   particular implementation to be used in your application.
 
-  See [HashLocation](/ember/release/classes/HashLocation).
-  See [HistoryLocation](/ember/release/classes/HistoryLocation).
-  See [NoneLocation](/ember/release/classes/NoneLocation).
-  See [AutoLocation](/ember/release/classes/AutoLocation).
+  - See [HashLocation](/ember/release/classes/HashLocation).
+  - See [HistoryLocation](/ember/release/classes/HistoryLocation).
+  - See [NoneLocation](/ember/release/classes/NoneLocation).
 
   ## Location API
 
   Each location implementation must provide the following methods:
 
-  * implementation: returns the string name used to reference the implementation.
-  * getURL: returns the current URL.
-  * setURL(path): sets the current URL.
-  * replaceURL(path): replace the current URL (optional).
-  * onUpdateURL(callback): triggers the callback when the URL changes.
-  * formatURL(url): formats `url` to be placed into `href` attribute.
-  * detect() (optional): instructs the location to do any feature detection
+  * `implementation`: returns the string name used to reference the implementation.
+  * `getURL`: returns the current URL.
+  * `setURL(path)`: sets the current URL.
+  * `replaceURL(path)`: replace the current URL (optional).
+  * `onUpdateURL(callback)`: triggers the callback when the URL changes.
+  * `formatURL(url)`: formats `url` to be placed into `href` attribute.
+  * `detect()` (optional): instructs the location to do any feature detection
       necessary. If the location needs to redirect to a different URL, it
       can cancel routing by setting the `cancelRouterSetup` property on itself
       to `false`.
 
-  Calling setURL or replaceURL will not trigger onUpdateURL callbacks.
+  Calling `setURL` or `replaceURL` will not trigger onUpdateURL callbacks.
 
   ## Custom implementation
 
@@ -75,56 +59,93 @@ export type UpdateCallback = (url: string) => void;
   }
   ```
 
+  @for @ember/routing/location
   @class Location
-  @private
+  @since 5.0.0
+  @public
 */
-export default {
+export interface Location {
   /**
-   This is deprecated in favor of using the container to lookup the location
-   implementation as desired.
+   * Returns the string name used to reference the implementation.
+   *
+   * @property implementation
+   * @type String
+   * @public
+   */
+  implementation: keyof Registry & string;
 
-   For example:
+  /**
+   * If the location needs to redirect to a different URL, it can cancel routing
+   * by setting the `cancelRouterSetup` property on itself to false.
+   * @property cancelRouterSetup
+   * @type Boolean
+   * @optional
+   * @default true
+   * @public
+   */
+  cancelRouterSetup?: boolean;
 
-   ```javascript
-   // Given a location registered as follows:
-   container.register('location:history-test', HistoryTestLocation);
+  /**
+   * The current URL.
+   * @property
+   * @type String
+   * @public
+   */
+  getURL(): string;
 
-   // You could create a new instance via:
-   container.lookup('location:history-test');
-   ```
+  /**
+   * Sets the current URL. Calling `setURL` will not trigger `onUpdateURL`
+   * callbacks.
+   *
+   * @public
+   * @method
+   * @param {String} url the new URL to update to.
+   */
+  setURL(url: string): void;
 
-    @method create
-    @param {Object} options
-    @return {Object} an instance of an implementation of the `location` API
-    @deprecated Use the container to lookup the location implementation that you
-    need.
-    @private
-  */
-  create(options?: { implementation: string }): ILocation {
-    let implementation = options?.implementation;
-    assert("Location.create: you must specify a 'implementation' option", implementation);
+  /**
+   * Replace the current URL (optional). Calling `replaceURL` will not trigger
+   * `onUpdateURL` callbacks.
+   *
+   * @public
+   * @method
+   * @param {String} url the new URL to replace the current URL with.
+   */
+  replaceURL?(url: string): void;
 
-    let implementationClass = this.implementations[implementation];
+  /**
+   * triggers the callback when the URL changes.
+   * @param {(newUrl: string) => void} callback A function to run when the URL
+   *   changes. The the new URL string is provided as the only argument.
+   */
+  onUpdateURL(callback: UpdateCallback): void;
 
-    assert(`Location.create: ${implementation} is not a valid implementation`, implementationClass);
+  /**
+   * Formats url to be placed into href attribute.
+   *
+   * @public
+   * @method
+   * @param {String} url the url to format
+   */
+  formatURL(url: string): string;
+  /**
+   * Instructs the location to do any feature detection necessary. If the
+   * location needs to redirect to a different URL, it can cancel routing by
+   * setting the cancelRouterSetup property on itself to false.
+   */
+  detect?(): void;
 
-    deprecate(
-      "Calling `create` on Location class is deprecated. Instead, use `container.lookup('location:my-location')` to lookup the location you need.",
-      false,
-      {
-        id: 'deprecate-auto-location',
-        until: '5.0.0',
-        url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
-        for: 'ember-source',
-        since: {
-          available: '4.1.0',
-          enabled: '4.1.0',
-        },
-      }
-    );
+  initState?(): void;
+  destroy(): void;
+}
 
-    return implementationClass.create(...arguments);
-  },
+export type UpdateCallback = (url: string) => void;
 
-  implementations: {} as Record<string, { create: (...args: any[]) => ILocation }>,
-};
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Registry extends Record<string, Location | undefined> {}
+
+declare module '@ember/owner' {
+  export interface DIRegistry {
+    location: Registry;
+  }
+}

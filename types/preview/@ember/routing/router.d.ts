@@ -37,13 +37,5 @@ declare module '@ember/routing/router' {
     transitionTo(name: string, options: {}): Transition;
   }
 
-  export default interface RouterService extends Evented {}
-}
-
-declare module '@ember/service' {
-  import RouterService from '@ember/routing/router-service';
-
-  interface Registry {
-    router: RouterService;
-  }
+  export default interface Router extends Evented {}
 }
