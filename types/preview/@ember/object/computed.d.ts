@@ -5,7 +5,11 @@ declare module '@ember/object/computed' {
    * will be cached. You can specify various properties that your computed property is dependent on.
    * This will force the cached result to be recomputed if the dependencies are modified.
    */
-  export default class ComputedProperty {
+  export default class ComputedProperty<
+    // Unused generics for compat with @types/ember__object package.
+    // see https://github.com/machty/ember-concurrency/issues/510
+    Get = unknown, Set = Get
+  > {
     /**
      * Call on a computed property to set it into read-only mode. When in this
      * mode the computed property will throw an error when set.
