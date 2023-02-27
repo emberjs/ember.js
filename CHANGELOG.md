@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.12.0-beta.2 (February 27, 2023)
+
+- [#20385](https://github.com/emberjs/ember.js/pull/20385) [BUGFIX] Improve error for owner methods called after destroy
+
 ## v4.12.0-beta.1 (February 20, 2023)
 
 - [#20352](https://github.com/emberjs/ember.js/pull/20352) [FEATURE] Enable generating Typescript blueprints when `isTypeScriptProject` is true without additional environment variables per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
