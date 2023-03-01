@@ -28,6 +28,7 @@ import {
   ComputedDescriptor,
   descriptorForDecorator,
   descriptorForProperty,
+  isClassicDecorator,
   makeComputedDecorator,
   nativeDescDecorator,
 } from './decorator';
@@ -237,7 +238,7 @@ function mergeMixins(
   keys: string[],
   keysWithSuper: string[]
 ): void {
-  let currentMixin;
+  let currentMixin: MixinLike | undefined;
 
   for (let i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
@@ -304,12 +305,17 @@ function mergeProps(
       let desc = meta.peekDescriptors(key);
 
       if (desc === undefined) {
-        // The superclass did not have a CP, which means it may have
-        // observers or listeners on that property.
-        let prev = (values[key] = base[key]);
+        // If the value is a classic decorator, we don't want to actually
+        // access it, because that will execute the decorator while we're
+        // building the class.
+        if (!isClassicDecorator(value)) {
+          // The superclass did not have a CP, which means it may have
+          // observers or listeners on that property.
+          let prev = (values[key] = base[key]);
 
-        if (typeof prev === 'function') {
-          updateObserversAndListeners(base, key, prev, false);
+          if (typeof prev === 'function') {
+            updateObserversAndListeners(base, key, prev, false);
+          }
         }
       } else {
         descs[key] = desc;
