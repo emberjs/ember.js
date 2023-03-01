@@ -135,7 +135,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-qunit": "^7.3.4",
-    "execa": "^5.1.1",
+    "execa": "^7.0.0",
     "expect-type": "^0.15.0",
     "express": "^4.18.2",
     "finalhandler": "^1.1.2",
