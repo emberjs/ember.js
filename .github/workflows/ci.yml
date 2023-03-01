@@ -92,7 +92,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version: 14.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
