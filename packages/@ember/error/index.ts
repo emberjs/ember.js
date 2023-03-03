@@ -2,7 +2,11 @@ import { deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 /**
- @module @ember/error
+This module is deprecated and should not be used.
+See [the deprecations guide](https://deprecations.emberjs.com/v4.x#toc_deprecate-ember-error)
+for more details.
+
+@module @ember/error
 */
 
 /** ErrorConstructor without node extensions */

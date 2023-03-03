@@ -1,4 +1,8 @@
 /**
+This module is deprecated and should not be used.
+See [the deprecations guide](https://deprecations.emberjs.com/v4.x#toc_ember-string-from-ember-module)
+for more details.
+
 @module @ember/string
 */
 
