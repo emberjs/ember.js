@@ -2,20 +2,18 @@
 @module @ember/object/mixin
 */
 import { INIT_FACTORY } from '@ember/-internals/container';
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { type Meta, metaFor, peekMeta } from '@ember/-internals/meta';
+
 import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
-import type {
-  ComputedDecorator,
-  ComputedPropertyGetter,
-  ComputedPropertyObj,
-  ComputedPropertySetter,
-  ComputedDescriptor,
-} from '@ember/-internals/metal';
 import {
+  type ComputedDecorator,
+  type ComputedPropertyGetter,
+  type ComputedPropertyObj,
+  type ComputedPropertySetter,
+  type ComputedDescriptor,
   ComputedProperty,
   descriptorForDecorator,
   makeComputedDecorator,
@@ -27,6 +25,7 @@ import {
   defineDecorator,
   defineValue,
 } from '@ember/-internals/metal';
+
 import { addListener, removeListener } from '@ember/object/events';
 
 const a_concat = Array.prototype.concat;

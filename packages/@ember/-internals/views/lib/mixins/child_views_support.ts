@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import { type View } from '@ember/-internals/glimmer/lib/renderer';
 import { nativeDescDecorator } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import { getChildViews, addChildView } from '../system/utils';

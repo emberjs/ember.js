@@ -1,5 +1,5 @@
 import EmberObject, { set } from '@ember/object';
-import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import { type ILocation as EmberLocation, type UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
 
 /**

@@ -1,5 +1,5 @@
-import type { InternalOwner } from '@ember/-internals/owner';
-import type { ComponentManager } from '@glimmer/interfaces';
+import { type InternalOwner } from '@ember/-internals/owner';
+import { type ComponentManager } from '@glimmer/interfaces';
 import {
   componentCapabilities as glimmerComponentCapabilities,
   modifierCapabilities as glimmerModifierCapabilities,

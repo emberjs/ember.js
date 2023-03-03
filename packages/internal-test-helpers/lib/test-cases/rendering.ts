@@ -1,19 +1,19 @@
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compile } from 'ember-template-compiler';
+import { type EmberPrecompileOptions, compile } from 'ember-template-compiler';
+
 import { EventDispatcher } from '@ember/-internals/views';
-import type { Renderer } from '@ember/-internals/glimmer';
+import { type Renderer, helper, Helper, _resetRenderers } from '@ember/-internals/glimmer';
 import Component from '@ember/component';
-import { helper, Helper, _resetRenderers } from '@ember/-internals/glimmer';
+
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy, runTask } from '../run';
-import type { InternalFactory } from '@ember/-internals/owner';
-import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
+import { type InternalFactory } from '@ember/-internals/owner';
+import { type BootOptions, type EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { HelperFunction } from '@ember/-internals/glimmer/lib/helper';
+import { type HelperFunction } from '@ember/-internals/glimmer/lib/helper';
 
 const TextNode = window.Text;
 

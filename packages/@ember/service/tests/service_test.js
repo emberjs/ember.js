@@ -1,7 +1,6 @@
 import Service, { inject, service } from '@ember/service';
 import EmberObject from '@ember/object';
-import { buildOwner, runDestroy } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { buildOwner, runDestroy, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'inject - decorator',

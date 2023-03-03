@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import Router from '@ember/routing/router';
 import { run } from '@ember/runloop';
-import type { TestableApp } from '../ext/application';
+import { type TestableApp } from '../ext/application';
 
 /**
   Loads a route, sets up any controllers, and renders any templates associated

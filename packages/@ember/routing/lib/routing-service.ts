@@ -6,10 +6,10 @@ import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
-import type { ModelFor } from 'router_js';
+import { type ModelFor } from 'router_js';
 import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
-import type { RouterState } from '@ember/routing/-internals';
+import { type RouterState } from '@ember/routing/-internals';
 import { ROUTER } from '@ember/routing/router-service';
 
 /**

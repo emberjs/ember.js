@@ -1,16 +1,18 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { type Meta, metaFor, peekMeta } from '@ember/-internals/meta';
+
 import { isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { _WeakSet } from '@glimmer/util';
-import type { Tag, TagMeta } from '@glimmer/validator';
 import {
+  type Tag,
+  type TagMeta,
   combine,
   createUpdatableTag,
   tagMetaFor,
   updateTag,
   validateTag,
 } from '@glimmer/validator';
+
 import { objectAt } from './array';
 import { tagForProperty } from './tags';
 

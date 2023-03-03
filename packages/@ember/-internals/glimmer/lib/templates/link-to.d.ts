@@ -1,3 +1,3 @@
-import type { TemplateFactory } from '@glimmer/interfaces';
+import { type TemplateFactory } from '@glimmer/interfaces';
 declare const TEMPLATE: TemplateFactory;
 export default TEMPLATE;

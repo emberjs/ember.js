@@ -1,6 +1,6 @@
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import { type AST, type ASTPlugin } from '@glimmer/syntax';
 import { assert } from '@ember/debug';
-import type { EmberASTPluginEnvironment } from '../types';
+import { type EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 /**

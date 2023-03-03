@@ -1,11 +1,11 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor } from '@ember/-internals/meta';
+import { type Meta, metaFor } from '@ember/-internals/meta';
+
 import { toString } from '@ember/-internals/utils';
 import { assert, inspect } from '@ember/debug';
 import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type { UpdatableTag } from '@glimmer/validator';
 import {
+  type UpdatableTag,
   ALLOW_CYCLES,
   consumeTag,
   tagFor,
@@ -16,13 +16,12 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
+
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
-import type {
-  ExtendedMethodDecorator,
-  DecoratorPropertyDescriptor,
-  ElementDescriptor,
-} from './decorator';
 import {
+  type ExtendedMethodDecorator,
+  type DecoratorPropertyDescriptor,
+  type ElementDescriptor,
   ComputedDescriptor,
   descriptorForDecorator,
   descriptorForProperty,
@@ -30,10 +29,11 @@ import {
   isElementDescriptor,
   makeComputedDecorator,
 } from './decorator';
+
 import expandProperties from './expand_properties';
 import { addObserver, setObserverSuspended } from './observer';
-import type { PropertyDidChange } from './property_events';
 import {
+  type PropertyDidChange,
   beginPropertyChanges,
   endPropertyChanges,
   hasPropertyDidChange,

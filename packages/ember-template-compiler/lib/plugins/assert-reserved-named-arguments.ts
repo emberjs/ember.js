@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import { type AST, type ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
-import type { EmberASTPluginEnvironment } from '../types';
+import { type EmberASTPluginEnvironment } from '../types';
 
 export default function assertReservedNamedArguments(env: EmberASTPluginEnvironment): ASTPlugin {
   let moduleName = env.meta?.moduleName;

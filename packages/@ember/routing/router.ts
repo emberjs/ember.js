@@ -1,53 +1,62 @@
 import { privatize as P } from '@ember/-internals/container';
-import type {
-  BootEnvironment,
-  OutletState as GlimmerOutletState,
-  OutletView,
-} from '@ember/-internals/glimmer';
-import { computed, get, set } from '@ember/object';
-import type { default as Owner, FactoryManager } from '@ember/owner';
-import { getOwner } from '@ember/owner';
-import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
-import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
 import {
+  type BootEnvironment,
+  type OutletState as GlimmerOutletState,
+  type OutletView,
+} from '@ember/-internals/glimmer';
+import EmberObject, { computed, get, set } from '@ember/object';
+import { type default as Owner, type FactoryManager, getOwner } from '@ember/owner';
+
+import {
+  type DSLCallback,
+  type EngineRouteInfo,
+  BucketCache,
+  DSL,
+  RouterState,
+} from '@ember/routing/-internals';
+
+import {
+  type RouteArgs,
+  type RouteOptions,
   calculateCacheKey,
   extractRouteArgs,
   getActiveTargetName,
   resemblesURL,
 } from './lib/utils';
-import type { RouteArgs, RouteOptions } from './lib/utils';
 import EmberLocation, { type ILocation as IEmberLocation } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
-import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/utils';
 import Evented from '@ember/object/evented';
 import { assert, deprecate, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { QueryParamMeta, RenderOptions } from '@ember/routing/route';
-import type Route from '@ember/routing/route';
 import {
+  type QueryParamMeta,
+  type RenderOptions,
   defaultSerialize,
   getFullQueryParams,
   hasDefaultSerialize,
   ROUTE_CONNECTIONS,
 } from '@ember/routing/route';
-import type {
-  InternalRouteInfo,
-  ModelFor,
-  RouteInfo,
-  RouteInfoWithAttributes,
-  Transition,
-  TransitionError,
-  TransitionState,
+import type Route from '@ember/routing/route';
+
+import Router, {
+  logAbort,
+  STATE_SYMBOL,
+  type InternalRouteInfo,
+  type ModelFor,
+  type RouteInfo,
+  type RouteInfoWithAttributes,
+  type Transition,
+  type TransitionError,
+  type TransitionState,
 } from 'router_js';
-import Router, { logAbort, STATE_SYMBOL } from 'router_js';
-import type { Timer } from 'backburner';
+import { type Timer } from 'backburner';
 import EngineInstance from '@ember/engine/instance';
-import type { QueryParams } from 'route-recognizer';
-import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
-import type { Template } from '@glimmer/interfaces';
+import { type QueryParams } from 'route-recognizer';
+import { type AnyFn, type MethodNamesOf, type OmitFirst } from '@ember/-internals/utility-types';
+import { type Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
 
 /**

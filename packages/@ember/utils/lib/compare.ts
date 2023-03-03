@@ -1,5 +1,4 @@
-import type { TypeName } from './type-of';
-import typeOf from './type-of';
+import typeOf, { type TypeName } from './type-of';
 import { Comparable } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 

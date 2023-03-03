@@ -2,7 +2,7 @@
 @module ember
 */
 
-import type { TemplateFactory } from '@glimmer/interfaces';
+import { type TemplateFactory } from '@glimmer/interfaces';
 import compile from './compile';
 
 export interface BootstrapOptions {

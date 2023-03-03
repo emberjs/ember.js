@@ -1,34 +1,40 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import type { InternalOwner } from '@ember/-internals/owner';
-import { getOwner } from '@ember/-internals/owner';
+import { type InternalOwner, getOwner } from '@ember/-internals/owner';
+
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type {
-  Bounds,
-  CompileTimeCompilationContext,
-  Cursor,
-  DebugRenderTree,
-  DynamicScope as GlimmerDynamicScope,
-  ElementBuilder,
-  Environment,
-  Option,
-  RenderResult,
-  RuntimeContext,
-  Template,
-  TemplateFactory,
+import {
+  type Bounds,
+  type CompileTimeCompilationContext,
+  type Cursor,
+  type DebugRenderTree,
+  type DynamicScope as GlimmerDynamicScope,
+  type ElementBuilder,
+  type Environment,
+  type Option,
+  type RenderResult,
+  type RuntimeContext,
+  type Template,
+  type TemplateFactory,
+  CurriedType,
 } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/interfaces';
+
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
-import type { CurriedValue } from '@glimmer/runtime';
 import {
+  type Reference,
+  createConstRef,
+  UNDEFINED_REFERENCE,
+  valueForRef,
+} from '@glimmer/reference';
+
+import {
+  type CurriedValue,
   clientBuilder,
   curry,
   DOMChanges,
@@ -37,9 +43,10 @@ import {
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
+
 import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
-import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { type SimpleDocument, type SimpleElement, type SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';
 import { BOUNDS } from './component-managers/curly';
@@ -48,7 +55,7 @@ import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
-import type { OutletState } from './utils/outlet';
+import { type OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;

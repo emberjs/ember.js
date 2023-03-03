@@ -1,19 +1,24 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
-import { isFactory } from '@ember/-internals/owner';
+import {
+  type InternalFactory,
+  type InternalOwner,
+  type RegisterOptions,
+  isFactory,
+} from '@ember/-internals/owner';
+
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import type {
-  CompileTimeResolver,
-  HelperDefinitionState,
-  ModifierDefinitionState,
-  Option,
-  ResolvedComponentDefinition,
-  RuntimeResolver,
-  Template,
-  TemplateFactory,
+import {
+  type CompileTimeResolver,
+  type HelperDefinitionState,
+  type ModifierDefinitionState,
+  type Option,
+  type ResolvedComponentDefinition,
+  type RuntimeResolver,
+  type Template,
+  type TemplateFactory,
 } from '@glimmer/interfaces';
 import {
   getComponentTemplate,

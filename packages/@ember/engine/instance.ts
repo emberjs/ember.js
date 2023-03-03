@@ -3,19 +3,18 @@
 */
 
 import EmberObject from '@ember/object';
-import { RSVP } from '@ember/-internals/runtime';
+import { RSVP, ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
-import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
-import type { InternalOwner } from '@ember/-internals/owner';
+import { type InternalOwner, type FullName, isFactory } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
-import { type FullName, isFactory } from '@ember/-internals/owner';
+
 import Engine from '@ember/engine';
 import type Application from '@ember/application';
-import type { BootEnvironment } from '@ember/-internals/glimmer';
-import type { SimpleElement } from '@simple-dom/interface';
+import { type BootEnvironment } from '@ember/-internals/glimmer';
+import { type SimpleElement } from '@simple-dom/interface';
 
 const CEngine = Engine;
 

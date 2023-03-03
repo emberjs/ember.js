@@ -14,6 +14,8 @@ module.exports = {
   plugins: ['ember-internal', 'import', 'qunit', 'disable-features'],
   rules: {
     'no-console': 'error',
+    'import/no-duplicates': ['error', { 'prefer-inline': true }],
+    'import/consistent-type-specifier-style': ['error', 'prefer-inline'],
     'no-implicit-coercion': 'error',
     'no-new-wrappers': 'error',
     'no-unused-vars': 'error',
@@ -56,7 +58,11 @@ module.exports = {
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-this-alias': 'off',
         '@typescript-eslint/no-var-requires': 'warn',
-        '@typescript-eslint/consistent-type-imports': 'error',
+        // '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { fixStyle: 'inline-type-imports' },
+        ],
 
         // TODO: Enable and fix these rules
         // Typescript provides better types with these rules enabled

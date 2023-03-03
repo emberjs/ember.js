@@ -1,7 +1,6 @@
 import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
-import { get, set } from '@ember/object';
-import EmberObject from '@ember/object';
+import EmberObject, { get, set } from '@ember/object';
 import ObjectProxy from '@ember/object/proxy';
 
 import {

@@ -1,6 +1,5 @@
 import Ember from 'ember';
-import { confirmExport } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { confirmExport, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 class ReexportsTestCase extends AbstractTestCase {}
 

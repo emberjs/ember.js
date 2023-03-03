@@ -6,7 +6,7 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import EmberRoute from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import NoneLocation from '@ember/routing/none-location';
-import { _loaded } from '@ember/application';
+import Application, { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import EmberObject from '@ember/object';
 import {
@@ -18,7 +18,6 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import Application from '..';
 
 moduleFor(
   'Application, autobooting multiple apps',

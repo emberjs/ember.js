@@ -2,7 +2,9 @@
 @module @ember/array/proxy
 */
 
+import EmberObject, { get } from '@ember/object';
 import {
+  type PropertyDidChange,
   objectAt,
   alias,
   PROPERTY_DID_CHANGE,
@@ -13,10 +15,7 @@ import {
   arrayContentWillChange,
   tagForProperty,
 } from '@ember/-internals/metal';
-import { get } from '@ember/object';
-import type { PropertyDidChange } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
-import EmberObject from '@ember/object';
 import EmberArray from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';

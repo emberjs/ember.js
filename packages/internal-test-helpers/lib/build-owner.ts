@@ -3,7 +3,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import { registerDestructor } from '@ember/destroyable';
 import type Resolver from './test-resolver';
-import type { EngineInstanceOptions } from '@ember/engine/instance';
+import { type EngineInstanceOptions } from '@ember/engine/instance';
 
 class ResolverWrapper {
   resolver: Resolver | undefined;

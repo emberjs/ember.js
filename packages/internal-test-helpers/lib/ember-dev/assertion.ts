@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import type { DebugEnv, Message } from './utils';
-import { callWithStub, checkTest } from './utils';
+import { type DebugEnv, type Message, callWithStub, checkTest } from './utils';
 
 type ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => void;
 type IgnoreAssertionFunc = (func: () => void) => void;

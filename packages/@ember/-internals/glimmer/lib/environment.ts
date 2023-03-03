@@ -1,14 +1,14 @@
 import { ENV } from '@ember/-internals/environment';
 import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
-import type { InternalOwner } from '@ember/-internals/owner';
+import { type InternalOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
-import { assert, deprecate, warn } from '@ember/debug';
-import type { DeprecationOptions } from '@ember/debug';
+
+import { type DeprecationOptions, assert, deprecate, warn } from '@ember/debug';
 import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
-import type { EnvironmentDelegate } from '@glimmer/runtime';
+import { type EnvironmentDelegate } from '@glimmer/runtime';
 import { setTrackingTransactionEnv } from '@glimmer/validator';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';

@@ -1,4 +1,4 @@
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import { type AST, type ASTPlugin } from '@glimmer/syntax';
 
 export default function transformQuotedBindingsIntoJustBindings(/* env */): ASTPlugin {
   return {

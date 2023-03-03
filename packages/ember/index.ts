@@ -129,8 +129,7 @@ import {
   unregisterDestructor,
 } from '@ember/destroyable';
 
-import type * as EmberTemplateCompiler from 'ember-template-compiler';
-import type { precompile, compile } from 'ember-template-compiler';
+import { type precompile, type compile, type EmberTemplateCompiler } from 'ember-template-compiler';
 import type * as EmberTesting from 'ember-testing';
 
 /**

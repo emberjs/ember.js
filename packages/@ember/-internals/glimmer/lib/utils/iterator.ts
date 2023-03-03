@@ -2,11 +2,11 @@ import { objectAt } from '@ember/-internals/metal';
 import type EmberArray from '@ember/array';
 import { isEmberArray } from '@ember/array/-internals';
 import { isObject } from '@ember/-internals/utils';
-import type { Option } from '@glimmer/interfaces';
-import type { IteratorDelegate } from '@glimmer/reference';
+import { type Option } from '@glimmer/interfaces';
+import { type IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
-import type { NativeArray } from '@ember/array';
+import { type NativeArray } from '@ember/array';
 
 export default function toIterator(iterable: unknown): Option<IteratorDelegate> {
   if (iterable instanceof EachInWrapper) {

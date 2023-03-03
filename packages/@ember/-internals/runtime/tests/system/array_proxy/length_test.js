@@ -1,9 +1,8 @@
 import ArrayProxy from '@ember/array/proxy';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject, { observer, set, get } from '@ember/object';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '@ember/array';
 import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
-import { set, get } from '@ember/object';
 import { createCache, getValue } from '@glimmer/validator';
 
 moduleFor(

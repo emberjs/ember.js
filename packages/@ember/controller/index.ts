@@ -1,16 +1,24 @@
 import { getOwner } from '@ember/-internals/owner'; // This is imported from -internals to avoid circularity
 import { computed, get } from '@ember/object';
 import { FrameworkObject } from '@ember/object/-internals';
-import { inject as metalInject } from '@ember/-internals/metal';
-import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
+
+import {
+  type DecoratorPropertyDescriptor,
+  type ElementDescriptor,
+  metalInject,
+} from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
-import type { RouteArgs } from '@ember/routing/-internals';
-import { deprecateTransitionMethods, prefixRouteNameArg } from '@ember/routing/-internals';
+import {
+  type RouteArgs,
+  deprecateTransitionMethods,
+  prefixRouteNameArg,
+} from '@ember/routing/-internals';
+
 import { ActionHandler } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import type Route from '@ember/routing/route';
 import type Router from '@ember/routing/router';
-import type { Transition } from 'router_js';
+import { type Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
 export type ControllerQueryParam = string | Record<string, { type: ControllerQueryParamType }>;

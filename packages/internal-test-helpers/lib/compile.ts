@@ -2,10 +2,9 @@
 @module ember
 */
 import { precompileJSON } from '@glimmer/compiler';
-import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
+import { type SerializedTemplateWithLazyBlock, type TemplateFactory } from '@glimmer/interfaces';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import type { EmberPrecompileOptions } from 'ember-template-compiler';
-import { compileOptions } from 'ember-template-compiler';
+import { type EmberPrecompileOptions, compileOptions } from 'ember-template-compiler';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.

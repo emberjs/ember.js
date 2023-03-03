@@ -1,8 +1,8 @@
-import type { Meta } from '@ember/-internals/meta';
-import { meta as metaFor } from '@ember/-internals/meta';
+import { type Meta, metaFor } from '@ember/-internals/meta';
+
 import { assert, inspect } from '@ember/debug';
-import type { UpdatableTag } from '@glimmer/validator';
 import {
+  type UpdatableTag,
   consumeTag,
   tagFor,
   tagMetaFor,
@@ -11,14 +11,16 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
+
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
-import type { ExtendedMethodDecorator } from './decorator';
 import {
+  type ExtendedMethodDecorator,
   ComputedDescriptor,
   descriptorForDecorator,
   isElementDescriptor,
   makeComputedDecorator,
 } from './decorator';
+
 import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';

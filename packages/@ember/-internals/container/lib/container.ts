@@ -1,16 +1,17 @@
-import type {
-  InternalFactory,
-  FactoryClass,
-  InternalOwner,
-  RegisterOptions,
-  FactoryManager,
-  FullName,
+import {
+  type InternalFactory,
+  type FactoryClass,
+  type InternalOwner,
+  type RegisterOptions,
+  type FactoryManager,
+  type FullName,
+  setOwner,
 } from '@ember/-internals/owner';
-import { setOwner } from '@ember/-internals/owner';
+
 import { dictionary } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { DebugRegistry } from './registry';
+import { type DebugRegistry } from './registry';
 import type Registry from './registry';
 
 interface LeakTracking {
