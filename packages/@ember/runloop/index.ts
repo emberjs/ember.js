@@ -14,7 +14,7 @@ type PartialParams<P extends any[]> = P extends [infer First, ...infer Rest]
   : // This is necessary to handle optional tuple values
   Required<P> extends [infer First, ...infer Rest]
   ? [] | [First | undefined] | [First | undefined, ...PartialParams<Partial<Rest>>]
-  : never;
+  : [];
 
 type RemainingParams<PartialParams extends any[], All extends any[]> = PartialParams extends [
   infer First,
