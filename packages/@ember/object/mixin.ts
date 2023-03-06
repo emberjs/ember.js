@@ -14,7 +14,6 @@ import {
   type ComputedPropertyObj,
   type ComputedPropertySetter,
   type ComputedDescriptor,
-  isAccessor,
   isClassicDecorator,
 } from '@ember/-internals/metal';
 import {
