@@ -4,6 +4,6 @@
     "outDir": "dist",
     "noEmit": true
   },
-  "include": ["packages/**/*.ts", "packages/**/*.js"],
+  "include": ["packages/**/*.ts"],
   "exclude": ["dist", "node_modules", "tmp", "types"]
 }
