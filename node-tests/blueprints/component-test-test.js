@@ -111,84 +111,6 @@ describe('Blueprint: component-test', function () {
         });
       });
     });
-
-    describe('with ember-cli-mocha@0.11.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.11.0');
-      });
-
-      it('component-test x-foo', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo'], (_file) => {
-          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-            fixture('component-test/mocha.js')
-          );
-        });
-      });
-
-      it('component-test x-foo --unit', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], (_file) => {
-          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-            fixture('component-test/mocha-unit.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha@0.12.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.12.0');
-      });
-
-      it('component-test x-foo', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo'], (_file) => {
-          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-            fixture('component-test/mocha-0.12.js')
-          );
-        });
-      });
-
-      it('component-test x-foo --unit', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], (_file) => {
-          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-            fixture('component-test/mocha-0.12-unit.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.14.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.14.0');
-      });
-
-      it('component-test x-foo', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo'], (_file) => {
-          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-            fixture('component-test/mocha-rfc232.js')
-          );
-        });
-      });
-
-      it('component-test x-foo --unit', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], (_file) => {
-          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-            fixture('component-test/mocha-rfc232-unit.js')
-          );
-        });
-      });
-    });
   });
 
   describe('in addon', function () {
@@ -249,32 +171,6 @@ describe('Blueprint: component-test', function () {
         return emberGenerateDestroy(['component-test', 'foo', '--unit'], (_file) => {
           expect(_file('tests/unit/components/foo-test.js')).to.equal(
             fixture('component-test/rfc232-unit-addon.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.16.2', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.16.2');
-      });
-
-      it('component-test foo', function () {
-        return emberGenerateDestroy(['component-test', 'foo'], (_file) => {
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/mocha-rfc232-addon.js')
-          );
-        });
-      });
-
-      it('component-test foo --unit', function () {
-        return emberGenerateDestroy(['component-test', 'foo', '--unit'], (_file) => {
-          expect(_file('tests/unit/components/foo-test.js')).to.equal(
-            fixture('component-test/mocha-rfc232-unit-addon.js')
           );
         });
       });

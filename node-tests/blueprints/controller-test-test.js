@@ -71,84 +71,6 @@ describe('Blueprint: controller-test', function () {
         });
       });
     });
-
-    describe('with ember-cli-mocha@0.11.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.11.0');
-      });
-
-      it('controller-test foo for mocha', function () {
-        return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-            fixture('controller-test/mocha.js')
-          );
-        });
-      });
-
-      it('controller-test foo/bar for mocha', function () {
-        return emberGenerateDestroy(['controller-test', 'foo/bar'], (_file) => {
-          expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-            fixture('controller-test/mocha-nested.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-cli-mocha@0.12.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-mocha', '0.12.0');
-      });
-
-      it('controller-test foo', function () {
-        return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-            fixture('controller-test/mocha-0.12.js')
-          );
-        });
-      });
-
-      it('controller-test foo/bar', function () {
-        return emberGenerateDestroy(['controller-test', 'foo/bar'], (_file) => {
-          expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-            fixture('controller-test/mocha-0.12-nested.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.14.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.14.0');
-      });
-
-      it('controller-test foo', function () {
-        return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-            fixture('controller-test/mocha-rfc232.js')
-          );
-        });
-      });
-
-      it('controller-test foo/bar', function () {
-        return emberGenerateDestroy(['controller-test', 'foo/bar'], (_file) => {
-          expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-            fixture('controller-test/mocha-rfc232-nested.js')
-          );
-        });
-      });
-    });
   });
 
   describe('in addon', function () {
@@ -187,24 +109,6 @@ describe('Blueprint: controller-test', function () {
         return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
           expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
             fixture('controller-test/rfc232-addon.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.16.2', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.16.2');
-      });
-
-      it('controller-test foo', function () {
-        return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-            fixture('controller-test/mocha-rfc232-addon.js')
           );
         });
       });

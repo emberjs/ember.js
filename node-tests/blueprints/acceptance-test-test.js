@@ -55,41 +55,6 @@ describe('Blueprint: acceptance-test', function () {
         });
       });
     });
-
-    describe('with ember-cli-mocha', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-      });
-
-      it('acceptance-test foo', function () {
-        return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
-          expect(_file('tests/acceptance/foo-test.js')).to.equal(
-            fixture('acceptance-test/mocha.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.14.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.14.0');
-      });
-
-      it('acceptance-test foo', function () {
-        return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
-          expect(_file('tests/acceptance/foo-test.js')).to.equal(
-            fixture('acceptance-test/mocha-rfc268.js')
-          );
-        });
-      });
-    });
   });
 
   describe('in addon', function () {
@@ -140,24 +105,6 @@ describe('Blueprint: acceptance-test', function () {
         return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
           expect(_file('tests/acceptance/foo-test.js')).to.equal(
             fixture('acceptance-test/qunit-rfc268-addon.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.16.2', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.16.2');
-      });
-
-      it('acceptance-test foo', function () {
-        return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
-          expect(_file('tests/acceptance/foo-test.js')).to.equal(
-            fixture('acceptance-test/mocha-rfc268-addon.js')
           );
         });
       });
