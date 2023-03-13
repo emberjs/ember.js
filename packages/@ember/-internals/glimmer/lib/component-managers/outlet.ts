@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import type { InternalOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/-debug-basic';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import type {

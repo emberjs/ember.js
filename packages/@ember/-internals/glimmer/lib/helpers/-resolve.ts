@@ -2,7 +2,7 @@
   @module ember
 */
 import type { FullName, InternalOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/-debug-basic';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';

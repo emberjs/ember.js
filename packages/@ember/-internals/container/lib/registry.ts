@@ -7,7 +7,7 @@ import type {
   Resolver,
 } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert, deprecate } from '@ember/-debug-basic';
 import type { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import type { ContainerOptions, LazyInjection } from './container';

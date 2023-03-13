@@ -2,7 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/-debug-basic';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {

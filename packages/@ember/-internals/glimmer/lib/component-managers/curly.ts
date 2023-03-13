@@ -6,7 +6,7 @@ import {
 } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
-import { assert, debugFreeze } from '@ember/debug';
+import { assert, debugFreeze } from '@ember/-debug-basic';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {

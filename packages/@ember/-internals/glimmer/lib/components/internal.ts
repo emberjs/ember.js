@@ -1,7 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/-debug-basic';
 import type {
   CapturedArguments,
   Destroyable,

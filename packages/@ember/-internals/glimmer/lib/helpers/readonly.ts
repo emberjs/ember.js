@@ -3,7 +3,7 @@
 */
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createReadOnlyRef } from '@glimmer/reference';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/-debug-basic';
 import { internalHelper } from './internal-helper';
 
 /**

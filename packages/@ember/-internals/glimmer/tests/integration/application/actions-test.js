@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
-import { getDebugFunction, setDebugFunction } from '@ember/debug';
+import { getDebugFunction, setDebugFunction } from '@ember/-debug-basic';
 
 import { Component } from '../../utils/helpers';
 

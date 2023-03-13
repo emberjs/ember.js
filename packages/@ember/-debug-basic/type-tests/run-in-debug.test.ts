@@ -1,4 +1,4 @@
-import { runInDebug } from '@ember/debug';
+import { runInDebug } from '@ember/-debug-basic';
 import { expectTypeOf } from 'expect-type';
 
 let ret = runInDebug(() => {

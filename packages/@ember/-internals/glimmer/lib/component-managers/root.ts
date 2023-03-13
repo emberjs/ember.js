@@ -1,5 +1,5 @@
 import { getFactoryFor } from '@ember/-internals/container';
-import { assert } from '@ember/debug';
+import { assert } from '@ember/-debug-basic';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {

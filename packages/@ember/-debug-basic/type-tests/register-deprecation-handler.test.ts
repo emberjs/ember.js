@@ -1,4 +1,4 @@
-import { registerDeprecationHandler } from '@ember/debug';
+import { registerDeprecationHandler } from '@ember/-debug-basic';
 import { expectTypeOf } from 'expect-type';
 import type { DeprecationOptions } from '../lib/deprecate';
 import type { Handler } from '../lib/handlers';
