@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v4.12.0-beta.3 (March 13, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+- [#20398](https://github.com/emberjs/ember.js/pull/20398) [BUGFIX] Fix runloop types on TS 5.0+
+
 ## v4.12.0-beta.2 (February 27, 2023)
 
 - [#20385](https://github.com/emberjs/ember.js/pull/20385) [BUGFIX] Improve error for owner methods called after destroy
