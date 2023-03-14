@@ -12,8 +12,8 @@ declare module '@ember/utils' {
   export function isBlank(obj?: unknown): boolean;
 
   /**
-   * Verifies that a value is `null` or an empty string, empty array,
-   * or empty function.
+   * Verifies that a value is null or undefined, an empty string,
+   * or an empty array.
    */
   export function isEmpty(obj?: unknown): boolean;
 
