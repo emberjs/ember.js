@@ -31,7 +31,7 @@
    Where the 3rd item in the array is bound to updates of the `myOtherPerson` property.
 
    @method array
-   @for Ember.Templates.helpers
+   @for @ember/helper
    @param {Array} options
    @return {Array} Array
    @since 3.8.0

@@ -65,7 +65,7 @@
   See also [partial application](https://en.wikipedia.org/wiki/Partial_application).
 
   @method fn
-  @for Ember.Templates.helpers
+  @for @ember/helper
   @public
   @since 3.11.0
 */

@@ -34,7 +34,7 @@
    ```
 
    @method hash
-   @for Ember.Templates.helpers
+   @for @ember/helper
    @param {Object} options
    @return {Object} Hash
    @since 2.3.0
