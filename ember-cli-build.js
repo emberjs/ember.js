@@ -34,17 +34,6 @@ const ENV = process.env.EMBER_ENV || 'development';
 const SHOULD_ROLLUP = process.env.SHOULD_ROLLUP !== 'false';
 const SHOULD_MINIFY = Boolean(process.env.SHOULD_MINIFY);
 
-/**
- * There isn't a way for us to override targets through ember-cli-babel, and we
- * don't want to introduce that functionality for reasons. This is a quick and
- * dirty way for us to accomplish custom targets. This is specifically for:
- *
- * 1. The ember-template-compiler.js file, which should always be built for all
- *    of our supported browsers.
- * 2. The ember.debug.js file, which should always be built for modern browsers.
- *
- * This is not a recommended way of building standard Ember apps.
- */
 function withTargets(project, fn) {
   return (tree, isProduction = ENV === 'production', { targets } = {}) => {
     let originalTargets = project.targets;
