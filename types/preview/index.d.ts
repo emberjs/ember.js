@@ -117,6 +117,8 @@ import './@ember/string';
 import './@ember/template';
 import './@ember/template/-private/handlebars';
 
+import './@ember/template-compilation';
+
 import './@ember/test';
 import './@ember/test/adapter';
 
