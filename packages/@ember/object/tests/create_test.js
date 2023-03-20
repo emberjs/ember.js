@@ -39,24 +39,6 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test implicit injections raises deprecation']() {
-      let owner = buildOwner();
-
-      class FooService extends Service {
-        bar = 'foo';
-      }
-      class FooObject extends EmberObject {}
-      owner.register('service:foo', FooService);
-      owner.register('foo:main', FooObject);
-
-      expectDeprecation(
-        () => owner.inject('foo:main', 'foo', 'service:foo'),
-        /As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject `foo` on `foo:main`, or look it up directly using the `getOwner` API./
-      );
-
-      runDestroy(owner);
-    }
-
     ['@test calls computed property setters'](assert) {
       let MyClass = EmberObject.extend({
         foo: computed({
