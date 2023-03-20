@@ -16,13 +16,16 @@ import {
   resemblesURL,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
-import EmberLocation, { type ILocation as IEmberLocation } from '@ember/routing/location';
+import {
+  type Location as EmberLocation,
+  type Registry as LocationRegistry,
+} from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/utils';
 import Evented from '@ember/object/evented';
-import { assert, deprecate, info } from '@ember/debug';
+import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { QueryParamMeta, RenderOptions } from '@ember/routing/route';
@@ -182,7 +185,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @public
   */
   // Set with reopen to allow overriding via extend
-  declare location: string | IEmberLocation;
+  declare location: (keyof LocationRegistry & string) | EmberLocation;
 
   _routerMicrolib!: Router<R>;
   _didSetupRouter = false;
@@ -328,7 +331,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   }
 
   _initRouterJs(): void {
-    let location = get(this, 'location') as IEmberLocation;
+    let location = get(this, 'location') as EmberLocation;
     let router = this;
     const owner = getOwner(this);
     assert('Router is unexpectedly missing an owner', owner);
@@ -570,7 +573,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     if (this.setupRouter()) {
       let initialURL = get(this, 'initialURL') as string | undefined;
       if (initialURL === undefined) {
-        initialURL = (get(this, 'location') as IEmberLocation).getURL();
+        initialURL = (get(this, 'location') as EmberLocation).getURL();
       }
       let initialTransition = this.handleURL(initialURL);
       if (initialTransition && initialTransition.error) {
@@ -586,7 +589,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     this._didSetupRouter = true;
     this._setupLocation();
 
-    let location = get(this, 'location') as IEmberLocation;
+    let location = get(this, 'location') as EmberLocation;
 
     // Allow the Location class to cancel the router setup while it refreshes
     // the page
@@ -899,64 +902,15 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     assert('Router is unexpectedly missing an owner', owner);
 
     if ('string' === typeof location) {
-      let resolvedLocation = owner.lookup(`location:${location}`) as IEmberLocation;
+      let resolvedLocation = owner.lookup(`location:${location}`);
 
-      if (location === 'auto') {
-        deprecate(
-          "Router location 'auto' is deprecated. Most users will want to set `locationType` to 'history' in config/environment.js for no change in behavior. See deprecation docs for details.",
-          false,
-          {
-            id: 'deprecate-auto-location',
-            until: '5.0.0',
-            url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
-            for: 'ember-source',
-            since: {
-              available: '4.1.0',
-              enabled: '4.1.0',
-            },
-          }
-        );
-      }
-
-      if (resolvedLocation !== undefined) {
-        location = set(this, 'location', resolvedLocation);
-      } else {
-        // Allow for deprecated registration of custom location API's
-        let options = {
-          implementation: location,
-        };
-
-        location = set(this, 'location', EmberLocation.create(options));
-      }
+      assert(`Could not resolve a location class at 'location:${location}'`, resolvedLocation);
+      location = set(this, 'location', resolvedLocation);
     }
 
     if (location !== null && typeof location === 'object') {
       if (rootURL) {
         set(location, 'rootURL', rootURL);
-      }
-
-      // Allow the location to do any feature detection, such as AutoLocation
-      // detecting history support. This gives it a chance to set its
-      // `cancelRouterSetup` property which aborts routing.
-      if (typeof location.detect === 'function') {
-        if (this.location !== 'auto') {
-          deprecate(
-            'The `detect` method on the Location object is deprecated. If you need detection you can run your detection code in app.js, before setting the location type.',
-            false,
-            {
-              id: 'deprecate-auto-location',
-              until: '5.0.0',
-              url: 'https://emberjs.com/deprecations/v4.x#toc_deprecate-auto-location',
-              for: 'ember-source',
-              since: {
-                available: '4.1.0',
-                enabled: '4.1.0',
-              },
-            }
-          );
-        }
-
-        location.detect();
       }
 
       // ensure that initState is called AFTER the rootURL is set on
@@ -1946,7 +1900,7 @@ EmberRouter.reopen({
 
   // FIXME: Does this need to be overrideable via extend?
   url: computed(function (this: EmberRouter) {
-    let location = get(this, 'location') as string | IEmberLocation;
+    let location = get(this, 'location') as string | EmberLocation;
 
     if (typeof location === 'string') {
       return undefined;

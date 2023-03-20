@@ -1,24 +1,24 @@
-import type { ILocation } from '@ember/routing/location';
-import Location from '@ember/routing/location';
+import type { Location } from '@ember/routing/location';
 import { expectTypeOf } from 'expect-type';
-
-// This is deprecated so let's not bother with more testing
-expectTypeOf(Location.create).toBeFunction();
+import type Owner from '@ember/owner';
+import type NoneLocation from '../none-location';
+import type HashLocation from '../hash-location';
+import type HistoryLocation from '../history-location';
 
 // Interface
-expectTypeOf<ILocation['implementation']>().toEqualTypeOf<string>();
-expectTypeOf<ILocation['cancelRouterSetup']>().toEqualTypeOf<boolean | undefined>();
-expectTypeOf<ILocation['getURL']>().toEqualTypeOf<() => string>();
-expectTypeOf<ILocation['setURL']>().toEqualTypeOf<(url: string) => void>();
-expectTypeOf<ILocation['replaceURL']>().toEqualTypeOf<((url: string) => void) | undefined>();
-expectTypeOf<ILocation['onUpdateURL']>().toEqualTypeOf<(callback: (url: string) => void) => void>();
-expectTypeOf<ILocation['formatURL']>().toEqualTypeOf<(url: string) => string>();
-expectTypeOf<ILocation['detect']>().toEqualTypeOf<(() => void) | undefined>();
-expectTypeOf<ILocation['initState']>().toEqualTypeOf<(() => void) | undefined>();
-expectTypeOf<ILocation['destroy']>().toEqualTypeOf<() => void>();
+expectTypeOf<Location['implementation']>().toEqualTypeOf<string>();
+expectTypeOf<Location['cancelRouterSetup']>().toEqualTypeOf<boolean | undefined>();
+expectTypeOf<Location['getURL']>().toEqualTypeOf<() => string>();
+expectTypeOf<Location['setURL']>().toEqualTypeOf<(url: string) => void>();
+expectTypeOf<Location['replaceURL']>().toEqualTypeOf<((url: string) => void) | undefined>();
+expectTypeOf<Location['onUpdateURL']>().toEqualTypeOf<(callback: (url: string) => void) => void>();
+expectTypeOf<Location['formatURL']>().toEqualTypeOf<(url: string) => string>();
+expectTypeOf<Location['detect']>().toEqualTypeOf<(() => void) | undefined>();
+expectTypeOf<Location['initState']>().toEqualTypeOf<(() => void) | undefined>();
+expectTypeOf<Location['destroy']>().toEqualTypeOf<() => void>();
 
 // Minimal implementation
-class TestLocation implements ILocation {
+class TestLocation implements Location {
   implementation = 'test';
 
   getURL() {
@@ -39,3 +39,8 @@ class TestLocation implements ILocation {
 }
 
 new TestLocation();
+
+declare let owner: Owner;
+expectTypeOf(owner.lookup('location:none')).toEqualTypeOf<NoneLocation>();
+expectTypeOf(owner.lookup('location:hash')).toEqualTypeOf<HashLocation>();
+expectTypeOf(owner.lookup('location:history')).toEqualTypeOf<HistoryLocation>();

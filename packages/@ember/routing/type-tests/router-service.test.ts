@@ -1,7 +1,7 @@
 /* eslint-disable no-self-assign */
 
 import type Owner from '@ember/owner';
-import type { ILocation as EmberLocation } from '@ember/routing/location';
+import type { Location as EmberLocation } from '@ember/routing/location';
 import type Route from '@ember/routing/route';
 import type { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
 import RouterService from '@ember/routing/router-service';

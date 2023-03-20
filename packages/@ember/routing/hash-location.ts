@@ -1,6 +1,6 @@
 import EmberObject, { set } from '@ember/object';
 import { bind } from '@ember/runloop';
-import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
 
 /**
@@ -172,5 +172,11 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     if (this._hashchangeHandler) {
       window.removeEventListener('hashchange', this._hashchangeHandler);
     }
+  }
+}
+
+declare module '@ember/routing/location' {
+  export interface Registry {
+    hash: HashLocation;
   }
 }

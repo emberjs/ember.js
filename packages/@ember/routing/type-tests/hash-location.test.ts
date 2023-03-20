@@ -1,4 +1,4 @@
-import type { ILocation } from '@ember/routing/location';
+import type { Location } from '@ember/routing/location';
 import type EmberObject from '@ember/object';
 import HashLocation from '@ember/routing/hash-location';
 import { expectTypeOf } from 'expect-type';
@@ -11,4 +11,4 @@ let owner = {} as Owner;
 
 let location = new HashLocation(owner);
 expectTypeOf(location).toMatchTypeOf<EmberObject>();
-expectTypeOf(location).toMatchTypeOf<ILocation>();
+expectTypeOf(location).toMatchTypeOf<Location>();

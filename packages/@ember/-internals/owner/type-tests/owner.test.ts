@@ -99,7 +99,7 @@ owner.lookup('non-namespace-string');
 expectTypeOf(owner.lookup('namespace@type:name')).toEqualTypeOf<unknown>();
 
 // Arbitrary registration patterns work, as here.
-declare module '@ember/-internals/owner' {
+declare module '@ember/owner' {
   export interface DIRegistry {
     etc: {
       'my-type-test': ConstructThis;

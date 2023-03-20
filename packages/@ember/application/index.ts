@@ -15,7 +15,6 @@ import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher } from '@ember/-internals/views';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
-import AutoLocation from '@ember/routing/auto-location';
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
 import NoneLocation from '@ember/routing/none-location';
@@ -1205,7 +1204,6 @@ function commonSetupRegistry(registry: Registry) {
   registry.register('route:basic', Route);
   registry.register('event_dispatcher:main', EventDispatcher);
 
-  registry.register('location:auto', AutoLocation);
   registry.register('location:hash', HashLocation);
   registry.register('location:history', HistoryLocation);
   registry.register('location:none', NoneLocation);

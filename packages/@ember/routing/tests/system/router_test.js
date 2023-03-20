@@ -1,6 +1,5 @@
 import HashLocation from '@ember/routing/hash-location';
 import HistoryLocation from '@ember/routing/history-location';
-import AutoLocation from '@ember/routing/auto-location';
 import NoneLocation from '@ember/routing/none-location';
 import Router, { triggerEvent } from '@ember/routing/router';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -31,7 +30,6 @@ moduleFor(
       //register the HashLocation (the default)
       owner.register('location:hash', HashLocation);
       owner.register('location:history', HistoryLocation);
-      owner.register('location:auto', AutoLocation);
       owner.register('location:none', NoneLocation);
     }
 
@@ -97,36 +95,6 @@ moduleFor(
       assert.equal(location.get('rootURL'), '/rootdir/');
     }
 
-    ['@test replacePath should be called with the right path'](assert) {
-      assert.expect(2);
-
-      let location = owner.lookup('location:auto');
-
-      let browserLocation = {
-        href: 'http://test.com/rootdir/welcome',
-        origin: 'http://test.com',
-        pathname: '/rootdir/welcome',
-        hash: '',
-        search: '',
-        replace(url) {
-          assert.equal(url, 'http://test.com/rootdir/#/welcome');
-        },
-      };
-
-      location.location = browserLocation;
-      location.global = { onhashchange() {} };
-      location.history = null;
-
-      expectDeprecation(() => {
-        createRouter({
-          settings: {
-            location: 'auto',
-            rootURL: '/rootdir/',
-          },
-        });
-      });
-    }
-
     ['@test Router._routePath should consume identical prefixes'](assert) {
       createRouter();
 
@@ -176,37 +144,6 @@ moduleFor(
       });
 
       router.startRouting();
-    }
-
-    ["@test AutoLocation should replace the url when it's not in the preferred format"](assert) {
-      assert.expect(2);
-
-      let location = owner.lookup('location:auto');
-
-      location.location = {
-        href: 'http://test.com/rootdir/welcome',
-        origin: 'http://test.com',
-        pathname: '/rootdir/welcome',
-        hash: '',
-        search: '',
-        replace(url) {
-          assert.equal(url, 'http://test.com/rootdir/#/welcome');
-        },
-      };
-
-      location.history = null;
-      location.global = {
-        onhashchange() {},
-      };
-
-      expectDeprecation(() => {
-        createRouter({
-          settings: {
-            location: 'auto',
-            rootURL: '/rootdir/',
-          },
-        });
-      });
     }
 
     ['@test Router#handleURL should remove any #hashes before doing URL transition'](assert) {

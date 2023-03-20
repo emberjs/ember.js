@@ -1,6 +1,6 @@
 import EmberObject, { set } from '@ember/object';
 import { assert } from '@ember/debug';
-import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/location';
 
 /**
 @module @ember/routing/none-location
@@ -133,3 +133,9 @@ NoneLocation.reopen({
   path: '',
   rootURL: '/',
 });
+
+declare module '@ember/routing/location' {
+  export interface Registry {
+    none: NoneLocation;
+  }
+}

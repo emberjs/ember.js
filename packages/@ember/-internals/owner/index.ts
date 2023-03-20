@@ -72,19 +72,28 @@ export type FullName<
   @private
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface DIRegistry extends Record<string, Record<string, unknown>> {}
+export interface DIRegistry {}
 
 // Convenience utility for pulling a specific factory manager off `DIRegistry`
 // if one exists, or falling back to the default definition otherwise.
 /**
   @private
  */
-type ResolveFactoryManager<
-  Type extends string,
-  Name extends string
-> = DIRegistry[Type][Name] extends infer RegistryEntry extends object
-  ? FactoryManager<RegistryEntry>
-  : FactoryManager<object> | undefined;
+type ResolveFactoryManager<Type extends string, Name extends string> = Type extends ValidType
+  ? Name extends ValidName<Type>
+    ? DIRegistry[Type][Name] extends infer RegistryEntry extends object
+      ? FactoryManager<RegistryEntry>
+      : FactoryManagerDefault
+    : FactoryManagerDefault
+  : FactoryManagerDefault;
+
+type FactoryManagerDefault = FactoryManager<object> | undefined;
+
+type Lookup<Type extends string, Name extends string> = Type extends ValidType
+  ? Name extends ValidName<Type>
+    ? DIRegistry[Type][Name]
+    : unknown
+  : unknown;
 
 /**
   The common interface for the ability to `register()` an item, shared by the
@@ -230,10 +239,10 @@ interface BasicContainer {
    @param {RegisterOptions} options
    @return {any}
    */
-  lookup<Type extends ValidType, Name extends ValidName<Type>>(
+  lookup<Type extends string, Name extends string>(
     fullName: FullName<Type, Name>,
     options?: RegisterOptions
-  ): DIRegistry[Type][Name];
+  ): Lookup<Type, Name>;
 
   /**
     Given a `FullName`, of the form `"type:name"` return a `FactoryManager`.
@@ -277,7 +286,7 @@ interface BasicContainer {
     @param {string} fullName
     @return {FactoryManager}
   */
-  factoryFor<Type extends ValidType, Name extends ValidName<Type>>(
+  factoryFor<Type extends string, Name extends string>(
     fullName: FullName<Type, Name>
   ): ResolveFactoryManager<Type, Name>;
 }
