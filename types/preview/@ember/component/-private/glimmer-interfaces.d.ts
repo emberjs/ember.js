@@ -42,4 +42,8 @@ declare module '@ember/component/-private/glimmer-interfaces' {
     createComponent(factory: object, args: Arguments): ComponentStateBucket;
     getContext(instance: ComponentStateBucket): unknown;
   }
+
+  export interface TemplateFactory {
+    __htmlbars_inline_precompile_template_factory: any;
+  }
 }
