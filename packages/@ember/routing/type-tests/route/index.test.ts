@@ -26,29 +26,6 @@ expectTypeOf(route.paramsFor('foo')).toEqualTypeOf<Record<string, unknown>>();
 
 let aPost = {};
 let aComment = {};
-expectTypeOf(route.transitionTo('blogPosts')).toEqualTypeOf<Transition>();
-route.transitionTo('blogPosts.recentEntries');
-route.transitionTo('blogPost', aPost);
-route.transitionTo('blogPost', 1);
-route.transitionTo('blogComment', aPost, aComment);
-route.transitionTo('blogComment', 1, 13);
-route.transitionTo('/');
-route.transitionTo('/blog/post/1/comment/13');
-route.transitionTo('/blog/posts?sort=title');
-route.transitionTo('blogPost', 1, { queryParams: { showComments: 'true' } });
-route.transitionTo({ queryParams: { showComments: 'true' } });
-
-expectTypeOf(route.replaceWith('blogPosts')).toEqualTypeOf<Transition>();
-route.replaceWith('blogPosts.recentEntries');
-route.replaceWith('blogPost', aPost);
-route.replaceWith('blogPost', 1);
-route.replaceWith('blogComment', aPost, aComment);
-route.replaceWith('blogComment', 1, 13);
-route.replaceWith('/');
-route.replaceWith('/blog/post/1/comment/13');
-route.replaceWith('/blog/posts?sort=title');
-route.replaceWith('blogPost', 1, { queryParams: { showComments: 'true' } });
-route.replaceWith({ queryParams: { showComments: 'true' } });
 
 expectTypeOf(route.intermediateTransitionTo('blogPosts')).toEqualTypeOf<void>();
 

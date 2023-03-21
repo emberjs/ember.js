@@ -5,11 +5,9 @@ import { inject as metalInject } from '@ember/-internals/metal';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
-import { deprecateTransitionMethods, prefixRouteNameArg } from '@ember/routing/-internals';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import type Route from '@ember/routing/route';
-import type Router from '@ember/routing/router';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
@@ -301,33 +299,6 @@ const ControllerMixin = Mixin.create(ActionHandler, {
     let delegate = controller._qpDelegate;
     let value = get(controller, prop);
     delegate(prop, value);
-  },
-
-  transitionToRoute<R extends Route>(...args: RouteArgs<R>): Transition {
-    deprecateTransitionMethods('controller', 'transitionToRoute');
-
-    // target may be either another controller or a router
-    let target = get(this, 'target');
-
-    // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
-    // mock out an object that only has the single method. Since this is deprecated, I think it's
-    // ok to be a little less than proper here.
-    let method = (target as Controller).transitionToRoute ?? (target as Router<R>).transitionTo;
-
-    return method.apply(target, prefixRouteNameArg(this, args));
-  },
-
-  replaceRoute<R extends Route>(...args: RouteArgs<R>): Transition {
-    deprecateTransitionMethods('controller', 'replaceRoute');
-    // target may be either another controller or a router
-    let target = get(this, 'target');
-
-    // SAFETY: We can't actually assert that this is a full Controller or Router since some tests
-    // mock out an object that only has the single method. Since this is deprecated, I think it's
-    // ok to be a little less than proper here.
-    let method = (target as Controller).replaceRoute ?? (target as Router<R>).replaceWith;
-
-    return method.apply(target, prefixRouteNameArg(this, args));
   },
 });
 

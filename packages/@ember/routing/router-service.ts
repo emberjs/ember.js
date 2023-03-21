@@ -156,11 +156,13 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
      ```app/routes/application.js
      import Route from '@ember/routing/route';
+     import { service } from '@ember/service';
 
      export default class extends Route {
+       @service router;
        beforeModel() {
          if (!authorized()){
-           this.replaceWith('unauthorized');
+           this.router.replaceWith('unauthorized');
          }
        }
      });

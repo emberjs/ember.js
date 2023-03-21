@@ -177,7 +177,10 @@ function registerController(name, controllerProps) {
 }
 
 function registerRoute(name, routeProps) {
-  let route = this.Ember.Route.extend(routeProps);
+  let route = this.Ember.Route.extend({
+    router: this.Ember.inject.service('router'),
+    ...routeProps,
+  });
   this.register('route:' + name, route);
 }
 

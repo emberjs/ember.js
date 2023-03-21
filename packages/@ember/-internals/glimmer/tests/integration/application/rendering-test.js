@@ -3,6 +3,7 @@ import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
+import { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
 import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
@@ -498,10 +499,10 @@ moduleFor(
       this.add(
         'route:index',
         Route.extend({
+          router: service(),
+
           activate() {
-            expectDeprecation(() => {
-              this.transitionTo('a');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('a');
           },
         })
       );

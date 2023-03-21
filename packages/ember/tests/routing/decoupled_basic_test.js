@@ -18,6 +18,7 @@ import {
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
+import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -667,11 +668,10 @@ moduleFor(
       this.add(
         'route:choose',
         Route.extend({
+          router: service(),
           redirect() {
             if (destination) {
-              expectDeprecation(() => {
-                this.transitionTo(destination);
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo(destination);
             }
           },
 
@@ -698,7 +698,7 @@ moduleFor(
     }
 
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
-      assert.expect(4);
+      assert.expect(3);
 
       this.router.map(function () {
         this.route('home');
@@ -712,10 +712,9 @@ moduleFor(
       this.add(
         'route:bar',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('home');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('home');
           },
           setupController() {
             assert.ok(false, 'Should transition before setupController');
@@ -743,7 +742,7 @@ moduleFor(
     ['@test Redirecting to the current target in the middle of a route does not abort initial routing'](
       assert
     ) {
-      assert.expect(6);
+      assert.expect(5);
 
       this.router.map(function () {
         this.route('home');
@@ -759,12 +758,11 @@ moduleFor(
       this.add(
         'route:bar',
         Route.extend({
+          router: service(),
           redirect() {
-            return expectDeprecation(() => {
-              return this.transitionTo('bar.baz').then(function () {
-                successCount++;
-              });
-            }, /Calling transitionTo on a route is deprecated/);
+            return this.router.transitionTo('bar.baz').then(function () {
+              successCount++;
+            });
           },
 
           setupController() {
@@ -792,7 +790,7 @@ moduleFor(
     ['@test Redirecting to the current target with a different context aborts the remainder of the routes'](
       assert
     ) {
-      assert.expect(6);
+      assert.expect(4);
 
       this.router.map(function () {
         this.route('home');
@@ -810,13 +808,12 @@ moduleFor(
       this.add(
         'route:bar',
         Route.extend({
+          router: service(),
           afterModel() {
             if (count++ > 10) {
               assert.ok(false, 'infinite loop');
             } else {
-              expectDeprecation(() => {
-                this.transitionTo('bar.baz', model);
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('bar.baz', model);
             }
           },
         })
@@ -856,11 +853,10 @@ moduleFor(
       this.add(
         'route:foo',
         Route.extend({
+          router: service(),
           actions: {
             goToQux() {
-              expectDeprecation(() => {
-                this.transitionTo('foo.qux');
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('foo.qux');
             },
           },
         })
@@ -1051,7 +1047,7 @@ moduleFor(
     ['@test Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered'](
       assert
     ) {
-      assert.expect(6);
+      assert.expect(5);
 
       this.router.map(function () {
         this.route('index');
@@ -1064,14 +1060,13 @@ moduleFor(
       this.add(
         'route:index',
         Route.extend({
+          router: service(),
           actions: {
             willTransition(transition) {
               assert.ok(true, 'willTransition was called');
               if (redirect) {
                 // router.js won't refire `willTransition` for this redirect
-                expectDeprecation(() => {
-                  this.transitionTo('about');
-                }, /Calling transitionTo on a route is deprecated/);
+                this.router.transitionTo('about');
               } else {
                 transition.abort();
               }
@@ -1353,10 +1348,9 @@ moduleFor(
       this.add(
         'route:home',
         Route.extend({
+          router: service(),
           beforeModel() {
-            expectDeprecation(() => {
-              this.transitionTo('about', null);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('about', null);
           },
         })
       );
@@ -1557,7 +1551,7 @@ moduleFor(
     }
 
     async ['@test Errors in transitionTo within redirect hook are logged'](assert) {
-      assert.expect(5);
+      assert.expect(4);
       let actual = [];
 
       this.router.map(function () {
@@ -1568,10 +1562,9 @@ moduleFor(
       this.add(
         'route:yondo',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('stink-bomb', { something: 'goes boom' });
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('stink-bomb', { something: 'goes boom' });
           },
         })
       );
@@ -1604,10 +1597,9 @@ moduleFor(
       this.add(
         'route:yondo',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('stink-bomb', { something: 'goes boom' });
-            }, /Calling transitionTo on a route is deprecated/);
+            this.transitionTo('stink-bomb', { something: 'goes boom' });
           },
         })
       );

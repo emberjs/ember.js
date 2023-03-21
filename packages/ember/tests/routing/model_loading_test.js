@@ -6,6 +6,7 @@ import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { computed, set } from '@ember/object';
+import { service } from '@ember/service';
 
 let originalConsoleError;
 
@@ -721,11 +722,10 @@ moduleFor(
       this.add(
         'route:posts',
         Route.extend({
+          router: service(),
           actions: {
             showPost(context) {
-              expectDeprecation(() => {
-                this.transitionTo('post', context);
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('post', context);
             },
           },
         })
@@ -734,6 +734,8 @@ moduleFor(
       this.add(
         'route:post',
         Route.extend({
+          router: service(),
+
           model(params) {
             return { id: params.postId };
           },
@@ -744,9 +746,7 @@ moduleFor(
 
           actions: {
             editPost() {
-              expectDeprecation(() => {
-                this.transitionTo('post.edit');
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('post.edit');
             },
           },
         })

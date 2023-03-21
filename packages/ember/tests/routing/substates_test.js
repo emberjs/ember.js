@@ -1,6 +1,7 @@
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
+import { service } from '@ember/service';
 
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
@@ -901,6 +902,7 @@ moduleFor(
       this.add(
         'route:mom.sally',
         Route.extend({
+          router: service(),
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
@@ -911,9 +913,7 @@ moduleFor(
             error(err) {
               step(assert, 2, 'MomSallyRoute#actions.error');
               handledError = err;
-              expectDeprecation(() => {
-                this.transitionTo('mom.this-route-throws');
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('mom.this-route-throws');
 
               return false;
             },
@@ -978,6 +978,7 @@ moduleFor(
       this.add(
         'route:mom.sally',
         Route.extend({
+          router: service(),
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
@@ -988,9 +989,7 @@ moduleFor(
             error(err) {
               step(assert, 2, 'MomSallyRoute#actions.error');
               handledError = err;
-              expectDeprecation(() => {
-                this.transitionTo('mom.this-route-throws');
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('mom.this-route-throws');
 
               return false;
             },
@@ -1245,10 +1244,9 @@ moduleFor(
       this.add(
         'route:grandma',
         Route.extend({
+          router: service(),
           beforeModel: function () {
-            expectDeprecation(() => {
-              this.transitionTo('memere', 1);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('memere', 1);
           },
         })
       );
