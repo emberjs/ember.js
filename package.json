@@ -99,7 +99,7 @@
     "@glimmer/runtime": "0.84.2",
     "@glimmer/validator": "0.84.2",
     "@simple-dom/document": "^1.4.0",
-    "@tsconfig/ember": "^1.0.1",
+    "@tsconfig/ember": "^2.0.0",
     "@types/node": "^18.11.11",
     "@types/qunit": "^2.19.4",
     "@types/rsvp": "^4.0.4",
