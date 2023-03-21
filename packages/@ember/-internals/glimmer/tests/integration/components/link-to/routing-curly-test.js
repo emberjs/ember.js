@@ -9,6 +9,7 @@ import { A as emberA } from '@ember/array';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
+import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
@@ -1716,10 +1717,9 @@ moduleFor(
       this.add(
         'route:parent',
         class extends Route {
+          @service router;
           afterModel() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.child');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.child');
           }
         }
       );

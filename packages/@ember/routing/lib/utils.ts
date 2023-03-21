@@ -1,7 +1,7 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import type { InternalRouteInfo, ModelFor } from 'router_js';
 import type Router from 'router_js';
@@ -282,23 +282,6 @@ export function shallowEqual<A extends object, B extends object>(a: A, b: B): bo
   }
 
   return aCount === bCount;
-}
-
-export function deprecateTransitionMethods(frameworkClass: string, methodName: string): void {
-  deprecate(
-    `Calling ${methodName} on a ${frameworkClass} is deprecated. Use the RouterService instead.`,
-    false,
-    {
-      id: 'routing.transition-methods',
-      for: 'ember-source',
-      since: {
-        available: '3.26.0',
-        enabled: '3.26.0',
-      },
-      until: '5.0.0',
-      url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
-    }
-  );
 }
 
 function isRouteOptions(value: unknown): value is RouteOptions {

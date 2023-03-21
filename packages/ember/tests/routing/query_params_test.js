@@ -8,6 +8,7 @@ import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
 import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
+import { service } from '@ember/service';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
 
@@ -106,7 +107,7 @@ moduleFor(
     ['@test Calling transitionTo does not lose query params already on the activeTransition'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(2);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -118,10 +119,9 @@ moduleFor(
       this.add(
         'route:parent.child',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.sibling');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.sibling');
           },
         })
       );
@@ -144,7 +144,7 @@ moduleFor(
     ['@test Calling transitionTo does not serialize query params already serialized on the activeTransition'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(3);
 
       this.router.map(function () {
         this.route('parent', function () {
@@ -156,10 +156,9 @@ moduleFor(
       this.add(
         'route:parent.child',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.sibling');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.sibling');
           },
         })
       );
@@ -1758,7 +1757,7 @@ moduleFor(
     async [`@test Updating single query parameter doesn't affect other query parameters. Issue #14438`](
       assert
     ) {
-      assert.expect(6);
+      assert.expect(5);
 
       this.router.map(function () {
         this.route('grandparent', { path: 'grandparent/:foo' }, function () {
@@ -1773,10 +1772,9 @@ moduleFor(
       this.add(
         'route:index',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('grandparent.parent.child', 1);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('grandparent.parent.child', 1);
           },
         })
       );
