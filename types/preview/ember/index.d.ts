@@ -7,7 +7,6 @@ declare module 'ember' {
   import type * as EmberTemplateNs from '@ember/template';
   import * as EmberTemplateHandlebarsNs from '@ember/template/-private/handlebars';
   import type * as EmberServiceNs from '@ember/service';
-  import type * as EmberPolyfillsNs from '@ember/polyfills';
   import type * as EmberUtilsNs from '@ember/utils';
   import type * as EmberRunloopNs from '@ember/runloop';
   import * as EmberObjectNs from '@ember/object';
@@ -280,11 +279,6 @@ declare module 'ember' {
     interface Run extends RunFn, EmberRunloop {}
     const run: Run;
 
-    const platform: {
-      defineProperty: boolean;
-      hasPropertyAccessors: boolean;
-    };
-
     /**
      * `getEngineParent` retrieves an engine instance's parent instance.
      */
@@ -326,12 +320,6 @@ declare module 'ember' {
      */
     const isEqual: typeof EmberUtilsNs.isEqual;
     const typeOf: typeof EmberUtilsNs.typeOf;
-    /**
-     * Copy properties from a source object to a target object.
-     * @deprecated until v5.0. You should replace any calls to `Ember.assign`
-     *   with `Object.assign` or use the object spread operator.
-     */
-    const assign: typeof EmberPolyfillsNs.assign;
     const guidFor: typeof EmberObjectInternalsNs.guidFor;
 
     /**
