@@ -12,7 +12,7 @@ import { meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, captureRenderTree, deprecate } from '@ember/debug';
+import { assert, captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner';
 import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
 import Service, { service } from '@ember/service';
@@ -48,8 +48,6 @@ import {
   setComponentManager,
   escapeExpression,
   getTemplates,
-  htmlSafe,
-  isHTMLSafe,
   setTemplates,
   template,
   isSerializationFirstNode,
