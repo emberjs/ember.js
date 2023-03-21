@@ -20,16 +20,11 @@
 
   Each location implementation must provide the following methods:
 
-  * `implementation`: returns the string name used to reference the implementation.
   * `getURL`: returns the current URL.
   * `setURL(path)`: sets the current URL.
   * `replaceURL(path)`: replace the current URL (optional).
   * `onUpdateURL(callback)`: triggers the callback when the URL changes.
   * `formatURL(url)`: formats `url` to be placed into `href` attribute.
-  * `detect()` (optional): instructs the location to do any feature detection
-      necessary. If the location needs to redirect to a different URL, it
-      can cancel routing by setting the `cancelRouterSetup` property on itself
-      to `false`.
 
   Calling `setURL` or `replaceURL` will not trigger onUpdateURL callbacks.
 
@@ -65,15 +60,6 @@
   @public
 */
 export interface Location {
-  /**
-   * Returns the string name used to reference the implementation.
-   *
-   * @property implementation
-   * @type String
-   * @public
-   */
-  implementation: keyof Registry & string;
-
   /**
    * If the location needs to redirect to a different URL, it can cancel routing
    * by setting the `cancelRouterSetup` property on itself to false.
@@ -128,12 +114,6 @@ export interface Location {
    * @param {String} url the url to format
    */
   formatURL(url: string): string;
-  /**
-   * Instructs the location to do any feature detection necessary. If the
-   * location needs to redirect to a different URL, it can cancel routing by
-   * setting the cancelRouterSetup property on itself to false.
-   */
-  detect?(): void;
 
   initState?(): void;
   destroy(): void;

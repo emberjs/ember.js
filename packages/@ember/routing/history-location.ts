@@ -1,4 +1,5 @@
-import EmberObject, { set } from '@ember/object';
+import EmberObject from '@ember/object';
+import { assert } from '@ember/debug';
 import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
 
@@ -58,10 +59,11 @@ function _uuid() {
   @protected
 */
 export default class HistoryLocation extends EmberObject implements EmberLocation {
+  // SAFETY: both of these properties initialized via `init`.
   declare location: Location;
   declare baseURL: string;
 
-  history?: any;
+  history?: Window['history'];
 
   implementation = 'history';
   _previousURL?: string;
@@ -75,6 +77,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @private
   */
   rootURL = '/';
+
   /**
     @private
 
@@ -95,8 +98,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
       baseURL = base.getAttribute('href') ?? '';
     }
 
-    set(this, 'baseURL', baseURL);
-    set(this, 'location', this.location || window.location);
+    this.baseURL = baseURL;
+    this.location = this.location ?? window.location;
 
     this._popstateHandler = undefined;
   }
@@ -108,8 +111,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method initState
   */
   initState(): void {
-    let history = this.history || window.history;
-    set(this, 'history', history);
+    let history = this.history ?? window.history;
+    this.history = history;
 
     let { state } = history;
     let path = this.formatURL(this.getURL());
@@ -157,6 +160,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @param path {String}
   */
   setURL(path: string): void {
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
     let { state } = this.history;
     path = this.formatURL(path);
 
@@ -174,6 +178,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @param path {String}
   */
   replaceURL(path: string): void {
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
     let { state } = this.history;
     path = this.formatURL(path);
 
@@ -192,7 +197,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   pushState(path: string): void {
     let state = { path, uuid: _uuid() };
 
-    this.history.pushState(state, null, path);
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
+    this.history.pushState(state, '', path);
 
     // used for webkit workaround
     this._previousURL = this.getURL();
@@ -208,7 +214,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   replaceState(path: string): void {
     let state = { path, uuid: _uuid() };
 
-    this.history.replaceState(state, null, path);
+    assert('HistoryLocation.history is unexpectedly missing', this.history);
+    this.history.replaceState(state, '', path);
 
     // used for webkit workaround
     this._previousURL = this.getURL();
