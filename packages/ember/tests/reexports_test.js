@@ -2,7 +2,6 @@ import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
-import require from 'require';
 
 moduleFor(
   'ember reexports',
