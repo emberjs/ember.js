@@ -254,7 +254,6 @@ module.exports = {
     'helperContainer',
     'htmlSafe',
     'if',
-    'implementation',
     'in-element',
     'includes',
     'incrementProperty',

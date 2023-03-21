@@ -1,4 +1,4 @@
-import EmberObject, { set } from '@ember/object';
+import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
 import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/location';
 
@@ -21,8 +21,7 @@ import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/l
   @protected
 */
 export default class NoneLocation extends EmberObject implements EmberLocation {
-  declare updateCallback: UpdateCallback;
-  implementation = 'none';
+  updateCallback?: UpdateCallback;
 
   // Set in reopen so it can be overwritten with extend
   declare path: string;
@@ -77,7 +76,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @param path {String}
   */
   setURL(path: string): void {
-    set(this, 'path', path);
+    this.path = path;
   }
 
   /**
@@ -101,8 +100,10 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @param url {String}
   */
   handleURL(url: string): void {
-    set(this, 'path', url);
-    this.updateCallback(url);
+    this.path = url;
+    if (this.updateCallback) {
+      this.updateCallback(url);
+    }
   }
 
   /**
@@ -114,7 +115,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
 
     @private
     @method formatURL
-    @param url {String}
+    @param {String} url
     @return {String} url
   */
   formatURL(url: string): string {
