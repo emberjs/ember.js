@@ -2,7 +2,6 @@ import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
-import require from 'require';
 
 moduleFor(
   'ember reexports',
@@ -18,63 +17,6 @@ moduleFor(
 
         confirmExport(Ember, assert, path, moduleId, exportName);
       });
-    }
-
-    ['@test Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
-      let glimmer = require('@ember/-internals/glimmer');
-      expectDeprecation(() => {
-        assert.equal(
-          Ember.String.htmlSafe,
-          glimmer.htmlSafe,
-          'Ember.String.htmlSafe is exported correctly'
-        );
-      }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
-      assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
-    }
-
-    ['@test Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
-      let glimmer = require('@ember/-internals/glimmer');
-      expectDeprecation(() => {
-        assert.equal(
-          Ember.String.isHTMLSafe,
-          glimmer.isHTMLSafe,
-          'Ember.String.isHTMLSafe is exported correctly'
-        );
-      }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
-      assert.notEqual(glimmer.isHTMLSafe, undefined, 'Ember.String.isHTMLSafe is not `undefined`');
-    }
-
-    ['@test Ember.String methods export correctly (but deprecated)'](assert) {
-      let string = require('@ember/string');
-      let methods = [
-        'camelize',
-        'capitalize',
-        'classify',
-        'dasherize',
-        'decamelize',
-        'underscore',
-        'w',
-      ];
-      methods.forEach((method) => {
-        expectDeprecation(() => {
-          assert.equal(
-            Ember.String[method],
-            string[method],
-            `Ember.String.${method} is exported correctly`
-          );
-        }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
-        assert.notEqual(string[method], undefined, `Ember.String.${method} is not \`undefined\``);
-      });
-    }
-
-    ['@test Ember.STRINGS is deprecated'](assert) {
-      expectDeprecation(() => {
-        assert.ok(Ember.STRINGS);
-      }, 'Ember.STRINGS is deprecated. It is no longer used by Ember.');
-
-      expectDeprecation(() => {
-        Ember.STRINGS = {};
-      }, 'Ember.STRINGS is deprecated. It is no longer used by Ember.');
     }
 
     '@test Ember.FEATURES is exported'(assert) {
@@ -285,9 +227,6 @@ let allExports = [
   // @ember/service
   ['Service', '@ember/service', 'default'],
   ['inject.service', '@ember/service', 'service'],
-
-  // @ember/string
-  ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],
 
   // @ember/template
   [null, '@ember/template', 'htmlSafe'],

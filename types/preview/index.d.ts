@@ -112,8 +112,6 @@ import './@ember/runloop/types';
 
 import './@ember/service';
 
-import './@ember/string';
-
 import './@ember/template';
 import './@ember/template/-private/handlebars';
 

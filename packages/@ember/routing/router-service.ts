@@ -579,8 +579,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     assert('RouterService is unexpectedly missing an owner', owner);
     let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
 
-    // R could be instantiated with a different sub-type
-    // @ts-ignore
+    // @ts-expect-error R could be instantiated with a different sub-type
     return this._router._routerMicrolib.refresh(pivotRoute);
   }
 

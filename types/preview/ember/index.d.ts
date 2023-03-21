@@ -4,7 +4,6 @@ declare module 'ember' {
   import Rsvp from 'rsvp';
 
   import type { Registry as ControllerRegistry } from '@ember/controller';
-  import type * as EmberStringNs from '@ember/string';
   import type * as EmberTemplateNs from '@ember/template';
   import * as EmberTemplateHandlebarsNs from '@ember/template/-private/handlebars';
   import type * as EmberServiceNs from '@ember/service';
@@ -261,18 +260,6 @@ declare module 'ember' {
       function print(ast: any): void;
       function log(level: string, str: string): void;
       function registerHelper(name: string, helper: any): void;
-    }
-    namespace String {
-      const camelize: typeof EmberStringNs.camelize;
-      const capitalize: typeof EmberStringNs.capitalize;
-      const classify: typeof EmberStringNs.classify;
-      const dasherize: typeof EmberStringNs.dasherize;
-      const decamelize: typeof EmberStringNs.decamelize;
-      function fmt(...args: string[]): string;
-      const htmlSafe: typeof EmberTemplateNs.htmlSafe;
-      const isHTMLSafe: typeof EmberTemplateNs.isHTMLSafe;
-      const underscore: typeof EmberStringNs.underscore;
-      const w: typeof EmberStringNs.w;
     }
     namespace Template {
       const htmlSafe: typeof EmberTemplateNs.htmlSafe;

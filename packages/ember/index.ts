@@ -15,17 +15,6 @@ import * as EmberDebug from '@ember/debug';
 import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
 import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
-import {
-  _getStrings,
-  _setStrings,
-  dasherize,
-  camelize,
-  capitalize,
-  classify,
-  decamelize,
-  underscore,
-  w,
-} from '@ember/string';
 import Service, { service } from '@ember/service';
 
 import EmberObject, {
@@ -387,17 +376,6 @@ const PartialEmber = {
   // ****@ember/service****
   Service,
 
-  // ****@ember/string****
-  String: {
-    camelize,
-    capitalize,
-    classify,
-    decamelize,
-    dasherize,
-    underscore,
-    w,
-  },
-
   // ****@ember/utils****
   compare,
   isBlank,
@@ -527,22 +505,6 @@ interface Ember extends PartialEmber {
   set testing(value: boolean);
 
   /**
-    Defines the hash of localized strings for the current language. Used by
-    the `String.loc` helper. To localize, add string values to this
-    hash.
-
-    @property STRINGS
-    @for Ember
-    @type Object
-    @private
-  */
-  // ****@ember/string****
-  get STRINGS(): {
-    [key: string]: string;
-  };
-  set STRINGS(value: { [key: string]: string });
-
-  /**
     Whether searching on the global for new Namespace instances is enabled.
 
     This is only exported here as to not break any addons.  Given the new
@@ -605,12 +567,6 @@ Object.defineProperty(Ember, 'testing', {
   enumerable: false,
 });
 
-Object.defineProperty(Ember, 'STRINGS', {
-  configurable: false,
-  get: _getStrings,
-  set: _setStrings,
-});
-
 Object.defineProperty(Ember, 'BOOTED', {
   configurable: false,
   enumerable: false,
@@ -623,43 +579,6 @@ Object.defineProperty(Ember, 'TEMPLATES', {
   set: setTemplates,
   configurable: false,
   enumerable: false,
-});
-
-function deprecateStringUseOnEmberModule() {
-  deprecate(
-    'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.',
-    false,
-    {
-      id: 'ember-string.from-ember-module',
-      for: 'ember-source',
-      since: {
-        available: '4.10',
-        enabled: '4.10.',
-      },
-      until: '5.0.0',
-      url: 'https://deprecations.emberjs.com/v4.x/#toc_ember-string-from-ember-module',
-    }
-  );
-}
-
-Object.defineProperty(Ember, 'String', {
-  enumerable: true,
-  configurable: true,
-  get() {
-    deprecateStringUseOnEmberModule();
-
-    return {
-      camelize,
-      capitalize,
-      classify,
-      dasherize,
-      decamelize,
-      underscore,
-      w,
-      htmlSafe,
-      isHTMLSafe,
-    };
-  },
 });
 
 Object.defineProperty(Ember, 'TEMPLATES', {
