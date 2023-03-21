@@ -59,7 +59,6 @@ import VERSION from './version';
 import * as views from '@ember/-internals/views';
 import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import DataAdapter from '@ember/debug/data-adapter';
-import EmberError from '@ember/error';
 import { run } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import EmberArray, { A, NativeArray, isArray, makeArray } from '@ember/array';
@@ -278,9 +277,6 @@ const PartialEmber = {
 
   // ****@ember/enumerable/mutable****
   MutableEnumerable,
-
-  // ****@ember/error****
-  Error: EmberError,
 
   // ****@ember/instrumentation****
   instrument: instrumentation.instrument,

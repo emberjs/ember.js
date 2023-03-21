@@ -197,8 +197,6 @@ e1.register('data:foo', {}, { instantiate: false });
 // Ember.EngineInstance
 const ei1 = new Ember.EngineInstance();
 ei1.lookup('data:foo');
-// Ember.Error
-new Ember.Error('Halp!');
 // Ember.Evented
 interface OE1 extends Ember.Evented {}
 class OE1 extends Ember.Object.extend(Ember.Evented) {}
