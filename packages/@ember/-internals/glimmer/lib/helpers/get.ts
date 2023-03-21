@@ -93,6 +93,6 @@
 
   @public
   @method get
-  @for Ember.Templates.helpers
+  @for @ember/helper
   @since 2.1.0
  */
