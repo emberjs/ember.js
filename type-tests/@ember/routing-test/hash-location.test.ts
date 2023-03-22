@@ -1,6 +1,6 @@
+import type Location from '@ember/routing/location';
 import type EmberObject from '@ember/object';
-import NoneLocation from '@ember/routing/none-location';
-import type { Location } from '@ember/routing/location';
+import HashLocation from '@ember/routing/hash-location';
 import { expectTypeOf } from 'expect-type';
 import type Owner from '@ember/owner';
 
@@ -9,6 +9,6 @@ let owner = {} as Owner;
 
 // This doesn't have any public API
 
-let location = new NoneLocation(owner);
+let location = new HashLocation(owner);
 expectTypeOf(location).toMatchTypeOf<EmberObject>();
 expectTypeOf(location).toMatchTypeOf<Location>();

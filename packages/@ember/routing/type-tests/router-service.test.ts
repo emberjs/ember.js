@@ -1,7 +1,10 @@
 /* eslint-disable no-self-assign */
 
 import type Owner from '@ember/owner';
-import type { Location as EmberLocation } from '@ember/routing/location';
+import type {
+  default as EmberLocation,
+  Registry as LocationRegistry,
+} from '@ember/routing/location';
 import type Route from '@ember/routing/route';
 import type { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/router-service';
 import RouterService from '@ember/routing/router-service';
@@ -87,7 +90,7 @@ expectTypeOf(router.currentURL).toEqualTypeOf<string | null>();
 // @ts-expect-error readonly
 router.currentURL = router.currentURL;
 
-expectTypeOf(router.location).toEqualTypeOf<string | EmberLocation>();
+expectTypeOf(router.location).toEqualTypeOf<(keyof LocationRegistry & string) | EmberLocation>();
 // @ts-expect-error readonly
 router.location = router.location;
 

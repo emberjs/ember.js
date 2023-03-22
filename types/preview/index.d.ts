@@ -91,7 +91,7 @@ import './@ember/object/proxy';
 
 import './@ember/routing';
 import './@ember/routing/-private/router-dsl';
-import './@ember/routing/auto-location';
+import './@ember/routing/location';
 import './@ember/routing/hash-location';
 import './@ember/routing/history-location';
 import './@ember/routing/none-location';

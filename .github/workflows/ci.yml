@@ -43,8 +43,8 @@ jobs:
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - name: Check published types
-        run: yarn type-check:types
+      - name: Check published and internal types
+        run: yarn type-check
 
   types-range:
     name: Type Checking (other supported versions)
@@ -65,8 +65,8 @@ jobs:
         run: yarn build:types
       - name: install TS@${{matrix.ts-version}}
         run: yarn add -D typescript@${{ matrix.ts-version }}
-      - name: Check published types with TS@${{matrix.ts-version}}
-        run: yarn type-check:types
+      - name: Check published and internal types with TS@${{matrix.ts-version}}
+        run: yarn type-check
 
   basic-test:
     name: Debug and Prebuilt (All Tests by Package + Canary Features)

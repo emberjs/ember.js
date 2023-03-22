@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object';
 import { assert } from '@ember/debug';
-import type { Location as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 
 /**
 @module @ember/routing/none-location
