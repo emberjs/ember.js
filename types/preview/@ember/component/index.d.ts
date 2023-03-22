@@ -1,16 +1,13 @@
 declare module '@ember/component' {
   import CoreView from '@ember/component/-private/core-view';
   import ClassNamesSupport from '@ember/component/-private/class-names-support';
+  import { TemplateFactory } from '@ember/component/-private/glimmer-interfaces';
   import ViewMixin from '@ember/component/-private/view-mixin';
   import { ComponentManager, Capabilities } from '@ember/component/-private/glimmer-interfaces';
   import { Opaque } from 'ember/-private/type-utils';
 
   // Re-export these types so people can use them!
   export { ComponentManager, Capabilities };
-
-  interface TemplateFactory {
-    __htmlbars_inline_precompile_template_factory: any;
-  }
 
   // The generic here is for a *signature: a way to hang information for tools
   // like Glint which can provide typey checking for component templates using
@@ -136,7 +133,10 @@ declare module '@ember/component' {
     updateHook: boolean;
   }
 
-  export function capabilities<Version extends keyof ComponentCapabilitiesVersions>(managerAPI: Version, options?: ComponentCapabilitiesVersions[Version]): ComponentCapabilities;
+  export function capabilities<Version extends keyof ComponentCapabilitiesVersions>(
+    managerAPI: Version,
+    options?: ComponentCapabilitiesVersions[Version]
+  ): ComponentCapabilities;
 
   // In normal TypeScript, these built-in components are essentially opaque tokens
   // that just need to be importable. Declaring them with unique interfaces
