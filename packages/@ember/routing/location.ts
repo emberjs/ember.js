@@ -59,7 +59,7 @@
   @since 5.0.0
   @public
 */
-export interface Location {
+export default interface Location {
   /**
    * If the location needs to redirect to a different URL, it can cancel routing
    * by setting the `cancelRouterSetup` property on itself to false.

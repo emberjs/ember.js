@@ -16,9 +16,9 @@ import {
   resemblesURL,
 } from './lib/utils';
 import type { RouteArgs, RouteOptions } from './lib/utils';
-import {
-  type Location as EmberLocation,
-  type Registry as LocationRegistry,
+import type {
+  default as EmberLocation,
+  Registry as LocationRegistry,
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
