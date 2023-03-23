@@ -1,3 +1,24 @@
+## v0.84.3 (2023-03-23)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1402](https://github.com/glimmerjs/glimmer-vm/pull/1402) Allow passing `false` to the `on` modifier's options ([@boris-petrov](https://github.com/boris-petrov))
+* `@glimmer/integration-tests`
+  * [#1391](https://github.com/glimmerjs/glimmer-vm/pull/1391) Update Firefox detection in `on` modifier test (remove use of `InstallTrigger`) ([@bertdeblock](https://github.com/bertdeblock))
+* `@glimmer/syntax`
+  * [#1390](https://github.com/glimmerjs/glimmer-vm/pull/1390) Allow components to be named the same as void tags ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer/integration-tests`
+  * [#1394](https://github.com/glimmerjs/glimmer-vm/pull/1394) Fix typo ([@2hu12](https://github.com/2hu12))
+
+#### Committers: 5
+- 2hu ([@2hu12](https://github.com/2hu12))
+- Bert De Block ([@bertdeblock](https://github.com/bertdeblock))
+- Boris Petrov ([@boris-petrov](https://github.com/boris-petrov))
+- Simon Ihmig ([@simonihmig](https://github.com/simonihmig))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.84.2 (2022-04-13)
 
 #### :bug: Bug Fix
