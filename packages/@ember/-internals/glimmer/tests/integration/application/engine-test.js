@@ -12,6 +12,8 @@ import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
+import { getOwner } from '@ember/owner';
+import { associateDestroyableChild, registerDestructor } from '@ember/destroyable';
 
 import { compile } from '../../utils/helpers';
 
@@ -181,11 +183,11 @@ moduleFor(
       this.assert.expect(1);
 
       let sharedTemplate = compile(strip`
-      <h1>{{this.contextType}}</h1>
-      {{ambiguous-curlies}}
+        <h1>{{this.contextType}}</h1>
+        {{ambiguous-curlies}}
 
-      {{outlet}}
-    `);
+        {{outlet}}
+      `);
 
       this.add('template:application', sharedTemplate);
       this.add(
@@ -219,8 +221,8 @@ moduleFor(
             this.register(
               'template:components/ambiguous-curlies',
               compile(strip`
-        <p>Component!</p>
-      `)
+                <p>Component!</p>
+              `)
             );
           },
         })
@@ -874,6 +876,58 @@ moduleFor(
         );
         assert.strictEqual(this.element.querySelector('.lazy-query-param').innerHTML, 'foo');
       });
+    }
+
+    async ['@test engine owner is not destroyed before singleton destructors for that engine are run'](
+      assert
+    ) {
+      assert.expect(2);
+
+      let hooks = [];
+      this.setupAppAndRoutableEngine(hooks);
+
+      class NonEmberSingleton {
+        static create(parent) {
+          let owner = getOwner(parent);
+          let instance = new this();
+          associateDestroyableChild(owner, instance);
+          registerDestructor(instance, () => {
+            assert.false(owner.isDestroyed, 'owner should not be destroyed');
+          });
+          return instance;
+        }
+      }
+
+      class ExampleEngine extends Engine {
+        init() {
+          super.init(...arguments);
+          this.register('any-old:singleton', NonEmberSingleton);
+          this.register('component:example', ExampleComponent);
+          this.register('template:application', compile('<Example />'));
+        }
+
+        Resolver = ModuleBasedTestResolver;
+
+        willDestroy() {
+          assert.ok(true, 'ExampleEngine.willDestroy was indeed executed');
+        }
+      }
+
+      class ExampleComponent extends Component {
+        get theSingleton() {
+          return getOwner(this).lookup('any-old:singleton');
+        }
+
+        willDestroy() {
+          let owner = getOwner(this);
+          assert.false(owner.isDestroyed, 'owner should not be destroyed');
+          assert.ok(this.theSingleton, 'we were able to do a lookup');
+        }
+      }
+
+      this.add('engine:blog', ExampleEngine);
+
+      await this.visit('/blog');
     }
   }
 );
