@@ -51,7 +51,7 @@ function tokensFromType(
     if (tag.indexOf('.') !== -1) {
       let [potentialLocal] = tag.split('.');
 
-      if (scopedTokens.indexOf(potentialLocal) === -1) {
+      if (scopedTokens.indexOf(potentialLocal) !== -1) {
         return;
       }
     }
