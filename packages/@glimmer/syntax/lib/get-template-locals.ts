@@ -43,6 +43,19 @@ function tokensFromType(
       return;
     }
 
+    // the tag may be from a yielded object
+    // example:
+    //   <x.button>
+    // An ElementNode does not parse the "tag" in to a PathExpression
+    // so we have to split on `.`, just like how `this` presence is checked.
+    if (tag.indexOf('.') !== -1) {
+      let [potentialLocal] = tag.split('.');
+
+      if (scopedTokens.indexOf(potentialLocal) === -1) {
+        return;
+      }
+    }
+
     if (scopedTokens.indexOf(tag) !== -1) {
       return;
     }
