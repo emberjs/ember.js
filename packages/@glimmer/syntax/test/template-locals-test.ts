@@ -76,6 +76,18 @@ QUnit.test('it does not include locals', function (assert) {
   assert.deepEqual(locals, ['SomeComponent']);
 });
 
+QUnit.test('it can include object-locals', function (assert) {
+  let locals = getTemplateLocals(
+    `
+      <SomeComponent as |b|>
+        <b.button />
+      </SomeComponent>
+    `
+  );
+
+  assert.deepEqual(locals, ['SomeComponent']);
+});
+
 QUnit.test('it can include keywords', function (assert) {
   let locals = getTemplateLocals(
     `
