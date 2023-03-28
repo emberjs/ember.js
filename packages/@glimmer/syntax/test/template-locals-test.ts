@@ -76,11 +76,27 @@ QUnit.test('it does not include locals', function (assert) {
   assert.deepEqual(locals, ['SomeComponent']);
 });
 
-QUnit.test('it can include object-locals', function (assert) {
+QUnit.test('it excludes object locals', function (assert) {
   let locals = getTemplateLocals(
     `
       <SomeComponent as |b|>
         <b.button />
+      </SomeComponent>
+    `
+  );
+
+  assert.deepEqual(locals, ['SomeComponent']);
+});
+
+QUnit.test('it excludes object locals from nested blocks', function (assert) {
+  let locals = getTemplateLocals(
+    `
+      <SomeComponent as |some|>
+        <some.foo as |foo|>
+          <foo.bar as |bar|>
+            <bar.baz />
+          </foo.bar>
+        </some.foo>
       </SomeComponent>
     `
   );
