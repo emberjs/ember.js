@@ -1,5 +1,4 @@
 import { DEBUG } from '@glimmer/env';
-import { FEATURE_DEFAULT_HELPER_MANAGER } from '@glimmer/global-context';
 import {
   ComponentManager,
   HelperManager,
@@ -182,23 +181,21 @@ module('Managers', () => {
       assert.strictEqual(instance['factory'], factory, 'manager has correct delegate factory');
     });
 
-    if (FEATURE_DEFAULT_HELPER_MANAGER) {
-      test('it determines the default manager', (assert) => {
-        let myTestHelper = () => 0;
-        let instance = getInternalHelperManager(myTestHelper) as CustomHelperManager<object>;
+    test('it determines the default manager', (assert) => {
+      let myTestHelper = () => 0;
+      let instance = getInternalHelperManager(myTestHelper) as CustomHelperManager<object>;
 
-        assert.strictEqual(typeof instance, 'object', 'manager is an internal manager');
-        assert.strictEqual(
-          typeof instance.getHelper({}),
-          'function',
-          'manager can generate helper function'
-        );
-        assert.strictEqual(
-          instance['factory']({})?.getDebugName?.(myTestHelper),
-          '(helper function myTestHelper)'
-        );
-      });
-    }
+      assert.strictEqual(typeof instance, 'object', 'manager is an internal manager');
+      assert.strictEqual(
+        typeof instance.getHelper({}),
+        'function',
+        'manager can generate helper function'
+      );
+      assert.strictEqual(
+        instance['factory']({})?.getDebugName?.(myTestHelper),
+        '(helper function myTestHelper)'
+      );
+    });
 
     test('it works with internal helpers', (assert) => {
       let helper = () => {
