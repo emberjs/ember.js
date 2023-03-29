@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
 import { debugToString, _WeakSet } from '@glimmer/util';
-import { FEATURE_DEFAULT_HELPER_MANAGER } from '@glimmer/global-context';
 import {
   InternalComponentManager,
   InternalModifierManager,
@@ -144,12 +143,10 @@ export function getInternalHelperManager(
 
   let manager = getManager(HELPER_MANAGERS, definition);
 
-  if (FEATURE_DEFAULT_HELPER_MANAGER) {
-    // Functions are special-cased because functions are defined
-    // as the "default" helper, per: https://github.com/emberjs/rfcs/pull/756
-    if (manager === undefined && typeof definition === 'function') {
-      manager = DEFAULT_MANAGER;
-    }
+  // Functions are special-cased because functions are defined
+  // as the "default" helper, per: https://github.com/emberjs/rfcs/pull/756
+  if (manager === undefined && typeof definition === 'function') {
+    manager = DEFAULT_MANAGER;
   }
 
   if (manager) {
@@ -236,11 +233,7 @@ function hasDefaultComponentManager(_definition: object): boolean {
 }
 
 function hasDefaultHelperManager(definition: object): boolean {
-  if (FEATURE_DEFAULT_HELPER_MANAGER) {
-    return typeof definition === 'function';
-  }
-
-  return false;
+  return typeof definition === 'function';
 }
 
 function hasDefaultModifierManager(_definition: object): boolean {
