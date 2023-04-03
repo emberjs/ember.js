@@ -119,9 +119,7 @@ const ProxyMixin = Mixin.create({
 
   unknownProperty(key: string) {
     let content = contentFor(this);
-    if (content) {
-      return get(content, key);
-    }
+    return content ? get(content, key) : undefined;
   },
 
   setUnknownProperty(key: string, value: unknown) {

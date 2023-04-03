@@ -116,6 +116,7 @@ if (DEBUG) {
     captureErrorForStack = () => {
       try {
         __fail__.fail();
+        return;
       } catch (e) {
         return e;
       }
