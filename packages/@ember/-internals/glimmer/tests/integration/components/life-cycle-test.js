@@ -6,6 +6,7 @@ import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { getOwner } from '@ember/owner';
 
 class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {
@@ -160,6 +161,8 @@ class LifeCycleHooksTest extends RenderingTestCase {
       );
     };
 
+    let assertArbitrary = (cb) => cb(this.assert);
+
     let { isInteractive } = this;
 
     let ComponentClass = this.ComponentClass.extend({
@@ -281,6 +284,13 @@ class LifeCycleHooksTest extends RenderingTestCase {
       willDestroy() {
         pushHook('willDestroy');
         removeComponent(this);
+
+        assertArbitrary((assert) => {
+          assert.strictEqual(this.isDestroying, true, 'component is `isDestroying`');
+          assert.strictEqual(this.isDestroyed, false, 'component is not `isDestroyed`');
+          let owner = getOwner(this);
+          assert.strictEqual(owner.isDestroyed, false, "component's owner is not `isDestroyed`");
+        });
 
         this._super(...arguments);
       },

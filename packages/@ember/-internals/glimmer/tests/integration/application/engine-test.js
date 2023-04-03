@@ -6,14 +6,13 @@ import {
   runTaskNext,
 } from 'internal-test-helpers';
 
-import { Component } from '@ember/-internals/glimmer';
+import { Component as EmberComponent } from '@ember/-internals/glimmer';
 import Route from '@ember/routing/route';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
 import { getOwner } from '@ember/owner';
-import { associateDestroyableChild, registerDestructor } from '@ember/destroyable';
 
 import { compile } from '../../utils/helpers';
 
@@ -240,7 +239,7 @@ moduleFor(
         {{ambiguous-curlies}}
       `);
 
-      let sharedComponent = Component.extend({
+      let sharedComponent = EmberComponent.extend({
         layout: sharedLayout,
       });
 
@@ -878,7 +877,7 @@ moduleFor(
       });
     }
 
-    async ['@test engine owner is not destroyed before singleton destructors for that engine are run'](
+    async ['@test engine owner is not destroyed before destructors for Ember components in that engine are run'](
       assert
     ) {
       assert.expect(2);
@@ -886,22 +885,9 @@ moduleFor(
       let hooks = [];
       this.setupAppAndRoutableEngine(hooks);
 
-      class NonEmberSingleton {
-        static create(parent) {
-          let owner = getOwner(parent);
-          let instance = new this();
-          associateDestroyableChild(owner, instance);
-          registerDestructor(instance, () => {
-            assert.false(owner.isDestroyed, 'owner should not be destroyed');
-          });
-          return instance;
-        }
-      }
-
       class ExampleEngine extends Engine {
         init() {
           super.init(...arguments);
-          this.register('any-old:singleton', NonEmberSingleton);
           this.register('component:example', ExampleComponent);
           this.register('template:application', compile('<Example />'));
         }
@@ -909,19 +895,18 @@ moduleFor(
         Resolver = ModuleBasedTestResolver;
 
         willDestroy() {
+          console.log('engine go boom now');
           assert.ok(true, 'ExampleEngine.willDestroy was indeed executed');
         }
       }
 
-      class ExampleComponent extends Component {
-        get theSingleton() {
-          return getOwner(this).lookup('any-old:singleton');
-        }
+      class ExampleComponent extends EmberComponent {
+        wafflesBeYummy = 'yeahhhhh';
 
         willDestroy() {
+          console.log('component go boom now');
           let owner = getOwner(this);
           assert.false(owner.isDestroyed, 'owner should not be destroyed');
-          assert.ok(this.theSingleton, 'we were able to do a lookup');
         }
       }
 
