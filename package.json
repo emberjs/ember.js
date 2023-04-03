@@ -103,7 +103,7 @@
     "@types/node": "^18.11.11",
     "@types/qunit": "^2.19.4",
     "@types/rsvp": "^4.0.4",
-    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
     "@typescript-eslint/parser": "^5.51.0",
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
