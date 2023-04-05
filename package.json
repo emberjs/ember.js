@@ -80,7 +80,7 @@
     "chalk": "^3.0.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.20.0",
-    "ember-cli-browserstack": "^1.1.0",
+    "ember-cli-browserstack": "^2.0.1",
     "ensure-posix-path": "^1.1.1",
     "eslint": "^7.7.0",
     "eslint-config-prettier": "^6.11.0",
