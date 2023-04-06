@@ -1,5 +1,20 @@
 # Ember Changelog
 
+## v5.0.0-beta.1 (April 6, 2023)
+
+- [#20429](https://github.com/emberjs/ember.js/pull/20429) [BUGFIX] TS lint-level error in `mixins/-proxy.ts`
+- [#20410](https://github.com/emberjs/ember.js/pull/20410) [BUGFIX] Add missing type declarations in the preview types for @ember/template-compilation
+- [#20379](https://github.com/emberjs/ember.js/pull/20379) [CLEANUP] Remove deprecated `@ember/error` package
+- [#20380](https://github.com/emberjs/ember.js/pull/20380) [CLEANUP] Remove deprecated `assign` polyfill
+- [#20381](https://github.com/emberjs/ember.js/pull/20381) [CLEANUP] Remove deprecated `@ember/string` package
+- [#20382](https://github.com/emberjs/ember.js/pull/20382) [CLEANUP] Remove deprecated injection
+- [#20402](https://github.com/emberjs/ember.js/pull/20402) [CLEANUP] Drop support for `ember-cli-mocha` and `ember-mocha` when generating test blueprints
+- [#20406](https://github.com/emberjs/ember.js/pull/20406) [CLEANUP] Remove deprecated auto-location
+- [#20413](https://github.com/emberjs/ember.js/pull/20413) [CLEANUP] Remove deprecated routing.transition-methods
+- [#20414](https://github.com/emberjs/ember.js/pull/20414) [CLEANUP] Add @ember/string to smoke-tests app
+- [#20415](https://github.com/emberjs/ember.js/pull/20415) [CLEANUP] Remove unused imports
+- [#20416](https://github.com/emberjs/ember.js/pull/20416) [CLEANUP] Finish cleaning up `Location` interface
+
 ## v4.12.0 (April 3, 2023)
 
 - [#20352](https://github.com/emberjs/ember.js/pull/20352) [FEATURE] Enable generating Typescript blueprints when `isTypeScriptProject` is true without additional environment variables per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
