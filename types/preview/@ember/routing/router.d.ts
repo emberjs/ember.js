@@ -3,6 +3,7 @@ declare module '@ember/routing/router' {
   import Evented from '@ember/object/evented';
   import RouterDSL from '@ember/routing/-private/router-dsl';
   import Transition from '@ember/routing/transition';
+  import Location from '@ember/routing/location';
 
   /**
    * The `Ember.Router` class manages the application state and URLs. Refer to
@@ -21,7 +22,7 @@ declare module '@ember/routing/router' {
      *
      * @note the `'auto'` location is [deprecated](https://deprecations.emberjs.com/v4.x/#toc_deprecate-auto-location).
      */
-    location: 'history' | 'hash' | 'none' | 'auto';
+    location: 'history' | 'hash' | 'none' | 'auto' | Location | string;
     /**
      * Represents the URL of the root of the application, often '/'. This prefix is
      * assumed on all routes defined on this router.
