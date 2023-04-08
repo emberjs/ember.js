@@ -9,10 +9,10 @@ declare module '@ember/routing/history-location' {
   export default class HistoryLocation extends EmberObject implements Location {
     getURL(): string;
     setURL(url: string): void;
-    replaceURL?(url: string): void;
+    replaceURL(url: string): void;
     onUpdateURL(callback: UpdateCallback): void;
     formatURL(url: string): string;
-    initState?(): void;
+    initState(): void;
   }
 }
 
