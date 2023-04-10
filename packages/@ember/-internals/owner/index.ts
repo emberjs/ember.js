@@ -732,3 +732,5 @@ export interface RegistryProxy extends BasicRegistry {
  *   APIs which are not exposed on `Owner` itself.
  */
 export interface InternalOwner extends RegistryProxy, ContainerProxy {}
+
+export { trackOwner, setupOwnerTracker, type OwnerTrackerCallback } from './leak-detector';

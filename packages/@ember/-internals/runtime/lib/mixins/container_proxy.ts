@@ -4,7 +4,7 @@ import { schedule, join } from '@ember/runloop';
 */
 import type Container from '@ember/-internals/container/lib/container';
 import Mixin from '@ember/object/mixin';
-import type { ContainerProxy } from '@ember/-internals/owner';
+import { type ContainerProxy, trackOwner } from '@ember/-internals/owner';
 
 // This is defined as a separate interface so that it can be used in the definition of
 // `Owner` without also including the `__container__` property.
@@ -29,6 +29,12 @@ const ContainerProxyMixin = Mixin.create({
    @property {Ember.Container} __container__
    */
   __container__: null,
+
+  init() {
+    this._super();
+
+    trackOwner(this);
+  },
 
   ownerInjection() {
     return this.__container__.ownerInjection();
