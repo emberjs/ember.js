@@ -90,7 +90,7 @@ function buildFromParts(packageVersion, gitInfo) {
     };
   } else {
     let channel =
-      branch === 'master'
+      branch === 'main'
         ? process.env.BUILD_TYPE === 'alpha'
           ? 'alpha'
           : 'canary'
