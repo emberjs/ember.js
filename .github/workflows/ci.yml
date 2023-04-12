@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
       - beta
       - release
       # release branches
@@ -346,8 +346,8 @@ jobs:
         blueprint-test,
         browser-test,
       ]
-    # Only run on pushes to master
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    # Only run on pushes to main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
