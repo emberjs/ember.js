@@ -11,6 +11,7 @@ import { setupObserversCheck } from './observers';
 import { setupRunLoopCheck } from './run-loop';
 import type { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
+import { setupOwnerLeakTracker } from './setup-owner-leak-detection';
 
 declare global {
   let Ember: any;
@@ -106,4 +107,10 @@ export default function setupQUnit() {
 
     await QUnit.assert.rejects(promise, expected, message);
   };
+
+  if (typeof gc === 'undefined') {
+    // `gc` isn't available, no reason to do **anything** WRT leak detection
+    return;
+  }
+  setupOwnerLeakTracker();
 }

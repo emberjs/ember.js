@@ -22,6 +22,12 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": false,
 
+    "lib": [
+      "ES2017",
+      "ES2021.Weakref",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "newLine": "LF",
 
     "allowJs": true,
