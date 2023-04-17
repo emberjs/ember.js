@@ -1850,7 +1850,7 @@ function buildRenderOptions(
   options?: PartialRenderOptions
 ): RenderOptions {
   let isDefaultRender = !nameOrOptions && !options;
-  let _name;
+  let _name: string;
   if (!isDefaultRender) {
     if (typeof nameOrOptions === 'object' && !options) {
       _name = route.templateName || route.routeName;
@@ -1860,7 +1860,11 @@ function buildRenderOptions(
         'The name in the given arguments is undefined or empty string',
         !isEmpty(nameOrOptions)
       );
-      _name = nameOrOptions!;
+      // SAFETY: the check for `nameOrOptions` above should be validating this,
+      // and as of TS 5.1.0-dev.2023-0417 it is *not*. This cast can go away if
+      // TS validates it correctly *or* if we refactor this entire function to
+      // be less wildly dynamic in its argument handling.
+      _name = nameOrOptions as string;
     }
   }
   assert(
