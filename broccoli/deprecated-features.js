@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const ts = require('./typescript');
+const ts = require('typescript');
 
 /**
  * @param name {string}
