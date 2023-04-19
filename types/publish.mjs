@@ -277,8 +277,18 @@ export function rewriteModule(code, moduleName) {
     // things which rely on declaration merging can work, but they need to be
     // emitted *outside* the `declare module` we are introducing.
     visitTSModuleDeclaration(path) {
-      otherModuleDeclarations.push(path.node);
-      path.prune(path.node);
+      // ...but we need to *avoid* doing this for namespace declarations! So we
+      // *only* do it for cases where we are sure, since `declare module` will
+      // always have a string literal, while `declare namespace` will have an
+      // actual identifier instead.
+      if (path.node.id.type == 'StringLiteral') {
+        otherModuleDeclarations.push(path.node);
+        path.prune(path.node);
+      } else {
+        // Where we have a `declare namespace` type, we need to emit it without
+        // the `declare`, as with other items.
+        path.node.declare = false;
+      }
       this.traverse(path);
     },
 
