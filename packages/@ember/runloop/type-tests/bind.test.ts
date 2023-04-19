@@ -135,4 +135,6 @@ expectTypeOf(bind(foo, 'test', 1, true, 'baz')).toEqualTypeOf<() => number | voi
 expectTypeOf(bind(foo, 'test', 1, true, undefined)).toEqualTypeOf<() => number | void>();
 
 // @ts-expect-error Invalid args
+bind(foo, foo.test, 'string');
+// We would like to catch this, but it ends up in the fallback path.
 bind(foo, 'test', 'string');

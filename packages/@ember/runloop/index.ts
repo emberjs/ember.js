@@ -1,8 +1,7 @@
 import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
-import type { DeferredActionQueues } from 'backburner.js';
-import Backburner, { Timer } from 'backburner.js';
+import Backburner, { Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
 export { Timer };
@@ -86,6 +85,10 @@ export const _queues = [
   _rsvpErrorQueue,
 ];
 
+/**
+ * @internal
+ * @private
+ */
 export const _backburner = new Backburner(_queues, {
   defaultQueue: 'actions',
   onBegin,
@@ -292,6 +295,14 @@ export function bind<
 ): T[U] extends AnyFn
   ? (...args: RemainingParams<A, Parameters<T[U]>>) => ReturnType<T[U]> | void
   : never;
+// This final fallback is the equivalent of the (quite unsafe!) type for `bind`
+// from TS' defs for `Function.prototype.bind`. In general, it means we have a
+// loss of safety if we do not
+export function bind<T, M extends keyof T & PropertyKey>(
+  target: T,
+  methodName: M,
+  ...args: any[]
+): (...args: any[]) => unknown;
 export function bind(...curried: any[]): any {
   assert(
     'could not find a suitable method to bind',
@@ -760,11 +771,11 @@ export function next(...args: any[]) {
   @method cancel
   @static
   @for @ember/runloop
-  @param {Object} timer Timer object to cancel
+  @param {Object} [timer] Timer object to cancel
   @return {Boolean} true if canceled or false/undefined if it wasn't found
   @public
 */
-export function cancel(timer: Timer): boolean {
+export function cancel(timer?: Timer): boolean {
   return _backburner.cancel(timer);
 }
 
