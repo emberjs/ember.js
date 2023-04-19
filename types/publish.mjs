@@ -97,9 +97,28 @@ ${MODULES_PLACEHOLDER}
 
 const TYPES_DIR = path.join('types', 'stable');
 
+const MANUALLY_COPIED_D_TS_MODULES = [
+  {
+    input: 'packages/loader/lib/index.d.ts',
+    output: path.join(TYPES_DIR, 'require.d.ts'),
+  },
+  {
+    input: 'packages/ember-template-compiler/lib/types.d.ts',
+    output: path.join(TYPES_DIR, 'ember-template-compiler/lib/types.d.ts'),
+  },
+  {
+    input: 'packages/ember/version.d.ts',
+    output: path.join(TYPES_DIR, 'ember/version.d.ts'),
+  },
+];
+
 async function main() {
   fs.rmSync(TYPES_DIR, { recursive: true, force: true });
   fs.mkdirSync(TYPES_DIR, { recursive: true });
+
+  for (let { input, output } of MANUALLY_COPIED_D_TS_MODULES) {
+    fs.copyFileSync(input, output);
+  }
 
   spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']);
 
