@@ -6,33 +6,45 @@ import require, { has } from 'require';
 
 import { getENV, getLookup, setLookup } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
-import { Registry, Container } from '@ember/-internals/container';
+import {
+  Registry as InternalRegistry,
+  Container as InternalContainer,
+} from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
-import { meta } from '@ember/-internals/meta';
+import { meta as internalMeta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import { FEATURES, isEnabled } from '@ember/canary-features';
+import { FEATURES as EmberFEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, captureRenderTree } from '@ember/debug';
+import { assert as emberAssert, captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner.js';
-import Controller, { inject as injectController, ControllerMixin } from '@ember/controller';
-import Service, { service } from '@ember/service';
+import EmberController, {
+  inject as injectController,
+  ControllerMixin as EmberControllerMixin,
+} from '@ember/controller';
+import EmberService, { service } from '@ember/service';
 
 import EmberObject, {
   action,
-  computed,
-  defineProperty,
-  notifyPropertyChange,
-  observer,
-  get,
-  getProperties,
-  set,
-  setProperties,
-  trySet,
+  computed as emberComputed,
+  defineProperty as emberDefineProperty,
+  notifyPropertyChange as emberNotifyPropertyChange,
+  observer as emberObserver,
+  get as emberGet,
+  getProperties as emberGetProperties,
+  set as emberSet,
+  setProperties as emberSetProperties,
+  trySet as emberTrySet,
 } from '@ember/object';
-import { cacheFor } from '@ember/object/-internals';
+import { cacheFor as emberCacheFor } from '@ember/object/-internals';
 import { dependentKeyCompat } from '@ember/object/compat';
-import ComputedProperty, { expandProperties } from '@ember/object/computed';
-import { addListener, removeListener, sendEvent } from '@ember/object/events';
+import EmberComputedProperty, {
+  expandProperties as emberExpandProperties,
+} from '@ember/object/computed';
+import {
+  addListener as emberAddListener,
+  removeListener as emberRemoveListener,
+  sendEvent as emberSendEvent,
+} from '@ember/object/events';
 
 // This is available in global scope courtesy of `loader/lib/index.js`, but that
 // "module" is created as a runtime-only module and makes `define` available as
@@ -45,10 +57,10 @@ declare function define(path: string, deps: string[], module: () => void): void;
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
-  _ProxyMixin,
-  RSVP,
-  Comparable,
-  ActionHandler,
+  _ProxyMixin as internalProxyMixin,
+  RSVP as _RSVP,
+  Comparable as InternalComparable,
+  ActionHandler as InternalActionHandler,
 } from '@ember/-internals/runtime';
 import {
   componentCapabilities,
@@ -61,43 +73,64 @@ import {
   isSerializationFirstNode,
   type TemplatesRegistry,
 } from '@ember/-internals/glimmer';
-import VERSION from './version';
+import Version from './version';
 import * as views from '@ember/-internals/views';
-import ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
-import DataAdapter from '@ember/debug/data-adapter';
-import { run } from '@ember/runloop';
+import EmberContainerDebugAdapter from '@ember/debug/container-debug-adapter';
+import EmberDataAdapter from '@ember/debug/data-adapter';
+import { run as emberRun } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
-import EmberArray, { A, NativeArray, isArray, makeArray } from '@ember/array';
-import MutableArray from '@ember/array/mutable';
-import ArrayProxy from '@ember/array/proxy';
-import Application, { getOwner, setOwner, onLoad, runLoadHooks } from '@ember/application';
-import ApplicationInstance from '@ember/application/instance';
-import Namespace from '@ember/application/namespace';
-import Component, { Input } from '@ember/component';
-import Helper from '@ember/component/helper';
-import Engine from '@ember/engine';
-import EngineInstance from '@ember/engine/instance';
-import Enumerable from '@ember/enumerable';
-import MutableEnumerable from '@ember/enumerable/mutable';
-import CoreObject from '@ember/object/core';
-import Evented, { on } from '@ember/object/evented';
-import Mixin, { mixin } from '@ember/object/mixin';
-import Observable from '@ember/object/observable';
-import { addObserver, removeObserver } from '@ember/object/observers';
-import ObjectProxy from '@ember/object/proxy';
-import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-import HashLocation from '@ember/routing/hash-location';
-import HistoryLocation from '@ember/routing/history-location';
-import NoneLocation from '@ember/routing/none-location';
-import Route from '@ember/routing/route';
-import Router from '@ember/routing/router';
+import EmberArray, {
+  A as EmberA,
+  NativeArray as EmberNativeArray,
+  isArray as emberIsArray,
+  makeArray as emberMakeArray,
+} from '@ember/array';
+import EmberMutableArray from '@ember/array/mutable';
+import EmberArrayProxy from '@ember/array/proxy';
+import EmberApplication, {
+  getOwner as applicationGetOwner,
+  setOwner as applicationSetOwner,
+  onLoad as applicationOnLoad,
+  runLoadHooks as applicationRunLoadHooks,
+} from '@ember/application';
+import EmberApplicationInstance from '@ember/application/instance';
+import EmberNamespace from '@ember/application/namespace';
+import EmberComponent, { Input as EmberInput } from '@ember/component';
+import EmberHelper from '@ember/component/helper';
+import EmberEngine from '@ember/engine';
+import EmberEngineInstance from '@ember/engine/instance';
+import EmberEnumerable from '@ember/enumerable';
+import EmberMutableEnumerable from '@ember/enumerable/mutable';
+import EmberCoreObject from '@ember/object/core';
+import EmberEvented, { on as emberOn } from '@ember/object/evented';
+import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
+import EmberObservable from '@ember/object/observable';
 import {
-  controllerFor,
-  generateController,
-  generateControllerFactory,
-  DSL as RouterDSL,
+  addObserver as emberAddObserver,
+  removeObserver as emberRemoveObserver,
+} from '@ember/object/observers';
+import EmberObjectProxy from '@ember/object/proxy';
+import EmberPromiseProxyMixin from '@ember/object/promise-proxy-mixin';
+import EmberHashLocation from '@ember/routing/hash-location';
+import EmberHistoryLocation from '@ember/routing/history-location';
+import EmberNoneLocation from '@ember/routing/none-location';
+import EmberRoute from '@ember/routing/route';
+import EmberRouter from '@ember/routing/router';
+import {
+  controllerFor as emberControllerFor,
+  generateController as emberGenerateController,
+  generateControllerFactory as emberGenerateControllerFactory,
+  DSL as EmberRouterDSL,
 } from '@ember/routing/-internals';
-import { isNone, isBlank, isEmpty, isPresent, isEqual, typeOf, compare } from '@ember/utils';
+import {
+  isNone as emberIsNone,
+  isBlank as emberIsBlank,
+  isEmpty as emberIsEmpty,
+  isPresent as emberIsPresent,
+  isEqual as emberIsEqual,
+  typeOf as emberTypeOf,
+  compare as emberCompare,
+} from '@ember/utils';
 
 import * as glimmerRuntime from '@glimmer/runtime';
 
@@ -112,7 +145,7 @@ import {
 import {
   assertDestroyablesDestroyed,
   associateDestroyableChild,
-  destroy,
+  destroy as emberDestroy,
   enableDestroyableTracking,
   isDestroying,
   isDestroyed,
@@ -124,264 +157,281 @@ import type * as EmberTemplateCompiler from 'ember-template-compiler';
 import type { precompile, compile } from 'ember-template-compiler';
 import type * as EmberTesting from 'ember-testing';
 
-/**
-  Namespace for injection helper methods.
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace Ember {
+  export const isNamespace = true;
 
-  @class inject
-  @namespace Ember
-  @static
-  @public
-*/
-function inject() {
-  assert(
-    `Injected properties must be created through helpers, see '${Object.keys(inject)
-      .map((k) => `'inject.${k}'`)
-      .join(' or ')}'`
-  );
-}
-// ****@ember/controller****
-inject.controller = injectController;
-// ****@ember/service****
-inject.service = service;
-
-const PartialEmber = {
-  isNamespace: true,
-
-  toString() {
+  export function toString() {
     return 'Ember';
-  },
+  }
 
   // ****@ember/-internals/container****
-  Container,
-  Registry,
+  export const Container = InternalContainer;
+  export type Container = InternalContainer;
+  export const Registry = InternalRegistry;
+  export type Registry = InternalRegistry;
 
   // ****@ember/-internals/glimmer****
   // Partially re-exported from @glimmer/manager
-  _setComponentManager: setComponentManager,
-  _componentManagerCapabilities: componentCapabilities,
-  _modifierManagerCapabilities: modifierCapabilities,
+  export const _setComponentManager = setComponentManager;
+  export const _componentManagerCapabilities = componentCapabilities;
+  export const _modifierManagerCapabilities = modifierCapabilities;
 
   // ****@ember/-internals/meta****
-  meta,
+  export const meta = internalMeta;
 
   // ****@ember/-internals/metal****
-  _createCache: metal.createCache, // Also @glimmer/validator
-  _cacheGetValue: metal.getValue, // Also @glimmer/validator
-  _cacheIsConst: metal.isConst, // Also @glimmer/validator
-  _descriptor: metal.nativeDescDecorator,
-  _getPath: metal._getPath,
-  _setClassicDecorator: metal.setClassicDecorator,
-  _tracked: metal.tracked, // Also exported from @glimmer/tracking
-  beginPropertyChanges: metal.beginPropertyChanges,
-  changeProperties: metal.changeProperties,
-  endPropertyChanges: metal.endPropertyChanges,
-  hasListeners: metal.hasListeners,
-  libraries: metal.libraries,
+  export const _createCache = metal.createCache; // Also @glimmer/validator
+  export const _cacheGetValue = metal.getValue; // Also @glimmer/validator
+  export const _cacheIsConst = metal.isConst; // Also @glimmer/validator
+  export const _descriptor = metal.nativeDescDecorator;
+  export const _getPath = metal._getPath;
+  export const _setClassicDecorator = metal.setClassicDecorator;
+  export const _tracked = metal.tracked; // Also exported from @glimmer/tracking
+  export const beginPropertyChanges = metal.beginPropertyChanges;
+  export const changeProperties = metal.changeProperties;
+  export const endPropertyChanges = metal.endPropertyChanges;
+  export const hasListeners = metal.hasListeners;
+  export const libraries = metal.libraries;
 
   // ****@ember/-internals/runtime****
-  _ContainerProxyMixin: ContainerProxyMixin,
-  _ProxyMixin,
-  _RegistryProxyMixin: RegistryProxyMixin,
-  ActionHandler,
-  Comparable,
-  RSVP, // Also from 'rsvp' directly.
+  export const _ContainerProxyMixin = ContainerProxyMixin;
+  export const _ProxyMixin = internalProxyMixin;
+  export const _RegistryProxyMixin = RegistryProxyMixin;
+  export const ActionHandler = InternalActionHandler;
+  export type ActionHandler = InternalActionHandler;
+  export const Comparable = InternalComparable;
+  export type Comparable = InternalComparable;
+  export const RSVP = _RSVP; // Also from 'rsvp' directly.
 
   // ****@ember/-internals/view****
-  ComponentLookup: views.ComponentLookup,
-  EventDispatcher: views.EventDispatcher,
+  export const ComponentLookup = views.ComponentLookup;
+  export const EventDispatcher = views.EventDispatcher;
 
   // ****@ember/-internals/utils****
-  _Cache: utils.Cache,
-  GUID_KEY: utils.GUID_KEY,
-  canInvoke: utils.canInvoke,
-  generateGuid: utils.generateGuid,
-  guidFor: utils.guidFor,
-  uuid: utils.uuid,
-  wrap: utils.wrap,
+  export const _Cache = utils.Cache;
+  export const GUID_KEY = utils.GUID_KEY;
+  export const canInvoke = utils.canInvoke;
+  export const generateGuid = utils.generateGuid;
+  export const guidFor = utils.guidFor;
+  export const uuid = utils.uuid;
+  export const wrap = utils.wrap;
 
   // ****@ember/application****
-  getOwner,
-  onLoad,
-  runLoadHooks,
-  setOwner,
-  Application,
+  export const getOwner = applicationGetOwner;
+  export const onLoad = applicationOnLoad;
+  export const runLoadHooks = applicationRunLoadHooks;
+  export const setOwner = applicationSetOwner;
+  export const Application = EmberApplication;
+  export type Application = EmberApplication;
 
   // ****@ember/application/instance****
-  ApplicationInstance,
+  export const ApplicationInstance = EmberApplicationInstance;
+  export type ApplicationInstance = EmberApplicationInstance;
 
-  // ****@ember/application/namespace****
-  Namespace,
+  // // ****@ember/application/namespace****
+  export const Namespace = EmberNamespace;
+  export type Namespace = EmberNamespace;
 
   // ****@ember/array****
-  A,
-  Array: EmberArray,
-  NativeArray,
-  isArray,
-  makeArray,
+  export const A = EmberA;
+  export const Array = EmberArray;
+  export type Array<T> = EmberArray<T>;
+  export const NativeArray = EmberNativeArray;
+  export type NativeArray<T> = EmberNativeArray<T>;
+  export const isArray = emberIsArray;
+  export const makeArray = emberMakeArray;
 
   // ****@ember/array/mutable****
-  MutableArray,
+  export const MutableArray = EmberMutableArray;
+  export type MutableArray<T> = EmberMutableArray<T>;
 
   // ****@ember/array/proxy****
-  ArrayProxy,
+  export const ArrayProxy = EmberArrayProxy;
+  export type ArrayProxy<T> = EmberArrayProxy<T>;
 
   // ****@ember/canary-features****
-  FEATURES: { isEnabled, ...FEATURES },
+  export const FEATURES = { isEnabled, ...EmberFEATURES };
 
   // ****@ember/component****
-  _Input: Input,
-  Component,
+  export const _Input = EmberInput;
+  export const Component = EmberComponent;
+  export type Component = EmberComponent;
 
-  // ****@ember/component/helper****
-  Helper,
+  // // ****@ember/component/helper****
+  export const Helper = EmberHelper;
+  export type Helper = EmberHelper;
 
   // ****@ember/controller****
-  Controller,
-  ControllerMixin,
+  export const Controller = EmberController;
+  export type Controller = EmberController;
+  export const ControllerMixin = EmberControllerMixin;
+  export type ControllerMixin<T> = EmberControllerMixin<T>;
 
   // ****@ember/debug****
-  _captureRenderTree: captureRenderTree,
-  assert: EmberDebug.assert,
-  warn: EmberDebug.warn,
-  debug: EmberDebug.debug,
-  deprecate: EmberDebug.deprecate,
-  deprecateFunc: EmberDebug.deprecateFunc,
-  runInDebug: EmberDebug.runInDebug,
-  inspect: EmberDebug.inspect,
+  export const _captureRenderTree = captureRenderTree;
+  export const assert = EmberDebug.assert;
+  export const warn = EmberDebug.warn;
+  export const debug = EmberDebug.debug;
+  export const deprecate = EmberDebug.deprecate;
+  export const deprecateFunc = EmberDebug.deprecateFunc;
+  export const runInDebug = EmberDebug.runInDebug;
+  export const inspect = EmberDebug.inspect;
 
-  Debug: {
+  export const Debug = {
     registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
     registerWarnHandler: EmberDebug.registerWarnHandler,
     // ****@ember/-internals/metal****
     isComputed: metal.isComputed,
-  },
+  };
 
   // ****@ember/debug/container-debug-adapter****
-  ContainerDebugAdapter,
+  export const ContainerDebugAdapter = EmberContainerDebugAdapter;
+  export type ContainerDebugAdapter = EmberContainerDebugAdapter;
 
   // ****@ember/debug/data-adapter****
-  DataAdapter,
+  export const DataAdapter = EmberDataAdapter;
+  export type DataAdapter<T> = EmberDataAdapter<T>;
 
   // ****@ember/destroyable****
-  _assertDestroyablesDestroyed: assertDestroyablesDestroyed,
-  _associateDestroyableChild: associateDestroyableChild,
-  _enableDestroyableTracking: enableDestroyableTracking,
-  _isDestroying: isDestroying,
-  _isDestroyed: isDestroyed,
-  _registerDestructor: registerDestructor,
-  _unregisterDestructor: unregisterDestructor,
-  destroy,
+  export const _assertDestroyablesDestroyed = assertDestroyablesDestroyed;
+  export const _associateDestroyableChild = associateDestroyableChild;
+  export const _enableDestroyableTracking = enableDestroyableTracking;
+  export const _isDestroying = isDestroying;
+  export const _isDestroyed = isDestroyed;
+  export const _registerDestructor = registerDestructor;
+  export const _unregisterDestructor = unregisterDestructor;
+  export const destroy = emberDestroy;
 
   // ****@ember/engine****
-  Engine,
+  export const Engine = EmberEngine;
+  export type Engine = EmberEngine;
 
   // ****@ember/engine/instance****
-  EngineInstance,
+  export const EngineInstance = EmberEngineInstance;
+  export type EngineInstance = EmberEngineInstance;
 
   // ****@ember/enumerable****
-  Enumerable,
+  export const Enumerable = EmberEnumerable;
+  export type Enumerable = EmberEnumerable;
 
   // ****@ember/enumerable/mutable****
-  MutableEnumerable,
+  export const MutableEnumerable = EmberMutableEnumerable;
+  export type MutableEnumerable = EmberMutableEnumerable;
 
   // ****@ember/instrumentation****
-  instrument: instrumentation.instrument,
-  subscribe: instrumentation.subscribe,
+  export const instrument = instrumentation.instrument;
+  export const subscribe = instrumentation.subscribe;
 
-  Instrumentation: {
+  export const Instrumentation = {
     instrument: instrumentation.instrument,
     subscribe: instrumentation.subscribe,
     unsubscribe: instrumentation.unsubscribe,
     reset: instrumentation.reset,
-  },
+  };
 
   // ****@ember/object****
-  Object: EmberObject,
-  _action: action,
-  computed,
-  defineProperty,
-  get,
-  getProperties,
-  notifyPropertyChange,
-  observer,
-  set,
-  trySet,
-  setProperties,
+  export const Object = EmberObject;
+  export type Object = EmberObject;
+  export const _action = action;
+  export const computed = emberComputed;
+  export const defineProperty = emberDefineProperty;
+  export const get = emberGet;
+  export const getProperties = emberGetProperties;
+  export const notifyPropertyChange = emberNotifyPropertyChange;
+  export const observer = emberObserver;
+  export const set = emberSet;
+  export const trySet = emberTrySet;
+  export const setProperties = emberSetProperties;
 
   // ****@ember/object/-internals****
-  cacheFor,
+  export const cacheFor = emberCacheFor;
 
   // ****@ember/object/compat****
-  _dependentKeyCompat: dependentKeyCompat,
+  export const _dependentKeyCompat = dependentKeyCompat;
 
   // ****@ember/object/computed****
-  ComputedProperty,
-  expandProperties,
+  export const ComputedProperty = EmberComputedProperty;
+  export type ComputedProperty = EmberComputedProperty;
+  export const expandProperties = emberExpandProperties;
 
   // ****@ember/object/core****
-  CoreObject,
+  export const CoreObject = EmberCoreObject;
+  export type CoreObject = EmberCoreObject;
 
   // ****@ember/object/evented****
-  Evented,
-  on,
+  export const Evented = EmberEvented;
+  export type Evented = EmberEvented;
+  export const on = emberOn;
 
   // ****@ember/object/events****
-  addListener,
-  removeListener,
-  sendEvent,
+  export const addListener = emberAddListener;
+  export const removeListener = emberRemoveListener;
+  export const sendEvent = emberSendEvent;
 
   // ****@ember/object/mixin****
-  Mixin,
-  mixin,
+  export const Mixin = EmberMixin;
+  export type Mixin = EmberMixin;
+  export const mixin = emberMixin;
 
   // ****@ember/object/observable****
-  Observable,
+  export const Observable = EmberObservable;
+  export type Observable = EmberObservable;
 
   // ****@ember/object/observers****
-  addObserver,
-  removeObserver,
+  export const addObserver = emberAddObserver;
+  export const removeObserver = emberRemoveObserver;
 
   // ****@ember/object/promise-proxy-mixin****
-  PromiseProxyMixin,
+  export const PromiseProxyMixin = EmberPromiseProxyMixin;
+  export type PromiseProxyMixin<T> = EmberPromiseProxyMixin<T>;
 
   // ****@ember/object/proxy****
-  ObjectProxy,
+  export const ObjectProxy = EmberObjectProxy;
+  export type ObjectProxy = EmberObjectProxy;
 
   // ****@ember/routing/-internals****
-  RouterDSL,
-  controllerFor,
-  generateController,
-  generateControllerFactory,
+  export const RouterDSL = EmberRouterDSL;
+  export type RouterDSL = EmberRouterDSL;
+  export const controllerFor = emberControllerFor;
+  export const generateController = emberGenerateController;
+  export const generateControllerFactory = emberGenerateControllerFactory;
 
   // ****@ember/routing/hash-location****
-  HashLocation,
+  export const HashLocation = EmberHashLocation;
+  export type HashLocation = EmberHashLocation;
 
   // ****@ember/routing/history-location****
-  HistoryLocation,
+  export const HistoryLocation = EmberHistoryLocation;
+  export type HistoryLocation = EmberHistoryLocation;
 
   // ****@ember/routing/none-location****
-  NoneLocation,
+  export const NoneLocation = EmberNoneLocation;
+  export type NoneLocation = EmberNoneLocation;
 
   // ****@ember/routing/route****
-  Route,
+  export const Route = EmberRoute;
+  export type Route = EmberRoute;
 
   // ****@ember/routing/router****
-  Router,
+  export const Router = EmberRouter;
+  export type Router = EmberRouter;
 
-  // ****@ember/runloop****
-  run,
+  // // ****@ember/runloop****
+  export const run = emberRun;
 
-  // ****@ember/service****
-  Service,
+  // // ****@ember/service****
+  export const Service = EmberService;
+  export type Service = EmberService;
 
   // ****@ember/utils****
-  compare,
-  isBlank,
-  isEmpty,
-  isEqual,
-  isNone,
-  isPresent,
-  typeOf,
+  export const compare = emberCompare;
+  export const isBlank = emberIsBlank;
+  export const isEmpty = emberIsEmpty;
+  export const isEqual = emberIsEqual;
+  export const isNone = emberIsNone;
+  export const isPresent = emberIsPresent;
+  export const typeOf = emberTypeOf;
 
   // ****@ember/version****
   /**
@@ -391,9 +441,9 @@ const PartialEmber = {
     @type String
     @public
   */
-  VERSION,
+  export const VERSION = Version;
 
-  ViewUtils: {
+  export const ViewUtils = {
     // ****@ember/-internals/views****
     getChildViews: views.getChildViews,
     getElementView: views.getElementView,
@@ -406,61 +456,67 @@ const PartialEmber = {
 
     // ****@ember/-internals/glimmer****
     isSerializationFirstNode,
-  },
+  };
 
   // ****@glimmer/manager****
-  _getComponentTemplate: getComponentTemplate,
-  _helperManagerCapabilities: helperCapabilities,
-  _setComponentTemplate: setComponentTemplate,
-  _setHelperManager: setHelperManager,
-  _setModifierManager: setModifierManager,
+  export const _getComponentTemplate = getComponentTemplate;
+  export const _helperManagerCapabilities = helperCapabilities;
+  export const _setComponentTemplate = setComponentTemplate;
+  export const _setHelperManager = setHelperManager;
+  export const _setModifierManager = setModifierManager;
 
   // ****@glimmer/runtime****
-  _templateOnlyComponent: glimmerRuntime.templateOnlyComponent,
-  _invokeHelper: glimmerRuntime.invokeHelper,
-  _hash: glimmerRuntime.hash,
-  _array: glimmerRuntime.array,
-  _concat: glimmerRuntime.concat,
-  _get: glimmerRuntime.get,
-  _on: glimmerRuntime.on,
-  _fn: glimmerRuntime.fn,
+  export const _templateOnlyComponent = glimmerRuntime.templateOnlyComponent;
+  export const _invokeHelper = glimmerRuntime.invokeHelper;
+  export const _hash = glimmerRuntime.hash;
+  export const _array = glimmerRuntime.array;
+  export const _concat = glimmerRuntime.concat;
+  export const _get = glimmerRuntime.get;
+  export const _on = glimmerRuntime.on;
+  export const _fn = glimmerRuntime.fn;
 
   // Backburner
-  _Backburner: Backburner,
+  export const _Backburner = Backburner;
+  export type _Backburner = Backburner;
 
-  // ****@ember/controller, @ember/service****
-  inject,
+  // // ****@ember/controller, @ember/service****
+  /**
+    Namespace for injection helper methods.
 
-  __loader: {
+    @class inject
+    @namespace Ember
+    @static
+    @public
+  */
+  export function inject() {
+    // uses `globalThis` to avoid clobbering with `Ember.Object` in TS namespace
+    emberAssert(
+      `Injected properties must be created through helpers, see '${globalThis.Object.keys(inject)
+        .map((k) => `'inject.${k}'`)
+        .join(' or ')}'`
+    );
+  }
+  // ****@ember/controller****
+  inject.controller = injectController;
+  // ****@ember/service****
+  inject.service = service;
+
+  export const __loader = {
     require,
     define,
     // @ts-expect-error These properties don't appear as being defined
     registry: typeof requirejs !== 'undefined' ? requirejs.entries : require.entries,
-  },
-} as const;
-
-interface EmberHandlebars {
-  template: typeof template;
-  Utils: {
-    escapeExpression: typeof escapeExpression;
   };
-  compile?: typeof compile;
-  precompile?: typeof precompile;
-}
 
-interface EmberHTMLBars {
-  template: typeof template;
-  compile?: typeof compile;
-  precompile?: typeof precompile;
-}
+  // ------------------------------------------------------------------------ //
+  // These properties are assigned to the namespace with getters (and, in some
+  // cases setters) with `Object.defineProperty` below.
+  // ------------------------------------------------------------------------ //
 
-type PartialEmber = typeof PartialEmber;
-interface Ember extends PartialEmber {
-  get ENV(): object;
+  export declare const ENV: Readonly<object>;
 
   // ****@ember/-internals/environment****
-  get lookup(): Record<string, unknown>;
-  set lookup(value: Record<string, unknown>);
+  export declare let lookup: Record<string, unknown>;
 
   /**
     A function may be assigned to `Ember.onerror` to be called when Ember
@@ -490,11 +546,9 @@ interface Ember extends PartialEmber {
     @public
   */
   // ****@ember/-internals/error-handling****
-  get onerror(): Function | undefined;
-  set onerror(handler: Function | undefined);
+  export declare let onerror: Function | undefined;
 
-  get testing(): boolean;
-  set testing(value: boolean);
+  export declare let testing: boolean;
 
   /**
     Whether searching on the global for new Namespace instances is enabled.
@@ -510,8 +564,7 @@ interface Ember extends PartialEmber {
     @type Boolean
     @private
   */
-  get BOOTED(): boolean;
-  set BOOTED(flag: boolean);
+  export declare let BOOTED: boolean;
 
   /**
     Global hash of shared templates. This will automatically be populated
@@ -523,18 +576,33 @@ interface Ember extends PartialEmber {
     @type Object
     @private
   */
-  get TEMPLATES(): TemplatesRegistry;
-  set TEMPLATES(registry: TemplatesRegistry);
+  export declare let TEMPLATES: TemplatesRegistry;
 
-  HTMLBars: EmberHTMLBars;
-  Handlebars: EmberHandlebars;
-  Test?: typeof EmberTesting['Test'] & {
-    Adapter: typeof EmberTesting['Adapter'];
-    QUnitAdapter: typeof EmberTesting['QUnitAdapter'];
-  };
-  setupForTesting?: typeof EmberTesting['setupForTesting'];
+  export declare let HTMLBars: EmberHTMLBars;
+  export declare let Handlebars: EmberHandlebars;
+  export declare let Test:
+    | (typeof EmberTesting['Test'] & {
+        Adapter: typeof EmberTesting['Adapter'];
+        QUnitAdapter: typeof EmberTesting['QUnitAdapter'];
+      })
+    | undefined;
+  export declare let setupForTesting: typeof EmberTesting['setupForTesting'] | undefined;
 }
-const Ember = PartialEmber as Ember;
+
+interface EmberHandlebars {
+  template: typeof template;
+  Utils: {
+    escapeExpression: typeof escapeExpression;
+  };
+  compile?: typeof compile;
+  precompile?: typeof precompile;
+}
+
+interface EmberHTMLBars {
+  template: typeof template;
+  compile?: typeof compile;
+  precompile?: typeof precompile;
+}
 
 Object.defineProperty(Ember, 'ENV', {
   get: getENV,
@@ -587,7 +655,7 @@ Object.defineProperty(Ember, 'testing', {
   enumerable: false,
 });
 
-runLoadHooks('Ember.Application', Application);
+applicationRunLoadHooks('Ember.Application', EmberApplication);
 
 let EmberHandlebars: EmberHandlebars = {
   template,
