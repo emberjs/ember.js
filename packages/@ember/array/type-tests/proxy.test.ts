@@ -1,4 +1,3 @@
-import type { NativeArray } from '@ember/array';
 import type EmberArray from '@ember/array';
 import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
@@ -13,10 +12,10 @@ let foo = new Foo();
 let content = A([foo]);
 
 // We can't infer the correct type through `create`;
-let proxy = ArrayProxy.create({ content }) as ArrayProxy<Foo, NativeArray<Foo>>;
+let proxy = ArrayProxy.create({ content }) as ArrayProxy<Foo>;
 
 expectTypeOf(proxy).toMatchTypeOf<EmberArray<Foo>>();
 expectTypeOf(proxy).toMatchTypeOf<MutableArray<Foo>>();
 
-expectTypeOf(proxy.content).toEqualTypeOf<NativeArray<Foo> | null>();
-expectTypeOf(proxy.arrangedContent).toEqualTypeOf<NativeArray<Foo> | null>();
+expectTypeOf(proxy.content).toEqualTypeOf<EmberArray<Foo> | null>();
+expectTypeOf(proxy.arrangedContent).toEqualTypeOf<EmberArray<Foo> | null>();
