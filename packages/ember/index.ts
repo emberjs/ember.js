@@ -320,9 +320,12 @@ namespace Ember {
   export type MutableEnumerable = EmberMutableEnumerable;
 
   // ****@ember/instrumentation****
+  /** @private */
   export const instrument = instrumentation.instrument;
+  /** @private */
   export const subscribe = instrumentation.subscribe;
 
+  /** @private */
   export const Instrumentation = {
     instrument: instrumentation.instrument,
     subscribe: instrumentation.subscribe,
@@ -542,11 +545,11 @@ namespace Ember {
 
     @event onerror
     @for Ember
-    @param {Exception} error the error object
+    @param {Error} error the error object
     @public
   */
   // ****@ember/-internals/error-handling****
-  export declare let onerror: Function | undefined;
+  export declare let onerror: ((error: Error) => unknown) | undefined;
 
   export declare let testing: boolean;
 
