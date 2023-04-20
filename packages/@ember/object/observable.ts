@@ -156,6 +156,7 @@ interface Observable {
     @public
   */
   getProperties<L extends Array<keyof this>>(list: L): { [Key in L[number]]: this[Key] };
+  getProperties<L extends Array<keyof this>>(...list: L): { [Key in L[number]]: this[Key] };
   getProperties<L extends string[]>(list: L): { [Key in L[number]]: unknown };
   getProperties<L extends string[]>(...list: L): { [Key in L[number]]: unknown };
 

@@ -31,6 +31,18 @@ import { get } from './property_get';
   @return {Object}
   @public
 */
+function getProperties<T, L extends Array<keyof T>>(
+  obj: T,
+  list: L
+): {
+  [Key in L[number]]: T[Key];
+};
+function getProperties<T, L extends Array<keyof T>>(
+  obj: T,
+  ...list: L
+): {
+  [Key in L[number]]: T[Key];
+};
 function getProperties<L extends string[]>(obj: unknown, list: L): Record<L[number], unknown>;
 function getProperties<L extends string[]>(obj: unknown, ...list: L): Record<L[number], unknown>;
 function getProperties<L extends string[]>(
