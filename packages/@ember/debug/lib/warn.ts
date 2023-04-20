@@ -9,7 +9,12 @@ export interface WarnOptions {
 }
 
 export type RegisterHandlerFunc = (handler: HandlerCallback<WarnOptions>) => void;
-export type WarnFunc = (message: string, test?: boolean, options?: WarnOptions) => void;
+export interface WarnFunc {
+  (message: string): void;
+  (message: string, test: boolean): void;
+  (message: string, options: WarnOptions): void;
+  (message: string, test: boolean, options: WarnOptions): void;
+}
 
 let registerHandler: RegisterHandlerFunc = () => {};
 let warn: WarnFunc = () => {};
@@ -97,7 +102,7 @@ if (DEBUG) {
     @public
     @since 1.0.0
   */
-  warn = function warn(message, test, options) {
+  warn = function warn(message: string, test?: boolean | WarnOptions, options?: WarnOptions) {
     if (arguments.length === 2 && typeof test === 'object') {
       options = test;
       test = false;
@@ -106,7 +111,8 @@ if (DEBUG) {
     assert(missingOptionsDeprecation, Boolean(options));
     assert(missingOptionsIdDeprecation, Boolean(options && options.id));
 
-    invoke('warn', message, test, options);
+    // SAFETY: we checked this by way of the `arguments` check above.
+    invoke('warn', message, test as boolean, options);
   };
 }
 
