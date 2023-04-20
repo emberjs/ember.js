@@ -57,10 +57,7 @@ import type ApplicationInstance from '@ember/application/instance';
 @module @ember/routing/router
 */
 
-function defaultDidTransition<R extends Route>(
-  this: EmberRouter<R>,
-  infos: InternalRouteInfo<R>[]
-) {
+function defaultDidTransition(this: EmberRouter, infos: InternalRouteInfo<Route>[]) {
   updatePaths(this);
 
   this._cancelSlowTransitionTimer();
@@ -77,10 +74,10 @@ function defaultDidTransition<R extends Route>(
   }
 }
 
-function defaultWillTransition<R extends Route>(
-  this: EmberRouter<R>,
-  oldInfos: InternalRouteInfo<R>[],
-  newInfos: InternalRouteInfo<R>[]
+function defaultWillTransition(
+  this: EmberRouter,
+  oldInfos: InternalRouteInfo<Route>[],
+  newInfos: InternalRouteInfo<Route>[]
 ) {
   if (DEBUG) {
     // @ts-expect-error namespace isn't public
@@ -154,7 +151,7 @@ const { slice } = Array.prototype;
   @uses Evented
   @public
 */
-class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -187,7 +184,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   // Set with reopen to allow overriding via extend
   declare location: (keyof LocationRegistry & string) | EmberLocation;
 
-  _routerMicrolib!: Router<R>;
+  _routerMicrolib!: Router<Route>;
   _didSetupRouter = false;
   _initialTransitionStarted = false;
 
@@ -207,7 +204,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   _handledErrors = new Set();
   _engineInstances: Record<string, Record<string, EngineInstance>> = Object.create(null);
   _engineInfoByRoute = Object.create(null);
-  _routerService: RouterService<R>;
+  _routerService: RouterService;
 
   _slowTransitionTimer: Timer | null = null;
 
@@ -325,7 +322,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     assert('BUG: BucketCache should always be present', bucketCache instanceof BucketCache);
     this._bucketCache = bucketCache;
 
-    let routerService = owner.lookup('service:router') as RouterService<R> | undefined;
+    let routerService = owner.lookup('service:router') as RouterService | undefined;
     assert('BUG: RouterService should always be present', routerService !== undefined);
     this._routerService = routerService;
   }
@@ -337,8 +334,8 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     assert('Router is unexpectedly missing an owner', owner);
     let seen = Object.create(null);
 
-    class PrivateRouter extends Router<R> {
-      getRoute(name: string): R {
+    class PrivateRouter extends Router<Route> {
+      getRoute(name: string): Route {
         let routeName = name;
         let routeOwner = owner;
         let engineInfo = router._engineInfoByRoute[routeName];
@@ -354,7 +351,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
         assert('Route is unexpectedly missing an owner', routeOwner);
 
-        let route = routeOwner.lookup(fullRouteName) as R | undefined;
+        let route = routeOwner.lookup(fullRouteName) as Route | undefined;
 
         if (seen[name]) {
           assert('seen routes should exist', route);
@@ -368,7 +365,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
           // `@ember/application/lib` package.
           let DefaultRoute: any = routeOwner.factoryFor('route:basic')!.class;
           routeOwner.register(fullRouteName, DefaultRoute.extend());
-          route = routeOwner.lookup(fullRouteName) as R;
+          route = routeOwner.lookup(fullRouteName) as Route;
 
           if (DEBUG) {
             if (router.namespace.LOG_ACTIVE_GENERATION) {
@@ -407,25 +404,25 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
       }
 
       // TODO: merge into routeDidChange
-      didTransition(infos: InternalRouteInfo<R>[]) {
+      didTransition(infos: InternalRouteInfo<Route>[]) {
         assert(
           'You attempted to override the "didTransition" method which has been deprecated. Please inject the router service and listen to the "routeDidChange" event.',
           router.didTransition === defaultDidTransition
         );
-        router.didTransition<R>(infos);
+        router.didTransition(infos);
       }
 
       // TODO: merge into routeWillChange
-      willTransition(oldInfos: InternalRouteInfo<R>[], newInfos: InternalRouteInfo<R>[]) {
+      willTransition(oldInfos: InternalRouteInfo<Route>[], newInfos: InternalRouteInfo<Route>[]) {
         assert(
           'You attempted to override the "willTransition" method which has been deprecated. Please inject the router service and listen to the "routeWillChange" event.',
           router.willTransition === defaultWillTransition
         );
-        router.willTransition<R>(oldInfos, newInfos);
+        router.willTransition(oldInfos, newInfos);
       }
 
       triggerEvent<N extends MethodNamesOf<typeof defaultActionHandlers>>(
-        routeInfos: InternalRouteInfo<R>[],
+        routeInfos: InternalRouteInfo<Route>[],
         ignoreFailure: boolean,
         name: N,
         args: OmitFirst<Parameters<typeof defaultActionHandlers[N]>>
@@ -719,7 +716,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
       attempted transition
     @public
   */
-  transitionTo(...args: RouteArgs<R>): Transition {
+  transitionTo(...args: RouteArgs<Route>): Transition {
     if (resemblesURL(args[0])) {
       assert(
         `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
@@ -727,7 +724,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
       );
       return this._doURLTransition('transitionTo', args[0]);
     }
-    let { routeName, models, queryParams } = extractRouteArgs<R>(args);
+    let { routeName, models, queryParams } = extractRouteArgs(args);
     assert(
       `A transition was attempted from '${this.currentRouteName}' to '${routeName}' but the application instance has already been destroyed.`,
       !this.isDestroying && !this.isDestroyed
@@ -767,11 +764,11 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
       attempted transition
     @public
   */
-  replaceWith(...args: RouteArgs<R>): Transition {
+  replaceWith(...args: RouteArgs<Route>): Transition {
     return this.transitionTo(...args).method('replace');
   }
 
-  generate(name: string, ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]) {
+  generate(name: string, ...args: ModelFor<Route>[] | [...ModelFor<Route>[], RouteOptions]) {
     let url = this._routerMicrolib.generate(name, ...args);
     assert('expected non-string location', typeof this.location !== 'string');
     return this.location.formatURL(url);
@@ -802,7 +799,11 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @private
     @since 1.7.0
   */
-  isActiveIntent(routeName: string, models: ModelFor<R>[], queryParams: Record<string, unknown>) {
+  isActiveIntent(
+    routeName: string,
+    models: ModelFor<Route>[],
+    queryParams: Record<string, unknown>
+  ) {
     return this.currentState!.isActiveIntent(routeName, models, queryParams);
   }
 
@@ -931,7 +932,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @return {Void}
   */
   _serializeQueryParams(
-    routeInfos: InternalRouteInfo<R>[],
+    routeInfos: InternalRouteInfo<Route>[],
     queryParams: Record<string, unknown>
   ): asserts queryParams is Record<string, string | null | undefined> {
     forEachQueryParam(
@@ -979,7 +980,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @return {Void}
   */
   _deserializeQueryParams(
-    routeInfos: InternalRouteInfo<R>[],
+    routeInfos: InternalRouteInfo<Route>[],
     queryParams: Record<string, unknown>
   ) {
     forEachQueryParam(
@@ -1029,7 +1030,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @return {Void}
   */
   _pruneDefaultQueryParamValues(
-    routeInfos: InternalRouteInfo<R>[],
+    routeInfos: InternalRouteInfo<Route>[],
     queryParams: Record<string, string | null | undefined>
   ) {
     let qps = this._queryParamsFor(routeInfos);
@@ -1043,7 +1044,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
   _doTransition(
     _targetRouteName: string | undefined,
-    models: ModelFor<R>[],
+    models: ModelFor<Route>[],
     _queryParams: Record<string, unknown>,
     _fromRouterService?: boolean
   ): Transition {
@@ -1072,7 +1073,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
 
   _processActiveTransitionQueryParams(
     targetRouteName: string,
-    models: ModelFor<R>[],
+    models: ModelFor<Route>[],
     queryParams: Record<string, unknown>,
     _queryParams: {}
   ) {
@@ -1113,7 +1114,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   */
   _prepareQueryParams(
     targetRouteName: string,
-    models: ModelFor<R>[],
+    models: ModelFor<Route>[],
     queryParams: Record<string, unknown>,
     _fromRouterService?: boolean
   ) {
@@ -1135,7 +1136,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @param {RouteInfo} routeInfo
     @return {Object}
   */
-  _getQPMeta(routeInfo: InternalRouteInfo<R>) {
+  _getQPMeta(routeInfo: InternalRouteInfo<Route>) {
     let route = routeInfo.route;
     return route && (get(route, '_qp') as Route['_qp']);
   }
@@ -1149,7 +1150,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @param {Array<RouteInfo>} routeInfos
     @return {Object}
    */
-  _queryParamsFor(routeInfos: InternalRouteInfo<R>[]) {
+  _queryParamsFor(routeInfos: InternalRouteInfo<Route>[]) {
     let routeInfoLength = routeInfos.length;
     let leafRouteName = routeInfos[routeInfoLength - 1]!.name;
     let cached = this._qpCache[leafRouteName];
@@ -1213,7 +1214,11 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @param {Object} queryParams
     @return {Void}
   */
-  _fullyScopeQueryParams(leafRouteName: string, contexts: ModelFor<R>[], queryParams: QueryParams) {
+  _fullyScopeQueryParams(
+    leafRouteName: string,
+    contexts: ModelFor<Route>[],
+    queryParams: QueryParams
+  ) {
     let state = calculatePostTransitionState(this, leafRouteName, contexts);
     let routeInfos = state.routeInfos;
     let qpMeta;
@@ -1252,7 +1257,7 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     @return {Void}
   */
   _hydrateUnsuppliedQueryParams(
-    state: TransitionState<R>,
+    state: TransitionState<Route>,
     queryParams: QueryParams,
     _fromRouterService: boolean
   ): void {
@@ -1327,8 +1332,8 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
     );
   }
 
-  currentState: null | RouterState<R> = null;
-  targetState = null;
+  currentState: null | RouterState = null;
+  targetState: null | RouterState = null;
 
   _handleSlowTransition(transition: Transition, originRoute: Route) {
     if (!this._routerMicrolib.activeTransition) {
@@ -1487,9 +1492,9 @@ class EmberRouter<R extends Route = Route> extends EmberObject.extend(Evented) i
   @param {Function} callback
   @return {Void}
  */
-function forEachRouteAbove<R extends Route>(
-  routeInfos: InternalRouteInfo<R>[],
-  callback: (route: R, routeInfo: InternalRouteInfo<R>) => boolean
+function forEachRouteAbove(
+  routeInfos: InternalRouteInfo<Route>[],
+  callback: (route: Route, routeInfo: InternalRouteInfo<Route>) => boolean
 ) {
   for (let i = routeInfos.length - 1; i >= 0; --i) {
     let routeInfo = routeInfos[i];
@@ -1518,8 +1523,8 @@ function forEachRouteAbove<R extends Route>(
 // and are not meant to be overridable.
 let defaultActionHandlers = {
   willResolveModel<R extends Route>(
-    this: EmberRouter<R>,
-    _routeInfos: InternalRouteInfo<R>[],
+    this: EmberRouter,
+    _routeInfos: InternalRouteInfo<Route>[],
     transition: Transition,
     originRoute: R
   ) {
@@ -1527,9 +1532,9 @@ let defaultActionHandlers = {
   },
 
   // Attempt to find an appropriate error route or substate to enter.
-  error<R extends Route>(
-    this: EmberRouter<R>,
-    routeInfos: InternalRouteInfo<R>[],
+  error(
+    this: EmberRouter,
+    routeInfos: InternalRouteInfo<Route>[],
     error: Error,
     transition: Transition
   ) {
@@ -1537,7 +1542,7 @@ let defaultActionHandlers = {
 
     let routeInfoWithError = routeInfos[routeInfos.length - 1];
 
-    forEachRouteAbove(routeInfos, (route: R, routeInfo: InternalRouteInfo<R>) => {
+    forEachRouteAbove(routeInfos, (route, routeInfo) => {
       // We don't check the leaf most routeInfo since that would
       // technically be below where we're at in the route hierarchy.
       if (routeInfo !== routeInfoWithError) {
@@ -1565,16 +1570,12 @@ let defaultActionHandlers = {
   },
 
   // Attempt to find an appropriate loading route or substate to enter.
-  loading<R extends Route>(
-    this: EmberRouter<R>,
-    routeInfos: InternalRouteInfo<R>[],
-    transition: Transition
-  ) {
+  loading(this: EmberRouter, routeInfos: InternalRouteInfo<Route>[], transition: Transition) {
     let router = this;
 
     let routeInfoWithSlowLoading = routeInfos[routeInfos.length - 1];
 
-    forEachRouteAbove(routeInfos, (route: R, routeInfo: InternalRouteInfo<R>) => {
+    forEachRouteAbove(routeInfos, (route, routeInfo) => {
       // We don't check the leaf most routeInfos since that would
       // technically be below where we're at in the route hierarchy.
       if (routeInfo !== routeInfoWithSlowLoading) {
@@ -1689,12 +1690,9 @@ function routeHasBeenDefined(owner: Owner, router: any, localName: string, fullN
   return routerHasRoute && ownerHasRoute;
 }
 
-export function triggerEvent<
-  R extends Route,
-  N extends MethodNamesOf<typeof defaultActionHandlers>
->(
-  this: EmberRouter<R>,
-  routeInfos: InternalRouteInfo<R>[],
+export function triggerEvent<N extends MethodNamesOf<typeof defaultActionHandlers>>(
+  this: EmberRouter,
+  routeInfos: InternalRouteInfo<Route>[],
   ignoreFailure: boolean,
   name: N,
   args: OmitFirst<Parameters<typeof defaultActionHandlers[N]>>
@@ -1745,7 +1743,7 @@ export function triggerEvent<
 }
 
 function calculatePostTransitionState<R extends Route>(
-  emberRouter: EmberRouter<R>,
+  emberRouter: EmberRouter,
   leafRouteName: string,
   contexts: ModelFor<R>[]
 ) {
@@ -1799,9 +1797,9 @@ function didBeginTransition(transition: Transition, router: EmberRouter) {
   }, 'Transition Error');
 }
 
-function forEachQueryParam<R extends Route>(
-  router: EmberRouter<R>,
-  routeInfos: InternalRouteInfo<R>[],
+function forEachQueryParam(
+  router: EmberRouter,
+  routeInfos: InternalRouteInfo<Route>[],
   queryParams: Record<string, unknown>,
   callback: (key: string, value: unknown, qp: QueryParam | undefined) => void
 ) {

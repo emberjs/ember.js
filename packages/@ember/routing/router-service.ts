@@ -56,11 +56,11 @@ function cleanURL(url: string, rootURL: string) {
    @class RouterService
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface RouterService<R extends Route> extends Evented {}
-class RouterService<R extends Route> extends Service.extend(Evented) {
-  [ROUTER]?: EmberRouter<R>;
+interface RouterService extends Evented {}
+class RouterService extends Service.extend(Evented) {
+  [ROUTER]?: EmberRouter;
 
-  get _router(): EmberRouter<R> {
+  get _router(): EmberRouter {
     let router = this[ROUTER];
     if (router !== undefined) {
       return router;
@@ -127,7 +127,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
        attempted transition
      @public
    */
-  transitionTo(...args: RouteArgs<R>): Transition {
+  transitionTo(...args: RouteArgs<Route>): Transition {
     if (resemblesURL(args[0])) {
       // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
       // in 3.6+, so it can be removed when TS is upgraded.
@@ -178,7 +178,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
        attempted transition
      @public
    */
-  replaceWith(...args: RouteArgs<R>): Transition {
+  replaceWith(...args: RouteArgs<Route>): Transition {
     return this.transitionTo(...args).method('replace');
   }
 
@@ -250,7 +250,10 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      @return {String} the string representing the generated URL
      @public
    */
-  urlFor(routeName: string, ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]) {
+  urlFor<R extends Route>(
+    routeName: string,
+    ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]
+  ) {
     this._router.setupRouter();
     return this._router.generate(routeName, ...args);
   }
@@ -302,7 +305,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
-  isActive(...args: RouteArgs<R>) {
+  isActive(...args: RouteArgs<Route>) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
@@ -581,7 +584,6 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     assert('RouterService is unexpectedly missing an owner', owner);
     let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
 
-    // @ts-expect-error R could be instantiated with a different sub-type
     return this._router._routerMicrolib.refresh(pivotRoute);
   }
 

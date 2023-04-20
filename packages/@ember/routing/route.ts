@@ -23,13 +23,7 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
-import type {
-  InternalRouteInfo,
-  ModelFor,
-  Route as IRoute,
-  Transition,
-  TransitionState,
-} from 'router_js';
+import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { QueryParam } from '@ember/routing/router';
 import EmberRouter from '@ember/routing/router';
@@ -57,7 +51,7 @@ export type QueryParamMeta = {
   };
 };
 
-type RouteTransitionState<R extends Route> = TransitionState<R> & {
+type RouteTransitionState = TransitionState<Route> & {
   fullQueryParams?: Record<string, unknown>;
   queryParamsFor?: Record<string, Record<string, unknown>>;
 };
@@ -83,7 +77,7 @@ const RENDER = Symbol('render');
   @since 1.0.0
   @public
 */
-interface Route<T = unknown> extends IRoute<T> {
+interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -254,14 +248,11 @@ interface Route<T = unknown> extends IRoute<T> {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<T = unknown>
-  extends EmberObject.extend(ActionHandler, Evented)
-  implements IRoute, Evented
-{
+class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
   static isRouteFactory = true;
 
-  context = {} as T;
-  declare currentModel: T;
+  context = {} as Model;
+  declare currentModel: Model;
 
   _bucketCache!: BucketCache;
   _internalName!: string;
@@ -290,13 +281,6 @@ class Route<T = unknown>
       this._environment = owner.lookup('-environment:main');
     }
   }
-
-  // Implement Evented
-  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
-  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare trigger: (name: string, ...args: any[]) => any;
-  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare has: (name: string) => boolean;
 
   /**
     A hook you can implement to convert the route's model into parameters
@@ -343,7 +327,7 @@ class Route<T = unknown>
     @since 1.0.0
     @public
   */
-  serialize(model: T | undefined, params: string[]): { [key: string]: unknown } | undefined {
+  serialize(model: Model | undefined, params: string[]): { [key: string]: unknown } | undefined {
     if (params.length < 1 || !model) {
       return;
     }
@@ -570,7 +554,7 @@ class Route<T = unknown>
     }
 
     // SAFETY: Since `_qp` is protected we can't infer the type
-    let qps = (get(this, '_qp') as Route<T>['_qp']).qps;
+    let qps = (get(this, '_qp') as Route<Model>['_qp']).qps;
 
     let namePaths = new Array(names.length);
     for (let a = 0; a < names.length; ++a) {
@@ -764,8 +748,11 @@ class Route<T = unknown>
     @since 1.7.0
     @public
   */
-  resetController(_controller: Controller, _isExiting: boolean, _transition: Transition) {
-    return this;
+  resetController(_controller: Controller, _isExiting: boolean, _transition: Transition): void {
+    // We document that subclasses do not have to return *anything* and in fact
+    // do not even have to call super, so whiel we *do* return `this`, we need
+    // to be explicit in the types that our return type is *effectively* `void`.
+    return this as unknown as void;
   }
 
   /**
@@ -788,7 +775,7 @@ class Route<T = unknown>
   _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
     // SAFETY: Since `_qp` is protected we can't infer the type
-    controller['_qpDelegate'] = (get(this, '_qp') as Route<T>['_qp']).states.inactive;
+    controller['_qpDelegate'] = (get(this, '_qp') as Route<Model>['_qp']).states.inactive;
 
     this.resetController(controller, isExiting, transition);
   }
@@ -920,13 +907,13 @@ class Route<T = unknown>
     @private
     @method setup
   */
-  setup(context: T | undefined, transition: Transition) {
+  setup(context: Model | undefined, transition: Transition) {
     let controllerName = this.controllerName || this.routeName;
     let definedController = this.controllerFor(controllerName, true);
     let controller = definedController ?? this.generateController(controllerName);
 
     // SAFETY: Since `_qp` is protected we can't infer the type
-    let queryParams = get(this, '_qp') as Route<T>['_qp'];
+    let queryParams = get(this, '_qp') as Route<Model>['_qp'];
 
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers. Side effects. Side effects everywhere.
@@ -1059,8 +1046,11 @@ class Route<T = unknown>
     @since 1.0.0
     @public
    */
-  afterModel(_resolvedModel: T | undefined, _transition: Transition): unknown | Promise<unknown>;
-  afterModel(_resolvedModel: T | undefined, _transition: Transition): void {}
+  afterModel(
+    _resolvedModel: Model | undefined,
+    _transition: Transition
+  ): unknown | Promise<unknown>;
+  afterModel(_resolvedModel: Model | undefined, _transition: Transition): void {}
 
   /**
     A hook you can implement to optionally redirect to another route.
@@ -1085,7 +1075,7 @@ class Route<T = unknown>
     @since 1.0.0
     @public
   */
-  redirect(_model: T, _transition: Transition) {}
+  redirect(_model: Model, _transition: Transition) {}
 
   /**
     Called when the context is changed by router.js.
@@ -1175,10 +1165,13 @@ class Route<T = unknown>
     @since 1.0.0
     @public
   */
-  model(params: Record<string, unknown>, transition: Transition): T | PromiseLike<T> | undefined {
+  model(
+    params: Record<string, unknown>,
+    transition: Transition
+  ): Model | PromiseLike<Model> | undefined {
     let name, sawParams, value;
     // SAFETY: Since `_qp` is protected we can't infer the type
-    let queryParams = (get(this, '_qp') as Route<T>['_qp']).map;
+    let queryParams = (get(this, '_qp') as Route<Model>['_qp']).map;
 
     for (let prop in params) {
       if (prop === 'queryParams' || (queryParams && prop in queryParams)) {
@@ -1196,15 +1189,15 @@ class Route<T = unknown>
     if (!name) {
       if (sawParams) {
         // SAFETY: This should be equivalent
-        return Object.assign({}, params) as T;
+        return Object.assign({}, params) as Model;
       } else {
         if (transition.resolveIndex < 1) {
           return;
         }
         // SAFETY: This should be correct, but TS is unable to infer this.
         return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1]!.context as
-          | T
-          | PromiseLike<T>
+          | Model
+          | PromiseLike<Model>
           | undefined;
       }
     }
@@ -1221,7 +1214,7 @@ class Route<T = unknown>
 
     Router.js hook.
    */
-  deserialize(_params: {}, transition: Transition) {
+  deserialize(_params: Record<string, unknown>, transition: Transition) {
     return this.model(this._paramsFor(this.routeName, _params), transition);
   }
 
@@ -1306,7 +1299,7 @@ class Route<T = unknown>
     @since 1.0.0
     @public
   */
-  setupController(controller: Controller, context: T | undefined, _transition?: Transition) {
+  setupController(controller: Controller, context: Model | undefined, _transition?: Transition) {
     if (controller && context !== undefined) {
       set(controller, 'model', context);
     }
@@ -1548,7 +1541,7 @@ class Route<T = unknown>
   buildRouteInfoMetadata(): unknown;
   buildRouteInfoMetadata(): void {}
 
-  private _paramsFor(routeName: string, params: {}) {
+  private _paramsFor(routeName: string, params: Record<string, unknown>) {
     let transition = this._router._routerMicrolib.activeTransition;
     if (transition !== undefined) {
       return this.paramsFor(routeName);
@@ -1965,10 +1958,7 @@ type PartialRenderOptions = Partial<
   Pick<RenderOptions, 'into' | 'outlet' | 'controller' | 'model'>
 >;
 
-export function getFullQueryParams<R extends Route>(
-  router: EmberRouter<R>,
-  state: RouteTransitionState<R>
-) {
+export function getFullQueryParams(router: EmberRouter, state: RouteTransitionState) {
   if (state.fullQueryParams) {
     return state.fullQueryParams;
   }
@@ -1991,10 +1981,7 @@ export function getFullQueryParams<R extends Route>(
   return fullQueryParamsState;
 }
 
-function getQueryParamsFor<R extends Route>(
-  route: R,
-  state: RouteTransitionState<R>
-): Record<string, unknown> {
+function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<string, unknown> {
   state.queryParamsFor = state.queryParamsFor || {};
   let name = route.fullRouteName;
 
@@ -2009,7 +1996,7 @@ function getQueryParamsFor<R extends Route>(
 
   // Copy over all the query params for this route/controller into params hash.
   // SAFETY: Since `_qp` is protected we can't infer the type
-  let qps = (get(route, '_qp') as Route<ModelFor<R>>['_qp']).qps;
+  let qps = (get(route, '_qp') as Route['_qp']).qps;
   for (let qp of qps) {
     // Put deserialized qp on params hash.
     let qpValueWasPassedIn = qp.prop in fullQueryParams;

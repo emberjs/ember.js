@@ -469,12 +469,12 @@ class LinkTo extends InternalComponent {
   }
 
   private get isActive(): boolean {
-    return this.isActiveForState(this.routing.currentState as Maybe<RouterState<Route>>);
+    return this.isActiveForState(this.routing.currentState as Maybe<RouterState>);
   }
 
   private get willBeActive(): Option<boolean> {
-    let current = this.routing.currentState as Maybe<RouterState<Route>>;
-    let target = this.routing.targetState as Maybe<RouterState<Route>>;
+    let current = this.routing.currentState;
+    let target = this.routing.targetState;
 
     if (current === target) {
       return null;
@@ -530,7 +530,7 @@ class LinkTo extends InternalComponent {
     }
   }
 
-  private isActiveForState(state: Maybe<RouterState<Route>>): boolean {
+  private isActiveForState(state: Maybe<RouterState>): boolean {
     if (!isPresent(state)) {
       return false;
     }

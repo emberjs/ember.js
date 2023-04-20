@@ -6,10 +6,9 @@
 
 import '@ember/service';
 import type RouterService from '@ember/routing/router-service';
-import type Route from '@ember/routing/route';
 
 declare module '@ember/service' {
   export interface Registry {
-    router: RouterService<Route>;
+    router: RouterService;
   }
 }

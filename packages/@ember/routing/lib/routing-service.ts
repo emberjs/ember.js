@@ -28,9 +28,9 @@ export default class RoutingService<R extends Route> extends Service {
   declare currentRouteName: EmberRouter['currentRouteName'];
   declare currentPath: EmberRouter['currentPath'];
 
-  [ROUTER]?: EmberRouter<R>;
+  [ROUTER]?: EmberRouter;
 
-  get router(): EmberRouter<R> {
+  get router(): EmberRouter {
     let router = this[ROUTER];
     if (router !== undefined) {
       return router;
@@ -104,7 +104,7 @@ export default class RoutingService<R extends Route> extends Service {
     contexts: ModelFor<R>[],
     queryParams: Record<string, unknown> | undefined,
     routeName: string,
-    routerState: RouterState<R>
+    routerState: RouterState
   ): boolean {
     let handlers = this.router._routerMicrolib.recognizer.handlersFor(routeName);
     let leafName = handlers[handlers.length - 1].handler;

@@ -3,7 +3,8 @@ import Array from '@ember/array';
 import Ember from 'ember'; // currently needed for Transition
 import Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
-import { AnyFn } from 'ember/-private/type-utils';
+import { service } from '@ember/service';
+import RouterService from '@ember/routing/router-service';
 
 // Ensure that Ember.Transition is private
 // @ts-expect-error
@@ -16,12 +17,13 @@ interface Post extends Ember.Object {
 interface Posts extends Array<Post> {}
 
 class Test extends Route {
+  @service declare router: RouterService;
   queryParams = {
     memberQp: { refreshModel: true },
   };
 
   beforeModel(transition: Transition) {
-    this.transitionTo('someOtherRoute');
+    this.router.transitionTo('someOtherRoute');
   }
 
   model() {
@@ -30,7 +32,7 @@ class Test extends Route {
 
   afterModel(posts: Posts, transition: Transition) {
     if (posts.firstObject) {
-      this.transitionTo('post.show', posts.firstObject);
+      this.router.transitionTo('post.show', posts.firstObject);
     }
   }
 
@@ -97,8 +99,6 @@ class HasEvented extends Route {
 
 class HasActionHandler extends Route {
   methodUsingActionHandler() {
-    expectTypeOf(this.actions).toEqualTypeOf<{
-      [index: string]: AnyFn;
-    }>();
+    expectTypeOf(this.actions).toEqualTypeOf<Record<string, (...args: any[]) => any>>();
   }
 }

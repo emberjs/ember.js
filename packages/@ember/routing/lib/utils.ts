@@ -37,9 +37,9 @@ type ExtractedArgs<R extends Route> = {
 
 export type RouteOptions = { queryParams: Record<string, unknown> };
 
-export function extractRouteArgs<R extends Route>(args: RouteArgs<R>): ExtractedArgs<R> {
+export function extractRouteArgs(args: RouteArgs<Route>): ExtractedArgs<Route> {
   // SAFETY: This should just be the same thing
-  args = args.slice() as RouteArgs<R>;
+  args = args.slice() as RouteArgs<Route>;
 
   let possibleOptions = args[args.length - 1];
 
@@ -60,7 +60,7 @@ export function extractRouteArgs<R extends Route>(args: RouteArgs<R>): Extracted
   }
 
   // SAFTEY: We removed the name and options if they existed, only models left.
-  let models = args as ModelFor<R>[];
+  let models = args as ModelFor<Route>[];
 
   return { routeName, models, queryParams };
 }
@@ -74,9 +74,9 @@ export function getActiveTargetName(router: Router<Route>): string {
   return lastRouteInfo.name;
 }
 
-export function stashParamNames<R extends Route>(
-  router: EmberRouter<R>,
-  routeInfos: Array<ExtendedInternalRouteInfo<R>> & { _namesStashed?: boolean }
+export function stashParamNames(
+  router: EmberRouter,
+  routeInfos: Array<ExtendedInternalRouteInfo<Route>> & { _namesStashed?: boolean }
 ): void {
   if (routeInfos['_namesStashed']) {
     return;
@@ -90,7 +90,7 @@ export function stashParamNames<R extends Route>(
   assert('has route info', routeInfo);
   let targetRouteName = routeInfo.name;
   let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
-  let dynamicParent: InternalRouteInfo<R>;
+  let dynamicParent: InternalRouteInfo<Route>;
 
   for (let i = 0; i < routeInfos.length; ++i) {
     let routeInfo = routeInfos[i];
@@ -104,11 +104,7 @@ export function stashParamNames<R extends Route>(
     routeInfo['_names'] = names;
 
     let route = routeInfo.route!;
-    // SAFETY: This cast should be idential. I don't understand why it is needed.
-    route._stashNames(
-      routeInfo as InternalRouteInfo<NonNullable<R>>,
-      dynamicParent! as InternalRouteInfo<NonNullable<R>>
-    );
+    route._stashNames(routeInfo, dynamicParent!);
   }
 
   routeInfos['_namesStashed'] = true;
