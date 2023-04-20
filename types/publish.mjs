@@ -165,6 +165,14 @@ async function copySideEffectModules() {
       output: '@ember/service/owner-ext.d.ts',
     },
     {
+      input: 'packages/@ember/routing/location-ext.d.ts',
+      output: '@ember/routing/location-ext.d.ts',
+    },
+    {
+      input: 'packages/@ember/routing/owner-ext.d.ts',
+      output: '@ember/routing/owner-ext.d.ts',
+    },
+    {
       input: 'packages/@ember/routing/service-ext.d.ts',
       output: '@ember/routing/service-ext.d.ts',
     },
