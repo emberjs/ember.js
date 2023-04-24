@@ -55,8 +55,12 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface RouterService extends Evented {}
+interface RouterService extends Evented {
+  on(
+    eventName: 'routeWillChange' | 'routeDidChange',
+    callback: (transition: Transition) => void
+  ): this;
+}
 class RouterService extends Service.extend(Evented) {
   [ROUTER]?: EmberRouter;
 
