@@ -23,7 +23,7 @@ import states from './states';
   @private
 */
 
-interface CoreView extends FrameworkObject, Evented, ActionHandler, View {}
+interface CoreView extends Evented, ActionHandler, View {}
 class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
   isView = true;
 
