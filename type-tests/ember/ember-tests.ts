@@ -1,7 +1,7 @@
+import { AnyFn } from '@ember/-internals/utility-types';
 import { A } from '@ember/array';
 import type { SafeString } from '@ember/template/-private/handlebars';
 import Ember from 'ember';
-import type { AnyFn } from 'ember/-private/type-utils';
 import { expectTypeOf } from 'expect-type';
 
 class President extends Ember.Object {
@@ -90,12 +90,6 @@ const NormalApp = Ember.Application.create({
   rootElement: '#sidebar',
 });
 
-Ember.Handlebars.registerHelper(
-  'highlight',
-  (property: string, options: any) =>
-    new Ember.Handlebars.SafeString('<span class="highlight">' + 'some value' + '</span>')
-);
-
 class Person2 extends Ember.Object {
   name = '';
 
@@ -177,5 +171,5 @@ const mix2 = Ember.Mixin.create({
 
 const component1 = Ember.Component.extend(mix1, mix2, {
   lyft: Ember.inject.service(),
-  cars: Ember.computed.readOnly('lyft.cars'),
+  cars: Ember.computed('lyft.cars').readOnly(),
 });
