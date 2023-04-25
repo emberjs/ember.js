@@ -37,7 +37,8 @@ export {
   @uses Observable
   @public
 */
-interface EmberObject extends CoreObject, Observable {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface EmberObject extends Observable {}
 class EmberObject extends CoreObject.extend(Observable) {
   get _debugContainerKey() {
     let factory = getFactoryFor(this);
