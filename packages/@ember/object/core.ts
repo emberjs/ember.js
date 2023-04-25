@@ -770,7 +770,7 @@ class CoreObject {
     Args extends Array<Partial<Record<K, I[K]>>>
   >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args> {
     let props = args[0];
-    let instance: InstanceType<C>;
+    let instance;
 
     if (props !== undefined) {
       instance = new this(getOwner(props)) as InstanceType<C>;
@@ -795,7 +795,9 @@ class CoreObject {
       initialize(instance, flattenProps.apply(this, args));
     }
 
-    return instance;
+    // SAFETY: The `initialize` call is responsible to merge the prototype chain
+    // so that this holds.
+    return instance as InstanceType<C> & MergeArray<Args>;
   }
 
   /**

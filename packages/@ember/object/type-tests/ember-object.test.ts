@@ -22,15 +22,11 @@ expectTypeOf(o.isDestroying).toEqualTypeOf<boolean>(); // from instance
 /**
  * One-argument case
  */
+// @ts-expect-error: there are *no* types in common here, so we reject them.
 const o1 = EmberObject.create({ x: 9, y: 'hello', z: false });
-expectTypeOf(o1).not.toHaveProperty('x');
-expectTypeOf(o1).not.toHaveProperty('y');
-expectTypeOf(o1).not.toHaveProperty('z');
 
+// @ts-expect-error: there are *no* types in common here, so we reject them.
 const obj = EmberObject.create({ a: 1 }, { b: 2 }, { c: 3 });
-expectTypeOf(obj).not.toHaveProperty('a');
-expectTypeOf(obj).not.toHaveProperty('b');
-expectTypeOf(obj).not.toHaveProperty('c');
 
 export class Person extends EmberObject {
   firstName!: string;
