@@ -23,14 +23,15 @@ function isVeryOldQunit(obj: unknown): obj is VeryOldQunit {
   @extends TestAdapter
   @public
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface QUnitAdapter extends Adapter {}
+interface QUnitAdapter extends Adapter {
+  doneCallbacks: Array<Function>;
+}
 const QUnitAdapter = Adapter.extend({
-  init() {
+  init(this: QUnitAdapter) {
     this.doneCallbacks = [];
   },
 
-  asyncStart() {
+  asyncStart(this: QUnitAdapter) {
     if (isVeryOldQunit(QUnit)) {
       // very old QUnit version
       // eslint-disable-next-line qunit/no-qunit-stop
@@ -40,7 +41,7 @@ const QUnitAdapter = Adapter.extend({
     }
   },
 
-  asyncEnd() {
+  asyncEnd(this: QUnitAdapter) {
     // checking for QUnit.stop here (even though we _need_ QUnit.start) because
     // QUnit.start() still exists in QUnit 2.x (it just throws an error when calling
     // inside a test context)
