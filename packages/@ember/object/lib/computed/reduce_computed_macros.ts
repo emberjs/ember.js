@@ -1030,7 +1030,11 @@ export function collect(dependentKey: string, ...additionalDependentKeys: string
   );
 }
 
-type SortDefinition = (itemA: unknown, itemB: unknown) => number;
+// (UN)SAFETY: we use `any` here to match how TS defines the sorting for arrays.
+// Additionally, since we're using it with *decorators*, we don't have any way
+// to plumb through the relationship between the types in a way that would be
+// variance-safe.
+type SortDefinition = (itemA: any, itemB: any) => number;
 
 /**
   A computed property which returns a new array with all the properties from the
