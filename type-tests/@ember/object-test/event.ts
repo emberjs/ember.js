@@ -60,15 +60,6 @@ function testEvented() {
   person.greet();
 }
 
-function testObserver() {
-  EmberObject.extend({
-    // TODO: enable after https://github.com/typed-ember/ember-cli-typescript/issues/290
-    // valueObserver: observer('value', () => {
-    //     // Executes whenever the "value" property changes
-    // })
-  });
-}
-
 function testListener() {
   function willDestroyListener() {}
 
@@ -81,12 +72,12 @@ function testListener() {
       removeListener(this, 'willDestroy', this, 'willDestroyListener');
       removeListener(this, 'willDestroy', this, willDestroyListener);
 
-      addListener(this, 'willDestroy', 'willDestroyListener');
-      addListener(this, 'willDestroy', 'willDestroyListener', true);
-      addListener(this, 'willDestroy', willDestroyListener);
-      addListener(this, 'willDestroy', willDestroyListener, true);
-      removeListener(this, 'willDestroy', 'willDestroyListener');
-      removeListener(this, 'willDestroy', willDestroyListener);
+      addListener(this, 'willDestroy', null, 'willDestroyListener');
+      addListener(this, 'willDestroy', null, 'willDestroyListener', true);
+      addListener(this, 'willDestroy', null, willDestroyListener);
+      addListener(this, 'willDestroy', null, willDestroyListener, true);
+      removeListener(this, 'willDestroy', null, 'willDestroyListener');
+      removeListener(this, 'willDestroy', null, willDestroyListener);
     }
 
     willDestroyListener() {
