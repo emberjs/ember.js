@@ -20,7 +20,7 @@ expectTypeOf(people.isAny('isHappy', false)).toBeBoolean();
 people.isAny('isHappy', 'false');
 
 expectTypeOf(people.objectAt(0)).toEqualTypeOf<Person | undefined>();
-expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<Ember.Array<Person | undefined>>();
+expectTypeOf(people.objectsAt([1, 2, 3])).toEqualTypeOf<Array<Person | undefined>>();
 
 expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Person[]>();
 expectTypeOf(people.filterBy('isHappy')).toMatchTypeOf<Ember.NativeArray<Person>>();
