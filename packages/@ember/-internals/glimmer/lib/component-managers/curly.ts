@@ -219,7 +219,7 @@ export default class CurlyComponentManager
       Object.assign(named, args.named.capture());
 
       for (let i = 0; i < count; i++) {
-        let name = positionalParams[i];
+        let name: string | undefined = positionalParams[i];
         assert('Expected at least one positional param', name);
 
         assert(

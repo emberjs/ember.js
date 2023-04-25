@@ -198,10 +198,10 @@ class ClassicHelperManager implements HelperManager<ClassicHelperStateBucket> {
     hasDestroyable: true,
   });
 
-  private ownerInjection: object;
+  private ownerInjection: Record<string, unknown>;
 
   constructor(owner: InternalOwner | undefined) {
-    let ownerInjection = {};
+    let ownerInjection: Record<string, unknown> = {};
     setOwner(ownerInjection, owner!);
     this.ownerInjection = ownerInjection;
   }
