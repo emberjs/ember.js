@@ -21,7 +21,9 @@
      eventually be the list of *all* modules, but this allows us to publish
      iteratively as we gain confidence in the stability of the types.
 
-  This is *not* an optimal long-term publishing strategy. We would prefer to
+  This is *not* an optimal long-term publishing strategy. (To the contrary: it
+  is an underspecified and _ad hoc_ implementation of a module resolver, and is
+  likely to fall over if you so much as breathe on it.) We would prefer to
   generate per-package roll-ups, using a Rollup plugin or some such, but we are
   currently blocked on a number of internal circular dependencies as well as the
   difficulty of avoiding multiple definitions of the same types reused across
@@ -471,6 +473,12 @@ function normalizeSpecifier(moduleName, specifier) {
           throw new Error(
             `Could not generate a valid path for relative path specifier ${specifier} in ${moduleName}`
           );
+        }
+
+        // If we get to `@ember`, we know we're at the root and we *need* to
+        // retain it. Otherwise, we're not there yet and should keep moving up.
+        if (parent === '@ember') {
+          merged.push(parent);
         }
       } else {
         merged.push(chunk);
