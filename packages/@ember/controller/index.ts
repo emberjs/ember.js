@@ -11,7 +11,10 @@ import type Route from '@ember/routing/route';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
-export type ControllerQueryParam = string | Record<string, { type: ControllerQueryParamType }>;
+export type ControllerQueryParam =
+  | string
+  | Record<string, { type: ControllerQueryParamType }>
+  | Record<string, string>;
 
 const MODEL = symbol('MODEL');
 
