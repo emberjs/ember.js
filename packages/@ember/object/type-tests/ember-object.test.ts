@@ -23,14 +23,14 @@ expectTypeOf(o.isDestroying).toEqualTypeOf<boolean>(); // from instance
  * One-argument case
  */
 const o1 = EmberObject.create({ x: 9, y: 'hello', z: false });
-expectTypeOf(o1.x).toEqualTypeOf<number>();
-expectTypeOf(o1.y).toEqualTypeOf<string>();
-expectTypeOf(o1.z).toEqualTypeOf<boolean>();
+expectTypeOf(o1).not.toHaveProperty('x');
+expectTypeOf(o1).not.toHaveProperty('y');
+expectTypeOf(o1).not.toHaveProperty('z');
 
 const obj = EmberObject.create({ a: 1 }, { b: 2 }, { c: 3 });
-expectTypeOf(obj.b).toEqualTypeOf<number>();
-expectTypeOf(obj.a).toEqualTypeOf<number>();
-expectTypeOf(obj.c).toEqualTypeOf<number>();
+expectTypeOf(obj).not.toHaveProperty('a');
+expectTypeOf(obj).not.toHaveProperty('b');
+expectTypeOf(obj).not.toHaveProperty('c');
 
 export class Person extends EmberObject {
   firstName!: string;

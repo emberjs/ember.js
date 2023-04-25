@@ -27,9 +27,10 @@ expectTypeOf(co2.toString()).toEqualTypeOf<string>();
 
 /** .create tests w/ initial instance data passed in */
 const co3 = CoreObject.create({ foo: '123', bar: 456 });
-
-expectTypeOf(co3.foo).toEqualTypeOf<string>();
-expectTypeOf(co3.bar).toEqualTypeOf<number>();
+// but we don't create a new type:
+expectTypeOf(co3).toEqualTypeOf<CoreObject>();
+expectTypeOf(co3).not.toHaveProperty('foo');
+expectTypeOf(co3).not.toHaveProperty('bar');
 
 // NOTE: This is marked as @internal and will not be publicly available
 CoreObject.extend({ baz: 6 });
