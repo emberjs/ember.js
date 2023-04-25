@@ -272,7 +272,7 @@ function isQueryParams(value: unknown): value is QueryParams {
   @public
 **/
 
-class LinkTo extends InternalComponent {
+class _LinkTo extends InternalComponent {
   static toString(): string {
     return 'LinkTo';
   }
@@ -582,7 +582,7 @@ class LinkTo extends InternalComponent {
   }
 }
 
-let { prototype } = LinkTo;
+let { prototype } = _LinkTo;
 
 let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
   if (target) {
@@ -602,7 +602,7 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   Object.defineProperty(prototype, 'onUnsupportedArgument', {
     configurable: true,
     enumerable: false,
-    value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+    value: function onUnsupportedArgument(this: _LinkTo, name: string): void {
       if (name === 'href') {
         assert(`Passing the \`@href\` argument to <LinkTo> is not supported.`);
       } else {
@@ -621,12 +621,12 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
     superModelsDescriptor && typeof superModelsDescriptor.get === 'function'
   );
 
-  let superModelsGetter = superModelsDescriptor.get as (this: LinkTo) => {}[];
+  let superModelsGetter = superModelsDescriptor.get as (this: _LinkTo) => {}[];
 
   Object.defineProperty(prototype, 'models', {
     configurable: true,
     enumerable: false,
-    get: function models(this: LinkTo): {}[] {
+    get: function models(this: _LinkTo): {}[] {
       let models = superModelsGetter.call(this);
 
       if (models.length > 0 && !('query' in this.args.named)) {
@@ -646,12 +646,12 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
     superQueryDescriptor && typeof superQueryDescriptor.get === 'function'
   );
 
-  let superQueryGetter = superQueryDescriptor.get as (this: LinkTo) => {};
+  let superQueryGetter = superQueryDescriptor.get as (this: _LinkTo) => {};
 
   Object.defineProperty(prototype, 'query', {
     configurable: true,
     enumerable: false,
-    get: function query(this: LinkTo): {} {
+    get: function query(this: _LinkTo): {} {
       if ('query' in this.args.named) {
         let qp = superQueryGetter.call(this);
 
@@ -684,7 +684,7 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   Object.defineProperty(prototype, 'onUnsupportedArgument', {
     configurable: true,
     enumerable: false,
-    value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+    value: function onUnsupportedArgument(this: _LinkTo, name: string): void {
       if (name !== 'params') {
         superOnUnsupportedArgument.call(this, name);
       }
@@ -692,4 +692,6 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   });
 }
 
-export default opaquify(LinkTo, LinkToTemplate);
+const LinkTo = opaquify(_LinkTo, LinkToTemplate);
+type LinkTo = typeof LinkTo;
+export default LinkTo;
