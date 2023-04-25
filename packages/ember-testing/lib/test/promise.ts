@@ -42,7 +42,7 @@ export default class TestPromise<T> extends RSVP.Promise<T> {
   @param {Function} resolver The function used to resolve the promise.
   @param {String} label An optional string for identifying the promise.
 */
-export function promise<T>(resolver: Executor<T>, label: string) {
+export function promise<T>(resolver: Executor<T>, label?: string) {
   let fullLabel = `Ember.Test.promise: ${label || '<Unknown Promise>'}`;
   return new TestPromise(resolver, fullLabel);
 }
