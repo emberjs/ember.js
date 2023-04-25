@@ -853,7 +853,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       let instanceMap = instances[name];
       assert('has instanceMap', instanceMap);
       for (let id in instanceMap) {
-        let instance = instanceMap[id];
+        let instance: EngineInstance | undefined = instanceMap[id];
         assert('has instance', instance);
         run(instance, 'destroy');
       }
