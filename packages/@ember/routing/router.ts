@@ -716,7 +716,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       attempted transition
     @public
   */
-  transitionTo(...args: RouteArgs<Route>): Transition {
+  transitionTo(...args: RouteArgs): Transition {
     if (resemblesURL(args[0])) {
       assert(
         `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
@@ -764,7 +764,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       attempted transition
     @public
   */
-  replaceWith(...args: RouteArgs<Route>): Transition {
+  replaceWith(...args: RouteArgs): Transition {
     return this.transitionTo(...args).method('replace');
   }
 

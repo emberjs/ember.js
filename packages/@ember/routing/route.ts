@@ -870,7 +870,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @since 1.2.0
     @public
    */
-  intermediateTransitionTo(...args: NamedRouteArgs<this>): void {
+  intermediateTransitionTo(...args: NamedRouteArgs): void {
     let [name, ...preparedArgs] = prefixRouteNameArg(this, args);
     this._router.intermediateTransitionTo(name, ...preparedArgs);
   }

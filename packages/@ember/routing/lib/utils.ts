@@ -3,7 +3,7 @@ import { getOwner } from '@ember/-internals/owner';
 import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import type { InternalRouteInfo, ModelFor } from 'router_js';
+import type { InternalRouteInfo } from 'router_js';
 import type Router from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
 import type { ExtendedInternalRouteInfo } from '@ember/routing/route';
@@ -18,28 +18,28 @@ export type ExpandedControllerQueryParam = {
   type?: ControllerQueryParamType;
 };
 
-export type NamedRouteArgs<R extends Route> =
-  | [routeNameOrUrl: string, ...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
-  | [routeNameOrUrl: string, ...models: ModelFor<R>[]];
+export type NamedRouteArgs =
+  | [routeNameOrUrl: string, ...modelsAndOptions: [...unknown[], RouteOptions]]
+  | [routeNameOrUrl: string, ...models: unknown[]];
 
-export type UnnamedRouteArgs<R extends Route> =
-  | [...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
-  | [...models: ModelFor<R>[]]
+export type UnnamedRouteArgs =
+  | [...modelsAndOptions: [...unknown[], RouteOptions]]
+  | [...models: unknown[]]
   | [options: RouteOptions];
 
-export type RouteArgs<R extends Route> = NamedRouteArgs<R> | UnnamedRouteArgs<R>;
+export type RouteArgs = NamedRouteArgs | UnnamedRouteArgs;
 
-type ExtractedArgs<R extends Route> = {
+type ExtractedArgs = {
   routeName: string | undefined;
-  models: ModelFor<R>[];
+  models: unknown[];
   queryParams: Record<string, unknown>;
 };
 
 export type RouteOptions = { queryParams: Record<string, unknown> };
 
-export function extractRouteArgs(args: RouteArgs<Route>): ExtractedArgs<Route> {
+export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   // SAFETY: This should just be the same thing
-  args = args.slice() as RouteArgs<Route>;
+  args = args.slice() as RouteArgs;
 
   let possibleOptions = args[args.length - 1];
 
@@ -60,7 +60,7 @@ export function extractRouteArgs(args: RouteArgs<Route>): ExtractedArgs<Route> {
   }
 
   // SAFTEY: We removed the name and options if they existed, only models left.
-  let models = args as ModelFor<Route>[];
+  let models = args;
 
   return { routeName, models, queryParams };
 }
@@ -233,7 +233,7 @@ export function resemblesURL(str: unknown): str is string {
 
   @private
 */
-export function prefixRouteNameArg<T extends NamedRouteArgs<Route> | UnnamedRouteArgs<Route>>(
+export function prefixRouteNameArg<T extends NamedRouteArgs | UnnamedRouteArgs>(
   route: Route,
   args: T
 ): T {

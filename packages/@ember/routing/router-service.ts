@@ -131,7 +131,7 @@ class RouterService extends Service.extend(Evented) {
        attempted transition
      @public
    */
-  transitionTo(...args: RouteArgs<Route>): Transition {
+  transitionTo(...args: RouteArgs): Transition {
     if (resemblesURL(args[0])) {
       // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
       // in 3.6+, so it can be removed when TS is upgraded.
@@ -182,7 +182,7 @@ class RouterService extends Service.extend(Evented) {
        attempted transition
      @public
    */
-  replaceWith(...args: RouteArgs<Route>): Transition {
+  replaceWith(...args: RouteArgs): Transition {
     return this.transitionTo(...args).method('replace');
   }
 
@@ -309,7 +309,7 @@ class RouterService extends Service.extend(Evented) {
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
-  isActive(...args: RouteArgs<Route>) {
+  isActive(...args: RouteArgs) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 

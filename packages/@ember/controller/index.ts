@@ -7,7 +7,6 @@ import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
-import type Route from '@ember/routing/route';
 import type { Transition } from 'router_js';
 
 export type ControllerQueryParamType = 'boolean' | 'number' | 'array' | 'string';
@@ -165,7 +164,7 @@ interface ControllerMixin<T> extends ActionHandler {
       attempted transition
     @public
   */
-  transitionToRoute(...args: RouteArgs<Route>): Transition;
+  transitionToRoute(...args: RouteArgs): Transition;
 
   /**
     Transition into another route while replacing the current URL, if possible.
@@ -229,7 +228,7 @@ interface ControllerMixin<T> extends ActionHandler {
       attempted transition
     @public
   */
-  replaceRoute(...args: RouteArgs<Route>): Transition;
+  replaceRoute(...args: RouteArgs): Transition;
 }
 const ControllerMixin = Mixin.create(ActionHandler, {
   /* ducktype as a controller */
