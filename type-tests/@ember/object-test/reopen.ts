@@ -36,6 +36,7 @@ const tom = Person2.create({
   name: 'Tom Dale',
 });
 
+// @ts-expect-error
 const badTom = Person2.create({ name: 99 });
 
 // @ts-expect-error

@@ -41,4 +41,7 @@ const Engine3 = BaseEngine.create();
 
 const Engine3Instance1 = Engine3.buildInstance();
 
+// @ts-expect-error
 const Engine3Instance2 = Engine3.buildInstance({ foo: 'bar' });
+
+const Engine3Instance3 = Engine3.buildInstance({ mountPoint: 'somewhere', routable: true });
