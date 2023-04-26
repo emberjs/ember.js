@@ -36,6 +36,154 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
 @module @ember/component
 */
 
+interface ComponentMethods {
+  // Overrideable methods are defined here since you can't `declare` a method in a class
+
+  /**
+   Called when the attributes passed into the component have been updated.
+    Called both during the initial render of a container and during a rerender.
+    Can be used in place of an observer; code placed here will be executed
+    every time any attribute updates.
+    @method didReceiveAttrs
+    @public
+    @since 1.13.0
+    */
+  didReceiveAttrs(): void;
+
+  /**
+   Called when the attributes passed into the component have been updated.
+    Called both during the initial render of a container and during a rerender.
+    Can be used in place of an observer; code placed here will be executed
+    every time any attribute updates.
+    @event didReceiveAttrs
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called after a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @method didRender
+    @public
+    @since 1.13.0
+    */
+  didRender(): void;
+
+  /**
+   Called after a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @event didRender
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called before a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @method willRender
+    @public
+    @since 1.13.0
+    */
+  willRender(): void;
+
+  /**
+   Called before a component has been rendered, both on initial render and
+    in subsequent rerenders.
+    @event willRender
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called when the attributes passed into the component have been changed.
+    Called only during a rerender, not during an initial render.
+    @method didUpdateAttrs
+    @public
+    @since 1.13.0
+    */
+  didUpdateAttrs(): void;
+
+  /**
+   Called when the attributes passed into the component have been changed.
+    Called only during a rerender, not during an initial render.
+    @event didUpdateAttrs
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called when the component is about to update and rerender itself.
+    Called only during a rerender, not during an initial render.
+    @method willUpdate
+    @public
+    @since 1.13.0
+    */
+  willUpdate(): void;
+
+  /**
+   Called when the component is about to update and rerender itself.
+    Called only during a rerender, not during an initial render.
+    @event willUpdate
+    @public
+    @since 1.13.0
+    */
+
+  /**
+   Called when the component has updated and rerendered itself.
+    Called only during a rerender, not during an initial render.
+    @method didUpdate
+    @public
+    @since 1.13.0
+    */
+  didUpdate(): void;
+
+  /**
+   Called when the component has updated and rerendered itself.
+    Called only during a rerender, not during an initial render.
+    @event didUpdate
+    @public
+    @since 1.13.0
+    */
+
+  /**
+    The HTML `id` of the component's element in the DOM. You can provide this
+    value yourself but it must be unique (just as in HTML):
+
+    ```handlebars
+    {{my-component elementId="a-really-cool-id"}}
+    ```
+
+    ```handlebars
+    <MyComponent @elementId="a-really-cool-id" />
+    ```
+    If not manually set a default value will be provided by the framework.
+    Once rendered an element's `elementId` is considered immutable and you
+    should never change it. If you need to compute a dynamic value for the
+    `elementId`, you should do this when the component or element is being
+    instantiated:
+
+    ```javascript
+    export default Component.extend({
+      init() {
+        this._super(...arguments);
+
+        var index = this.get('index');
+        this.set('elementId', `component-id${index}`);
+      }
+    });
+    ```
+
+    @property elementId
+    @type String
+    @public
+  */
+  layoutName?: string;
+}
+
+// A zero-runtime-overhead private symbol to use in branding the component to
+// preserve its type parameter.
+declare const SIGNATURE: unique symbol;
+
 /**
   A component is a reusable UI element that consists of a `.hbs` template and an
   optional JavaScript class that defines its behavior. For example, someone
@@ -650,150 +798,9 @@ let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
   @uses Ember.ViewStateSupport
   @public
 */
-interface ComponentMethods {
-  // Overrideable methods are defined here since you can't `declare` a method in a class
-
-  /**
-   Called when the attributes passed into the component have been updated.
-    Called both during the initial render of a container and during a rerender.
-    Can be used in place of an observer; code placed here will be executed
-    every time any attribute updates.
-    @method didReceiveAttrs
-    @public
-    @since 1.13.0
-    */
-  didReceiveAttrs(): void;
-
-  /**
-   Called when the attributes passed into the component have been updated.
-    Called both during the initial render of a container and during a rerender.
-    Can be used in place of an observer; code placed here will be executed
-    every time any attribute updates.
-    @event didReceiveAttrs
-    @public
-    @since 1.13.0
-    */
-
-  /**
-   Called after a component has been rendered, both on initial render and
-    in subsequent rerenders.
-    @method didRender
-    @public
-    @since 1.13.0
-    */
-  didRender(): void;
-
-  /**
-   Called after a component has been rendered, both on initial render and
-    in subsequent rerenders.
-    @event didRender
-    @public
-    @since 1.13.0
-    */
-
-  /**
-   Called before a component has been rendered, both on initial render and
-    in subsequent rerenders.
-    @method willRender
-    @public
-    @since 1.13.0
-    */
-  willRender(): void;
-
-  /**
-   Called before a component has been rendered, both on initial render and
-    in subsequent rerenders.
-    @event willRender
-    @public
-    @since 1.13.0
-    */
-
-  /**
-   Called when the attributes passed into the component have been changed.
-    Called only during a rerender, not during an initial render.
-    @method didUpdateAttrs
-    @public
-    @since 1.13.0
-    */
-  didUpdateAttrs(): void;
-
-  /**
-   Called when the attributes passed into the component have been changed.
-    Called only during a rerender, not during an initial render.
-    @event didUpdateAttrs
-    @public
-    @since 1.13.0
-    */
-
-  /**
-   Called when the component is about to update and rerender itself.
-    Called only during a rerender, not during an initial render.
-    @method willUpdate
-    @public
-    @since 1.13.0
-    */
-  willUpdate(): void;
-
-  /**
-   Called when the component is about to update and rerender itself.
-    Called only during a rerender, not during an initial render.
-    @event willUpdate
-    @public
-    @since 1.13.0
-    */
-
-  /**
-   Called when the component has updated and rerendered itself.
-    Called only during a rerender, not during an initial render.
-    @method didUpdate
-    @public
-    @since 1.13.0
-    */
-  didUpdate(): void;
-
-  /**
-   Called when the component has updated and rerendered itself.
-    Called only during a rerender, not during an initial render.
-    @event didUpdate
-    @public
-    @since 1.13.0
-    */
-
-  /**
-    The HTML `id` of the component's element in the DOM. You can provide this
-    value yourself but it must be unique (just as in HTML):
-
-    ```handlebars
-    {{my-component elementId="a-really-cool-id"}}
-    ```
-
-    ```handlebars
-    <MyComponent @elementId="a-really-cool-id" />
-    ```
-    If not manually set a default value will be provided by the framework.
-    Once rendered an element's `elementId` is considered immutable and you
-    should never change it. If you need to compute a dynamic value for the
-    `elementId`, you should do this when the component or element is being
-    instantiated:
-
-    ```javascript
-    export default Component.extend({
-      init() {
-        this._super(...arguments);
-
-        var index = this.get('index');
-        this.set('elementId', `component-id${index}`);
-      }
-    });
-    ```
-
-    @property elementId
-    @type String
-    @public
-  */
-  layoutName?: string;
-}
-interface Component
+// This type param is used in the class, so must appear here.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface Component<S = unknown>
   extends CoreView,
     ChildViewsSupport,
     ViewStateSupport,
@@ -803,7 +810,7 @@ interface Component
     ViewMixin,
     ComponentMethods {}
 
-class Component
+class Component<S = unknown>
   extends CoreView.extend(
     ChildViewsSupport,
     ViewStateSupport,
@@ -825,6 +832,10 @@ class Component
   implements PropertyDidChange
 {
   isComponent = true;
+
+  // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
+  // here to preserve the type param.
+  private declare [SIGNATURE]: S;
 
   // SAFTEY: This is set in `init`.
   declare _superRerender: ViewMixin['rerender'];
@@ -1009,50 +1020,65 @@ class Component
   declare attributeBindings?: string[];
 
   /**
-    Layout can be used to wrap content in a component.
-    @property layout
-    @type Function
+   Enables components to take a list of parameters as arguments.
+    For example, a component that takes two parameters with the names
+    `name` and `age`:
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    let MyComponent = Component.extend();
+
+    MyComponent.reopenClass({
+      positionalParams: ['name', 'age']
+    });
+
+    export default MyComponent;
+    ```
+
+    It can then be invoked like this:
+
+    ```hbs
+    {{my-component "John" 38}}
+    ```
+
+    The parameters can be referred to just like named parameters:
+
+    ```hbs
+    Name: {{name}}, Age: {{age}}.
+    ```
+
+    Using a string instead of an array allows for an arbitrary number of
+    parameters:
+
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    let MyComponent = Component.extend();
+
+    MyComponent.reopenClass({
+      positionalParams: 'names'
+    });
+
+    export default MyComponent;
+    ```
+
+    It can then be invoked like this:
+
+    ```hbs
+    {{my-component "John" "Michael" "Scott"}}
+    ```
+    The parameters can then be referred to by enumerating over the list:
+
+    ```hbs
+    {{#each names as |name|}}{{name}}{{/each}}
+    ```
+
+    @static
     @public
-  */
-  declare layout?: TemplateFactory | Template;
-
-  /**
-    The name of the layout to lookup if no layout is provided.
-    By default `Component` will lookup a template with this name in
-    `Ember.TEMPLATES` (a shared global object).
-    @property layoutName
-    @type String
-    @default undefined
-    @private
-  */
-  declare layoutName?: string;
-
-  /**
-   The WAI-ARIA role of the control represented by this view. For example, a
-    button may have a role of type 'button', or a pane may have a role of
-    type 'alertdialog'. This property is used by assistive software to help
-    visually challenged users navigate rich web applications.
-
-    The full list of valid WAI-ARIA roles is available at:
-    [https://www.w3.org/TR/wai-aria/#roles_categorization](https://www.w3.org/TR/wai-aria/#roles_categorization)
-
-    @property ariaRole
-    @type String
-    @default undefined
-    @public
-    */
-  declare ariaRole?: string;
-
-  static isComponentFactory = true;
-
-  static toString() {
-    return '@ember/component';
-  }
-}
-
-// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
-  /**
+    @property positionalParams
+    @since 1.13.0
+    */ /**
    Enables components to take a list of parameters as arguments.
     For example, a component that takes two parameters with the names
     `name` and `age`:
@@ -1112,6 +1138,52 @@ Component.reopenClass({
     @property positionalParams
     @since 1.13.0
     */
+  declare static positionalParams: string | string[];
+
+  /**
+    Layout can be used to wrap content in a component.
+    @property layout
+    @type Function
+    @public
+  */
+  declare layout?: TemplateFactory | Template;
+
+  /**
+    The name of the layout to lookup if no layout is provided.
+    By default `Component` will lookup a template with this name in
+    `Ember.TEMPLATES` (a shared global object).
+    @property layoutName
+    @type String
+    @default undefined
+    @private
+  */
+  declare layoutName?: string;
+
+  /**
+   The WAI-ARIA role of the control represented by this view. For example, a
+    button may have a role of type 'button', or a pane may have a role of
+    type 'alertdialog'. This property is used by assistive software to help
+    visually challenged users navigate rich web applications.
+
+    The full list of valid WAI-ARIA roles is available at:
+    [https://www.w3.org/TR/wai-aria/#roles_categorization](https://www.w3.org/TR/wai-aria/#roles_categorization)
+
+    @property ariaRole
+    @type String
+    @default undefined
+    @public
+    */
+  declare ariaRole?: string;
+
+  static isComponentFactory = true;
+
+  static toString() {
+    return '@ember/component';
+  }
+}
+
+// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
+Component.reopenClass({
   positionalParams: [],
 });
 
