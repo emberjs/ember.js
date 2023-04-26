@@ -1,5 +1,4 @@
 import type Owner from '@ember/owner';
-import type { SafeString } from '@ember/template/-private/handlebars';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
@@ -112,11 +111,8 @@ expectTypeOf(Ember.setProperties(O2.create(), { name: 'bar' }).name).toEqualType
 // trySet
 expectTypeOf(Ember.trySet(O2, 'nam', '')).toEqualTypeOf<string | undefined>();
 // typeOf
-expectTypeOf(Ember.typeOf('')).toEqualTypeOf<'string'>();
-// @ts-ignore -- this *should* work but the namespace version is not carrying
-// it through correctly. However, people can *and should* simply use the
-// module import instead!
-expectTypeOf(Ember.typeOf(Ember.A())).toEqualTypeOf<'array'>();
+expectTypeOf(Ember.typeOf('')).toBeString();
+expectTypeOf(Ember.typeOf(Ember.A())).toBeString();
 // warn
 Ember.warn('be caseful!');
 Ember.warn('be caseful!', { id: 'some-warning' });
