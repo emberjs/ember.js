@@ -22,8 +22,8 @@ class MyObject30 extends Ember.Object {
 }
 
 class MyObject31 extends Ember.Object {
-  constructor(properties: object) {
-    super(properties);
+  constructor(owner: Ember.EngineInstance) {
+    super(owner);
   }
 }
 
