@@ -17,7 +17,7 @@ import { get } from '@ember/object';
 import type { PropertyDidChange } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
-import EmberArray from '@ember/array';
+import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
@@ -125,7 +125,7 @@ interface ArrayProxy<T> extends MutableArray<T> {
     @type EmberArray
     @public
   */
-  content: EmberArray<T> | null;
+  content: EmberArray<T> | NativeArray<T> | null;
   /**
     The array that the proxy pretends to be. In the default `ArrayProxy`
     implementation, this and `content` are the same. Subclasses of `ArrayProxy`
@@ -214,7 +214,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
     this._removeArrangedContentArrayObserver();
   }
 
-  declare content: EmberArray<T> | null;
+  declare content: EmberArray<T> | NativeArray<T> | null;
 
   declare arrangedContent: EmberArray<T> | null;
 
