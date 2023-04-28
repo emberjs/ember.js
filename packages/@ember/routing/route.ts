@@ -263,7 +263,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   declare _topLevelViewTemplate: any;
   declare _environment: any;
 
-  constructor(owner: Owner) {
+  constructor(owner?: Owner) {
     super(owner);
 
     if (owner) {
