@@ -202,7 +202,12 @@ namespace Ember {
   export type ActionHandler = InternalActionHandler;
   export const Comparable = InternalComparable;
   export type Comparable = InternalComparable;
-  export const RSVP = _RSVP; // Also from 'rsvp' directly.
+
+  // This syntax is namespace-specific: `import` in a namespace is aliasing one
+  // namespace to another, while `export` marks the item public on the namespace
+  // (as with the rest of the exported items).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export import RSVP = _RSVP;
 
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;
