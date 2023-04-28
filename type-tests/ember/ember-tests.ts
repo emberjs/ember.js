@@ -1,6 +1,5 @@
 import { AnyFn } from '@ember/-internals/utility-types';
 import { A } from '@ember/array';
-import type { SafeString } from '@ember/template/-private/handlebars';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
