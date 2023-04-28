@@ -1,1 +1,1 @@
-export { Helper as default, helper } from '@ember/-internals/glimmer';
+export { Helper as default, helper, type FunctionBasedHelper } from '@ember/-internals/glimmer';

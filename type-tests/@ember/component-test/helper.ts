@@ -1,34 +1,5 @@
-import { BadType, DefaultPositional, EmptyObject } from '@ember/component/-private/signature-utils';
-import Helper, {
-  ExpandSignature,
-  FunctionBasedHelper,
-  FunctionBasedHelperInstance,
-  helper,
-} from '@ember/component/helper';
+import Helper, { FunctionBasedHelper, helper } from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
-
-class DeprecatedSignatureForm extends Helper<{
-  PositionalArgs: [offset: Date];
-  Return: Date;
-}> {
-  timer?: ReturnType<typeof setInterval> | undefined;
-  now = new Date();
-  init() {
-    super.init();
-    this.timer = setInterval(() => {
-      this.set('now', new Date());
-      this.recompute();
-    }, 100);
-  }
-  compute([offset]: [Date]): Date {
-    return new Date(this.now.getTime() + offset.getTime());
-  }
-  willDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-  }
-}
 
 interface DemoSig {
   Args: {
@@ -41,13 +12,6 @@ interface DemoSig {
   Return: string;
 }
 
-function testMissingSignature({ Args, Return }: ExpandSignature<unknown>) {
-  expectTypeOf(Args.Named).toEqualTypeOf<BadType<'This helper is missing a signature'>>();
-
-  expectTypeOf(Args.Positional).toEqualTypeOf<unknown[]>();
-  expectTypeOf(Return).toBeUnknown();
-}
-
 class SignatureForm extends Helper<DemoSig> {
   compute(
     [i18nizer]: [i18nizer: (s: string) => string],
@@ -57,7 +21,11 @@ class SignatureForm extends Helper<DemoSig> {
   }
 }
 
-class NoSignatureForm extends Helper {
+// Type-safe helpers require you to pass a signature so that it is visible to
+// external callers (via Glint) *or* to handle the fact that your callers may
+// pass you anything if there is no signature. Unfortunately, the only way to
+// make that safe would be to make the signature *required*.
+class BadNoSigForm extends Helper {
   compute(
     [i18nizer]: [i18nizer: (s: string) => string],
     { name, age }: { name: string; age: number }
@@ -102,23 +70,29 @@ const inferenceOnPositional = helper(function add([a, b]: [number, number]) {
 
 expectTypeOf(inferenceOnPositional).toEqualTypeOf<
   FunctionBasedHelper<{
-    Args: { Positional: [number, number]; Named: EmptyObject };
+    Args: { Positional: [number, number]; Named: object };
     Return: number;
   }>
 >();
 
 const coolHelper = helper((_, named) => {
-  expectTypeOf(named).toEqualTypeOf<EmptyObject>();
+  expectTypeOf(named).toEqualTypeOf<object>();
 });
 
-const typeInferenceOnNamed = helper((_, { cool }: { cool: boolean }) => {
+const typeInferenceOnNamed = helper((_: [], { cool }: { cool: boolean }) => {
   expectTypeOf(cool).toBeBoolean();
 
   return cool ? 123 : 'neat';
 });
+
 expectTypeOf(typeInferenceOnNamed).toEqualTypeOf<
   FunctionBasedHelper<{
-    Args: { Positional: DefaultPositional; Named: { cool: boolean } };
+    Args: {
+      Positional: [];
+      Named: {
+        cool: boolean;
+      };
+    };
     Return: 123 | 'neat';
   }>
 >();
@@ -130,7 +104,13 @@ const dasherizeHelper = helper(function dasherize(
   return str.split(/[\s\n_.]+/g).join(delim);
 });
 expectTypeOf(dasherizeHelper).toEqualTypeOf<
-  FunctionBasedHelper<{ Args: { Positional: [string]; Named: { delim?: string } }; Return: string }>
+  FunctionBasedHelper<{
+    Args: {
+      Positional: [string];
+      Named: { delim?: string };
+    };
+    Return: string;
+  }>
 >();
 
 const signatureForm = helper<DemoSig>(([i18nizer], { name, age }) =>
@@ -153,6 +133,15 @@ const badReturnSig = helper<DemoSig>(([i18nizer], { name, age }) =>
 );
 
 const greet = helper(([name]: [string]) => `Hello, ${name}`);
+expectTypeOf(greet).toEqualTypeOf<
+  FunctionBasedHelper<{
+    Args: {
+      Positional: [string];
+      Named: object;
+    };
+    Return: string;
+  }>
+>();
 
 // @ts-expect-error
 new greet();
@@ -160,10 +149,6 @@ new greet();
 // @ts-expect-error
 class Subgreet extends greet {}
 
+// Check that generics are accepted. (We cannot meaningfully test for how they
+// are *handled* because it uses items we do not want to expose in public API.)
 const pair = helper(<T>([item]: [T]): [T, T] => [item, item]);
-expectTypeOf(pair).toEqualTypeOf<
-  abstract new <T>() => FunctionBasedHelperInstance<{
-    Args: { Positional: [T]; Named: EmptyObject };
-    Return: [T, T];
-  }>
->();

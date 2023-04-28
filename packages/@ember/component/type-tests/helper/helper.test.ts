@@ -1,4 +1,4 @@
-import type { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer/lib/helper';
+import type { FunctionBasedHelper } from '@ember/-internals/glimmer/lib/helper';
 import { helper } from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
 
@@ -8,7 +8,10 @@ let myHelper = helper(function ([cents]: [number], { currency }: { currency: str
   return `${currency}${cents * 0.01}`;
 });
 expectTypeOf(myHelper).toEqualTypeOf<
-  HelperFactory<SimpleHelper<string, [number], { currency: string }>>
+  FunctionBasedHelper<{
+    Args: { Positional: [number]; Named: { currency: string } };
+    Return: string;
+  }>
 >();
 
 // @ts-expect-error invalid named params
