@@ -29,7 +29,7 @@
   @for @ember/component/template-only
   @category EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
 */
-import { Opaque } from '@ember/-internals/utility-types';
+import { type Opaque } from '@ember/-internals/utility-types';
 import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime';
 
 /**

@@ -355,10 +355,10 @@ export function helper<P extends DefaultPositional, N extends object, R = unknow
 export function helper<S>(
   helperFn: (positional: Positional<S>, named: Named<S>) => Return<S>
 ): FunctionBasedHelper<S>;
-// At the implementation site, we
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function helper(
   helperFn: (positional: unknown[], named: object) => unknown
+  // At the implementation site, we don't care about the actual underlying type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): FunctionBasedHelper<any> {
   return new Wrapper(helperFn) as unknown as FunctionBasedHelper<any>;
 }

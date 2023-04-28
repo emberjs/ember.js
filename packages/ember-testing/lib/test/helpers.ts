@@ -1,5 +1,5 @@
 import type { AnyFn } from '@ember/-internals/utility-types';
-import Application from '@ember/application';
+import type Application from '@ember/application';
 import TestPromise from './promise';
 
 export const helpers: Record<
