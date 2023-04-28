@@ -16,7 +16,7 @@ registerWaiter();
 registerHelper('boot', (app) => {
   expectTypeOf(app.advanceReadiness()).toBeVoid();
   expectTypeOf(app.deferReadiness()).toBeVoid();
-  expectTypeOf(app.register('foo', class {})).toBeVoid();
+  expectTypeOf(app.register('foo:bar', class {})).toBeVoid();
   // @ts-expect-error
   app.register('foo');
   // @ts-expect-error
