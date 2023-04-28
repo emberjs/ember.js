@@ -82,5 +82,5 @@ export type TOC<S> = TemplateOnlyComponent<S>;
 // prettier-ignore
 const templateOnly =
   glimmerTemplateOnlyComponent as unknown as
-    <S>(moduleName?: string) => TemplateOnlyComponent<S>;
+    <S>(moduleName?: string, name?: string) => TemplateOnlyComponent<S>;
 export default templateOnly;

@@ -1,8 +1,7 @@
-import templateOnlyComponent from '@ember/component/template-only';
-import type { TemplateOnlyComponentDefinition } from '@glimmer/runtime/dist/types/lib/component/template-only';
+import templateOnlyComponent, { type TemplateOnlyComponent } from '@ember/component/template-only';
 import { expectTypeOf } from 'expect-type';
 
-expectTypeOf(templateOnlyComponent()).toEqualTypeOf<TemplateOnlyComponentDefinition>();
+expectTypeOf(templateOnlyComponent()).toEqualTypeOf<TemplateOnlyComponent<unknown>>();
 
 templateOnlyComponent('myModule');
 templateOnlyComponent('myModule', 'myName');
