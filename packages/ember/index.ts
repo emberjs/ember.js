@@ -750,6 +750,6 @@ defineEmberTestingLazyLoad('Test');
 defineEmberTestingLazyLoad('setupForTesting');
 
 // @ts-expect-error Per types, runLoadHooks requires a second parameter. Should we loosen types?
-runLoadHooks('Ember');
+applicationRunLoadHooks('Ember');
 
 export default Ember;
