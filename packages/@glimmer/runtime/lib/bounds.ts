@@ -1,5 +1,5 @@
 import { Bounds, Cursor, Option } from '@glimmer/interfaces';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
 export class CursorImpl implements Cursor {

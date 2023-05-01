@@ -5,7 +5,7 @@ import {
   SimpleDocument,
   SimpleElement,
   SimpleNode,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { DOMOperations } from '../dom/operations';
 
 // Patch:    Adjacent text node merging fix

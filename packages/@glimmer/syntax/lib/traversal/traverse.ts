@@ -80,7 +80,7 @@ function getNodeHandler<N extends ASTv1.Node>(
 
   let handler = visitor[nodeType];
   if (handler !== undefined) {
-    return (handler as unknown) as NodeTraversal<ASTv1.Node>;
+    return handler as unknown as NodeTraversal<ASTv1.Node>;
   }
   return visitor.All;
 }
@@ -138,7 +138,7 @@ function get<N extends ASTv1.Node>(
   node: N,
   key: VisitorKeys[N['type']] & keyof N
 ): ASTv1.Node | ASTv1.Node[] {
-  return (node[key] as unknown) as ASTv1.Node | ASTv1.Node[];
+  return node[key] as unknown as ASTv1.Node | ASTv1.Node[];
 }
 
 function set<N extends ASTv1.Node, K extends keyof N>(node: N, key: K, value: N[K]): void {

@@ -1,4 +1,4 @@
-import { Tag } from './validators';
+import { Tag } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@glimmer/global-context';
 
@@ -200,7 +200,7 @@ if (DEBUG) {
     try {
       assert(false, makeTrackingErrorMessage(transaction, obj, keyName));
     } catch (e) {
-      if (e.stack) {
+      if (hasStack(e)) {
         let updateStackBegin = e.stack.indexOf('Stack trace for the update:');
 
         if (updateStackBegin !== -1) {
@@ -213,4 +213,13 @@ if (DEBUG) {
       throw e;
     }
   };
+}
+
+function hasStack(error: unknown): error is { stack: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'stack' in error &&
+    typeof error.stack === 'string'
+  );
 }

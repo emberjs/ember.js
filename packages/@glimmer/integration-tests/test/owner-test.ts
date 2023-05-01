@@ -99,7 +99,7 @@ function defineCheckOwnerComponent(ownerToCheck: object | undefined, assert: Ass
       constructor(owner: object, args: Record<string, unknown>) {
         super(owner, args);
 
-        assert.equal(owner, ownerToCheck, 'owner is correct');
+        assert.strictEqual(owner, ownerToCheck, 'owner is correct');
       }
     },
   });

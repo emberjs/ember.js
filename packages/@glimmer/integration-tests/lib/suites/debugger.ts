@@ -21,15 +21,15 @@ export class DebuggerSuite extends RenderTest {
 
     setDebuggerCallback((context: any, get) => {
       callbackExecuted++;
-      this.assert.equal(context.foo, expectedContext.foo);
-      this.assert.equal(get('foo'), expectedContext.foo);
+      this.assert.strictEqual(context.foo, expectedContext.foo);
+      this.assert.strictEqual(get('foo'), expectedContext.foo);
     });
 
     this.render(
       '{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}',
       expectedContext
     );
-    this.assert.equal(callbackExecuted, 1);
+    this.assert.strictEqual(callbackExecuted, 1);
     this.assertHTML('true');
     this.assertStableRerender();
 
@@ -40,7 +40,7 @@ export class DebuggerSuite extends RenderTest {
       },
     };
     this.rerender(expectedContext);
-    this.assert.equal(callbackExecuted, 2);
+    this.assert.strictEqual(callbackExecuted, 2);
     this.assertHTML('false');
     this.assertStableNodes();
 
@@ -51,7 +51,7 @@ export class DebuggerSuite extends RenderTest {
       },
     };
     this.rerender(expectedContext);
-    this.assert.equal(callbackExecuted, 3);
+    this.assert.strictEqual(callbackExecuted, 3);
     this.assertHTML('true');
     this.assertStableNodes();
   }
@@ -68,8 +68,8 @@ export class DebuggerSuite extends RenderTest {
 
     setDebuggerCallback((context: any, get) => {
       callbackExecuted++;
-      this.assert.equal(get('foo'), expectedContext.foo);
-      this.assert.equal(get('bar'), expectedContext.foo);
+      this.assert.strictEqual(get('foo'), expectedContext.foo);
+      this.assert.strictEqual(get('bar'), expectedContext.foo);
       this.assert.deepEqual(get('this'), context);
     });
 
@@ -77,7 +77,7 @@ export class DebuggerSuite extends RenderTest {
       '{{#with this.foo as |bar|}}{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/with}}',
       expectedContext
     );
-    this.assert.equal(callbackExecuted, 1);
+    this.assert.strictEqual(callbackExecuted, 1);
     this.assertHTML('true');
     this.assertStableRerender();
 
@@ -88,7 +88,7 @@ export class DebuggerSuite extends RenderTest {
       },
     };
     this.rerender(expectedContext);
-    this.assert.equal(callbackExecuted, 2);
+    this.assert.strictEqual(callbackExecuted, 2);
     this.assertHTML('false');
     this.assertStableNodes();
 
@@ -99,7 +99,7 @@ export class DebuggerSuite extends RenderTest {
       },
     };
     this.rerender(expectedContext);
-    this.assert.equal(callbackExecuted, 3);
+    this.assert.strictEqual(callbackExecuted, 3);
     this.assertHTML('true');
     this.assertStableNodes();
   }

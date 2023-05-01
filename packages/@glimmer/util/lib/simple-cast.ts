@@ -1,5 +1,5 @@
 import { unreachable } from './platform-utils';
-import { NodeType, SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { NodeType, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 
 interface GenericElementTags {
   HTML: HTMLElement;

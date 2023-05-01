@@ -1,6 +1,6 @@
 import { RenderTest, Count } from '../render-test';
 import { test } from '../test-decorator';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import { EmberishCurlyComponent } from '../components';
 import { classes, assertEmberishElement } from '../dom/assertions';
 import { assertElement, toInnerHTML } from '../dom/simple-utils';
@@ -18,7 +18,7 @@ export class EmberishComponentTests extends RenderTest {
         didInsertElement() {
           count.expect('didInsertElement');
           assert.ok(this.element, 'didInsertElement');
-          assert.equal(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
+          assert.strictEqual(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
         }
 
         didUpdate() {

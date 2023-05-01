@@ -10,7 +10,7 @@ import {
   stripTight,
   trimLines,
 } from '..';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { assert } from './support';
 import { expect } from '@glimmer/util';
 import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
@@ -1163,8 +1163,12 @@ class UpdatingTest extends RenderTest {
     let firstNode = this.element.firstChild;
     assert.notStrictEqual(firstNode, null, 'first node should have rendered');
     if (firstNode !== null) {
-      assert.equal(firstNode.nodeType, 3, 'the first node of the helper should be a text node');
-      assert.equal(firstNode.nodeValue, 'hello world', 'its content should be hello world');
+      assert.strictEqual(
+        firstNode.nodeType,
+        3,
+        'the first node of the helper should be a text node'
+      );
+      assert.strictEqual(firstNode.nodeValue, 'hello world', 'its content should be hello world');
 
       assert.strictEqual(firstNode.nextSibling, null, 'there should only be one nodes');
     }
@@ -1178,7 +1182,7 @@ class UpdatingTest extends RenderTest {
     let textNode: Node | null;
     if (assertNodeTagName(firstNode, 'div')) {
       textNode = firstNode.firstChild;
-      assert.equal(textNode && textNode.nodeValue, 'hello');
+      assert.strictEqual(textNode && textNode.nodeValue, 'hello');
     }
 
     this.rerender({ value: 'goodbye' });
@@ -1190,7 +1194,7 @@ class UpdatingTest extends RenderTest {
     firstNode = this.element.firstChild;
     if (assertNodeTagName(firstNode, 'div')) {
       textNode = firstNode.firstChild;
-      assert.equal(textNode && textNode.nodeValue, 'hello');
+      assert.strictEqual(textNode && textNode.nodeValue, 'hello');
     }
   }
 
@@ -2038,10 +2042,10 @@ class UpdatingTest extends RenderTest {
     this.assertHTML(`<div>initial</div><div>update</div>`);
 
     this.rerender({ list: ['initial'] });
-    assert.equal(destroyCount, 1, 'destroy was called for removed item');
+    assert.strictEqual(destroyCount, 1, 'destroy was called for removed item');
 
     this.rerender({ list: [] });
-    assert.equal(destroyCount, 2, 'remaining list item was correctly destroyed');
+    assert.strictEqual(destroyCount, 2, 'remaining list item was correctly destroyed');
   }
 
   @test
@@ -2076,7 +2080,7 @@ class UpdatingTest extends RenderTest {
     this.assertHTML(`<div>initial</div><div>update</div>`);
 
     this.rerender({ list: ['initial'] });
-    assert.equal(destroyCount, 1, 'new list item was correctly destroyed');
+    assert.strictEqual(destroyCount, 1, 'new list item was correctly destroyed');
   }
 
   // TODO: port https://github.com/emberjs/ember.js/pull/14082

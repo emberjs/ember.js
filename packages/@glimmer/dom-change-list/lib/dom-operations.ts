@@ -1,15 +1,16 @@
-import { Option } from '@glimmer/interfaces';
-import { dict, assert, assign } from '@glimmer/util';
-import { NodeToken, NodeTokensImpl } from './node-tokens';
 import {
-  Namespace,
-  ElementNamespace,
   AttrNamespace,
+  ElementNamespace,
+  Namespace,
+  NodeToken,
+  Option,
   SimpleDocument,
-  SimpleNode,
-  SimpleElement,
   SimpleDocumentFragment,
-} from '@simple-dom/interface';
+  SimpleElement,
+  SimpleNode,
+} from '@glimmer/interfaces';
+import { dict, assert, assign } from '@glimmer/util';
+import { NodeTokensImpl } from './node-tokens';
 
 export enum ConstructionOperation {
   OpenElement,

@@ -92,7 +92,8 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
 
 export class ConstantsImpl
   extends CompileTimeConstantImpl
-  implements RuntimeConstants, ResolutionTimeConstants {
+  implements RuntimeConstants, ResolutionTimeConstants
+{
   protected reifiedArrs: { [key: number]: unknown[] } = {
     [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
   };

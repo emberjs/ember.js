@@ -19,7 +19,7 @@ import {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { ComponentKind } from '../../components';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import { UserHelper } from '../../helpers';

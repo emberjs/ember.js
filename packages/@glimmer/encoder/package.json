@@ -4,7 +4,7 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/encoder",
   "dependencies": {
     "@glimmer/env": "0.1.7",
-    "@glimmer/interfaces": "0.84.3",
-    "@glimmer/vm": "0.84.3"
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/vm": "workspace:^"
   }
 }

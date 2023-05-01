@@ -1,5 +1,5 @@
 import { assign, dict, unwrap } from '@glimmer/util';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { assert } from './support';
 import {
   test,
@@ -36,7 +36,7 @@ interface HookedComponent {
 }
 
 function inspectHooks<T extends EmberishCurlyComponentFactory>(ComponentClass: T): T {
-  return (class extends (ComponentClass as any) {
+  return class extends (ComponentClass as any) {
     constructor() {
       super();
 
@@ -97,7 +97,7 @@ function inspectHooks<T extends EmberishCurlyComponentFactory>(ComponentClass: T
       super.didRender(...arguments);
       this.hooks['didRender']++;
     }
-  } as any) as T;
+  } as any as T;
 }
 
 function assertFired(component: HookedComponent, name: string, count = 1) {
@@ -1285,10 +1285,14 @@ class CurlyIdsTest extends CurlyTest {
     markAsSeen(assertElement(this.element.childNodes[1]));
     markAsSeen(assertElement(this.element.childNodes[2]));
 
-    assert.equal(Object.keys(IDs).length, 3, 'Expected the components to each have a unique IDs');
+    assert.strictEqual(
+      Object.keys(IDs).length,
+      3,
+      'Expected the components to each have a unique IDs'
+    );
 
     for (let id in IDs) {
-      assert.equal(IDs[id], 1, `Expected ID ${id} to be unique`);
+      assert.strictEqual(IDs[id], 1, `Expected ID ${id} to be unique`);
     }
   }
 }
@@ -1388,7 +1392,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
       'Curly',
       'non-block',
       'In layout - someProp: {{@someProp}}',
-      inspectHooks((NonBlock as unknown) as EmberishCurlyComponentFactory)
+      inspectHooks(NonBlock as unknown as EmberishCurlyComponentFactory)
     );
 
     this.render('{{non-block someProp=this.someProp}}', { someProp: 'wycats' });
@@ -1509,19 +1513,19 @@ class CurlyGlimmerComponentTest extends CurlyTest {
 
     let element: HTMLInputElement = instance.element as HTMLInputElement;
 
-    assert.equal(element.value, '');
+    assert.strictEqual(element.value, '');
 
     this.rerender({
       someProp: 'wycats',
     });
 
-    assert.equal(element.value, 'wycats');
+    assert.strictEqual(element.value, 'wycats');
 
     this.rerender({
       someProp: null,
     });
 
-    assert.equal(element.value, '');
+    assert.strictEqual(element.value, '');
   }
 
   @test
@@ -2118,11 +2122,18 @@ class CurlyBoundsTrackingTest extends CurlyTest {
 
     assert.ok(instance, 'instance is created');
 
+    if (!instance) {
+      return;
+    }
+
     this.assertEmberishElement('span', {}, 'foo bar');
 
-    assert.equal(instance!.bounds.parentElement(), document.querySelector('#qunit-fixture'));
-    assert.equal(instance!.bounds.firstNode(), instance!.element);
-    assert.equal(instance!.bounds.lastNode(), instance!.element);
+    assert.strictEqual(
+      instance.bounds.parentElement(),
+      document.querySelector('#qunit-fixture') as unknown as SimpleElement
+    );
+    assert.strictEqual(instance!.bounds.firstNode(), instance.element as unknown as SimpleNode);
+    assert.strictEqual(instance!.bounds.lastNode(), instance.element as unknown as SimpleNode);
   }
 
   @test
@@ -2157,10 +2168,16 @@ class CurlyBoundsTrackingTest extends CurlyTest {
       'zomg <span id="first-node">foo</span> <span id="before-last-node">bar</span>! wow'
     );
 
-    assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
-    assert.equal(instance.bounds.firstNode(), document.querySelector('#first-node'));
-    assert.equal(
-      instance.bounds.lastNode(),
+    assert.strictEqual(
+      check(instance.bounds.parentElement(), HTMLElement),
+      check(document.querySelector('#qunit-fixture'), HTMLElement)
+    );
+    assert.strictEqual(
+      check(instance.bounds.firstNode(), HTMLElement),
+      check(document.querySelector('#first-node'), HTMLElement)
+    );
+    assert.strictEqual(
+      check(instance.bounds.lastNode(), Node),
       document.querySelector('#before-last-node')!.nextSibling
     );
   }
@@ -2189,3 +2206,11 @@ jitSuite(CurlyTeardownTest);
 jitSuite(CurlyLateLayoutTest);
 jitSuite(CurlyAppendableTest);
 jitSuite(CurlyBoundsTrackingTest);
+
+function check<T>(node: Node | SimpleNode | null, Type: { new (...args: any[]): T }): T {
+  if (node instanceof Type) {
+    return node;
+  } else {
+    throw Error(`Expected ${Type.name} but got ${node?.constructor.name ?? 'null'}`);
+  }
+}

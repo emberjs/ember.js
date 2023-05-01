@@ -11,7 +11,7 @@ module('[glimmer-compiler] Compile options', ({ test }) => {
     let template = unwrapTemplate(
       preprocess('Hi, {{name}}!', { meta: { moduleName } })
     ) as TemplateWithIdAndReferrer;
-    assert.equal(template.referrer.moduleName, moduleName, 'Template has the moduleName');
+    assert.strictEqual(template.referrer.moduleName, moduleName, 'Template has the moduleName');
   });
 });
 
@@ -23,7 +23,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       })
     );
 
-    assert.equal(wire.moduleName, 'my/module-name', 'Template has correct meta');
+    assert.strictEqual(wire.moduleName, 'my/module-name', 'Template has correct meta');
   });
 
   test('customizeComponentName is used if present', function (assert) {
@@ -45,7 +45,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let componentName = block[3][componentNameExpr[1]];
-    assert.equal(componentName, 'ooFX', 'customized component name was used');
+    assert.strictEqual(componentName, 'ooFX', 'customized component name was used');
   });
 
   test('customizeComponentName does not cause components to conflict with existing symbols', function (assert) {
@@ -69,7 +69,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let componentName = block[3][componentNameExpr[1]];
-    assert.equal(componentName, 'rental', 'customized component name was used');
+    assert.strictEqual(componentName, 'rental', 'customized component name was used');
   });
 
   test('customizeComponentName is not invoked on curly components', function (assert) {
@@ -92,7 +92,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let componentName = block[3][componentNameExpr[1]];
-    assert.equal(componentName, 'my-component', 'original component name was used');
+    assert.strictEqual(componentName, 'my-component', 'original component name was used');
   });
 
   test('customizeComponentName is not invoked on angle-bracket-like name invoked with curlies', function (assert) {
@@ -115,7 +115,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let componentName = block[3][componentNameExpr[1]];
-    assert.equal(componentName, 'MyComponent', 'original component name was used');
+    assert.strictEqual(componentName, 'MyComponent', 'original component name was used');
   });
 
   test('lowercased names are not resolved or customized in resolution mode', (assert) => {
@@ -136,6 +136,6 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let elementName = openElementExpr[1];
-    assert.equal(elementName, 'rental', 'element name is correct');
+    assert.strictEqual(elementName, 'rental', 'element name is correct');
   });
 });

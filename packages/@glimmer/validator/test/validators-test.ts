@@ -1,6 +1,7 @@
 import { module, test } from './-utils';
 import { DEBUG } from '@glimmer/env';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
+import { UpdatableTag } from '@glimmer/interfaces';
 
 import {
   ALLOW_CYCLES,
@@ -16,7 +17,6 @@ import {
   validateTag,
   valueForTag,
 } from '..';
-import { UpdatableTag } from '../lib/validators';
 
 function unwrap<T>(value: T | null | undefined): T {
   if (value === null || value === undefined) {
@@ -65,7 +65,7 @@ module('@glimmer/validator: validators', () => {
         let subtag = createTag();
 
         assert.throws(
-          () => updateTag((tag as unknown) as UpdatableTag, subtag),
+          () => updateTag(tag as unknown as UpdatableTag, subtag),
           /Error: Attempted to update a tag that was not updatable/
         );
       });
@@ -113,7 +113,7 @@ module('@glimmer/validator: validators', () => {
       let snapshot = valueForTag(tag);
 
       // Now, we update the parent tag with the subtag, and revalidate it
-      updateTag((tag as unknown) as UpdatableTag, subtag);
+      updateTag(tag as unknown as UpdatableTag, subtag);
 
       assert.ok(validateTag(tag, snapshot), 'tag is still valid after being updated');
 

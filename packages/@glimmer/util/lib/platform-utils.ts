@@ -14,7 +14,7 @@ export const HAS_NATIVE_SYMBOL = (function () {
   return typeof Symbol() === 'symbol';
 })();
 
-export function keys<T>(obj: T): Array<keyof T> {
+export function keys<T extends object>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof T>;
 }
 

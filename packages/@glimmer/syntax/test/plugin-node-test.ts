@@ -31,7 +31,7 @@ test('plugins are provided the syntax package', (assert) => {
     plugins: {
       ast: [
         ({ syntax }) => {
-          assert.equal(syntax.Walker, Walker);
+          assert.strictEqual(syntax.Walker, Walker);
 
           return { name: 'plugin-a', visitor: {} };
         },
@@ -40,6 +40,7 @@ test('plugins are provided the syntax package', (assert) => {
   });
 });
 
+// eslint-disable-next-line qunit/require-expect
 test('can support the legacy AST transform API via ASTPlugin', (assert) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   function ensurePlugin(FunctionOrPlugin: any): ASTPluginBuilder {
@@ -103,7 +104,7 @@ test('AST plugins can be chained', (assert) => {
       name: 'second',
       visitor: {
         Program(node: AST.Program | AST.Block | AST.Template) {
-          assert.equal(FIRST_PLUGIN.get(node), true, 'AST from first plugin is passed to second');
+          assert.true(FIRST_PLUGIN.get(node), 'AST from first plugin is passed to second');
 
           SECOND_PLUGIN.set(node, true);
         },
@@ -116,7 +117,7 @@ test('AST plugins can be chained', (assert) => {
       name: 'third',
       visitor: {
         Program(node: AST.Program | AST.Block | AST.Template) {
-          assert.equal(SECOND_PLUGIN.get(node), true, 'AST from second plugin is passed to third');
+          assert.true(SECOND_PLUGIN.get(node), 'AST from second plugin is passed to third');
 
           THIRD_PLUGIN.set(node, true);
         },
@@ -130,7 +131,7 @@ test('AST plugins can be chained', (assert) => {
     },
   });
 
-  assert.equal(THIRD_PLUGIN.get(ast), true, 'return value from last AST transform is used');
+  assert.true(THIRD_PLUGIN.get(ast), 'return value from last AST transform is used');
 });
 
 test('AST plugins can access meta from environment', (assert) => {
@@ -146,7 +147,7 @@ test('AST plugins can access meta from environment', (assert) => {
             meta as { moduleName: 'string' },
             'expected meta to not be null'
           );
-          assert.equal(
+          assert.strictEqual(
             moduleName,
             'template/module/name',
             'module was passed in the meta enviornment property'

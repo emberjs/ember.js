@@ -1,12 +1,16 @@
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, InternalModifierManager, Owner } from '@glimmer/interfaces';
+import {
+  CapturedArguments,
+  InternalModifierManager,
+  Owner,
+  SimpleElement,
+} from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
-import { reifyNamed } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
 import { buildUntouchableThis } from '@glimmer/util';
+import { reifyNamed } from '../vm/arguments';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
 

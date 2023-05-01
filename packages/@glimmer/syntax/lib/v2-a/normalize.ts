@@ -544,9 +544,10 @@ class ElementNormalizer {
    * attrPart is the narrowed down list of valid attribute values that are also
    * allowed as a concat part (you can't nest concats).
    */
-  private attrPart(
-    part: ASTv1.MustacheStatement | ASTv1.TextNode
-  ): { expr: ASTv2.ExpressionNode; trusting: boolean } {
+  private attrPart(part: ASTv1.MustacheStatement | ASTv1.TextNode): {
+    expr: ASTv2.ExpressionNode;
+    trusting: boolean;
+  } {
     switch (part.type) {
       case 'MustacheStatement':
         return { expr: this.mustacheAttr(part), trusting: !part.escaped };
@@ -558,9 +559,10 @@ class ElementNormalizer {
     }
   }
 
-  private attrValue(
-    part: ASTv1.MustacheStatement | ASTv1.TextNode | ASTv1.ConcatStatement
-  ): { expr: ASTv2.ExpressionNode; trusting: boolean } {
+  private attrValue(part: ASTv1.MustacheStatement | ASTv1.TextNode | ASTv1.ConcatStatement): {
+    expr: ASTv2.ExpressionNode;
+    trusting: boolean;
+  } {
     switch (part.type) {
       case 'ConcatStatement': {
         let parts = part.parts.map((p) => this.attrPart(p).expr);

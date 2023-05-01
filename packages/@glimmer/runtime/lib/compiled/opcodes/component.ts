@@ -665,10 +665,9 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   let { definition, state } = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager } = definition;
 
-  let tagName = (manager as Recast<
-    InternalComponentManager,
-    WithDynamicTagName<unknown>
-  >).getTagName(state);
+  let tagName = (
+    manager as Recast<InternalComponentManager, WithDynamicTagName<unknown>>
+  ).getTagName(state);
 
   // User provided value from JS, so we don't bother to encode
   vm.stack.push(tagName);

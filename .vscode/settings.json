@@ -1,5 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+  "explorer.excludeGitIgnore": true,
   "search.exclude": {
     "tmp": true
   },
@@ -23,9 +24,10 @@
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "eslint.format.enable": true,
   "typescript.tsc.autoDetect": "on",
   "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.importModuleSpecifier": "project-relative",
   "javascript.preferences.importModuleSpecifier": "relative",
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.workspaceSymbols.scope": "currentProject",
@@ -35,5 +37,20 @@
       "changeProcessCWD": true
     }
   ],
-  "eslint.enable": true
+  "eslint.enable": true,
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

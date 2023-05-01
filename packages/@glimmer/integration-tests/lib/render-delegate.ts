@@ -4,7 +4,7 @@ import {
   ElementNamespace,
   SimpleDocumentFragment,
   SimpleDocument,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { ASTPluginBuilder } from '@glimmer/syntax';
 import { ComponentKind, ComponentTypes } from './components';
 import { UserHelper } from './helpers';

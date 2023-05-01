@@ -2,7 +2,12 @@ import { Operand, SerializedTemplateBlock, SerializedInlineBlock, BlockOperand }
 import { EncoderError } from './compile/encoder';
 import { Option } from './core';
 import { InternalComponentCapabilities } from './managers/internal/component';
-import { ConstantPool, SerializedHeap, CompileTimeCompilationContext } from './program';
+import {
+  ConstantPool,
+  SerializedHeap,
+  CompileTimeCompilationContext,
+  CreateRuntimeOp,
+} from './program';
 import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 

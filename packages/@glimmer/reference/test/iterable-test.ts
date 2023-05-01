@@ -113,21 +113,21 @@ module('@glimmer/reference: IterableReference', (hooks) => {
 
       let keys1 = target.toKeys();
 
-      assert.equal(keys1.length, 3);
-      assert.equal(keys1[0], yehuda);
-      assert.equal(keys1[1], godfrey);
+      assert.strictEqual(keys1.length, 3);
+      assert.strictEqual(keys1[0], yehuda);
+      assert.strictEqual(keys1[1], godfrey);
 
       arr.pop();
       arr.unshift(godfrey);
 
       let keys2 = target.toKeys();
 
-      assert.equal(keys2.length, 3);
-      assert.equal(keys2[0], godfrey);
-      assert.equal(keys2[1], yehuda);
+      assert.strictEqual(keys2.length, 3);
+      assert.strictEqual(keys2[0], godfrey);
+      assert.strictEqual(keys2[1], yehuda);
 
       // Test that a unique key was created and is used consistently
-      assert.equal(keys1[2], keys2[2]);
+      assert.strictEqual(keys1[2], keys2[2]);
     });
 
     test('@identity works with primitives (except null)', (assert) => {
@@ -148,7 +148,7 @@ module('@glimmer/reference: IterableReference', (hooks) => {
 
       let keys2 = target.toKeys();
 
-      assert.equal(keys1[0], keys2[1]);
+      assert.strictEqual(keys1[0], keys2[1]);
     });
 
     test('@identity works with multiple null values', (assert) => {
@@ -161,8 +161,8 @@ module('@glimmer/reference: IterableReference', (hooks) => {
 
       let keys2 = target.toKeys();
 
-      assert.equal(keys2.length, 2);
-      assert.equal(keys1[0], keys2[0]);
+      assert.strictEqual(keys2.length, 2);
+      assert.strictEqual(keys1[0], keys2[0]);
       assert.notEqual(keys1[0], keys2[1]);
     });
 

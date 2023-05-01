@@ -14,7 +14,7 @@ import {
   RuntimeContext,
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
-import { artifacts } from '@glimmer/program';
+import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import { createConstRef, Reference } from '@glimmer/reference';
 import {
   array,
@@ -38,7 +38,7 @@ import {
   SimpleDocumentFragment,
   SimpleElement,
   SimpleText,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { preprocess } from '../../compile';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { UserHelper } from '../../helpers';
@@ -68,7 +68,11 @@ export function JitDelegateContext(
   env: EnvironmentDelegate
 ): JitTestDelegateContext {
   let sharedArtifacts = artifacts();
-  let context = programCompilationContext(sharedArtifacts, new JitCompileTimeLookup(resolver));
+  let context = programCompilationContext(
+    sharedArtifacts,
+    new JitCompileTimeLookup(resolver),
+    (heap) => new RuntimeOpImpl(heap)
+  );
   let runtime = runtimeContext({ document: doc }, env, sharedArtifacts, resolver);
   return { runtime, program: context };
 }

@@ -659,8 +659,8 @@ export class EachSuite extends RenderTest {
 
         let changedNodes = stats.move + stats.retain;
         assert.ok(changedNodes <= arr.length, 'changed nodes count');
-        assert.equal(stats.insert, 0, 'inserted nodes count');
-        assert.equal(stats.delete, 0, 'deleted nodes count');
+        assert.strictEqual(stats.insert, 0, 'inserted nodes count');
+        assert.strictEqual(stats.delete, 0, 'deleted nodes count');
       });
 
       this.assertHTML(arr.join(''));

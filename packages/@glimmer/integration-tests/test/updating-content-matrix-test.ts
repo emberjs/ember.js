@@ -1,6 +1,6 @@
 import { SafeString } from '@glimmer/runtime';
 import { RenderTest, jitSuite, RenderTestConstructor } from '..';
-import { SimpleElement, SimpleNode, Namespace } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode, Namespace } from '@glimmer/interfaces';
 import RenderDelegate from '../lib/render-delegate';
 
 const SVG_NAMESPACE = Namespace.SVG;
@@ -167,9 +167,8 @@ function generateContentTestCase(
     };
 
     (test as any).isTest = true;
-    (suite as any).prototype[
-      `updating ${tc.name} produces expected result in ${wrapper.name}`
-    ] = test;
+    (suite as any).prototype[`updating ${tc.name} produces expected result in ${wrapper.name}`] =
+      test;
   });
 }
 

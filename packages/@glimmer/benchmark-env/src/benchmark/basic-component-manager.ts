@@ -27,7 +27,8 @@ interface BasicState {
 }
 
 class BasicComponentManager
-  implements WithCreateInstance<BasicState, new (args: Readonly<Dict<unknown>>) => object, Owner> {
+  implements WithCreateInstance<BasicState, new (args: Readonly<Dict<unknown>>) => object, Owner>
+{
   create(
     _owner: Owner,
     Component: { new (args: ComponentArgs): object },

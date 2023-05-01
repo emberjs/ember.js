@@ -1,34 +1,36 @@
 import { DEBUG } from '@glimmer/env';
 import { getProp, setProp } from '@glimmer/global-context';
-import { Option } from '@glimmer/interfaces';
+import {
+  ComputeReference,
+  ConstantReference,
+  Reference,
+  InvokableReference,
+  Option,
+  ReferenceSymbol,
+  ReferenceType,
+  UnboundReference,
+} from '@glimmer/interfaces';
 import { expect, isDict, symbol } from '@glimmer/util';
 import {
   CONSTANT_TAG,
-  consumeTag,
   INITIAL,
   Revision,
   Tag,
+  consumeTag,
   track,
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
 
-export const REFERENCE: unique symbol = symbol('REFERENCE');
+export const REFERENCE: ReferenceSymbol = symbol('REFERENCE');
 
-const enum ReferenceType {
-  Constant,
-  Compute,
-  Unbound,
-  Invokable,
-}
-
-export interface Reference<_T = unknown> {
-  [REFERENCE]: ReferenceType;
-  debugLabel?: string;
-  children: null | Map<string | Reference, Reference>;
-}
+const CONSTANT: ConstantReference = 0;
+const COMPUTE: ComputeReference = 1;
+const UNBOUND: UnboundReference = 2;
+const INVOKABLE: InvokableReference = 3;
 
 export default Reference;
+export type { Reference };
 
 //////////
 
@@ -37,7 +39,7 @@ export interface ReferenceEnvironment {
   setProp(obj: unknown, path: string, value: unknown): unknown;
 }
 
-class ReferenceImpl<T = unknown> implements Reference {
+class ReferenceImpl<T = unknown> implements Reference<T> {
   [REFERENCE]: ReferenceType;
   public tag: Option<Tag> = null;
   public lastRevision: Revision = INITIAL;
@@ -56,7 +58,7 @@ class ReferenceImpl<T = unknown> implements Reference {
 }
 
 export function createPrimitiveRef(value: unknown): Reference {
-  let ref = new ReferenceImpl(ReferenceType.Unbound);
+  let ref = new ReferenceImpl(UNBOUND);
 
   ref.tag = CONSTANT_TAG;
   ref.lastValue = value;
@@ -74,7 +76,7 @@ export const TRUE_REFERENCE = createPrimitiveRef(true);
 export const FALSE_REFERENCE = createPrimitiveRef(false);
 
 export function createConstRef(value: unknown, debugLabel: false | string): Reference {
-  let ref = new ReferenceImpl(ReferenceType.Constant);
+  let ref = new ReferenceImpl(CONSTANT);
 
   ref.lastValue = value;
   ref.tag = CONSTANT_TAG;
@@ -87,7 +89,7 @@ export function createConstRef(value: unknown, debugLabel: false | string): Refe
 }
 
 export function createUnboundRef(value: unknown, debugLabel: false | string): Reference {
-  let ref = new ReferenceImpl(ReferenceType.Unbound);
+  let ref = new ReferenceImpl(UNBOUND);
 
   ref.lastValue = value;
   ref.tag = CONSTANT_TAG;
@@ -104,7 +106,7 @@ export function createComputeRef<T = unknown>(
   update: Option<(value: T) => void> = null,
   debugLabel: false | string = 'unknown'
 ): Reference<T> {
-  let ref = new ReferenceImpl<T>(ReferenceType.Compute);
+  let ref = new ReferenceImpl<T>(COMPUTE);
 
   ref.compute = compute;
   ref.update = update;
@@ -123,7 +125,7 @@ export function createReadOnlyRef(ref: Reference): Reference {
 }
 
 export function isInvokableRef(ref: Reference) {
-  return ref[REFERENCE] === ReferenceType.Invokable;
+  return ref[REFERENCE] === INVOKABLE;
 }
 
 export function createInvokableRef(inner: Reference): Reference {
@@ -132,7 +134,7 @@ export function createInvokableRef(inner: Reference): Reference {
     (value) => updateRef(inner, value)
   );
   ref.debugLabel = inner.debugLabel;
-  ref[REFERENCE] = ReferenceType.Invokable;
+  ref[REFERENCE] = INVOKABLE;
 
   return ref;
 }
@@ -164,11 +166,13 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   if (tag === null || !validateTag(tag, lastRevision)) {
     let { compute } = ref;
 
-    tag = ref.tag = track(() => {
+    const newTag = track(() => {
       lastValue = ref.lastValue = compute!();
     }, DEBUG && ref.debugLabel);
 
-    ref.lastRevision = valueForTag(tag);
+    tag = ref.tag = newTag;
+
+    ref.lastRevision = valueForTag(newTag);
   } else {
     lastValue = ref.lastValue;
   }
@@ -204,7 +208,7 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
     }
   }
 
-  if (type === ReferenceType.Unbound) {
+  if (type === UNBOUND) {
     let parent = valueForRef(parentRef);
 
     if (isDict(parent)) {

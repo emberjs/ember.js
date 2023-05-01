@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-extraneous-import
-import { Reference } from '@glimmer/reference';
+import { Reference } from './references';
 import { InternalComponentCapability, InternalComponentManager } from './managers';
 import { Dict } from './core';
 import { CompilableProgram } from './template';

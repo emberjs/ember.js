@@ -68,7 +68,7 @@ function buildBlock(
       deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     }
 
-    defaultBlock = (assign({}, _defaultBlock, { type: 'Block' }) as unknown) as ASTv1.Block;
+    defaultBlock = assign({}, _defaultBlock, { type: 'Block' }) as unknown as ASTv1.Block;
   } else {
     defaultBlock = _defaultBlock;
   }
@@ -78,7 +78,7 @@ function buildBlock(
       deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     }
 
-    elseBlock = (assign({}, _elseBlock, { type: 'Block' }) as unknown) as ASTv1.Block;
+    elseBlock = assign({}, _elseBlock, { type: 'Block' }) as unknown as ASTv1.Block;
   } else {
     elseBlock = _elseBlock;
   }

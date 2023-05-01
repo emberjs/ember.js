@@ -3,14 +3,13 @@
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/node",
   "dependencies": {
-    "@glimmer/runtime": "0.84.3",
-    "@glimmer/interfaces": "0.84.3",
-    "@glimmer/util": "0.84.3",
-    "@simple-dom/document": "^1.4.0",
-    "@simple-dom/interface": "^1.4.0"
+    "@glimmer/runtime": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^",
+    "@simple-dom/document": "^1.4.0"
   },
   "devDependencies": {
-    "@types/qunit": "^2.9.0",
-    "@glimmer/compiler": "0.84.3"
+    "@types/qunit": "^2.19.5",
+    "@glimmer/compiler": "workspace:^"
   }
 }

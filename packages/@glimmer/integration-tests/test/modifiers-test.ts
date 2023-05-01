@@ -1,6 +1,6 @@
 import { RenderTest, jitSuite, test, Count } from '..';
 import { Dict } from '@glimmer/interfaces';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import { Option } from '@glimmer/interfaces';
 
 class BaseModifier {
@@ -30,7 +30,7 @@ class ModifierTests extends RenderTest {
         didInsertElement() {
           count.expect('didInsertElement');
           assert.ok(this.element, 'didInsertElement');
-          assert.equal(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
+          assert.strictEqual(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
         }
 
         didUpdate() {
@@ -101,7 +101,7 @@ class ModifierTests extends RenderTest {
     this.render('<TheFoo {{bar "something" foo="else"}}/>');
     assert.deepEqual(modifierParams, ['something']);
     assert.deepEqual(modifierNamedArgs, { foo: 'else' });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -161,7 +161,7 @@ class ModifierTests extends RenderTest {
     });
     assert.deepEqual(modifierParams, ['something']);
     assert.deepEqual(modifierNamedArgs, { foo: 'else' });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -169,7 +169,7 @@ class ModifierTests extends RenderTest {
     this.rerender({ something: 'another', foo: 'thingy' });
     assert.deepEqual(modifierParams, ['another']);
     assert.deepEqual(modifierNamedArgs, { foo: 'thingy' });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -202,7 +202,7 @@ class ModifierTests extends RenderTest {
     this.render('<TheFoo {{bar "name" this foo=this}}/>', context);
     assert.deepEqual(modifierParams, ['name', context]);
     assert.deepEqual(modifierNamedArgs, { foo: context });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -210,7 +210,7 @@ class ModifierTests extends RenderTest {
     this.rerender(context2);
     assert.deepEqual(modifierParams, ['name', context2]);
     assert.deepEqual(modifierNamedArgs, { foo: context2 });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -248,7 +248,7 @@ class ModifierTests extends RenderTest {
     );
     assert.deepEqual(modifierParams, ['bar']);
     assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -256,7 +256,7 @@ class ModifierTests extends RenderTest {
     this.rerender({ foo: 'qux' });
     assert.deepEqual(modifierParams, ['qux']);
     assert.deepEqual(modifierNamedArgs, { foo: 'qux' });
-    assert.equal(
+    assert.strictEqual(
       modifiedElement && modifiedElement.getAttribute('id'),
       'inner-div',
       'Modifier is called on the element receiving the splattributes'
@@ -464,11 +464,11 @@ class ModifierTests extends RenderTest {
     class Foo extends BaseModifier {
       didInsertElement([bar]: string[]) {
         count.expect('didInsertElement');
-        assert.equal(bar, 'bar');
+        assert.strictEqual(bar, 'bar');
       }
       didUpdate([foo]: string[]) {
         count.expect('didUpdate');
-        assert.equal(foo, 'foo');
+        assert.strictEqual(foo, 'foo');
       }
     }
     this.registerModifier('foo', Foo);
@@ -481,11 +481,11 @@ class ModifierTests extends RenderTest {
     class Foo extends BaseModifier {
       didInsertElement(_params: unknown[], { bar }: Dict<string>) {
         count.expect('didInsertElement');
-        assert.equal(bar, 'bar');
+        assert.strictEqual(bar, 'bar');
       }
       didUpdate(_params: unknown[], { bar }: Dict<string>) {
         count.expect('didUpdate');
-        assert.equal(bar, 'foo');
+        assert.strictEqual(bar, 'foo');
       }
     }
     this.registerModifier('foo', Foo);
@@ -498,13 +498,13 @@ class ModifierTests extends RenderTest {
     class Foo extends BaseModifier {
       didInsertElement([baz]: string[], { bar }: Dict<string>) {
         count.expect('didInsertElement');
-        assert.equal(bar, 'bar');
-        assert.equal(baz, 'baz');
+        assert.strictEqual(bar, 'bar');
+        assert.strictEqual(baz, 'baz');
       }
       didUpdate([foo]: string[], { bar }: Dict<string>) {
         count.expect('didUpdate');
-        assert.equal(bar, 'foo');
-        assert.equal(foo, 'foo');
+        assert.strictEqual(bar, 'foo');
+        assert.strictEqual(foo, 'foo');
       }
     }
     this.registerModifier('foo', Foo);

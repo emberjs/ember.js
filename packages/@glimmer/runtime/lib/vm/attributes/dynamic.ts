@@ -7,7 +7,7 @@ import {
   AttributeCursor,
 } from '@glimmer/interfaces';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
-import { AttrNamespace, Namespace, SimpleElement } from '@simple-dom/interface';
+import { AttrNamespace, Namespace, SimpleElement } from '@glimmer/interfaces';
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';

@@ -21,7 +21,7 @@ import {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { DynamicAttribute, dynamicAttribute } from './attributes/dynamic';

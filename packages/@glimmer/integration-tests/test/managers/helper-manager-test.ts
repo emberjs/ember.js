@@ -49,12 +49,12 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(Main);
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('plain function');
 
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('plain function');
   }
 
@@ -75,12 +75,12 @@ class HelperManagerTest extends RenderTest {
       hello,
     });
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('plain function');
 
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('plain function');
   }
 
@@ -101,12 +101,12 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(Main);
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('plain function');
 
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('plain function');
   }
 
@@ -122,19 +122,19 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(defineComponent({ obj }, '{{obj @value @unused}}'), args);
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
 
     args.value = 'there';
     this.rerender();
 
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
     this.assertHTML('there');
 
     args.unused = 'unused2';
     this.rerender();
 
-    assert.equal(count, 3, 'rendered thrice');
+    assert.strictEqual(count, 3, 'rendered thrice');
     this.assertHTML('there');
   }
 
@@ -150,13 +150,13 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(defineComponent({ obj }, '{{obj}}'));
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
 
     trackedState.value = 'there';
     this.rerender();
     this.assertHTML('there');
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
   }
 
   @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
@@ -170,13 +170,13 @@ class HelperManagerTest extends RenderTest {
     let args = trackedObj({ value: 'hello', unused: 'unused' });
 
     this.renderComponent(defineComponent({ obj }, '{{obj @value namedOpt=@unused}}'), args);
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
 
     args.unused = 'unused2';
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
   }
 
@@ -192,13 +192,13 @@ class HelperManagerTest extends RenderTest {
     let args = trackedObj({ value: 'hello', used: 'used' });
 
     this.renderComponent(defineComponent({ obj }, '{{obj @value namedOpt=@used}}'), args);
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('used');
 
     args.used = 'there';
     this.rerender();
 
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
     this.assertHTML('there');
   }
 
@@ -216,7 +216,7 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(defineComponent({ obj }, 'result: {{obj}}'), args);
     this.assertHTML('result: default value');
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
   }
 
   @test({ skip: SKIP_DEFAULT_HELPER_MANAGER_TESTS })
@@ -233,13 +233,13 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(defineComponent({ obj }, 'result: {{obj @value}}'), args);
     this.assertHTML('result: default value');
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
 
     args.value = 'value';
     this.rerender();
 
     this.assertHTML('result: value');
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
   }
 
   @test 'tracks changes to named arguments'(assert: Assert) {
@@ -256,18 +256,18 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(defineComponent({ hello: Hello }, '{{hello foo=@foo}}'), args);
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
     args.foo = 456;
     this.rerender();
 
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
     this.assertHTML('456');
   }
 
@@ -285,18 +285,18 @@ class HelperManagerTest extends RenderTest {
 
     this.renderComponent(defineComponent({ hello: Hello }, '{{hello @foo}}'), args);
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
     args.foo = 456;
     this.rerender();
 
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
     this.assertHTML('456');
   }
 
@@ -319,18 +319,18 @@ class HelperManagerTest extends RenderTest {
     }
     this.renderComponent(defineComponent({ hello: Hello }, '{{hello}}'));
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
     this.rerender();
 
-    assert.equal(count, 1, 'rendered once');
+    assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
     instance!.foo = 456;
     this.rerender();
 
-    assert.equal(count, 2, 'rendered twice');
+    assert.strictEqual(count, 2, 'rendered twice');
     this.assertHTML('456');
   }
 

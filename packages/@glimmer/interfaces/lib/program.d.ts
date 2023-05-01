@@ -6,6 +6,8 @@ import { ComponentDefinitionState, ComponentDefinition } from './components';
 import { HelperDefinitionState, Owner } from './runtime';
 import { ModifierDefinitionState } from './runtime/modifier';
 
+export type CreateRuntimeOp = (heap: CompileTimeHeap) => RuntimeOp;
+
 export interface RuntimeOp {
   offset: number;
   type: number;
@@ -48,6 +50,8 @@ export interface RuntimeHeap extends OpcodeHeap {
 export interface CompileTimeCompilationContext {
   // The offsets to stdlib functions
   readonly stdlib: STDLib;
+
+  readonly createOp: CreateRuntimeOp;
 
   // Interned constants
   readonly constants: CompileTimeConstants & ResolutionTimeConstants;

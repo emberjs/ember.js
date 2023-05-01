@@ -536,19 +536,19 @@ export class InElementSuite extends RenderTest {
     );
 
     equalsElement(externalElement, 'div', {}, stripTight``);
-    this.assert.equal(destroyed, 0, 'component was destroyed');
+    this.assert.strictEqual(destroyed, 0, 'component was destroyed');
     this.assertHTML('<!---->');
     this.assertStableRerender();
 
     this.rerender({ showExternal: true });
     equalsElement(externalElement, 'div', {}, stripTight`[destroy me!]`);
-    this.assert.equal(destroyed, 0, 'component was destroyed');
+    this.assert.strictEqual(destroyed, 0, 'component was destroyed');
     this.assertHTML('<!---->');
     this.assertStableRerender();
 
     this.rerender({ showExternal: false });
     equalsElement(externalElement, 'div', {}, stripTight``);
-    this.assert.equal(destroyed, 1, 'component was destroyed');
+    this.assert.strictEqual(destroyed, 1, 'component was destroyed');
     this.assertHTML('<!---->');
     this.assertStableRerender();
   }

@@ -5,6 +5,6 @@
   "description": "Implementation for the owner in Glimmer apps",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "0.84.3"
+    "@glimmer/util": "workspace:^"
   }
 }

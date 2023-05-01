@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/env';
 import {
-  Tag,
   CONSTANT_TAG,
   validateTag,
   Revision,
@@ -16,6 +15,7 @@ import {
   resetTrackingTransaction,
 } from './debug';
 import { symbol, unwrap } from './utils';
+import { Tag } from '@glimmer/interfaces';
 
 /**
  * An object that that tracks @tracked properties that were consumed.
@@ -171,7 +171,7 @@ export function createCache<T>(fn: () => T, debuggingLabel?: string | false): Ca
     cache[DEBUG_LABEL] = debuggingLabel;
   }
 
-  return (cache as unknown) as Cache<T>;
+  return cache as unknown as Cache<T>;
 }
 
 export function getValue<T>(cache: Cache<T>): T | undefined {
