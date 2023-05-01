@@ -332,7 +332,7 @@ let allExports = [
   ['RouterDSL', '@ember/-internals/routing'],
 
   // backburner
-  ['_Backburner', 'backburner', 'default'],
+  ['_Backburner', 'backburner.js', 'default'],
 
   // rsvp
   [null, 'rsvp', 'default'],
