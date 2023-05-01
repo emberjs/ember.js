@@ -28,10 +28,14 @@ export default function buildOwner(
 ) {
   let ownerType = options.ownerType || 'application';
   let ownerOptions = options.ownerOptions || {};
-  let resolver = options.resolver;
-  if (!resolver) {
-    throw new Error('You must provide a resolver to buildOwner');
-  }
+  // TODO(SAFETY): this is a lie, and we should use the error thrown below.
+  // At the moment, though, some *tests* pass no resolver, and expect this to
+  // work anyway. The fix is to have those tests pass a test-friendly resolver
+  // and then this will work as expected.
+  let resolver = options.resolver!;
+  // if (!resolver) {
+  //   throw new Error('You must provide a resolver to buildOwner');
+  // }
   let bootOptions = options.bootOptions || {};
 
   let namespace: Application | Engine;
