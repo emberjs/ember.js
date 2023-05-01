@@ -1,5 +1,5 @@
 /**
-@module @ember/object/mixin
+@module @ember/object
 */
 import { INIT_FACTORY } from '@ember/-internals/container';
 import type { Meta } from '@ember/-internals/meta';
@@ -10,32 +10,34 @@ import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
 import type {
   ComputedDecorator,
+  ComputedDescriptor,
   ComputedPropertyGetter,
   ComputedPropertyObj,
   ComputedPropertySetter,
-  ComputedDescriptor,
 } from '@ember/-internals/metal';
 import {
   ComputedProperty,
-  descriptorForDecorator,
-  makeComputedDecorator,
-  nativeDescDecorator,
-  setUnprocessedMixins,
   addObserver,
-  removeObserver,
-  revalidateObservers,
   defineDecorator,
   defineValue,
+  descriptorForDecorator,
+  isClassicDecorator,
+  makeComputedDecorator,
+  nativeDescDecorator,
+  removeObserver,
+  revalidateObservers,
+  setUnprocessedMixins,
 } from '@ember/-internals/metal';
-import { addListener, removeListener } from '@ember/object/events';
+import { addListener, removeListener } from './events';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
-function extractAccessors(properties: { [key: string]: any } | undefined) {
+function extractAccessors(properties: { [key: string]: unknown } | undefined) {
   if (properties !== undefined) {
     for (let key of Object.keys(properties)) {
-      let desc = Object.getOwnPropertyDescriptor(properties, key)!;
+      let desc = Object.getOwnPropertyDescriptor(properties, key);
+      assert(`a property descriptor for ${key} must exist`, desc !== undefined);
 
       if (desc.get !== undefined || desc.set !== undefined) {
         Object.defineProperty(properties, key, { value: nativeDescDecorator(desc) });
@@ -225,7 +227,7 @@ function mergeMixins(
   keys: string[],
   keysWithSuper: string[]
 ): void {
-  let currentMixin;
+  let currentMixin: MixinLike | undefined;
 
   for (let i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
@@ -299,12 +301,17 @@ function mergeProps(
       let desc = meta.peekDescriptors(key);
 
       if (desc === undefined) {
-        // The superclass did not have a CP, which means it may have
-        // observers or listeners on that property.
-        let prev = (values[key] = base[key]);
+        // If the value is a classic decorator, we don't want to actually
+        // access it, because that will execute the decorator while we're
+        // building the class.
+        if (!isClassicDecorator(value)) {
+          // The superclass did not have a CP, which means it may have
+          // observers or listeners on that property.
+          let prev = (values[key] = base[key]);
 
-        if (typeof prev === 'function') {
-          updateObserversAndListeners(base, key, prev, false);
+          if (typeof prev === 'function') {
+            updateObserversAndListeners(base, key, prev, false);
+          }
         }
       } else {
         descs[key] = desc;
@@ -534,8 +541,6 @@ export default class Mixin {
   /** @internal */
   _without: any[] | undefined;
 
-  declare [INIT_FACTORY]?: null;
-
   /** @internal */
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     MIXINS.add(this);
@@ -546,7 +551,7 @@ export default class Mixin {
 
     if (DEBUG) {
       // Eagerly add INIT_FACTORY to avoid issues in DEBUG as a result of Object.seal(mixin)
-      this[INIT_FACTORY] = null;
+      (this as Record<typeof INIT_FACTORY, unknown>)[INIT_FACTORY] = null;
       /*
         In debug builds, we seal mixins to help avoid performance pitfalls.
 
@@ -738,15 +743,14 @@ function _detect(curMixin: Mixin, targetMixin: Mixin, seen = new Set()): boolean
   return false;
 }
 
-function _keys(mixin: Mixin, ret = new Set<string>(), seen = new Set()) {
+function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
   if (seen.has(mixin)) {
     return;
   }
   seen.add(mixin);
 
   if (mixin.properties) {
-    let props = Object.keys(mixin.properties);
-    for (let prop of props) {
+    for (const prop of Object.keys(mixin.properties)) {
       ret.add(prop);
     }
   } else if (mixin.mixins) {
@@ -755,3 +759,5 @@ function _keys(mixin: Mixin, ret = new Set<string>(), seen = new Set()) {
 
   return ret;
 }
+
+export { Mixin };
