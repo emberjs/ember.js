@@ -136,7 +136,7 @@
     "mkdirp": "^1.0.4",
     "mocha": "^7.1.2",
     "prettier": "^2.1.2",
-    "puppeteer": "^3.0.4",
+    "puppeteer": "^13.5.1",
     "qunit": "^2.14.0",
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.4",
