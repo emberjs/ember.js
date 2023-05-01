@@ -325,7 +325,7 @@ jobs:
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           S3_BUCKET_NAME: 'builds.emberjs.com'
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
@@ -359,7 +359,7 @@ jobs:
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           BUILD_TYPE: alpha
           OVERRIDE_FEATURES: ''
