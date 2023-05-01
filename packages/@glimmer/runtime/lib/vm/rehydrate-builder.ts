@@ -9,7 +9,7 @@ import {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
 

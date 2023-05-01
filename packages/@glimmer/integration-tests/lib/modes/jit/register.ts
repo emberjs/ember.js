@@ -125,7 +125,7 @@ export function registerComponent<K extends ComponentKind>(
       registerEmberishCurlyComponent(
         registry,
         name,
-        (Class as any) as typeof EmberishCurlyComponent,
+        Class as any as typeof EmberishCurlyComponent,
         layout
       );
       break;

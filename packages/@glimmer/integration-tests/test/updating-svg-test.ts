@@ -1,6 +1,6 @@
 import { RenderTest, test, jitSuite } from '..';
 import { assertNodeTagName } from '..';
-import { Namespace, SimpleElement } from '@simple-dom/interface';
+import { Namespace, SimpleElement } from '@glimmer/interfaces';
 import { assert } from './support';
 
 const SVG_NAMESPACE = Namespace.SVG;
@@ -16,9 +16,9 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = () => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
         if (assertNodeTagName(this.element.firstChild.firstChild, 'circle')) {
-          assert.equal(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          assert.strictEqual(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       }
     };
@@ -45,9 +45,9 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = () => {
       if (assertNodeTagName(parent.firstChild, 'svg')) {
-        assert.equal(parent.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(parent.firstChild.namespaceURI, SVG_NAMESPACE);
         if (assertNodeTagName(parent.firstChild.firstChild, 'foreignObject')) {
-          assert.equal(parent.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          assert.strictEqual(parent.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       }
     };
@@ -78,11 +78,11 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = () => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
         if (assertNodeTagName(this.element.firstChild.firstChild, 'foreignObject')) {
-          assert.equal(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          assert.strictEqual(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           if (assertNodeTagName(this.element.firstChild.firstChild.firstChild, 'div')) {
-            assert.equal(
+            assert.strictEqual(
               this.element.firstChild.firstChild.firstChild.namespaceURI,
               XHTML_NAMESPACE
             );
@@ -111,9 +111,9 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = () => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
         let attr = this.element.firstChild.attributes[0];
-        assert.equal(attr.namespaceURI, XLINK_NAMESPACE);
+        assert.strictEqual(attr.namespaceURI, XLINK_NAMESPACE);
       }
     };
 
@@ -138,7 +138,7 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespace = () => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
       }
     };
 
@@ -163,10 +163,10 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = (isUnsafe: boolean) => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
       }
       if (isUnsafe && assertNodeTagName(this.element.lastChild, 'i')) {
-        assert.equal(this.element.lastChild.namespaceURI, XHTML_NAMESPACE);
+        assert.strictEqual(this.element.lastChild.namespaceURI, XHTML_NAMESPACE);
       }
     };
 
@@ -193,18 +193,18 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = (callback: (svg: SimpleElement) => void) => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
         callback(this.element.firstChild as SimpleElement);
       }
       if (assertNodeTagName(this.element.lastChild, 'div')) {
-        assert.equal(this.element.lastChild.namespaceURI, XHTML_NAMESPACE);
+        assert.strictEqual(this.element.lastChild.namespaceURI, XHTML_NAMESPACE);
       }
     };
 
     this.assertHTML(`<svg><path></path></svg><div></div>`);
     assertNamespaces((svg) => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(
+        assert.strictEqual(
           svg.firstChild.namespaceURI,
           SVG_NAMESPACE,
           'initial render path has SVG namespace'
@@ -217,7 +217,7 @@ class UpdatingSvgTest extends RenderTest {
     this.assertHTML(`<svg><path></path></svg><div></div>`);
     assertNamespaces((svg) => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
+        assert.strictEqual(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
       }
     });
 
@@ -228,13 +228,13 @@ class UpdatingSvgTest extends RenderTest {
     this.assertHTML(`<svg><foreignObject><span></span></foreignObject></svg><div></div>`);
     assertNamespaces((svg) => {
       if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
-        assert.equal(
+        assert.strictEqual(
           svg.firstChild.namespaceURI,
           SVG_NAMESPACE,
           'initial render path has SVG namespace'
         );
         if (assertNodeTagName(svg.firstChild.firstChild, 'span')) {
-          assert.equal(
+          assert.strictEqual(
             svg.firstChild.firstChild.namespaceURI,
             XHTML_NAMESPACE,
             'span has XHTML NS'
@@ -250,14 +250,14 @@ class UpdatingSvgTest extends RenderTest {
     this.assertHTML(`<svg><path></path><circle></circle></svg><div></div>`);
     assertNamespaces((svg) => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(
+        assert.strictEqual(
           svg.firstChild.namespaceURI,
           SVG_NAMESPACE,
           'initial render path has SVG namespace'
         );
       }
       if (assertNodeTagName(svg.lastChild, 'circle')) {
-        assert.equal(
+        assert.strictEqual(
           svg.lastChild.namespaceURI,
           SVG_NAMESPACE,
           'initial render path has SVG namespace'
@@ -270,7 +270,7 @@ class UpdatingSvgTest extends RenderTest {
     this.assertHTML(`<svg><path></path></svg><div></div>`);
     assertNamespaces((svg) => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
-        assert.equal(
+        assert.strictEqual(
           svg.firstChild.namespaceURI,
           SVG_NAMESPACE,
           'initial render path has SVG namespace'
@@ -287,9 +287,9 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = () => {
       if (assertNodeTagName(this.element.firstChild, 'div')) {
-        assert.equal(this.element.firstChild.namespaceURI, XHTML_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, XHTML_NAMESPACE);
         if (assertNodeTagName(this.element.firstChild.firstChild, 'svg')) {
-          assert.equal(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          assert.strictEqual(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       }
     };
@@ -315,7 +315,7 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertSvg = (callback?: (svg: SVGSVGElement) => void) => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
-        assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
         if (callback) callback(this.element.firstChild);
       }
     };
@@ -345,13 +345,13 @@ class UpdatingSvgTest extends RenderTest {
     let assertNamespaces = (isTrue: boolean) => {
       if (isTrue) {
         if (assertNodeTagName(this.element.firstChild, 'svg')) {
-          assert.equal(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
+          assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       } else {
         if (assertNodeTagName(this.element.firstChild, 'div')) {
-          assert.equal(this.element.firstChild.namespaceURI, XHTML_NAMESPACE);
+          assert.strictEqual(this.element.firstChild.namespaceURI, XHTML_NAMESPACE);
           if (assertNodeTagName(this.element.firstChild.firstChild, 'svg')) {
-            assert.equal(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+            assert.strictEqual(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           }
         }
       }
@@ -378,14 +378,17 @@ class UpdatingSvgTest extends RenderTest {
 
     let assertNamespaces = (isTrue: boolean) => {
       if (assertNodeTagName(this.element.firstChild, 'div')) {
-        assert.equal(this.element.firstChild.namespaceURI, XHTML_NAMESPACE);
+        assert.strictEqual(this.element.firstChild.namespaceURI, XHTML_NAMESPACE);
         if (assertNodeTagName(this.element.firstChild.firstChild, 'svg')) {
-          assert.equal(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          assert.strictEqual(this.element.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           if (
             isTrue &&
             assertNodeTagName(this.element.firstChild.firstChild.firstChild, 'circle')
           ) {
-            assert.equal(this.element.firstChild.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+            assert.strictEqual(
+              this.element.firstChild.firstChild.firstChild.namespaceURI,
+              SVG_NAMESPACE
+            );
           }
         }
       }

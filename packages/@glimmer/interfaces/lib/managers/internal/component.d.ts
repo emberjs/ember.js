@@ -1,5 +1,4 @@
 // eslint-disable-next-line node/no-extraneous-import
-import { Reference } from '@glimmer/reference';
 import { SimpleElement } from '@simple-dom/interface';
 import { PreparedArguments, ComponentInstanceState } from '../../components';
 import { Option, Destroyable } from '../../core';
@@ -13,6 +12,7 @@ import { ProgramSymbolTable } from '../../tier1/symbol-table';
 import { DynamicScope } from '../../runtime/scope';
 import { RenderNode } from '../../runtime/debug-render-tree';
 import { Owner } from '../../runtime';
+import { Reference } from '../../references';
 
 /**
  * Describes the capabilities of a particular component. The capabilities are

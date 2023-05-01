@@ -1,4 +1,4 @@
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { Dict } from '@glimmer/interfaces';
 import { dict, assign } from '@glimmer/util';
 
@@ -178,7 +178,7 @@ export function assertSerializedInElement(result: string, expected: string, mess
   if (matched) {
     QUnit.assert.ok(true, `has cursor ${matched[0]}`);
     let [, trimmed] = result.split(matched![0]);
-    QUnit.assert.equal(trimmed, expected, message);
+    QUnit.assert.strictEqual(trimmed, expected, message);
   } else {
     QUnit.assert.ok(false, `does not have a cursor`);
   }

@@ -10,6 +10,7 @@ import {
   HighLevelOp,
   BuilderOp,
   MachineOp,
+  ContainingMetadata,
 } from '@glimmer/interfaces';
 import { SwitchCases } from './conditional';
 import { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
@@ -109,7 +110,7 @@ export function compileStd(context: CompileTimeCompilationContext): StdLib {
   );
 }
 
-const STDLIB_META = {
+export const STDLIB_META: ContainingMetadata = {
   evalSymbols: null,
   upvars: null,
   moduleName: 'stdlib',

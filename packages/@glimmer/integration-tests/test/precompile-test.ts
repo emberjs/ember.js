@@ -26,7 +26,7 @@ QUnit.module('templateFactory', {
 QUnit.test('id of serialized template is exposed on the factory', (assert) => {
   let factory = templateFactory(serializedTemplate) as TemplateFactoryWithIdAndMeta;
   assert.ok(factory.__id, 'is present');
-  assert.equal(factory.__id, serializedTemplate.id, 'id matches serialized template id');
+  assert.strictEqual(factory.__id, serializedTemplate.id, 'id matches serialized template id');
 });
 
 QUnit.test('generates id if no id is on the serialized template', (assert) => {
@@ -45,7 +45,7 @@ QUnit.test('id of template matches factory', (assert) => {
   let factory = templateFactory(serializedTemplate) as TemplateFactoryWithIdAndMeta;
   let template = unwrapTemplate(factory()) as TemplateWithIdAndReferrer;
   assert.ok(template.id, 'is present');
-  assert.equal(template.id, factory.__id, 'template id matches factory id');
+  assert.strictEqual(template.id, factory.__id, 'template id matches factory id');
 });
 
 QUnit.test('meta is accessible from factory', (assert) => {

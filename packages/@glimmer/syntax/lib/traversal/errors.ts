@@ -34,7 +34,7 @@ const TraversalError: TraversalErrorConstructor = (function () {
     this.stack = error.stack;
   }
 
-  return (TraversalError as unknown) as TraversalErrorConstructor;
+  return TraversalError as unknown as TraversalErrorConstructor;
 })();
 
 export default TraversalError;

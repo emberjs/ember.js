@@ -12,7 +12,7 @@ export async function measureRender(
   endMark: string,
   render: () => Promise<void> | void
 ) {
-  const endObserved = new Promise((resolve) => {
+  const endObserved = new Promise<void>((resolve) => {
     new PerformanceObserver((entries, observer) => {
       if (entries.getEntriesByName(endMark, 'mark').length > 0) {
         resolve();

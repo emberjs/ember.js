@@ -12,27 +12,23 @@ if (globalObj[GLIMMER_VALIDATOR_REGISTRATION] === true) {
 
 globalObj[GLIMMER_VALIDATOR_REGISTRATION] = true;
 
+export { CombinatorTag, ConstantTag, DirtyableTag, Tag, UpdatableTag } from '@glimmer/interfaces';
+
 export {
   ALLOW_CYCLES,
   bump,
-  CombinatorTag,
   combine,
   COMPUTE,
   CONSTANT_TAG,
   CONSTANT,
-  ConstantTag,
   createTag,
   createUpdatableTag,
   CurrentTag,
   CURRENT_TAG,
   DIRTY_TAG as dirtyTag,
-  DirtyableTag,
-  EntityTag,
   INITIAL,
   isConstTag,
   Revision,
-  Tag,
-  UpdatableTag,
   UPDATE_TAG as updateTag,
   validateTag,
   valueForTag,

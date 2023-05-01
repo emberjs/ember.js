@@ -7,7 +7,7 @@ import {
   SimpleElement,
   SimpleDocumentFragment,
   SimpleAttr,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 

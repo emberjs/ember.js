@@ -24,7 +24,7 @@ function isOperandType(s: string): s is OperandType {
   return OPERAND_TYPES.indexOf(s as any) !== -1;
 }
 
-export type OperandType = typeof OPERAND_TYPES[number];
+export type OperandType = (typeof OPERAND_TYPES)[number];
 
 export interface Operand {
   type: OperandType;
@@ -210,7 +210,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
 }
 
 export const META_KIND = tuple('METADATA', 'MACHINE_METADATA');
-export type META_KIND = typeof META_KIND[number];
+export type META_KIND = (typeof META_KIND)[number];
 
 export function buildSingleMeta(
   kind: META_KIND,

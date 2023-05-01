@@ -50,11 +50,11 @@ abstract class ModifierManagerTest extends RenderTest {
       class extends CustomModifier {
         didInsertElement() {
           assert.step('Called didInsertElement');
-          assert.equal(this.args.positional[0], true, 'gets initial args');
+          assert.strictEqual(this.args.positional[0], true, 'gets initial args');
         }
         didUpdate() {
           assert.step('Called didUpdate');
-          assert.equal(this.args.positional[0], 'true', 'gets updated args');
+          assert.strictEqual(this.args.positional[0], 'true', 'gets updated args');
         }
         willDestroyElement() {
           assert.step('Called willDestroyElement');
@@ -91,7 +91,7 @@ abstract class ModifierManagerTest extends RenderTest {
       class extends CustomModifier {
         didInsertElement() {
           assert.step('Foo didInsertElement');
-          assert.equal(this.args.positional[0], true, 'gets initial args');
+          assert.strictEqual(this.args.positional[0], true, 'gets initial args');
         }
       }
     );
@@ -100,7 +100,7 @@ abstract class ModifierManagerTest extends RenderTest {
       didInsertElement() {
         super.didInsertElement();
         assert.step('Bar didInsertElement');
-        assert.equal(this.args.positional[0], true, 'gets initial args');
+        assert.strictEqual(this.args.positional[0], true, 'gets initial args');
       }
     }
 
@@ -123,16 +123,16 @@ abstract class ModifierManagerTest extends RenderTest {
           // eslint-disable-next-line no-unused-expressions
           this.args.positional[0];
 
-          assert.equal(this.element.tagName, 'H1');
+          assert.strictEqual(this.element.tagName, 'H1');
           this.savedElement = this.element;
         }
 
         didUpdate() {
-          assert.equal(this.element, this.savedElement);
+          assert.strictEqual(this.element, this.savedElement);
         }
 
         willDestroyElement() {
-          assert.equal(this.element, this.savedElement);
+          assert.strictEqual(this.element, this.savedElement);
         }
       }
     );
@@ -181,24 +181,24 @@ abstract class ModifierManagerTest extends RenderTest {
     this.renderComponent(Main);
     this.assertHTML(`<h1>hello world</h1>`);
 
-    assert.equal(insertCount, 1);
-    assert.equal(updateCount, 0);
+    assert.strictEqual(insertCount, 1);
+    assert.strictEqual(updateCount, 0);
 
     trackedTwo.count++;
     this.rerender();
-    assert.equal(updateCount, 0);
+    assert.strictEqual(updateCount, 0);
 
     trackedOne.count++;
     this.rerender();
-    assert.equal(updateCount, 1);
+    assert.strictEqual(updateCount, 1);
 
     trackedOne.count++;
     this.rerender();
-    assert.equal(updateCount, 1);
+    assert.strictEqual(updateCount, 1);
 
     trackedTwo.count++;
     this.rerender();
-    assert.equal(updateCount, 2);
+    assert.strictEqual(updateCount, 2);
   }
 
   @test
@@ -275,8 +275,8 @@ abstract class ModifierManagerTest extends RenderTest {
 
     this.rerender();
 
-    assert.equal(barCount, 0, 'bar was not accessed during detruction');
-    assert.equal(bazCount, 0, 'baz was not accessed during detruction');
+    assert.strictEqual(barCount, 0, 'bar was not accessed during detruction');
+    assert.strictEqual(bazCount, 0, 'baz was not accessed during detruction');
   }
 }
 
@@ -351,16 +351,16 @@ class ModifierManagerTest322 extends ModifierManagerTest {
 
     this.assertHTML(`<h1>hello world</h1>`);
 
-    assert.equal(insertCount, 1);
-    assert.equal(updateCount, 0);
+    assert.strictEqual(insertCount, 1);
+    assert.strictEqual(updateCount, 0);
 
     args.positionOne = 'no first?';
     this.rerender();
-    assert.equal(updateCount, 0);
+    assert.strictEqual(updateCount, 0);
 
     args.positionTwo = 'YASSSSSSS!!!';
     this.rerender();
-    assert.equal(updateCount, 1);
+    assert.strictEqual(updateCount, 1);
   }
 
   @test 'modifers only track named arguments they consume'(assert: Assert) {
@@ -397,16 +397,16 @@ class ModifierManagerTest322 extends ModifierManagerTest {
 
     this.assertHTML(`<h1>hello world</h1>`);
 
-    assert.equal(insertCount, 1);
-    assert.equal(updateCount, 0);
+    assert.strictEqual(insertCount, 1);
+    assert.strictEqual(updateCount, 0);
 
     args.bar = 'other bar';
     this.rerender();
-    assert.equal(updateCount, 0);
+    assert.strictEqual(updateCount, 0);
 
     args.qux = 'quuuuxxxxxx';
     this.rerender();
-    assert.equal(updateCount, 1);
+    assert.strictEqual(updateCount, 1);
   }
 }
 

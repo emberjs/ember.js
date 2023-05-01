@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
 const badProtocols = ['javascript:', 'vbscript:'];
@@ -44,7 +44,7 @@ if (
   URL !== null &&
   // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
   // thinks it is `never` without this `as unknown as any`
-  typeof ((URL as unknown) as any).parse === 'function'
+  typeof (URL as unknown as any).parse === 'function'
 ) {
   // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
   // ultimately, this should be changed (so that we can either rely on the natural `URL` global

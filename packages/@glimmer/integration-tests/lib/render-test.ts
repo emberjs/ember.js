@@ -10,7 +10,7 @@ import {
 import { ASTPluginBuilder } from '@glimmer/syntax';
 import { dirtyTagFor } from '@glimmer/validator';
 import { assert, clearElement, dict, expect } from '@glimmer/util';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import {
   ComponentBlueprint,
   ComponentKind,

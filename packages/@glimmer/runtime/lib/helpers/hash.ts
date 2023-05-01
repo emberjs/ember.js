@@ -1,10 +1,10 @@
 import { CapturedArguments, Dict } from '@glimmer/interfaces';
 import { createComputeRef, Reference } from '@glimmer/reference';
-import { reifyNamed } from '@glimmer/runtime';
 import { deprecate } from '@glimmer/global-context';
 import { HAS_NATIVE_PROXY } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 import { DEBUG } from '@glimmer/env';
+import { reifyNamed } from '../vm/arguments';
 
 let wrapHashProxy: (hash: Record<string, unknown>) => Record<string, unknown>;
 
@@ -64,32 +64,30 @@ if (DEBUG) {
    @return {Object} Hash
    @public
  */
-export default internalHelper(
-  ({ named }: CapturedArguments): Reference<Dict<unknown>> => {
-    let ref = createComputeRef(
-      () => {
-        let hash = reifyNamed(named);
+export default internalHelper(({ named }: CapturedArguments): Reference<Dict<unknown>> => {
+  let ref = createComputeRef(
+    () => {
+      let hash = reifyNamed(named);
 
-        if (DEBUG && HAS_NATIVE_PROXY) {
-          hash = wrapHashProxy(hash);
-        }
+      if (DEBUG && HAS_NATIVE_PROXY) {
+        hash = wrapHashProxy(hash);
+      }
 
-        return hash;
-      },
-      null,
-      'hash'
-    );
+      return hash;
+    },
+    null,
+    'hash'
+  );
 
-    // Setup the children so that templates can bypass getting the value of
-    // the reference and treat children lazily
-    let children = new Map();
+  // Setup the children so that templates can bypass getting the value of
+  // the reference and treat children lazily
+  let children = new Map();
 
-    for (let name in named) {
-      children.set(name, named[name]);
-    }
-
-    ref.children = children;
-
-    return ref;
+  for (let name in named) {
+    children.set(name, named[name]);
   }
-);
+
+  ref.children = children;
+
+  return ref;
+});

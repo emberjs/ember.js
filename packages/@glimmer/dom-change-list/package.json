@@ -3,10 +3,9 @@
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/dom-change-list",
   "dependencies": {
-    "@glimmer/util": "0.84.3",
-    "@glimmer/interfaces": "0.84.3",
-    "@simple-dom/document": "^1.4.0",
-    "@simple-dom/interface": "^1.4.0"
+    "@glimmer/util": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@simple-dom/document": "^1.4.0"
   },
   "devDependencies": {
     "@simple-dom/serializer": "^1.4.0",

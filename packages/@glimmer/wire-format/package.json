@@ -5,7 +5,7 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/wire-format",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "0.84.3",
-    "@glimmer/interfaces": "0.84.3"
+    "@glimmer/util": "workspace:^",
+    "@glimmer/interfaces": "workspace:^"
   }
 }

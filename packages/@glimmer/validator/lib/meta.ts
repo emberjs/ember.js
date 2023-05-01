@@ -1,7 +1,8 @@
 import { DEBUG } from '@glimmer/env';
-import { DIRTY_TAG, createUpdatableTag, UpdatableTag, ConstantTag } from './validators';
+import { DIRTY_TAG, createUpdatableTag } from './validators';
 import { assertTagNotConsumed } from './debug';
 import { Indexable, unwrap } from './utils';
+import { ConstantTag, UpdatableTag } from '@glimmer/interfaces';
 
 function isObjectLike<T>(u: T): u is Indexable & T {
   return (typeof u === 'object' && u !== null) || typeof u === 'function';

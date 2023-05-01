@@ -16,7 +16,7 @@ module(
         layout: 'Hello',
       });
 
-      assert.equal(invocation, '<TestComponent />');
+      assert.strictEqual(invocation, '<TestComponent />');
     });
 
     test('Can build glimmer invocation with template', (assert) => {
@@ -26,7 +26,7 @@ module(
         template: 'World',
       });
 
-      assert.equal(invocation, '<TestComponent>World</TestComponent>');
+      assert.strictEqual(invocation, '<TestComponent>World</TestComponent>');
     });
 
     test('Can build glimmer invocation with args', (assert) => {
@@ -37,7 +37,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null, literal: "'literal'" },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         "<TestComponent @foo={{bar}} @baz={{1}} @bar={{null}} @literal='literal'>World</TestComponent>"
       );
@@ -52,7 +52,7 @@ module(
         attributes: { 'data-foo': 'bar', id: 'wat' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         '<TestComponent @foo={{bar}} @baz={{1}} @bar={{null}} data-foo=bar id=wat>World</TestComponent>'
       );
@@ -68,7 +68,7 @@ module(
         attributes: { 'data-foo': '"bar"', id: '"wat"' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `<LolWat @foo={{bar}} @baz={{1}} @bar={{null}} data-foo="bar" id="wat">World</LolWat>`
       );
@@ -85,7 +85,7 @@ module(
         blockParams: ['a b c'],
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `<Lol @foo={{bar}} @baz={{1}} @bar={{null}} data-foo="bar" id="wat" as |a b c|>World</Lol>`
       );
@@ -97,7 +97,7 @@ module(
         layout: 'Hello',
       });
 
-      assert.equal(invocation, '{{test-component}}');
+      assert.strictEqual(invocation, '{{test-component}}');
     });
 
     test('Can build curly invocation with template', (assert) => {
@@ -107,7 +107,7 @@ module(
         template: 'World',
       });
 
-      assert.equal(invocation, '{{#test-component}}World{{/test-component}}');
+      assert.strictEqual(invocation, '{{#test-component}}World{{/test-component}}');
     });
 
     test('Can build curly invocation with args', (assert) => {
@@ -118,7 +118,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         '{{#test-component foo=bar baz=1 bar=null}}World{{/test-component}}'
       );
@@ -145,7 +145,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null, 'data-foo': '"bar"', id: '"wat"' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#test-component foo=bar baz=1 bar=null data-foo="bar" id="wat"}}World{{/test-component}}`
       );
@@ -160,7 +160,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null, 'data-foo': '"bar"', id: '"wat"' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#lol-wat foo=bar baz=1 bar=null data-foo="bar" id="wat"}}World{{/lol-wat}}`
       );
@@ -176,7 +176,7 @@ module(
         blockParams: ['a b c'],
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#lol-wat foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{/lol-wat}}`
       );
@@ -193,7 +193,7 @@ module(
         else: 'ELSE',
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#lol-wat foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}ELSE{{/lol-wat}}`
       );
@@ -205,7 +205,7 @@ module(
         layout: 'Hello',
       });
 
-      assert.equal(invocation, '{{component this.componentName}}');
+      assert.strictEqual(invocation, '{{component this.componentName}}');
     });
 
     test('Can build dynamic invocation with template', (assert) => {
@@ -215,7 +215,7 @@ module(
         template: 'World',
       });
 
-      assert.equal(invocation, '{{#component this.componentName}}World{{/component}}');
+      assert.strictEqual(invocation, '{{#component this.componentName}}World{{/component}}');
     });
 
     test('Can build dynamic invocation with args', (assert) => {
@@ -226,7 +226,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         '{{#component this.componentName foo=bar baz=1 bar=null}}World{{/component}}'
       );
@@ -241,7 +241,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null, 'data-foo': '"bar"', id: '"wat"' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#component this.componentName foo=bar baz=1 bar=null data-foo="bar" id="wat"}}World{{/component}}`
       );
@@ -257,7 +257,7 @@ module(
         blockParams: ['a b c'],
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#component this.componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{/component}}`
       );
@@ -274,7 +274,7 @@ module(
         else: 'ELSE',
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `{{#component this.componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}ELSE{{/component}}`
       );
@@ -286,7 +286,7 @@ module(
         layout: 'Hello',
       });
 
-      assert.equal(invocation, '<TestComponent />');
+      assert.strictEqual(invocation, '<TestComponent />');
     });
 
     test('Can build basic component invocation with template', (assert) => {
@@ -296,7 +296,7 @@ module(
         template: 'World',
       });
 
-      assert.equal(invocation, '<TestComponent>World</TestComponent>');
+      assert.strictEqual(invocation, '<TestComponent>World</TestComponent>');
     });
 
     test('Can build basic component invocation with args', (assert) => {
@@ -307,7 +307,7 @@ module(
         args: { foo: 'bar', baz: 1, bar: null },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         '<TestComponent @foo={{bar}} @baz={{1}} @bar={{null}}>World</TestComponent>'
       );
@@ -322,7 +322,7 @@ module(
         attributes: { 'data-foo': 'bar', id: 'wat' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         '<TestComponent @foo={{bar}} @baz={{1}} @bar={{null}} data-foo=bar id=wat>World</TestComponent>'
       );
@@ -338,7 +338,7 @@ module(
         attributes: { 'data-foo': '"bar"', id: '"wat"' },
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `<Lol @foo={{bar}} @baz={{1}} @bar={{null}} data-foo="bar" id="wat">World</Lol>`
       );
@@ -355,7 +355,7 @@ module(
         blockParams: ['a b c'],
       });
 
-      assert.equal(
+      assert.strictEqual(
         invocation,
         `<Lol @foo={{bar}} @baz={{1}} @bar={{null}} data-foo="bar" id="wat" as |a b c|>World</Lol>`
       );

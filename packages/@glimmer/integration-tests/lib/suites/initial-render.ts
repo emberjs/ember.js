@@ -1,4 +1,4 @@
-import { Namespace, SimpleElement } from '@simple-dom/interface';
+import { Namespace, SimpleElement } from '@glimmer/interfaces';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { castToBrowser, checkNode, strip, unwrap } from '@glimmer/util';
@@ -415,7 +415,7 @@ export class InitialRenderSuite extends RenderTest {
     `);
 
     let selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
-    this.assert.equal(selectNode.selectedIndex, 1);
+    this.assert.strictEqual(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
     this.rerender({ selected: false });
@@ -429,7 +429,7 @@ export class InitialRenderSuite extends RenderTest {
 
     selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
 
-    this.assert.equal(selectNode.selectedIndex, 0);
+    this.assert.strictEqual(selectNode.selectedIndex, 0);
 
     this.assertStableNodes();
 
@@ -445,7 +445,7 @@ export class InitialRenderSuite extends RenderTest {
 
     selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
 
-    this.assert.equal(selectNode.selectedIndex, 0);
+    this.assert.strictEqual(selectNode.selectedIndex, 0);
 
     this.assertStableNodes();
 
@@ -459,7 +459,7 @@ export class InitialRenderSuite extends RenderTest {
     `);
 
     selectNode = checkNode(castToBrowser(this.element, 'HTML').firstElementChild, 'select');
-    this.assert.equal(selectNode.selectedIndex, 1);
+    this.assert.strictEqual(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }
 
@@ -509,13 +509,13 @@ export class InitialRenderSuite extends RenderTest {
         <option>5</option>
       </select>`);
 
-    this.assert.equal(selected.length, 2, 'two options are selected');
-    this.assert.equal(
+    this.assert.strictEqual(selected.length, 2, 'two options are selected');
+    this.assert.strictEqual(
       castToBrowser(selected[0], 'option').value,
       '1',
       'first selected item is "1"'
     );
-    this.assert.equal(
+    this.assert.strictEqual(
       castToBrowser(selected[1], 'option').value,
       '2',
       'second selected item is "2"'
@@ -608,7 +608,7 @@ export class InitialRenderSuite extends RenderTest {
     if (assertNodeTagName(svg, 'svg')) {
       let use = svg.firstChild;
       if (assertNodeTagName(use, 'use')) {
-        this.assert.equal(use.href.baseVal, 'home');
+        this.assert.strictEqual(use.href.baseVal, 'home');
       }
     }
   }
@@ -626,7 +626,7 @@ export class InitialRenderSuite extends RenderTest {
     if (assertNodeTagName(svg, 'svg')) {
       let use = svg.firstChild;
       if (assertNodeTagName(use, 'use')) {
-        this.assert.equal(use.href.baseVal, 'home');
+        this.assert.strictEqual(use.href.baseVal, 'home');
       }
     }
   }
@@ -637,8 +637,8 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<svg viewBox="0 0 0 0"></svg>');
     let svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, Namespace.SVG);
-      this.assert.equal(svg.getAttribute('viewBox'), '0 0 0 0');
+      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG);
+      this.assert.strictEqual(svg.getAttribute('viewBox'), '0 0 0 0');
     }
     this.assertStableRerender();
   }
@@ -652,16 +652,16 @@ export class InitialRenderSuite extends RenderTest {
     let svg = this.element.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, Namespace.SVG);
+      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG);
 
       let path = svg.firstChild;
       if (assertNodeTagName(path, 'path')) {
-        this.assert.equal(
+        this.assert.strictEqual(
           path.namespaceURI,
           Namespace.SVG,
           'creates the path element with a namespace'
         );
-        this.assert.equal(path.getAttribute('d'), d);
+        this.assert.strictEqual(path.getAttribute('d'), d);
       }
     }
 
@@ -676,12 +676,12 @@ export class InitialRenderSuite extends RenderTest {
     let svg = this.element.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, Namespace.SVG);
+      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG);
 
       let foreignObject = svg.firstChild;
 
       if (assertNodeTagName(foreignObject, 'foreignObject')) {
-        this.assert.equal(
+        this.assert.strictEqual(
           foreignObject.namespaceURI,
           Namespace.SVG,
           'creates the foreignObject element with a namespace'
@@ -697,19 +697,19 @@ export class InitialRenderSuite extends RenderTest {
     this.render('<svg></svg><svg></svg><div></div>');
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
-    this.assert.equal(
+    this.assert.strictEqual(
       castToBrowser(unwrap(this.element.childNodes[0]), 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the first svg element with a namespace'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       castToBrowser(this.element.childNodes[1], 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the second svg element with a namespace'
     );
 
-    this.assert.equal(
+    this.assert.strictEqual(
       castToBrowser(this.element.childNodes[2], 'HTML').namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
@@ -729,7 +729,7 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<div><svg></svg></div><div></div>');
 
     if (assertNodeTagName(firstDiv, 'div')) {
-      this.assert.equal(
+      this.assert.strictEqual(
         firstDiv.namespaceURI,
         XHTML_NAMESPACE,
         "first div's namespace is xhtmlNamespace"
@@ -737,11 +737,11 @@ export class InitialRenderSuite extends RenderTest {
     }
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, Namespace.SVG, "svg's namespace is svgNamespace");
+      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG, "svg's namespace is svgNamespace");
     }
 
     if (assertNodeTagName(secondDiv, 'div')) {
-      this.assert.equal(
+      this.assert.strictEqual(
         secondDiv.namespaceURI,
         XHTML_NAMESPACE,
         "last div's namespace is xhtmlNamespace"

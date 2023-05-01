@@ -1,7 +1,7 @@
 import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, Reference } from '@glimmer/reference';
-import { reifyPositional } from '@glimmer/runtime';
 import { internalHelper } from './internal-helper';
+import { reifyPositional } from '../vm/arguments';
 
 /**
    Use the `{{array}}` helper to create an array to pass as an option to your
@@ -37,8 +37,6 @@ import { internalHelper } from './internal-helper';
    @public
  */
 
-export default internalHelper(
-  ({ positional }: CapturedArguments): Reference<unknown[]> => {
-    return createComputeRef(() => reifyPositional(positional), null, 'array');
-  }
-);
+export default internalHelper(({ positional }: CapturedArguments): Reference<unknown[]> => {
+  return createComputeRef(() => reifyPositional(positional), null, 'array');
+});

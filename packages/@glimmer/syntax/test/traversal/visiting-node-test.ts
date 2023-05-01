@@ -295,7 +295,7 @@ test('Basics', function (assert) {
 
   traverse(ast, {
     TextNode(node, path) {
-      assert.equal(node.chars, 'bar');
+      assert.strictEqual(node.chars, 'bar');
       assert.strictEqual(path.node, node);
       assert.deepEqual(describeFullPath(path), [
         { nodeType: 'Template', key: 'body' },
@@ -316,6 +316,7 @@ test('Helper', function (assert) {
   traverse(ast, {
     PathExpression(node, path) {
       if (node.original === 'this.blah') {
+        // eslint-disable-next-line qunit/no-conditional-assertions
         assert.deepEqual(describeFullPath(path), [
           { nodeType: 'Template', key: 'body' },
           { nodeType: 'BlockStatement', key: 'params' },
@@ -323,6 +324,7 @@ test('Helper', function (assert) {
           { nodeType: 'PathExpression', key: null },
         ]);
 
+        // eslint-disable-next-line qunit/no-conditional-assertions
         assert.notEqual((path.parent!.node as AST.SubExpression).params.indexOf(node), -1);
       }
     },
@@ -339,6 +341,7 @@ test('Modifier', function (assert) {
   traverse(ast, {
     PathExpression(node, path) {
       if (node.original === 'foo') {
+        // eslint-disable-next-line qunit/no-conditional-assertions
         assert.deepEqual(describeFullPath(path), [
           { nodeType: 'Template', key: 'body' },
           { nodeType: 'ElementNode', key: 'modifiers' },
@@ -347,12 +350,14 @@ test('Modifier', function (assert) {
         ]);
 
         if (hasSymbol) {
+          // eslint-disable-next-line qunit/no-conditional-assertions
           assert.deepEqual(
             Array.from(path.parents()).map((it) => (it as WalkerPath<AST.Node>).node.type),
             ['ElementModifierStatement', 'ElementNode', 'Template']
           );
         }
 
+        // eslint-disable-next-line qunit/no-conditional-assertions
         assert.strictEqual((path.parent!.node as AST.ElementModifierStatement).path, node);
       }
     },

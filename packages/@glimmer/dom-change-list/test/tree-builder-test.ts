@@ -3,7 +3,7 @@ import { DOMTreeConstruction, NodeTokensImpl, TreeBuilder } from '..';
 import { TestCase, module, test } from './test-case';
 import { XLINK, Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 import createHTMLDocument from '@simple-dom/document';
-import { SimpleDocument, SimpleDocumentFragment, SimpleElement } from '@simple-dom/interface';
+import { SimpleDocument, SimpleDocumentFragment, SimpleElement } from '@glimmer/interfaces';
 
 @module('[dom-change-list] TreeBuilder')
 export class ChangeListTest extends TestCase {
@@ -107,7 +107,7 @@ export class ChangeListTest extends TestCase {
   protected shouldEqual(expectedHTML: string) {
     let tokens = this.append();
     let actualHTML = toHTML(this.parent);
-    QUnit.assert.equal(actualHTML, expectedHTML);
+    QUnit.assert.strictEqual(actualHTML, expectedHTML);
 
     let { expected, actual } = this.tree.reify(tokens);
 
@@ -117,7 +117,7 @@ export class ChangeListTest extends TestCase {
   protected shouldEqualNS(expected: string) {
     this.append();
     let actual = toHTMLNS(this.parent);
-    QUnit.assert.equal(actual, expected);
+    QUnit.assert.strictEqual(actual, expected);
   }
 }
 

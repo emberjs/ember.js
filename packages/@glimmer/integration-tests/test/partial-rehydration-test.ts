@@ -32,7 +32,7 @@ export class PartialRehydrationTest extends RenderTest {
     };
 
     const html = this.delegate.renderComponentServerSide('Root', args);
-    this.assert.equal(
+    this.assert.strictEqual(
       html,
       content([
         OPEN,
@@ -101,7 +101,7 @@ export class PartialRehydrationTest extends RenderTest {
     };
 
     const html = this.delegate.renderComponentServerSide('Root', args);
-    this.assert.equal(
+    this.assert.strictEqual(
       html,
       content([
         OPEN,

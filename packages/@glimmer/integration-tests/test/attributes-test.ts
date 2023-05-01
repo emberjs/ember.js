@@ -1,6 +1,6 @@
 import { normalizeProperty } from '@glimmer/runtime';
 import { assertElement, hasAttribute, jitSuite, RenderTest, test, tracked } from '..';
-import { Namespace, SimpleElement } from '@simple-dom/interface';
+import { Namespace, SimpleElement } from '@glimmer/interfaces';
 import { castToBrowser, expect } from '@glimmer/util';
 
 export class AttributesTests extends RenderTest {
@@ -156,28 +156,28 @@ export class AttributesTests extends RenderTest {
   @test
   'can read attributes'() {
     this.render('<div data-bar="bar"></div>');
-    this.assert.equal(this.readDOMAttr('data-bar'), 'bar');
+    this.assert.strictEqual(this.readDOMAttr('data-bar'), 'bar');
     this.assertStableRerender();
   }
 
   @test
   'can read attributes from namespace elements'() {
     this.render('<svg viewBox="0 0 0 0"></svg>');
-    this.assert.equal(this.readDOMAttr('viewBox'), '0 0 0 0');
+    this.assert.strictEqual(this.readDOMAttr('viewBox'), '0 0 0 0');
     this.assertStableRerender();
   }
 
   @test
   'can read properties'() {
     this.render('<input value="gnargnar" />');
-    this.assert.equal(this.readDOMAttr('value'), 'gnargnar');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'gnargnar');
     this.assertStableRerender();
   }
 
   @test
   'can read the form attribute'() {
     this.render('<button form="gnargnar" />');
-    this.assert.equal(this.readDOMAttr('form'), 'gnargnar');
+    this.assert.strictEqual(this.readDOMAttr('form'), 'gnargnar');
     this.assertStableRerender();
   }
 
@@ -188,7 +188,7 @@ export class AttributesTests extends RenderTest {
     let outputElement = assertElement(this.element.lastChild);
 
     this.assert.ok(hasAttribute(outputElement, 'form'));
-    this.assert.equal(this.readDOMAttr('form', outputElement), 'bar');
+    this.assert.strictEqual(this.readDOMAttr('form', outputElement), 'bar');
 
     this.assertStableRerender();
     this.assertStableNodes();
@@ -197,30 +197,30 @@ export class AttributesTests extends RenderTest {
   @test
   'handles null input values'() {
     this.render('<input value={{this.isNull}} />', { isNull: null });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
     this.rerender({ isNull: 'hey' });
-    this.assert.equal(this.readDOMAttr('value'), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'hey');
     this.assertStableNodes();
 
     this.rerender({ isNull: null });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableNodes();
   }
 
   @test
   'handles undefined input values'() {
     this.render('<input value={{this.isUndefined}} />', { isUndefined: null });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
     this.rerender({ isUndefined: 'hey' });
-    this.assert.equal(this.readDOMAttr('value'), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'hey');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: null });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableNodes();
   }
 
@@ -228,15 +228,15 @@ export class AttributesTests extends RenderTest {
   'handles undefined `toString` input values'() {
     let obj = Object.create(null);
     this.render('<input value={{this.obj}} />', { obj });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
     this.rerender({ obj: 'hello' });
-    this.assert.equal(this.readDOMAttr('value'), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'hello');
     this.assertStableNodes();
 
     this.rerender({ obj });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableNodes();
   }
 
@@ -249,7 +249,7 @@ export class AttributesTests extends RenderTest {
     let model = new Model();
 
     this.render('<input value={{this.model.value}} />', { model });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
     let inputElement = castToBrowser(
@@ -258,19 +258,19 @@ export class AttributesTests extends RenderTest {
     );
 
     inputElement.value = 'bar';
-    this.assert.equal(this.readDOMAttr('value'), 'bar');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'bar');
 
     model.value = 'foo';
     this.rerender();
-    this.assert.equal(this.readDOMAttr('value'), 'foo');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'foo');
     this.assertStableNodes();
 
     inputElement.value = 'bar';
-    this.assert.equal(this.readDOMAttr('value'), 'bar');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'bar');
 
     model.value = 'foo';
     this.rerender();
-    this.assert.equal(this.readDOMAttr('value'), 'foo');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'foo');
     this.assertStableNodes();
   }
 
@@ -285,30 +285,30 @@ export class AttributesTests extends RenderTest {
     });
 
     this.render('<input checked={{if this.foo true undefined}} />', { foo: true });
-    this.assert.equal(this.readDOMAttr('checked'), true);
+    this.assert.strictEqual(this.readDOMAttr('checked'), true);
     this.assertStableRerender();
 
     this.rerender({ foo: false });
-    this.assert.equal(this.readDOMAttr('checked'), false);
+    this.assert.strictEqual(this.readDOMAttr('checked'), false);
     this.assertStableNodes();
 
     this.rerender({ foo: true });
-    this.assert.equal(this.readDOMAttr('checked'), true);
+    this.assert.strictEqual(this.readDOMAttr('checked'), true);
     this.assertStableNodes();
   }
 
   @test
   'input[checked] prop updates when set to null'() {
     this.render('<input checked={{this.foo}} />', { foo: true });
-    this.assert.equal(this.readDOMAttr('checked'), true);
+    this.assert.strictEqual(this.readDOMAttr('checked'), true);
     this.assertStableRerender();
 
     this.rerender({ foo: null });
-    this.assert.equal(this.readDOMAttr('checked'), false);
+    this.assert.strictEqual(this.readDOMAttr('checked'), false);
     this.assertStableNodes();
 
     this.rerender({ foo: true });
-    this.assert.equal(this.readDOMAttr('checked'), true);
+    this.assert.strictEqual(this.readDOMAttr('checked'), true);
     this.assertStableNodes();
   }
 
@@ -319,52 +319,52 @@ export class AttributesTests extends RenderTest {
       '<select value={{this.foo}}><option></option><option value="us" selected>us</option></select>',
       { foo: undefined }
     );
-    this.assert.equal(this.readDOMAttr('value'), 'us');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'us');
     this.assertStableRerender();
 
     // now setting the `value` property will have an effect
     this.rerender({ foo: null });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableNodes();
 
     this.rerender({ foo: 'us' });
-    this.assert.equal(this.readDOMAttr('value'), 'us');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'us');
     this.assertStableNodes();
   }
 
   @test
   'handles empty string textarea values'() {
     this.render('<textarea value={{this.name}} />', { name: '' });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
     // Note: In IE and Edge will insert a TextNode,
     //       thus the nodes are going to be unstable
     this.rerender({ name: 'Alex' });
-    this.assert.equal(this.readDOMAttr('value'), 'Alex');
+    this.assert.strictEqual(this.readDOMAttr('value'), 'Alex');
 
     this.rerender({ name: '' });
-    this.assert.equal(this.readDOMAttr('value'), '');
+    this.assert.strictEqual(this.readDOMAttr('value'), '');
   }
 
   @test
   'handles empty string input placeholders'() {
     this.render('<input type="text" placeholder={{this.name}} />', { name: '' });
-    this.assert.equal(this.readDOMAttr('placeholder'), '');
+    this.assert.strictEqual(this.readDOMAttr('placeholder'), '');
     this.assertStableRerender();
 
     this.rerender({ name: 'Alex' });
-    this.assert.equal(this.readDOMAttr('placeholder'), 'Alex');
+    this.assert.strictEqual(this.readDOMAttr('placeholder'), 'Alex');
 
     this.rerender({ name: '' });
-    this.assert.equal(this.readDOMAttr('placeholder'), '');
+    this.assert.strictEqual(this.readDOMAttr('placeholder'), '');
     this.assertStableNodes();
   }
 
   @test
   'type attribute can be set to non-valid type'() {
     this.render('<input type="yolo" />');
-    this.assert.equal(this.readDOMAttr('type'), 'text');
+    this.assert.strictEqual(this.readDOMAttr('type'), 'text');
     this.assertStableRerender();
 
     this.rerender();
@@ -383,27 +383,27 @@ export class AttributesTests extends RenderTest {
 
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertStableRerender();
 
     this.rerender({ isUndefined: 'hey', isNotUndefined: 'hello' });
     this.assert.ok(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: 'hey', isNotUndefined: 'world' });
     this.assert.ok(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'world');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'world');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertStableNodes();
   }
 
@@ -419,30 +419,30 @@ export class AttributesTests extends RenderTest {
 
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertHTML('<div></div><div data-foo="hello" />');
     this.assertStableRerender();
 
     this.rerender({ isNull: 'hey', isNotNull: 'hello' });
     this.assert.ok(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertHTML('<div data-foo="hey"></div><div data-foo="hello" />');
     this.assertStableNodes();
 
     this.rerender({ isNull: 'hey', isNotNull: 'world' });
     this.assert.ok(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'world');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'world');
     this.assertHTML('<div data-foo="hey"></div><div data-foo="world" />');
     this.assertStableNodes();
 
     this.rerender({ isNull: undefined, isNotNull: 'hello' });
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
-    this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertHTML('<div></div><div data-foo="hello" />');
     this.assertStableNodes();
   }
@@ -458,26 +458,26 @@ export class AttributesTests extends RenderTest {
     let secondElement = assertElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'title'));
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
     this.assertHTML('<div></div><div title="hello"></div>');
     this.assertStableRerender();
 
     this.rerender({ isUndefined: 'hey', isNotUndefined: 'hello' });
-    this.assert.equal(this.readDOMAttr('title', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('title', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
     this.assertHTML('<div title="hey"></div><div title="hello"></div>');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: 'hey', isNotUndefined: 'world' });
-    this.assert.equal(this.readDOMAttr('title', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'world');
+    this.assert.strictEqual(this.readDOMAttr('title', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'world');
     this.assertHTML('<div title="hey"></div><div title="world"></div>');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
-    this.assert.equal(this.readDOMAttr('title', firstElement), '');
-    this.assert.equal(
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('title', firstElement), '');
+    this.assert.strictEqual(
       this.readDOMAttr('title', firstElement),
       this.nativeValueForElementProperty('div', 'title', '')
     );
@@ -495,26 +495,26 @@ export class AttributesTests extends RenderTest {
     let secondElement = assertElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'title'));
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
     this.assertHTML('<div></div><div title="hello"></div>');
     this.assertStableRerender();
 
     this.rerender({ isNull: 'hey', isNotNull: 'hello' });
-    this.assert.equal(this.readDOMAttr('title', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('title', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
     this.assertHTML('<div title="hey"></div><div title="hello"></div>');
     this.assertStableNodes();
 
     this.rerender({ isNull: 'hey', isNotNull: 'world' });
-    this.assert.equal(this.readDOMAttr('title', firstElement), 'hey');
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'world');
+    this.assert.strictEqual(this.readDOMAttr('title', firstElement), 'hey');
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'world');
     this.assertHTML('<div title="hey"></div><div title="world"></div>');
     this.assertStableNodes();
 
     this.rerender({ isNull: undefined, isNotNull: 'hello' });
-    this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
-    this.assert.equal(this.readDOMAttr('title', firstElement), '');
-    this.assert.equal(
+    this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
+    this.assert.strictEqual(this.readDOMAttr('title', firstElement), '');
+    this.assert.strictEqual(
       this.readDOMAttr('title', firstElement),
       this.nativeValueForElementProperty('div', 'title', '')
     );
