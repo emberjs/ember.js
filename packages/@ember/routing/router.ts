@@ -1898,7 +1898,7 @@ EmberRouter.reopen({
 
   // FIXME: Does this need to be overrideable via extend?
   url: computed(function (this: EmberRouter) {
-    let location = get(this, 'location') as string | EmberLocation;
+    let location = get(this, 'location');
 
     if (typeof location === 'string') {
       return undefined;
