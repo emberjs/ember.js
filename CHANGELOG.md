@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v5.0.0-beta.2 (May 2, 2023)
+
+- [#20434](https://github.com/emberjs/ember.js/pull/20434) [BUGFIX] Fix HistoryLocation preview types
+- [#20438](https://github.com/emberjs/ember.js/pull/20438) [BREAKING] Drop support for Node 14
+- [#20441](https://github.com/emberjs/ember.js/pull/20441) [BUGFIX] Fix for TS 5.1 nightly narrowing change
+- [#20445](https://github.com/emberjs/ember.js/pull/20445) [CLEANUP] Update browser support per RFC #685. Minimum support has been updated to Chrome >= 103, Edge >= 110, Firefox >= 102, iOS >= 12, Safari >= 12, ChromeAndroid >= 112, FirefoxAndroid >= 110
+
 ## v5.0.0-beta.1 (April 6, 2023)
 
 - [#20429](https://github.com/emberjs/ember.js/pull/20429) [BUGFIX] TS lint-level error in `mixins/-proxy.ts`
