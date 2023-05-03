@@ -154,7 +154,7 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   public type = 'try';
 
-  protected bounds!: UpdatableBlock; // Hides property on base class
+  protected declare bounds: UpdatableBlock; // Hides property on base class
 
   evaluate(vm: UpdatingVMImpl) {
     vm.try(this.children, this);
@@ -213,13 +213,13 @@ export class ListItemOpcode extends TryOpcode {
 
 export class ListBlockOpcode extends BlockOpcode {
   public type = 'list-block';
-  public children!: ListItemOpcode[];
+  public declare children: ListItemOpcode[];
 
   private opcodeMap = new Map<unknown, ListItemOpcode>();
   private marker: SimpleComment | null = null;
   private lastIterator: OpaqueIterator;
 
-  protected readonly bounds!: LiveBlockList;
+  protected declare readonly bounds: LiveBlockList;
 
   constructor(
     state: ResumableVMState,

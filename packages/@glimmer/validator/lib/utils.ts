@@ -29,7 +29,7 @@ export const symbolFor: (key: string) => any =
     : (key: string) => `__GLIMMER_VALIDATOR_SYMBOL_FOR_${key}`;
 
 export function getGlobal(): Indexable {
-  // eslint-disable-next-line node/no-unsupported-features/es-builtins
+  // eslint-disable-next-line n/no-unsupported-features/es-builtins
   if (typeof globalThis !== 'undefined') return indexable(globalThis);
   if (typeof self !== 'undefined') return indexable(self);
   if (typeof window !== 'undefined') return indexable(window);

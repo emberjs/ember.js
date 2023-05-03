@@ -16,10 +16,10 @@ const XLINK = Namespace.XLink;
 @module('[dom-change-list] DOMTreeConstruction')
 export class ChangeListTest extends TestCase {
   // These definitely assigned properties are set in before()
-  protected document!: SimpleDocument;
-  protected parent!: SimpleElement | SimpleDocumentFragment;
-  protected tree!: Builder;
-  protected construction!: DOMTreeConstruction;
+  protected declare document: SimpleDocument;
+  protected declare parent: SimpleElement | SimpleDocumentFragment;
+  protected declare tree: Builder;
+  protected declare construction: DOMTreeConstruction;
 
   before() {
     this.document = createDocument();
@@ -128,7 +128,7 @@ export class ChangeListTest extends TestCase {
 }
 
 export class Builder extends TestBuilder {
-  protected tree!: DOMTreeConstruction; // Hides property in base class
+  protected declare tree: DOMTreeConstruction; // Hides property in base class
 
   openElement(tag: string, namespace?: Namespace) {
     let token = this.tree.openElement(tag, namespace);

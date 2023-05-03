@@ -53,9 +53,9 @@ export class OnModifierState {
   public tag = createUpdatableTag();
   public element: Element;
   public args: CapturedArguments;
-  public eventName!: string;
-  public callback!: EventListener;
-  private userProvidedCallback!: EventListener;
+  public declare eventName: string;
+  public declare callback: EventListener;
+  private declare userProvidedCallback: EventListener;
   public once?: boolean;
   public passive?: boolean;
   public capture?: boolean;

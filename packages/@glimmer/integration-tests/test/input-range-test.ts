@@ -45,8 +45,8 @@ abstract class RangeTests extends AttributesTests {
   }
 }
 
-class TemplateRangeTests extends RangeTests {
-  attrs!: string;
+abstract class TemplateRangeTests extends RangeTests {
+  abstract readonly attrs: string;
 
   renderRange(value: number) {
     this.render(`<input ${this.attrs} />`, {

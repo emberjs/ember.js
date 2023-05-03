@@ -1,4 +1,4 @@
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import { SimpleElement } from '@simple-dom/interface';
 import { PreparedArguments, ComponentInstanceState } from '../../components';
 import { Option, Destroyable } from '../../core';
@@ -141,7 +141,7 @@ export interface InternalComponentManager<
   getDebugName(state: TComponentDefinition): string;
 }
 
-interface CustomRenderNode extends RenderNode {
+export interface CustomRenderNode extends RenderNode {
   bucket: object;
 }
 

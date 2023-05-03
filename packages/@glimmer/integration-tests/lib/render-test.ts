@@ -49,7 +49,7 @@ export class Count {
 }
 
 export class RenderTest implements IRenderTest {
-  testType!: ComponentKind;
+  testType: ComponentKind = 'unknown';
 
   protected element: SimpleElement;
   protected assert = QUnit.assert;

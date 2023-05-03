@@ -126,10 +126,11 @@ class ArrayTest extends RenderTest {
     let fooBarInstance: FooBar;
 
     class FooBar extends GlimmerishComponent {
-      @tracked personOne = 'Chad';
+      @tracked personOne;
 
       constructor(owner: object, args: Record<string, unknown>) {
         super(owner, args);
+        this.personOne = 'Chad';
         fooBarInstance = this;
       }
     }
