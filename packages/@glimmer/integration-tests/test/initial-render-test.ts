@@ -1,7 +1,7 @@
 import { Dict, Option } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
 import { castToBrowser, expect } from '@glimmer/util';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import {
   assertElement,
   assertElementShape,
@@ -65,7 +65,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 
   assertRehydrationStats({ nodesRemoved: nodes }: { nodesRemoved: number }) {
     let { clearedNodes } = this.delegate.rehydrationStats;
-    this.assert.equal(clearedNodes.length, nodes, 'cleared nodes');
+    this.assert.strictEqual(clearedNodes.length, nodes, 'cleared nodes');
   }
 
   assertExactServerOutput(_expected: string) {
@@ -456,7 +456,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 2 });
-    this.assert.equal(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
+    this.assert.strictEqual(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
   }
 
   @test
@@ -495,7 +495,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(
+    this.assert.strictEqual(
       toInnerHTML(clientRemote),
       '<prefix></prefix><suffix></suffix><inner>Wat Wat</inner>'
     );
@@ -540,7 +540,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderClientSide(template, { remote: clientRemote, prefix: clientPrefix });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(
+    this.assert.strictEqual(
       toInnerHTML(clientRemote),
       '<inner>Wat Wat</inner><prefix></prefix><suffix></suffix>'
     );
@@ -569,7 +569,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 1 });
-    this.assert.equal(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
+    this.assert.strictEqual(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
   }
 
   @test
@@ -597,7 +597,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(
+    this.assert.strictEqual(
       toInnerHTML(clientRemote),
       '<preexisting></preexisting><inner>Wat Wat</inner>'
     );
@@ -635,7 +635,7 @@ class Rehydration extends AbstractRehydrationTests {
       preexisting: clientPreexisting,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(
+    this.assert.strictEqual(
       toInnerHTML(clientRemote),
       '<prefix></prefix><inner>Wat Wat</inner><preexisting></preexisting>'
     );
@@ -692,8 +692,8 @@ class Rehydration extends AbstractRehydrationTests {
       remoteChild: clientRemoteChild,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(toInnerHTML(clientRemoteParent), '<inner><!----></inner>');
-    this.assert.equal(toInnerHTML(clientRemoteChild), 'Wat Wat');
+    this.assert.strictEqual(toInnerHTML(clientRemoteParent), '<inner><!----></inner>');
+    this.assert.strictEqual(toInnerHTML(clientRemoteChild), 'Wat Wat');
   }
 
   @test
@@ -1230,9 +1230,9 @@ class RehydratingComponents extends AbstractRehydrationTests {
       let wrapper = assertElement(firstElementChild(this.element));
 
       // injects wrapper elements
-      this.assert.equal(wrapper.getAttribute('class'), 'ember-view');
-      this.assert.equal(toTextContent(wrapper), 'Hello World');
-      // this.assert.equal(this.element.textContent, 'Hello World');
+      this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
+      this.assert.strictEqual(toTextContent(wrapper), 'Hello World');
+      // this.assert.strictEqual(this.element.textContent, 'Hello World');
     } else {
       this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
@@ -1242,7 +1242,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       template,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(toTextContent(this.element), 'Hello World');
+    this.assert.strictEqual(toTextContent(this.element), 'Hello World');
     this.assertStableRerender();
   }
 
@@ -1271,8 +1271,8 @@ class RehydratingComponents extends AbstractRehydrationTests {
     if (emberishComponent) {
       let wrapper = assertElement(firstElementChild(this.element));
       // injects wrapper elements
-      this.assert.equal(wrapper.getAttribute('class'), 'ember-view');
-      this.assert.equal(toTextContent(this.element), 'Hello World');
+      this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
+      this.assert.strictEqual(toTextContent(this.element), 'Hello World');
     } else {
       this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
@@ -1288,7 +1288,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       template,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(toTextContent(this.element), 'Hello Chad');
+    this.assert.strictEqual(toTextContent(this.element), 'Hello Chad');
     this.assertStableRerender();
   }
 

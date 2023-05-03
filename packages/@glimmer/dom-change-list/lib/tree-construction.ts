@@ -1,11 +1,12 @@
-import { NodeToken, NodeTokensImpl } from './node-tokens';
+import { NodeTokensImpl } from './node-tokens';
 import { HTML, OperationsBuilder, run } from './dom-operations';
 import {
   Namespace,
   SimpleDocument,
   SimpleElement,
   SimpleDocumentFragment,
-} from '@simple-dom/interface';
+  NodeToken,
+} from '@glimmer/interfaces';
 
 // https://github.com/whatwg/dom/issues/270
 

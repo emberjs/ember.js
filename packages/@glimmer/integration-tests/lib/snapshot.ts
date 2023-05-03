@@ -1,6 +1,6 @@
 import { Option } from '@glimmer/interfaces';
 import { castToSimple } from '@glimmer/util';
-import { NodeType, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { NodeType, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { EndTag, Token, tokenize } from 'simple-html-tokenizer';
 import { replaceHTML, toInnerHTML } from './dom/simple-utils';
 
@@ -140,13 +140,13 @@ export function isServerMarker(node: SimpleNode) {
 export function normalizeSnapshot(
   oldSnapshot: NodesSnapshot,
   newSnapshot: NodesSnapshot,
-  except: Array<SimpleNode>
-) {
+  except: SimpleNode[]
+): { oldSnapshot: IndividualSnapshot[]; newSnapshot: IndividualSnapshot[] } {
   let oldIterator = new SnapshotIterator(oldSnapshot);
   let newIterator = new SnapshotIterator(newSnapshot);
 
-  let normalizedOld = [];
-  let normalizedNew = [];
+  let normalizedOld: IndividualSnapshot[] = [];
+  let normalizedNew: IndividualSnapshot[] = [];
 
   while (true) {
     let nextOld = oldIterator.peek();
@@ -161,8 +161,8 @@ export function normalizeSnapshot(
       oldIterator.skip();
       newIterator.skip();
     } else {
-      normalizedOld.push(oldIterator.next());
-      normalizedNew.push(newIterator.next());
+      normalizedOld.push(oldIterator.next() as IndividualSnapshot);
+      normalizedNew.push(newIterator.next() as IndividualSnapshot);
     }
   }
 

@@ -44,7 +44,7 @@ interface OnManager {
 }
 
 function getOnManager() {
-  return (getInternalModifierManager(on) as unknown) as OnManager;
+  return getInternalModifierManager(on) as unknown as OnManager;
 }
 
 if (hasDom) {
@@ -97,19 +97,19 @@ if (hasDom) {
         },
       });
 
-      assert.equal(count, 0, 'not called on initial render');
+      assert.strictEqual(count, 0, 'not called on initial render');
 
       this.assertStableRerender();
       this.assertCounts({ adds: 1, removes: 0 });
-      assert.equal(count, 0, 'not called on a rerender');
+      assert.strictEqual(count, 0, 'not called on a rerender');
 
       this.findButton().click();
 
-      assert.equal(count, 1, 'has been called 1 time');
+      assert.strictEqual(count, 1, 'has been called 1 time');
 
       this.findButton().click();
 
-      assert.equal(count, 2, 'has been called 2 times');
+      assert.strictEqual(count, 2, 'has been called 2 times');
 
       this.assertCounts({ adds: 1, removes: 0 });
     }
@@ -146,20 +146,20 @@ if (hasDom) {
 
       let button = this.findButton();
 
-      assert.equal(first, 0, 'precond - first not called on initial render');
-      assert.equal(second, 0, 'precond - second not called on initial render');
+      assert.strictEqual(first, 0, 'precond - first not called on initial render');
+      assert.strictEqual(second, 0, 'precond - second not called on initial render');
 
       button.click();
 
-      assert.equal(first, 1, 'first has been called 1 time');
-      assert.equal(second, 0, 'second not called on initial render');
+      assert.strictEqual(first, 1, 'first has been called 1 time');
+      assert.strictEqual(second, 0, 'second not called on initial render');
 
       this.rerender({ callback: secondCallback });
 
       button.click();
 
-      assert.equal(first, 1, 'first has been called 1 time');
-      assert.equal(second, 1, 'second has been called 1 times');
+      assert.strictEqual(first, 1, 'first has been called 1 time');
+      assert.strictEqual(second, 1, 'second has been called 1 times');
 
       this.assertCounts({ adds: 2, removes: 1 });
     }
@@ -176,18 +176,18 @@ if (hasDom) {
 
       let button = this.findButton();
 
-      assert.equal(count, 0, 'not called on initial render');
+      assert.strictEqual(count, 0, 'not called on initial render');
 
       this.assertStableRerender();
-      assert.equal(count, 0, 'not called on a rerender');
+      assert.strictEqual(count, 0, 'not called on a rerender');
 
       button.click();
 
-      assert.equal(count, 1, 'has been called 1 time');
+      assert.strictEqual(count, 1, 'has been called 1 time');
 
       button.click();
 
-      assert.equal(count, 1, 'has been called 1 times');
+      assert.strictEqual(count, 1, 'has been called 1 times');
 
       if (isIE11) {
         this.assertCounts({ adds: 1, removes: 1 });
@@ -213,18 +213,18 @@ if (hasDom) {
       let button = this.findButton();
 
       button.click();
-      assert.equal(count, 1, 'has been called 1 time');
+      assert.strictEqual(count, 1, 'has been called 1 time');
 
       button.click();
-      assert.equal(count, 2, 'has been called 2 times');
+      assert.strictEqual(count, 2, 'has been called 2 times');
 
       this.rerender({ once: true });
 
       button.click();
-      assert.equal(count, 3, 'has been called 3 time');
+      assert.strictEqual(count, 3, 'has been called 3 time');
 
       button.click();
-      assert.equal(count, 3, 'is not called again');
+      assert.strictEqual(count, 3, 'is not called again');
 
       if (isIE11) {
         this.assertCounts({ adds: 2, removes: 2 });
@@ -235,7 +235,8 @@ if (hasDom) {
 
     @test
     'setting passive named argument prevents calling preventDefault'(assert: Assert) {
-      let matcher = /You marked this listener as 'passive', meaning that you must not call 'event.preventDefault\(\)'/;
+      let matcher =
+        /You marked this listener as 'passive', meaning that you must not call 'event.preventDefault\(\)'/;
 
       this.render('<button {{on "click" this.callback passive=true}}>Click Me</button>', {
         callback(event: UIEvent) {
@@ -336,7 +337,7 @@ if (hasDom) {
 
       this.findButton().click();
 
-      assert.equal(called, 1, 'callback is being invoked');
+      assert.strictEqual(called, true, 'callback is being invoked');
 
       this.rerender({ otherThing: 1 });
       this.assertCounts({ adds: 1, removes: 0 });
@@ -441,7 +442,7 @@ if (hasDom) {
 
       this.findButton().click();
 
-      assert.equal(count, 1, 'has been called 1 time');
+      assert.strictEqual(count, 1, 'has been called 1 time');
 
       this.rerender({ showButton: false });
       this.assertCounts({ adds: 1, removes: 1 });

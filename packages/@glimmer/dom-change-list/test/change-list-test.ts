@@ -7,7 +7,7 @@ import {
   SimpleDocument,
   SimpleElement,
   SimpleDocumentFragment,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import createDocument from '@simple-dom/document';
 
 const SVG = Namespace.SVG;
@@ -113,7 +113,7 @@ export class ChangeListTest extends TestCase {
   protected shouldEqual(expectedHTML: string) {
     let tokens = this.append();
     let actualHTML = toHTML(this.parent);
-    QUnit.assert.equal(actualHTML, expectedHTML);
+    QUnit.assert.strictEqual(actualHTML, expectedHTML);
 
     let { expected, actual } = this.tree.reify(tokens);
 
@@ -123,7 +123,7 @@ export class ChangeListTest extends TestCase {
   protected shouldEqualNS(expected: string) {
     this.append();
     let actual = toHTMLNS(this.parent);
-    QUnit.assert.equal(actual, expected);
+    QUnit.assert.strictEqual(actual, expected);
   }
 }
 

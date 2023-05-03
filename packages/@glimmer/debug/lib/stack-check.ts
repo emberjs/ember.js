@@ -1,5 +1,5 @@
 import { Option, Dict, BlockSymbolTable, ProgramSymbolTable, Maybe } from '@glimmer/interfaces';
-import { SimpleElement, SimpleDocumentFragment, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleDocumentFragment, SimpleNode } from '@glimmer/interfaces';
 
 export interface Checker<T> {
   type: T;

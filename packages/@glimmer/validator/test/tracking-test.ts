@@ -106,6 +106,8 @@ module('@glimmer/validator: tracking', () => {
     });
 
     test('isTracking works within a track and untrack frame', (assert) => {
+      assert.expect(3);
+
       assert.notOk(isTracking());
 
       track(() => {
@@ -118,6 +120,8 @@ module('@glimmer/validator: tracking', () => {
     });
 
     test('nested tracks work', (assert) => {
+      assert.expect(3);
+
       assert.notOk(isTracking());
 
       track(() => {
@@ -130,6 +134,7 @@ module('@glimmer/validator: tracking', () => {
     });
 
     test('nested tracks and untracks work', (assert) => {
+      assert.expect(1);
       track(() => {
         track(() => {
           untrack(() => {
@@ -273,16 +278,16 @@ module('@glimmer/validator: tracking', () => {
         return ++count;
       });
 
-      assert.equal(getValue(cache), 1, 'called correctly the first time');
-      assert.equal(getValue(cache), 1, 'memoized result returned second time');
+      assert.strictEqual(getValue(cache), 1, 'called correctly the first time');
+      assert.strictEqual(getValue(cache), 1, 'memoized result returned second time');
 
       dirtyTag(tag1);
-      assert.equal(getValue(cache), 2, 'cache busted when tag1 dirtied');
-      assert.equal(getValue(cache), 2, 'memoized result returned when nothing dirtied');
+      assert.strictEqual(getValue(cache), 2, 'cache busted when tag1 dirtied');
+      assert.strictEqual(getValue(cache), 2, 'memoized result returned when nothing dirtied');
 
       dirtyTag(tag2);
-      assert.equal(getValue(cache), 3, 'cache busted when tag2 dirtied');
-      assert.equal(getValue(cache), 3, 'memoized result returned when nothing dirtied');
+      assert.strictEqual(getValue(cache), 3, 'cache busted when tag2 dirtied');
+      assert.strictEqual(getValue(cache), 3, 'memoized result returned when nothing dirtied');
     });
 
     test('it ignores tags consumed within an untrack frame', (assert) => {
@@ -298,15 +303,15 @@ module('@glimmer/validator: tracking', () => {
         return ++count;
       });
 
-      assert.equal(getValue(cache), 1, 'called correctly the first time');
-      assert.equal(getValue(cache), 1, 'memoized result returned second time');
+      assert.strictEqual(getValue(cache), 1, 'called correctly the first time');
+      assert.strictEqual(getValue(cache), 1, 'memoized result returned second time');
 
       dirtyTag(tag1);
-      assert.equal(getValue(cache), 2, 'cache busted when tag1 dirtied');
-      assert.equal(getValue(cache), 2, 'memoized result returned when nothing dirtied');
+      assert.strictEqual(getValue(cache), 2, 'cache busted when tag1 dirtied');
+      assert.strictEqual(getValue(cache), 2, 'memoized result returned when nothing dirtied');
 
       dirtyTag(tag2);
-      assert.equal(getValue(cache), 2, 'cache not busted when tag2 dirtied');
+      assert.strictEqual(getValue(cache), 2, 'cache not busted when tag2 dirtied');
     });
 
     test('nested memoizations work, and automatically propogate', (assert) => {
@@ -429,8 +434,8 @@ module('@glimmer/validator: tracking', () => {
       let foo = new Foo();
 
       setter(foo, 456);
-      assert.equal(getter(foo), 456, 'value is set correctly');
-      assert.equal(foo.foo, 123, 'value is not set on the actual object');
+      assert.strictEqual(getter(foo), 456, 'value is set correctly');
+      assert.strictEqual(foo.foo, 123, 'value is not set on the actual object');
     });
 
     test('it can receive an initializer', (assert) => {
@@ -445,10 +450,11 @@ module('@glimmer/validator: tracking', () => {
 
       let foo = new Foo();
 
-      assert.equal(getter(foo), 456, 'value is initialized correctly');
-      assert.equal(foo.foo, 123, 'value is not set on the actual object');
+      assert.strictEqual(getter(foo), 456, 'value is initialized correctly');
+      assert.strictEqual(foo.foo, 123, 'value is not set on the actual object');
     });
 
+    // eslint-disable-next-line qunit/require-expect
     test('it tracks changes to the storage cell', (assert) => {
       class Foo {
         foo = 123;
@@ -461,7 +467,7 @@ module('@glimmer/validator: tracking', () => {
 
       let foo = new Foo();
       let tag = track(() => {
-        assert.equal(getter(foo), 456, 'value is set correctly');
+        assert.strictEqual(getter(foo), 456, 'value is set correctly');
       });
 
       let snapshot = valueForTag(tag);

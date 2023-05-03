@@ -45,7 +45,7 @@ module('Destroyables', (hooks) => {
   });
 
   hooks.afterEach((assert) => {
-    assert.equal(destroyQueue.length, 0, 'destruction flushed');
+    assert.strictEqual(destroyQueue.length, 0, 'destruction flushed');
   });
 
   test('standard destructors work', (assert) => {
@@ -54,20 +54,20 @@ module('Destroyables', (hooks) => {
 
     registerDestructor(destroyable, () => count++);
 
-    assert.equal(isDestroying(destroyable), false, 'not destroying at first');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed at first');
+    assert.false(isDestroying(destroyable), 'not destroying at first');
+    assert.false(isDestroyed(destroyable), 'not destroyed at first');
 
     destroy(destroyable);
 
-    assert.equal(isDestroying(destroyable), true, 'destroying immediately after destroy() called');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed immediately after destroy()');
-    assert.equal(count, 0, 'count has not increased');
+    assert.true(isDestroying(destroyable), 'destroying immediately after destroy() called');
+    assert.false(isDestroyed(destroyable), 'not destroyed immediately after destroy()');
+    assert.strictEqual(count, 0, 'count has not increased');
 
     flush();
 
-    assert.equal(isDestroying(destroyable), true, 'still destroying after flush');
-    assert.equal(isDestroyed(destroyable), true, 'destroyed after flush');
-    assert.equal(count, 1, 'destructor was run');
+    assert.true(isDestroying(destroyable), 'still destroying after flush');
+    assert.true(isDestroyed(destroyable), 'destroyed after flush');
+    assert.strictEqual(count, 1, 'destructor was run');
   });
 
   test('destructors work with functions', (assert) => {
@@ -76,20 +76,20 @@ module('Destroyables', (hooks) => {
 
     registerDestructor(destroyable, () => count++);
 
-    assert.equal(isDestroying(destroyable), false, 'not destroying at first');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed at first');
+    assert.false(isDestroying(destroyable), 'not destroying at first');
+    assert.false(isDestroyed(destroyable), 'not destroyed at first');
 
     destroy(destroyable);
 
-    assert.equal(isDestroying(destroyable), true, 'destroying immediately after destroy() called');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed immediately after destroy()');
-    assert.equal(count, 0, 'count has not increased');
+    assert.true(isDestroying(destroyable), 'destroying immediately after destroy() called');
+    assert.false(isDestroyed(destroyable), 'not destroyed immediately after destroy()');
+    assert.strictEqual(count, 0, 'count has not increased');
 
     flush();
 
-    assert.equal(isDestroying(destroyable), true, 'still destroying after flush');
-    assert.equal(isDestroyed(destroyable), true, 'destroyed after flush');
-    assert.equal(count, 1, 'destructor was run');
+    assert.true(isDestroying(destroyable), 'still destroying after flush');
+    assert.true(isDestroyed(destroyable), 'destroyed after flush');
+    assert.strictEqual(count, 1, 'destructor was run');
   });
 
   test('can register multiple destructors', (assert) => {
@@ -99,20 +99,20 @@ module('Destroyables', (hooks) => {
     registerDestructor(destroyable, () => count++);
     registerDestructor(destroyable, () => count++);
 
-    assert.equal(isDestroying(destroyable), false, 'not destroying at first');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed at first');
+    assert.false(isDestroying(destroyable), 'not destroying at first');
+    assert.false(isDestroyed(destroyable), 'not destroyed at first');
 
     destroy(destroyable);
 
-    assert.equal(isDestroying(destroyable), true, 'destroying immediately after destroy() called');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed immediately after destroy()');
-    assert.equal(count, 0, 'count has not increased');
+    assert.true(isDestroying(destroyable), 'destroying immediately after destroy() called');
+    assert.false(isDestroyed(destroyable), 'not destroyed immediately after destroy()');
+    assert.strictEqual(count, 0, 'count has not increased');
 
     flush();
 
-    assert.equal(isDestroying(destroyable), true, 'still destroying after flush');
-    assert.equal(isDestroyed(destroyable), true, 'destroyed after flush');
-    assert.equal(count, 2, 'both destructors were run');
+    assert.true(isDestroying(destroyable), 'still destroying after flush');
+    assert.true(isDestroyed(destroyable), 'destroyed after flush');
+    assert.strictEqual(count, 2, 'both destructors were run');
   });
 
   test('destruction only happens once', (assert) => {
@@ -124,16 +124,16 @@ module('Destroyables', (hooks) => {
     destroy(destroyable);
     flush();
 
-    assert.equal(isDestroying(destroyable), true, 'destroying after flush');
-    assert.equal(isDestroyed(destroyable), true, 'destroyed after flush');
-    assert.equal(count, 1, 'destructor was run');
+    assert.true(isDestroying(destroyable), 'destroying after flush');
+    assert.true(isDestroyed(destroyable), 'destroyed after flush');
+    assert.strictEqual(count, 1, 'destructor was run');
 
     destroy(destroyable);
     flush();
 
-    assert.equal(isDestroying(destroyable), true, 'destroying after second flush');
-    assert.equal(isDestroyed(destroyable), true, 'destroyed after second flush');
-    assert.equal(count, 1, 'destructor was not run again');
+    assert.true(isDestroying(destroyable), 'destroying after second flush');
+    assert.true(isDestroyed(destroyable), 'destroyed after second flush');
+    assert.strictEqual(count, 1, 'destructor was not run again');
   });
 
   test('eager destructors work', (assert) => {
@@ -144,15 +144,15 @@ module('Destroyables', (hooks) => {
 
     destroy(destroyable);
 
-    assert.equal(isDestroying(destroyable), true, 'destroying immediately after destroy() called');
-    assert.equal(isDestroyed(destroyable), false, 'not destroyed immediately after destroy()');
-    assert.equal(count, 1, 'count has increased, eager destructor run');
+    assert.true(isDestroying(destroyable), 'destroying immediately after destroy() called');
+    assert.false(isDestroyed(destroyable), 'not destroyed immediately after destroy()');
+    assert.strictEqual(count, 1, 'count has increased, eager destructor run');
 
     flush();
 
-    assert.equal(isDestroying(destroyable), true, 'destroying after flush');
-    assert.equal(isDestroyed(destroyable), true, 'destroyed after flush');
-    assert.equal(count, 1, 'destructor was not run again');
+    assert.true(isDestroying(destroyable), 'destroying after flush');
+    assert.true(isDestroyed(destroyable), 'destroyed after flush');
+    assert.strictEqual(count, 1, 'destructor was not run again');
   });
 
   test('can unregister a destructor', (assert) => {
@@ -165,7 +165,7 @@ module('Destroyables', (hooks) => {
     destroy(destroyable);
     flush();
 
-    assert.equal(count, 0, 'destructor was not called');
+    assert.strictEqual(count, 0, 'destructor was not called');
   });
 
   test('can associate destroyable children', (assert) => {
@@ -176,33 +176,29 @@ module('Destroyables', (hooks) => {
     registerDestructor(parent, () => assert.step('parent'));
     registerDestructor(child, () => assert.step('child'));
 
-    assert.equal(isDestroying(parent), false, 'parent not destroying at first');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed at first');
+    assert.false(isDestroying(parent), 'parent not destroying at first');
+    assert.false(isDestroyed(parent), 'parent not destroyed at first');
 
-    assert.equal(isDestroying(child), false, 'child not destroying at first');
-    assert.equal(isDestroyed(child), false, 'child not destroyed at first');
+    assert.false(isDestroying(child), 'child not destroying at first');
+    assert.false(isDestroyed(child), 'child not destroyed at first');
 
     destroy(parent);
 
-    assert.equal(
-      isDestroying(parent),
-      true,
-      'parent destroying immediately after destroy() called'
-    );
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed immediately after destroy()');
+    assert.true(isDestroying(parent), 'parent destroying immediately after destroy() called');
+    assert.false(isDestroyed(parent), 'parent not destroyed immediately after destroy()');
 
-    assert.equal(isDestroying(child), true, 'child destroying immediately after destroy() called');
-    assert.equal(isDestroyed(child), false, 'child not destroyed immediately after destroy()');
+    assert.true(isDestroying(child), 'child destroying immediately after destroy() called');
+    assert.false(isDestroyed(child), 'child not destroyed immediately after destroy()');
 
     assert.verifySteps([], 'nothing destroyed yet');
 
     flush();
 
-    assert.equal(isDestroying(parent), true, 'parent still destroying after flush');
-    assert.equal(isDestroyed(parent), true, 'parent destroyed after flush');
+    assert.true(isDestroying(parent), 'parent still destroying after flush');
+    assert.true(isDestroyed(parent), 'parent destroyed after flush');
 
-    assert.equal(isDestroying(child), true, 'child still destroying after flush');
-    assert.equal(isDestroyed(child), true, 'child destroyed after flush');
+    assert.true(isDestroying(child), 'child still destroying after flush');
+    assert.true(isDestroyed(child), 'child destroyed after flush');
 
     assert.verifySteps(['child', 'parent'], 'destructors run in correct order');
   });
@@ -215,43 +211,39 @@ module('Destroyables', (hooks) => {
     registerDestructor(parent, () => assert.step('parent'));
     registerDestructor(child, () => assert.step('child'));
 
-    assert.equal(isDestroying(parent), false, 'parent not destroying at first');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed at first');
+    assert.false(isDestroying(parent), 'parent not destroying at first');
+    assert.false(isDestroyed(parent), 'parent not destroyed at first');
 
-    assert.equal(isDestroying(child), false, 'child not destroying at first');
-    assert.equal(isDestroyed(child), false, 'child not destroyed at first');
+    assert.false(isDestroying(child), 'child not destroying at first');
+    assert.false(isDestroyed(child), 'child not destroyed at first');
 
     destroy(child);
 
-    assert.equal(isDestroying(parent), false, 'parent not immediately after child destroy()');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed after child destroy()');
+    assert.false(isDestroying(parent), 'parent not immediately after child destroy()');
+    assert.false(isDestroyed(parent), 'parent not destroyed after child destroy()');
 
-    assert.equal(isDestroying(child), true, 'child destroying immediately after destroy()');
-    assert.equal(
-      isDestroyed(child),
-      false,
-      'child not destroyed immediately after destroy() called'
-    );
+    assert.true(isDestroying(child), 'child destroying immediately after destroy()');
+    assert.false(isDestroyed(child), 'child not destroyed immediately after destroy() called');
 
     assert.verifySteps([], 'nothing destroyed yet');
     flush();
 
-    assert.equal(isDestroying(parent), false, 'parent still not destroying after flush');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed after flush');
+    assert.false(isDestroying(parent), 'parent still not destroying after flush');
+    assert.false(isDestroyed(parent), 'parent not destroyed after flush');
 
-    assert.equal(isDestroying(child), true, 'child still destroying after flush');
-    assert.equal(isDestroyed(child), true, 'child destroyed after flush');
+    assert.true(isDestroying(child), 'child still destroying after flush');
+    assert.true(isDestroyed(child), 'child destroyed after flush');
 
     assert.verifySteps(['child'], 'child destructor run');
     destroy(parent);
 
-    assert.equal(isDestroying(parent), true, 'parent destroying after destroy()');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed before flush');
+    assert.true(isDestroying(parent), 'parent destroying after destroy()');
+    assert.false(isDestroyed(parent), 'parent not destroyed before flush');
 
     flush();
 
-    assert.equal(isDestroying(parent), true, 'parent still destroying after flush');
-    assert.equal(isDestroyed(parent), true, 'parent destroyed after flush');
+    assert.true(isDestroying(parent), 'parent still destroying after flush');
+    assert.true(isDestroyed(parent), 'parent destroyed after flush');
 
     assert.verifySteps(['parent'], 'parent destructor run');
   });
@@ -271,28 +263,28 @@ module('Destroyables', (hooks) => {
     destroy(parent1);
     flush();
 
-    assert.equal(isDestroying(parent1), true, 'parent1 destroying');
-    assert.equal(isDestroyed(parent1), true, 'parent1 destroyed');
+    assert.true(isDestroying(parent1), 'parent1 destroying');
+    assert.true(isDestroyed(parent1), 'parent1 destroyed');
 
-    assert.equal(isDestroying(parent2), false, 'parent2 not destroying');
-    assert.equal(isDestroyed(parent2), false, 'parent2 not destroyed');
+    assert.false(isDestroying(parent2), 'parent2 not destroying');
+    assert.false(isDestroyed(parent2), 'parent2 not destroyed');
 
-    assert.equal(isDestroying(child), true, 'child destroying');
-    assert.equal(isDestroyed(child), true, 'child destroyed');
+    assert.true(isDestroying(child), 'child destroying');
+    assert.true(isDestroyed(child), 'child destroyed');
 
     assert.verifySteps(['child', 'parent1'], 'first parent and child destroyed');
 
     destroy(parent2);
     flush();
 
-    assert.equal(isDestroying(parent1), true, 'parent1 destroying');
-    assert.equal(isDestroyed(parent1), true, 'parent1 destroyed');
+    assert.true(isDestroying(parent1), 'parent1 destroying');
+    assert.true(isDestroyed(parent1), 'parent1 destroyed');
 
-    assert.equal(isDestroying(parent2), true, 'parent2 destroying');
-    assert.equal(isDestroyed(parent2), true, 'parent2 destroyed');
+    assert.true(isDestroying(parent2), 'parent2 destroying');
+    assert.true(isDestroyed(parent2), 'parent2 destroyed');
 
-    assert.equal(isDestroying(child), true, 'child destroying');
-    assert.equal(isDestroyed(child), true, 'child destroyed');
+    assert.true(isDestroying(child), 'child destroying');
+    assert.true(isDestroyed(child), 'child destroyed');
 
     assert.verifySteps(['parent2'], 'second parent destroyed');
   });
@@ -305,45 +297,41 @@ module('Destroyables', (hooks) => {
     registerDestructor(parent, () => assert.step('parent'));
     registerDestructor(child, () => assert.step('child'));
 
-    assert.equal(isDestroying(parent), false, 'parent not destroying at first');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed at first');
+    assert.false(isDestroying(parent), 'parent not destroying at first');
+    assert.false(isDestroyed(parent), 'parent not destroyed at first');
 
-    assert.equal(isDestroying(child), false, 'child not destroying at first');
-    assert.equal(isDestroyed(child), false, 'child not destroyed at first');
+    assert.false(isDestroying(child), 'child not destroying at first');
+    assert.false(isDestroyed(child), 'child not destroyed at first');
 
     destroyChildren(parent);
 
-    assert.equal(isDestroying(parent), false, 'parent not immediately after child destroy()');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed after child destroy()');
+    assert.false(isDestroying(parent), 'parent not immediately after child destroy()');
+    assert.false(isDestroyed(parent), 'parent not destroyed after child destroy()');
 
-    assert.equal(isDestroying(child), true, 'child destroying immediately after destroy()');
-    assert.equal(
-      isDestroyed(child),
-      false,
-      'child not destroyed immediately after destroy() called'
-    );
+    assert.true(isDestroying(child), 'child destroying immediately after destroy()');
+    assert.false(isDestroyed(child), 'child not destroyed immediately after destroy() called');
 
     assert.verifySteps([], 'nothing destroyed yet');
 
     flush();
 
-    assert.equal(isDestroying(parent), false, 'parent still not destroying after flush');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed after flush');
+    assert.false(isDestroying(parent), 'parent still not destroying after flush');
+    assert.false(isDestroyed(parent), 'parent not destroyed after flush');
 
-    assert.equal(isDestroying(child), true, 'child still destroying after flush');
-    assert.equal(isDestroyed(child), true, 'child destroyed after flush');
+    assert.true(isDestroying(child), 'child still destroying after flush');
+    assert.true(isDestroyed(child), 'child destroyed after flush');
 
     assert.verifySteps(['child'], 'child destructor called');
 
     destroy(parent);
 
-    assert.equal(isDestroying(parent), true, 'parent destroying after destroy()');
-    assert.equal(isDestroyed(parent), false, 'parent not destroyed before flush');
+    assert.true(isDestroying(parent), 'parent destroying after destroy()');
+    assert.false(isDestroyed(parent), 'parent not destroyed before flush');
 
     flush();
 
-    assert.equal(isDestroying(parent), true, 'parent still destroying after flush');
-    assert.equal(isDestroyed(parent), true, 'parent destroyed after flush');
+    assert.true(isDestroying(parent), 'parent still destroying after flush');
+    assert.true(isDestroyed(parent), 'parent destroyed after flush');
 
     assert.verifySteps(['parent'], 'parent destructor called');
   });
@@ -384,9 +372,11 @@ module('Destroyables', (hooks) => {
 
     associateDestroyableChild(parent, child);
     registerDestructor(parent, (_parent) =>
-      assert.equal(parent, _parent, 'passed the correct value')
+      assert.strictEqual(parent, _parent, 'passed the correct value')
     );
-    registerDestructor(child, (_child) => assert.equal(child, _child, 'passed the correct value'));
+    registerDestructor(child, (_child) =>
+      assert.strictEqual(child, _child, 'passed the correct value')
+    );
 
     destroy(parent);
     flush();
@@ -472,7 +462,11 @@ module('Destroyables', (hooks) => {
       try {
         assertDestroyablesDestroyed!();
       } catch (error) {
-        assert.deepEqual(error.destroyables, [obj1, obj2], 'destroyables property');
+        assert.deepEqual(
+          (error as { destroyables: unknown[] }).destroyables,
+          [obj1, obj2],
+          'destroyables property'
+        );
       }
     });
 

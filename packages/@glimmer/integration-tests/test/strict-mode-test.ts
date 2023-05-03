@@ -1295,7 +1295,7 @@ class BuiltInsStrictModeTest extends RenderTest {
     assert.expect(3);
 
     let handleClick = (value: number) => {
-      assert.equal(value, 123, 'handler called with correct value');
+      assert.strictEqual(value, 123, 'handler called with correct value');
     };
 
     let Foo = defineComponent(

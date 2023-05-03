@@ -3,13 +3,13 @@
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/syntax",
   "dependencies": {
-    "@glimmer/interfaces": "0.84.3",
-    "@glimmer/util": "0.84.3",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^",
     "@handlebars/parser": "~2.0.0",
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "0.84.3",
+    "@glimmer/local-debug-flags": "workspace:^",
     "@types/qunit": "^2.9.0"
   }
 }

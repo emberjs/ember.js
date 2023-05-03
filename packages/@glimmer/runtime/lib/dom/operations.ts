@@ -6,7 +6,7 @@ import {
   InsertPosition,
   SimpleText,
   SimpleComment,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { Dict, Option, Bounds } from '@glimmer/interfaces';
 import { ConcreteBounds } from '../bounds';
 import { expect } from '@glimmer/util';

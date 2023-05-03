@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-extraneous-import
-import { Reference } from '@glimmer/reference';
+import { Reference } from '../references';
 import { CapturedArguments } from './arguments';
 import { Owner } from './owner';
 import { DynamicScope } from './scope';

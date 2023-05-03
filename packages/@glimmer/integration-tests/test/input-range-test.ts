@@ -57,7 +57,7 @@ class TemplateRangeTests extends RangeTests {
   }
 
   assertRangeValue(value: number) {
-    this.assert.equal(this.readDOMAttr('value'), value.toString());
+    this.assert.strictEqual(this.readDOMAttr('value'), value.toString());
   }
 }
 
@@ -97,7 +97,7 @@ jitSuite(
 
     assertRangeValue(value: number): void {
       let attr = (this.element.firstChild as any)['value'];
-      this.assert.equal(attr, value.toString());
+      this.assert.strictEqual(attr, value.toString());
     }
   }
 );
@@ -114,7 +114,7 @@ jitSuite(
 
     assertRangeValue(value: number): void {
       let attr = this.readDOMAttr('value');
-      this.assert.equal(attr, value.toString());
+      this.assert.strictEqual(attr, value.toString());
     }
   }
 );
@@ -131,7 +131,7 @@ jitSuite(
 
     assertRangeValue(value: number): void {
       let attr = this.readDOMAttr('value');
-      this.assert.equal(attr, value.toString());
+      this.assert.strictEqual(attr, value.toString());
     }
   }
 );
@@ -152,7 +152,7 @@ jitSuite(
 
     assertRangeValue(value: number): void {
       let attr = this.readDOMAttr('value');
-      this.assert.equal(attr, value.toString());
+      this.assert.strictEqual(attr, value.toString());
     }
   }
 );

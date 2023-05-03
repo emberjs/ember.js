@@ -2,7 +2,7 @@ import { CapturedArguments, InternalModifierManager, Owner } from '@glimmer/inte
 import { Reference, valueForRef } from '@glimmer/reference';
 import { castToBrowser } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 
 interface OnModifierState {
   element: SimpleElement;

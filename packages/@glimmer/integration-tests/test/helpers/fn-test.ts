@@ -87,16 +87,16 @@ class FnTest extends RenderTest {
       arg2: 'bar',
     });
 
-    assert.equal(this.stashedFn?.(), 'arg1: foo, arg2: bar');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: foo, arg2: bar');
 
     this.rerender({ arg1: 'qux' });
-    assert.equal(this.stashedFn?.(), 'arg1: qux, arg2: bar');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: qux, arg2: bar');
 
     this.rerender({ arg2: 'derp' });
-    assert.equal(this.stashedFn?.(), 'arg1: qux, arg2: derp');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: qux, arg2: derp');
 
     this.rerender({ arg1: 'foo', arg2: 'bar' });
-    assert.equal(this.stashedFn?.(), 'arg1: foo, arg2: bar');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: foo, arg2: bar');
   }
 
   @test
@@ -113,13 +113,13 @@ class FnTest extends RenderTest {
       arg2: 'bar',
     });
 
-    assert.equal(this.stashedFn?.(), 'arg1: foo, arg2: bar');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: foo, arg2: bar');
 
     this.rerender({ myFunc: func2 });
-    assert.equal(this.stashedFn?.(), 'arg2: bar, arg1: foo');
+    assert.strictEqual(this.stashedFn?.(), 'arg2: bar, arg1: foo');
 
     this.rerender({ myFunc: func1 });
-    assert.equal(this.stashedFn?.(), 'arg1: foo, arg2: bar');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: foo, arg2: bar');
   }
 
   @test
@@ -207,7 +207,7 @@ class FnTest extends RenderTest {
 
     this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, context);
 
-    assert.equal(this.stashedFn?.(), 'arg1: foo, arg2: bar');
+    assert.strictEqual(this.stashedFn?.(), 'arg1: foo, arg2: bar');
   }
 
   @test

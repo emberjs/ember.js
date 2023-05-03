@@ -1,6 +1,5 @@
-// eslint-disable-next-line node/no-extraneous-import
-import { Reference } from '@glimmer/reference';
 import { Option } from '../core';
+import { Reference } from '../references';
 
 export interface ElementOperations {
   setAttribute(name: string, value: Reference, trusting: boolean, namespace: Option<string>): void;

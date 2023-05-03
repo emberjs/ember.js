@@ -7,8 +7,8 @@ import {
   Helper,
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
-import { artifacts } from '@glimmer/program';
-import { SimpleElement } from '@simple-dom/interface';
+import { artifacts, RuntimeOpImpl } from '@glimmer/program';
+import { SimpleElement } from '@glimmer/interfaces';
 import {
   getComponentTemplate,
   getInternalComponentManager,
@@ -78,14 +78,18 @@ export default function createRegistry(): Registry {
     },
     render: (entry, args, element, isIteractive) => {
       const sharedArtifacts = artifacts();
-      const context = programCompilationContext(sharedArtifacts, {
-        lookupHelper: (name) => helpers.get(name) ?? null,
-        lookupModifier: (name) => modifiers.get(name) ?? null,
-        lookupComponent: (name) => components.get(name) ?? null,
+      const context = programCompilationContext(
+        sharedArtifacts,
+        {
+          lookupHelper: (name) => helpers.get(name) ?? null,
+          lookupModifier: (name) => modifiers.get(name) ?? null,
+          lookupComponent: (name) => components.get(name) ?? null,
 
-        lookupBuiltInHelper: () => null,
-        lookupBuiltInModifier: () => null,
-      });
+          lookupBuiltInHelper: () => null,
+          lookupBuiltInModifier: () => null,
+        },
+        (heap) => new RuntimeOpImpl(heap)
+      );
       const component = components.get(entry);
       if (!component) {
         throw new Error(`missing ${entry} component`);

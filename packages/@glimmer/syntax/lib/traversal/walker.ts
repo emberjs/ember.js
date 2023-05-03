@@ -33,7 +33,7 @@ export default class Walker {
     switch (node.type) {
       case 'Block':
       case 'Template':
-        return visitors.Program(this, (node as unknown) as ASTv1.Program, callback);
+        return visitors.Program(this, node as unknown as ASTv1.Program, callback);
       case 'ElementNode':
         return visitors.ElementNode(this, node, callback);
       case 'BlockStatement':

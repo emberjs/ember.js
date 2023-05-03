@@ -214,7 +214,7 @@ export default class VM implements PublicVM, InternalVM {
 
   loadValue<T>(register: Register | MachineRegister, value: T): void {
     if (isLowLevelRegister(register)) {
-      this[INNER_VM].loadRegister(register, (value as any) as number);
+      this[INNER_VM].loadRegister(register, value as any as number);
     }
 
     switch (register) {

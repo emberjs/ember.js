@@ -4,7 +4,7 @@ import { capabilityFlagsFrom, managerHasCapability } from '..';
 QUnit.module('Capabilities Bitmaps');
 
 QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
-  assert.equal(
+  assert.strictEqual(
     capabilityFlagsFrom({
       dynamicLayout: false,
       dynamicTag: false,
@@ -24,7 +24,7 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
     'empty capabilities'
   );
 
-  assert.equal(
+  assert.strictEqual(
     capabilityFlagsFrom({
       dynamicLayout: true,
       dynamicTag: true,
@@ -44,7 +44,7 @@ QUnit.test('encodes a capabilities object into a bitmap', (assert) => {
     'all capabilities'
   );
 
-  assert.equal(
+  assert.strictEqual(
     capabilityFlagsFrom({
       dynamicLayout: true,
       dynamicTag: false,
@@ -82,52 +82,40 @@ QUnit.test('allows querying bitmap for a capability', (assert) => {
     hasSubOwner: false,
   });
 
-  assert.strictEqual(
-    true,
+  assert.true(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.DynamicLayout)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.DynamicTag)
   );
-  assert.strictEqual(
-    true,
+  assert.true(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.PrepareArgs)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.CreateArgs)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.AttributeHook)
   );
-  assert.strictEqual(
-    true,
+  assert.true(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.ElementHook)
   );
-  assert.strictEqual(
-    true,
+  assert.true(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.DynamicScope)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.CreateCaller)
   );
-  assert.strictEqual(
-    true,
+  assert.true(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.UpdateHook)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.CreateInstance)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.WillDestroy)
   );
-  assert.strictEqual(
-    false,
+  assert.false(
     managerHasCapability({} as any, capabilities, InternalComponentCapability.HasSubOwner)
   );
 });

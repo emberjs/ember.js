@@ -482,7 +482,7 @@ function acceptCallNodes(
   hash: ASTv1.Hash;
 } {
   if (node.path.type.endsWith('Literal')) {
-    const path = (node.path as unknown) as
+    const path = node.path as unknown as
       | HBS.StringLiteral
       | HBS.UndefinedLiteral
       | HBS.NullLiteral
@@ -512,7 +512,7 @@ function acceptCallNodes(
   let path =
     node.path.type === 'PathExpression'
       ? compiler.PathExpression(node.path)
-      : compiler.SubExpression((node.path as unknown) as HBS.SubExpression);
+      : compiler.SubExpression(node.path as unknown as HBS.SubExpression);
   let params = node.params ? node.params.map((e) => compiler.acceptNode<ASTv1.Expression>(e)) : [];
 
   // if there is no hash, position it as a collapsed node immediately after the last param (or the

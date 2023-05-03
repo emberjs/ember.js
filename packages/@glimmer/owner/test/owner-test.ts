@@ -21,7 +21,7 @@ module('Owner', () => {
 
       setOwner(obj, owner);
 
-      assert.equal(Object.keys(obj).length, 0, 'no enumerable props were added');
+      assert.strictEqual(Object.keys(obj).length, 0, 'no enumerable props were added');
     });
   }
 });

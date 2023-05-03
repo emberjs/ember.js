@@ -7,12 +7,13 @@ import {
   ModifierCapabilitiesVersions,
   ModifierManager,
   Owner,
+  UpdatableTag,
 } from '@glimmer/interfaces';
 import { registerDestructor } from '@glimmer/destroyable';
 import { valueForRef } from '@glimmer/reference';
 import { castToBrowser, dict } from '@glimmer/util';
-import { createUpdatableTag, untrack, UpdatableTag } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
+import { createUpdatableTag, untrack } from '@glimmer/validator';
+import { SimpleElement } from '@glimmer/interfaces';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
 import { ManagerFactory } from '.';
@@ -64,7 +65,8 @@ export interface CustomModifierState<ModifierInstance> {
   * `destroyModifier()` - invoked when the modifier is about to be destroyed
 */
 export class CustomModifierManager<O extends Owner, ModifierInstance>
-  implements InternalModifierManager<CustomModifierState<ModifierInstance>> {
+  implements InternalModifierManager<CustomModifierState<ModifierInstance>>
+{
   private componentManagerDelegates = new WeakMap<O, ModifierManager<ModifierInstance>>();
 
   constructor(private factory: ManagerFactory<O, ModifierManager<ModifierInstance>>) {}
@@ -151,10 +153,10 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
   }
 }
 
-export function reifyArgs({
-  named,
-  positional,
-}: CapturedArguments): { named: Record<string, unknown>; positional: unknown[] } {
+export function reifyArgs({ named, positional }: CapturedArguments): {
+  named: Record<string, unknown>;
+  positional: unknown[];
+} {
   let reifiedNamed = dict();
 
   for (let key in named) {

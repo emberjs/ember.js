@@ -103,19 +103,19 @@ QUnit.module('[glimmer-syntax] Code generation', function () {
 
   templates.forEach((template) => {
     test(`${template} is stable when printed`, function (assert) {
-      assert.equal(printTransform(template), template);
+      assert.strictEqual(printTransform(template), template);
     });
   });
 
   test('TextNode: chars escape - but do not match', (assert) => {
-    assert.equal(
+    assert.strictEqual(
       printTransform('&lt; &amp; &nbsp; &gt; &copy;2018'),
       '&lt; &amp; &nbsp; &gt; ©2018'
     );
   });
 
   test('Handlebars comment', (assert) => {
-    assert.equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
+    assert.strictEqual(printTransform('{{! foo }}'), '{{!-- foo --}}');
   });
 });
 
@@ -131,7 +131,7 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function () 
 
   function buildTest(template: string) {
     test(`${template} is stable when printed`, function (assert) {
-      assert.equal(printTransform(template), template);
+      assert.strictEqual(printTransform(template), template);
     });
   }
 
@@ -171,7 +171,7 @@ QUnit.module('[glimmer-syntax] Code generation - override', function () {
       },
     });
 
-    assert.equal(actual, `<FooBar @baz="ZOMG!!!!" @derp="qux" />`);
+    assert.strictEqual(actual, `<FooBar @baz="ZOMG!!!!" @derp="qux" />`);
   });
 
   test('maintains proper spacing when overriding hash', function (assert) {
@@ -189,7 +189,7 @@ QUnit.module('[glimmer-syntax] Code generation - override', function () {
       },
     });
 
-    assert.equal(actual, `{{foo-bar baz="ZOMG!!!!"}}`);
+    assert.strictEqual(actual, `{{foo-bar baz="ZOMG!!!!"}}`);
   });
 
   test('maintains proper spacing when overriding empty hash', function (assert) {
@@ -207,6 +207,6 @@ QUnit.module('[glimmer-syntax] Code generation - override', function () {
       },
     });
 
-    assert.equal(actual, `{{foo-bar derp}}`);
+    assert.strictEqual(actual, `{{foo-bar derp}}`);
   });
 });

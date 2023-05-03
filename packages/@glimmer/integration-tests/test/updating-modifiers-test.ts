@@ -1,5 +1,5 @@
 import { RenderTest, test, jitSuite } from '..';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import { assert } from './support';
 
 function makeSyncDataAttrModifier(hooks: string[]) {

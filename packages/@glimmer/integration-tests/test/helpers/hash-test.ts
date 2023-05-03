@@ -190,7 +190,7 @@ class HashTest extends RenderTest {
         super(owner, args);
         args.hash.firstName = 'Chad';
 
-        assert.equal(args.hash.firstName, 'Chad', 'Name updated in JS');
+        assert.strictEqual(args.hash.firstName, 'Chad', 'Name updated in JS');
       }
     }
 

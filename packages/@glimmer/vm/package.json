@@ -3,8 +3,8 @@
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/vm",
   "dependencies": {
-    "@glimmer/util": "0.84.3",
-    "@glimmer/interfaces": "0.84.3"
+    "@glimmer/util": "workspace:^",
+    "@glimmer/interfaces": "workspace:^"
   },
   "typings": "index.ts"
 }

@@ -4,15 +4,17 @@ import {
   TemplateCompilationContext,
   CompileTimeArtifacts,
   CompileTimeCompilationContext,
+  CreateRuntimeOp,
 } from '@glimmer/interfaces';
 import { EncoderImpl } from './encoder';
 import { CompileTimeCompilationContextImpl } from '../program-context';
 
 export function programCompilationContext(
   artifacts: CompileTimeArtifacts,
-  resolver: CompileTimeResolver
+  resolver: CompileTimeResolver,
+  createOp: CreateRuntimeOp
 ): CompileTimeCompilationContext {
-  return new CompileTimeCompilationContextImpl(artifacts, resolver);
+  return new CompileTimeCompilationContextImpl(artifacts, resolver, createOp);
 }
 
 export function templateCompilationContext(

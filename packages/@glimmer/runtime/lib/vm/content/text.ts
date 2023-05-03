@@ -1,7 +1,7 @@
 import { isEmpty, isString } from '../../dom/normalize';
 import { UpdatingOpcode } from '@glimmer/interfaces';
 import { Reference, valueForRef } from '@glimmer/reference';
-import { SimpleText } from '@simple-dom/interface';
+import { SimpleText } from '@glimmer/interfaces';
 
 export default class DynamicTextContent implements UpdatingOpcode {
   constructor(

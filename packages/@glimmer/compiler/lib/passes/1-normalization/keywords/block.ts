@@ -11,9 +11,7 @@ import { assertCurryKeyword } from './utils/curry';
 
 export const BLOCK_KEYWORDS = keywords('Block')
   .kw('in-element', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       insertBefore: ASTv2.ExpressionNode | null;
       destination: ASTv2.ExpressionNode;
     }> {
@@ -90,9 +88,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('if', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       condition: ASTv2.ExpressionNode;
     }> {
       let { args } = node;
@@ -154,9 +150,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('unless', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       condition: ASTv2.ExpressionNode;
     }> {
       let { args } = node;
@@ -218,9 +212,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('each', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       value: ASTv2.ExpressionNode;
       key: ASTv2.ExpressionNode | null;
     }> {
@@ -288,9 +280,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('with', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       value: ASTv2.ExpressionNode;
     }> {
       let { args } = node;
@@ -352,9 +342,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('let', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       positional: ASTv2.PositionalArguments;
     }> {
       let { args } = node;
@@ -408,9 +396,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('-with-dynamic-vars', {
-    assert(
-      node: ASTv2.InvokeBlock
-    ): Result<{
+    assert(node: ASTv2.InvokeBlock): Result<{
       named: ASTv2.NamedArguments;
     }> {
       return Ok({ named: node.args.named });

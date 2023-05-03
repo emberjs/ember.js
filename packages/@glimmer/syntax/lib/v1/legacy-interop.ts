@@ -3,7 +3,7 @@ import { PathExpression, PathHead } from './nodes-v1';
 import b from './public-builders';
 
 export class PathExpressionImplV1 implements PathExpression {
-  type: 'PathExpression' = 'PathExpression';
+  type = 'PathExpression' as const;
   public parts: string[];
   public this = false;
   public data = false;

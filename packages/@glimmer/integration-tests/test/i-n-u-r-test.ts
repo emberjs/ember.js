@@ -7,16 +7,18 @@ import { module } from './support';
 module('Render Tests: I-N-U-R', ({ test }) => {
   let doc = castToSimple(document);
 
+  // eslint-disable-next-line qunit/require-expect
   test('Can set properties', (assert) => {
     new (class extends RenderTest {
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         this.setProperties({ foo: 'bar' });
-        assert.equal(this.context.foo, 'bar');
+        assert.strictEqual(this.context.foo, 'bar');
       }
     })(new JitRenderDelegate());
   });
 
+  // eslint-disable-next-line qunit/require-expect
   test('Can take basic snapshots', (assert) => {
     let div = doc.createElement('div');
     let text = doc.createTextNode('Foo');
@@ -32,6 +34,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
+  // eslint-disable-next-line qunit/require-expect
   test('Can take nested snapshots', (assert) => {
     let div = doc.createElement('div');
     let p = doc.createElement('p');
@@ -49,6 +52,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
+  // eslint-disable-next-line qunit/require-expect
   test('Can take nested snapshots of serialized blocks', (assert) => {
     let div = doc.createElement('div');
     let open = doc.createComment('<!--%+b:0%-->');

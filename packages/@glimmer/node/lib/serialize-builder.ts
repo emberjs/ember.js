@@ -8,7 +8,7 @@ import type {
 } from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
 import { RemoteLiveBlock } from '@glimmer/runtime';
-import type { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode, SimpleText } from '@glimmer/interfaces';
 
 const TEXT_NODE = 3;
 
@@ -86,7 +86,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
       return super.__appendText(string);
     } else if (string === '') {
-      return (this.__appendComment('% %') as any) as SimpleText;
+      return this.__appendComment('% %') as any as SimpleText;
     } else if (current && current.nodeType === TEXT_NODE) {
       this.__appendComment('%|%');
     }

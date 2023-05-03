@@ -6,7 +6,7 @@ import {
   SimpleDocument,
   SimpleElement,
   SimpleNode,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { DOMOperations, moveNodesBefore } from '../dom/operations';
 
 export const SVG_NAMESPACE = Namespace.SVG;

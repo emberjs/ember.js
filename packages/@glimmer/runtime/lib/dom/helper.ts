@@ -7,7 +7,7 @@ import {
   SimpleDocument,
   SimpleElement,
   SimpleNode,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { BLACKLIST_TABLE, DOMOperations } from './operations';

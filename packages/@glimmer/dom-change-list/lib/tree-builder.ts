@@ -1,13 +1,15 @@
-import { Option, NodeTokens, Dict } from '@glimmer/interfaces';
-import { HTML } from './dom-operations';
-import { DOMTreeConstruction } from './tree-construction';
-import { NodeToken } from './node-tokens';
 import {
+  Option,
+  NodeTokens,
+  Dict,
   Namespace,
+  NodeToken,
   SimpleElement,
   SimpleDocumentFragment,
   SimpleDocument,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
+import { HTML } from './dom-operations';
+import { DOMTreeConstruction } from './tree-construction';
 
 export const SVG_NAMESPACE = Namespace.SVG;
 export const HTML_NAMESPACE = Namespace.HTML;

@@ -1,16 +1,15 @@
 import {
   CompileTimeConstants,
-  Recast,
-  RuntimeOp,
   Dict,
   Maybe,
-  TemplateCompilationContext,
+  Recast,
   ResolutionTimeConstants,
+  RuntimeOp,
+  TemplateCompilationContext,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { RuntimeOpImpl } from '@glimmer/program';
-import { Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
-import { decodeImmediate, decodeHandle, LOCAL_LOGGER } from '@glimmer/util';
+import { decodeHandle, decodeImmediate, LOCAL_LOGGER } from '@glimmer/util';
+import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0, Register } from '@glimmer/vm';
 import { opcodeMetadata } from './opcode-metadata';
 import { Primitive } from './stack-check';
 
@@ -24,7 +23,7 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
     LOCAL_LOGGER.group(`%c${start}:${end}`, 'color: #999');
 
     let heap = context.program.heap;
-    let opcode = new RuntimeOpImpl(heap);
+    let opcode = context.program.createOp(heap);
 
     let _size = 0;
     for (let i = start; i < end; i = i + _size) {

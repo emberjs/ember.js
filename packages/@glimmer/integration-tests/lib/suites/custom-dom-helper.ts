@@ -28,10 +28,10 @@ export class CompilationTests extends RenderTest {
   'generates id in node'() {
     let template = precompile('hello');
     let obj = JSON.parse(template);
-    this.assert.equal(obj.id, 'G0ggkEjw', 'short sha of template source');
+    this.assert.strictEqual(obj.id, 'G0ggkEjw', 'short sha of template source');
     template = precompile('hello', { meta: { moduleName: 'template/hello' } });
     obj = JSON.parse(template);
-    this.assert.equal(obj.id, '4vC0bnaR', 'short sha of template source and meta');
+    this.assert.strictEqual(obj.id, '4vC0bnaR', 'short sha of template source and meta');
   }
 }
 
@@ -106,6 +106,6 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
   assertHTML(html: string) {
     let b = blockStack();
     let serialized = toInnerHTML(this.element);
-    this.assert.equal(serialized, `${b(0)}${html}${b(0)}`);
+    this.assert.strictEqual(serialized, `${b(0)}${html}${b(0)}`);
   }
 }

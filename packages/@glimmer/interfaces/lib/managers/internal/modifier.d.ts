@@ -1,11 +1,9 @@
-import { GlimmerTreeChanges } from '../../dom/changes';
-// eslint-disable-next-line node/no-extraneous-import
-import { UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { Owner } from '../../runtime';
 import { Destroyable } from '../../core';
 import { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier';
 import { CapturedArguments } from '../../runtime/arguments';
+import { UpdatableTag } from '../../tags';
 
 export interface InternalModifierManager<
   TModifierInstanceState = ModifierInstanceState,

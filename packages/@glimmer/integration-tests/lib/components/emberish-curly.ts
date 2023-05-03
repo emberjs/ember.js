@@ -1,37 +1,37 @@
+import { registerDestructor } from '@glimmer/destroyable';
 import {
-  Option,
-  CapturedNamedArguments,
   Bounds,
-  WithDynamicTagName,
-  WithDynamicLayout,
-  Template,
-  VMArguments,
-  PreparedArguments,
-  DynamicScope,
-  ElementOperations,
+  CapturedNamedArguments,
+  CompilableProgram,
   Destroyable,
   Dict,
-  InternalComponentCapabilities,
-  WithCreateInstance,
-  CompilableProgram,
-  Owner,
+  DynamicScope,
+  ElementOperations,
   Environment,
+  InternalComponentCapabilities,
+  Reference,
+  Option,
+  Owner,
+  PreparedArguments,
+  Template,
+  VMArguments,
+  WithCreateInstance,
+  WithDynamicLayout,
+  WithDynamicTagName,
 } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import {
+  childRefFor,
+  createComputeRef,
   createConstRef,
   createPrimitiveRef,
   valueForRef,
-  Reference,
-  childRefFor,
-  createComputeRef,
 } from '@glimmer/reference';
-import { createTag, dirtyTag, DirtyableTag, consumeTag, dirtyTagFor } from '@glimmer/validator';
-import { keys, EMPTY_ARRAY, assign, unwrapTemplate } from '@glimmer/util';
-import { registerDestructor } from '@glimmer/destroyable';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
-import { TestComponentConstructor } from './types';
+import { EMPTY_ARRAY, assign, keys, unwrapTemplate } from '@glimmer/util';
+import { DirtyableTag, consumeTag, createTag, dirtyTag, dirtyTagFor } from '@glimmer/validator';
 import { TestJitRuntimeResolver } from '../modes/jit/resolver';
+import { TestComponentConstructor } from './types';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
@@ -135,7 +135,8 @@ export class EmberishCurlyComponentManager
   implements
     WithCreateInstance<EmberishCurlyComponentState>,
     WithDynamicTagName<EmberishCurlyComponentState>,
-    WithDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver> {
+    WithDynamicLayout<EmberishCurlyComponentState, TestJitRuntimeResolver>
+{
   getDebugName(state: EmberishCurlyComponentFactory) {
     return state.name;
   }

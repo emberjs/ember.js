@@ -25,7 +25,7 @@ import {
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { expect, Stack, logStep } from '@glimmer/util';
 import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
-import { SimpleComment } from '@simple-dom/interface';
+import { SimpleComment } from '@glimmer/interfaces';
 import { clear, move as moveBounds } from '../bounds';
 import { InternalVM, VmInitCallback } from './append';
 import { LiveBlockList, NewElementBuilder } from './element-builder';

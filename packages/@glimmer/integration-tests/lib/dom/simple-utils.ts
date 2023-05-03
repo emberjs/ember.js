@@ -9,7 +9,7 @@ import {
   SimpleComment,
   SimpleText,
   SimpleDocument,
-} from '@simple-dom/interface';
+} from '@glimmer/interfaces';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 import { Option } from '@glimmer/interfaces';
@@ -34,12 +34,10 @@ export interface CastToBrowserDom {
   Node: { browser: Node; simple: SimpleNode };
 }
 
-export type CastableSimpleDOM<
-  Type extends CastableNodeType = CastableNodeType
-> = CastToBrowserDom[Type]['simple'];
-export type CastableBrowserDom<
-  Type extends CastableNodeType = CastableNodeType
-> = CastToBrowserDom[Type]['browser'];
+export type CastableSimpleDOM<Type extends CastableNodeType = CastableNodeType> =
+  CastToBrowserDom[Type]['simple'];
+export type CastableBrowserDom<Type extends CastableNodeType = CastableNodeType> =
+  CastToBrowserDom[Type]['browser'];
 
 type NodeTypeFor<C extends CastableSimpleDOM> = C['nodeType'];
 
@@ -65,12 +63,12 @@ export function castToBrowser(
     return null;
   } else if (nodeType !== undefined) {
     if (node.nodeType === nodeType) {
-      return (node as unknown) as CastableBrowserDom;
+      return node as unknown as CastableBrowserDom;
     } else {
       throw new Error(`ASSERT: invalid cast to ${nodeType}`);
     }
   } else {
-    return (node as unknown) as CastableBrowserDom;
+    return node as unknown as CastableBrowserDom;
   }
 }
 
@@ -100,7 +98,7 @@ export function castToSimple<Type extends CastableNodeType>(
   } else if (node === null) {
     throw new Error(`unexpected null element passed to castToSimple (add assertNull: true)`);
   } else if (node.nodeType === nodeType) {
-    return (node as unknown) as CastableSimpleDOM<Type>;
+    return node as unknown as CastableSimpleDOM<Type>;
   } else {
     throw new Error(`unexpected`);
   }
