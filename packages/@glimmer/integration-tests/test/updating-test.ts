@@ -32,7 +32,7 @@ class SafeStringImpl implements SafeString {
 class UpdatingTest extends RenderTest {
   static suiteName = 'Updating';
 
-  delegate!: JitRenderDelegate;
+  declare delegate: JitRenderDelegate;
 
   @test
   'updating a single curly'() {

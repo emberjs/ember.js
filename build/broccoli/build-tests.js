@@ -14,9 +14,9 @@ const babel = require('broccoli-babel-transpiler');
  * 2. Test files as AMD modules.
  * 3. A test harness, including HTML page, QUnit, dependencies, etc.
  */
-module.exports = function (tsTree, jsTree, packagesTree) {
+module.exports = function (jsTree, packagesTree) {
   let browserTests = merge([
-    transpileBrowserTestsToAMD(tsTree, jsTree),
+    transpileBrowserTestsToAMD(jsTree),
     includeGlimmerAMD(packagesTree),
     includeVendorDependencies(),
     includeTestHarness(),
@@ -31,7 +31,7 @@ module.exports = function (tsTree, jsTree, packagesTree) {
   return merge([browserTests, nodeTests]);
 };
 
-function transpileBrowserTestsToAMD(tsTree, jsTree) {
+function transpileBrowserTestsToAMD(jsTree) {
   let testTree = funnel(jsTree, {
     include: ['@glimmer/!(node)/test/**/*.js'],
   });

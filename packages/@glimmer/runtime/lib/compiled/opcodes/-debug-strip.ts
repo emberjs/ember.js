@@ -45,7 +45,7 @@ export const CheckOperations: Checker<Option<ComponentElementOperations>> = wrap
 );
 
 class ReferenceChecker {
-  type!: Reference;
+  declare type: Reference;
 
   validate(value: unknown): value is Reference {
     return typeof value === 'object' && value !== null && REFERENCE in value;
@@ -70,7 +70,7 @@ export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
 export const CheckHelper: Checker<Helper> = CheckFunction as Checker<Helper>;
 
 export class UndefinedReferenceChecker implements Checker<Reference> {
-  type!: Reference;
+  declare type: Reference;
 
   validate(value: unknown): value is Reference {
     return value === UNDEFINED_REFERENCE;

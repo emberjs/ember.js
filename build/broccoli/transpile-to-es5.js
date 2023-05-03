@@ -29,19 +29,14 @@ module.exports = function transpileToES5(inputNode, modules = false) {
   }
 
   const options = {
-    annotation: 'Babel - ES5',
+    annotation: 'Babel - Default Target',
     sourceMaps: 'inline',
     presets: [
       [
         '@babel/preset-env',
         {
-          loose: true,
+          targets: 'defaults',
           modules,
-          exclude: [
-            // Transforms all `typeof` checks to account for Symbol, which we don't
-            // rely on, so can safely skip.
-            '@babel/plugin-transform-typeof-symbol',
-          ],
         },
       ],
     ],
