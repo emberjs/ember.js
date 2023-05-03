@@ -208,7 +208,7 @@ export class NamedArgumentsImpl implements NamedArguments {
   public base = 0;
   public length = 0;
 
-  private stack!: EvaluationStack;
+  private declare stack: EvaluationStack;
 
   private _references: Option<readonly Reference[]> = null;
 
@@ -365,7 +365,7 @@ function toSymbolName(name: string): string {
 const EMPTY_BLOCK_VALUES = emptyArray<BlockValue>();
 
 export class BlockArgumentsImpl implements BlockArguments {
-  private stack!: EvaluationStack;
+  private declare stack: EvaluationStack;
   private internalValues: Option<readonly BlockValue[]> = null;
   private _symbolNames: Option<readonly string[]> = null;
 

@@ -8,11 +8,11 @@ import { SimpleDocument, SimpleDocumentFragment, SimpleElement } from '@glimmer/
 @module('[dom-change-list] TreeBuilder')
 export class ChangeListTest extends TestCase {
   // These definitely assigned properties are set in before()
-  protected document!: SimpleDocument;
-  protected parent!: SimpleElement | SimpleDocumentFragment;
-  protected tree!: Builder;
-  protected builder!: TreeBuilder;
-  protected construction!: DOMTreeConstruction;
+  protected declare document: SimpleDocument;
+  protected declare parent: SimpleElement | SimpleDocumentFragment;
+  protected declare tree: Builder;
+  protected declare builder: TreeBuilder;
+  protected declare construction: DOMTreeConstruction;
 
   before() {
     this.document = createHTMLDocument();
@@ -122,7 +122,7 @@ export class ChangeListTest extends TestCase {
 }
 
 export class Builder extends TestBuilder {
-  protected tree!: TreeBuilder; // Hides property in base class
+  protected declare tree: TreeBuilder; // Hides property in base class
 
   openElement(tag: string) {
     let token = this.tree.openElement(tag);

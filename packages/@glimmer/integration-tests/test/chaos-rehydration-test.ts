@@ -181,8 +181,8 @@ function getErrorMessage(assert: Assert, error: unknown): string {
 class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   static suiteName = 'chaos-rehydration';
 
-  protected delegate!: RehydrationDelegate;
-  protected serverOutput!: Option<string>;
+  protected declare delegate: RehydrationDelegate;
+  protected declare serverOutput: Option<string>;
 
   renderServerSide(
     template: string | ComponentBlueprint,
@@ -252,7 +252,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
 
 class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
   static suiteName = 'chaos-partial-rehydration';
-  protected delegate!: PartialRehydrationDelegate;
+  protected declare delegate: PartialRehydrationDelegate;
 
   renderClientSide(componentName: string, args: Dict<unknown>): void {
     this.renderResult = this.delegate.renderComponentClientSide(componentName, args, this.element);

@@ -4,7 +4,7 @@ import { assert } from './support';
 
 function makeSyncDataAttrModifier(hooks: string[]) {
   return class SyncDataAttrModifier {
-    element!: SimpleElement;
+    declare element: SimpleElement;
     didInsertElement([param]: string[]) {
       this.element.setAttribute('data-modifier', `installed - ${param}`);
       hooks.push('didInsertElement');

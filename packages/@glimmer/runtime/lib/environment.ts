@@ -113,7 +113,7 @@ class TransactionImpl implements Transaction {
 export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
-  protected appendOperations!: GlimmerTreeConstruction;
+  protected declare appendOperations: GlimmerTreeConstruction;
   protected updateOperations?: GlimmerTreeChanges;
 
   // Delegate methods and values

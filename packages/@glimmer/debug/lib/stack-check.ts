@@ -10,7 +10,7 @@ export interface Checker<T> {
 
 export function wrap<T>(checker: () => Checker<T>): Checker<T> {
   class Wrapped {
-    type!: T;
+    declare type: T;
 
     validate(value: unknown): value is T {
       return checker().validate(value);
@@ -29,7 +29,7 @@ export interface Constructor<T> extends Function {
 }
 
 class TypeofChecker<T> implements Checker<T> {
-  type!: T;
+  declare type: T;
 
   constructor(private expectedType: string) {}
 
@@ -45,7 +45,7 @@ class TypeofChecker<T> implements Checker<T> {
 export type Primitive = undefined | null | boolean | number | string;
 
 class PrimitiveChecker implements Checker<Primitive> {
-  type!: Primitive;
+  declare type: Primitive;
 
   validate(value: unknown): value is Primitive {
     return (
@@ -63,7 +63,7 @@ class PrimitiveChecker implements Checker<Primitive> {
 }
 
 class NullChecker implements Checker<null> {
-  type!: null;
+  declare type: null;
 
   validate(value: unknown): value is null {
     return value === null;
@@ -75,7 +75,7 @@ class NullChecker implements Checker<null> {
 }
 
 class InstanceofChecker<T> implements Checker<T> {
-  type!: T;
+  declare type: T;
 
   constructor(private Class: Constructor<T>) {}
 
@@ -89,7 +89,7 @@ class InstanceofChecker<T> implements Checker<T> {
 }
 
 class OptionChecker<T> implements Checker<Option<T>> {
-  type!: Option<T>;
+  declare type: Option<T>;
 
   constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
 
@@ -104,7 +104,7 @@ class OptionChecker<T> implements Checker<Option<T>> {
 }
 
 class MaybeChecker<T> implements Checker<Maybe<T>> {
-  type!: Maybe<T>;
+  declare type: Maybe<T>;
 
   constructor(private checker: Checker<T>) {}
 
@@ -119,7 +119,7 @@ class MaybeChecker<T> implements Checker<Maybe<T>> {
 }
 
 class OrChecker<T, U> implements Checker<T | U> {
-  type!: T | U;
+  declare type: T | U;
 
   constructor(private left: Checker<T>, private right: Checker<U>) {}
 
@@ -133,7 +133,7 @@ class OrChecker<T, U> implements Checker<T | U> {
 }
 
 class ExactValueChecker<T> implements Checker<T> {
-  type!: T;
+  declare type: T;
 
   constructor(private value: T, private desc: string) {}
 
@@ -147,7 +147,7 @@ class ExactValueChecker<T> implements Checker<T> {
 }
 
 class PropertyChecker<T> implements Checker<T> {
-  type!: T;
+  declare type: T;
 
   constructor(private checkers: Dict<Checker<unknown>>) {}
 
@@ -175,7 +175,7 @@ class PropertyChecker<T> implements Checker<T> {
 }
 
 class ArrayChecker<T> implements Checker<T[]> {
-  type!: T[];
+  declare type: T[];
 
   constructor(private checker: Checker<T>) {}
 
@@ -192,7 +192,7 @@ class ArrayChecker<T> implements Checker<T[]> {
 }
 
 class DictChecker<T> implements Checker<Dict<T>> {
-  type!: Dict<T>;
+  declare type: Dict<T>;
 
   constructor(private checker: Checker<T>) {}
 
@@ -231,7 +231,7 @@ class OpaqueChecker implements Checker<unknown> {
 }
 
 class ObjectChecker implements Checker<unknown> {
-  type!: object;
+  declare type: object;
 
   validate(obj: unknown): obj is object {
     return typeof obj === 'function' || (typeof obj === 'object' && obj !== null);
@@ -247,7 +247,7 @@ export interface SafeString {
 }
 
 class SafeStringChecker implements Checker<SafeString> {
-  type!: SafeString;
+  declare type: SafeString;
 
   validate(value: unknown): value is SafeString {
     return (

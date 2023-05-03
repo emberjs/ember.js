@@ -1975,7 +1975,7 @@ class CurlyTeardownTest extends CurlyTest {
 class CurlyLateLayoutTest extends CurlyTest {
   static suiteName = '[curly component] late bound layout';
 
-  delegate!: JitRenderDelegate;
+  declare delegate: JitRenderDelegate;
 
   @test
   'can bind the layout late'() {
@@ -2002,7 +2002,7 @@ class CurlyLateLayoutTest extends CurlyTest {
 class CurlyAppendableTest extends CurlyTest {
   static suiteName = '[curly component] appendable components';
 
-  delegate!: JitRenderDelegate;
+  declare delegate: JitRenderDelegate;
 
   @test
   'it does not work on optimized appends'() {
