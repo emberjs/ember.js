@@ -21,8 +21,8 @@ import { Reference } from '@glimmer/reference';
 import { EnvironmentDelegate } from '@glimmer/runtime';
 
 export interface RenderDelegateOptions {
-  doc?: SimpleDocument | Document;
-  env?: EnvironmentDelegate;
+  doc?: SimpleDocument | Document | undefined;
+  env?: EnvironmentDelegate | undefined;
 }
 
 export default interface RenderDelegate {

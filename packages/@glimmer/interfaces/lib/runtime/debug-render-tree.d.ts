@@ -9,7 +9,7 @@ export interface RenderNode {
   name: string;
   args: CapturedArguments;
   instance: unknown;
-  template?: string;
+  template?: string | undefined;
 }
 
 export interface CapturedRenderNode {

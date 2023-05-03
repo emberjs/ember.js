@@ -1,7 +1,7 @@
 import { precompile } from '@glimmer/compiler';
 import { preprocess } from '../..';
 import { module } from '../support';
-import { unwrapTemplate, assert as glimmerAssert } from '@glimmer/util';
+import { unwrapTemplate, assert as glimmerAssert, expect } from '@glimmer/util';
 import { SexpOpcodes, WireFormat } from '@glimmer/interfaces';
 import { TemplateWithIdAndReferrer } from '@glimmer/opcode-compiler';
 
@@ -24,6 +24,40 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     assert.strictEqual(wire.moduleName, 'my/module-name', 'Template has correct meta');
+  });
+
+  test('lexicalScope is used if present', (assert) => {
+    // eslint-disable-next-line no-eval
+    let wire: WireFormat.SerializedTemplateWithLazyBlock = eval(
+      `(${precompile('<hello /><div />', {
+        lexicalScope: (variable: string) => variable === 'hello',
+      })})`
+    );
+
+    const hello = {};
+    assert.ok(hello, 'the lexical variable is present');
+
+    // eslint-disable-next-line no-eval
+    let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
+    let [statements] = block;
+    let [[, componentNameExpr], ...divExpr] = statements as [
+      WireFormat.Statements.Component,
+      ...WireFormat.Statement[]
+    ];
+
+    assert.deepEqual(wire.scope?.(), [hello]);
+
+    assert.deepEqual(
+      componentNameExpr,
+      [SexpOpcodes.GetLexicalSymbol, 0],
+      'The component invocation is for the lexical symbol `hello` (the 0th lexical entry)'
+    );
+
+    assert.deepEqual(divExpr, [
+      [SexpOpcodes.OpenElement, 0],
+      [SexpOpcodes.FlushElement],
+      [SexpOpcodes.CloseElement],
+    ]);
   });
 
   test('customizeComponentName is used if present', function (assert) {

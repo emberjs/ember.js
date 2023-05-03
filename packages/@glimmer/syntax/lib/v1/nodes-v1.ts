@@ -10,7 +10,7 @@ export interface Symbols {
   get(name: string): number;
 
   getLocalsMap(): Dict<number>;
-  getEvalInfo(): WireFormat.Core.EvalInfo;
+  getDebugInfo(): WireFormat.Core.DebugInfo;
 
   allocateFree(name: string): number;
   allocateNamed(name: string): number;

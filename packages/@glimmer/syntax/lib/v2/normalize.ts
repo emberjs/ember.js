@@ -2,7 +2,11 @@ import { PresentArray } from '@glimmer/interfaces';
 import { assert, assign, isPresent } from '@glimmer/util';
 
 import Printer from '../generation/printer';
-import { PrecompileOptions, preprocess } from '../parser/tokenizer-event-handlers';
+import {
+  PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
+  preprocess,
+} from '../parser/tokenizer-event-handlers';
 import { SourceLocation } from '../source/location';
 import { SourceSlice } from '../source/slice';
 import { Source } from '../source/source';
@@ -27,22 +31,23 @@ import {
 
 export function normalize(
   source: Source,
-  options: PrecompileOptions = {}
+  options: PrecompileOptionsWithLexicalScope = { lexicalScope: () => false }
 ): [ast: ASTv2.Template, locals: string[]] {
   let ast = preprocess(source, options);
 
-  let normalizeOptions = assign(
-    {
-      strictMode: false,
-      locals: [],
-    },
-    options
-  );
+  let normalizeOptions = {
+    strictMode: false,
+    locals: [],
+    ...options,
+  };
 
   let top = SymbolTable.top(
     normalizeOptions.locals,
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    options.customizeComponentName ?? ((name) => name)
+    {
+      customizeComponentName: options.customizeComponentName ?? ((name) => name),
+      lexicalScope: options.lexicalScope,
+    }
   );
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);
@@ -91,9 +96,9 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
   resolutionFor<N extends ASTv1.CallNode | ASTv1.PathExpression>(
     node: N,
     resolution: Resolution<N>
-  ): { resolution: ASTv2.FreeVarResolution } | { resolution: 'error'; path: string; head: string } {
+  ): { result: ASTv2.FreeVarResolution } | { result: 'error'; path: string; head: string } {
     if (this.strict) {
-      return { resolution: ASTv2.STRICT_RESOLUTION };
+      return { result: ASTv2.STRICT_RESOLUTION };
     }
 
     if (this.isFreeVar(node)) {
@@ -101,15 +106,15 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
 
       if (r === null) {
         return {
-          resolution: 'error',
+          result: 'error',
           path: printPath(node),
           head: printHead(node),
         };
       }
 
-      return { resolution: r };
+      return { result: r };
     } else {
-      return { resolution: ASTv2.STRICT_RESOLUTION };
+      return { result: ASTv2.STRICT_RESOLUTION };
     }
   }
 
@@ -128,7 +133,7 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
   }
 
   hasBinding(name: string): boolean {
-    return this.table.has(name);
+    return this.table.has(name) || this.table.hasLexical(name);
   }
 
   child(blockParams: string[]): BlockContext<BlockSymbolTable> {
@@ -181,7 +186,7 @@ class ExpressionNormalizer {
       case 'SubExpression': {
         let resolution = this.block.resolutionFor(expr, SexpSyntaxContext);
 
-        if (resolution.resolution === 'error') {
+        if (resolution.result === 'error') {
           throw generateSyntaxError(
             `You attempted to invoke a path (\`${resolution.path}\`) but ${resolution.head} was not in scope`,
             expr.loc
@@ -189,7 +194,7 @@ class ExpressionNormalizer {
         }
 
         return this.block.builder.sexp(
-          this.callParts(expr, resolution.resolution),
+          this.callParts(expr, resolution.result),
           this.block.loc(expr.loc)
         );
       }
@@ -396,14 +401,14 @@ class StatementNormalizer {
 
     let resolution = this.block.resolutionFor(block, BlockSyntaxContext);
 
-    if (resolution.resolution === 'error') {
+    if (resolution.result === 'error') {
       throw generateSyntaxError(
         `You attempted to invoke a path (\`{{#${resolution.path}}}\`) but ${resolution.head} was not in scope`,
         loc
       );
     }
 
-    let callParts = this.expr.callParts(block, resolution.resolution);
+    let callParts = this.expr.callParts(block, resolution.result);
 
     return this.block.builder.blockStatement(
       assign(
@@ -505,14 +510,14 @@ class ElementNormalizer {
   private modifier(m: ASTv1.ElementModifierStatement): ASTv2.ElementModifier {
     let resolution = this.ctx.resolutionFor(m, ModifierSyntaxContext);
 
-    if (resolution.resolution === 'error') {
+    if (resolution.result === 'error') {
       throw generateSyntaxError(
         `You attempted to invoke a path (\`{{#${resolution.path}}}\`) as a modifier, but ${resolution.head} was not in scope. Try adding \`this\` to the beginning of the path`,
         m.loc
       );
     }
 
-    let callParts = this.expr.callParts(m, resolution.resolution);
+    let callParts = this.expr.callParts(m, resolution.result);
     return this.ctx.builder.modifier(callParts, this.ctx.loc(m.loc));
   }
 
@@ -701,6 +706,8 @@ class ElementNormalizer {
     // expression normalizer.
     let isComponent = inScope || uppercase;
 
+    console.log({ isComponent });
+
     let variableLoc = loc.sliceStartChars({ skipStart: 1, chars: variable.length });
 
     let tailLength = tail.reduce((accum, part) => accum + 1 + part.length, 0);
@@ -716,14 +723,16 @@ class ElementNormalizer {
 
       let resolution = this.ctx.resolutionFor(path, ComponentSyntaxContext);
 
-      if (resolution.resolution === 'error') {
+      if (resolution.result === 'error') {
         throw generateSyntaxError(
           `You attempted to invoke a path (\`<${resolution.path}>\`) but ${resolution.head} was not in scope`,
           loc
         );
       }
 
-      return new ExpressionNormalizer(this.ctx).normalize(path, resolution.resolution);
+      return new ExpressionNormalizer(this.ctx).normalize(path, resolution.result);
+    } else {
+      this.ctx.table.allocateFree(variable, ASTv2.STRICT_RESOLUTION);
     }
 
     // If the tag name wasn't a valid component but contained a `.`, it's

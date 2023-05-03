@@ -14,19 +14,24 @@ import { GetContextualFreeOp, SexpOpcodes } from '@glimmer/interfaces';
  * 1. in a strict mode template
  * 2. in an unambiguous invocation with dot paths
  */
-export class StrictResolution {
-  resolution(): GetContextualFreeOp {
-    return SexpOpcodes.GetStrictFree;
-  }
+export const STRICT_RESOLUTION = {
+  resolution: (): GetContextualFreeOp => SexpOpcodes.GetStrictKeyword,
+  serialize: (): SerializedResolution => 'Strict',
+  isAngleBracket: false as const,
+};
 
-  serialize(): SerializedResolution {
-    return 'Strict';
-  }
+export type StrictResolution = typeof STRICT_RESOLUTION;
 
-  readonly isAngleBracket = false;
+export const HTML_RESOLUTION = {
+  ...STRICT_RESOLUTION,
+  isAngleBracket: true as const,
+};
+
+export type HtmlResolution = typeof HTML_RESOLUTION;
+
+export function isStrictResolution(value: unknown): value is StrictResolution {
+  return value === STRICT_RESOLUTION;
 }
-
-export const STRICT_RESOLUTION = new StrictResolution();
 
 /**
  * A `LooseModeResolution` includes:
@@ -145,7 +150,7 @@ export class LooseModeResolution {
 
   resolution(): GetContextualFreeOp {
     if (this.ambiguity.namespaces.length === 0) {
-      return SexpOpcodes.GetStrictFree;
+      return SexpOpcodes.GetStrictKeyword;
     } else if (this.ambiguity.namespaces.length === 1) {
       if (this.ambiguity.fallback) {
         // simple namespaced resolution with fallback must be attr={{x}}
@@ -192,11 +197,15 @@ export class LooseModeResolution {
 
 export const ARGUMENT_RESOLUTION = LooseModeResolution.fallback();
 
-export const enum FreeVarNamespace {
+export enum FreeVarNamespace {
   Helper = 'Helper',
   Modifier = 'Modifier',
   Component = 'Component',
 }
+
+export const HELPER_NAMESPACE = FreeVarNamespace.Helper;
+export const MODIFIER_NAMESPACE = FreeVarNamespace.Modifier;
+export const COMPONENT_NAMESPACE = FreeVarNamespace.Component;
 
 /**
  * A `ComponentOrHelperAmbiguity` might be a component or a helper, with an optional fallback
@@ -268,7 +277,7 @@ type Ambiguity =
   | NamespacedAmbiguity
   | FallbackAmbiguity;
 
-export type FreeVarResolution = StrictResolution | LooseModeResolution;
+export type FreeVarResolution = StrictResolution | HtmlResolution | LooseModeResolution;
 
 // Serialization
 

@@ -83,8 +83,8 @@ export class ExpressionEncoder {
     symbol,
   }: ASTv2.LocalVarReference):
     | WireFormat.Expressions.GetSymbol
-    | WireFormat.Expressions.GetTemplateSymbol {
-    return [isTemplateLocal ? SexpOpcodes.GetTemplateSymbol : SexpOpcodes.GetSymbol, symbol];
+    | WireFormat.Expressions.GetLexicalSymbol {
+    return [isTemplateLocal ? SexpOpcodes.GetLexicalSymbol : SexpOpcodes.GetSymbol, symbol];
   }
 
   GetWithResolver({ symbol }: mir.GetWithResolver): WireFormat.Expressions.GetContextualFree {
