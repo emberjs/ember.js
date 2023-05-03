@@ -8,7 +8,7 @@ const PRODUCTION = process.env.EMBER_ENV === 'production';
 /**
  * Transpiles a tree of ES2015+ JavaScript files to ES5 with Babel.
  */
-module.exports = function transpileToES5(inputNode, modules = false) {
+module.exports = function transpileGlimmer(inputNode, modules = false) {
   let plugins = [];
 
   if (!PRODUCTION) {
@@ -29,13 +29,12 @@ module.exports = function transpileToES5(inputNode, modules = false) {
   }
 
   const options = {
-    annotation: 'Babel - Default Target',
+    annotation: 'Babel - ES2020',
     sourceMaps: 'inline',
     presets: [
       [
         '@babel/preset-env',
         {
-          targets: 'last 2 versions, > 0.5%',
           modules,
         },
       ],

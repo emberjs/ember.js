@@ -35,7 +35,7 @@ export class RehydratingCursor extends CursorImpl {
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
   private unmatchedAttributes: Option<SimpleAttr[]> = null;
-  [CURSOR_STACK]!: Stack<RehydratingCursor>; // Hides property on base class
+  declare [CURSOR_STACK]: Stack<RehydratingCursor>; // Hides property on base class
   blockDepth = 0;
   startingBlockOffset: number;
 

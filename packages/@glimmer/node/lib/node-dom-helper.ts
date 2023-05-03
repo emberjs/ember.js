@@ -4,7 +4,7 @@ import createHTMLDocument from '@simple-dom/document';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
-  protected document!: SimpleDocument; // Hides property on base class
+  protected declare document: SimpleDocument; // Hides property on base class
   constructor(doc: Option<SimpleDocument>) {
     super(doc || createHTMLDocument());
   }

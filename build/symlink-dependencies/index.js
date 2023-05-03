@@ -1,4 +1,4 @@
-/* eslint-disable node/no-unpublished-require */
+/* eslint-disable n/no-unpublished-require */
 
 'use strict';
 

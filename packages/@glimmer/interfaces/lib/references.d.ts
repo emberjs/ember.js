@@ -12,7 +12,11 @@ export interface ReferenceTypes {
   readonly Invokable: InvokableReference;
 }
 
-type ReferenceType = ConstantReference | ComputeReference | UnboundReference | InvokableReference;
+export type ReferenceType =
+  | ConstantReference
+  | ComputeReference
+  | UnboundReference
+  | InvokableReference;
 
 declare const REFERENCE: unique symbol;
 export type ReferenceSymbol = typeof REFERENCE;

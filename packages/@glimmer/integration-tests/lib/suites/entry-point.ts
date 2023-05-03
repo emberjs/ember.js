@@ -10,7 +10,7 @@ import { defineComponent } from '../test-helpers/define';
 export class EntryPointTest extends RenderTest {
   static suiteName = 'entry points';
 
-  readonly testType!: ComponentKind;
+  declare readonly testType: ComponentKind;
 
   readonly count = new Count();
 

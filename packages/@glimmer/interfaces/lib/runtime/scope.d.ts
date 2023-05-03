@@ -1,5 +1,5 @@
 import { CompilableBlock } from '../template';
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import { Option, Dict } from '../core';
 import { BlockSymbolTable } from '../tier1/symbol-table';
 import { Owner } from './owner';

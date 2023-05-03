@@ -27,7 +27,12 @@ module.exports = function () {
   // TypeScript compiler understands the project as a whole, it's faster to do
   // this once and use the transpiled JavaScript as the input to any further
   // transformations.
-  let jsTree = typescript(tsTree);
+  let jsTree = typescript(tsTree, {
+    compilerOptions: {
+      // tests use stage 1 decorators, so we need to use "set" semantics for fields.
+      useDefineForClassFields: false,
+    },
+  });
 
   // The TypeScript compiler doesn't emit `.d.ts` files, so we need to manually
   // merge them back into our JavaScript output.
@@ -71,7 +76,7 @@ module.exports = function () {
     let smokeTestTree = writeSmokeTest(packagesTree);
     output = [packagesTree, smokeTestTree];
   } else {
-    let testsTree = buildTests(tsTree, jsTree, packagesTree);
+    let testsTree = buildTests(jsTree, packagesTree);
     output = [packagesTree, testsTree];
   }
 

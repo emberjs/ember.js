@@ -1,7 +1,7 @@
-/* eslint-disable node/no-unpublished-require */
+/* eslint-disable n/no-unpublished-require */
 const rollup = require('rollup');
 const sourcemap = require('rollup-plugin-sourcemaps');
-const { terser } = require('rollup-plugin-terser');
+const terser = require('@rollup/plugin-terser');
 const strip = require('@rollup/plugin-strip');
 const path = require('path');
 const fs = require('fs-extra');

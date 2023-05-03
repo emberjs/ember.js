@@ -4,16 +4,19 @@ import { RenderTest, test, jitSuite, tracked, defineComponent, trackedObj } from
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
 import { getOwner, setOwner } from '@glimmer/owner';
 
-class CustomModifier {
-  static create(args: Arguments) {
-    return new this(getOwner(args)!, args);
+abstract class CustomModifier {
+  static create<This extends { new (owner: object, args: Arguments): unknown }>(
+    this: This,
+    args: Arguments
+  ): InstanceType<This> {
+    return new this(getOwner(args)!, args) as InstanceType<This>;
   }
 
   constructor(owner: Owner, public args: Arguments) {
     setOwner(this, owner);
   }
 
-  element!: Element;
+  declare element: Element;
 
   didInsertElement(): void {}
   didUpdate(): void {}

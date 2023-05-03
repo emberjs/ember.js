@@ -14,7 +14,7 @@ import { castToSimple } from '@glimmer/util';
 
 export class PartialRehydrationTest extends RenderTest {
   static suiteName = 'partial rehydration';
-  delegate!: PartialRehydrationDelegate;
+  declare delegate: PartialRehydrationDelegate;
 
   @test
   'can rehydrate from non starting blocks'() {

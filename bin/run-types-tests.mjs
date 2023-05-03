@@ -1,7 +1,5 @@
-#!/usr/bin/env node
-
-const execa = require('execa');
-const yaml = require('js-yaml');
+import { execa } from 'execa';
+import yaml from 'js-yaml';
 
 async function main() {
   /**
@@ -22,7 +20,7 @@ async function main() {
     let { message } = err;
     console.log('not ok 1 - types failed smoke test');
     console.log(`  ---
-${yaml.safeDump({ message })}
+${yaml.dump({ message })}
   ...`);
 
     process.exitCode = 1;

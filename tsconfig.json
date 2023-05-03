@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // Compilation Configuration
-    "target": "es2017",
+    "target": "es2020",
     "lib": ["ES2020", "DOM"],
     "inlineSources": true,
     "inlineSourceMap": true,
@@ -21,9 +21,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
+    "useDefineForClassFields": true,
 
     "newLine": "LF",
-    "noEmit": true
+    "noEmit": true,
+
+    "skipLibCheck": true
   },
   "include": ["packages/**/*.ts", "packages/interfaces/**/*.d.ts"],
   "exclude": ["dist", "ts-dist", "**/dist", "tmp", "node_modules", ".vscode"]

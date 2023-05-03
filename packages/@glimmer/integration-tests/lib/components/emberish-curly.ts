@@ -50,15 +50,15 @@ export class EmberishCurlyComponent {
   public static positionalParams: string[] | string = [];
 
   public dirtinessTag: DirtyableTag = createTag();
-  public layout!: Template;
-  public name!: string;
+  public declare layout: Template;
+  public declare name: string;
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;
-  public attrs!: Attrs;
-  public element!: Element;
-  public bounds!: Bounds;
+  public declare attrs: Attrs;
+  public declare element: Element;
+  public declare bounds: Bounds;
   public parentView: Option<EmberishCurlyComponent> = null;
-  public args!: CapturedNamedArguments;
+  public declare args: CapturedNamedArguments;
 
   public _guid: string;
 

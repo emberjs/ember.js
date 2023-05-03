@@ -41,8 +41,8 @@ class RenderTests extends InitialRenderSuite {
 
 class AbstractRehydrationTests extends InitialRenderSuite {
   name = 'rehydration';
-  protected delegate!: RehydrationDelegate;
-  protected serverOutput!: Option<string>;
+  protected declare delegate: RehydrationDelegate;
+  protected declare serverOutput: Option<string>;
 
   renderServerSide(
     template: string | ComponentBlueprint,
