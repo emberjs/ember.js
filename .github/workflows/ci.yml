@@ -112,6 +112,13 @@ jobs:
           BROCCOLI_ENV: production
           SHOULD_TRANSPILE: true
         run: yarn ember build
+
+      - name: Set BrowserStack Local Identifier
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
+
       - name: test:browserstack
         env:
           BROWSERSTACK_USERNAME: emberjscoreteam1
