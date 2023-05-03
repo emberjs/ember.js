@@ -1,7 +1,9 @@
 import {
+  AttrNamespace,
   Dict,
   Expressions,
   GetContextualFreeOp,
+  Namespace,
   Option,
   PresentArray,
   SexpOpcodes,
@@ -9,7 +11,6 @@ import {
   WireFormat,
 } from '@glimmer/interfaces';
 import { assert, assertNever, dict, exhausted, expect, isPresent, values } from '@glimmer/util';
-import { AttrNamespace, Namespace } from '@simple-dom/interface';
 
 import {
   Builder,

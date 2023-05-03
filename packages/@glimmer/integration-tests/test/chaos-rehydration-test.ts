@@ -1,6 +1,6 @@
 import { Dict, Option } from '@glimmer/interfaces';
-import { castToBrowser, castToSimple, expect, LOCAL_LOGGER } from '@glimmer/util';
-import { NodeType, SimpleElement } from '@simple-dom/interface';
+import { castToBrowser, castToSimple, expect, isObject, LOCAL_LOGGER } from '@glimmer/util';
+import { NodeType, SimpleElement } from '@glimmer/interfaces';
 import {
   blockStack,
   CLOSE,
@@ -129,7 +129,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
       this.renderClientSide(template, context);
 
       let element = castToBrowser(this.element, 'HTML');
-      this.assert.equal(element.innerHTML, expectedHTML);
+      this.assert.strictEqual(element.innerHTML, expectedHTML);
     } else {
       for (let i = 0; i < count; i++) {
         let seed = QUnit.config.seed ? `&seed=${QUnit.config.seed}` : '';
@@ -141,7 +141,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
           this.renderClientSide(template, context);
 
           let element = castToBrowser(this.element, 'HTML');
-          this.assert.equal(
+          this.assert.strictEqual(
             element.innerHTML,
             expectedHTML,
             `should match after iteration ${i}; rerun with these query params: '${rerunUrl}'`
@@ -149,7 +149,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
         } catch (error) {
           this.assert.pushResult({
             result: false,
-            actual: error.message,
+            actual: getErrorMessage(this.assert, error),
             expected: undefined,
             message: `Error occurred during iteration ${i}; rerun with these query params: ${rerunUrl}`,
           });
@@ -161,6 +161,20 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
         }
       }
     }
+  }
+}
+
+function getErrorMessage(assert: Assert, error: unknown): string {
+  if (isObject(error) && 'message' in error && typeof error.message === 'string') {
+    return error.message;
+  } else {
+    assert.pushResult({
+      result: false,
+      expected: `an error with a 'message' property`,
+      actual: error,
+      message: `unexpectedly, error.message did not exist`,
+    });
+    return '';
   }
 }
 
@@ -255,7 +269,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
     );
     const html = this.delegate.renderComponentServerSide('Root', args);
 
-    this.assert.equal(
+    this.assert.strictEqual(
       html,
       content([
         OPEN,
@@ -298,7 +312,7 @@ class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
       '<div><RehydratingComponent @show={{@show}}/></div>'
     );
     const html = this.delegate.renderComponentServerSide('Root', args);
-    this.assert.equal(
+    this.assert.strictEqual(
       html,
       content([
         OPEN,

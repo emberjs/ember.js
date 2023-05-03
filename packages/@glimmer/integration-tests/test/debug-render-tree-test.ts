@@ -7,7 +7,7 @@ import {
   Owner,
 } from '@glimmer/interfaces';
 import { expect, assign } from '@glimmer/util';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import {
   test,
   RenderTest,
@@ -446,20 +446,20 @@ class DebugRenderTreeTest extends RenderTest {
     let node = expect(_node, 'BUG: Expected node');
 
     return {
-      parentElement: ((expect(
+      parentElement: expect(
         node.parentNode,
         'BUG: detached node'
-      ) as unknown) as SimpleNode) as SimpleElement,
-      firstNode: (node as unknown) as SimpleNode,
-      lastNode: (node as unknown) as SimpleNode,
+      ) as unknown as SimpleNode as SimpleElement,
+      firstNode: node as unknown as SimpleNode,
+      lastNode: node as unknown as SimpleNode,
     };
   }
 
   elementBounds(element: Element): CapturedBounds {
     return {
-      parentElement: (element as unknown) as SimpleElement,
-      firstNode: (element.firstChild! as unknown) as SimpleNode,
-      lastNode: (element.lastChild! as unknown) as SimpleNode,
+      parentElement: element as unknown as SimpleElement,
+      firstNode: element.firstChild! as unknown as SimpleNode,
+      lastNode: element.lastChild! as unknown as SimpleNode,
     };
   }
 

@@ -1,9 +1,9 @@
 import { CompilableBlock } from '../template';
 // eslint-disable-next-line node/no-extraneous-import
-import { Reference } from '@glimmer/reference';
 import { Option, Dict } from '../core';
 import { BlockSymbolTable } from '../tier1/symbol-table';
 import { Owner } from './owner';
+import { Reference } from '../references';
 
 export type Block = CompilableBlock | number;
 

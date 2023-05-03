@@ -41,15 +41,16 @@ export interface Constructor<T = unknown, Prototype = T> {
   prototype: Prototype;
 }
 
-export function module(name: string): (klass: typeof TestCase & Constructor) => void {
-  return function (klass: typeof TestCase & Constructor) {
+export function module(name: string): (klass: new () => TestCase) => void {
+  return function (klass: new () => TestCase) {
     QUnit.module(name);
 
-    let proto = (klass.prototype as any) as Dict<unknown>;
+    let proto = klass.prototype as any as Dict<unknown>;
     for (let prop in proto) {
       const test = proto[prop];
 
       if (isTestFunction(test)) {
+        // eslint-disable-next-line qunit/require-expect
         QUnit.test(prop, (assert) => new klass().run(test, assert));
       }
     }

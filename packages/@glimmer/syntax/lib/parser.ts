@@ -73,9 +73,9 @@ export abstract class Parser {
   }
 
   finish<T extends { loc: SourceSpan }>(node: ParserNodeBuilder<T>): T {
-    return (assign({}, node, {
+    return assign({}, node, {
       loc: node.loc.until(this.offset()),
-    } as const) as unknown) as T;
+    } as const) as unknown as T;
 
     // node.loc = node.loc.withEnd(end);
   }

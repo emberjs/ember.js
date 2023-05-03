@@ -87,7 +87,7 @@ function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableM
     DESTROYABLE_META.set(destroyable, meta);
   }
 
-  return (meta as unknown) as DestroyableMeta<T>;
+  return meta as unknown as DestroyableMeta<T>;
 }
 
 export function associateDestroyableChild<T extends Destroyable>(parent: Destroyable, child: T): T {

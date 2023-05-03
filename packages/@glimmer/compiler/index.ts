@@ -1,14 +1,14 @@
-export { defaultId, precompile, precompileJSON, PrecompileOptions } from './lib/compiler';
 export {
-  ProgramSymbols,
   buildStatement,
   buildStatements,
-  s,
   c,
-  unicode,
   NEWLINE,
+  ProgramSymbols,
+  s,
+  unicode,
 } from './lib/builder/builder';
-export { BuilderStatement, Builder } from './lib/builder/builder-interface';
+export { Builder, BuilderStatement } from './lib/builder/builder-interface';
+export { defaultId, precompile, precompileJSON, PrecompileOptions } from './lib/compiler';
 
 // exported only for tests
 export { default as WireFormatDebugger } from './lib/wire-format-debug';

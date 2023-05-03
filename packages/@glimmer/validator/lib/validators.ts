@@ -1,4 +1,19 @@
 import { DEBUG } from '@glimmer/env';
+import type {
+  MonomorphicTagId,
+  COMBINATOR_TAG_ID as ICOMBINATOR_TAG_ID,
+  CONSTANT_TAG_ID as ICONSTANT_TAG_ID,
+  DIRTYABLE_TAG_ID as IDIRTYABLE_TAG_ID,
+  UPDATABLE_TAG_ID as IUPDATABLE_TAG_ID,
+  VOLATILE_TAG_ID as IVOLATILE_TAG_ID,
+  CURRENT_TAG_ID as ICURRENT_TAG_ID,
+  UpdatableTag,
+  TagTypeSymbol,
+  DirtyableTag,
+  TagComputeSymbol,
+  Tag,
+  ConstantTag,
+} from '@glimmer/interfaces';
 import { scheduleRevalidate } from '@glimmer/global-context';
 import { symbol, unwrap } from './utils';
 import { assertTagNotConsumed } from './debug';
@@ -11,7 +26,7 @@ export const CONSTANT: Revision = 0;
 export const INITIAL: Revision = 1;
 export const VOLATILE: Revision = NaN;
 
-let $REVISION = INITIAL;
+export let $REVISION = INITIAL;
 
 export function bump(): void {
   $REVISION++;
@@ -19,13 +34,14 @@ export function bump(): void {
 
 //////////
 
-export const COMPUTE: unique symbol = symbol('TAG_COMPUTE');
+const DIRYTABLE_TAG_ID: IDIRTYABLE_TAG_ID = 0;
+const UPDATABLE_TAG_ID: IUPDATABLE_TAG_ID = 1;
+const COMBINATOR_TAG_ID: ICOMBINATOR_TAG_ID = 2;
+const CONSTANT_TAG_ID: ICONSTANT_TAG_ID = 3;
 
-export interface EntityTag<T> {
-  [COMPUTE](): T;
-}
+//////////
 
-export type Tag = EntityTag<Revision>;
+export const COMPUTE: TagComputeSymbol = symbol('TAG_COMPUTE');
 
 //////////
 
@@ -57,20 +73,7 @@ export function validateTag(tag: Tag, snapshot: Revision): boolean {
 
 //////////
 
-/**
- * This enum represents all of the possible tag types for the monomorphic tag class.
- * Other custom tag classes can exist, such as CurrentTag and VolatileTag, but for
- * performance reasons, any type of tag that is meant to be used frequently should
- * be added to the monomorphic tag.
- */
-const enum MonomorphicTagTypes {
-  Dirtyable,
-  Updatable,
-  Combinator,
-  Constant,
-}
-
-const TYPE: unique symbol = symbol('TAG_TYPE');
+const TYPE: TagTypeSymbol = symbol('TAG_TYPE');
 
 // this is basically a const
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -88,16 +91,7 @@ function allowsCycles(tag: Tag): boolean {
   }
 }
 
-interface MonomorphicTagBase<T extends MonomorphicTagTypes> extends Tag {
-  [TYPE]: T;
-}
-
-export type DirtyableTag = MonomorphicTagBase<MonomorphicTagTypes.Dirtyable>;
-export type UpdatableTag = MonomorphicTagBase<MonomorphicTagTypes.Updatable>;
-export type CombinatorTag = MonomorphicTagBase<MonomorphicTagTypes.Combinator>;
-export type ConstantTag = MonomorphicTagBase<MonomorphicTagTypes.Constant>;
-
-class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
+class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   static combine(tags: Tag[]): Tag {
     switch (tags.length) {
       case 0:
@@ -105,7 +99,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
       case 1:
         return tags[0];
       default:
-        let tag: MonomorphicTagImpl = new MonomorphicTagImpl(MonomorphicTagTypes.Combinator);
+        let tag: MonomorphicTagImpl = new MonomorphicTagImpl(COMBINATOR_TAG_ID);
         tag.subtag = tags;
         return tag;
     }
@@ -169,7 +163,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
   }
 
   static updateTag(_tag: UpdatableTag, _subtag: Tag) {
-    if (DEBUG && _tag[TYPE] !== MonomorphicTagTypes.Updatable) {
+    if (DEBUG && _tag[TYPE] !== UPDATABLE_TAG_ID) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
 
@@ -204,10 +198,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagTypes = MonomorphicTagTypes> {
   }
 
   static dirtyTag(tag: DirtyableTag | UpdatableTag, disableConsumptionAssertion?: boolean) {
-    if (
-      DEBUG &&
-      !(tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable)
-    ) {
+    if (DEBUG && !(tag[TYPE] === UPDATABLE_TAG_ID || tag[TYPE] === DIRYTABLE_TAG_ID)) {
       throw new Error('Attempted to dirty a tag that was not dirtyable');
     }
 
@@ -229,16 +220,16 @@ export const UPDATE_TAG = MonomorphicTagImpl.updateTag;
 //////////
 
 export function createTag(): DirtyableTag {
-  return new MonomorphicTagImpl(MonomorphicTagTypes.Dirtyable);
+  return new MonomorphicTagImpl(DIRYTABLE_TAG_ID);
 }
 
 export function createUpdatableTag(): UpdatableTag {
-  return new MonomorphicTagImpl(MonomorphicTagTypes.Updatable);
+  return new MonomorphicTagImpl(UPDATABLE_TAG_ID);
 }
 
 //////////
 
-export const CONSTANT_TAG: ConstantTag = new MonomorphicTagImpl(MonomorphicTagTypes.Constant);
+export const CONSTANT_TAG: ConstantTag = new MonomorphicTagImpl(CONSTANT_TAG_ID);
 
 export function isConstTag(tag: Tag): tag is ConstantTag {
   return tag === CONSTANT_TAG;
@@ -246,7 +237,10 @@ export function isConstTag(tag: Tag): tag is ConstantTag {
 
 //////////
 
+const VOLATILE_TAG_ID: IVOLATILE_TAG_ID = 100;
+
 export class VolatileTag implements Tag {
+  readonly [TYPE] = VOLATILE_TAG_ID;
   [COMPUTE](): Revision {
     return VOLATILE;
   }
@@ -256,7 +250,10 @@ export const VOLATILE_TAG = new VolatileTag();
 
 //////////
 
-export class CurrentTag implements CurrentTag {
+const CURRENT_TAG_ID: ICURRENT_TAG_ID = 101;
+
+export class CurrentTag implements Tag {
+  readonly [TYPE] = CURRENT_TAG_ID;
   [COMPUTE](): Revision {
     return $REVISION;
   }

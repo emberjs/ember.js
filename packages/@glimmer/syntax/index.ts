@@ -1,41 +1,39 @@
-export { Source } from './lib/source/source';
-export { default as builders } from './lib/v1/public-builders';
-export * as ASTv1 from './lib/v1/api';
-export * as ASTv2 from './lib/v2-a/api';
-export { normalize } from './lib/v2-a/normalize';
-export { SymbolTable, BlockSymbolTable, ProgramSymbolTable } from './lib/symbol-table';
-export { generateSyntaxError, GlimmerSyntaxError } from './lib/syntax-error';
+export { default as print } from './lib/generation/print';
+export { sortByLoc } from './lib/generation/util';
+export { getTemplateLocals } from './lib/get-template-locals';
+export { isKeyword, KEYWORDS_TYPES, KeywordType } from './lib/keywords';
 export {
-  preprocess,
   ASTPlugin,
   ASTPluginBuilder,
   ASTPluginEnvironment,
+  PrecompileOptions,
+  preprocess,
   Syntax,
   TemplateIdFn,
-  PrecompileOptions,
 } from './lib/parser/tokenizer-event-handlers';
-export { default as print } from './lib/generation/print';
-export { sortByLoc } from './lib/generation/util';
-export { default as Walker } from './lib/traversal/walker';
-export { default as traverse } from './lib/traversal/traverse';
-export { NodeVisitor } from './lib/traversal/visitor';
-export { cannotRemoveNode, cannotReplaceNode } from './lib/traversal/errors';
-export { default as WalkerPath } from './lib/traversal/path';
-export { isKeyword, KeywordType, KEYWORDS_TYPES } from './lib/keywords';
-export { getTemplateLocals } from './lib/get-template-locals';
-
+export { PreprocessOptions } from './lib/parser/tokenizer-event-handlers';
 export { SourceSlice } from './lib/source/slice';
+export { Source } from './lib/source/source';
 export { SourceSpan } from './lib/source/span';
 export {
-  SpanList,
-  maybeLoc,
-  MaybeHasSourceSpan,
-  loc,
   HasSourceSpan,
   hasSpan,
+  loc,
+  MaybeHasSourceSpan,
+  maybeLoc,
+  SpanList,
 } from './lib/source/span-list';
-export { PreprocessOptions } from './lib/parser/tokenizer-event-handlers';
-
+export { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './lib/symbol-table';
+export { generateSyntaxError, GlimmerSyntaxError } from './lib/syntax-error';
+export { cannotRemoveNode, cannotReplaceNode } from './lib/traversal/errors';
+export { default as WalkerPath } from './lib/traversal/path';
+export { default as traverse } from './lib/traversal/traverse';
+export { NodeVisitor } from './lib/traversal/visitor';
+export { default as Walker } from './lib/traversal/walker';
+export * as ASTv1 from './lib/v1/api';
+export { default as builders } from './lib/v1/public-builders';
+export * as ASTv2 from './lib/v2-a/api';
+export { normalize } from './lib/v2-a/normalize';
 export { node } from './lib/v2-a/objects/node';
 
 /** @deprecated use WalkerPath instead */

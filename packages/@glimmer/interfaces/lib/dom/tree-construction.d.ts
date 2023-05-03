@@ -1,9 +1,4 @@
-import {
-  Namespace,
-  SimpleDocumentFragment,
-  SimpleElement,
-  SimpleNode,
-} from '@simple-dom/interface';
+import { Namespace, SimpleDocumentFragment, SimpleElement, SimpleNode } from './simple';
 
 export type NodeToken = number;
 

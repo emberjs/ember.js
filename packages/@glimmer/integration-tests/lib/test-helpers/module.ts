@@ -70,7 +70,7 @@ export function suite<D extends RenderDelegate>(
     if (shouldRunTest<D>(Delegate)) {
       componentModule(
         `${Delegate.style} :: Components :: ${suiteName}`,
-        (klass as any) as RenderTestConstructor<D, RenderTest>,
+        klass as any as RenderTestConstructor<D, RenderTest>,
         Delegate
       );
     }
@@ -99,7 +99,7 @@ export function suite<D extends RenderDelegate>(
             instance!.count.assert();
           });
         } else {
-          // eslint-disable-next-line no-loop-func
+          // eslint-disable-next-line no-loop-func, qunit/require-expect
           QUnit.test(prop, (assert) => {
             let result = test.call(instance!, assert, instance!.count);
             instance!.count.assert();
@@ -131,6 +131,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
 
     return (type: ComponentKind, klass: RenderTestConstructor<D, T>) => {
       if (!shouldSkip) {
+        // eslint-disable-next-line qunit/require-expect
         QUnit.test(prop, (assert) => {
           let instance = new klass(new Delegate());
           instance.testType = type;

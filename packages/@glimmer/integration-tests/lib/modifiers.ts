@@ -1,4 +1,4 @@
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import {
   Dict,
   Option,
@@ -27,7 +27,8 @@ export class TestModifierDefinitionState {
 }
 
 export class TestModifierManager
-  implements InternalModifierManager<TestModifier, TestModifierDefinitionState> {
+  implements InternalModifierManager<TestModifier, TestModifierDefinitionState>
+{
   create(
     _owner: Owner,
     element: SimpleElement,

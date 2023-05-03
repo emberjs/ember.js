@@ -92,7 +92,7 @@ class ErrImpl<T> extends ResultImpl<T> {
   }
 
   cast<U>(): Result<U> {
-    return (this as unknown) as Result<U>;
+    return this as unknown as Result<U>;
   }
 }
 

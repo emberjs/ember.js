@@ -1,4 +1,4 @@
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import {
   Dict,
   RuntimeResolver,

@@ -12,10 +12,10 @@ jobs:
     name: Glimmer Krausest Benchmark
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: volta-cli/action@v1
+      - uses: NullVoxPopuli/action-setup-pnpm@v2
       - name: Build Control
         run: |
           git checkout ${{ github.event.pull_request.base.sha }}
@@ -24,16 +24,16 @@ jobs:
       - name: Build Experiment
         run: |
           git checkout ${{ github.sha }}
-          yarn install --frozen-lockfile
-          yarn ember build --env production --suppress-sizes --output-path dist
+          pnpm install --frozen-lockfile
+          pnpm ember build --env production --suppress-sizes --output-path dist
       - name: Run Analysis
         timeout-minutes: 10
         uses: tracerbench/tracerbench-compare-action@master
         with:
           build-control: false
           build-experiment: false
-          control-serve-command: yarn benchmark:control
-          experiment-serve-command: yarn benchmark:experiment
+          control-serve-command: pnpm benchmark:control
+          experiment-serve-command: pnpm benchmark:experiment
           control-url: http://localhost:3000/krausest/
           experiment-url: http://localhost:3001/krausest/
           regression-threshold: 25

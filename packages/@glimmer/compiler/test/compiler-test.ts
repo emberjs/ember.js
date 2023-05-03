@@ -24,7 +24,7 @@ import {
 QUnit.module('@glimmer/compiler - compiling source to wire format');
 
 function compile(content: string): SerializedTemplate {
-  let parsed = (JSON.parse(precompile(content, {})) as unknown) as SerializedTemplateWithLazyBlock;
+  let parsed = JSON.parse(precompile(content, {})) as unknown as SerializedTemplateWithLazyBlock;
   let block = JSON.parse(parsed.block);
 
   return assign({}, parsed, { block });

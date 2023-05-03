@@ -114,9 +114,7 @@ function translateIfUnlessInlineKeyword(type: string) {
   };
 }
 
-export function ifUnlessInlineKeyword(
-  type: string
-): KeywordDelegate<
+export function ifUnlessInlineKeyword(type: string): KeywordDelegate<
   ASTv2.CallExpression | ASTv2.AppendContent,
   {
     condition: ASTv2.ExpressionNode;

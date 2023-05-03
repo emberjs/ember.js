@@ -8,10 +8,15 @@
     "typeRoots": [],
     "types": [],
     "baseUrl": ".",
-    "noEmit": true,
-    "paths": {
-      "@glimmer/*": ["../../dist/@glimmer/*"]
-    }
+    "noEmit": true
   },
-  "files": ["lib/index.js"]
+  "include": [
+    "benchmark/**/*",
+    "build/**/*",
+    "bin/**/*",
+    "lib/**/*",
+    "server/**/*",
+    "packages/build-utils/@glimmer/**/*",
+    "./*.js"
+  ]
 }

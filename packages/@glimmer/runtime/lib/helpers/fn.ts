@@ -7,9 +7,9 @@ import {
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
-import { reifyPositional } from '@glimmer/runtime';
 import { buildUntouchableThis } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
+import { reifyPositional } from '../vm/arguments';
 
 const context = buildUntouchableThis('`fn` helper');
 

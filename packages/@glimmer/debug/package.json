@@ -4,13 +4,13 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/debug",
   "private": true,
   "dependencies": {
-    "@glimmer/interfaces": "0.84.3",
-    "@glimmer/util": "0.84.3",
-    "@glimmer/vm": "0.84.3",
-    "@simple-dom/interface": "^1.4.0"
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^",
+    "@glimmer/vm": "workspace:^"
   },
   "devDependencies": {
-    "@types/qunit": "^2.9.0",
+    "@glimmer/local-debug-flags": "workspace:^",
+    "@types/qunit": "^2.19.5",
     "toml": "^3.0.0"
   }
 }

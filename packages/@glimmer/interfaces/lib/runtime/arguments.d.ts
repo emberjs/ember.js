@@ -1,9 +1,6 @@
-// eslint-disable-next-line node/no-extraneous-import
-import { Reference } from '@glimmer/reference';
-// eslint-disable-next-line node/no-extraneous-import
-import { Tag } from '@glimmer/validator';
-import { Dict, Option } from '../core';
-import { ScopeBlock, Block } from './scope';
+import { Option } from '../core';
+import { Reference } from '../references';
+import { ScopeBlock } from './scope';
 
 declare const CAPTURED_ARGS: unique symbol;
 

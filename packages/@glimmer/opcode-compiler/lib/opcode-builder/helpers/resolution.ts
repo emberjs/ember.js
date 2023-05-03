@@ -82,7 +82,7 @@ function assertResolverInvariants(meta: ContainingMetadata): ResolvedContainingM
     }
   }
 
-  return (meta as unknown) as ResolvedContainingMetadata;
+  return meta as unknown as ResolvedContainingMetadata;
 }
 
 /**

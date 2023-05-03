@@ -14,9 +14,7 @@ declare function require(id: 'crypto'): Crypto;
 declare function require(id: string): unknown;
 
 interface Crypto {
-  createHash(
-    alg: 'sha1'
-  ): {
+  createHash(alg: 'sha1'): {
     update(src: string, encoding: 'utf8'): void;
     digest(encoding: 'base64'): string;
   };
@@ -120,7 +118,7 @@ export function precompile(
     moduleName: moduleName ?? '(unknown template module)',
     // lying to the type checker here because we're going to
     // replace it just below, after stringification
-    scope: (SCOPE_PLACEHOLDER as unknown) as null,
+    scope: SCOPE_PLACEHOLDER as unknown as null,
     isStrictMode: options.strictMode ?? false,
   };
 

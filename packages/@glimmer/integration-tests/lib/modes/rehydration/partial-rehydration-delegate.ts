@@ -1,7 +1,7 @@
 import { Dict, RenderResult } from '@glimmer/interfaces';
 import { renderComponent, renderSync } from '@glimmer/runtime';
 import { RehydrationDelegate } from './delegate';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement } from '@glimmer/interfaces';
 import { DebugRehydrationBuilder } from './builder';
 
 export class PartialRehydrationDelegate extends RehydrationDelegate {
