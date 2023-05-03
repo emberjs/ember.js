@@ -1,7 +1,7 @@
-#!/usr/bin/env node
+import path from 'node:path';
+import { execaSync } from 'execa';
 
-const path = require('path');
-const execa = require('execa');
+const __dirname = new URL('.', import.meta.url).pathname;
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const EMBER_BIN = 'ember';
@@ -32,7 +32,7 @@ if ('EMBER_CLI_TEST_OUTPUT' in process.env) {
 
 // Executes a command and pipes stdout back to the user.
 function exec(command, args) {
-  execa.sync(command, args, {
+  execaSync(command, args, {
     stdio: 'inherit',
     preferLocal: true,
   });

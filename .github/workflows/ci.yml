@@ -44,7 +44,7 @@ jobs:
 
 
   test-node:
-    name: Chrome
+    name: Node
     runs-on: ubuntu-latest
     needs: ["install_dependencies"]
     timeout-minutes: 10

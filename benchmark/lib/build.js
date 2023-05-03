@@ -1,4 +1,4 @@
-/* eslint-disable node/no-unpublished-require */
+/* eslint-disable n/no-unpublished-require */
 const rollup = require('rollup');
 const sourcemap = require('rollup-plugin-sourcemaps');
 const terser = require('@rollup/plugin-terser');

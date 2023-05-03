@@ -9,7 +9,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:qunit/recommended",
-    "plugin:node/recommended",
+    "plugin:n/recommended",
+    "plugin:import/errors",
     "prettier"
   ],
   "plugins": ["@typescript-eslint", "prettier", "qunit"],
@@ -27,6 +28,7 @@
   },
   "ignorePatterns": ["dist", "ts-dist", "node_modules", "tmp"],
   "rules": {
+    "n/no-missing-import": "off",
     // disabled because we still have a few commented tests
     "qunit/no-commented-tests": "off",
     // disabled due to false positives
@@ -37,7 +39,7 @@
     "qunit/no-global-stop-start": "off",
     "import/no-extraneous-dependencies": ["error"],
     // this is handled by import/no-extraneous-dependencies
-    "node/no-extraneous-import": "off",
+    "n/no-extraneous-import": "off",
     "prettier/prettier": "error",
     "accessor-pairs": "error",
     "array-callback-return": "error",
@@ -119,7 +121,7 @@
     "no-path-concat": "off",
     "no-plusplus": "off",
     "no-process-env": "off",
-    "no-process-exit": "error",
+    "no-process-exit": "off",
     "no-proto": "error",
     "no-restricted-globals": "error",
     "no-restricted-imports": "error",
@@ -209,7 +211,6 @@
         "plugin:import/errors",
         "plugin:import/typescript",
         "plugin:qunit/recommended",
-        "plugin:node/recommended",
         "prettier"
       ],
       "plugins": ["simple-import-sort"],
@@ -225,7 +226,7 @@
         "import/export": "off",
         "qunit/no-global-expect": ["off"],
         // this is handled by import/errors
-        "node/no-extraneous-import": "off",
+        "n/no-extraneous-import": "off",
         "@typescript-eslint/unbound-method": [
           "error",
           {
@@ -255,7 +256,8 @@
         "sourceType": "module"
       },
       "rules": {
-        "no-useless-constructor": "off"
+        "no-useless-constructor": "off",
+        "n/no-missing-import": "off"
       }
     },
     // node files
@@ -266,6 +268,7 @@
         "testem.js",
         "testem-browserstack.js",
         "bin/**/*.js",
+        "bin/**/*.mjs",
         "build/**/*.js",
         "server/**/*.js"
       ],
@@ -281,8 +284,15 @@
     {
       "files": ["bin/**/*.js"],
       "rules": {
+        "n/no-unsupported-features/es-syntax": [
+          "error",
+          {
+            "version": ">=16.0.0",
+            "ignores": []
+          }
+        ],
         "no-process-exit": "off",
-        "node/shebang": "off"
+        "n/shebang": "off"
       }
     },
     {
@@ -291,11 +301,12 @@
         "browser": true
       },
       "files": ["benchmark/**/*.js", "benchmark/**/*.d.ts"],
+      "extends": ["plugin:import/errors"],
       "parserOptions": {
         "sourceType": "module"
       },
       "rules": {
-        "node/no-unsupported-features/es-syntax": "off",
+        "n/no-unsupported-features/es-syntax": "off",
         "no-console": "off"
       }
     },
@@ -307,8 +318,8 @@
         "mocha": true
       },
       "rules": {
-        "node/no-unsupported-features/es-syntax": "off",
-        "node/no-unpublished-import": "off",
+        "n/no-unsupported-features/es-syntax": "off",
+        "n/no-unpublished-import": "off",
         "no-console": "off"
       }
     },
@@ -328,8 +339,9 @@
       //   "tsconfigRootDir": __dirname
       // },
       "rules": {
-        "node/no-unsupported-features/es-syntax": "off",
-        "node/no-unsupported-features/node-builtins": "off",
+        "n/no-missing-import": "off",
+        "n/no-unsupported-features/es-syntax": "off",
+        "n/no-unsupported-features/node-builtins": "off",
         "@typescript-eslint/naming-convention": [
           "error",
           {
@@ -417,7 +429,7 @@
         "packages/@glimmer/reference/test/template-test.ts"
       ],
       "rules": {
-        "node/no-extraneous-import": "warn"
+        "n/no-extraneous-import": "warn"
       }
     }
   ]

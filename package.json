@@ -19,7 +19,6 @@
     "build": "ember build --env production --suppress-sizes",
     "build:flags": "RETAIN_FLAGS=true ember build --env production --suppress-sizes",
     "build:typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
-    "link:local": "node bin/yarn-link-local",
     "lint": "npm-run-all lint:*",
     "lint:files": "eslint . --cache",
     "force:lint:files": "eslint .",
@@ -27,10 +26,10 @@
     "start": "ember serve --port=7357",
     "test": "ember test",
     "test:browserstack": "ember test --test-port=7774 --host 127.0.0.1 --config-file=testem-browserstack.js",
-    "test:node": "qunit dist/**/*-node-test.js",
+    "test:node": "node bin/run-node-tests.mjs",
     "test:babel-plugins": "yarn workspace @glimmer/vm-babel-plugins test",
     "test:smoke": "SMOKE_TESTS=true ember test",
-    "test:types": "node bin/run-types-tests.js"
+    "test:types": "node bin/run-types-tests.mjs"
   },
   "pnpm": {
     "overrides": {
@@ -89,7 +88,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-qunit": "^7.3.4",
     "eslint-plugin-simple-import-sort": "^10.0.0",
@@ -127,6 +126,9 @@
     "paths": [
       "lib/local-linker"
     ]
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "volta": {
     "node": "16.20.0",
