@@ -25,7 +25,7 @@ export let logTrackingStack: undefined | ((transaction?: Transaction) => string)
 
 interface Transaction {
   parent: Transaction | null;
-  debugLabel?: string;
+  debugLabel?: string | undefined;
 }
 
 if (DEBUG) {
@@ -64,7 +64,7 @@ if (DEBUG) {
 
     let debugLabel = _debugLabel || undefined;
 
-    let parent = TRANSACTION_STACK[TRANSACTION_STACK.length - 1] || null;
+    let parent = TRANSACTION_STACK[TRANSACTION_STACK.length - 1] ?? null;
 
     TRANSACTION_STACK.push({
       parent,

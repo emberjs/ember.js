@@ -36,8 +36,8 @@ export type DebugState = {
   type: number;
   isMachine: 0 | 1;
   size: number;
-  params?: Maybe<Dict>;
-  name?: string;
+  params?: Maybe<Dict> | undefined;
+  name?: string | undefined;
   state: unknown;
 };
 

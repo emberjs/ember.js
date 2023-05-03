@@ -1,29 +1,37 @@
 import { Core, Dict, SexpOpcodes } from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
 
-import { ASTv2 } from '..';
-import { isUpperCase } from './utils';
+import * as ASTv2 from './v2/api';
+
+export interface Upvar {
+  readonly name: string;
+  readonly resolution: ASTv2.FreeVarResolution;
+}
+
+interface SymbolTableOptions {
+  customizeComponentName: (input: string) => string;
+  lexicalScope: (variable: string) => boolean;
+}
 
 export abstract class SymbolTable {
-  static top(
-    locals: string[],
-    customizeComponentName: (input: string) => string
-  ): ProgramSymbolTable {
-    return new ProgramSymbolTable(locals, customizeComponentName);
+  static top(locals: string[], options: SymbolTableOptions): ProgramSymbolTable {
+    return new ProgramSymbolTable(locals, options);
   }
 
   abstract has(name: string): boolean;
   abstract get(name: string): [symbol: number, isRoot: boolean];
 
+  abstract hasLexical(name: string): boolean;
+  abstract getLexical(name: string): number;
+
   abstract getLocalsMap(): Dict<number>;
-  abstract getEvalInfo(): Core.EvalInfo;
+  abstract getDebugInfo(): Core.DebugInfo;
+  abstract setHasDebugger(): void;
 
   abstract allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number;
   abstract allocateNamed(name: string): number;
   abstract allocateBlock(name: string): number;
   abstract allocate(identifier: string): number;
-
-  abstract setHasEval(): void;
 
   child(locals: string[]): BlockSymbolTable {
     let symbols = locals.map((name) => this.allocate(name));
@@ -32,10 +40,7 @@ export abstract class SymbolTable {
 }
 
 export class ProgramSymbolTable extends SymbolTable {
-  constructor(
-    private templateLocals: string[],
-    private customizeComponentName: (input: string) => string
-  ) {
+  constructor(private templateLocals: string[], private options: SymbolTableOptions) {
     super();
   }
 
@@ -47,22 +52,30 @@ export class ProgramSymbolTable extends SymbolTable {
   private blocks = dict<number>();
   private usedTemplateLocals: string[] = [];
 
-  _hasEval = false;
+  #hasDebugger = false;
+
+  hasLexical(name: string): boolean {
+    return this.options.lexicalScope(name);
+  }
+
+  getLexical(name: string): number {
+    return this.allocateFree(name, ASTv2.HTML_RESOLUTION);
+  }
 
   getUsedTemplateLocals(): string[] {
     return this.usedTemplateLocals;
   }
 
-  setHasEval(): void {
-    this._hasEval = true;
+  setHasDebugger(): void {
+    this.#hasDebugger = true;
   }
 
   get hasEval(): boolean {
-    return this._hasEval;
+    return this.#hasDebugger;
   }
 
   has(name: string): boolean {
-    return this.templateLocals.indexOf(name) !== -1;
+    return this.templateLocals.includes(name);
   }
 
   get(name: string): [number, boolean] {
@@ -81,7 +94,7 @@ export class ProgramSymbolTable extends SymbolTable {
     return dict();
   }
 
-  getEvalInfo(): Core.EvalInfo {
+  getDebugInfo(): Core.DebugInfo {
     let locals = this.getLocalsMap();
     return Object.keys(locals).map((symbol) => locals[symbol]);
   }
@@ -91,10 +104,9 @@ export class ProgramSymbolTable extends SymbolTable {
     // the optional `customizeComponentName` function provided to the precompiler.
     if (
       resolution.resolution() === SexpOpcodes.GetFreeAsComponentHead &&
-      resolution.isAngleBracket &&
-      isUpperCase(name)
+      resolution.isAngleBracket
     ) {
-      name = this.customizeComponentName(name);
+      name = this.options.customizeComponentName(name);
     }
 
     let index = this.upvars.indexOf(name);
@@ -147,6 +159,14 @@ export class BlockSymbolTable extends SymbolTable {
     return this.symbols;
   }
 
+  getLexical(name: string): number {
+    return this.parent.getLexical(name);
+  }
+
+  hasLexical(name: string): boolean {
+    return this.parent.hasLexical(name);
+  }
+
   has(name: string): boolean {
     return this.symbols.indexOf(name) !== -1 || this.parent.has(name);
   }
@@ -162,13 +182,13 @@ export class BlockSymbolTable extends SymbolTable {
     return dict;
   }
 
-  getEvalInfo(): Core.EvalInfo {
+  getDebugInfo(): Core.DebugInfo {
     let locals = this.getLocalsMap();
     return Object.keys(locals).map((symbol) => locals[symbol]);
   }
 
-  setHasEval(): void {
-    this.parent.setHasEval();
+  setHasDebugger(): void {
+    this.parent.setHasDebugger();
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {

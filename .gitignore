@@ -1,6 +1,7 @@
 /dist/
 /control-dist/
 node_modules/
+**/node_modules/
 tmp/
 ts-dist/
 .eslintcache
@@ -8,4 +9,3 @@ ts-dist/
 *.dot
 *.pdf
 instrumentation.*.json
-.vscode/

@@ -47,9 +47,7 @@ export function isSimplePath(path: ASTv2.ExpressionNode): path is SimplePath {
   if (path.type === 'Path') {
     let { ref: head, tail: parts } = path;
 
-    return (
-      head.type === 'Free' && head.resolution !== ASTv2.STRICT_RESOLUTION && parts.length === 0
-    );
+    return head.type === 'Free' && !ASTv2.isStrictResolution(head.resolution) && parts.length === 0;
   } else {
     return false;
   }
@@ -64,7 +62,7 @@ export function isStrictHelper(expr: HasPath): boolean {
     return true;
   }
 
-  return expr.callee.ref.resolution === ASTv2.STRICT_RESOLUTION;
+  return ASTv2.isStrictResolution(expr.callee.ref.resolution);
 }
 
 export function assertIsValidModifier<N extends HasPath>(

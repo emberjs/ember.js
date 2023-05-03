@@ -13,7 +13,7 @@ export interface VarPath extends ASTv1.PathExpression {
 
 export function SexpSyntaxContext(node: ASTv1.SubExpression): ASTv2.FreeVarResolution | null {
   if (isSimpleCallee(node)) {
-    return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Helper);
+    return ASTv2.LooseModeResolution.namespaced(ASTv2.HELPER_NAMESPACE);
   } else {
     return null;
   }
@@ -23,7 +23,7 @@ export function ModifierSyntaxContext(
   node: ASTv1.ElementModifierStatement
 ): ASTv2.FreeVarResolution | null {
   if (isSimpleCallee(node)) {
-    return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Modifier);
+    return ASTv2.LooseModeResolution.namespaced(ASTv2.MODIFIER_NAMESPACE);
   } else {
     return null;
   }
@@ -31,7 +31,7 @@ export function ModifierSyntaxContext(
 
 export function BlockSyntaxContext(node: ASTv1.BlockStatement): ASTv2.FreeVarResolution | null {
   if (isSimpleCallee(node)) {
-    return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Component);
+    return ASTv2.LooseModeResolution.namespaced(ASTv2.COMPONENT_NAMESPACE);
   } else {
     return ASTv2.LooseModeResolution.fallback();
   }
@@ -117,7 +117,9 @@ function isSimpleCallee(node: AstCallParts): boolean {
   return isSimplePath(path);
 }
 
-function isSimplePath(node: ASTv1.Expression): boolean {
+type SimplePath = ASTv1.PathExpression & { head: ASTv1.VarHead };
+
+function isSimplePath(node: ASTv1.Expression): node is SimplePath {
   if (node.type === 'PathExpression' && node.head.type === 'VarHead') {
     return node.tail.length === 0;
   } else {

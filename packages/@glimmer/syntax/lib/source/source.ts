@@ -3,10 +3,15 @@ import { DEBUG } from '@glimmer/env';
 import type { Option } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 
+import { PrecompileOptions } from '../parser/tokenizer-event-handlers';
 import { SourceLocation, SourcePosition } from './location';
 import { SourceOffset, SourceSpan } from './span';
 
 export class Source {
+  static from(source: string, options: PrecompileOptions = {}): Source {
+    return new Source(source, options.meta?.moduleName);
+  }
+
   constructor(readonly source: string, readonly module: string = 'an unknown module') {}
 
   /**
