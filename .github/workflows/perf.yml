@@ -19,8 +19,8 @@ jobs:
       - name: Build Control
         run: |
           git checkout ${{ github.event.pull_request.base.sha }}
-          yarn install --frozen-lockfile
-          yarn ember build --env production --suppress-sizes --output-path control-dist
+          pnpm install --frozen-lockfile
+          pnpm ember build --env production --suppress-sizes --output-path control-dist
       - name: Build Experiment
         run: |
           git checkout ${{ github.sha }}

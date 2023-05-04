@@ -32,9 +32,9 @@ export { NodeVisitor } from './lib/traversal/visitor';
 export { default as Walker } from './lib/traversal/walker';
 export * as ASTv1 from './lib/v1/api';
 export { default as builders } from './lib/v1/public-builders';
-export * as ASTv2 from './lib/v2-a/api';
-export { normalize } from './lib/v2-a/normalize';
-export { node } from './lib/v2-a/objects/node';
+export * as ASTv2 from './lib/v2/api';
+export { normalize } from './lib/v2/normalize';
+export { node } from './lib/v2/objects/node';
 
 /** @deprecated use WalkerPath instead */
 export { default as Path } from './lib/traversal/walker';
