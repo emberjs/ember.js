@@ -206,7 +206,7 @@ export class EncoderImpl implements Encoder {
           case HighLevelOperand.IsStrictMode:
             return encodeHandle(constants.value(this.meta.isStrictMode));
 
-          case HighLevelOperand.EvalSymbols:
+          case HighLevelOperand.DebugSymbols:
             return encodeHandle(constants.array(this.meta.evalSymbols || EMPTY_STRING_ARRAY));
 
           case HighLevelOperand.Block:

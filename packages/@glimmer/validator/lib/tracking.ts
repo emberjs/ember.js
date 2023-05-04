@@ -150,7 +150,7 @@ interface InternalCache<T = unknown> {
   [LAST_VALUE]: T | undefined;
   [TAG]: Tag | undefined;
   [SNAPSHOT]: Revision;
-  [DEBUG_LABEL]?: string | false;
+  [DEBUG_LABEL]?: string | false | undefined;
 }
 
 export function createCache<T>(fn: () => T, debuggingLabel?: string | false): Cache<T> {

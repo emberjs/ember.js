@@ -1,7 +1,7 @@
 import {
   LabelOperand,
   SerializedInlineBlock,
-  EvalSymbolsOperand,
+  DebugSymbolsOperand,
   HighLevelOperand,
   BlockOperand,
   StdLibOperand,
@@ -19,8 +19,8 @@ export function labelOperand(value: string): LabelOperand {
   return { type: HighLevelOperand.Label, value };
 }
 
-export function evalSymbolsOperand(): EvalSymbolsOperand {
-  return { type: HighLevelOperand.EvalSymbols, value: undefined };
+export function debugSymbolsOperand(): DebugSymbolsOperand {
+  return { type: HighLevelOperand.DebugSymbols, value: undefined };
 }
 
 export function isStrictMode(): IsStrictModeOperand {

@@ -27,20 +27,20 @@ class Builders {
   }
 
   blockItself({
-    body,
-    blockParams,
+    body = [],
+    blockParams = [],
     chained = false,
     loc,
   }: {
-    body?: ASTv1.Statement[];
-    blockParams?: string[];
-    chained?: boolean;
+    body?: ASTv1.Statement[] | undefined;
+    blockParams?: string[] | undefined;
+    chained?: boolean | undefined;
     loc: SourceSpan;
   }): ASTv1.Block {
     return {
       type: 'Block',
-      body: body || [],
-      blockParams: blockParams || [],
+      body: body,
+      blockParams: blockParams,
       chained,
       loc,
     };

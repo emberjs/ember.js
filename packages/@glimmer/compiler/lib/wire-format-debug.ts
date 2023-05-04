@@ -168,7 +168,7 @@ export default class WireFormatDebugger {
         case Op.Concat:
           return ['concat', this.formatParams(opcode[1] as WireFormat.Core.Params)];
 
-        case Op.GetStrictFree:
+        case Op.GetStrictKeyword:
           return ['get-strict-free', this.upvars[opcode[1]], opcode[2]];
 
         case Op.GetFreeAsComponentOrHelperHeadOrThisFallback:
@@ -204,7 +204,7 @@ export default class WireFormatDebugger {
           }
         }
 
-        case Op.GetTemplateSymbol: {
+        case Op.GetLexicalSymbol: {
           return ['get-template-symbol', opcode[1], opcode[2]];
         }
 

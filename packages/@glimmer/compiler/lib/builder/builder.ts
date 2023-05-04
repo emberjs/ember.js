@@ -319,7 +319,9 @@ function buildKeyword(
   let childSymbols = symbols.child(normalized.blockParams || []);
 
   let block = buildBlock(normalized.blocks.default, childSymbols, childSymbols.paramSymbols);
-  let inverse = normalized.blocks.else ? buildBlock(normalized.blocks.else, symbols, []) : null;
+  let inverse = normalized.blocks['else']
+    ? buildBlock(normalized.blocks['else'], symbols, [])
+    : null;
 
   switch (name) {
     case 'with':
@@ -402,9 +404,7 @@ export function buildElementParams(
   let keys: string[] = [];
   let values: WireFormat.Expression[] = [];
 
-  Object.keys(attrs).forEach((key) => {
-    let value = attrs[key];
-
+  for (const [key, value] of Object.entries(attrs)) {
     if (value === HeadKind.Splat) {
       params.push([Op.AttrSplat, symbols.block('&attrs')]);
     } else if (key[0] === '@') {
@@ -421,7 +421,7 @@ export function buildElementParams(
         )
       );
     }
-  });
+  }
 
   return { params, args: isPresent(keys) && isPresent(values) ? [keys, values] : null };
 }
@@ -619,7 +619,7 @@ export function buildVar(
   switch (head.kind) {
     case VariableKind.Free:
       if (context === 'Strict') {
-        op = SexpOpcodes.GetStrictFree;
+        op = SexpOpcodes.GetStrictKeyword;
       } else if (context === 'AppendBare') {
         op = SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback;
       } else if (context === 'AppendInvoke') {
@@ -673,7 +673,7 @@ function getSymbolForVar(
 export function expressionContextOp(context: VariableResolutionContext): GetContextualFreeOp {
   switch (context) {
     case VariableResolutionContext.Strict:
-      return Op.GetStrictFree;
+      return Op.GetStrictKeyword;
     case VariableResolutionContext.AmbiguousAppend:
       return Op.GetFreeAsComponentOrHelperHeadOrThisFallback;
     case VariableResolutionContext.AmbiguousAppendInvoke:

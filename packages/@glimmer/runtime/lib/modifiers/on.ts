@@ -56,10 +56,10 @@ export class OnModifierState {
   public declare eventName: string;
   public declare callback: EventListener;
   private declare userProvidedCallback: EventListener;
-  public once?: boolean;
-  public passive?: boolean;
-  public capture?: boolean;
-  public options?: AddEventListenerOptions;
+  public once?: boolean | undefined;
+  public passive?: boolean | undefined;
+  public capture?: boolean | undefined;
+  public options?: AddEventListenerOptions | undefined;
   public shouldUpdate = true;
 
   constructor(element: Element, args: CapturedArguments) {
@@ -90,7 +90,7 @@ export class OnModifierState {
     // we want to handle both `true` and `false` because both have a meaning:
     // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
     if (once !== undefined || passive !== undefined || capture !== undefined) {
-      options = this.options = { once, passive, capture };
+      options = this.options = { once, passive, capture } as AddEventListenerOptions;
     } else {
       this.options = undefined;
     }

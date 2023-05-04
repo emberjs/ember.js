@@ -31,7 +31,7 @@ import {
   DynamicScope,
   PushPrimitiveReference,
 } from '../opcode-builder/helpers/vm';
-import { evalSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
+import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { Compilers, PushStatementOp } from './compilers';
 import {
   isGetFreeComponent,
@@ -133,8 +133,8 @@ STATEMENTS.add(SexpOpcodes.Yield, (op, [, to, params]) => YieldBlock(op, to, par
 
 STATEMENTS.add(SexpOpcodes.AttrSplat, (op, [, to]) => YieldBlock(op, to, null));
 
-STATEMENTS.add(SexpOpcodes.Debugger, (op, [, evalInfo]) =>
-  op(Op.Debugger, evalSymbolsOperand(), evalInfo)
+STATEMENTS.add(SexpOpcodes.Debugger, (op, [, debugInfo]) =>
+  op(Op.Debugger, debugSymbolsOperand(), debugInfo)
 );
 
 STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {

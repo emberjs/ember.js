@@ -26,6 +26,80 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     assert.strictEqual(wire.moduleName, 'my/module-name', 'Template has correct meta');
   });
 
+  function compile(
+    template: string,
+    locals: string[],
+    evaluate: (source: string) => WireFormat.SerializedTemplateWithLazyBlock
+  ) {
+    let source = precompile(template, {
+      lexicalScope: (variable: string) => locals.includes(variable),
+    });
+
+    let wire = evaluate(`(${source})`);
+
+    return {
+      ...wire,
+      block: JSON.parse(wire.block),
+    };
+  }
+
+  test('lexicalScope is used if present', (assert) => {
+    // eslint-disable-next-line no-eval
+    let wire = compile(`<hello /><div />`, ['hello'], (source) => eval(source));
+
+    const hello = { varname: 'hello' };
+    assert.ok(hello, 'avoid unused variable lint');
+
+    // eslint-disable-next-line no-eval
+    let [statements] = wire.block;
+    let [[, componentNameExpr], ...divExpr] = statements as [
+      WireFormat.Statements.Component,
+      ...WireFormat.Statement[]
+    ];
+
+    assert.deepEqual(wire.scope?.(), [hello]);
+
+    assert.deepEqual(
+      componentNameExpr,
+      [SexpOpcodes.GetLexicalSymbol, 0],
+      'The component invocation is for the lexical symbol `hello` (the 0th lexical entry)'
+    );
+
+    assert.deepEqual(divExpr, [
+      [SexpOpcodes.OpenElement, 0],
+      [SexpOpcodes.FlushElement],
+      [SexpOpcodes.CloseElement],
+    ]);
+  });
+
+  test('lexicalScope works if the component name is a path', (assert) => {
+    // eslint-disable-next-line no-eval
+    let wire = compile(`<f.hello /><div />`, ['f'], (source) => eval(source));
+
+    const f = {};
+    assert.ok(f, 'avoid unused variable lint');
+
+    // eslint-disable-next-line no-eval
+    let [statements] = wire.block;
+    let [[, componentNameExpr], ...divExpr] = statements as [
+      WireFormat.Statements.Component,
+      ...WireFormat.Statement[]
+    ];
+
+    assert.deepEqual(wire.scope?.(), [f]);
+    assert.deepEqual(
+      componentNameExpr,
+      [SexpOpcodes.GetLexicalSymbol, 0, ['hello']],
+      'The component invocation is for the lexical symbol `hello` (the 0th lexical entry)'
+    );
+
+    assert.deepEqual(divExpr, [
+      [SexpOpcodes.OpenElement, 0],
+      [SexpOpcodes.FlushElement],
+      [SexpOpcodes.CloseElement],
+    ]);
+  });
+
   test('customizeComponentName is used if present', function (assert) {
     let wire = JSON.parse(
       precompile('<XFoo />', {

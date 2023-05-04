@@ -110,14 +110,14 @@ export class StaticAttr extends node('StaticAttr').fields<{
   kind: { component: boolean };
   name: SourceSlice;
   value: SourceSlice;
-  namespace?: string;
+  namespace?: string | undefined;
 }>() {}
 
 export class DynamicAttr extends node('DynamicAttr').fields<{
   kind: AttrKind;
   name: SourceSlice;
   value: ExpressionNode;
-  namespace?: string;
+  namespace?: string | undefined;
 }>() {}
 
 export class SimpleElement extends node('SimpleElement').fields<{
