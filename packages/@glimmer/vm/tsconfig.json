@@ -21,12 +21,9 @@
     "noImplicitReturns": true,
 
     "newLine": "LF",
-    "noEmit": true
+    "noEmit": true,
+
+    "skipLibCheck": true
   },
-  "include": ["lib/**/*.ts", "index.ts"],
-  "references": [
-    {
-      "path": "../interfaces"
-    }
-  ]
+  "include": ["lib/**/*.ts", "index.ts"]
 }

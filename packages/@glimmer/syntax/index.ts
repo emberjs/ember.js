@@ -7,6 +7,7 @@ export {
   ASTPluginBuilder,
   ASTPluginEnvironment,
   PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
   preprocess,
   Syntax,
   TemplateIdFn,
