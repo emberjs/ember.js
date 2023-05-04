@@ -296,7 +296,7 @@ setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
   Accordingly, we define an abstract class and declaration merge it with the
   interface; this inherently provides an `abstract` constructor. Since it is
   `abstract`, it is not callable, which is important since end users should not
-  be able to do `let myHelper = helper(someFn); new helper()`.
+  be able to do `let myHelper = helper(someFn); new myHelper()`.
  */
 
 /**
