@@ -22,7 +22,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "useDefineForClassFields": true,
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true,
     // "noImplicitOverride": true,
     // "noPropertyAccessFromIndexSignature": true,
     // "noUncheckedIndexedAccess": true,

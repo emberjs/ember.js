@@ -4,8 +4,13 @@ import {
   TemplateJavascript,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { normalize, PrecompileOptions, Source, TemplateIdFn } from '@glimmer/syntax';
-import { PrecompileOptionsWithLexicalScope } from '@glimmer/syntax/lib/parser/tokenizer-event-handlers';
+import {
+  normalize,
+  PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
+  Source,
+  TemplateIdFn,
+} from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
 import pass0 from './passes/1-normalization/index';

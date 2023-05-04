@@ -7,6 +7,7 @@ export interface TraversalError extends Error {
   key: string;
   node: ASTv1.Node;
   parent: Option<ASTv1.Node>;
+  stack: string | undefined;
 }
 
 export interface TraversalErrorConstructor {
@@ -31,7 +32,7 @@ const TraversalError: TraversalErrorConstructor = (function () {
     this.message = message;
     this.node = node;
     this.parent = parent;
-    this.stack = error.stack;
+    this.stack = error.stack ?? '';
   }
 
   return TraversalError as unknown as TraversalErrorConstructor;

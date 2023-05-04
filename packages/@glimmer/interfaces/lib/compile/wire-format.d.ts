@@ -324,7 +324,7 @@ export namespace Statements {
   type Attr<Op extends AttrOp> = [
     op: Op,
     name: string | WellKnownAttrName,
-    value: Expreession,
+    value: Expression,
     namespace?: string | undefined
   ];
 

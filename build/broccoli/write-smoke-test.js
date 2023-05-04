@@ -37,6 +37,8 @@ class TypesSmokeTestWriter extends Plugin {
           newLine: 'LF',
           noEmit: true,
 
+          skipLibCheck: true,
+
           paths: {
             '@glimmer/*': ['@glimmer/*/dist/types/index.d.ts'],
           },

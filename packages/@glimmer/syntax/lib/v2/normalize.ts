@@ -118,6 +118,10 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
     }
   }
 
+  isLexicalVar(variable: string): boolean {
+    return this.table.hasLexical(variable);
+  }
+
   private isFreeVar(callee: ASTv1.CallNode | ASTv1.PathExpression): boolean {
     if (callee.type === 'PathExpression') {
       if (callee.head.type !== 'VarHead') {
@@ -706,8 +710,6 @@ class ElementNormalizer {
     // expression normalizer.
     let isComponent = inScope || uppercase;
 
-    console.log({ isComponent });
-
     let variableLoc = loc.sliceStartChars({ skipStart: 1, chars: variable.length });
 
     let tailLength = tail.reduce((accum, part) => accum + 1 + part.length, 0);
@@ -721,7 +723,9 @@ class ElementNormalizer {
         loc: pathLoc,
       });
 
-      let resolution = this.ctx.resolutionFor(path, ComponentSyntaxContext);
+      let resolution = this.ctx.isLexicalVar(variable)
+        ? { result: ASTv2.STRICT_RESOLUTION }
+        : this.ctx.resolutionFor(path, ComponentSyntaxContext);
 
       if (resolution.result === 'error') {
         throw generateSyntaxError(
