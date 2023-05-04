@@ -1,11 +1,10 @@
-import { Cursor, ElementBuilder, Environment } from '@glimmer/interfaces';
+import { Cursor, ElementBuilder, Environment, NodeType, SimpleNode } from '@glimmer/interfaces';
 import { RehydrateBuilder } from '@glimmer/runtime';
-import { NodeType, SimpleNode } from '@glimmer/interfaces';
 
 export class DebugRehydrationBuilder extends RehydrateBuilder {
   clearedNodes: SimpleNode[] = [];
 
-  remove(node: SimpleNode) {
+  override remove(node: SimpleNode) {
     let next = super.remove(node);
 
     if (node.nodeType !== NodeType.COMMENT_NODE) {

@@ -1,6 +1,6 @@
 import { PresentArray, SexpOpcodes, WireFormat } from '@glimmer/interfaces';
 import { ASTv2 } from '@glimmer/syntax';
-import { assertPresent, isPresent, mapPresent } from '@glimmer/util';
+import { assertPresentArray, isPresentArray, mapPresentArray } from '@glimmer/util';
 
 import * as mir from './mir';
 
@@ -113,7 +113,7 @@ export class ExpressionEncoder {
   }
 
   Tail({ members }: mir.Tail): PresentArray<string> {
-    return mapPresent(members, (member) => member.chars);
+    return mapPresentArray(members, (member) => member.chars);
   }
 
   Args({ positional, named }: mir.Args): WireFormat.Core.Args {
@@ -131,7 +131,7 @@ export class ExpressionEncoder {
   NamedArguments({ entries: pairs }: mir.NamedArguments): WireFormat.Core.Hash {
     let list = pairs.toArray();
 
-    if (isPresent(list)) {
+    if (isPresentArray(list)) {
       let names: string[] = [];
       let values: WireFormat.Expression[] = [];
 
@@ -141,8 +141,8 @@ export class ExpressionEncoder {
         values.push(value);
       }
 
-      assertPresent(names);
-      assertPresent(values);
+      assertPresentArray(names);
+      assertPresentArray(values);
 
       return [names, values];
     } else {

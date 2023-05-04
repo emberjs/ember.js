@@ -1,6 +1,6 @@
-import { EnvironmentDelegate } from '@glimmer/runtime';
-import { Destroyable, Destructor, RenderResult } from '@glimmer/interfaces';
 import setGlobalContext from '@glimmer/global-context';
+import { Destroyable, Destructor, RenderResult } from '@glimmer/interfaces';
+import { EnvironmentDelegate } from '@glimmer/runtime';
 
 type Queue = (() => void)[];
 

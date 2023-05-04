@@ -11,9 +11,11 @@ export function fillNulls<T>(count: number): T[] {
 }
 
 export function values<T>(obj: { [s: string]: T }): T[] {
-  const vals = [];
-  for (const key in obj) {
-    vals.push(obj[key]);
-  }
-  return vals;
+  return Object.values(obj);
+}
+
+export type ObjectEntry<D extends object> = { [P in keyof D]: [P, D[P]] }[keyof D];
+
+export function entries<D extends object>(dict: D): ObjectEntry<D>[] {
+  return Object.entries(dict) as ObjectEntry<D>[];
 }

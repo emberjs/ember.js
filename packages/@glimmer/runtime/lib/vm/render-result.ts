@@ -1,6 +1,13 @@
-import { Environment, RenderResult, LiveBlock, UpdatingOpcode } from '@glimmer/interfaces';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import {
+  Environment,
+  LiveBlock,
+  RenderResult,
+  SimpleElement,
+  SimpleNode,
+  UpdatingOpcode,
+} from '@glimmer/interfaces';
+
 import { clear } from '../bounds';
 import UpdatingVMImpl from './update';
 

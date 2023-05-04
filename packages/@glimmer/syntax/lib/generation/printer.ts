@@ -11,7 +11,7 @@ voidTagNames.split(' ').forEach((tagName) => {
   voidMap[tagName] = true;
 });
 
-const NON_WHITESPACE = /\S/;
+const NON_WHITESPACE = /^\S/;
 
 export interface PrinterOptions {
   entityEncoding: 'transformed' | 'raw';
@@ -42,7 +42,7 @@ export interface PrinterOptions {
  *  - Link (component)
  */
 function isVoidTag(tag: string): boolean {
-  return voidMap[tag.toLowerCase()] && tag[0].toLowerCase() === tag[0];
+  return !!(voidMap[tag.toLowerCase()] && tag[0]?.toLowerCase() === tag[0]);
 }
 
 export default class Printer {
@@ -66,7 +66,7 @@ export default class Printer {
     if (this.options.override !== undefined) {
       let result = this.options.override(node, this.options);
       if (typeof result === 'string') {
-        if (ensureLeadingWhitespace && result !== '' && NON_WHITESPACE.test(result[0])) {
+        if (ensureLeadingWhitespace && NON_WHITESPACE.test(result)) {
           result = ` ${result}`;
         }
 

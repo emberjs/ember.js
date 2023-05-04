@@ -1,21 +1,22 @@
+import { DEBUG } from '@glimmer/env';
+import { dict, unwrap } from '@glimmer/util';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+
+import { GlobalContext, testOverrideGlobalContext } from '../../global-context';
 import {
-  createComputeRef,
-  valueForRef,
-  createConstRef,
   childRefFor,
-  isUpdatableRef,
-  updateRef,
+  createComputeRef,
+  createConstRef,
+  createDebugAliasRef,
+  createInvokableRef,
   createReadOnlyRef,
   createUnboundRef,
-  createInvokableRef,
   isInvokableRef,
-  createDebugAliasRef,
+  isUpdatableRef,
+  updateRef,
+  valueForRef,
 } from '..';
-import { createTag, dirtyTag, consumeTag } from '@glimmer/validator';
-import { dict } from '@glimmer/util';
-import { GlobalContext, testOverrideGlobalContext } from '../../global-context';
 import { tracked } from './support';
-import { DEBUG } from '@glimmer/env';
 
 const { module, test } = QUnit;
 
@@ -25,7 +26,7 @@ class TrackedDict<T> {
 
   get(key: string): T {
     consumeTag(this.tag);
-    return this.data[key];
+    return unwrap(this.data[key]);
   }
 
   set(key: string, value: T) {

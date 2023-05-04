@@ -1,19 +1,24 @@
-import { Option } from '@glimmer/interfaces';
-import { createConstRef, createPrimitiveRef, createComputeRef } from '@glimmer/reference';
-import { RenderTest, test, jitSuite, JitRenderDelegate, GlimmerishComponent, tracked } from '..';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
+import { Option, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/reference';
 import { SafeString } from '@glimmer/runtime';
+import { expect } from '@glimmer/util';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+
 import {
   assertNodeTagName,
   getElementByClassName,
   getElementsByTagName,
+  GlimmerishComponent,
+  JitRenderDelegate,
+  jitSuite,
+  RenderTest,
   stripTight,
+  test,
+  tracked,
   trimLines,
 } from '..';
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { assert } from './support';
-import { expect } from '@glimmer/util';
-import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
 
 function makeSafeString(value: string): SafeString {
   return new SafeStringImpl(value);
@@ -2019,7 +2024,7 @@ class UpdatingTest extends RenderTest {
       'DestroyableComponent',
       '{{@item}}',
       class extends GlimmerishComponent {
-        willDestroy() {
+        override willDestroy() {
           destroyCount++;
         }
       }
@@ -2057,7 +2062,7 @@ class UpdatingTest extends RenderTest {
       'DestroyableComponent',
       '{{@item}}',
       class extends GlimmerishComponent {
-        willDestroy() {
+        override willDestroy() {
           destroyCount++;
         }
       }

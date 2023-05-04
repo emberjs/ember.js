@@ -1,23 +1,23 @@
 export {
-  setInternalHelperManager,
-  setInternalModifierManager,
-  setInternalComponentManager,
+  getInternalComponentManager,
   getInternalHelperManager,
   getInternalModifierManager,
-  getInternalComponentManager,
+  hasInternalComponentManager,
   hasInternalHelperManager,
   hasInternalModifierManager,
-  hasInternalComponentManager,
+  setInternalComponentManager,
+  setInternalHelperManager,
+  setInternalModifierManager,
 } from './lib/internal/index';
-export { setHelperManager, setModifierManager, setComponentManager } from './lib/public/index';
 export { componentCapabilities, CustomComponentManager } from './lib/public/component';
-export { modifierCapabilities, CustomModifierManager } from './lib/public/modifier';
 export {
-  helperCapabilities,
+  CustomHelperManager,
   hasDestroyable,
   hasValue,
-  CustomHelperManager,
+  helperCapabilities,
 } from './lib/public/helper';
+export { setComponentManager, setHelperManager, setModifierManager } from './lib/public/index';
+export { CustomModifierManager, modifierCapabilities } from './lib/public/modifier';
 export { getComponentTemplate, setComponentTemplate } from './lib/public/template';
-export { capabilityFlagsFrom, hasCapability, managerHasCapability } from './lib/util/capabilities';
 export { getCustomTagFor, setCustomTagFor } from './lib/util/args-proxy';
+export { capabilityFlagsFrom, hasCapability, managerHasCapability } from './lib/util/capabilities';

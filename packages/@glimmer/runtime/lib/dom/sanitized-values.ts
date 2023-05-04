@@ -1,5 +1,5 @@
-import { Option } from '@glimmer/interfaces';
-import { SimpleElement } from '@glimmer/interfaces';
+import { Option, SimpleElement } from '@glimmer/interfaces';
+
 import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
 const badProtocols = ['javascript:', 'vbscript:'];

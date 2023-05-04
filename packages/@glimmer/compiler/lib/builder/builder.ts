@@ -10,7 +10,15 @@ import {
   VariableResolutionContext,
   WireFormat,
 } from '@glimmer/interfaces';
-import { assert, assertNever, dict, exhausted, expect, isPresent, values } from '@glimmer/util';
+import {
+  assert,
+  assertNever,
+  dict,
+  exhausted,
+  expect,
+  isPresentArray,
+  values,
+} from '@glimmer/util';
 
 import {
   Builder,
@@ -131,7 +139,7 @@ class LocalSymbols implements Symbols {
 
   local(name: string): number {
     if (name in this.locals) {
-      return this.locals[name];
+      return this.locals[name] as number;
     } else {
       return this.parent.local(name);
     }
@@ -318,7 +326,11 @@ function buildKeyword(
   let params = buildParams(normalized.params, symbols);
   let childSymbols = symbols.child(normalized.blockParams || []);
 
-  let block = buildBlock(normalized.blocks.default, childSymbols, childSymbols.paramSymbols);
+  let block = buildBlock(
+    normalized.blocks['default'] as NormalizedBlock,
+    childSymbols,
+    childSymbols.paramSymbols
+  );
   let inverse = normalized.blocks['else']
     ? buildBlock(normalized.blocks['else'], symbols, [])
     : null;
@@ -390,7 +402,7 @@ export function buildAngleInvocation(
   return [
     Op.Component,
     buildExpression(head, VariableResolutionContext.ResolveAsComponentHead, symbols),
-    isPresent(paramList) ? paramList : null,
+    isPresentArray(paramList) ? paramList : null,
     args,
     [['default'], [[blockList, []]]],
   ];
@@ -423,7 +435,7 @@ export function buildElementParams(
     }
   }
 
-  return { params, args: isPresent(keys) && isPresent(values) ? [keys, values] : null };
+  return { params, args: isPresentArray(keys) && isPresentArray(values) ? [keys, values] : null };
 }
 
 export function extractNamespace(name: string): Option<AttrNamespace> {
@@ -695,7 +707,7 @@ export function buildParams(
   exprs: Option<NormalizedParams>,
   symbols: Symbols
 ): Option<WireFormat.Core.Params> {
-  if (exprs === null || !isPresent(exprs)) return null;
+  if (exprs === null || !isPresentArray(exprs)) return null;
 
   return exprs.map((e) => buildExpression(e, 'Strict', symbols)) as WireFormat.Core.ConcatParams;
 }
@@ -712,10 +724,10 @@ export function buildHash(exprs: Option<NormalizedHash>, symbols: Symbols): Wire
 
   let out: [string[], WireFormat.Expression[]] = [[], []];
 
-  Object.keys(exprs).forEach((key) => {
+  for (const [key, value] of Object.entries(exprs)) {
     out[0].push(key);
-    out[1].push(buildExpression(exprs[key], 'Strict', symbols));
-  });
+    out[1].push(buildExpression(value, 'Strict', symbols));
+  }
 
   return out as WireFormat.Core.Hash;
 }
@@ -728,17 +740,17 @@ export function buildBlocks(
   let keys: string[] = [];
   let values: WireFormat.SerializedInlineBlock[] = [];
 
-  Object.keys(blocks).forEach((name) => {
+  for (const [name, block] of Object.entries(blocks)) {
     keys.push(name);
 
     if (name === 'default') {
       let symbols = parent.child(blockParams || []);
 
-      values.push(buildBlock(blocks[name], symbols, symbols.paramSymbols));
+      values.push(buildBlock(block, symbols, symbols.paramSymbols));
     } else {
-      values.push(buildBlock(blocks[name], parent, []));
+      values.push(buildBlock(block, parent, []));
     }
-  });
+  }
 
   return [keys, values];
 }

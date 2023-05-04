@@ -1,13 +1,14 @@
+import { destroy } from '@glimmer/destroyable';
 import { AST } from '@glimmer/syntax';
 import { assign } from '@glimmer/util';
+
+import { GlimmerishComponent } from '../components/emberish-glimmer';
+import { equalsElement } from '../dom/assertions';
+import { replaceHTML } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { equalsElement } from '../dom/assertions';
 import { stripTight } from '../test-helpers/strings';
-import { replaceHTML } from '../dom/simple-utils';
-import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { tracked } from '../test-helpers/tracked';
-import { destroy } from '@glimmer/destroyable';
 
 export class InElementSuite extends RenderTest {
   static suiteName = '#in-element';
@@ -424,34 +425,37 @@ export class InElementSuite extends RenderTest {
       }
     );
 
-    equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
-    equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
-    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    const [first, second, third] = roots;
+    this.guard(first && second && third, 'the roots exists');
+
+    equalsElement(first.element, 'div', {}, '<p>foo</p>');
+    equalsElement(second.element, 'div', {}, '<p>bar</p>');
+    equalsElement(third?.element, 'div', {}, '<p>baz</p>');
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 
-    roots[0].value = 'qux!';
+    first.value = 'qux!';
     this.rerender();
-    equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
-    equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
-    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    equalsElement(first.element, 'div', {}, '<p>qux!</p>');
+    equalsElement(second.element, 'div', {}, '<p>bar</p>');
+    equalsElement(third.element, 'div', {}, '<p>baz</p>');
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 
-    roots[1].value = 'derp';
+    second.value = 'derp';
     this.rerender();
-    equalsElement(roots[0].element, 'div', {}, '<p>qux!</p>');
-    equalsElement(roots[1].element, 'div', {}, '<p>derp</p>');
-    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    equalsElement(first.element, 'div', {}, '<p>qux!</p>');
+    equalsElement(second.element, 'div', {}, '<p>derp</p>');
+    equalsElement(third.element, 'div', {}, '<p>baz</p>');
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 
-    roots[0].value = 'foo';
-    roots[1].value = 'bar';
+    first.value = 'foo';
+    second.value = 'bar';
     this.rerender();
-    equalsElement(roots[0].element, 'div', {}, '<p>foo</p>');
-    equalsElement(roots[1].element, 'div', {}, '<p>bar</p>');
-    equalsElement(roots[2].element, 'div', {}, '<p>baz</p>');
+    equalsElement(first.element, 'div', {}, '<p>foo</p>');
+    equalsElement(second.element, 'div', {}, '<p>bar</p>');
+    equalsElement(third.element, 'div', {}, '<p>baz</p>');
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
     this.testType = 'TemplateOnly';
@@ -514,7 +518,7 @@ export class InElementSuite extends RenderTest {
     let destroyed = 0;
 
     class DestroyMeComponent extends GlimmerishComponent {
-      willDestroy() {
+      override willDestroy() {
         super.willDestroy();
         destroyed++;
       }

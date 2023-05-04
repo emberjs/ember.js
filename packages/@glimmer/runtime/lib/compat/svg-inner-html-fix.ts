@@ -1,12 +1,14 @@
-import { Bounds, Option } from '@glimmer/interfaces';
-import { assert, castToBrowser, clearElement, unwrap } from '@glimmer/util';
 import {
+  Bounds,
   InsertPosition,
   Namespace,
+  Option,
   SimpleDocument,
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import { assert, castToBrowser, clearElement, unwrap } from '@glimmer/util';
+
 import { DOMOperations, moveNodesBefore } from '../dom/operations';
 
 export const SVG_NAMESPACE = Namespace.SVG;
@@ -37,7 +39,11 @@ export function applySVGInnerHTMLFix(
   let div = document.createElement('div') as SimpleElement;
 
   return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
-    insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
+    override insertHTMLBefore(
+      parent: SimpleElement,
+      nextSibling: Option<SimpleNode>,
+      html: string
+    ): Bounds {
       if (html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
       }

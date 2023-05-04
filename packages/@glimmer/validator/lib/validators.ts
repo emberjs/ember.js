@@ -1,22 +1,23 @@
 import { DEBUG } from '@glimmer/env';
+import { scheduleRevalidate } from '@glimmer/global-context';
 import type {
-  MonomorphicTagId,
   COMBINATOR_TAG_ID as ICOMBINATOR_TAG_ID,
   CONSTANT_TAG_ID as ICONSTANT_TAG_ID,
-  DIRTYABLE_TAG_ID as IDIRTYABLE_TAG_ID,
-  UPDATABLE_TAG_ID as IUPDATABLE_TAG_ID,
-  VOLATILE_TAG_ID as IVOLATILE_TAG_ID,
-  CURRENT_TAG_ID as ICURRENT_TAG_ID,
-  UpdatableTag,
-  TagTypeSymbol,
-  DirtyableTag,
-  TagComputeSymbol,
-  Tag,
   ConstantTag,
+  CURRENT_TAG_ID as ICURRENT_TAG_ID,
+  DIRTYABLE_TAG_ID as IDIRTYABLE_TAG_ID,
+  DirtyableTag,
+  MonomorphicTagId,
+  Tag,
+  TagComputeSymbol,
+  TagTypeSymbol,
+  UPDATABLE_TAG_ID as IUPDATABLE_TAG_ID,
+  UpdatableTag,
+  VOLATILE_TAG_ID as IVOLATILE_TAG_ID,
 } from '@glimmer/interfaces';
-import { scheduleRevalidate } from '@glimmer/global-context';
-import { symbol, unwrap } from './utils';
+
 import { assertTagNotConsumed } from './debug';
+import { symbol, unwrap } from './utils';
 
 //////////
 
@@ -97,7 +98,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
       case 0:
         return CONSTANT_TAG;
       case 1:
-        return tags[0];
+        return tags[0] as Tag;
       default:
         let tag: MonomorphicTagImpl = new MonomorphicTagImpl(COMBINATOR_TAG_ID);
         tag.subtag = tags;
@@ -136,8 +137,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
         if (subtag !== null) {
           if (Array.isArray(subtag)) {
-            for (let i = 0; i < subtag.length; i++) {
-              let value = subtag[i][COMPUTE]();
+            for (const tag of subtag) {
+              let value = tag[COMPUTE]();
               revision = Math.max(value, revision);
             }
           } else {

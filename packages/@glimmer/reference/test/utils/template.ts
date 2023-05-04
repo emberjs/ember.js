@@ -52,7 +52,7 @@ class ObjectIterator extends BoundedIterator {
     return this.values[position];
   }
 
-  memoFor(position: number): unknown {
+  override memoFor(position: number): unknown {
     return this.keys[position];
   }
 }

@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, preprocess, syntaxErrorFor } from '../..';
+import { jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from '../..';
 
 class SyntaxErrors extends RenderTest {
   static suiteName = 'general syntax errors';

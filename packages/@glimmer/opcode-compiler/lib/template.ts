@@ -10,6 +10,7 @@ import {
   TemplateOk,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
+
 import { compilable } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
 

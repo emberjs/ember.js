@@ -1,7 +1,6 @@
-import { Environment } from './environment';
-import { RuntimeHeap, RuntimeConstants, RuntimeOp, ResolutionTimeConstants } from '../program';
+import { ResolutionTimeConstants, RuntimeConstants, RuntimeHeap, RuntimeOp } from '../program';
 import { RuntimeResolver } from '../serialize';
-import { Owner } from './owner';
+import { Environment } from './environment';
 
 /**
   The Runtime is the set of static structures that contain the compiled

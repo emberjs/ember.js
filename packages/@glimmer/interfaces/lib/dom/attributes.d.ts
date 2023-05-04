@@ -1,17 +1,17 @@
 import {
+  AttrNamespace,
+  SimpleComment,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
-  SimpleComment,
-  SimpleDocumentFragment,
-  AttrNamespace,
 } from '@simple-dom/interface';
-import { Option, Maybe } from '../core';
-import { Bounds, Cursor } from './bounds';
+
+import { Maybe, Option } from '../core';
 import { ElementOperations, Environment, ModifierInstance } from '../runtime';
-import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
 import { Stack } from '../stack';
-import { InternalModifierManager } from '../managers';
+import { Bounds, Cursor } from './bounds';
+import { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;

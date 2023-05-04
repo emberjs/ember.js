@@ -1,6 +1,7 @@
-import { testOverrideGlobalContext, GlobalContext } from '@glimmer/global-context';
+import { GlobalContext, testOverrideGlobalContext } from '@glimmer/global-context';
+
+import { jitSuite, RenderTest, test } from '..';
 import { assert } from './support';
-import { RenderTest, test, jitSuite } from '..';
 
 let warnings = 0;
 let originalContext: GlobalContext | null;

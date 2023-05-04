@@ -1,5 +1,13 @@
-import { Option, Dict, BlockSymbolTable, ProgramSymbolTable, Maybe } from '@glimmer/interfaces';
-import { SimpleElement, SimpleDocumentFragment, SimpleNode } from '@glimmer/interfaces';
+import {
+  BlockSymbolTable,
+  Dict,
+  Maybe,
+  Option,
+  ProgramSymbolTable,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+} from '@glimmer/interfaces';
 
 export interface Checker<T> {
   type: T;
@@ -155,19 +163,14 @@ class PropertyChecker<T> implements Checker<T> {
     if (typeof obj !== 'object') return false;
     if (obj === null || obj === undefined) return false;
 
-    return Object.keys(this.checkers).every((k) => {
-      if (!(k in obj)) return false;
-
-      let value = (obj as Dict)[k];
-      let checker = this.checkers[k];
-
-      return checker.validate(value);
-    });
+    return Object.entries(this.checkers).every(([k, checker]) =>
+      k in obj ? checker.validate((obj as Dict)[k]) : false
+    );
   }
 
   expected(): string {
-    let pairs = Object.keys(this.checkers).map((k) => {
-      return `${k}: ${this.checkers[k].expected()}`;
+    let pairs = Object.entries(this.checkers).map(([k, checker]) => {
+      return `${k}: ${checker.expected()}`;
     });
 
     return `{ ${pairs.join(',')} }`;
@@ -287,11 +290,29 @@ export function CheckDict<T>(obj: Checker<T>): Checker<Dict<T>> {
   return new DictChecker(obj);
 }
 
-export function check<T>(value: unknown, checker: Checker<T>): T {
+function defaultMessage(value: unknown, expected: string): string {
+  return `Got ${value}, expected:\n${expected}`;
+}
+
+export function check<T>(
+  value: unknown,
+  checker: Checker<T>,
+  message?: (value: unknown, expected: string) => string
+): T;
+export function check<T, U extends T>(value: T, checker: (value: T) => asserts value is U): U;
+export function check<T>(
+  value: unknown,
+  checker: Checker<T> | ((value: unknown) => void),
+  message: (value: unknown, expected: string) => string = defaultMessage
+): T {
+  if (typeof checker === 'function') {
+    checker(value);
+    return value as T;
+  }
   if (checker.validate(value)) {
     return value;
   } else {
-    throw new Error(`Got ${value}, expected:\n${checker.expected()}`);
+    throw new Error(message(value, checker.expected()));
   }
 }
 

@@ -1,6 +1,6 @@
 import { PresentArray } from '@glimmer/interfaces';
 import { ASTv2, KEYWORDS_TYPES } from '@glimmer/syntax';
-import { isPresent } from '@glimmer/util';
+import { getLast, isPresentArray } from '@glimmer/util';
 
 import { AnyOptionalList, PresentList } from '../../../shared/list';
 import { Ok, Result, ResultArray } from '../../../shared/result';
@@ -56,8 +56,8 @@ export class NormalizeExpressions {
     let ref = this.VariableReference(path.ref);
     let { tail } = path;
 
-    if (isPresent(tail)) {
-      let tailLoc = tail[0].loc.extend(tail[tail.length - 1].loc);
+    if (isPresentArray(tail)) {
+      let tailLoc = tail[0].loc.extend(getLast(tail).loc);
       return Ok(
         new mir.PathExpression({
           loc: path.loc,

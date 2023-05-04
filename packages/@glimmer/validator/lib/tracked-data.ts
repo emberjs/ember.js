@@ -1,4 +1,4 @@
-import { tagFor, dirtyTagFor } from './meta';
+import { dirtyTagFor, tagFor } from './meta';
 import { consumeTag } from './tracking';
 
 export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;

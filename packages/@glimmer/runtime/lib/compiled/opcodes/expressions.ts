@@ -1,4 +1,15 @@
 import {
+  check,
+  CheckBlockSymbolTable,
+  CheckHandle,
+  CheckMaybe,
+  CheckOption,
+  CheckOr,
+} from '@glimmer/debug';
+import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import { DEBUG } from '@glimmer/env';
+import { toBool } from '@glimmer/global-context';
+import {
   CapturedPositionalArguments,
   CurriedType,
   Helper,
@@ -11,43 +22,33 @@ import {
   VM as PublicVM,
 } from '@glimmer/interfaces';
 import {
-  Reference,
   childRefFor,
-  UNDEFINED_REFERENCE,
-  TRUE_REFERENCE,
-  FALSE_REFERENCE,
-  valueForRef,
   createComputeRef,
+  FALSE_REFERENCE,
+  Reference,
+  TRUE_REFERENCE,
+  UNDEFINED_REFERENCE,
+  valueForRef,
 } from '@glimmer/reference';
-import { $v0 } from '@glimmer/vm';
-import { APPEND_OPCODES } from '../../opcodes';
-import { createConcatRef } from '../expressions/concat';
-import { associateDestroyableChild, destroy, _hasDestroyableChildren } from '@glimmer/destroyable';
 import { assert, assign, debugToString, decodeHandle, isObject } from '@glimmer/util';
-import { toBool } from '@glimmer/global-context';
-import {
-  check,
-  CheckOption,
-  CheckHandle,
-  CheckBlockSymbolTable,
-  CheckOr,
-  CheckMaybe,
-} from '@glimmer/debug';
+import { $v0 } from '@glimmer/vm';
+
+import { isCurriedType, resolveCurriedValue } from '../../curried-value';
+import { APPEND_OPCODES } from '../../opcodes';
+import createCurryRef from '../../references/curry-value';
+import { CONSTANTS } from '../../symbols';
+import { reifyPositional } from '../../vm/arguments';
+import { createConcatRef } from '../expressions/concat';
 import {
   CheckArguments,
-  CheckReference,
-  CheckCompilableBlock,
-  CheckScope,
-  CheckHelper,
-  CheckUndefinedReference,
-  CheckScopeBlock,
   CheckCapturedArguments,
+  CheckCompilableBlock,
+  CheckHelper,
+  CheckReference,
+  CheckScope,
+  CheckScopeBlock,
+  CheckUndefinedReference,
 } from './-debug-strip';
-import { CONSTANTS } from '../../symbols';
-import { DEBUG } from '@glimmer/env';
-import createCurryRef from '../../references/curry-value';
-import { isCurriedType, resolveCurriedValue } from '../../curried-value';
-import { reifyPositional } from '../../vm/arguments';
 
 export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 

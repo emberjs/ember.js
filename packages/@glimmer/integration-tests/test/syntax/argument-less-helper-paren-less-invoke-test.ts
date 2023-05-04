@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, defineSimpleHelper } from '../..';
+import { defineSimpleHelper, jitSuite, RenderTest, test } from '../..';
 
 class ArgumentLessHelperParenLessInvokeTest extends RenderTest {
   static suiteName = 'argument-less helper paren-less invoke';

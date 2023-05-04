@@ -1,15 +1,15 @@
 import {
-  DynamicScope,
   Dict,
-  PartialScope,
-  ScopeSlot,
-  ScopeBlock,
+  DynamicScope,
   Option,
-  Scope,
   Owner,
+  PartialScope,
+  Scope,
+  ScopeBlock,
+  ScopeSlot,
 } from '@glimmer/interfaces';
-import { assign } from '@glimmer/util';
 import { Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { assign, unwrap } from '@glimmer/util';
 
 export class DynamicScopeImpl implements DynamicScope {
   private bucket: Dict<Reference>;
@@ -23,7 +23,7 @@ export class DynamicScopeImpl implements DynamicScope {
   }
 
   get(key: string): Reference {
-    return this.bucket[key];
+    return unwrap(this.bucket[key]);
   }
 
   set(key: string, reference: Reference): Reference {

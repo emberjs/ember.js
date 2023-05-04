@@ -48,17 +48,13 @@ function tokensFromType(
     //   <x.button>
     // An ElementNode does not parse the "tag" in to a PathExpression
     // so we have to split on `.`, just like how `this` presence is checked.
-    if (tag.indexOf('.') !== -1) {
-      let [potentialLocal] = tag.split('.');
+    if (tag.includes('.')) {
+      let [potentialLocal] = tag.split('.') as [string, ...string[]];
 
-      if (scopedTokens.indexOf(potentialLocal) !== -1) {
-        return;
-      }
+      if (scopedTokens.includes(potentialLocal)) return;
     }
 
-    if (scopedTokens.indexOf(tag) !== -1) {
-      return;
-    }
+    if (scopedTokens.includes(tag)) return;
 
     return tag;
   }

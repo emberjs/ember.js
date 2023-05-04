@@ -1,6 +1,6 @@
-import { Dict, CapturedArguments } from '@glimmer/interfaces';
-import { Reference, createComputeRef } from '@glimmer/reference';
-import { reifyPositional, reifyNamed } from '@glimmer/runtime';
+import { CapturedArguments, Dict } from '@glimmer/interfaces';
+import { createComputeRef, Reference } from '@glimmer/reference';
+import { reifyNamed, reifyPositional } from '@glimmer/runtime';
 
 export type UserHelper = (args: ReadonlyArray<unknown>, named: Dict<unknown>) => unknown;
 

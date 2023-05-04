@@ -1,4 +1,4 @@
-import { assert, isPresent } from '@glimmer/util';
+import { assert, isPresentArray } from '@glimmer/util';
 
 import { CharPosition, HbsPosition, InvisiblePosition, OffsetKind, PositionData } from './offset';
 
@@ -37,7 +37,7 @@ class WhenList<Out> {
   first(kind: OffsetKind): Out | null {
     for (let when of this._whens) {
       let value = when.match(kind);
-      if (isPresent(value)) {
+      if (isPresentArray(value)) {
         return value[0];
       }
     }
@@ -121,7 +121,7 @@ class Matcher<Out, M extends Matches = Matches> {
     let nesteds = this._whens.match(left);
 
     assert(
-      isPresent(nesteds),
+      isPresentArray(nesteds),
       `no match defined for (${left}, ${right}) and no AnyMatch defined either`
     );
 

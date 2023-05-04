@@ -1,43 +1,44 @@
-import { Reference, valueForRef, isConstRef, createComputeRef } from '@glimmer/reference';
-import {
-  Revision,
-  Tag,
-  valueForTag,
-  validateTag,
-  consumeTag,
-  CURRENT_TAG,
-} from '@glimmer/validator';
 import {
   check,
-  CheckString,
   CheckElement,
-  CheckOption,
-  CheckNode,
   CheckMaybe,
+  CheckNode,
+  CheckOption,
+  CheckString,
 } from '@glimmer/debug';
+import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import { DEBUG } from '@glimmer/env';
 import {
-  Op,
-  Option,
-  ModifierDefinition,
-  ModifierInstance,
-  Owner,
   CapturedPositionalArguments,
   CurriedType,
-  ModifierDefinitionState,
   Environment,
-  UpdatingVM,
+  ModifierDefinition,
+  ModifierDefinitionState,
+  ModifierInstance,
+  Op,
+  Option,
+  Owner,
   UpdatingOpcode,
+  UpdatingVM,
 } from '@glimmer/interfaces';
-import { $t0 } from '@glimmer/vm';
-import { APPEND_OPCODES } from '../../opcodes';
-import { Assert } from './vm';
-import { DynamicAttribute } from '../../vm/attributes/dynamic';
-import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
-import { CONSTANTS } from '../../symbols';
+import { createComputeRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import { assign, debugToString, expect, isObject } from '@glimmer/util';
+import {
+  consumeTag,
+  CURRENT_TAG,
+  Revision,
+  Tag,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator';
+import { $t0 } from '@glimmer/vm';
+
 import { CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
-import { DEBUG } from '@glimmer/env';
-import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import { APPEND_OPCODES } from '../../opcodes';
+import { CONSTANTS } from '../../symbols';
+import { DynamicAttribute } from '../../vm/attributes/dynamic';
+import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
+import { Assert } from './vm';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getValue(text));

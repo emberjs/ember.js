@@ -1,10 +1,10 @@
-import { Environment } from './environment';
 import { Destroyable } from '../core';
-import { DynamicScope } from './scope';
-import { Owner } from './owner';
 import { GlimmerTreeChanges } from '../dom/changes';
-import { ExceptionHandler } from './render';
 import { Reference } from '../references';
+import { Environment } from './environment';
+import { Owner } from './owner';
+import { ExceptionHandler } from './render';
+import { DynamicScope } from './scope';
 /**
  * This is used in the Glimmer Embedding API. In particular, embeddings
  * provide helpers through the `CompileTimeLookup` interface, and the

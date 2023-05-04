@@ -1,11 +1,12 @@
 import { DEBUG } from '@glimmer/env';
-import { debugToString, _WeakSet } from '@glimmer/util';
 import {
+  Helper,
   InternalComponentManager,
   InternalModifierManager,
-  Helper,
   Owner,
 } from '@glimmer/interfaces';
+import { debugToString } from '@glimmer/util';
+
 import { CustomHelperManager } from '../public/helper';
 import { FunctionHelperManager } from './defaults';
 

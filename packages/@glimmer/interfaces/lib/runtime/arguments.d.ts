@@ -52,8 +52,7 @@ export interface CapturedBlockArguments {
   get(name: string): Option<ScopeBlock>;
 }
 
-export interface CapturedNamedArguments {
-  [key: string]: Reference;
+export interface CapturedNamedArguments extends Record<string, Reference> {
   [CAPTURED_ARGS]: true;
 }
 

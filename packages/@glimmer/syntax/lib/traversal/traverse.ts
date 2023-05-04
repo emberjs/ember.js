@@ -1,5 +1,5 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { deprecate } from '@glimmer/util';
+import { deprecate, unwrap } from '@glimmer/util';
 
 import * as ASTv1 from '../v1/api';
 import visitorKeys, { VisitorKey, VisitorKeys } from '../v1/visitor-keys';
@@ -202,7 +202,7 @@ function visitArray(
   parentKey: string | null
 ) {
   for (let i = 0; i < array.length; i++) {
-    let node = array[i];
+    let node = unwrap(array[i]);
     let path = new WalkerPath(node, parent, parentKey);
     let result = visitNode(visitor, path);
     if (result !== undefined) {

@@ -1,4 +1,4 @@
-import { Statements, Statement, SexpOpcodes, Expressions, Expression } from '@glimmer/interfaces';
+import { Expression, Expressions, SexpOpcodes, Statement, Statements } from '@glimmer/interfaces';
 
 export function is<T>(variant: number): (value: any) => value is T {
   return function (value: any): value is T {

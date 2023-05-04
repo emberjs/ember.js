@@ -1,22 +1,22 @@
-import { isConstRef, valueForRef } from '@glimmer/reference';
 import {
   check,
-  CheckString,
-  CheckSafeString,
-  CheckNode,
   CheckDocumentFragment,
+  CheckNode,
+  CheckSafeString,
+  CheckString,
 } from '@glimmer/debug';
+import { DEBUG } from '@glimmer/env';
+import { ContentType, CurriedType, Op } from '@glimmer/interfaces';
+import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
+import { isConstRef, valueForRef } from '@glimmer/reference';
 import { isObject } from '@glimmer/util';
 
-import { APPEND_OPCODES } from '../../opcodes';
-import { CheckReference } from './-debug-strip';
-import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../dom/normalize';
-import DynamicTextContent from '../../vm/content/text';
-import { ContentType, CurriedType, Op } from '@glimmer/interfaces';
-import { AssertFilter } from './vm';
-import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
-import { DEBUG } from '@glimmer/env';
 import { isCurriedType } from '../../curried-value';
+import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';
+import { APPEND_OPCODES } from '../../opcodes';
+import DynamicTextContent from '../../vm/content/text';
+import { CheckReference } from './-debug-strip';
+import { AssertFilter } from './vm';
 
 function toContentType(value: unknown) {
   if (shouldCoerce(value)) {

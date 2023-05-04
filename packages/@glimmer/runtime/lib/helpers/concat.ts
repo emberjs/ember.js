@@ -1,7 +1,8 @@
 import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef } from '@glimmer/reference';
-import { internalHelper } from './internal-helper';
+
 import { reifyPositional } from '../vm/arguments';
+import { internalHelper } from './internal-helper';
 
 const isEmpty = (value: unknown): boolean => {
   return value === null || value === undefined || typeof (value as object).toString !== 'function';

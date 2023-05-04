@@ -1,11 +1,10 @@
-import { CompileTimeConstants, CompileTimeHeap } from '../program';
-import { Dict, Option } from '../core';
-import { SingleBuilderOperand } from './operands';
-import { NamedBlocks, HandleResult } from '../template';
-import { Op, MachineOp } from '../vm-opcodes';
-import * as WireFormat from './wire-format';
-import { InternalComponentCapabilities } from '../managers/internal/component';
 import { CompileTimeComponent } from '../..';
+import { Option } from '../core';
+import { CompileTimeConstants } from '../program';
+import { HandleResult, NamedBlocks } from '../template';
+import { MachineOp, Op } from '../vm-opcodes';
+import { SingleBuilderOperand } from './operands';
+import * as WireFormat from './wire-format';
 
 // These values are used in the same space as standard opcodes, so we need to
 // start them at a higher value to prevent collisions

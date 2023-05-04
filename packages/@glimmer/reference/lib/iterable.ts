@@ -1,9 +1,10 @@
-import { getPath, toIterator } from '@glimmer/global-context';
-import { Option, Dict } from '@glimmer/interfaces';
-import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { DEBUG } from '@glimmer/env';
-import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
-import { Reference, ReferenceEnvironment, valueForRef, createComputeRef } from './reference';
+import { getPath, toIterator } from '@glimmer/global-context';
+import { Dict, Option } from '@glimmer/interfaces';
+import { EMPTY_ARRAY, isObject } from '@glimmer/util';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+
+import { createComputeRef, Reference, ReferenceEnvironment, valueForRef } from './reference';
 
 export interface IterationItem<T, U> {
   key: unknown;

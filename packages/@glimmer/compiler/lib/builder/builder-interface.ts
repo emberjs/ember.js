@@ -1,5 +1,5 @@
 import { Dict, DictValue, Option, PresentArray } from '@glimmer/interfaces';
-import { assertNever, dict, expect, isPresent } from '@glimmer/util';
+import { assertNever, dict, expect, isPresentArray } from '@glimmer/util';
 
 export type BuilderParams = BuilderExpression[];
 export type BuilderHash = Option<Dict<BuilderExpression>>;
@@ -314,7 +314,7 @@ function extractBlockHead(name: string): NormalizedHead {
     throw new Error(`Unexpected missing # in block head`);
   }
 
-  return normalizeDottedPath(result[2]);
+  return normalizeDottedPath(result[2] as string);
 }
 
 function normalizeCallHead(name: string): NormalizedHead {
@@ -324,13 +324,13 @@ function normalizeCallHead(name: string): NormalizedHead {
     throw new Error(`Unexpected missing () in call head`);
   }
 
-  return normalizeDottedPath(result[1]);
+  return normalizeDottedPath(result[1] as string);
 }
 
 function normalizePath(head: string, tail: string[] = []): NormalizedHead {
   let pathHead = normalizePathHead(head);
 
-  if (isPresent(tail)) {
+  if (isPresentArray(tail)) {
     return {
       type: ExpressionKind.GetPath,
       path: {
@@ -349,11 +349,11 @@ function normalizePath(head: string, tail: string[] = []): NormalizedHead {
 function normalizeDottedPath(whole: string): NormalizedHead {
   let { kind, name: rest } = normalizePathHead(whole);
 
-  let [name, ...tail] = rest.split('.');
+  let [name, ...tail] = rest.split('.') as [string, ...string[]];
 
   let variable: Variable = { kind, name, mode: 'loose' };
 
-  if (isPresent(tail)) {
+  if (isPresentArray(tail)) {
     return { type: ExpressionKind.GetPath, path: { head: variable, tail } };
   } else {
     return { type: ExpressionKind.GetVar, variable };
@@ -503,12 +503,12 @@ function normalizeAttr(attr: BuilderAttr): { expr: NormalizedAttr; trusted: bool
 
 function mapObject<T extends Dict<unknown>, Out>(
   object: T,
-  callback: (value: DictValue<T>, key: keyof T) => Out
+  mapper: (value: DictValue<T>, key: keyof T) => Out
 ): { [P in keyof T]: Out } {
   let out = dict() as { [P in keyof T]?: Out };
 
   Object.keys(object).forEach(<K extends keyof T>(k: K) => {
-    out[k] = callback(object[k] as DictValue<T>, k);
+    out[k] = mapper(object[k] as DictValue<T>, k);
   });
 
   return out as { [P in keyof T]: Out };
@@ -537,13 +537,7 @@ export function isElement(input: [string, ...unknown[]]): input is BuilderElemen
 export function extractElement(input: string): Option<string> {
   let match = /^<([a-z0-9\-][a-zA-Z0-9\-]*)>$/.exec(input);
 
-  return match ? match[1] : null;
-}
-
-export function extractAngleInvocation(input: string): Option<string> {
-  let match = /^<(@[a-zA-Z0-9]*|[A-Z][a-zA-Z0-9\-]*)>$/.exec(input[0]);
-
-  return match ? match[1] : null;
+  return match?.[1] ?? null;
 }
 
 export function isAngleInvocation(input: [string, ...unknown[]]): input is InvocationElement {

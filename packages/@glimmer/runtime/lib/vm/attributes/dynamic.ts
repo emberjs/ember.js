@@ -1,18 +1,21 @@
-import {
-  Dict,
-  Environment,
-  Option,
-  ElementBuilder,
-  AttributeOperation,
-  AttributeCursor,
-} from '@glimmer/interfaces';
+import { DEBUG } from '@glimmer/env';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
-import { AttrNamespace, Namespace, SimpleElement } from '@glimmer/interfaces';
+import {
+  AttributeCursor,
+  AttributeOperation,
+  AttrNamespace,
+  Dict,
+  ElementBuilder,
+  Environment,
+  Namespace,
+  Option,
+  SimpleElement,
+} from '@glimmer/interfaces';
+import { castToBrowser } from '@glimmer/util';
+
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
-import { DEBUG } from '@glimmer/env';
-import { castToBrowser } from '@glimmer/util';
 
 export function dynamicAttribute(
   element: SimpleElement,
@@ -140,13 +143,13 @@ export class DefaultDynamicProperty extends DynamicAttribute {
 }
 
 export class SafeDynamicProperty extends DefaultDynamicProperty {
-  set(dom: ElementBuilder, value: unknown, env: Environment): void {
+  override set(dom: ElementBuilder, value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(element, name, value);
     super.set(dom, sanitized, env);
   }
 
-  update(value: unknown, env: Environment): void {
+  override update(value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(element, name, value);
     super.update(sanitized, env);
@@ -154,13 +157,13 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
 }
 
 export class SafeDynamicAttribute extends SimpleDynamicAttribute {
-  set(dom: ElementBuilder, value: unknown, env: Environment): void {
+  override set(dom: ElementBuilder, value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(element, name, value);
     super.set(dom, sanitized, env);
   }
 
-  update(value: unknown, env: Environment): void {
+  override update(value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(element, name, value);
     super.update(sanitized, env);
@@ -168,11 +171,11 @@ export class SafeDynamicAttribute extends SimpleDynamicAttribute {
 }
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
-  set(dom: ElementBuilder, value: unknown) {
+  override set(dom: ElementBuilder, value: unknown) {
     dom.__setProperty('value', normalizeStringValue(value));
   }
 
-  update(value: unknown) {
+  override update(value: unknown) {
     let input = castToBrowser(this.attribute.element, ['input', 'textarea']);
     let currentValue = input.value;
     let normalizedValue = normalizeStringValue(value);
@@ -183,13 +186,13 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
 }
 
 export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
-  set(dom: ElementBuilder, value: unknown): void {
+  override set(dom: ElementBuilder, value: unknown): void {
     if (value !== null && value !== undefined && value !== false) {
       dom.__setProperty('selected', true);
     }
   }
 
-  update(value: unknown): void {
+  override update(value: unknown): void {
     let option = castToBrowser(this.attribute.element, 'option');
 
     if (value) {
@@ -234,12 +237,12 @@ let DebugStyleAttributeManager: {
 
 if (DEBUG) {
   DebugStyleAttributeManager = class extends SimpleDynamicAttribute {
-    set(dom: ElementBuilder, value: unknown, env: Environment): void {
+    override set(dom: ElementBuilder, value: unknown, env: Environment): void {
       warnIfStyleNotTrusted(value);
 
       super.set(dom, value, env);
     }
-    update(value: unknown, env: Environment): void {
+    override update(value: unknown, env: Environment): void {
       warnIfStyleNotTrusted(value);
 
       super.update(value, env);

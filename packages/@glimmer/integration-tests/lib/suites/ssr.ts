@@ -1,5 +1,5 @@
-import { test } from '../test-decorator';
 import { AbstractNodeTest } from '../modes/node/env';
+import { test } from '../test-decorator';
 
 export class ServerSideSuite extends AbstractNodeTest {
   static suiteName = 'Server Side Rendering';

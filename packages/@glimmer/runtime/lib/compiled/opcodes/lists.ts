@@ -1,8 +1,9 @@
-import { createIteratorRef, valueForRef } from '@glimmer/reference';
-import { APPEND_OPCODES } from '../../opcodes';
-import { CheckReference, CheckIterator } from './-debug-strip';
 import { check } from '@glimmer/debug';
 import { Op } from '@glimmer/interfaces';
+import { createIteratorRef, valueForRef } from '@glimmer/reference';
+
+import { APPEND_OPCODES } from '../../opcodes';
+import { CheckIterator, CheckReference } from './-debug-strip';
 import { AssertFilter } from './vm';
 
 APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) => {

@@ -1,11 +1,15 @@
-import { EnvironmentDelegate } from '@glimmer/runtime';
+import setGlobalContext from '@glimmer/global-context';
 import { Destroyable, Destructor, Dict, Option } from '@glimmer/interfaces';
 import { IteratorDelegate } from '@glimmer/reference';
-import setGlobalContext from '@glimmer/global-context';
-import { consumeTag, tagFor, dirtyTagFor } from '@glimmer/validator';
+import { EnvironmentDelegate } from '@glimmer/runtime';
+import { consumeTag, dirtyTagFor, tagFor } from '@glimmer/validator';
 
-let scheduledDestroyables: Destroyable[] = [];
-let scheduledDestructors: Destructor<any>[] = [];
+interface Scheduled {
+  destroyable: Destroyable;
+  destructor: Destructor<any>;
+}
+
+let scheduled: Scheduled[] = [];
 let scheduledFinishDestruction: (() => void)[] = [];
 
 let actualDeprecations: string[] = [];
@@ -27,9 +31,8 @@ QUnit.assert.validateDeprecations = function (...expectedDeprecations: (string |
     });
   }
 
-  for (let i = 0; i < actualDeprecations.length; i++) {
-    let actual = actualDeprecations[i];
-    let expected = expectedDeprecations[i];
+  actualDeprecations.forEach((actual, i) => {
+    let expected = expectedDeprecations[i] as string | RegExp;
 
     let result = expected instanceof RegExp ? Boolean(actual.match(expected)) : actual === expected;
 
@@ -39,7 +42,7 @@ QUnit.assert.validateDeprecations = function (...expectedDeprecations: (string |
       expected,
       message: `Deprecation ${i + 1} matches: "${actual}"`,
     });
-  }
+  });
 
   actualDeprecations = [];
 };
@@ -72,8 +75,7 @@ setGlobalContext({
   scheduleRevalidate() {},
 
   scheduleDestroy<T extends Destroyable>(destroyable: T, destructor: Destructor<T>) {
-    scheduledDestroyables.push(destroyable);
-    scheduledDestructors.push(destructor);
+    scheduled.push({ destroyable, destructor });
   },
 
   scheduleDestroyed(fn: () => void) {
@@ -193,14 +195,13 @@ export const BaseEnv: EnvironmentDelegate = {
   enableDebugTooling: false,
 
   onTransactionCommit() {
-    for (let i = 0; i < scheduledDestroyables.length; i++) {
-      scheduledDestructors[i](scheduledDestroyables[i]);
+    for (const { destroyable, destructor } of scheduled) {
+      destructor(destroyable);
     }
 
     scheduledFinishDestruction.forEach((fn) => fn());
 
-    scheduledDestroyables = [];
-    scheduledDestructors = [];
+    scheduled = [];
     scheduledFinishDestruction = [];
   },
 };

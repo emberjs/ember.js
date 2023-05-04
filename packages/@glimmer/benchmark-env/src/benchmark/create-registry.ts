@@ -1,20 +1,20 @@
 import {
-  ResolvedComponentDefinition,
-  InternalModifierManager,
   Dict,
-  ModifierDefinitionState,
-  HelperDefinitionState,
   Helper,
+  HelperDefinitionState,
+  InternalModifierManager,
+  ModifierDefinitionState,
+  ResolvedComponentDefinition,
+  SimpleElement,
 } from '@glimmer/interfaces';
-import { programCompilationContext } from '@glimmer/opcode-compiler';
-import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import { SimpleElement } from '@glimmer/interfaces';
 import {
   getComponentTemplate,
   getInternalComponentManager,
   setInternalHelperManager,
   setInternalModifierManager,
 } from '@glimmer/manager';
+import { programCompilationContext } from '@glimmer/opcode-compiler';
+import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 
 import { UpdateBenchmark } from '../interfaces';
 import renderBenchmark from './render-benchmark';

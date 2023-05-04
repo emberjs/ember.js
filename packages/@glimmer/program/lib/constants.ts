@@ -1,17 +1,16 @@
 import {
   CompileTimeConstants,
+  ComponentDefinition,
   ComponentDefinitionState,
   ConstantPool,
+  HelperDefinitionState,
   InternalComponentCapability,
-  ComponentDefinition,
+  ModifierDefinitionState,
   ResolutionTimeConstants,
   ResolvedComponentDefinition,
   RuntimeConstants,
-  ModifierDefinitionState,
-  HelperDefinitionState,
   Template,
 } from '@glimmer/interfaces';
-import { assert, constants, expect, unwrapTemplate } from '@glimmer/util';
 import {
   capabilityFlagsFrom,
   getComponentTemplate,
@@ -21,6 +20,8 @@ import {
   managerHasCapability,
 } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
+import { assert, constants, enumerate, expect, unwrapTemplate } from '@glimmer/util';
+
 import { DEFAULT_TEMPLATE } from './util/default-template';
 
 const WELL_KNOWN_EMPTY_ARRAY: unknown = Object.freeze([]);
@@ -81,8 +82,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
     let handles = this.getValue(value) as number[];
     let reified: T[] = new Array(handles.length);
 
-    for (let i = 0; i < handles.length; i++) {
-      let n = handles[i];
+    for (const [i, n] of enumerate(handles)) {
       reified[i] = this.getValue(n);
     }
 
@@ -316,8 +316,8 @@ export class ConstantsImpl
       let names: number[] = this.getValue(index);
       reified = new Array(names.length);
 
-      for (let i = 0; i < names.length; i++) {
-        reified[i] = this.getValue(names[i]);
+      for (const [i, name] of enumerate(names)) {
+        reified[i] = this.getValue(name);
       }
 
       reifiedArrs[index] = reified;

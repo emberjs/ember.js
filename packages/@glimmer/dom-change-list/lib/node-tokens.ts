@@ -10,6 +10,6 @@ export class NodeTokensImpl implements NodeTokens {
   }
 
   reify(token: NodeToken): SimpleNode {
-    return this.nodes[token];
+    return this.nodes[token]!;
   }
 }

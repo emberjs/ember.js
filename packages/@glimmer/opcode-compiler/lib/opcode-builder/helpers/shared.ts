@@ -1,14 +1,15 @@
 import {
   ContainingMetadata,
   LayoutWithContext,
+  NamedBlocks,
   Op,
   Option,
   WireFormat,
-  NamedBlocks,
 } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
-import { PushYieldableBlock } from './blocks';
+
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+import { PushYieldableBlock } from './blocks';
 import { expr } from './expr';
 
 /**
@@ -27,8 +28,8 @@ export function CompileArgs(
   atNames: boolean
 ): void {
   let blockNames: string[] = blocks.names;
-  for (let i = 0; i < blockNames.length; i++) {
-    PushYieldableBlock(op, blocks.get(blockNames[i]));
+  for (const name of blockNames) {
+    PushYieldableBlock(op, blocks.get(name));
   }
 
   let count = CompilePositional(op, positional);

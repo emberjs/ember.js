@@ -1,37 +1,38 @@
 import {
+  CheckArray,
   CheckBlockSymbolTable,
+  CheckDict,
   Checker,
   CheckFunction,
   CheckHandle,
   CheckInstanceof,
   CheckInterface,
   CheckNumber,
-  CheckProgramSymbolTable,
-  CheckUnknown,
-  wrap,
+  CheckObject,
   CheckOption,
   CheckOr,
-  CheckArray,
-  CheckDict,
-  CheckObject,
+  CheckProgramSymbolTable,
   CheckString,
+  CheckUnknown,
+  wrap,
 } from '@glimmer/debug';
 import {
-  CompilableBlock,
-  ComponentDefinition,
-  InternalComponentManager,
-  ElementOperations,
-  Invocation,
-  Scope,
-  Helper,
   CapturedArguments,
-  Option,
-  ScopeBlock,
+  CompilableBlock,
   CompilableProgram,
+  ComponentDefinition,
   ComponentInstance,
+  ElementOperations,
+  Helper,
+  InternalComponentManager,
+  Invocation,
+  Option,
+  Scope,
+  ScopeBlock,
 } from '@glimmer/interfaces';
-import { Reference, REFERENCE, OpaqueIterator, UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { Tag, COMPUTE } from '@glimmer/validator';
+import { OpaqueIterator, REFERENCE, Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { COMPUTE, Tag } from '@glimmer/validator';
+
 import { PartialScopeImpl } from '../../scope';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { ComponentElementOperations } from './component';

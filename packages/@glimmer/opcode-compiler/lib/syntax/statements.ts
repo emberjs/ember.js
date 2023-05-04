@@ -12,6 +12,7 @@ import {
   WireFormat,
 } from '@glimmer/interfaces';
 import { $fp, $sp } from '@glimmer/vm';
+
 import {
   InvokeStaticBlock,
   InvokeStaticBlockWithStack,
@@ -22,8 +23,14 @@ import {
   InvokeDynamicComponent,
   InvokeNonStaticComponent,
 } from '../opcode-builder/helpers/components';
-import { SwitchCases, Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional';
+import { Replayable, ReplayableIf, SwitchCases } from '../opcode-builder/helpers/conditional';
 import { expr } from '../opcode-builder/helpers/expr';
+import {
+  isGetFreeComponent,
+  isGetFreeComponentOrHelper,
+  isGetFreeModifier,
+  isGetFreeOptionalComponentOrHelper,
+} from '../opcode-builder/helpers/resolution';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
 import {
   Call,
@@ -32,14 +39,8 @@ import {
   PushPrimitiveReference,
 } from '../opcode-builder/helpers/vm';
 import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
-import { Compilers, PushStatementOp } from './compilers';
-import {
-  isGetFreeComponent,
-  isGetFreeComponentOrHelper,
-  isGetFreeModifier,
-  isGetFreeOptionalComponentOrHelper,
-} from '../opcode-builder/helpers/resolution';
 import { namedBlocks } from '../utils';
+import { Compilers, PushStatementOp } from './compilers';
 
 export const STATEMENTS = new Compilers<PushStatementOp, StatementSexpOpcode>();
 

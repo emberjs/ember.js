@@ -4,39 +4,41 @@ import {
   CheckHandle,
   CheckInstanceof,
   CheckInterface,
+  CheckOr,
   CheckProgramSymbolTable,
   CheckString,
-  CheckOr,
 } from '@glimmer/debug';
+import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
+  CapturedArguments,
+  CompilableProgram,
   ComponentDefinition,
-  InternalComponentCapability,
   ComponentDefinitionState,
+  ComponentInstance,
   ComponentInstanceState,
-  InternalComponentManager,
+  ComponentInstanceWithCreate,
+  CurriedType,
   Dict,
   DynamicScope,
   ElementOperations,
+  InternalComponentCapability,
+  InternalComponentManager,
+  ModifierInstance,
   Op,
   Option,
+  Owner,
   ProgramSymbolTable,
   Recast,
   ScopeSlot,
+  UpdatingOpcode,
   VMArguments,
   WithDynamicTagName,
   WithElementHook,
   WithUpdateHook,
-  CapturedArguments,
-  CompilableProgram,
-  ComponentInstance,
-  ModifierInstance,
-  ComponentInstanceWithCreate,
-  Owner,
-  CurriedType,
-  UpdatingOpcode,
 } from '@glimmer/interfaces';
+import { managerHasCapability } from '@glimmer/manager';
 import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
 import {
   assert,
@@ -44,14 +46,21 @@ import {
   debugToString,
   dict,
   EMPTY_STRING_ARRAY,
+  enumerate,
   expect,
+  unwrap,
   unwrapTemplate,
 } from '@glimmer/util';
 import { $t0, $t1 } from '@glimmer/vm';
-import { registerDestructor } from '@glimmer/destroyable';
-import { managerHasCapability } from '@glimmer/manager';
-import { resolveComponent } from '../../component/resolve';
+
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
+import { resolveComponent } from '../../component/resolve';
+import {
+  CurriedValue,
+  isCurriedType,
+  isCurriedValue,
+  resolveCurriedValue,
+} from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import { ARGS, CONSTANTS } from '../../symbols';
@@ -62,18 +71,12 @@ import {
   CheckArguments,
   CheckComponentDefinition,
   CheckComponentInstance,
+  CheckCurriedComponentDefinition,
   CheckFinishedComponentInstance,
   CheckInvocation,
   CheckReference,
-  CheckCurriedComponentDefinition,
 } from './-debug-strip';
 import { UpdateDynamicAttributeOpcode } from './dom';
-import {
-  CurriedValue,
-  isCurriedType,
-  isCurriedValue,
-  resolveCurriedValue,
-} from '../../curried-value';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -333,7 +336,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
     let names = Object.keys(named);
 
     for (let i = 0; i < names.length; i++) {
-      stack.push(named[names[i]]);
+      stack.push(named[unwrap(names[i])]);
     }
 
     args.setup(stack, names, blockNames, positionalCount, false);
@@ -501,7 +504,7 @@ export class ComponentElementOperations implements ElementOperations {
         continue;
       }
 
-      let attr = this.attributes[name];
+      let attr = unwrap(this.attributes[name]);
       if (name === 'class') {
         setDeferredAttr(vm, 'class', mergeClasses(this.classes), attr.namespace, attr.trusting);
       } else {
@@ -522,7 +525,7 @@ function mergeClasses(classes: (string | Reference)[]): string | Reference<unkno
     return '';
   }
   if (classes.length === 1) {
-    return classes[0];
+    return unwrap(classes[0]);
   }
   if (allStringClasses(classes)) {
     return classes.join(' ');
@@ -786,8 +789,8 @@ APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
   let callerNames = args.named.atNames;
 
   for (let i = callerNames.length - 1; i >= 0; i--) {
-    let atName = callerNames[i];
-    let symbol = state.table.symbols.indexOf(callerNames[i]);
+    let atName = unwrap(callerNames[i]);
+    let symbol = state.table.symbols.indexOf(atName);
     let value = args.named.get(atName, true);
 
     if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
@@ -813,8 +816,8 @@ APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
   let { blocks } = check(vm.stack.peek(), CheckArguments);
 
-  for (let i = 0; i < blocks.names.length; i++) {
-    bindBlock(blocks.symbolNames[i], blocks.names[i], state, blocks, vm);
+  for (const [i] of enumerate(blocks.names)) {
+    bindBlock(unwrap(blocks.symbolNames[i]), unwrap(blocks.names[i]), state, blocks, vm);
   }
 });
 

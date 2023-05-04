@@ -19,6 +19,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
+    "useDefineForClassFields": true,
+    "exactOptionalPropertyTypes": true,
 
     "newLine": "LF",
     "noEmit": true,

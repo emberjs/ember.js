@@ -1,23 +1,22 @@
-import { preprocess as parse, AST, PreprocessOptions } from '..';
+import { entries } from '@glimmer/util';
+
+import { AST, preprocess as parse, PreprocessOptions } from '..';
 
 function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.Node> {
+  return normalizeValue(obj);
+}
+
+function normalizeValue<T extends AST.Node | AST.Node[] | unknown>(obj: T): T {
   if (obj && typeof obj === 'object') {
-    let newObj: any;
     if (Array.isArray(obj)) {
-      newObj = obj.slice();
-      for (let i = 0; i < obj.length; i++) {
-        newObj[i] = normalizeNode(obj[i]);
-      }
+      return obj.map(normalizeValue) as T;
     } else {
-      newObj = {};
-      let keys = Object.keys(obj);
-      for (let i = 0; i < keys.length; i++) {
-        let key = keys[i];
-        if (key === 'loc') continue;
-        newObj[key] = normalizeNode((obj as any)[key]);
-      }
+      return Object.fromEntries(
+        entries(obj).flatMap(([key, value]) =>
+          key === 'loc' ? [] : [[key, normalizeValue(value)]]
+        )
+      ) as T;
     }
-    return newObj;
   } else {
     return obj;
   }

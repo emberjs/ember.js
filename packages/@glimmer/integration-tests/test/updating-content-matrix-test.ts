@@ -1,6 +1,7 @@
+import { Namespace, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
-import { RenderTest, jitSuite, RenderTestConstructor } from '..';
-import { SimpleElement, SimpleNode, Namespace } from '@glimmer/interfaces';
+
+import { jitSuite, RenderTest, RenderTestConstructor } from '..';
 import RenderDelegate from '../lib/render-delegate';
 
 const SVG_NAMESPACE = Namespace.SVG;

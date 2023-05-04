@@ -1,4 +1,4 @@
-import { consumeTag, tagFor, dirtyTagFor } from '@glimmer/validator';
+import { consumeTag, dirtyTagFor, tagFor } from '@glimmer/validator';
 
 export function trackedObj<T extends Record<string, unknown>>(
   obj: T = {} as T

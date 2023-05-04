@@ -1,6 +1,6 @@
-import { castToBrowser, expect, HAS_NATIVE_PROXY } from '@glimmer/util';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
+import { castToBrowser, expect, HAS_NATIVE_PROXY } from '@glimmer/util';
 
 import { jitSuite, RenderTest, test } from '../..';
 

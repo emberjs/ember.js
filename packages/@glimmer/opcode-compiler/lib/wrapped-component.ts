@@ -1,20 +1,20 @@
 import {
-  ProgramSymbolTable,
+  BuilderOp,
   CompilableProgram,
-  LayoutWithContext,
-  Option,
   CompileTimeCompilationContext,
   HandleResult,
-  BuilderOp,
   HighLevelOp,
+  LayoutWithContext,
+  Option,
+  ProgramSymbolTable,
 } from '@glimmer/interfaces';
-
-import { templateCompilationContext } from './opcode-builder/context';
-import { meta } from './opcode-builder/helpers/shared';
-import { ATTRS_BLOCK, WrappedComponent } from './opcode-builder/helpers/components';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+
 import { debugCompiler } from './compiler';
+import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
+import { ATTRS_BLOCK, WrappedComponent } from './opcode-builder/helpers/components';
+import { meta } from './opcode-builder/helpers/shared';
 import { HighLevelStatementOp } from './syntax/compilers';
 
 export class WrappedBuilder implements CompilableProgram {

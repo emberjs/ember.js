@@ -1,27 +1,28 @@
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import { Dict } from '@glimmer/interfaces';
-import { dict, assign } from '@glimmer/util';
+import { Dict, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import { assign, dict, isSimpleElement } from '@glimmer/util';
 
 export interface DebugElement {
-  element: SimpleElement | null;
+  element: SimpleElement | null | undefined;
   description: string;
 }
 
-function isDebugElement(el: SimpleElement | DebugElement): el is DebugElement {
+function isDebugElement(el: SimpleNode | Node | DebugElement): el is DebugElement {
   return !(el as any).nodeType;
 }
 
-function extract(element: EqualsElement): DebugElement {
-  if (element === null) {
-    return { element: null, description: 'element' };
-  } else if (isDebugElement(element)) {
-    return element;
+function extract(node: EqualsElement): DebugElement {
+  if (node === null || node === undefined) {
+    return { element: node, description: 'element' };
+  } else if (isDebugElement(node)) {
+    return node;
+  } else if (isSimpleElement(node)) {
+    return { element: node, description: `${node.tagName}` };
   } else {
-    return { element, description: 'element' };
+    return { element: null, description: `${node.constructor.name}` };
   }
 }
 
-export type EqualsElement = SimpleElement | null | DebugElement;
+export type EqualsElement = SimpleNode | Node | null | undefined | DebugElement;
 
 export function equalsElement(
   input: EqualsElement,
@@ -31,12 +32,14 @@ export function equalsElement(
 ) {
   let { element, description } = extract(input);
 
-  if (element === null) {
+  if (element === null || element === undefined) {
     QUnit.assert.pushResult({
       result: false,
       actual: element,
       expected: true,
-      message: `failed - expected ${description} to not be null`,
+      message: `failed - expected ${description} to be present (it was ${
+        element === null ? 'null' : 'missing'
+      })`,
     });
     return;
   }
@@ -51,15 +54,14 @@ export function equalsElement(
   let expectedAttrs: Dict<Matcher> = dict<Matcher>();
 
   let expectedCount = 0;
-  for (let prop in attributes) {
+  for (let [prop, expected] of Object.entries(attributes)) {
     expectedCount++;
-    let expected = attributes[prop];
 
     let matcher: Matcher = isMatcher(expected) ? expected : equalsAttr(expected);
     expectedAttrs[prop] = matcher;
 
     QUnit.assert.pushResult({
-      result: expectedAttrs[prop].match(element && element.getAttribute(prop)),
+      result: matcher.match(element && element.getAttribute(prop)),
       actual: matcher.fail(element && element.getAttribute(prop)),
       expected: matcher.fail(element && element.getAttribute(prop)),
       message: `Expected ${description}'s ${prop} attribute ${matcher.expected()}`,
@@ -68,8 +70,8 @@ export function equalsElement(
 
   let actualAttributes = dict();
   if (element) {
-    for (let i = 0, l = element.attributes.length; i < l; i++) {
-      actualAttributes[element.attributes[i].name] = element.attributes[i].value;
+    for (const attribute of Array.from(element.attributes)) {
+      actualAttributes[attribute.name] = attribute.value;
     }
   }
 

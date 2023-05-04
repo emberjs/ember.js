@@ -1,18 +1,18 @@
 import {
-  jitSuite,
-  GlimmerishComponents,
-  TemplateOnlyComponents,
   DebuggerSuite,
   EachSuite,
   EmberishComponentTests,
+  GlimmerishComponents,
   HasBlockParamsHelperSuite,
   HasBlockSuite,
   InElementSuite,
+  jitComponentSuite,
+  jitSuite,
   ScopeSuite,
   ShadowingSuite,
+  TemplateOnlyComponents,
   WithDynamicVarsSuite,
   YieldSuite,
-  jitComponentSuite,
 } from '..';
 
 jitSuite(DebuggerSuite);

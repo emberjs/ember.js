@@ -1,4 +1,5 @@
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+
 import { Option } from '../core';
 
 export interface Bounds {

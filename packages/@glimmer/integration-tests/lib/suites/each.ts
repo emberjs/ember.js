@@ -1,9 +1,10 @@
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
+import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
 import { tracked } from '../test-helpers/tracked';
-import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { beginTestSteps, endTestSteps, verifySteps } from '@glimmer/util';
-import { createTag, consumeTag, dirtyTag } from '@glimmer/validator';
 
 export class EachSuite extends RenderTest {
   static suiteName = '#each';
@@ -374,7 +375,7 @@ export class EachSuite extends RenderTest {
   'When re-iterated via swap #1, the original references are updated'() {
     if (!LOCAL_DEBUG) return;
 
-    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    let arr = numbers();
     this.render(`{{#each this.arr as |item|}}{{item}}{{/each}}`, { arr });
 
     let a = arr[1];
@@ -404,7 +405,7 @@ export class EachSuite extends RenderTest {
   'When re-iterated via swap #2, the original references are updated'() {
     if (!LOCAL_DEBUG) return;
 
-    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    let arr = numbers();
     this.render(`{{#each this.arr as |item|}}{{item}}{{/each}}`, { arr });
 
     let a = arr[0];
@@ -434,7 +435,7 @@ export class EachSuite extends RenderTest {
   'When re-iterated via swap #3, the original references are updated'() {
     if (!LOCAL_DEBUG) return;
 
-    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    let arr = numbers();
     this.render(`{{#each this.arr as |item|}}{{item}}{{/each}}`, { arr });
 
     let a = arr[0];
@@ -464,7 +465,7 @@ export class EachSuite extends RenderTest {
   'When re-iterated via swap #4, the original references are updated'() {
     if (!LOCAL_DEBUG) return;
 
-    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    let arr = numbers();
     this.render(`{{#each this.arr as |item|}}{{item}}{{/each}}`, { arr });
 
     let a = arr[1];
@@ -498,7 +499,7 @@ export class EachSuite extends RenderTest {
   'When re-iterated via swap #5, the original references are updated'() {
     if (!LOCAL_DEBUG) return;
 
-    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    let arr = numbers();
     this.render(`{{#each this.arr as |item|}}{{item}}{{/each}}`, { arr });
 
     let a = arr[1];
@@ -530,7 +531,7 @@ export class EachSuite extends RenderTest {
   'When re-iterated via swap #6, the original references are updated'() {
     if (!LOCAL_DEBUG) return;
 
-    let arr = [1, 2, 3, 4, 5, 6, 7, 8];
+    let arr = numbers();
     this.render(`{{#each this.arr as |item|}}{{item}}{{/each}}`, { arr });
 
     let a = arr[1];
@@ -779,4 +780,17 @@ class Val {
 
 function val(i: number): Val {
   return new Val(i);
+}
+
+function numbers() {
+  return [1, 2, 3, 4, 5, 6, 7, 8] as [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+  ];
 }

@@ -49,13 +49,11 @@
  * the `RuntimeResolver` to do dynamic resolution when necessary.
  */
 
-import { Option } from './core';
-import { ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinitionState, ComponentInstanceState } from './components';
-import { CompilableProgram, Template, HandleResult } from './template';
-import { CompileTimeCompilationContext } from './program';
-import { Owner, ModifierDefinitionState, HelperDefinitionState } from './runtime';
+import { Option } from './core';
 import { InternalComponentCapability, InternalComponentManager } from './managers';
+import { HelperDefinitionState, ModifierDefinitionState, Owner } from './runtime';
+import { CompilableProgram, Template } from './template';
 
 export interface CompileTimeComponent {
   handle: number;

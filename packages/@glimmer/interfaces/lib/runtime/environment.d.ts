@@ -1,11 +1,11 @@
 import { SimpleDocument } from '@simple-dom/interface';
+
+import { WithCreateInstance } from '../..';
 import { ComponentDefinitionState, ComponentInstance, ComponentInstanceState } from '../components';
 import { Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { DebugRenderTree } from './debug-render-tree';
-import { Owner } from './owner';
 import { ModifierInstance } from './modifier';
-import { WithCreateInstance } from '../..';
 
 export interface EnvironmentOptions {
   document?: SimpleDocument;

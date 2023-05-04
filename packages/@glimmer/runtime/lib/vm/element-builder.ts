@@ -1,4 +1,6 @@
+import { destroy, registerDestructor } from '@glimmer/destroyable';
 import {
+  AttrNamespace,
   Bounds,
   Cursor,
   CursorStackSymbol,
@@ -9,21 +11,18 @@ import {
   GlimmerTreeConstruction,
   LiveBlock,
   Maybe,
-  Option,
-  UpdatableBlock,
   ModifierInstance,
-} from '@glimmer/interfaces';
-import { assert, expect, Stack, symbol } from '@glimmer/util';
-import {
-  AttrNamespace,
+  Option,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
+  UpdatableBlock,
 } from '@glimmer/interfaces';
+import { assert, expect, Stack, symbol } from '@glimmer/util';
+
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
-import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {

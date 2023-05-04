@@ -1,30 +1,41 @@
 import { InstructionEncoderImpl } from '@glimmer/encoder';
+import { DEBUG } from '@glimmer/env';
 import {
-  CompileTimeConstants,
-  Operand,
-  CompileTimeHeap,
-  Op,
-  BuilderOpcode,
-  HighLevelBuilderOpcode,
-  MachineOp,
-  SingleBuilderOperand,
-  Encoder,
-  HighLevelResolutionOpcode,
-  HighLevelOp,
-  OpcodeSize,
-  InstructionEncoder,
-  Dict,
-  EncoderError,
-  HandleResult,
   BuilderOp,
+  BuilderOpcode,
+  CompileTimeConstants,
+  CompileTimeHeap,
   CompileTimeResolver,
   ContainingMetadata,
+  Dict,
+  Encoder,
+  EncoderError,
+  HandleResult,
+  HighLevelBuilderOpcode,
+  HighLevelOp,
   HighLevelOperand,
-  STDLib,
+  HighLevelResolutionOpcode,
+  InstructionEncoder,
+  MachineOp,
+  Op,
+  OpcodeSize,
+  Operand,
   ResolutionTimeConstants,
+  SingleBuilderOperand,
+  STDLib,
 } from '@glimmer/interfaces';
+import {
+  assert,
+  dict,
+  EMPTY_STRING_ARRAY,
+  encodeHandle,
+  expect,
+  isPresentArray,
+  Stack,
+} from '@glimmer/util';
 import { isMachineOp } from '@glimmer/vm';
-import { Stack, dict, expect, EMPTY_STRING_ARRAY, encodeHandle, assert } from '@glimmer/util';
+
+import { compilableBlock } from '../compilable-template';
 import {
   resolveComponent,
   resolveComponentOrHelper,
@@ -33,8 +44,6 @@ import {
   resolveOptionalComponentOrHelper,
   resolveOptionalHelper,
 } from './helpers/resolution';
-import { compilableBlock } from '../compilable-template';
-import { DEBUG } from '@glimmer/env';
 
 export class Labels {
   labels: Dict<number> = dict();
@@ -50,9 +59,9 @@ export class Labels {
 
   patch(heap: CompileTimeHeap): void {
     let { targets, labels } = this;
-    for (let i = 0; i < targets.length; i++) {
-      let { at, target } = targets[i];
-      let address = labels[target] - at;
+
+    for (const { at, target } of targets) {
+      let address = labels[target]! - at;
 
       assert(heap.getbyaddr(at) === -1, 'Expected heap to contain a placeholder, but it did not');
 
@@ -97,7 +106,7 @@ export function encodeOp(
         let freeVar = op[1];
         let name = expect(meta.upvars, 'BUG: attempted to resolve value but no upvars found')[
           freeVar
-        ];
+        ]!;
 
         let andThen = op[2];
 
@@ -160,7 +169,7 @@ export class EncoderImpl implements Encoder {
     this.heap.push(MachineOp.Return | OpcodeSize.MACHINE_MASK);
     this.heap.finishMalloc(handle, size);
 
-    if (this.errors.length) {
+    if (isPresentArray(this.errors)) {
       return { errors: this.errors, handle };
     } else {
       return handle;

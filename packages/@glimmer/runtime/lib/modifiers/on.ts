@@ -1,3 +1,4 @@
+import { check, CheckFunction, CheckString } from '@glimmer/debug';
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -8,8 +9,9 @@ import {
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
+import { buildUntouchableThis, expect } from '@glimmer/util';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
-import { buildUntouchableThis } from '@glimmer/util';
+
 import { reifyNamed } from '../vm/arguments';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
@@ -95,40 +97,37 @@ export class OnModifierState {
       this.options = undefined;
     }
 
-    if (
-      DEBUG &&
-      (args.positional[0] === undefined || typeof valueForRef(args.positional[0]) !== 'string')
-    ) {
-      throw new Error(
-        'You must pass a valid DOM event name as the first argument to the `on` modifier'
-      );
-    }
+    let first = expect(
+      args.positional[0],
+      'You must pass a valid DOM event name as the first argument to the `on` modifier'
+    );
 
-    let eventName = valueForRef(args.positional[0]) as string;
+    let eventName = check(
+      valueForRef(first),
+      CheckString,
+      () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
+    );
+
     if (eventName !== this.eventName) {
       this.eventName = eventName;
       this.shouldUpdate = true;
     }
 
-    let userProvidedCallbackReference = args.positional[1];
+    const userProvidedCallbackReference = expect(
+      args.positional[1],
+      'You must pass a function as the second argument to the `on` modifier'
+    );
 
-    if (DEBUG) {
-      if (args.positional[1] === undefined) {
-        throw new Error(`You must pass a function as the second argument to the \`on\` modifier.`);
+    const userProvidedCallback = check(
+      valueForRef(userProvidedCallbackReference),
+      CheckFunction,
+      (actual) => {
+        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+          actual === null ? 'null' : typeof actual
+        }. While rendering:\n\n${userProvidedCallbackReference.debugLabel}`;
       }
+    ) as EventListener;
 
-      let value = valueForRef(userProvidedCallbackReference);
-
-      if (typeof value !== 'function') {
-        throw new Error(
-          `You must pass a function as the second argument to the \`on\` modifier; you passed ${
-            value === null ? 'null' : typeof value
-          }. While rendering:\n\n${userProvidedCallbackReference.debugLabel}`
-        );
-      }
-    }
-
-    let userProvidedCallback = valueForRef(userProvidedCallbackReference) as EventListener;
     if (userProvidedCallback !== this.userProvidedCallback) {
       this.userProvidedCallback = userProvidedCallback;
       this.shouldUpdate = true;

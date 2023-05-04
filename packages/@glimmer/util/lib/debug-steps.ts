@@ -1,4 +1,5 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
+
 import assert from './assert';
 import { expect } from './platform-utils';
 
@@ -28,8 +29,10 @@ if (LOCAL_DEBUG) {
   logStep = (type: string, step: unknown) => {
     if (LOGGED_STEPS === null) return;
 
-    LOGGED_STEPS[type] = LOGGED_STEPS[type] || [];
-    LOGGED_STEPS[type].push(step);
+    let steps = LOGGED_STEPS[type];
+    if (!steps) steps = LOGGED_STEPS[type] = [];
+
+    steps.push(step);
   };
 
   verifySteps = (

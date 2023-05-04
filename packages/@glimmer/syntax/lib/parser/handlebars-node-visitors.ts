@@ -1,4 +1,5 @@
 import { Option, Recast } from '@glimmer/interfaces';
+import { getLast, isPresentArray, unwrap } from '@glimmer/util';
 import { TokenizerState } from 'simple-html-tokenizer';
 
 import { Parser, ParserNodeBuilder, Tag } from '../parser';
@@ -11,9 +12,9 @@ import { PathExpressionImplV1 } from '../v1/legacy-interop';
 import b from '../v1/parser-builders';
 
 export abstract class HandlebarsNodeVisitors extends Parser {
-  abstract appendToCommentData(s: string): void;
-  abstract beginAttributeValue(quoted: boolean): void;
-  abstract finishAttributeValue(): void;
+  abstract override appendToCommentData(s: string): void;
+  abstract override beginAttributeValue(quoted: boolean): void;
+  abstract override finishAttributeValue(): void;
 
   private get isTopLevel() {
     return this.elementStack.length === 0;
@@ -51,7 +52,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     }
 
     for (i = 0; i < l; i++) {
-      this.acceptNode(program.body[i]);
+      this.acceptNode(unwrap(program.body[i]));
     }
 
     // Ensure that that the element stack is balanced properly.
@@ -383,18 +384,13 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   Hash(hash: HBS.Hash): ASTv1.Hash {
-    let pairs: ASTv1.HashPair[] = [];
-
-    for (let i = 0; i < hash.pairs.length; i++) {
-      let pair = hash.pairs[i];
-      pairs.push(
-        b.pair({
-          key: pair.key,
-          value: this.acceptNode(pair.value),
-          loc: this.source.spanFor(pair.loc),
-        })
-      );
-    }
+    let pairs = hash.pairs.map((pair) =>
+      b.pair({
+        key: pair.key,
+        value: this.acceptNode(pair.value),
+        loc: this.source.spanFor(pair.loc),
+      })
+    );
 
     return b.hash(pairs, this.source.spanFor(hash.loc));
   }
@@ -432,13 +428,13 @@ function calculateRightStrippedOffsets(original: string, value: string) {
 
   // otherwise, return the number of newlines prior to
   // `value`
-  let difference = original.split(value)[0];
+  let [difference] = original.split(value) as [string];
   let lines = difference.split(/\n/);
   let lineCount = lines.length - 1;
 
   return {
     lines: lineCount,
-    columns: lines[lineCount].length,
+    columns: unwrap(lines[lineCount]).length,
   };
 }
 
@@ -517,7 +513,7 @@ function acceptCallNodes(
 
   // if there is no hash, position it as a collapsed node immediately after the last param (or the
   // path, if there are also no params)
-  let end = params.length > 0 ? params[params.length - 1].loc : path.loc;
+  let end = isPresentArray(params) ? getLast(params).loc : path.loc;
 
   let hash = node.hash
     ? compiler.Hash(node.hash)

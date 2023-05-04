@@ -1,6 +1,6 @@
-import * as WireFormat from './wire-format';
-import { SymbolTable } from '../tier1/symbol-table';
 import { CompilableTemplate } from '../template';
+import { SymbolTable } from '../tier1/symbol-table';
+import * as WireFormat from './wire-format';
 
 export const enum HighLevelOperand {
   Label = 1,

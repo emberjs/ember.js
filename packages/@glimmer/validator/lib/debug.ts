@@ -1,6 +1,7 @@
-import { Tag } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@glimmer/global-context';
+import { Tag } from '@glimmer/interfaces';
+import { asPresentArray, getLast } from '@glimmer/util';
 
 export let beginTrackingTransaction:
   | undefined
@@ -171,7 +172,7 @@ if (DEBUG) {
   markTagAsConsumed = (_tag: Tag) => {
     if (!CONSUMED_TAGS || CONSUMED_TAGS.has(_tag)) return;
 
-    CONSUMED_TAGS.set(_tag, TRANSACTION_STACK[TRANSACTION_STACK.length - 1]);
+    CONSUMED_TAGS.set(_tag, getLast(asPresentArray(TRANSACTION_STACK)));
 
     // We need to mark the tag and all of its subtags as consumed, so we need to
     // cast it and access its internals. In the future this shouldn't be necessary,

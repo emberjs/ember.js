@@ -1,4 +1,4 @@
-import { jitSuite, RenderTest, strip, test, GlimmerishComponent, tracked } from '../..';
+import { GlimmerishComponent, jitSuite, RenderTest, strip, test, tracked } from '../..';
 
 class ArrayTest extends RenderTest {
   static suiteName = 'Helpers test: {{array}}';
@@ -268,12 +268,12 @@ class ArrayTest extends RenderTest {
 
     this.render(strip`<FooBar @people={{array "Tom" this.personTwo}}/>`, { personTwo: 'Chad' });
 
-    let firstArray = fooBarInstance!.args.people;
+    let firstArray = fooBarInstance!.args['people'];
 
     this.rerender({ personTwo: 'Godfrey' });
 
     this.assert.ok(
-      firstArray !== fooBarInstance!.args.people,
+      firstArray !== fooBarInstance!.args['people'],
       'should have created an entirely new array'
     );
   }

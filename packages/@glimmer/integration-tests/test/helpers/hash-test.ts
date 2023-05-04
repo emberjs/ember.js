@@ -1,5 +1,6 @@
-import { jitSuite, RenderTest, test, GlimmerishComponent, tracked } from '../..';
 import { HAS_NATIVE_PROXY } from '@glimmer/util';
+
+import { GlimmerishComponent, jitSuite, RenderTest, test, tracked } from '../..';
 
 class HashTest extends RenderTest {
   static suiteName = 'Helpers test: {{hash}}';
@@ -188,9 +189,9 @@ class HashTest extends RenderTest {
     class FooBar extends GlimmerishComponent {
       constructor(owner: object, args: { hash: Record<string, unknown> }) {
         super(owner, args);
-        args.hash.firstName = 'Chad';
+        args.hash['firstName'] = 'Chad';
 
-        assert.strictEqual(args.hash.firstName, 'Chad', 'Name updated in JS');
+        assert.strictEqual(args.hash['firstName'], 'Chad', 'Name updated in JS');
       }
     }
 
@@ -217,11 +218,11 @@ class HashTest extends RenderTest {
     class FooBar extends GlimmerishComponent {
       constructor(owner: object, args: { hash: Record<string, unknown> }) {
         super(owner, args);
-        args.hash.name = 'Chad';
+        args.hash['name'] = 'Chad';
       }
 
       get alias() {
-        return (this.args.hash as Record<string, unknown>).name;
+        return (this.args['hash'] as Record<string, unknown>)['name'];
       }
     }
 
@@ -256,7 +257,7 @@ class HashTest extends RenderTest {
     class FooBar extends GlimmerishComponent {
       constructor(owner: object, args: { hash: Record<string, unknown> }) {
         super(owner, args);
-        args.hash.lastName = 'Chan';
+        args.hash['lastName'] = 'Chan';
       }
     }
 

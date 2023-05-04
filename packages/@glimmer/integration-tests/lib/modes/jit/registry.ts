@@ -1,15 +1,15 @@
 import {
   CompilableProgram,
-  ResolvedComponentDefinition,
-  Invocation,
-  Option,
-  Template,
   HelperDefinitionState,
-  ModifierDefinitionState,
   InternalComponentManager,
+  Invocation,
+  ModifierDefinitionState,
+  Option,
+  ResolvedComponentDefinition,
+  Template,
 } from '@glimmer/interfaces';
-import { assert, dict } from '@glimmer/util';
 import { getComponentTemplate } from '@glimmer/manager';
+import { assert, dict } from '@glimmer/util';
 
 // This is used to replicate a requirement of Ember's template referrers, which
 // assign the `owner` to the template meta. The requirement is that the template
@@ -38,7 +38,7 @@ export class TypedRegistry<T> {
   }
 
   get(name: string): Option<T> {
-    return this.byName[name];
+    return this.byName[name] ?? null;
   }
 
   register(name: string, value: T): void {

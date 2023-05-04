@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
+import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 import { Destroyable, Destructor } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
-import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 
 const enum DestroyingState {
   Live = 0,
@@ -41,9 +41,7 @@ function push<T extends object>(collection: OneOrMany<T>, newItem: T): OneOrMany
 
 function iterate<T extends object>(collection: OneOrMany<T>, fn: (item: T) => void) {
   if (Array.isArray(collection)) {
-    for (let i = 0; i < collection.length; i++) {
-      fn(collection[i]);
-    }
+    collection.forEach(fn);
   } else if (collection !== null) {
     fn(collection);
   }

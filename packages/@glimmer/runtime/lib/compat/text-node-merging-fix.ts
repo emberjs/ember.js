@@ -1,11 +1,13 @@
-import { Bounds, Option } from '@glimmer/interfaces';
 import {
+  Bounds,
   InsertPosition,
+  Option,
   SimpleComment,
   SimpleDocument,
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+
 import { DOMOperations } from '../dom/operations';
 
 // Patch:    Adjacent text node merging fix
@@ -38,7 +40,11 @@ export function applyTextNodeMergingFix(
       this.uselessComment = document.createComment('');
     }
 
-    insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
+    override insertHTMLBefore(
+      parent: SimpleElement,
+      nextSibling: Option<SimpleNode>,
+      html: string
+    ): Bounds {
       if (html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
       }

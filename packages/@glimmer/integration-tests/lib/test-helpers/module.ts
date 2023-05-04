@@ -1,12 +1,13 @@
-import { IRenderTest, Count, RenderTest } from '../render-test';
-import RenderDelegate, { RenderDelegateOptions } from '../render-delegate';
-import { JitRenderDelegate } from '../modes/jit/delegate';
-import { keys } from '@glimmer/util';
-import { DeclaredComponentKind } from '../test-decorator';
-import { ComponentKind } from '../components';
-import { NodeJitRenderDelegate } from '../modes/node/env';
-import { JitSerializationDelegate } from '../suites/custom-dom-helper';
 import { EnvironmentDelegate } from '@glimmer/runtime';
+import { keys } from '@glimmer/util';
+
+import { ComponentKind } from '../components';
+import { JitRenderDelegate } from '../modes/jit/delegate';
+import { NodeJitRenderDelegate } from '../modes/node/env';
+import RenderDelegate, { RenderDelegateOptions } from '../render-delegate';
+import { Count, IRenderTest, RenderTest } from '../render-test';
+import { JitSerializationDelegate } from '../suites/custom-dom-helper';
+import { DeclaredComponentKind } from '../test-decorator';
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
   suiteName: string;
@@ -216,15 +217,27 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
   tests: ComponentTests
 ): void {
   keys(tests).forEach((type) => {
-    let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
+    let formattedType = upperFirst(type);
+
     QUnit.module(`[integration] ${formattedType}`, () => {
-      for (let i = tests[type].length - 1; i >= 0; i--) {
-        let t = tests[type][i];
+      const allTests = [...tests[type]].reverse();
+
+      for (const t of allTests) {
         t(formattedType, klass);
-        tests[type].pop();
       }
+
+      tests[type] = [];
     });
   });
+}
+
+function upperFirst<T extends string>(
+  str: T extends '' ? `upperFirst only takes (statically) non-empty strings` : T
+): string {
+  let first = str[0] as string;
+  let rest = str.slice(1) as string;
+
+  return `${first.toUpperCase()}${rest}`;
 }
 
 const HAS_TYPED_ARRAYS = typeof Uint16Array !== 'undefined';

@@ -1,12 +1,12 @@
+import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { Cache, createCache, getValue } from '@glimmer/validator';
 import { Arguments, InternalHelperManager } from '@glimmer/interfaces';
-import { debugToString } from '@glimmer/util';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
+import { getOwner } from '@glimmer/owner';
+import { debugToString } from '@glimmer/util';
+import { Cache, createCache, getValue } from '@glimmer/validator';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';
-import { getOwner } from '@glimmer/owner';
-import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
 
 let ARGS_CACHES = DEBUG ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>() : undefined;
 

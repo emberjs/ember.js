@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { expect } from '@glimmer/util';
+import { expect, unwrap } from '@glimmer/util';
 
 import { generateSyntaxError } from './syntax-error';
 import * as ASTv1 from './v1/api';
@@ -24,19 +24,23 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
   let attrNames = [];
 
   for (let i = 0; i < l; i++) {
-    attrNames.push(element.attributes[i].name);
+    attrNames.push(unwrap(element.attributes[i]).name);
   }
 
   let asIndex = attrNames.indexOf('as');
 
-  if (asIndex === -1 && attrNames.length > 0 && attrNames[attrNames.length - 1].charAt(0) === '|') {
+  if (
+    asIndex === -1 &&
+    attrNames.length > 0 &&
+    unwrap(attrNames[attrNames.length - 1]).charAt(0) === '|'
+  ) {
     throw generateSyntaxError(
       'Block parameters must be preceded by the `as` keyword, detected block parameters without `as`',
       element.loc
     );
   }
 
-  if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
+  if (asIndex !== -1 && l > asIndex && unwrap(attrNames[asIndex + 1]).charAt(0) === '|') {
     // Some basic validation, since we're doing the parsing ourselves
     let paramsString = attrNames.slice(asIndex).join(' ');
     if (
@@ -51,7 +55,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
 
     let params = [];
     for (let i = asIndex + 1; i < l; i++) {
-      let param = attrNames[i].replace(/\|/g, '');
+      let param = unwrap(attrNames[i]).replace(/\|/g, '');
       if (param !== '') {
         if (ID_INVERSE_PATTERN.test(param)) {
           throw generateSyntaxError(
@@ -116,9 +120,9 @@ export function printLiteral(literal: ASTv1.Literal): string {
 }
 
 export function isUpperCase(tag: string): boolean {
-  return tag[0] === tag[0].toUpperCase() && tag[0] !== tag[0].toLowerCase();
+  return tag[0] === tag[0]?.toUpperCase() && tag[0] !== tag[0]?.toLowerCase();
 }
 
 export function isLowerCase(tag: string): boolean {
-  return tag[0] === tag[0].toLowerCase() && tag[0] !== tag[0].toUpperCase();
+  return tag[0] === tag[0]?.toLowerCase() && tag[0] !== tag[0]?.toUpperCase();
 }

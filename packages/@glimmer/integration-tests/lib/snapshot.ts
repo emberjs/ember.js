@@ -1,7 +1,7 @@
-import { Option } from '@glimmer/interfaces';
+import { NodeType, Option, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { castToSimple } from '@glimmer/util';
-import { NodeType, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import { EndTag, Token, tokenize } from 'simple-html-tokenizer';
+
 import { replaceHTML, toInnerHTML } from './dom/simple-utils';
 
 export type IndividualSnapshot = 'up' | 'down' | SimpleNode;
@@ -177,7 +177,7 @@ class SnapshotIterator {
 
   peek(): Option<IndividualSnapshot> {
     if (this.pos >= this.snapshot.length) return null;
-    return this.snapshot[this.pos];
+    return this.snapshot[this.pos] as IndividualSnapshot;
   }
 
   next(): Option<IndividualSnapshot> {
@@ -197,7 +197,7 @@ class SnapshotIterator {
   }
 
   private nextNode(): IndividualSnapshot {
-    let token = this.snapshot[this.pos++];
+    let token = this.snapshot[this.pos++] as IndividualSnapshot;
 
     if (token === 'down') {
       this.depth++;

@@ -1,4 +1,3 @@
-import { PrecompileOptions } from '@glimmer/syntax';
 import {
   CapturedRenderNode,
   CompileTimeCompilationContext,
@@ -6,12 +5,17 @@ import {
   Dict,
   DynamicScope,
   ElementBuilder,
+  ElementNamespace,
   Environment,
   HandleResult,
   Helper,
   Option,
   RenderResult,
   RuntimeContext,
+  SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleText,
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
@@ -30,15 +34,9 @@ import {
   renderSync,
   runtimeContext,
 } from '@glimmer/runtime';
-import { ASTPluginBuilder } from '@glimmer/syntax';
+import { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { assign, castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/util';
-import {
-  ElementNamespace,
-  SimpleDocument,
-  SimpleDocumentFragment,
-  SimpleElement,
-  SimpleText,
-} from '@glimmer/interfaces';
+
 import { preprocess } from '../../compile';
 import { ComponentKind, ComponentTypes } from '../../components';
 import { UserHelper } from '../../helpers';

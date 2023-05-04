@@ -1,10 +1,10 @@
-import { GlimmerTreeChanges, GlimmerTreeConstruction } from '@glimmer/interfaces';
+import { GlimmerTreeChanges, GlimmerTreeConstruction, SimpleDocument } from '@glimmer/interfaces';
 import createHTMLDocument from '@simple-dom/document';
-import { SimpleDocument } from '@glimmer/interfaces';
-import { JitRenderDelegate } from '../jit/delegate';
-import { RenderTest } from '../../render-test';
+
+import { assertingElement, toInnerHTML } from '../../dom/simple-utils';
 import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
-import { toInnerHTML, assertElement } from '../../dom/simple-utils';
+import { RenderTest } from '../../render-test';
+import { JitRenderDelegate } from '../jit/delegate';
 
 export interface NodeEnvironmentOptions {
   document: SimpleDocument;
@@ -13,7 +13,7 @@ export interface NodeEnvironmentOptions {
 }
 
 export class NodeJitRenderDelegate extends JitRenderDelegate {
-  static style = 'node jit';
+  static override style = 'node jit';
 
   constructor(options: RenderDelegateOptions = {}) {
     options.doc = options.doc || createHTMLDocument();
@@ -26,13 +26,13 @@ export class AbstractNodeTest extends RenderTest {
     super(delegate);
   }
 
-  assertHTML(html: string) {
+  override assertHTML(html: string) {
     let serialized = toInnerHTML(this.element);
     this.assert.strictEqual(serialized, html);
   }
 
-  assertComponent(html: string) {
-    let el = assertElement(this.element.firstChild);
+  override assertComponent(html: string) {
+    let el = assertingElement(this.element.firstChild);
 
     if (this.testType !== 'Glimmer') {
       this.assert.strictEqual(el.getAttribute('class'), 'ember-view');

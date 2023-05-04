@@ -1,7 +1,8 @@
-import { WithCreateInstance, Dict, VMArguments, Template, Owner } from '@glimmer/interfaces';
+import { Dict, Owner, Template, VMArguments, WithCreateInstance } from '@glimmer/interfaces';
+import { getComponentTemplate } from '@glimmer/manager';
 import { createConstRef, Reference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
-import { getComponentTemplate } from '@glimmer/manager';
+
 import { ComponentArgs } from '../interfaces';
 import argsProxy from './args-proxy';
 

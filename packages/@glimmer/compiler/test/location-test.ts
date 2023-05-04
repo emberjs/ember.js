@@ -56,10 +56,10 @@ const cases: Dict<[string, number | null][]> = {
 
 QUnit.module('locations - position');
 
-Object.keys(cases).forEach((string) => {
+for (const [string, testCase] of Object.entries(cases)) {
   let source = new Source(string);
 
-  for (let [span, offset] of cases[string]) {
+  for (let [span, offset] of testCase) {
     let [line, column] = span.split(':').map((i) => parseInt(i, 10));
 
     if (offset === null) continue;
@@ -68,15 +68,15 @@ Object.keys(cases).forEach((string) => {
       assert.deepEqual(source.hbsPosFor(unwrap(offset)), { line, column });
     });
   }
-});
+}
 
 QUnit.module('locations - location');
 
-Object.keys(cases).forEach((string) => {
+for (const [string, testCase] of Object.entries(cases)) {
   let source = new Source(string);
 
-  for (let [span, offset] of cases[string]) {
-    let [line, column] = span.split(':').map((i) => parseInt(i, 10));
+  for (let [span, offset] of testCase) {
+    let [line, column] = span.split(':').map((i) => parseInt(i, 10)) as [number, number];
 
     if (offset === null) continue;
 
@@ -84,4 +84,4 @@ Object.keys(cases).forEach((string) => {
       assert.deepEqual(source.offsetFor(line, column).offset, offset);
     });
   }
-});
+}

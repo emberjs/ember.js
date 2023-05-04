@@ -133,11 +133,11 @@ export type MaybeResult<T> = T | Result<T>;
 export class MapIntoResultArray<T> {
   constructor(private items: T[]) {}
 
-  map<U>(callback: (item: T) => Result<U>): Result<U[]> {
+  map<U>(mapper: (item: T) => Result<U>): Result<U[]> {
     let out = new ResultArray<U>();
 
     for (let item of this.items) {
-      out.add(callback(item));
+      out.add(mapper(item));
     }
 
     return out.toArray();

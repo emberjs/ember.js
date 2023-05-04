@@ -2,24 +2,23 @@ import {
   Cursor,
   Dict,
   ElementBuilder,
+  ElementNamespace,
   Environment,
   Helper,
   Option,
   RenderResult,
-} from '@glimmer/interfaces';
-import { serializeBuilder } from '@glimmer/node';
-import { createConstRef, Reference } from '@glimmer/reference';
-import { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
-import { assign, castToSimple } from '@glimmer/util';
-import createHTMLDocument from '@simple-dom/document';
-import {
-  ElementNamespace,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
+import { serializeBuilder } from '@glimmer/node';
+import { createConstRef, Reference } from '@glimmer/reference';
+import { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
+import { assign, castToSimple } from '@glimmer/util';
+import createHTMLDocument from '@simple-dom/document';
+
 import { ComponentKind } from '../../components';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
 import { UserHelper } from '../../helpers';

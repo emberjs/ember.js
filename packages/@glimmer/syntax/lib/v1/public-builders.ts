@@ -1,6 +1,6 @@
 import { Dict, Option } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { assert, assign, deprecate, isPresent } from '@glimmer/util';
+import { asPresentArray, assert, assign, deprecate, isPresentArray } from '@glimmer/util';
 
 import { SourceLocation, SourcePosition, SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
@@ -150,7 +150,7 @@ function buildConcat(
   parts: (ASTv1.TextNode | ASTv1.MustacheStatement)[],
   loc?: SourceLocation
 ): ASTv1.ConcatStatement {
-  if (!isPresent(parts)) {
+  if (!isPresentArray(parts)) {
     throw new Error(`b.concat requires at least one part`);
   }
 
@@ -285,7 +285,7 @@ function buildHead(
   original: string,
   loc: SourceLocation
 ): { head: ASTv1.PathHead; tail: string[] } {
-  let [head, ...tail] = original.split('.');
+  let [head, ...tail] = asPresentArray(original.split('.'));
   let headNode: ASTv1.PathHead;
 
   if (head === 'this') {

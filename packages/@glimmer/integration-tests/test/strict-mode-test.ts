@@ -1,17 +1,17 @@
+import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
 import { castToBrowser } from '@glimmer/util';
-import { on, fn, hash, array, get, concat } from '@glimmer/runtime';
 
 import {
-  RenderTest,
-  test,
-  jitSuite,
-  GlimmerishComponent,
-  trackedObj,
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
+  GlimmerishComponent,
+  jitSuite,
+  RenderTest,
   syntaxErrorFor,
+  test,
   TestHelper,
+  trackedObj,
 } from '..';
 
 class GeneralStrictModeTest extends RenderTest {
@@ -125,7 +125,7 @@ class GeneralStrictModeTest extends RenderTest {
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args.Bar = 'bar';
+    args['Bar'] = 'bar';
 
     this.assert.throws(() => {
       this.rerender();
@@ -164,7 +164,7 @@ class GeneralStrictModeTest extends RenderTest {
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args.Bar = 'bar';
+    args['Bar'] = 'bar';
 
     this.assert.throws(() => {
       this.rerender();
@@ -203,7 +203,7 @@ class GeneralStrictModeTest extends RenderTest {
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args.Bar = 'bar';
+    args['Bar'] = 'bar';
 
     this.assert.throws(() => {
       this.rerender();
@@ -708,7 +708,7 @@ class DynamicStrictModeTest extends RenderTest {
         return 'Hello, world!';
       }
 
-      willDestroy() {
+      override willDestroy() {
         assert.step('willDestroy 1 called');
       }
     }
@@ -718,7 +718,7 @@ class DynamicStrictModeTest extends RenderTest {
         return 'Hello, earth!';
       }
 
-      willDestroy() {
+      override willDestroy() {
         assert.step('willDestroy 2 called');
       }
     }
@@ -730,14 +730,14 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args.helper = Helper2;
+    args['helper'] = Helper2;
 
     this.rerender();
     this.assertHTML('Hello, earth!');
     this.assertStableRerender();
     assert.verifySteps(['willDestroy 1 called']);
 
-    args.helper = undefined;
+    args['helper'] = undefined;
 
     this.rerender();
     this.assertHTML('');
@@ -752,7 +752,7 @@ class DynamicStrictModeTest extends RenderTest {
         return `Hello, ${this.args.positional[0]}!`;
       }
 
-      willDestroy() {
+      override willDestroy() {
         assert.step('willDestroy 1 called');
       }
     }
@@ -762,7 +762,7 @@ class DynamicStrictModeTest extends RenderTest {
         return `Goodbye, ${this.args.positional[0]}!`;
       }
 
-      willDestroy() {
+      override willDestroy() {
         assert.step('willDestroy 2 called');
       }
     }
@@ -775,14 +775,14 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertHTML('Hello, world!');
     this.assertStableRerender();
 
-    args.helper = Helper2;
+    args['helper'] = Helper2;
 
     this.rerender();
     this.assertHTML('Goodbye, world!');
     this.assertStableRerender();
     assert.verifySteps(['willDestroy 1 called']);
 
-    args.helper = undefined;
+    args['helper'] = undefined;
 
     this.rerender();
     this.assertHTML('');
@@ -818,7 +818,7 @@ class DynamicStrictModeTest extends RenderTest {
   @test
   'Can pass modifier as argument and invoke dynamically (with args)'() {
     const foo = defineSimpleModifier(
-      (element: Element, [value]: string[]) => (element.innerHTML = value)
+      (element: Element, [value]: [string]) => (element.innerHTML = value)
     );
     const Foo = defineComponent({}, '<div {{@value "Hello, world!"}}></div>');
     const Bar = defineComponent({ foo, Foo }, '<Foo @value={{foo}}/>');
@@ -845,7 +845,7 @@ class DynamicStrictModeTest extends RenderTest {
   @test
   'Can pass curried modifier as argument and invoke dynamically'() {
     const foo = defineSimpleModifier(
-      (element: Element, [value]: string[]) => (element.innerHTML = value)
+      (element: Element, [value]: [string]) => (element.innerHTML = value)
     );
     const Foo = defineComponent({}, '<div {{@value}}></div>');
     const Bar = defineComponent({ foo, Foo }, '<Foo @value={{modifier foo "Hello, world!"}}/>');
@@ -966,14 +966,14 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertHTML('<div>Hello, world!</div>');
     this.assertStableRerender();
 
-    args.modifier = modifier2;
+    args['modifier'] = modifier2;
 
     this.rerender();
     this.assertHTML('<div>Hello, earth!</div>');
     this.assertStableRerender();
     assert.verifySteps(['willDestroy 1 called']);
 
-    args.modifier = undefined;
+    args['modifier'] = undefined;
 
     this.rerender();
     this.assertHTML('<div>Hello, earth!</div>');
@@ -1007,14 +1007,14 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertHTML('<div>Hello, world!</div>');
     this.assertStableRerender();
 
-    args.modifier = modifier2;
+    args['modifier'] = modifier2;
 
     this.rerender();
     this.assertHTML('<div>Goodbye, world!</div>');
     this.assertStableRerender();
     assert.verifySteps(['willDestroy 1 called']);
 
-    args.modifier = undefined;
+    args['modifier'] = undefined;
 
     this.rerender();
     this.assertHTML('<div>Goodbye, world!</div>');
@@ -1047,12 +1047,12 @@ class DynamicStrictModeTest extends RenderTest {
     this.assertHTML('<div>Hello, world!</div>');
     this.assertStableRerender();
 
-    args.inSpace = true;
+    args['inSpace'] = true;
     this.rerender();
     this.assertHTML('<div>Hello, Nebula!</div>');
     this.assertStableRerender();
 
-    args.name = 'Luna';
+    args['name'] = 'Luna';
     this.rerender();
     this.assertHTML('<div>Hello, Luna!</div>');
     this.assertStableRerender();

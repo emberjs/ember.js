@@ -5,6 +5,7 @@ import {
   SimpleNode,
   SimpleText,
 } from '@simple-dom/interface';
+
 import { Option } from '../core';
 import { Bounds } from './bounds';
 

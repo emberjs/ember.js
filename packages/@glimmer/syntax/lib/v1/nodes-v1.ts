@@ -165,10 +165,11 @@ export type StatementName =
 export interface AttrNode extends BaseNode {
   type: 'AttrNode';
   name: string;
-  value: TextNode | MustacheStatement | ConcatStatement;
+  value: AttrValue;
 }
 
 export type AttrValue = TextNode | MustacheStatement | ConcatStatement;
+export type AttrPart = TextNode | MustacheStatement;
 
 export interface TextNode extends BaseNode {
   type: 'TextNode';
@@ -335,3 +336,5 @@ export type Literal = Nodes[LiteralName];
 export type Expression = Nodes[ExpressionName];
 export type Expressions = Pick<Nodes, ExpressionName>;
 export type TopLevelStatement = Statement | Nodes['Block'];
+
+export type ParentNode = Template | Block | ElementNode;

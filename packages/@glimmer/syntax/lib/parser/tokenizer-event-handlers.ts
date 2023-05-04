@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { assertPresent, assign } from '@glimmer/util';
+import { assertPresentArray, assign, getFirst, getLast, isPresentArray } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 
@@ -142,9 +142,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let tag = this.finish(this.currentTag);
 
     let element = this.elementStack.pop() as ASTv1.ElementNode;
-    let parent = this.currentElement();
 
     this.validateEndTag(tag, element, isVoid);
+    let parent = this.currentElement();
 
     element.loc = element.loc.withEnd(this.offset());
     parseElementBlockParams(element);
@@ -242,21 +242,19 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   assembleConcatenatedValue(
     parts: (ASTv1.MustacheStatement | ASTv1.TextNode)[]
   ): ASTv1.ConcatStatement {
-    for (let i = 0; i < parts.length; i++) {
-      let part: ASTv1.BaseNode = parts[i];
-
+    for (const part of parts) {
       if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
         throw generateSyntaxError(
           'Unsupported node in quoted attribute value: ' + part['type'],
-          part.loc
+          (part as ASTv1.BaseNode).loc
         );
       }
     }
 
-    assertPresent(parts, `the concatenation parts of an element should not be empty`);
+    assertPresentArray(parts, `the concatenation parts of an element should not be empty`);
 
-    let first = parts[0];
-    let last = parts[parts.length - 1];
+    let first = getFirst(parts);
+    let last = getLast(parts);
 
     return b.concat(parts, this.source.spanFor(first.loc).extend(this.source.spanFor(last.loc)));
   }
@@ -266,41 +264,39 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     element: ASTv1.ElementNode,
     selfClosing: boolean
   ): void {
-    let error;
-
     if (voidMap[tag.name] && !selfClosing) {
       // EngTag is also called by StartTag for void and self-closing tags (i.e.
       // <input> or <br />, so we need to check for that here. Otherwise, we would
       // throw an error for those cases.
-      error = `<${tag.name}> elements do not need end tags. You should remove it`;
+      throw generateSyntaxError(
+        `<${tag.name}> elements do not need end tags. You should remove it`,
+        tag.loc
+      );
     } else if (element.tag === undefined) {
-      error = `Closing tag </${tag.name}> without an open tag`;
+      throw generateSyntaxError(`Closing tag </${tag.name}> without an open tag`, tag.loc);
     } else if (element.tag !== tag.name) {
-      error = `Closing tag </${tag.name}> did not match last open tag <${element.tag}> (on line ${element.loc.startPosition.line})`;
-    }
-
-    if (error) {
-      throw generateSyntaxError(error, tag.loc);
+      throw generateSyntaxError(
+        `Closing tag </${tag.name}> did not match last open tag <${element.tag}> (on line ${element.loc.startPosition.line})`,
+        tag.loc
+      );
     }
   }
 
   assembleAttributeValue(
-    parts: (ASTv1.MustacheStatement | ASTv1.TextNode)[],
+    parts: ASTv1.AttrPart[],
     isQuoted: boolean,
     isDynamic: boolean,
     span: SourceSpan
-  ): ASTv1.ConcatStatement | ASTv1.MustacheStatement | ASTv1.TextNode {
+  ): ASTv1.AttrValue {
     if (isDynamic) {
       if (isQuoted) {
         return this.assembleConcatenatedValue(parts);
       } else {
-        if (
-          parts.length === 1 ||
-          (parts.length === 2 &&
-            parts[1].type === 'TextNode' &&
-            (parts[1] as ASTv1.TextNode).chars === '/')
-        ) {
-          return parts[0];
+        assertPresentArray(parts);
+
+        const [head, a] = parts;
+        if (a === undefined || (a.type === 'TextNode' && a.chars === '/')) {
+          return head;
         } else {
           throw generateSyntaxError(
             `An unquoted attribute value must be a string or a mustache, ` +
@@ -310,8 +306,10 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
           );
         }
       }
+    } else if (isPresentArray(parts)) {
+      return parts[0];
     } else {
-      return parts.length > 0 ? parts[0] : b.text({ chars: '', loc: span });
+      return b.text({ chars: '', loc: span });
     }
   }
 }
@@ -396,7 +394,7 @@ class CodemodEntityParser extends EntityParser {
     super({});
   }
 
-  parse(): string | undefined {
+  override parse(): string | undefined {
     return undefined;
   }
 }
@@ -449,8 +447,7 @@ export function preprocess(
   }
 
   if (options && options.plugins && options.plugins.ast) {
-    for (let i = 0, l = options.plugins.ast.length; i < l; i++) {
-      let transform = options.plugins.ast[i];
+    for (const transform of options.plugins.ast) {
       let env: ASTPluginEnvironment = assign({}, options, { syntax }, { plugins: undefined });
 
       let pluginResult = transform(env);

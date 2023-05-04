@@ -1,11 +1,11 @@
 import { DEBUG } from '@glimmer/env';
 import {
   CompilerBuffer,
-  Operand,
+  InstructionEncoder,
   MachineOp,
   Op,
-  InstructionEncoder,
   OpcodeSize,
+  Operand,
 } from '@glimmer/interfaces';
 
 export class InstructionEncoderImpl implements InstructionEncoder {

@@ -1,5 +1,4 @@
-import { Option } from '@glimmer/interfaces';
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import { Option, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 
 export function clearElement(parent: SimpleElement) {
   let current: Option<SimpleNode> = parent.firstChild;

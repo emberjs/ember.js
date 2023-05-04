@@ -1,15 +1,18 @@
-import { Option, NodeTokens } from '@glimmer/interfaces';
-import { DOMTreeConstruction, TreeBuilder } from '..';
 import {
-  Namespace,
   AttrNamespace,
+  Namespace,
+  NodeTokens,
   NodeType,
-  SimpleElement,
-  SimpleDocumentFragment,
+  Option,
+  PresentArray,
   SimpleAttr,
+  SimpleDocumentFragment,
+  SimpleElement,
 } from '@glimmer/interfaces';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
+
+import { DOMTreeConstruction, TreeBuilder } from '..';
 
 export const SVG = Namespace.SVG;
 export const XLINK = Namespace.XLink;
@@ -27,7 +30,7 @@ export function toHTMLNS(parent: SimpleElement | SimpleDocumentFragment) {
 }
 
 class NamespacedHTMLSerializer extends Serializer {
-  openTag(element: SimpleElement): string {
+  override openTag(element: SimpleElement): string {
     if (element.namespaceURI === SVG) {
       return '<svg:' + element.tagName.toLowerCase() + this.attributes(element.attributes) + '>';
     } else {
@@ -35,7 +38,7 @@ class NamespacedHTMLSerializer extends Serializer {
     }
   }
 
-  closeTag(element: SimpleElement): string {
+  override closeTag(element: SimpleElement): string {
     if (element.namespaceURI === SVG) {
       return '</svg:' + element.tagName.toLowerCase() + '>';
     } else {
@@ -43,7 +46,7 @@ class NamespacedHTMLSerializer extends Serializer {
     }
   }
 
-  attr(original: SimpleAttr): string {
+  override attr(original: SimpleAttr): string {
     let attr: { name: string; value: Option<string>; specified: boolean };
     if (original.namespaceURI === XLINK) {
       attr = {
@@ -65,10 +68,10 @@ export interface ExpectedToken {
 }
 
 export class Builder {
-  protected expected: ExpectedToken[] = [];
+  protected expected: PresentArray<ExpectedToken>;
 
   constructor(protected tree: DOMTreeConstruction | TreeBuilder) {
-    this.expected[0] = { type: 'element', value: '<undefined>' };
+    this.expected = [{ type: 'element', value: '<undefined>' }];
   }
 
   appendTo(parent: SimpleElement | SimpleDocumentFragment) {

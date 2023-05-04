@@ -1,19 +1,20 @@
 import {
-  SimpleElement,
-  SimpleDocumentFragment,
   InsertPosition,
-  SimpleNode,
+  Maybe,
   NodeType,
+  Option,
   SerializableElement,
   SerializableNode,
   SimpleComment,
-  SimpleText,
   SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
 } from '@glimmer/interfaces';
+import { clearElement } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
-import { Option } from '@glimmer/interfaces';
-import { clearElement } from '@glimmer/util';
 
 export function toInnerHTML(parent: SimpleElement | SimpleDocumentFragment): string {
   let serializer = new Serializer(voidMap);
@@ -47,7 +48,7 @@ export function castToBrowser(node: null): null;
 export function castToBrowser<N extends CastableSimpleDOM>(
   node: N
 ): CastableBrowserDom<NodeTypeFor<N>>;
-export function castToBrowser<N extends CastableSimpleDOM>(
+export function castToBrowser(
   node: SimpleNode,
   nodeType: 'Node'
 ): CastToBrowserDom['Node']['browser'];
@@ -160,7 +161,7 @@ export function replaceHTML(parent: SimpleElement, value: string): void {
   parent.insertAdjacentHTML(InsertPosition.afterbegin, value);
 }
 
-export function assertElement(node: Option<SimpleNode>): SimpleElement {
+export function assertingElement(node: Maybe<SimpleNode>): SimpleElement {
   if (!node || node.nodeType !== NodeType.ELEMENT_NODE) {
     throw new Error(`Expected element, got ${node}`);
   }
@@ -168,14 +169,18 @@ export function assertElement(node: Option<SimpleNode>): SimpleElement {
   return node;
 }
 
-export function hasAttribute(parent: SimpleElement, attr: string): boolean {
-  let attrs = parent.attributes;
+export function isSimpleElement(node: Maybe<SimpleNode>): node is SimpleElement {
+  return !node || node.nodeType !== NodeType.ELEMENT_NODE;
+}
 
-  for (let i = 0; i < attrs.length; i++) {
-    if (attrs[i].name === attr) return true;
+export function assertElement(node: Maybe<SimpleNode>): asserts node is SimpleElement {
+  if (!isSimpleElement(node)) {
+    throw new Error(`Expected element, got ${node}`);
   }
+}
 
-  return false;
+export function hasAttribute(parent: SimpleElement, attr: string): boolean {
+  return Array.from(parent.attributes).some((parentAttr) => parentAttr.name === attr);
 }
 
 export function firstElementChild(parent: SimpleElement): Option<SimpleElement> {
@@ -209,23 +214,23 @@ export function elementId(element: SimpleElement): Option<string> {
 }
 
 class TextSerializer extends Serializer {
-  openTag(_element: SerializableElement) {
+  override openTag(_element: SerializableElement) {
     return '';
   }
 
-  closeTag(_element: SerializableElement) {
+  override closeTag(_element: SerializableElement) {
     return '';
   }
 
-  text(text: SerializableNode) {
+  override text(text: SerializableNode) {
     return text.nodeValue || '';
   }
 
-  comment(_comment: SerializableNode) {
+  override comment(_comment: SerializableNode) {
     return '';
   }
 
-  rawHTMLSection(_content: SerializableNode): never {
+  override rawHTMLSection(_content: SerializableNode): never {
     throw new Error('Unexpected raw HTML section in serialized text');
   }
 }

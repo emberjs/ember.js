@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+
 import { debugToString as maybeDebugToString } from '..';
 // `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
 // `"ActiveXObject" in window` returns `true` in all IE versions

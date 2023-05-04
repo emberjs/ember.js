@@ -1,15 +1,16 @@
 import {
   CompileTimeHeap,
-  SerializedHeap,
-  RuntimeHeap,
-  StdLibOperand,
-  RuntimeConstants,
-  RuntimeProgram,
   ResolutionTimeConstants,
+  RuntimeConstants,
+  RuntimeHeap,
+  RuntimeProgram,
+  SerializedHeap,
+  StdLibOperand,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
+import { expect, unwrap } from '@glimmer/util';
+
 import { RuntimeOpImpl } from './opcode';
-import { assert } from '@glimmer/util';
 
 const enum TableSlotState {
   Allocated,
@@ -37,12 +38,11 @@ export class RuntimeHeapImpl implements RuntimeHeap {
   // may move it. However, it is legal to use this address
   // multiple times between compactions.
   getaddr(handle: number): number {
-    return this.table[handle];
+    return unwrap(this.table[handle]);
   }
 
   getbyaddr(address: number): number {
-    assert(this.heap[address] !== undefined, 'Access memory out of bounds of the heap');
-    return this.heap[address];
+    return expect(this.heap[address], 'Access memory out of bounds of the heap');
   }
 
   sizeof(handle: number): number {
@@ -104,7 +104,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   }
 
   getbyaddr(address: number): number {
-    return this.heap[address];
+    return unwrap(this.heap[address]);
   }
 
   setbyaddr(address: number, value: number) {
@@ -134,7 +134,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   // may move it. However, it is legal to use this address
   // multiple times between compactions.
   getaddr(handle: number): number {
-    return this.handleTable[handle];
+    return unwrap(this.handleTable[handle]);
   }
 
   sizeof(handle: number): number {
@@ -157,8 +157,8 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
     let { handleTable, handleState, heap } = this;
 
     for (let i = 0; i < length; i++) {
-      let offset = handleTable[i];
-      let size = handleTable[i + 1] - offset;
+      let offset = unwrap(handleTable[i]);
+      let size = unwrap(handleTable[i + 1]) - unwrap(offset);
       let state = handleState[i];
 
       if (state === TableSlotState.Purged) {
@@ -171,7 +171,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
         compactedSize += size;
       } else if (state === TableSlotState.Allocated) {
         for (let j = offset; j <= i + size; j++) {
-          heap[j - compactedSize] = heap[j];
+          heap[j - compactedSize] = unwrap(heap[j]);
         }
 
         handleTable[i] = offset - compactedSize;
@@ -220,7 +220,7 @@ function slice(arr: Int32Array, start: number, end: number): Int32Array {
   let ret = new Int32Array(end);
 
   for (; start < end; start++) {
-    ret[start] = arr[start];
+    ret[start] = unwrap(arr[start]);
   }
 
   return ret;
@@ -228,7 +228,7 @@ function slice(arr: Int32Array, start: number, end: number): Int32Array {
 
 function sizeof(table: number[], handle: number) {
   if (LOCAL_DEBUG) {
-    return table[handle + 1] - table[handle];
+    return unwrap(table[handle + 1]) - unwrap(table[handle]);
   } else {
     return -1;
   }

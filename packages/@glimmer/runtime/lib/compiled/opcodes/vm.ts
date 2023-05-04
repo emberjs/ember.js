@@ -1,45 +1,46 @@
-import { toBool } from '@glimmer/global-context';
-import { CompilableTemplate, Option, Op, UpdatingOpcode } from '@glimmer/interfaces';
 import {
-  Reference,
-  valueForRef,
-  isConstRef,
-  createPrimitiveRef,
-  UNDEFINED_REFERENCE,
-  NULL_REFERENCE,
-  TRUE_REFERENCE,
-  FALSE_REFERENCE,
-  createComputeRef,
-  createConstRef,
-} from '@glimmer/reference';
-import {
-  CONSTANT_TAG,
-  Revision,
-  Tag,
-  valueForTag,
-  validateTag,
-  INITIAL,
-  beginTrackFrame,
-  endTrackFrame,
-  consumeTag,
-} from '@glimmer/validator';
-import { assert, decodeHandle, decodeImmediate, expect, isHandle } from '@glimmer/util';
-import {
-  CheckNumber,
   check,
-  CheckInstanceof,
-  CheckOption,
   CheckBlockSymbolTable,
   CheckHandle,
+  CheckInstanceof,
+  CheckNumber,
+  CheckOption,
   CheckPrimitive,
 } from '@glimmer/debug';
-import { stackAssert } from './assert';
+import { toBool } from '@glimmer/global-context';
+import { CompilableTemplate, Op, Option, UpdatingOpcode } from '@glimmer/interfaces';
+import {
+  createComputeRef,
+  createConstRef,
+  createPrimitiveRef,
+  FALSE_REFERENCE,
+  isConstRef,
+  NULL_REFERENCE,
+  Reference,
+  TRUE_REFERENCE,
+  UNDEFINED_REFERENCE,
+  valueForRef,
+} from '@glimmer/reference';
+import { assert, decodeHandle, decodeImmediate, expect, isHandle, unwrap } from '@glimmer/util';
+import {
+  beginTrackFrame,
+  CONSTANT_TAG,
+  consumeTag,
+  endTrackFrame,
+  INITIAL,
+  Revision,
+  Tag,
+  validateTag,
+  valueForTag,
+} from '@glimmer/validator';
+
 import { APPEND_OPCODES } from '../../opcodes';
+import { CONSTANTS } from '../../symbols';
 import { UpdatingVM } from '../../vm';
+import { InternalVM } from '../../vm/append';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
-import { CONSTANTS } from '../../symbols';
-import { InternalVM } from '../../vm/append';
+import { stackAssert } from './assert';
 
 APPEND_OPCODES.add(Op.ChildScope, (vm) => vm.pushChildScope());
 
@@ -174,7 +175,7 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
       invokingScope = invokingScope.child();
 
       for (let i = 0; i < localsCount; i++) {
-        invokingScope.bindSymbol(locals![i], args.at(i));
+        invokingScope.bindSymbol(unwrap(locals[i]), args.at(i));
       }
     }
   }

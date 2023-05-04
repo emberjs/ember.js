@@ -2,8 +2,9 @@ import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debu
 import { Dict, Maybe, Op, Option, RuntimeOp } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { valueForRef } from '@glimmer/reference';
-import { assert, fillNulls, LOCAL_LOGGER } from '@glimmer/util';
+import { assert, fillNulls, LOCAL_LOGGER, unwrap } from '@glimmer/util';
 import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
+
 import { isScopeReference } from './scope';
 import { CONSTANTS, DESTROYABLE_STACK, INNER_VM, STACKS } from './symbols';
 import { LowLevelVM, VM } from './vm';
@@ -155,7 +156,7 @@ export class AppendOpcodes {
   }
 
   evaluate(vm: VM, opcode: RuntimeOp, type: number) {
-    let operation = this.evaluateOpcode[type];
+    let operation = unwrap(this.evaluateOpcode[type]);
 
     if (operation.syscall) {
       assert(

@@ -1,4 +1,5 @@
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+
 import { Bounds } from '../dom/bounds';
 import { Arguments, CapturedArguments } from './arguments';
 

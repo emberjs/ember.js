@@ -1,12 +1,13 @@
-import { AbstractNodeTest, NodeJitRenderDelegate } from '../modes/node/env';
-import { test } from '../test-decorator';
-import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
-import { RenderTest } from '../render-test';
-import { Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
-import { blockStack } from '../dom/blocks';
-import { strip } from '../test-helpers/strings';
-import { toInnerHTML } from '../dom/simple-utils';
 import { precompile } from '@glimmer/compiler';
+import { Cursor, ElementBuilder, Environment } from '@glimmer/interfaces';
+import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
+
+import { blockStack } from '../dom/blocks';
+import { toInnerHTML } from '../dom/simple-utils';
+import { AbstractNodeTest, NodeJitRenderDelegate } from '../modes/node/env';
+import { RenderTest } from '../render-test';
+import { test } from '../test-decorator';
+import { strip } from '../test-helpers/strings';
 
 export class DOMHelperTests extends AbstractNodeTest {
   static suiteName = 'Server-side rendering in Node.js (normal)';
@@ -36,15 +37,15 @@ export class CompilationTests extends RenderTest {
 }
 
 export class JitSerializationDelegate extends NodeJitRenderDelegate {
-  static style = 'jit serialization';
+  static override style = 'jit serialization';
 
-  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+  override getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
     return serializeBuilder(env, cursor);
   }
 }
 
 export class SerializedDOMHelperTests extends DOMHelperTests {
-  static suiteName = 'Server-side rendering in Node.js (serialize)';
+  static override suiteName = 'Server-side rendering in Node.js (serialize)';
 
   @test
   'The compiler can handle unescaped HTML'() {
@@ -103,7 +104,7 @@ export class SerializedDOMHelperTests extends DOMHelperTests {
     `);
   }
 
-  assertHTML(html: string) {
+  override assertHTML(html: string) {
     let b = blockStack();
     let serialized = toInnerHTML(this.element);
     this.assert.strictEqual(serialized, `${b(0)}${html}${b(0)}`);

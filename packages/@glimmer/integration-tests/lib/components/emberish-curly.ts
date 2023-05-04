@@ -9,10 +9,10 @@ import {
   ElementOperations,
   Environment,
   InternalComponentCapabilities,
-  Reference,
   Option,
   Owner,
   PreparedArguments,
+  Reference,
   Template,
   VMArguments,
   WithCreateInstance,
@@ -28,8 +28,9 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, assign, keys, unwrapTemplate } from '@glimmer/util';
-import { DirtyableTag, consumeTag, createTag, dirtyTag, dirtyTagFor } from '@glimmer/validator';
+import { assign, EMPTY_ARRAY, keys, unwrapTemplate } from '@glimmer/util';
+import { consumeTag, createTag, DirtyableTag, dirtyTag, dirtyTagFor } from '@glimmer/validator';
+
 import { TestJitRuntimeResolver } from '../modes/jit/resolver';
 import { TestComponentConstructor } from './types';
 
@@ -181,7 +182,7 @@ export class EmberishCurlyComponentManager
       let count = Math.min(positionalParams.length, args.positional.length);
 
       for (let i = 0; i < count; i++) {
-        let name = positionalParams[i];
+        let name = positionalParams[i] as string;
 
         if (named[name]) {
           throw new Error(
@@ -227,7 +228,7 @@ export class EmberishCurlyComponentManager
 
     if (dyn) {
       for (let i = 0; i < dyn.length; i++) {
-        let name = dyn[i];
+        let name = dyn[i] as string;
         component.set(name, valueForRef(dynamicScope.get(name)));
       }
     }
@@ -273,8 +274,7 @@ export class EmberishCurlyComponentManager
     let bindings = component.attributeBindings;
 
     if (bindings) {
-      for (let i = 0; i < bindings.length; i++) {
-        let attribute = bindings[i];
+      for (const attribute of bindings) {
         let reference = childRefFor(selfRef, attribute);
 
         operations.setAttribute(attribute, reference, false, null);

@@ -1,14 +1,14 @@
-import { DOMTreeConstruction, NodeTokensImpl } from '..';
-
-import { TestCase, module, test } from './test-case';
-import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 import {
   Namespace,
   SimpleDocument,
-  SimpleElement,
   SimpleDocumentFragment,
+  SimpleElement,
 } from '@glimmer/interfaces';
 import createDocument from '@simple-dom/document';
+
+import { DOMTreeConstruction, NodeTokensImpl } from '..';
+import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';
+import { module, test, TestCase } from './test-case';
 
 const SVG = Namespace.SVG;
 const XLINK = Namespace.XLink;
@@ -21,7 +21,7 @@ export class ChangeListTest extends TestCase {
   protected declare tree: Builder;
   protected declare construction: DOMTreeConstruction;
 
-  before() {
+  override before() {
     this.document = createDocument();
     this.parent = this.document.createElement('div');
     this.construction = new DOMTreeConstruction();

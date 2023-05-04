@@ -1,8 +1,9 @@
 import { SimpleElement } from '@simple-dom/interface';
-import { Owner } from '../../runtime';
+
 import { Destroyable } from '../../core';
-import { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier';
+import { Owner } from '../../runtime';
 import { CapturedArguments } from '../../runtime/arguments';
+import { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier';
 import { UpdatableTag } from '../../tags';
 
 export interface InternalModifierManager<

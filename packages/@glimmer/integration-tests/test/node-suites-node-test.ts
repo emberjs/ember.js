@@ -1,14 +1,14 @@
 import {
+  CompilationTests,
+  DOMHelperTests,
+  JitSerializationDelegate,
   nodeComponentSuite,
+  NodeJitRenderDelegate,
   nodeSuite,
+  SerializedDOMHelperTests,
   ServerSideComponentSuite,
   ServerSideSuite,
   suite,
-  DOMHelperTests,
-  NodeJitRenderDelegate,
-  SerializedDOMHelperTests,
-  JitSerializationDelegate,
-  CompilationTests,
 } from '..';
 
 nodeSuite(ServerSideSuite);

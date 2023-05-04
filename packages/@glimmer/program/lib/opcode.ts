@@ -1,4 +1,4 @@
-import { OpcodeSize, RuntimeOp, OpcodeHeap } from '@glimmer/interfaces';
+import { OpcodeHeap, OpcodeSize, RuntimeOp } from '@glimmer/interfaces';
 
 export class RuntimeOpImpl implements RuntimeOp {
   public offset = 0;

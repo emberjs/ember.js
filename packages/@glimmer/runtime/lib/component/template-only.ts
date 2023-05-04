@@ -1,6 +1,6 @@
 import { InternalComponentCapabilities, InternalComponentManager } from '@glimmer/interfaces';
-import { NULL_REFERENCE, Reference } from '@glimmer/reference';
 import { setInternalComponentManager } from '@glimmer/manager';
+import { NULL_REFERENCE, Reference } from '@glimmer/reference';
 
 const CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: false,

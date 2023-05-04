@@ -5,26 +5,28 @@ import {
   Dict,
   InternalComponentManager,
   Owner,
+  SimpleElement,
+  SimpleNode,
 } from '@glimmer/interfaces';
-import { expect, assign } from '@glimmer/util';
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import {
-  test,
-  RenderTest,
-  suite,
-  BaseEnv,
-  JitRenderDelegate,
-  EmberishCurlyComponent,
-  GlimmerishComponent,
-  createTemplate,
-} from '..';
+import { setComponentTemplate } from '@glimmer/manager';
 import {
   EMPTY_ARGS,
   TemplateOnlyComponent,
   templateOnlyComponent,
   TemplateOnlyComponentManager,
 } from '@glimmer/runtime';
-import { setComponentTemplate } from '@glimmer/manager';
+import { assign, expect } from '@glimmer/util';
+
+import {
+  BaseEnv,
+  createTemplate,
+  EmberishCurlyComponent,
+  GlimmerishComponent,
+  JitRenderDelegate,
+  RenderTest,
+  suite,
+  test,
+} from '..';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
@@ -209,7 +211,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args.arg === 'first',
+        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
         children: [],
@@ -223,7 +225,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args.arg === 'first',
+        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -232,7 +234,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'second' } },
-        instance: (instance: GlimmerishComponent) => instance.args.arg === 'second',
+        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'second',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.lastChild),
         children: [],
@@ -246,7 +248,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'component',
         name: 'HelloWorld',
         args: { positional: [], named: { arg: 'first' } },
-        instance: (instance: GlimmerishComponent) => instance.args.arg === 'first',
+        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -471,16 +473,16 @@ class DebugRenderTreeTest extends RenderTest {
 
   assertRenderNodes(
     actual: CapturedRenderNode[],
-    expected: ExpectedRenderNode[],
+    expectedNodes: ExpectedRenderNode[],
     path: string
   ): void {
     this.assert.strictEqual(
       actual.length,
-      expected.length,
-      `Expecting ${expected.length} render nodes at ${path}, got ${actual.length}.\n`
+      expectedNodes.length,
+      `Expecting ${expectedNodes.length} render nodes at ${path}, got ${actual.length}.\n`
     );
 
-    if (actual.length === expected.length) {
+    if (actual.length === expectedNodes.length) {
       let byTypeAndName = <T, U, V extends { type: T; name: U }>(a: V, b: V): number => {
         if (a.type > b.type) {
           return 1;
@@ -496,11 +498,12 @@ class DebugRenderTreeTest extends RenderTest {
       };
 
       actual = actual.sort(byTypeAndName);
-      expected = expected.sort(byTypeAndName);
+      expectedNodes = expectedNodes.sort(byTypeAndName);
 
-      for (let i = 0; i < actual.length; i++) {
-        this.assertRenderNode(actual[i], expected[i], `${actual[i].type}:${actual[i].name}`);
-      }
+      actual.forEach((actualNode, i) => {
+        let expected = this.guardPresent({ [`node (${i})`]: expectedNodes[i] });
+        this.assertRenderNode(actualNode, expected, `${actualNode.type}:${actualNode.name}`);
+      });
     } else {
       this.assert.deepEqual(actual, [], path);
     }
