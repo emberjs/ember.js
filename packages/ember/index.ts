@@ -261,15 +261,15 @@ namespace Ember {
   // ****@ember/component****
   export const _Input = EmberInput;
   export const Component = EmberComponent;
-  export type Component<S> = EmberComponent<S>;
+  export type Component<S = unknown> = EmberComponent<S>;
 
   // // ****@ember/component/helper****
   export const Helper = EmberHelper;
-  export type Helper<S> = EmberHelper<S>;
+  export type Helper<S = unknown> = EmberHelper<S>;
 
   // ****@ember/controller****
   export const Controller = EmberController;
-  export type Controller<T> = EmberController<T>;
+  export type Controller<T = unknown> = EmberController<T>;
   export const ControllerMixin = EmberControllerMixin;
   export type ControllerMixin<T> = EmberControllerMixin<T>;
 
