@@ -98,14 +98,34 @@ ${MODULES_PLACEHOLDER}
 
 const TYPES_DIR = path.join('types', 'stable');
 
+// These modules need to be copied over *and* post-processed: they need to be
+// locally-importable as regular modules, but `tsc` will not move them over
+// itself, but unlike some modules which need to be left unchanged (e.g. the
+// `*-ext.d.ts` modules) these still need the module wrapper added.
+const HAND_COPIED_BUT_NEEDS_POSTPROCESSING = [
+  'ember/version.d.ts',
+  '@ember/-internals/glimmer/lib/templates/empty.d.ts',
+  '@ember/-internals/glimmer/lib/templates/input.d.ts',
+  '@ember/-internals/glimmer/lib/templates/link-to.d.ts',
+  '@ember/-internals/glimmer/lib/templates/outlet.d.ts',
+  '@ember/-internals/glimmer/lib/templates/root.d.ts',
+  '@ember/-internals/glimmer/lib/templates/textarea.d.ts',
+];
+
 async function main() {
   await fs.rm(TYPES_DIR, { recursive: true, force: true });
   await fs.mkdir(TYPES_DIR, { recursive: true });
 
   doOrDie(() => spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']));
 
-  await doOrDie(copyHandwrittenDefinitions);
-  let excludes = await doOrDie(copySideEffectModules);
+  let remappedLocationExcludes = await doOrDie(copyHandwrittenDefinitions);
+  let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);
+
+  // The majority of those items should be excluded entirely, but in some cases
+  // we still need to post-process them.
+  let excludes = remappedLocationExcludes
+    .concat(sideEffectExcludes)
+    .filter((excluded) => !HAND_COPIED_BUT_NEEDS_POSTPROCESSING.includes(excluded));
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
@@ -115,18 +135,16 @@ async function main() {
     cwd: TYPES_DIR,
   });
 
+  let missing = excludes.filter((excluded) => !allModules.includes(excluded));
+  if (missing.length) console.error('Did not capture modules:', ...missing);
+
   // However, we only want to process (i.e. rewrite) a subset of the modules.
   let modulesToProcess = allModules.filter((moduleName) => !excludes.includes(moduleName));
-  let status = await doOrDie(() =>
-    Promise.all(modulesToProcess.map(processModule)).then((values) =>
-      values.some((value) => value === 'failure') ? 'failure' : 'success'
-    )
-  );
+  let status = await doOrDie(async () => {
+    let values = await Promise.all(modulesToProcess.map(processModule));
+    return values.some((value) => value === 'failure') ? 'failure' : 'success';
+  });
 
-  // Only publish the types we actually *want* to provide public API for, or
-  // which are necessary support paths (e.g. all the `-internal` paths, whose
-  // types are used in the public APIs). Use `/// <reference path="..." />`
-  // directives to make it clear that these are type-only references.
   let moduleReferences = allModules
     .map((moduleName) => `/// <reference path="./${moduleName}" />`)
     .join('\n');
@@ -140,61 +158,31 @@ async function main() {
   process.exit(status === 'success' ? 0 : 1);
 }
 
+const REMAPPED_LOCATION_MODULES = [
+  {
+    input: 'packages/loader/lib/index.d.ts',
+    output: 'require.d.ts',
+  },
+];
+
 /**
-  "Emit" hand-authored `.d.ts` modules for two cases:
-
-  - modules which need to live in a different location in the output than in the
-    input tree, e.g. for the loader, which creates runtime modules at a
-    different location than
-
-  - modules which exist to augment other modules, e.g. for the DI registry, in a
-    way that works *without modification* in both source and distributed types
-
-  In both cases, these represent modules which need to be copied over and then
-  *left exactly as they are*.
+  "Emit" hand-authored `.d.ts` modules for modules which need to live in a
+  different location in the output than in the input tree, e.g. for the loader,
+  which creates runtime modules at a different location than its source location
+  naturally corresponds to. These represent modules which need to be copied over
+  and then *left exactly as they are*.
 
   @returns {Promise<string[]>} an array of module names to exclude from the rest of the
     post-processing steps
  */
-async function copySideEffectModules() {
-  let sideEffectModules = [
-    {
-      input: 'packages/loader/lib/index.d.ts',
-      output: 'require.d.ts',
-    },
-    {
-      input: 'packages/@ember/service/owner-ext.d.ts',
-      output: '@ember/service/owner-ext.d.ts',
-    },
-    {
-      input: 'packages/@ember/routing/location-ext.d.ts',
-      output: '@ember/routing/location-ext.d.ts',
-    },
-    {
-      input: 'packages/@ember/routing/owner-ext.d.ts',
-      output: '@ember/routing/owner-ext.d.ts',
-    },
-    {
-      input: 'packages/@ember/routing/service-ext.d.ts',
-      output: '@ember/routing/service-ext.d.ts',
-    },
-  ];
-
-  return doOrDie(async () => {
-    /** @type {string[]} */
-    let excludes = [];
-
-    await Promise.all(
-      sideEffectModules.map(async ({ input, output }) => {
-        let outputPath = path.join(TYPES_DIR, output);
-        // Cannot use fs.cp() until we require Node 16
-        await fs.mkdir(path.dirname(output), { recursive: true });
-        await fs.copyFile(input, outputPath);
-        excludes.push(output);
+function copyRemappedLocationModules() {
+  return doOrDie(() => {
+    return Promise.all(
+      REMAPPED_LOCATION_MODULES.map(async ({ input, output }) => {
+        await fs.cp(input, path.join(TYPES_DIR, output), { recursive: true });
+        return output;
       })
     );
-
-    return excludes;
   });
 }
 
@@ -203,24 +191,33 @@ async function copySideEffectModules() {
   generated by the build system, like the `.d.ts` files for templates. Since
   `tsc` ignores loose `.d.ts` files in the source of a project, these must
   simply be copied over manually.
- */
+
+  Exclude from this list any items we also copy via `copySideEffectModules`() so
+  we do not end up with duplicates (while that *should* still work given our
+  current design for publishing, it is a "happens to" rather than "is naturally
+  correct", so we want to avoid that).
+
+  @returns {Promise<Array<string>>} The modules copied over by hand.
+*/
 async function copyHandwrittenDefinitions() {
   let inputDir = 'packages';
-  let definitionModules = glob.sync('**/*.d.ts', {
-    cwd: inputDir,
-  });
+  let definitionModules = glob
+    .sync('**/*.d.ts', {
+      cwd: inputDir,
+    })
+    .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 
   await doOrDie(() =>
     Promise.all(
-      definitionModules.map(async (moduleName) => {
+      definitionModules.map((moduleName) => {
         let input = path.join(inputDir, moduleName);
         let output = path.join(TYPES_DIR, moduleName);
-        // Cannot use fs.cp() until we require Node 16
-        await fs.mkdir(path.dirname(output), { recursive: true });
-        await fs.copyFile(input, output);
+        return fs.cp(input, output, { recursive: true });
       })
     )
   );
+
+  return definitionModules;
 }
 
 /**
