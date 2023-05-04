@@ -12,8 +12,8 @@ import type { Maybe, Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
-import InternalComponent, { OpaqueInternalComponentConstructor, opaquify } from './internal';
-import { Opaque } from '@ember/-internals/utility-types';
+import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
+import { type Opaque } from '@ember/-internals/utility-types';
 
 const EMPTY_ARRAY: {}[] = [];
 const EMPTY_QUERY_PARAMS = {};

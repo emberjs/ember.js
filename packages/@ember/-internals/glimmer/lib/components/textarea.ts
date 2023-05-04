@@ -1,11 +1,11 @@
 /**
 @module @ember/component
 */
-import { Opaque } from '@ember/-internals/utility-types';
+import { type Opaque } from '@ember/-internals/utility-types';
 import { action } from '@ember/object';
 import TextareaTemplate from '../templates/textarea';
 import AbstractInput from './abstract-input';
-import { OpaqueInternalComponentConstructor, opaquify } from './internal';
+import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
 /**
   The `Textarea` component inserts a new instance of `<textarea>` tag into the template.
