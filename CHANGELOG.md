@@ -26,6 +26,10 @@
 - [#20415](https://github.com/emberjs/ember.js/pull/20415) [CLEANUP] Remove unused imports
 - [#20416](https://github.com/emberjs/ember.js/pull/20416) [CLEANUP] Finish cleaning up `Location` interface
 
+## v4.4.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
 ## v3.28.12 (May 4, 2023)
 
 - [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
