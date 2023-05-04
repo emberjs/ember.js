@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v3.28.12 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
 ## v3.28.11 (November 30, 2022)
 
 - [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX LTS] Allow class-based helpers in strict-mode
