@@ -29,6 +29,12 @@
   "ignorePatterns": ["dist", "ts-dist", "node_modules", "tmp"],
   "rules": {
     "n/no-missing-import": "off",
+    "n/no-unsupported-features/es-builtins": [
+      "error",
+      {
+        "version": "16.0.0"
+      }
+    ],
     // disabled because we still have a few commented tests
     "qunit/no-commented-tests": "off",
     // disabled due to false positives

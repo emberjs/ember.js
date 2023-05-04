@@ -16,11 +16,11 @@ function isTestFunction(value: any): value is TestFunction {
 }
 
 export function test(meta: Dict<unknown>): MethodDecorator;
-export function test(
+export function test<T>(
   _target: object,
   _name: string,
-  descriptor: PropertyDescriptor
-): PropertyDescriptor | void;
+  descriptor: TypedPropertyDescriptor<T>
+): TypedPropertyDescriptor<T> | void;
 export function test(...args: any[]) {
   if (args.length === 1) {
     let meta: Dict<unknown> = args[0];

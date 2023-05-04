@@ -899,5 +899,5 @@ operand-stack = [
 
 [syscall.debugger]
 
-format = ["Debugger", "symbols:str-array", "evalInfo:array"]
+format = ["Debugger", "symbols:str-array", "debugInfo:array"]
 operation = "Activate the debugger"

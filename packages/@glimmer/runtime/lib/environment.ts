@@ -114,7 +114,7 @@ export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
   protected declare appendOperations: GlimmerTreeConstruction;
-  protected updateOperations?: GlimmerTreeChanges;
+  protected updateOperations?: GlimmerTreeChanges | undefined;
 
   // Delegate methods and values
   public isInteractive = this.delegate.isInteractive;

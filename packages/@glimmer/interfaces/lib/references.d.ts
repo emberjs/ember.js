@@ -23,7 +23,7 @@ export type ReferenceSymbol = typeof REFERENCE;
 
 export interface Reference<T = unknown> {
   [REFERENCE]: ReferenceType;
-  debugLabel?: string;
+  debugLabel?: string | undefined;
   compute: Option<() => T>;
   children: null | Map<string | Reference, Reference>;
 }

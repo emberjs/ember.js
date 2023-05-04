@@ -63,10 +63,11 @@ export const enum SexpOpcodes {
   // Get
   // Get a local value via symbol
   GetSymbol = 30, // GetPath + 0-2,
-  // Template symbol are values that are in scope in the template in strict mode
-  GetTemplateSymbol = 32,
-  // Free variables are only keywords in strict mode
-  GetStrictFree = 31,
+  // Lexical symbols are values that are in scope in the template in strict mode
+  GetLexicalSymbol = 32,
+  // If a free variable is not a lexical symbol in strict mode, it must be a keyword.
+  // FIXME: Why does this make it to the wire format in the first place?
+  GetStrictKeyword = 31,
 
   // `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
   GetFreeAsComponentOrHelperHeadOrThisFallback = 34,
@@ -113,7 +114,7 @@ export type GetContextualFreeOp =
   | SexpOpcodes.GetFreeAsHelperHead
   | SexpOpcodes.GetFreeAsModifierHead
   | SexpOpcodes.GetFreeAsComponentHead
-  | SexpOpcodes.GetStrictFree;
+  | SexpOpcodes.GetStrictKeyword;
 
 export type AttrOp =
   | SexpOpcodes.StaticAttr
@@ -146,10 +147,10 @@ export namespace Core {
   export type Blocks = Option<[string[], SerializedInlineBlock[]]>;
   export type Args = [Params, Hash];
   export type NamedBlock = [string, SerializedInlineBlock];
-  export type EvalInfo = number[];
+  export type DebugInfo = number[];
   export type ElementParameters = Option<PresentArray<ElementParameter>>;
 
-  export type Syntax = Path | Params | ConcatParams | Hash | Blocks | Args | EvalInfo;
+  export type Syntax = Path | Params | ConcatParams | Hash | Blocks | Args | DebugInfo;
 }
 
 export type CoreSyntax = Core.Syntax;
@@ -160,8 +161,8 @@ export namespace Expressions {
   export type Hash = Core.Hash;
 
   export type GetSymbol = [SexpOpcodes.GetSymbol, number];
-  export type GetTemplateSymbol = [SexpOpcodes.GetTemplateSymbol, number];
-  export type GetStrictFree = [SexpOpcodes.GetStrictFree, number];
+  export type GetLexicalSymbol = [SexpOpcodes.GetLexicalSymbol, number];
+  export type GetStrictFree = [SexpOpcodes.GetStrictKeyword, number];
   export type GetFreeAsComponentOrHelperHeadOrThisFallback = [
     SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
     number
@@ -188,11 +189,11 @@ export namespace Expressions {
     | GetFreeAsModifierHead
     | GetFreeAsComponentHead;
   export type GetFree = GetStrictFree | GetContextualFree;
-  export type GetVar = GetSymbol | GetTemplateSymbol | GetFree;
+  export type GetVar = GetSymbol | GetLexicalSymbol | GetFree;
 
   export type GetPathSymbol = [SexpOpcodes.GetSymbol, number, Path];
-  export type GetPathTemplateSymbol = [SexpOpcodes.GetTemplateSymbol, number, Path];
-  export type GetPathStrictFree = [SexpOpcodes.GetStrictFree, number, Path];
+  export type GetPathTemplateSymbol = [SexpOpcodes.GetLexicalSymbol, number, Path];
+  export type GetPathStrictFree = [SexpOpcodes.GetStrictKeyword, number, Path];
   export type GetPathFreeAsComponentOrHelperHeadOrThisFallback = [
     SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback,
     number,
@@ -319,18 +320,16 @@ export namespace Statements {
   export type OpenElementWithSplat = [SexpOpcodes.OpenElementWithSplat, string | WellKnownTagName];
   export type FlushElement = [SexpOpcodes.FlushElement];
   export type CloseElement = [SexpOpcodes.CloseElement];
-  export type StaticAttr = [
-    SexpOpcodes.StaticAttr,
-    string | WellKnownAttrName,
-    Expression,
-    string?
+
+  type Attr<Op extends AttrOp> = [
+    op: Op,
+    name: string | WellKnownAttrName,
+    value: Expression,
+    namespace?: string | undefined
   ];
-  export type StaticComponentAttr = [
-    SexpOpcodes.StaticComponentAttr,
-    string | WellKnownAttrName,
-    Expression,
-    string?
-  ];
+
+  export type StaticAttr = Attr<SexpOpcodes.StaticAttr>;
+  export type StaticComponentAttr = Attr<SexpOpcodes.StaticComponentAttr>;
 
   export type AnyStaticAttr = StaticAttr | StaticComponentAttr;
 
@@ -339,30 +338,10 @@ export namespace Statements {
   export type DynamicArg = [SexpOpcodes.DynamicArg, string, Expression];
   export type StaticArg = [SexpOpcodes.StaticArg, string, Expression];
 
-  export type DynamicAttr = [
-    SexpOpcodes.DynamicAttr,
-    string | WellKnownAttrName,
-    Expression,
-    string?
-  ];
-  export type ComponentAttr = [
-    SexpOpcodes.ComponentAttr,
-    string | WellKnownAttrName,
-    Expression,
-    string?
-  ];
-  export type TrustingDynamicAttr = [
-    SexpOpcodes.TrustingDynamicAttr,
-    string | WellKnownAttrName,
-    Expression,
-    string?
-  ];
-  export type TrustingComponentAttr = [
-    SexpOpcodes.TrustingComponentAttr,
-    string | WellKnownAttrName,
-    Expression,
-    string?
-  ];
+  export type DynamicAttr = Attr<SexpOpcodes.DynamicAttr>;
+  export type ComponentAttr = Attr<SexpOpcodes.ComponentAttr>;
+  export type TrustingDynamicAttr = Attr<SexpOpcodes.TrustingDynamicAttr>;
+  export type TrustingComponentAttr = Attr<SexpOpcodes.TrustingComponentAttr>;
 
   export type AnyDynamicAttr =
     | DynamicAttr
@@ -370,7 +349,7 @@ export namespace Statements {
     | TrustingDynamicAttr
     | TrustingComponentAttr;
 
-  export type Debugger = [SexpOpcodes.Debugger, Core.EvalInfo];
+  export type Debugger = [SexpOpcodes.Debugger, Core.DebugInfo];
   export type InElement = [
     op: SexpOpcodes.InElement,
     block: SerializedInlineBlock,
@@ -492,7 +471,7 @@ export type SerializedTemplateBlock = [
   Statements.Statement[],
   // symbols
   string[],
-  // hasEval
+  // hasDebug
   boolean,
   // upvars
   string[]
@@ -519,7 +498,7 @@ export interface SerializedTemplateWithLazyBlock {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
   moduleName: string;
-  scope: (() => unknown[]) | undefined | null;
+  scope?: (() => unknown[]) | undefined | null;
   isStrictMode: boolean;
 }
 

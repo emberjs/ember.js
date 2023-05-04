@@ -23,14 +23,14 @@ function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.T
 function makeResolutionTypeVerifier(typeToVerify: SexpOpcodes) {
   return (
     opcode: Expressions.Expression
-  ): opcode is Expressions.GetFree | Expressions.GetTemplateSymbol => {
+  ): opcode is Expressions.GetFree | Expressions.GetLexicalSymbol => {
     if (!isGetLikeTuple(opcode)) return false;
 
     let type = opcode[0];
 
     return (
-      type === SexpOpcodes.GetStrictFree ||
-      type === SexpOpcodes.GetTemplateSymbol ||
+      type === SexpOpcodes.GetStrictKeyword ||
+      type === SexpOpcodes.GetLexicalSymbol ||
       type === typeToVerify
     );
   };
@@ -100,7 +100,7 @@ export function resolveComponent(
 
   let type = expr[0];
 
-  if (DEBUG && expr[0] === SexpOpcodes.GetStrictFree) {
+  if (DEBUG && expr[0] === SexpOpcodes.GetStrictKeyword) {
     throw new Error(
       `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
         meta.upvars![expr[1]]
@@ -108,7 +108,7 @@ export function resolveComponent(
     );
   }
 
-  if (type === SexpOpcodes.GetTemplateSymbol) {
+  if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
@@ -150,14 +150,14 @@ export function resolveHelper(
 
   let type = expr[0];
 
-  if (type === SexpOpcodes.GetTemplateSymbol) {
+  if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
     then(constants.helper(definition as object));
-  } else if (type === SexpOpcodes.GetStrictFree) {
+  } else if (type === SexpOpcodes.GetStrictKeyword) {
     then(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'helper')
     );
@@ -192,14 +192,14 @@ export function resolveModifier(
 
   let type = expr[0];
 
-  if (type === SexpOpcodes.GetTemplateSymbol) {
+  if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
     then(constants.modifier(definition as object));
-  } else if (type === SexpOpcodes.GetStrictFree) {
+  } else if (type === SexpOpcodes.GetStrictKeyword) {
     let { upvars } = assertResolverInvariants(meta);
     let name = upvars[expr[1]];
     let modifier = resolver.lookupBuiltInModifier(name);
@@ -242,7 +242,7 @@ export function resolveComponentOrHelper(
 
   let type = expr[0];
 
-  if (type === SexpOpcodes.GetTemplateSymbol) {
+  if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
@@ -270,7 +270,7 @@ export function resolveComponentOrHelper(
     }
 
     ifHelper(expect(helper, 'BUG: helper must exist'));
-  } else if (type === SexpOpcodes.GetStrictFree) {
+  } else if (type === SexpOpcodes.GetStrictKeyword) {
     ifHelper(
       lookupBuiltInHelper(
         expr as Expressions.GetStrictFree,
@@ -341,7 +341,7 @@ export function resolveOptionalComponentOrHelper(
 
   let type = expr[0];
 
-  if (type === SexpOpcodes.GetTemplateSymbol) {
+  if (type === SexpOpcodes.GetLexicalSymbol) {
     let { scopeValues, owner } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
@@ -375,7 +375,7 @@ export function resolveOptionalComponentOrHelper(
     }
 
     ifValue(constants.value(definition));
-  } else if (type === SexpOpcodes.GetStrictFree) {
+  } else if (type === SexpOpcodes.GetStrictKeyword) {
     ifHelper(
       lookupBuiltInHelper(expr as Expressions.GetStrictFree, resolver, meta, constants, 'value')
     );

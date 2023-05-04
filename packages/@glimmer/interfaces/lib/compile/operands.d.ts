@@ -5,7 +5,7 @@ import { CompilableTemplate } from '../template';
 export const enum HighLevelOperand {
   Label = 1,
   IsStrictMode = 2,
-  EvalSymbols = 3,
+  DebugSymbols = 3,
   Block = 4,
   StdLib = 5,
   NonSmallInt = 6,
@@ -23,8 +23,8 @@ export interface IsStrictModeOperand {
   value: undefined;
 }
 
-export interface EvalSymbolsOperand {
-  type: HighLevelOperand.EvalSymbols;
+export interface DebugSymbolsOperand {
+  type: HighLevelOperand.DebugSymbols;
   value: undefined;
 }
 
@@ -61,7 +61,7 @@ export interface LayoutOperand {
 export type HighLevelBuilderOperand =
   | LabelOperand
   | IsStrictModeOperand
-  | EvalSymbolsOperand
+  | DebugSymbolsOperand
   | StdLibOperand
   | BlockOperand
   | NonSmallIntOperand

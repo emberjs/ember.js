@@ -4,7 +4,13 @@ import {
   TemplateJavascript,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { normalize, PrecompileOptions, Source, TemplateIdFn } from '@glimmer/syntax';
+import {
+  normalize,
+  PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
+  Source,
+  TemplateIdFn,
+} from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
 import pass0 from './passes/1-normalization/index';
@@ -66,10 +72,10 @@ const defaultOptions: PrecompileOptions = {
  */
 export function precompileJSON(
   string: string,
-  options: PrecompileOptions = defaultOptions
+  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
   let source = new Source(string, options.meta?.moduleName);
-  let [ast, locals] = normalize(source, options);
+  let [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
   let block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });
@@ -105,7 +111,7 @@ const SCOPE_PLACEHOLDER = '796d24e6-2450-4fb0-8cdf-b65638b5ef70';
  */
 export function precompile(
   source: string,
-  options: PrecompileOptions = defaultOptions
+  options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): TemplateJavascript {
   let [block, usedLocals] = precompileJSON(source, options);
 

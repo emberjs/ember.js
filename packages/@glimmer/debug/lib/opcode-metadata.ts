@@ -1328,7 +1328,7 @@ METADATA[Op.Debugger] = {
       type: 'str-array',
     },
     {
-      name: 'evalInfo',
+      name: 'debugInfo',
       type: 'array',
     },
   ],

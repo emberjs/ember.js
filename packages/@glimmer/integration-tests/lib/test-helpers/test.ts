@@ -3,11 +3,11 @@ import { Dict } from '@glimmer/interfaces';
 import { keys } from '@glimmer/util';
 
 export function test(meta: ComponentTestMeta): MethodDecorator;
-export function test(
+export function test<T>(
   _target: Object | ComponentTestMeta,
   _name?: string,
-  descriptor?: PropertyDescriptor
-): PropertyDescriptor | void;
+  descriptor?: TypedPropertyDescriptor<T>
+): TypedPropertyDescriptor<T> | void;
 export function test(...args: any[]) {
   if (args.length === 1) {
     let meta: ComponentTestMeta = args[0];

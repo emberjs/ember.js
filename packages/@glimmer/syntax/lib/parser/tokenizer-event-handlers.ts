@@ -345,7 +345,11 @@ export interface TemplateIdFn {
 
 export interface PrecompileOptions extends PreprocessOptions {
   id?: TemplateIdFn;
-  customizeComponentName?(input: string): string;
+  customizeComponentName?: ((input: string) => string) | undefined;
+}
+
+export interface PrecompileOptionsWithLexicalScope extends PrecompileOptions {
+  lexicalScope: (variable: string) => boolean;
 }
 
 export interface PreprocessOptions {
