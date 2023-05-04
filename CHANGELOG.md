@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.0.0-beta.3 (May 3, 2023)
+
+- Publish v5.0.0-beta.2 again, having fixed publishing automation
+
 ## v5.0.0-beta.2 (May 2, 2023)
 
 - [#20434](https://github.com/emberjs/ember.js/pull/20434) [BUGFIX] Fix HistoryLocation preview types
