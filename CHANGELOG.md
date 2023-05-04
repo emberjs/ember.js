@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.8.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
 ### v4.8.4 (December 13, 2022)
 
 - [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX LTS] ContainerDebugAdapter extends EmberObject
