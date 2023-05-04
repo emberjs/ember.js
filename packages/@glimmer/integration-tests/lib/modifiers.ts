@@ -1,15 +1,15 @@
-import { SimpleElement } from '@glimmer/interfaces';
-import {
-  Dict,
-  Option,
-  InternalModifierManager,
-  Destroyable,
-  CapturedArguments,
-  Owner,
-} from '@glimmer/interfaces';
-import { UpdatableTag, createUpdatableTag } from '@glimmer/validator';
 import { registerDestructor } from '@glimmer/destroyable';
-import { reifyPositional, reifyNamed } from '@glimmer/runtime';
+import {
+  CapturedArguments,
+  Destroyable,
+  Dict,
+  InternalModifierManager,
+  Option,
+  Owner,
+  SimpleElement,
+} from '@glimmer/interfaces';
+import { reifyNamed, reifyPositional } from '@glimmer/runtime';
+import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;

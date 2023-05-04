@@ -1,4 +1,5 @@
 import { castToSimple } from '@glimmer/util';
+
 import { JitRenderDelegate, RenderTest } from '..';
 import { module } from './support';
 
@@ -13,7 +14,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         this.setProperties({ foo: 'bar' });
-        assert.strictEqual(this.context.foo, 'bar');
+        assert.strictEqual(this.context['foo'], 'bar');
       }
     })(new JitRenderDelegate());
   });
@@ -25,7 +26,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(text);
 
     new (class extends RenderTest {
-      element = div;
+      override element = div;
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         let snapShot = this.takeSnapshot();
@@ -43,7 +44,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(p);
 
     new (class extends RenderTest {
-      element = div;
+      override element = div;
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         let snapShot = this.takeSnapshot();
@@ -63,7 +64,7 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(close);
 
     new (class extends RenderTest {
-      element = div;
+      override element = div;
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         let snapShot = this.takeSnapshot();

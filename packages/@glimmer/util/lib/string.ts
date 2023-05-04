@@ -1,3 +1,5 @@
+import { getFirst, getLast, isPresentArray } from './present';
+
 export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   let out = '';
   for (let i = 0; i < strings.length; i++) {
@@ -9,11 +11,11 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
 
   let lines = out.split('\n');
 
-  while (lines.length && lines[0].match(/^\s*$/)) {
+  while (isPresentArray(lines) && getFirst(lines).match(/^\s*$/)) {
     lines.shift();
   }
 
-  while (lines.length && lines[lines.length - 1].match(/^\s*$/)) {
+  while (isPresentArray(lines) && getLast(lines).match(/^\s*$/)) {
     lines.pop();
   }
 

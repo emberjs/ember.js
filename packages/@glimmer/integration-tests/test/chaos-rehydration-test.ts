@@ -1,6 +1,6 @@
-import { Dict, Option } from '@glimmer/interfaces';
+import { Dict, NodeType, Option, SimpleElement } from '@glimmer/interfaces';
 import { castToBrowser, castToSimple, expect, isObject, LOCAL_LOGGER } from '@glimmer/util';
-import { NodeType, SimpleElement } from '@glimmer/interfaces';
+
 import {
   blockStack,
   CLOSE,
@@ -9,13 +9,13 @@ import {
   content,
   equalTokens,
   OPEN,
+  PartialRehydrationDelegate,
+  qunitFixture,
   RehydrationDelegate,
   RenderTest,
   replaceHTML,
   suite,
   test,
-  PartialRehydrationDelegate,
-  qunitFixture,
 } from '..';
 
 // `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
@@ -66,13 +66,12 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
     function collectChildNodes(childNodes: Node[], node: Node): Node[] {
       // do some thing with the node here
-      let children = node.childNodes;
-      for (let i = 0; i < children.length; i++) {
-        let child = children[i];
+
+      node.childNodes.forEach((child) => {
         childNodes.push(child);
 
         collectChildNodes(childNodes, child);
-      }
+      });
 
       return childNodes;
     }
@@ -85,8 +84,9 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
     // select a random node to remove
     let indexToRemove = Math.floor(this.getRandomForIteration(iteration) * nodes.length);
-    let nodeToRemove = nodes[indexToRemove];
-    let parent = nodeToRemove.parentNode!;
+
+    let nodeToRemove = this.guardPresent({ 'node to remove': nodes[indexToRemove] });
+    let parent = this.guardPresent({ 'parent node': nodeToRemove.parentNode });
 
     // remove it
     parent.removeChild(nodeToRemove);
@@ -121,9 +121,9 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     let elementResetValue = element.innerHTML;
 
     let urlParams = (QUnit as any).urlParams as Dict<string>;
-    if (urlParams.iteration) {
+    if (urlParams['iteration']) {
       // runs a single iteration directly, no try/catch, with logging
-      let iteration = parseInt(urlParams.iteration, 10);
+      let iteration = parseInt(urlParams['iteration'], 10);
       this.wreakHavoc(iteration, true);
 
       this.renderClientSide(template, context);

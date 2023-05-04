@@ -3,8 +3,8 @@ import {
   ComponentDefinition,
   Option,
   Owner,
-  RuntimeResolver,
   ResolutionTimeConstants,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 

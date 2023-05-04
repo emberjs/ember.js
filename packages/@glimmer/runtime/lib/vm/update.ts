@@ -1,3 +1,4 @@
+import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
   Bounds,
@@ -10,9 +11,10 @@ import {
   Option,
   RuntimeContext,
   Scope,
+  SimpleComment,
   UpdatableBlock,
-  UpdatingVM,
   UpdatingOpcode,
+  UpdatingVM,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import {
@@ -22,10 +24,9 @@ import {
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
-import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
-import { expect, Stack, logStep } from '@glimmer/util';
+import { expect, logStep, Stack, unwrap } from '@glimmer/util';
 import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
-import { SimpleComment } from '@glimmer/interfaces';
+
 import { clear, move as moveBounds } from '../bounds';
 import { InternalVM, VmInitCallback } from './append';
 import { LiveBlockList, NewElementBuilder } from './element-builder';
@@ -156,7 +157,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   protected declare bounds: UpdatableBlock; // Hides property on base class
 
-  evaluate(vm: UpdatingVMImpl) {
+  override evaluate(vm: UpdatingVMImpl) {
     vm.try(this.children, this);
   }
 
@@ -237,7 +238,7 @@ export class ListBlockOpcode extends BlockOpcode {
     this.opcodeMap.set(opcode.key, opcode);
   }
 
-  evaluate(vm: UpdatingVMImpl) {
+  override evaluate(vm: UpdatingVMImpl) {
     let iterator = valueForRef(this.iterableRef);
 
     if (this.lastIterator !== iterator) {
@@ -305,7 +306,7 @@ export class ListBlockOpcode extends BlockOpcode {
           // the position of the item's opcode, and determine if they are all
           // retained.
           for (let i = currentOpcodeIndex + 1; i < seenIndex; i++) {
-            if (children[i].retained === false) {
+            if (unwrap(children[i]).retained === false) {
               seenUnretained = true;
               break;
             }
@@ -327,9 +328,7 @@ export class ListBlockOpcode extends BlockOpcode {
       }
     }
 
-    for (let i = 0; i < children.length; i++) {
-      let opcode = children[i];
-
+    for (const opcode of children) {
       if (opcode.retained === false) {
         this.deleteItem(opcode);
       } else {
@@ -353,7 +352,7 @@ export class ListBlockOpcode extends BlockOpcode {
     children.push(opcode);
   }
 
-  private insertItem(item: OpaqueIterationItem, before: ListItemOpcode) {
+  private insertItem(item: OpaqueIterationItem, before: ListItemOpcode | undefined) {
     if (LOCAL_DEBUG) {
       logStep!('list-updates', ['insert', item.key]);
     }
@@ -380,7 +379,11 @@ export class ListBlockOpcode extends BlockOpcode {
     });
   }
 
-  private moveItem(opcode: ListItemOpcode, item: OpaqueIterationItem, before: ListItemOpcode) {
+  private moveItem(
+    opcode: ListItemOpcode,
+    item: OpaqueIterationItem,
+    before: ListItemOpcode | undefined
+  ) {
     let { children } = this;
 
     updateRef(opcode.memo, item.memo);

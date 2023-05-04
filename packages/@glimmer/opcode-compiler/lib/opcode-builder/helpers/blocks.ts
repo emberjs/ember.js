@@ -1,9 +1,10 @@
 import { MachineOp, Op, Option, WireFormat } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
-import { PushPrimitive } from './vm';
+
+import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { blockOperand, symbolTableOperand } from '../operands';
 import { SimpleArgs } from './shared';
-import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+import { PushPrimitive } from './vm';
 
 /**
  * Yield to a block located at a particular symbol location.

@@ -1,4 +1,4 @@
-import { encodeImmediate, decodeImmediate, ImmediateConstants } from '..';
+import { decodeImmediate, encodeImmediate, ImmediateConstants } from '..';
 
 const { module, test } = QUnit;
 

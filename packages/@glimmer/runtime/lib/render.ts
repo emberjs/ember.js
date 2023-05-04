@@ -1,24 +1,25 @@
+import { DEBUG } from '@glimmer/env';
 import {
-  DynamicScope,
-  Environment,
-  RenderResult,
-  RichIteratorResult,
-  TemplateIterator,
-  RuntimeContext,
-  ElementBuilder,
   CompilableProgram,
   CompileTimeCompilationContext,
   ComponentDefinitionState,
+  DynamicScope,
+  ElementBuilder,
+  Environment,
   Owner,
+  RenderResult,
+  RichIteratorResult,
+  RuntimeContext,
+  TemplateIterator,
 } from '@glimmer/interfaces';
 import { childRefFor, createConstRef, Reference } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/util';
+import { runInTrackingTransaction } from '@glimmer/validator';
+
+import { inTransaction } from './environment';
+import { DynamicScopeImpl } from './scope';
 import { ARGS, CONSTANTS } from './symbols';
 import VM, { InternalVM } from './vm/append';
-import { DynamicScopeImpl } from './scope';
-import { inTransaction } from './environment';
-import { DEBUG } from '@glimmer/env';
-import { runInTrackingTransaction } from '@glimmer/validator';
 
 class TemplateIteratorImpl implements TemplateIterator {
   constructor(private vm: InternalVM) {}

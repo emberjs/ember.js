@@ -1,5 +1,5 @@
-import { NamedBlocks, Option, WireFormat, SerializedInlineBlock } from '@glimmer/interfaces';
-import { dict, assign } from '@glimmer/util';
+import { NamedBlocks, Option, SerializedInlineBlock, WireFormat } from '@glimmer/interfaces';
+import { assign, dict, enumerate, unwrap } from '@glimmer/util';
 
 interface NamedBlocksDict {
   [key: string]: Option<WireFormat.SerializedInlineBlock>;
@@ -49,8 +49,8 @@ export function namedBlocks(blocks: WireFormat.Core.Blocks): NamedBlocks {
 
   let [keys, values] = blocks;
 
-  for (let i = 0; i < keys.length; i++) {
-    out[keys[i]] = values[i];
+  for (const [i, key] of enumerate(keys)) {
+    out[key] = unwrap(values[i]);
   }
 
   return new NamedBlocksImpl(out);

@@ -6,12 +6,12 @@ const merge = require('broccoli-merge-trees');
 const Rollup = require('broccoli-rollup');
 const sourcemaps = require('rollup-plugin-sourcemaps');
 const UnwatchedDir = require('broccoli-source').UnwatchedDir;
+const debugMacros = require('babel-plugin-debug-macros');
+const Project = require('../utils/project');
 const transpileToES5 = require('./transpile-to-es5');
 const writePackageJSON = require('./write-package-json');
 const writeLicense = require('./write-license');
-const debugMacros = require('babel-plugin-debug-macros');
 
-const Project = require('../utils/project');
 const project = Project.from('packages');
 
 module.exports = function buildPackages(es2017, matrix) {

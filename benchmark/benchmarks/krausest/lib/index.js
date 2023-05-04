@@ -1,9 +1,9 @@
 import { createBenchmark } from '@glimmer/benchmark-env';
 
-import ApplicationTemplate from './components/Application.hbs';
 import Application from './components/Application';
-import RowTemplate from './components/Row.hbs';
+import ApplicationTemplate from './components/Application.hbs';
 import Row from './components/Row';
+import RowTemplate from './components/Row.hbs';
 import buildData from './utils/data';
 
 /**

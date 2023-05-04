@@ -9,7 +9,8 @@ import {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import { dict, assert, assign } from '@glimmer/util';
+import { assert, assign, dict } from '@glimmer/util';
+
 import { NodeTokensImpl } from './node-tokens';
 
 export enum ConstructionOperation {
@@ -42,13 +43,14 @@ export class Constants {
   private set = dict<number>();
 
   get(s: string): number {
-    if (this.set[s] !== undefined) {
-      return this.set[s];
+    let index = this.set[s];
+
+    if (index === undefined) {
+      index = this.strings.length;
+      this.strings.push(s);
+      this.set[s] = index;
     }
 
-    let index = this.strings.length;
-    this.strings.push(s);
-    this.set[s] = index;
     return index;
   }
 
@@ -139,24 +141,24 @@ export function run(opcodes: ReadonlyArray<number>, options: RunOptions) {
   });
 
   while (offset < end) {
-    let value = opcodes[offset];
+    let value = opcodes[offset]!;
     let size = sizeof(value);
     let opcode = opcodeof(value);
 
-    let func = ConstructionOperations[opcode];
+    let func = ConstructionOperations[opcode]!;
 
     switch (size) {
       case 0:
         func(state);
         break;
       case 1:
-        func(state, opcodes[offset + 1]);
+        func(state, opcodes[offset + 1]!);
         break;
       case 2:
-        func(state, opcodes[offset + 1], opcodes[offset + 2]);
+        func(state, opcodes[offset + 1]!, opcodes[offset + 2]!);
         break;
       case 3:
-        func(state, opcodes[offset + 1], opcodes[offset + 2], opcodes[offset + 3]);
+        func(state, opcodes[offset + 1]!, opcodes[offset + 2]!, opcodes[offset + 3]!);
         break;
     }
 
@@ -175,7 +177,7 @@ const ConstructionOperations: ConstructionFunction[] = [
 
     if (state.constructing) flush(state);
 
-    let el = document.createElementNS(constants[namespace] as ElementNamespace, constants[tag]);
+    let el = document.createElementNS(constants[namespace] as ElementNamespace, constants[tag]!);
     state.constructing = el;
     state.tokens.register(el);
   },
@@ -184,7 +186,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   (state) => {
     if (state.constructing) flush(state);
     state.elements.pop();
-    state.parent = state.elements[state.elements.length - 1];
+    state.parent = state.elements[state.elements.length - 1]!;
   },
 
   /* (SetAttribute name value namespace) */
@@ -198,8 +200,8 @@ const ConstructionOperations: ConstructionFunction[] = [
 
     constructing!.setAttributeNS(
       constants[namespace] as AttrNamespace,
-      constants[name],
-      constants[value]
+      constants[name]!,
+      constants[value]!
     );
   },
 
@@ -208,7 +210,7 @@ const ConstructionOperations: ConstructionFunction[] = [
     let { constants, document, parent, nextSibling, constructing } = state;
 
     let parentElement = constructing ? flush(state) : parent;
-    let textNode = document.createTextNode(constants[text]);
+    let textNode = document.createTextNode(constants[text]!);
     parentElement.insertBefore(textNode, nextSibling);
     state.tokens.register(textNode);
   },
@@ -217,7 +219,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   (state, text) => {
     let { constants, document, parent, nextSibling } = state;
     let parentElement = state.constructing ? flush(state) : parent;
-    let commentNode = document.createComment(constants[text]);
+    let commentNode = document.createComment(constants[text]!);
     parentElement.insertBefore(commentNode, nextSibling);
     state.tokens.register(commentNode);
   },

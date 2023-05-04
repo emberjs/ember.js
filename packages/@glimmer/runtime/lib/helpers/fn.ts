@@ -1,3 +1,4 @@
+import { check } from '@glimmer/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments } from '@glimmer/interfaces';
 import {
@@ -8,8 +9,9 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { buildUntouchableThis } from '@glimmer/util';
-import { internalHelper } from './internal-helper';
+
 import { reifyPositional } from '../vm/arguments';
+import { internalHelper } from './internal-helper';
 
 const context = buildUntouchableThis('`fn` helper');
 
@@ -78,9 +80,7 @@ const context = buildUntouchableThis('`fn` helper');
   @public
 */
 export default internalHelper(({ positional }: CapturedArguments) => {
-  let callbackRef = positional[0];
-
-  if (DEBUG) assertCallbackIsFn(callbackRef);
+  let callbackRef = check(positional[0], assertCallbackIsFn);
 
   return createComputeRef(
     () => {
@@ -102,7 +102,7 @@ export default internalHelper(({ positional }: CapturedArguments) => {
   );
 });
 
-function assertCallbackIsFn(callbackRef: Reference) {
+function assertCallbackIsFn(callbackRef: Reference | undefined): asserts callbackRef is Reference {
   if (
     !(
       callbackRef &&

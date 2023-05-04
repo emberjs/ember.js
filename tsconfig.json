@@ -2,7 +2,7 @@
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2020",
-    "lib": ["ES2020", "DOM"],
+    "lib": ["ES2020", "ES2022.Error", "DOM"],
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
@@ -22,10 +22,10 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "useDefineForClassFields": true,
-    // "exactOptionalPropertyTypes": true,
-    // "noImplicitOverride": true,
-    // "noPropertyAccessFromIndexSignature": true,
-    // "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
 
     "newLine": "LF",
     "noEmit": true,

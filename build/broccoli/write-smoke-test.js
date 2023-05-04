@@ -1,6 +1,6 @@
-const Plugin = require('broccoli-plugin');
 const fs = require('fs');
 const path = require('path');
+const Plugin = require('broccoli-plugin');
 
 /**
  * Writes a TypeScript file that imports each package. This file can be passed
@@ -33,6 +33,8 @@ class TypesSmokeTestWriter extends Plugin {
           noUnusedLocals: true,
           noUnusedParameters: true,
           noImplicitReturns: true,
+          useDefineForClassFields: true,
+          exactOptionalPropertyTypes: true,
 
           newLine: 'LF',
           noEmit: true,

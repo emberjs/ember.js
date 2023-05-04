@@ -1,8 +1,8 @@
-import { Dict, RenderResult } from '@glimmer/interfaces';
+import { Dict, RenderResult, SimpleElement } from '@glimmer/interfaces';
 import { renderComponent, renderSync } from '@glimmer/runtime';
-import { RehydrationDelegate } from './delegate';
-import { SimpleElement } from '@glimmer/interfaces';
+
 import { DebugRehydrationBuilder } from './builder';
+import { RehydrationDelegate } from './delegate';
 
 export class PartialRehydrationDelegate extends RehydrationDelegate {
   registerTemplateOnlyComponent(name: string, layout: string) {

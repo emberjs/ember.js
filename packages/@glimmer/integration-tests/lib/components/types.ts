@@ -1,7 +1,8 @@
-import { GlimmerishComponent } from './emberish-glimmer';
-import { EmberishCurlyComponent } from './emberish-curly';
 import { Dict } from '@glimmer/interfaces';
 import { TemplateOnlyComponent } from '@glimmer/runtime';
+
+import { EmberishCurlyComponent } from './emberish-curly';
+import { GlimmerishComponent } from './emberish-glimmer';
 
 export type ComponentKind = 'Glimmer' | 'Curly' | 'Dynamic' | 'TemplateOnly' | 'Custom' | 'unknown';
 

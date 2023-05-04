@@ -1,10 +1,4 @@
 {
-  "root": true,
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": "latest",
-    "project": ["tsconfig.json", "tsconfig.build.json", "packages/@glimmer/vm/tsconfig.json"]
-  },
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
@@ -13,203 +7,9 @@
     "plugin:import/errors",
     "prettier"
   ],
-  "plugins": ["@typescript-eslint", "prettier", "qunit"],
-  "settings": {
-    "import/resolver": {
-      "typescript": {}
-    },
-    "import/parsers": {
-      "@typescript-eslint/parser": [".js", ".ts", ".d.ts"]
-    },
-    "node": {
-      "allowModules": ["@glimmer/debug", "@glimmer/local-debug-flags"],
-      "tryExtensions": [".js", ".ts", ".d.ts", ".json"]
-    }
-  },
-  "ignorePatterns": ["dist", "ts-dist", "node_modules", "tmp"],
-  "rules": {
-    "n/no-missing-import": "off",
-    "n/no-unsupported-features/es-builtins": [
-      "error",
-      {
-        "version": "16.0.0"
-      }
-    ],
-    // disabled because we still have a few commented tests
-    "qunit/no-commented-tests": "off",
-    // disabled due to false positives
-    "qunit/no-global-expect": "off",
-    // disabled because we still use this pattern everywhere
-    "qunit/no-global-module-test": "off",
-    // disabled due to false positives
-    "qunit/no-global-stop-start": "off",
-    "import/no-extraneous-dependencies": ["error"],
-    // this is handled by import/no-extraneous-dependencies
-    "n/no-extraneous-import": "off",
-    "prettier/prettier": "error",
-    "accessor-pairs": "error",
-    "array-callback-return": "error",
-    "block-scoped-var": "error",
-    "callback-return": "error",
-    "capitalized-comments": "off",
-    "class-methods-use-this": "off",
-    "complexity": "off",
-    "consistent-return": "error",
-    "consistent-this": "error",
-    "default-case": "error",
-    "dot-notation": [
-      "error",
-      {
-        "allowKeywords": true
-      }
-    ],
-    "eqeqeq": "error",
-    "func-name-matching": "error",
-    "func-names": "off",
-    "func-style": ["error", "declaration"],
-    "global-require": "off",
-    "guard-for-in": "error",
-    "handle-callback-err": "error",
-    "id-blacklist": "error",
-    "id-length": "off",
-    "id-match": "error",
-    "init-declarations": "off",
-    "line-comment-position": "error",
-    "lines-around-directive": "error",
-    "max-depth": "off",
-    "max-lines": "off",
-    "max-nested-callbacks": "error",
-    "max-params": "off",
-    "new-cap": "error",
-    "newline-after-var": "off",
-    "newline-before-return": "off",
-    "no-alert": "error",
-    "no-await-in-loop": "off",
-    "no-bitwise": "error",
-    "no-caller": "error",
-    "no-catch-shadow": "error",
-    "no-console": "error",
-    "no-continue": "error",
-    "no-div-regex": "error",
-    "no-duplicate-imports": "error",
-    "no-else-return": "error",
-    "no-eq-null": "error",
-    "no-eval": "error",
-    "no-extend-native": "error",
-    "no-extra-bind": "error",
-    "no-extra-label": "error",
-    "no-implicit-globals": "off",
-    "no-implied-eval": "error",
-    "no-inline-comments": "error",
-    "no-invalid-this": "error",
-    "no-iterator": "error",
-    "no-label-var": "error",
-    "no-labels": "error",
-    "no-lone-blocks": "error",
-    "no-lonely-if": "error",
-    "no-loop-func": "error",
-    "no-magic-numbers": "off",
-    "no-mixed-requires": "error",
-    "no-multi-assign": "error",
-    "no-multi-spaces": "error",
-    "no-multi-str": "error",
-    "no-native-reassign": "error",
-    "no-negated-condition": "error",
-    "no-negated-in-lhs": "error",
-    "no-nested-ternary": "error",
-    "no-new": "error",
-    "no-new-func": "error",
-    "no-new-object": "error",
-    "no-new-require": "error",
-    "no-new-wrappers": "error",
-    "no-octal-escape": "error",
-    "no-param-reassign": "off",
-    "no-path-concat": "off",
-    "no-plusplus": "off",
-    "no-process-env": "off",
-    "no-process-exit": "off",
-    "no-proto": "error",
-    "no-restricted-globals": "error",
-    "no-restricted-imports": "error",
-    "no-restricted-modules": "error",
-    "no-restricted-properties": "error",
-    "no-restricted-syntax": "error",
-    "no-return-assign": "error",
-    "no-return-await": "error",
-    "no-script-url": "error",
-    "no-self-compare": "error",
-    "no-sequences": "error",
-    "no-shadow": "error",
-    "no-sync": "off",
-    "no-template-curly-in-string": "error",
-    "no-ternary": "off",
-    "no-throw-literal": "error",
-    "no-undef-init": "error",
-    "no-undefined": "off",
-    "no-unmodified-loop-condition": "error",
-    "no-unneeded-ternary": "error",
-    "no-unused-expressions": "error",
-    "no-unused-labels": "error",
-    "no-use-before-define": "off",
-    "no-useless-call": "error",
-    "no-useless-computed-key": "error",
-    "no-useless-concat": "error",
-    "no-useless-constructor": "error",
-    "no-useless-rename": "error",
-    "no-useless-return": "error",
-    "no-var": "error",
-    "no-void": "error",
-    "no-warning-comments": "error",
-    "object-shorthand": "error",
-    "one-var": "off",
-    "operator-assignment": "error",
-    "prefer-const": "off",
-    "prefer-destructuring": [
-      "error",
-      {
-        "array": false,
-        "object": false
-      }
-    ],
-    "prefer-numeric-literals": "error",
-    "prefer-promise-reject-errors": "error",
-    "prefer-reflect": "error",
-    "prefer-rest-params": "error",
-    "prefer-spread": "error",
-    "prefer-template": "off",
-    "radix": "error",
-    "require-await": "error",
-    "require-jsdoc": "off",
-    "sort-imports": "off",
-    "sort-keys": "off",
-    "sort-vars": "off",
-    "spaced-comment": ["error", "always"],
-    "strict": "off",
-    "symbol-description": "error",
-    "valid-jsdoc": "off",
-    "vars-on-top": "error",
-    "yoda": ["error", "never"],
-
-    // replace ESLint rules with TypeScript-compatible rules
-    "camelcase": "off",
-
-    "no-array-constructor": "off",
-    "@typescript-eslint/no-array-constructor": "error",
-    "no-empty-function": "off",
-    "@typescript-eslint/no-empty-function": "error",
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "error"
-  },
+  "ignorePatterns": ["dist", "ts-dist", "node_modules", "tmp", "**/node_modules", "**/dist"],
   "overrides": [
     {
-      "parserOptions": {
-        "project": "./tsconfig.json"
-      },
-      "files": [
-        "packages/@glimmer/compiler/**/*.ts",
-        "packages/@glimmer/syntax/lib/**/*.ts",
-        "packages/@glimmer/syntax/index.ts"
-      ],
       "extends": [
         // "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "eslint:recommended",
@@ -219,32 +19,15 @@
         "plugin:qunit/recommended",
         "prettier"
       ],
-      "plugins": ["simple-import-sort"],
+      "files": [
+        "packages/@glimmer/compiler/**/*.ts",
+        "packages/@glimmer/syntax/lib/**/*.ts",
+        "packages/@glimmer/syntax/index.ts"
+      ],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      },
       "rules": {
-        "prefer-const": ["off"],
-        "simple-import-sort/imports": ["error"],
-        "simple-import-sort/exports": ["error"],
-        "import/order": "off",
-        "sort-imports": "off",
-        "import/first": ["error"],
-        "import/newline-after-import": ["error"],
-        "import/no-duplicates": ["error"],
-        "import/export": "off",
-        "qunit/no-global-expect": ["off"],
-        // this is handled by import/errors
-        "n/no-extraneous-import": "off",
-        "@typescript-eslint/unbound-method": [
-          "error",
-          {
-            "ignoreStatic": true
-          }
-        ],
-        "@typescript-eslint/no-explicit-any": [
-          "error",
-          {
-            "ignoreRestArgs": true
-          }
-        ],
         "@typescript-eslint/ban-types": [
           "error",
           {
@@ -253,7 +36,23 @@
               "object": false
             }
           }
-        ]
+        ],
+        "@typescript-eslint/no-explicit-any": [
+          "error",
+          {
+            "ignoreRestArgs": true
+          }
+        ],
+        "@typescript-eslint/unbound-method": [
+          "error",
+          {
+            "ignoreStatic": true
+          }
+        ],
+        // this is handled by import/errors
+        "n/no-extraneous-import": "off",
+        "prefer-const": ["off"],
+        "qunit/no-global-expect": ["off"]
       }
     },
     {
@@ -262,12 +61,16 @@
         "sourceType": "module"
       },
       "rules": {
-        "no-useless-constructor": "off",
-        "n/no-missing-import": "off"
+        "n/no-missing-import": "off",
+        "no-useless-constructor": "off"
       }
     },
     // node files
     {
+      "env": {
+        "es6": true,
+        "node": true
+      },
       "files": [
         ".eslintrc.js",
         "ember-cli-build.js",
@@ -278,10 +81,6 @@
         "build/**/*.js",
         "server/**/*.js"
       ],
-      "env": {
-        "es6": true,
-        "node": true
-      },
       "rules": {
         "no-console": "off"
       }
@@ -293,21 +92,20 @@
         "n/no-unsupported-features/es-syntax": [
           "error",
           {
-            "version": ">=16.0.0",
-            "ignores": []
+            "ignores": [],
+            "version": ">=16.0.0"
           }
         ],
-        "no-process-exit": "off",
         "n/shebang": "off"
       }
     },
     {
       "env": {
-        "es6": true,
-        "browser": true
+        "browser": true,
+        "es6": true
       },
-      "files": ["benchmark/**/*.js", "benchmark/**/*.d.ts"],
       "extends": ["plugin:import/errors"],
+      "files": ["benchmark/**/*.js", "benchmark/**/*.d.ts"],
       "parserOptions": {
         "sourceType": "module"
       },
@@ -317,15 +115,15 @@
       }
     },
     {
-      "files": ["packages/build-utils/@glimmer/vm-babel-plugins/test/**/*.js"],
       "env": {
         "es6": true,
-        "node": true,
-        "mocha": true
+        "mocha": true,
+        "node": true
       },
+      "files": ["packages/build-utils/@glimmer/vm-babel-plugins/test/**/*.js"],
       "rules": {
-        "n/no-unsupported-features/es-syntax": "off",
         "n/no-unpublished-import": "off",
+        "n/no-unsupported-features/es-syntax": "off",
         "no-console": "off"
       }
     },
@@ -345,38 +143,33 @@
       //   "tsconfigRootDir": __dirname
       // },
       "rules": {
-        "n/no-missing-import": "off",
-        "n/no-unsupported-features/es-syntax": "off",
-        "n/no-unsupported-features/node-builtins": "off",
+        "@typescript-eslint/consistent-type-assertions": "error",
         "@typescript-eslint/naming-convention": [
           "error",
           {
-            "selector": ["parameter"],
             "format": ["camelCase", "PascalCase"],
-            "leadingUnderscore": "allow"
+            "leadingUnderscore": "allow",
+            "selector": ["parameter"]
           },
           {
-            "selector": "variable",
+            "format": null,
             "modifiers": ["const"],
-            "format": null
+            "selector": "variable"
           },
           {
-            "selector": ["typeLike"],
             "format": ["PascalCase"],
-            "leadingUnderscore": "allow"
+            "leadingUnderscore": "allow",
+            "selector": ["typeLike"]
           },
           {
-            "selector": ["typeAlias"],
-            "format": ["PascalCase", "UPPER_CASE"]
+            "format": ["PascalCase", "UPPER_CASE"],
+            "selector": ["typeAlias"]
           }
         ],
-        "@typescript-eslint/consistent-type-assertions": "error",
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-inferrable-types": "error",
         "@typescript-eslint/no-require-imports": "error",
         "@typescript-eslint/no-unused-vars": "off",
-
-        "callback-return": "off",
         "consistent-return": "off",
         "consistent-this": "off",
         "constructor-super": "off",
@@ -386,6 +179,9 @@
         "func-style": "off",
         "guard-for-in": "off",
         "line-comment-position": "off",
+        "n/no-missing-import": "off",
+        "n/no-unsupported-features/es-syntax": "off",
+        "n/no-unsupported-features/node-builtins": "off",
         "new-cap": "off",
         "no-bitwise": "off",
         "no-case-declarations": "off",
@@ -419,7 +215,6 @@
         "no-warning-comments": "off",
         "object-shorthand": "off",
         "operator-assignment": "off",
-        "prefer-reflect": "off",
         "prefer-rest-params": "off",
         "prefer-spread": "off",
         "spaced-comment": "off"
@@ -438,5 +233,206 @@
         "n/no-extraneous-import": "warn"
       }
     }
-  ]
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "project": ["tsconfig.json", "tsconfig.build.json", "packages/@glimmer/vm/tsconfig.json"]
+  },
+  "plugins": ["@typescript-eslint", "prettier", "qunit", "simple-import-sort", "unused-imports"],
+  "root": true,
+  "rules": {
+    "@typescript-eslint/no-array-constructor": "error",
+    "@typescript-eslint/no-empty-function": "error",
+    "@typescript-eslint/no-unused-vars": "error",
+    "accessor-pairs": "error",
+    "array-callback-return": "error",
+    "block-scoped-var": "error",
+    // replace ESLint rules with TypeScript-compatible rules
+    "camelcase": "off",
+    "capitalized-comments": "off",
+    "class-methods-use-this": "off",
+    "complexity": "off",
+    "consistent-return": "error",
+    "consistent-this": "error",
+    "default-case": "error",
+    "dot-notation": [
+      "error",
+      {
+        "allowKeywords": true
+      }
+    ],
+    "eqeqeq": "error",
+    "func-name-matching": "error",
+    "func-names": "off",
+    "func-style": ["error", "declaration"],
+    "guard-for-in": "error",
+    "id-denylist": "error",
+    "id-length": "off",
+    "id-match": "error",
+    "import/export": "off",
+    "import/first": ["error"],
+    "import/newline-after-import": ["error"],
+    "import/no-duplicates": ["error"],
+    "import/no-extraneous-dependencies": ["error"],
+    "import/order": "off",
+    "init-declarations": "off",
+    "max-depth": "off",
+    "max-lines": "off",
+    "max-nested-callbacks": "error",
+    "max-params": "off",
+    "n/callback-return": "error",
+    "n/global-require": "off",
+    "n/handle-callback-err": "error",
+    // this is handled by import/no-extraneous-dependencies
+    "n/no-extraneous-import": "off",
+    "n/no-missing-import": "off",
+    "n/no-mixed-requires": "error",
+    "n/no-new-require": "error",
+    "n/no-path-concat": "off",
+    "n/no-process-env": "off",
+    "n/no-process-exit": "off",
+    "n/no-restricted-import": "error",
+    "n/no-sync": "off",
+    "n/no-unsupported-features/es-builtins": [
+      "error",
+      {
+        "version": "16.0.0"
+      }
+    ],
+    "new-cap": "error",
+    "no-alert": "error",
+    "no-array-constructor": "off",
+    "no-await-in-loop": "off",
+    "no-bitwise": "error",
+    "no-caller": "error",
+    "no-console": "error",
+    "no-continue": "error",
+    "no-div-regex": "error",
+    "no-duplicate-imports": "error",
+    "no-else-return": "error",
+    "no-empty-function": "off",
+    "no-eq-null": "error",
+    "no-eval": "error",
+    "no-extend-native": "error",
+    "no-extra-bind": "error",
+    "no-extra-label": "error",
+    "no-global-assign": "error",
+    "no-implicit-globals": "off",
+    "no-implied-eval": "error",
+    "no-inline-comments": "error",
+    "no-invalid-this": "error",
+    "no-iterator": "error",
+    "no-label-var": "error",
+    "no-labels": "error",
+    "no-lone-blocks": "error",
+    "no-lonely-if": "error",
+    "no-loop-func": "error",
+    "no-magic-numbers": "off",
+    "no-multi-assign": "error",
+    "no-multi-spaces": "error",
+    "no-multi-str": "error",
+    "no-negated-condition": "error",
+    "no-nested-ternary": "error",
+    "no-new": "error",
+    "no-new-func": "error",
+    "no-new-object": "error",
+    "no-new-wrappers": "error",
+    "no-octal-escape": "error",
+    "no-param-reassign": "off",
+    "no-plusplus": "off",
+    "no-proto": "error",
+    "no-restricted-globals": "error",
+    "no-restricted-imports": "error",
+    "no-restricted-properties": "error",
+    "no-restricted-syntax": "error",
+    "no-return-assign": "error",
+    "no-return-await": "error",
+    "no-script-url": "error",
+    "no-self-compare": "error",
+    "no-sequences": "error",
+    "no-shadow": "error",
+    "no-template-curly-in-string": "error",
+    "no-ternary": "off",
+    "no-throw-literal": "error",
+    "no-undef-init": "error",
+    "no-undefined": "off",
+    "no-unmodified-loop-condition": "error",
+    "no-unneeded-ternary": "error",
+    "no-unsafe-negation": "error",
+    "no-unused-expressions": "error",
+    "no-unused-labels": "error",
+    "no-unused-vars": "off",
+    "no-use-before-define": "off",
+    "no-useless-call": "error",
+    "no-useless-computed-key": "error",
+    "no-useless-concat": "error",
+    "no-useless-constructor": "error",
+    "no-useless-rename": "error",
+    "no-useless-return": "error",
+    "no-var": "error",
+    "no-void": "error",
+    "no-warning-comments": "error",
+    "object-shorthand": "error",
+    "one-var": "off",
+    "operator-assignment": "error",
+    "prefer-const": "off",
+    "prefer-destructuring": [
+      "error",
+      {
+        "array": false,
+        "object": false
+      }
+    ],
+    "prefer-numeric-literals": "error",
+    "prefer-promise-reject-errors": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "prefer-template": "off",
+    "prettier/prettier": "error",
+    // disabled because we still have a few commented tests
+    "qunit/no-commented-tests": "off",
+    // disabled due to false positives
+    "qunit/no-global-expect": "off",
+    // disabled because we still use this pattern everywhere
+    "qunit/no-global-module-test": "off",
+    // disabled due to false positives
+    "qunit/no-global-stop-start": "off",
+    "radix": "error",
+    "require-await": "error",
+    "require-jsdoc": "off",
+    "simple-import-sort/exports": ["error"],
+    "simple-import-sort/imports": ["error"],
+    "sort-imports": "off",
+    "sort-keys": "off",
+    "sort-vars": "off",
+    "spaced-comment": ["error", "always"],
+    "strict": "off",
+    "symbol-description": "error",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "args": "after-used",
+        "argsIgnorePattern": "^_",
+        "vars": "all",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "valid-jsdoc": "off",
+    "vars-on-top": "error",
+    "yoda": ["error", "never"]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".js", ".ts", ".d.ts"]
+    },
+    "import/resolver": {
+      "typescript": {}
+    },
+    "node": {
+      "allowModules": ["@glimmer/debug", "@glimmer/local-debug-flags"],
+      "tryExtensions": [".js", ".ts", ".d.ts", ".json"]
+    }
+  }
 }

@@ -1,21 +1,20 @@
-import { RenderTest, jitSuite, test, Count } from '..';
-import { Dict } from '@glimmer/interfaces';
-import { SimpleElement } from '@glimmer/interfaces';
-import { Option } from '@glimmer/interfaces';
+import { Dict, Option, SimpleElement } from '@glimmer/interfaces';
+
+import { Count, jitSuite, RenderTest, test } from '..';
 
 class BaseModifier {
   element?: SimpleElement;
-  didInsertElement(_params: unknown[], _hash: Dict<unknown>) {}
-  willDestroyElement() {}
-  didUpdate(_params: unknown[], _hash: Dict<unknown>) {}
+  didInsertElement(_params: unknown[], _hash: Dict<unknown>): void {}
+  willDestroyElement(): void {}
+  didUpdate(_params: unknown[], _hash: Dict<unknown>): void {}
 }
 
 abstract class AbstractInsertable extends BaseModifier {
-  abstract didInsertElement(_params: unknown[], _hash: Dict<unknown>): void;
+  abstract override didInsertElement(_params: unknown[], _hash: Dict<unknown>): void;
 }
 
 abstract class AbstractDestroyable extends BaseModifier {
-  abstract willDestroyElement(): void;
+  abstract override willDestroyElement(): void;
 }
 
 class ModifierTests extends RenderTest {
@@ -147,7 +146,7 @@ class ModifierTests extends RenderTest {
         modifierNamedArgs = namedArgs;
         modifiedElement = this.element;
       }
-      didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
+      override didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
         modifierParams = params;
         modifierNamedArgs = namedArgs;
         modifiedElement = this.element;
@@ -189,7 +188,7 @@ class ModifierTests extends RenderTest {
         modifierNamedArgs = namedArgs;
         modifiedElement = this.element;
       }
-      didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
+      override didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
         modifierParams = params;
         modifierNamedArgs = namedArgs;
         modifiedElement = this.element;
@@ -230,7 +229,7 @@ class ModifierTests extends RenderTest {
         modifierNamedArgs = namedArgs;
         modifiedElement = this.element;
       }
-      didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
+      override didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
         modifierParams = params;
         modifierNamedArgs = namedArgs;
         modifiedElement = this.element;
@@ -462,11 +461,11 @@ class ModifierTests extends RenderTest {
   @test
   'with params'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
-      didInsertElement([bar]: string[]) {
+      override didInsertElement([bar]: string[]) {
         count.expect('didInsertElement');
         assert.strictEqual(bar, 'bar');
       }
-      didUpdate([foo]: string[]) {
+      override didUpdate([foo]: string[]) {
         count.expect('didUpdate');
         assert.strictEqual(foo, 'foo');
       }
@@ -479,11 +478,11 @@ class ModifierTests extends RenderTest {
   @test
   'with hash'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
-      didInsertElement(_params: unknown[], { bar }: Dict<string>) {
+      override didInsertElement(_params: unknown[], { bar }: Dict<string>) {
         count.expect('didInsertElement');
         assert.strictEqual(bar, 'bar');
       }
-      didUpdate(_params: unknown[], { bar }: Dict<string>) {
+      override didUpdate(_params: unknown[], { bar }: Dict<string>) {
         count.expect('didUpdate');
         assert.strictEqual(bar, 'foo');
       }
@@ -496,12 +495,12 @@ class ModifierTests extends RenderTest {
   @test
   'with hash and params'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
-      didInsertElement([baz]: string[], { bar }: Dict<string>) {
+      override didInsertElement([baz]: string[], { bar }: Dict<string>) {
         count.expect('didInsertElement');
         assert.strictEqual(bar, 'bar');
         assert.strictEqual(baz, 'baz');
       }
-      didUpdate([foo]: string[], { bar }: Dict<string>) {
+      override didUpdate([foo]: string[], { bar }: Dict<string>) {
         count.expect('didUpdate');
         assert.strictEqual(bar, 'foo');
         assert.strictEqual(foo, 'foo');

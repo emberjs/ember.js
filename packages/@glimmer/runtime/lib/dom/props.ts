@@ -1,5 +1,4 @@
-import { Dict } from '@glimmer/interfaces';
-import { SimpleElement } from '@glimmer/interfaces';
+import { Dict, SimpleElement } from '@glimmer/interfaces';
 
 /*
  * @method normalizeProperty

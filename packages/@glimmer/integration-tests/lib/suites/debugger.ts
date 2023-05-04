@@ -1,5 +1,6 @@
+import { resetDebuggerCallback, setDebuggerCallback } from '@glimmer/runtime';
+
 import { RenderTest } from '../render-test';
-import { setDebuggerCallback, resetDebuggerCallback } from '@glimmer/runtime';
 import { test } from '../test-decorator';
 
 export class DebuggerSuite extends RenderTest {

@@ -1,17 +1,18 @@
-import { $fp, $v0 } from '@glimmer/vm';
 import {
-  Option,
-  Op,
-  MachineOp,
-  WireFormat,
-  NonSmallIntOperand,
   CurriedType,
+  MachineOp,
+  NonSmallIntOperand,
+  Op,
+  Option,
+  WireFormat,
 } from '@glimmer/interfaces';
 import { encodeImmediate, isSmallInt } from '@glimmer/util';
-import { SimpleArgs } from './shared';
+import { $fp, $v0 } from '@glimmer/vm';
+
 import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { isStrictMode, nonSmallIntOperand } from '../operands';
 import { expr } from './expr';
+import { SimpleArgs } from './shared';
 
 export type Primitive = undefined | null | boolean | number | string;
 

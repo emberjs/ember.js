@@ -10,14 +10,20 @@ export function strip(strings: TemplateStringsArray, ...args: string[]) {
 }
 
 export function stripTight(strings: TemplateStringsArray) {
-  return strings[0]
+  const [first] = strings;
+  if (!first) return '';
+
+  return first
     .split('\n')
     .map((s) => s.trim())
     .join('');
 }
 
 export function trimLines(strings: TemplateStringsArray) {
-  return strings[0]
+  const [first] = strings;
+  if (!first) return '';
+
+  return first
     .trim()
     .split('\n')
     .map((s) => s.trim())

@@ -1,4 +1,4 @@
-import { jitSuite, RenderTest, test, GlimmerishComponent, tracked } from '../..';
+import { GlimmerishComponent, jitSuite, RenderTest, test, tracked } from '../..';
 
 class GetTest extends RenderTest {
   static suiteName = 'Helpers test: {{get}}';

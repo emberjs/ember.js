@@ -1,22 +1,22 @@
-import { module, test } from './-utils';
 import { DEBUG } from '@glimmer/env';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
 import { UpdatableTag } from '@glimmer/interfaces';
 
 import {
   ALLOW_CYCLES,
-  CONSTANT_TAG,
-  CURRENT_TAG,
-  VOLATILE_TAG,
   bump,
   combine,
+  CONSTANT_TAG,
   createTag,
   createUpdatableTag,
+  CURRENT_TAG,
   dirtyTag,
   updateTag,
   validateTag,
   valueForTag,
+  VOLATILE_TAG,
 } from '..';
+import { module, test } from './-utils';
 
 function unwrap<T>(value: T | null | undefined): T {
   if (value === null || value === undefined) {

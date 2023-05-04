@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, preprocess, syntaxErrorFor } from '../..';
+import { jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from '../..';
 
 let types = ['if', 'unless'];
 

@@ -1,15 +1,15 @@
-import { RenderTest, jitSuite, test, preprocess } from '../..';
-import { KEYWORDS_TYPES } from '@glimmer/syntax';
+import { KEYWORDS_TYPES, KeywordType } from '@glimmer/syntax';
 
-const KEYWORDS = Object.keys(KEYWORDS_TYPES);
+import { jitSuite, preprocess, RenderTest, test } from '../..';
 
-const BLOCK_KEYWORDS = KEYWORDS.filter((key) => KEYWORDS_TYPES[key].indexOf('Block') !== -1);
+type KeywordName = keyof typeof KEYWORDS_TYPES;
+const TYPES: Record<KeywordName, readonly KeywordType[]> = KEYWORDS_TYPES;
+const KEYWORDS = Object.keys(KEYWORDS_TYPES) as KeywordName[];
 
-const APPEND_KEYWORDS = KEYWORDS.filter((key) => KEYWORDS_TYPES[key].indexOf('Append') !== -1);
-
-const CALL_KEYWORDS = KEYWORDS.filter((key) => KEYWORDS_TYPES[key].indexOf('Call') !== -1);
-
-const MODIFIER_KEYWORDS = KEYWORDS.filter((key) => KEYWORDS_TYPES[key].indexOf('Modifier') !== -1);
+const BLOCK_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Block'));
+const APPEND_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Append'));
+const CALL_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Call'));
+const MODIFIER_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Modifier'));
 
 for (let keyword of KEYWORDS) {
   class KeywordSyntaxErrors extends RenderTest {

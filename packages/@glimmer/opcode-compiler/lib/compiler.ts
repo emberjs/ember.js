@@ -1,5 +1,5 @@
 import { debugSlice } from '@glimmer/debug';
-import { TemplateCompilationContext, HandleResult } from '@glimmer/interfaces';
+import { HandleResult, TemplateCompilationContext } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { extractHandle } from '@glimmer/util';
 

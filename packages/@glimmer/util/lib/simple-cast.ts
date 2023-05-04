@@ -1,5 +1,6 @@
+import { Maybe, NodeType, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+
 import { unreachable } from './platform-utils';
-import { NodeType, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 
 interface GenericElementTags {
   HTML: HTMLElement;
@@ -39,8 +40,8 @@ export function castToSimple(
 ) {
   if (isDocument(node)) {
     return node as SimpleDocument;
-  } else if (isElement(node)) {
-    return node as SimpleElement;
+  } else if (isSimpleElement(node)) {
+    return node;
   } else {
     return node as SimpleNode;
   }
@@ -97,8 +98,12 @@ function isDocument(node: Node | SimpleNode | SimpleDocument): node is Document 
   return node.nodeType === NodeType.DOCUMENT_NODE;
 }
 
-function isElement(node: Node | SimpleNode | SimpleElement): node is Element | SimpleElement {
-  return node.nodeType === NodeType.ELEMENT_NODE;
+export function isSimpleElement(node: Maybe<SimpleNode | Node>): node is SimpleElement {
+  return node?.nodeType === NodeType.ELEMENT_NODE;
+}
+
+export function isElement(node: Maybe<Node | SimpleNode>): node is Element {
+  return node?.nodeType === NodeType.ELEMENT_NODE && node instanceof Element;
 }
 
 export function checkNode<S extends SugaryNodeCheck>(

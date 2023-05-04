@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "@glimmer-test/syntax",
+  "dependencies": {
+    "@glimmer/integration-tests": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
+  }
+}

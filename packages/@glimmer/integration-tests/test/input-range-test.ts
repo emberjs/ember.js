@@ -1,5 +1,5 @@
+import { EmberishCurlyComponent, EmberishCurlyComponentFactory, jitSuite, test } from '..';
 import { AttributesTests } from './attributes-test';
-import { jitSuite, test, EmberishCurlyComponent, EmberishCurlyComponentFactory } from '..';
 
 abstract class RangeTests extends AttributesTests {
   min = -5;
@@ -63,7 +63,7 @@ abstract class TemplateRangeTests extends RangeTests {
 
 jitSuite(
   class extends TemplateRangeTests {
-    static suiteName = `[emberjs/ember.js#15675] Template <input type="range" value={{this.value}} min={{this.min}} max={{this.max}} />`;
+    static override suiteName = `[emberjs/ember.js#15675] Template <input type="range" value={{this.value}} min={{this.min}} max={{this.max}} />`;
 
     attrs = 'type="range" value={{this.value}} min={{this.min}} max={{this.max}}';
   }
@@ -72,17 +72,17 @@ jitSuite(
 // Ember Components attributeBindings
 
 class EmberInputRangeComponent extends EmberishCurlyComponent {
-  tagName = 'input';
+  override tagName = 'input';
   type = 'range';
 }
 
 jitSuite(
   class EmberComponentRangeTests extends RangeTests {
-    static suiteName = `Components - [emberjs/ember.js#15675] - type value min max`;
+    static override suiteName = `Components - [emberjs/ember.js#15675] - type value min max`;
 
     component(): EmberishCurlyComponentFactory {
       return class extends EmberInputRangeComponent {
-        attributeBindings = ['type', 'value', 'min', 'max'];
+        override attributeBindings = ['type', 'value', 'min', 'max'];
       } as any;
     }
 
@@ -104,7 +104,7 @@ jitSuite(
 
 jitSuite(
   class BasicComponentImplicitAttributesRangeTest extends RangeTests {
-    static suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type="range" value="%x" min="-5" max="50" />`;
+    static override suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type="range" value="%x" min="-5" max="50" />`;
     attrs = 'type="range" value="%x" min="-5" max="50"';
 
     renderRange(value: number): void {
@@ -121,7 +121,7 @@ jitSuite(
 
 jitSuite(
   class BasicComponentSplattributesLastRangeTest extends RangeTests {
-    static suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type="range" value="%x" min="-5" max="50" />`;
+    static override suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes last <input type="range" value="%x" min="-5" max="50" />`;
     attrs = 'type="range" value="%x" min="-5" max="50"';
 
     renderRange(value: number): void {
@@ -138,7 +138,7 @@ jitSuite(
 
 jitSuite(
   class BasicComponentSplattributesFirstRangeTest extends RangeTests {
-    static suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type="range" value="%x" min="-5" max="50" />`;
+    static override suiteName = `integration - GlimmerComponent - [emberjs/ember.js#15675] ...attributes first <input type="range" value="%x" min="-5" max="50" />`;
     attrs = 'type="text" min="-5" max="50"';
 
     renderRange(value: number): void {

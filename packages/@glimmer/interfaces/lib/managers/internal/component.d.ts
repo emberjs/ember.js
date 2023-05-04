@@ -1,18 +1,19 @@
 // eslint-disable-next-line n/no-extraneous-import
 import { SimpleElement } from '@simple-dom/interface';
-import { PreparedArguments, ComponentInstanceState } from '../../components';
-import { Option, Destroyable } from '../../core';
+
+import { ComponentInstanceState, PreparedArguments } from '../../components';
+import { Destroyable, Option } from '../../core';
 import { Bounds } from '../../dom/bounds';
+import { Reference } from '../../references';
+import { Owner } from '../../runtime';
 import { CapturedArguments, VMArguments } from '../../runtime/arguments';
+import { RenderNode } from '../../runtime/debug-render-tree';
 import { ElementOperations } from '../../runtime/element';
 import { Environment } from '../../runtime/environment';
+import { DynamicScope } from '../../runtime/scope';
 import { RuntimeResolver } from '../../serialize';
 import { CompilableProgram } from '../../template';
 import { ProgramSymbolTable } from '../../tier1/symbol-table';
-import { DynamicScope } from '../../runtime/scope';
-import { RenderNode } from '../../runtime/debug-render-tree';
-import { Owner } from '../../runtime';
-import { Reference } from '../../references';
 
 /**
  * Describes the capabilities of a particular component. The capabilities are

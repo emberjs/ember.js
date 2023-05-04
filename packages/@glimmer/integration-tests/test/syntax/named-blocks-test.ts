@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, preprocess, syntaxErrorFor } from '../..';
+import { jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from '../..';
 
 class NamedBlocksSyntaxErrors extends RenderTest {
   static suiteName = 'named blocks syntax errors';

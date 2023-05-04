@@ -1,10 +1,11 @@
 import {
   CompileTimeResolver,
-  Option,
-  ResolvedComponentDefinition,
   HelperDefinitionState,
   ModifierDefinitionState,
+  Option,
+  ResolvedComponentDefinition,
 } from '@glimmer/interfaces';
+
 import { TestJitRuntimeResolver } from './resolver';
 
 export default class JitCompileTimeLookup implements CompileTimeResolver {

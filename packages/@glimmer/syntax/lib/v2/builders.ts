@@ -1,5 +1,5 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { assert, assertPresent, assign } from '@glimmer/util';
+import { assert, assertPresentArray, assign } from '@glimmer/util';
 
 import { SourceSlice } from '../source/slice';
 import { SourceSpan } from '../source/span';
@@ -233,7 +233,7 @@ export class Builder {
   }
 
   interpolate(parts: ASTv2.ExpressionNode[], loc: SourceSpan): ASTv2.InterpolateExpression {
-    assertPresent(parts);
+    assertPresentArray(parts);
 
     return new ASTv2.InterpolateExpression({
       loc,
@@ -295,7 +295,6 @@ export class Builder {
 
   blockStatement(
     {
-      symbols,
       program,
       inverse = null,
       ...call

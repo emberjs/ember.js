@@ -1,4 +1,5 @@
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+
 import { RichIteratorResult } from '../core';
 import { Bounds } from '../dom/bounds';
 import { Environment } from './environment';

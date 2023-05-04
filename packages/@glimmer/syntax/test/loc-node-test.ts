@@ -1,4 +1,6 @@
-import { preprocess as parse, AST } from '..';
+import { guardArray } from '@glimmer/integration-tests';
+
+import { AST, preprocess as parse } from '..';
 import { SourceLocation } from '../lib/v1/api';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
@@ -293,7 +295,10 @@ data-barf="herpy"
 
   let [, div] = ast.body;
   if (assertNodeType(div, 'ElementNode')) {
-    let [dataFoo, dataDerp, dataBarf, dataQux, dataSomethingBoolean, dataHurky] = div.attributes;
+    let [dataFoo, dataDerp, dataBarf, dataQux, dataSomethingBoolean, dataHurky] = guardArray(
+      { attributes: div.attributes },
+      { min: 6 }
+    );
 
     locEqual(dataFoo, 2, 9, 2, 24, 'data-foo');
     locEqual(dataDerp, 3, 6, 3, 23, 'data-derp');
@@ -314,7 +319,7 @@ test('element dynamic attribute', function () {
 
   let [img] = ast.body;
   if (assertNodeType(img, 'ElementNode')) {
-    let [src] = img.attributes;
+    let [src] = guardArray({ attributes: img.attributes }, { min: 1 });
     locEqual(src, 1, 5, 1, 17);
     let { value } = src;
     locEqual(value, 1, 9, 1, 17);
@@ -339,7 +344,10 @@ foo"
 
   let [, div] = ast.body;
   if (assertNodeType(div, 'ElementNode')) {
-    let [dataFoo, dataBar, dataDerp, dataQux] = div.attributes;
+    let [dataFoo, dataBar, dataDerp, dataQux] = guardArray(
+      { attributes: div.attributes },
+      { min: 4 }
+    );
     let dataFooValue = dataFoo.value;
     let dataBarValue = dataBar.value;
     let dataDerpValue = dataDerp.value;

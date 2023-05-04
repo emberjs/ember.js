@@ -1,7 +1,7 @@
 'use strict';
 
-const writeFile = require('broccoli-file-creator');
 const { readFileSync } = require('fs');
+const writeFile = require('broccoli-file-creator');
 
 const LICENSE = readFileSync('./LICENSE', 'utf8');
 

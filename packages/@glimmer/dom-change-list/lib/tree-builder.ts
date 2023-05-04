@@ -1,13 +1,14 @@
 import {
-  Option,
-  NodeTokens,
   Dict,
   Namespace,
   NodeToken,
-  SimpleElement,
-  SimpleDocumentFragment,
+  NodeTokens,
+  Option,
   SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
 } from '@glimmer/interfaces';
+
 import { HTML } from './dom-operations';
 import { DOMTreeConstruction } from './tree-construction';
 
@@ -152,6 +153,6 @@ export class TreeBuilder {
     let { contexts } = this;
     let { length } = contexts;
 
-    return length ? contexts[length - 1] : null;
+    return length ? contexts[length - 1]! : null;
   }
 }

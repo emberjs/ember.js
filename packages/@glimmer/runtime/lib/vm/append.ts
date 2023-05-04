@@ -1,25 +1,26 @@
+import { associateDestroyableChild } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import {
   CompilableTemplate,
+  CompileTimeCompilationContext,
   Destroyable,
   DynamicScope,
   ElementBuilder,
   Environment,
   Option,
+  Owner,
   PartialScope,
   RenderResult,
+  ResolutionTimeConstants,
   RichIteratorResult,
   RuntimeConstants,
   RuntimeContext,
   RuntimeHeap,
   RuntimeProgram,
   Scope,
-  CompileTimeCompilationContext,
-  VM as PublicVM,
-  ResolutionTimeConstants,
-  Owner,
   UpdatingOpcode,
+  VM as PublicVM,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -30,7 +31,7 @@ import {
   Reference,
   UNDEFINED_REFERENCE,
 } from '@glimmer/reference';
-import { assert, expect, LOCAL_LOGGER, Stack, unwrapHandle } from '@glimmer/util';
+import { assert, expect, LOCAL_LOGGER, reverse, Stack, unwrapHandle } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
 import {
   $fp,
@@ -46,7 +47,7 @@ import {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
-import { associateDestroyableChild } from '@glimmer/destroyable';
+
 import {
   BeginTrackFrameOpcode,
   EndTrackFrameOpcode,
@@ -628,8 +629,7 @@ export default class VM implements PublicVM, InternalVM {
   bindDynamicScope(names: string[]) {
     let scope = this.dynamicScope();
 
-    for (let i = names.length - 1; i >= 0; i--) {
-      let name = names[i];
+    for (const name of reverse(names)) {
       scope.set(name, this.stack.pop<Reference<unknown>>());
     }
   }

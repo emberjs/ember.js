@@ -1,12 +1,14 @@
-import { astEqual } from '../support';
+import { guardArray } from '@glimmer/integration-tests';
+
 import {
-  preprocess as parse,
-  traverse,
-  builders as b,
   AST,
+  builders as b,
   cannotRemoveNode,
   cannotReplaceNode,
+  preprocess as parse,
+  traverse,
 } from '../..';
+import { astEqual } from '../support';
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
@@ -14,7 +16,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
   QUnit.test(`[${eventName}] Replacing self in a key (returning null)`, (assert) => {
     let ast = parse(`<x y={{z}} />`);
     let el = ast.body[0] as AST.ElementNode;
-    let attr = el.attributes[0];
+    let [attr] = guardArray({ attributes: el.attributes }, { min: 1 });
 
     assert.throws(() => {
       traverse(ast, {
@@ -33,7 +35,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
   QUnit.test(`[${eventName}] Replacing self in a key (returning an empty array)`, (assert) => {
     let ast = parse(`<x y={{z}} />`);
     let el = ast.body[0] as AST.ElementNode;
-    let attr = el.attributes[0];
+    let [attr] = guardArray({ attributes: el.attributes }, { min: 1 });
 
     assert.throws(() => {
       traverse(ast, {
@@ -91,7 +93,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     (assert) => {
       let ast = parse(`<x y={{z}} />`);
       let el = ast.body[0] as AST.ElementNode;
-      let attr = el.attributes[0];
+      let [attr] = guardArray({ attributes: el.attributes }, { min: 1 });
 
       assert.throws(() => {
         traverse(ast, {

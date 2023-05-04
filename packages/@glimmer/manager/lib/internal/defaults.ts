@@ -1,10 +1,10 @@
-import { buildCapabilities } from '../util/capabilities';
-
 import type {
   CapturedArguments as Arguments,
   HelperCapabilities,
   HelperManagerWithValue,
 } from '@glimmer/interfaces';
+
+import { buildCapabilities } from '../util/capabilities';
 
 type FnArgs<Args extends Arguments = Arguments> =
   | [...Args['positional'], Args['named']]

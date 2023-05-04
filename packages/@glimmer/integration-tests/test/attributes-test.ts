@@ -1,7 +1,8 @@
-import { normalizeProperty } from '@glimmer/runtime';
-import { assertElement, hasAttribute, jitSuite, RenderTest, test, tracked } from '..';
 import { Namespace, SimpleElement } from '@glimmer/interfaces';
+import { normalizeProperty } from '@glimmer/runtime';
 import { castToBrowser, expect } from '@glimmer/util';
+
+import { assertingElement, hasAttribute, jitSuite, RenderTest, test, tracked } from '..';
 
 export class AttributesTests extends RenderTest {
   static suiteName = 'Attributes';
@@ -185,7 +186,7 @@ export class AttributesTests extends RenderTest {
   'can set attributes on form properties'() {
     this.render('<form id={{this.foo}}></form><output form={{this.foo}}></output>', { foo: 'bar' });
 
-    let outputElement = assertElement(this.element.lastChild);
+    let outputElement = assertingElement(this.element.lastChild);
 
     this.assert.ok(hasAttribute(outputElement, 'form'));
     this.assert.strictEqual(this.readDOMAttr('form', outputElement), 'bar');
@@ -378,8 +379,8 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = assertElement(this.element.firstChild);
-    let secondElement = assertElement(this.element.lastChild);
+    let firstElement = assertingElement(this.element.firstChild);
+    let secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
@@ -414,8 +415,8 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = assertElement(this.element.firstChild);
-    let secondElement = assertElement(this.element.lastChild);
+    let firstElement = assertingElement(this.element.firstChild);
+    let secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
@@ -454,8 +455,8 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = assertElement(this.element.firstChild);
-    let secondElement = assertElement(this.element.lastChild);
+    let firstElement = assertingElement(this.element.firstChild);
+    let secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'title'));
     this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
@@ -491,8 +492,8 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = assertElement(this.element.firstChild);
-    let secondElement = assertElement(this.element.lastChild);
+    let firstElement = assertingElement(this.element.firstChild);
+    let secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'title'));
     this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
@@ -707,7 +708,7 @@ jitSuite(
     static suiteName = 'img[src] attribute';
     protected tag = 'img';
     protected attr = 'src';
-    protected isEmptyElement = true;
+    protected override isEmptyElement = true;
     protected isSelfClosing = false;
   }
 );

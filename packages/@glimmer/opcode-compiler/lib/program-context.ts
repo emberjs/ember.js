@@ -1,13 +1,14 @@
 import {
-  STDLib,
-  CompileTimeCompilationContext,
-  CompileTimeResolver,
-  CompileTimeHeap,
-  CompileTimeConstants,
   CompileTimeArtifacts,
-  ResolutionTimeConstants,
+  CompileTimeCompilationContext,
+  CompileTimeConstants,
+  CompileTimeHeap,
+  CompileTimeResolver,
   CreateRuntimeOp,
+  ResolutionTimeConstants,
+  STDLib,
 } from '@glimmer/interfaces';
+
 import { compileStd } from './opcode-builder/helpers/stdlib';
 
 export class CompileTimeCompilationContextImpl implements CompileTimeCompilationContext {

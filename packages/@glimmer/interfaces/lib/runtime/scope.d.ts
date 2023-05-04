@@ -1,9 +1,9 @@
-import { CompilableBlock } from '../template';
 // eslint-disable-next-line n/no-extraneous-import
-import { Option, Dict } from '../core';
+import { Dict, Option } from '../core';
+import { Reference } from '../references';
+import { CompilableBlock } from '../template';
 import { BlockSymbolTable } from '../tier1/symbol-table';
 import { Owner } from './owner';
-import { Reference } from '../references';
 
 export type Block = CompilableBlock | number;
 

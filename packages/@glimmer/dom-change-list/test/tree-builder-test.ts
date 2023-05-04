@@ -1,9 +1,9 @@
-import { DOMTreeConstruction, NodeTokensImpl, TreeBuilder } from '..';
-
-import { TestCase, module, test } from './test-case';
-import { XLINK, Builder as TestBuilder, toHTML, toHTMLNS } from './support';
-import createHTMLDocument from '@simple-dom/document';
 import { SimpleDocument, SimpleDocumentFragment, SimpleElement } from '@glimmer/interfaces';
+import createHTMLDocument from '@simple-dom/document';
+
+import { DOMTreeConstruction, NodeTokensImpl, TreeBuilder } from '..';
+import { Builder as TestBuilder, toHTML, toHTMLNS, XLINK } from './support';
+import { module, test, TestCase } from './test-case';
 
 @module('[dom-change-list] TreeBuilder')
 export class ChangeListTest extends TestCase {
@@ -14,7 +14,7 @@ export class ChangeListTest extends TestCase {
   protected declare builder: TreeBuilder;
   protected declare construction: DOMTreeConstruction;
 
-  before() {
+  override before() {
     this.document = createHTMLDocument();
     this.parent = this.document.createElement('div');
     this.construction = new DOMTreeConstruction();

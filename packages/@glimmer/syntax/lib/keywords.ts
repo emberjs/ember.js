@@ -8,7 +8,7 @@ export function isKeyword(word: string): boolean {
  * This includes the full list of keywords currently in use in the template
  * language, and where their valid usages are.
  */
-export const KEYWORDS_TYPES: { [key: string]: KeywordType[] } = {
+export const KEYWORDS_TYPES = {
   component: ['Call', 'Append', 'Block'],
   debugger: ['Append'],
   'each-in': ['Block'],
@@ -31,4 +31,4 @@ export const KEYWORDS_TYPES: { [key: string]: KeywordType[] } = {
   unless: ['Call', 'Append', 'Block'],
   with: ['Block'],
   yield: ['Append'],
-};
+} satisfies Record<string, readonly KeywordType[]>;

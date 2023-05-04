@@ -1,23 +1,24 @@
-import { assign, dict, unwrap } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
-import { assert } from './support';
+import { assign, dict, unwrap } from '@glimmer/util';
+
 import {
-  test,
-  jitSuite,
-  assertElement,
-  firstElementChild,
-  equalsElement,
   classes,
-  regex,
-  EmberishCurlyComponent,
-  stripTight,
-  elementId,
-  GlimmerishComponent,
-  RenderTest,
-  JitRenderDelegate,
   createTemplate,
+  elementId,
+  EmberishCurlyComponent,
   EmberishCurlyComponentFactory,
+  equalsElement,
+  firstElementChild,
+  GlimmerishComponent,
+  isSimpleElement,
+  JitRenderDelegate,
+  jitSuite,
+  regex,
+  RenderTest,
+  stripTight,
+  test,
 } from '..';
+import { assert } from './support';
 
 interface ComponentHooks {
   didInitAttrs: number;
@@ -188,7 +189,7 @@ class CurlyCreateTest extends CurlyTest {
   @test
   'when no block present'() {
     class FooBar extends EmberishCurlyComponent {
-      tagName = 'div';
+      override tagName = 'div';
     }
 
     this.registerComponent('Curly', 'foo-bar', `{{this.HAS_BLOCK}}`, FooBar);
@@ -201,7 +202,7 @@ class CurlyCreateTest extends CurlyTest {
   @test
   'when block present'() {
     class FooBar extends EmberishCurlyComponent {
-      tagName = 'div';
+      override tagName = 'div';
     }
 
     this.registerComponent('Curly', 'foo-bar', `{{this.HAS_BLOCK}}`, FooBar);
@@ -267,7 +268,7 @@ class CurlyDynamicCustomizationTest extends CurlyTest {
   @test
   'dynamic tagName'() {
     class FooBar extends EmberishCurlyComponent {
-      tagName = 'aside';
+      override tagName = 'aside';
     }
 
     this.registerComponent('Curly', 'foo-bar', `Hello. It's me.`, FooBar);
@@ -280,7 +281,7 @@ class CurlyDynamicCustomizationTest extends CurlyTest {
   @test
   'dynamic tagless component'() {
     class FooBar extends EmberishCurlyComponent {
-      tagName = '';
+      override tagName = '';
     }
 
     this.registerComponent('Curly', 'foo-bar', `Michael Jordan says "Go Tagless"`, FooBar);
@@ -295,7 +296,7 @@ class CurlyDynamicCustomizationTest extends CurlyTest {
     let fooBarInstance: FooBar | undefined;
 
     class FooBar extends EmberishCurlyComponent {
-      attributeBindings = ['style'];
+      override attributeBindings = ['style'];
       style: string | null = null;
 
       constructor() {
@@ -338,8 +339,8 @@ class CurlyArgsTest extends CurlyTest {
   @test
   'using @value from emberish curly component'() {
     class FooBar extends EmberishCurlyComponent {
-      static positionalParams = ['foo'];
-      tagName = 'div';
+      static override positionalParams = ['foo'];
+      override tagName = 'div';
     }
 
     this.registerComponent('Curly', 'foo-bar', `{{@blah}}`, FooBar);
@@ -398,7 +399,7 @@ class CurlyScopeTest extends CurlyTest {
   @test
   'correct scope - accessing local variable in yielded block (curly component)'() {
     class FooBar extends EmberishCurlyComponent {
-      public tagName = '';
+      public override tagName = '';
     }
 
     this.registerComponent(
@@ -444,14 +445,14 @@ class CurlyScopeTest extends CurlyTest {
   'correct scope - caller self can be threaded through (curly component)'() {
     // demonstrates ability for Ember to know the target object of curly component actions
     class Base extends EmberishCurlyComponent {
-      public tagName = '';
+      public override tagName = '';
     }
     class FooBar extends Base {
-      public name = 'foo-bar';
+      public override name = 'foo-bar';
     }
 
     class QuxDerp extends Base {
-      public name = 'qux-derp';
+      public override name = 'qux-derp';
     }
 
     this.registerComponent(
@@ -739,7 +740,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'static named positional parameters'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['person', 'age'];
+      static override positionalParams = ['person', 'age'];
     }
 
     this.registerComponent(
@@ -757,7 +758,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'dynamic named positional parameters'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['person', 'age'];
+      static override positionalParams = ['person', 'age'];
     }
 
     this.registerComponent(
@@ -785,7 +786,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'if a value is passed as a non-positional parameter, it takes precedence over the named one'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['name'];
+      static override positionalParams = ['name'];
     }
 
     this.registerComponent('Curly', 'sample-component', '{{this.name}}', SampleComponent);
@@ -801,7 +802,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'static arbitrary number of positional parameters'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = 'names';
+      static override positionalParams = 'names';
     }
 
     this.registerComponent(
@@ -818,8 +819,14 @@ class CurlyPositionalArgsTest extends CurlyTest {
       `
     );
 
-    let first = assertElement(this.element.firstChild);
-    let second = assertElement(this.element.lastChild);
+    let [first, second] = this.guardArray(
+      {
+        children: [this.element.firstChild, this.element.lastChild],
+      },
+      { min: 2, condition: isSimpleElement }
+    );
+    // let first = assertingElement(this.element.firstChild);
+    // let second = assertingElement(this.element.lastChild);
 
     assertElementIsEmberishElement(first, 'div', 'Foo4Bar');
     assertElementIsEmberishElement(second, 'div', 'Foo4Bar5Baz');
@@ -828,7 +835,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'arbitrary positional parameter conflict with hash parameter is reported'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['names'];
+      static override positionalParams = ['names'];
     }
 
     this.registerComponent(
@@ -848,7 +855,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'can use hash parameter instead of arbitrary positional param [GH #12444]'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['names'];
+      static override positionalParams = ['names'];
     }
 
     this.registerComponent(
@@ -868,7 +875,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'can use hash parameter instead of positional param'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['first', 'second'];
+      static override positionalParams = ['first', 'second'];
     }
 
     this.registerComponent(
@@ -901,7 +908,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   'dynamic arbitrary number of positional parameters'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = 'n';
+      static override positionalParams = 'n';
     }
 
     this.registerComponent(
@@ -935,7 +942,7 @@ class CurlyPositionalArgsTest extends CurlyTest {
   @test
   '{{component}} helper works with positional params'() {
     class SampleComponent extends EmberishCurlyComponent {
-      static positionalParams = ['name', 'age'];
+      static override positionalParams = ['name', 'age'];
     }
 
     this.registerComponent(
@@ -1149,7 +1156,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   @test
   'component helper can curry arguments'() {
     class FooBarComponent extends EmberishCurlyComponent {
-      static positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
+      static override positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
     }
 
     this.registerComponent(
@@ -1209,7 +1216,7 @@ class CurlyClosureComponentsTest extends CurlyTest {
   @test
   'component helper: currying works inline'() {
     class FooBarComponent extends EmberishCurlyComponent {
-      static positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
+      static override positionalParams = ['one', 'two', 'three', 'four', 'five', 'six'];
     }
 
     this.registerComponent(
@@ -1266,9 +1273,22 @@ class CurlyIdsTest extends CurlyTest {
       `
     );
 
-    let first = assertElement(this.element.firstChild);
-    let second = assertElement(first.nextSibling);
-    let third = assertElement(second.nextSibling);
+    let [first, second, third] = this.guardArray(
+      {
+        nodes: [
+          this.element.firstChild,
+          this.element.firstChild?.nextSibling,
+          this.element.firstChild?.nextSibling?.nextSibling,
+        ],
+      },
+      {
+        min: 3,
+        condition: isSimpleElement,
+      }
+    );
+    // let first = assertingElement(this.element.firstChild);
+    // let second = assertingElement(first.nextSibling);
+    // let third = assertingElement(second.nextSibling);
 
     equalsElement(first, 'div', { id: regex(/^ember\d*$/), class: 'ember-view' }, '');
     equalsElement(second, 'div', { id: regex(/^ember\d*$/), class: 'ember-view' }, '');
@@ -1281,9 +1301,19 @@ class CurlyIdsTest extends CurlyTest {
       IDs[id] = (IDs[id] || 0) + 1;
     }
 
-    markAsSeen(assertElement(this.element.childNodes[0]));
-    markAsSeen(assertElement(this.element.childNodes[1]));
-    markAsSeen(assertElement(this.element.childNodes[2]));
+    let [firstChild, secondChild, thirdChild] = this.guardArray(
+      {
+        'child nodes': this.element.childNodes,
+      },
+      {
+        min: 3,
+        condition: isSimpleElement,
+      }
+    );
+
+    markAsSeen(firstChild);
+    markAsSeen(secondChild);
+    markAsSeen(thirdChild);
 
     assert.strictEqual(
       Object.keys(IDs).length,
@@ -1383,7 +1413,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     let instance: (NonBlock & HookedComponent) | undefined;
 
     class NonBlock extends EmberishCurlyComponent {
-      init() {
+      override init() {
         instance = this as any;
       }
     }
@@ -1436,7 +1466,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     let instance: (NonBlock & HookedComponent) | undefined;
 
     class NonBlock extends EmberishCurlyComponent {
-      init() {
+      override init() {
         instance = this as any;
       }
     }
@@ -1489,9 +1519,9 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     let instance: InputComponent | undefined;
 
     class InputComponent extends EmberishCurlyComponent {
-      tagName = 'input';
-      attributeBindings = ['value'];
-      init() {
+      override tagName = 'input';
+      override attributeBindings = ['value'];
+      override init() {
         instance = this;
       }
     }
@@ -1533,8 +1563,8 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     let instance: FooBarComponent | undefined;
 
     class FooBarComponent extends EmberishCurlyComponent {
-      attributeBindings = ['class'];
-      init() {
+      override attributeBindings = ['class'];
+      override init() {
         instance = this;
       }
     }
@@ -1573,7 +1603,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
     let instance: (NonBlock & HookedComponent) | undefined;
 
     class NonBlock extends EmberishCurlyComponent {
-      init() {
+      override init() {
         instance = this as any;
       }
     }
@@ -1643,12 +1673,12 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed = 0;
 
     class DestroyMeComponent extends EmberishCurlyComponent {
-      willDestroyElement() {
+      override willDestroyElement() {
         super.willDestroyElement();
         willDestroy++;
       }
 
-      destroy() {
+      override destroy() {
         super.destroy();
         destroyed++;
       }
@@ -1672,7 +1702,7 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed = 0;
 
     class DestroyMeComponent extends GlimmerishComponent {
-      willDestroy() {
+      override willDestroy() {
         super.willDestroy();
         destroyed++;
       }
@@ -1699,7 +1729,7 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed = 0;
 
     class DestroyMeComponent extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
         destroyed++;
       }
@@ -1725,9 +1755,9 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed: unknown[] = [];
 
     class DestroyMeComponent extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
-        destroyed.push(this.attrs.item);
+        destroyed.push(this.attrs['item']);
       }
     }
 
@@ -1757,9 +1787,9 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed: unknown[] = [];
 
     class DestroyMeComponent extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
-        destroyed.push(this.attrs.item);
+        destroyed.push(this.attrs['item']);
       }
     }
 
@@ -1802,16 +1832,16 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed: string[] = [];
 
     class DestroyMeComponent extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
-        destroyed.push(this.attrs.from as any);
+        destroyed.push(this.attrs['from'] as any);
       }
     }
 
     class DestroyMe2Component extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
-        destroyed.push(this.attrs.from as any);
+        destroyed.push(this.attrs['from'] as any);
       }
     }
 
@@ -1844,16 +1874,16 @@ class CurlyTeardownTest extends CurlyTest {
     let destroyed: string[] = [];
 
     class DestroyMe1Component extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
-        destroyed.push(`destroy-me1: ${this.attrs.item}`);
+        destroyed.push(`destroy-me1: ${this.attrs['item']}`);
       }
     }
 
     class DestroyMe2Component extends EmberishCurlyComponent {
-      destroy() {
+      override destroy() {
         super.destroy();
-        destroyed.push(`destroy-me2: ${this.attrs.from} - ${this.attrs.item}`);
+        destroyed.push(`destroy-me2: ${this.attrs['from']} - ${this.attrs['item']}`);
       }
     }
 
@@ -1918,14 +1948,14 @@ class CurlyTeardownTest extends CurlyTest {
     let curlyDestroyed = false;
 
     class DestroyMe1Component extends GlimmerishComponent {
-      willDestroy(this: GlimmerishComponent) {
+      override willDestroy(this: GlimmerishComponent) {
         super.willDestroy();
         glimmerDestroyed = true;
       }
     }
 
     class DestroyMe2Component extends EmberishCurlyComponent {
-      destroy(this: EmberishCurlyComponent) {
+      override destroy(this: EmberishCurlyComponent) {
         super.destroy();
         curlyDestroyed = true;
       }
@@ -1980,7 +2010,7 @@ class CurlyLateLayoutTest extends CurlyTest {
   @test
   'can bind the layout late'() {
     class FooBar extends EmberishCurlyComponent {
-      layout = createTemplate('Swap - {{yield}}')(undefined);
+      override layout = createTemplate('Swap - {{yield}}')(undefined);
     }
 
     this.delegate.registerComponent('Curly', 'Curly', 'foo-bar', null, FooBar);
@@ -1988,7 +2018,8 @@ class CurlyLateLayoutTest extends CurlyTest {
     this.render('{{#foo-bar}}YIELD{{/foo-bar}}');
 
     equalsElement(
-      assertElement(this.element.firstChild),
+      this.element.firstChild,
+
       'div',
       {
         class: classes('ember-view'),
@@ -2108,7 +2139,7 @@ class CurlyBoundsTrackingTest extends CurlyTest {
     let instance: FooBar | undefined;
 
     class FooBar extends EmberishCurlyComponent {
-      tagName = 'span';
+      override tagName = 'span';
 
       constructor() {
         super();
@@ -2141,7 +2172,7 @@ class CurlyBoundsTrackingTest extends CurlyTest {
     let instance: FooBar | undefined;
 
     class FooBar extends EmberishCurlyComponent {
-      tagName = '';
+      override tagName = '';
 
       constructor() {
         super();

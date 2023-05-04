@@ -1,5 +1,8 @@
 import { Dict, Option, Stack } from '@glimmer/interfaces';
 
+import { unwrap } from './platform-utils';
+import { getLast } from './present';
+
 export function dict<T = unknown>(): Dict<T> {
   return Object.create(null);
 }
@@ -31,15 +34,14 @@ export class StackImpl<T> implements Stack<T> {
 
   pop(): Option<T> {
     let item = this.stack.pop();
-    let len = this.stack.length;
-    this.current = len === 0 ? null : this.stack[len - 1];
+    this.current = getLast(this.stack) ?? null;
 
     return item === undefined ? null : item;
   }
 
   nth(from: number): Option<T> {
     let len = this.stack.length;
-    return len < from ? null : this.stack[len - from];
+    return len < from ? null : unwrap(this.stack[len - from]);
   }
 
   isEmpty(): boolean {

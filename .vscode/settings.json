@@ -7,7 +7,10 @@
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true,
+    "dist/**": true,
     "node_modules/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
     "tmp/**": true
   },
   "files.watcherExclude": {

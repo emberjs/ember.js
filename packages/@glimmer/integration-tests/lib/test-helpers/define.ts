@@ -1,16 +1,4 @@
-import { templateOnlyComponent } from '@glimmer/runtime';
-import {
-  setHelperManager,
-  helperCapabilities,
-  setComponentTemplate,
-  modifierCapabilities,
-  setModifierManager,
-} from '@glimmer/manager';
 import { registerDestructor } from '@glimmer/destroyable';
-import { setOwner } from '@glimmer/owner';
-
-import { createTemplate } from '../compile';
-
 import {
   Arguments,
   HelperCapabilities,
@@ -18,6 +6,17 @@ import {
   ModifierManager,
   Owner,
 } from '@glimmer/interfaces';
+import {
+  helperCapabilities,
+  modifierCapabilities,
+  setComponentTemplate,
+  setHelperManager,
+  setModifierManager,
+} from '@glimmer/manager';
+import { setOwner } from '@glimmer/owner';
+import { templateOnlyComponent } from '@glimmer/runtime';
+
+import { createTemplate } from '../compile';
 
 interface SimpleHelperState {
   fn: (...args: unknown[]) => unknown;

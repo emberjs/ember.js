@@ -1,15 +1,18 @@
 import {
-  SimpleElement,
-  SimpleDocument,
-  Namespace,
-  SimpleNode,
+  Bounds,
+  Dict,
   InsertPosition,
-  SimpleText,
+  Namespace,
+  Option,
   SimpleComment,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
 } from '@glimmer/interfaces';
-import { Dict, Option, Bounds } from '@glimmer/interfaces';
-import { ConcreteBounds } from '../bounds';
 import { expect } from '@glimmer/util';
+
+import { ConcreteBounds } from '../bounds';
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };

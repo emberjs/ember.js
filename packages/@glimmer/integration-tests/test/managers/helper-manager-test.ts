@@ -1,16 +1,17 @@
+import { Arguments, Owner } from '@glimmer/interfaces';
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
+
 import {
+  defineComponent,
+  GlimmerishComponent,
+  jitSuite,
   RenderTest,
   test,
-  jitSuite,
-  GlimmerishComponent,
-  tracked,
-  defineComponent,
-  trackedObj,
   TestHelper,
   TestHelperManager,
+  tracked,
+  trackedObj,
 } from '../..';
-import { Arguments, Owner } from '@glimmer/interfaces';
 
 class HelperManagerTest extends RenderTest {
   static suiteName = 'Helper Managers';
@@ -122,13 +123,13 @@ class HelperManagerTest extends RenderTest {
     assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
 
-    args.value = 'there';
+    args['value'] = 'there';
     this.rerender();
 
     assert.strictEqual(count, 2, 'rendered twice');
     this.assertHTML('there');
 
-    args.unused = 'unused2';
+    args['unused'] = 'unused2';
     this.rerender();
 
     assert.strictEqual(count, 3, 'rendered thrice');
@@ -142,7 +143,7 @@ class HelperManagerTest extends RenderTest {
 
     let obj = () => {
       count++;
-      return trackedState.value;
+      return trackedState['value'];
     };
 
     this.renderComponent(defineComponent({ obj }, '{{obj}}'));
@@ -150,7 +151,7 @@ class HelperManagerTest extends RenderTest {
     assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
 
-    trackedState.value = 'there';
+    trackedState['value'] = 'there';
     this.rerender();
     this.assertHTML('there');
     assert.strictEqual(count, 2, 'rendered twice');
@@ -170,7 +171,7 @@ class HelperManagerTest extends RenderTest {
     assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('hello');
 
-    args.unused = 'unused2';
+    args['unused'] = 'unused2';
     this.rerender();
 
     assert.strictEqual(count, 1, 'rendered once');
@@ -183,7 +184,7 @@ class HelperManagerTest extends RenderTest {
 
     let obj = (_x: string, options: Record<string, unknown>) => {
       count++;
-      return options.namedOpt;
+      return options['namedOpt'];
     };
 
     let args = trackedObj({ value: 'hello', used: 'used' });
@@ -192,7 +193,7 @@ class HelperManagerTest extends RenderTest {
     assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('used');
 
-    args.used = 'there';
+    args['used'] = 'there';
     this.rerender();
 
     assert.strictEqual(count, 2, 'rendered twice');
@@ -232,7 +233,7 @@ class HelperManagerTest extends RenderTest {
     this.assertHTML('result: default value');
     assert.strictEqual(count, 1, 'rendered once');
 
-    args.value = 'value';
+    args['value'] = 'value';
     this.rerender();
 
     this.assertHTML('result: value');
@@ -245,7 +246,7 @@ class HelperManagerTest extends RenderTest {
     class Hello extends TestHelper {
       value() {
         count++;
-        return this.args.named.foo;
+        return this.args.named['foo'];
       }
     }
 
@@ -261,7 +262,7 @@ class HelperManagerTest extends RenderTest {
     assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
-    args.foo = 456;
+    args['foo'] = 456;
     this.rerender();
 
     assert.strictEqual(count, 2, 'rendered twice');
@@ -290,7 +291,7 @@ class HelperManagerTest extends RenderTest {
     assert.strictEqual(count, 1, 'rendered once');
     this.assertHTML('123');
 
-    args.foo = 456;
+    args['foo'] = 456;
     this.rerender();
 
     assert.strictEqual(count, 2, 'rendered twice');
@@ -337,7 +338,7 @@ class HelperManagerTest extends RenderTest {
         return 'hello';
       }
 
-      willDestroy() {
+      override willDestroy() {
         assert.ok(true, 'destructor called');
       }
     }
@@ -416,7 +417,7 @@ class HelperManagerTest extends RenderTest {
 
   @test 'capabilities helper function must be used to generate capabilities'(assert: Assert) {
     class OverrideTestHelperManager extends TestHelperManager {
-      capabilities = {
+      override capabilities = {
         hasValue: true,
         hasDestroyable: true,
         hasScheduledEffect: false,

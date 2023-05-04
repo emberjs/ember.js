@@ -1,16 +1,17 @@
+import { castToSimple } from '@glimmer/util';
+
 import {
-  PartialRehydrationDelegate,
-  test,
-  RenderTest,
-  suite,
+  CLOSE,
   content,
   OPEN,
-  CLOSE,
-  replaceHTML,
+  PartialRehydrationDelegate,
   qunitFixture,
+  RenderTest,
+  replaceHTML,
   stripTight,
+  suite,
+  test,
 } from '..';
-import { castToSimple } from '@glimmer/util';
 
 export class PartialRehydrationTest extends RenderTest {
   static suiteName = 'partial rehydration';

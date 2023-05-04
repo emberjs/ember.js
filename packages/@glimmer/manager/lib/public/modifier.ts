@@ -1,3 +1,4 @@
+import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import {
   Arguments,
@@ -7,15 +8,15 @@ import {
   ModifierCapabilitiesVersions,
   ModifierManager,
   Owner,
+  SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
-import { registerDestructor } from '@glimmer/destroyable';
 import { valueForRef } from '@glimmer/reference';
 import { castToBrowser, dict } from '@glimmer/util';
 import { createUpdatableTag, untrack } from '@glimmer/validator';
-import { SimpleElement } from '@glimmer/interfaces';
-import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
+
 import { argsProxyFor } from '../util/args-proxy';
+import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { ManagerFactory } from '.';
 
 export function modifierCapabilities<Version extends keyof ModifierCapabilitiesVersions>(
@@ -159,8 +160,8 @@ export function reifyArgs({ named, positional }: CapturedArguments): {
 } {
   let reifiedNamed = dict();
 
-  for (let key in named) {
-    reifiedNamed[key] = valueForRef(named[key]);
+  for (const [key, value] of Object.entries(named)) {
+    reifiedNamed[key] = valueForRef(value);
   }
 
   let reifiedPositional = positional.map(valueForRef);

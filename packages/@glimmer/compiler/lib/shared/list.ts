@@ -1,5 +1,5 @@
 import { Option, PresentArray } from '@glimmer/interfaces';
-import { isPresent, mapPresent } from '@glimmer/util';
+import { isPresentArray, mapPresentArray } from '@glimmer/util';
 
 export interface OptionalList<T> {
   map<U>(callback: (input: T) => U): MapList<T, U, AnyOptionalList<T>>;
@@ -19,7 +19,7 @@ export class PresentList<T> implements OptionalList<T> {
   }
 
   map<U>(callback: (input: T) => U): MapList<T, U, PresentList<T>> {
-    let result = mapPresent(this.list, callback);
+    let result = mapPresentArray(this.list, callback);
     return new PresentList(result) as MapList<T, U, this>;
   }
 
@@ -71,7 +71,7 @@ export class EmptyList<T> implements OptionalList<T> {
 // export type OptionalList<T> = PresentList<T> | EmptyList<T>;
 
 export function OptionalList<T>(value: readonly T[]): AnyOptionalList<T> {
-  if (isPresent(value)) {
+  if (isPresentArray(value)) {
     return new PresentList(value);
   } else {
     return new EmptyList<T>();

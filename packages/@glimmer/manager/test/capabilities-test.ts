@@ -1,4 +1,5 @@
 import { InternalComponentCapability } from '@glimmer/interfaces';
+
 import { capabilityFlagsFrom, managerHasCapability } from '..';
 
 QUnit.module('Capabilities Bitmaps');

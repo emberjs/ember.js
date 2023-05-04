@@ -10,6 +10,7 @@ import {
 } from '@glimmer/interfaces';
 import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
 import { expect, isObject } from '@glimmer/util';
+
 import { curry, isCurriedType } from '../curried-value';
 
 export default function createCurryRef(

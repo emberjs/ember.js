@@ -147,6 +147,9 @@ importers:
       eslint-plugin-simple-import-sort:
         specifier: ^10.0.0
         version: 10.0.0(eslint@8.39.0)
+      eslint-plugin-unused-imports:
+        specifier: ^2.0.0
+        version: 2.0.0(@typescript-eslint/eslint-plugin@5.59.2)(eslint@8.39.0)
       execa:
         specifier: ^7.1.1
         version: 7.1.1
@@ -656,8 +659,20 @@ importers:
         specifier: workspace:^
         version: link:../local-debug-flags
       '@types/qunit':
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.19.5
+        version: 2.19.5
+
+  packages/@glimmer/syntax/test:
+    dependencies:
+      '@glimmer/integration-tests':
+        specifier: workspace:^
+        version: link:../../integration-tests
+      '@glimmer/interfaces':
+        specifier: workspace:^
+        version: link:../../interfaces
+      '@glimmer/util':
+        specifier: workspace:^
+        version: link:../../util
 
   packages/@glimmer/util:
     dependencies:
@@ -686,6 +701,9 @@ importers:
       '@glimmer/interfaces':
         specifier: workspace:^
         version: link:../interfaces
+      '@glimmer/util':
+        specifier: workspace:^
+        version: link:../util
 
   packages/@glimmer/vm:
     dependencies:
@@ -5856,6 +5874,7 @@ packages:
 
   /eslint-config-prettier@8.8.0(eslint@8.39.0):
     resolution: {integrity: sha512-wLbQiFre3tdGgpDv67NQKnJuTlcUVYHas3k+DZCc2U2BadthoEY4B7hLPvAxaqdyOGCzuLfii2fqGph10va7oA==}
+    hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
     dependencies:
@@ -6020,6 +6039,26 @@ packages:
       eslint: '>=5.0.0'
     dependencies:
       eslint: 8.39.0
+    dev: true
+
+  /eslint-plugin-unused-imports@2.0.0(@typescript-eslint/eslint-plugin@5.59.2)(eslint@8.39.0):
+    resolution: {integrity: sha512-3APeS/tQlTrFa167ThtP0Zm0vctjr4M44HMpeg1P4bK6wItarumq0Ma82xorMKdFsWpphQBlRPzw/pxiVELX1A==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      '@typescript-eslint/eslint-plugin': ^5.0.0
+      eslint: ^8.0.0
+    peerDependenciesMeta:
+      '@typescript-eslint/eslint-plugin':
+        optional: true
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 5.59.2(@typescript-eslint/parser@5.59.2)(eslint@8.39.0)(typescript@5.0.4)
+      eslint: 8.39.0
+      eslint-rule-composer: 0.3.0
+    dev: true
+
+  /eslint-rule-composer@0.3.0:
+    resolution: {integrity: sha512-bt+Sh8CtDmn2OajxvNO+BX7Wn4CIWMpTRm3MaiKPCQcnnlm0CS2mhui6QaoeQugs+3Kj2ESKEEGJUdVafwhiCg==}
+    engines: {node: '>=4.0.0'}
     dev: true
 
   /eslint-scope@5.1.1:
@@ -11000,6 +11039,7 @@ packages:
 
   /update-browserslist-db@1.0.11(browserslist@4.21.5):
     resolution: {integrity: sha512-dCwEFf0/oT85M1fHBg4F0jtLwJrutGoHSQXCh7u4o2t1drG+c0a9Flnqww6XUKSfQMPpJBRjU8d4RXB09qtvaA==}
+    hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
     dependencies:

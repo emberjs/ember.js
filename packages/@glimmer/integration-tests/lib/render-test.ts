@@ -1,16 +1,20 @@
+import { destroy } from '@glimmer/destroyable';
 import {
+  ComponentDefinitionState,
   Dict,
+  DynamicScope,
+  Helper,
   Maybe,
   Option,
   RenderResult,
-  Helper,
-  ComponentDefinitionState,
-  DynamicScope,
+  SimpleElement,
+  SimpleNode,
 } from '@glimmer/interfaces';
+import { inTransaction } from '@glimmer/runtime';
 import { ASTPluginBuilder } from '@glimmer/syntax';
+import { assert, clearElement, dict, expect, isPresent } from '@glimmer/util';
 import { dirtyTagFor } from '@glimmer/validator';
-import { assert, clearElement, dict, expect } from '@glimmer/util';
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
+
 import {
   ComponentBlueprint,
   ComponentKind,
@@ -19,13 +23,14 @@ import {
   GLIMMER_TEST_COMPONENT,
 } from './components';
 import { assertElementShape, assertEmberishElement } from './dom/assertions';
-import { assertElement, toInnerHTML } from './dom/simple-utils';
+import { assertingElement, toInnerHTML } from './dom/simple-utils';
 import { UserHelper } from './helpers';
 import { TestModifierConstructor } from './modifiers';
 import RenderDelegate from './render-delegate';
 import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
-import { destroy } from '@glimmer/destroyable';
-import { inTransaction } from '@glimmer/runtime';
+
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+type Present<T> = Exclude<T, null | undefined>;
 
 export interface IRenderTest {
   readonly count: Count;
@@ -464,6 +469,110 @@ export class RenderTest implements IRenderTest {
     this.assertStableNodes();
   }
 
+  protected guard(condition: any, message: string): asserts condition {
+    if (condition) {
+      this.assert.ok(condition, message);
+    } else {
+      throw Error(`Guard Failed: message`);
+    }
+  }
+
+  protected guardWith<T, U extends T, K extends string>(
+    desc: { [P in K]: T },
+    { condition }: { condition: (value: T) => value is U }
+  ): U {
+    let [description, value] = Object.entries(desc)[0] as [string, T];
+
+    if (condition(value)) {
+      this.assert.ok(
+        condition(value),
+        `${description} satisfied ${condition.name ?? '{anonymous guard}'}`
+      );
+      return value;
+    } else {
+      throw Error(
+        `Guard Failed: ${description} didn't satisfy ${condition.name ?? '{anonymous guard}'}`
+      );
+    }
+  }
+
+  protected guardPresent<T, K extends string>(desc: { [P in K]: T }): Present<T> {
+    let [description, value] = Object.entries(desc)[0] as [string, T];
+
+    let missing = value === undefined || value === null;
+
+    if (missing) {
+      throw Error(`Guard Failed: ${description} was not present (was ${String(value)})`);
+    }
+
+    this.assert.ok(!missing, `${description} was present`);
+
+    return value as Present<T>;
+  }
+
+  protected guardArray<T extends Maybe<unknown>[], K extends string>(desc: { [P in K]: T }): {
+    [K in keyof T]: Present<T[K]>;
+  };
+  protected guardArray<T, K extends string, N extends number>(
+    desc: { [P in K]: Iterable<T> | ArrayLike<T> },
+    options: { min: N }
+  ): Expand<NTuple<N, Present<T>>>;
+  protected guardArray<T, U extends T, K extends string, N extends number>(
+    desc: { [P in K]: Iterable<T> | ArrayLike<T> },
+    options: { min: N; condition: (value: T) => value is U }
+  ): Expand<NTuple<N, U>>;
+  protected guardArray<T, K extends string, A extends ArrayLike<T>>(desc: { [P in K]: A }): Expand<
+    NTuple<A['length'], Present<T>>
+  >;
+  protected guardArray<T, K extends string>(desc: {
+    [P in K]: Iterable<T> | ArrayLike<T>;
+  }): Present<T>[];
+  protected guardArray<T, K extends string, U extends T>(
+    desc: {
+      [P in K]: Iterable<T> | ArrayLike<T>;
+    },
+    options: { condition: (value: T) => value is U; min?: number }
+  ): U[];
+  protected guardArray(
+    desc: Record<string, Iterable<unknown> | ArrayLike<unknown>>,
+    options?: {
+      min?: Maybe<number>;
+      condition?: (value: unknown) => boolean;
+    }
+  ): unknown[] {
+    let [message, list] = Object.entries(desc)[0] as [string, unknown[]];
+
+    let array: unknown[] = Array.from(list);
+    let condition: (value: unknown) => boolean;
+
+    if (typeof options?.min === 'number') {
+      if (array.length < options.min) {
+        throw Error(
+          `Guard Failed: expected to have at least ${options.min} (of ${message}), but got ${array.length}`
+        );
+      }
+
+      array = array.slice(0, options.min);
+      condition = (value) => value !== null && value !== undefined;
+      message = `${message}: ${options.min} present elements`;
+    } else if (options?.condition) {
+      condition = options.condition;
+    } else {
+      condition = isPresent;
+      message = `${message}: all are present`;
+    }
+
+    let succeeds = array.every(condition);
+
+    if (succeeds) {
+      this.assert.ok(succeeds, message);
+    } else {
+      throw Error(`Guard Failed: ${message}`);
+    }
+
+    return array;
+  }
+
   protected assertHTML(html: string, elementOrMessage?: SimpleElement | string, message?: string) {
     if (typeof elementOrMessage === 'object') {
       equalTokens(elementOrMessage || this.element, html, message ? `${html} (${message})` : html);
@@ -474,7 +583,7 @@ export class RenderTest implements IRenderTest {
   }
 
   protected assertComponent(content: string, attrs: Object = {}) {
-    let element = assertElement(this.element.firstChild);
+    let element = assertingElement(this.element.firstChild);
 
     switch (this.testType) {
       case 'Glimmer':
@@ -519,4 +628,71 @@ function uniq(arr: any[]) {
     if (accum.indexOf(val) === -1) accum.push(val);
     return accum;
   }, []);
+}
+
+type NTuple<N extends number, Type, T extends any[] = []> = T['length'] extends N
+  ? T
+  : NTuple<N, Type, [...T, Type]>;
+
+export function guardArray<T extends Maybe<unknown>[], K extends string>(desc: { [P in K]: T }): {
+  [K in keyof T]: Present<T[K]>;
+};
+export function guardArray<T, K extends string, N extends number>(
+  desc: { [P in K]: Iterable<T> | ArrayLike<T> },
+  options: { min: N }
+): Expand<NTuple<N, Present<T>>>;
+export function guardArray<T, U extends T, K extends string, N extends number>(
+  desc: { [P in K]: Iterable<T> | ArrayLike<T> },
+  options: { min: N; condition: (value: T) => value is U }
+): Expand<NTuple<N, U>>;
+export function guardArray<T, K extends string, A extends ArrayLike<T>>(desc: {
+  [P in K]: A;
+}): Expand<NTuple<A['length'], Present<T>>>;
+export function guardArray<T, K extends string>(desc: {
+  [P in K]: Iterable<T> | ArrayLike<T>;
+}): Present<T>[];
+export function guardArray<T, K extends string, U extends T>(
+  desc: {
+    [P in K]: Iterable<T> | ArrayLike<T>;
+  },
+  options: { condition: (value: T) => value is U; min?: number }
+): U[];
+export function guardArray(
+  desc: Record<string, Iterable<unknown> | ArrayLike<unknown>>,
+  options?: {
+    min?: Maybe<number>;
+    condition?: (value: unknown) => boolean;
+  }
+): unknown[] {
+  let [message, list] = Object.entries(desc)[0] as [string, unknown[]];
+
+  let array: unknown[] = Array.from(list);
+  let condition: (value: unknown) => boolean;
+
+  if (typeof options?.min === 'number') {
+    if (array.length < options.min) {
+      throw Error(
+        `Guard Failed: expected to have at least ${options.min} (of ${message}), but got ${array.length}`
+      );
+    }
+
+    array = array.slice(0, options.min);
+    condition = (value) => value !== null && value !== undefined;
+    message = `${message}: ${options.min} present elements`;
+  } else if (options?.condition) {
+    condition = options.condition;
+  } else {
+    condition = isPresent;
+    message = `${message}: all are present`;
+  }
+
+  let succeeds = array.every(condition);
+
+  if (succeeds) {
+    QUnit.assert.ok(succeeds, message);
+  } else {
+    throw Error(`Guard Failed: ${message}`);
+  }
+
+  return array;
 }

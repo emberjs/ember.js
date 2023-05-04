@@ -1,10 +1,10 @@
 import {
+  defineComponent,
+  defineSimpleHelper,
+  GlimmerishComponent,
+  jitSuite,
   RenderTest,
   test,
-  jitSuite,
-  GlimmerishComponent,
-  defineSimpleHelper,
-  defineComponent,
 } from '../..';
 
 class DynamicHelpersResolutionModeTest extends RenderTest {

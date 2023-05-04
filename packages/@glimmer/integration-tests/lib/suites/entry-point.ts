@@ -1,10 +1,11 @@
-import { DynamicScopeImpl } from '@glimmer/runtime';
 import { createPrimitiveRef } from '@glimmer/reference';
+import { DynamicScopeImpl } from '@glimmer/runtime';
 import { castToBrowser } from '@glimmer/util';
-import { RenderTest, Count } from '../render-test';
+
 import { ComponentKind } from '../components/types';
-import { test } from '../test-decorator';
 import { JitRenderDelegate } from '../modes/jit/delegate';
+import { Count, RenderTest } from '../render-test';
+import { test } from '../test-decorator';
 import { defineComponent } from '../test-helpers/define';
 
 export class EntryPointTest extends RenderTest {
@@ -12,7 +13,7 @@ export class EntryPointTest extends RenderTest {
 
   declare readonly testType: ComponentKind;
 
-  readonly count = new Count();
+  override readonly count = new Count();
 
   @test
   'an entry point'() {

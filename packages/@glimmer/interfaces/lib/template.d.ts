@@ -1,13 +1,8 @@
-import { Operand, SerializedTemplateBlock, SerializedInlineBlock, BlockOperand } from './compile';
+import { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile';
 import { EncoderError } from './compile/encoder';
 import { Option } from './core';
 import { InternalComponentCapabilities } from './managers/internal/component';
-import {
-  ConstantPool,
-  SerializedHeap,
-  CompileTimeCompilationContext,
-  CreateRuntimeOp,
-} from './program';
+import { CompileTimeCompilationContext, ConstantPool, SerializedHeap } from './program';
 import { Owner } from './runtime';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
@@ -84,7 +79,7 @@ export interface ResolvedLayout {
 export type OkHandle = number;
 export interface ErrHandle {
   handle: number;
-  errors: EncoderError[];
+  errors: PresentArray<EncoderError>;
 }
 
 export type HandleResult = OkHandle | ErrHandle;

@@ -1,24 +1,23 @@
 import {
+  Cursor,
+  Dict,
+  DynamicScope,
+  ElementBuilder,
+  ElementNamespace,
+  Environment,
+  Helper,
+  RenderResult,
+  SimpleDocument,
+  SimpleDocumentFragment,
   SimpleElement,
   SimpleText,
-  ElementNamespace,
-  SimpleDocumentFragment,
-  SimpleDocument,
-} from '@glimmer/interfaces';
-import { ASTPluginBuilder } from '@glimmer/syntax';
-import { ComponentKind, ComponentTypes } from './components';
-import { UserHelper } from './helpers';
-import {
-  Dict,
-  RenderResult,
-  Environment,
-  Cursor,
-  ElementBuilder,
-  Helper,
-  DynamicScope,
 } from '@glimmer/interfaces';
 import { Reference } from '@glimmer/reference';
 import { EnvironmentDelegate } from '@glimmer/runtime';
+import { ASTPluginBuilder } from '@glimmer/syntax';
+
+import { ComponentKind, ComponentTypes } from './components';
+import { UserHelper } from './helpers';
 
 export interface RenderDelegateOptions {
   doc?: SimpleDocument | Document | undefined;

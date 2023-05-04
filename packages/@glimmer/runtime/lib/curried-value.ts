@@ -1,6 +1,6 @@
 import { CapturedArguments, CurriedType, Owner } from '@glimmer/interfaces';
-import { symbol, _WeakSet } from '@glimmer/util';
 import { Reference } from '@glimmer/reference';
+import { _WeakSet, symbol } from '@glimmer/util';
 
 const TYPE: unique symbol = symbol('TYPE');
 const INNER: unique symbol = symbol('INNER');

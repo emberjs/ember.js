@@ -199,12 +199,12 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
     let path = getCalleeExpression(node);
 
     if (path && path.type === 'Path' && path.ref.type === 'Free' && isKeyword(path.ref.name)) {
-      let { name } = path.ref;
+      let { name } = path.ref as { name: keyof typeof KEYWORDS_TYPES };
 
       let usedType = this._type;
-      let validTypes = KEYWORDS_TYPES[name];
+      let validTypes: readonly KeywordType[] = KEYWORDS_TYPES[name];
 
-      if (validTypes.indexOf(usedType) === -1) {
+      if (!validTypes.includes(usedType)) {
         return Err(
           generateSyntaxError(
             `The \`${name}\` keyword was used incorrectly. It was used as ${
@@ -230,7 +230,7 @@ const typesToReadableName = {
   Modifier: 'a modifier',
 };
 
-function generateTypesMessage(name: string, types: KeywordType[]): string {
+function generateTypesMessage(name: string, types: readonly KeywordType[]): string {
   return types
     .map((type) => {
       switch (type) {

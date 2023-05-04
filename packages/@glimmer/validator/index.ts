@@ -1,4 +1,4 @@
-import { symbolFor, getGlobal } from './lib/utils';
+import { getGlobal, symbolFor } from './lib/utils';
 
 const GLIMMER_VALIDATOR_REGISTRATION = symbolFor('GLIMMER_VALIDATOR_REGISTRATION');
 
@@ -12,19 +12,41 @@ if (globalObj[GLIMMER_VALIDATOR_REGISTRATION] === true) {
 
 globalObj[GLIMMER_VALIDATOR_REGISTRATION] = true;
 
-export { CombinatorTag, ConstantTag, DirtyableTag, Tag, UpdatableTag } from '@glimmer/interfaces';
-
+export {
+  beginTrackingTransaction,
+  endTrackingTransaction,
+  logTrackingStack,
+  runInTrackingTransaction,
+  setTrackingTransactionEnv,
+} from './lib/debug';
+export { dirtyTagFor, tagFor, TagMeta, tagMetaFor } from './lib/meta';
+export { trackedData } from './lib/tracked-data';
+export {
+  beginTrackFrame,
+  beginUntrackFrame,
+  Cache,
+  consumeTag,
+  createCache,
+  endTrackFrame,
+  endUntrackFrame,
+  getValue,
+  isConst,
+  isTracking,
+  resetTracking,
+  track,
+  untrack,
+} from './lib/tracking';
 export {
   ALLOW_CYCLES,
   bump,
   combine,
   COMPUTE,
-  CONSTANT_TAG,
   CONSTANT,
+  CONSTANT_TAG,
   createTag,
   createUpdatableTag,
-  CurrentTag,
   CURRENT_TAG,
+  CurrentTag,
   DIRTY_TAG as dirtyTag,
   INITIAL,
   isConstTag,
@@ -32,35 +54,8 @@ export {
   UPDATE_TAG as updateTag,
   validateTag,
   valueForTag,
-  VolatileTag,
-  VOLATILE_TAG,
   VOLATILE,
+  VOLATILE_TAG,
+  VolatileTag,
 } from './lib/validators';
-
-export { dirtyTagFor, tagFor, tagMetaFor, TagMeta } from './lib/meta';
-
-export {
-  beginTrackFrame,
-  endTrackFrame,
-  beginUntrackFrame,
-  endUntrackFrame,
-  resetTracking,
-  consumeTag,
-  isTracking,
-  track,
-  untrack,
-  Cache,
-  createCache,
-  isConst,
-  getValue,
-} from './lib/tracking';
-
-export { trackedData } from './lib/tracked-data';
-
-export {
-  logTrackingStack,
-  setTrackingTransactionEnv,
-  runInTrackingTransaction,
-  beginTrackingTransaction,
-  endTrackingTransaction,
-} from './lib/debug';
+export { CombinatorTag, ConstantTag, DirtyableTag, Tag, UpdatableTag } from '@glimmer/interfaces';

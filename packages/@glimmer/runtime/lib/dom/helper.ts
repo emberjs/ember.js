@@ -1,13 +1,16 @@
-import { GlimmerTreeChanges, GlimmerTreeConstruction, Option } from '@glimmer/interfaces';
-import { castToSimple } from '@glimmer/util';
 import {
   AttrNamespace,
   ElementNamespace,
+  GlimmerTreeChanges,
+  GlimmerTreeConstruction,
   Namespace,
+  Option,
   SimpleDocument,
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import { castToSimple } from '@glimmer/util';
+
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { BLACKLIST_TABLE, DOMOperations } from './operations';
@@ -105,7 +108,7 @@ export namespace DOM {
 export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges {
   protected namespace: Option<string>;
 
-  constructor(protected document: SimpleDocument) {
+  constructor(protected override document: SimpleDocument) {
     super(document);
     this.namespace = null;
   }

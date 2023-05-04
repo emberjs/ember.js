@@ -1,11 +1,11 @@
-import { Dict, Option } from '@glimmer/interfaces';
+import { Dict, Option, SimpleElement } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
 import { castToBrowser, expect } from '@glimmer/util';
-import { SimpleElement } from '@glimmer/interfaces';
+
 import {
-  assertElement,
   assertElementShape,
   assertEmberishElement,
+  assertingElement,
   assertSerializedInElement,
   blockStack,
   CLOSE,
@@ -35,12 +35,12 @@ import {
 const isIE11 = !(window as any).ActiveXObject && 'ActiveXObject' in window;
 
 class RenderTests extends InitialRenderSuite {
-  static suiteName = 'initial render (client)';
-  name = 'client';
+  static override suiteName = 'initial render (client)';
+  override name = 'client';
 }
 
 class AbstractRehydrationTests extends InitialRenderSuite {
-  name = 'rehydration';
+  override name = 'rehydration';
   protected declare delegate: RehydrationDelegate;
   protected declare serverOutput: Option<string>;
 
@@ -82,7 +82,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 }
 
 class Rehydration extends AbstractRehydrationTests {
-  static suiteName = 'rehydration';
+  static override suiteName = 'rehydration';
 
   @test
   'rehydrates into element with pre-existing content'() {
@@ -210,8 +210,8 @@ class Rehydration extends AbstractRehydrationTests {
 
     // remove the first `<!--%-b:1%-->`
     let element = castToBrowser(this.element, 'HTML');
-    let div = element.children[0];
-    let commentToRemove = div.childNodes[3];
+    let [div] = this.guardArray({ children: element.children }, { min: 1 });
+    let commentToRemove = this.guardArray({ children: div.childNodes }, { min: 4 })[3];
     div.removeChild(commentToRemove);
 
     this.renderClientSide(template, context);
@@ -326,7 +326,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // remove the attribute
     let element = castToBrowser(this.element, 'HTML');
-    let div = element.children[0];
+    let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.removeAttribute('data-foo');
 
     this.renderClientSide(template, {});
@@ -343,7 +343,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // add an extra attribute
     let element = castToBrowser(this.element, 'HTML');
-    let div = element.children[0];
+    let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.setAttribute('data-bar', 'oops');
 
     this.renderClientSide(template, {});
@@ -360,7 +360,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     // mutate the attribute
     let element = castToBrowser(this.element, 'HTML');
-    let div = element.children[0];
+    let [div] = this.guardArray({ children: element.children }, { min: 1 });
     div.setAttribute('class', 'zomg');
 
     this.renderClientSide(template, {});
@@ -452,7 +452,7 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 2 });
@@ -491,7 +491,7 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
@@ -535,7 +535,7 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
     let clientPrefix = clientRemote.childNodes[4];
 
     this.renderClientSide(template, { remote: clientRemote, prefix: clientPrefix });
@@ -565,7 +565,7 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 1 });
@@ -593,7 +593,7 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
@@ -627,7 +627,7 @@ class Rehydration extends AbstractRehydrationTests {
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
     let clientPreexisting = clientRemote.childNodes[1];
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
 
     this.renderClientSide(template, {
       remote: clientRemote,
@@ -686,7 +686,7 @@ class Rehydration extends AbstractRehydrationTests {
 
     replaceHTML(clientRemoteParent, serializedParentRemote);
     replaceHTML(clientRemoteChild, serializedRemoteChild);
-    this.element = assertElement(host.firstChild);
+    this.element = assertingElement(host.firstChild);
     this.renderClientSide(template, {
       remoteParent: clientRemoteParent,
       remoteChild: clientRemoteChild,
@@ -977,7 +977,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     // the Dynamic test type is using {{component 'foo'}} style invocation
     // and therefore an extra node is added delineating the block start
     let elementIndex = this.testType === 'Dynamic' ? 3 : 2;
-    let element = assertElement(this.element.childNodes[elementIndex]);
+    let element = assertingElement(this.element.childNodes[elementIndex]);
 
     if (this.testType === 'Glimmer') {
       assertElementShape(element, 'div', attrs, html);
@@ -986,12 +986,12 @@ class RehydratingComponents extends AbstractRehydrationTests {
     }
   }
 
-  renderServerSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
+  override renderServerSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
     let template = this._buildComponent(blueprint, properties);
     super.renderServerSide(template, properties);
   }
 
-  renderClientSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
+  override renderClientSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
     let template = this._buildComponent(blueprint, properties);
     super.renderClientSide(template, properties);
   }
@@ -1227,7 +1227,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     });
     let b = blockStack();
     if (emberishComponent) {
-      let wrapper = assertElement(firstElementChild(this.element));
+      let wrapper = assertingElement(firstElementChild(this.element));
 
       // injects wrapper elements
       this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
@@ -1269,7 +1269,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     });
     let b = blockStack();
     if (emberishComponent) {
-      let wrapper = assertElement(firstElementChild(this.element));
+      let wrapper = assertingElement(firstElementChild(this.element));
       // injects wrapper elements
       this.assert.strictEqual(wrapper.getAttribute('class'), 'ember-view');
       this.assert.strictEqual(toTextContent(this.element), 'Hello World');

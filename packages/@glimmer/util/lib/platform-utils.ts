@@ -1,4 +1,5 @@
-import { Maybe } from '@glimmer/interfaces';
+import { Maybe, Present } from '@glimmer/interfaces';
+
 import intern from './intern';
 
 export type Factory<T> = new (...args: unknown[]) => T;
@@ -23,9 +24,9 @@ export function unwrap<T>(val: Maybe<T>): T {
   return val as T;
 }
 
-export function expect<T>(val: Maybe<T>, message: string): T {
+export function expect<T>(val: T, message: string): Present<T> {
   if (val === null || val === undefined) throw new Error(message);
-  return val as T;
+  return val as Present<T>;
 }
 
 export function unreachable(message = 'unreachable'): Error {

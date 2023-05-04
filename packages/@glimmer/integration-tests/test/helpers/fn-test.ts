@@ -2,7 +2,7 @@ import { CapturedArguments } from '@glimmer/interfaces';
 import { createInvokableRef } from '@glimmer/reference';
 import { HAS_NATIVE_PROXY } from '@glimmer/util';
 
-import { jitSuite, RenderTest, test, GlimmerishComponent } from '../..';
+import { GlimmerishComponent, jitSuite, RenderTest, test } from '../..';
 
 class FnTest extends RenderTest {
   static suiteName = 'Helpers test: {{fn}}';
@@ -23,7 +23,7 @@ class FnTest extends RenderTest {
       class extends GlimmerishComponent {
         constructor(owner: object, args: Record<string, unknown>) {
           super(owner, args);
-          testContext.stashedFn = args.stashedFn as () => unknown;
+          testContext.stashedFn = args['stashedFn'] as () => unknown;
         }
       }
     );
@@ -165,7 +165,7 @@ class FnTest extends RenderTest {
 
     this.render(`<Stash @stashedFn={{fn this.myFunc this.arg1}}/>`, {
       myFunc(arg1: string) {
-        return `arg1: ${arg1}, arg2: ${this.arg2}`;
+        return `arg1: ${arg1}, arg2: ${this['arg2']}`;
       },
 
       arg1: 'foo',
@@ -241,7 +241,8 @@ class FnTest extends RenderTest {
   @test
   'can be used on the result of `mut`'() {
     this.registerInternalHelper('mut', (args: CapturedArguments) => {
-      return createInvokableRef(args.positional[0]);
+      let [first] = this.guardArray({ positional: args.positional }, { min: 1 });
+      return createInvokableRef(first);
     });
 
     this.render(`{{this.arg1}}<Stash @stashedFn={{fn (mut this.arg1) this.arg2}}/>`, {
@@ -260,7 +261,8 @@ class FnTest extends RenderTest {
   @test
   'can be used on the result of `mut` with a falsy value'() {
     this.registerInternalHelper('mut', (args: CapturedArguments) => {
-      return createInvokableRef(args.positional[0]);
+      let [first] = this.guardArray({ positional: args.positional }, { min: 1 });
+      return createInvokableRef(first);
     });
 
     this.render(`{{this.arg1}}<Stash @stashedFn={{fn (mut this.arg1) this.arg2}}/>`, {

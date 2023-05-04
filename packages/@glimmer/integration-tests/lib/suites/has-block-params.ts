@@ -1,6 +1,6 @@
+import { GlimmerishComponent } from '../components';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { GlimmerishComponent } from '../components';
 
 export class HasBlockParamsHelperSuite extends RenderTest {
   static suiteName = 'has-block-params';

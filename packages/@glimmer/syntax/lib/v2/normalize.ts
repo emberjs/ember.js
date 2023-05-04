@@ -1,5 +1,5 @@
 import { PresentArray } from '@glimmer/interfaces';
-import { assert, assign, isPresent } from '@glimmer/util';
+import { asPresentArray, assert, assign, isPresentArray } from '@glimmer/util';
 
 import Printer from '../generation/printer';
 import {
@@ -463,7 +463,7 @@ class ElementNormalizer {
     let { tag, selfClosing, comments } = element;
     let loc = this.ctx.loc(element.loc);
 
-    let [tagHead, ...rest] = tag.split('.');
+    let [tagHead, ...rest] = asPresentArray(tag.split('.'));
 
     // the head, attributes and modifiers are in the current scope
     let path = this.classifyTag(tagHead, rest, element.loc);
@@ -791,7 +791,7 @@ class Children {
 
 class TemplateChildren extends Children {
   assertTemplate(table: ProgramSymbolTable): ASTv2.Template {
-    if (isPresent(this.namedBlocks)) {
+    if (isPresentArray(this.namedBlocks)) {
       throw generateSyntaxError(`Unexpected named block at the top-level of a template`, this.loc);
     }
 
@@ -801,7 +801,7 @@ class TemplateChildren extends Children {
 
 class BlockChildren extends Children {
   assertBlock(table: BlockSymbolTable): ASTv2.Block {
-    if (isPresent(this.namedBlocks)) {
+    if (isPresentArray(this.namedBlocks)) {
       throw generateSyntaxError(`Unexpected named block nested in a normal block`, this.loc);
     }
 
@@ -827,7 +827,7 @@ class ElementChildren extends Children {
       );
     }
 
-    if (isPresent(this.namedBlocks)) {
+    if (isPresentArray(this.namedBlocks)) {
       throw generateSyntaxError(
         `Unexpected named block inside <:${name.chars}> named block: named blocks cannot contain nested named blocks`,
         this.loc
@@ -869,7 +869,7 @@ class ElementChildren extends Children {
       );
     }
 
-    if (isPresent(this.namedBlocks)) {
+    if (isPresentArray(this.namedBlocks)) {
       let names = this.namedBlocks.map((b) => b.name);
 
       if (names.length === 1) {
@@ -894,14 +894,14 @@ class ElementChildren extends Children {
     table: BlockSymbolTable,
     hasBlockParams: boolean
   ): PresentArray<ASTv2.NamedBlock> {
-    if (isPresent(this.namedBlocks) && this.hasSemanticContent) {
+    if (isPresentArray(this.namedBlocks) && this.hasSemanticContent) {
       throw generateSyntaxError(
         `Unexpected content inside <${name}> component invocation: when using named blocks, the tag cannot contain other content`,
         this.loc
       );
     }
 
-    if (isPresent(this.namedBlocks)) {
+    if (isPresentArray(this.namedBlocks)) {
       if (hasBlockParams) {
         throw generateSyntaxError(
           `Unexpected block params list on <${name}> component invocation: when passing named blocks, the invocation tag cannot take block params`,

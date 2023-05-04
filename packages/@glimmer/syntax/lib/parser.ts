@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { assert, assign, expect } from '@glimmer/util';
+import { asPresentArray, assert, assign, expect, getLast, unwrap } from '@glimmer/util';
 import {
   EntityParser,
   EventedTokenizer,
@@ -15,8 +15,6 @@ import * as HBS from './v1/handlebars-ast';
 export type ParserNodeBuilder<N extends { loc: SourceSpan }> = Omit<N, 'loc'> & {
   loc: SourceOffset;
 };
-
-export type Element = ASTv1.Template | ASTv1.Block | ASTv1.ElementNode;
 
 export interface Tag<T extends 'StartTag' | 'EndTag'> {
   readonly type: T;
@@ -39,7 +37,7 @@ export interface Attribute {
 }
 
 export abstract class Parser {
-  protected elementStack: Element[] = [];
+  protected elementStack: ASTv1.ParentNode[] = [];
   private lines: string[];
   readonly source: Source;
   public currentAttribute: Option<Attribute> = null;
@@ -163,8 +161,8 @@ export abstract class Parser {
     return (this[node.type as T] as (node: HBS.Node<T>) => HBS.Output<T>)(node);
   }
 
-  currentElement(): Element {
-    return this.elementStack[this.elementStack.length - 1];
+  currentElement(): ASTv1.ParentNode {
+    return getLast(asPresentArray(this.elementStack));
   }
 
   sourceForNode(node: HBS.Node, endNode?: { loc: HBS.SourceLocation }): string {
@@ -172,7 +170,7 @@ export abstract class Parser {
     let currentLine = firstLine - 1;
     let firstColumn = node.loc.start.column;
     let string = [];
-    let line;
+    let line: string;
 
     let lastLine: number;
     let lastColumn: number;
@@ -187,7 +185,7 @@ export abstract class Parser {
 
     while (currentLine < lastLine) {
       currentLine++;
-      line = this.lines[currentLine];
+      line = unwrap(this.lines[currentLine]);
 
       if (currentLine === firstLine) {
         if (firstLine === lastLine) {

@@ -1,9 +1,10 @@
 import { precompile } from '@glimmer/compiler';
-import { preprocess } from '../..';
-import { module } from '../support';
-import { unwrapTemplate, assert as glimmerAssert } from '@glimmer/util';
 import { SexpOpcodes, WireFormat } from '@glimmer/interfaces';
 import { TemplateWithIdAndReferrer } from '@glimmer/opcode-compiler';
+import { assert as glimmerAssert, unwrapTemplate } from '@glimmer/util';
+
+import { preprocess } from '../..';
+import { module } from '../support';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
   test('moduleName option is passed into meta', (assert) => {

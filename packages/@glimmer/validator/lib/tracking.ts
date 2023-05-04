@@ -1,21 +1,21 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  CONSTANT_TAG,
-  validateTag,
-  Revision,
-  valueForTag,
-  isConstTag,
-  combine,
-} from './validators';
+import { Tag } from '@glimmer/interfaces';
 
 import {
-  markTagAsConsumed,
   beginTrackingTransaction,
   endTrackingTransaction,
+  markTagAsConsumed,
   resetTrackingTransaction,
 } from './debug';
 import { symbol, unwrap } from './utils';
-import { Tag } from '@glimmer/interfaces';
+import {
+  combine,
+  CONSTANT_TAG,
+  isConstTag,
+  Revision,
+  validateTag,
+  valueForTag,
+} from './validators';
 
 /**
  * An object that that tracks @tracked properties that were consumed.
@@ -241,13 +241,13 @@ function assertTag(tag: Tag | undefined, cache: InternalCache): asserts tag is T
 // refactors are merged, and we should generally be moving away from it. It may
 // be necessary in Ember for a while longer, but I think we'll be able to drop
 // it in favor of cache sooner rather than later.
-export function track(callback: () => void, debugLabel?: string | false): Tag {
+export function track(block: () => void, debugLabel?: string | false): Tag {
   beginTrackFrame(debugLabel);
 
   let tag;
 
   try {
-    callback();
+    block();
   } finally {
     tag = endTrackFrame();
   }

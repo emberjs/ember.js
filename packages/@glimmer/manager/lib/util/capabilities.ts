@@ -1,17 +1,17 @@
+import { check, CheckNumber } from '@glimmer/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet } from '@glimmer/util';
 import {
   Capabilities,
   InternalComponentCapabilities,
+  InternalComponentCapability,
   InternalComponentManager,
-  WithUpdateHook,
-  WithPrepareArgs,
   WithCreateInstance,
   WithDynamicLayout,
-  InternalComponentCapability,
+  WithPrepareArgs,
   WithSubOwner,
+  WithUpdateHook,
 } from '@glimmer/interfaces';
-import { check, CheckNumber } from '@glimmer/debug';
+import { _WeakSet } from '@glimmer/util';
 
 export const FROM_CAPABILITIES = DEBUG ? new _WeakSet() : undefined;
 

@@ -1,5 +1,5 @@
 import { Core, Dict, SexpOpcodes } from '@glimmer/interfaces';
-import { dict } from '@glimmer/util';
+import { dict, unwrap } from '@glimmer/util';
 
 import * as ASTv2 from './v2/api';
 
@@ -95,8 +95,7 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   getDebugInfo(): Core.DebugInfo {
-    let locals = this.getLocalsMap();
-    return Object.keys(locals).map((symbol) => locals[symbol]);
+    return Object.values(this.getLocalsMap());
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
@@ -172,8 +171,13 @@ export class BlockSymbolTable extends SymbolTable {
   }
 
   get(name: string): [number, boolean] {
+    let local = this.#get(name);
+    return local ? [local, false] : this.parent.get(name);
+  }
+
+  #get(name: string): number | null {
     let slot = this.symbols.indexOf(name);
-    return slot === -1 ? this.parent.get(name) : [this.slots[slot], false];
+    return slot === -1 ? null : unwrap(this.slots[slot]);
   }
 
   getLocalsMap(): Dict<number> {
@@ -183,8 +187,7 @@ export class BlockSymbolTable extends SymbolTable {
   }
 
   getDebugInfo(): Core.DebugInfo {
-    let locals = this.getLocalsMap();
-    return Object.keys(locals).map((symbol) => locals[symbol]);
+    return Object.values(this.getLocalsMap());
   }
 
   setHasDebugger(): void {

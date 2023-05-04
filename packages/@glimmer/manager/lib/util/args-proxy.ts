@@ -32,7 +32,7 @@ function convertToInt(prop: number | string | symbol): number | null {
 function tagForNamedArg(namedArgs: CapturedNamedArguments, key: string): Tag {
   return track(() => {
     if (key in namedArgs) {
-      valueForRef(namedArgs[key]);
+      valueForRef(namedArgs[key]!);
     }
   });
 }
@@ -48,7 +48,7 @@ function tagForPositionalArg(positionalArgs: CapturedPositionalArguments, key: s
 
     if (parsed !== null && parsed < positionalArgs.length) {
       // consume the tag of the referenced index
-      valueForRef(positionalArgs[parsed]);
+      valueForRef(positionalArgs[parsed]!);
     }
   });
 }
@@ -115,7 +115,7 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
     const parsed = convertToInt(prop);
 
     if (parsed !== null && parsed < positional.length) {
-      return valueForRef(positional[parsed]);
+      return valueForRef(positional[parsed]!);
     }
 
     return (target as any)[prop];
@@ -194,7 +194,7 @@ if (HAS_NATIVE_PROXY) {
         enumerable: true,
         configurable: true,
         get() {
-          return valueForRef(named[name]);
+          return valueForRef(named[name]!);
         },
       });
     });

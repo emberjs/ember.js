@@ -1,10 +1,11 @@
+import { DEBUG } from '@glimmer/env';
+import { deprecate } from '@glimmer/global-context';
 import { CapturedArguments, Dict } from '@glimmer/interfaces';
 import { createComputeRef, Reference } from '@glimmer/reference';
-import { deprecate } from '@glimmer/global-context';
 import { HAS_NATIVE_PROXY } from '@glimmer/util';
-import { internalHelper } from './internal-helper';
-import { DEBUG } from '@glimmer/env';
+
 import { reifyNamed } from '../vm/arguments';
+import { internalHelper } from './internal-helper';
 
 let wrapHashProxy: (hash: Record<string, unknown>) => Record<string, unknown>;
 

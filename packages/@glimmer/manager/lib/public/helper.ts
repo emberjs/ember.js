@@ -13,8 +13,8 @@ import {
 } from '@glimmer/interfaces';
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
-import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { argsProxyFor } from '../util/args-proxy';
+import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
 import { ManagerFactory } from './index';
 
 export function helperCapabilities<Version extends keyof HelperCapabilitiesVersions>(

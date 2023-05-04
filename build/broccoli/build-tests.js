@@ -4,8 +4,8 @@ const path = require('path');
 const merge = require('broccoli-merge-trees');
 const funnel = require('broccoli-funnel');
 const concat = require('broccoli-concat');
-const transpileToES5 = require('./transpile-to-es5');
 const babel = require('broccoli-babel-transpiler');
+const transpileToES5 = require('./transpile-to-es5');
 
 /**
  * For development, this returns a Broccoli tree with:

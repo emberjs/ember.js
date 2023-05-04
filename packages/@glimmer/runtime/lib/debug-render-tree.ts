@@ -6,7 +6,8 @@ import {
   Option,
   RenderNode,
 } from '@glimmer/interfaces';
-import { expect, assign, Stack } from '@glimmer/util';
+import { assign, expect, Stack } from '@glimmer/util';
+
 import { reifyArgs } from './vm/arguments';
 
 interface InternalRenderNode<T extends object> extends RenderNode {

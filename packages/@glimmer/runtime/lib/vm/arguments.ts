@@ -23,9 +23,10 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { dict, emptyArray, EMPTY_STRING_ARRAY } from '@glimmer/util';
+import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate, unwrap } from '@glimmer/util';
 import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { $sp } from '@glimmer/vm';
+
 import { CheckCompilableBlock, CheckReference, CheckScope } from '../compiled/opcodes/-debug-strip';
 import { REGISTERS } from '../symbols';
 import { EvaluationStack } from './stack';
@@ -301,13 +302,11 @@ export class NamedArgumentsImpl implements NamedArguments {
     let { names, references } = this;
     let map = dict<Reference>();
 
-    for (let i = 0; i < names.length; i++) {
-      let name = names[i];
-
+    for (const [i, name] of enumerate(names)) {
       if (DEBUG) {
-        map[name] = createDebugAliasRef!(`@${name}`, references[i]);
+        map[name] = createDebugAliasRef!(`@${name}`, unwrap(references[i]));
       } else {
-        map[name] = references[i];
+        map[name] = unwrap(references[i]);
       }
     }
 
@@ -321,8 +320,7 @@ export class NamedArgumentsImpl implements NamedArguments {
       let { names, length, stack } = this;
       let newNames = names.slice();
 
-      for (let i = 0; i < keys.length; i++) {
-        let name = keys[i];
+      for (const name of keys) {
         let idx = newNames.indexOf(name);
 
         if (idx === -1) {
@@ -485,8 +483,8 @@ export function createCapturedArgs(named: Dict<Reference>, positional: Reference
 export function reifyNamed(named: CapturedNamedArguments) {
   let reified = dict();
 
-  for (let key in named) {
-    reified[key] = valueForRef(named[key]);
+  for (const [key, value] of Object.entries(named)) {
+    reified[key] = valueForRef(value);
   }
 
   return reified;

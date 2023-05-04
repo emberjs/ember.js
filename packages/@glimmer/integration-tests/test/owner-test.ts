@@ -5,22 +5,23 @@ import {
   WithCreateInstance,
   WithSubOwner,
 } from '@glimmer/interfaces';
-import {
-  test,
-  suite,
-  EmberishCurlyComponent,
-  RenderTest,
-  JitRenderDelegate,
-  createTemplate,
-  TestJitRuntimeResolver,
-  GlimmerishComponent,
-  defineComponent,
-} from '..';
-import { NULL_REFERENCE, Reference } from '@glimmer/reference';
 import { setInternalComponentManager } from '@glimmer/manager';
+import { NULL_REFERENCE, Reference } from '@glimmer/reference';
+
+import {
+  createTemplate,
+  defineComponent,
+  EmberishCurlyComponent,
+  GlimmerishComponent,
+  JitRenderDelegate,
+  RenderTest,
+  suite,
+  test,
+  TestJitRuntimeResolver,
+} from '..';
 
 class OwnerJitRuntimeResolver extends TestJitRuntimeResolver {
-  lookupComponent(name: string, owner: () => void): ResolvedComponentDefinition | null {
+  override lookupComponent(name: string, owner: () => void): ResolvedComponentDefinition | null {
     if (typeof owner === 'function') owner();
 
     return super.lookupComponent(name, owner);
@@ -28,7 +29,7 @@ class OwnerJitRuntimeResolver extends TestJitRuntimeResolver {
 }
 
 class OwnerJitRenderDelegate extends JitRenderDelegate {
-  protected resolver = new OwnerJitRuntimeResolver(this.registry);
+  protected override resolver = new OwnerJitRuntimeResolver(this.registry);
 }
 
 const CAPABILITIES = {
@@ -88,7 +89,7 @@ setInternalComponentManager(new MountManager(), MountComponent);
 function defineMountComponent(owner: object, scope: Record<string, unknown>, template: string) {
   return defineComponent(scope, template, {
     definition: class extends MountComponent {
-      static owner = owner;
+      static override owner = owner;
     },
   });
 }
@@ -113,13 +114,13 @@ class OwnerTest extends RenderTest {
   @test
   'owner can be used per-template in compile time resolver'(assert: Assert) {
     class FooBar extends EmberishCurlyComponent {
-      layout = createTemplate('<FooBaz/>')(() => {
+      override layout = createTemplate('<FooBaz/>')(() => {
         assert.step('foo-bar owner called');
       });
     }
 
     class FooBaz extends EmberishCurlyComponent {
-      layout = createTemplate('<FooQux/>')(() => {
+      override layout = createTemplate('<FooQux/>')(() => {
         assert.step('foo-baz owner called');
       });
     }
@@ -143,7 +144,7 @@ class OwnerTest extends RenderTest {
       'FooBaz',
       null,
       class FooBaz extends EmberishCurlyComponent {
-        layout = createTemplate('<FooQux/>')(() => {
+        override layout = createTemplate('<FooQux/>')(() => {
           assert.step('foo-baz owner called');
         });
       }
@@ -155,7 +156,7 @@ class OwnerTest extends RenderTest {
       'FooBar',
       null,
       class FooBar extends EmberishCurlyComponent {
-        layout = createTemplate('<FooBaz/>')(() => {
+        override layout = createTemplate('<FooBaz/>')(() => {
           assert.step('foo-bar owner called');
         });
       }

@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+
 import { HAS_NATIVE_PROXY } from './platform-utils';
 
 export default function buildUntouchableThis(source: string): null | object {

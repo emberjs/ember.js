@@ -1,13 +1,15 @@
-import { labelOperand } from '../operands';
-import { Op, MachineOp, HighLevelBuilderOpcode } from '@glimmer/interfaces';
+import { HighLevelBuilderOpcode, MachineOp, Op } from '@glimmer/interfaces';
+import { unwrap } from '@glimmer/util';
+
 import { PushStatementOp } from '../../syntax/compilers';
+import { labelOperand } from '../operands';
 
 export type When = (match: number, callback: () => void) => void;
 
 export function SwitchCases(
   op: PushStatementOp,
   bootstrap: () => void,
-  callback: (when: When) => void
+  matcher: (when: When) => void
 ): void {
   // Setup the switch DSL
   let clauses: Array<{ match: number; label: string; callback: () => void }> = [];
@@ -19,7 +21,7 @@ export function SwitchCases(
   }
 
   // Call the callback
-  callback(when);
+  matcher(when);
 
   // Emit the opcodes for the switch
   op(Op.Enter, 1);
@@ -35,7 +37,7 @@ export function SwitchCases(
   // Enumerate the clauses in reverse order. Earlier matches will
   // require fewer checks.
   for (let i = clauses.length - 1; i >= 0; i--) {
-    let clause = clauses[i];
+    let clause = unwrap(clauses[i]);
 
     op(HighLevelBuilderOpcode.Label, clause.label);
     op(Op.Pop, 1);

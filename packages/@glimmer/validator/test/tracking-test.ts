@@ -1,13 +1,14 @@
-import { module, test } from './-utils';
-
 import { DEBUG } from '@glimmer/env';
 
 import {
-  consumeTag,
-  createTag,
   beginTrackFrame,
-  endTrackFrame,
+  consumeTag,
+  createCache,
+  createTag,
   dirtyTag,
+  endTrackFrame,
+  getValue,
+  isConst,
   isTracking,
   runInTrackingTransaction,
   track,
@@ -15,10 +16,8 @@ import {
   untrack,
   validateTag,
   valueForTag,
-  createCache,
-  isConst,
-  getValue,
 } from '..';
+import { module, test } from './-utils';
 
 module('@glimmer/validator: tracking', () => {
   module('track', () => {

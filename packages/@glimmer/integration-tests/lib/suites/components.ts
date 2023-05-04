@@ -1,11 +1,12 @@
 import { Dict, Owner } from '@glimmer/interfaces';
+
+import { GlimmerishComponent } from '../components';
+import { assertElementShape } from '../dom/assertions';
+import { assertingElement } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { GlimmerishComponent } from '../components';
 import { strip, stripTight } from '../test-helpers/strings';
 import { tracked } from '../test-helpers/tracked';
-import { assertElement } from '../dom/simple-utils';
-import { assertElementShape } from '../dom/assertions';
 
 export class TemplateOnlyComponents extends RenderTest {
   static suiteName = 'TemplateOnly';
@@ -436,7 +437,7 @@ export class GlimmerishComponents extends RenderTest {
 
       constructor(owner: Owner, args: Dict) {
         super(owner, args);
-        this.Foo = args.Foo;
+        this.Foo = args['Foo'];
       }
     }
     this.registerComponent('Glimmer', 'TestHarness', '<this.Foo data-test="foo"/>', TestHarness);
@@ -456,7 +457,7 @@ export class GlimmerishComponents extends RenderTest {
 
       constructor(owner: Owner, args: Dict) {
         super(owner, args);
-        this.Foo = args.Foo;
+        this.Foo = args['Foo'];
       }
     }
     this.registerComponent('Glimmer', 'TestHarness', '<this.Foo @name="world"/>', TestHarness);
@@ -476,7 +477,7 @@ export class GlimmerishComponents extends RenderTest {
 
       constructor(owner: Owner, args: Dict) {
         super(owner, args);
-        this.Foo = args.Foo;
+        this.Foo = args['Foo'];
       }
     }
     this.registerComponent('Glimmer', 'TestHarness', '<this.Foo>world</this.Foo>', TestHarness);
@@ -497,7 +498,7 @@ export class GlimmerishComponents extends RenderTest {
 
       constructor(owner: Owner, args: Dict) {
         super(owner, args);
-        this.Foo = args.Foo;
+        this.Foo = args['Foo'];
       }
     }
 
@@ -730,7 +731,7 @@ export class GlimmerishComponents extends RenderTest {
       { components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] }
     );
 
-    let first = assertElement(el.firstChild);
+    let first = assertingElement(el.firstChild);
 
     assertElementShape(first, 'div', { 'data-bar': 'Bar' }, 'Hello World');
     this.rerender({ components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });

@@ -1,13 +1,13 @@
-import { _WeakSet } from '@glimmer/util';
 import { ComponentManager, HelperManager, ModifierManager, Owner } from '@glimmer/interfaces';
+
 import {
   setInternalComponentManager,
   setInternalHelperManager,
   setInternalModifierManager,
 } from '../internal/index';
 import { CustomComponentManager } from './component';
-import { CustomModifierManager } from './modifier';
 import { CustomHelperManager } from './helper';
+import { CustomModifierManager } from './modifier';
 
 type Manager = ComponentManager<unknown> | ModifierManager<unknown> | HelperManager<unknown>;
 

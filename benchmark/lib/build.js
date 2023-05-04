@@ -1,9 +1,9 @@
 /* eslint-disable n/no-unpublished-require */
+const path = require('path');
 const rollup = require('rollup');
 const sourcemap = require('rollup-plugin-sourcemaps');
 const terser = require('@rollup/plugin-terser');
 const strip = require('@rollup/plugin-strip');
-const path = require('path');
 const fs = require('fs-extra');
 const symlinkOrCopy = require('symlink-or-copy').sync;
 

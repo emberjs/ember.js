@@ -5,6 +5,7 @@ import {
   ContainingMetadata,
   Expressions,
   Owner,
+  ResolutionTimeConstants,
   ResolveComponentOp,
   ResolveComponentOrHelperOp,
   ResolveHelperOp,
@@ -12,9 +13,8 @@ import {
   ResolveOptionalComponentOrHelperOp,
   ResolveOptionalHelperOp,
   SexpOpcodes,
-  ResolutionTimeConstants,
 } from '@glimmer/interfaces';
-import { assert, debugToString, expect } from '@glimmer/util';
+import { assert, debugToString, expect, unwrap } from '@glimmer/util';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
@@ -123,7 +123,7 @@ export function resolveComponent(
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
 
-    let name = upvars[expr[1]];
+    let name = unwrap(upvars[expr[1]]);
     let definition = resolver.lookupComponent(name, owner)!;
 
     if (DEBUG && (typeof definition !== 'object' || definition === null)) {
@@ -164,7 +164,7 @@ export function resolveHelper(
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
 
-    let name = upvars[expr[1]];
+    let name = unwrap(upvars[expr[1]]);
     let helper = resolver.lookupHelper(name, owner!)!;
 
     if (DEBUG && helper === null) {
@@ -201,7 +201,7 @@ export function resolveModifier(
     then(constants.modifier(definition as object));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let { upvars } = assertResolverInvariants(meta);
-    let name = upvars[expr[1]];
+    let name = unwrap(upvars[expr[1]]);
     let modifier = resolver.lookupBuiltInModifier(name);
 
     if (DEBUG && modifier === null) {
@@ -213,7 +213,7 @@ export function resolveModifier(
     then(constants.modifier(modifier!, name));
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
-    let name = upvars[expr[1]];
+    let name = unwrap(upvars[expr[1]]);
     let modifier = resolver.lookupModifier(name, owner)!;
 
     if (DEBUG && modifier === null) {
@@ -283,7 +283,7 @@ export function resolveComponentOrHelper(
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
 
-    let name = upvars[expr[1]];
+    let name = unwrap(upvars[expr[1]]);
     let definition = resolver.lookupComponent(name, owner);
 
     if (definition !== null) {
@@ -317,7 +317,7 @@ export function resolveOptionalHelper(
   );
   let { upvars, owner } = assertResolverInvariants(meta);
 
-  let name = upvars[expr[1]];
+  let name = unwrap(upvars[expr[1]]);
   let helper = resolver.lookupHelper(name, owner);
 
   if (helper) {
@@ -382,7 +382,7 @@ export function resolveOptionalComponentOrHelper(
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
 
-    let name = upvars[expr[1]];
+    let name = unwrap(upvars[expr[1]]);
     let definition = resolver.lookupComponent(name, owner);
 
     if (definition !== null) {
@@ -407,7 +407,7 @@ function lookupBuiltInHelper(
 ): number {
   let { upvars } = assertResolverInvariants(meta);
 
-  let name = upvars[expr[1]];
+  let name = unwrap(upvars[expr[1]]);
   let helper = resolver.lookupBuiltInHelper(name);
 
   if (DEBUG && helper === null) {

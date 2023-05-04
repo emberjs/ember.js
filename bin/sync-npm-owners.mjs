@@ -4,9 +4,10 @@
 // glimmer-engine.
 
 import { execSync } from 'node:child_process';
-import { globSync } from 'glob';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+import { globSync } from 'glob';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const manifest = resolve(__dirname, '../package.json');

@@ -1,9 +1,10 @@
 import { Namespace, SimpleElement } from '@glimmer/interfaces';
+import { castToBrowser, checkNode, strip, unwrap } from '@glimmer/util';
+
+import { assertNodeTagName } from '../dom/assertions';
+import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { castToBrowser, checkNode, strip, unwrap } from '@glimmer/util';
-import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
-import { assertNodeTagName } from '../dom/assertions';
 
 export class InitialRenderSuite extends RenderTest {
   static suiteName = 'initial render';
@@ -491,13 +492,15 @@ export class InitialRenderSuite extends RenderTest {
     }
     let options = getElementsByTagName(selectNode, 'option');
     let selected: SimpleElement[] = [];
-    for (let i = 0; i < options.length; i++) {
-      let option = options[i];
+
+    for (const option of options) {
       // TODO: This is a real discrepancy with SimpleDOM
       if ((option as any).selected) {
         selected.push(option);
       }
     }
+
+    let [first, second] = this.guardArray({ selected }, { min: 2 });
 
     this.assertHTML(strip`
       <select multiple="">
@@ -511,12 +514,12 @@ export class InitialRenderSuite extends RenderTest {
 
     this.assert.strictEqual(selected.length, 2, 'two options are selected');
     this.assert.strictEqual(
-      castToBrowser(selected[0], 'option').value,
+      castToBrowser(first, 'option').value,
       '1',
       'first selected item is "1"'
     );
     this.assert.strictEqual(
-      castToBrowser(selected[1], 'option').value,
+      castToBrowser(second, 'option').value,
       '2',
       'second selected item is "2"'
     );
@@ -697,20 +700,25 @@ export class InitialRenderSuite extends RenderTest {
     this.render('<svg></svg><svg></svg><div></div>');
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
+    const [firstChild, secondChild, thirdChild] = this.guardArray(
+      { childNodes: this.element.childNodes },
+      { min: 3 }
+    );
+
     this.assert.strictEqual(
-      castToBrowser(unwrap(this.element.childNodes[0]), 'SVG').namespaceURI,
+      castToBrowser(unwrap(firstChild), 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the first svg element with a namespace'
     );
 
     this.assert.strictEqual(
-      castToBrowser(this.element.childNodes[1], 'SVG').namespaceURI,
+      castToBrowser(secondChild, 'SVG').namespaceURI,
       Namespace.SVG,
       'creates the second svg element with a namespace'
     );
 
     this.assert.strictEqual(
-      castToBrowser(this.element.childNodes[2], 'HTML').namespaceURI,
+      castToBrowser(thirdChild, 'HTML').namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
     );

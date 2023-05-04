@@ -1,8 +1,11 @@
-import { preprocess as parse, traverse, AST, WalkerPath } from '../..';
+import { AST, preprocess as parse, traverse, WalkerPath } from '../..';
 
 const { test } = QUnit;
 
-function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.BaseNode]>) {
+function traversalEqual(
+  node: AST.Node,
+  expectedTraversal: Array<[string, AST.BaseNode | undefined]>
+) {
   let actualTraversal: Array<[string, AST.BaseNode]> = [];
 
   traverse(node, {
@@ -18,13 +21,13 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.Ba
 
   QUnit.assert.deepEqual(
     actualTraversal.map((a) => `${a[0]} ${a[1].type}`),
-    expectedTraversal.map((a) => `${a[0]} ${a[1].type}`)
+    expectedTraversal.map((a) => `${a[0]} ${a[1]?.type}`)
   );
 
   let nodesEqual = true;
 
   for (let i = 0; i < actualTraversal.length; i++) {
-    if (actualTraversal[i][1] !== expectedTraversal[i][1]) {
+    if (actualTraversal[i]?.[1] !== expectedTraversal[i]?.[1]) {
       nodesEqual = false;
       break;
     }
@@ -40,34 +43,34 @@ test('Elements and attributes', function () {
     `<div id="id" class="large {{this.classes}}" value={{this.value}}><b></b><b></b></div>`
   );
   let el = ast.body[0] as AST.ElementNode;
-  let concat = el.attributes[1].value as AST.ConcatStatement;
-  let concatMustache = concat.parts[1] as AST.MustacheStatement;
-  let attrMustache = el.attributes[2].value as AST.MustacheStatement;
+  let concat = el.attributes[1]?.value as AST.ConcatStatement | undefined;
+  let concatMustache = concat?.parts[1] as AST.MustacheStatement | undefined;
+  let attrMustache = el.attributes[2]?.value as AST.MustacheStatement | undefined;
   traversalEqual(ast, [
     ['enter', ast],
     ['enter', el],
     ['enter', el.attributes[0]],
-    ['enter', el.attributes[0].value],
-    ['exit', el.attributes[0].value],
+    ['enter', el.attributes[0]?.value],
+    ['exit', el.attributes[0]?.value],
     ['exit', el.attributes[0]],
     ['enter', el.attributes[1]],
     ['enter', concat],
-    ['enter', concat.parts[0]],
-    ['exit', concat.parts[0]],
+    ['enter', concat?.parts[0]],
+    ['exit', concat?.parts[0]],
     ['enter', concatMustache],
-    ['enter', concatMustache.path],
-    ['exit', concatMustache.path],
-    ['enter', concatMustache.hash],
-    ['exit', concatMustache.hash],
+    ['enter', concatMustache?.path],
+    ['exit', concatMustache?.path],
+    ['enter', concatMustache?.hash],
+    ['exit', concatMustache?.hash],
     ['exit', concatMustache],
     ['exit', concat],
     ['exit', el.attributes[1]],
     ['enter', el.attributes[2]],
     ['enter', attrMustache],
-    ['enter', attrMustache.path],
-    ['exit', attrMustache.path],
-    ['enter', attrMustache.hash],
-    ['exit', attrMustache.hash],
+    ['enter', attrMustache?.path],
+    ['exit', attrMustache?.path],
+    ['enter', attrMustache?.hash],
+    ['exit', attrMustache?.hash],
     ['exit', attrMustache],
     ['exit', el.attributes[2]],
     ['enter', el.children[0]],
@@ -86,28 +89,28 @@ test('Element modifiers', function () {
     ['enter', ast],
     ['enter', el],
     ['enter', el.modifiers[0]],
-    ['enter', el.modifiers[0].path],
-    ['exit', el.modifiers[0].path],
-    ['enter', el.modifiers[0].hash],
-    ['exit', el.modifiers[0].hash],
+    ['enter', el.modifiers[0]?.path],
+    ['exit', el.modifiers[0]?.path],
+    ['enter', el.modifiers[0]?.hash],
+    ['exit', el.modifiers[0]?.hash],
     ['exit', el.modifiers[0]],
     ['enter', el.modifiers[1]],
-    ['enter', el.modifiers[1].path],
-    ['exit', el.modifiers[1].path],
-    ['enter', el.modifiers[1].params[0]],
-    ['exit', el.modifiers[1].params[0]],
-    ['enter', el.modifiers[1].params[1]],
-    ['exit', el.modifiers[1].params[1]],
-    ['enter', el.modifiers[1].hash],
-    ['enter', el.modifiers[1].hash.pairs[0]],
-    ['enter', el.modifiers[1].hash.pairs[0].value],
-    ['exit', el.modifiers[1].hash.pairs[0].value],
-    ['exit', el.modifiers[1].hash.pairs[0]],
-    ['enter', el.modifiers[1].hash.pairs[1]],
-    ['enter', el.modifiers[1].hash.pairs[1].value],
-    ['exit', el.modifiers[1].hash.pairs[1].value],
-    ['exit', el.modifiers[1].hash.pairs[1]],
-    ['exit', el.modifiers[1].hash],
+    ['enter', el.modifiers[1]?.path],
+    ['exit', el.modifiers[1]?.path],
+    ['enter', el.modifiers[1]?.params[0]],
+    ['exit', el.modifiers[1]?.params[0]],
+    ['enter', el.modifiers[1]?.params[1]],
+    ['exit', el.modifiers[1]?.params[1]],
+    ['enter', el.modifiers[1]?.hash],
+    ['enter', el.modifiers[1]?.hash.pairs[0]],
+    ['enter', el.modifiers[1]?.hash.pairs[0]?.value],
+    ['exit', el.modifiers[1]?.hash.pairs[0]?.value],
+    ['exit', el.modifiers[1]?.hash.pairs[0]],
+    ['enter', el.modifiers[1]?.hash.pairs[1]],
+    ['enter', el.modifiers[1]?.hash.pairs[1]?.value],
+    ['exit', el.modifiers[1]?.hash.pairs[1]?.value],
+    ['exit', el.modifiers[1]?.hash.pairs[1]],
+    ['exit', el.modifiers[1]?.hash],
     ['exit', el.modifiers[1]],
     ['exit', el],
     ['exit', ast],
@@ -142,12 +145,12 @@ test('Blocks', function () {
     ['exit', block2.params[1]],
     ['enter', block2.hash],
     ['enter', block2.hash.pairs[0]],
-    ['enter', block2.hash.pairs[0].value],
-    ['exit', block2.hash.pairs[0].value],
+    ['enter', block2.hash.pairs[0]?.value],
+    ['exit', block2.hash.pairs[0]?.value],
     ['exit', block2.hash.pairs[0]],
     ['enter', block2.hash.pairs[1]],
-    ['enter', block2.hash.pairs[1].value],
-    ['exit', block2.hash.pairs[1].value],
+    ['enter', block2.hash.pairs[1]?.value],
+    ['exit', block2.hash.pairs[1]?.value],
     ['exit', block2.hash.pairs[1]],
     ['exit', block2.hash],
     ['enter', block2.program],
@@ -184,12 +187,12 @@ test('Mustaches', function () {
     ['exit', must2.params[1]],
     ['enter', must2.hash],
     ['enter', must2.hash.pairs[0]],
-    ['enter', must2.hash.pairs[0].value],
-    ['exit', must2.hash.pairs[0].value],
+    ['enter', must2.hash.pairs[0]?.value],
+    ['exit', must2.hash.pairs[0]?.value],
     ['exit', must2.hash.pairs[0]],
     ['enter', must2.hash.pairs[1]],
-    ['enter', must2.hash.pairs[1].value],
-    ['exit', must2.hash.pairs[1].value],
+    ['enter', must2.hash.pairs[1]?.value],
+    ['exit', must2.hash.pairs[1]?.value],
     ['exit', must2.hash.pairs[1]],
     ['exit', must2.hash],
     ['exit', must2],
@@ -206,9 +209,9 @@ test('Nested helpers', function () {
 
   let must = ast.body[0] as AST.MustacheStatement;
   let sexp = must.params[0] as AST.SubExpression;
-  let nestedSexp1 = must.hash.pairs[0].value as AST.SubExpression;
-  let nestedSexp2 = must.hash.pairs[1].value as AST.SubExpression;
-  let deeplyNestedSexp = nestedSexp2.hash.pairs[0].value as AST.SubExpression;
+  let nestedSexp1 = must.hash.pairs[0]?.value as AST.SubExpression | undefined;
+  let nestedSexp2 = must.hash.pairs[1]?.value as AST.SubExpression | undefined;
+  let deeplyNestedSexp = nestedSexp2?.hash.pairs[0]?.value as AST.SubExpression | undefined;
   traversalEqual(ast, [
     ['enter', ast],
     ['enter', must],
@@ -223,42 +226,42 @@ test('Nested helpers', function () {
     ['exit', sexp.params[1]],
     ['enter', sexp.hash],
     ['enter', sexp.hash.pairs[0]],
-    ['enter', sexp.hash.pairs[0].value],
-    ['exit', sexp.hash.pairs[0].value],
+    ['enter', sexp.hash.pairs[0]?.value],
+    ['exit', sexp.hash.pairs[0]?.value],
     ['exit', sexp.hash.pairs[0]],
     ['enter', sexp.hash.pairs[1]],
-    ['enter', sexp.hash.pairs[1].value],
-    ['exit', sexp.hash.pairs[1].value],
+    ['enter', sexp.hash.pairs[1]?.value],
+    ['exit', sexp.hash.pairs[1]?.value],
     ['exit', sexp.hash.pairs[1]],
     ['exit', sexp.hash],
     ['exit', sexp],
     ['enter', must.hash],
     ['enter', must.hash.pairs[0]],
     ['enter', nestedSexp1],
-    ['enter', nestedSexp1.path],
-    ['exit', nestedSexp1.path],
-    ['enter', nestedSexp1.params[0]],
-    ['exit', nestedSexp1.params[0]],
-    ['enter', nestedSexp1.hash],
-    ['exit', nestedSexp1.hash],
+    ['enter', nestedSexp1?.path],
+    ['exit', nestedSexp1?.path],
+    ['enter', nestedSexp1?.params[0]],
+    ['exit', nestedSexp1?.params[0]],
+    ['enter', nestedSexp1?.hash],
+    ['exit', nestedSexp1?.hash],
     ['exit', nestedSexp1],
     ['exit', must.hash.pairs[0]],
     ['enter', must.hash.pairs[1]],
     ['enter', nestedSexp2],
-    ['enter', nestedSexp2.path],
-    ['exit', nestedSexp2.path],
-    ['enter', nestedSexp2.hash],
-    ['enter', nestedSexp2.hash.pairs[0]],
+    ['enter', nestedSexp2?.path],
+    ['exit', nestedSexp2?.path],
+    ['enter', nestedSexp2?.hash],
+    ['enter', nestedSexp2?.hash.pairs[0]],
     ['enter', deeplyNestedSexp],
-    ['enter', deeplyNestedSexp.path],
-    ['exit', deeplyNestedSexp.path],
-    ['enter', deeplyNestedSexp.params[0]],
-    ['exit', deeplyNestedSexp.params[0]],
-    ['enter', deeplyNestedSexp.hash],
-    ['exit', deeplyNestedSexp.hash],
+    ['enter', deeplyNestedSexp?.path],
+    ['exit', deeplyNestedSexp?.path],
+    ['enter', deeplyNestedSexp?.params[0]],
+    ['exit', deeplyNestedSexp?.params[0]],
+    ['enter', deeplyNestedSexp?.hash],
+    ['exit', deeplyNestedSexp?.hash],
     ['exit', deeplyNestedSexp],
-    ['exit', nestedSexp2.hash.pairs[0]],
-    ['exit', nestedSexp2.hash],
+    ['exit', nestedSexp2?.hash.pairs[0]],
+    ['exit', nestedSexp2?.hash],
     ['exit', nestedSexp2],
     ['exit', must.hash.pairs[1]],
     ['exit', must.hash],

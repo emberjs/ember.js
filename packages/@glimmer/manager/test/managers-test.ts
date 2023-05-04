@@ -10,21 +10,21 @@ import { UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { createUpdatableTag } from '@glimmer/validator';
 
 import {
-  setInternalComponentManager,
-  getInternalComponentManager,
-  setInternalModifierManager,
-  getInternalModifierManager,
-  setInternalHelperManager,
-  getInternalHelperManager,
-  setComponentManager,
-  setModifierManager,
-  setHelperManager,
   componentCapabilities,
-  modifierCapabilities,
-  helperCapabilities,
   CustomComponentManager,
-  CustomModifierManager,
   CustomHelperManager,
+  CustomModifierManager,
+  getInternalComponentManager,
+  getInternalHelperManager,
+  getInternalModifierManager,
+  helperCapabilities,
+  modifierCapabilities,
+  setComponentManager,
+  setHelperManager,
+  setInternalComponentManager,
+  setInternalHelperManager,
+  setInternalModifierManager,
+  setModifierManager,
 } from '..';
 
 const { module, test } = QUnit;

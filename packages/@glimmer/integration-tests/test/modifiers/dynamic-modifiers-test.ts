@@ -1,12 +1,12 @@
 import {
-  RenderTest,
-  test,
-  jitSuite,
-  defineSimpleModifier,
-  syntaxErrorFor,
-  GlimmerishComponent,
-  defineSimpleHelper,
   defineComponent,
+  defineSimpleHelper,
+  defineSimpleModifier,
+  GlimmerishComponent,
+  jitSuite,
+  RenderTest,
+  syntaxErrorFor,
+  test,
 } from '../..';
 
 class DynamicModifiersResolutionModeTest extends RenderTest {
@@ -42,9 +42,9 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
 
   @test
   'Can pass curried modifier as argument and invoke dynamically'() {
-    const foo = defineSimpleModifier(
-      (element: Element, [value]: string[]) => (element.innerHTML = value)
-    );
+    const foo = defineSimpleModifier((element: Element, [value]: [string]): void => {
+      element.innerHTML = value;
+    });
     this.registerComponent('TemplateOnly', 'Foo', '<div {{@value}}></div>');
 
     this.render('<Foo @value={{modifier this.foo "Hello, world!"}}/>', { foo });

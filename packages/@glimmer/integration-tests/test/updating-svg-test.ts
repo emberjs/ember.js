@@ -1,6 +1,6 @@
-import { RenderTest, test, jitSuite } from '..';
-import { assertNodeTagName } from '..';
 import { Namespace, SimpleElement } from '@glimmer/interfaces';
+
+import { assertNodeTagName, jitSuite, RenderTest, test } from '..';
 import { assert } from './support';
 
 const SVG_NAMESPACE = Namespace.SVG;
@@ -112,7 +112,10 @@ class UpdatingSvgTest extends RenderTest {
     let assertNamespaces = () => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
         assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
-        let attr = this.element.firstChild.attributes[0];
+        let [attr] = this.guardArray(
+          { attributes: this.element.firstChild.attributes },
+          { min: 1 }
+        );
         assert.strictEqual(attr.namespaceURI, XLINK_NAMESPACE);
       }
     };
@@ -191,10 +194,10 @@ class UpdatingSvgTest extends RenderTest {
       content: '<path></path>',
     });
 
-    let assertNamespaces = (callback: (svg: SimpleElement) => void) => {
+    let assertNamespaces = (withElement: (svg: SimpleElement) => void) => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
         assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
-        callback(this.element.firstChild as SimpleElement);
+        withElement(this.element.firstChild as SimpleElement);
       }
       if (assertNodeTagName(this.element.lastChild, 'div')) {
         assert.strictEqual(this.element.lastChild.namespaceURI, XHTML_NAMESPACE);
@@ -313,10 +316,10 @@ class UpdatingSvgTest extends RenderTest {
   'expression nested inside a namespaced context.root element'() {
     this.render('<svg>{{this.content}}</svg>', { content: 'Maurice' });
 
-    let assertSvg = (callback?: (svg: SVGSVGElement) => void) => {
+    let assertSvg = (withSVG?: (svg: SVGSVGElement) => void) => {
       if (assertNodeTagName(this.element.firstChild, 'svg')) {
         assert.strictEqual(this.element.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (callback) callback(this.element.firstChild);
+        if (withSVG) withSVG(this.element.firstChild);
       }
     };
 

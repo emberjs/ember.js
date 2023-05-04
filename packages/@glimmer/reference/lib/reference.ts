@@ -3,9 +3,9 @@ import { getProp, setProp } from '@glimmer/global-context';
 import {
   ComputeReference,
   ConstantReference,
-  Reference,
   InvokableReference,
   Option,
+  Reference,
   ReferenceSymbol,
   ReferenceType,
   UnboundReference,
@@ -13,10 +13,10 @@ import {
 import { expect, isDict, symbol } from '@glimmer/util';
 import {
   CONSTANT_TAG,
+  consumeTag,
   INITIAL,
   Revision,
   Tag,
-  consumeTag,
   track,
   validateTag,
   valueForTag,
@@ -250,8 +250,8 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
 export function childRefFromParts(root: Reference, parts: string[]): Reference {
   let reference = root;
 
-  for (let i = 0; i < parts.length; i++) {
-    reference = childRefFor(reference, parts[i]);
+  for (const part of parts) {
+    reference = childRefFor(reference, part);
   }
 
   return reference;

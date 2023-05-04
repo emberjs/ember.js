@@ -1,11 +1,11 @@
 import { precompile } from '@glimmer/compiler';
 import { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
-import { unwrapTemplate } from '@glimmer/util';
 import {
   templateFactory,
   TemplateFactoryWithIdAndMeta,
   TemplateWithIdAndReferrer,
 } from '@glimmer/opcode-compiler';
+import { unwrapTemplate } from '@glimmer/util';
 
 let serializedTemplate: SerializedTemplateWithLazyBlock;
 let serializedTemplateNoId: SerializedTemplateWithLazyBlock;

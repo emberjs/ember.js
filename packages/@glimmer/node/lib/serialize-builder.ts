@@ -1,14 +1,15 @@
 import type {
   Bounds,
-  Environment,
-  Option,
   ElementBuilder,
+  Environment,
   Maybe,
   ModifierInstance,
+  Option,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
 } from '@glimmer/interfaces';
-import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
-import { RemoteLiveBlock } from '@glimmer/runtime';
-import type { SimpleElement, SimpleNode, SimpleText } from '@glimmer/interfaces';
+import { ConcreteBounds, NewElementBuilder, RemoteLiveBlock } from '@glimmer/runtime';
 
 const TEXT_NODE = 3;
 
@@ -29,7 +30,7 @@ function currentNode(
 class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   private serializeBlockDepth = 0;
 
-  __openBlock(): void {
+  override __openBlock(): void {
     let { tagName } = this.element;
 
     if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
@@ -40,7 +41,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     super.__openBlock();
   }
 
-  __closeBlock(): void {
+  override __closeBlock(): void {
     let { tagName } = this.element;
 
     super.__closeBlock();
@@ -51,7 +52,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     }
   }
 
-  __appendHTML(html: string): Bounds {
+  override __appendHTML(html: string): Bounds {
     let { tagName } = this.element;
 
     if (tagName === 'TITLE' || tagName === 'SCRIPT' || tagName === 'STYLE') {
@@ -79,7 +80,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return new ConcreteBounds(this.element, first, last);
   }
 
-  __appendText(string: string): SimpleText {
+  override __appendText(string: string): SimpleText {
     let { tagName } = this.element;
     let current = currentNode(this);
 
@@ -94,7 +95,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.__appendText(string);
   }
 
-  closeElement(): Option<ModifierInstance[]> {
+  override closeElement(): Option<ModifierInstance[]> {
     if (NEEDS_EXTRA_CLOSE.has(this.element)) {
       NEEDS_EXTRA_CLOSE.delete(this.element);
       super.closeElement();
@@ -103,7 +104,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.closeElement();
   }
 
-  openElement(tag: string) {
+  override openElement(tag: string) {
     if (tag === 'tr') {
       if (
         this.element.tagName !== 'TBODY' &&
@@ -123,7 +124,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.openElement(tag);
   }
 
-  pushRemoteElement(
+  override pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null

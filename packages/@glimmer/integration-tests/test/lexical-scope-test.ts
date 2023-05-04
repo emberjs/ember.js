@@ -1,4 +1,4 @@
-import { RenderTest, test, jitSuite, defineComponent } from '..';
+import { defineComponent, jitSuite, RenderTest, test } from '..';
 
 class LexicalScopeTest extends RenderTest {
   static suiteName = 'loose mode: lexical scope';

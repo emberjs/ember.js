@@ -1,3 +1,5 @@
+import { assertPresentArray, getFirst } from '@glimmer/util';
+
 import { SourceSpan } from '../source/span';
 import { PathExpression, PathHead } from './nodes-v1';
 import b from './public-builders';
@@ -38,7 +40,8 @@ export class PathExpressionImplV1 implements PathExpression {
     } else if (this.data) {
       firstPart = `@${this.parts[0]}`;
     } else {
-      firstPart = this.parts[0];
+      assertPresentArray(this.parts);
+      firstPart = getFirst(this.parts);
     }
 
     let firstPartLoc = this.loc.collapse('start').sliceStartChars({

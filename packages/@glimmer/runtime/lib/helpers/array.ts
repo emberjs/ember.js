@@ -1,7 +1,8 @@
 import { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, Reference } from '@glimmer/reference';
-import { internalHelper } from './internal-helper';
+
 import { reifyPositional } from '../vm/arguments';
+import { internalHelper } from './internal-helper';
 
 /**
    Use the `{{array}}` helper to create an array to pass as an option to your

@@ -1,8 +1,8 @@
-import { preprocess as parse, builders as b, ASTv1 } from '..';
 import { Dict } from '@glimmer/interfaces';
 
-import { astEqual } from './support';
 import { syntaxErrorFor } from '../../integration-tests';
+import { ASTv1, builders as b, preprocess as parse } from '..';
+import { astEqual } from './support';
 
 const test = QUnit.test;
 
@@ -62,10 +62,11 @@ function buildIntegrationPointTest(integrationPoint: string) {
     );
   };
 }
-for (let i = 0, length = integrationPoints.length; i < length; i++) {
+
+for (const integrationPoint of integrationPoints) {
   test(
-    'svg content with html content inline for ' + integrationPoints[i],
-    buildIntegrationPointTest(integrationPoints[i])
+    'svg content with html content inline for ' + integrationPoint,
+    buildIntegrationPointTest(integrationPoint)
   );
 }
 
@@ -887,11 +888,7 @@ export function normalizeHash(
   hash: Dict<ASTv1.Expression>,
   loc?: ASTv1.SourceLocation
 ): ASTv1.Hash {
-  let pairs: ASTv1.HashPair[] = [];
-
-  Object.keys(hash).forEach((key) => {
-    pairs.push(b.pair(key, hash[key]));
-  });
+  let pairs = Object.entries(hash).map(([key, value]) => b.pair(key, value));
 
   return b.hash(pairs, loc);
 }

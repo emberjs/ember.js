@@ -1,6 +1,6 @@
+import { CompilerBuffer } from '../template';
 import { MachineOp, Op } from '../vm-opcodes';
 import { Operand } from './operands';
-import { CompilerBuffer } from '../template';
 
 export const enum OpcodeSize {
   ARG_SHIFT = 8,

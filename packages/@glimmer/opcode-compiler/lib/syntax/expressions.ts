@@ -1,3 +1,4 @@
+import { assert, deprecate } from '@glimmer/global-context';
 import {
   ExpressionSexpOpcode,
   HighLevelResolutionOpcode,
@@ -6,7 +7,7 @@ import {
   SexpOpcodes,
 } from '@glimmer/interfaces';
 import { $v0 } from '@glimmer/vm';
-import { assert, deprecate } from '@glimmer/global-context';
+
 import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';

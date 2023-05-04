@@ -1,10 +1,11 @@
-import { RenderTest, Count } from '../render-test';
-import { test } from '../test-decorator';
 import { SimpleElement } from '@glimmer/interfaces';
+
 import { EmberishCurlyComponent } from '../components';
-import { classes, assertEmberishElement } from '../dom/assertions';
-import { assertElement, toInnerHTML } from '../dom/simple-utils';
+import { assertEmberishElement, classes } from '../dom/assertions';
+import { assertingElement, toInnerHTML } from '../dom/simple-utils';
+import { Count, RenderTest } from '../render-test';
 import { equalTokens } from '../snapshot';
+import { test } from '../test-decorator';
 
 export class EmberishComponentTests extends RenderTest {
   static suiteName = 'Emberish';
@@ -310,7 +311,7 @@ export class EmberishComponentTests extends RenderTest {
 
     this.render(`<FooBar data-foo="bar" />`);
 
-    let wrapperElement = assertElement(this.element.firstChild);
+    let wrapperElement = assertingElement(this.element.firstChild);
     assertEmberishElement(wrapperElement, 'div', { 'data-foo': 'bar' });
     equalTokens(toInnerHTML(wrapperElement), '<h1 data-foo="bar">Hello world!</h1>');
 

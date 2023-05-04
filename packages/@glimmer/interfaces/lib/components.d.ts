@@ -1,10 +1,10 @@
 // eslint-disable-next-line n/no-extraneous-import
-import { Reference } from './references';
-import { InternalComponentCapability, InternalComponentManager } from './managers';
 import { Dict } from './core';
+import { InternalComponentCapability, InternalComponentManager } from './managers';
+import { Reference } from './references';
+import { ScopeSlot } from './runtime';
 import { CompilableProgram } from './template';
 import { ProgramSymbolTable } from './tier1/symbol-table';
-import { ScopeSlot } from './runtime';
 
 export type ComponentDefinitionState = object;
 export type ComponentInstanceState = unknown;

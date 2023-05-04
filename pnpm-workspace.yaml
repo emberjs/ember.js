@@ -2,4 +2,5 @@ packages:
   - 'benchmark'
   - 'lib/local-linker'
   - 'packages/@glimmer/*'
+  - 'packages/@glimmer/*/test'
   - 'packages/build-utils/@glimmer/*'

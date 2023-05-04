@@ -301,7 +301,7 @@ export default class WireFormatDebugger {
     if (blocks === null) return null;
 
     return blocks[0].reduce((accum, key, index) => {
-      accum[key] = this.formatBlock(blocks[1][index]);
+      accum[key] = this.formatBlock(blocks[1][index] as SerializedInlineBlock);
       return accum;
     }, dict());
   }

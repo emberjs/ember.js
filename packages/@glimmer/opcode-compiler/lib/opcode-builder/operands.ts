@@ -1,17 +1,17 @@
 import {
-  LabelOperand,
-  SerializedInlineBlock,
+  BlockOperand,
+  CompilableTemplate,
   DebugSymbolsOperand,
   HighLevelOperand,
-  BlockOperand,
-  StdLibOperand,
+  IsStrictModeOperand,
+  LabelOperand,
+  LayoutOperand,
   NonSmallIntOperand,
   SerializedBlock,
+  SerializedInlineBlock,
+  StdLibOperand,
   SymbolTable,
   SymbolTableOperand,
-  CompilableTemplate,
-  LayoutOperand,
-  IsStrictModeOperand,
 } from '@glimmer/interfaces';
 import { assert, isSmallInt } from '@glimmer/util';
 

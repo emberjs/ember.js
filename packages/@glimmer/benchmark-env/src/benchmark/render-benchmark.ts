@@ -1,16 +1,16 @@
-import { SimpleElement } from '@glimmer/interfaces';
 import {
+  CompileTimeCompilationContext,
   Dict,
-  RuntimeResolver,
   ResolvedComponentDefinition,
   RuntimeArtifacts,
-  CompileTimeCompilationContext,
+  RuntimeResolver,
+  SimpleElement,
 } from '@glimmer/interfaces';
-import { NewElementBuilder, runtimeContext, renderComponent, renderSync } from '@glimmer/runtime';
+import { NewElementBuilder, renderComponent, renderSync, runtimeContext } from '@glimmer/runtime';
 
+import { UpdateBenchmark } from '../interfaces';
 import createEnvDelegate, { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
-import { UpdateBenchmark } from '../interfaces';
 
 export default async function renderBenchmark(
   artifacts: RuntimeArtifacts,

@@ -1,15 +1,20 @@
-import { Bounds, ElementBuilder, Environment, Option, Maybe } from '@glimmer/interfaces';
-import { assert, castToBrowser, castToSimple, expect, Stack } from '@glimmer/util';
 import {
   AttrNamespace,
+  Bounds,
+  ElementBuilder,
+  Environment,
+  Maybe,
   Namespace,
   NodeType,
+  Option,
   SimpleAttr,
   SimpleComment,
   SimpleElement,
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
+import { assert, castToBrowser, castToSimple, expect, Stack } from '@glimmer/util';
+
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
 
@@ -117,7 +122,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     currentCursor.nextSibling = null;
   }
 
-  pushElement(
+  override pushElement(
     /** called from parent constructor before we initialize this */
     this:
       | RehydrateBuilder
@@ -173,7 +178,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __openBlock(): void {
+  override __openBlock(): void {
     let { currentCursor } = this;
     if (currentCursor === null) return;
 
@@ -197,7 +202,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __closeBlock(): void {
+  override __closeBlock(): void {
     let { currentCursor } = this;
     if (currentCursor === null) return;
 
@@ -253,7 +258,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendNode(node: SimpleNode): SimpleNode {
+  override __appendNode(node: SimpleNode): SimpleNode {
     let { candidate } = this;
 
     // This code path is only used when inserting precisely one node. It needs more
@@ -266,7 +271,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendHTML(html: string): Bounds {
+  override __appendHTML(html: string): Bounds {
     let candidateBounds = this.markerBounds();
 
     if (candidateBounds) {
@@ -316,7 +321,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendText(string: string): SimpleText {
+  override __appendText(string: string): SimpleText {
     let { candidate } = this;
 
     if (candidate) {
@@ -345,7 +350,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendComment(string: string): SimpleComment {
+  override __appendComment(string: string): SimpleComment {
     let _candidate = this.candidate;
     if (_candidate && isComment(_candidate)) {
       if (_candidate.nodeValue !== string) {
@@ -361,7 +366,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__appendComment(string);
   }
 
-  __openElement(tag: string): SimpleElement {
+  override __openElement(tag: string): SimpleElement {
     let _candidate = this.candidate;
 
     if (_candidate && isElement(_candidate) && isSameNodeType(_candidate, tag)) {
@@ -379,7 +384,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__openElement(tag);
   }
 
-  __setAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
+  override __setAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
     let unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
@@ -396,7 +401,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__setAttribute(name, value, namespace);
   }
 
-  __setProperty(name: string, value: string): void {
+  override __setProperty(name: string, value: string): void {
     let unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
@@ -413,11 +418,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__setProperty(name, value);
   }
 
-  __flushElement(parent: SimpleElement, constructing: SimpleElement): void {
+  override __flushElement(parent: SimpleElement, constructing: SimpleElement): void {
     let { unmatchedAttributes: unmatched } = this;
     if (unmatched) {
-      for (let i = 0; i < unmatched.length; i++) {
-        this.constructing!.removeAttribute(unmatched[i].name);
+      for (const attr of unmatched) {
+        this.constructing!.removeAttribute(attr.name);
       }
       this.unmatchedAttributes = null;
     } else {
@@ -425,7 +430,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  willCloseElement() {
+  override willCloseElement() {
     let { candidate, currentCursor } = this;
 
     if (candidate !== null) {
@@ -447,7 +452,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return null;
   }
 
-  __pushRemoteElement(
+  override __pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
@@ -480,7 +485,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return this.pushLiveBlock(block, true);
   }
 
-  didAppendBounds(bounds: Bounds): Bounds {
+  override didAppendBounds(bounds: Bounds): Bounds {
     super.didAppendBounds(bounds);
     if (this.candidate) {
       let last = bounds.lastNode();
@@ -538,8 +543,7 @@ function isSameNodeType(candidate: SimpleElement, tag: string) {
 }
 
 function findByName(array: SimpleAttr[], name: string): SimpleAttr | undefined {
-  for (let i = 0; i < array.length; i++) {
-    let attr = array[i];
+  for (const attr of array) {
     if (attr.name === name) return attr;
   }
 

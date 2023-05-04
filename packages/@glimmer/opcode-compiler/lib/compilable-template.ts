@@ -1,29 +1,30 @@
 import {
-  Option,
-  LayoutWithContext,
-  ContainingMetadata,
-  SerializedInlineBlock,
-  WireFormat,
-  SymbolTable,
-  CompilableTemplate,
-  Statement,
-  CompileTimeCompilationContext,
+  BlockSymbolTable,
+  BuilderOp,
   CompilableBlock,
   CompilableProgram,
+  CompilableTemplate,
+  CompileTimeCompilationContext,
+  ContainingMetadata,
   HandleResult,
-  BlockSymbolTable,
-  SerializedBlock,
-  BuilderOp,
   HighLevelOp,
+  LayoutWithContext,
+  Option,
+  SerializedBlock,
+  SerializedInlineBlock,
+  Statement,
+  SymbolTable,
+  WireFormat,
 } from '@glimmer/interfaces';
-import { meta } from './opcode-builder/helpers/shared';
-import { EMPTY_ARRAY } from '@glimmer/util';
-import { templateCompilationContext } from './opcode-builder/context';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { EMPTY_ARRAY } from '@glimmer/util';
+
 import { debugCompiler } from './compiler';
-import { STATEMENTS } from './syntax/statements';
-import { HighLevelStatementOp } from './syntax/compilers';
+import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
+import { meta } from './opcode-builder/helpers/shared';
+import { HighLevelStatementOp } from './syntax/compilers';
+import { STATEMENTS } from './syntax/statements';
 
 export const PLACEHOLDER_HANDLE = -1;
 
@@ -91,8 +92,8 @@ export function compileStatements(
     encodeOp(encoder, constants, resolver, meta, op as BuilderOp | HighLevelOp);
   }
 
-  for (let i = 0; i < statements.length; i++) {
-    sCompiler.compile(pushOp, statements[i]);
+  for (const statement of statements) {
+    sCompiler.compile(pushOp, statement);
   }
 
   let handle = context.encoder.commit(meta.size);

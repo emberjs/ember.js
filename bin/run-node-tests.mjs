@@ -1,4 +1,5 @@
 import path from 'node:path';
+
 import { execaSync } from 'execa';
 
 const __dirname = new URL('.', import.meta.url).pathname;
