@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.4.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
 ### v4.4.4 (November 2, 2022)
 
 - [CVE pending](https://emberjs.com/blog/ember-4-8-1-released) Fix a prototype pollution vulnerability in `set` and `setProperties
