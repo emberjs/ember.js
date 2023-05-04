@@ -12,7 +12,8 @@ import type { Maybe, Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
-import InternalComponent, { opaquify } from './internal';
+import InternalComponent, { OpaqueInternalComponentConstructor, opaquify } from './internal';
+import { Opaque } from '@ember/-internals/utility-types';
 
 const EMPTY_ARRAY: {}[] = [];
 const EMPTY_QUERY_PARAMS = {};
@@ -692,6 +693,6 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   });
 }
 
-const LinkTo = opaquify(_LinkTo, LinkToTemplate);
-type LinkTo = typeof LinkTo;
+const LinkTo = opaquify(_LinkTo, LinkToTemplate) as LinkTo;
+interface LinkTo extends Opaque<'component:link-to'>, OpaqueInternalComponentConstructor {}
 export default LinkTo;
