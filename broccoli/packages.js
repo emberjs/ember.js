@@ -140,7 +140,7 @@ module.exports.backburnerES = function _backburnerES() {
   return funnelLib('backburner.js', 'dist/es6', {
     files: ['backburner.js'],
     annotation: 'backburner es',
-    // This write the "output" to `backburner.js.js` in the funnel, which means
+    // This writes the "output" to `backburner.js.js` in the funnel, which means
     // that when it gets fed into the Babel AMD transform, which (implicitly)
     // pulls off the trailing `.js`, the result is just `backburner.js`, which
     // is the actual Node-resolve-able (and therefore TS-resolve-able) ES module
