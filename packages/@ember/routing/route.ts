@@ -251,10 +251,18 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
 class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
   static isRouteFactory = true;
 
+  // These properties will end up appearing in the public interface because we
+  // `implements IRoute` from `router.js`, which has them as part of *its*
+  // public contract. We mark them as `@internal` so they at least signal to
+  // people subclassing `Route` that they should not use them.
+  /** @internal */
   context = {} as Model;
+  /** @internal */
   declare currentModel: Model;
 
+  /** @internal */
   _bucketCache!: BucketCache;
+  /** @internal */
   _internalName!: string;
 
   private _names: unknown;
