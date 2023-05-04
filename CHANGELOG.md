@@ -26,6 +26,10 @@
 - [#20415](https://github.com/emberjs/ember.js/pull/20415) [CLEANUP] Remove unused imports
 - [#20416](https://github.com/emberjs/ember.js/pull/20416) [CLEANUP] Finish cleaning up `Location` interface
 
+## v3.28.12 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
 ## v4.12.0 (April 3, 2023)
 
 - [#20352](https://github.com/emberjs/ember.js/pull/20352) [FEATURE] Enable generating Typescript blueprints when `isTypeScriptProject` is true without additional environment variables per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
