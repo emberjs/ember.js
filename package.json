@@ -94,6 +94,7 @@
     "ember-router-generator": "^2.0.0",
     "inflection": "^1.13.2",
     "resolve": "^1.22.0",
+    "route-recognizer": "^0.3.4",
     "router_js": "^8.0.3",
     "semver": "^7.3.8",
     "silent-error": "^1.1.1"
@@ -153,7 +154,6 @@
     "puppeteer": "^19.4.1",
     "qunit": "^2.19.4",
     "recast": "^0.21.5",
-    "route-recognizer": "^0.3.4",
     "rsvp": "^4.8.5",
     "serve-static": "^1.14.2",
     "simple-dom": "^1.4.0",
