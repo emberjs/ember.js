@@ -1,4 +1,8 @@
-import Helper, { FunctionBasedHelper, helper } from '@ember/component/helper';
+import Helper, {
+  FunctionBasedHelper,
+  FunctionBasedHelperInstance,
+  helper,
+} from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';
 
 interface DemoSig {
@@ -152,3 +156,12 @@ class Subgreet extends greet {}
 // Check that generics are accepted. (We cannot meaningfully test for how they
 // are *handled* because it uses items we do not want to expose in public API.)
 const pair = helper(<T>([item]: [T]): [T, T] => [item, item]);
+expectTypeOf(pair).toEqualTypeOf<
+  abstract new <T>() => FunctionBasedHelperInstance<{
+    Args: {
+      Positional: [T, T];
+      Named: object;
+    };
+    Return: T;
+  }>
+>();

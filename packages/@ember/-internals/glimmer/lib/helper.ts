@@ -259,7 +259,7 @@ class Wrapper<S = unknown> implements HelperFactory<SimpleHelper<S>> {
 
   constructor(public compute: (positional: Positional<S>, named: Named<S>) => Return<S>) {}
 
-  create() {
+  create(): SimpleHelper<S> {
     // needs new instance or will leak containers
     return {
       compute: this.compute,
@@ -308,12 +308,25 @@ setHelperManager(() => SIMPLE_CLASSIC_HELPER_MANAGER, Wrapper.prototype);
  */
 // Making `FunctionBasedHelper` an alias this way allows callers to name it in
 // terms meaningful to *them*, while preserving the type behavior described on
-// the `abstract class HelperFactory` above.
+// the `abstract class FunctionBasedHelperInstance` below.
 export type FunctionBasedHelper<S> = abstract new () => FunctionBasedHelperInstance<S>;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface FunctionBasedHelperInstance<S> extends SimpleHelper<S> {}
-declare abstract class FunctionBasedHelperInstance<S> extends Helper<S> {
+// This abstract class -- specifically, its `protected abstract __concrete__`
+// member -- prevents subclasses from doing `class X extends helper(..)`, since
+// that is an error at runtime. While it is rare that people would type that, it
+// is not impossible and we use this to give them early signal via the types for
+// a behavior which will break (and in a somewhat inscrutable way!) at runtime.
+//
+// This is needful because we lie about what this actually is for Glint's sake:
+// a function-based helper returns a `Factory<SimpleHelper>`, which is designed
+// to be "opaque" from a consumer's POV, i.e. not user-callable or constructible
+// but only useable in a template (or via `invokeHelper()` which also treats it
+// as a fully opaque `object` from a type POV). But Glint needs a `Helper<S>` to
+// make it work the same way as class-based helpers. (Note that this does not
+// hold for plain functions as helpers, which it can handle distinctly.) This
+// signature thus makes it so that the item is usable *as* a `Helper` in Glint,
+// but without letting end users treat it as a helper class instance.
+export declare abstract class FunctionBasedHelperInstance<S> extends Helper<S> {
   protected abstract __concrete__: never;
 }
 
@@ -360,5 +373,22 @@ export function helper(
   // At the implementation site, we don't care about the actual underlying type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): FunctionBasedHelper<any> {
+  // SAFETY: this is completely lies, in two ways:
+  //
+  // 1. `Wrapper` is a `Factory<SimpleHelper<S>>`, but from the perspective of
+  //    any external callers (i.e. Ember *users*), it is quite important that
+  //    the `Factory` relationship be hidden, because it is not public API for
+  //    an end user to call `.create()` on a helper created this way. Instead,
+  //    we provide them an `abstract new` signature (which means it cannot be
+  //    directly constructed by calling `new` on it) and which does not have the
+  //    `.create()` signature on it anymore.
+  //
+  // 2. The produced type here ends up being a subtype of `Helper`, which is not
+  //    strictly true. This is necessary for the sake of Glint, which provides
+  //    its information by way of a "declaration merge" with `Helper<S>` in the
+  //    case of items produced by `helper()`.
+  //
+  // Long-term, this entire construct can go away in favor of deprecating the
+  // `helper()` invocation in favor of using plain functions.
   return new Wrapper(helperFn) as unknown as FunctionBasedHelper<any>;
 }
