@@ -33,5 +33,5 @@
     "skipLibCheck": true
   },
   "include": ["packages/**/*.ts", "packages/interfaces/**/*.d.ts"],
-  "exclude": ["dist", "ts-dist", "**/dist", "tmp", "node_modules", ".vscode"]
+  "exclude": ["dist", "ts-dist", "**/dist", "tmp", "node_modules", ".vscode", "**/fixtures/**/*"]
 }

@@ -19,5 +19,6 @@
     "server/**/*",
     "packages/build-utils/@glimmer/**/*",
     "./*.js"
-  ]
+  ],
+  "exclude": ["**/fixtures/**/*"]
 }

@@ -4,7 +4,7 @@
 const fs = require('fs');
 const toml = require('toml');
 const prettier = require('prettier');
-const { normalizeAll, buildEnum, buildMetas, strip } = require('../dist/@glimmer/debug');
+const { normalizeAll, buildEnum, buildMetas, strip } = require('@glimmer/debug');
 
 function parse(file) {
   let opcodes = fs.readFileSync(file, { encoding: 'utf8' });
