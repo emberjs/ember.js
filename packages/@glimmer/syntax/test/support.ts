@@ -11,7 +11,7 @@ function normalizeValue<T extends AST.Node | AST.Node[] | unknown>(obj: T): T {
     if (Array.isArray(obj)) {
       return obj.map(normalizeValue) as T;
     } else {
-      return Object.fromEntries(
+      return fromEntries(
         entries(obj).flatMap(([key, value]) =>
           key === 'loc' ? [] : [[key, normalizeValue(value)]]
         )
@@ -20,6 +20,21 @@ function normalizeValue<T extends AST.Node | AST.Node[] | unknown>(obj: T): T {
   } else {
     return obj;
   }
+}
+
+// convert entries ([string, unknown][]) into a record
+type FromEntries<T extends [PropertyKey, unknown][]> = {
+  [K in T[number] as K[0]]: Extract<K, [PropertyKey, unknown]>[1];
+};
+
+function fromEntries<T extends [PropertyKey, unknown][]>(entries: T): FromEntries<T> {
+  let out: any = {};
+
+  for (let [key, value] of entries) {
+    out[key as string] = value;
+  }
+
+  return out as FromEntries<T>;
 }
 
 export function astEqual(
