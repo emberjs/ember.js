@@ -112,6 +112,13 @@ jobs:
           BROCCOLI_ENV: production
           SHOULD_TRANSPILE: true
         run: yarn ember build
+
+      - name: Set BrowserStack Local Identifier
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
+
       - name: test:browserstack
         env:
           BROWSERSTACK_USERNAME: emberjscoreteam1
@@ -260,7 +267,7 @@ jobs:
       - name: Setup firefox
         uses: browser-actions/setup-firefox@latest
         with:
-          firefox-version: 91.0.1
+          firefox-version: 102.0.1
       - run: firefox --version
       - name: test
         run: yarn ember test -c testem.ci-browsers.js
@@ -325,7 +332,7 @@ jobs:
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           S3_BUCKET_NAME: 'builds.emberjs.com'
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
@@ -359,7 +366,7 @@ jobs:
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           BUILD_TYPE: alpha
           OVERRIDE_FEATURES: ''

@@ -100,6 +100,7 @@
     "silent-error": "^1.1.1"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.321.1",
     "@babel/preset-env": "^7.16.11",
     "@simple-dom/document": "^1.4.0",
     "@tsconfig/ember": "^2.0.0",
@@ -127,7 +128,6 @@
     "ember-cli-browserstack": "^2.0.1",
     "ember-cli-dependency-checker": "^3.3.1",
     "ember-cli-yuidoc": "^0.9.1",
-    "ember-publisher": "0.0.7",
     "eslint": "^8.29.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-node": "^0.3.7",
@@ -153,7 +153,7 @@
     "prettier": "^2.8.0",
     "puppeteer": "^19.4.1",
     "qunit": "^2.19.4",
-    "recast": "^0.21.5",
+    "recast": "^0.22.0",
     "rsvp": "^4.8.5",
     "serve-static": "^1.14.2",
     "simple-dom": "^1.4.0",

@@ -1,5 +1,16 @@
 # Ember Changelog
 
+## v5.0.0-beta.3 (May 3, 2023)
+
+- Publish v5.0.0-beta.2 again, having fixed publishing automation
+
+## v5.0.0-beta.2 (May 2, 2023)
+
+- [#20434](https://github.com/emberjs/ember.js/pull/20434) [BUGFIX] Fix HistoryLocation preview types
+- [#20438](https://github.com/emberjs/ember.js/pull/20438) [BREAKING] Drop support for Node 14
+- [#20441](https://github.com/emberjs/ember.js/pull/20441) [BUGFIX] Fix for TS 5.1 nightly narrowing change
+- [#20445](https://github.com/emberjs/ember.js/pull/20445) [CLEANUP] Update browser support per RFC #685. Minimum support has been updated to Chrome >= 103, Edge >= 110, Firefox >= 102, iOS >= 12, Safari >= 12, ChromeAndroid >= 112, FirefoxAndroid >= 110
+
 ## v5.0.0-beta.1 (April 6, 2023)
 
 - [#20429](https://github.com/emberjs/ember.js/pull/20429) [BUGFIX] TS lint-level error in `mixins/-proxy.ts`
@@ -14,6 +25,18 @@
 - [#20414](https://github.com/emberjs/ember.js/pull/20414) [CLEANUP] Add @ember/string to smoke-tests app
 - [#20415](https://github.com/emberjs/ember.js/pull/20415) [CLEANUP] Remove unused imports
 - [#20416](https://github.com/emberjs/ember.js/pull/20416) [CLEANUP] Finish cleaning up `Location` interface
+
+### v4.8.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
+## v4.4.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
+## v3.28.12 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
 
 ## v4.12.0 (April 3, 2023)
 
