@@ -1,4 +1,4 @@
-import Controller, { inject } from '@ember/controller';
+import Controller, { ControllerQueryParam, inject } from '@ember/controller';
 
 class FirstController extends Controller {
   foo = 'bar';
@@ -10,11 +10,13 @@ class FirstController extends Controller {
     'category',
     {
       searchTerm: {
-        as: 'search',
+        type: 'number',
       },
+    },
+    {
       subCategory: 'sub-category',
     },
-  ];
+  ] as const;
 
   first() {
     return '';

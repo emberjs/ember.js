@@ -2,7 +2,7 @@ import Router from '@ember/routing/router';
 import Service, { inject as service } from '@ember/service';
 import EmberObject, { get } from '@ember/object';
 import RouterService from '@ember/routing/router-service';
-import RouteInfo from '@ember/routing/route-info';
+import RouteInfo, { RouteInfoWithAttributes } from '@ember/routing/route-info';
 
 import { expectTypeOf } from 'expect-type';
 
@@ -31,13 +31,14 @@ AppRouter.map(function () {
 class RouterServiceConsumer extends Service {
   @service('router') declare router: RouterService;
   currentRouteName() {
-    expectTypeOf(get(this, 'router').currentRouteName).toEqualTypeOf<string>();
+    let router = get(this, 'router');
+    expectTypeOf(this.router.currentRouteName).toEqualTypeOf<string | null>();
   }
   currentURL() {
-    expectTypeOf(get(this, 'router').currentURL).toEqualTypeOf<string>();
+    expectTypeOf(this.router.currentURL).toEqualTypeOf<string | null>();
   }
   rootURL() {
-    expectTypeOf(get(this, 'router').rootURL).toEqualTypeOf<string>();
+    expectTypeOf(this.router.rootURL).toEqualTypeOf<string>();
   }
   transitionWithoutModel() {
     get(this, 'router').transitionTo('some-route');
@@ -55,29 +56,32 @@ class RouterServiceConsumer extends Service {
     get(this, 'router').transitionTo('index', model, { queryParams: { search: 'ember' } });
   }
   onAndRouteInfo() {
-    const router = get(this, 'router');
-    router
+    this.router
       .on('routeWillChange', (transition) => {
         const to = transition.to;
-        expectTypeOf(to.child).toEqualTypeOf<RouteInfo | null>();
-        expectTypeOf(to.localName).toEqualTypeOf<string>();
-        expectTypeOf(to.name).toEqualTypeOf<string>();
-        expectTypeOf(to.paramNames).toEqualTypeOf<string[]>();
-        expectTypeOf(to.params['foo']).toEqualTypeOf<string | undefined>();
-        expectTypeOf(to.parent).toEqualTypeOf<RouteInfo | null>();
-        expectTypeOf(to.queryParams['foo']).toEqualTypeOf<string | undefined>();
-        expectTypeOf(to.find((info) => info.name === 'foo')).toEqualTypeOf<RouteInfo | undefined>();
+        if (to) {
+          expectTypeOf(to.child).toEqualTypeOf<RouteInfo | RouteInfoWithAttributes | null>();
+          expectTypeOf(to.localName).toEqualTypeOf<string>();
+          expectTypeOf(to.name).toEqualTypeOf<string>();
+          expectTypeOf(to.paramNames).toEqualTypeOf<string[]>();
+          expectTypeOf(to.params?.['foo']).toBeUnknown();
+          expectTypeOf(to.parent).toEqualTypeOf<RouteInfo | RouteInfoWithAttributes | null>();
+          expectTypeOf(to.queryParams['foo']).toBeUnknown();
+          expectTypeOf(to.find((info) => info.name === 'foo')).toEqualTypeOf<
+            RouteInfo | undefined
+          >();
+        }
       })
       .on('routeDidChange', (transition) => {
         const from = transition.from;
         if (from) {
-          expectTypeOf(from.child).toEqualTypeOf<RouteInfo | null>();
+          expectTypeOf(from.child).toEqualTypeOf<RouteInfo | RouteInfoWithAttributes | null>();
           expectTypeOf(from.localName).toEqualTypeOf<string>();
           expectTypeOf(from.name).toEqualTypeOf<string>();
           expectTypeOf(from.paramNames).toEqualTypeOf<string[]>();
-          expectTypeOf(from.params['foo']).toEqualTypeOf<string | undefined>();
-          expectTypeOf(from.parent).toEqualTypeOf<RouteInfo | null>();
-          expectTypeOf(from.queryParams['foo']).toEqualTypeOf<string | undefined>();
+          expectTypeOf(from.params?.['foo']).toBeUnknown();
+          expectTypeOf(from.parent).toEqualTypeOf<RouteInfo | RouteInfoWithAttributes | null>();
+          expectTypeOf(from.queryParams['foo']).toBeUnknown();
           expectTypeOf(from.find((info) => info.name === 'foo')).toEqualTypeOf<
             RouteInfo | undefined
           >();

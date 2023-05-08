@@ -1,6 +1,15 @@
-import { setModifierManager, capabilities, on, OnModifier } from '@ember/modifier';
+import {
+  setModifierManager,
+  capabilities,
+  on,
+  type OnModifier,
+  type ModifierCapabilities,
+} from '@ember/modifier';
+import { ModifierManager } from '@glimmer/interfaces';
 import { expectTypeOf } from 'expect-type';
 
 expectTypeOf(on).toEqualTypeOf<OnModifier>();
-expectTypeOf(setModifierManager((_owner) => {}, {})).toEqualTypeOf<{}>();
-expectTypeOf(capabilities('3.24')).toBeUnknown();
+
+declare let manager: ModifierManager<unknown>;
+expectTypeOf(setModifierManager((_owner) => manager, {})).toEqualTypeOf<{}>();
+expectTypeOf(capabilities('3.22')).toEqualTypeOf<ModifierCapabilities>();

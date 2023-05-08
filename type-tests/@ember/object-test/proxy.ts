@@ -2,6 +2,14 @@ import Ember from 'ember';
 import ObjectProxy from '@ember/object/proxy';
 import { expectTypeOf } from 'expect-type';
 
+declare class X extends Ember.Object {
+  foo: string;
+  bar: number;
+}
+
+declare let x: X;
+x.getProperties('foo', 'bar');
+
 interface Book {
   title: string;
   subtitle: string;
@@ -9,7 +17,7 @@ interface Book {
 }
 
 class DefaultProxy extends ObjectProxy {}
-expectTypeOf(DefaultProxy.create().content).toEqualTypeOf<object | undefined>();
+expectTypeOf(DefaultProxy.create().content).toBeUnknown();
 
 class BookProxy extends ObjectProxy<Book> {
   private readonly baz = 'baz';
@@ -26,30 +34,30 @@ class BookProxy extends ObjectProxy<Book> {
 }
 
 const book = BookProxy.create();
-expectTypeOf(book.content).toEqualTypeOf<Book | undefined>();
+expectTypeOf(book.content).toEqualTypeOf<Book | null>();
 
-// @ts-expect-error
-book.get('unknownProperty');
-expectTypeOf(book.get('title')).toEqualTypeOf<string | undefined>();
+expectTypeOf(book.get('some-nonsense-property')).toBeUnknown();
+expectTypeOf(book.get('title')).toBeString();
 expectTypeOf(book.get('altTitle')).toBeString();
-expectTypeOf(book.getTitle()).toEqualTypeOf<string | undefined>();
+expectTypeOf(book.getTitle()).toBeString();
 
-// @ts-expect-error
-book.getProperties('title', 'unknownProperty');
+book.getProperties('title', 'some-nonsense-property');
 expectTypeOf(book.getProperties('title', 'subtitle')).toEqualTypeOf<
-  Pick<Partial<Book>, 'title' | 'subtitle'>
+  Pick<Book, 'title' | 'subtitle'>
 >();
-expectTypeOf(book.getPropertiesTitleSubtitle()).toEqualTypeOf<
-  Pick<Partial<Book>, 'title' | 'subtitle'>
->();
+expectTypeOf(book.getPropertiesTitleSubtitle()).toEqualTypeOf<Pick<Book, 'title' | 'subtitle'>>();
 expectTypeOf(book.getProperties(['subtitle', 'chapters'])).toEqualTypeOf<
-  Pick<Partial<Book>, 'subtitle' | 'chapters'>
+  Pick<Book, 'subtitle' | 'chapters'>
 >();
-// @ts-expect-error
-book.getProperties(['title', 'unknownProperty']);
+expectTypeOf(book.getProperties(['title', 'some-nonsense-property'])).toEqualTypeOf<
+  Record<'title' | 'some-nonsense-property', unknown>
+>;
+expectTypeOf(book.getProperties('title', 'altTitle')).toEqualTypeOf<{
+  title: string;
+  altTitle: string;
+}>;
 
-// @ts-expect-error
-book.get('baz');
+expectTypeOf(book.get('baz')).toBeUnknown();
 
 book.set('title', 'New');
 // @ts-expect-error
@@ -62,11 +70,8 @@ book.setProperties({
   subtitle: 'and improved',
   altTitle: 'Alternate2',
 });
-// @ts-expect-error
 book.setProperties({ title: 1 });
-// @ts-expect-error
 book.setProperties({ altTitle: 1 });
-// @ts-expect-error
 book.setProperties({ invalid: true });
 
 class Person extends Ember.Object {
@@ -91,18 +96,16 @@ class PersonProxy extends ObjectProxy<Person> {}
 
 const person = PersonProxy.create();
 
-expectTypeOf(person.get('firstName')).toEqualTypeOf<string | undefined>();
-expectTypeOf(person.get('fullName')).toEqualTypeOf<string | undefined>();
+expectTypeOf(person.get('firstName')).toBeString();
+expectTypeOf(person.get('fullName')).toBeString();
 expectTypeOf(person.set('fullName', 'John Doe')).toBeString();
 // @ts-expect-error
 person.set('fullName', 1);
 // @ts-expect-error
 person.set('invalid', true);
-expectTypeOf(person.setProperties({ fullName: 'John Doe' })).toEqualTypeOf<
-  Pick<PersonProxy & Person, 'fullName'>
->();
+expectTypeOf(person.setProperties({ fullName: 'John Doe' })).toEqualTypeOf<{
+  fullName: 'John Doe';
+}>();
 expectTypeOf(person.setProperties({ fullName: 'John Doe' }).fullName).toBeString();
-// @ts-expect-error
 person.setProperties({ fullName: 1 });
-// @ts-expect-error
 person.setProperties({ fullName: 'John Doe', invalid: true });

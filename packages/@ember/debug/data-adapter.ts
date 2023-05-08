@@ -18,10 +18,15 @@ import { assert } from '.';
 
 type RecordColor = 'black' | 'red' | 'blue' | 'green';
 
+type Column = {
+  name: string;
+  desc: string;
+};
+
 type WrappedType<N extends string = string> = {
   name: N;
   count: number;
-  columns: unknown[];
+  columns: Column[];
   object: unknown;
 };
 
@@ -307,7 +312,10 @@ export default class DataAdapter<T> extends EmberObject {
     @return {Array} List of objects defining filters.
      The object should have a `name` and `desc` property.
   */
-  getFilters() {
+  getFilters(): Array<{
+    name: string;
+    desc: string;
+  }> {
     return emberA();
   }
 
@@ -472,7 +480,7 @@ export default class DataAdapter<T> extends EmberObject {
      name: {String} The name of the column.
      desc: {String} Humanized description (what would show in a table column name).
   */
-  columnsForType(_klass: unknown) {
+  columnsForType(_klass: unknown): Column[] {
     return emberA();
   }
 

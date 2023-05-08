@@ -285,9 +285,3 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     }
   }
 }
-
-declare module '@ember/routing/location' {
-  export interface Registry {
-    history: HistoryLocation;
-  }
-}

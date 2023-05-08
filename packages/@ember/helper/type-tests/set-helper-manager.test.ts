@@ -1,19 +1,24 @@
-import type {
-  HelperFactory,
-  HelperFunction,
-  SimpleHelper,
-} from '@ember/-internals/glimmer/lib/helper';
+import type { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer/lib/helper';
 import { getDebugName } from '@ember/-internals/utils';
 import { capabilities, setHelperManager } from '@ember/helper';
 import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 import { expectTypeOf } from 'expect-type';
 
 class Wrapper<T = unknown, P extends unknown[] = unknown[], N extends Dict<unknown> = Dict<unknown>>
-  implements HelperFactory<SimpleHelper<T, P, N>>
+  implements
+    HelperFactory<
+      SimpleHelper<{
+        Args: {
+          Positional: P;
+          Named: N;
+        };
+        Return: T;
+      }>
+    >
 {
   readonly isHelperFactory = true;
 
-  constructor(public compute: HelperFunction<T, P, N>) {}
+  constructor(public compute: (positional: P, named: N) => T) {}
 
   create() {
     // needs new instance or will leak containers

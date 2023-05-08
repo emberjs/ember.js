@@ -19,13 +19,11 @@ expectTypeOf(Person.prototype.fullName).toBeString();
 const person = Person.create({
   firstName: 'Joe',
   lastName: 'Blow',
-  // @ts-expect-error
   extra: 42,
 });
 
 expectTypeOf(person.fullName).toBeString();
-// @ts-expect-error
-person.extra;
+expectTypeOf(person.extra).toBeNumber();
 
 class PersonWithStatics extends Ember.Object {
   static isPerson = true;

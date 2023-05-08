@@ -5,8 +5,7 @@ const da = Ember.DataAdapter.create();
 
 const filters = da.getFilters();
 expectTypeOf(filters.includes({ name: 'foo', desc: 'bar' })).toBeBoolean();
-// @ts-expect-error
-filters.includes({});
+filters.includes({ name: 'lol', desc: 'wut' });
 
 expectTypeOf(filters[0]?.name).toEqualTypeOf<string | undefined>();
 expectTypeOf(filters[0]?.desc).toEqualTypeOf<string | undefined>();
@@ -15,19 +14,17 @@ expectTypeOf(
   da.watchModelTypes(
     function added(wrappedTypes) {
       wrappedTypes;
-      expectTypeOf(wrappedTypes[0]?.release).toEqualTypeOf<(() => void) | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.columns[0]?.desc).toEqualTypeOf<string | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.columns[0]?.name).toEqualTypeOf<string | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.count).toEqualTypeOf<number | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.name).toEqualTypeOf<string | undefined>();
+      expectTypeOf(wrappedTypes[0]?.columns[0]?.desc).toEqualTypeOf<string | undefined>();
+      expectTypeOf(wrappedTypes[0]?.columns[0]?.name).toEqualTypeOf<string | undefined>();
+      expectTypeOf(wrappedTypes[0]?.count).toEqualTypeOf<number | undefined>();
+      expectTypeOf(wrappedTypes[0]?.name).toEqualTypeOf<string | undefined>();
     },
     function updated(wrappedTypes) {
       wrappedTypes;
-      expectTypeOf(wrappedTypes[0]?.release).toEqualTypeOf<(() => void) | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.columns[0]?.desc).toEqualTypeOf<string | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.columns[0]?.name).toEqualTypeOf<string | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.count).toEqualTypeOf<number | undefined>();
-      expectTypeOf(wrappedTypes[0]?.type.name).toEqualTypeOf<string | undefined>();
+      expectTypeOf(wrappedTypes[0]?.columns[0]?.desc).toEqualTypeOf<string | undefined>();
+      expectTypeOf(wrappedTypes[0]?.columns[0]?.name).toEqualTypeOf<string | undefined>();
+      expectTypeOf(wrappedTypes[0]?.count).toEqualTypeOf<number | undefined>();
+      expectTypeOf(wrappedTypes[0]?.name).toEqualTypeOf<string | undefined>();
     }
   )
 ).toEqualTypeOf<() => void>();
@@ -38,16 +35,16 @@ expectTypeOf(
   da.watchRecords(
     'house',
     function added(records) {
-      expectTypeOf(records[0]?.object).toEqualTypeOf<object | undefined>();
+      expectTypeOf(records[0]?.object).toBeUnknown();
       expectTypeOf(records[0]?.columnValues).toEqualTypeOf<object | undefined>();
     },
     function updated(records) {
-      expectTypeOf(records[0]?.object).toEqualTypeOf<object | undefined>();
+      expectTypeOf(records[0]?.object).toEqualTypeOf<unknown>();
       expectTypeOf(records[0]?.columnValues).toEqualTypeOf<object | undefined>();
     },
-    function removed(idx, count) {
-      expectTypeOf(idx).toBeNumber();
-      expectTypeOf(count).toBeNumber();
+    function removed(records) {
+      expectTypeOf(records[0]?.object).toEqualTypeOf<unknown>();
+      expectTypeOf(records[0]?.columnValues).toEqualTypeOf<object | undefined>();
     }
   )
 ).toEqualTypeOf<() => void>();

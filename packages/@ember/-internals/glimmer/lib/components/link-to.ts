@@ -12,7 +12,8 @@ import type { Maybe, Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
-import InternalComponent, { opaquify } from './internal';
+import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
+import { type Opaque } from '@ember/-internals/utility-types';
 
 const EMPTY_ARRAY: {}[] = [];
 const EMPTY_QUERY_PARAMS = {};
@@ -272,7 +273,7 @@ function isQueryParams(value: unknown): value is QueryParams {
   @public
 **/
 
-class LinkTo extends InternalComponent {
+class _LinkTo extends InternalComponent {
   static toString(): string {
     return 'LinkTo';
   }
@@ -469,12 +470,12 @@ class LinkTo extends InternalComponent {
   }
 
   private get isActive(): boolean {
-    return this.isActiveForState(this.routing.currentState as Maybe<RouterState<Route>>);
+    return this.isActiveForState(this.routing.currentState as Maybe<RouterState>);
   }
 
   private get willBeActive(): Option<boolean> {
-    let current = this.routing.currentState as Maybe<RouterState<Route>>;
-    let target = this.routing.targetState as Maybe<RouterState<Route>>;
+    let current = this.routing.currentState;
+    let target = this.routing.targetState;
 
     if (current === target) {
       return null;
@@ -530,7 +531,7 @@ class LinkTo extends InternalComponent {
     }
   }
 
-  private isActiveForState(state: Maybe<RouterState<Route>>): boolean {
+  private isActiveForState(state: Maybe<RouterState>): boolean {
     if (!isPresent(state)) {
       return false;
     }
@@ -582,7 +583,7 @@ class LinkTo extends InternalComponent {
   }
 }
 
-let { prototype } = LinkTo;
+let { prototype } = _LinkTo;
 
 let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
   if (target) {
@@ -602,7 +603,7 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   Object.defineProperty(prototype, 'onUnsupportedArgument', {
     configurable: true,
     enumerable: false,
-    value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+    value: function onUnsupportedArgument(this: _LinkTo, name: string): void {
       if (name === 'href') {
         assert(`Passing the \`@href\` argument to <LinkTo> is not supported.`);
       } else {
@@ -621,12 +622,12 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
     superModelsDescriptor && typeof superModelsDescriptor.get === 'function'
   );
 
-  let superModelsGetter = superModelsDescriptor.get as (this: LinkTo) => {}[];
+  let superModelsGetter = superModelsDescriptor.get as (this: _LinkTo) => {}[];
 
   Object.defineProperty(prototype, 'models', {
     configurable: true,
     enumerable: false,
-    get: function models(this: LinkTo): {}[] {
+    get: function models(this: _LinkTo): {}[] {
       let models = superModelsGetter.call(this);
 
       if (models.length > 0 && !('query' in this.args.named)) {
@@ -646,12 +647,12 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
     superQueryDescriptor && typeof superQueryDescriptor.get === 'function'
   );
 
-  let superQueryGetter = superQueryDescriptor.get as (this: LinkTo) => {};
+  let superQueryGetter = superQueryDescriptor.get as (this: _LinkTo) => {};
 
   Object.defineProperty(prototype, 'query', {
     configurable: true,
     enumerable: false,
-    get: function query(this: LinkTo): {} {
+    get: function query(this: _LinkTo): {} {
       if ('query' in this.args.named) {
         let qp = superQueryGetter.call(this);
 
@@ -684,7 +685,7 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   Object.defineProperty(prototype, 'onUnsupportedArgument', {
     configurable: true,
     enumerable: false,
-    value: function onUnsupportedArgument(this: LinkTo, name: string): void {
+    value: function onUnsupportedArgument(this: _LinkTo, name: string): void {
       if (name !== 'params') {
         superOnUnsupportedArgument.call(this, name);
       }
@@ -692,4 +693,6 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
   });
 }
 
-export default opaquify(LinkTo, LinkToTemplate);
+const LinkTo = opaquify(_LinkTo, LinkToTemplate) as LinkTo;
+interface LinkTo extends Opaque<'component:link-to'>, OpaqueInternalComponentConstructor {}
+export default LinkTo;

@@ -24,10 +24,11 @@ expectTypeOf(
   instance.register('service:store-singleton', Store, { singleton: true, instantiate: true })
 ).toEqualTypeOf<void>();
 
-expectTypeOf(instance.lookup('service:store')).toBeUnknown();
+// We do not have a registry entry, so we will not get back the `Store` class.
+expectTypeOf(instance.lookup('service:store')).toEqualTypeOf<object | undefined>();
 expectTypeOf(
   instance.lookup('service:store', { singleton: true, instantiate: true })
-).toBeUnknown();
+).toEqualTypeOf<object | undefined>();
 
 expectTypeOf(instance.hasRegistration('service:store')).toEqualTypeOf<boolean>();
 // @ts-expect-error requires name

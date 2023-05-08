@@ -41,4 +41,11 @@ const App2 = BaseApp.create({
 const App3 = BaseApp.create();
 
 expectTypeOf(App3.buildInstance()).toEqualTypeOf<ApplicationInstance>();
-expectTypeOf(App3.buildInstance({ foo: 'bar' })).toEqualTypeOf<ApplicationInstance>();
+expectTypeOf(App3.buildInstance({})).toEqualTypeOf<ApplicationInstance>();
+expectTypeOf(App3.buildInstance).parameter(0).toEqualTypeOf<
+  | {
+      mountPoint?: string;
+      routable?: boolean;
+    }
+  | undefined
+>();

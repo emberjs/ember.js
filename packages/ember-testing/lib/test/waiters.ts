@@ -43,7 +43,11 @@ const callbacks: Array<() => unknown> = [];
 export function registerWaiter<T>(context: T, callback: (this: T) => unknown): void;
 export function registerWaiter(callback: (this: null) => unknown): void;
 export function registerWaiter<T>(
-  ...args: [context: T, callback: (this: T) => unknown] | [callback: (this: null) => unknown]
+  // Formatting makes a pretty big difference in how readable this is.
+  // prettier-ignore
+  ...args:
+    | [context: T, callback: (this: T) => unknown]
+    | [callback: (this: null) => unknown]
 ): void {
   let checkedCallback: () => unknown;
   let checkedContext: T | null;

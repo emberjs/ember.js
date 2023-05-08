@@ -15,7 +15,7 @@ const overridden = ArrayProxy.create({
   objectAtContent(this: ArrayProxy<string>, idx: number): string | undefined {
     // NOTE: cast is necessary because `this` is not managed correctly in the
     // `.create()` body anymore.
-    return (this.get('content') as EmberArray<string>).objectAt(idx)?.toUpperCase();
+    return (this.get('content') as unknown as EmberArray<string>).objectAt(idx)?.toUpperCase();
   },
 });
 
@@ -25,8 +25,8 @@ class MyNewProxy<T> extends ArrayProxy<T> {
   isNew = true;
 }
 
-const x = MyNewProxy.create({ content: A([1, 2, 3]) }) as MyNewProxy<number>;
-expectTypeOf(x.get('firstObject')).toEqualTypeOf<number | undefined>();
+const x = MyNewProxy.create({ content: A([1, 2, 3]) });
+expectTypeOf(x.get('firstObject')).toBeUnknown();
 expectTypeOf(x.isNew).toBeBoolean();
 
 // Custom EmberArray

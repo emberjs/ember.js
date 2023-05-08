@@ -2,13 +2,14 @@
 @module @ember/component
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
+import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
 import { valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
-import { opaquify } from './internal';
+import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
 let isValidInputType: (type: string) => boolean;
 
@@ -158,7 +159,7 @@ if (hasDOM) {
   @param {Hash} options
   @public
 */
-class Input extends AbstractInput {
+class _Input extends AbstractInput {
   static toString(): string {
     return 'Input';
   }
@@ -270,4 +271,6 @@ class Input extends AbstractInput {
   }
 }
 
-export default opaquify(Input, InputTemplate);
+const Input = opaquify(_Input, InputTemplate) as Input;
+interface Input extends Opaque<'component:input'>, OpaqueInternalComponentConstructor {}
+export default Input;

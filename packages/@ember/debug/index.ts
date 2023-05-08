@@ -24,7 +24,10 @@ export type DebugFunctionType =
   | 'runInDebug'
   | 'deprecateFunc';
 
-export type AssertFunc = (desc: string, condition?: unknown) => asserts condition;
+export interface AssertFunc {
+  (desc: string, condition: unknown): asserts condition;
+  (desc: string): never;
+}
 export type DebugFunc = (message: string) => void;
 export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
@@ -63,7 +66,9 @@ export type SetDebugFunction = {
 // These are the default production build versions:
 const noop = () => {};
 
-let assert: AssertFunc = noop;
+// SAFETY: these casts are just straight-up lies, but the point is that they do
+// not do anything in production builds.
+let assert: AssertFunc = noop as unknown as AssertFunc;
 let info: InfoFunc = noop;
 let warn: WarnFunc = noop;
 let debug: DebugFunc = noop;
@@ -71,8 +76,8 @@ let deprecate: DeprecateFunc = noop;
 let debugSeal: DebugSealFunc = noop;
 let debugFreeze: DebugFreezeFunc = noop;
 let runInDebug: RunInDebugFunc = noop;
-let setDebugFunction: SetDebugFunction = noop as any;
-let getDebugFunction: GetDebugFunction = noop as any;
+let setDebugFunction: SetDebugFunction = noop as unknown as SetDebugFunction;
+let getDebugFunction: GetDebugFunction = noop as unknown as GetDebugFunction;
 
 let deprecateFunc: DeprecateFuncFunc = function () {
   return arguments[arguments.length - 1];
@@ -165,11 +170,16 @@ if (DEBUG) {
     @public
     @since 1.0.0
   */
-  setDebugFunction('assert', function assert(desc, test) {
+  function assert(desc: string): never;
+  function assert(desc: string, test: unknown): asserts test;
+  // eslint-disable-next-line no-inner-declarations
+  function assert(desc: string, test?: unknown): asserts test {
     if (!test) {
       throw new Error(`Assertion Failed: ${desc}`);
     }
-  });
+  }
+
+  setDebugFunction('assert', assert);
 
   /**
     Display a debug notice.

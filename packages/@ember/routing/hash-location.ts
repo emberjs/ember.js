@@ -173,9 +173,3 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     }
   }
 }
-
-declare module '@ember/routing/location' {
-  export interface Registry {
-    hash: HashLocation;
-  }
-}

@@ -18,7 +18,7 @@ enableDestroyableTracking({});
 enableDestroyableTracking('foo');
 // @ts-expect-error
 enableDestroyableTracking(1);
-enableDestroyableTracking();
+enableDestroyableTracking?.();
 
 class Child {
   state: boolean;
@@ -87,4 +87,4 @@ assertDestroyablesDestroyed({});
 assertDestroyablesDestroyed('foo');
 // @ts-expect-error
 assertDestroyablesDestroyed(1);
-assertDestroyablesDestroyed();
+assertDestroyablesDestroyed?.();

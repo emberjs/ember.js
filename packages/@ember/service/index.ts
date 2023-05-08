@@ -97,12 +97,29 @@ export default class Service extends FrameworkObject {
 /**
   A type registry for Ember `Service`s. Meant to be declaration-merged so string
   lookups resolve to the correct type.
- */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Registry {}
 
-declare module '@ember/owner' {
-  export interface DIRegistry {
-    service: Registry;
+  Blueprints should include such a declaration merge for TypeScript:
+
+  ```ts
+  import Service from '@ember/service';
+
+  export default class ExampleService extends Service {
+    // ...
   }
-}
+
+  declare module '@ember/service' {
+    export interface Registry {
+      example: ExampleService;
+    }
+  }
+  ```
+
+  Then `@service` can check that the service is registered correctly, and APIs
+  like `owner.lookup('service:example')` can return `ExampleService`.
+ */
+// NOTE: this cannot be `Record<string, Service | undefined>`, convenient as
+// that would be for end users, because there is no actual contract to that
+// effect with Ember -- and in the future this choice would allow us to have
+// registered services which have no base class.
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Registry extends Record<string, object | undefined> {}

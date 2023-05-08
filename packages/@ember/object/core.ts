@@ -91,7 +91,10 @@ function initialize(obj: CoreObject, properties?: unknown) {
     let keyNames = Object.keys(properties);
 
     for (let keyName of keyNames) {
-      let value = (properties as any)[keyName];
+      // SAFETY: this cast as a Record is safe because all object types can be
+      // indexed in JS, and we explicitly type it as returning `unknown`, so the
+      // result *must* be checked below.
+      let value: unknown = (properties as Record<string, unknown>)[keyName];
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
@@ -311,7 +314,7 @@ class CoreObject {
     }
   }
 
-  reopen(...args: Array<Mixin | Record<string, unknown>>) {
+  reopen(...args: Array<Mixin | Record<string, unknown>>): this {
     applyMixin(this, args);
     return this;
   }
@@ -709,10 +712,10 @@ class CoreObject {
     @param {Object} [arguments]* Object containing values to use within the new class
     @public
   */
-  static extend<Statics, Instance>(
+  static extend<Statics, Instance, M extends Array<unknown>>(
     this: Statics & EmberClassConstructor<Instance>,
-    ...mixins: any[]
-  ): Readonly<Statics> & EmberClassConstructor<Instance>;
+    ...mixins: M
+  ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
   static extend(...mixins: any[]) {
     let Class = class extends this {};
     reopen.apply(Class.PrototypeMixin, mixins);
@@ -760,16 +763,17 @@ class CoreObject {
     @param [arguments]*
     @public
   */
-  static create<Class extends typeof CoreObject, Args extends Array<Record<string, any>>>(
-    this: Class,
-    ...args: Args
-  ): InstanceType<Class> & MergeArray<Args>;
-  static create(...args: Record<string, unknown>[]) {
+  static create<
+    C extends typeof CoreObject,
+    I extends InstanceType<C>,
+    K extends keyof I,
+    Args extends Array<Partial<Record<K, I[K]>>>
+  >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args> {
     let props = args[0];
     let instance;
 
     if (props !== undefined) {
-      instance = new this(getOwner(props));
+      instance = new this(getOwner(props)) as InstanceType<C>;
       // TODO(SAFETY): at present, we cannot actually rely on this being set,
       // because a number of acceptance tests are (incorrectly? Unclear!)
       // relying on the ability to run through this path with `factory` being
@@ -782,7 +786,7 @@ class CoreObject {
       // assert(`missing factory when creating object ${instance}`, factory !== undefined);
       setFactoryFor(instance, factory as NonNullable<typeof factory>);
     } else {
-      instance = new this();
+      instance = new this() as InstanceType<C>;
     }
 
     if (args.length <= 1) {
@@ -791,7 +795,9 @@ class CoreObject {
       initialize(instance, flattenProps.apply(this, args));
     }
 
-    return instance;
+    // SAFETY: The `initialize` call is responsible to merge the prototype chain
+    // so that this holds.
+    return instance as InstanceType<C> & MergeArray<Args>;
   }
 
   /**
@@ -828,7 +834,7 @@ class CoreObject {
     @static
     @public
   */
-  static reopen(...args: any[]) {
+  static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
     this.willReopen();
     reopen.apply(this.PrototypeMixin, args);
     return this;
@@ -909,7 +915,10 @@ class CoreObject {
     @static
     @public
   */
-  static reopenClass(...mixins: Array<Mixin | Record<string, unknown>>) {
+  static reopenClass<C extends typeof CoreObject>(
+    this: C,
+    ...mixins: Array<Mixin | Record<string, unknown>>
+  ): C {
     applyMixin(this, mixins);
     return this;
   }

@@ -27,10 +27,12 @@ import { set } from './property_set';
   @return properties
   @public
 */
-export default function setProperties<TProperties extends { [key: string]: any }>(
+function setProperties<T, K extends keyof T>(obj: T, properties: Pick<T, K>): Pick<T, K>;
+function setProperties<T extends Record<string, unknown>>(obj: object, properties: T): T;
+function setProperties<K extends string, Hash extends Record<K, unknown>>(
   obj: object,
-  properties: TProperties
-): TProperties {
+  properties: Hash
+): Hash {
   if (properties === null || typeof properties !== 'object') {
     return properties;
   }
@@ -38,8 +40,13 @@ export default function setProperties<TProperties extends { [key: string]: any }
     let props = Object.keys(properties);
 
     for (let propertyName of props) {
-      set(obj, propertyName, properties[propertyName]);
+      // SAFETY: casting `properties` this way is safe because any object in JS
+      // can be indexed this way, and the result will be `unknown`, making it
+      // safe for callers.
+      set(obj, propertyName, (properties as Record<string, unknown>)[propertyName]);
     }
   });
   return properties;
 }
+
+export default setProperties;

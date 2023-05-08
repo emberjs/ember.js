@@ -153,6 +153,7 @@ class Bar extends EmberObject {
 
   // @ts-expect-error
   @and declare andTest0: boolean;
+  // @ts-expect-error
   @and() declare andTest1: boolean;
   @and('firstName') declare andTest2: boolean;
   @and('firstName', 'lastName') declare andTest3: boolean;
@@ -165,6 +166,7 @@ class Bar extends EmberObject {
 
   // @ts-expect-error
   @collect declare collectTest0: unknown[];
+  // @ts-expect-error
   @collect() declare collectTest1: unknown[];
   @collect('firstName') declare collectTest2: string[];
 
@@ -174,7 +176,12 @@ class Bar extends EmberObject {
   @deprecatingAlias() declare deprecatingAliasTest1: string;
   // @ts-expect-error
   @deprecatingAlias('firstName') declare deprecatingAliasTest2: string;
-  @deprecatingAlias('firstName', { id: 'deprecate-everything', until: 'v5.0.0' })
+  @deprecatingAlias('firstName', {
+    id: 'deprecate-everything',
+    until: 'v5.0.0',
+    for: 'test',
+    since: { available: '5.1.0', enabled: '5.3.0' },
+  })
   declare deprecatingAliasTest3: string;
 
   // @ts-expect-error
@@ -228,6 +235,7 @@ class Bar extends EmberObject {
 
   // @ts-expect-error
   @intersect declare intersectTest1: any;
+  // @ts-expect-error
   @intersect() declare intersectTest2: any;
   @intersect('firstName') declare intersectTest3: any;
   @intersect('firstName', 'lastName') declare intersectTest4: any;
@@ -324,6 +332,7 @@ class Bar extends EmberObject {
 
   // @ts-expect-error
   @or declare orTest1: boolean;
+  // @ts-expect-error
   @or() declare orTest2: boolean;
   @or('firstName') declare orTest3: boolean;
   @or('firstName', 'lastName') declare orTest4: boolean;
@@ -376,6 +385,7 @@ class Bar extends EmberObject {
 
   // @ts-expect-error
   @union declare unionTest1: never;
+  // @ts-expect-error
   @union() declare unionTest2: [];
   @union('firstName') declare unionTest3: string[];
   @union('firstName', 'lastName') declare unionTest4: string[];

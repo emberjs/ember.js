@@ -585,10 +585,10 @@ export default class Mixin {
     @param arguments*
     @public
   */
-  static create(...args: any[]): Mixin {
+  static create<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
     setUnprocessedMixins();
     let M = this;
-    return new M(args, undefined);
+    return new M(args, undefined) as InstanceType<M>;
   }
 
   // returns the mixins currently applied to the specified object
@@ -617,9 +617,9 @@ export default class Mixin {
     @private
     @internal
   */
-  reopen(...args: any[]): this | undefined {
+  reopen(...args: Array<Mixin | Record<string, unknown>>): this {
     if (args.length === 0) {
-      return;
+      return this;
     }
 
     if (this.properties) {

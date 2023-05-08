@@ -29,10 +29,10 @@ class RouterServiceConsumer extends Ember.Service {
   declare router: RouterService;
 
   currentRouteName() {
-    expectTypeOf(Ember.get(this, 'router').currentRouteName).toEqualTypeOf<string>();
+    expectTypeOf(this.router.currentRouteName).toEqualTypeOf<string | null>();
   }
   currentURL() {
-    expectTypeOf(Ember.get(this, 'router').currentURL).toEqualTypeOf<string>();
+    expectTypeOf(this.router.currentURL).toEqualTypeOf<string | null>();
   }
   transitionWithoutModel() {
     Ember.get(this, 'router').transitionTo('some-route');

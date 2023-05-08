@@ -1,10 +1,11 @@
 /**
 @module @ember/component
 */
+import { type Opaque } from '@ember/-internals/utility-types';
 import { action } from '@ember/object';
 import TextareaTemplate from '../templates/textarea';
 import AbstractInput from './abstract-input';
-import { opaquify } from './internal';
+import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
 /**
   The `Textarea` component inserts a new instance of `<textarea>` tag into the template.
@@ -139,7 +140,7 @@ import { opaquify } from './internal';
   @see {Ember.Templates.components.Textarea}
   @public
 **/
-class Textarea extends AbstractInput {
+class _Textarea extends AbstractInput {
   static toString(): string {
     return 'Textarea';
   }
@@ -164,4 +165,6 @@ class Textarea extends AbstractInput {
   }
 }
 
-export default opaquify(Textarea, TextareaTemplate);
+const Textarea = opaquify(_Textarea, TextareaTemplate) as Textarea;
+interface Textarea extends Opaque<'component:textarea'>, OpaqueInternalComponentConstructor {}
+export default Textarea;
