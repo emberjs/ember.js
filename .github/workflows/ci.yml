@@ -70,17 +70,35 @@ jobs:
   #     - run: pnpm browserstack:results
   #     - run: pnpm browserstack:disconnect
 
-  # test-types:
-  #   name: Types
+  # test-browserstack:
+  #   name: Browserstack
   #   runs-on: ubuntu-latest
   #   needs: ['install_dependencies']
-  #   timeout-minutes: 10
+  #   timeout-minutes: 20
+
+  #   env:
+  #     BROWSERSTACK_USERNAME: glimmervm1
+  #     BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
 
   #   steps:
   #     - uses: actions/checkout@v3
   #     - uses: NullVoxPopuli/action-setup-pnpm@v2
-  #     - run: pnpm build
-  #     - run: pnpm test:types
+  #     - run: pnpm browserstack:connect
+  #     - run: pnpm test:browserstack
+  #     - run: pnpm browserstack:results
+  #     - run: pnpm browserstack:disconnect
+
+  test-types:
+    name: Types
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: NullVoxPopuli/action-setup-pnpm@v2
+      - run: pnpm build
+      - run: pnpm test:types
 
   floating-dependencies:
     name: Floating Dependencies

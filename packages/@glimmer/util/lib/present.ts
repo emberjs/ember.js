@@ -4,9 +4,11 @@ export function isPresent<T>(value: T): value is Present<T> {
   return value !== null && value !== undefined;
 }
 
-export function assertPresent<T>(value: T): asserts value is Present<T> {
+export function assertPresent<T extends string>(value: T): asserts value is Present<T>;
+export function assertPresent<T>(value: T, message: string): asserts value is Present<T>;
+export function assertPresent<T>(value: T, message?: string): asserts value is Present<T> {
   if (!isPresent(value)) {
-    throw new Error(`Expected present, got ${value}`);
+    throw new Error(`Expected present, got ${typeof value === 'string' ? value : message!}`);
   }
 }
 

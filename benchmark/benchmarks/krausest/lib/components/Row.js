@@ -1,4 +1,7 @@
 export default class Row {
+  /**
+   * @param {Readonly<Record<string, any>> & {item: unknown; select: (item: unknown) => void}} args
+   */
   constructor(args) {
     this.args = args;
     this.onSelect = () => {

@@ -1,7 +1,6 @@
 import { type Dict, type Option, type PresentArray, type WireFormat } from '@glimmer/interfaces';
 
-import { type SourceLocation } from '../source/location';
-import { type SourceSpan } from '../source/span';
+import type * as src from '../source/api';
 
 export interface Symbols {
   symbols: string[];
@@ -33,7 +32,7 @@ export interface BaseNode {
   // The type property should be a string literal. For example, Identifier
   // has: `type: "Identifier"`
   type: NodeType;
-  loc: SourceSpan;
+  loc: src.SourceSpan;
 }
 
 export interface CommonProgram extends BaseNode {
@@ -133,13 +132,13 @@ export interface MustacheCommentStatement extends BaseNode {
 export interface NamedBlockName {
   type: 'NamedBlockName';
   name: string;
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export interface ElementName {
   type: 'ElementName';
   name: string;
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export interface ElementNode extends BaseNode {
@@ -192,31 +191,31 @@ export interface SubExpression extends Call {
 
 export interface ThisHead {
   type: 'ThisHead';
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export interface AtHead {
   type: 'AtHead';
   name: string;
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export interface VarHead {
   type: 'VarHead';
   name: string;
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export interface FreeVarHead {
   type: 'FreeVarHead';
   name: string;
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export interface LocalVarHead {
   type: 'LocalVarHead';
   name: string;
-  loc: SourceLocation;
+  loc: src.SourceLocation;
 }
 
 export type PathHead = ThisHead | AtHead | VarHead;

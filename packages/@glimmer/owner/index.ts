@@ -1,6 +1,4 @@
-import { symbol } from '@glimmer/util';
-
-export const OWNER: unique symbol = symbol('OWNER') as any;
+export const OWNER: unique symbol = Symbol('OWNER') as any;
 
 interface OwnedObject<O extends object> {
   [OWNER]: O | undefined;

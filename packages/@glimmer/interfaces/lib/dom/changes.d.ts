@@ -1,13 +1,6 @@
-import type {
-  Namespace,
-  SimpleComment,
-  SimpleElement,
-  SimpleNode,
-  SimpleText,
-} from '@glimmer/interfaces';
-
 import { type Option } from '../core';
 import { type Bounds } from './bounds';
+import type { Namespace, SimpleComment, SimpleElement, SimpleNode, SimpleText } from './simple';
 
 export interface GlimmerDOMOperations {
   createElement(tag: string, context?: SimpleElement): SimpleElement;

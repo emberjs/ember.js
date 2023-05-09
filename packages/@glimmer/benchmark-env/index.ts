@@ -1,3 +1,3 @@
-export { default as createBenchmark } from './src/create-benchmark';
-export { default as createCell } from './src/create-cell';
-export type { Benchmark, Cell, ComponentArgs, UpdateBenchmark } from './src/interfaces';
+export { default as createBenchmark } from './lib/create-benchmark';
+export { default as createCell } from './lib/create-cell';
+export type { Benchmark, Cell, ComponentArgs, UpdateBenchmark } from './lib/interfaces';

@@ -38,6 +38,6 @@ import { internalHelper } from './internal-helper';
    @public
  */
 
-export default internalHelper(({ positional }: CapturedArguments): Reference<unknown[]> => {
+export const array = internalHelper(({ positional }: CapturedArguments): Reference<unknown[]> => {
   return createComputeRef(() => reifyPositional(positional), null, 'array');
 });

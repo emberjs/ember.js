@@ -28,6 +28,9 @@ export class Item {
   }
 }
 
+/**
+ * @param {number} max
+ */
 function _random(max) {
   // eslint-disable-next-line no-bitwise
   return (Math.random() * max) | 0;

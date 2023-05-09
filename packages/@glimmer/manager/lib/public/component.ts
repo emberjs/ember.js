@@ -144,7 +144,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
 
     let component: ComponentInstance = delegate.createComponent(definition, args);
 
-    return new CustomComponentState(component!, delegate, args);
+    return new CustomComponentState(component, delegate, args);
   }
 
   getDebugName(definition: ComponentDefinitionState): string {

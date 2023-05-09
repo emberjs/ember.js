@@ -2,20 +2,20 @@
   "compilerOptions": {
     "composite": true,
     // Compilation Configuration
-    "target": "es2020",
-    "lib": ["esnext", "DOM", "DOM.Iterable"],
+    "lib": ["esnext", "DOM", "DOM.Iterable", "ES2015.Iterable"],
+    "allowJs": true,
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "../ts-dist/packages",
+    "outDir": "../../ts-dist/packages",
     "baseUrl": ".",
 
-    "isolatedModules": true,
     "verbatimModuleSyntax": true,
 
     // Environment Configuration
     "experimentalDecorators": true,
+    "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
 
@@ -28,12 +28,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
 
-    "newLine": "LF",
-    "noEmit": true,
-
     "skipLibCheck": true,
 
     "types": ["qunit", "node", "vite/client"]
   },
-  "exclude": ["**/dist", "**/ts-dist", "**/dist", "**/node_modules", "**/fixtures"]
+  "exclude": ["*/dist", "*/node_modules"]
 }

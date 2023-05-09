@@ -260,7 +260,7 @@ export class NamedArgumentsImpl implements NamedArguments {
       names = this._names = this._atNames!.map(this.toSyntheticName);
     }
 
-    return names!;
+    return names;
   }
 
   get atNames(): readonly string[] {
@@ -270,7 +270,7 @@ export class NamedArgumentsImpl implements NamedArguments {
       atNames = this._atNames = this._names!.map(this.toAtName);
     }
 
-    return atNames!;
+    return atNames;
   }
 
   has(name: string): boolean {
@@ -411,11 +411,11 @@ export class BlockArgumentsImpl implements BlockArguments {
   }
 
   has(name: string): boolean {
-    return this.names!.indexOf(name) !== -1;
+    return this.names.indexOf(name) !== -1;
   }
 
   get(name: string): Option<ScopeBlock> {
-    let idx = this.names!.indexOf(name);
+    let idx = this.names.indexOf(name);
 
     if (idx === -1) {
       return null;

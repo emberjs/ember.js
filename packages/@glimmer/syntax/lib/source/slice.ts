@@ -1,28 +1,27 @@
-import { type Source } from './index';
-import { type SerializedSourceSpan, SourceSpan } from './span';
+import * as src from './api';
 
 export type SerializedSourceSlice<Chars extends string = string> = [
   chars: Chars,
-  span: SerializedSourceSpan
+  span: src.SerializedSourceSpan
 ];
 
 export class SourceSlice<Chars extends string = string> {
   static synthetic<S extends string>(chars: S): SourceSlice<S> {
-    let offsets = SourceSpan.synthetic(chars);
+    let offsets = src.SourceSpan.synthetic(chars);
     return new SourceSlice({ loc: offsets, chars: chars });
   }
 
-  static load(source: Source, slice: SerializedSourceSlice): SourceSlice {
+  static load(source: src.Source, slice: SerializedSourceSlice): SourceSlice {
     return new SourceSlice({
-      loc: SourceSpan.load(source, slice[1]),
+      loc: src.SourceSpan.load(source, slice[1]),
       chars: slice[0],
     });
   }
 
   readonly chars: Chars;
-  readonly loc: SourceSpan;
+  readonly loc: src.SourceSpan;
 
-  constructor(options: { loc: SourceSpan; chars: Chars }) {
+  constructor(options: { loc: src.SourceSpan; chars: Chars }) {
     this.loc = options.loc;
     this.chars = options.chars;
   }

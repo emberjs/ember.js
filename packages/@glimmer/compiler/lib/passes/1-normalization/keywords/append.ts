@@ -1,5 +1,5 @@
 import { CurriedType } from '@glimmer/interfaces';
-import { ASTv2, generateSyntaxError, type SourceSlice, SourceSpan } from '@glimmer/syntax';
+import { ASTv2, generateSyntaxError, src } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
@@ -22,14 +22,14 @@ export const APPEND_KEYWORDS = keywords('Append')
   .kw('unless', toAppend(ifUnlessInlineKeyword('unless')))
   .kw('yield', {
     assert(node: ASTv2.AppendContent): Result<{
-      target: SourceSlice;
+      target: src.SourceSlice;
       positional: ASTv2.PositionalArguments;
     }> {
       let { args } = node;
 
       if (args.named.isEmpty()) {
         return Ok({
-          target: SourceSpan.synthetic('default').toSlice(),
+          target: src.SourceSpan.synthetic('default').toSlice(),
           positional: args.positional,
         });
       } else {
@@ -57,7 +57,7 @@ export const APPEND_KEYWORDS = keywords('Append')
         target,
         positional,
       }: {
-        target: SourceSlice;
+        target: src.SourceSlice;
         positional: ASTv2.PositionalArguments;
       }
     ): Result<mir.Statement> {

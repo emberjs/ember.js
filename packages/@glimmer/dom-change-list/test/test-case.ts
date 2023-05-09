@@ -45,7 +45,7 @@ export function module(name: string): (klass: new () => TestCase) => void {
   return function (klass: new () => TestCase) {
     QUnit.module(name);
 
-    let proto = klass.prototype as any as Dict<unknown>;
+    let proto = klass.prototype as Dict<unknown>;
     for (let prop in proto) {
       const test = proto[prop];
 

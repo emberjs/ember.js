@@ -1,9 +1,9 @@
+import { enumerate } from './array-utils';
 import { getFirst, getLast, isPresentArray } from './present';
 
 export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   let out = '';
-  for (let i = 0; i < strings.length; i++) {
-    let string = strings[i];
+  for (const [i, string] of enumerate(strings)) {
     let dynamic = args[i] !== undefined ? String(args[i]) : '';
 
     out += `${string}${dynamic}`;

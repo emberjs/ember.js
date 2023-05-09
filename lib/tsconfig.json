@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "outDir": "../ts-dist/lib"
+  },
+  "files": ["local-linker/index.js"]
+}

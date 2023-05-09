@@ -39,7 +39,7 @@ function run(command, args = []) {
       // eslint-disable-next-line n/no-process-exit
       process.exit(0);
     } finally {
-      if (process.env.GITHUB_RUN_ID) {
+      if (process.env['GITHUB_RUN_ID']) {
         await run('ember', ['browserstack:results']);
       }
       await run('ember', ['browserstack:disconnect']);

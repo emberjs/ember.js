@@ -13,13 +13,13 @@ import {
   type TransactionSymbol,
 } from '@glimmer/interfaces';
 import { RuntimeProgramImpl } from '@glimmer/program';
-import { assert, expect, symbol } from '@glimmer/util';
+import { assert, expect } from '@glimmer/util';
 import { track, updateTag } from '@glimmer/validator';
 
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 
-export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
+export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
 
 class TransactionImpl implements Transaction {
   public scheduledInstallModifiers: ModifierInstance[] = [];

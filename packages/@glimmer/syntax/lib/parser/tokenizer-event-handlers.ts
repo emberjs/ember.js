@@ -6,8 +6,7 @@ import { EntityParser } from 'simple-html-tokenizer';
 import print from '../generation/print';
 import { voidMap } from '../generation/printer';
 import { type Tag } from '../parser';
-import { Source } from '../source/source';
-import { type SourceOffset, SourceSpan } from '../source/span';
+import * as src from '../source/api';
 import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
 import { type NodeVisitor } from '../traversal/visitor';
@@ -200,7 +199,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       current.loc = current.loc.withEnd(this.offset());
     } else {
       // initially assume the text node is a single char
-      let loc: SourceOffset = this.offset();
+      let loc: src.SourceOffset = this.offset();
 
       // the tokenizer line/column have already been advanced, correct location info
       if (char === '\n') {
@@ -245,7 +244,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     for (const part of parts) {
       if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
         throw generateSyntaxError(
-          'Unsupported node in quoted attribute value: ' + part['type'],
+          `Unsupported node in quoted attribute value: ${part['type'] as string}`,
           (part as ASTv1.BaseNode).loc
         );
       }
@@ -286,7 +285,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     parts: ASTv1.AttrPart[],
     isQuoted: boolean,
     isDynamic: boolean,
-    span: SourceSpan
+    span: src.SourceSpan
   ): ASTv1.AttrValue {
     if (isDynamic) {
       if (isQuoted) {
@@ -400,22 +399,22 @@ class CodemodEntityParser extends EntityParser {
 }
 
 export function preprocess(
-  input: string | Source | HBS.Program,
+  input: string | src.Source | HBS.Program,
   options: PreprocessOptions = {}
 ): ASTv1.Template {
   let mode = options.mode || 'precompile';
 
-  let source: Source;
+  let source: src.Source;
   let ast: HBS.Program;
   if (typeof input === 'string') {
-    source = new Source(input, options.meta?.moduleName);
+    source = new src.Source(input, options.meta?.moduleName);
 
     if (mode === 'codemod') {
       ast = parseWithoutProcessing(input, options.parseOptions) as HBS.Program;
     } else {
       ast = parse(input, options.parseOptions) as HBS.Program;
     }
-  } else if (input instanceof Source) {
+  } else if (input instanceof src.Source) {
     source = input;
 
     if (mode === 'codemod') {
@@ -424,7 +423,7 @@ export function preprocess(
       ast = parse(input.source, options.parseOptions) as HBS.Program;
     }
   } else {
-    source = new Source('', options.meta?.moduleName);
+    source = new src.Source('', options.meta?.moduleName);
     ast = input;
   }
 
@@ -433,7 +432,7 @@ export function preprocess(
     entityParser = new CodemodEntityParser();
   }
 
-  let offsets = SourceSpan.forCharPositions(source, 0, source.source.length);
+  let offsets = src.SourceSpan.forCharPositions(source, 0, source.source.length);
   ast.loc = {
     source: '(program)',
     start: offsets.startPosition,

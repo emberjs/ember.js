@@ -1846,7 +1846,7 @@ class UpdatingTest extends RenderTest {
     this.rerender({ list: [] });
     if (assertNodeTagName(this.element.firstChild, 'ul')) {
       assert.strictEqual(
-        this.element.firstChild!.firstChild && this.element.firstChild!.firstChild.nodeType,
+        this.element.firstChild.firstChild && this.element.firstChild.firstChild.nodeType,
         8,
         "there are no li's after removing the remaining entry"
       );
@@ -2007,7 +2007,7 @@ class UpdatingTest extends RenderTest {
     this.rerender({ list: [] });
     if (assertNodeTagName(this.element.firstChild, 'ul')) {
       assert.strictEqual(
-        this.element.firstChild!.firstChild && this.element.firstChild!.firstChild.nodeType,
+        this.element.firstChild.firstChild && this.element.firstChild.firstChild.nodeType,
         8,
         "there are no li's after removing the remaining entry"
       );

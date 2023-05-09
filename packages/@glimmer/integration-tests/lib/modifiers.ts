@@ -58,7 +58,7 @@ export class TestModifierManager
     }
 
     if (instance && instance.willDestroyElement) {
-      registerDestructor(instance, () => instance!.willDestroyElement!(), true);
+      registerDestructor(instance, () => instance.willDestroyElement!(), true);
     }
   }
 

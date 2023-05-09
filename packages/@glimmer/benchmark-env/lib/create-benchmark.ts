@@ -23,6 +23,6 @@ export default function createBenchmark(): Benchmark {
 
       registry.registerComponent(name, component);
     },
-    render: registry.render,
+    render: (...args) => registry.render(...args),
   };
 }

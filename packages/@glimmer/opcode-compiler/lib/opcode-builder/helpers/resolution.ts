@@ -102,7 +102,7 @@ export function resolveComponent(
   if (import.meta.env.DEV && expr[0] === SexpOpcodes.GetStrictKeyword) {
     throw new Error(
       `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
-        meta.upvars![expr[1]]
+        meta.upvars![expr[1]] ?? '{unknown variable}'
       }`
     );
   }
@@ -164,7 +164,7 @@ export function resolveHelper(
     let { upvars, owner } = assertResolverInvariants(meta);
 
     let name = unwrap(upvars[expr[1]]);
-    let helper = resolver.lookupHelper(name, owner!)!;
+    let helper = resolver.lookupHelper(name, owner)!;
 
     if (import.meta.env.DEV && helper === null) {
       throw new Error(
@@ -414,7 +414,7 @@ function lookupBuiltInHelper(
     // value of some kind that is not in scope
     throw new Error(
       `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${
-        meta.upvars![expr[1]]
+        meta.upvars![expr[1]] ?? '{unknown variable}'
       }`
     );
   }

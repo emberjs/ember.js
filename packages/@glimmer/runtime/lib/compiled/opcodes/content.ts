@@ -46,13 +46,13 @@ function toDynamicContentType(value: unknown) {
     return ContentType.String;
   }
 
-  if (isCurriedType(value, CurriedType.Component) || hasInternalComponentManager(value as object)) {
+  if (isCurriedType(value, CurriedType.Component) || hasInternalComponentManager(value)) {
     return ContentType.Component;
   } else {
     if (
       import.meta.env.DEV &&
       !isCurriedType(value, CurriedType.Helper) &&
-      !hasInternalHelperManager(value as object)
+      !hasInternalHelperManager(value)
     ) {
       throw new Error(
         `Attempted use a dynamic value as a component or helper, but that value did not have an associated component or helper manager. The value was: ${value}`

@@ -16,7 +16,7 @@ import type {
 } from '@glimmer/interfaces';
 
 import { assertTagNotConsumed } from './debug';
-import { symbol, unwrap } from './utils';
+import { unwrap } from './utils';
 
 //////////
 
@@ -41,7 +41,7 @@ const CONSTANT_TAG_ID: ICONSTANT_TAG_ID = 3;
 
 //////////
 
-export const COMPUTE: TagComputeSymbol = symbol('TAG_COMPUTE');
+export const COMPUTE: TagComputeSymbol = Symbol('TAG_COMPUTE') as TagComputeSymbol;
 
 //////////
 
@@ -73,7 +73,7 @@ export function validateTag(tag: Tag, snapshot: Revision): boolean {
 
 //////////
 
-const TYPE: TagTypeSymbol = symbol('TAG_TYPE');
+const TYPE: TagTypeSymbol = Symbol('TAG_TYPE') as TagTypeSymbol;
 
 // this is basically a const
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -92,7 +92,7 @@ function allowsCycles(tag: Tag): boolean {
 }
 
 class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
-  static combine(tags: Tag[]): Tag {
+  static combine(this: void, tags: Tag[]): Tag {
     switch (tags.length) {
       case 0:
         return CONSTANT_TAG;
@@ -110,7 +110,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   private lastValue = INITIAL;
 
   private isUpdating = false;
-  private subtag: Tag | Tag[] | null = null;
+  public subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
 
   [TYPE]: T;
@@ -163,7 +163,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     return this.lastValue;
   }
 
-  static updateTag(_tag: UpdatableTag, _subtag: Tag) {
+  static updateTag(this: void, _tag: UpdatableTag, _subtag: Tag) {
     if (import.meta.env.DEV && _tag[TYPE] !== UPDATABLE_TAG_ID) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
@@ -198,7 +198,11 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     }
   }
 
-  static dirtyTag(tag: DirtyableTag | UpdatableTag, disableConsumptionAssertion?: boolean) {
+  static dirtyTag(
+    this: void,
+    tag: DirtyableTag | UpdatableTag,
+    disableConsumptionAssertion?: boolean
+  ) {
     if (
       import.meta.env.DEV &&
       !(tag[TYPE] === UPDATABLE_TAG_ID || tag[TYPE] === DIRYTABLE_TAG_ID)

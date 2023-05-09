@@ -1,4 +1,4 @@
-import { ASTv2, maybeLoc, SourceSpan } from '@glimmer/syntax';
+import { ASTv2, maybeLoc, src } from '@glimmer/syntax';
 
 import { OptionalList } from '../../../../shared/list';
 import { Ok, Result, ResultArray } from '../../../../shared/result';
@@ -133,7 +133,7 @@ export class ClassifiedElement {
     return Result.all(args.toArray(), attrs.toArray()).mapOk(([args, attrs]) => ({
       attrs,
       args: new mir.NamedArguments({
-        loc: maybeLoc(args, SourceSpan.NON_EXISTENT),
+        loc: maybeLoc(args, src.SourceSpan.NON_EXISTENT),
         entries: OptionalList(args),
       }),
     }));
@@ -149,7 +149,7 @@ export class ClassifiedElement {
       let elementParams = [...attrs, ...modifiers];
 
       let params = new mir.ElementParameters({
-        loc: maybeLoc(elementParams, SourceSpan.NON_EXISTENT),
+        loc: maybeLoc(elementParams, src.SourceSpan.NON_EXISTENT),
         body: OptionalList(elementParams),
       });
 

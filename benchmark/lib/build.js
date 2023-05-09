@@ -1,9 +1,18 @@
-/* eslint-disable n/no-unpublished-require */
+/* eslint-disable no-inline-comments */
 const path = require('path');
 const rollup = require('rollup');
-const sourcemap = require('rollup-plugin-sourcemaps');
-const terser = require('@rollup/plugin-terser');
-const strip = require('@rollup/plugin-strip');
+const sourcemap = /** @type {import("@rollup/plugin-terser").default} */ (
+  /** @type {unknown} */
+  (require('rollup-plugin-sourcemaps'))
+);
+const terser = /** @type {import("@rollup/plugin-terser").default} */ (
+  /** @type {unknown} */
+  (require('@rollup/plugin-terser'))
+);
+const strip = /** @type {import("@rollup/plugin-strip").default} */ (
+  /** @type {unknown} */
+  (require('@rollup/plugin-strip'))
+);
 const fs = require('fs-extra');
 const symlinkOrCopy = require('symlink-or-copy').sync;
 
@@ -37,6 +46,9 @@ async function build(dist, out) {
         },
       }),
     ],
+    /**
+     * @param {{ message?: any; code?: any; }} warning
+     */
     onwarn(warning) {
       let { code } = warning;
       if (
@@ -63,6 +75,7 @@ async function build(dist, out) {
     sourcemap: true,
     plugins: [
       {
+        name: '@glimmer/benchmark/bundle',
         generateBundle() {
           this.emitFile({
             type: 'asset',

@@ -1,4 +1,7 @@
 export default class Application {
+  /**
+   * @param {Readonly<Record<string, any>>} args
+   */
   constructor(args) {
     this.args = args;
 

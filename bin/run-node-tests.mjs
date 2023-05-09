@@ -19,9 +19,11 @@ process.on('exit', (code) => {
   }
 });
 
+let outputDir = process.env['EMBER_CLI_TEST_OUTPUT'];
+
 // When running inside `ember test`, we already have a build we can use.
-if ('EMBER_CLI_TEST_OUTPUT' in process.env) {
-  process.chdir(process.env.EMBER_CLI_TEST_OUTPUT);
+if (outputDir) {
+  process.chdir(outputDir);
   exec(QUNIT_BIN, [NODE_TEST_GLOB]);
 } else {
   // When running script directly, we need to build first to ensure we have
@@ -32,6 +34,10 @@ if ('EMBER_CLI_TEST_OUTPUT' in process.env) {
 }
 
 // Executes a command and pipes stdout back to the user.
+/**
+ * @param {string} command
+ * @param {readonly string[] | undefined} args
+ */
 function exec(command, args) {
   execaSync(command, args, {
     stdio: 'inherit',

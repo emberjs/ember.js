@@ -55,6 +55,7 @@
     "id-denylist": "error",
     "id-length": "off",
     "id-match": "error",
+    "import/default": "off",
     "import/export": "off",
     "import/first": ["error"],
     "import/newline-after-import": ["error"],
@@ -262,20 +263,6 @@
       }
     },
 
-    // bin scripts
-    {
-      "files": ["bin/**/*.js"],
-      "rules": {
-        "n/no-unsupported-features/es-syntax": [
-          "error",
-          {
-            "ignores": [],
-            "version": ">=16.0.0"
-          }
-        ],
-        "n/shebang": "off"
-      }
-    },
     {
       "env": {
         "browser": true,
@@ -297,7 +284,7 @@
         "mocha": true,
         "node": true
       },
-      "files": ["packages/build-utils/@glimmer/vm-babel-plugins/test/**/*.js"],
+      "files": ["packages/build-utils/@glimmer/*/test/**/*.js"],
       "rules": {
         "n/no-unpublished-import": "off",
         "n/no-unsupported-features/es-syntax": "off",

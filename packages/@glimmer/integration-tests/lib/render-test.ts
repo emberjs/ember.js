@@ -360,7 +360,7 @@ export class RenderTest implements IRenderTest {
     }
 
     if (typeof template === 'object') {
-      let blueprint = template as ComponentBlueprint;
+      let blueprint = template;
       template = this.buildComponent(blueprint);
 
       if (this.testType === 'Dynamic' && properties['componentName'] === undefined) {
@@ -387,7 +387,7 @@ export class RenderTest implements IRenderTest {
     }
 
     assert(
-      this.delegate.renderComponent,
+      !!this.delegate.renderComponent,
       'Attempted to render a component, but the delegate did not implement renderComponent'
     );
 

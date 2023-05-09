@@ -1,4 +1,5 @@
 packages:
+  - 'bin'
   - 'build'
   - 'packages'
   - 'benchmark'

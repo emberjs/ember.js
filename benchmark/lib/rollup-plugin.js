@@ -7,6 +7,7 @@ const fs = require('fs');
  */
 module.exports = function benchmark(dist) {
   return {
+    name: '@glimmer/benchmark',
     resolveId(id) {
       if (id === '@glimmer/env') {
         return '\0@glimmer/env';

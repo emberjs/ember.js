@@ -1227,7 +1227,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Sexpr helpers'() {
     this.registerHelper('testing', function (params) {
-      return params[0] + '!';
+      return `${params[0]}!`;
     });
 
     this.render('<div>{{testing (testing "hello")}}</div>');
@@ -1238,7 +1238,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'The compiler can handle multiple invocations of sexprs'() {
     this.registerHelper('testing', function (params) {
-      return '' + params[0] + params[1];
+      return `${params[0]}${params[1]}`;
     });
 
     this.render(
@@ -1256,7 +1256,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'The compiler passes along the hash arguments'() {
     this.registerHelper('testing', function (_, hash) {
-      return hash['first'] + '-' + hash['second'];
+      return `${hash['first']}-${hash['second']}`;
     });
 
     this.render('<div>{{testing first="one" second="two"}}</div>');

@@ -1,7 +1,6 @@
 // @ts-check
 
-// eslint-disable-next-line n/no-missing-require
-const fs = require('fs');
+const fs = require('node:fs');
 const toml = require('toml');
 const prettier = require('prettier');
 const { normalizeAll, buildEnum, buildMetas, strip } = require('@glimmer/debug');

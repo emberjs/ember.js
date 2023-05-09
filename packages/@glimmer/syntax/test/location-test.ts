@@ -1,6 +1,6 @@
 /* eslint-disable qunit/no-global-module-test */
 import { type Dict } from '@glimmer/interfaces';
-import { Source } from '@glimmer/syntax';
+import { src } from '@glimmer/syntax';
 import { unwrap } from '@glimmer/util';
 
 // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -57,7 +57,7 @@ const cases: Dict<[string, number | null][]> = {
 QUnit.module('locations - position');
 
 for (const [string, testCase] of Object.entries(cases)) {
-  let source = new Source(string);
+  let source = new src.Source(string);
 
   for (let [span, offset] of testCase) {
     let [line, column] = span.split(':').map((i) => parseInt(i, 10));
@@ -73,7 +73,7 @@ for (const [string, testCase] of Object.entries(cases)) {
 QUnit.module('locations - location');
 
 for (const [string, testCase] of Object.entries(cases)) {
-  let source = new Source(string);
+  let source = new src.Source(string);
 
   for (let [span, offset] of testCase) {
     let [line, column] = span.split(':').map((i) => parseInt(i, 10)) as [number, number];

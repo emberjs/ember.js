@@ -57,8 +57,8 @@ function remove<T extends object>(collection: OneOrMany<T>, item: T, message: st
   }
 
   if (Array.isArray(collection) && collection.length > 1) {
-    let index = collection!.indexOf(item);
-    collection!.splice(index, 1);
+    let index = collection.indexOf(item);
+    collection.splice(index, 1);
     return collection;
   } else {
     return null;

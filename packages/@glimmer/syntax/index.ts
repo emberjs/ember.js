@@ -13,9 +13,8 @@ export {
   type Syntax,
   type TemplateIdFn,
 } from './lib/parser/tokenizer-event-handlers';
+export * as src from './lib/source/api';
 export { SourceSlice } from './lib/source/slice';
-export { Source } from './lib/source/source';
-export { SourceSpan } from './lib/source/span';
 export {
   type HasSourceSpan,
   hasSpan,

@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
     "skipLibCheck": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "strict": true,
+    "baseUrl": "."
   },
   "files": [],
-  "references": [{
-    "path": "tsconfig.build.json"
-  }, {
-    "path": "packages/tsconfig.json"
-  }]
+  "references": [
+    { "path": "benchmark/tsconfig.json" },
+    { "path": "bin/tsconfig.json" },
+    { "path": "build/tsconfig.json" },
+    { "path": "packages/@glimmer/tsconfig.json" },
+    { "path": "packages/build-utils/tsconfig.json" },
+    { "path": "server/tsconfig.json" },
+    { "path": "lib/tsconfig.json" }
+  ]
 }

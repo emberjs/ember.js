@@ -1,15 +1,26 @@
 // node files
 {
+  "root": false,
   "env": {
     "es6": true,
     "node": true
   },
   "parserOptions": {
     "ecmaVersion": "latest",
-    "project": ["tsconfig.build.json"]
+    "project": ["bin/tsconfig.json"]
   },
+  "extends": ["plugin:@typescript-eslint/recommended"],
 
   "rules": {
-    "no-console": "off"
+    "dot-notation": "off",
+    "no-console": "off",
+    "n/no-unsupported-features/es-syntax": [
+      "error",
+      {
+        "ignores": [],
+        "version": ">=16.0.0"
+      }
+    ],
+    "n/shebang": "off"
   }
 }

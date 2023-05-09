@@ -176,14 +176,14 @@ if (import.meta.env.DEV) {
     // We need to mark the tag and all of its subtags as consumed, so we need to
     // cast it and access its internals. In the future this shouldn't be necessary,
     // this is only for computed properties.
-    let tag = _tag as any;
+    let subtag = (_tag as unknown as { subtag: Tag | Tag[] | null }).subtag;
 
-    if (tag.subtag) {
-      markTagAsConsumed!(tag.subtag);
-    }
+    if (!subtag || !markTagAsConsumed) return;
 
-    if (tag.subtags) {
-      tag.subtags.forEach((tag: Tag) => markTagAsConsumed!(tag));
+    if (Array.isArray(subtag)) {
+      subtag.forEach(markTagAsConsumed);
+    } else {
+      markTagAsConsumed(subtag);
     }
   };
 

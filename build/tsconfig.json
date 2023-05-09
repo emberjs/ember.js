@@ -1,4 +1,11 @@
 {
-  "extends": "../tsconfig.base.json",
-  "includes": ["*.js"]
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "allowJs": true,
+    "outDir": "../ts-dist/build",
+    "skipLibCheck": true
+  },
+  "files": ["debug.js"],
+  "references": [{ "path": "../packages/@glimmer/tsconfig.json" }]
 }

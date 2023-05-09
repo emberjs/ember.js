@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "baseUrl": ".",
+
+    "target": "es2020",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "verbatimModuleSyntax": true,
+
+    "suppressImplicitAnyIndexErrors": false,
+    "useDefineForClassFields": false,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+
+    "outDir": "../ts-dist/bench"
+  },
+  "include": ["./index.js", "./lib/**/*.js", "./bin/**/*.js"],
+  "references": [
+    {
+      "path": "../packages/@glimmer/tsconfig.json"
+    }
+  ]
+}

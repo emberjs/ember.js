@@ -37,7 +37,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
   getRandomForIteration(iteration: number) {
     const { seed } = QUnit.config;
 
-    const str = iteration + '\x1C' + seed;
+    const str = `${iteration}\x1C${seed}`;
 
     // from https://github.com/qunitjs/qunit/blob/2.9.3/src/core/utilities.js#L144-L158
     let hash = 0;

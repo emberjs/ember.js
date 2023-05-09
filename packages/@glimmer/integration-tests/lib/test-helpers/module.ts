@@ -236,7 +236,7 @@ function upperFirst<T extends string>(
   str: T extends '' ? `upperFirst only takes (statically) non-empty strings` : T
 ): string {
   let first = str[0] as string;
-  let rest = str.slice(1) as string;
+  let rest = str.slice(1);
 
   return `${first.toUpperCase()}${rest}`;
 }

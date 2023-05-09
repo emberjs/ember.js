@@ -11,7 +11,7 @@ import { globSync } from 'glob';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const manifest = resolve(__dirname, '../package.json');
-let name = JSON.parse(readFileSync(manifest)).name;
+let name = JSON.parse(readFileSync(manifest, { encoding: 'utf-8' })).name;
 
 console.log('Looking for existing owners on ' + name + ' on npm...');
 

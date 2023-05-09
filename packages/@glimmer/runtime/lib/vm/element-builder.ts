@@ -20,7 +20,7 @@ import {
   type SimpleText,
   type UpdatableBlock,
 } from '@glimmer/interfaces';
-import { assert, expect, Stack, symbol } from '@glimmer/util';
+import { assert, expect, Stack } from '@glimmer/util';
 
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
 import { type DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
@@ -69,7 +69,7 @@ export class Fragment implements Bounds {
   }
 }
 
-export const CURSOR_STACK: CursorStackSymbol = symbol('CURSOR_STACK');
+export const CURSOR_STACK: CursorStackSymbol = Symbol('CURSOR_STACK') as CursorStackSymbol;
 
 export class NewElementBuilder implements ElementBuilder {
   public dom: GlimmerTreeConstruction;

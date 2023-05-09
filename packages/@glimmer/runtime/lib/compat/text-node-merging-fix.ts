@@ -6,15 +6,9 @@ import {
   type SimpleElement,
   type SimpleNode,
 } from '@glimmer/interfaces';
+import { INSERT_BEFORE_END } from '@glimmer/util';
 
 import { type DOMOperations } from '../dom/operations';
-
-export enum InsertPosition {
-  beforebegin = 'beforebegin',
-  afterbegin = 'afterbegin',
-  beforeend = 'beforeend',
-  afterend = 'afterend',
-}
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -79,7 +73,7 @@ function shouldApplyFix(document: SimpleDocument) {
   const mergingTextDiv = document.createElement('div');
 
   mergingTextDiv.appendChild(document.createTextNode('first'));
-  mergingTextDiv.insertAdjacentHTML(InsertPosition.beforeend, 'second');
+  mergingTextDiv.insertAdjacentHTML(INSERT_BEFORE_END, 'second');
 
   if (mergingTextDiv.childNodes.length === 2) {
     // It worked as expected, no fix required

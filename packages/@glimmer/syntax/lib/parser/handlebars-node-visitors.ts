@@ -1,5 +1,6 @@
 import { type Option, type Recast } from '@glimmer/interfaces';
 import { getLast, isPresentArray, unwrap } from '@glimmer/util';
+import type { TokenizerState } from 'simple-html-tokenizer';
 
 import { Parser, type ParserNodeBuilder, type Tag } from '../parser';
 import { NON_EXISTENT_LOCATION } from '../source/location';
@@ -10,89 +11,8 @@ import type * as HBS from '../v1/handlebars-ast';
 import { PathExpressionImplV1 } from '../v1/legacy-interop';
 import b from '../v1/parser-builders';
 
-enum TokenizerState {
-  beforeData = 'beforeData',
-  data = 'data',
-  rcdata = 'rcdata',
-  rawtext = 'rawtext',
-  scriptData = 'scriptData',
-  plaintext = 'plaintext',
-  tagOpen = 'tagOpen',
-  endTagOpen = 'endTagOpen',
-  tagName = 'tagName',
-  endTagName = 'endTagName',
-  rcdataLessThanSign = 'rcdataLessThanSign',
-  rcdataEndTagOpen = 'rcdataEndTagOpen',
-  rcdataEndTagName = 'rcdataEndTagName',
-  rawtextLessThanSign = 'rawtextLessThanSign',
-  rawtextEndTagOpen = 'rawtextEndTagOpen',
-  rawtextEndTagName = 'rawtextEndTagName',
-  scriptDataLessThanSign = 'scriptDataLessThanSign',
-  scriptDataEndTagOpen = 'scriptDataEndTagOpen',
-  scriptDataEndTagName = 'scriptDataEndTagName',
-  scriptDataEscapeStart = 'scriptDataEscapeStart',
-  scriptDataEscapseStartDash = 'scriptDataEscapseStartDash',
-  scriptDataEscaped = 'scriptDataEscaped',
-  scriptDataEscapedDash = 'scriptDataEscapedDash',
-  scriptDataEscapedDashDash = 'scriptDataEscapedDashDash',
-  scriptDataEscapedLessThanSign = 'scriptDataEscapedLessThanSign',
-  scriptDataEscapedEndTagOpen = 'scriptDataEscapedEndTagOpen',
-  scriptDataEscapedEndTagName = 'scriptDataEscapedEndTagName',
-  scriptDataDoubleEscapeStart = 'scriptDataDoubleEscapeStart',
-  scriptDataDoubleEscaped = 'scriptDataDoubleEscaped',
-  scriptDataDoubleEscapedDash = 'scriptDataDoubleEscapedDash',
-  scriptDataDoubleEscapedDashDash = 'scriptDataDoubleEscapedDashDash',
-  scriptDataDoubleEscapedLessThanSign = 'scriptDataDoubleEscapedLessThanSign',
-  scriptDataDoubleEscapeEnd = 'scriptDataDoubleEscapeEnd',
-  beforeAttributeName = 'beforeAttributeName',
-  attributeName = 'attributeName',
-  afterAttributeName = 'afterAttributeName',
-  beforeAttributeValue = 'beforeAttributeValue',
-  attributeValueDoubleQuoted = 'attributeValueDoubleQuoted',
-  attributeValueSingleQuoted = 'attributeValueSingleQuoted',
-  attributeValueUnquoted = 'attributeValueUnquoted',
-  afterAttributeValueQuoted = 'afterAttributeValueQuoted',
-  selfClosingStartTag = 'selfClosingStartTag',
-  bogusComment = 'bogusComment',
-  markupDeclarationOpen = 'markupDeclarationOpen',
-  commentStart = 'commentStart',
-  commentStartDash = 'commentStartDash',
-  comment = 'comment',
-  commentLessThanSign = 'commentLessThanSign',
-  commentLessThanSignBang = 'commentLessThanSignBang',
-  commentLessThanSignBangDash = 'commentLessThanSignBangDash',
-  commentLessThanSignBangDashDash = 'commentLessThanSignBangDashDash',
-  commentEndDash = 'commentEndDash',
-  commentEnd = 'commentEnd',
-  commentEndBang = 'commentEndBang',
-  doctype = 'doctype',
-  beforeDoctypeName = 'beforeDoctypeName',
-  doctypeName = 'doctypeName',
-  afterDoctypeName = 'afterDoctypeName',
-  afterDoctypePublicKeyword = 'afterDoctypePublicKeyword',
-  beforeDoctypePublicIdentifier = 'beforeDoctypePublicIdentifier',
-  doctypePublicIdentifierDoubleQuoted = 'doctypePublicIdentifierDoubleQuoted',
-  doctypePublicIdentifierSingleQuoted = 'doctypePublicIdentifierSingleQuoted',
-  afterDoctypePublicIdentifier = 'afterDoctypePublicIdentifier',
-  betweenDoctypePublicAndSystemIdentifiers = 'betweenDoctypePublicAndSystemIdentifiers',
-  afterDoctypeSystemKeyword = 'afterDoctypeSystemKeyword',
-  beforeDoctypeSystemIdentifier = 'beforeDoctypeSystemIdentifier',
-  doctypeSystemIdentifierDoubleQuoted = 'doctypeSystemIdentifierDoubleQuoted',
-  doctypeSystemIdentifierSingleQuoted = 'doctypeSystemIdentifierSingleQuoted',
-  afterDoctypeSystemIdentifier = 'afterDoctypeSystemIdentifier',
-  bogusDoctype = 'bogusDoctype',
-  cdataSection = 'cdataSection',
-  cdataSectionBracket = 'cdataSectionBracket',
-  cdataSectionEnd = 'cdataSectionEnd',
-  characterReference = 'characterReference',
-  numericCharacterReference = 'numericCharacterReference',
-  hexadecimalCharacterReferenceStart = 'hexadecimalCharacterReferenceStart',
-  decimalCharacterReferenceStart = 'decimalCharacterReferenceStart',
-  hexadecimalCharacterReference = 'hexadecimalCharacterReference',
-  decimalCharacterReference = 'decimalCharacterReference',
-  numericCharacterReferenceEnd = 'numericCharacterReferenceEnd',
-  characterReferenceEnd = 'characterReferenceEnd',
-}
+const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState;
+const ATTRIBUTE_VALUE_UNQUOTED = 'attributeValueUnquoted' as TokenizerState;
 
 export abstract class HandlebarsNodeVisitors extends Parser {
   abstract override appendToCommentData(s: string): void;
@@ -150,15 +70,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   BlockStatement(block: HBS.BlockStatement): ASTv1.BlockStatement | void {
-    if (this.tokenizer.state === TokenizerState.comment) {
+    if (this.tokenizer.state === 'comment') {
       this.appendToCommentData(this.sourceForNode(block));
       return;
     }
 
-    if (
-      this.tokenizer.state !== TokenizerState.data &&
-      this.tokenizer.state !== TokenizerState.beforeData
-    ) {
+    if (this.tokenizer.state !== 'data' && this.tokenizer.state !== 'beforeData') {
       throw generateSyntaxError(
         'A block may only be used inside an HTML element or another block.',
         this.source.spanFor(block.loc)
@@ -235,34 +152,34 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     switch (tokenizer.state) {
       // Tag helpers
-      case TokenizerState.tagOpen:
-      case TokenizerState.tagName:
+      case 'tagOpen':
+      case 'tagName':
         throw generateSyntaxError(`Cannot use mustaches in an elements tagname`, mustache.loc);
 
-      case TokenizerState.beforeAttributeName:
+      case 'beforeAttributeName':
         addElementModifier(this.currentStartTag, mustache);
         break;
-      case TokenizerState.attributeName:
-      case TokenizerState.afterAttributeName:
+      case 'attributeName':
+      case 'afterAttributeName':
         this.beginAttributeValue(false);
         this.finishAttributeValue();
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.transitionTo(TokenizerState.beforeAttributeName);
+        tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
         break;
-      case TokenizerState.afterAttributeValueQuoted:
+      case 'afterAttributeValueQuoted':
         addElementModifier(this.currentStartTag, mustache);
-        tokenizer.transitionTo(TokenizerState.beforeAttributeName);
+        tokenizer.transitionTo(BEFORE_ATTRIBUTE_NAME);
         break;
 
       // Attribute values
-      case TokenizerState.beforeAttributeValue:
+      case 'beforeAttributeValue':
         this.beginAttributeValue(false);
         this.appendDynamicAttributeValuePart(mustache);
-        tokenizer.transitionTo(TokenizerState.attributeValueUnquoted);
+        tokenizer.transitionTo(ATTRIBUTE_VALUE_UNQUOTED);
         break;
-      case TokenizerState.attributeValueDoubleQuoted:
-      case TokenizerState.attributeValueSingleQuoted:
-      case TokenizerState.attributeValueUnquoted:
+      case 'attributeValueDoubleQuoted':
+      case 'attributeValueSingleQuoted':
+      case 'attributeValueUnquoted':
         this.appendDynamicAttributeValuePart(mustache);
         break;
 
@@ -305,7 +222,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   CommentStatement(rawComment: HBS.CommentStatement): Option<ASTv1.MustacheCommentStatement> {
     const { tokenizer } = this;
 
-    if (tokenizer.state === TokenizerState.comment) {
+    if (tokenizer.state === 'comment') {
       this.appendToCommentData(this.sourceForNode(rawComment));
       return null;
     }
@@ -314,13 +231,13 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     const comment = b.mustacheComment(value, this.source.spanFor(loc));
 
     switch (tokenizer.state) {
-      case TokenizerState.beforeAttributeName:
-      case TokenizerState.afterAttributeName:
+      case 'beforeAttributeName':
+      case 'afterAttributeName':
         this.currentStartTag.comments.push(comment);
         break;
 
-      case TokenizerState.beforeData:
-      case TokenizerState.data:
+      case 'beforeData':
+      case 'data':
         appendChild(this.currentElement(), comment);
         break;
 

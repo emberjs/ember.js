@@ -105,7 +105,7 @@ function assertFired(component: HookedComponent, name: string, count = 1) {
   let hooks = component.hooks;
 
   if (!hooks) {
-    throw new TypeError('Not hooked: ' + component);
+    throw new TypeError(`Not hooked: ${component}`);
   }
 
   if (name in hooks) {
@@ -2163,8 +2163,8 @@ class CurlyBoundsTrackingTest extends CurlyTest {
       instance.bounds.parentElement(),
       document.querySelector('#qunit-fixture') as unknown as SimpleElement
     );
-    assert.strictEqual(instance!.bounds.firstNode(), instance.element as unknown as SimpleNode);
-    assert.strictEqual(instance!.bounds.lastNode(), instance.element as unknown as SimpleNode);
+    assert.strictEqual(instance.bounds.firstNode(), instance.element as unknown as SimpleNode);
+    assert.strictEqual(instance.bounds.lastNode(), instance.element as unknown as SimpleNode);
   }
 
   @test

@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "dependencies": {
+    "puppeteer-chromium-resolver": "^20.0.0",
+    "chalk": "^5.2.0",
+    "execa": "^7.1.1",
+    "js-yaml": "^4.1.0",
+    "glob": "^10.2.2",
+    "@types/glob": "^8.1.0",
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "^20.1.1",
+    "@types/puppeteer-chromium-resolver": "workspace:^"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

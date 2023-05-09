@@ -64,7 +64,7 @@ if (import.meta.env.DEV) {
    @return {Object} Hash
    @public
  */
-export default internalHelper(({ named }: CapturedArguments): Reference<Dict<unknown>> => {
+export const hash = internalHelper(({ named }: CapturedArguments): Reference<Dict<unknown>> => {
   let ref = createComputeRef(
     () => {
       let hash = reifyNamed(named);

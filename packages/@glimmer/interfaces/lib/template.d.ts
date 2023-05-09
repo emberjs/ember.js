@@ -1,3 +1,4 @@
+import { type PresentArray } from './array';
 import { type Operand, type SerializedInlineBlock, type SerializedTemplateBlock } from './compile';
 import { type EncoderError } from './compile/encoder';
 import { type Option } from './core';

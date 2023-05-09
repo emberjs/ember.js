@@ -857,7 +857,7 @@ export function normalizeModifier(sexp: ModifierSexp): ASTv1.ElementModifierStat
     next = parts.shift();
 
     if (isHashSexp(next)) {
-      hash = normalizeHash(next as Dict<ASTv1.Expression>);
+      hash = normalizeHash(next);
     } else {
       break _process;
     }

@@ -1,5 +1,8 @@
 {
   "private": true,
   "name": "@types/qunit",
-  "types": "index.d.ts"
+  "types": "index.d.ts",
+  "dependencies": {
+    "@types/js-reporters": "workspace:^"
+  }
 }

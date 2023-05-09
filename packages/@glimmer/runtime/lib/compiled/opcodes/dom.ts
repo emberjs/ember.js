@@ -308,7 +308,7 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
         }
 
         this.tag = tag;
-        vm.env.scheduleInstallModifier(newInstance!);
+        vm.env.scheduleInstallModifier(newInstance);
       }
 
       this.instance = newInstance;
