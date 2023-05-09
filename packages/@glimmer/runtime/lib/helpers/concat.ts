@@ -35,7 +35,7 @@ const normalizeTextValue = (value: unknown): string => {
   @public
   @method concat
 */
-export default internalHelper(({ positional }: CapturedArguments) => {
+export const concat = internalHelper(({ positional }: CapturedArguments) => {
   return createComputeRef(
     () => reifyPositional(positional).map(normalizeTextValue).join(''),
     null,

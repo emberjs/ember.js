@@ -108,7 +108,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       element,
       delegate,
       args,
-      modifier: instance!,
+      modifier: instance,
     };
 
     if (import.meta.env.DEV) {

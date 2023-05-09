@@ -1,14 +1,13 @@
 import { type CapturedArguments, type CurriedType, type Owner } from '@glimmer/interfaces';
 import { type Reference } from '@glimmer/reference';
-import { _WeakSet, symbol } from '@glimmer/util';
 
-const TYPE: unique symbol = symbol('TYPE');
-const INNER: unique symbol = symbol('INNER');
-const OWNER: unique symbol = symbol('OWNER');
-const ARGS: unique symbol = symbol('ARGS');
-const RESOLVED: unique symbol = symbol('RESOLVED');
+const TYPE: unique symbol = Symbol('TYPE');
+const INNER: unique symbol = Symbol('INNER');
+const OWNER: unique symbol = Symbol('OWNER');
+const ARGS: unique symbol = Symbol('ARGS');
+const RESOLVED: unique symbol = Symbol('RESOLVED');
 
-const CURRIED_VALUES = new _WeakSet();
+const CURRIED_VALUES = new WeakSet();
 
 export function isCurriedValue(value: unknown): value is CurriedValue<CurriedType> {
   return CURRIED_VALUES.has(value as object);

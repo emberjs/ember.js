@@ -1,7 +1,5 @@
 import { type Maybe, type Present } from '@glimmer/interfaces';
 
-import intern from './intern';
-
 export type Factory<T> = new (...args: unknown[]) => T;
 
 export const HAS_NATIVE_PROXY = typeof Proxy === 'function';
@@ -34,15 +32,9 @@ export function unreachable(message = 'unreachable'): Error {
 }
 
 export function exhausted(value: never): never {
-  throw new Error(`Exhausted ${value}`);
+  throw new Error(`Exhausted ${String(value)}`);
 }
 
 export type Lit = string | number | boolean | undefined | null | void | {};
 
 export const tuple = <T extends Lit[]>(...args: T) => args;
-
-export function enumerableSymbol(key: string): any {
-  return intern(`__${key}${Math.floor(Math.random() * Date.now())}__`);
-}
-
-export const symbol = HAS_NATIVE_SYMBOL ? Symbol : enumerableSymbol;

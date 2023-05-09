@@ -90,7 +90,7 @@ setGlobalContext({
 
   getProp(obj: unknown, key: string): unknown {
     if (typeof obj === 'object' && obj !== null) {
-      consumeTag(tagFor(obj as object, key));
+      consumeTag(tagFor(obj, key));
     }
 
     return (obj as Dict)[key];
@@ -98,7 +98,7 @@ setGlobalContext({
 
   setProp(obj: unknown, key: string, value: unknown): unknown {
     if (typeof obj === 'object' && obj !== null) {
-      dirtyTagFor(obj as object, key);
+      dirtyTagFor(obj, key);
     }
 
     return ((obj as Dict)[key] = value);

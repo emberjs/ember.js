@@ -32,6 +32,7 @@ export type Revision = number;
 
 export interface Tag {
   readonly [TYPE]: TagId;
+  readonly subtag?: Tag | Tag[] | null | undefined;
   [COMPUTE](): Revision;
 }
 

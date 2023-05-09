@@ -1,3 +1,8 @@
+import { type Maybe, type Option } from '../core';
+import { type ElementOperations, type Environment, type ModifierInstance } from '../runtime';
+import { type Stack } from '../stack';
+import { type Bounds, type Cursor } from './bounds';
+import { type GlimmerTreeChanges, type GlimmerTreeConstruction } from './changes';
 import type {
   AttrNamespace,
   SimpleComment,
@@ -5,13 +10,7 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from '@glimmer/interfaces';
-
-import { type Maybe, type Option } from '../core';
-import { type ElementOperations, type Environment, type ModifierInstance } from '../runtime';
-import { type Stack } from '../stack';
-import { type Bounds, type Cursor } from './bounds';
-import { type GlimmerTreeChanges, type GlimmerTreeConstruction } from './changes';
+} from './simple';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;

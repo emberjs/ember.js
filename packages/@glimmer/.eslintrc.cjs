@@ -1,17 +1,15 @@
-const { resolve } = require('path');
-
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   root: false,
   overrides: [
     {
-      files: ['*.ts'],
+      files: ['*.ts', '*.js'],
       excludedFiles: ['*/node_modules'],
       parserOptions: {
         ecmaVersion: 'latest',
-        project: [resolve(__dirname, 'tsconfig.json')],
+        project: ['packages/@glimmer/tsconfig.json'],
       },
-      // extends: ['plugin:@typescript-eslint/recommended-requiring-type-checking'],
+      extends: ['plugin:@typescript-eslint/recommended-requiring-type-checking'],
       rules: {
         '@typescript-eslint/consistent-type-imports': [
           'error',
@@ -47,10 +45,19 @@ module.exports = {
             selector: ['typeAlias'],
           },
         ],
+        'require-await': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-inferrable-types': 'error',
         '@typescript-eslint/no-require-imports': 'error',
         '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/restrict-template-expressions': 'off',
+        'array-callback-return': 'off',
+        'prefer-const': 'off',
         'consistent-return': 'off',
         'consistent-this': 'off',
         'constructor-super': 'off',

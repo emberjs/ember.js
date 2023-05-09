@@ -92,7 +92,7 @@ export function castToBrowser<S extends SugaryNodeCheck>(
 }
 
 function checkError(from: string, check: SugaryNodeCheck): Error {
-  return new Error(`cannot cast a ${from} into ${check}`);
+  return new Error(`cannot cast a ${from} into ${String(check)}`);
 }
 
 function isDocument(node: Node | SimpleNode | SimpleDocument): node is Document | SimpleDocument {
@@ -115,9 +115,9 @@ export function checkBrowserNode<S extends SugaryNodeCheck>(
 
   if (node !== null) {
     if (typeof check === 'string') {
-      isMatch = stringCheckNode(node, check as BrowserTag);
+      isMatch = stringCheckNode(node, check);
     } else if (Array.isArray(check)) {
-      isMatch = check.some((c) => stringCheckNode(node, c as BrowserTag));
+      isMatch = check.some((c) => stringCheckNode(node, c));
     } else {
       throw unreachable();
     }
@@ -126,7 +126,7 @@ export function checkBrowserNode<S extends SugaryNodeCheck>(
   if (isMatch && node instanceof Node) {
     return node as NodeForSugaryCheck<S>;
   } else {
-    throw checkError(`SimpleElement(${node})`, check);
+    throw checkError(`SimpleElement(${node?.constructor?.name ?? 'null'})`, check);
   }
 }
 

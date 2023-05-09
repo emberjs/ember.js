@@ -82,7 +82,7 @@ export function SimpleArgs(
     }
   }
 
-  op(Op.PushArgs, names as string[], EMPTY_STRING_ARRAY, flags);
+  op(Op.PushArgs, names, EMPTY_STRING_ARRAY, flags);
 }
 
 /**

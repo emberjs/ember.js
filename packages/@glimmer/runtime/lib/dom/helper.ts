@@ -130,6 +130,6 @@ let helper = DOMChangesImpl;
 helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChangesImpl;
 helper = applySVGInnerHTMLFix(doc, helper, NS_SVG) as typeof DOMChangesImpl;
 
-export default helper;
+export const DOMChanges = helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
 export type DOMTreeConstruction = DOM.DOMTreeConstruction;

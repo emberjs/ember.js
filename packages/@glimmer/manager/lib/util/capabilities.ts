@@ -10,9 +10,8 @@ import {
   type WithSubOwner,
   type WithUpdateHook,
 } from '@glimmer/interfaces';
-import { _WeakSet } from '@glimmer/util';
 
-export const FROM_CAPABILITIES = import.meta.env.DEV ? new _WeakSet() : undefined;
+export const FROM_CAPABILITIES = import.meta.env.DEV ? new WeakSet() : undefined;
 
 export function buildCapabilities<T extends object>(capabilities: T): T & Capabilities {
   if (import.meta.env.DEV) {

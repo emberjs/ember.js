@@ -9,7 +9,7 @@ import {
   type ReferenceType,
   type UnboundReference,
 } from '@glimmer/interfaces';
-import { expect, isDict, symbol } from '@glimmer/util';
+import { expect, isDict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   consumeTag,
@@ -21,7 +21,7 @@ import {
   valueForTag,
 } from '@glimmer/validator';
 
-export const REFERENCE: ReferenceSymbol = symbol('REFERENCE');
+export const REFERENCE: ReferenceSymbol = Symbol('REFERENCE') as ReferenceSymbol;
 
 const CONSTANT: ConstantReference = 0;
 const COMPUTE: ComputeReference = 1;

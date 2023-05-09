@@ -215,7 +215,7 @@ function InvokeStaticComponent(
     let flags = count << 4;
     flags |= 0b1000;
 
-    let names: string[] = EMPTY_STRING_ARRAY as string[];
+    let names: string[] = EMPTY_STRING_ARRAY;
 
     // Next, if named args exist, push them all. If they have an associated symbol
     // in the invoked component (e.g. they are used within its template), we push

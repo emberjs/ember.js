@@ -80,7 +80,7 @@ export class TestJitRegistry {
       return null;
     }
 
-    let { manager, state } = definition as ResolvedComponentDefinition;
+    let { manager, state } = definition;
 
     let capabilities = manager.getCapabilities(state);
 

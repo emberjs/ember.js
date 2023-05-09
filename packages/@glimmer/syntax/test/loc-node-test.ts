@@ -1,4 +1,4 @@
-import { type AST, preprocess as parse } from '@glimmer/syntax';
+import { type AST, preprocess as parse, type src } from '@glimmer/syntax';
 import { guardArray } from '@glimmer/test-utils';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
@@ -12,7 +12,7 @@ function assertNodeType<T extends keyof AST.Nodes>(
     result: nodeType === type,
     actual: nodeType,
     expected: type,
-    message: `expected node type to be ${node} but was ${nodeType}`,
+    message: `expected node type to be ${type} but was ${String(nodeType)}`,
   });
   return nodeType === type;
 }
@@ -27,7 +27,7 @@ function locEqual(
   endColumn: number,
   message = JSON.stringify(node)
 ) {
-  let expected: AST.SourceLocation = {
+  let expected: src.SourceLocation = {
     start: { line: startLine, column: startColumn },
     end: { line: endLine, column: endColumn },
   };

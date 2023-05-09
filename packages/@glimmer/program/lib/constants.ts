@@ -79,7 +79,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
   }
 
   getArray<T>(value: number): T[] {
-    let handles = this.getValue(value) as number[];
+    let handles = this.getValue<number[]>(value);
     let reified: T[] = new Array(handles.length);
 
     for (const [i, n] of enumerate(handles)) {
@@ -249,7 +249,7 @@ export class ConstantsImpl
         compilable,
       };
 
-      definition!.handle = this.value(definition);
+      definition.handle = this.value(definition);
       this.componentDefinitionCache.set(definitionState, definition);
       this.componentDefinitionCount++;
     }
@@ -294,7 +294,7 @@ export class ConstantsImpl
         compilable,
       };
 
-      definition!.handle = this.value(definition);
+      definition.handle = this.value(definition);
       this.componentDefinitionCache.set(resolvedDefinition, definition);
       this.componentDefinitionCount++;
     }

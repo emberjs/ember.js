@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "baseUrl": ".",
+
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true,
+
+    "outDir": "../../ts-dist/build-utils",
+
+    "suppressImplicitAnyIndexErrors": false,
+    "useDefineForClassFields": false,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true
+  },
+  "include": ["@glimmer/*/index.*", "@glimmer/*/lib/**/*", "@glimmer/*/test/**/*"]
+}

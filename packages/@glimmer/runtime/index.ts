@@ -19,7 +19,7 @@ export {
 } from './lib/component/template-only';
 export { CurriedValue, curry } from './lib/curried-value';
 export {
-  default as DOMChanges,
+  DOMChanges,
   DOMTreeConstruction,
   DOMChangesImpl as IDOMChanges,
   isWhitespace,
@@ -31,13 +31,13 @@ export {
   inTransaction,
   runtimeContext,
 } from './lib/environment';
-export { default as array } from './lib/helpers/array';
-export { default as concat } from './lib/helpers/concat';
-export { default as fn } from './lib/helpers/fn';
-export { default as get } from './lib/helpers/get';
-export { default as hash } from './lib/helpers/hash';
+export { array } from './lib/helpers/array';
+export { concat } from './lib/helpers/concat';
+export { fn } from './lib/helpers/fn';
+export { get } from './lib/helpers/get';
+export { hash } from './lib/helpers/hash';
 export { invokeHelper } from './lib/helpers/invoke';
-export { default as on } from './lib/modifiers/on';
+export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
 export { DynamicScopeImpl, PartialScopeImpl } from './lib/scope';
 export type { SafeString } from './lib/upsert';

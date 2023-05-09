@@ -6,7 +6,6 @@ import {
   type Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { symbol } from '@glimmer/util';
 import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
 
 import objectValues from './utils/platform';
@@ -130,7 +129,7 @@ module('@glimmer/reference: IterableReference', (hooks) => {
     });
 
     test('@identity works with primitives (except null)', (assert) => {
-      let arr = [undefined, 123, 'foo', symbol('bar'), true];
+      let arr = [undefined, 123, 'foo', Symbol('bar'), true];
       let target = new IterableWrapper(arr);
 
       assert.deepEqual(target.toValues(), arr);

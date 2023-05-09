@@ -139,8 +139,6 @@ export class CharPosition implements PositionData {
    * This is already a `CharPosition`.
    *
    * {@see HbsPosition} for the alternative.
-   *
-   * @implements {PositionData}
    */
   toCharPos(): CharPosition {
     return this;
@@ -149,8 +147,6 @@ export class CharPosition implements PositionData {
   /**
    * Produce a Handlebars {@see SourcePosition} for this `CharPosition`. If this `CharPosition` was
    * computed using {@see SourceOffset#move}, this will compute the `SourcePosition` for the offset.
-   *
-   * @implements {PositionData}
    */
   toJSON(): SourcePosition {
     const hbs = this.toHbsPos();
@@ -209,8 +205,6 @@ export class HbsPosition implements PositionData {
    * computed its `CharPosition`, it will not need to do compute it again, and the same
    * `HbsPosition` is retained when used as one of the ends of a `SourceSpan`, so computing the
    * `CharPosition` should be a one-time operation.
-   *
-   * @implements {PositionData}
    */
   toCharPos(): CharPosition | null {
     let charPos = this._charPos;
@@ -231,8 +225,6 @@ export class HbsPosition implements PositionData {
   /**
    * Return the {@see SourcePosition} that this `HbsPosition` was instantiated with. This operation
    * does not need to compute anything.
-   *
-   * @implements {PositionData}
    */
   toJSON(): SourcePosition {
     return this.hbsPos;

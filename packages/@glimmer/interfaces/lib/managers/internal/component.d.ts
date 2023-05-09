@@ -1,6 +1,7 @@
 import { type ComponentInstanceState, type PreparedArguments } from '../../components';
 import { type Destroyable, type Option } from '../../core';
 import { type Bounds } from '../../dom/bounds';
+import { type SimpleElement } from '../../dom/simple';
 import { type Reference } from '../../references';
 import { type Owner } from '../../runtime';
 import { type CapturedArguments, type VMArguments } from '../../runtime/arguments';

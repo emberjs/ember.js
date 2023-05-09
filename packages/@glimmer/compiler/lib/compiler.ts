@@ -8,7 +8,7 @@ import {
   normalize,
   type PrecompileOptions,
   type PrecompileOptionsWithLexicalScope,
-  Source,
+  src,
   type TemplateIdFn,
 } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
@@ -76,7 +76,7 @@ export function precompileJSON(
   string: string,
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
-  const source = new Source(string, options.meta?.moduleName);
+  const source = new src.Source(string, options.meta?.moduleName);
   const [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
   const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);

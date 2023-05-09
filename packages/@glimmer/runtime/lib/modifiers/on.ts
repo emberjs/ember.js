@@ -123,7 +123,7 @@ export class OnModifierState {
       (actual) => {
         return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
           actual === null ? 'null' : typeof actual
-        }. While rendering:\n\n${userProvidedCallbackReference.debugLabel}`;
+        }. While rendering:\n\n${userProvidedCallbackReference.debugLabel ?? `{unlabeled value}`}`;
       }
     ) as EventListener;
 
@@ -148,7 +148,9 @@ export class OnModifierState {
           if (import.meta.env.DEV && passive) {
             event.preventDefault = () => {
               throw new Error(
-                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${userProvidedCallback}`
+                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
+                  userProvidedCallback.name ?? `{anonymous function}`
+                }`
               );
             };
           }
@@ -385,4 +387,4 @@ class OnModifierManager implements InternalModifierManager<OnModifierState | nul
   }
 }
 
-export default setInternalModifierManager(new OnModifierManager(), {});
+export const on = setInternalModifierManager(new OnModifierManager(), {});

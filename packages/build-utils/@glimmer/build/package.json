@@ -1,0 +1,57 @@
+{
+  "private": true,
+  "name": "@glimmer/build-support",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    "default": "./index.js"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "main": "dist/index.cjs",
+    "types": "dist/index.d.ts"
+  },
+  "starbeam": {
+    "source": "js:typed",
+    "type": "library:build-support"
+  },
+  "scripts": {
+    "test:lint": "eslint \"src/**/*.{js,d.ts}\"",
+    "test:types": "tsc -b"
+  },
+  "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@eslint/eslintrc": "^2.0.2",
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@typescript-eslint/parser": "^5.59.1",
+    "eslint": "^8.39.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-json": "^3.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
+    "magic-string": "^0.30.0",
+    "postcss": "^8.4.23",
+    "rollup": "^3.20.6",
+    "rollup-plugin-polyfill-node": "^0.12.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-ts": "^3.2.0",
+    "rollup-cache": "^1.2.0",
+    "unplugin-fonts": "^1.0.3",
+    "vite": "4.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "18.16.1",
+    "typescript": "*"
+  }
+}

@@ -90,12 +90,12 @@ export class EmberishCurlyComponent {
 
   set(key: string, value: unknown) {
     (this as any)[key] = value;
-    dirtyTagFor(this, key as string);
+    dirtyTagFor(this, key);
   }
 
   setProperties(dict: Dict) {
     for (let key of keys(dict)) {
-      this.set(key as string, dict[key]);
+      this.set(key, dict[key]);
     }
   }
 

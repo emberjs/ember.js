@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import setGlobalContext from '@glimmer/global-context';
 import { type Destroyable, type Destructor, type RenderResult } from '@glimmer/interfaces';
 import { type EnvironmentDelegate } from '@glimmer/runtime';
@@ -25,17 +26,19 @@ let revalidateScheduled = false;
 setGlobalContext({
   scheduleRevalidate() {
     if (!revalidateScheduled) {
-      Promise.resolve().then(() => {
-        const { env } = result;
-        env.begin();
-        result.rerender();
-        revalidateScheduled = false;
-        env.commit();
-        // only resolve if commit didn't dirty again
-        if (!revalidateScheduled && resolveRender !== undefined) {
-          resolveRender();
-        }
-      });
+      Promise.resolve()
+        .then(() => {
+          const { env } = result;
+          env.begin();
+          result.rerender();
+          revalidateScheduled = false;
+          env.commit();
+          // only resolve if commit didn't dirty again
+          if (!revalidateScheduled && resolveRender !== undefined) {
+            resolveRender();
+          }
+        })
+        .catch((e) => console.error(e));
     }
   },
 

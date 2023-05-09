@@ -6,7 +6,7 @@ import {
   markTagAsConsumed,
   resetTrackingTransaction,
 } from './debug';
-import { symbol, unwrap } from './utils';
+import { unwrap } from './utils';
 import {
   combine,
   CONSTANT_TAG,
@@ -131,18 +131,18 @@ export function consumeTag(tag: Tag): void {
 
 //////////
 
-const CACHE_KEY: unique symbol = symbol('CACHE_KEY');
+const CACHE_KEY = Symbol('CACHE_KEY');
 
 // public interface
 export interface Cache<T = unknown> {
   [CACHE_KEY]: T;
 }
 
-const FN: unique symbol = symbol('FN');
-const LAST_VALUE: unique symbol = symbol('LAST_VALUE');
-const TAG: unique symbol = symbol('TAG');
-const SNAPSHOT: unique symbol = symbol('SNAPSHOT');
-const DEBUG_LABEL: unique symbol = symbol('DEBUG_LABEL');
+const FN = Symbol('FN');
+const LAST_VALUE = Symbol('LAST_VALUE');
+const TAG = Symbol('TAG');
+const SNAPSHOT = Symbol('SNAPSHOT');
+const DEBUG_LABEL = Symbol('DEBUG_LABEL');
 
 interface InternalCache<T = unknown> {
   [FN]: (...args: unknown[]) => T;

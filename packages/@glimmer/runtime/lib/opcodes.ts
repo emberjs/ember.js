@@ -98,18 +98,18 @@ export class AppendOpcodes {
 
     if (LOCAL_DEBUG) {
       let meta = opcodeMetadata(type, isMachine);
-      let actualChange = vm.fetchValue($sp) - sp!;
+      let actualChange = vm.fetchValue($sp) - sp;
       if (
         meta &&
         meta.check &&
         typeof meta.stackChange! === 'number' &&
-        meta.stackChange! !== actualChange
+        meta.stackChange !== actualChange
       ) {
         throw new Error(
           `Error in ${pre.name}:\n\n${pc}. ${logOpcode(
             pre.name!,
-            pre.params!
-          )}\n\nStack changed by ${actualChange}, expected ${meta.stackChange!}`
+            pre.params
+          )}\n\nStack changed by ${actualChange}, expected ${meta.stackChange}`
         );
       }
 

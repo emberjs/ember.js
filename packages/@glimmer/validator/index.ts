@@ -1,6 +1,6 @@
-import { getGlobal, symbolFor } from './lib/utils';
+import { getGlobal } from './lib/utils';
 
-const GLIMMER_VALIDATOR_REGISTRATION = symbolFor('GLIMMER_VALIDATOR_REGISTRATION');
+const GLIMMER_VALIDATOR_REGISTRATION = Symbol('GLIMMER_VALIDATOR_REGISTRATION');
 
 const globalObj = getGlobal();
 

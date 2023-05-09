@@ -1,4 +1,4 @@
-import { assertPresentArray, getFirst } from '@glimmer/util';
+import { asPresentArray, assertPresentArray, getFirst } from '@glimmer/util';
 
 import { type SourceSpan } from '../source/span';
 import { type PathExpression, type PathHead } from './nodes-v1';
@@ -38,7 +38,7 @@ export class PathExpressionImplV1 implements PathExpression {
     if (this.this) {
       firstPart = 'this';
     } else if (this.data) {
-      firstPart = `@${this.parts[0]}`;
+      firstPart = `@${getFirst(asPresentArray(this.parts))}`;
     } else {
       assertPresentArray(this.parts);
       firstPart = getFirst(this.parts);

@@ -13,21 +13,6 @@ export function indexable<T extends object>(input: T): T & Indexable {
   return input as T & Indexable;
 }
 
-// This is a duplicate utility from @glimmer/util because `@glimmer/validator`
-// should not depend on any other @glimmer packages, in order to avoid pulling
-// in types and prevent regressions in `@glimmer/tracking` (which has public types).
-export const symbol =
-  typeof Symbol !== 'undefined'
-    ? Symbol
-    : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (key: string) => `__${key}${Math.floor(Math.random() * Date.now())}__` as any;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const symbolFor: (key: string) => any =
-  typeof Symbol !== 'undefined'
-    ? Symbol.for
-    : (key: string) => `__GLIMMER_VALIDATOR_SYMBOL_FOR_${key}`;
-
 export function getGlobal(): Indexable {
   // eslint-disable-next-line n/no-unsupported-features/es-builtins
   if (typeof globalThis !== 'undefined') return indexable(globalThis);

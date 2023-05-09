@@ -63,7 +63,7 @@ function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
   context: CompileTimeCompilationContext
 ): HandleResult {
-  if (compilable.compiled !== null) return compilable.compiled!;
+  if (compilable.compiled !== null) return compilable.compiled;
 
   compilable.compiled = PLACEHOLDER_HANDLE;
 

@@ -28,10 +28,10 @@ export interface Benchmark {
    * @param template
    * @param component
    */
-  basicComponent<TComponent extends object = object>(
+  basicComponent<TComponent extends object = object, Args extends ComponentArgs = ComponentArgs>(
     name: string,
     template: SerializedTemplateWithLazyBlock,
-    component: new (args: ComponentArgs) => TComponent
+    component: new (args: Args) => TComponent
   ): void;
 
   /**

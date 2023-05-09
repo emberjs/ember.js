@@ -24,7 +24,6 @@ export {
 export * from './lib/string';
 export * from './lib/template';
 export { default as buildUntouchableThis } from './lib/untouchable-this';
-export { default as _WeakSet } from './lib/weak-set';
 
 export type FIXME<T, S extends string> = (T & S) | T;
 

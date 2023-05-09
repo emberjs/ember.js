@@ -375,7 +375,7 @@ declare global {
   interface Reporter {
     init(
       /* eslint-disable @typescript-eslint/consistent-type-imports */
-      runner: import('@types/js-reporters').Runner,
+      runner: import('js-reporters').Runner,
       options: { log: (...args: unknown[]) => void }
     ): void;
   }
@@ -470,7 +470,11 @@ declare global {
     beforeEach(fn: (assert: Assert) => void | Promise<void>): void;
   }
 
-  type moduleFunc1 = (name: string, hooks?: Hooks, nested?: (hooks: NestedHooks) => void) => void;
+  type moduleFunc1 = (
+    name: string,
+    hooks?: Hooks,
+    nested?: (nestedHooks: NestedHooks) => void
+  ) => void;
   type moduleFunc2 = (name: string, nested?: (hooks: NestedHooks) => void) => void;
   type ModuleOnly = { only: moduleFunc1 & moduleFunc2 };
   type ModuleSkip = { skip: moduleFunc1 & moduleFunc2 };
@@ -839,7 +843,7 @@ declare global {
      * @param {string} Title of unit being tested
      * @param callback Function to close over assertions
      */
-    test(name: string, callback: (assert: Assert) => void | Promise<void>): void;
+    test: (name: string, callback: (assert: Assert) => void | Promise<void>) => void;
 
     /**
      * Register a callback to fire whenever a test ends.

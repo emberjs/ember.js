@@ -8,7 +8,7 @@ import { jitSuite, RenderTest, test } from '../..';
 const hasDom =
   typeof self === 'object' &&
   self !== null &&
-  (self as Window['self']).Object === Object &&
+  self.Object === Object &&
   typeof Window !== 'undefined' &&
   self.constructor === Window &&
   typeof document === 'object' &&
