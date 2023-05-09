@@ -1,25 +1,24 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  CompilableProgram,
-  CompileTimeCompilationContext,
-  ComponentDefinitionState,
-  DynamicScope,
-  ElementBuilder,
-  Environment,
-  Owner,
-  RenderResult,
-  RichIteratorResult,
-  RuntimeContext,
-  TemplateIterator,
+  type CompilableProgram,
+  type CompileTimeCompilationContext,
+  type ComponentDefinitionState,
+  type DynamicScope,
+  type ElementBuilder,
+  type Environment,
+  type Owner,
+  type RenderResult,
+  type RichIteratorResult,
+  type RuntimeContext,
+  type TemplateIterator,
 } from '@glimmer/interfaces';
-import { childRefFor, createConstRef, Reference } from '@glimmer/reference';
+import { childRefFor, createConstRef, type Reference } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/util';
 import { runInTrackingTransaction } from '@glimmer/validator';
 
 import { inTransaction } from './environment';
 import { DynamicScopeImpl } from './scope';
 import { ARGS, CONSTANTS } from './symbols';
-import VM, { InternalVM } from './vm/append';
+import VM, { type InternalVM } from './vm/append';
 
 class TemplateIteratorImpl implements TemplateIterator {
   constructor(private vm: InternalVM) {}
@@ -28,7 +27,7 @@ class TemplateIteratorImpl implements TemplateIterator {
   }
 
   sync(): RenderResult {
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       return runInTrackingTransaction!(() => this.vm.execute(), '- While rendering:');
     } else {
       return this.vm.execute();

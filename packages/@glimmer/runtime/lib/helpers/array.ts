@@ -1,5 +1,5 @@
-import { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, Reference } from '@glimmer/reference';
+import { type CapturedArguments } from '@glimmer/interfaces';
+import { createComputeRef, type Reference } from '@glimmer/reference';
 
 import { reifyPositional } from '../vm/arguments';
 import { internalHelper } from './internal-helper';

@@ -1,4 +1,4 @@
-import { getOwner, setOwner } from '..';
+import { getOwner, setOwner } from '@glimmer/owner';
 
 const { module, test } = QUnit;
 

@@ -7,25 +7,24 @@ import {
   CheckOr,
 } from '@glimmer/debug';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import { toBool } from '@glimmer/global-context';
 import {
-  CapturedPositionalArguments,
+  type CapturedPositionalArguments,
   CurriedType,
-  Helper,
-  HelperDefinitionState,
+  type Helper,
+  type HelperDefinitionState,
   Op,
-  Owner,
-  ResolutionTimeConstants,
-  RuntimeConstants,
-  ScopeBlock,
-  VM as PublicVM,
+  type Owner,
+  type ResolutionTimeConstants,
+  type RuntimeConstants,
+  type ScopeBlock,
+  type VM as PublicVM,
 } from '@glimmer/interfaces';
 import {
   childRefFor,
   createComputeRef,
   FALSE_REFERENCE,
-  Reference,
+  type Reference,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   valueForRef,
@@ -63,8 +62,8 @@ APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
 
   let isStrict = false;
 
-  if (DEBUG) {
-    // strict check only happens in DEBUG builds, no reason to load it otherwise
+  if (import.meta.env.DEV) {
+    // strict check only happens in import.meta.env.DEV builds, no reason to load it otherwise
     isStrict = vm[CONSTANTS].getValue<boolean>(decodeHandle(_isStrict));
   }
 
@@ -133,7 +132,7 @@ function resolveHelper(
 ): Helper {
   let handle = constants.helper(definition, null, true)!;
 
-  if (DEBUG && handle === null) {
+  if (import.meta.env.DEV && handle === null) {
     throw new Error(
       `Expected a dynamic helper definition, but received an object or function that did not have a helper manager associated with it. The dynamic invocation was \`{{${
         ref.debugLabel

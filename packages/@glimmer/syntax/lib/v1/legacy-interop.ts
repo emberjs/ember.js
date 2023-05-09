@@ -1,7 +1,7 @@
 import { assertPresentArray, getFirst } from '@glimmer/util';
 
-import { SourceSpan } from '../source/span';
-import { PathExpression, PathHead } from './nodes-v1';
+import { type SourceSpan } from '../source/span';
+import { type PathExpression, type PathHead } from './nodes-v1';
 import b from './public-builders';
 
 export class PathExpressionImplV1 implements PathExpression {

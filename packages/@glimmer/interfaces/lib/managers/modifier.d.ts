@@ -1,5 +1,5 @@
-import { Arguments } from '../runtime';
-import { Capabilities } from './capabilities';
+import { type Arguments } from '../runtime';
+import { type Capabilities } from './capabilities';
 
 export interface ModifierCapabilitiesVersions {
   // passes factoryFor(...).class to `.createModifier`

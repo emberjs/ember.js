@@ -8,7 +8,7 @@ export {
   setInternalComponentManager,
   setInternalHelperManager,
   setInternalModifierManager,
-} from './lib/internal/index';
+} from './lib/internal/api';
 export { componentCapabilities, CustomComponentManager } from './lib/public/component';
 export {
   CustomHelperManager,

@@ -1,12 +1,12 @@
 import {
-  CompilableProgram,
-  HelperDefinitionState,
-  InternalComponentManager,
-  Invocation,
-  ModifierDefinitionState,
-  Option,
-  ResolvedComponentDefinition,
-  Template,
+  type CompilableProgram,
+  type HelperDefinitionState,
+  type InternalComponentManager,
+  type Invocation,
+  type ModifierDefinitionState,
+  type Option,
+  type ResolvedComponentDefinition,
+  type Template,
 } from '@glimmer/interfaces';
 import { getComponentTemplate } from '@glimmer/manager';
 import { assert, dict } from '@glimmer/util';

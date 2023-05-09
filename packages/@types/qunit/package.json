@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "name": "@types/qunit",
+  "types": "index.d.ts"
+}

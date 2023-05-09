@@ -1,17 +1,15 @@
+import { DOMTreeConstruction, type NodeTokensImpl } from '@glimmer/dom-change-list';
 import {
-  Namespace,
-  SimpleDocument,
-  SimpleDocumentFragment,
-  SimpleElement,
+  type Namespace,
+  type SimpleDocument,
+  type SimpleDocumentFragment,
+  type SimpleElement,
 } from '@glimmer/interfaces';
+import { NS_SVG, NS_XLINK } from '@glimmer/util';
 import createDocument from '@simple-dom/document';
 
-import { DOMTreeConstruction, NodeTokensImpl } from '..';
 import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 import { module, test, TestCase } from './test-case';
-
-const SVG = Namespace.SVG;
-const XLINK = Namespace.XLink;
 
 @module('[dom-change-list] DOMTreeConstruction')
 export class ChangeListTest extends TestCase {
@@ -42,7 +40,7 @@ export class ChangeListTest extends TestCase {
 
   @test
   'openElement and closeElement'() {
-    let { tree } = this;
+    const { tree } = this;
 
     tree.openElement('span');
     tree.appendText('hello world');
@@ -56,7 +54,7 @@ export class ChangeListTest extends TestCase {
 
   @test
   setAttribute() {
-    let { tree } = this;
+    const { tree } = this;
 
     tree.openElement('span');
     tree.setAttribute('class', 'chad');
@@ -67,7 +65,7 @@ export class ChangeListTest extends TestCase {
 
   @test
   'nested elements'() {
-    let { tree } = this;
+    const { tree } = this;
 
     tree.openElement('p');
     tree.setAttribute('class', 'chad');
@@ -83,9 +81,9 @@ export class ChangeListTest extends TestCase {
 
   @test
   'namespaced elements'() {
-    let { tree } = this;
+    const { tree } = this;
 
-    tree.openElement('svg', SVG);
+    tree.openElement('svg', NS_SVG);
     tree.closeElement();
 
     this.shouldEqualNS('<svg:svg></svg:svg>');
@@ -93,12 +91,12 @@ export class ChangeListTest extends TestCase {
 
   @test
   'namespaced attributes'() {
-    let { tree } = this;
+    const { tree } = this;
 
-    tree.openElement('svg', SVG);
-    tree.openElement('a', SVG);
+    tree.openElement('svg', NS_SVG);
+    tree.openElement('a', NS_SVG);
     tree.setAttribute('fill', 'red');
-    tree.setAttribute('href', 'linky', XLINK);
+    tree.setAttribute('href', 'linky', NS_XLINK);
     tree.closeElement();
     tree.closeElement();
 
@@ -111,18 +109,18 @@ export class ChangeListTest extends TestCase {
   }
 
   protected shouldEqual(expectedHTML: string) {
-    let tokens = this.append();
-    let actualHTML = toHTML(this.parent);
+    const tokens = this.append();
+    const actualHTML = toHTML(this.parent);
     QUnit.assert.strictEqual(actualHTML, expectedHTML);
 
-    let { expected, actual } = this.tree.reify(tokens);
+    const { expected, actual } = this.tree.reify(tokens);
 
     QUnit.assert.deepEqual(actual, expected);
   }
 
   protected shouldEqualNS(expected: string) {
     this.append();
-    let actual = toHTMLNS(this.parent);
+    const actual = toHTMLNS(this.parent);
     QUnit.assert.strictEqual(actual, expected);
   }
 }
@@ -131,7 +129,7 @@ export class Builder extends TestBuilder {
   protected declare tree: DOMTreeConstruction; // Hides property in base class
 
   openElement(tag: string, namespace?: Namespace) {
-    let token = this.tree.openElement(tag, namespace);
+    const token = this.tree.openElement(tag, namespace);
     this.expected[token] = { type: 'element', value: tag.toUpperCase() };
   }
 }

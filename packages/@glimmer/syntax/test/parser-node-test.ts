@@ -1,7 +1,7 @@
-import { Dict } from '@glimmer/interfaces';
+import { type Dict } from '@glimmer/interfaces';
+import { syntaxErrorFor } from '@glimmer/test-utils';
 
-import { syntaxErrorFor } from '../../integration-tests';
-import { ASTv1, builders as b, preprocess as parse } from '..';
+import { type ASTv1, builders as b, preprocess as parse } from '..';
 import { astEqual } from './support';
 
 const test = QUnit.test;

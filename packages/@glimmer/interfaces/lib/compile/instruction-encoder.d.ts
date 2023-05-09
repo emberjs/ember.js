@@ -1,8 +1,8 @@
-import { CompilerBuffer } from '../template';
-import { MachineOp, Op } from '../vm-opcodes';
-import { Operand } from './operands';
+import { type CompilerBuffer } from '../template';
+import { type MachineOp, type Op } from '../vm-opcodes';
+import { type Operand } from './operands';
 
-export const enum OpcodeSize {
+export enum OpcodeSize {
   ARG_SHIFT = 8,
   MAX_SIZE = 0x7fffffff,
   TYPE_SIZE = 0b11111111,

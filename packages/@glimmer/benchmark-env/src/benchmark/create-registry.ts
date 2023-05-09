@@ -1,11 +1,11 @@
 import {
-  Dict,
-  Helper,
-  HelperDefinitionState,
-  InternalModifierManager,
-  ModifierDefinitionState,
-  ResolvedComponentDefinition,
-  SimpleElement,
+  type Dict,
+  type Helper,
+  type HelperDefinitionState,
+  type InternalModifierManager,
+  type ModifierDefinitionState,
+  type ResolvedComponentDefinition,
+  type SimpleElement,
 } from '@glimmer/interfaces';
 import {
   getComponentTemplate,
@@ -16,7 +16,7 @@ import {
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 
-import { UpdateBenchmark } from '../interfaces';
+import { type UpdateBenchmark } from '../interfaces';
 import renderBenchmark from './render-benchmark';
 
 export interface Registry {

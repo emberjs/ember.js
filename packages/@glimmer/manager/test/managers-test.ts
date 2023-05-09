@@ -1,18 +1,14 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  ComponentManager,
-  HelperManager,
-  InternalComponentManager,
-  InternalHelperManager,
-  ModifierManager,
+  type ComponentManager,
+  type HelperManager,
+  type InternalComponentManager,
+  type InternalHelperManager,
+  type ModifierManager,
 } from '@glimmer/interfaces';
-import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { createUpdatableTag } from '@glimmer/validator';
-
 import {
   componentCapabilities,
   CustomComponentManager,
-  CustomHelperManager,
+  type CustomHelperManager,
   CustomModifierManager,
   getInternalComponentManager,
   getInternalHelperManager,
@@ -25,7 +21,9 @@ import {
   setInternalHelperManager,
   setInternalModifierManager,
   setModifierManager,
-} from '..';
+} from '@glimmer/manager';
+import { UNDEFINED_REFERENCE } from '@glimmer/reference';
+import { createUpdatableTag } from '@glimmer/validator';
 
 const { module, test } = QUnit;
 
@@ -105,7 +103,7 @@ module('Managers', () => {
       );
     });
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       test('throws if multiple component managers associated with the same definition', (assert) => {
         let definition = setInternalComponentManager({} as any, {});
 
@@ -208,7 +206,7 @@ module('Managers', () => {
       assert.strictEqual(instance1, helper, 'manager is the internal helper');
     });
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       test('throws if multiple helper managers associated with the same definition', (assert) => {
         let definition = setInternalHelperManager(() => {
           return {} as any;
@@ -316,7 +314,7 @@ module('Managers', () => {
       );
     });
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       test('throws if multiple modifier managers associated with the same definition', (assert) => {
         let definition = setModifierManager(() => {
           return {} as any;
@@ -377,7 +375,7 @@ module('Managers', () => {
 });
 
 function assertPrimitiveUsage(assert: Assert, setManager: any) {
-  if (!DEBUG) {
+  if (!import.meta.env.DEV) {
     assert.expect(0);
     return;
   }

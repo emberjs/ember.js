@@ -1,16 +1,15 @@
 import { check, CheckFunction, CheckString } from '@glimmer/debug';
 import { registerDestructor } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  CapturedArguments,
-  InternalModifierManager,
-  Owner,
-  SimpleElement,
+  type CapturedArguments,
+  type InternalModifierManager,
+  type Owner,
+  type SimpleElement,
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
 import { buildUntouchableThis, expect } from '@glimmer/util';
-import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag, type UpdatableTag } from '@glimmer/validator';
 
 import { reifyNamed } from '../vm/arguments';
 
@@ -133,7 +132,7 @@ export class OnModifierState {
       this.shouldUpdate = true;
     }
 
-    if (DEBUG && args.positional.length !== 2) {
+    if (import.meta.env.DEV && args.positional.length !== 2) {
       throw new Error(
         `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`
       );
@@ -141,12 +140,12 @@ export class OnModifierState {
 
     let needsCustomCallback =
       (SUPPORTS_EVENT_OPTIONS === false && once) /* needs manual once implementation */ ||
-      (DEBUG && passive); /* needs passive enforcement */
+      (import.meta.env.DEV && passive); /* needs passive enforcement */
 
     if (this.shouldUpdate) {
       if (needsCustomCallback) {
         let callback = (this.callback = function (this: Element, event) {
-          if (DEBUG && passive) {
+          if (import.meta.env.DEV && passive) {
             event.preventDefault = () => {
               throw new Error(
                 `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${userProvidedCallback}`
@@ -159,7 +158,7 @@ export class OnModifierState {
           }
           return userProvidedCallback.call(untouchableContext, event);
         });
-      } else if (DEBUG) {
+      } else if (import.meta.env.DEV) {
         // prevent the callback from being bound to the element
         this.callback = userProvidedCallback.bind(untouchableContext);
       } else {

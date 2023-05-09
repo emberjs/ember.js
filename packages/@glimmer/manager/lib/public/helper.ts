@@ -1,32 +1,31 @@
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  Helper,
-  HelperCapabilities,
-  HelperCapabilitiesVersions,
-  HelperDefinitionState,
-  HelperManager,
-  HelperManagerWithDestroyable,
-  HelperManagerWithValue,
-  InternalHelperManager,
-  Owner,
+  type Helper,
+  type HelperCapabilities,
+  type HelperCapabilitiesVersions,
+  type HelperDefinitionState,
+  type HelperManager,
+  type HelperManagerWithDestroyable,
+  type HelperManagerWithValue,
+  type InternalHelperManager,
+  type Owner,
 } from '@glimmer/interfaces';
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 import { argsProxyFor } from '../util/args-proxy';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
-import { ManagerFactory } from './index';
+import { type ManagerFactory } from './index';
 
 export function helperCapabilities<Version extends keyof HelperCapabilitiesVersions>(
   managerAPI: Version,
   options: Partial<HelperCapabilities> = {}
 ): HelperCapabilities {
-  if (DEBUG && managerAPI !== '3.23') {
+  if (import.meta.env.DEV && managerAPI !== '3.23') {
     throw new Error('Invalid helper manager compatibility specified');
   }
 
   if (
-    DEBUG &&
+    import.meta.env.DEV &&
     (!(options.hasValue || options.hasScheduledEffect) ||
       (options.hasValue && options.hasScheduledEffect))
   ) {
@@ -35,7 +34,7 @@ export function helperCapabilities<Version extends keyof HelperCapabilitiesVersi
     );
   }
 
-  if (DEBUG && options.hasScheduledEffect) {
+  if (import.meta.env.DEV && options.hasScheduledEffect) {
     throw new Error(
       'The `hasScheduledEffect` capability has not yet been implemented for helper managers. Please pass `hasValue` instead'
     );
@@ -77,7 +76,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
       let { factory } = this;
       delegate = factory(owner);
 
-      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+      if (import.meta.env.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
           `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
@@ -118,7 +117,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
         let cache = createComputeRef(
           () => (manager as HelperManagerWithValue<unknown>).getValue(bucket),
           null,
-          DEBUG && manager.getDebugName && manager.getDebugName(definition)
+          import.meta.env.DEV && manager.getDebugName && manager.getDebugName(definition)
         );
 
         if (hasDestroyable(manager)) {
@@ -129,7 +128,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
       } else if (hasDestroyable(manager)) {
         let ref = createConstRef(
           undefined,
-          DEBUG && (manager.getDebugName?.(definition) ?? 'unknown helper')
+          import.meta.env.DEV && (manager.getDebugName?.(definition) ?? 'unknown helper')
         );
 
         associateDestroyableChild(ref, manager.getDestroyable(bucket));

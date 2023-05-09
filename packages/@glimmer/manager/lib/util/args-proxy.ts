@@ -1,13 +1,12 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  Arguments,
-  CapturedArguments,
-  CapturedNamedArguments,
-  CapturedPositionalArguments,
+  type Arguments,
+  type CapturedArguments,
+  type CapturedNamedArguments,
+  type CapturedPositionalArguments,
 } from '@glimmer/interfaces';
-import { Reference, valueForRef } from '@glimmer/reference';
+import { type Reference, valueForRef } from '@glimmer/reference';
 import { HAS_NATIVE_PROXY } from '@glimmer/util';
-import { Tag, track } from '@glimmer/validator';
+import { type Tag, track } from '@glimmer/validator';
 
 const CUSTOM_TAG_FOR = new WeakMap<object, (obj: object, key: string) => Tag>();
 
@@ -84,7 +83,7 @@ class NamedArgsProxy implements ProxyHandler<{}> {
   }
 
   getOwnPropertyDescriptor(_target: {}, prop: string | number | symbol) {
-    if (DEBUG && !(prop in this.named)) {
+    if (import.meta.env.DEV && !(prop in this.named)) {
       throw new Error(
         `args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys(). Attempted to get the descriptor for \`${String(
           prop
@@ -145,7 +144,7 @@ if (HAS_NATIVE_PROXY) {
     const namedTarget = Object.create(null);
     const positionalTarget: unknown[] = [];
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       const setHandler = function (_target: unknown, prop: symbol | string | number): never {
         throw new Error(
           `You attempted to set ${String(
@@ -209,7 +208,7 @@ if (HAS_NATIVE_PROXY) {
       });
     });
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       // Prevent mutations in development mode. This will not prevent the
       // proxy from updating, but will prevent assigning new values or pushing
       // for instance.

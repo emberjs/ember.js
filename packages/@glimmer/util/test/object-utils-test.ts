@@ -1,4 +1,4 @@
-import { assign } from '..';
+import { assign } from '@glimmer/util';
 
 QUnit.module('object-utils tests');
 

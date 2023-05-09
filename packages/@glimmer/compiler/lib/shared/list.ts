@@ -1,4 +1,4 @@
-import { Option, PresentArray } from '@glimmer/interfaces';
+import { type Option, type PresentArray } from '@glimmer/interfaces';
 import { isPresentArray, mapPresentArray } from '@glimmer/util';
 
 export interface OptionalList<T> {

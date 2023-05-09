@@ -1,4 +1,4 @@
-import { Dict, SimpleDocumentFragment, SimpleNode } from '@glimmer/interfaces';
+import { type Dict, type SimpleDocumentFragment, type SimpleNode } from '@glimmer/interfaces';
 
 export interface SafeString {
   toHTML(): string;

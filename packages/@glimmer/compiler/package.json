@@ -2,6 +2,10 @@
   "name": "@glimmer/compiler",
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/compiler",
+  "main": "index.ts",
+  "publishConfig": {
+    "main": "dist/index.js"
+  },
   "dependencies": {
     "@glimmer/syntax": "workspace:^",
     "@glimmer/util": "workspace:^",
@@ -9,6 +13,7 @@
     "@glimmer/interfaces": "workspace:^"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "workspace:^"
+    "@glimmer/local-debug-flags": "workspace:^",
+    "@types/node": "^20.1.0"
   }
 }

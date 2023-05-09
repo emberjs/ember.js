@@ -1,10 +1,16 @@
-import { MachineOp, Option, RuntimeHeap, RuntimeOp, RuntimeProgram } from '@glimmer/interfaces';
+import {
+  MachineOp,
+  type Option,
+  type RuntimeHeap,
+  type RuntimeOp,
+  type RuntimeProgram,
+} from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { assert } from '@glimmer/util';
-import { $fp, $pc, $ra, $sp, MachineRegister } from '@glimmer/vm';
+import { $fp, $pc, $ra, $sp, type MachineRegister } from '@glimmer/vm';
 
 import { APPEND_OPCODES } from '../opcodes';
-import VM from './append';
+import type VM from './append';
 
 export interface LowLevelRegisters {
   [MachineRegister.pc]: number;

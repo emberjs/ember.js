@@ -1,4 +1,4 @@
-import { Core, Dict, SexpOpcodes } from '@glimmer/interfaces';
+import { type Core, type Dict, SexpOpcodes } from '@glimmer/interfaces';
 import { dict, unwrap } from '@glimmer/util';
 
 import * as ASTv2 from './v2/api';

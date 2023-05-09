@@ -1,28 +1,27 @@
 import { InstructionEncoderImpl } from '@glimmer/encoder';
-import { DEBUG } from '@glimmer/env';
 import {
-  BuilderOp,
-  BuilderOpcode,
-  CompileTimeConstants,
-  CompileTimeHeap,
-  CompileTimeResolver,
-  ContainingMetadata,
-  Dict,
-  Encoder,
-  EncoderError,
-  HandleResult,
+  type BuilderOp,
+  type BuilderOpcode,
+  type CompileTimeConstants,
+  type CompileTimeHeap,
+  type CompileTimeResolver,
+  type ContainingMetadata,
+  type Dict,
+  type Encoder,
+  type EncoderError,
+  type HandleResult,
   HighLevelBuilderOpcode,
-  HighLevelOp,
+  type HighLevelOp,
   HighLevelOperand,
   HighLevelResolutionOpcode,
-  InstructionEncoder,
+  type InstructionEncoder,
   MachineOp,
   Op,
   OpcodeSize,
-  Operand,
-  ResolutionTimeConstants,
-  SingleBuilderOperand,
-  STDLib,
+  type Operand,
+  type ResolutionTimeConstants,
+  type SingleBuilderOperand,
+  type STDLib,
 } from '@glimmer/interfaces';
 import {
   assert,
@@ -126,7 +125,7 @@ export function encodeOp(
         break;
 
       case HighLevelResolutionOpcode.ResolveFree:
-        if (DEBUG) {
+        if (import.meta.env.DEV) {
           let [, upvarIndex] = op;
           let freeName = expect(meta.upvars, 'BUG: attempted to resolve value but no upvars found')[
             upvarIndex
@@ -183,7 +182,7 @@ export class EncoderImpl implements Encoder {
   ): void {
     let { heap } = this;
 
-    if (DEBUG && (type as number) > OpcodeSize.TYPE_SIZE) {
+    if (import.meta.env.DEV && (type as number) > OpcodeSize.TYPE_SIZE) {
       throw new Error(`Opcode type over 8-bits. Got ${type}.`);
     }
 

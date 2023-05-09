@@ -1,8 +1,13 @@
-import { GlimmerTreeChanges, GlimmerTreeConstruction, SimpleDocument } from '@glimmer/interfaces';
+import {
+  type GlimmerTreeChanges,
+  type GlimmerTreeConstruction,
+  type SimpleDocument,
+} from '@glimmer/interfaces';
 import createHTMLDocument from '@simple-dom/document';
 
 import { assertingElement, toInnerHTML } from '../../dom/simple-utils';
-import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
+import type RenderDelegate from '../../render-delegate';
+import { type RenderDelegateOptions } from '../../render-delegate';
 import { RenderTest } from '../../render-test';
 import { JitRenderDelegate } from '../jit/delegate';
 

@@ -1,26 +1,25 @@
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  Bounds,
-  DynamicScope,
-  ElementBuilder,
-  Environment,
-  ExceptionHandler,
-  GlimmerTreeChanges,
-  LiveBlock,
-  Option,
-  RuntimeContext,
-  Scope,
-  SimpleComment,
-  UpdatableBlock,
-  UpdatingOpcode,
-  UpdatingVM,
+  type Bounds,
+  type DynamicScope,
+  type ElementBuilder,
+  type Environment,
+  type ExceptionHandler,
+  type GlimmerTreeChanges,
+  type LiveBlock,
+  type Option,
+  type RuntimeContext,
+  type Scope,
+  type SimpleComment,
+  type UpdatableBlock,
+  type UpdatingOpcode,
+  type UpdatingVM,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import {
-  OpaqueIterationItem,
-  OpaqueIterator,
-  Reference,
+  type OpaqueIterationItem,
+  type OpaqueIterator,
+  type Reference,
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
@@ -28,8 +27,8 @@ import { expect, logStep, Stack, unwrap } from '@glimmer/util';
 import { resetTracking, runInTrackingTransaction } from '@glimmer/validator';
 
 import { clear, move as moveBounds } from '../bounds';
-import { InternalVM, VmInitCallback } from './append';
-import { LiveBlockList, NewElementBuilder } from './element-builder';
+import { type InternalVM, type VmInitCallback } from './append';
+import { type LiveBlockList, NewElementBuilder } from './element-builder';
 
 export default class UpdatingVMImpl implements UpdatingVM {
   public env: Environment;
@@ -45,7 +44,7 @@ export default class UpdatingVMImpl implements UpdatingVM {
   }
 
   execute(opcodes: UpdatingOpcode[], handler: ExceptionHandler) {
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       let hasErrored = true;
       try {
         runInTrackingTransaction!(() => this._execute(opcodes, handler), '- While rendering:');

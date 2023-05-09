@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "@glimmer/test-utils",
+  "main": "index.ts",
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
+  }
+}

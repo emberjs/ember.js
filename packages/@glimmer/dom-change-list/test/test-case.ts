@@ -1,4 +1,4 @@
-import { Dict } from '@glimmer/interfaces';
+import { type Dict } from '@glimmer/interfaces';
 
 // A bunch of this file was extracted from the Glimmer testing harness.
 // TODO: Clean this up and eliminate anything that isn't generically unnecessary.

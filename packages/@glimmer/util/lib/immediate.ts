@@ -38,7 +38,7 @@ import { debugAssert as assert } from './assert';
   strategy.
 */
 
-export const enum ImmediateConstants {
+export enum ImmediateConstants {
   MAX_SMI = 2 ** 30 - 1,
   MIN_SMI = ~MAX_SMI,
   SIGN_BIT = ~(2 ** 29),

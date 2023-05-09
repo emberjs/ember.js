@@ -1,34 +1,33 @@
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import {
-  CompilableTemplate,
-  CompileTimeCompilationContext,
-  Destroyable,
-  DynamicScope,
-  ElementBuilder,
-  Environment,
-  Option,
-  Owner,
-  PartialScope,
-  RenderResult,
-  ResolutionTimeConstants,
-  RichIteratorResult,
-  RuntimeConstants,
-  RuntimeContext,
-  RuntimeHeap,
-  RuntimeProgram,
-  Scope,
-  UpdatingOpcode,
-  VM as PublicVM,
+  type CompilableTemplate,
+  type CompileTimeCompilationContext,
+  type Destroyable,
+  type DynamicScope,
+  type ElementBuilder,
+  type Environment,
+  type Option,
+  type Owner,
+  type PartialScope,
+  type RenderResult,
+  type ResolutionTimeConstants,
+  type RichIteratorResult,
+  type RuntimeConstants,
+  type RuntimeContext,
+  type RuntimeHeap,
+  type RuntimeProgram,
+  type Scope,
+  type UpdatingOpcode,
+  type VM as PublicVM,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { RuntimeOpImpl } from '@glimmer/program';
+import { type RuntimeOpImpl } from '@glimmer/program';
 import {
   createIteratorItemRef,
-  OpaqueIterationItem,
-  OpaqueIterator,
-  Reference,
+  type OpaqueIterationItem,
+  type OpaqueIterator,
+  type Reference,
   UNDEFINED_REFERENCE,
 } from '@glimmer/reference';
 import { assert, expect, LOCAL_LOGGER, reverse, Stack, unwrapHandle } from '@glimmer/util';
@@ -43,9 +42,9 @@ import {
   $t1,
   $v0,
   isLowLevelRegister,
-  MachineRegister,
-  Register,
-  SyscallRegister,
+  type MachineRegister,
+  type Register,
+  type SyscallRegister,
 } from '@glimmer/vm';
 
 import {
@@ -53,22 +52,22 @@ import {
   EndTrackFrameOpcode,
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
-import { APPEND_OPCODES, DebugState } from '../opcodes';
+import { APPEND_OPCODES, type DebugState } from '../opcodes';
 import { PartialScopeImpl } from '../scope';
 import { ARGS, CONSTANTS, DESTROYABLE_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';
-import { LiveBlockList } from './element-builder';
+import { type LiveBlockList } from './element-builder';
 import LowLevelVM from './low-level';
 import RenderResultImpl from './render-result';
-import EvaluationStackImpl, { EvaluationStack } from './stack';
+import EvaluationStackImpl, { type EvaluationStack } from './stack';
 import {
-  BlockOpcode,
+  type BlockOpcode,
   ListBlockOpcode,
   ListItemOpcode,
-  ResumableVMState,
+  type ResumableVMState,
   ResumableVMStateImpl,
   TryOpcode,
-  VMState,
+  type VMState,
 } from './update';
 
 /**
@@ -281,10 +280,11 @@ export default class VM implements PublicVM, InternalVM {
     private readonly elementStack: ElementBuilder,
     readonly context: CompileTimeCompilationContext
   ) {
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       assertGlobalContextWasSet!();
     }
 
+    this.resume = initVM(context);
     let evalStack = EvaluationStackImpl.restore(stack);
 
     assert(typeof pc === 'number', 'pc is a number');
@@ -349,7 +349,7 @@ export default class VM implements PublicVM, InternalVM {
     return vm;
   }
 
-  private resume: VmInitCallback = initVM(this.context);
+  private resume: VmInitCallback;
 
   compile(block: CompilableTemplate): number {
     let handle = unwrapHandle(block.compile(this.context));
@@ -556,7 +556,7 @@ export default class VM implements PublicVM, InternalVM {
   /// EXECUTION
 
   execute(initialize?: (vm: this) => void): RenderResult {
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       let hasErrored = true;
       try {
         let value = this._execute(initialize);

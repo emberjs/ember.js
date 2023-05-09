@@ -13,8 +13,8 @@ export * from './lib/program-context';
 export {
   templateCacheCounters,
   default as templateFactory,
-  TemplateFactoryWithIdAndMeta,
-  TemplateWithIdAndReferrer,
+  type TemplateFactoryWithIdAndMeta,
+  type TemplateWithIdAndReferrer,
 } from './lib/template';
 export { EMPTY_BLOCKS } from './lib/utils';
 export { WrappedBuilder } from './lib/wrapped-component';

@@ -1,9 +1,15 @@
-import { Dict, Owner, Template, VMArguments, WithCreateInstance } from '@glimmer/interfaces';
+import {
+  type Dict,
+  type Owner,
+  type Template,
+  type VMArguments,
+  type WithCreateInstance,
+} from '@glimmer/interfaces';
 import { getComponentTemplate } from '@glimmer/manager';
-import { createConstRef, Reference } from '@glimmer/reference';
+import { createConstRef, type Reference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 
-import { ComponentArgs } from '../interfaces';
+import { type ComponentArgs } from '../interfaces';
 import argsProxy from './args-proxy';
 
 const BASIC_COMPONENT_CAPABILITIES = {

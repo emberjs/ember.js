@@ -1,17 +1,18 @@
 import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
-import { Arguments, InternalHelperManager } from '@glimmer/interfaces';
+import { type Arguments, type InternalHelperManager } from '@glimmer/interfaces';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 import { getOwner } from '@glimmer/owner';
 import { debugToString } from '@glimmer/util';
-import { Cache, createCache, getValue } from '@glimmer/validator';
+import { type Cache, createCache, getValue } from '@glimmer/validator';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';
 
-let ARGS_CACHES = DEBUG ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>() : undefined;
+let ARGS_CACHES = import.meta.env.DEV
+  ? new WeakMap<SimpleArgsProxy, Cache<Partial<Arguments>>>()
+  : undefined;
 
 function getArgs(proxy: SimpleArgsProxy): Partial<Arguments> {
-  return getValue(DEBUG ? ARGS_CACHES!.get(proxy)! : proxy.argsCache!)!;
+  return getValue(import.meta.env.DEV ? ARGS_CACHES!.get(proxy)! : proxy.argsCache!)!;
 }
 
 class SimpleArgsProxy {
@@ -23,7 +24,7 @@ class SimpleArgsProxy {
   ) {
     let argsCache = createCache(() => computeArgs(context));
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       ARGS_CACHES!.set(this, argsCache);
       Object.freeze(this);
     } else {
@@ -47,7 +48,7 @@ export function invokeHelper(
   definition: object,
   computeArgs?: (context: object) => Partial<Arguments>
 ): Cache<unknown> {
-  if (DEBUG && (typeof context !== 'object' || context === null)) {
+  if (import.meta.env.DEV && (typeof context !== 'object' || context === null)) {
     throw new Error(
       `Expected a context object to be passed as the first parameter to invokeHelper, got ${context}`
     );
@@ -57,7 +58,7 @@ export function invokeHelper(
   const internalManager = getInternalHelperManager(definition)!;
 
   // TODO: figure out why assert isn't using the TS assert thing
-  if (DEBUG && !internalManager) {
+  if (import.meta.env.DEV && !internalManager) {
     throw new Error(
       `Expected a helper definition to be passed as the second parameter to invokeHelper, but no helper manager was found. The definition value that was passed was \`${debugToString!(
         definition
@@ -65,7 +66,7 @@ export function invokeHelper(
     );
   }
 
-  if (DEBUG && typeof internalManager === 'function') {
+  if (import.meta.env.DEV && typeof internalManager === 'function') {
     throw new Error(
       'Found a helper manager, but it was an internal built-in helper manager. `invokeHelper` does not support internal helpers yet.'
     );
@@ -79,7 +80,7 @@ export function invokeHelper(
 
   if (hasValue(manager)) {
     cache = createCache(() => {
-      if (DEBUG && (isDestroying(cache) || isDestroyed(cache))) {
+      if (import.meta.env.DEV && (isDestroying(cache) || isDestroyed(cache))) {
         throw new Error(
           `You attempted to get the value of a helper after the helper was destroyed, which is not allowed`
         );

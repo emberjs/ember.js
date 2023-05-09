@@ -1,4 +1,4 @@
-import { CompileTimeArtifacts, RuntimeArtifacts } from '@glimmer/interfaces';
+import { type CompileTimeArtifacts, type RuntimeArtifacts } from '@glimmer/interfaces';
 
 import { ConstantsImpl } from './constants';
 import { HeapImpl } from './program';

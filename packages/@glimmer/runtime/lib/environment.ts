@@ -1,17 +1,16 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  ComponentInstanceWithCreate,
-  Environment,
-  EnvironmentOptions,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
-  ModifierInstance,
-  Option,
-  RuntimeArtifacts,
-  RuntimeContext,
-  RuntimeResolver,
-  Transaction,
-  TransactionSymbol,
+  type ComponentInstanceWithCreate,
+  type Environment,
+  type EnvironmentOptions,
+  type GlimmerTreeChanges,
+  type GlimmerTreeConstruction,
+  type ModifierInstance,
+  type Option,
+  type RuntimeArtifacts,
+  type RuntimeContext,
+  type RuntimeResolver,
+  type Transaction,
+  type TransactionSymbol,
 } from '@glimmer/interfaces';
 import { RuntimeProgramImpl } from '@glimmer/program';
 import { assert, expect, symbol } from '@glimmer/util';
@@ -64,7 +63,7 @@ class TransactionImpl implements Transaction {
         let tag = track(
           // eslint-disable-next-line no-loop-func
           () => manager.install(state),
-          DEBUG &&
+          import.meta.env.DEV &&
             `- While rendering:\n  (instance of a \`${
               definition.resolvedName || manager.getDebugName(definition.state)
             }\` modifier)`
@@ -82,7 +81,7 @@ class TransactionImpl implements Transaction {
         let tag = track(
           // eslint-disable-next-line no-loop-func
           () => manager.update(state),
-          DEBUG &&
+          import.meta.env.DEV &&
             `- While rendering:\n  (instance of a \`${
               definition.resolvedName || manager.getDebugName(definition.state)
             }\` modifier)`
@@ -102,18 +101,20 @@ export class EnvironmentImpl implements Environment {
   protected updateOperations?: GlimmerTreeChanges | undefined;
 
   // Delegate methods and values
-  public isInteractive = this.delegate.isInteractive;
+  public isInteractive: boolean;
 
-  debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
+  debugRenderTree: DebugRenderTree<object> | undefined;
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate) {
+    this.isInteractive = delegate.isInteractive;
+    this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;
       this.updateOperations = options.updateOperations;
     } else if (options.document) {
       this.appendOperations = new DOMTreeConstruction(options.document);
       this.updateOperations = new DOMChangesImpl(options.document);
-    } else if (DEBUG) {
+    } else if (import.meta.env.DEV) {
       throw new Error('you must pass document or appendOperations to a new runtime');
     }
   }

@@ -1,4 +1,4 @@
-import { CapturedArguments } from '@glimmer/interfaces';
+import { type CapturedArguments } from '@glimmer/interfaces';
 import { createInvokableRef } from '@glimmer/reference';
 import { HAS_NATIVE_PROXY } from '@glimmer/util';
 

@@ -1,7 +1,11 @@
-import { SimpleDocument, SimpleDocumentFragment, SimpleElement } from '@glimmer/interfaces';
+import { DOMTreeConstruction, type NodeTokensImpl, TreeBuilder } from '@glimmer/dom-change-list';
+import {
+  type SimpleDocument,
+  type SimpleDocumentFragment,
+  type SimpleElement,
+} from '@glimmer/interfaces';
 import createHTMLDocument from '@simple-dom/document';
 
-import { DOMTreeConstruction, NodeTokensImpl, TreeBuilder } from '..';
 import { Builder as TestBuilder, toHTML, toHTMLNS, XLINK } from './support';
 import { module, test, TestCase } from './test-case';
 

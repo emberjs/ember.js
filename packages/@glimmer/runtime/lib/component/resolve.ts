@@ -1,10 +1,9 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  ComponentDefinition,
-  Option,
-  Owner,
-  ResolutionTimeConstants,
-  RuntimeResolver,
+  type ComponentDefinition,
+  type Option,
+  type Owner,
+  type ResolutionTimeConstants,
+  type RuntimeResolver,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
@@ -19,7 +18,7 @@ export function resolveComponent(
     expect(owner, 'BUG: expected owner when looking up component')
   );
 
-  if (DEBUG && !definition) {
+  if (import.meta.env.DEV && !definition) {
     throw new Error(
       `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
     );

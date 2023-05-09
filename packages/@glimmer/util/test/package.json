@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "name": "@glimmer-test/util",
+  "dependencies": {
+    "@glimmer/util": "workspace:^"
+  }
+}

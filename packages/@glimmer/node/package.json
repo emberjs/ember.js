@@ -9,7 +9,7 @@
     "@simple-dom/document": "^1.4.0"
   },
   "devDependencies": {
-    "@types/qunit": "^2.19.5",
+    "@types/qunit": "workspace:^",
     "@glimmer/compiler": "workspace:^"
   }
 }

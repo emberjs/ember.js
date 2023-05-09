@@ -1,37 +1,34 @@
+import { type DOMTreeConstruction, type TreeBuilder } from '@glimmer/dom-change-list';
 import {
-  AttrNamespace,
-  Namespace,
-  NodeTokens,
-  NodeType,
-  Option,
-  PresentArray,
-  SimpleAttr,
-  SimpleDocumentFragment,
-  SimpleElement,
+  type Namespace,
+  type NodeTokens,
+  type Option,
+  type PresentArray,
+  type SimpleAttr,
+  type SimpleDocumentFragment,
+  type SimpleElement,
 } from '@glimmer/interfaces';
+import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, NS_XLINK, TEXT_NODE } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 
-import { DOMTreeConstruction, TreeBuilder } from '..';
-
-export const SVG = Namespace.SVG;
-export const XLINK = Namespace.XLink;
+export const XLINK = NS_XLINK;
 
 export function toHTML(parent: SimpleElement | SimpleDocumentFragment) {
-  let serializer = new Serializer(voidMap);
+  const serializer = new Serializer(voidMap);
 
   return serializer.serializeChildren(parent);
 }
 
 export function toHTMLNS(parent: SimpleElement | SimpleDocumentFragment) {
-  let serializer = new NamespacedHTMLSerializer(voidMap);
+  const serializer = new NamespacedHTMLSerializer(voidMap);
 
   return serializer.serializeChildren(parent);
 }
 
 class NamespacedHTMLSerializer extends Serializer {
   override openTag(element: SimpleElement): string {
-    if (element.namespaceURI === SVG) {
+    if (element.namespaceURI === NS_SVG) {
       return '<svg:' + element.tagName.toLowerCase() + this.attributes(element.attributes) + '>';
     } else {
       return super.openTag(element);
@@ -39,7 +36,7 @@ class NamespacedHTMLSerializer extends Serializer {
   }
 
   override closeTag(element: SimpleElement): string {
-    if (element.namespaceURI === SVG) {
+    if (element.namespaceURI === NS_SVG) {
       return '</svg:' + element.tagName.toLowerCase() + '>';
     } else {
       return super.closeTag(element);
@@ -48,7 +45,7 @@ class NamespacedHTMLSerializer extends Serializer {
 
   override attr(original: SimpleAttr): string {
     let attr: { name: string; value: Option<string>; specified: boolean };
-    if (original.namespaceURI === XLINK) {
+    if (original.namespaceURI === NS_XLINK) {
       attr = {
         name: `xlink:${original.name}`,
         value: original.value,
@@ -76,7 +73,7 @@ export class Builder {
 
   appendTo(parent: SimpleElement | SimpleDocumentFragment) {
     if (parent.nodeType === 1) {
-      this.expected[0].value = (parent as SimpleElement).tagName;
+      this.expected[0].value = parent.tagName;
     } else {
       this.expected[0].value = '#document-fragment';
     }
@@ -86,36 +83,36 @@ export class Builder {
     this.tree.closeElement();
   }
 
-  setAttribute(name: string, value: string, namespace?: AttrNamespace) {
+  setAttribute(name: string, value: string, namespace?: Namespace) {
     this.tree.setAttribute(name, value, namespace);
   }
 
   appendText(text: string) {
-    let token = this.tree.appendText(text);
+    const token = this.tree.appendText(text);
     this.expected[token] = { type: 'text', value: text };
   }
 
   appendComment(text: string) {
-    let token = this.tree.appendComment(text);
+    const token = this.tree.appendComment(text);
     this.expected[token] = { type: 'comment', value: text };
   }
 
   reify(tokens: NodeTokens): { actual: ExpectedToken[]; expected: ExpectedToken[] } {
-    let actual: ExpectedToken[] = [];
-    let { expected } = this;
+    const actual: ExpectedToken[] = [];
+    const { expected } = this;
 
     for (let i = 0; i < expected.length; i++) {
-      let reified = tokens.reify(i);
+      const reified = tokens.reify(i);
 
       switch (reified.nodeType) {
-        case NodeType.ELEMENT_NODE:
+        case ELEMENT_NODE:
           actual.push({ type: 'element', value: reified.tagName });
           break;
-        case NodeType.TEXT_NODE:
-          actual.push({ type: 'text', value: reified.nodeValue! });
+        case TEXT_NODE:
+          actual.push({ type: 'text', value: reified.nodeValue });
           break;
-        case NodeType.COMMENT_NODE:
-          actual.push({ type: 'comment', value: reified.nodeValue! });
+        case COMMENT_NODE:
+          actual.push({ type: 'comment', value: reified.nodeValue });
           break;
       }
     }

@@ -1,4 +1,10 @@
-import { Bounds, Option, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import {
+  type Bounds,
+  type Option,
+  type SimpleDocument,
+  type SimpleElement,
+  type SimpleNode,
+} from '@glimmer/interfaces';
 import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
 import createHTMLDocument from '@simple-dom/document';
 

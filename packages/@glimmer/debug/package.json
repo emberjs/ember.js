@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "workspace:^",
-    "@types/qunit": "^2.19.5",
     "toml": "^3.0.0"
   }
 }

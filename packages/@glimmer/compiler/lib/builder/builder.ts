@@ -1,11 +1,10 @@
 import {
-  AttrNamespace,
-  Dict,
-  Expressions,
-  GetContextualFreeOp,
-  Namespace,
-  Option,
-  PresentArray,
+  type AttrNamespace,
+  type Dict,
+  type Expressions,
+  type GetContextualFreeOp,
+  type Option,
+  type PresentArray,
   SexpOpcodes,
   VariableResolutionContext,
   WireFormat,
@@ -17,29 +16,32 @@ import {
   exhausted,
   expect,
   isPresentArray,
+  NS_XLINK,
+  NS_XML,
+  NS_XMLNS,
   values,
 } from '@glimmer/util';
 
 import {
   Builder,
-  BuilderComment,
-  BuilderStatement,
+  type BuilderComment,
+  type BuilderStatement,
   ExpressionKind,
   HeadKind,
-  NormalizedAngleInvocation,
-  NormalizedAttrs,
-  NormalizedBlock,
-  NormalizedBlocks,
-  NormalizedElement,
-  NormalizedExpression,
-  NormalizedHash,
-  NormalizedHead,
-  NormalizedKeywordStatement,
-  NormalizedParams,
-  NormalizedPath,
-  NormalizedStatement,
+  type NormalizedAngleInvocation,
+  type NormalizedAttrs,
+  type NormalizedBlock,
+  type NormalizedBlocks,
+  type NormalizedElement,
+  type NormalizedExpression,
+  type NormalizedHash,
+  type NormalizedHead,
+  type NormalizedKeywordStatement,
+  type NormalizedParams,
+  type NormalizedPath,
+  type NormalizedStatement,
   normalizeStatement,
-  Variable,
+  type Variable,
   VariableKind,
 } from './builder-interface';
 
@@ -440,7 +442,7 @@ export function buildElementParams(
 
 export function extractNamespace(name: string): Option<AttrNamespace> {
   if (name === 'xmlns') {
-    return Namespace.XMLNS;
+    return NS_XMLNS;
   }
 
   let match = /^([^:]*):([^:]*)$/.exec(name);
@@ -453,11 +455,11 @@ export function extractNamespace(name: string): Option<AttrNamespace> {
 
   switch (namespace) {
     case 'xlink':
-      return Namespace.XLink;
+      return NS_XLINK;
     case 'xml':
-      return Namespace.XML;
+      return NS_XML;
     case 'xmlns':
-      return Namespace.XMLNS;
+      return NS_XMLNS;
   }
 
   return null;

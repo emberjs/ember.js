@@ -1,4 +1,4 @@
-import { SourceSpan } from './source/span';
+import { type SourceSpan } from './source/span';
 
 export interface GlimmerSyntaxError extends Error {
   location: SourceSpan | null;

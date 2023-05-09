@@ -19,12 +19,12 @@ export {
   runInTrackingTransaction,
   setTrackingTransactionEnv,
 } from './lib/debug';
-export { dirtyTagFor, tagFor, TagMeta, tagMetaFor } from './lib/meta';
+export { dirtyTagFor, tagFor, type TagMeta, tagMetaFor } from './lib/meta';
 export { trackedData } from './lib/tracked-data';
 export {
   beginTrackFrame,
   beginUntrackFrame,
-  Cache,
+  type Cache,
   consumeTag,
   createCache,
   endTrackFrame,
@@ -50,7 +50,7 @@ export {
   DIRTY_TAG as dirtyTag,
   INITIAL,
   isConstTag,
-  Revision,
+  type Revision,
   UPDATE_TAG as updateTag,
   validateTag,
   valueForTag,
@@ -58,4 +58,10 @@ export {
   VOLATILE_TAG,
   VolatileTag,
 } from './lib/validators';
-export { CombinatorTag, ConstantTag, DirtyableTag, Tag, UpdatableTag } from '@glimmer/interfaces';
+export type {
+  CombinatorTag,
+  ConstantTag,
+  DirtyableTag,
+  Tag,
+  UpdatableTag,
+} from '@glimmer/interfaces';

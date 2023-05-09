@@ -1,4 +1,4 @@
-import { Option } from '@glimmer/interfaces';
+import { type Option } from '@glimmer/interfaces';
 import { asPresentArray, assert, assign, expect, getLast, unwrap } from '@glimmer/util';
 import {
   EntityParser,
@@ -6,11 +6,11 @@ import {
   HTML5NamedCharRefs as namedCharRefs,
 } from 'simple-html-tokenizer';
 
-import { SourcePosition } from './source/location';
-import { Source } from './source/source';
-import { SourceOffset, SourceSpan } from './source/span';
-import * as ASTv1 from './v1/api';
-import * as HBS from './v1/handlebars-ast';
+import { type SourcePosition } from './source/location';
+import { type Source } from './source/source';
+import { type SourceOffset, type SourceSpan } from './source/span';
+import type * as ASTv1 from './v1/api';
+import type * as HBS from './v1/handlebars-ast';
 
 export type ParserNodeBuilder<N extends { loc: SourceSpan }> = Omit<N, 'loc'> & {
   loc: SourceOffset;

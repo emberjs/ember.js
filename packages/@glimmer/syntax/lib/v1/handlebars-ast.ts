@@ -6,7 +6,7 @@
  * https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/handlebars/index.d.ts.
  */
 
-import * as ASTv1 from './api';
+import type * as ASTv1 from './api';
 
 export interface CommonNode {
   loc: SourceLocation;

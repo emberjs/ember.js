@@ -1,4 +1,4 @@
-import { artifacts } from '..';
+import { artifacts } from '@glimmer/program';
 
 QUnit.module('Artifacts Test');
 

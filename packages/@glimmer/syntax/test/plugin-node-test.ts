@@ -1,6 +1,12 @@
+import {
+  type AST,
+  type ASTPluginBuilder,
+  type ASTPluginEnvironment,
+  preprocess,
+  type Syntax,
+  Walker,
+} from '@glimmer/syntax';
 import { expect } from '@glimmer/util';
-
-import { AST, ASTPluginBuilder, ASTPluginEnvironment, preprocess, Syntax, Walker } from '..';
 
 const { test } = QUnit;
 

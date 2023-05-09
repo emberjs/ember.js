@@ -2,12 +2,12 @@ import {
   consumeTag,
   dirtyTagFor,
   tagFor,
-  TagMeta,
+  type TagMeta,
   tagMetaFor,
-  UpdatableTag,
+  type UpdatableTag,
 } from '@glimmer/validator';
 
-import { Cell } from './interfaces';
+import { type Cell } from './interfaces';
 
 class CellImpl<T> implements Cell<T> {
   private _meta: TagMeta;

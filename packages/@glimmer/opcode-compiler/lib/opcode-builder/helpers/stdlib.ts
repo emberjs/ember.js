@@ -1,15 +1,15 @@
 import {
-  BuilderOp,
-  CompileTimeCompilationContext,
-  ContainingMetadata,
+  type BuilderOp,
+  type CompileTimeCompilationContext,
+  type ContainingMetadata,
   ContentType,
-  HighLevelOp,
+  type HighLevelOp,
   MachineOp,
   Op,
 } from '@glimmer/interfaces';
 import { $s0 } from '@glimmer/vm';
 
-import { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
+import { type HighLevelStatementOp, type PushStatementOp } from '../../syntax/compilers';
 import { encodeOp, EncoderImpl } from '../encoder';
 import { StdLib } from '../stdlib';
 import { InvokeBareComponent, invokePreparedComponent } from './components';

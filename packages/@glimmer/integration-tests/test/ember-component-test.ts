@@ -1,4 +1,4 @@
-import { SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import { type SimpleElement, type SimpleNode } from '@glimmer/interfaces';
 import { assign, dict, unwrap } from '@glimmer/util';
 
 import {
@@ -6,12 +6,12 @@ import {
   createTemplate,
   elementId,
   EmberishCurlyComponent,
-  EmberishCurlyComponentFactory,
+  type EmberishCurlyComponentFactory,
   equalsElement,
   firstElementChild,
   GlimmerishComponent,
   isSimpleElement,
-  JitRenderDelegate,
+  type JitRenderDelegate,
   jitSuite,
   regex,
   RenderTest,
@@ -1693,7 +1693,7 @@ class CurlyTeardownTest extends CurlyTest {
 
     this.rerender({ cond: false });
 
-    assert.strictEqual(willDestroy, 1, 'destroy should not be called');
+    assert.strictEqual(willDestroy, 1, 'willDestroy should be called exactly once');
     assert.strictEqual(destroyed, 1, 'destroy should be called exactly one');
   }
 

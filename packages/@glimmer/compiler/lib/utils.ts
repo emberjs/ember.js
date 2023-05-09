@@ -1,4 +1,4 @@
-import { Dict, WellKnownAttrName, WellKnownTagName } from '@glimmer/interfaces';
+import { type Dict, WellKnownAttrName, WellKnownTagName } from '@glimmer/interfaces';
 
 // There is a small whitelist of namespaced attributes specially
 // enumerated in

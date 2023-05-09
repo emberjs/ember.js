@@ -5,7 +5,6 @@ import {
   CheckSafeString,
   CheckString,
 } from '@glimmer/debug';
-import { DEBUG } from '@glimmer/env';
 import { ContentType, CurriedType, Op } from '@glimmer/interfaces';
 import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
@@ -51,7 +50,7 @@ function toDynamicContentType(value: unknown) {
     return ContentType.Component;
   } else {
     if (
-      DEBUG &&
+      import.meta.env.DEV &&
       !isCurriedType(value, CurriedType.Helper) &&
       !hasInternalHelperManager(value as object)
     ) {

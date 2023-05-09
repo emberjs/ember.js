@@ -1,19 +1,16 @@
-// eslint-disable-next-line n/no-extraneous-import
-import { SimpleElement } from '@simple-dom/interface';
-
-import { ComponentInstanceState, PreparedArguments } from '../../components';
-import { Destroyable, Option } from '../../core';
-import { Bounds } from '../../dom/bounds';
-import { Reference } from '../../references';
-import { Owner } from '../../runtime';
-import { CapturedArguments, VMArguments } from '../../runtime/arguments';
-import { RenderNode } from '../../runtime/debug-render-tree';
-import { ElementOperations } from '../../runtime/element';
-import { Environment } from '../../runtime/environment';
-import { DynamicScope } from '../../runtime/scope';
-import { RuntimeResolver } from '../../serialize';
-import { CompilableProgram } from '../../template';
-import { ProgramSymbolTable } from '../../tier1/symbol-table';
+import { type ComponentInstanceState, type PreparedArguments } from '../../components';
+import { type Destroyable, type Option } from '../../core';
+import { type Bounds } from '../../dom/bounds';
+import { type Reference } from '../../references';
+import { type Owner } from '../../runtime';
+import { type CapturedArguments, type VMArguments } from '../../runtime/arguments';
+import { type RenderNode } from '../../runtime/debug-render-tree';
+import { type ElementOperations } from '../../runtime/element';
+import { type Environment } from '../../runtime/environment';
+import { type DynamicScope } from '../../runtime/scope';
+import { type RuntimeResolver } from '../../serialize';
+import { type CompilableProgram } from '../../template';
+import { type ProgramSymbolTable } from '../../tier1/symbol-table';
 
 /**
  * Describes the capabilities of a particular component. The capabilities are
@@ -114,7 +111,7 @@ export interface InternalComponentCapabilities {
  * Enum used for bit flags version of the capabilities, used once the component
  * has been loaded for the first time
  */
-export const enum InternalComponentCapability {
+export enum InternalComponentCapability {
   DynamicLayout = 0b0000000000001,
   DynamicTag = 0b0000000000010,
   PrepareArgs = 0b0000000000100,

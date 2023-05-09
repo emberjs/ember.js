@@ -1,4 +1,4 @@
-import { preprocess as parse, print } from '../..';
+import { preprocess as parse, print } from '@glimmer/syntax';
 
 const { test } = QUnit;
 

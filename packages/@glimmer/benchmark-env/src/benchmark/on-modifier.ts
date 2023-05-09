@@ -1,10 +1,10 @@
 import {
-  CapturedArguments,
-  InternalModifierManager,
-  Owner,
-  SimpleElement,
+  type CapturedArguments,
+  type InternalModifierManager,
+  type Owner,
+  type SimpleElement,
 } from '@glimmer/interfaces';
-import { Reference, valueForRef } from '@glimmer/reference';
+import { type Reference, valueForRef } from '@glimmer/reference';
 import { castToBrowser } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
 

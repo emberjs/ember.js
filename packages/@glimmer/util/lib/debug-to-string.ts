@@ -1,8 +1,6 @@
-import { DEBUG } from '@glimmer/env';
-
 let debugToString: undefined | ((value: unknown) => string);
 
-if (DEBUG) {
+if (import.meta.env.DEV) {
   let getFunctionName = (fn: Function) => {
     let functionName = fn.name;
 

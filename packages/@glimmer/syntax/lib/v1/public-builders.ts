@@ -1,11 +1,11 @@
-import { Dict, Option } from '@glimmer/interfaces';
+import { type Dict, type Option } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { asPresentArray, assert, assign, deprecate, isPresentArray } from '@glimmer/util';
 
-import { SourceLocation, SourcePosition, SYNTHETIC_LOCATION } from '../source/location';
+import { type SourceLocation, type SourcePosition, SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
-import * as ASTv1 from './api';
+import type * as ASTv1 from './api';
 import { PathExpressionImplV1 } from './legacy-interop';
 
 let _SOURCE: Source | undefined;

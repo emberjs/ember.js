@@ -1,5 +1,5 @@
 import { precompile } from '@glimmer/compiler';
-import { Cursor, ElementBuilder, Environment } from '@glimmer/interfaces';
+import { type Cursor, type ElementBuilder, type Environment } from '@glimmer/interfaces';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
 
 import { blockStack } from '../dom/blocks';

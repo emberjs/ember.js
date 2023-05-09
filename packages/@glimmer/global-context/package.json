@@ -2,9 +2,6 @@
   "name": "@glimmer/global-context",
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/global-context",
-  "dependencies": {
-    "@glimmer/env": "^0.1.7"
-  },
   "publishConfig": {
     "access": "public"
   }

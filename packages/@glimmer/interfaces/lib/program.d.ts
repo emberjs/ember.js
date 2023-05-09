@@ -1,10 +1,10 @@
-import { Encoder } from './compile';
-import { ComponentDefinition, ComponentDefinitionState } from './components';
-import { HelperDefinitionState } from './runtime';
-import { ModifierDefinitionState } from './runtime/modifier';
-import { CompileTimeResolver, ResolvedComponentDefinition } from './serialize';
-import { ContainingMetadata, STDLib, Template } from './template';
-import { Op } from './vm-opcodes';
+import { type Encoder } from './compile';
+import { type ComponentDefinition, type ComponentDefinitionState } from './components';
+import { type HelperDefinitionState } from './runtime';
+import { type ModifierDefinitionState } from './runtime/modifier';
+import { type CompileTimeResolver, type ResolvedComponentDefinition } from './serialize';
+import { type ContainingMetadata, type STDLib, type Template } from './template';
+import { type Op } from './vm-opcodes';
 
 export type CreateRuntimeOp = (heap: CompileTimeHeap) => RuntimeOp;
 

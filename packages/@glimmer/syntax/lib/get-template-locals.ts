@@ -1,7 +1,7 @@
 import { isKeyword } from './keywords';
 import { preprocess } from './parser/tokenizer-event-handlers';
 import traverse from './traversal/traverse';
-import * as ASTv1 from './v1/api';
+import type * as ASTv1 from './v1/api';
 
 interface GetTemplateLocalsOptions {
   includeKeywords?: boolean;

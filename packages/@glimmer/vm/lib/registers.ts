@@ -22,7 +22,7 @@ export const $t1: TemporaryRegister.t1 = 7;
 // $8 or $v0 (return value)
 export const $v0 = 8;
 
-export const enum MachineRegister {
+export enum MachineRegister {
   // These must be in sync with the computed values
   // above, but TypeScript doesn't like it
 

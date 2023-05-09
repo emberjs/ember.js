@@ -1,10 +1,10 @@
 import { registerDestructor } from '@glimmer/destroyable';
 import {
-  Arguments,
-  HelperCapabilities,
-  HelperManager,
-  ModifierManager,
-  Owner,
+  type Arguments,
+  type HelperCapabilities,
+  type HelperManager,
+  type ModifierManager,
+  type Owner,
 } from '@glimmer/interfaces';
 import {
   helperCapabilities,

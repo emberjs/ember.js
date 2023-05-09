@@ -1,31 +1,32 @@
 import {
-  Cursor,
-  Dict,
-  ElementBuilder,
-  ElementNamespace,
-  Environment,
-  Helper,
-  Option,
-  RenderResult,
-  SimpleDocument,
-  SimpleDocumentFragment,
-  SimpleElement,
-  SimpleNode,
-  SimpleText,
+  type Cursor,
+  type Dict,
+  type ElementBuilder,
+  type ElementNamespace,
+  type Environment,
+  type Helper,
+  type Option,
+  type RenderResult,
+  type SimpleDocument,
+  type SimpleDocumentFragment,
+  type SimpleElement,
+  type SimpleNode,
+  type SimpleText,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
-import { createConstRef, Reference } from '@glimmer/reference';
-import { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
+import { createConstRef, type Reference } from '@glimmer/reference';
+import { type ASTPluginBuilder, type PrecompileOptions } from '@glimmer/syntax';
 import { assign, castToSimple } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
 
-import { ComponentKind } from '../../components';
+import { BaseEnv } from '../../base-env';
+import { type ComponentKind } from '../../components';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
-import { UserHelper } from '../../helpers';
-import { TestModifierConstructor } from '../../modifiers';
-import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
-import { BaseEnv } from '../env';
-import { JitDelegateContext, JitTestDelegateContext } from '../jit/delegate';
+import { type UserHelper } from '../../helpers';
+import { type TestModifierConstructor } from '../../modifiers';
+import type RenderDelegate from '../../render-delegate';
+import { type RenderDelegateOptions } from '../../render-delegate';
+import { JitDelegateContext, type JitTestDelegateContext } from '../jit/delegate';
 import {
   registerComponent,
   registerHelper,
@@ -35,7 +36,7 @@ import {
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
-import { debugRehydration, DebugRehydrationBuilder } from './builder';
+import { debugRehydration, type DebugRehydrationBuilder } from './builder';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];

@@ -1,6 +1,6 @@
-import * as ASTv1 from '../v1/api';
-import { VisitorKey } from '../v1/visitor-keys';
-import WalkerPath from './path';
+import type * as ASTv1 from '../v1/api';
+import { type VisitorKey } from '../v1/visitor-keys';
+import type WalkerPath from './path';
 
 export interface FullNodeTraversal<N extends ASTv1.Node> {
   enter?(node: N, path: WalkerPath<N>): void;

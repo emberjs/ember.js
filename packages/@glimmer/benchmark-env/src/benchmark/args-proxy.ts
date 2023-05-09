@@ -1,7 +1,11 @@
-import { CapturedArguments, CapturedNamedArguments, Reference } from '@glimmer/interfaces';
+import {
+  type CapturedArguments,
+  type CapturedNamedArguments,
+  type Reference,
+} from '@glimmer/interfaces';
 import { valueForRef } from '@glimmer/reference';
 
-import { ComponentArgs } from '../interfaces';
+import { type ComponentArgs } from '../interfaces';
 
 class ArgsProxy implements ProxyHandler<CapturedNamedArguments> {
   isExtensible() {

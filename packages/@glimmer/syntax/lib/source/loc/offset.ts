@@ -1,40 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { SourcePosition, UNKNOWN_POSITION } from '../location';
-import { Source } from '../source';
+import { type SourcePosition, UNKNOWN_POSITION } from '../location';
+import { type Source } from '../source';
+import { OffsetKind } from './kinds';
 import { match, MatchAny } from './match';
-import { SourceSpan, span } from './span';
-
-export const enum OffsetKind {
-  /**
-   * We have already computed the character position of this offset or span.
-   */
-  CharPosition = 'CharPosition',
-
-  /**
-   * This offset or span was instantiated with a Handlebars SourcePosition or SourceLocation. Its
-   * character position will be computed on demand.
-   */
-  HbsPosition = 'HbsPosition',
-
-  /**
-   * for (rare) situations where a node is created but there was no source location (e.g. the name
-   * "default" in default blocks when the word "default" never appeared in source). This is used
-   * by the internals when there is a legitimate reason for the internals to synthesize a node
-   * with no location.
-   */
-  InternalsSynthetic = 'InternalsSynthetic',
-  /**
-   * For situations where a node represents zero parts of the source (for example, empty arguments).
-   * In general, we attempt to assign these nodes *some* position (empty arguments can be
-   * positioned immediately after the callee), but it's not always possible
-   */
-  NonExistent = 'NonExistent',
-  /**
-   * For situations where a source location was expected, but it didn't correspond to the node in
-   * the source. This happens if a plugin creates broken locations.
-   */
-  Broken = 'Broken',
-}
+import { type SourceSpan, span } from './span';
 
 /**
  * All positions have these details in common. Most notably, all three kinds of positions can
@@ -91,7 +60,7 @@ export class SourceOffset {
    * Get the character offset for this `SourceOffset`, if possible.
    */
   get offset(): number | null {
-    let charPos = this.data.toCharPos();
+    const charPos = this.data.toCharPos();
     return charPos === null ? null : charPos.offset;
   }
 
@@ -126,12 +95,12 @@ export class SourceOffset {
    * returns a broken offset.
    */
   move(by: number): SourceOffset {
-    let charPos = this.data.toCharPos();
+    const charPos = this.data.toCharPos();
 
     if (charPos === null) {
       return SourceOffset.broken();
     } else {
-      let result = charPos.offset + by;
+      const result = charPos.offset + by;
 
       if (charPos.source.check(result)) {
         return new CharPosition(charPos.source, result).wrap();
@@ -184,7 +153,7 @@ export class CharPosition implements PositionData {
    * @implements {PositionData}
    */
   toJSON(): SourcePosition {
-    let hbs = this.toHbsPos();
+    const hbs = this.toHbsPos();
     return hbs === null ? UNKNOWN_POSITION : hbs.toJSON();
   }
 
@@ -209,7 +178,7 @@ export class CharPosition implements PositionData {
     let locPos = this._locPos;
 
     if (locPos === null) {
-      let hbsPos = this.source.hbsPosFor(this.charPos);
+      const hbsPos = this.source.hbsPosFor(this.charPos);
 
       if (hbsPos === null) {
         this._locPos = locPos = BROKEN;
@@ -247,7 +216,7 @@ export class HbsPosition implements PositionData {
     let charPos = this._charPos;
 
     if (charPos === null) {
-      let charPosNumber = this.source.charPosFor(this.hbsPos);
+      const charPosNumber = this.source.charPosFor(this.hbsPos);
 
       if (charPosNumber === null) {
         this._charPos = charPos = BROKEN;

@@ -1,4 +1,4 @@
-export const enum CurriedType {
+export enum CurriedType {
   Component = 0,
   Helper = 1,
   Modifier = 2,

@@ -1,5 +1,6 @@
-import { Maybe, NodeType, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import type { Maybe, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 
+import { DOCUMENT_NODE, ELEMENT_NODE } from './dom-utils';
 import { unreachable } from './platform-utils';
 
 interface GenericElementTags {
@@ -87,7 +88,7 @@ export function castToBrowser<S extends SugaryNodeCheck>(
     );
   }
 
-  return checkNode<S>(node, sugaryCheck!);
+  return checkBrowserNode<S>(node, sugaryCheck!);
 }
 
 function checkError(from: string, check: SugaryNodeCheck): Error {
@@ -95,19 +96,19 @@ function checkError(from: string, check: SugaryNodeCheck): Error {
 }
 
 function isDocument(node: Node | SimpleNode | SimpleDocument): node is Document | SimpleDocument {
-  return node.nodeType === NodeType.DOCUMENT_NODE;
+  return node.nodeType === DOCUMENT_NODE;
 }
 
 export function isSimpleElement(node: Maybe<SimpleNode | Node>): node is SimpleElement {
-  return node?.nodeType === NodeType.ELEMENT_NODE;
+  return node?.nodeType === ELEMENT_NODE;
 }
 
 export function isElement(node: Maybe<Node | SimpleNode>): node is Element {
-  return node?.nodeType === NodeType.ELEMENT_NODE && node instanceof Element;
+  return node?.nodeType === ELEMENT_NODE && node instanceof Element;
 }
 
-export function checkNode<S extends SugaryNodeCheck>(
-  node: Node | null,
+export function checkBrowserNode<S extends SugaryNodeCheck>(
+  node: Node | SimpleNode | null,
   check: S
 ): NodeForSugaryCheck<S> {
   let isMatch = false;
@@ -122,14 +123,17 @@ export function checkNode<S extends SugaryNodeCheck>(
     }
   }
 
-  if (isMatch) {
+  if (isMatch && node instanceof Node) {
     return node as NodeForSugaryCheck<S>;
   } else {
     throw checkError(`SimpleElement(${node})`, check);
   }
 }
 
-function stringCheckNode<S extends BrowserTag>(node: Node, check: S): node is BrowserTags[S] {
+function stringCheckNode<S extends BrowserTag>(
+  node: Node | SimpleNode,
+  check: S
+): node is BrowserTags[S] {
   switch (check) {
     case 'NODE':
       return true;

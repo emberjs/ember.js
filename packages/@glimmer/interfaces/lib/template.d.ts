@@ -1,10 +1,18 @@
-import { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile';
-import { EncoderError } from './compile/encoder';
-import { Option } from './core';
-import { InternalComponentCapabilities } from './managers/internal/component';
-import { CompileTimeCompilationContext, ConstantPool, SerializedHeap } from './program';
-import { Owner } from './runtime';
-import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
+import { type Operand, type SerializedInlineBlock, type SerializedTemplateBlock } from './compile';
+import { type EncoderError } from './compile/encoder';
+import { type Option } from './core';
+import { type InternalComponentCapabilities } from './managers/internal/component';
+import {
+  type CompileTimeCompilationContext,
+  type ConstantPool,
+  type SerializedHeap,
+} from './program';
+import { type Owner } from './runtime';
+import {
+  type BlockSymbolTable,
+  type ProgramSymbolTable,
+  type SymbolTable,
+} from './tier1/symbol-table';
 
 export interface CompilableProgram extends CompilableTemplate<ProgramSymbolTable> {
   moduleName: string;

@@ -1,7 +1,11 @@
 import { precompileJSON } from '@glimmer/compiler';
-import { SerializedTemplateWithLazyBlock, Template, TemplateFactory } from '@glimmer/interfaces';
+import {
+  type SerializedTemplateWithLazyBlock,
+  type Template,
+  type TemplateFactory,
+} from '@glimmer/interfaces';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { PrecompileOptions } from '@glimmer/syntax';
+import { type PrecompileOptions } from '@glimmer/syntax';
 
 // TODO: This fundamentally has little to do with testing and
 // most tests should just use a more generic preprocess, extracted
@@ -30,22 +34,4 @@ export function createTemplate(
   };
 
   return templateFactory(templateBlock);
-}
-
-export function syntaxErrorFor(
-  message: string,
-  code: string,
-  moduleName: string,
-  line: number,
-  column: number
-): Error {
-  let quotedCode = code ? `\n\n|\n|  ${code.split('\n').join('\n|  ')}\n|\n\n` : '';
-
-  let error = new Error(
-    `${message}: ${quotedCode}(error occurred in '${moduleName}' @ line ${line} : column ${column})`
-  );
-
-  error.name = 'SyntaxError';
-
-  return error;
 }

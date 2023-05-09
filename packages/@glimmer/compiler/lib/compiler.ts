@@ -1,15 +1,15 @@
 import {
-  SerializedTemplateBlock,
-  SerializedTemplateWithLazyBlock,
-  TemplateJavascript,
+  type SerializedTemplateBlock,
+  type SerializedTemplateWithLazyBlock,
+  type TemplateJavascript,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import {
   normalize,
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
+  type PrecompileOptions,
+  type PrecompileOptionsWithLexicalScope,
   Source,
-  TemplateIdFn,
+  type TemplateIdFn,
 } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
@@ -27,15 +27,17 @@ interface Crypto {
 }
 
 export const defaultId: TemplateIdFn = (() => {
-  let req: typeof require | undefined =
-    typeof module === 'object' && typeof module.require === 'function' ? module.require : require;
+  const req: typeof require | undefined =
+    typeof module === 'object' && typeof module.require === 'function'
+      ? module.require
+      : globalThis.require;
 
   if (req) {
     try {
       const crypto = req('crypto');
 
-      let idFn: TemplateIdFn = (src) => {
-        let hash = crypto.createHash('sha1');
+      const idFn: TemplateIdFn = (src) => {
+        const hash = crypto.createHash('sha1');
         hash.update(src, 'utf8');
         // trim to 6 bytes of data (2^48 - 1)
         return hash.digest('base64').substring(0, 8);
@@ -74,9 +76,9 @@ export function precompileJSON(
   string: string,
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
-  let source = new Source(string, options.meta?.moduleName);
-  let [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
-  let block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
+  const source = new Source(string, options.meta?.moduleName);
+  const [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
+  const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);
   });
 
@@ -113,12 +115,12 @@ export function precompile(
   source: string,
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): TemplateJavascript {
-  let [block, usedLocals] = precompileJSON(source, options);
+  const [block, usedLocals] = precompileJSON(source, options);
 
-  let moduleName = options.meta?.moduleName;
-  let idFn = options.id || defaultId;
-  let blockJSON = JSON.stringify(block);
-  let templateJSONObject: SerializedTemplateWithLazyBlock = {
+  const moduleName = options.meta?.moduleName;
+  const idFn = options.id || defaultId;
+  const blockJSON = JSON.stringify(block);
+  const templateJSONObject: SerializedTemplateWithLazyBlock = {
     id: idFn(JSON.stringify(options.meta) + blockJSON),
     block: blockJSON,
     moduleName: moduleName ?? '(unknown template module)',
@@ -136,7 +138,7 @@ export function precompile(
   let stringified = JSON.stringify(templateJSONObject);
 
   if (usedLocals.length > 0) {
-    let scopeFn = `()=>[${usedLocals.join(',')}]`;
+    const scopeFn = `()=>[${usedLocals.join(',')}]`;
 
     stringified = stringified.replace(`"${SCOPE_PLACEHOLDER}"`, scopeFn);
   }
@@ -144,4 +146,4 @@ export function precompile(
   return stringified;
 }
 
-export { PrecompileOptions };
+export type { PrecompileOptions };

@@ -1,4 +1,5 @@
-import { builders as b } from '..';
+import { builders as b } from '@glimmer/syntax';
+
 import { element } from './parser-node-test';
 import { astEqual } from './support';
 

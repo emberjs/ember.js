@@ -1,4 +1,4 @@
-import { Maybe, Present } from '@glimmer/interfaces';
+import { type Maybe, type Present } from '@glimmer/interfaces';
 
 import intern from './intern';
 

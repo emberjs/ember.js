@@ -6,5 +6,5 @@
     "@glimmer/util": "workspace:^",
     "@glimmer/interfaces": "workspace:^"
   },
-  "typings": "index.ts"
+  "types": "index.ts"
 }

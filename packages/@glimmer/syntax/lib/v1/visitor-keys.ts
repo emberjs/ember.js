@@ -1,43 +1,41 @@
-import { tuple } from '@glimmer/util';
-
-import * as ASTv1 from './api';
+import type * as ASTv1 from './api';
 
 // ensure stays in sync with typing
 // ParentNode and ChildKey types are derived from VisitorKeysMap
 const visitorKeys = {
-  Program: tuple('body'),
-  Template: tuple('body'),
-  Block: tuple('body'),
+  Program: ['body'],
+  Template: ['body'],
+  Block: ['body'],
 
-  MustacheStatement: tuple('path', 'params', 'hash'),
-  BlockStatement: tuple('path', 'params', 'hash', 'program', 'inverse'),
-  ElementModifierStatement: tuple('path', 'params', 'hash'),
-  PartialStatement: tuple('name', 'params', 'hash'),
-  CommentStatement: tuple(),
-  MustacheCommentStatement: tuple(),
-  ElementNode: tuple('attributes', 'modifiers', 'children', 'comments'),
-  AttrNode: tuple('value'),
-  TextNode: tuple(),
+  MustacheStatement: ['path', 'params', 'hash'],
+  BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'],
+  ElementModifierStatement: ['path', 'params', 'hash'],
+  PartialStatement: ['name', 'params', 'hash'],
+  CommentStatement: [],
+  MustacheCommentStatement: [],
+  ElementNode: ['attributes', 'modifiers', 'children', 'comments'],
+  AttrNode: ['value'],
+  TextNode: [],
 
-  ConcatStatement: tuple('parts'),
-  SubExpression: tuple('path', 'params', 'hash'),
-  PathExpression: tuple(),
-  PathHead: tuple(),
+  ConcatStatement: ['parts'],
+  SubExpression: ['path', 'params', 'hash'],
+  PathExpression: [],
+  PathHead: [],
 
-  StringLiteral: tuple(),
-  BooleanLiteral: tuple(),
-  NumberLiteral: tuple(),
-  NullLiteral: tuple(),
-  UndefinedLiteral: tuple(),
+  StringLiteral: [],
+  BooleanLiteral: [],
+  NumberLiteral: [],
+  NullLiteral: [],
+  UndefinedLiteral: [],
 
-  Hash: tuple('pairs'),
-  HashPair: tuple('value'),
+  Hash: ['pairs'],
+  HashPair: ['value'],
 
   // v2 new nodes
-  NamedBlock: tuple('attributes', 'modifiers', 'children', 'comments'),
-  SimpleElement: tuple('attributes', 'modifiers', 'children', 'comments'),
-  Component: tuple('head', 'attributes', 'modifiers', 'children', 'comments'),
-};
+  NamedBlock: ['attributes', 'modifiers', 'children', 'comments'],
+  SimpleElement: ['attributes', 'modifiers', 'children', 'comments'],
+  Component: ['head', 'attributes', 'modifiers', 'children', 'comments'],
+} as const;
 
 type VisitorKeysMap = typeof visitorKeys;
 

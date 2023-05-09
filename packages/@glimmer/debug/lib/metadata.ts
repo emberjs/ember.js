@@ -1,24 +1,22 @@
-import { Dict, Option, PresentArray } from '@glimmer/interfaces';
-
-const tuple = <T extends string[]>(...args: T) => args;
+import { type Dict, type Option, type PresentArray } from '@glimmer/interfaces';
 
 // TODO: How do these map onto constant and machine types?
-export const OPERAND_TYPES = tuple(
+export const OPERAND_TYPES = [
   'u32',
   'i32',
+  'owner',
   'handle',
-  'bool',
   'str',
   'option-str',
-  'str-array',
   'array',
-  'unknown',
+  'str-array',
+  'bool',
   'primitive',
-  'scope',
-  'symbol-table',
   'register',
-  'owner'
-);
+  'unknown',
+  'symbol-table',
+  'scope',
+];
 
 function isOperandType(s: string): s is OperandType {
   return OPERAND_TYPES.indexOf(s as any) !== -1;
@@ -149,7 +147,7 @@ export function buildEnum(
   offset: number,
   max?: number
 ): { enumString: string; predicate: string } {
-  let e = [`export const enum ${name} {`];
+  let e = [`export enum ${name} {`];
 
   let last: number;
 
@@ -210,7 +208,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   return stripped;
 }
 
-export const META_KIND = tuple('METADATA', 'MACHINE_METADATA');
+export const META_KIND = ['METADATA', 'MACHINE_METADATA'];
 export type META_KIND = (typeof META_KIND)[number];
 
 export function buildSingleMeta<D extends Dict<NormalizedMetadata>>(

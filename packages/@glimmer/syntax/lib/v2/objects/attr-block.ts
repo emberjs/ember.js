@@ -1,4 +1,4 @@
-import { SourceSlice } from '../../source/slice';
+import { type SourceSlice } from '../../source/slice';
 import { NamedArgument } from './args';
 import type { CallFields } from './base';
 import type { ExpressionNode } from './expr';

@@ -1,6 +1,5 @@
-import { DEBUG } from '@glimmer/env';
 import { assert } from '@glimmer/global-context';
-import { Tag } from '@glimmer/interfaces';
+import { type Tag } from '@glimmer/interfaces';
 import { asPresentArray, getLast } from '@glimmer/util';
 
 export let beginTrackingTransaction:
@@ -29,7 +28,7 @@ interface Transaction {
   debugLabel?: string | undefined;
 }
 
-if (DEBUG) {
+if (import.meta.env.DEV) {
   let CONSUMED_TAGS: WeakMap<Tag, Transaction> | null = null;
 
   let TRANSACTION_STACK: Transaction[] = [];

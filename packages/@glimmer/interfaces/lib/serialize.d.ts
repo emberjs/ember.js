@@ -49,11 +49,11 @@
  * the `RuntimeResolver` to do dynamic resolution when necessary.
  */
 
-import { ComponentDefinitionState, ComponentInstanceState } from './components';
-import { Option } from './core';
-import { InternalComponentCapability, InternalComponentManager } from './managers';
-import { HelperDefinitionState, ModifierDefinitionState, Owner } from './runtime';
-import { CompilableProgram, Template } from './template';
+import { type ComponentDefinitionState, type ComponentInstanceState } from './components';
+import { type Option } from './core';
+import { type InternalComponentCapability, type InternalComponentManager } from './managers';
+import { type HelperDefinitionState, type ModifierDefinitionState, type Owner } from './runtime';
+import { type CompilableProgram, type Template } from './template';
 
 export interface CompileTimeComponent {
   handle: number;
@@ -71,7 +71,7 @@ export interface ResolvedComponentDefinition<
   template: Template | null;
 }
 
-export const enum ResolverContext {
+export enum ResolverContext {
   Component,
   Modifier,
   Helper,

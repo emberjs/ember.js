@@ -1,15 +1,14 @@
 import {
-  AttrNamespace,
-  ElementNamespace,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
-  Namespace,
-  Option,
-  SimpleDocument,
-  SimpleElement,
-  SimpleNode,
+  type AttrNamespace,
+  type ElementNamespace,
+  type GlimmerTreeChanges,
+  type GlimmerTreeConstruction,
+  type Option,
+  type SimpleDocument,
+  type SimpleElement,
+  type SimpleNode,
 } from '@glimmer/interfaces';
-import { castToSimple } from '@glimmer/util';
+import { castToSimple, NS_SVG } from '@glimmer/util';
 
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
@@ -64,7 +63,7 @@ import { BLACKLIST_TABLE, DOMOperations } from './operations';
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
-let doc: Option<SimpleDocument> = typeof document === 'undefined' ? null : castToSimple(document);
+const doc: Option<SimpleDocument> = typeof document === 'undefined' ? null : castToSimple(document);
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
@@ -98,7 +97,7 @@ export namespace DOM {
   appliedTreeConstruction = applySVGInnerHTMLFix(
     doc,
     appliedTreeConstruction,
-    Namespace.SVG
+    NS_SVG
   ) as typeof TreeConstruction;
 
   export const DOMTreeConstruction = appliedTreeConstruction;
@@ -129,9 +128,8 @@ export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges 
 let helper = DOMChangesImpl;
 
 helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChangesImpl;
-helper = applySVGInnerHTMLFix(doc, helper, Namespace.SVG) as typeof DOMChangesImpl;
+helper = applySVGInnerHTMLFix(doc, helper, NS_SVG) as typeof DOMChangesImpl;
 
 export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
 export type DOMTreeConstruction = DOM.DOMTreeConstruction;
-export type DOMNamespace = Namespace;

@@ -1,20 +1,20 @@
-import { Option } from '@glimmer/interfaces';
+import { type Option } from '@glimmer/interfaces';
 import { assertPresentArray, assign, getFirst, getLast, isPresentArray } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 
 import print from '../generation/print';
 import { voidMap } from '../generation/printer';
-import { Tag } from '../parser';
+import { type Tag } from '../parser';
 import { Source } from '../source/source';
-import { SourceOffset, SourceSpan } from '../source/span';
+import { type SourceOffset, SourceSpan } from '../source/span';
 import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
-import { NodeVisitor } from '../traversal/visitor';
+import { type NodeVisitor } from '../traversal/visitor';
 import Walker from '../traversal/walker';
 import { appendChild, parseElementBlockParams } from '../utils';
-import * as ASTv1 from '../v1/api';
-import * as HBS from '../v1/handlebars-ast';
+import type * as ASTv1 from '../v1/api';
+import type * as HBS from '../v1/handlebars-ast';
 import b from '../v1/parser-builders';
 import publicBuilder from '../v1/public-builders';
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';

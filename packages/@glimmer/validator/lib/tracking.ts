@@ -1,5 +1,4 @@
-import { DEBUG } from '@glimmer/env';
-import { Tag } from '@glimmer/interfaces';
+import { type Tag } from '@glimmer/interfaces';
 
 import {
   beginTrackingTransaction,
@@ -12,7 +11,7 @@ import {
   combine,
   CONSTANT_TAG,
   isConstTag,
-  Revision,
+  type Revision,
   validateTag,
   valueForTag,
 } from './validators';
@@ -29,7 +28,7 @@ class Tracker {
 
     this.tags.add(tag);
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       unwrap(markTagAsConsumed)(tag);
     }
 
@@ -73,7 +72,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
 
   CURRENT_TRACKER = new Tracker();
 
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     unwrap(beginTrackingTransaction)(debuggingContext);
   }
 }
@@ -81,7 +80,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
 export function endTrackFrame(): Tag {
   let current = CURRENT_TRACKER;
 
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     if (OPEN_TRACK_FRAMES.length === 0) {
       throw new Error('attempted to close a tracking frame, but one was not open');
     }
@@ -100,7 +99,7 @@ export function beginUntrackFrame(): void {
 }
 
 export function endUntrackFrame(): void {
-  if (DEBUG && OPEN_TRACK_FRAMES.length === 0) {
+  if (import.meta.env.DEV && OPEN_TRACK_FRAMES.length === 0) {
     throw new Error('attempted to close a tracking frame, but one was not open');
   }
 
@@ -115,7 +114,7 @@ export function resetTracking(): string | void {
 
   CURRENT_TRACKER = null;
 
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     return unwrap(resetTrackingTransaction)();
   }
 }
@@ -154,7 +153,7 @@ interface InternalCache<T = unknown> {
 }
 
 export function createCache<T>(fn: () => T, debuggingLabel?: string | false): Cache<T> {
-  if (DEBUG && !(typeof fn === 'function')) {
+  if (import.meta.env.DEV && !(typeof fn === 'function')) {
     throw new Error(
       `createCache() must be passed a function as its first parameter. Called with: ${String(fn)}`
     );
@@ -167,7 +166,7 @@ export function createCache<T>(fn: () => T, debuggingLabel?: string | false): Ca
     [SNAPSHOT]: -1,
   };
 
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     cache[DEBUG_LABEL] = debuggingLabel;
   }
 
@@ -213,7 +212,7 @@ function assertCache<T>(
   value: Cache<T> | InternalCache<T>,
   fnName: string
 ): asserts value is InternalCache<T> {
-  if (DEBUG && !(typeof value === 'object' && value !== null && FN in value)) {
+  if (import.meta.env.DEV && !(typeof value === 'object' && value !== null && FN in value)) {
     throw new Error(
       `${fnName}() can only be used on an instance of a cache created with createCache(). Called with: ${String(
         value
@@ -224,7 +223,7 @@ function assertCache<T>(
 
 // replace this with `expect` when we can
 function assertTag(tag: Tag | undefined, cache: InternalCache): asserts tag is Tag {
-  if (DEBUG && tag === undefined) {
+  if (import.meta.env.DEV && tag === undefined) {
     throw new Error(
       `isConst() can only be used on a cache once getValue() has been called at least once. Called with cache function:\n\n${String(
         cache[FN]

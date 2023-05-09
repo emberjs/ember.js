@@ -1,8 +1,8 @@
-import { CompilableTemplate } from '../template';
-import { SymbolTable } from '../tier1/symbol-table';
-import * as WireFormat from './wire-format';
+import { type CompilableTemplate } from '../template';
+import { type SymbolTable } from '../tier1/symbol-table';
+import type * as WireFormat from './wire-format';
 
-export const enum HighLevelOperand {
+export enum HighLevelOperand {
   Label = 1,
   IsStrictMode = 2,
   DebugSymbols = 3,

@@ -1,15 +1,14 @@
 import { registerDestructor } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  Arguments,
-  CapturedArguments,
-  InternalModifierManager,
-  ModifierCapabilities,
-  ModifierCapabilitiesVersions,
-  ModifierManager,
-  Owner,
-  SimpleElement,
-  UpdatableTag,
+  type Arguments,
+  type CapturedArguments,
+  type InternalModifierManager,
+  type ModifierCapabilities,
+  type ModifierCapabilitiesVersions,
+  type ModifierManager,
+  type Owner,
+  type SimpleElement,
+  type UpdatableTag,
 } from '@glimmer/interfaces';
 import { valueForRef } from '@glimmer/reference';
 import { castToBrowser, dict } from '@glimmer/util';
@@ -17,13 +16,13 @@ import { createUpdatableTag, untrack } from '@glimmer/validator';
 
 import { argsProxyFor } from '../util/args-proxy';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
-import { ManagerFactory } from '.';
+import { type ManagerFactory } from '.';
 
 export function modifierCapabilities<Version extends keyof ModifierCapabilitiesVersions>(
   managerAPI: Version,
   optionalFeatures: ModifierCapabilitiesVersions[Version] = {}
 ): ModifierCapabilities {
-  if (DEBUG && managerAPI !== '3.22') {
+  if (import.meta.env.DEV && managerAPI !== '3.22') {
     throw new Error('Invalid modifier manager compatibility specified');
   }
 
@@ -80,7 +79,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       let { factory } = this;
       delegate = factory(owner);
 
-      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+      if (import.meta.env.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
           `Custom modifier managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.22')\` (imported via \`import { capabilities } from '@ember/modifier';\`). Received: \`${JSON.stringify(
@@ -112,7 +111,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       modifier: instance!,
     };
 
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       state.debugName = typeof definition === 'function' ? definition.name : definition.toString();
     }
 

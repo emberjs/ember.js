@@ -31,14 +31,14 @@ class LogTest extends RenderTest {
   }
 
   @test
-  ['correctly logs primitives']() {
+  'correctly logs primitives'() {
     this.render(`{{log "one" 1 true}}`);
 
     this.assertLog(['one', 1, true]);
   }
 
   @test
-  ['correctly logs a property']() {
+  'correctly logs a property'() {
     this.render(`{{log this.value}}`, {
       value: 'one',
     });
@@ -47,7 +47,7 @@ class LogTest extends RenderTest {
   }
 
   @test
-  ['correctly logs multiple arguments']() {
+  'correctly logs multiple arguments'() {
     this.render(`{{log "my variable:" this.value}}`, {
       value: 'one',
     });
@@ -56,21 +56,21 @@ class LogTest extends RenderTest {
   }
 
   @test
-  ['correctly logs `this`']() {
+  'correctly logs `this`'() {
     this.render(`{{log this}}`);
 
     this.assertLog([this.context]);
   }
 
   @test
-  ['correctly logs as a subexpression']() {
+  'correctly logs as a subexpression'() {
     this.render(`{{if (log "one" 1 true) "Hello!"}}`);
 
     this.assertLog(['one', 1, true]);
   }
 
   @test
-  ['correctly logs when values update']() {
+  'correctly logs when values update'() {
     this.render(`{{log this.foo}}`, { foo: 123 });
 
     this.rerender({ foo: 456 });

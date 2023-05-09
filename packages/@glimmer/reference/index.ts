@@ -1,11 +1,11 @@
 export {
-  AbstractIterator,
+  type AbstractIterator,
   createIteratorItemRef,
   createIteratorRef,
-  IterationItem,
-  IteratorDelegate,
-  OpaqueIterationItem,
-  OpaqueIterator,
+  type IterationItem,
+  type IteratorDelegate,
+  type OpaqueIterationItem,
+  type OpaqueIterator,
 } from './lib/iterable';
 export {
   childRefFor,
@@ -23,8 +23,8 @@ export {
   isUpdatableRef,
   NULL_REFERENCE,
   REFERENCE,
-  Reference,
-  ReferenceEnvironment,
+  type Reference,
+  type ReferenceEnvironment,
   TRUE_REFERENCE,
   UNDEFINED_REFERENCE,
   updateRef,

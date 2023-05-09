@@ -13,8 +13,5 @@
     "@glimmer/runtime": "workspace:^",
     "@glimmer/util": "workspace:^",
     "@glimmer/validator": "workspace:^"
-  },
-  "devDependencies": {
-    "@types/qunit": "^2.19.5"
   }
 }

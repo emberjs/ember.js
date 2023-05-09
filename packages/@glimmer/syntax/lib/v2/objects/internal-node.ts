@@ -1,10 +1,10 @@
-import { SourceSlice } from '../../source/slice';
+import { type SourceSlice } from '../../source/slice';
 import { SpanList } from '../../source/span-list';
-import { BlockSymbolTable, ProgramSymbolTable } from '../../symbol-table';
+import { type BlockSymbolTable, type ProgramSymbolTable } from '../../symbol-table';
 import { Args, NamedArguments } from './args';
 import type { ComponentArg, ElementModifier, HtmlOrSplatAttr } from './attr-block';
 import type { GlimmerParentNodeOptions } from './base';
-import { BaseNodeFields, node } from './node';
+import { type BaseNodeFields, node } from './node';
 
 /**
  * Corresponds to an entire template.

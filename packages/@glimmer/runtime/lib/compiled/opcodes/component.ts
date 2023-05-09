@@ -9,37 +9,36 @@ import {
   CheckString,
 } from '@glimmer/debug';
 import { registerDestructor } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  Bounds,
-  CapturedArguments,
-  CompilableProgram,
-  ComponentDefinition,
-  ComponentDefinitionState,
-  ComponentInstance,
-  ComponentInstanceState,
-  ComponentInstanceWithCreate,
+  type Bounds,
+  type CapturedArguments,
+  type CompilableProgram,
+  type ComponentDefinition,
+  type ComponentDefinitionState,
+  type ComponentInstance,
+  type ComponentInstanceState,
+  type ComponentInstanceWithCreate,
   CurriedType,
-  Dict,
-  DynamicScope,
-  ElementOperations,
+  type Dict,
+  type DynamicScope,
+  type ElementOperations,
   InternalComponentCapability,
-  InternalComponentManager,
-  ModifierInstance,
+  type InternalComponentManager,
+  type ModifierInstance,
   Op,
-  Option,
-  Owner,
-  ProgramSymbolTable,
-  Recast,
-  ScopeSlot,
-  UpdatingOpcode,
-  VMArguments,
-  WithDynamicTagName,
-  WithElementHook,
-  WithUpdateHook,
+  type Option,
+  type Owner,
+  type ProgramSymbolTable,
+  type Recast,
+  type ScopeSlot,
+  type UpdatingOpcode,
+  type VMArguments,
+  type WithDynamicTagName,
+  type WithElementHook,
+  type WithUpdateHook,
 } from '@glimmer/interfaces';
 import { managerHasCapability } from '@glimmer/manager';
-import { isConstRef, Reference, valueForRef } from '@glimmer/reference';
+import { isConstRef, type Reference, valueForRef } from '@glimmer/reference';
 import {
   assert,
   assign,
@@ -56,7 +55,7 @@ import { $t0, $t1 } from '@glimmer/vm';
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
 import {
-  CurriedValue,
+  type CurriedValue,
   isCurriedType,
   isCurriedValue,
   resolveCurriedValue,
@@ -64,9 +63,9 @@ import {
 import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import { ARGS, CONSTANTS } from '../../symbols';
-import { UpdatingVM } from '../../vm';
-import { InternalVM } from '../../vm/append';
-import { BlockArgumentsImpl, EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
+import { type UpdatingVM } from '../../vm';
+import { type InternalVM } from '../../vm/append';
+import { type BlockArgumentsImpl, EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
   CheckComponentDefinition,
@@ -147,7 +146,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
   let definition: ComponentDefinition | CurriedValue;
 
   if (typeof component === 'string') {
-    if (DEBUG && isStrict) {
+    if (import.meta.env.DEV && isStrict) {
       throw new Error(
         `Attempted to resolve a dynamic component with a string definition, \`${component}\` in a strict mode template. In strict mode, using strings to resolve component definitions is prohibited. You can instead import the component definition and use it directly.`
       );
@@ -173,7 +172,10 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
 
   let definition: CurriedValue | ComponentDefinition | null;
 
-  if (DEBUG && !(typeof value === 'function' || (typeof value === 'object' && value !== null))) {
+  if (
+    import.meta.env.DEV &&
+    !(typeof value === 'function' || (typeof value === 'object' && value !== null))
+  ) {
     throw new Error(
       `Expected a component definition, but received ${value}. You may have accidentally done <${ref.debugLabel}>, where "${ref.debugLabel}" was a string instead of a curried component definition. You must either use the component definition directly, or use the {{component}} helper to create a curried component definition when invoking dynamically.`
     );
@@ -184,7 +186,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   } else {
     definition = constants.component(value as object, vm.getOwner(), true);
 
-    if (DEBUG && definition === null) {
+    if (import.meta.env.DEV && definition === null) {
       throw new Error(
         `Expected a dynamic component definition, but received an object or function that did not have a component manager associated with it. The dynamic invocation was \`<${
           ref.debugLabel
@@ -398,7 +400,7 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
   let d = manager.getDestroyable(state);
 
   if (
-    DEBUG &&
+    import.meta.env.DEV &&
     !managerHasCapability(manager, capabilities, InternalComponentCapability.WillDestroy) &&
     d !== null &&
     typeof 'willDestroy' in d
@@ -414,7 +416,7 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.BeginComponentTransaction, (vm, { op1: _state }) => {
   let name;
 
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     let { definition, manager } = check(vm.fetchValue(_state), CheckComponentInstance);
 
     name = definition.resolvedName ?? manager.getDebugName(definition.state);
@@ -732,7 +734,7 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
 APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {
   let { stack } = vm;
 
-  // In DEBUG handles could be ErrHandle objects
+  // In import.meta.env.DEV handles could be ErrHandle objects
   let handle = check(stack.pop(), CheckHandle);
   let table = check(stack.pop(), CheckProgramSymbolTable);
 

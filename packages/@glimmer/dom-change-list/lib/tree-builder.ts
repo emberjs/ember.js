@@ -1,19 +1,16 @@
 import {
-  Dict,
-  Namespace,
-  NodeToken,
-  NodeTokens,
-  Option,
-  SimpleDocument,
-  SimpleDocumentFragment,
-  SimpleElement,
+  type Dict,
+  type Namespace,
+  type NodeToken,
+  type NodeTokens,
+  type Option,
+  type SimpleDocument,
+  type SimpleDocumentFragment,
+  type SimpleElement,
 } from '@glimmer/interfaces';
+import { NS_HTML, NS_SVG } from '@glimmer/util';
 
-import { HTML } from './dom-operations';
 import { DOMTreeConstruction } from './tree-construction';
-
-export const SVG_NAMESPACE = Namespace.SVG;
-export const HTML_NAMESPACE = Namespace.HTML;
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
@@ -92,11 +89,11 @@ export class TreeBuilder {
   constructor(private dom: DOMTreeConstruction = new DOMTreeConstruction()) {}
 
   openElement(tag: string) {
-    let context = this.current;
+    const context = this.current;
     let isSVG: boolean;
 
     if (context) {
-      isSVG = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
+      isSVG = context.namespaceURI === NS_SVG || tag === 'svg';
       isSVG = isSVG && !context.isIntegration;
     } else {
       isSVG = tag === 'svg';
@@ -109,13 +106,13 @@ export class TreeBuilder {
 
       this.contexts.push({
         tag,
-        namespaceURI: SVG_NAMESPACE,
+        namespaceURI: NS_SVG,
         isIntegration: !!(SVG_INTEGRATION_POINTS as Dict)[tag],
       });
-      return this.dom.openElement(tag, SVG_NAMESPACE);
+      return this.dom.openElement(tag, NS_SVG);
     }
 
-    this.contexts.push({ tag, namespaceURI: HTML, isIntegration: false });
+    this.contexts.push({ tag, namespaceURI: NS_HTML, isIntegration: false });
     return this.dom.openElement(tag);
   }
 
@@ -136,12 +133,12 @@ export class TreeBuilder {
   }
 
   get currentTag(): Option<string> {
-    let current = this.current;
+    const current = this.current;
     return current && current.tag;
   }
 
   get currentNamespace(): Option<Namespace> {
-    let current = this.current;
+    const current = this.current;
     return current && current.namespaceURI;
   }
 
@@ -150,8 +147,8 @@ export class TreeBuilder {
   }
 
   private get current(): Option<Context> {
-    let { contexts } = this;
-    let { length } = contexts;
+    const { contexts } = this;
+    const { length } = contexts;
 
     return length ? contexts[length - 1]! : null;
   }

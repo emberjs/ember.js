@@ -1,5 +1,5 @@
-import { Namespace, SimpleElement } from '@glimmer/interfaces';
-import { castToBrowser, checkNode, strip, unwrap } from '@glimmer/util';
+import { type SimpleElement } from '@glimmer/interfaces';
+import { castToBrowser, checkNode, NS_SVG, strip, unwrap } from '@glimmer/util';
 
 import { assertNodeTagName } from '../dom/assertions';
 import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
@@ -85,7 +85,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Void Elements'() {
-    let voidElements = 'area base br embed hr img input keygen link meta param source track wbr';
+    const voidElements = 'area base br embed hr img input keygen link meta param source track wbr';
     voidElements.split(' ').forEach((tagName) => this.shouldBeVoid(tagName));
   }
 
@@ -485,13 +485,13 @@ export class InitialRenderSuite extends RenderTest {
       }
     );
 
-    let selectNode = firstElementChild(this.element);
+    const selectNode = firstElementChild(this.element);
     this.assert.ok(selectNode, 'rendered select');
     if (selectNode === null) {
       return;
     }
-    let options = getElementsByTagName(selectNode, 'option');
-    let selected: SimpleElement[] = [];
+    const options = getElementsByTagName(selectNode, 'option');
+    const selected: SimpleElement[] = [];
 
     for (const option of options) {
       // TODO: This is a real discrepancy with SimpleDOM
@@ -500,7 +500,7 @@ export class InitialRenderSuite extends RenderTest {
       }
     }
 
-    let [first, second] = this.guardArray({ selected }, { min: 2 });
+    const [first, second] = this.guardArray({ selected }, { min: 2 });
 
     this.assertHTML(strip`
       <select multiple="">
@@ -607,9 +607,9 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML(
       `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`
     );
-    let svg = this.element.firstChild;
+    const svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
-      let use = svg.firstChild;
+      const use = svg.firstChild;
       if (assertNodeTagName(use, 'use')) {
         this.assert.strictEqual(use.href.baseVal, 'home');
       }
@@ -625,9 +625,9 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML(
       `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`
     );
-    let svg = this.element.firstChild;
+    const svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
-      let use = svg.firstChild;
+      const use = svg.firstChild;
       if (assertNodeTagName(use, 'use')) {
         this.assert.strictEqual(use.href.baseVal, 'home');
       }
@@ -638,9 +638,9 @@ export class InitialRenderSuite extends RenderTest {
   '<svg> tag with case-sensitive attribute'() {
     this.render('<svg viewBox="0 0 0 0"></svg>');
     this.assertHTML('<svg viewBox="0 0 0 0"></svg>');
-    let svg = this.element.firstChild;
+    const svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG);
+      this.assert.strictEqual(svg.namespaceURI, NS_SVG);
       this.assert.strictEqual(svg.getAttribute('viewBox'), '0 0 0 0');
     }
     this.assertStableRerender();
@@ -648,20 +648,20 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'nested element in the SVG namespace'() {
-    let d = 'M 0 0 L 100 100';
+    const d = 'M 0 0 L 100 100';
     this.render(`<svg><path d="${d}"></path></svg>`);
     this.assertHTML(`<svg><path d="${d}"></path></svg>`);
 
-    let svg = this.element.firstChild;
+    const svg = this.element.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG);
+      this.assert.strictEqual(svg.namespaceURI, NS_SVG);
 
-      let path = svg.firstChild;
+      const path = svg.firstChild;
       if (assertNodeTagName(path, 'path')) {
         this.assert.strictEqual(
           path.namespaceURI,
-          Namespace.SVG,
+          NS_SVG,
           'creates the path element with a namespace'
         );
         this.assert.strictEqual(path.getAttribute('d'), d);
@@ -676,17 +676,17 @@ export class InitialRenderSuite extends RenderTest {
     this.render('<svg><foreignObject>Hi</foreignObject></svg>');
     this.assertHTML('<svg><foreignObject>Hi</foreignObject></svg>');
 
-    let svg = this.element.firstChild;
+    const svg = this.element.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG);
+      this.assert.strictEqual(svg.namespaceURI, NS_SVG);
 
-      let foreignObject = svg.firstChild;
+      const foreignObject = svg.firstChild;
 
       if (assertNodeTagName(foreignObject, 'foreignObject')) {
         this.assert.strictEqual(
           foreignObject.namespaceURI,
-          Namespace.SVG,
+          NS_SVG,
           'creates the foreignObject element with a namespace'
         );
       }
@@ -707,13 +707,13 @@ export class InitialRenderSuite extends RenderTest {
 
     this.assert.strictEqual(
       castToBrowser(unwrap(firstChild), 'SVG').namespaceURI,
-      Namespace.SVG,
+      NS_SVG,
       'creates the first svg element with a namespace'
     );
 
     this.assert.strictEqual(
       castToBrowser(secondChild, 'SVG').namespaceURI,
-      Namespace.SVG,
+      NS_SVG,
       'creates the second svg element with a namespace'
     );
 
@@ -730,9 +730,9 @@ export class InitialRenderSuite extends RenderTest {
   'Namespaced and non-namespaced elements with nesting'() {
     this.render('<div><svg></svg></div><div></div>');
 
-    let firstDiv = this.element.firstChild;
-    let secondDiv = this.element.lastChild;
-    let svg = firstDiv && firstDiv.firstChild;
+    const firstDiv = this.element.firstChild;
+    const secondDiv = this.element.lastChild;
+    const svg = firstDiv && firstDiv.firstChild;
 
     this.assertHTML('<div><svg></svg></div><div></div>');
 
@@ -745,7 +745,7 @@ export class InitialRenderSuite extends RenderTest {
     }
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.strictEqual(svg.namespaceURI, Namespace.SVG, "svg's namespace is svgNamespace");
+      this.assert.strictEqual(svg.namespaceURI, NS_SVG, "svg's namespace is svgNamespace");
     }
 
     if (assertNodeTagName(secondDiv, 'div')) {
@@ -878,7 +878,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Safe HTML curlies'() {
-    let title = {
+    const title = {
       toHTML() {
         return '<span>hello</span> <em>world</em>';
       },
@@ -890,7 +890,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Triple curlies'() {
-    let title = '<span>hello</span> <em>world</em>';
+    const title = '<span>hello</span> <em>world</em>';
     this.render('<div>{{{this.title}}}</div>', { title });
     this.assertHTML('<div><span>hello</span> <em>world</em></div>');
     this.assertStableRerender();
@@ -907,7 +907,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Top level triple curlies'() {
-    let title = '<span>hello</span> <em>world</em>';
+    const title = '<span>hello</span> <em>world</em>';
     this.render('{{{this.title}}}', { title });
     this.assertHTML('<span>hello</span> <em>world</em>');
     this.assertStableRerender();
@@ -915,7 +915,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Top level unescaped tr'() {
-    let title = '<tr><td>Yo</td></tr>';
+    const title = '<tr><td>Yo</td></tr>';
     this.render('<table>{{{this.title}}}</table>', { title });
     this.assertHTML('<table><tbody><tr><td>Yo</td></tr></tbody></table>');
     this.assertStableRerender();
@@ -958,13 +958,13 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<div><p>chancancode</p>!</div>');
     this.assertStableRerender();
 
-    let p = this.element.firstChild!.firstChild!;
+    const p = this.element.firstChild!.firstChild!;
 
     this.rerender({ admin: false });
     this.assertHTML('<div><!---->!</div>');
     this.assertStableNodes({ except: p });
 
-    let comment = this.element.firstChild!.firstChild!;
+    const comment = this.element.firstChild!.firstChild!;
 
     this.rerender({ admin: true });
     this.assertHTML('<div><p>chancancode</p>!</div>');
@@ -990,7 +990,7 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<div><!---->!</div>');
     this.assertStableNodes({ except: p });
 
-    let comment = this.element.firstChild!.firstChild!;
+    const comment = this.element.firstChild!.firstChild!;
 
     this.rerender({ admin: true });
     this.assertHTML('<div><p>chancancode</p>!</div>');
@@ -1059,7 +1059,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Integer powers of 2'() {
-    let ints = [];
+    const ints = [];
     let i = 9007199254740991; // Number.MAX_SAFE_INTEGER isn't available on IE11
     while (i > 1) {
       ints.push(i);

@@ -1,10 +1,9 @@
 import { check } from '@glimmer/debug';
-import { DEBUG } from '@glimmer/env';
-import { CapturedArguments } from '@glimmer/interfaces';
+import { type CapturedArguments } from '@glimmer/interfaces';
 import {
   createComputeRef,
   isInvokableRef,
-  Reference,
+  type Reference,
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
@@ -87,7 +86,7 @@ export default internalHelper(({ positional }: CapturedArguments) => {
       return (...invocationArgs: unknown[]) => {
         let [fn, ...args] = reifyPositional(positional);
 
-        if (DEBUG) assertCallbackIsFn(callbackRef);
+        if (import.meta.env.DEV) assertCallbackIsFn(callbackRef);
 
         if (isInvokableRef(callbackRef)) {
           let value = args.length > 0 ? args[0] : invocationArgs[0];

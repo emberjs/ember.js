@@ -1,6 +1,6 @@
-import { Namespace, SimpleElement } from '@glimmer/interfaces';
+import { type SimpleElement } from '@glimmer/interfaces';
 import { normalizeProperty } from '@glimmer/runtime';
-import { castToBrowser, expect } from '@glimmer/util';
+import { castToBrowser, expect, NS_SVG } from '@glimmer/util';
 
 import { assertingElement, hasAttribute, jitSuite, RenderTest, test, tracked } from '..';
 
@@ -8,8 +8,8 @@ export class AttributesTests extends RenderTest {
   static suiteName = 'Attributes';
 
   protected readDOMAttr(attr: string, element = this.element.firstChild as SimpleElement) {
-    let isSVG = element.namespaceURI === Namespace.SVG;
-    let { type, normalized } = normalizeProperty(element, attr);
+    const isSVG = element.namespaceURI === NS_SVG;
+    const { type, normalized } = normalizeProperty(element, attr);
 
     if (isSVG) {
       return element.getAttribute(normalized);
@@ -26,7 +26,7 @@ export class AttributesTests extends RenderTest {
     T extends keyof HTMLElementTagNameMap,
     P extends keyof HTMLElementTagNameMap[T]
   >(tagName: T, property: P, value: HTMLElementTagNameMap[T][P]) {
-    let element = document.createElement<T>(tagName);
+    const element = document.createElement<T>(tagName);
     element[property] = value;
     return element[property];
   }
@@ -186,7 +186,7 @@ export class AttributesTests extends RenderTest {
   'can set attributes on form properties'() {
     this.render('<form id={{this.foo}}></form><output form={{this.foo}}></output>', { foo: 'bar' });
 
-    let outputElement = assertingElement(this.element.lastChild);
+    const outputElement = assertingElement(this.element.lastChild);
 
     this.assert.ok(hasAttribute(outputElement, 'form'));
     this.assert.strictEqual(this.readDOMAttr('form', outputElement), 'bar');
@@ -227,7 +227,7 @@ export class AttributesTests extends RenderTest {
 
   @test
   'handles undefined `toString` input values'() {
-    let obj = Object.create(null);
+    const obj = Object.create(null);
     this.render('<input value={{this.obj}} />', { obj });
     this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
@@ -247,13 +247,13 @@ export class AttributesTests extends RenderTest {
       @tracked value = '';
     }
 
-    let model = new Model();
+    const model = new Model();
 
     this.render('<input value={{this.model.value}} />', { model });
     this.assert.strictEqual(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
-    let inputElement = castToBrowser(
+    const inputElement = castToBrowser(
       expect(this.element.firstChild, 'expected input to exist'),
       'input'
     );
@@ -379,8 +379,8 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = assertingElement(this.element.firstChild);
-    let secondElement = assertingElement(this.element.lastChild);
+    const firstElement = assertingElement(this.element.firstChild);
+    const secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
@@ -415,8 +415,8 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = assertingElement(this.element.firstChild);
-    let secondElement = assertingElement(this.element.lastChild);
+    const firstElement = assertingElement(this.element.firstChild);
+    const secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
     this.assert.ok(hasAttribute(secondElement, 'data-foo'));
@@ -455,8 +455,8 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = assertingElement(this.element.firstChild);
-    let secondElement = assertingElement(this.element.lastChild);
+    const firstElement = assertingElement(this.element.firstChild);
+    const secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'title'));
     this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');
@@ -492,8 +492,8 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = assertingElement(this.element.firstChild);
-    let secondElement = assertingElement(this.element.lastChild);
+    const firstElement = assertingElement(this.element.firstChild);
+    const secondElement = assertingElement(this.element.lastChild);
 
     this.assert.notOk(hasAttribute(firstElement, 'title'));
     this.assert.strictEqual(this.readDOMAttr('title', secondElement), 'hello');

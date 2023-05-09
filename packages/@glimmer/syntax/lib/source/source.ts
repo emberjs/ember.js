@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { DEBUG } from '@glimmer/env';
+
 import type { Option } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 
-import { PrecompileOptions } from '../parser/tokenizer-event-handlers';
-import { SourceLocation, SourcePosition } from './location';
+import { type PrecompileOptions } from '../parser/tokenizer-event-handlers';
+import { type SourceLocation, type SourcePosition } from './location';
 import { SourceOffset, SourceSpan } from './span';
 
 export class Source {
@@ -75,7 +75,7 @@ export class Source {
       if (seenLines === line - 1) {
         if (seenChars + column > nextLine) return nextLine;
 
-        if (DEBUG) {
+        if (import.meta.env.DEV) {
           let roundTrip = this.hbsPosFor(seenChars + column);
           assert(roundTrip !== null, `the returned offset failed to round-trip`);
           assert(roundTrip.line === line, `the round-tripped line didn't match the original line`);

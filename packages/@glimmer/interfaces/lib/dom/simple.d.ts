@@ -1,4 +1,4 @@
-export {
+export type {
   AttrNamespace,
   ElementNamespace,
   InsertPosition,

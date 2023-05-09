@@ -2,8 +2,10 @@
   "private": true,
   "name": "@glimmer-test/syntax",
   "dependencies": {
+    "@glimmer/syntax": "workspace:^",
     "@glimmer/integration-tests": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
-    "@glimmer/util": "workspace:^"
+    "@glimmer/util": "workspace:^",
+    "@glimmer/test-utils": "workspace:^"
   }
 }
