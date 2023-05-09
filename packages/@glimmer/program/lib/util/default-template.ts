@@ -1,6 +1,6 @@
 import {
-  SerializedTemplateBlock,
-  SerializedTemplateWithLazyBlock,
+  type SerializedTemplateBlock,
+  type SerializedTemplateWithLazyBlock,
   SexpOpcodes,
 } from '@glimmer/interfaces';
 

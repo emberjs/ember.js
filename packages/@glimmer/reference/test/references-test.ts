@@ -1,8 +1,7 @@
-import { DEBUG } from '@glimmer/env';
+import { type GlobalContext, testOverrideGlobalContext } from '@glimmer/global-context';
 import { dict, unwrap } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
-import { GlobalContext, testOverrideGlobalContext } from '../../global-context';
 import {
   childRefFor,
   createComputeRef,
@@ -371,7 +370,7 @@ module('References', (hooks) => {
     });
   });
 
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     module('debugAliasRef', () => {
       test('debug alias refs are transparent', (assert) => {
         class Foo {

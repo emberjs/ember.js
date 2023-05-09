@@ -1,9 +1,5 @@
-export {
-  NON_EXISTENT_LOCATION,
-  SourceLocation,
-  SourcePosition,
-  SYNTHETIC_LOCATION,
-  UNKNOWN_POSITION,
-} from './location';
+export type { SourceLocation, SourcePosition } from './location';
+export { NON_EXISTENT_LOCATION, SYNTHETIC_LOCATION, UNKNOWN_POSITION } from './location';
 export { Source } from './source';
-export { HasSourceSpan, hasSpan, loc, MaybeHasSourceSpan, maybeLoc, SpanList } from './span-list';
+export type { HasSourceSpan, MaybeHasSourceSpan } from './span-list';
+export { hasSpan, loc, maybeLoc, SpanList } from './span-list';

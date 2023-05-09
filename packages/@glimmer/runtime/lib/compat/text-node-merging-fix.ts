@@ -1,14 +1,20 @@
 import {
-  Bounds,
-  InsertPosition,
-  Option,
-  SimpleComment,
-  SimpleDocument,
-  SimpleElement,
-  SimpleNode,
+  type Bounds,
+  type Option,
+  type SimpleComment,
+  type SimpleDocument,
+  type SimpleElement,
+  type SimpleNode,
 } from '@glimmer/interfaces';
 
-import { DOMOperations } from '../dom/operations';
+import { type DOMOperations } from '../dom/operations';
+
+export enum InsertPosition {
+  beforebegin = 'beforebegin',
+  afterbegin = 'afterbegin',
+  beforeend = 'beforeend',
+  afterend = 'afterend',
+}
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -51,14 +57,14 @@ export function applyTextNodeMergingFix(
 
       let didSetUselessComment = false;
 
-      let nextPrevious = nextSibling ? nextSibling.previousSibling : parent.lastChild;
+      const nextPrevious = nextSibling ? nextSibling.previousSibling : parent.lastChild;
 
       if (nextPrevious && nextPrevious instanceof Text) {
         didSetUselessComment = true;
         parent.insertBefore(this.uselessComment, nextSibling);
       }
 
-      let bounds = super.insertHTMLBefore(parent, nextSibling, html);
+      const bounds = super.insertHTMLBefore(parent, nextSibling, html);
 
       if (didSetUselessComment) {
         parent.removeChild(this.uselessComment);
@@ -70,7 +76,7 @@ export function applyTextNodeMergingFix(
 }
 
 function shouldApplyFix(document: SimpleDocument) {
-  let mergingTextDiv = document.createElement('div');
+  const mergingTextDiv = document.createElement('div');
 
   mergingTextDiv.appendChild(document.createTextNode('first'));
   mergingTextDiv.insertAdjacentHTML(InsertPosition.beforeend, 'second');

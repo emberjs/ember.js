@@ -9,5 +9,8 @@
     "@glimmer/global-context": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/util": "workspace:^"
+  },
+  "devDependencies": {
+    "@glimmer/local-debug-flags": "workspace:^"
   }
 }

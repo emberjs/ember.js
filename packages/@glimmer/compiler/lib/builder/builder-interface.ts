@@ -1,4 +1,4 @@
-import { Dict, DictValue, Option, PresentArray } from '@glimmer/interfaces';
+import { type Dict, type DictValue, type Option, type PresentArray } from '@glimmer/interfaces';
 import { assertNever, dict, expect, isPresentArray } from '@glimmer/util';
 
 export type BuilderParams = BuilderExpression[];
@@ -26,7 +26,7 @@ export interface NormalizedAngleInvocation {
   block: Option<NormalizedBlock>;
 }
 
-export const enum HeadKind {
+export enum HeadKind {
   Block = 'Block',
   Call = 'Call',
   Element = 'Element',
@@ -178,7 +178,7 @@ export type SugaryArrayStatement = BuilderCallExpression | BuilderElement | Buil
 export function normalizeSugaryArrayStatement(
   statement: SugaryArrayStatement
 ): NormalizedStatement {
-  let name = statement[0];
+  const name = statement[0];
 
   switch (name[0]) {
     case '(': {
@@ -206,7 +206,7 @@ export function normalizeSugaryArrayStatement(
     }
 
     case '#': {
-      let {
+      const {
         head: path,
         params,
         hash,
@@ -225,8 +225,8 @@ export function normalizeSugaryArrayStatement(
     }
 
     case '!': {
-      let name = statement[0].slice(1);
-      let { params, hash, blocks, blockParams } = normalizeBuilderBlockStatement(
+      const name = statement[0].slice(1);
+      const { params, hash, blocks, blockParams } = normalizeBuilderBlockStatement(
         statement as BuilderBlockStatement
       );
 
@@ -308,7 +308,7 @@ function normalizeVerboseStatement(statement: VerboseStatement): NormalizedState
 }
 
 function extractBlockHead(name: string): NormalizedHead {
-  let result = /^(#|!)(.*)$/.exec(name);
+  const result = /^(#|!)(.*)$/.exec(name);
 
   if (result === null) {
     throw new Error(`Unexpected missing # in block head`);
@@ -318,7 +318,7 @@ function extractBlockHead(name: string): NormalizedHead {
 }
 
 function normalizeCallHead(name: string): NormalizedHead {
-  let result = /^\((.*)\)$/.exec(name);
+  const result = /^\((.*)\)$/.exec(name);
 
   if (result === null) {
     throw new Error(`Unexpected missing () in call head`);
@@ -328,7 +328,7 @@ function normalizeCallHead(name: string): NormalizedHead {
 }
 
 function normalizePath(head: string, tail: string[] = []): NormalizedHead {
-  let pathHead = normalizePathHead(head);
+  const pathHead = normalizePathHead(head);
 
   if (isPresentArray(tail)) {
     return {
@@ -347,11 +347,11 @@ function normalizePath(head: string, tail: string[] = []): NormalizedHead {
 }
 
 function normalizeDottedPath(whole: string): NormalizedHead {
-  let { kind, name: rest } = normalizePathHead(whole);
+  const { kind, name: rest } = normalizePathHead(whole);
 
-  let [name, ...tail] = rest.split('.') as [string, ...string[]];
+  const [name, ...tail] = rest.split('.') as [string, ...string[]];
 
-  let variable: Variable = { kind, name, mode: 'loose' };
+  const variable: Variable = { kind, name, mode: 'loose' };
 
   if (isPresentArray(tail)) {
     return { type: ExpressionKind.GetPath, path: { head: variable, tail } };
@@ -412,7 +412,7 @@ export interface NormalizedBuilderBlockStatement {
 export function normalizeBuilderBlockStatement(
   statement: BuilderBlockStatement
 ): NormalizedBuilderBlockStatement {
-  let head = statement[0];
+  const head = statement[0];
   let blocks: NormalizedBlocks = dict();
   let params: Option<NormalizedParams> = null;
   let hash: Option<NormalizedHash> = null;
@@ -471,7 +471,7 @@ export function entries<D extends Dict>(
   callback: <K extends keyof D>(key: K, value: D[K]) => void
 ): void {
   Object.keys(dict).forEach((key) => {
-    let value = dict[key];
+    const value = dict[key];
     callback(key, value as D[keyof D]);
   });
 }
@@ -496,7 +496,7 @@ function normalizeAttr(attr: BuilderAttr): { expr: NormalizedAttr; trusted: bool
   if (attr === 'splat') {
     return { expr: HeadKind.Splat, trusted: false };
   } else {
-    let expr = normalizeExpression(attr);
+    const expr = normalizeExpression(attr);
     return { expr, trusted: false };
   }
 }
@@ -505,7 +505,7 @@ function mapObject<T extends Dict<unknown>, Out>(
   object: T,
   mapper: (value: DictValue<T>, key: keyof T) => Out
 ): { [P in keyof T]: Out } {
-  let out = dict() as { [P in keyof T]?: Out };
+  const out = dict() as { [P in keyof T]?: Out };
 
   Object.keys(object).forEach(<K extends keyof T>(k: K) => {
     out[k] = mapper(object[k] as DictValue<T>, k);
@@ -529,32 +529,32 @@ export type InvocationElement =
   | [string, BuilderAttrs];
 
 export function isElement(input: [string, ...unknown[]]): input is BuilderElement {
-  let match = /^<([a-z0-9\-][a-zA-Z0-9\-]*)>$/.exec(input[0]);
+  const match = /^<([a-z0-9\-][a-zA-Z0-9\-]*)>$/.exec(input[0]);
 
   return !!match && !!match[1];
 }
 
 export function extractElement(input: string): Option<string> {
-  let match = /^<([a-z0-9\-][a-zA-Z0-9\-]*)>$/.exec(input);
+  const match = /^<([a-z0-9\-][a-zA-Z0-9\-]*)>$/.exec(input);
 
   return match?.[1] ?? null;
 }
 
 export function isAngleInvocation(input: [string, ...unknown[]]): input is InvocationElement {
   // TODO Paths
-  let match = /^<(@[a-zA-Z0-9]*|[A-Z][a-zA-Z0-9\-]*)>$/.exec(input[0]);
+  const match = /^<(@[a-zA-Z0-9]*|[A-Z][a-zA-Z0-9\-]*)>$/.exec(input[0]);
 
   return !!match && !!match[1];
 }
 
 export function isBlock(input: [string, ...unknown[]]): input is BuilderBlockStatement {
   // TODO Paths
-  let match = /^#[^]?([a-zA-Z0-9]*|[A-Z][a-zA-Z0-9\-]*)$/.exec(input[0]);
+  const match = /^#[^]?([a-zA-Z0-9]*|[A-Z][a-zA-Z0-9\-]*)$/.exec(input[0]);
 
   return !!match && !!match[1];
 }
 
-export const enum Builder {
+export enum Builder {
   Literal,
   Comment,
   Append,
@@ -594,7 +594,7 @@ export type TupleBuilderExpression =
 type Params = BuilderParams;
 type Hash = Dict<BuilderExpression>;
 
-export const enum ExpressionKind {
+export enum ExpressionKind {
   Literal = 'Literal',
   Call = 'Call',
   GetPath = 'GetPath',
@@ -672,7 +672,7 @@ export function normalizeAppendExpression(
         return normalizeAppendHead(normalizePath(expression[1], expression[2]), forceTrusted);
       }
       case Builder.Concat: {
-        let expr: NormalizedConcat = {
+        const expr: NormalizedConcat = {
           type: ExpressionKind.Concat,
           params: normalizeParams(expression.slice(1)) as [
             NormalizedExpression,
@@ -760,7 +760,7 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
         return normalizePath(expression[1], expression[2]);
       }
       case Builder.Concat: {
-        let expr: NormalizedConcat = {
+        const expr: NormalizedConcat = {
           type: ExpressionKind.Concat,
           params: normalizeParams(expression.slice(1)) as [
             NormalizedExpression,
@@ -847,7 +847,7 @@ export function statementIsExpression(
     return false;
   }
 
-  let name = statement[0];
+  const name = statement[0];
 
   if (typeof name === 'number') {
     switch (name) {

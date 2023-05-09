@@ -1,18 +1,28 @@
 import {
-  Bounds,
-  InsertPosition,
-  Namespace,
-  Option,
-  SimpleDocument,
-  SimpleElement,
-  SimpleNode,
+  type Bounds,
+  type Option,
+  type SimpleDocument,
+  type SimpleElement,
+  type SimpleNode,
 } from '@glimmer/interfaces';
-import { assert, castToBrowser, clearElement, unwrap } from '@glimmer/util';
+import {
+  assert,
+  castToBrowser,
+  clearElement,
+  INSERT_AFTER_BEGIN,
+  INSERT_BEFORE_END,
+  NS_SVG,
+  unwrap,
+} from '@glimmer/util';
 
-import { DOMOperations, moveNodesBefore } from '../dom/operations';
+import { type DOMOperations, moveNodesBefore } from '../dom/operations';
 
-export const SVG_NAMESPACE = Namespace.SVG;
-export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
+export enum InsertPosition {
+  beforebegin = 'beforebegin',
+  afterbegin = 'afterbegin',
+  beforeend = 'beforeend',
+  afterend = 'afterend',
+}
 
 // Patch:    insertAdjacentHTML on SVG Fix
 // Browsers: Safari, IE, Edge, Firefox ~33-34
@@ -28,7 +38,7 @@ export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 export function applySVGInnerHTMLFix(
   document: Option<SimpleDocument>,
   DOMClass: typeof DOMOperations,
-  svgNamespace: SVG_NAMESPACE
+  svgNamespace: typeof NS_SVG
 ): typeof DOMOperations {
   if (!document) return DOMClass;
 
@@ -36,7 +46,7 @@ export function applySVGInnerHTMLFix(
     return DOMClass;
   }
 
-  let div = document.createElement('div') as SimpleElement;
+  const div = document.createElement('div');
 
   return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
     override insertHTMLBefore(
@@ -72,19 +82,19 @@ function fixSVG(
   if (parent.tagName.toUpperCase() === 'FOREIGNOBJECT') {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG
     // namespaced elements. So here a wrapper is used.
-    let wrappedHtml = '<svg><foreignObject>' + html + '</foreignObject></svg>';
+    const wrappedHtml = '<svg><foreignObject>' + html + '</foreignObject></svg>';
 
     clearElement(div);
-    div.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
+    div.insertAdjacentHTML(INSERT_AFTER_BEGIN, wrappedHtml);
 
     source = div.firstChild!.firstChild!;
   } else {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG
     // namespaced elements. So here a wrapper is used.
-    let wrappedHtml = '<svg>' + html + '</svg>';
+    const wrappedHtml = '<svg>' + html + '</svg>';
 
     clearElement(div);
-    div.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
+    div.insertAdjacentHTML(INSERT_AFTER_BEGIN, wrappedHtml);
 
     source = div.firstChild!;
   }
@@ -92,11 +102,11 @@ function fixSVG(
   return moveNodesBefore(source, parent, reference);
 }
 
-function shouldApplyFix(document: SimpleDocument, svgNamespace: SVG_NAMESPACE) {
-  let svg = document.createElementNS(svgNamespace, 'svg');
+function shouldApplyFix(document: SimpleDocument, svgNamespace: typeof NS_SVG) {
+  const svg = document.createElementNS(svgNamespace, 'svg');
 
   try {
-    svg.insertAdjacentHTML(InsertPosition.beforeend, '<circle></circle>');
+    svg.insertAdjacentHTML(INSERT_BEFORE_END, '<circle></circle>');
   } catch (e) {
     // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
     // Safari: Will throw, insertAdjacentHTML is not present on SVG
@@ -104,7 +114,7 @@ function shouldApplyFix(document: SimpleDocument, svgNamespace: SVG_NAMESPACE) {
     // FF: Old versions will create a node in the wrong namespace
     if (
       svg.childNodes.length === 1 &&
-      castToBrowser(unwrap(svg.firstChild), 'SVG').namespaceURI === SVG_NAMESPACE
+      castToBrowser(unwrap(svg.firstChild), 'SVG').namespaceURI === NS_SVG
     ) {
       // The test worked as expected, no fix required
       return false;

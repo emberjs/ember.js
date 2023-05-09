@@ -1,4 +1,4 @@
-import { Option, Present, PresentArray } from '@glimmer/interfaces';
+import { type Option, type Present, type PresentArray } from '@glimmer/interfaces';
 
 export function isPresent<T>(value: T): value is Present<T> {
   return value !== null && value !== undefined;

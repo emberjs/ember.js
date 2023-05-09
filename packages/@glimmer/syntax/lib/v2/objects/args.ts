@@ -1,5 +1,5 @@
-import { SourceSlice } from '../../source/slice';
-import { SourceSpan } from '../../source/span';
+import { type SourceSlice } from '../../source/slice';
+import { type SourceSpan } from '../../source/span';
 import type { ExpressionNode } from './expr';
 import { node } from './node';
 

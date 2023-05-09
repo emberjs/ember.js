@@ -1,9 +1,9 @@
-import { Option } from '@glimmer/interfaces';
+import { type Option } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/util';
 
 import { generateSyntaxError } from './syntax-error';
-import * as ASTv1 from './v1/api';
-import * as HBS from './v1/handlebars-ast';
+import type * as ASTv1 from './v1/api';
+import type * as HBS from './v1/handlebars-ast';
 
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.

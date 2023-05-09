@@ -1,15 +1,15 @@
 import { registerDestructor } from '@glimmer/destroyable';
 import {
-  CapturedArguments,
-  Destroyable,
-  Dict,
-  InternalModifierManager,
-  Option,
-  Owner,
-  SimpleElement,
+  type CapturedArguments,
+  type Destroyable,
+  type Dict,
+  type InternalModifierManager,
+  type Option,
+  type Owner,
+  type SimpleElement,
 } from '@glimmer/interfaces';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
-import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag, type UpdatableTag } from '@glimmer/validator';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;

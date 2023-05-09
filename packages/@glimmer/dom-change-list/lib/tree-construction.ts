@@ -1,13 +1,14 @@
 import {
-  Namespace,
-  NodeToken,
-  SimpleDocument,
-  SimpleDocumentFragment,
-  SimpleElement,
+  type Namespace,
+  type NodeToken,
+  type SimpleDocument,
+  type SimpleDocumentFragment,
+  type SimpleElement,
 } from '@glimmer/interfaces';
+import { NS_HTML } from '@glimmer/util';
 
-import { HTML, OperationsBuilder, run } from './dom-operations';
-import { NodeTokensImpl } from './node-tokens';
+import { OperationsBuilder, run } from './dom-operations';
+import { type NodeTokensImpl } from './node-tokens';
 
 // https://github.com/whatwg/dom/issues/270
 
@@ -20,7 +21,7 @@ export class DOMTreeConstruction {
     this.builder = new OperationsBuilder(this.ops);
   }
 
-  openElement(name: string, ns: Namespace = HTML): NodeToken {
+  openElement(name: string, ns: Namespace = NS_HTML): NodeToken {
     this.builder.openElement(name, ns);
     return this.token++;
   }
@@ -39,7 +40,7 @@ export class DOMTreeConstruction {
     return this.token++;
   }
 
-  setAttribute(name: string, value: string, namespace: Namespace = HTML) {
+  setAttribute(name: string, value: string, namespace: Namespace = NS_HTML) {
     this.builder.setAttribute(name, value, namespace);
   }
 

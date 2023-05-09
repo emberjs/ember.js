@@ -1,6 +1,6 @@
 import { assign } from '@glimmer/util';
 
-import { SourceSpan } from '../../source/span';
+import { type SourceSpan } from '../../source/span';
 
 export interface BaseNodeFields {
   loc: SourceSpan;

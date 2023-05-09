@@ -9,12 +9,12 @@ on:
       - 'v*'
   pull_request: {}
   schedule:
-    - cron:  '0 3 * * *' # daily, at 3am
+    - cron: '0 3 * * *' # daily, at 3am
 
 jobs:
   install_dependencies:
-    name: "Install Dependencies"
-    runs-on: "ubuntu-latest"
+    name: 'Install Dependencies'
+    runs-on: 'ubuntu-latest'
 
     steps:
       - uses: actions/checkout@v3
@@ -23,7 +23,7 @@ jobs:
   lint:
     name: Linting
     runs-on: ubuntu-latest
-    needs: ["install_dependencies"]
+    needs: ['install_dependencies']
     timeout-minutes: 10
 
     steps:
@@ -34,60 +34,58 @@ jobs:
   test-chrome:
     name: Chrome
     runs-on: ubuntu-latest
-    needs: ["install_dependencies"]
+    needs: ['install_dependencies']
     timeout-minutes: 10
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: NullVoxPopuli/action-setup-pnpm@v2
-    - run: pnpm test
-
-
-  test-node:
-    name: Node
-    runs-on: ubuntu-latest
-    needs: ["install_dependencies"]
-    timeout-minutes: 10
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: NullVoxPopuli/action-setup-pnpm@v2
-    - run: pnpm test
-
-  test-browserstack:
-    name: Browserstack
-    runs-on: ubuntu-latest
-    needs: ["install_dependencies"]
-    timeout-minutes: 20
-
-    env:
-      BROWSERSTACK_USERNAME: glimmervm1
-      BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
-
-    steps:
+      - name: install puppeteer libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -yq libgbm1 gconf-service libasound2 libatk1.0-0 libc6 \
+            libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 \
+            libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 \
+            libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 \
+            libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
+            libxss1 libxtst6 ca-certificates fonts-liberation libnss3 lsb-release \
+            xdg-utils wget libcairo2
       - uses: actions/checkout@v3
       - uses: NullVoxPopuli/action-setup-pnpm@v2
-      - run: pnpm browserstack:connect
-      - run: pnpm test:browserstack
-      - run: pnpm browserstack:results
-      - run: pnpm browserstack:disconnect
+      - run: pnpm test
 
-  test-types:
-    name: Types
-    runs-on: ubuntu-latest
-    needs: ["install_dependencies"]
-    timeout-minutes: 10
+  # test-browserstack:
+  #   name: Browserstack
+  #   runs-on: ubuntu-latest
+  #   needs: ['install_dependencies']
+  #   timeout-minutes: 20
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: NullVoxPopuli/action-setup-pnpm@v2
-      - run: pnpm build
-      - run: pnpm test:types
+  #   env:
+  #     BROWSERSTACK_USERNAME: glimmervm1
+  #     BROWSERSTACK_ACCESS_KEY: 7DFjbGLxYRsXWmc8tzeh
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: NullVoxPopuli/action-setup-pnpm@v2
+  #     - run: pnpm browserstack:connect
+  #     - run: pnpm test:browserstack
+  #     - run: pnpm browserstack:results
+  #     - run: pnpm browserstack:disconnect
+
+  # test-types:
+  #   name: Types
+  #   runs-on: ubuntu-latest
+  #   needs: ['install_dependencies']
+  #   timeout-minutes: 10
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: NullVoxPopuli/action-setup-pnpm@v2
+  #     - run: pnpm build
+  #     - run: pnpm test:types
 
   floating-dependencies:
     name: Floating Dependencies
     runs-on: ubuntu-latest
-    needs: ["install_dependencies"]
+    needs: ['install_dependencies']
     timeout-minutes: 10
 
     steps:

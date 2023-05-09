@@ -1,12 +1,12 @@
 import {
-  HelperDefinitionState,
-  ModifierDefinitionState,
-  Option,
-  ResolvedComponentDefinition,
-  RuntimeResolver,
+  type HelperDefinitionState,
+  type ModifierDefinitionState,
+  type Option,
+  type ResolvedComponentDefinition,
+  type RuntimeResolver,
 } from '@glimmer/interfaces';
 
-import { TestJitRegistry } from './registry';
+import { type TestJitRegistry } from './registry';
 
 export class TestJitRuntimeResolver implements RuntimeResolver {
   constructor(private registry: TestJitRegistry) {}

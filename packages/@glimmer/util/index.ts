@@ -4,6 +4,7 @@ export { dict, isDict, isObject, StackImpl as Stack } from './lib/collections';
 export { beginTestSteps, endTestSteps, logStep, verifySteps } from './lib/debug-steps';
 export { default as debugToString } from './lib/debug-to-string';
 export * from './lib/dom';
+export * from './lib/dom-utils';
 export * from './lib/immediate';
 export { default as intern } from './lib/intern';
 export {
@@ -16,7 +17,7 @@ export * from './lib/present';
 export {
   castToBrowser,
   castToSimple,
-  checkNode,
+  checkBrowserNode as checkNode,
   isElement,
   isSimpleElement,
 } from './lib/simple-cast';

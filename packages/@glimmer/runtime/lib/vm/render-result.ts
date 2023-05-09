@@ -1,11 +1,11 @@
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import {
-  Environment,
-  LiveBlock,
-  RenderResult,
-  SimpleElement,
-  SimpleNode,
-  UpdatingOpcode,
+  type Environment,
+  type LiveBlock,
+  type RenderResult,
+  type SimpleElement,
+  type SimpleNode,
+  type UpdatingOpcode,
 } from '@glimmer/interfaces';
 
 import { clear } from '../bounds';

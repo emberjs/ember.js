@@ -1,5 +1,5 @@
-import { Op, Scope } from '@glimmer/interfaces';
-import { childRefFor, Reference, valueForRef } from '@glimmer/reference';
+import { Op, type Scope } from '@glimmer/interfaces';
+import { childRefFor, type Reference, valueForRef } from '@glimmer/reference';
 import { decodeHandle, dict, unwrap } from '@glimmer/util';
 
 import { APPEND_OPCODES } from '../../opcodes';

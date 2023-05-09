@@ -1,7 +1,7 @@
 import { HighLevelBuilderOpcode, MachineOp, Op } from '@glimmer/interfaces';
 import { unwrap } from '@glimmer/util';
 
-import { PushStatementOp } from '../../syntax/compilers';
+import { type PushStatementOp } from '../../syntax/compilers';
 import { labelOperand } from '../operands';
 
 export type When = (match: number, callback: () => void) => void;

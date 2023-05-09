@@ -1,6 +1,6 @@
 export type Present<T> = Exclude<T, null | undefined>;
 export type Option<T> = T | null;
-export type Maybe<T> = Option<T> | undefined | void;
+export type Maybe<T> = Option<T> | undefined;
 export type FIXME<T, _S extends string> = T;
 
 export type Dict<T = unknown> = Record<string, T>;

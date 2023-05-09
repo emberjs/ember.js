@@ -1,4 +1,4 @@
-import { Option, SimpleElement } from '@glimmer/interfaces';
+import { type Option, type SimpleElement } from '@glimmer/interfaces';
 
 import { isSafeString, normalizeStringValue } from '../dom/normalize';
 

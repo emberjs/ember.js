@@ -1,17 +1,17 @@
 import {
-  CapturedArguments,
-  CapturedRenderNode,
-  CustomRenderNode,
-  Dict,
-  InternalComponentManager,
-  Owner,
-  SimpleElement,
-  SimpleNode,
+  type CapturedArguments,
+  type CapturedRenderNode,
+  type CustomRenderNode,
+  type Dict,
+  type InternalComponentManager,
+  type Owner,
+  type SimpleElement,
+  type SimpleNode,
 } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
 import {
   EMPTY_ARGS,
-  TemplateOnlyComponent,
+  type TemplateOnlyComponent,
   templateOnlyComponent,
   TemplateOnlyComponentManager,
 } from '@glimmer/runtime';
@@ -20,7 +20,7 @@ import { assign, expect } from '@glimmer/util';
 import {
   BaseEnv,
   createTemplate,
-  EmberishCurlyComponent,
+  type EmberishCurlyComponent,
   GlimmerishComponent,
   JitRenderDelegate,
   RenderTest,

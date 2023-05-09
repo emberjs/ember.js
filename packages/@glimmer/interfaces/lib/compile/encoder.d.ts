@@ -1,14 +1,14 @@
-import { CompileTimeComponent } from '../..';
-import { Option } from '../core';
-import { CompileTimeConstants } from '../program';
-import { HandleResult, NamedBlocks } from '../template';
-import { MachineOp, Op } from '../vm-opcodes';
-import { SingleBuilderOperand } from './operands';
-import * as WireFormat from './wire-format';
+import { type CompileTimeComponent } from '../..';
+import { type Option } from '../core';
+import { type CompileTimeConstants } from '../program';
+import { type HandleResult, type NamedBlocks } from '../template';
+import { type MachineOp, type Op } from '../vm-opcodes';
+import { type SingleBuilderOperand } from './operands';
+import type * as WireFormat from './wire-format';
 
 // These values are used in the same space as standard opcodes, so we need to
 // start them at a higher value to prevent collisions
-export const enum HighLevelBuilderOpcode {
+export enum HighLevelBuilderOpcode {
   Label = 1000,
   StartLabels = 1001,
   StopLabels = 1002,
@@ -17,7 +17,7 @@ export const enum HighLevelBuilderOpcode {
   End = StopLabels,
 }
 
-export const enum HighLevelResolutionOpcode {
+export enum HighLevelResolutionOpcode {
   ResolveModifier = 1003,
 
   ResolveComponent = 1004,

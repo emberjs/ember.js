@@ -1,5 +1,5 @@
 /* eslint-disable qunit/no-global-module-test */
-import { Dict } from '@glimmer/interfaces';
+import { type Dict } from '@glimmer/interfaces';
 import { Source } from '@glimmer/syntax';
 import { unwrap } from '@glimmer/util';
 

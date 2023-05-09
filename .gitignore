@@ -1,11 +1,14 @@
 /dist/
+**/dist
 /control-dist/
 node_modules/
 **/node_modules/
 tmp/
-ts-dist/
+/ts-dist/
+**/ts-dist
 .eslintcache
 *.log
 *.dot
 *.pdf
 instrumentation.*.json
+.cache

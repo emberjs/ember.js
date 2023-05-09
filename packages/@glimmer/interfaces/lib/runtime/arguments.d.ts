@@ -1,6 +1,6 @@
-import { Option } from '../core';
-import { Reference } from '../references';
-import { ScopeBlock } from './scope';
+import { type Option } from '../core';
+import { type Reference } from '../references';
+import { type ScopeBlock } from './scope';
 
 declare const CAPTURED_ARGS: unique symbol;
 

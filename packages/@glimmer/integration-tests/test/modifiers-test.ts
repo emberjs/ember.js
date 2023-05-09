@@ -1,6 +1,6 @@
-import { Dict, Option, SimpleElement } from '@glimmer/interfaces';
+import { type Dict, type Option, type SimpleElement } from '@glimmer/interfaces';
 
-import { Count, jitSuite, RenderTest, test } from '..';
+import { type Count, jitSuite, RenderTest, test } from '..';
 
 class BaseModifier {
   element?: SimpleElement;

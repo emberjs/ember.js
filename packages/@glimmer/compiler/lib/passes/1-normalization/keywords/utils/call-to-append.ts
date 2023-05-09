@@ -1,7 +1,7 @@
-import { Result } from '../../../../shared/result';
+import { type Result } from '../../../../shared/result';
 import * as mir from '../../../2-encoding/mir';
-import { NormalizationState } from '../../context';
-import { GenericKeywordNode, KeywordDelegate } from '../impl';
+import { type NormalizationState } from '../../context';
+import { type GenericKeywordNode, type KeywordDelegate } from '../impl';
 
 export function toAppend<T>({
   assert,

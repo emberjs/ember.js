@@ -7,36 +7,35 @@ import {
   CheckString,
 } from '@glimmer/debug';
 import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  CapturedPositionalArguments,
+  type CapturedPositionalArguments,
   CurriedType,
-  Environment,
-  ModifierDefinition,
-  ModifierDefinitionState,
-  ModifierInstance,
+  type Environment,
+  type ModifierDefinition,
+  type ModifierDefinitionState,
+  type ModifierInstance,
   Op,
-  Option,
-  Owner,
-  UpdatingOpcode,
-  UpdatingVM,
+  type Option,
+  type Owner,
+  type UpdatingOpcode,
+  type UpdatingVM,
 } from '@glimmer/interfaces';
-import { createComputeRef, isConstRef, Reference, valueForRef } from '@glimmer/reference';
+import { createComputeRef, isConstRef, type Reference, valueForRef } from '@glimmer/reference';
 import { assign, debugToString, expect, isObject } from '@glimmer/util';
 import {
   consumeTag,
   CURRENT_TAG,
-  Revision,
-  Tag,
+  type Revision,
+  type Tag,
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
 import { $t0 } from '@glimmer/vm';
 
-import { CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
+import { type CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
-import { DynamicAttribute } from '../../vm/attributes/dynamic';
+import { type DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 
@@ -197,7 +196,7 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
 
     let handle = constants.modifier(hostDefinition, null, true);
 
-    if (DEBUG && handle === null) {
+    if (import.meta.env.DEV && handle === null) {
       throw new Error(
         `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
           ref.debugLabel

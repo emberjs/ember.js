@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { scheduleRevalidate } from '@glimmer/global-context';
 import type {
   COMBINATOR_TAG_ID as ICOMBINATOR_TAG_ID,
@@ -80,7 +79,7 @@ const TYPE: TagTypeSymbol = symbol('TAG_TYPE');
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
-if (DEBUG) {
+if (import.meta.env.DEV) {
   ALLOW_CYCLES = new WeakMap();
 }
 
@@ -105,6 +104,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
         return tag;
     }
   }
+
   private revision = INITIAL;
   private lastChecked = INITIAL;
   private lastValue = INITIAL;
@@ -123,7 +123,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     let { lastChecked } = this;
 
     if (this.isUpdating === true) {
-      if (DEBUG && !allowsCycles(this)) {
+      if (import.meta.env.DEV && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
@@ -164,7 +164,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   }
 
   static updateTag(_tag: UpdatableTag, _subtag: Tag) {
-    if (DEBUG && _tag[TYPE] !== UPDATABLE_TAG_ID) {
+    if (import.meta.env.DEV && _tag[TYPE] !== UPDATABLE_TAG_ID) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
 
@@ -199,11 +199,14 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   }
 
   static dirtyTag(tag: DirtyableTag | UpdatableTag, disableConsumptionAssertion?: boolean) {
-    if (DEBUG && !(tag[TYPE] === UPDATABLE_TAG_ID || tag[TYPE] === DIRYTABLE_TAG_ID)) {
+    if (
+      import.meta.env.DEV &&
+      !(tag[TYPE] === UPDATABLE_TAG_ID || tag[TYPE] === DIRYTABLE_TAG_ID)
+    ) {
       throw new Error('Attempted to dirty a tag that was not dirtyable');
     }
 
-    if (DEBUG && disableConsumptionAssertion !== true) {
+    if (import.meta.env.DEV && disableConsumptionAssertion !== true) {
       // Usually by this point, we've already asserted with better error information,
       // but this is our last line of defense.
       unwrap(assertTagNotConsumed)(tag);

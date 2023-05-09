@@ -1,3 +1,6 @@
+import './lib/setup';
+
+export * from './lib/base-env';
 export * from './lib/compile';
 export * from './lib/components';
 export * from './lib/dom/assertions';
@@ -11,7 +14,9 @@ export * from './lib/modes/jit/resolver';
 export * from './lib/modes/node/env';
 export * from './lib/modes/rehydration/delegate';
 export * from './lib/modes/rehydration/partial-rehydration-delegate';
+export type { RenderDelegateOptions } from './lib/render-delegate';
 export * from './lib/render-test';
+export * from './lib/setup-harness';
 export * from './lib/snapshot';
 export * from './lib/suites';
 export * from './lib/test-helpers/define';
@@ -20,3 +25,4 @@ export * from './lib/test-helpers/strings';
 export * from './lib/test-helpers/test';
 export * from './lib/test-helpers/tracked';
 export * from './lib/test-helpers/tracked-object';
+export { syntaxErrorFor } from '@glimmer/test-utils';

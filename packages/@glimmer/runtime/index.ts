@@ -3,11 +3,11 @@
  */
 import './lib/bootstrap';
 
-import { RichIteratorResult } from '@glimmer/interfaces';
+import { type RichIteratorResult } from '@glimmer/interfaces';
 
 export { clear, ConcreteBounds, CursorImpl } from './lib/bounds';
 export {
-  DebugCallback,
+  type DebugCallback,
   resetDebuggerCallback,
   setDebuggerCallback,
 } from './lib/compiled/opcodes/debugger';
@@ -26,7 +26,7 @@ export {
 } from './lib/dom/helper';
 export { normalizeProperty } from './lib/dom/props';
 export {
-  EnvironmentDelegate,
+  type EnvironmentDelegate,
   EnvironmentImpl,
   inTransaction,
   runtimeContext,
@@ -40,8 +40,8 @@ export { invokeHelper } from './lib/helpers/invoke';
 export { default as on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
 export { DynamicScopeImpl, PartialScopeImpl } from './lib/scope';
-export { SafeString } from './lib/upsert';
-export { InternalVM, VM as LowLevelVM, UpdatingVM } from './lib/vm';
+export type { SafeString } from './lib/upsert';
+export { type InternalVM, VM as LowLevelVM, UpdatingVM } from './lib/vm';
 export {
   createCapturedArgs,
   EMPTY_ARGS,

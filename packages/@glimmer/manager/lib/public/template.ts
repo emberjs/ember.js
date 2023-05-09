@@ -1,5 +1,4 @@
-import { DEBUG } from '@glimmer/env';
-import { TemplateFactory } from '@glimmer/interfaces';
+import { type TemplateFactory } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
 
 const TEMPLATES: WeakMap<object, TemplateFactory> = new WeakMap();
@@ -7,11 +6,14 @@ const TEMPLATES: WeakMap<object, TemplateFactory> = new WeakMap();
 const getPrototypeOf = Object.getPrototypeOf;
 
 export function setComponentTemplate(factory: TemplateFactory, obj: object) {
-  if (DEBUG && !(obj !== null && (typeof obj === 'object' || typeof obj === 'function'))) {
+  if (
+    import.meta.env.DEV &&
+    !(obj !== null && (typeof obj === 'object' || typeof obj === 'function'))
+  ) {
     throw new Error(`Cannot call \`setComponentTemplate\` on \`${debugToString!(obj)}\``);
   }
 
-  if (DEBUG && TEMPLATES.has(obj)) {
+  if (import.meta.env.DEV && TEMPLATES.has(obj)) {
     throw new Error(
       `Cannot call \`setComponentTemplate\` multiple times on the same class (\`${debugToString!(
         obj

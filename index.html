@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Glimmer Test Suite</title>
+</head>
+
+<body>
+  <script type="module">
+    // Do this first so that `@glimmer/integration-tests` will see the global
+    // `QUnit`. We should change the code structure here so that we don't
+    // rely on the global to bootstrap QUnit, but this is fine for now.
+    const QUnit = await import('qunit');
+    QUnit.config.autostart = false;
+  </script>
+  <script type="module">
+    import { setupQunit } from "@glimmer/integration-tests";
+    const { smokeTest } = await setupQunit();
+
+    const packages =  await import.meta.glob("./packages/@glimmer/*/test/**/*-test.ts");
+    let smokeTestFile = './packages/@glimmer/integration-tests/test/smoke-test.ts';
+
+    // evaluate the tests before starting QUnit
+    for (const [name, pkg] of Object.entries(packages)) {
+      if (name === smokeTestFile && !smokeTest) {
+        continue;
+      }
+
+      await pkg();
+    }
+
+    QUnit.start();
+
+  </script>
+
+</body>
+
+</html>

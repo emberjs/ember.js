@@ -13,8 +13,6 @@
  *
  */
 
-import { DEBUG } from '@glimmer/env';
-
 //////////
 
 /**
@@ -162,7 +160,7 @@ export interface GlobalContext {
 let globalContextWasSet = false;
 
 export default function setGlobalContext(context: GlobalContext) {
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     if (globalContextWasSet) {
       throw new Error('Attempted to set the global context twice. This should only be set once.');
     }
@@ -189,7 +187,7 @@ export let testOverrideGlobalContext:
   | ((context: Partial<GlobalContext> | null) => GlobalContext | null)
   | undefined;
 
-if (DEBUG) {
+if (import.meta.env.DEV) {
   assertGlobalContextWasSet = () => {
     if (globalContextWasSet === false) {
       throw new Error(

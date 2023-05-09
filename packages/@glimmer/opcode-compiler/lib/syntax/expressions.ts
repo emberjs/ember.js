@@ -1,6 +1,6 @@
 import { assert, deprecate } from '@glimmer/global-context';
 import {
-  ExpressionSexpOpcode,
+  type ExpressionSexpOpcode,
   HighLevelResolutionOpcode,
   MachineOp,
   Op,
@@ -12,7 +12,7 @@ import { expr } from '../opcode-builder/helpers/expr';
 import { isGetFreeHelper } from '../opcode-builder/helpers/resolution';
 import { SimpleArgs } from '../opcode-builder/helpers/shared';
 import { Call, CallDynamic, Curry, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
-import { Compilers, PushExpressionOp } from './compilers';
+import { Compilers, type PushExpressionOp } from './compilers';
 
 export const EXPRESSIONS = new Compilers<PushExpressionOp, ExpressionSexpOpcode>();
 

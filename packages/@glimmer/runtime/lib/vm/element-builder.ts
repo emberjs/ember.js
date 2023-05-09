@@ -1,29 +1,29 @@
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import {
-  AttrNamespace,
-  Bounds,
-  Cursor,
-  CursorStackSymbol,
-  ElementBuilder,
-  ElementOperations,
-  Environment,
-  GlimmerTreeChanges,
-  GlimmerTreeConstruction,
-  LiveBlock,
-  Maybe,
-  ModifierInstance,
-  Option,
-  SimpleComment,
-  SimpleDocumentFragment,
-  SimpleElement,
-  SimpleNode,
-  SimpleText,
-  UpdatableBlock,
+  type AttrNamespace,
+  type Bounds,
+  type Cursor,
+  type CursorStackSymbol,
+  type ElementBuilder,
+  type ElementOperations,
+  type Environment,
+  type GlimmerTreeChanges,
+  type GlimmerTreeConstruction,
+  type LiveBlock,
+  type Maybe,
+  type ModifierInstance,
+  type Option,
+  type SimpleComment,
+  type SimpleDocumentFragment,
+  type SimpleElement,
+  type SimpleNode,
+  type SimpleText,
+  type UpdatableBlock,
 } from '@glimmer/interfaces';
 import { assert, expect, Stack, symbol } from '@glimmer/util';
 
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
-import { DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
+import { type DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
   firstNode(): SimpleNode;

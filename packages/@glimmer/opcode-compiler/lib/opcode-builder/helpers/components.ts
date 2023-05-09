@@ -1,20 +1,20 @@
 import {
-  CompilableProgram,
-  CompileTimeComponent,
+  type CompilableProgram,
+  type CompileTimeComponent,
   HighLevelBuilderOpcode,
   InternalComponentCapability,
-  LayoutWithContext,
+  type LayoutWithContext,
   MachineOp,
-  NamedBlocks,
+  type NamedBlocks,
   Op,
-  Option,
-  WireFormat,
+  type Option,
+  type WireFormat,
 } from '@glimmer/interfaces';
 import { hasCapability } from '@glimmer/manager';
 import { EMPTY_STRING_ARRAY, reverse, unwrap } from '@glimmer/util';
-import { $s0, $s1, $sp, SavedRegister } from '@glimmer/vm';
+import { $s0, $s1, $sp, type SavedRegister } from '@glimmer/vm';
 
-import { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+import { type PushExpressionOp, type PushStatementOp } from '../../syntax/compilers';
 import { namedBlocks } from '../../utils';
 import { isStrictMode, labelOperand, layoutOperand, symbolTableOperand } from '../operands';
 import { InvokeStaticBlock, PushYieldableBlock, YieldBlock } from './blocks';

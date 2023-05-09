@@ -1,11 +1,11 @@
 import {
-  CompileTimeHeap,
-  ResolutionTimeConstants,
-  RuntimeConstants,
-  RuntimeHeap,
-  RuntimeProgram,
-  SerializedHeap,
-  StdLibOperand,
+  type CompileTimeHeap,
+  type ResolutionTimeConstants,
+  type RuntimeConstants,
+  type RuntimeHeap,
+  type RuntimeProgram,
+  type SerializedHeap,
+  type StdLibOperand,
 } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { expect, unwrap } from '@glimmer/util';

@@ -1,16 +1,14 @@
 import {
-  Bounds,
-  Dict,
-  InsertPosition,
-  Namespace,
-  Option,
-  SimpleComment,
-  SimpleDocument,
-  SimpleElement,
-  SimpleNode,
-  SimpleText,
+  type Bounds,
+  type Dict,
+  type Option,
+  type SimpleComment,
+  type SimpleDocument,
+  type SimpleElement,
+  type SimpleNode,
+  type SimpleText,
 } from '@glimmer/interfaces';
-import { expect } from '@glimmer/util';
+import { expect, INSERT_BEFORE_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/util';
 
 import { ConcreteBounds } from '../bounds';
 
@@ -43,7 +41,7 @@ export class DOMOperations {
     let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
 
     if (context) {
-      isElementInSVGNamespace = context.namespaceURI === Namespace.SVG || tag === 'svg';
+      isElementInSVGNamespace = context.namespaceURI === NS_SVG || tag === 'svg';
       isHTMLIntegrationPoint = !!(SVG_INTEGRATION_POINTS as Dict<number>)[context.tagName];
     } else {
       isElementInSVGNamespace = tag === 'svg';
@@ -58,7 +56,7 @@ export class DOMOperations {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
 
-      return this.document.createElementNS(Namespace.SVG, tag);
+      return this.document.createElementNS(NS_SVG, tag);
     } else {
       return this.document.createElement(tag);
     }
@@ -70,16 +68,16 @@ export class DOMOperations {
 
   insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
     if (html === '') {
-      let comment = this.createComment('');
+      const comment = this.createComment('');
       parent.insertBefore(comment, nextSibling);
       return new ConcreteBounds(parent, comment, comment);
     }
 
-    let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
+    const prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
     let last: SimpleNode;
 
     if (nextSibling === null) {
-      parent.insertAdjacentHTML(InsertPosition.beforeend, html);
+      parent.insertAdjacentHTML(INSERT_BEFORE_END, html);
       last = expect(parent.lastChild, 'bug in insertAdjacentHTML?');
     } else if (nextSibling instanceof HTMLElement) {
       nextSibling.insertAdjacentHTML('beforebegin', html);
@@ -90,15 +88,15 @@ export class DOMOperations {
       //
       // This also protects Edge, IE and Firefox w/o the inspector open
       // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
-      let { uselessElement } = this;
+      const { uselessElement } = this;
 
       parent.insertBefore(uselessElement, nextSibling);
-      uselessElement.insertAdjacentHTML(InsertPosition.beforebegin, html);
+      uselessElement.insertAdjacentHTML(INSERT_BEFORE_BEGIN, html);
       last = expect(uselessElement.previousSibling, 'bug in insertAdjacentHTML?');
       parent.removeChild(uselessElement);
     }
 
-    let first = expect(prev ? prev.nextSibling : parent.firstChild, 'bug in insertAdjacentHTML?');
+    const first = expect(prev ? prev.nextSibling : parent.firstChild, 'bug in insertAdjacentHTML?');
     return new ConcreteBounds(parent, first, last);
   }
 
@@ -116,12 +114,12 @@ export function moveNodesBefore(
   target: SimpleElement,
   nextSibling: Option<SimpleNode>
 ): Bounds {
-  let first = expect(source.firstChild, 'source is empty');
+  const first = expect(source.firstChild, 'source is empty');
   let last: SimpleNode = first;
   let current: Option<SimpleNode> = first;
 
   while (current) {
-    let next: Option<SimpleNode> = current.nextSibling;
+    const next: Option<SimpleNode> = current.nextSibling;
 
     target.insertBefore(current, nextSibling);
 

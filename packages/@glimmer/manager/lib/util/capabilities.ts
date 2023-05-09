@@ -1,22 +1,21 @@
 import { check, CheckNumber } from '@glimmer/debug';
-import { DEBUG } from '@glimmer/env';
 import {
-  Capabilities,
-  InternalComponentCapabilities,
+  type Capabilities,
+  type InternalComponentCapabilities,
   InternalComponentCapability,
-  InternalComponentManager,
-  WithCreateInstance,
-  WithDynamicLayout,
-  WithPrepareArgs,
-  WithSubOwner,
-  WithUpdateHook,
+  type InternalComponentManager,
+  type WithCreateInstance,
+  type WithDynamicLayout,
+  type WithPrepareArgs,
+  type WithSubOwner,
+  type WithUpdateHook,
 } from '@glimmer/interfaces';
 import { _WeakSet } from '@glimmer/util';
 
-export const FROM_CAPABILITIES = DEBUG ? new _WeakSet() : undefined;
+export const FROM_CAPABILITIES = import.meta.env.DEV ? new _WeakSet() : undefined;
 
 export function buildCapabilities<T extends object>(capabilities: T): T & Capabilities {
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     FROM_CAPABILITIES!.add(capabilities);
     Object.freeze(capabilities);
   }

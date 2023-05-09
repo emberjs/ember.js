@@ -1,6 +1,12 @@
 import { assert, isPresentArray } from '@glimmer/util';
 
-import { CharPosition, HbsPosition, InvisiblePosition, OffsetKind, PositionData } from './offset';
+import { OffsetKind } from './kinds';
+import {
+  type CharPosition,
+  type HbsPosition,
+  type InvisiblePosition,
+  type PositionData,
+} from './offset';
 
 /**
  * This file implements the DSL used by span and offset in places where they need to exhaustively
@@ -35,8 +41,8 @@ class WhenList<Out> {
   }
 
   first(kind: OffsetKind): Out | null {
-    for (let when of this._whens) {
-      let value = when.match(kind);
+    for (const when of this._whens) {
+      const value = when.match(kind);
       if (isPresentArray(value)) {
         return value[0];
       }
@@ -68,12 +74,12 @@ class When<Out> {
   }
 
   match(kind: OffsetKind): Out[] {
-    let pattern = patternFor(kind);
+    const pattern = patternFor(kind);
 
-    let out: Out[] = [];
+    const out: Out[] = [];
 
-    let exact = this._map.get(pattern);
-    let fallback = this._map.get(MatchAny);
+    const exact = this._map.get(pattern);
+    const fallback = this._map.get(MatchAny);
 
     if (exact) {
       out.push(exact);
@@ -118,14 +124,14 @@ class Matcher<Out, M extends Matches = Matches> {
     left: OffsetKind,
     right: OffsetKind
   ): (left: PositionData, right: PositionData) => Out {
-    let nesteds = this._whens.match(left);
+    const nesteds = this._whens.match(left);
 
     assert(
       isPresentArray(nesteds),
       `no match defined for (${left}, ${right}) and no AnyMatch defined either`
     );
 
-    let callback = new WhenList(nesteds).first(right);
+    const callback = new WhenList(nesteds).first(right);
 
     assert(
       callback !== null,

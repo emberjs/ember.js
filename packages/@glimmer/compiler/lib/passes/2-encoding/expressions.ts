@@ -1,8 +1,8 @@
-import { PresentArray, SexpOpcodes, WireFormat } from '@glimmer/interfaces';
-import { ASTv2 } from '@glimmer/syntax';
+import { type PresentArray, SexpOpcodes, type WireFormat } from '@glimmer/interfaces';
+import { type ASTv2 } from '@glimmer/syntax';
 import { assertPresentArray, isPresentArray, mapPresentArray } from '@glimmer/util';
 
-import * as mir from './mir';
+import type * as mir from './mir';
 
 export type HashPair = [string, WireFormat.Expression];
 

@@ -1,4 +1,4 @@
-export const enum ContentType {
+export enum ContentType {
   Component,
   Helper,
   String,

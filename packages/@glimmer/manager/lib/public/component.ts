@@ -1,27 +1,26 @@
 import { registerDestructor } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
 import {
-  Arguments,
-  ComponentCapabilities,
-  ComponentCapabilitiesVersions,
-  ComponentDefinitionState,
-  ComponentManager,
-  ComponentManagerWithAsyncLifeCycleCallbacks,
-  ComponentManagerWithAsyncUpdateHook,
-  ComponentManagerWithDestructors,
-  ComponentManagerWithUpdateHook,
-  Destroyable,
-  InternalComponentCapabilities,
-  InternalComponentManager,
-  Option,
-  Owner,
-  VMArguments,
+  type Arguments,
+  type ComponentCapabilities,
+  type ComponentCapabilitiesVersions,
+  type ComponentDefinitionState,
+  type ComponentManager,
+  type ComponentManagerWithAsyncLifeCycleCallbacks,
+  type ComponentManagerWithAsyncUpdateHook,
+  type ComponentManagerWithDestructors,
+  type ComponentManagerWithUpdateHook,
+  type Destroyable,
+  type InternalComponentCapabilities,
+  type InternalComponentManager,
+  type Option,
+  type Owner,
+  type VMArguments,
 } from '@glimmer/interfaces';
-import { createConstRef, Reference } from '@glimmer/reference';
+import { createConstRef, type Reference } from '@glimmer/reference';
 
 import { argsProxyFor } from '../util/args-proxy';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
-import { ManagerFactory } from './index';
+import type { ManagerFactory } from './api';
 
 const CAPABILITIES = {
   dynamicLayout: false,
@@ -43,7 +42,7 @@ export function componentCapabilities<Version extends keyof ComponentCapabilitie
   managerAPI: Version,
   options: ComponentCapabilitiesVersions[Version] = {}
 ): ComponentCapabilities {
-  if (DEBUG && managerAPI !== '3.13') {
+  if (import.meta.env.DEV && managerAPI !== '3.13') {
     throw new Error('Invalid component manager compatibility specified');
   }
 
@@ -120,7 +119,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
       let { factory } = this;
       delegate = factory(owner);
 
-      if (DEBUG && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
+      if (import.meta.env.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
           `Custom component managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.13')\` (imported via \`import { capabilities } from '@ember/component';\`). Received: \`${JSON.stringify(

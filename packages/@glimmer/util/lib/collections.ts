@@ -1,4 +1,4 @@
-import { Dict, Option, Stack } from '@glimmer/interfaces';
+import { type Dict, type Option, type Stack } from '@glimmer/interfaces';
 
 import { unwrap } from './platform-utils';
 import { getLast } from './present';

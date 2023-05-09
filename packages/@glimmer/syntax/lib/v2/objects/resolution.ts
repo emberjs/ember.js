@@ -6,7 +6,7 @@
  * 3. Fallback resolution
  */
 
-import { GetContextualFreeOp, SexpOpcodes } from '@glimmer/interfaces';
+import { type GetContextualFreeOp, SexpOpcodes } from '@glimmer/interfaces';
 
 /**
  * Strict resolution is used:

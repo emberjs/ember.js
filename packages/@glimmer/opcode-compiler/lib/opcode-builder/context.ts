@@ -1,10 +1,10 @@
 import {
-  CompileTimeArtifacts,
-  CompileTimeCompilationContext,
-  CompileTimeResolver,
-  ContainingMetadata,
-  CreateRuntimeOp,
-  TemplateCompilationContext,
+  type CompileTimeArtifacts,
+  type CompileTimeCompilationContext,
+  type CompileTimeResolver,
+  type ContainingMetadata,
+  type CreateRuntimeOp,
+  type TemplateCompilationContext,
 } from '@glimmer/interfaces';
 
 import { CompileTimeCompilationContextImpl } from '../program-context';

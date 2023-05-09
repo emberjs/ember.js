@@ -1,4 +1,4 @@
-import { getTemplateLocals } from '..';
+import { getTemplateLocals } from '@glimmer/syntax';
 
 QUnit.module('[glimmer-syntax] getTemplateLocals');
 

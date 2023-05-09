@@ -1,33 +1,34 @@
 import { destroy } from '@glimmer/destroyable';
 import {
-  ComponentDefinitionState,
-  Dict,
-  DynamicScope,
-  Helper,
-  Maybe,
-  Option,
-  RenderResult,
-  SimpleElement,
-  SimpleNode,
+  type ComponentDefinitionState,
+  type Dict,
+  type DynamicScope,
+  type Helper,
+  type Maybe,
+  type Option,
+  type RenderResult,
+  type SimpleElement,
+  type SimpleNode,
 } from '@glimmer/interfaces';
 import { inTransaction } from '@glimmer/runtime';
-import { ASTPluginBuilder } from '@glimmer/syntax';
+import { type ASTPluginBuilder } from '@glimmer/syntax';
+import type { NTuple } from '@glimmer/test-utils';
 import { assert, clearElement, dict, expect, isPresent } from '@glimmer/util';
 import { dirtyTagFor } from '@glimmer/validator';
 
 import {
-  ComponentBlueprint,
-  ComponentKind,
-  ComponentTypes,
+  type ComponentBlueprint,
+  type ComponentKind,
+  type ComponentTypes,
   CURLY_TEST_COMPONENT,
   GLIMMER_TEST_COMPONENT,
 } from './components';
 import { assertElementShape, assertEmberishElement } from './dom/assertions';
 import { assertingElement, toInnerHTML } from './dom/simple-utils';
-import { UserHelper } from './helpers';
-import { TestModifierConstructor } from './modifiers';
-import RenderDelegate from './render-delegate';
-import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
+import { type UserHelper } from './helpers';
+import { type TestModifierConstructor } from './modifiers';
+import type RenderDelegate from './render-delegate';
+import { equalTokens, isServerMarker, type NodesSnapshot, normalizeSnapshot } from './snapshot';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type Present<T> = Exclude<T, null | undefined>;
@@ -628,71 +629,4 @@ function uniq(arr: any[]) {
     if (accum.indexOf(val) === -1) accum.push(val);
     return accum;
   }, []);
-}
-
-type NTuple<N extends number, Type, T extends any[] = []> = T['length'] extends N
-  ? T
-  : NTuple<N, Type, [...T, Type]>;
-
-export function guardArray<T extends Maybe<unknown>[], K extends string>(desc: { [P in K]: T }): {
-  [K in keyof T]: Present<T[K]>;
-};
-export function guardArray<T, K extends string, N extends number>(
-  desc: { [P in K]: Iterable<T> | ArrayLike<T> },
-  options: { min: N }
-): Expand<NTuple<N, Present<T>>>;
-export function guardArray<T, U extends T, K extends string, N extends number>(
-  desc: { [P in K]: Iterable<T> | ArrayLike<T> },
-  options: { min: N; condition: (value: T) => value is U }
-): Expand<NTuple<N, U>>;
-export function guardArray<T, K extends string, A extends ArrayLike<T>>(desc: {
-  [P in K]: A;
-}): Expand<NTuple<A['length'], Present<T>>>;
-export function guardArray<T, K extends string>(desc: {
-  [P in K]: Iterable<T> | ArrayLike<T>;
-}): Present<T>[];
-export function guardArray<T, K extends string, U extends T>(
-  desc: {
-    [P in K]: Iterable<T> | ArrayLike<T>;
-  },
-  options: { condition: (value: T) => value is U; min?: number }
-): U[];
-export function guardArray(
-  desc: Record<string, Iterable<unknown> | ArrayLike<unknown>>,
-  options?: {
-    min?: Maybe<number>;
-    condition?: (value: unknown) => boolean;
-  }
-): unknown[] {
-  let [message, list] = Object.entries(desc)[0] as [string, unknown[]];
-
-  let array: unknown[] = Array.from(list);
-  let condition: (value: unknown) => boolean;
-
-  if (typeof options?.min === 'number') {
-    if (array.length < options.min) {
-      throw Error(
-        `Guard Failed: expected to have at least ${options.min} (of ${message}), but got ${array.length}`
-      );
-    }
-
-    array = array.slice(0, options.min);
-    condition = (value) => value !== null && value !== undefined;
-    message = `${message}: ${options.min} present elements`;
-  } else if (options?.condition) {
-    condition = options.condition;
-  } else {
-    condition = isPresent;
-    message = `${message}: all are present`;
-  }
-
-  let succeeds = array.every(condition);
-
-  if (succeeds) {
-    QUnit.assert.ok(succeeds, message);
-  } else {
-    throw Error(`Guard Failed: ${message}`);
-  }
-
-  return array;
 }

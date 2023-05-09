@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "@glimmer-test/compiler",
+  "dependencies": {
+    "@glimmer/compiler": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/syntax": "workspace:^",
+    "@glimmer/util": "workspace:^"
+  }
+}

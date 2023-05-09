@@ -1,23 +1,23 @@
 import { registerDestructor } from '@glimmer/destroyable';
 import {
-  Bounds,
-  CapturedNamedArguments,
-  CompilableProgram,
-  Destroyable,
-  Dict,
-  DynamicScope,
-  ElementOperations,
-  Environment,
-  InternalComponentCapabilities,
-  Option,
-  Owner,
-  PreparedArguments,
-  Reference,
-  Template,
-  VMArguments,
-  WithCreateInstance,
-  WithDynamicLayout,
-  WithDynamicTagName,
+  type Bounds,
+  type CapturedNamedArguments,
+  type CompilableProgram,
+  type Destroyable,
+  type Dict,
+  type DynamicScope,
+  type ElementOperations,
+  type Environment,
+  type InternalComponentCapabilities,
+  type Option,
+  type Owner,
+  type PreparedArguments,
+  type Reference,
+  type Template,
+  type VMArguments,
+  type WithCreateInstance,
+  type WithDynamicLayout,
+  type WithDynamicTagName,
 } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
 import {
@@ -29,10 +29,16 @@ import {
 } from '@glimmer/reference';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
 import { assign, EMPTY_ARRAY, keys, unwrapTemplate } from '@glimmer/util';
-import { consumeTag, createTag, DirtyableTag, dirtyTag, dirtyTagFor } from '@glimmer/validator';
+import {
+  consumeTag,
+  createTag,
+  type DirtyableTag,
+  dirtyTag,
+  dirtyTagFor,
+} from '@glimmer/validator';
 
-import { TestJitRuntimeResolver } from '../modes/jit/resolver';
-import { TestComponentConstructor } from './types';
+import { type TestJitRuntimeResolver } from '../modes/jit/resolver';
+import { type TestComponentConstructor } from './types';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };

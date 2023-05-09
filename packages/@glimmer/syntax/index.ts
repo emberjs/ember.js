@@ -1,35 +1,35 @@
 export { default as print } from './lib/generation/print';
 export { sortByLoc } from './lib/generation/util';
 export { getTemplateLocals } from './lib/get-template-locals';
-export { isKeyword, KEYWORDS_TYPES, KeywordType } from './lib/keywords';
+export { isKeyword, KEYWORDS_TYPES, type KeywordType } from './lib/keywords';
+export type { PreprocessOptions } from './lib/parser/tokenizer-event-handlers';
 export {
-  ASTPlugin,
-  ASTPluginBuilder,
-  ASTPluginEnvironment,
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
+  type ASTPlugin,
+  type ASTPluginBuilder,
+  type ASTPluginEnvironment,
+  type PrecompileOptions,
+  type PrecompileOptionsWithLexicalScope,
   preprocess,
-  Syntax,
-  TemplateIdFn,
+  type Syntax,
+  type TemplateIdFn,
 } from './lib/parser/tokenizer-event-handlers';
-export { PreprocessOptions } from './lib/parser/tokenizer-event-handlers';
 export { SourceSlice } from './lib/source/slice';
 export { Source } from './lib/source/source';
 export { SourceSpan } from './lib/source/span';
 export {
-  HasSourceSpan,
+  type HasSourceSpan,
   hasSpan,
   loc,
-  MaybeHasSourceSpan,
+  type MaybeHasSourceSpan,
   maybeLoc,
   SpanList,
 } from './lib/source/span-list';
 export { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './lib/symbol-table';
-export { generateSyntaxError, GlimmerSyntaxError } from './lib/syntax-error';
+export { generateSyntaxError, type GlimmerSyntaxError } from './lib/syntax-error';
 export { cannotRemoveNode, cannotReplaceNode } from './lib/traversal/errors';
 export { default as WalkerPath } from './lib/traversal/path';
 export { default as traverse } from './lib/traversal/traverse';
-export { NodeVisitor } from './lib/traversal/visitor';
+export type { NodeVisitor } from './lib/traversal/visitor';
 export { default as Walker } from './lib/traversal/walker';
 export * as ASTv1 from './lib/v1/api';
 export { default as builders } from './lib/v1/public-builders';

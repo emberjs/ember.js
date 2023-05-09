@@ -1,10 +1,10 @@
 import {
   CurriedType,
-  Option,
-  SerializedInlineBlock,
-  SerializedTemplateBlock,
+  type Option,
+  type SerializedInlineBlock,
+  type SerializedTemplateBlock,
   SexpOpcodes as Op,
-  WireFormat,
+  type WireFormat,
 } from '@glimmer/interfaces';
 import { dict, exhausted } from '@glimmer/util';
 

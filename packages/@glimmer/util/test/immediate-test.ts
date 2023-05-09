@@ -1,4 +1,4 @@
-import { decodeImmediate, encodeImmediate, ImmediateConstants } from '..';
+import { decodeImmediate, encodeImmediate, ImmediateConstants } from '@glimmer/util';
 
 const { module, test } = QUnit;
 

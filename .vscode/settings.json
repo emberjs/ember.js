@@ -1,68 +1,52 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "explorer.excludeGitIgnore": true,
-  "search.exclude": {
-    "tmp": true
+  "[ignore][properties][shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   },
+  "[json][jsonc][markdown][yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript][typescript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
+  },
+  "editor.formatOnSave": true,
+  "eslint.enable": true,
+  "eslint.packageManager": "npm",
+  "eslint.workingDirectories": [
+    {
+      "mode": "location"
+    }
+  ],
+  "explorer.excludeGitIgnore": true,
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true,
-    "dist/**": true,
-    "node_modules/**": true,
+    "**/dist/**": true,
     "**/node_modules/**": true,
-    "**/dist/**": true,
-    "tmp/**": true
-  },
-  "files.watcherExclude": {
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "tmp": true,
-    "**/dist/**": true,
-    "dist": true
+    "dist/**": true,
+    "node_modules/**": true
   },
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
-  "editor.renderWhitespace": "boundary",
-  "editor.insertSpaces": true,
-  "editor.tabSize": 2,
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-  "eslint.format.enable": true,
-  "typescript.tsc.autoDetect": "on",
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/dist/**": true,
+    "dist": true
+  },
   "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
   "typescript.preferences.importModuleSpecifier": "project-relative",
-  "javascript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "project-relative",
+
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "typescript.preferences.useAliasesForRenames": false,
+
+  "typescript.tsc.autoDetect": "on",
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.workspaceSymbols.scope": "currentProject",
-  "eslint.workingDirectories": [
-    {
-      "directory": ".",
-      "changeProcessCWD": true
-    }
-  ],
-  "eslint.enable": true,
-  "[yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[properties]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  },
-  "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  },
-  "[ignore]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
-  }
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.workspaceSymbols.scope": "currentProject"
 }

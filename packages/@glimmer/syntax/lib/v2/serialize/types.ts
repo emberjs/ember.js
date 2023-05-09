@@ -1,8 +1,8 @@
 import type { PresentArray } from '@glimmer/interfaces';
 
-import { SerializedSourceSlice } from '../../source/slice';
-import { SerializedSourceSpan } from '../../source/span';
-import * as ASTv2 from '../api';
+import { type SerializedSourceSlice } from '../../source/slice';
+import { type SerializedSourceSpan } from '../../source/span';
+import type * as ASTv2 from '../api';
 
 export interface SerializedBaseNode {
   loc: SerializedSourceSpan;

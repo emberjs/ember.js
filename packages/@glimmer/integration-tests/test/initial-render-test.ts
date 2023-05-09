@@ -1,5 +1,5 @@
-import { Dict, Option, SimpleElement } from '@glimmer/interfaces';
-import { SafeString } from '@glimmer/runtime';
+import { type Dict, type Option, type SimpleElement } from '@glimmer/interfaces';
+import { type SafeString } from '@glimmer/runtime';
 import { castToBrowser, expect } from '@glimmer/util';
 
 import {
@@ -9,9 +9,9 @@ import {
   assertSerializedInElement,
   blockStack,
   CLOSE,
-  ComponentBlueprint,
+  type ComponentBlueprint,
   componentSuite,
-  Content,
+  type Content,
   content,
   EMPTY,
   equalTokens,

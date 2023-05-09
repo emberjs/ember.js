@@ -1,6 +1,6 @@
-import { PresentArray } from '../array';
-import { Dict, Option } from '../core';
-import { CurriedType } from '../curry';
+import { type PresentArray } from '../array';
+import { type Dict, type Option } from '../core';
+import { type CurriedType } from '../curry';
 
 export type TupleSyntax = Statement | TupleExpression;
 
@@ -15,7 +15,7 @@ export type YieldTo = number;
 /**
  * A VariableResolutionContext explains how a variable name should be resolved.
  */
-export const enum VariableResolutionContext {
+export enum VariableResolutionContext {
   Strict = 0,
   AmbiguousAppend = 1,
   AmbiguousAppendInvoke = 2,
@@ -25,7 +25,7 @@ export const enum VariableResolutionContext {
   ResolveAsComponentHead = 7,
 }
 
-export const enum SexpOpcodes {
+export enum SexpOpcodes {
   // Statements
   Append = 1,
   TrustingAppend = 2,
@@ -280,7 +280,7 @@ export type Get = Expressions.GetVar;
 
 export type TupleExpression = Expressions.TupleExpression;
 
-export const enum WellKnownAttrName {
+export enum WellKnownAttrName {
   class = 0,
   id = 1,
   value = 2,
@@ -290,7 +290,7 @@ export const enum WellKnownAttrName {
   href = 6,
 }
 
-export const enum WellKnownTagName {
+export enum WellKnownTagName {
   div = 0,
   span = 1,
   p = 2,

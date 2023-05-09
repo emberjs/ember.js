@@ -1,5 +1,5 @@
-import { CapturedArguments, CurriedType, Owner } from '@glimmer/interfaces';
-import { Reference } from '@glimmer/reference';
+import { type CapturedArguments, type CurriedType, type Owner } from '@glimmer/interfaces';
+import { type Reference } from '@glimmer/reference';
 import { _WeakSet, symbol } from '@glimmer/util';
 
 const TYPE: unique symbol = symbol('TYPE');

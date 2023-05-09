@@ -7,5 +7,7 @@
     "directory": "packages/@glimmer/local-debug-flags"
   },
   "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
-  "private": true
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts"
 }

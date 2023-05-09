@@ -1,0 +1,15 @@
+// node files
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "project": ["tsconfig.build.json"]
+  },
+
+  "rules": {
+    "no-console": "off"
+  }
+}

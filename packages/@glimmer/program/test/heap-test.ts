@@ -1,4 +1,4 @@
-import { HeapImpl } from '..';
+import { HeapImpl } from '@glimmer/program';
 
 QUnit.module('Heap');
 

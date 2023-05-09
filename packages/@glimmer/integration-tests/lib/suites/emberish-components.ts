@@ -1,9 +1,9 @@
-import { SimpleElement } from '@glimmer/interfaces';
+import { type SimpleElement } from '@glimmer/interfaces';
 
 import { EmberishCurlyComponent } from '../components';
 import { assertEmberishElement, classes } from '../dom/assertions';
 import { assertingElement, toInnerHTML } from '../dom/simple-utils';
-import { Count, RenderTest } from '../render-test';
+import { type Count, RenderTest } from '../render-test';
 import { equalTokens } from '../snapshot';
 import { test } from '../test-decorator';
 

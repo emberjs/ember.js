@@ -1,31 +1,31 @@
 import {
-  CapturedRenderNode,
-  CompileTimeCompilationContext,
-  Cursor,
-  Dict,
-  DynamicScope,
-  ElementBuilder,
-  ElementNamespace,
-  Environment,
-  HandleResult,
-  Helper,
-  Option,
-  RenderResult,
-  RuntimeContext,
-  SimpleDocument,
-  SimpleDocumentFragment,
-  SimpleElement,
-  SimpleText,
+  type CapturedRenderNode,
+  type CompileTimeCompilationContext,
+  type Cursor,
+  type Dict,
+  type DynamicScope,
+  type ElementBuilder,
+  type ElementNamespace,
+  type Environment,
+  type HandleResult,
+  type Helper,
+  type Option,
+  type RenderResult,
+  type RuntimeContext,
+  type SimpleDocument,
+  type SimpleDocumentFragment,
+  type SimpleElement,
+  type SimpleText,
 } from '@glimmer/interfaces';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import { createConstRef, Reference } from '@glimmer/reference';
+import { createConstRef, type Reference } from '@glimmer/reference';
 import {
   array,
   clientBuilder,
   concat,
-  CurriedValue,
-  EnvironmentDelegate,
+  type CurriedValue,
+  type EnvironmentDelegate,
   fn,
   get,
   hash,
@@ -34,15 +34,16 @@ import {
   renderSync,
   runtimeContext,
 } from '@glimmer/runtime';
-import { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
+import { type ASTPluginBuilder, type PrecompileOptions } from '@glimmer/syntax';
 import { assign, castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/util';
 
+import { BaseEnv } from '../../base-env';
 import { preprocess } from '../../compile';
-import { ComponentKind, ComponentTypes } from '../../components';
-import { UserHelper } from '../../helpers';
-import { TestModifierConstructor } from '../../modifiers';
-import RenderDelegate, { RenderDelegateOptions } from '../../render-delegate';
-import { BaseEnv } from '../env';
+import { type ComponentKind, type ComponentTypes } from '../../components';
+import { type UserHelper } from '../../helpers';
+import { type TestModifierConstructor } from '../../modifiers';
+import type RenderDelegate from '../../render-delegate';
+import { type RenderDelegateOptions } from '../../render-delegate';
 import JitCompileTimeLookup from './compilation-context';
 import {
   componentHelper,
@@ -79,8 +80,8 @@ export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
   static style = 'jit';
 
-  protected registry = new TestJitRegistry();
-  protected resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver(this.registry);
+  protected registry: TestJitRegistry;
+  protected resolver: TestJitRuntimeResolver;
 
   private plugins: ASTPluginBuilder[] = [];
   private _context: JitTestDelegateContext | null = null;
@@ -88,9 +89,15 @@ export class JitRenderDelegate implements RenderDelegate {
   private doc: SimpleDocument;
   private env: EnvironmentDelegate;
 
-  constructor(options?: RenderDelegateOptions) {
-    this.doc = castToSimple(options?.doc ?? document);
-    this.env = assign({}, options?.env ?? BaseEnv);
+  constructor({
+    doc,
+    env,
+    resolver = (registry) => new TestJitRuntimeResolver(registry),
+  }: RenderDelegateOptions = {}) {
+    this.registry = new TestJitRegistry();
+    this.resolver = resolver(this.registry);
+    this.doc = castToSimple(doc ?? document);
+    this.env = assign({}, env ?? BaseEnv);
     this.registry.register('modifier', 'on', on);
     this.registry.register('helper', 'fn', fn);
     this.registry.register('helper', 'hash', hash);

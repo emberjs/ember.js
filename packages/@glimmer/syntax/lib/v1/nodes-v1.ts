@@ -1,7 +1,7 @@
-import { Dict, Option, PresentArray, WireFormat } from '@glimmer/interfaces';
+import { type Dict, type Option, type PresentArray, type WireFormat } from '@glimmer/interfaces';
 
-import { SourceLocation } from '../source/location';
-import { SourceSpan } from '../source/span';
+import { type SourceLocation } from '../source/location';
+import { type SourceSpan } from '../source/span';
 
 export interface Symbols {
   symbols: string[];

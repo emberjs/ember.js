@@ -23,6 +23,6 @@
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer/opcode-compiler": "workspace:^",
     "@glimmer/debug": "workspace:^",
-    "@types/qunit": "^2.19.5"
+    "@types/qunit": "workspace:^"
   }
 }

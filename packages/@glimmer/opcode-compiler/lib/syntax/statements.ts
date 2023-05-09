@@ -1,15 +1,15 @@
 import {
-  CompileTimeComponent,
+  type CompileTimeComponent,
   ContentType,
   HighLevelBuilderOpcode,
   HighLevelResolutionOpcode,
   MachineOp,
   Op,
   SexpOpcodes,
-  StatementSexpOpcode,
-  WellKnownAttrName,
-  WellKnownTagName,
-  WireFormat,
+  type StatementSexpOpcode,
+  type WellKnownAttrName,
+  type WellKnownTagName,
+  type WireFormat,
 } from '@glimmer/interfaces';
 import { $fp, $sp } from '@glimmer/vm';
 
@@ -40,7 +40,7 @@ import {
 } from '../opcode-builder/helpers/vm';
 import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { namedBlocks } from '../utils';
-import { Compilers, PushStatementOp } from './compilers';
+import { Compilers, type PushStatementOp } from './compilers';
 
 export const STATEMENTS = new Compilers<PushStatementOp, StatementSexpOpcode>();
 

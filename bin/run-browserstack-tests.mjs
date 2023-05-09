@@ -11,12 +11,10 @@ import { execa } from 'execa';
 function run(command, args = []) {
   console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
 
-  let p = execa(command, args);
-
-  p.stdout?.pipe(process.stdout);
-  p.stderr?.pipe(process.stderr);
-
-  return p;
+  return execa(command, args, {
+    stdout: 'inherit',
+    stderr: 'inherit',
+  });
 }
 
 (async function () {

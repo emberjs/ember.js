@@ -1,4 +1,4 @@
-import { Dict } from '@glimmer/interfaces';
+import { type Dict } from '@glimmer/interfaces';
 import { keys } from '@glimmer/util';
 
 export type DeclaredComponentKind = 'glimmer' | 'curly' | 'dynamic' | 'templateOnly';

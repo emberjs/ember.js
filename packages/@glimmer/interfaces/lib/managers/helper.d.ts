@@ -1,5 +1,5 @@
-import { Arguments } from '../runtime';
-import { Capabilities } from './capabilities';
+import { type Arguments } from '../runtime';
+import { type Capabilities } from './capabilities';
 
 export interface HelperCapabilitiesVersions {
   '3.23': {

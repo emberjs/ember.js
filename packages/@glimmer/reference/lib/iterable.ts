@@ -1,10 +1,14 @@
-import { DEBUG } from '@glimmer/env';
 import { getPath, toIterator } from '@glimmer/global-context';
-import { Dict, Option } from '@glimmer/interfaces';
+import { type Dict, type Option } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
-import { createComputeRef, Reference, ReferenceEnvironment, valueForRef } from './reference';
+import {
+  createComputeRef,
+  type Reference,
+  type ReferenceEnvironment,
+  valueForRef,
+} from './reference';
 
 export interface IterationItem<T, U> {
   key: unknown;
@@ -47,7 +51,7 @@ const IDENTITY: KeyFor = (item) => {
 };
 
 function keyForPath(path: string): KeyFor {
-  if (DEBUG && path[0] === '@') {
+  if (import.meta.env.DEV && path[0] === '@') {
     throw new Error(`invalid keypath: '${path}', valid keys: @index, @identity, or a path`);
   }
   return uniqueKeyFor((item) => getPath(item as object, path));

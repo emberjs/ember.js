@@ -11,8 +11,8 @@ export {
   $v0,
   isLowLevelRegister,
   MachineRegister,
-  Register,
+  type Register,
   SavedRegister,
-  SyscallRegister,
+  type SyscallRegister,
   TemporaryRegister,
 } from './lib/registers';

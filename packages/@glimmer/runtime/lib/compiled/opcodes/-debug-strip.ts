@@ -2,7 +2,7 @@ import {
   CheckArray,
   CheckBlockSymbolTable,
   CheckDict,
-  Checker,
+  type Checker,
   CheckFunction,
   CheckHandle,
   CheckInstanceof,
@@ -17,21 +17,26 @@ import {
   wrap,
 } from '@glimmer/debug';
 import {
-  CapturedArguments,
-  CompilableBlock,
-  CompilableProgram,
-  ComponentDefinition,
-  ComponentInstance,
-  ElementOperations,
-  Helper,
-  InternalComponentManager,
-  Invocation,
-  Option,
-  Scope,
-  ScopeBlock,
+  type CapturedArguments,
+  type CompilableBlock,
+  type CompilableProgram,
+  type ComponentDefinition,
+  type ComponentInstance,
+  type ElementOperations,
+  type Helper,
+  type InternalComponentManager,
+  type Invocation,
+  type Option,
+  type Scope,
+  type ScopeBlock,
 } from '@glimmer/interfaces';
-import { OpaqueIterator, REFERENCE, Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { COMPUTE, Tag } from '@glimmer/validator';
+import {
+  type OpaqueIterator,
+  REFERENCE,
+  type Reference,
+  UNDEFINED_REFERENCE,
+} from '@glimmer/reference';
+import { COMPUTE, type Tag } from '@glimmer/validator';
 
 import { PartialScopeImpl } from '../../scope';
 import { VMArgumentsImpl } from '../../vm/arguments';

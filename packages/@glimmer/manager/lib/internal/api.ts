@@ -1,9 +1,8 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  Helper,
-  InternalComponentManager,
-  InternalModifierManager,
-  Owner,
+  type Helper,
+  type InternalComponentManager,
+  type InternalModifierManager,
+  type Owner,
 } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
 
@@ -31,7 +30,11 @@ function setManager<Def extends object>(
   manager: object,
   obj: Def
 ): Def {
-  if (DEBUG && (typeof obj !== 'object' || obj === null) && typeof obj !== 'function') {
+  if (
+    import.meta.env.DEV &&
+    (typeof obj !== 'object' || obj === null) &&
+    typeof obj !== 'function'
+  ) {
     throw new Error(
       `Attempted to set a manager on a non-object value. Managers can only be associated with objects or functions. Value was ${debugToString!(
         obj
@@ -39,7 +42,7 @@ function setManager<Def extends object>(
     );
   }
 
-  if (DEBUG && map.has(obj)) {
+  if (import.meta.env.DEV && map.has(obj)) {
     throw new Error(
       `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${debugToString!(
         obj
@@ -88,7 +91,7 @@ export function getInternalModifierManager(
   isOptional?: true | undefined
 ): InternalModifierManager | null {
   if (
-    DEBUG &&
+    import.meta.env.DEV &&
     typeof definition !== 'function' &&
     (typeof definition !== 'object' || definition === null)
   ) {
@@ -102,7 +105,7 @@ export function getInternalModifierManager(
   if (manager === undefined) {
     if (isOptional === true) {
       return null;
-    } else if (DEBUG) {
+    } else if (import.meta.env.DEV) {
       throw new Error(
         `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${debugToString!(
           definition
@@ -133,7 +136,7 @@ export function getInternalHelperManager(
   isOptional?: true | undefined
 ): CustomHelperManager | Helper | null {
   if (
-    DEBUG &&
+    import.meta.env.DEV &&
     typeof definition !== 'function' &&
     (typeof definition !== 'object' || definition === null)
   ) {
@@ -154,7 +157,7 @@ export function getInternalHelperManager(
     return manager;
   } else if (isOptional === true) {
     return null;
-  } else if (DEBUG) {
+  } else if (import.meta.env.DEV) {
     throw new Error(
       `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${debugToString!(
         definition
@@ -182,7 +185,7 @@ export function getInternalComponentManager(
   isOptional?: true | undefined
 ): InternalComponentManager | null {
   if (
-    DEBUG &&
+    import.meta.env.DEV &&
     typeof definition !== 'function' &&
     (typeof definition !== 'object' || definition === null)
   ) {
@@ -196,7 +199,7 @@ export function getInternalComponentManager(
   if (manager === undefined) {
     if (isOptional === true) {
       return null;
-    } else if (DEBUG) {
+    } else if (import.meta.env.DEV) {
       throw new Error(
         `Attempted to load a component, but there wasn't a component manager associated with the definition. The definition was: ${debugToString!(
           definition

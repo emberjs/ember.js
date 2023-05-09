@@ -1,4 +1,4 @@
-import { SimpleElement } from '@glimmer/interfaces';
+import { type SimpleElement } from '@glimmer/interfaces';
 
 import { jitSuite, RenderTest, test } from '..';
 import { assert } from './support';

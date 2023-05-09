@@ -1,3 +1,5 @@
+/// <reference types="qunit" />
+
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 import assert from './assert';

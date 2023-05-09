@@ -1,37 +1,12 @@
 {
   "compilerOptions": {
-    // Compilation Configuration
-    "target": "es2020",
-    "lib": ["ES2020", "ES2022.Error", "DOM"],
-    "inlineSources": true,
-    "inlineSourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "ts-dist",
-    "baseUrl": "packages",
-    "rootDir": "packages",
-
-    // Environment Configuration
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-
-    // Enhance Strictness
+    "skipLibCheck": true,
     "strict": true,
-    "suppressImplicitAnyIndexErrors": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "useDefineForClassFields": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
-
-    "newLine": "LF",
-    "noEmit": true,
-
-    "skipLibCheck": true
   },
-  "include": ["packages/**/*.ts", "packages/interfaces/**/*.d.ts"],
-  "exclude": ["dist", "ts-dist", "**/dist", "tmp", "node_modules", ".vscode", "**/fixtures/**/*"]
+  "files": [],
+  "references": [{
+    "path": "tsconfig.build.json"
+  }, {
+    "path": "packages/tsconfig.json"
+  }]
 }

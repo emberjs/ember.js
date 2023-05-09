@@ -1,6 +1,6 @@
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import type { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 
-import { Option } from '../core';
+import { type Option } from '../core';
 
 export interface Bounds {
   // a method to future-proof for wormholing; may not be needed ultimately

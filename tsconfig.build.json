@@ -1,16 +1,5 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "checkJs": true,
-    "target": "ES2019",
-    "moduleResolution": "node",
-    "module": "es2015",
-    "typeRoots": [],
-    "types": [],
-    "baseUrl": ".",
-    "noEmit": true,
-    "skipLibCheck": true
-  },
+  "extends": "./tsconfig.base.json",
   "include": [
     "benchmark/**/*",
     "build/**/*",
@@ -18,7 +7,10 @@
     "lib/**/*",
     "server/**/*",
     "packages/build-utils/@glimmer/**/*",
-    "./*.js"
+    "testem.js",
+    "testem-browserstack.js",
+    "ember-cli-build.js",
+    "vite.config.mts"
   ],
-  "exclude": ["**/fixtures/**/*"]
+  "exclude": ["**/fixtures/**/*", "node_modules/**/*", "**/node_modules/**"]
 }

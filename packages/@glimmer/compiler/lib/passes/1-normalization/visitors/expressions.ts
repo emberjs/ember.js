@@ -1,11 +1,11 @@
-import { PresentArray } from '@glimmer/interfaces';
+import { type PresentArray } from '@glimmer/interfaces';
 import { ASTv2, KEYWORDS_TYPES } from '@glimmer/syntax';
 import { getLast, isPresentArray } from '@glimmer/util';
 
-import { AnyOptionalList, PresentList } from '../../../shared/list';
+import { type AnyOptionalList, type PresentList } from '../../../shared/list';
 import { Ok, Result, ResultArray } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import { NormalizationState } from '../context';
+import { type NormalizationState } from '../context';
 import { CALL_KEYWORDS } from '../keywords';
 import { hasPath } from '../utils/is-node';
 

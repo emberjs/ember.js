@@ -1,8 +1,7 @@
-import { DEBUG } from '@glimmer/env';
-import { ConstantTag, UpdatableTag } from '@glimmer/interfaces';
+import { type ConstantTag, type UpdatableTag } from '@glimmer/interfaces';
 
 import { assertTagNotConsumed } from './debug';
-import { Indexable, unwrap } from './utils';
+import { type Indexable, unwrap } from './utils';
 import { createUpdatableTag, DIRTY_TAG } from './validators';
 
 function isObjectLike<T>(u: T): u is Indexable & T {
@@ -20,7 +19,7 @@ export function dirtyTagFor<T extends object>(
   key: keyof T | string | symbol,
   meta?: TagMeta
 ): void {
-  if (DEBUG && !isObjectLike(obj)) {
+  if (import.meta.env.DEV && !isObjectLike(obj)) {
     throw new Error(`BUG: Can't update a tag for a primitive`);
   }
 
@@ -33,7 +32,7 @@ export function dirtyTagFor<T extends object>(
   let propertyTag = tags.get(key);
 
   if (propertyTag !== undefined) {
-    if (DEBUG) {
+    if (import.meta.env.DEV) {
       unwrap(assertTagNotConsumed)(propertyTag, obj, key);
     }
 

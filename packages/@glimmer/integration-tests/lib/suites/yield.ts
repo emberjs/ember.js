@@ -25,7 +25,7 @@ export class YieldSuite extends RenderTest {
   @test({
     skip: 'glimmer',
   })
-  [`yield to "inverse"`]() {
+  'yield to "inverse"'() {
     this.render(
       {
         layout:
@@ -45,7 +45,7 @@ export class YieldSuite extends RenderTest {
   @test({
     skip: 'glimmer',
   })
-  [`yield to "else"`]() {
+  'yield to "else"'() {
     this.render(
       {
         layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="else"}}{{/if}}',

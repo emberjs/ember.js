@@ -1,5 +1,5 @@
 import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debug';
-import { Dict, Maybe, Op, Option, RuntimeOp } from '@glimmer/interfaces';
+import { type Dict, type Maybe, Op, type Option, type RuntimeOp } from '@glimmer/interfaces';
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { valueForRef } from '@glimmer/reference';
 import { assert, fillNulls, LOCAL_LOGGER, unwrap } from '@glimmer/util';
@@ -7,8 +7,8 @@ import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
 
 import { isScopeReference } from './scope';
 import { CONSTANTS, DESTROYABLE_STACK, INNER_VM, STACKS } from './symbols';
-import { LowLevelVM, VM } from './vm';
-import { InternalVM } from './vm/append';
+import { type LowLevelVM, type VM } from './vm';
+import { type InternalVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
 
 export interface OpcodeJSON {

@@ -1,7 +1,5 @@
-import { guardArray } from '@glimmer/integration-tests';
-
-import { AST, preprocess as parse } from '..';
-import { SourceLocation } from '../lib/v1/api';
+import { type AST, preprocess as parse } from '@glimmer/syntax';
+import { guardArray } from '@glimmer/test-utils';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
 
@@ -29,7 +27,7 @@ function locEqual(
   endColumn: number,
   message = JSON.stringify(node)
 ) {
-  let expected: SourceLocation = {
+  let expected: AST.SourceLocation = {
     start: { line: startLine, column: startColumn },
     end: { line: endLine, column: endColumn },
   };

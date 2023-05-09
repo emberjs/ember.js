@@ -1,9 +1,9 @@
 import { CurriedType } from '@glimmer/interfaces';
-import { ASTv2, generateSyntaxError, SourceSlice, SourceSpan } from '@glimmer/syntax';
+import { ASTv2, generateSyntaxError, type SourceSlice, SourceSpan } from '@glimmer/syntax';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import { NormalizationState } from '../context';
+import { type NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { toAppend } from './utils/call-to-append';

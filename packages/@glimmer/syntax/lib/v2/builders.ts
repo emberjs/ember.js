@@ -2,9 +2,9 @@ import type { PresentArray } from '@glimmer/interfaces';
 import { assert, assertPresentArray, assign } from '@glimmer/util';
 
 import { SourceSlice } from '../source/slice';
-import { SourceSpan } from '../source/span';
+import { type SourceSpan } from '../source/span';
 import { SpanList } from '../source/span-list';
-import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from '../symbol-table';
+import { type BlockSymbolTable, type ProgramSymbolTable, type SymbolTable } from '../symbol-table';
 import * as ASTv2 from './api';
 
 export interface CallParts {

@@ -1,31 +1,31 @@
-import { PresentArray } from '@glimmer/interfaces';
+import { type PresentArray } from '@glimmer/interfaces';
 import { asPresentArray, assert, assign, isPresentArray } from '@glimmer/util';
 
 import Printer from '../generation/printer';
 import {
-  PrecompileOptions,
-  PrecompileOptionsWithLexicalScope,
+  type PrecompileOptions,
+  type PrecompileOptionsWithLexicalScope,
   preprocess,
 } from '../parser/tokenizer-event-handlers';
-import { SourceLocation } from '../source/location';
+import { type SourceLocation } from '../source/location';
 import { SourceSlice } from '../source/slice';
-import { Source } from '../source/source';
-import { SourceSpan } from '../source/span';
+import { type Source } from '../source/source';
+import { type SourceSpan } from '../source/span';
 import { SpanList } from '../source/span-list';
-import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from '../symbol-table';
+import { type BlockSymbolTable, type ProgramSymbolTable, SymbolTable } from '../symbol-table';
 import { generateSyntaxError } from '../syntax-error';
 import { isLowerCase, isUpperCase } from '../utils';
-import * as ASTv1 from '../v1/api';
+import type * as ASTv1 from '../v1/api';
 import b from '../v1/parser-builders';
 import * as ASTv2 from './api';
-import { BuildElement, Builder, CallParts } from './builders';
+import { type BuildElement, Builder, type CallParts } from './builders';
 import {
   AppendSyntaxContext,
   AttrValueSyntaxContext,
   BlockSyntaxContext,
   ComponentSyntaxContext,
   ModifierSyntaxContext,
-  Resolution,
+  type Resolution,
   SexpSyntaxContext,
 } from './loose-resolution';
 

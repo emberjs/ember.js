@@ -9,7 +9,7 @@ import type {
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
-import { ConcreteBounds, NewElementBuilder, RemoteLiveBlock } from '@glimmer/runtime';
+import { ConcreteBounds, NewElementBuilder, type RemoteLiveBlock } from '@glimmer/runtime';
 
 const TEXT_NODE = 3;
 

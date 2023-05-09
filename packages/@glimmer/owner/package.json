@@ -6,5 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "@glimmer/util": "workspace:^"
+  },
+  "devDependencies": {
+    "@glimmer/local-debug-flags": "workspace:^"
   }
 }

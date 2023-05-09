@@ -1,4 +1,4 @@
-import * as ASTv1 from '../v1/api';
+import type * as ASTv1 from '../v1/api';
 
 const enum Char {
   NBSP = 0xa0,

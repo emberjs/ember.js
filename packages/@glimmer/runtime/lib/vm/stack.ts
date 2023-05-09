@@ -1,8 +1,8 @@
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $sp, MachineRegister } from '@glimmer/vm';
+import { $fp, $sp, type MachineRegister } from '@glimmer/vm';
 
 import { REGISTERS } from '../symbols';
-import { initializeRegistersWithSP, LowLevelRegisters } from './low-level';
+import { initializeRegistersWithSP, type LowLevelRegisters } from './low-level';
 
 export interface EvaluationStack {
   [REGISTERS]: LowLevelRegisters;

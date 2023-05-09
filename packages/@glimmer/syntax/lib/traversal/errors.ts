@@ -1,6 +1,6 @@
-import { Option } from '@glimmer/interfaces';
+import { type Option } from '@glimmer/interfaces';
 
-import * as ASTv1 from '../v1/api';
+import type * as ASTv1 from '../v1/api';
 
 export interface TraversalError extends Error {
   constructor: TraversalErrorConstructor;

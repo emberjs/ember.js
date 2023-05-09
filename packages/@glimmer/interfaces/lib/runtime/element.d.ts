@@ -1,5 +1,5 @@
-import { Option } from '../core';
-import { Reference } from '../references';
+import { type Option } from '../core';
+import { type Reference } from '../references';
 
 export interface ElementOperations {
   setAttribute(name: string, value: Reference, trusting: boolean, namespace: Option<string>): void;

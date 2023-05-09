@@ -1,14 +1,14 @@
 import {
-  CompileTimeCompilationContext,
-  Dict,
-  ResolvedComponentDefinition,
-  RuntimeArtifacts,
-  RuntimeResolver,
-  SimpleElement,
+  type CompileTimeCompilationContext,
+  type Dict,
+  type ResolvedComponentDefinition,
+  type RuntimeArtifacts,
+  type RuntimeResolver,
+  type SimpleElement,
 } from '@glimmer/interfaces';
 import { NewElementBuilder, renderComponent, renderSync, runtimeContext } from '@glimmer/runtime';
 
-import { UpdateBenchmark } from '../interfaces';
+import { type UpdateBenchmark } from '../interfaces';
 import createEnvDelegate, { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
 

@@ -1,4 +1,4 @@
-import { Option } from './core';
+import { type Option } from './core';
 
 export type ConstantReference = 0;
 export type ComputeReference = 1;

@@ -1,11 +1,11 @@
-import { SexpOpcodes, WellKnownAttrName, WireFormat } from '@glimmer/interfaces';
+import { SexpOpcodes, type WellKnownAttrName, type WireFormat } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { exhausted, LOCAL_LOGGER } from '@glimmer/util';
 
-import { OptionalList } from '../../shared/list';
+import { type OptionalList } from '../../shared/list';
 import { deflateAttrName, deflateTagName } from '../../utils';
 import { EXPR } from './expressions';
-import * as mir from './mir';
+import type * as mir from './mir';
 
 class WireStatements<S extends WireFormat.Statement = WireFormat.Statement> {
   constructor(private statements: readonly S[]) {}

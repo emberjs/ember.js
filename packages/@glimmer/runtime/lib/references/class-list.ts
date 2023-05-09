@@ -1,4 +1,4 @@
-import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
+import { createComputeRef, type Reference, valueForRef } from '@glimmer/reference';
 
 import { normalizeStringValue } from '../dom/normalize';
 

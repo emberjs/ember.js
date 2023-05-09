@@ -1,5 +1,5 @@
-import { Dict, Maybe } from '@glimmer/interfaces';
-import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
+import { type Dict, type Maybe } from '@glimmer/interfaces';
+import { createComputeRef, type Reference, valueForRef } from '@glimmer/reference';
 import { enumerate } from '@glimmer/util';
 
 export function createConcatRef(partsRefs: Reference[]) {

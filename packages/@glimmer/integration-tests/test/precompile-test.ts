@@ -1,9 +1,9 @@
 import { precompile } from '@glimmer/compiler';
-import { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
+import { type SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import {
   templateFactory,
-  TemplateFactoryWithIdAndMeta,
-  TemplateWithIdAndReferrer,
+  type TemplateFactoryWithIdAndMeta,
+  type TemplateWithIdAndReferrer,
 } from '@glimmer/opcode-compiler';
 import { unwrapTemplate } from '@glimmer/util';
 

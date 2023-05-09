@@ -1,7 +1,7 @@
-import { Dict } from '@glimmer/interfaces';
+import { type Dict } from '@glimmer/interfaces';
 import { keys } from '@glimmer/util';
 
-import { ComponentTestMeta } from '../test-decorator';
+import { type ComponentTestMeta } from '../test-decorator';
 
 export function test(meta: ComponentTestMeta): MethodDecorator;
 export function test<T>(

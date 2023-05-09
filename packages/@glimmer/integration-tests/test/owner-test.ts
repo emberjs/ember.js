@@ -1,12 +1,12 @@
 import {
-  InternalComponentCapabilities,
-  Owner,
-  ResolvedComponentDefinition,
-  WithCreateInstance,
-  WithSubOwner,
+  type InternalComponentCapabilities,
+  type Owner,
+  type ResolvedComponentDefinition,
+  type WithCreateInstance,
+  type WithSubOwner,
 } from '@glimmer/interfaces';
 import { setInternalComponentManager } from '@glimmer/manager';
-import { NULL_REFERENCE, Reference } from '@glimmer/reference';
+import { NULL_REFERENCE, type Reference } from '@glimmer/reference';
 
 import {
   createTemplate,
@@ -14,6 +14,7 @@ import {
   EmberishCurlyComponent,
   GlimmerishComponent,
   JitRenderDelegate,
+  type RenderDelegateOptions,
   RenderTest,
   suite,
   test,
@@ -29,7 +30,12 @@ class OwnerJitRuntimeResolver extends TestJitRuntimeResolver {
 }
 
 class OwnerJitRenderDelegate extends JitRenderDelegate {
-  protected override resolver = new OwnerJitRuntimeResolver(this.registry);
+  constructor(options?: RenderDelegateOptions) {
+    super({
+      ...options,
+      resolver: (registry) => new OwnerJitRuntimeResolver(registry),
+    });
+  }
 }
 
 const CAPABILITIES = {

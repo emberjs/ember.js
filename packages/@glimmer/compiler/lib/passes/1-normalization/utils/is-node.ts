@@ -1,5 +1,5 @@
-import { PresentArray } from '@glimmer/interfaces';
-import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
+import { type PresentArray } from '@glimmer/interfaces';
+import { ASTv2, generateSyntaxError, type SourceSlice } from '@glimmer/syntax';
 import { unreachable } from '@glimmer/util';
 
 export type HasPath<Node extends ASTv2.CallNode = ASTv2.CallNode> = Node & {

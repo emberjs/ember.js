@@ -1,17 +1,16 @@
-import { DEBUG } from '@glimmer/env';
 import {
-  CompileTimeConstants,
-  CompileTimeResolver,
-  ContainingMetadata,
-  Expressions,
-  Owner,
-  ResolutionTimeConstants,
-  ResolveComponentOp,
-  ResolveComponentOrHelperOp,
-  ResolveHelperOp,
-  ResolveModifierOp,
-  ResolveOptionalComponentOrHelperOp,
-  ResolveOptionalHelperOp,
+  type CompileTimeConstants,
+  type CompileTimeResolver,
+  type ContainingMetadata,
+  type Expressions,
+  type Owner,
+  type ResolutionTimeConstants,
+  type ResolveComponentOp,
+  type ResolveComponentOrHelperOp,
+  type ResolveHelperOp,
+  type ResolveModifierOp,
+  type ResolveOptionalComponentOrHelperOp,
+  type ResolveOptionalHelperOp,
   SexpOpcodes,
 } from '@glimmer/interfaces';
 import { assert, debugToString, expect, unwrap } from '@glimmer/util';
@@ -68,7 +67,7 @@ interface ResolvedContainingMetadata extends ContainingMetadata {
 }
 
 function assertResolverInvariants(meta: ContainingMetadata): ResolvedContainingMetadata {
-  if (DEBUG) {
+  if (import.meta.env.DEV) {
     if (!meta.upvars) {
       throw new Error(
         'Attempted to resolve a component, helper, or modifier, but no free vars were found'
@@ -100,7 +99,7 @@ export function resolveComponent(
 
   let type = expr[0];
 
-  if (DEBUG && expr[0] === SexpOpcodes.GetStrictKeyword) {
+  if (import.meta.env.DEV && expr[0] === SexpOpcodes.GetStrictKeyword) {
     throw new Error(
       `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
         meta.upvars![expr[1]]
@@ -126,7 +125,7 @@ export function resolveComponent(
     let name = unwrap(upvars[expr[1]]);
     let definition = resolver.lookupComponent(name, owner)!;
 
-    if (DEBUG && (typeof definition !== 'object' || definition === null)) {
+    if (import.meta.env.DEV && (typeof definition !== 'object' || definition === null)) {
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
       );
@@ -167,7 +166,7 @@ export function resolveHelper(
     let name = unwrap(upvars[expr[1]]);
     let helper = resolver.lookupHelper(name, owner!)!;
 
-    if (DEBUG && helper === null) {
+    if (import.meta.env.DEV && helper === null) {
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a helper, but nothing was found.`
       );
@@ -204,7 +203,7 @@ export function resolveModifier(
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver.lookupBuiltInModifier(name);
 
-    if (DEBUG && modifier === null) {
+    if (import.meta.env.DEV && modifier === null) {
       throw new Error(
         `Attempted to resolve a modifier in a strict mode template, but it was not in scope: ${name}`
       );
@@ -216,7 +215,7 @@ export function resolveModifier(
     let name = unwrap(upvars[expr[1]]);
     let modifier = resolver.lookupModifier(name, owner)!;
 
-    if (DEBUG && modifier === null) {
+    if (import.meta.env.DEV && modifier === null) {
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
       );
@@ -261,7 +260,7 @@ export function resolveComponentOrHelper(
 
     let helper = constants.helper(definition as object, null, true);
 
-    if (DEBUG && helper === null) {
+    if (import.meta.env.DEV && helper === null) {
       throw new Error(
         `Attempted to use a value as either a component or helper, but it did not have a component manager or helper manager associated with it. The value was: ${debugToString!(
           definition
@@ -291,7 +290,7 @@ export function resolveComponentOrHelper(
     } else {
       let helper = resolver.lookupHelper(name, owner);
 
-      if (DEBUG && helper === null) {
+      if (import.meta.env.DEV && helper === null) {
         throw new Error(
           `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
         );
@@ -410,7 +409,7 @@ function lookupBuiltInHelper(
   let name = unwrap(upvars[expr[1]]);
   let helper = resolver.lookupBuiltInHelper(name);
 
-  if (DEBUG && helper === null) {
+  if (import.meta.env.DEV && helper === null) {
     // Keyword helper did not exist, which means that we're attempting to use a
     // value of some kind that is not in scope
     throw new Error(

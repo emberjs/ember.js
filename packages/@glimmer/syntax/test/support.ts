@@ -1,6 +1,5 @@
+import { type AST, preprocess as parse, type PreprocessOptions } from '@glimmer/syntax';
 import { entries } from '@glimmer/util';
-
-import { AST, preprocess as parse, PreprocessOptions } from '..';
 
 function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.Node> {
   return normalizeValue(obj);
@@ -28,9 +27,9 @@ type FromEntries<T extends [PropertyKey, unknown][]> = {
 };
 
 function fromEntries<T extends [PropertyKey, unknown][]>(entries: T): FromEntries<T> {
-  let out: any = {};
+  const out: any = {};
 
-  for (let [key, value] of entries) {
+  for (const [key, value] of entries) {
     out[key as string] = value;
   }
 
