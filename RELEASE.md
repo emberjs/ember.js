@@ -41,7 +41,7 @@
 1. Go to [https://github.com/emberjs/ember.js/releases](https://github.com/emberjs/ember.js/releases)
 1. Click on the most recent tag (2.5.0-beta.2), and then click "Edit"
 1. Start with `### Changelog` and copy/paste the changelog into the box
-1. Make the title `Ember 2.5.0-beta.2` and check "This is a prerelease" for betas
+1. Make the title `Ember 2.5.0-beta.2` and check "This is a pre-release" for betas
 1. Update [builds page](https://github.com/ember-learn/builds/tree/master/app/fixtures/ember)
 1. Deploy
 
