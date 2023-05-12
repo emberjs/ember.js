@@ -1,5 +1,5 @@
 import { check } from '@glimmer/debug';
-import { type CapturedArguments } from '@glimmer/interfaces';
+import type { CapturedArguments } from "@glimmer/interfaces";
 import {
   createComputeRef,
   isInvokableRef,

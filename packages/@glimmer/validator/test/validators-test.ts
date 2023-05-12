@@ -1,5 +1,5 @@
 import { testOverrideGlobalContext } from '@glimmer/global-context';
-import { type UpdatableTag } from '@glimmer/interfaces';
+import type { UpdatableTag } from '@glimmer/interfaces';
 
 import {
   ALLOW_CYCLES,
@@ -14,7 +14,7 @@ import {
   validateTag,
   valueForTag,
   VOLATILE_TAG,
-} from '..';
+} from '@glimmer/validator';
 import { module, test } from './-utils';
 
 function unwrap<T>(value: T | null | undefined): T {
@@ -41,10 +41,9 @@ module('@glimmer/validator: validators', () => {
     });
 
     test('it calls scheduleRevalidate', (assert) => {
-      assert.expect(1);
-
       let originalContext = unwrap(testOverrideGlobalContext)({
         scheduleRevalidate() {
+          assert.step('scheduleRevalidate');
           assert.ok(true, 'called');
         },
       });
@@ -56,6 +55,8 @@ module('@glimmer/validator: validators', () => {
       } finally {
         unwrap(testOverrideGlobalContext)(originalContext);
       }
+
+      assert.verifySteps(['scheduleRevalidate']);
     });
 
     if (import.meta.env.DEV) {
@@ -65,7 +66,7 @@ module('@glimmer/validator: validators', () => {
 
         assert.throws(
           () => updateTag(tag as unknown as UpdatableTag, subtag),
-          /Error: Attempted to update a tag that was not updatable/
+          /Error: Attempted to update a tag that was not updatable/u
         );
       });
     }
@@ -203,7 +204,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => dirtyTag(combined),
-          /Error: Attempted to dirty a tag that was not dirtyable/
+          /Error: Attempted to dirty a tag that was not dirtyable/u
         );
       });
 
@@ -216,7 +217,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => updateTag(combined, tag1),
-          /Error: Attempted to update a tag that was not updatable/
+          /Error: Attempted to update a tag that was not updatable/u
         );
       });
     }
@@ -228,7 +229,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => dirtyTag(CONSTANT_TAG),
-          /Error: Attempted to dirty a tag that was not dirtyable/
+          /Error: Attempted to dirty a tag that was not dirtyable/u
         );
       });
 
@@ -238,7 +239,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => updateTag(CONSTANT_TAG, subtag),
-          /Error: Attempted to update a tag that was not updatable/
+          /Error: Attempted to update a tag that was not updatable/u
         );
       });
     }
@@ -266,7 +267,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => dirtyTag(VOLATILE_TAG),
-          /Error: Attempted to dirty a tag that was not dirtyable/
+          /Error: Attempted to dirty a tag that was not dirtyable/u
         );
       });
 
@@ -276,7 +277,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => updateTag(VOLATILE_TAG, subtag),
-          /Error: Attempted to update a tag that was not updatable/
+          /Error: Attempted to update a tag that was not updatable/u
         );
       });
     }
@@ -311,7 +312,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => dirtyTag(CURRENT_TAG),
-          /Error: Attempted to dirty a tag that was not dirtyable/
+          /Error: Attempted to dirty a tag that was not dirtyable/u
         );
       });
 
@@ -321,7 +322,7 @@ module('@glimmer/validator: validators', () => {
         assert.throws(
           // @ts-expect-error this is an error condition
           () => updateTag(CURRENT_TAG, subtag),
-          /Error: Attempted to update a tag that was not updatable/
+          /Error: Attempted to update a tag that was not updatable/u
         );
       });
     }

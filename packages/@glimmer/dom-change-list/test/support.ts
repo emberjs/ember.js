@@ -1,12 +1,12 @@
-import { type DOMTreeConstruction, type TreeBuilder } from '@glimmer/dom-change-list';
-import {
-  type Namespace,
-  type NodeTokens,
-  type Option,
-  type PresentArray,
-  type SimpleAttr,
-  type SimpleDocumentFragment,
-  type SimpleElement,
+import type { DOMTreeConstruction, TreeBuilder } from '@glimmer/dom-change-list';
+import type {
+  Namespace,
+  NodeTokens,
+  Nullable,
+  PresentArray,
+  SimpleAttr,
+  SimpleDocumentFragment,
+  SimpleElement,
 } from '@glimmer/interfaces';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, NS_XLINK, TEXT_NODE } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
@@ -29,7 +29,7 @@ export function toHTMLNS(parent: SimpleElement | SimpleDocumentFragment) {
 class NamespacedHTMLSerializer extends Serializer {
   override openTag(element: SimpleElement): string {
     if (element.namespaceURI === NS_SVG) {
-      return '<svg:' + element.tagName.toLowerCase() + this.attributes(element.attributes) + '>';
+      return `<svg:${element.tagName.toLowerCase()}${this.attributes(element.attributes)}>`;
     } else {
       return super.openTag(element);
     }
@@ -37,14 +37,14 @@ class NamespacedHTMLSerializer extends Serializer {
 
   override closeTag(element: SimpleElement): string {
     if (element.namespaceURI === NS_SVG) {
-      return '</svg:' + element.tagName.toLowerCase() + '>';
+      return `</svg:${element.tagName.toLowerCase()}>`;
     } else {
       return super.closeTag(element);
     }
   }
 
   override attr(original: SimpleAttr): string {
-    let attr: { name: string; value: Option<string>; specified: boolean };
+    let attr: { name: string; value: Nullable<string>; specified: boolean };
     if (original.namespaceURI === NS_XLINK) {
       attr = {
         name: `xlink:${original.name}`,

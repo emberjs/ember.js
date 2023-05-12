@@ -5,10 +5,10 @@ import {
   CheckSafeString,
   CheckString,
 } from '@glimmer/debug';
-import { ContentType, CurriedType, Op } from '@glimmer/interfaces';
 import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
 import { isObject } from '@glimmer/util';
+import { ContentType, CurriedType, Op } from '@glimmer/vm';
 
 import { isCurriedType } from '../../curried-value';
 import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';

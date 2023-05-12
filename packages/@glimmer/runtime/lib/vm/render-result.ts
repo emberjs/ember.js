@@ -1,15 +1,15 @@
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
-import {
-  type Environment,
-  type LiveBlock,
-  type RenderResult,
-  type SimpleElement,
-  type SimpleNode,
-  type UpdatingOpcode,
+import type {
+  Environment,
+  LiveBlock,
+  RenderResult,
+  SimpleElement,
+  SimpleNode,
+  UpdatingOpcode,
 } from '@glimmer/interfaces';
 
 import { clear } from '../bounds';
-import UpdatingVMImpl from './update';
+import { UpdatingVM } from './update';
 
 export default class RenderResultImpl implements RenderResult {
   constructor(
@@ -24,7 +24,7 @@ export default class RenderResultImpl implements RenderResult {
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
     let { env, updating } = this;
-    let vm = new UpdatingVMImpl(env, { alwaysRevalidate });
+    let vm = new UpdatingVM(env, { alwaysRevalidate });
     vm.execute(updating, this);
   }
 

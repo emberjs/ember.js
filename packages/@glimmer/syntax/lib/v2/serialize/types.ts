@@ -1,7 +1,7 @@
 import type { PresentArray } from '@glimmer/interfaces';
 
-import { type SerializedSourceSlice } from '../../source/slice';
-import { type SerializedSourceSpan } from '../../source/span';
+import type { SerializedSourceSlice } from '../../source/slice';
+import type { SerializedSourceSpan } from '../../source/span';
 import type * as ASTv2 from '../api';
 
 export interface SerializedBaseNode {

@@ -1,17 +1,18 @@
-import { CurriedType } from '@glimmer/interfaces';
+import type { CurriedType } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError } from '@glimmer/syntax';
+import { CurriedTypes } from '@glimmer/vm';
 
 import { Err, Ok, Result } from '../../../../shared/result';
 import * as mir from '../../../2-encoding/mir';
-import { type NormalizationState } from '../../context';
+import type { NormalizationState } from '../../context';
 import { VISIT_EXPRS } from '../../visitors/expressions';
-import { type KeywordDelegate } from '../impl';
+import type { KeywordDelegate } from '../impl';
 
 const CurriedTypeToReadableType = {
-  [CurriedType.Component]: 'component',
-  [CurriedType.Helper]: 'helper',
-  [CurriedType.Modifier]: 'modifier',
-};
+  [CurriedTypes.Component]: 'component',
+  [CurriedTypes.Helper]: 'helper',
+  [CurriedTypes.Modifier]: 'modifier',
+} as const;
 
 export function assertCurryKeyword(curriedType: CurriedType) {
   return (
@@ -22,7 +23,7 @@ export function assertCurryKeyword(curriedType: CurriedType) {
     args: ASTv2.Args;
   }> => {
     let readableType = CurriedTypeToReadableType[curriedType];
-    let stringsAllowed = curriedType === CurriedType.Component;
+    let stringsAllowed = curriedType === CurriedTypes.Component;
 
     let { args } = node;
 

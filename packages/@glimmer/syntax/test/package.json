@@ -3,9 +3,9 @@
   "name": "@glimmer-test/syntax",
   "dependencies": {
     "@glimmer/syntax": "workspace:^",
-    "@glimmer/integration-tests": "workspace:^",
+    "@glimmer-workspace/integration-tests": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/util": "workspace:^",
-    "@glimmer/test-utils": "workspace:^"
+    "@glimmer-workspace/test-utils": "workspace:^"
   }
 }

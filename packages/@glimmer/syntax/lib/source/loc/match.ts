@@ -1,12 +1,7 @@
 import { assert, isPresentArray } from '@glimmer/util';
 
 import { OffsetKind } from './kinds';
-import {
-  type CharPosition,
-  type HbsPosition,
-  type InvisiblePosition,
-  type PositionData,
-} from './offset';
+import type { CharPosition, HbsPosition, InvisiblePosition, PositionData } from './offset';
 
 /**
  * This file implements the DSL used by span and offset in places where they need to exhaustively
@@ -182,7 +177,7 @@ class Matcher<Out, M extends Matches = Matches> {
   when(
     left: Pattern,
     right: Pattern,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     callback: (left: any, right: any) => Out
   ): Matcher<Out, Matches> | ExhaustiveMatcher<Out> {
     this._whens.get(left, () => new When()).add(right, callback);

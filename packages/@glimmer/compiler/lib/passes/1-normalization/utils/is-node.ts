@@ -1,4 +1,4 @@
-import { type PresentArray } from '@glimmer/interfaces';
+import type { PresentArray } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError, type SourceSlice } from '@glimmer/syntax';
 import { unreachable } from '@glimmer/util';
 

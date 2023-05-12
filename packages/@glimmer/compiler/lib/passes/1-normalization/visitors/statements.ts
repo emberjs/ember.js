@@ -3,7 +3,7 @@ import { ASTv2 } from '@glimmer/syntax';
 import { OptionalList } from '../../../shared/list';
 import { Ok, Result, ResultArray } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import { type NormalizationState } from '../context';
+import type { NormalizationState } from '../context';
 import { BLOCK_KEYWORDS } from '../keywords';
 import { APPEND_KEYWORDS } from '../keywords/append';
 import { ClassifiedElement, hasDynamicFeatures } from './element/classified';

@@ -1,12 +1,12 @@
-import {
-  type Bounds,
-  type Dict,
-  type Option,
-  type SimpleComment,
-  type SimpleDocument,
-  type SimpleElement,
-  type SimpleNode,
-  type SimpleText,
+import type {
+  Bounds,
+  Dict,
+  Nullable,
+  SimpleComment,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
 } from '@glimmer/interfaces';
 import { expect, INSERT_BEFORE_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/util';
 
@@ -62,11 +62,11 @@ export class DOMOperations {
     }
   }
 
-  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Option<SimpleNode>) {
+  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Nullable<SimpleNode>) {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
+  insertHTMLBefore(parent: SimpleElement, nextSibling: Nullable<SimpleNode>, html: string): Bounds {
     if (html === '') {
       const comment = this.createComment('');
       parent.insertBefore(comment, nextSibling);
@@ -112,14 +112,14 @@ export class DOMOperations {
 export function moveNodesBefore(
   source: SimpleNode,
   target: SimpleElement,
-  nextSibling: Option<SimpleNode>
+  nextSibling: Nullable<SimpleNode>
 ): Bounds {
   const first = expect(source.firstChild, 'source is empty');
   let last: SimpleNode = first;
-  let current: Option<SimpleNode> = first;
+  let current: Nullable<SimpleNode> = first;
 
   while (current) {
-    const next: Option<SimpleNode> = current.nextSibling;
+    const next: Nullable<SimpleNode> = current.nextSibling;
 
     target.insertBefore(current, nextSibling);
 

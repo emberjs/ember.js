@@ -1,15 +1,15 @@
-import { type Option } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 import { assertPresentArray, assign, getFirst, getLast, isPresentArray } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 
 import print from '../generation/print';
 import { voidMap } from '../generation/printer';
-import { type Tag } from '../parser';
+import type { Tag } from '../parser';
 import * as src from '../source/api';
 import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
-import { type NodeVisitor } from '../traversal/visitor';
+import type { NodeVisitor } from '../traversal/visitor';
 import Walker from '../traversal/walker';
 import { appendChild, parseElementBlockParams } from '../utils';
 import type * as ASTv1 from '../v1/api';
@@ -337,7 +337,7 @@ interface HandlebarsParseOptions {
 }
 
 export interface TemplateIdFn {
-  (src: string): Option<string>;
+  (src: string): Nullable<string>;
 }
 
 export interface PrecompileOptions extends PreprocessOptions {
@@ -359,7 +359,7 @@ export interface PreprocessOptions {
     ast?: ASTPluginBuilder[];
   };
   parseOptions?: HandlebarsParseOptions;
-  customizeComponentName?(input: string): string;
+  customizeComponentName?: ((input: string) => string) | undefined;
 
   /**
     Useful for specifying a group of options together.

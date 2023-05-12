@@ -1,8 +1,19 @@
-import { SexpOpcodes, type WellKnownAttrName, type WireFormat } from '@glimmer/interfaces';
+import type {
+  AttrOpcode,
+  ComponentAttrOpcode,
+  DynamicAttrOpcode,
+  StaticAttrOpcode,
+  StaticComponentAttrOpcode,
+  TrustingComponentAttrOpcode,
+  TrustingDynamicAttrOpcode,
+  WellKnownAttrName,
+  WireFormat,
+} from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { exhausted, LOCAL_LOGGER } from '@glimmer/util';
+import { SexpOpcodes } from '@glimmer/wire-format';
 
-import { type OptionalList } from '../../shared/list';
+import type { OptionalList } from '../../shared/list';
 import { deflateAttrName, deflateTagName } from '../../utils';
 import { EXPR } from './expressions';
 import type * as mir from './mir';
@@ -262,10 +273,8 @@ function dynamicAttr({ name, value, namespace }: mir.DynamicAttr): DynamicAttrAr
   return out;
 }
 
-function staticAttrOp(kind: {
-  component: boolean;
-}): SexpOpcodes.StaticAttr | SexpOpcodes.StaticComponentAttr;
-function staticAttrOp(kind: { component: boolean }): WireFormat.AttrOp {
+function staticAttrOp(kind: { component: boolean }): StaticAttrOpcode | StaticComponentAttrOpcode;
+function staticAttrOp(kind: { component: boolean }): AttrOpcode {
   if (kind.component) {
     return SexpOpcodes.StaticComponentAttr;
   } else {
@@ -276,10 +285,10 @@ function staticAttrOp(kind: { component: boolean }): WireFormat.AttrOp {
 function dynamicAttrOp(
   kind: mir.AttrKind
 ):
-  | SexpOpcodes.TrustingComponentAttr
-  | SexpOpcodes.TrustingDynamicAttr
-  | SexpOpcodes.ComponentAttr
-  | SexpOpcodes.DynamicAttr {
+  | TrustingComponentAttrOpcode
+  | TrustingDynamicAttrOpcode
+  | ComponentAttrOpcode
+  | DynamicAttrOpcode {
   if (kind.component) {
     return kind.trusting ? SexpOpcodes.TrustingComponentAttr : SexpOpcodes.ComponentAttr;
   } else {

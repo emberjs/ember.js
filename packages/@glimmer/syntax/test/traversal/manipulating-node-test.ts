@@ -1,4 +1,4 @@
-import { guardArray } from '@glimmer/test-utils';
+import { guardArray } from '@glimmer-workspace/test-utils';
 
 import {
   type AST,
@@ -7,7 +7,7 @@ import {
   cannotReplaceNode,
   preprocess as parse,
   traverse,
-} from '../..';
+} from '@glimmer/syntax';
 import { astEqual } from '../support';
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');

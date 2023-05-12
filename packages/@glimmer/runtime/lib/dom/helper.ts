@@ -1,12 +1,9 @@
-import {
-  type AttrNamespace,
-  type ElementNamespace,
-  type GlimmerTreeChanges,
-  type GlimmerTreeConstruction,
-  type Option,
-  type SimpleDocument,
-  type SimpleElement,
-  type SimpleNode,
+import type {
+  GlimmerTreeChanges,
+  Nullable,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
 } from '@glimmer/interfaces';
 import { castToSimple, NS_SVG } from '@glimmer/util';
 
@@ -61,51 +58,18 @@ import { BLACKLIST_TABLE, DOMOperations } from './operations';
   'var',
 ].forEach((tag) => (BLACKLIST_TABLE[tag] = 1));
 
-const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
+const WHITESPACE =
+  /[\t\n\v\f\r \xA0\u{1680}\u{180e}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}]/u;
 
-const doc: Option<SimpleDocument> = typeof document === 'undefined' ? null : castToSimple(document);
+const doc: Nullable<SimpleDocument> =
+  typeof document === 'undefined' ? null : castToSimple(document);
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
 
-export namespace DOM {
-  export class TreeConstruction extends DOMOperations implements GlimmerTreeConstruction {
-    createElementNS(namespace: ElementNamespace, tag: string): SimpleElement {
-      return this.document.createElementNS(namespace, tag);
-    }
-
-    setAttribute(
-      element: SimpleElement,
-      name: string,
-      value: string,
-      namespace: Option<AttrNamespace> = null
-    ) {
-      if (namespace) {
-        element.setAttributeNS(namespace, name, value);
-      } else {
-        element.setAttribute(name, value);
-      }
-    }
-  }
-
-  let appliedTreeConstruction = TreeConstruction;
-  appliedTreeConstruction = applyTextNodeMergingFix(
-    doc,
-    appliedTreeConstruction
-  ) as typeof TreeConstruction;
-  appliedTreeConstruction = applySVGInnerHTMLFix(
-    doc,
-    appliedTreeConstruction,
-    NS_SVG
-  ) as typeof TreeConstruction;
-
-  export const DOMTreeConstruction = appliedTreeConstruction;
-  export type DOMTreeConstruction = TreeConstruction;
-}
-
 export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges {
-  protected namespace: Option<string>;
+  protected namespace: Nullable<string>;
 
   constructor(protected override document: SimpleDocument) {
     super(document);
@@ -131,5 +95,4 @@ helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChangesImpl;
 helper = applySVGInnerHTMLFix(doc, helper, NS_SVG) as typeof DOMChangesImpl;
 
 export const DOMChanges = helper;
-export const DOMTreeConstruction = DOM.DOMTreeConstruction;
-export type DOMTreeConstruction = DOM.DOMTreeConstruction;
+export { DOMTreeConstruction } from './api';

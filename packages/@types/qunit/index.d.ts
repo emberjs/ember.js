@@ -797,7 +797,7 @@ declare global {
      *
      * @param {string} Title of unit being tested
      */
-    skip(name: string, callback?: (assert: Assert) => void | Promise<void>): void;
+    skip: (name: string, callback?: (assert: Assert) => void | Promise<void>) => void;
 
     /**
      * Returns a single line string representing the stacktrace (call stack).

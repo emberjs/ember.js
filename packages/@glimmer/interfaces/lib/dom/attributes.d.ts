@@ -1,8 +1,8 @@
-import { type Maybe, type Option } from '../core';
-import { type ElementOperations, type Environment, type ModifierInstance } from '../runtime';
-import { type Stack } from '../stack';
-import { type Bounds, type Cursor } from './bounds';
-import { type GlimmerTreeChanges, type GlimmerTreeConstruction } from './changes';
+import type { Maybe, Nullable } from '../core';
+import type { ElementOperations, Environment, ModifierInstance } from '../runtime';
+import type { Stack } from '../stack';
+import type { Bounds, Cursor } from './bounds';
+import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes';
 import type {
   AttrNamespace,
   SimpleComment,
@@ -26,10 +26,10 @@ export interface SimpleLiveBlock extends LiveBlock {
   lastNode(): SimpleNode;
 }
 
-export interface RemoteLiveBlock extends SimpleLiveBlock {}
+export type RemoteLiveBlock = SimpleLiveBlock
 
 export interface UpdatableBlock extends SimpleLiveBlock {
-  reset(env: Environment): Option<SimpleNode>;
+  reset(env: Environment): Nullable<SimpleNode>;
 }
 
 export interface DOMStack {
@@ -37,11 +37,11 @@ export interface DOMStack {
     element: SimpleElement,
     guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Option<RemoteLiveBlock>;
+  ): Nullable<RemoteLiveBlock>;
   popRemoteElement(): void;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
-  flushElement(modifiers: Option<ModifierInstance[]>): void;
+  flushElement(modifiers: Nullable<ModifierInstance[]>): void;
   appendText(string: string): SimpleText;
   appendComment(string: string): SimpleComment;
 
@@ -50,15 +50,15 @@ export interface DOMStack {
   appendDynamicFragment(value: SimpleDocumentFragment): void;
   appendDynamicNode(value: SimpleNode): void;
 
-  setStaticAttribute(name: string, value: string, namespace: Option<string>): void;
+  setStaticAttribute(name: string, value: string, namespace: Nullable<string>): void;
   setDynamicAttribute(
     name: string,
     value: unknown,
     isTrusting: boolean,
-    namespace: Option<string>
+    namespace: Nullable<string>
   ): AttributeOperation;
 
-  closeElement(): Option<ModifierInstance[]>;
+  closeElement(): Nullable<ModifierInstance[]>;
 }
 
 export interface TreeOperations {
@@ -70,7 +70,7 @@ export interface TreeOperations {
   __appendComment(string: string): SimpleComment;
   __appendNode(node: SimpleNode): SimpleNode;
   __appendHTML(html: string): Bounds;
-  __setAttribute(name: string, value: string, namespace: Option<string>): void;
+  __setAttribute(name: string, value: string, namespace: Nullable<string>): void;
   __setProperty(name: string, value: unknown): void;
 }
 
@@ -80,10 +80,10 @@ export type CursorStackSymbol = typeof CURSOR_STACK;
 export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
   [CURSOR_STACK]: Stack<Cursor>;
 
-  nextSibling: Option<SimpleNode>;
+  nextSibling: Nullable<SimpleNode>;
   dom: GlimmerTreeConstruction;
   updateOperations: GlimmerTreeChanges;
-  constructing: Option<SimpleElement>;
+  constructing: Nullable<SimpleElement>;
   element: SimpleElement;
 
   hasBlocks: boolean;
@@ -100,7 +100,7 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
 export interface AttributeCursor {
   element: SimpleElement;
   name: string;
-  namespace: Option<AttrNamespace>;
+  namespace: Nullable<AttrNamespace>;
 }
 
 export interface AttributeOperation {

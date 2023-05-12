@@ -1,4 +1,4 @@
-import { type WireFormat } from '@glimmer/interfaces';
+import type { WireFormat } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 

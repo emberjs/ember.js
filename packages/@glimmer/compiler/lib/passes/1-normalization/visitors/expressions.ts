@@ -1,11 +1,11 @@
-import { type PresentArray } from '@glimmer/interfaces';
+import type { PresentArray } from '@glimmer/interfaces';
 import { ASTv2, KEYWORDS_TYPES } from '@glimmer/syntax';
 import { getLast, isPresentArray } from '@glimmer/util';
 
-import { type AnyOptionalList, type PresentList } from '../../../shared/list';
+import type { AnyOptionalList, PresentList } from '../../../shared/list';
 import { Ok, Result, ResultArray } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import { type NormalizationState } from '../context';
+import type { NormalizationState } from '../context';
 import { CALL_KEYWORDS } from '../keywords';
 import { hasPath } from '../utils/is-node';
 
@@ -18,7 +18,7 @@ export class NormalizeExpressions {
         return this.Interpolate(node, state);
       case 'Path':
         return this.PathExpression(node);
-      case 'Call':
+      case 'Call': {
         let translated = CALL_KEYWORDS.translate(node, state);
 
         if (translated !== null) {
@@ -26,6 +26,7 @@ export class NormalizeExpressions {
         }
 
         return this.CallExpression(node, state);
+      }
       case 'DeprecatedCall':
         return this.DeprecaedCallExpression(node, state);
     }

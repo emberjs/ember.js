@@ -1,9 +1,8 @@
-// eslint-disable-next-line n/no-extraneous-import
-import { type Dict, type Option } from '../core';
-import { type Reference } from '../references';
-import { type CompilableBlock } from '../template';
-import { type BlockSymbolTable } from '../tier1/symbol-table';
-import { type Owner } from './owner';
+import type { Dict, Nullable } from '../core';
+import type { Reference } from '../references';
+import type { CompilableBlock } from '../template';
+import type { BlockSymbolTable } from '../tier1/symbol-table';
+import type { Owner } from './owner';
 
 export type Block = CompilableBlock | number;
 
@@ -18,20 +17,20 @@ export interface Scope {
 
   getSelf(): Reference;
   getSymbol(symbol: number): Reference;
-  getBlock(symbol: number): Option<ScopeBlock>;
-  getEvalScope(): Option<Dict<ScopeSlot>>;
-  getPartialMap(): Option<Dict<Reference>>;
+  getBlock(symbol: number): Nullable<ScopeBlock>;
+  getEvalScope(): Nullable<Dict<ScopeSlot>>;
+  getPartialMap(): Nullable<Dict<Reference>>;
   bind(symbol: number, value: ScopeSlot): void;
   bindSelf(self: Reference): void;
   bindSymbol(symbol: number, value: Reference): void;
-  bindBlock(symbol: number, value: Option<ScopeBlock>): void;
-  bindEvalScope(map: Option<Dict<ScopeSlot>>): void;
+  bindBlock(symbol: number, value: Nullable<ScopeBlock>): void;
+  bindEvalScope(map: Nullable<Dict<ScopeSlot>>): void;
   bindPartialMap(map: Dict<Reference>): void;
   child(): Scope;
 }
 
 export interface PartialScope extends Scope {
-  bindEvalScope(scope: Option<Dict<ScopeSlot>>): void;
+  bindEvalScope(scope: Nullable<Dict<ScopeSlot>>): void;
 }
 
 export interface DynamicScope {

@@ -1,4 +1,4 @@
-import { type Option } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 import { asPresentArray, assert, assign, expect, getLast, unwrap } from '@glimmer/util';
 import {
   EntityParser,
@@ -38,8 +38,8 @@ export abstract class Parser {
   protected elementStack: ASTv1.ParentNode[] = [];
   private lines: string[];
   readonly source: src.Source;
-  public currentAttribute: Option<Attribute> = null;
-  public currentNode: Option<
+  public currentAttribute: Nullable<Attribute> = null;
+  public currentNode: Nullable<
     Readonly<
       | ParserNodeBuilder<ASTv1.CommentStatement>
       | ASTv1.TextNode
@@ -55,7 +55,7 @@ export abstract class Parser {
     mode: 'precompile' | 'codemod' = 'precompile'
   ) {
     this.source = source;
-    this.lines = source.source.split(/(?:\r\n?|\n)/g);
+    this.lines = source.source.split(/\r\n?|\n/u);
     this.tokenizer = new EventedTokenizer(this, entityParser, mode);
   }
 

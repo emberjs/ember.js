@@ -1,15 +1,30 @@
 import { check, CheckNumber } from '@glimmer/debug';
-import {
-  type Capabilities,
-  type InternalComponentCapabilities,
+import type {
+  AttributeHookCapability,
+  Capabilities,
+  CapabilityMask,
+  CreateArgsCapability,
+  CreateCallerCapability,
+  CreateInstanceCapability,
+  DynamicLayoutCapability,
+  DynamicScopeCapability,
+  DynamicTagCapability,
+  ElementHookCapability,
+  Expand,
+  HasSubOwnerCapability,
   InternalComponentCapability,
-  type InternalComponentManager,
-  type WithCreateInstance,
-  type WithDynamicLayout,
-  type WithPrepareArgs,
-  type WithSubOwner,
-  type WithUpdateHook,
+  InternalComponentManager,
+  PrepareArgsCapability,
+  UpdateHookCapability,
+  WillDestroyCapability,
+  WithCreateInstance,
+  WithDynamicLayout,
+  WithPrepareArgs,
+  WithSubOwner,
+  WithUpdateHook,
+  WrappedCapability,
 } from '@glimmer/interfaces';
+import { InternalComponentCapabilities } from '@glimmer/vm';
 
 export const FROM_CAPABILITIES = import.meta.env.DEV ? new WeakSet() : undefined;
 
@@ -22,58 +37,80 @@ export function buildCapabilities<T extends object>(capabilities: T): T & Capabi
   return capabilities as T & Capabilities;
 }
 
+const EMPTY = InternalComponentCapabilities.Empty;
+
+type CapabilityOptions = Expand<{
+  [P in keyof Omit<typeof InternalComponentCapabilities, 'Empty'>]?: boolean | undefined;
+}>;
+
 /**
  * Converts a ComponentCapabilities object into a 32-bit integer representation.
  */
-export function capabilityFlagsFrom(
-  capabilities: InternalComponentCapabilities
+export function capabilityFlagsFrom(capabilities: CapabilityOptions): CapabilityMask {
+  return (EMPTY |
+    capability(capabilities, 'dynamicLayout') |
+    capability(capabilities, 'dynamicTag') |
+    capability(capabilities, 'prepareArgs') |
+    capability(capabilities, 'createArgs') |
+    capability(capabilities, 'attributeHook') |
+    capability(capabilities, 'elementHook') |
+    capability(capabilities, 'dynamicScope') |
+    capability(capabilities, 'createCaller') |
+    capability(capabilities, 'updateHook') |
+    capability(capabilities, 'createInstance') |
+    capability(capabilities, 'wrapped') |
+    capability(capabilities, 'willDestroy') |
+    capability(capabilities, 'hasSubOwner')) as CapabilityMask;
+}
+
+function capability(
+  capabilities: CapabilityOptions,
+  capability: keyof CapabilityOptions
 ): InternalComponentCapability {
-  return (
-    0 |
-    (capabilities.dynamicLayout ? InternalComponentCapability.DynamicLayout : 0) |
-    (capabilities.dynamicTag ? InternalComponentCapability.DynamicTag : 0) |
-    (capabilities.prepareArgs ? InternalComponentCapability.PrepareArgs : 0) |
-    (capabilities.createArgs ? InternalComponentCapability.CreateArgs : 0) |
-    (capabilities.attributeHook ? InternalComponentCapability.AttributeHook : 0) |
-    (capabilities.elementHook ? InternalComponentCapability.ElementHook : 0) |
-    (capabilities.dynamicScope ? InternalComponentCapability.DynamicScope : 0) |
-    (capabilities.createCaller ? InternalComponentCapability.CreateCaller : 0) |
-    (capabilities.updateHook ? InternalComponentCapability.UpdateHook : 0) |
-    (capabilities.createInstance ? InternalComponentCapability.CreateInstance : 0) |
-    (capabilities.wrapped ? InternalComponentCapability.Wrapped : 0) |
-    (capabilities.willDestroy ? InternalComponentCapability.WillDestroy : 0) |
-    (capabilities.hasSubOwner ? InternalComponentCapability.HasSubOwner : 0)
-  );
+  return capabilities[capability] ? InternalComponentCapabilities[capability] : EMPTY;
 }
 
-export interface InternalComponentCapabilityMap {
-  [InternalComponentCapability.DynamicLayout]: WithDynamicLayout;
-  [InternalComponentCapability.DynamicTag]: InternalComponentManager;
-  [InternalComponentCapability.PrepareArgs]: WithPrepareArgs;
-  [InternalComponentCapability.CreateArgs]: InternalComponentManager;
-  [InternalComponentCapability.AttributeHook]: InternalComponentManager;
-  [InternalComponentCapability.ElementHook]: InternalComponentManager;
-  [InternalComponentCapability.DynamicScope]: InternalComponentManager;
-  [InternalComponentCapability.CreateCaller]: InternalComponentManager;
-  [InternalComponentCapability.UpdateHook]: WithUpdateHook;
-  [InternalComponentCapability.CreateInstance]: WithCreateInstance;
-  [InternalComponentCapability.Wrapped]: InternalComponentManager;
-  [InternalComponentCapability.WillDestroy]: InternalComponentManager;
-  [InternalComponentCapability.HasSubOwner]: WithSubOwner;
-}
+export type InternalComponentCapabilityFor<C extends InternalComponentCapability> =
+  C extends DynamicLayoutCapability
+    ? WithDynamicLayout
+    : C extends DynamicTagCapability
+    ? InternalComponentManager
+    : C extends PrepareArgsCapability
+    ? WithPrepareArgs
+    : C extends CreateArgsCapability
+    ? InternalComponentManager
+    : C extends AttributeHookCapability
+    ? InternalComponentManager
+    : C extends ElementHookCapability
+    ? InternalComponentManager
+    : C extends DynamicScopeCapability
+    ? InternalComponentManager
+    : C extends CreateCallerCapability
+    ? InternalComponentManager
+    : C extends UpdateHookCapability
+    ? WithUpdateHook
+    : C extends CreateInstanceCapability
+    ? WithCreateInstance
+    : C extends WrappedCapability
+    ? InternalComponentManager
+    : C extends WillDestroyCapability
+    ? InternalComponentManager
+    : C extends HasSubOwnerCapability
+    ? WithSubOwner
+    : never;
 
-export function managerHasCapability<F extends keyof InternalComponentCapabilityMap>(
+export function managerHasCapability<F extends InternalComponentCapability>(
   _manager: InternalComponentManager,
-  capabilities: InternalComponentCapability,
+  capabilities: CapabilityMask,
   capability: F
-): _manager is InternalComponentCapabilityMap[F] {
+): _manager is InternalComponentCapabilityFor<F> {
   check(capabilities, CheckNumber);
   return !!(capabilities & capability);
 }
 
-export function hasCapability<F extends keyof InternalComponentCapabilityMap>(
-  capabilities: InternalComponentCapability,
-  capability: F
+export function hasCapability(
+  capabilities: CapabilityMask,
+  capability: InternalComponentCapability
 ): boolean {
   check(capabilities, CheckNumber);
   return !!(capabilities & capability);

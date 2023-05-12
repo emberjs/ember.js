@@ -1,5 +1,5 @@
 import { getPath, toIterator } from '@glimmer/global-context';
-import { type Dict, type Option } from '@glimmer/interfaces';
+import type { Dict, Nullable } from "@glimmer/interfaces";
 import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
@@ -18,7 +18,7 @@ export interface IterationItem<T, U> {
 
 export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
   isEmpty(): boolean;
-  next(): Option<V>;
+  next(): Nullable<V>;
 }
 
 export type OpaqueIterationItem = IterationItem<unknown, unknown>;
@@ -31,7 +31,7 @@ export interface IteratorDelegate {
 
 export interface IteratorReferenceEnvironment extends ReferenceEnvironment {
   getPath(obj: unknown, path: string): unknown;
-  toIterator(obj: unknown): Option<IteratorDelegate>;
+  toIterator(obj: unknown): Nullable<IteratorDelegate>;
 }
 
 type KeyFor = (item: unknown, index: unknown) => unknown;
@@ -231,7 +231,7 @@ class ArrayIterator implements OpaqueIterator {
     return this.current.kind === 'empty';
   }
 
-  next(): Option<IterationItem<unknown, number>> {
+  next(): Nullable<IterationItem<unknown, number>> {
     let value: unknown;
 
     let current = this.current;

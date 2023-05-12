@@ -1,12 +1,13 @@
-import {
+import type {
   CurriedType,
-  type Option,
-  type SerializedInlineBlock,
-  type SerializedTemplateBlock,
-  SexpOpcodes as Op,
-  type WireFormat,
+  Nullable,
+  SerializedInlineBlock,
+  SerializedTemplateBlock,
+  WireFormat,
 } from '@glimmer/interfaces';
 import { dict, exhausted } from '@glimmer/util';
+import { CurriedTypes } from '@glimmer/vm';
+import { SexpOpcodes as Op } from '@glimmer/wire-format';
 
 import { inflateAttrName, inflateTagName } from './utils';
 
@@ -267,28 +268,28 @@ export default class WireFormatDebugger {
 
   private formatCurryType(value: CurriedType) {
     switch (value) {
-      case CurriedType.Component:
+      case CurriedTypes.Component:
         return 'component';
-      case CurriedType.Helper:
+      case CurriedTypes.Helper:
         return 'helper';
-      case CurriedType.Modifier:
+      case CurriedTypes.Modifier:
         return 'modifier';
       default:
         throw exhausted(value);
     }
   }
 
-  private formatElementParams(opcodes: Option<WireFormat.ElementParameter[]>): Option<unknown[]> {
+  private formatElementParams(opcodes: Nullable<WireFormat.ElementParameter[]>): Nullable<unknown[]> {
     if (opcodes === null) return null;
     return opcodes.map((o) => this.formatOpcode(o));
   }
 
-  private formatParams(opcodes: Option<WireFormat.Expression[]>): Option<unknown[]> {
+  private formatParams(opcodes: Nullable<WireFormat.Expression[]>): Nullable<unknown[]> {
     if (opcodes === null) return null;
     return opcodes.map((o) => this.formatOpcode(o));
   }
 
-  private formatHash(hash: WireFormat.Core.Hash): Option<object> {
+  private formatHash(hash: WireFormat.Core.Hash): Nullable<object> {
     if (hash === null) return null;
 
     return hash[0].reduce((accum, key, index) => {
@@ -297,7 +298,7 @@ export default class WireFormatDebugger {
     }, dict());
   }
 
-  private formatBlocks(blocks: WireFormat.Core.Blocks): Option<object> {
+  private formatBlocks(blocks: WireFormat.Core.Blocks): Nullable<object> {
     if (blocks === null) return null;
 
     return blocks[0].reduce((accum, key, index) => {

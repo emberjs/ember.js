@@ -1,4 +1,4 @@
-import { type CapturedArguments } from '@glimmer/interfaces';
+import type { CapturedArguments } from "@glimmer/interfaces";
 import { createComputeRef, type Reference } from '@glimmer/reference';
 
 import { reifyPositional } from '../vm/arguments';

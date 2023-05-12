@@ -1,9 +1,9 @@
-import { CurriedType } from '@glimmer/interfaces';
 import { type ASTv2, generateSyntaxError } from '@glimmer/syntax';
+import { CurriedTypes } from '@glimmer/vm';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import { type NormalizationState } from '../context';
+import type { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { VISIT_STMTS } from '../visitors/statements';
 import { keywords } from './impl';
@@ -422,7 +422,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('component', {
-    assert: assertCurryKeyword(CurriedType.Component),
+    assert: assertCurryKeyword(CurriedTypes.Component),
 
     translate(
       { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },

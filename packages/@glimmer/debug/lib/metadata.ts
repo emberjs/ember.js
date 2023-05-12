@@ -1,4 +1,4 @@
-import { type Dict, type Option, type PresentArray } from '@glimmer/interfaces';
+import type { Dict, Nullable, PresentArray } from '@glimmer/interfaces';
 
 // TODO: How do these map onto constant and machine types?
 export const OPERAND_TYPES = [
@@ -36,7 +36,7 @@ export interface NormalizedMetadata {
   name: string;
   mnemonic: string;
   before: null;
-  stackChange: Option<number>;
+  stackChange: Nullable<number>;
   ops: OperandList;
   operands: number;
   check: boolean;
@@ -82,7 +82,7 @@ export function normalize(key: string, input: RawOperandMetadata): NormalizedMet
   };
 }
 
-function stackChange(stack?: Stack): Option<number> {
+function stackChange(stack?: Stack): Nullable<number> {
   if (stack === undefined) {
     return 0;
   }
@@ -121,10 +121,15 @@ function op(input: `${string}:${string}`): Operand {
   }
 }
 
+export interface NormalizedOpcodes {
+  readonly machine: Dict<NormalizedMetadata>;
+  readonly syscall: Dict<NormalizedMetadata>;
+}
+
 export function normalizeAll(parsed: {
   machine: Dict<RawOperandMetadata>;
   syscall: Dict<RawOperandMetadata>;
-}): { machine: Dict<NormalizedMetadata>; syscall: Dict<NormalizedMetadata> } {
+}): NormalizedOpcodes {
   let machine = normalizeParsed(parsed.machine);
   let syscall = normalizeParsed(parsed.syscall);
 
@@ -189,12 +194,13 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
     out += `${string}${dynamic}`;
   }
 
-  out = out.match(/^\s*?\n?([\s\S]*?)\n?\s*$/)![1] as string;
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
+  out = /^\s*?\n?([\s\S]*?)\s*$/u.exec(out)![1] as string;
 
   let min = 9007199254740991; // Number.MAX_SAFE_INTEGER isn't available on IE11
 
   for (let line of out.split('\n')) {
-    let leading = line.match(/^\s*/)![0].length;
+    let leading = /^\s*/u.exec(line)![0].length;
 
     min = Math.min(min, leading);
   }

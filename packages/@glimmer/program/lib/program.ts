@@ -1,14 +1,15 @@
-import {
-  type CompileTimeHeap,
-  type ResolutionTimeConstants,
-  type RuntimeConstants,
-  type RuntimeHeap,
-  type RuntimeProgram,
-  type SerializedHeap,
-  type StdLibOperand,
-} from '@glimmer/interfaces';
+import type {
+  CompileTimeHeap,
+  ResolutionTimeConstants,
+  RuntimeConstants,
+  RuntimeHeap,
+  RuntimeProgram,
+  SerializedHeap,
+  StdLibOperand,
+} from "@glimmer/interfaces";
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { expect, unwrap } from '@glimmer/util';
+import { MACHINE_MASK } from '@glimmer/vm';
 
 import { RuntimeOpImpl } from './opcode';
 
@@ -88,9 +89,17 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
     this.handleState = [];
   }
 
-  push(item: number): void {
+  pushRaw(value: number): void {
     this.sizeCheck();
-    this.heap[this.offset++] = item;
+    this.heap[this.offset++] = value;
+  }
+
+  pushOp(item: number): void {
+    this.pushRaw(item);
+  }
+
+  pushMachine(item: number): void {
+    this.pushRaw(item | MACHINE_MASK);
   }
 
   private sizeCheck() {

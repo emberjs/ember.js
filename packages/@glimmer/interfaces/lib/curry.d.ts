@@ -1,5 +1,5 @@
-export enum CurriedType {
-  Component = 0,
-  Helper = 1,
-  Modifier = 2,
-}
+export type CurriedComponent = 0;
+export type CurriedHelper = 1;
+export type CurriedModifier = 2;
+
+export type CurriedType = CurriedComponent | CurriedHelper | CurriedModifier;

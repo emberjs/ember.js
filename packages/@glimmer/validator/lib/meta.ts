@@ -1,6 +1,6 @@
-import { type ConstantTag, type UpdatableTag } from '@glimmer/interfaces';
+import type { ConstantTag, UpdatableTag } from "@glimmer/interfaces";
 
-import { assertTagNotConsumed } from './debug';
+import { debug } from './debug';
 import { type Indexable, unwrap } from './utils';
 import { createUpdatableTag, DIRTY_TAG } from './validators';
 
@@ -33,7 +33,7 @@ export function dirtyTagFor<T extends object>(
 
   if (propertyTag !== undefined) {
     if (import.meta.env.DEV) {
-      unwrap(assertTagNotConsumed)(propertyTag, obj, key);
+      unwrap(debug.assertTagNotConsumed)(propertyTag, obj, key);
     }
 
     DIRTY_TAG(propertyTag, true);

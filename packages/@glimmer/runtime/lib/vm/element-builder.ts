@@ -1,25 +1,25 @@
 import { destroy, registerDestructor } from '@glimmer/destroyable';
-import {
-  type AttrNamespace,
-  type Bounds,
-  type Cursor,
-  type CursorStackSymbol,
-  type ElementBuilder,
-  type ElementOperations,
-  type Environment,
-  type GlimmerTreeChanges,
-  type GlimmerTreeConstruction,
-  type LiveBlock,
-  type Maybe,
-  type ModifierInstance,
-  type Option,
-  type SimpleComment,
-  type SimpleDocumentFragment,
-  type SimpleElement,
-  type SimpleNode,
-  type SimpleText,
-  type UpdatableBlock,
-} from '@glimmer/interfaces';
+import type {
+  AttrNamespace,
+  Bounds,
+  Cursor,
+  CursorStackSymbol,
+  ElementBuilder,
+  ElementOperations,
+  Environment,
+  GlimmerTreeChanges,
+  GlimmerTreeConstruction,
+  LiveBlock,
+  Maybe,
+  ModifierInstance,
+  Nullable,
+  SimpleComment,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+  UpdatableBlock,
+} from "@glimmer/interfaces";
 import { assert, expect, Stack } from '@glimmer/util';
 
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
@@ -74,12 +74,12 @@ export const CURSOR_STACK: CursorStackSymbol = Symbol('CURSOR_STACK') as CursorS
 export class NewElementBuilder implements ElementBuilder {
   public dom: GlimmerTreeConstruction;
   public updateOperations: GlimmerTreeChanges;
-  public constructing: Option<SimpleElement> = null;
-  public operations: Option<ElementOperations> = null;
+  public constructing: Nullable<SimpleElement> = null;
+  public operations: Nullable<ElementOperations> = null;
   private env: Environment;
 
   [CURSOR_STACK] = new Stack<Cursor>();
-  private modifierStack = new Stack<Option<ModifierInstance[]>>();
+  private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
   private blockStack = new Stack<LiveBlock>();
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
@@ -96,7 +96,7 @@ export class NewElementBuilder implements ElementBuilder {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Option<SimpleNode>) {
+  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
     this.pushElement(parentNode, nextSibling);
 
     this.env = env;
@@ -117,7 +117,7 @@ export class NewElementBuilder implements ElementBuilder {
     return this[CURSOR_STACK].current!.element;
   }
 
-  get nextSibling(): Option<SimpleNode> {
+  get nextSibling(): Nullable<SimpleNode> {
     return this[CURSOR_STACK].current!.nextSibling;
   }
 
@@ -181,7 +181,7 @@ export class NewElementBuilder implements ElementBuilder {
     return this.dom.createElement(tag, this.element);
   }
 
-  flushElement(modifiers: Option<ModifierInstance[]>) {
+  flushElement(modifiers: Nullable<ModifierInstance[]>) {
     let parent = this.element;
     let element = expect(
       this.constructing,
@@ -202,7 +202,7 @@ export class NewElementBuilder implements ElementBuilder {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
-  closeElement(): Option<ModifierInstance[]> {
+  closeElement(): Nullable<ModifierInstance[]> {
     this.willCloseElement();
     this.popElement();
     return this.popModifiers();
@@ -212,7 +212,7 @@ export class NewElementBuilder implements ElementBuilder {
     element: SimpleElement,
     guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Option<RemoteLiveBlock> {
+  ): Nullable<RemoteLiveBlock> {
     return this.__pushRemoteElement(element, guid, insertBefore);
   }
 
@@ -220,7 +220,7 @@ export class NewElementBuilder implements ElementBuilder {
     element: SimpleElement,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Option<RemoteLiveBlock> {
+  ): Nullable<RemoteLiveBlock> {
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
@@ -243,11 +243,11 @@ export class NewElementBuilder implements ElementBuilder {
     this[CURSOR_STACK].push(new CursorImpl(element, nextSibling));
   }
 
-  private pushModifiers(modifiers: Option<ModifierInstance[]>): void {
+  private pushModifiers(modifiers: Nullable<ModifierInstance[]>): void {
     this.modifierStack.push(modifiers);
   }
 
-  private popModifiers(): Option<ModifierInstance[]> {
+  private popModifiers(): Nullable<ModifierInstance[]> {
     return this.modifierStack.pop();
   }
 
@@ -343,7 +343,7 @@ export class NewElementBuilder implements ElementBuilder {
     return node;
   }
 
-  __setAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
+  __setAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
     this.dom.setAttribute(this.constructing!, name, value, namespace);
   }
 
@@ -351,7 +351,7 @@ export class NewElementBuilder implements ElementBuilder {
     (this.constructing! as any)[name] = value;
   }
 
-  setStaticAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
+  setStaticAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
     this.__setAttribute(name, value, namespace);
   }
 
@@ -359,7 +359,7 @@ export class NewElementBuilder implements ElementBuilder {
     name: string,
     value: unknown,
     trusting: boolean,
-    namespace: Option<AttrNamespace>
+    namespace: Nullable<AttrNamespace>
   ): DynamicAttribute {
     let element = this.constructing!;
     let attribute = dynamicAttribute(element, name, namespace, trusting);
@@ -369,8 +369,8 @@ export class NewElementBuilder implements ElementBuilder {
 }
 
 export class SimpleLiveBlock implements LiveBlock {
-  protected first: Option<FirstNode> = null;
-  protected last: Option<LastNode> = null;
+  protected first: Nullable<FirstNode> = null;
+  protected last: Nullable<LastNode> = null;
   protected nesting = 0;
 
   constructor(private parent: SimpleElement) {}
@@ -470,7 +470,7 @@ export class RemoteLiveBlock extends SimpleLiveBlock {
 }
 
 export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBlock {
-  reset(): Option<SimpleNode> {
+  reset(): Nullable<SimpleNode> {
     destroy(this);
     let nextSibling = clear(this);
 

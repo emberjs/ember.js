@@ -1,9 +1,9 @@
-import {
-  type Bounds,
-  type Option,
-  type SimpleDocument,
-  type SimpleElement,
-  type SimpleNode,
+import type {
+  Bounds,
+  Nullable,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
 } from '@glimmer/interfaces';
 import {
   assert,
@@ -36,7 +36,7 @@ export enum InsertPosition {
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
 export function applySVGInnerHTMLFix(
-  document: Option<SimpleDocument>,
+  document: Nullable<SimpleDocument>,
   DOMClass: typeof DOMOperations,
   svgNamespace: typeof NS_SVG
 ): typeof DOMOperations {
@@ -51,7 +51,7 @@ export function applySVGInnerHTMLFix(
   return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
     override insertHTMLBefore(
       parent: SimpleElement,
-      nextSibling: Option<SimpleNode>,
+      nextSibling: Nullable<SimpleNode>,
       html: string
     ): Bounds {
       if (html === '') {
@@ -71,7 +71,7 @@ function fixSVG(
   parent: SimpleElement,
   div: SimpleElement,
   html: string,
-  reference: Option<SimpleNode>
+  reference: Nullable<SimpleNode>
 ): Bounds {
   assert(html !== '', 'html cannot be empty');
 
@@ -117,9 +117,11 @@ function shouldApplyFix(document: SimpleDocument, svgNamespace: typeof NS_SVG) {
       castToBrowser(unwrap(svg.firstChild), 'SVG').namespaceURI === NS_SVG
     ) {
       // The test worked as expected, no fix required
+      // eslint-disable-next-line no-unsafe-finally
       return false;
     }
 
+    // eslint-disable-next-line no-unsafe-finally
     return true;
   }
 }

@@ -1,20 +1,20 @@
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import {
-  type Helper,
-  type HelperCapabilities,
-  type HelperCapabilitiesVersions,
-  type HelperDefinitionState,
-  type HelperManager,
-  type HelperManagerWithDestroyable,
-  type HelperManagerWithValue,
-  type InternalHelperManager,
-  type Owner,
-} from '@glimmer/interfaces';
+import type {
+  Helper,
+  HelperCapabilities,
+  HelperCapabilitiesVersions,
+  HelperDefinitionState,
+  HelperManager,
+  HelperManagerWithDestroyable,
+  HelperManagerWithValue,
+  InternalHelperManager,
+  Owner,
+} from "@glimmer/interfaces";
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 import { argsProxyFor } from '../util/args-proxy';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
-import { type ManagerFactory } from './index';
+import type { ManagerFactory } from './index';
 
 export function helperCapabilities<Version extends keyof HelperCapabilitiesVersions>(
   managerAPI: Version,

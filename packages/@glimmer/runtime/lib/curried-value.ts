@@ -1,5 +1,12 @@
-import { type CapturedArguments, type CurriedType, type Owner } from '@glimmer/interfaces';
-import { type Reference } from '@glimmer/reference';
+import type {
+  CapturedArguments,
+  CurriedComponent,
+  CurriedHelper,
+  CurriedModifier,
+  CurriedType,
+  Owner,
+} from "@glimmer/interfaces";
+import type { Reference } from '@glimmer/reference';
 
 const TYPE: unique symbol = Symbol('TYPE');
 const INNER: unique symbol = Symbol('INNER');
@@ -53,10 +60,10 @@ interface ResolvedCurriedValue<T> {
 }
 
 export function resolveCurriedValue(
-  curriedValue: CurriedValue<CurriedType.Component>
+  curriedValue: CurriedValue<CurriedComponent>
 ): ResolvedCurriedValue<object | string>;
 export function resolveCurriedValue(
-  curriedValue: CurriedValue<CurriedType.Helper> | CurriedValue<CurriedType.Modifier>
+  curriedValue: CurriedValue<CurriedHelper> | CurriedValue<CurriedModifier>
 ): ResolvedCurriedValue<object>;
 export function resolveCurriedValue(
   curriedValue: CurriedValue<CurriedType>
@@ -66,6 +73,7 @@ export function resolveCurriedValue(
   let named: Record<string, Reference>[] | undefined;
   let definition, owner, resolved;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     let { [ARGS]: curriedArgs, [INNER]: inner } = currentWrapper;
 

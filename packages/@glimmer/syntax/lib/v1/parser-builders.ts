@@ -1,9 +1,9 @@
-import { type Dict, type Option, type PresentArray } from '@glimmer/interfaces';
+import type { Dict, Nullable, PresentArray } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 
-import { type ParserNodeBuilder } from '../parser';
-import { type SourceLocation } from '../source/location';
-import { type SourceOffset, type SourceSpan } from '../source/span';
+import type { ParserNodeBuilder } from '../parser';
+import type { SourceLocation } from '../source/location';
+import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
 import { PathExpressionImplV1 } from './legacy-interop';
 
@@ -105,7 +105,7 @@ class Builders {
     params: ASTv1.Expression[];
     hash: ASTv1.Hash;
     defaultBlock: ASTv1.Block;
-    elseBlock?: Option<ASTv1.Block>;
+    elseBlock?: Nullable<ASTv1.Block>;
     loc: SourceSpan;
     openStrip: ASTv1.StripFlags;
     inverseStrip: ASTv1.StripFlags;

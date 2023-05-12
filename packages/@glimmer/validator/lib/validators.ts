@@ -15,7 +15,7 @@ import type {
   VOLATILE_TAG_ID as IVOLATILE_TAG_ID,
 } from '@glimmer/interfaces';
 
-import { assertTagNotConsumed } from './debug';
+import { debug } from './debug';
 import { unwrap } from './utils';
 
 //////////
@@ -76,7 +76,6 @@ export function validateTag(tag: Tag, snapshot: Revision): boolean {
 const TYPE: TagTypeSymbol = Symbol('TAG_TYPE') as TagTypeSymbol;
 
 // this is basically a const
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
 if (import.meta.env.DEV) {
@@ -98,10 +97,11 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
         return CONSTANT_TAG;
       case 1:
         return tags[0] as Tag;
-      default:
+      default: {
         let tag: MonomorphicTagImpl = new MonomorphicTagImpl(COMBINATOR_TAG_ID);
         tag.subtag = tags;
         return tag;
+      }
     }
   }
 
@@ -213,7 +213,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     if (import.meta.env.DEV && disableConsumptionAssertion !== true) {
       // Usually by this point, we've already asserted with better error information,
       // but this is our last line of defense.
-      unwrap(assertTagNotConsumed)(tag);
+      unwrap(debug.assertTagNotConsumed)(tag);
     }
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;

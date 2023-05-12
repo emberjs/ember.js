@@ -1,9 +1,9 @@
-/* eslint-disable qunit/no-global-module-test */
-import { type Dict } from '@glimmer/interfaces';
+ 
+import type { Dict } from '@glimmer/interfaces';
 import { src } from '@glimmer/syntax';
 import { unwrap } from '@glimmer/util';
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
+ 
 const test = QUnit.test;
 
 const cases: Dict<[string, number | null][]> = {

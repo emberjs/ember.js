@@ -1,10 +1,4 @@
-import {
-  type ErrHandle,
-  type HandleResult,
-  type OkHandle,
-  type Template,
-  type TemplateOk,
-} from '@glimmer/interfaces';
+import type { ErrHandle, HandleResult, OkHandle, Template, TemplateOk } from '@glimmer/interfaces';
 
 export function unwrapHandle(handle: HandleResult): number {
   if (typeof handle === 'number') {

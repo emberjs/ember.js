@@ -1,4 +1,3 @@
-/* eslint-disable qunit/no-global-module-test */
 /* eslint-disable qunit/no-test-expect-argument */
 
 import {
@@ -13,10 +12,10 @@ import {
   unicode,
   WireFormatDebugger,
 } from '@glimmer/compiler';
-import {
-  type SerializedTemplate,
-  type SerializedTemplateBlock,
-  type SerializedTemplateWithLazyBlock,
+import type {
+  SerializedTemplate,
+  SerializedTemplateBlock,
+  SerializedTemplateWithLazyBlock,
 } from '@glimmer/interfaces';
 import { assign, strip } from '@glimmer/util';
 
@@ -62,7 +61,7 @@ QUnit.test(
   `;
     assert.throws(
       () => compile(template),
-      /@onClick is not a valid attribute name. @arguments are only allowed on components, but the tag for this element \(`a`\) is a regular, non-component HTML element/
+      /@onClick is not a valid attribute name. @arguments are only allowed on components, but the tag for this element \(`a`\) is a regular, non-component HTML element/u
     );
   }
 );

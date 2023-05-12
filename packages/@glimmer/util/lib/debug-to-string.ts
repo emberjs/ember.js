@@ -5,12 +5,12 @@ if (import.meta.env.DEV) {
     let functionName = fn.name;
 
     if (functionName === undefined) {
-      let match = Function.prototype.toString.call(fn).match(/function (\w+)\s*\(/);
+      let match = /function (\w+)\s*\(/u.exec(String(fn));
 
       functionName = (match && match[1]) || '';
     }
 
-    return functionName.replace(/^bound /, '');
+    return functionName.replace(/^bound /u, '');
   };
 
   let getObjectName = (obj: object) => {
@@ -35,13 +35,13 @@ if (import.meta.env.DEV) {
     // this when the value is minified.
     if (
       name &&
-      name.match(/<.*:ember\d+>/) &&
+      /<.*:ember\d+>/u.test(name) &&
       className &&
       className[0] !== '_' &&
       className.length > 2 &&
       className !== 'Class'
     ) {
-      return name.replace(/<.*:/, `<${className}:`);
+      return name.replace(/<.*:/u, `<${className}:`);
     }
 
     return name || className;

@@ -1,10 +1,10 @@
-import {
-  type Expression,
-  type Expressions,
-  SexpOpcodes,
-  type Statement,
-  type Statements,
-} from '@glimmer/interfaces';
+import type { Expression, Expressions, Statement, Statements } from '@glimmer/interfaces';
+
+import { opcodes } from './lib/opcodes';
+
+export { opcodes as SexpOpcodes } from './lib/opcodes';
+export { resolution as VariableResolutionContext } from './lib/resolution';
+export { WellKnownAttrNames, WellKnownTagNames } from './lib/well-known';
 
 export function is<T>(variant: number): (value: any) => value is T {
   return function (value: any): value is T {
@@ -13,18 +13,18 @@ export function is<T>(variant: number): (value: any) => value is T {
 }
 
 // Statements
-export const isFlushElement = is<Statements.FlushElement>(SexpOpcodes.FlushElement);
+export const isFlushElement = is<Statements.FlushElement>(opcodes.FlushElement);
 
 export function isAttribute(val: Statement): val is Statements.Attribute {
   return (
-    val[0] === SexpOpcodes.StaticAttr ||
-    val[0] === SexpOpcodes.DynamicAttr ||
-    val[0] === SexpOpcodes.TrustingDynamicAttr ||
-    val[0] === SexpOpcodes.ComponentAttr ||
-    val[0] === SexpOpcodes.StaticComponentAttr ||
-    val[0] === SexpOpcodes.TrustingComponentAttr ||
-    val[0] === SexpOpcodes.AttrSplat ||
-    val[0] === SexpOpcodes.Modifier
+    val[0] === opcodes.StaticAttr ||
+    val[0] === opcodes.DynamicAttr ||
+    val[0] === opcodes.TrustingDynamicAttr ||
+    val[0] === opcodes.ComponentAttr ||
+    val[0] === opcodes.StaticComponentAttr ||
+    val[0] === opcodes.TrustingComponentAttr ||
+    val[0] === opcodes.AttrSplat ||
+    val[0] === opcodes.Modifier
   );
 }
 
@@ -37,12 +37,12 @@ export function getStringFromValue(expr: Expressions.StringValue): string {
 }
 
 export function isArgument(val: Statement): val is Statements.Argument {
-  return val[0] === SexpOpcodes.StaticArg || val[0] === SexpOpcodes.DynamicArg;
+  return val[0] === opcodes.StaticArg || val[0] === opcodes.DynamicArg;
 }
 
 export function isHelper(expr: Expression): expr is Expressions.Helper {
-  return Array.isArray(expr) && expr[0] === SexpOpcodes.Call;
+  return Array.isArray(expr) && expr[0] === opcodes.Call;
 }
 
 // Expressions
-export const isGet = is<Expressions.GetSymbol>(SexpOpcodes.GetSymbol);
+export const isGet = is<Expressions.GetSymbol>(opcodes.GetSymbol);

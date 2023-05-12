@@ -1,16 +1,15 @@
-import {
-  type CompileTimeConstants,
-  type ComponentDefinition,
-  type ComponentDefinitionState,
-  type ConstantPool,
-  type HelperDefinitionState,
-  InternalComponentCapability,
-  type ModifierDefinitionState,
-  type ResolutionTimeConstants,
-  type ResolvedComponentDefinition,
-  type RuntimeConstants,
-  type Template,
-} from '@glimmer/interfaces';
+import type {
+  CompileTimeConstants,
+  ComponentDefinition,
+  ComponentDefinitionState,
+  ConstantPool,
+  HelperDefinitionState,
+  ModifierDefinitionState,
+  ResolutionTimeConstants,
+  ResolvedComponentDefinition,
+  RuntimeConstants,
+  Template,
+} from "@glimmer/interfaces";
 import {
   capabilityFlagsFrom,
   getComponentTemplate,
@@ -21,6 +20,7 @@ import {
 } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { assert, constants, enumerate, expect, unwrapTemplate } from '@glimmer/util';
+import { InternalComponentCapabilities } from '@glimmer/vm';
 
 import { DEFAULT_TEMPLATE } from './util/default-template';
 
@@ -222,7 +222,9 @@ export class ConstantsImpl
       let compilable = null;
       let template;
 
-      if (!managerHasCapability(manager, capabilities, InternalComponentCapability.DynamicLayout)) {
+      if (
+        !managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout)
+      ) {
         template = templateFactory?.(owner) ?? this.defaultTemplate;
       } else {
         template = templateFactory?.(owner);
@@ -234,7 +236,7 @@ export class ConstantsImpl
         compilable = managerHasCapability(
           manager,
           capabilities,
-          InternalComponentCapability.Wrapped
+          InternalComponentCapabilities.wrapped
         )
           ? template.asWrappedLayout()
           : template.asLayout();
@@ -269,7 +271,9 @@ export class ConstantsImpl
 
       let compilable = null;
 
-      if (!managerHasCapability(manager, capabilities, InternalComponentCapability.DynamicLayout)) {
+      if (
+        !managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout)
+      ) {
         template = template ?? this.defaultTemplate;
       }
 
@@ -279,7 +283,7 @@ export class ConstantsImpl
         compilable = managerHasCapability(
           manager,
           capabilities,
-          InternalComponentCapability.Wrapped
+          InternalComponentCapabilities.wrapped
         )
           ? template.asWrappedLayout()
           : template.asLayout();

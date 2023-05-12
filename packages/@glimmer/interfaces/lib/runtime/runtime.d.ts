@@ -1,11 +1,6 @@
-import {
-  type ResolutionTimeConstants,
-  type RuntimeConstants,
-  type RuntimeHeap,
-  type RuntimeOp,
-} from '../program';
-import { type RuntimeResolver } from '../serialize';
-import { type Environment } from './environment';
+import type { ResolutionTimeConstants, RuntimeConstants, RuntimeHeap, RuntimeOp } from '../program';
+import type { RuntimeResolver } from '../serialize';
+import type { Environment } from './environment';
 
 /**
   The Runtime is the set of static structures that contain the compiled

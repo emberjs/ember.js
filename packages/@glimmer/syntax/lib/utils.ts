@@ -1,4 +1,4 @@
-import { type Option } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/util';
 
 import { generateSyntaxError } from './syntax-error';
@@ -8,7 +8,7 @@ import type * as HBS from './v1/handlebars-ast';
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.
 
-let ID_INVERSE_PATTERN = /[!"#%-,\.\/;->@\[-\^`\{-~]/;
+let ID_INVERSE_PATTERN = /[!"#%&'()*+./;<=>@[\\\]^`{|}~]/u;
 
 // Checks the element's attributes to see if it uses block params.
 // If it does, registers the block params with the program and
@@ -19,7 +19,7 @@ export function parseElementBlockParams(element: ASTv1.ElementNode): void {
   if (params) element.blockParams = params;
 }
 
-function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
+function parseBlockParams(element: ASTv1.ElementNode): Nullable<string[]> {
   let l = element.attributes.length;
   let attrNames = [];
 
@@ -45,7 +45,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
     let paramsString = attrNames.slice(asIndex).join(' ');
     if (
       paramsString.charAt(paramsString.length - 1) !== '|' ||
-      expect(paramsString.match(/\|/g), `block params must exist here`).length !== 2
+      expect(paramsString.match(/\|/gu), `block params must exist here`).length !== 2
     ) {
       throw generateSyntaxError(
         "Invalid block parameters syntax, '" + paramsString + "'",
@@ -55,7 +55,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Option<string[]> {
 
     let params = [];
     for (let i = asIndex + 1; i < l; i++) {
-      let param = unwrap(attrNames[i]).replace(/\|/g, '');
+      let param = unwrap(attrNames[i]).replace(/\|/gu, '');
       if (param !== '') {
         if (ID_INVERSE_PATTERN.test(param)) {
           throw generateSyntaxError(

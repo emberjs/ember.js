@@ -1,15 +1,8 @@
-import {
-  type CurriedType,
-  MachineOp,
-  type NonSmallIntOperand,
-  Op,
-  type Option,
-  type WireFormat,
-} from '@glimmer/interfaces';
+import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from "@glimmer/interfaces";
 import { encodeImmediate, isSmallInt } from '@glimmer/util';
-import { $fp, $v0 } from '@glimmer/vm';
+import { $fp, $v0, MachineOp, Op } from '@glimmer/vm';
 
-import { type PushExpressionOp, type PushStatementOp } from '../../syntax/compilers';
+import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { isStrictMode, nonSmallIntOperand } from '../operands';
 import { expr } from './expr';
 import { SimpleArgs } from './shared';
@@ -18,7 +11,7 @@ export type Primitive = undefined | null | boolean | number | string;
 
 export interface CompileHelper {
   handle: number;
-  positional: Option<WireFormat.Core.Params>;
+  positional: Nullable<WireFormat.Core.Params>;
   named: WireFormat.Core.Hash;
 }
 

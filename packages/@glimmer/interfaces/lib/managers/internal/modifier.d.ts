@@ -1,10 +1,10 @@
 import type { SimpleElement } from '@simple-dom/interface';
 
-import { type Destroyable } from '../../core';
-import { type Owner } from '../../runtime';
-import { type CapturedArguments } from '../../runtime/arguments';
-import { type ModifierDefinitionState, type ModifierInstanceState } from '../../runtime/modifier';
-import { type UpdatableTag } from '../../tags';
+import type { Destroyable } from '../../core';
+import type { Owner } from '../../runtime';
+import type { CapturedArguments } from '../../runtime/arguments';
+import type { ModifierDefinitionState, ModifierInstanceState } from '../../runtime/modifier';
+import type { UpdatableTag } from '../../tags';
 
 export interface InternalModifierManager<
   TModifierInstanceState = ModifierInstanceState,

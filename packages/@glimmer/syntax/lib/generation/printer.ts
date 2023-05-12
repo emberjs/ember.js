@@ -11,7 +11,7 @@ voidTagNames.split(' ').forEach((tagName) => {
   voidMap[tagName] = true;
 });
 
-const NON_WHITESPACE = /^\S/;
+const NON_WHITESPACE = /^\S/u;
 
 export interface PrinterOptions {
   entityEncoding: 'transformed' | 'raw';

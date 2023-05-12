@@ -1,4 +1,4 @@
-import { type Option } from '../core';
+import type { Nullable } from '../core';
 import type { SimpleElement, SimpleNode } from './simple';
 
 export interface Bounds {
@@ -10,5 +10,5 @@ export interface Bounds {
 
 export interface Cursor {
   readonly element: SimpleElement;
-  readonly nextSibling: Option<SimpleNode>;
+  readonly nextSibling: Nullable<SimpleNode>;
 }

@@ -1,19 +1,11 @@
-import { type PresentArray } from './array';
-import { type Operand, type SerializedInlineBlock, type SerializedTemplateBlock } from './compile';
-import { type EncoderError } from './compile/encoder';
-import { type Option } from './core';
-import { type InternalComponentCapabilities } from './managers/internal/component';
-import {
-  type CompileTimeCompilationContext,
-  type ConstantPool,
-  type SerializedHeap,
-} from './program';
-import { type Owner } from './runtime';
-import {
-  type BlockSymbolTable,
-  type ProgramSymbolTable,
-  type SymbolTable,
-} from './tier1/symbol-table';
+import type { PresentArray } from './array';
+import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile';
+import type { EncoderError } from './compile/encoder';
+import type { Nullable } from './core';
+import type { InternalComponentCapabilities } from './managers/internal/component';
+import type { CompileTimeCompilationContext, ConstantPool, SerializedHeap } from './program';
+import type { Owner } from './runtime';
+import type { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
 export interface CompilableProgram extends CompilableTemplate<ProgramSymbolTable> {
   moduleName: string;
@@ -82,7 +74,7 @@ export type CompilerBuffer = Array<Operand>;
 export interface ResolvedLayout {
   handle: number;
   capabilities: InternalComponentCapabilities;
-  compilable: Option<CompilableProgram>;
+  compilable: Nullable<CompilableProgram>;
 }
 
 export type OkHandle = number;
@@ -94,16 +86,16 @@ export interface ErrHandle {
 export type HandleResult = OkHandle | ErrHandle;
 
 export interface NamedBlocks {
-  get(name: string): Option<SerializedInlineBlock>;
+  get(name: string): Nullable<SerializedInlineBlock>;
   has(name: string): boolean;
-  with(name: string, block: Option<SerializedInlineBlock>): NamedBlocks;
+  with(name: string, block: Nullable<SerializedInlineBlock>): NamedBlocks;
   hasAny: boolean;
   names: string[];
 }
 
 export interface ContainingMetadata {
-  evalSymbols: Option<string[]>;
-  upvars: Option<string[]>;
+  evalSymbols: Nullable<string[]>;
+  upvars: Nullable<string[]>;
   scopeValues: unknown[] | null;
   isStrictMode: boolean;
   moduleName: string;

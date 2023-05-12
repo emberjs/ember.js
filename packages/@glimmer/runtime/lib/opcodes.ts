@@ -1,22 +1,30 @@
 import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debug';
-import { type Dict, type Maybe, Op, type Option, type RuntimeOp } from '@glimmer/interfaces';
+import type {
+  Dict,
+  Maybe,
+  Nullable,
+  RuntimeOp,
+  SomeVmOp,
+  VmMachineOp,
+  VmOp,
+} from "@glimmer/interfaces";
 import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { valueForRef } from '@glimmer/reference';
 import { assert, fillNulls, LOCAL_LOGGER, unwrap } from '@glimmer/util';
-import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
+import { $fp, $pc, $ra, $sp, Op } from '@glimmer/vm';
 
 import { isScopeReference } from './scope';
 import { CONSTANTS, DESTROYABLE_STACK, INNER_VM, STACKS } from './symbols';
-import { type LowLevelVM, type VM } from './vm';
-import { type InternalVM } from './vm/append';
+import type { LowLevelVM, VM } from './vm';
+import type { InternalVM } from './vm/append';
 import { CURSOR_STACK } from './vm/element-builder';
 
 export interface OpcodeJSON {
   type: number | string;
-  guid?: Option<number>;
+  guid?: Nullable<number>;
   deopted?: boolean;
   args?: string[];
-  details?: Dict<Option<string>>;
+  details?: Dict<Nullable<string>>;
   children?: OpcodeJSON[];
 }
 
@@ -34,7 +42,7 @@ export type Evaluate =
 export type DebugState = {
   pc: number;
   sp: number;
-  type: number;
+  type: VmMachineOp | VmOp;
   isMachine: 0 | 1;
   size: number;
   params?: Maybe<Dict> | undefined;
@@ -45,9 +53,13 @@ export type DebugState = {
 export class AppendOpcodes {
   private evaluateOpcode: Evaluate[] = fillNulls<Evaluate>(Op.Size).slice();
 
-  add<Name extends Op>(name: Name, evaluate: Syscall): void;
-  add<Name extends Op>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
-  add<Name extends Op>(name: Name, evaluate: Syscall | MachineOpcode, kind = 'syscall'): void {
+  add<Name extends VmOp>(name: Name, evaluate: Syscall): void;
+  add<Name extends VmMachineOp>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
+  add<Name extends SomeVmOp>(
+    name: Name,
+    evaluate: Syscall | MachineOpcode,
+    kind = 'syscall'
+  ): void {
     this.evaluateOpcode[name as number] = {
       syscall: kind !== 'machine',
       evaluate,

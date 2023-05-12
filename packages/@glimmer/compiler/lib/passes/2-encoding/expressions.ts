@@ -1,6 +1,7 @@
-import { type PresentArray, SexpOpcodes, type WireFormat } from '@glimmer/interfaces';
-import { type ASTv2 } from '@glimmer/syntax';
+import type { PresentArray, WireFormat } from '@glimmer/interfaces';
+import type { ASTv2 } from '@glimmer/syntax';
 import { assertPresentArray, isPresentArray, mapPresentArray } from '@glimmer/util';
+import { SexpOpcodes } from '@glimmer/wire-format';
 
 import type * as mir from './mir';
 

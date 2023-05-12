@@ -1,5 +1,5 @@
 import { type AST, preprocess as parse, type src } from '@glimmer/syntax';
-import { guardArray } from '@glimmer/test-utils';
+import { guardArray } from '@glimmer-workspace/test-utils';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
 
@@ -133,7 +133,6 @@ test('html elements', function () {
   }
 });
 
-// eslint-disable-next-line qunit/require-expect
 test('html elements with nested blocks', (assert) => {
   let ast = parse(`
     <div>
@@ -156,14 +155,14 @@ test('html elements with nested blocks', (assert) => {
     if (assertNodeType(ifBlock, 'BlockStatement')) {
       let inverseBlock = ifBlock.inverse;
       locEqual(inverseBlock, 5, 24, 7, 6, 'inverse block');
-      // eslint-disable-next-line qunit/no-conditional-assertions
+      assert.step('inverse block');
       assert.ok(inverseBlock, 'has inverse block');
       if (inverseBlock) {
         let [nestedIfBlock] = inverseBlock.body;
         locEqual(nestedIfBlock, 5, 6, 9, 6, 'nested if block');
         if (assertNodeType(nestedIfBlock, 'BlockStatement')) {
           let nestedIfInverseBlock = nestedIfBlock.inverse;
-          // eslint-disable-next-line qunit/no-conditional-assertions
+          assert.step('nested inverse block');
           assert.ok(nestedIfInverseBlock, 'has nested inverse block');
           if (nestedIfInverseBlock) {
             locEqual(nestedIfInverseBlock, 7, 14, 9, 6, 'nested inverse block');
@@ -172,6 +171,8 @@ test('html elements with nested blocks', (assert) => {
       }
     }
   }
+
+  assert.verifySteps(['inverse block', 'nested inverse block']);
 });
 
 test('block + newline + element ', function () {

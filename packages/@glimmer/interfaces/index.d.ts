@@ -1,4 +1,4 @@
-import * as WireFormat from './lib/compile/wire-format';
+import * as WireFormat from './lib/compile/wire-format/api';
 
 export * from './lib/array';
 export * from './lib/compile';

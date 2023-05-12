@@ -1,3 +1,7 @@
+const { resolve } = require('path');
+
+const tsconfig = resolve(__dirname, 'tsconfig.json');
+
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   root: false,
@@ -7,7 +11,7 @@ module.exports = {
       excludedFiles: ['*/node_modules'],
       parserOptions: {
         ecmaVersion: 'latest',
-        project: ['packages/@types/tsconfig.json'],
+        project: [tsconfig],
       },
       extends: ['plugin:@typescript-eslint/recommended-requiring-type-checking'],
       rules: {

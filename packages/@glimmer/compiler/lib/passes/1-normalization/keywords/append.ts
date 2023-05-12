@@ -1,9 +1,9 @@
-import { CurriedType } from '@glimmer/interfaces';
 import { ASTv2, generateSyntaxError, src } from '@glimmer/syntax';
+import { CurriedTypes } from '@glimmer/vm';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import { type NormalizationState } from '../context';
+import type { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { keywords } from './impl';
 import { toAppend } from './utils/call-to-append';
@@ -102,7 +102,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('component', {
-    assert: assertCurryKeyword(CurriedType.Component),
+    assert: assertCurryKeyword(CurriedTypes.Component),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
@@ -123,7 +123,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('helper', {
-    assert: assertCurryKeyword(CurriedType.Helper),
+    assert: assertCurryKeyword(CurriedTypes.Helper),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },

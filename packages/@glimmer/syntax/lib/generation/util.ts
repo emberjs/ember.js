@@ -8,11 +8,11 @@ const enum Char {
   AMP = 0x26,
 }
 
-const ATTR_VALUE_REGEX_TEST = /[\xA0"&]/;
-const ATTR_VALUE_REGEX_REPLACE = new RegExp(ATTR_VALUE_REGEX_TEST.source, 'g');
+const ATTR_VALUE_REGEX_TEST = /["&\xA0]/u;
+const ATTR_VALUE_REGEX_REPLACE = new RegExp(ATTR_VALUE_REGEX_TEST.source, 'gu');
 
-const TEXT_REGEX_TEST = /[\xA0&<>]/;
-const TEXT_REGEX_REPLACE = new RegExp(TEXT_REGEX_TEST.source, 'g');
+const TEXT_REGEX_TEST = /[&<>\xA0]/u;
+const TEXT_REGEX_REPLACE = new RegExp(TEXT_REGEX_TEST.source, 'gu');
 
 function attrValueReplacer(char: string): string {
   switch (char.charCodeAt(0)) {

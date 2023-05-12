@@ -1,7 +1,6 @@
 import { deprecate } from '@glimmer/global-context';
-import { type CapturedArguments, type Dict } from '@glimmer/interfaces';
+import type { CapturedArguments, Dict } from '@glimmer/interfaces';
 import { createComputeRef, type Reference } from '@glimmer/reference';
-import { HAS_NATIVE_PROXY } from '@glimmer/util';
 
 import { reifyNamed } from '../vm/arguments';
 import { internalHelper } from './internal-helper';
@@ -69,7 +68,7 @@ export const hash = internalHelper(({ named }: CapturedArguments): Reference<Dic
     () => {
       let hash = reifyNamed(named);
 
-      if (import.meta.env.DEV && HAS_NATIVE_PROXY) {
+      if (import.meta.env.DEV) {
         hash = wrapHashProxy(hash);
       }
 

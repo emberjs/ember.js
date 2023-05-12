@@ -1,3 +1,3 @@
-export { type InternalVM, default as VM } from './vm/append';
-export { default as LowLevelVM } from './vm/low-level';
-export { default as UpdatingVM } from './vm/update';
+export { type InternalVM, VM } from './vm/append';
+export { LowLevelVM } from './vm/low-level';
+export { UpdatingVM } from './vm/update';

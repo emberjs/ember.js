@@ -1,4 +1,4 @@
-import { type SimpleText, type UpdatingOpcode } from '@glimmer/interfaces';
+import type { SimpleText, UpdatingOpcode } from "@glimmer/interfaces";
 import { type Reference, valueForRef } from '@glimmer/reference';
 
 import { isEmpty, isString } from '../../dom/normalize';

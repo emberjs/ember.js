@@ -1,21 +1,27 @@
-import {
-  type CompilableProgram,
-  type CompileTimeComponent,
-  HighLevelBuilderOpcode,
-  InternalComponentCapability,
-  type LayoutWithContext,
-  MachineOp,
-  type NamedBlocks,
-  Op,
-  type Option,
-  type WireFormat,
-} from '@glimmer/interfaces';
+import type {
+  CapabilityMask,
+  CompilableProgram,
+  CompileTimeComponent,
+  LayoutWithContext,
+  NamedBlocks,
+  Nullable,
+  WireFormat,
+} from "@glimmer/interfaces";
 import { hasCapability } from '@glimmer/manager';
 import { EMPTY_STRING_ARRAY, reverse, unwrap } from '@glimmer/util';
-import { $s0, $s1, $sp, type SavedRegister } from '@glimmer/vm';
+import {
+  $s0,
+  $s1,
+  $sp,
+  InternalComponentCapabilities,
+  MachineOp,
+  Op,
+  type SavedRegister,
+} from '@glimmer/vm';
 
-import { type PushExpressionOp, type PushStatementOp } from '../../syntax/compilers';
+import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 import { namedBlocks } from '../../utils';
+import { HighLevelBuilderOpcodes } from '../opcodes';
 import { isStrictMode, labelOperand, layoutOperand, symbolTableOperand } from '../operands';
 import { InvokeStaticBlock, PushYieldableBlock, YieldBlock } from './blocks';
 import { Replayable } from './conditional';
@@ -25,7 +31,7 @@ import { CompileArgs, CompilePositional } from './shared';
 export const ATTRS_BLOCK = '&attrs';
 
 interface AnyComponent {
-  elementBlock: Option<WireFormat.SerializedInlineBlock>;
+  elementBlock: Nullable<WireFormat.SerializedInlineBlock>;
   positional: WireFormat.Core.Params;
   named: WireFormat.Core.Hash;
   blocks: NamedBlocks;
@@ -40,7 +46,7 @@ export interface DynamicComponent extends AnyComponent {
 
 // <Component>
 export interface StaticComponent extends AnyComponent {
-  capabilities: InternalComponentCapability;
+  capabilities: CapabilityMask;
   layout: CompilableProgram;
 }
 
@@ -48,7 +54,7 @@ export interface StaticComponent extends AnyComponent {
 export interface Component extends AnyComponent {
   // either we know the capabilities statically or we need to be conservative and assume
   // that the component requires all capabilities
-  capabilities: InternalComponentCapability | true;
+  capabilities: CapabilityMask | true;
 
   // are the arguments supplied as atNames?
   atNames: boolean;
@@ -137,7 +143,7 @@ export function InvokeDynamicComponent(
         atNames,
         blocks,
       });
-      op(HighLevelBuilderOpcode.Label, 'ELSE');
+      op(HighLevelBuilderOpcodes.Label, 'ELSE');
     }
   );
 }
@@ -149,7 +155,7 @@ function InvokeStaticComponent(
   let { symbolTable } = layout;
 
   let bailOut =
-    symbolTable.hasEval || hasCapability(capabilities, InternalComponentCapability.PrepareArgs);
+    symbolTable.hasEval || hasCapability(capabilities, InternalComponentCapabilities.prepareArgs);
 
   if (bailOut) {
     InvokeNonStaticComponent(op, {
@@ -206,7 +212,7 @@ function InvokeStaticComponent(
   // Next up we have arguments. If the component has the `createArgs` capability,
   // then it wants access to the arguments in JavaScript. We can't know whether
   // or not an argument is used, so we have to give access to all of them.
-  if (hasCapability(capabilities, InternalComponentCapability.CreateArgs)) {
+  if (hasCapability(capabilities, InternalComponentCapabilities.createArgs)) {
     // First we push positional arguments
     let count = CompilePositional(op, positional);
 
@@ -262,17 +268,17 @@ function InvokeStaticComponent(
 
   op(Op.BeginComponentTransaction, $s0);
 
-  if (hasCapability(capabilities, InternalComponentCapability.DynamicScope)) {
+  if (hasCapability(capabilities, InternalComponentCapabilities.dynamicScope)) {
     op(Op.PushDynamicScope);
   }
 
-  if (hasCapability(capabilities, InternalComponentCapability.CreateInstance)) {
+  if (hasCapability(capabilities, InternalComponentCapabilities.createInstance)) {
     op(Op.CreateComponent, (blocks.has('default') as any) | 0, $s0);
   }
 
   op(Op.RegisterComponentDestructor, $s0);
 
-  if (hasCapability(capabilities, InternalComponentCapability.CreateArgs)) {
+  if (hasCapability(capabilities, InternalComponentCapabilities.createArgs)) {
     op(Op.GetComponentSelf, $s0);
   } else {
     op(Op.GetComponentSelf, $s0, argNames);
@@ -318,7 +324,7 @@ function InvokeStaticComponent(
   op(MachineOp.PopFrame);
   op(Op.PopScope);
 
-  if (hasCapability(capabilities, InternalComponentCapability.DynamicScope)) {
+  if (hasCapability(capabilities, InternalComponentCapabilities.dynamicScope)) {
     op(Op.PopDynamicScope);
   }
 
@@ -333,7 +339,7 @@ export function InvokeNonStaticComponent(
   let bindableBlocks = !!namedBlocks;
   let bindableAtNames =
     capabilities === true ||
-    hasCapability(capabilities, InternalComponentCapability.PrepareArgs) ||
+    hasCapability(capabilities, InternalComponentCapabilities.prepareArgs) ||
     !!(named && named[0].length !== 0);
 
   let blocks = namedBlocks.with('attrs', elementBlock);
@@ -366,7 +372,7 @@ export function WrappedComponent(
   layout: LayoutWithContext,
   attrsBlockNumber: number
 ): void {
-  op(HighLevelBuilderOpcode.StartLabels);
+  op(HighLevelBuilderOpcodes.StartLabels);
   WithSavedRegister(op, $s1, () => {
     op(Op.GetComponentTagName, $s0);
     op(Op.PrimitiveReference);
@@ -379,14 +385,14 @@ export function WrappedComponent(
   op(Op.DidCreateElement, $s0);
   YieldBlock(op, attrsBlockNumber, null);
   op(Op.FlushElement);
-  op(HighLevelBuilderOpcode.Label, 'BODY');
+  op(HighLevelBuilderOpcodes.Label, 'BODY');
   InvokeStaticBlock(op, [layout.block[0], []]);
   op(Op.Fetch, $s1);
   op(Op.JumpUnless, labelOperand('END'));
   op(Op.CloseElement);
-  op(HighLevelBuilderOpcode.Label, 'END');
+  op(HighLevelBuilderOpcodes.Label, 'END');
   op(Op.Load, $s1);
-  op(HighLevelBuilderOpcode.StopLabels);
+  op(HighLevelBuilderOpcodes.StopLabels);
 }
 
 export function invokePreparedComponent(
@@ -394,7 +400,7 @@ export function invokePreparedComponent(
   hasBlock: boolean,
   bindableBlocks: boolean,
   bindableAtNames: boolean,
-  populateLayout: Option<() => void> = null
+  populateLayout: Nullable<() => void> = null
 ): void {
   op(Op.BeginComponentTransaction, $s0);
   op(Op.PushDynamicScope);

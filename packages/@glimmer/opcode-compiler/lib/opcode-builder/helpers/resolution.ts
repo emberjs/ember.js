@@ -1,25 +1,26 @@
-import {
-  type CompileTimeConstants,
-  type CompileTimeResolver,
-  type ContainingMetadata,
-  type Expressions,
-  type Owner,
-  type ResolutionTimeConstants,
-  type ResolveComponentOp,
-  type ResolveComponentOrHelperOp,
-  type ResolveHelperOp,
-  type ResolveModifierOp,
-  type ResolveOptionalComponentOrHelperOp,
-  type ResolveOptionalHelperOp,
-  SexpOpcodes,
-} from '@glimmer/interfaces';
+import type {
+  CompileTimeConstants,
+  CompileTimeResolver,
+  ContainingMetadata,
+  Expressions,
+  Owner,
+  ResolutionTimeConstants,
+  ResolveComponentOp,
+  ResolveComponentOrHelperOp,
+  ResolveHelperOp,
+  ResolveModifierOp,
+  ResolveOptionalComponentOrHelperOp,
+  ResolveOptionalHelperOp,
+  SexpOpcode,
+} from "@glimmer/interfaces";
 import { assert, debugToString, expect, unwrap } from '@glimmer/util';
+import { SexpOpcodes } from '@glimmer/wire-format';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {
   return Array.isArray(opcode) && opcode.length === 2;
 }
 
-function makeResolutionTypeVerifier(typeToVerify: SexpOpcodes) {
+function makeResolutionTypeVerifier(typeToVerify: SexpOpcode) {
   return (
     opcode: Expressions.Expression
   ): opcode is Expressions.GetFree | Expressions.GetLexicalSymbol => {

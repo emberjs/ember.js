@@ -1,17 +1,17 @@
-import { type ComponentInstanceState, type PreparedArguments } from '../../components';
-import { type Destroyable, type Option } from '../../core';
-import { type Bounds } from '../../dom/bounds';
-import { type SimpleElement } from '../../dom/simple';
-import { type Reference } from '../../references';
-import { type Owner } from '../../runtime';
-import { type CapturedArguments, type VMArguments } from '../../runtime/arguments';
-import { type RenderNode } from '../../runtime/debug-render-tree';
-import { type ElementOperations } from '../../runtime/element';
-import { type Environment } from '../../runtime/environment';
-import { type DynamicScope } from '../../runtime/scope';
-import { type RuntimeResolver } from '../../serialize';
-import { type CompilableProgram } from '../../template';
-import { type ProgramSymbolTable } from '../../tier1/symbol-table';
+import type { ComponentInstanceState, PreparedArguments } from '../../components';
+import type { Destroyable, Nullable } from '../../core';
+import type { Bounds } from '../../dom/bounds';
+import type { SimpleElement } from '../../dom/simple';
+import type { Reference } from '../../references';
+import type { Owner } from '../../runtime';
+import type { CapturedArguments, VMArguments } from '../../runtime/arguments';
+import type { RenderNode } from '../../runtime/debug-render-tree';
+import type { ElementOperations } from '../../runtime/element';
+import type { Environment } from '../../runtime/environment';
+import type { DynamicScope } from '../../runtime/scope';
+import type { RuntimeResolver } from '../../serialize';
+import type { CompilableProgram } from '../../template';
+import type { ProgramSymbolTable } from '../../tier1/symbol-table';
 
 /**
  * Describes the capabilities of a particular component. The capabilities are
@@ -112,21 +112,36 @@ export interface InternalComponentCapabilities {
  * Enum used for bit flags version of the capabilities, used once the component
  * has been loaded for the first time
  */
-export enum InternalComponentCapability {
-  DynamicLayout = 0b0000000000001,
-  DynamicTag = 0b0000000000010,
-  PrepareArgs = 0b0000000000100,
-  CreateArgs = 0b0000000001000,
-  AttributeHook = 0b0000000010000,
-  ElementHook = 0b0000000100000,
-  DynamicScope = 0b0000001000000,
-  CreateCaller = 0b0000010000000,
-  UpdateHook = 0b0000100000000,
-  CreateInstance = 0b0001000000000,
-  Wrapped = 0b0010000000000,
-  WillDestroy = 0b0100000000000,
-  HasSubOwner = 0b1000000000000,
-}
+export type EmptyCapability = 0b0000000000000;
+export type DynamicLayoutCapability = 0b0000000000001;
+export type DynamicTagCapability = 0b0000000000010;
+export type PrepareArgsCapability = 0b0000000000100;
+export type CreateArgsCapability = 0b0000000001000;
+export type AttributeHookCapability = 0b0000000010000;
+export type ElementHookCapability = 0b0000000100000;
+export type DynamicScopeCapability = 0b0000001000000;
+export type CreateCallerCapability = 0b0000010000000;
+export type UpdateHookCapability = 0b0000100000000;
+export type CreateInstanceCapability = 0b0001000000000;
+export type WrappedCapability = 0b0010000000000;
+export type WillDestroyCapability = 0b0100000000000;
+export type HasSubOwnerCapability = 0b1000000000000;
+
+export type InternalComponentCapability =
+  | EmptyCapability
+  | DynamicLayoutCapability
+  | DynamicTagCapability
+  | PrepareArgsCapability
+  | CreateArgsCapability
+  | AttributeHookCapability
+  | ElementHookCapability
+  | DynamicScopeCapability
+  | CreateCallerCapability
+  | UpdateHookCapability
+  | CreateInstanceCapability
+  | WrappedCapability
+  | WillDestroyCapability
+  | HasSubOwnerCapability;
 
 ////////////
 
@@ -136,7 +151,7 @@ export interface InternalComponentManager<
 > {
   getCapabilities(state: TComponentDefinition): InternalComponentCapabilities;
   getSelf(state: TComponentStateBucket): Reference;
-  getDestroyable(state: TComponentStateBucket): Option<Destroyable>;
+  getDestroyable(state: TComponentStateBucket): Nullable<Destroyable>;
   getDebugName(state: TComponentDefinition): string;
 }
 
@@ -166,7 +181,7 @@ export interface WithPrepareArgs<
   // for `create`. This allows for things like closure> components where the
   // args need to be curried before constructing the instance of the state
   // bucket.
-  prepareArgs(state: ComponentDefinitionState, args: VMArguments): Option<PreparedArguments>;
+  prepareArgs(state: ComponentDefinitionState, args: VMArguments): Nullable<PreparedArguments>;
 }
 
 export interface WithSubOwner<ComponentInstanceState = unknown, ComponentDefinitionState = unknown>
@@ -185,10 +200,10 @@ export interface WithCreateInstance<
   create(
     owner: O,
     state: ComponentDefinitionState,
-    args: Option<VMArguments>,
+    args: Nullable<VMArguments>,
     env: Environment,
-    dynamicScope: Option<DynamicScope>,
-    caller: Option<Reference>,
+    dynamicScope: Nullable<DynamicScope>,
+    caller: Nullable<Reference>,
     hasDefaultBlock: boolean
   ): ComponentInstanceState;
 
@@ -217,7 +232,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
   extends InternalComponentManager<ComponentInstanceState> {
   // When the component's tag has invalidated, the manager's `update` hook is
   // called.
-  update(state: ComponentInstanceState, dynamicScope: Option<DynamicScope>): void;
+  update(state: ComponentInstanceState, dynamicScope: Nullable<DynamicScope>): void;
 }
 
 export interface WithDynamicLayout<
@@ -235,7 +250,7 @@ export interface WithDynamicTagName<ComponentInstanceState>
   extends InternalComponentManager<ComponentInstanceState> {
   // If the component asks for the dynamic tag name capability, ask for
   // the tag name to use. (Only used in the "WrappedBuilder".)
-  getTagName(component: ComponentInstanceState): Option<string>;
+  getTagName(component: ComponentInstanceState): Nullable<string>;
 }
 
 export interface WithAttributeHook<ComponentInstanceState>

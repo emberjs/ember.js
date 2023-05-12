@@ -1,4 +1,4 @@
-import { type Option, type PresentArray } from '@glimmer/interfaces';
+import type { Nullable, PresentArray } from '@glimmer/interfaces';
 import { isPresentArray, mapPresentArray } from '@glimmer/util';
 
 export interface OptionalList<T> {
@@ -7,7 +7,7 @@ export interface OptionalList<T> {
     predicate: (value: T, index: number, array: T[]) => value is S
   ): AnyOptionalList<S>;
   toArray(): T[];
-  toPresentArray(): Option<PresentArray<T>>;
+  toPresentArray(): Nullable<PresentArray<T>>;
   into<U, V>(options: { ifPresent: (array: PresentList<T>) => U; ifEmpty: () => V }): U | V;
 }
 
@@ -59,7 +59,7 @@ export class EmptyList<T> implements OptionalList<T> {
     return this.list;
   }
 
-  toPresentArray(): Option<PresentArray<T>> {
+  toPresentArray(): Nullable<PresentArray<T>> {
     return null;
   }
 

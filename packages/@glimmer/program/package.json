@@ -8,9 +8,29 @@
     "@glimmer/opcode-compiler": "workspace:^",
     "@glimmer/manager": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
-    "@glimmer/encoder": "workspace:^"
+    "@glimmer/encoder": "workspace:^",
+    "@glimmer/wire-format": "workspace:^",
+    "@glimmer/vm": "workspace:^"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "workspace:^"
+    "@glimmer/local-debug-flags": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:^"
+  },
+  "main": "index.ts",
+  "types": "index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json",
+    "build": "rollup -c rollup.config.mjs"
   }
 }

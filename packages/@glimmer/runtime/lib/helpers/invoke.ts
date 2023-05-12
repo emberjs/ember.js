@@ -1,5 +1,5 @@
 import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
-import { type Arguments, type InternalHelperManager } from '@glimmer/interfaces';
+import type { Arguments, InternalHelperManager } from "@glimmer/interfaces";
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 import { getOwner } from '@glimmer/owner';
 import { debugToString } from '@glimmer/util';
