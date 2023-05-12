@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "lint": {
+      "dependsOn": ["test:lint"]
+    },
+    "test:lint": {},
+    "typecheck": {
+      "inputs": ["dist/**"],
+      "dependsOn": ["^build", "test:types"]
+    },
+    "test:types": {}
+  },
+  "globalDependencies": [
+    "tsconfig.json",
+    "tsconfig.dist.json",
+    "*/tsconfig.json",
+    "packages/*/tsconfig.json",
+    "packages/@glimmer-workspace/eslint-plugin/**/*"
+  ],
+  "globalEnv": ["NODE_OPTIONS"]
+}

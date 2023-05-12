@@ -1,4 +1,4 @@
-import { createCell } from '@glimmer/benchmark-env';
+import { createCell } from '@glimmer-workspace/benchmark-env';
 
 export class Item {
   /** @type {number} */
@@ -7,7 +7,6 @@ export class Item {
   /** @type {string} */
   label;
 
-  // eslint-disable-next-line no-invalid-this
   _selected = createCell(this, 'selected', false);
 
   /**
@@ -32,7 +31,6 @@ export class Item {
  * @param {number} max
  */
 function _random(max) {
-  // eslint-disable-next-line no-bitwise
   return (Math.random() * max) | 0;
 }
 

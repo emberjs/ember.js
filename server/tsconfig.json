@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.js.json",
+  "extends": "../tsconfig.cjs.json",
   "compilerOptions": { "composite": true },
   "include": ["*.js"]
 }

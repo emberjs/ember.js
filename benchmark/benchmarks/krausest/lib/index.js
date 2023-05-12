@@ -1,4 +1,4 @@
-import { createBenchmark } from '@glimmer/benchmark-env';
+import { createBenchmark } from '@glimmer-workspace/benchmark-env';
 
 import Application from './components/Application';
 import ApplicationTemplate from './components/Application.hbs';
@@ -7,7 +7,7 @@ import RowTemplate from './components/Row.hbs';
 import buildData from './utils/data';
 
 /**
- * @param {HTMLElement | import('@simple-dom/interface').SimpleElement} element
+ * @param {HTMLElement | import('../../../../packages/@glimmer/interfaces').SimpleElement} element
  * @param {boolean} isInteractive
  */
 export default async function render(element, isInteractive) {

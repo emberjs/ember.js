@@ -1,4 +1,4 @@
-import { type Option } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 
 import type * as ASTv1 from '../v1/api';
 
@@ -8,7 +8,7 @@ export default class Walker {
   public stack: unknown[] = [];
   constructor(public order?: unknown) {}
 
-  visit<N extends ASTv1.Node>(node: Option<N>, visitor: NodeCallback<N>): void {
+  visit<N extends ASTv1.Node>(node: Nullable<N>, visitor: NodeCallback<N>): void {
     if (!node) {
       return;
     }

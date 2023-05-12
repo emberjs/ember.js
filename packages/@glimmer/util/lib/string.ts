@@ -11,18 +11,18 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
 
   let lines = out.split('\n');
 
-  while (isPresentArray(lines) && getFirst(lines).match(/^\s*$/)) {
+  while (isPresentArray(lines) && /^\s*$/u.test(getFirst(lines))) {
     lines.shift();
   }
 
-  while (isPresentArray(lines) && getLast(lines).match(/^\s*$/)) {
+  while (isPresentArray(lines) && /^\s*$/u.test(getLast(lines))) {
     lines.pop();
   }
 
   let min = Infinity;
 
   for (let line of lines) {
-    let leading = line.match(/^\s*/)![0].length;
+    let leading = /^\s*/u.exec(line)![0].length;
 
     min = Math.min(min, leading);
   }

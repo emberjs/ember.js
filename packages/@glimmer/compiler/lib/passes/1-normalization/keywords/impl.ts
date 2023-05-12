@@ -8,7 +8,7 @@ import {
 import { exhausted } from '@glimmer/util';
 
 import { Err, type Result } from '../../../shared/result';
-import { type NormalizationState } from '../context';
+import type { NormalizationState } from '../context';
 
 export interface KeywordDelegate<Match extends KeywordMatch, V, Out> {
   assert(options: Match, state: NormalizationState): Result<V>;

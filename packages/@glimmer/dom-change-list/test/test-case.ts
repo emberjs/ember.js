@@ -1,4 +1,4 @@
-import { type Dict } from '@glimmer/interfaces';
+import type { Dict } from '@glimmer/interfaces';
 
 // A bunch of this file was extracted from the Glimmer testing harness.
 // TODO: Clean this up and eliminate anything that isn't generically unnecessary.
@@ -25,7 +25,7 @@ export function test(...args: any[]) {
   if (args.length === 1) {
     let meta: Dict<unknown> = args[0];
     return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
-      let testFunction = descriptor.value as Function & Dict<unknown>;
+      let testFunction = descriptor.value;
       Object.keys(meta).forEach((key) => (testFunction[key] = meta[key]));
       setTestingDescriptor(descriptor);
     };
@@ -50,7 +50,6 @@ export function module(name: string): (klass: new () => TestCase) => void {
       const test = proto[prop];
 
       if (isTestFunction(test)) {
-        // eslint-disable-next-line qunit/require-expect
         QUnit.test(prop, (assert) => new klass().run(test, assert));
       }
     }

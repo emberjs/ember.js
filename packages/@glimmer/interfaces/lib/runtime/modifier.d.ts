@@ -1,4 +1,4 @@
-import { type InternalModifierManager } from '../managers';
+import type { InternalModifierManager } from '../managers';
 
 export type ModifierDefinitionState = object;
 export type ModifierInstanceState = unknown;

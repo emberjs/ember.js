@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "@glimmer-workspace/test-utils",
+  "main": "index.ts",
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  }
+}

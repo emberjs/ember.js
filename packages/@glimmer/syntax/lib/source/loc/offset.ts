@@ -1,6 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+ 
 import { type SourcePosition, UNKNOWN_POSITION } from '../location';
-import { type Source } from '../source';
+import type { Source } from '../source';
 import { OffsetKind } from './kinds';
 import { match, MatchAny } from './match';
 import { type SourceSpan, span } from './span';

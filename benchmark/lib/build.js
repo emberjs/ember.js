@@ -1,6 +1,11 @@
-/* eslint-disable no-inline-comments */
+// @ts-check
+
+ 
 const path = require('path');
-const rollup = require('rollup');
+const rollup = /** @type {{rollup: import("rollup").rollup}} */ (
+  /** @type {unknown} */
+  (require('rollup'))
+);
 const sourcemap = /** @type {import("@rollup/plugin-terser").default} */ (
   /** @type {unknown} */
   (require('rollup-plugin-sourcemaps'))
@@ -37,7 +42,7 @@ async function build(dist, out) {
       }),
       terser({
         compress: {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
+           
           negate_iife: false,
           sequences: 0,
         },

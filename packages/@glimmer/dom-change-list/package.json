@@ -2,11 +2,29 @@
   "name": "@glimmer/dom-change-list",
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/dom-change-list",
+  "main": "index.ts",
+  "types": "index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
     "@glimmer/util": "workspace:^",
     "@glimmer/interfaces": "workspace:^"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "workspace:^"
+    "@glimmer/local-debug-flags": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:^"
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json",
+    "build": "rollup -c rollup.config.mjs"
   }
 }

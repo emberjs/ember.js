@@ -1,16 +1,16 @@
-import {
-  type Bounds,
-  type Option,
-  type SimpleDocument,
-  type SimpleElement,
-  type SimpleNode,
+import type {
+  Bounds,
+  Nullable,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
 } from '@glimmer/interfaces';
 import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
 import createHTMLDocument from '@simple-dom/document';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
   protected declare document: SimpleDocument; // Hides property on base class
-  constructor(doc: Option<SimpleDocument>) {
+  constructor(doc: Nullable<SimpleDocument>) {
     super(doc || createHTMLDocument());
   }
 
@@ -19,7 +19,7 @@ export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
 
   override insertHTMLBefore(
     parent: SimpleElement,
-    reference: Option<SimpleNode>,
+    reference: Nullable<SimpleNode>,
     html: string
   ): Bounds {
     let raw = this.document.createRawHTMLSection!(html);

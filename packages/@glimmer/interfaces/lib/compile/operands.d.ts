@@ -1,40 +1,48 @@
-import { type CompilableTemplate } from '../template';
-import { type SymbolTable } from '../tier1/symbol-table';
-import type * as WireFormat from './wire-format';
+import type { CompilableTemplate } from '../template';
+import type { SymbolTable } from '../tier1/symbol-table';
+import type * as WireFormat from './wire-format/api';
 
-export enum HighLevelOperand {
-  Label = 1,
-  IsStrictMode = 2,
-  DebugSymbols = 3,
-  Block = 4,
-  StdLib = 5,
-  NonSmallInt = 6,
-  SymbolTable = 7,
-  Layout = 8,
-}
+export type LabelOperandType = 1;
+export type IsStrictModeOperandType = 2;
+export type DebugSymbolsOperandType = 3;
+export type BlockOperandType = 4;
+export type StdLibOperandType = 5;
+export type NonSmallIntOperandType = 6;
+export type SymbolTableOperandType = 7;
+export type LayoutOperandType = 8;
+
+export type OperandType =
+  | LabelOperandType
+  | IsStrictModeOperandType
+  | DebugSymbolsOperandType
+  | BlockOperandType
+  | StdLibOperandType
+  | NonSmallIntOperandType
+  | SymbolTableOperandType
+  | LayoutOperandType;
 
 export interface LabelOperand {
-  type: HighLevelOperand.Label;
+  type: LabelOperandType;
   value: string;
 }
 
 export interface IsStrictModeOperand {
-  type: HighLevelOperand.IsStrictMode;
+  type: IsStrictModeOperandType;
   value: undefined;
 }
 
 export interface DebugSymbolsOperand {
-  type: HighLevelOperand.DebugSymbols;
+  type: DebugSymbolsOperandType;
   value: undefined;
 }
 
 export interface BlockOperand {
-  type: HighLevelOperand.Block;
+  type: BlockOperandType;
   value: WireFormat.SerializedInlineBlock | WireFormat.SerializedBlock;
 }
 
 export interface StdLibOperand {
-  type: HighLevelOperand.StdLib;
+  type: StdLibOperandType;
   value:
     | 'main'
     | 'trusting-append'
@@ -44,17 +52,17 @@ export interface StdLibOperand {
 }
 
 export interface NonSmallIntOperand {
-  type: HighLevelOperand.NonSmallInt;
+  type: NonSmallIntOperandType;
   value: number;
 }
 
 export interface SymbolTableOperand {
-  type: HighLevelOperand.SymbolTable;
+  type: SymbolTableOperandType;
   value: SymbolTable;
 }
 
 export interface LayoutOperand {
-  type: HighLevelOperand.Layout;
+  type: LayoutOperandType;
   value: CompilableTemplate;
 }
 

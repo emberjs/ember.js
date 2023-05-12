@@ -1,8 +1,8 @@
 import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
-import { type RichIteratorResult } from '../core';
-import { type Bounds } from '../dom/bounds';
-import { type Environment } from './environment';
+import type { RichIteratorResult } from '../core';
+import type { Bounds } from '../dom/bounds';
+import type { Environment } from './environment';
 
 export interface ExceptionHandler {
   handleException(): void;

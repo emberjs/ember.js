@@ -1,17 +1,6 @@
-import { type Maybe, type Present } from '@glimmer/interfaces';
+import type { Maybe, Present } from '@glimmer/interfaces';
 
 export type Factory<T> = new (...args: unknown[]) => T;
-
-export const HAS_NATIVE_PROXY = typeof Proxy === 'function';
-
-export const HAS_NATIVE_SYMBOL = (function () {
-  if (typeof Symbol !== 'function') {
-    return false;
-  }
-
-  // eslint-disable-next-line symbol-description
-  return typeof Symbol() === 'symbol';
-})();
 
 export function keys<T extends object>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof T>;

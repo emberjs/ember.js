@@ -1,4 +1,4 @@
-import { type Dict, type Option } from '@glimmer/interfaces';
+import type { Dict, Nullable } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { asPresentArray, assert, assign, deprecate, isPresentArray } from '@glimmer/util';
 
@@ -51,17 +51,17 @@ function buildMustache(
 
 function buildBlock(
   path: BuilderHead,
-  params: Option<ASTv1.Expression[]>,
-  hash: Option<ASTv1.Hash>,
+  params: Nullable<ASTv1.Expression[]>,
+  hash: Nullable<ASTv1.Hash>,
   _defaultBlock: ASTv1.PossiblyDeprecatedBlock,
-  _elseBlock?: Option<ASTv1.PossiblyDeprecatedBlock>,
+  _elseBlock?: Nullable<ASTv1.PossiblyDeprecatedBlock>,
   loc?: SourceLocation,
   openStrip?: ASTv1.StripFlags,
   inverseStrip?: ASTv1.StripFlags,
   closeStrip?: ASTv1.StripFlags
 ): ASTv1.BlockStatement {
   let defaultBlock: ASTv1.Block;
-  let elseBlock: Option<ASTv1.Block> | undefined;
+  let elseBlock: Nullable<ASTv1.Block> | undefined;
 
   if (_defaultBlock.type === 'Template') {
     if (LOCAL_DEBUG) {
@@ -101,7 +101,7 @@ function buildElementModifier(
   path: BuilderHead | ASTv1.Expression,
   params?: ASTv1.Expression[],
   hash?: ASTv1.Hash,
-  loc?: Option<SourceLocation>
+  loc?: Nullable<SourceLocation>
 ): ASTv1.ElementModifierStatement {
   return {
     type: 'ElementModifierStatement',
@@ -492,7 +492,7 @@ function buildPosition(line: number, column: number): SourcePosition {
   };
 }
 
-function buildLoc(loc: Option<SourceLocation>): SourceSpan;
+function buildLoc(loc: Nullable<SourceLocation>): SourceSpan;
 function buildLoc(
   startLine: number,
   startColumn: number,

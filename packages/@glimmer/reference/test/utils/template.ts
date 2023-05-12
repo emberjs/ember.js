@@ -1,4 +1,4 @@
-import { type IteratorDelegate } from '@glimmer/reference';
+import type { IteratorDelegate } from '@glimmer/reference';
 
 import objectValues from './platform';
 

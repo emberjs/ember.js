@@ -1,4 +1,4 @@
-import { type Dict, type Option, type PresentArray, type WireFormat } from '@glimmer/interfaces';
+import type { Dict, Nullable, PresentArray, WireFormat } from '@glimmer/interfaces';
 
 import type * as src from '../source/api';
 
@@ -94,7 +94,7 @@ export interface BlockStatement extends BaseNode {
   params: Expression[];
   hash: Hash;
   program: Block;
-  inverse?: Option<Block>;
+  inverse?: Nullable<Block>;
   openStrip: StripFlags;
   inverseStrip: StripFlags;
   closeStrip: StripFlags;

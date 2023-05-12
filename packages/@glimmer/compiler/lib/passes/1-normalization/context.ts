@@ -1,7 +1,7 @@
-import { type ASTv2, type SymbolTable } from '@glimmer/syntax';
+import type { ASTv2, SymbolTable } from '@glimmer/syntax';
 
-import { type OptionalList } from '../../shared/list';
-import { type Result } from '../../shared/result';
+import type { OptionalList } from '../../shared/list';
+import type { Result } from '../../shared/result';
 import type * as mir from '../2-encoding/mir';
 import { VISIT_STMTS } from './visitors/statements';
 

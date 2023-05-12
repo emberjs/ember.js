@@ -1,14 +1,14 @@
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
-import {
-  type AttributeCursor,
-  type AttributeOperation,
-  type AttrNamespace,
-  type Dict,
-  type ElementBuilder,
-  type Environment,
-  type Option,
-  type SimpleElement,
-} from '@glimmer/interfaces';
+import type {
+  AttributeCursor,
+  AttributeOperation,
+  AttrNamespace,
+  Dict,
+  ElementBuilder,
+  Environment,
+  Nullable,
+  SimpleElement,
+} from "@glimmer/interfaces";
 import { castToBrowser, NS_SVG } from '@glimmer/util';
 
 import { normalizeStringValue } from '../../dom/normalize';
@@ -18,7 +18,7 @@ import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitize
 export function dynamicAttribute(
   element: SimpleElement,
   attr: string,
-  namespace: Option<AttrNamespace>,
+  namespace: Nullable<AttrNamespace>,
   isTrusting = false
 ): DynamicAttribute {
   const { tagName, namespaceURI } = element;
@@ -209,7 +209,7 @@ function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
-function normalizeValue(value: unknown): Option<string> {
+function normalizeValue(value: unknown): Nullable<string> {
   if (
     value === false ||
     value === undefined ||

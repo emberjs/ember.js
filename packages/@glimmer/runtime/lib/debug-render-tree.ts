@@ -1,16 +1,16 @@
-import {
-  type Bounds,
-  type CapturedRenderNode,
-  type DebugRenderTree,
-  type Option,
-  type RenderNode,
-} from '@glimmer/interfaces';
+import type {
+  Bounds,
+  CapturedRenderNode,
+  DebugRenderTree,
+  Nullable,
+  RenderNode,
+} from "@glimmer/interfaces";
 import { assign, expect, Stack } from '@glimmer/util';
 
 import { reifyArgs } from './vm/arguments';
 
 interface InternalRenderNode<T extends object> extends RenderNode {
-  bounds: Option<Bounds>;
+  bounds: Nullable<Bounds>;
   refs: Set<Ref<T>>;
   parent?: InternalRenderNode<T>;
 }
@@ -19,13 +19,13 @@ let GUID = 0;
 
 export class Ref<T extends object> {
   readonly id: number = GUID++;
-  private value: Option<T>;
+  private value: Nullable<T>;
 
   constructor(value: T) {
     this.value = value;
   }
 
-  get(): Option<T> {
+  get(): Nullable<T> {
     return this.value;
   }
 
@@ -184,7 +184,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
     return { id, type, name, args: reifyArgs(args), instance, template, bounds, children };
   }
 
-  private captureTemplate({ template }: InternalRenderNode<TBucket>): Option<string> {
+  private captureTemplate({ template }: InternalRenderNode<TBucket>): Nullable<string> {
     return template || null;
   }
 

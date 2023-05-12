@@ -1,9 +1,9 @@
-import {
-  type ComponentManager,
-  type HelperManager,
-  type InternalComponentManager,
-  type InternalHelperManager,
-  type ModifierManager,
+import type {
+  ComponentManager,
+  HelperManager,
+  InternalComponentManager,
+  InternalHelperManager,
+  ModifierManager,
 } from '@glimmer/interfaces';
 import {
   componentCapabilities,
@@ -111,7 +111,7 @@ module('Managers', () => {
           setComponentManager(() => {
             return {} as any;
           }, definition);
-        }, /Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type/);
+        }, /Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type/u);
       });
 
       test('throws a useful error when missing capabilities on non-internal managers', (assert) => {
@@ -126,7 +126,7 @@ module('Managers', () => {
 
         assert.throws(() => {
           manager.create({}, {}, {} as any);
-        }, /Custom component managers must have a `capabilities` property /);
+        }, /Custom component managers must have a `capabilities` property /u);
       });
 
       test('throws a useful error when capabilities not made with buildCapabilities are used on non-internal managers', (assert) => {
@@ -143,10 +143,9 @@ module('Managers', () => {
 
         assert.throws(() => {
           manager.create({}, {}, {} as any);
-        }, /Custom component managers must have a `capabilities` property /);
+        }, /Custom component managers must have a `capabilities` property /u);
       });
 
-      // eslint-disable-next-line qunit/require-expect
       test('throws an error if used with primitive values', (assert) => {
         assertPrimitiveUsage(assert, setInternalComponentManager);
       });
@@ -216,7 +215,7 @@ module('Managers', () => {
           setHelperManager(() => {
             return {} as any;
           }, definition);
-        }, /Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type/);
+        }, /Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type/u);
       });
 
       test('throws a useful error when missing capabilities on non-internal managers', (assert) => {
@@ -228,7 +227,7 @@ module('Managers', () => {
 
         assert.throws(() => {
           manager.getDelegateFor({});
-        }, /Custom helper managers must have a `capabilities` property /);
+        }, /Custom helper managers must have a `capabilities` property /u);
       });
 
       test('throws a useful error when capabilities not made with buildCapabilities are used on non-internal managers', (assert) => {
@@ -242,10 +241,9 @@ module('Managers', () => {
 
         assert.throws(() => {
           manager.getDelegateFor({});
-        }, /Custom helper managers must have a `capabilities` property /);
+        }, /Custom helper managers must have a `capabilities` property /u);
       });
 
-      // eslint-disable-next-line qunit/require-expect
       test('throws an error if used with primitive values', (assert) => {
         assertPrimitiveUsage(assert, setInternalHelperManager);
       });
@@ -324,7 +322,7 @@ module('Managers', () => {
           setModifierManager(() => {
             return {} as any;
           }, definition);
-        }, /Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type/);
+        }, /Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type/u);
       });
 
       test('throws a useful error when missing capabilities on non-internal managers', (assert) => {
@@ -336,7 +334,7 @@ module('Managers', () => {
 
         assert.throws(() => {
           manager.create({}, {} as any, {}, {} as any);
-        }, /Custom modifier managers must have a `capabilities` property /);
+        }, /Custom modifier managers must have a `capabilities` property /u);
       });
 
       test('throws a useful error when capabilities not made with buildCapabilities are used on non-internal managers', (assert) => {
@@ -350,10 +348,9 @@ module('Managers', () => {
 
         assert.throws(() => {
           manager.create({}, {} as any, {}, {} as any);
-        }, /Custom modifier managers must have a `capabilities` property /);
+        }, /Custom modifier managers must have a `capabilities` property /u);
       });
 
-      // eslint-disable-next-line qunit/require-expect
       test('throws an error if used with primitive values', (assert) => {
         assertPrimitiveUsage(assert, setModifierManager);
       });
@@ -382,31 +379,31 @@ function assertPrimitiveUsage(assert: Assert, setManager: any) {
 
   assert.throws(() => {
     setManager(() => ({} as any), null as any);
-  }, /Attempted to set a manager on a non-object value/);
+  }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
     setManager(() => ({} as any), undefined as any);
-  }, /Attempted to set a manager on a non-object value/);
+  }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
     setManager(() => ({} as any), true as any);
-  }, /Attempted to set a manager on a non-object value/);
+  }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
     setManager(() => ({} as any), false as any);
-  }, /Attempted to set a manager on a non-object value/);
+  }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
     setManager(() => ({} as any), 123 as any);
-  }, /Attempted to set a manager on a non-object value/);
+  }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
     setManager(() => ({} as any), 'foo' as any);
-  }, /Attempted to set a manager on a non-object value/);
+  }, /Attempted to set a manager on a non-object value/u);
 
   if (typeof Symbol === 'function') {
     assert.throws(() => {
       setManager(() => ({} as any), Symbol('foo') as any);
-    }, /Attempted to set a manager on a non-object value/);
+    }, /Attempted to set a manager on a non-object value/u);
   }
 }

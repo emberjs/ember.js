@@ -11,6 +11,7 @@ import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
 import objectValues from './utils/platform';
 import { module, test } from './utils/qunit';
 import { TestContext } from './utils/template';
+import { unwrap } from '@glimmer/util';
 
 class IterableWrapper {
   private iterable: Reference<{ next(): OpaqueIterationItem | null }>;
@@ -28,13 +29,11 @@ class IterableWrapper {
 
     // bootstrap
     let iterator = valueForRef(this.iterable);
+    let item = iterator.next();
 
-    while (true) {
-      let item = iterator.next();
-
-      if (item === null) break;
-
+    while (item !== null) {
       result.push(item);
+      item = iterator.next();
     }
 
     return result;
@@ -53,11 +52,11 @@ module('@glimmer/reference: IterableReference', (hooks) => {
   let originalContext: GlobalContext | null;
 
   hooks.beforeEach(() => {
-    originalContext = testOverrideGlobalContext!(TestContext);
+    originalContext = unwrap(testOverrideGlobalContext)(TestContext);
   });
 
   hooks.afterEach(() => {
-    testOverrideGlobalContext!(originalContext);
+    unwrap(testOverrideGlobalContext)(originalContext);
   });
 
   module('iterator delegates', () => {

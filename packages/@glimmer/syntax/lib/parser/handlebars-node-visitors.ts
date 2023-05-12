@@ -1,4 +1,4 @@
-import { type Option, type Recast } from '@glimmer/interfaces';
+import type { Nullable, Recast } from '@glimmer/interfaces';
 import { getLast, isPresentArray, unwrap } from '@glimmer/util';
 import type { TokenizerState } from 'simple-html-tokenizer';
 
@@ -219,7 +219,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     this.tokenizer.flushData();
   }
 
-  CommentStatement(rawComment: HBS.CommentStatement): Option<ASTv1.MustacheCommentStatement> {
+  CommentStatement(rawComment: HBS.CommentStatement): Nullable<ASTv1.MustacheCommentStatement> {
     const { tokenizer } = this;
 
     if (tokenizer.state === 'comment') {
@@ -329,7 +329,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     // escaping – such as `{{foo.["bar.baz"]}}` would mean lookup a property
     // named literally "bar.baz" on `this.foo`). By convention, we use `null`
     // for this purpose.
-    if (original.match(/^this(\..+)?$/)) {
+    if (/^this(?:\..+)?$/u.test(original)) {
       thisHead = true;
     }
 
@@ -429,7 +429,7 @@ function calculateRightStrippedOffsets(original: string, value: string) {
   // otherwise, return the number of newlines prior to
   // `value`
   const [difference] = original.split(value) as [string];
-  const lines = difference.split(/\n/);
+  const lines = difference.split(/\n/u);
   const lineCount = lines.length - 1;
 
   return {

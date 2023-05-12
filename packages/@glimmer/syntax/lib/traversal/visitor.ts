@@ -1,5 +1,5 @@
 import type * as ASTv1 from '../v1/api';
-import { type VisitorKey } from '../v1/visitor-keys';
+import type { VisitorKey } from '../v1/visitor-keys';
 import type WalkerPath from './path';
 
 export interface FullNodeTraversal<N extends ASTv1.Node> {

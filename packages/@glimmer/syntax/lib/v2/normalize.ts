@@ -1,4 +1,4 @@
-import { type PresentArray } from '@glimmer/interfaces';
+import type { PresentArray } from '@glimmer/interfaces';
 import { asPresentArray, assert, assign, isPresentArray } from '@glimmer/util';
 
 import Printer from '../generation/printer';
@@ -7,10 +7,10 @@ import {
   type PrecompileOptionsWithLexicalScope,
   preprocess,
 } from '../parser/tokenizer-event-handlers';
-import { type SourceLocation } from '../source/location';
+import type { SourceLocation } from '../source/location';
 import { SourceSlice } from '../source/slice';
-import { type Source } from '../source/source';
-import { type SourceSpan } from '../source/span';
+import type { Source } from '../source/source';
+import type { SourceSpan } from '../source/span';
 import { SpanList } from '../source/span-list';
 import { type BlockSymbolTable, type ProgramSymbolTable, SymbolTable } from '../symbol-table';
 import { generateSyntaxError } from '../syntax-error';
@@ -43,7 +43,7 @@ export function normalize(
 
   let top = SymbolTable.top(
     normalizeOptions.locals,
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+     
     {
       customizeComponentName: options.customizeComponentName ?? ((name) => name),
       lexicalScope: options.lexicalScope,
@@ -777,7 +777,7 @@ class Children {
           case 'HtmlComment':
             return false;
           case 'HtmlText':
-            return !/^\s*$/.exec(c.chars);
+            return !/^\s*$/u.test(c.chars);
           default:
             return true;
         }

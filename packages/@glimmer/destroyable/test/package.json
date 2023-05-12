@@ -3,6 +3,7 @@
   "name": "@glimmer-test/destroyable",
   "dependencies": {
     "@glimmer/global-context": "workspace:^",
-    "@glimmer/destroyable": "workspace:^"
+    "@glimmer/destroyable": "workspace:^",
+    "@glimmer/util": "workspace:^"
   }
 }

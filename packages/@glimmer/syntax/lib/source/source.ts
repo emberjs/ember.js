@@ -1,10 +1,8 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-
-import type { Option } from '@glimmer/interfaces';
+import type { Nullable } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 
-import { type PrecompileOptions } from '../parser/tokenizer-event-handlers';
-import { type SourceLocation, type SourcePosition } from './location';
+import type { PrecompileOptions } from '../parser/tokenizer-event-handlers';
+import type { SourceLocation, SourcePosition } from './location';
 import { SourceOffset, SourceSpan } from './span';
 
 export class Source {
@@ -36,7 +34,7 @@ export class Source {
     });
   }
 
-  hbsPosFor(offset: number): Option<SourcePosition> {
+  hbsPosFor(offset: number): Nullable<SourcePosition> {
     let seenLines = 0;
     let seenChars = 0;
 
@@ -44,6 +42,7 @@ export class Source {
       return null;
     }
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       let nextLine = this.source.indexOf('\n', seenChars);
 
@@ -66,9 +65,7 @@ export class Source {
     let seenLines = 0;
     let seenChars = 0;
 
-    while (true) {
-      if (seenChars >= sourceLength) return sourceLength;
-
+    while (seenChars < sourceLength) {
       let nextLine = this.source.indexOf('\n', seenChars);
       if (nextLine === -1) nextLine = this.source.length;
 
@@ -93,5 +90,7 @@ export class Source {
         seenChars = nextLine + 1;
       }
     }
+
+    return sourceLength;
   }
 }

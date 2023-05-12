@@ -1,6 +1,6 @@
 import { check } from '@glimmer/debug';
-import { Op } from '@glimmer/interfaces';
 import { createIteratorRef, valueForRef } from '@glimmer/reference';
+import { Op } from '@glimmer/vm';
 
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckIterator, CheckReference } from './-debug-strip';

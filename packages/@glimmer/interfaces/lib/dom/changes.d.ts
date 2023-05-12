@@ -1,11 +1,11 @@
-import { type Option } from '../core';
-import { type Bounds } from './bounds';
+import type { Nullable } from '../core';
+import type { Bounds } from './bounds';
 import type { Namespace, SimpleComment, SimpleElement, SimpleNode, SimpleText } from './simple';
 
 export interface GlimmerDOMOperations {
   createElement(tag: string, context?: SimpleElement): SimpleElement;
-  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Option<SimpleNode>): void;
-  insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds;
+  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Nullable<SimpleNode>): void;
+  insertHTMLBefore(parent: SimpleElement, nextSibling: Nullable<SimpleNode>, html: string): Bounds;
   createTextNode(text: string): SimpleText;
   createComment(data: string): SimpleComment;
 }
@@ -21,6 +21,6 @@ export interface GlimmerTreeConstruction extends GlimmerDOMOperations {
     element: SimpleElement,
     name: string,
     value: string,
-    namespace?: Option<Namespace>
+    namespace?: Nullable<Namespace>
   ): void;
 }

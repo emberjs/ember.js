@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "name": "@glimmer-workspace/krausest",
+  "dependencies": {
+    "@glimmer-workspace/benchmark-env": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@simple-dom/document": "^1.4.0",
+    "@simple-dom/serializer": "^1.4.0",
+    "@simple-dom/void-map": "^1.4.0",
+    "@glimmer/compiler": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^4.3.5",
+    "@types/node": "^18.16.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "config": {
+    "tsconfig": "../../tsconfig.json"
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../../tsconfig.json"
+  }
+}

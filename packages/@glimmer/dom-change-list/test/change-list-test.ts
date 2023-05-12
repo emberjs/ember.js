@@ -1,9 +1,9 @@
 import { DOMTreeConstruction, type NodeTokensImpl } from '@glimmer/dom-change-list';
-import {
-  type Namespace,
-  type SimpleDocument,
-  type SimpleDocumentFragment,
-  type SimpleElement,
+import type {
+  Namespace,
+  SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
 } from '@glimmer/interfaces';
 import { NS_SVG, NS_XLINK } from '@glimmer/util';
 import createDocument from '@simple-dom/document';

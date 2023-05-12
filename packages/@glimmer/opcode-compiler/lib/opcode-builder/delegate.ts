@@ -1,8 +1,8 @@
-import {
-  type CompileTimeComponent,
-  type InternalComponentCapabilities,
-  type Option,
-} from '@glimmer/interfaces';
+import type {
+  CompileTimeComponent,
+  InternalComponentCapabilities,
+  Nullable,
+} from "@glimmer/interfaces";
 
 export const DEFAULT_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,
@@ -37,9 +37,9 @@ export const MINIMAL_CAPABILITIES: InternalComponentCapabilities = {
 };
 
 export interface ResolverDelegate<R = unknown> {
-  lookupHelper?(name: string, referrer: R): Option<number> | void;
-  lookupModifier?(name: string, referrer: R): Option<number> | void;
-  lookupComponent?(name: string, referrer: R): Option<CompileTimeComponent> | void;
+  lookupHelper?(name: string, referrer: R): Nullable<number> | void;
+  lookupModifier?(name: string, referrer: R): Nullable<number> | void;
+  lookupComponent?(name: string, referrer: R): Nullable<CompileTimeComponent> | void;
 
   // For debugging
   resolve?(handle: number): R;

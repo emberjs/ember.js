@@ -1,4 +1,4 @@
-import { type PresentArray } from '@glimmer/interfaces';
+import type { PresentArray } from '@glimmer/interfaces';
 
 import { SourceSlice } from '../../source/slice';
 import type { CallFields } from './base';

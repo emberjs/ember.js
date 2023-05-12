@@ -1,8 +1,8 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+ 
 import type { PresentArray } from '@glimmer/interfaces';
 import { getFirst, getLast, isPresentArray } from '@glimmer/util';
 
-import { type LocatedWithOptionalSpan, type LocatedWithSpan } from './location';
+import type { LocatedWithOptionalSpan, LocatedWithSpan } from './location';
 import { type SourceOffset, SourceSpan } from './span';
 
 export type HasSpan = SourceSpan | LocatedWithSpan | PresentArray<LocatedWithSpan>;

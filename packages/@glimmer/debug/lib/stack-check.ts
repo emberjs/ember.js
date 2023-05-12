@@ -1,13 +1,13 @@
-import {
-  type BlockSymbolTable,
-  type Dict,
-  type Maybe,
-  type Option,
-  type ProgramSymbolTable,
-  type SimpleDocumentFragment,
-  type SimpleElement,
-  type SimpleNode,
-} from '@glimmer/interfaces';
+import type {
+  BlockSymbolTable,
+  Dict,
+  Maybe,
+  Nullable,
+  ProgramSymbolTable,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+} from "@glimmer/interfaces";
 
 export interface Checker<T> {
   type: T;
@@ -96,12 +96,12 @@ class InstanceofChecker<T> implements Checker<T> {
   }
 }
 
-class OptionChecker<T> implements Checker<Option<T>> {
-  declare type: Option<T>;
+class OptionChecker<T> implements Checker<Nullable<T>> {
+  declare type: Nullable<T>;
 
   constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
 
-  validate(value: unknown): value is Option<T> {
+  validate(value: unknown): value is Nullable<T> {
     if (value === this.emptyValue) return true;
     return this.checker.validate(value);
   }
@@ -267,7 +267,7 @@ export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
   return new InstanceofChecker<T>(Class);
 }
 
-export function CheckOption<T>(checker: Checker<T>): Checker<Option<T>> {
+export function CheckOption<T>(checker: Checker<T>): Checker<Nullable<T>> {
   return new OptionChecker(checker, null);
 }
 

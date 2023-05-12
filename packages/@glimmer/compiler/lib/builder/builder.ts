@@ -1,12 +1,10 @@
-import {
-  type AttrNamespace,
-  type Dict,
-  type Expressions,
-  type GetContextualFreeOp,
-  type Option,
-  type PresentArray,
-  SexpOpcodes,
-  VariableResolutionContext,
+import type {
+  AttrNamespace,
+  Dict,
+  Expressions,
+  GetContextualFreeOpcode,
+  Nullable,
+  PresentArray,
   WireFormat,
 } from '@glimmer/interfaces';
 import {
@@ -21,6 +19,7 @@ import {
   NS_XMLNS,
   values,
 } from '@glimmer/util';
+import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
 
 import {
   Builder,
@@ -44,8 +43,6 @@ import {
   type Variable,
   VariableKind,
 } from './builder-interface';
-
-import Op = WireFormat.SexpOpcodes;
 
 interface Symbols {
   top: ProgramSymbols;
@@ -237,7 +234,7 @@ export function buildStatement(
 
     case HeadKind.Call: {
       let { head: path, params, hash, trusted } = normalized;
-      let builtParams: Option<WireFormat.Core.Params> = params
+      let builtParams: Nullable<WireFormat.Core.Params> = params
         ? buildParams(params, symbols)
         : null;
       let builtHash: WireFormat.Core.Hash = hash ? buildHash(hash, symbols) : null;
@@ -342,11 +339,12 @@ function buildKeyword(
       return [Op.With, expect(params, 'with requires params')[0], block, inverse];
     case 'if':
       return [Op.If, expect(params, 'if requires params')[0], block, inverse];
-    case 'each':
+    case 'each': {
       let keyExpr = normalized.hash ? normalized.hash['key'] : null;
       let key = keyExpr ? buildExpression(keyExpr, 'Strict', symbols) : null;
-
       return [Op.Each, expect(params, 'if requires params')[0], key, block, inverse];
+    }
+
     default:
       throw new Error('unimplemented keyword');
   }
@@ -379,7 +377,7 @@ function buildElement(
   return out;
 }
 
-function hasSplat(attrs: Option<NormalizedAttrs>): boolean {
+function hasSplat(attrs: Nullable<NormalizedAttrs>): boolean {
   if (attrs === null) return false;
 
   return Object.keys(attrs).some((a) => attrs[a] === HeadKind.Splat);
@@ -440,12 +438,12 @@ export function buildElementParams(
   return { params, args: isPresentArray(keys) && isPresentArray(values) ? [keys, values] : null };
 }
 
-export function extractNamespace(name: string): Option<AttrNamespace> {
+export function extractNamespace(name: string): Nullable<AttrNamespace> {
   if (name === 'xmlns') {
     return NS_XMLNS;
   }
 
-  let match = /^([^:]*):([^:]*)$/.exec(name);
+  let match = /^([^:]*):([^:]*)$/u.exec(name);
 
   if (match === null) {
     return null;
@@ -468,7 +466,7 @@ export function extractNamespace(name: string): Option<AttrNamespace> {
 export function buildAttributeValue(
   name: string,
   value: NormalizedExpression,
-  namespace: Option<AttrNamespace>,
+  namespace: Nullable<AttrNamespace>,
   symbols: Symbols
 ): WireFormat.Attribute[] {
   switch (value.type) {
@@ -633,21 +631,21 @@ export function buildVar(
   switch (head.kind) {
     case VariableKind.Free:
       if (context === 'Strict') {
-        op = SexpOpcodes.GetStrictKeyword;
+        op = Op.GetStrictKeyword;
       } else if (context === 'AppendBare') {
-        op = SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback;
+        op = Op.GetFreeAsComponentOrHelperHeadOrThisFallback;
       } else if (context === 'AppendInvoke') {
-        op = SexpOpcodes.GetFreeAsComponentOrHelperHead;
+        op = Op.GetFreeAsComponentOrHelperHead;
       } else if (context === 'TrustedAppendBare') {
-        op = SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
+        op = Op.GetFreeAsHelperHeadOrThisFallback;
       } else if (context === 'TrustedAppendInvoke') {
-        op = SexpOpcodes.GetFreeAsHelperHead;
+        op = Op.GetFreeAsHelperHead;
       } else if (context === 'AttrValueBare') {
-        op = SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
+        op = Op.GetFreeAsHelperHeadOrThisFallback;
       } else if (context === 'AttrValueInvoke') {
-        op = SexpOpcodes.GetFreeAsHelperHead;
+        op = Op.GetFreeAsHelperHead;
       } else if (context === 'SubExpression') {
-        op = SexpOpcodes.GetFreeAsHelperHead;
+        op = Op.GetFreeAsHelperHead;
       } else {
         op = expressionContextOp(context);
       }
@@ -684,7 +682,7 @@ function getSymbolForVar(
   }
 }
 
-export function expressionContextOp(context: VariableResolutionContext): GetContextualFreeOp {
+export function expressionContextOp(context: VariableResolutionContext): GetContextualFreeOpcode {
   switch (context) {
     case VariableResolutionContext.Strict:
       return Op.GetStrictKeyword;
@@ -706,9 +704,9 @@ export function expressionContextOp(context: VariableResolutionContext): GetCont
 }
 
 export function buildParams(
-  exprs: Option<NormalizedParams>,
+  exprs: Nullable<NormalizedParams>,
   symbols: Symbols
-): Option<WireFormat.Core.Params> {
+): Nullable<WireFormat.Core.Params> {
   if (exprs === null || !isPresentArray(exprs)) return null;
 
   return exprs.map((e) => buildExpression(e, 'Strict', symbols)) as WireFormat.Core.ConcatParams;
@@ -721,7 +719,7 @@ export function buildConcat(
   return exprs.map((e) => buildExpression(e, 'AttrValue', symbols)) as WireFormat.Core.ConcatParams;
 }
 
-export function buildHash(exprs: Option<NormalizedHash>, symbols: Symbols): WireFormat.Core.Hash {
+export function buildHash(exprs: Nullable<NormalizedHash>, symbols: Symbols): WireFormat.Core.Hash {
   if (exprs === null) return null;
 
   let out: [string[], WireFormat.Expression[]] = [[], []];
@@ -736,7 +734,7 @@ export function buildHash(exprs: Option<NormalizedHash>, symbols: Symbols): Wire
 
 export function buildBlocks(
   blocks: NormalizedBlocks,
-  blockParams: Option<string[]>,
+  blockParams: Nullable<string[]>,
   parent: Symbols
 ): WireFormat.Core.Blocks {
   let keys: string[] = [];

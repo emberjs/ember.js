@@ -1,13 +1,13 @@
-import {
-  type BuilderOp,
-  type CompilableProgram,
-  type CompileTimeCompilationContext,
-  type HandleResult,
-  type HighLevelOp,
-  type LayoutWithContext,
-  type Option,
-  type ProgramSymbolTable,
-} from '@glimmer/interfaces';
+import type {
+  BuilderOp,
+  CompilableProgram,
+  CompileTimeCompilationContext,
+  HandleResult,
+  HighLevelOp,
+  LayoutWithContext,
+  Nullable,
+  ProgramSymbolTable,
+} from "@glimmer/interfaces";
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 
 import { debugCompiler } from './compiler';
@@ -15,11 +15,11 @@ import { templateCompilationContext } from './opcode-builder/context';
 import { encodeOp } from './opcode-builder/encoder';
 import { ATTRS_BLOCK, WrappedComponent } from './opcode-builder/helpers/components';
 import { meta } from './opcode-builder/helpers/shared';
-import { type HighLevelStatementOp } from './syntax/compilers';
+import type { HighLevelStatementOp } from './syntax/compilers';
 
 export class WrappedBuilder implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
-  private compiled: Option<number> = null;
+  private compiled: Nullable<number> = null;
   private attrsBlockNumber: number;
 
   constructor(private layout: LayoutWithContext, public moduleName: string) {

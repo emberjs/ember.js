@@ -8,18 +8,17 @@ import {
 } from '@glimmer/debug';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { toBool } from '@glimmer/global-context';
-import {
-  type CapturedPositionalArguments,
+import type {
+  CapturedPositionalArguments,
   CurriedType,
-  type Helper,
-  type HelperDefinitionState,
-  Op,
-  type Owner,
-  type ResolutionTimeConstants,
-  type RuntimeConstants,
-  type ScopeBlock,
-  type VM as PublicVM,
-} from '@glimmer/interfaces';
+  Helper,
+  HelperDefinitionState,
+  Owner,
+  ResolutionTimeConstants,
+  RuntimeConstants,
+  ScopeBlock,
+  VM as PublicVM,
+} from "@glimmer/interfaces";
 import {
   childRefFor,
   createComputeRef,
@@ -30,7 +29,7 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { assert, assign, debugToString, decodeHandle, isObject } from '@glimmer/util';
-import { $v0 } from '@glimmer/vm';
+import { $v0, CurriedTypes, Op } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
@@ -88,7 +87,7 @@ APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
 
     let definition = valueForRef(ref);
 
-    if (isCurriedType(definition, CurriedType.Helper)) {
+    if (isCurriedType(definition, CurriedTypes.Helper)) {
       let { definition: resolvedDef, owner, positional, named } = resolveCurriedValue(definition);
 
       let helper = resolveHelper(vm[CONSTANTS], resolvedDef, ref);

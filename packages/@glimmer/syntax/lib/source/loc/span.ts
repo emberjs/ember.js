@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+ 
 
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { assertNever } from '@glimmer/util';
@@ -10,7 +10,7 @@ import {
   type SourcePosition,
 } from '../location';
 import { SourceSlice } from '../slice';
-import { type Source } from '../source';
+import type { Source } from '../source';
 import { OffsetKind } from './kinds';
 import { IsInvisible, match, MatchAny, type MatchFn } from './match';
 import {

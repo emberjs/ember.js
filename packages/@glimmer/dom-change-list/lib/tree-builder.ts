@@ -1,12 +1,12 @@
-import {
-  type Dict,
-  type Namespace,
-  type NodeToken,
-  type NodeTokens,
-  type Option,
-  type SimpleDocument,
-  type SimpleDocumentFragment,
-  type SimpleElement,
+import type {
+  Dict,
+  Namespace,
+  NodeToken,
+  NodeTokens,
+  Nullable,
+  SimpleDocument,
+  SimpleDocumentFragment,
+  SimpleElement,
 } from '@glimmer/interfaces';
 import { NS_HTML, NS_SVG } from '@glimmer/util';
 
@@ -132,12 +132,12 @@ export class TreeBuilder {
     return this.dom.appendComment(text);
   }
 
-  get currentTag(): Option<string> {
+  get currentTag(): Nullable<string> {
     const current = this.current;
     return current && current.tag;
   }
 
-  get currentNamespace(): Option<Namespace> {
+  get currentNamespace(): Nullable<Namespace> {
     const current = this.current;
     return current && current.namespaceURI;
   }
@@ -146,7 +146,7 @@ export class TreeBuilder {
     return this.dom.appendTo(element, owner);
   }
 
-  private get current(): Option<Context> {
+  private get current(): Nullable<Context> {
     const { contexts } = this;
     const { length } = contexts;
 

@@ -14,7 +14,7 @@ import {
   isUpdatableRef,
   updateRef,
   valueForRef,
-} from '..';
+} from '@glimmer/reference';
 import { tracked } from './support';
 
 const { module, test } = QUnit;
@@ -40,7 +40,7 @@ module('References', (hooks) => {
   let setCount = 0;
 
   hooks.beforeEach(() => {
-    originalContext = testOverrideGlobalContext!({
+    originalContext = unwrap(testOverrideGlobalContext)({
       getProp(obj: object, key: string): unknown {
         getCount++;
         return (obj as Record<string, unknown>)[key];
@@ -56,7 +56,7 @@ module('References', (hooks) => {
   });
 
   hooks.afterEach(() => {
-    testOverrideGlobalContext!(originalContext);
+    unwrap(testOverrideGlobalContext)(originalContext);
   });
 
   hooks.beforeEach(() => {
@@ -384,7 +384,7 @@ module('References', (hooks) => {
           (newValue) => (foo.value = newValue)
         );
 
-        let alias = createDebugAliasRef!('@test', original);
+        let alias = unwrap(createDebugAliasRef)('@test', original);
 
         assert.strictEqual(valueForRef(original), 123, 'alias returns correct value');
         assert.strictEqual(valueForRef(alias), 123, 'alias returns correct value');
@@ -396,14 +396,14 @@ module('References', (hooks) => {
         assert.strictEqual(valueForRef(alias), 456, 'alias returns correct value');
 
         let readOnly = createReadOnlyRef(original);
-        let readOnlyAlias = createDebugAliasRef!('@test', readOnly);
+        let readOnlyAlias = unwrap(createDebugAliasRef)('@test', readOnly);
 
         assert.strictEqual(valueForRef(readOnly), 456, 'alias returns correct value');
         assert.strictEqual(valueForRef(readOnlyAlias), 456, 'alias returns correct value');
         assert.notOk(isUpdatableRef(readOnly), 'alias is not updatable');
 
         let invokable = createInvokableRef(original);
-        let invokableAlias = createDebugAliasRef!('@test', invokable);
+        let invokableAlias = unwrap(createDebugAliasRef)('@test', invokable);
 
         assert.ok(isInvokableRef(invokableAlias), 'alias is invokable');
       });

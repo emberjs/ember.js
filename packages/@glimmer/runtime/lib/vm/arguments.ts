@@ -1,21 +1,21 @@
 import { check, CheckBlockSymbolTable, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
-import {
-  type BlockArguments,
-  type BlockSymbolTable,
-  type BlockValue,
-  type CapturedArguments,
-  type CapturedBlockArguments,
-  type CapturedNamedArguments,
-  type CapturedPositionalArguments,
-  type CompilableBlock,
-  type Dict,
-  type NamedArguments,
-  type Option,
-  type PositionalArguments,
-  type Scope,
-  type ScopeBlock,
-  type VMArguments,
-} from '@glimmer/interfaces';
+import type {
+  BlockArguments,
+  BlockSymbolTable,
+  BlockValue,
+  CapturedArguments,
+  CapturedBlockArguments,
+  CapturedNamedArguments,
+  CapturedPositionalArguments,
+  CompilableBlock,
+  Dict,
+  NamedArguments,
+  Nullable,
+  PositionalArguments,
+  Scope,
+  ScopeBlock,
+  VMArguments,
+} from "@glimmer/interfaces";
 import {
   createDebugAliasRef,
   type Reference,
@@ -28,7 +28,7 @@ import { $sp } from '@glimmer/vm';
 
 import { CheckCompilableBlock, CheckReference, CheckScope } from '../compiled/opcodes/-debug-strip';
 import { REGISTERS } from '../symbols';
-import { type EvaluationStack } from './stack';
+import type { EvaluationStack } from './stack';
 
 /*
   The calling convention is:
@@ -39,7 +39,7 @@ import { type EvaluationStack } from './stack';
 */
 
 export class VMArgumentsImpl implements VMArguments {
-  private stack: Option<EvaluationStack> = null;
+  private stack: Nullable<EvaluationStack> = null;
   public positional = new PositionalArgumentsImpl();
   public named = new NamedArgumentsImpl();
   public blocks = new BlockArgumentsImpl();
@@ -139,7 +139,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
   private stack: EvaluationStack = null as any;
 
-  private _references: Option<readonly Reference[]> = null;
+  private _references: Nullable<readonly Reference[]> = null;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
@@ -210,10 +210,10 @@ export class NamedArgumentsImpl implements NamedArguments {
 
   private declare stack: EvaluationStack;
 
-  private _references: Option<readonly Reference[]> = null;
+  private _references: Nullable<readonly Reference[]> = null;
 
-  private _names: Option<readonly string[]> = EMPTY_STRING_ARRAY;
-  private _atNames: Option<readonly string[]> = EMPTY_STRING_ARRAY;
+  private _names: Nullable<readonly string[]> = EMPTY_STRING_ARRAY;
+  private _atNames: Nullable<readonly string[]> = EMPTY_STRING_ARRAY;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
@@ -363,10 +363,10 @@ const EMPTY_BLOCK_VALUES = emptyArray<BlockValue>();
 
 export class BlockArgumentsImpl implements BlockArguments {
   private declare stack: EvaluationStack;
-  private internalValues: Option<readonly BlockValue[]> = null;
-  private _symbolNames: Option<readonly string[]> = null;
+  private internalValues: Nullable<readonly BlockValue[]> = null;
+  private _symbolNames: Nullable<readonly string[]> = null;
 
-  public internalTag: Option<Tag> = null;
+  public internalTag: Nullable<Tag> = null;
   public names: readonly string[] = EMPTY_STRING_ARRAY;
 
   public length = 0;
@@ -414,7 +414,7 @@ export class BlockArgumentsImpl implements BlockArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get(name: string): Option<ScopeBlock> {
+  get(name: string): Nullable<ScopeBlock> {
     let idx = this.names.indexOf(name);
 
     if (idx === -1) {
@@ -451,7 +451,7 @@ export class BlockArgumentsImpl implements BlockArguments {
 class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   public length: number;
 
-  constructor(public names: readonly string[], public values: readonly Option<BlockValue>[]) {
+  constructor(public names: readonly string[], public values: readonly Nullable<BlockValue>[]) {
     this.length = names.length;
   }
 
@@ -459,7 +459,7 @@ class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get(name: string): Option<ScopeBlock> {
+  get(name: string): Nullable<ScopeBlock> {
     let idx = this.names.indexOf(name);
 
     if (idx === -1) return null;

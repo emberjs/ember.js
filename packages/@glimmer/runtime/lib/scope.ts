@@ -1,13 +1,13 @@
-import {
-  type Dict,
-  type DynamicScope,
-  type Option,
-  type Owner,
-  type PartialScope,
-  type Scope,
-  type ScopeBlock,
-  type ScopeSlot,
-} from '@glimmer/interfaces';
+import type {
+  Dict,
+  DynamicScope,
+  Nullable,
+  Owner,
+  PartialScope,
+  Scope,
+  ScopeBlock,
+  ScopeSlot,
+} from "@glimmer/interfaces";
 import { type Reference, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { assign, unwrap } from '@glimmer/util';
 
@@ -85,16 +85,16 @@ export class PartialScopeImpl implements PartialScope {
     return this.get<Reference<unknown>>(symbol);
   }
 
-  getBlock(symbol: number): Option<ScopeBlock> {
+  getBlock(symbol: number): Nullable<ScopeBlock> {
     let block = this.get(symbol);
     return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock);
   }
 
-  getEvalScope(): Option<Dict<ScopeSlot>> {
+  getEvalScope(): Nullable<Dict<ScopeSlot>> {
     return this.evalScope;
   }
 
-  getPartialMap(): Option<Dict<Reference<unknown>>> {
+  getPartialMap(): Nullable<Dict<Reference<unknown>>> {
     return this.partialMap;
   }
 
@@ -110,11 +110,11 @@ export class PartialScopeImpl implements PartialScope {
     this.set(symbol, value);
   }
 
-  bindBlock(symbol: number, value: Option<ScopeBlock>) {
-    this.set<Option<ScopeBlock>>(symbol, value);
+  bindBlock(symbol: number, value: Nullable<ScopeBlock>) {
+    this.set<Nullable<ScopeBlock>>(symbol, value);
   }
 
-  bindEvalScope(map: Option<Dict<ScopeSlot>>) {
+  bindEvalScope(map: Nullable<Dict<ScopeSlot>>) {
     this.evalScope = map;
   }
 
@@ -122,11 +122,11 @@ export class PartialScopeImpl implements PartialScope {
     this.partialMap = map;
   }
 
-  bindCallerScope(scope: Option<Scope>): void {
+  bindCallerScope(scope: Nullable<Scope>): void {
     this.callerScope = scope;
   }
 
-  getCallerScope(): Option<Scope> {
+  getCallerScope(): Nullable<Scope> {
     return this.callerScope;
   }
 

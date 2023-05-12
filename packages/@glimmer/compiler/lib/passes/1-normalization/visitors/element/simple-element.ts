@@ -3,7 +3,7 @@ import { type ASTv2, generateSyntaxError, type SourceSlice } from '@glimmer/synt
 import { Err, type Result } from '../../../../shared/result';
 import * as mir from '../../../2-encoding/mir';
 import { VISIT_STMTS } from '../statements';
-import { type Classified, type ClassifiedElement, type PreparedArgs } from './classified';
+import type { Classified, ClassifiedElement, PreparedArgs } from './classified';
 
 export class ClassifiedSimpleElement implements Classified {
   constructor(

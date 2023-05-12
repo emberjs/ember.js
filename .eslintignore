@@ -1,10 +1,13 @@
 # compiled output
 /dist/
+**/dist/
 /tmp/
 
 # dependencies
 /bower_components/
 /node_modules/
+**/node_modules/
+**/.yalc/
 
 # misc
 /coverage/

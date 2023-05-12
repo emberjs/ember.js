@@ -7,19 +7,17 @@ import {
   CheckString,
 } from '@glimmer/debug';
 import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import {
-  type CapturedPositionalArguments,
-  CurriedType,
-  type Environment,
-  type ModifierDefinition,
-  type ModifierDefinitionState,
-  type ModifierInstance,
-  Op,
-  type Option,
-  type Owner,
-  type UpdatingOpcode,
-  type UpdatingVM,
-} from '@glimmer/interfaces';
+import type {
+  CapturedPositionalArguments,
+  Environment,
+  ModifierDefinition,
+  ModifierDefinitionState,
+  ModifierInstance,
+  Nullable,
+  Owner,
+  UpdatingOpcode,
+  UpdatingVM,
+} from "@glimmer/interfaces";
 import { createComputeRef, isConstRef, type Reference, valueForRef } from '@glimmer/reference';
 import { assign, debugToString, expect, isObject } from '@glimmer/util';
 import {
@@ -30,12 +28,12 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import { $t0 } from '@glimmer/vm';
+import { $t0, CurriedTypes, Op } from '@glimmer/vm';
 
 import { type CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
-import { type DynamicAttribute } from '../../vm/attributes/dynamic';
+import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 
@@ -83,7 +81,7 @@ APPEND_OPCODES.add(Op.PopRemoteElement, (vm) => {
 
 APPEND_OPCODES.add(Op.FlushElement, (vm) => {
   let operations = check(vm.fetchValue($t0), CheckOperations);
-  let modifiers: Option<ModifierInstance[]> = null;
+  let modifiers: Nullable<ModifierInstance[]> = null;
 
   if (operations) {
     modifiers = operations.flush(vm);
@@ -171,7 +169,7 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
 
     let hostDefinition: CurriedValue | ModifierDefinitionState;
 
-    if (isCurriedType(value, CurriedType.Modifier)) {
+    if (isCurriedType(value, CurriedTypes.Modifier)) {
       let {
         definition: resolvedDefinition,
         owner: curriedOwner,

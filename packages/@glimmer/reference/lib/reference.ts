@@ -1,14 +1,14 @@
 import { getProp, setProp } from '@glimmer/global-context';
-import {
-  type ComputeReference,
-  type ConstantReference,
-  type InvokableReference,
-  type Option,
-  type Reference,
-  type ReferenceSymbol,
-  type ReferenceType,
-  type UnboundReference,
-} from '@glimmer/interfaces';
+import type {
+  ComputeReference,
+  ConstantReference,
+  InvokableReference,
+  Nullable,
+  Reference,
+  ReferenceSymbol,
+  ReferenceType,
+  UnboundReference,
+} from "@glimmer/interfaces";
 import { expect, isDict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
@@ -40,14 +40,14 @@ export interface ReferenceEnvironment {
 
 class ReferenceImpl<T = unknown> implements Reference<T> {
   [REFERENCE]: ReferenceType;
-  public tag: Option<Tag> = null;
+  public tag: Nullable<Tag> = null;
   public lastRevision: Revision = INITIAL;
   public lastValue?: T;
 
-  public children: Option<Map<string | Reference, Reference>> = null;
+  public children: Nullable<Map<string | Reference, Reference>> = null;
 
-  public compute: Option<() => T> = null;
-  public update: Option<(val: T) => void> = null;
+  public compute: Nullable<() => T> = null;
+  public update: Nullable<(val: T) => void> = null;
 
   public debugLabel?: string;
 
@@ -102,7 +102,7 @@ export function createUnboundRef(value: unknown, debugLabel: false | string): Re
 
 export function createComputeRef<T = unknown>(
   compute: () => T,
-  update: Option<(value: T) => void> = null,
+  update: Nullable<(value: T) => void> = null,
   debugLabel: false | string = 'unknown'
 ): Reference<T> {
   const ref = new ReferenceImpl<T>(COMPUTE);

@@ -9,7 +9,7 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "../../ts-dist/packages",
-    "baseUrl": ".",
+    "baseUrl": "..",
 
     "verbatimModuleSyntax": true,
 
@@ -28,9 +28,8 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
 
-    "skipLibCheck": true,
-
     "types": ["qunit", "node", "vite/client"]
   },
-  "exclude": ["*/dist", "*/node_modules"]
+  "include": ["./**/*", "./**/*.d.ts"],
+  "exclude": ["*/dist", "*/node_modules", "**/fixtures", "*/test"]
 }

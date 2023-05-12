@@ -1,4 +1,4 @@
-import { type SourceSlice } from '../../source/slice';
+import type { SourceSlice } from '../../source/slice';
 import { node } from './node';
 import type { FreeVarResolution } from './resolution';
 

@@ -1,4 +1,4 @@
-import { type NodeToken, type NodeTokens, type SimpleNode } from '@glimmer/interfaces';
+import type { NodeToken, NodeTokens, SimpleNode } from '@glimmer/interfaces';
 
 export class NodeTokensImpl implements NodeTokens {
   private nodes: SimpleNode[] = [];

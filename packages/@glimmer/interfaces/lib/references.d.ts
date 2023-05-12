@@ -1,4 +1,4 @@
-import { type Option } from './core';
+import type { Nullable } from './core';
 
 export type ConstantReference = 0;
 export type ComputeReference = 1;
@@ -24,6 +24,6 @@ export type ReferenceSymbol = typeof REFERENCE;
 export interface Reference<T = unknown> {
   [REFERENCE]: ReferenceType;
   debugLabel?: string | undefined;
-  compute: Option<() => T>;
+  compute: Nullable<() => T>;
   children: null | Map<string | Reference, Reference>;
 }

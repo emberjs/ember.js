@@ -1,7 +1,8 @@
-import {
-  type SerializedTemplateBlock,
-  type SerializedTemplateWithLazyBlock,
-  type TemplateJavascript,
+import type {
+  Nullable,
+  SerializedTemplateBlock,
+  SerializedTemplateWithLazyBlock,
+  TemplateJavascript,
 } from '@glimmer/interfaces';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import {
@@ -46,7 +47,9 @@ export const defaultId: TemplateIdFn = (() => {
       idFn('test');
 
       return idFn;
-    } catch (e) {}
+    } catch {
+      // do nothing
+    }
   }
 
   return function idFn() {
@@ -73,10 +76,10 @@ const defaultOptions: PrecompileOptions = {
  * @return {string} a template javascript string
  */
 export function precompileJSON(
-  string: string,
+  string: Nullable<string>,
   options: PrecompileOptions | PrecompileOptionsWithLexicalScope = defaultOptions
 ): [block: SerializedTemplateBlock, usedLocals: string[]] {
-  const source = new src.Source(string, options.meta?.moduleName);
+  const source = new src.Source(string ?? '', options.meta?.moduleName);
   const [ast, locals] = normalize(source, { lexicalScope: () => false, ...options });
   const block = pass0(source, ast, options.strictMode ?? false).mapOk((pass2In) => {
     return pass2(pass2In);

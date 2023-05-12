@@ -1,16 +1,10 @@
-import {
-  MachineOp,
-  type Option,
-  type RuntimeHeap,
-  type RuntimeOp,
-  type RuntimeProgram,
-} from '@glimmer/interfaces';
+import type { Nullable, RuntimeHeap, RuntimeOp, RuntimeProgram } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { assert } from '@glimmer/util';
-import { $fp, $pc, $ra, $sp, type MachineRegister } from '@glimmer/vm';
+import { $fp, $pc, $ra, $sp, MachineOp, type MachineRegister } from '@glimmer/vm';
 
 import { APPEND_OPCODES } from '../opcodes';
-import type VM from './append';
+import type { VM } from './append';
 
 export interface LowLevelRegisters {
   [MachineRegister.pc]: number;
@@ -42,7 +36,7 @@ export interface Externs {
   debugAfter(state: unknown): void;
 }
 
-export default class LowLevelVM {
+export class LowLevelVM {
   public currentOpSize = 0;
 
   constructor(
@@ -115,7 +109,7 @@ export default class LowLevelVM {
     this.setPc(this.registers[$ra]);
   }
 
-  nextStatement(): Option<RuntimeOp> {
+  nextStatement(): Nullable<RuntimeOp> {
     let { registers, program } = this;
 
     let pc = registers[$pc];

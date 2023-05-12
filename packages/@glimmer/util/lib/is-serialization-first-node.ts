@@ -1,4 +1,4 @@
-import { type SimpleNode } from '@glimmer/interfaces';
+import type { SimpleNode } from '@glimmer/interfaces';
 
 export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
 

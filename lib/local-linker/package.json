@@ -1,6 +1,6 @@
 {
   "name": "local-linker",
-  "version": "workspace:^",
+  "version": "0.84.3",
   "private": true,
   "keywords": [
     "ember-addon"

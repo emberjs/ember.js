@@ -1,0 +1,38 @@
+{
+  "name": "@glimmer/vm-babel-plugins",
+  "version": "0.84.3",
+  "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
+  "repository": "https://github.com/glimmerjs/glimmer.js",
+  "author": "Tom Dale <tom@tomdale.net>",
+  "license": "MIT",
+  "private": false,
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "mocha",
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json",
+    "build": "rollup -c rollup.config.mjs"
+  },
+  "dependencies": {
+    "babel-plugin-debug-macros": "^0.3.4"
+  },
+  "devDependencies": {
+    "babel-plugin-tester": "^11.0.4",
+    "mocha": "^10.2.0",
+    "@glimmer-workspace/build-support": "workspace:^"
+  },
+  "main": "index.ts",
+  "types": "index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  }
+}

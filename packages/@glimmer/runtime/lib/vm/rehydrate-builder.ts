@@ -1,16 +1,16 @@
-import {
-  type AttrNamespace,
-  type Bounds,
-  type ElementBuilder,
-  type Environment,
-  type Maybe,
-  type Option,
-  type SimpleAttr,
-  type SimpleComment,
-  type SimpleElement,
-  type SimpleNode,
-  type SimpleText,
-} from '@glimmer/interfaces';
+import type {
+  AttrNamespace,
+  Bounds,
+  ElementBuilder,
+  Environment,
+  Maybe,
+  Nullable,
+  SimpleAttr,
+  SimpleComment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+} from "@glimmer/interfaces";
 import {
   assert,
   castToBrowser,
@@ -31,12 +31,12 @@ export function isSerializationFirstNode(node: SimpleNode): boolean {
 }
 
 export class RehydratingCursor extends CursorImpl {
-  candidate: Option<SimpleNode> = null;
+  candidate: Nullable<SimpleNode> = null;
   openBlockDepth: number;
   injectedOmittedNode = false;
   constructor(
     element: SimpleElement,
-    nextSibling: Option<SimpleNode>,
+    nextSibling: Nullable<SimpleNode>,
     public readonly startingBlockDepth: number
   ) {
     super(element, nextSibling);
@@ -45,12 +45,12 @@ export class RehydratingCursor extends CursorImpl {
 }
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
-  private unmatchedAttributes: Option<SimpleAttr[]> = null;
+  private unmatchedAttributes: Nullable<SimpleAttr[]> = null;
   declare [CURSOR_STACK]: Stack<RehydratingCursor>; // Hides property on base class
   blockDepth = 0;
   startingBlockOffset: number;
 
-  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Option<SimpleNode>) {
+  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
@@ -92,11 +92,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  get currentCursor(): Option<RehydratingCursor> {
+  get currentCursor(): Nullable<RehydratingCursor> {
     return this[CURSOR_STACK].current;
   }
 
-  get candidate(): Option<SimpleNode> {
+  get candidate(): Nullable<SimpleNode> {
     if (this.currentCursor) {
       return this.currentCursor.candidate!;
     }
@@ -104,13 +104,13 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return null;
   }
 
-  set candidate(node: Option<SimpleNode>) {
+  set candidate(node: Nullable<SimpleNode>) {
     const currentCursor = this.currentCursor!;
 
     currentCursor.candidate = node;
   }
 
-  disableRehydration(nextSibling: Option<SimpleNode>) {
+  disableRehydration(nextSibling: Nullable<SimpleNode>) {
     const currentCursor = this.currentCursor!;
 
     // rehydration will be disabled until we either:
@@ -121,7 +121,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     currentCursor.nextSibling = nextSibling;
   }
 
-  enableRehydration(candidate: Option<SimpleNode>) {
+  enableRehydration(candidate: Nullable<SimpleNode>) {
     const currentCursor = this.currentCursor!;
 
     currentCursor.candidate = candidate;
@@ -159,7 +159,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   // clears until the end of the current container
   // either the current open block or higher
   private clearMismatch(candidate: SimpleNode) {
-    let current: Option<SimpleNode> = candidate;
+    let current: Nullable<SimpleNode> = candidate;
     const currentCursor = this.currentCursor;
     if (currentCursor !== null) {
       const openBlockDepth = currentCursor.openBlockDepth;
@@ -303,14 +303,14 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  protected remove(node: SimpleNode): Option<SimpleNode> {
+  protected remove(node: SimpleNode): Nullable<SimpleNode> {
     const element = expect(node.parentNode, `cannot remove a detached node`) as SimpleElement;
     const next = node.nextSibling;
     element.removeChild(node);
     return next;
   }
 
-  private markerBounds(): Option<Bounds> {
+  private markerBounds(): Nullable<Bounds> {
     const _candidate = this.candidate;
 
     if (_candidate && isMarker(_candidate)) {
@@ -390,7 +390,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__openElement(tag);
   }
 
-  override __setAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
+  override __setAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
     const unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
@@ -450,7 +450,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super.willCloseElement();
   }
 
-  getMarker(element: HTMLElement, guid: string): Option<SimpleNode> {
+  getMarker(element: HTMLElement, guid: string): Nullable<SimpleNode> {
     const marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
       return castToSimple(marker);
@@ -462,7 +462,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
-  ): Option<RemoteLiveBlock> {
+  ): Nullable<RemoteLiveBlock> {
     const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
     assert(

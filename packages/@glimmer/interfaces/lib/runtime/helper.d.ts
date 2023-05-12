@@ -1,8 +1,7 @@
-// eslint-disable-next-line n/no-extraneous-import
-import { type Reference } from '../references';
-import { type CapturedArguments } from './arguments';
-import { type Owner } from './owner';
-import { type DynamicScope } from './scope';
+import type { Reference } from '../references';
+import type { CapturedArguments } from './arguments';
+import type { Owner } from './owner';
+import type { DynamicScope } from './scope';
 
 export type HelperDefinitionState = object;
 

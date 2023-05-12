@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: NullVoxPopuli/action-setup-pnpm@v2
+      - uses: NullVoxPopuli/action-setup-pnpm@NullVoxPopuli-patch-1
 
   lint:
     name: Linting

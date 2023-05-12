@@ -1,4 +1,4 @@
-// eslint-disable-next-line n/no-unpublished-require
+ 
 const express = require('express');
 
 const app = express();

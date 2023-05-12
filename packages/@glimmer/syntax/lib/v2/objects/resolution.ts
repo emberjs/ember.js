@@ -6,7 +6,8 @@
  * 3. Fallback resolution
  */
 
-import { type GetContextualFreeOp, SexpOpcodes } from '@glimmer/interfaces';
+import type { GetContextualFreeOpcode } from '@glimmer/interfaces';
+import { SexpOpcodes } from '@glimmer/wire-format';
 
 /**
  * Strict resolution is used:
@@ -15,7 +16,7 @@ import { type GetContextualFreeOp, SexpOpcodes } from '@glimmer/interfaces';
  * 2. in an unambiguous invocation with dot paths
  */
 export const STRICT_RESOLUTION = {
-  resolution: (): GetContextualFreeOp => SexpOpcodes.GetStrictKeyword,
+  resolution: (): GetContextualFreeOpcode => SexpOpcodes.GetStrictKeyword,
   serialize: (): SerializedResolution => 'Strict',
   isAngleBracket: false as const,
 };
@@ -148,7 +149,7 @@ export class LooseModeResolution {
 
   constructor(readonly ambiguity: Ambiguity, readonly isAngleBracket = false) {}
 
-  resolution(): GetContextualFreeOp {
+  resolution(): GetContextualFreeOpcode {
     if (this.ambiguity.namespaces.length === 0) {
       return SexpOpcodes.GetStrictKeyword;
     } else if (this.ambiguity.namespaces.length === 1) {

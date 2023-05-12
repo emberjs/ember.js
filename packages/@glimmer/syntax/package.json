@@ -5,11 +5,30 @@
   "dependencies": {
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/util": "workspace:^",
+    "@glimmer/wire-format": "workspace:^",
     "@handlebars/parser": "~2.0.0",
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "workspace:^",
-    "@types/qunit": "workspace:^"
+    "@types/qunit": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:^"
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json",
+    "build": "rollup -c rollup.config.mjs"
+  },
+  "main": "index.ts",
+  "types": "index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
   }
 }

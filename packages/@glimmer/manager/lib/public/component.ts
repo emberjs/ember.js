@@ -1,21 +1,21 @@
 import { registerDestructor } from '@glimmer/destroyable';
-import {
-  type Arguments,
-  type ComponentCapabilities,
-  type ComponentCapabilitiesVersions,
-  type ComponentDefinitionState,
-  type ComponentManager,
-  type ComponentManagerWithAsyncLifeCycleCallbacks,
-  type ComponentManagerWithAsyncUpdateHook,
-  type ComponentManagerWithDestructors,
-  type ComponentManagerWithUpdateHook,
-  type Destroyable,
-  type InternalComponentCapabilities,
-  type InternalComponentManager,
-  type Option,
-  type Owner,
-  type VMArguments,
-} from '@glimmer/interfaces';
+import type {
+  Arguments,
+  ComponentCapabilities,
+  ComponentCapabilitiesVersions,
+  ComponentDefinitionState,
+  ComponentManager,
+  ComponentManagerWithAsyncLifeCycleCallbacks,
+  ComponentManagerWithAsyncUpdateHook,
+  ComponentManagerWithDestructors,
+  ComponentManagerWithUpdateHook,
+  Destroyable,
+  InternalComponentCapabilities,
+  InternalComponentManager,
+  Nullable,
+  Owner,
+  VMArguments,
+} from "@glimmer/interfaces";
 import { createConstRef, type Reference } from '@glimmer/reference';
 
 import { argsProxyFor } from '../util/args-proxy';
@@ -180,7 +180,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
     return createConstRef(delegate.getContext(component), 'this');
   }
 
-  getDestroyable(bucket: CustomComponentState<ComponentInstance>): Option<Destroyable> {
+  getDestroyable(bucket: CustomComponentState<ComponentInstance>): Nullable<Destroyable> {
     const { delegate } = bucket;
 
     if (hasDestructors(delegate)) {

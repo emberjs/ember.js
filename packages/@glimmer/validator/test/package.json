@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@glimmer-test/util",
+  "name": "@glimmer-test/validator",
   "dependencies": {
     "@glimmer/validator": "workspace:^",
     "@glimmer/global-context": "workspace:^",

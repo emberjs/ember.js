@@ -1,13 +1,17 @@
-// eslint-disable-next-line n/no-extraneous-import
-import { type Dict } from './core';
-import { type InternalComponentCapability, type InternalComponentManager } from './managers';
-import { type Reference } from './references';
-import { type ScopeSlot } from './runtime';
-import { type CompilableProgram } from './template';
-import { type ProgramSymbolTable } from './tier1/symbol-table';
+import type { Dict } from './core';
+import type { InternalComponentManager } from './managers';
+import type { Reference } from './references';
+import type { ScopeSlot } from './runtime';
+import type { CompilableProgram } from './template';
+import type { ProgramSymbolTable } from './tier1/symbol-table';
 
 export type ComponentDefinitionState = object;
 export type ComponentInstanceState = unknown;
+
+declare const CapabilityBrand: unique symbol;
+export type CapabilityMask = number & {
+  [CapabilityBrand]: never;
+};
 
 export interface ComponentDefinition<
   D extends ComponentDefinitionState = ComponentDefinitionState,
@@ -18,7 +22,7 @@ export interface ComponentDefinition<
   handle: number;
   state: D;
   manager: M;
-  capabilities: InternalComponentCapability;
+  capabilities: CapabilityMask;
   compilable: CompilableProgram | null;
 }
 
@@ -29,7 +33,7 @@ export interface ComponentInstance<
 > {
   definition: ComponentDefinition<D, I>;
   manager: M;
-  capabilities: InternalComponentCapability;
+  capabilities: CapabilityMask;
   state: I;
   handle: number;
   table: ProgramSymbolTable;

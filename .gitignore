@@ -3,6 +3,7 @@
 /control-dist/
 node_modules/
 **/node_modules/
+**/.turbo
 tmp/
 /ts-dist/
 **/ts-dist
@@ -12,3 +13,4 @@ tmp/
 *.pdf
 instrumentation.*.json
 .cache
+**/.yalc

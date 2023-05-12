@@ -1,16 +1,16 @@
-import {
-  type ComponentInstanceWithCreate,
-  type Environment,
-  type EnvironmentOptions,
-  type GlimmerTreeChanges,
-  type GlimmerTreeConstruction,
-  type ModifierInstance,
-  type Option,
-  type RuntimeArtifacts,
-  type RuntimeContext,
-  type RuntimeResolver,
-  type Transaction,
-  type TransactionSymbol,
+import type {
+  ComponentInstanceWithCreate,
+  Environment,
+  EnvironmentOptions,
+  GlimmerTreeChanges,
+  GlimmerTreeConstruction,
+  ModifierInstance,
+  Nullable,
+  RuntimeArtifacts,
+  RuntimeContext,
+  RuntimeResolver,
+  Transaction,
+  TransactionSymbol,
 } from '@glimmer/interfaces';
 import { RuntimeProgramImpl } from '@glimmer/program';
 import { assert, expect } from '@glimmer/util';
@@ -61,7 +61,6 @@ class TransactionImpl implements Transaction {
 
       if (modifierTag !== null) {
         let tag = track(
-          // eslint-disable-next-line no-loop-func
           () => manager.install(state),
           import.meta.env.DEV &&
             `- While rendering:\n  (instance of a \`${
@@ -79,7 +78,6 @@ class TransactionImpl implements Transaction {
 
       if (modifierTag !== null) {
         let tag = track(
-          // eslint-disable-next-line no-loop-func
           () => manager.update(state),
           import.meta.env.DEV &&
             `- While rendering:\n  (instance of a \`${
@@ -95,7 +93,7 @@ class TransactionImpl implements Transaction {
 }
 
 export class EnvironmentImpl implements Environment {
-  [TRANSACTION]: Option<TransactionImpl> = null;
+  [TRANSACTION]: Nullable<TransactionImpl> = null;
 
   protected declare appendOperations: GlimmerTreeConstruction;
   protected updateOperations?: GlimmerTreeChanges | undefined;

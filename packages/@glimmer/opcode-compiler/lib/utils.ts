@@ -1,23 +1,18 @@
-import {
-  type NamedBlocks,
-  type Option,
-  type SerializedInlineBlock,
-  type WireFormat,
-} from '@glimmer/interfaces';
+import type { NamedBlocks, Nullable, SerializedInlineBlock, WireFormat } from "@glimmer/interfaces";
 import { assign, dict, enumerate, unwrap } from '@glimmer/util';
 
 interface NamedBlocksDict {
-  [key: string]: Option<WireFormat.SerializedInlineBlock>;
+  [key: string]: Nullable<WireFormat.SerializedInlineBlock>;
 }
 
 export class NamedBlocksImpl implements NamedBlocks {
   public names: string[];
 
-  constructor(private blocks: Option<NamedBlocksDict>) {
+  constructor(private blocks: Nullable<NamedBlocksDict>) {
     this.names = blocks ? Object.keys(blocks) : [];
   }
 
-  get(name: string): Option<SerializedInlineBlock> {
+  get(name: string): Nullable<SerializedInlineBlock> {
     if (!this.blocks) return null;
 
     return this.blocks[name] || null;
@@ -28,7 +23,7 @@ export class NamedBlocksImpl implements NamedBlocks {
     return blocks !== null && name in blocks;
   }
 
-  with(name: string, block: Option<SerializedInlineBlock>): NamedBlocks {
+  with(name: string, block: Nullable<SerializedInlineBlock>): NamedBlocks {
     let { blocks } = this;
 
     if (blocks) {

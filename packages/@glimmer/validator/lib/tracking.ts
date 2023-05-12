@@ -1,11 +1,6 @@
-import { type Tag } from '@glimmer/interfaces';
+import type { Tag } from "@glimmer/interfaces";
 
-import {
-  beginTrackingTransaction,
-  endTrackingTransaction,
-  markTagAsConsumed,
-  resetTrackingTransaction,
-} from './debug';
+import { debug } from './debug';
 import { unwrap } from './utils';
 import {
   combine,
@@ -29,7 +24,7 @@ class Tracker {
     this.tags.add(tag);
 
     if (import.meta.env.DEV) {
-      unwrap(markTagAsConsumed)(tag);
+      unwrap(debug.markTagAsConsumed)(tag);
     }
 
     this.last = tag;
@@ -73,7 +68,7 @@ export function beginTrackFrame(debuggingContext?: string | false): void {
   CURRENT_TRACKER = new Tracker();
 
   if (import.meta.env.DEV) {
-    unwrap(beginTrackingTransaction)(debuggingContext);
+    unwrap(debug.beginTrackingTransaction)(debuggingContext);
   }
 }
 
@@ -85,7 +80,7 @@ export function endTrackFrame(): Tag {
       throw new Error('attempted to close a tracking frame, but one was not open');
     }
 
-    unwrap(endTrackingTransaction)();
+    unwrap(debug.endTrackingTransaction)();
   }
 
   CURRENT_TRACKER = OPEN_TRACK_FRAMES.pop() || null;
@@ -115,7 +110,7 @@ export function resetTracking(): string | void {
   CURRENT_TRACKER = null;
 
   if (import.meta.env.DEV) {
-    return unwrap(resetTrackingTransaction)();
+    return unwrap(debug.resetTrackingTransaction)();
   }
 }
 

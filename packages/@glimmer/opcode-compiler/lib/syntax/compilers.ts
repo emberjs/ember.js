@@ -1,9 +1,4 @@
-import {
-  type BuilderOp,
-  type HighLevelOp,
-  type SexpOpcode,
-  type SexpOpcodeMap,
-} from '@glimmer/interfaces';
+import type { BuilderOp, HighLevelOp, SexpOpcode, SexpOpcodeMap } from "@glimmer/interfaces";
 import { assert, unwrap } from '@glimmer/util';
 
 export type PushExpressionOp = (...op: BuilderOp | HighLevelOp) => void;

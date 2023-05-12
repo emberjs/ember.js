@@ -1,4 +1,4 @@
-import { type CurriedType, type PresentArray } from '@glimmer/interfaces';
+import type { CurriedType, PresentArray } from '@glimmer/interfaces';
 import {
   type ASTv2,
   type BlockSymbolTable,
@@ -8,7 +8,7 @@ import {
   type SymbolTable,
 } from '@glimmer/syntax';
 
-import { type AnyOptionalList, type OptionalList, type PresentList } from '../../shared/list';
+import type { AnyOptionalList, OptionalList, PresentList } from '../../shared/list';
 
 export class Template extends node('Template').fields<{
   scope: ProgramSymbolTable;

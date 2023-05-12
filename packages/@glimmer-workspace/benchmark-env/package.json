@@ -1,0 +1,25 @@
+{
+  "name": "@glimmer-workspace/benchmark-env",
+  "version": "0.84.3",
+  "private": true,
+  "engines": {
+    "node": ">=16"
+  },
+  "main": "index.ts",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer-workspace/benchmark-env",
+  "dependencies": {
+    "@glimmer/global-context": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/manager": "workspace:^",
+    "@glimmer/opcode-compiler": "workspace:^",
+    "@glimmer/program": "workspace:^",
+    "@glimmer/reference": "workspace:^",
+    "@glimmer/runtime": "workspace:^",
+    "@glimmer/util": "workspace:^",
+    "@glimmer/validator": "workspace:^"
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  }
+}

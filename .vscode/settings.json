@@ -14,27 +14,29 @@
   "editor.formatOnSave": true,
   "eslint.enable": true,
   "eslint.packageManager": "npm",
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.lintTask.enable": true,
+  "eslint.onIgnoredFiles": "warn",
   "eslint.workingDirectories": [
     {
-      "mode": "location"
+      "mode": "auto"
     }
   ],
-  "explorer.excludeGitIgnore": true,
+  "explorer.excludeGitIgnore": false,
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true,
-    "**/dist/**": true,
     "**/node_modules/**": true,
-    "dist/**": true,
     "node_modules/**": true
   },
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
   "files.watcherExclude": {
     "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/dist/**": true,
-    "dist": true
+    "**/.git/subtree-cache/**": true
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
@@ -48,5 +50,6 @@
   "typescript.tsc.autoDetect": "on",
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.tsserver.experimental.enableProjectDiagnostics": false,
-  "typescript.workspaceSymbols.scope": "currentProject"
+  "typescript.workspaceSymbols.scope": "currentProject",
+  "eslint.problems.shortenToSingleLine": true
 }

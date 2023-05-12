@@ -1,4 +1,4 @@
-import { type Option, type SimpleElement } from '@glimmer/interfaces';
+import type { Nullable, SimpleElement } from "@glimmer/interfaces";
 
 import { isSafeString, normalizeStringValue } from '../dom/normalize';
 
@@ -16,11 +16,11 @@ function has(array: Array<string>, item: string): boolean {
   return array.indexOf(item) !== -1;
 }
 
-function checkURI(tagName: Option<string>, attribute: string): boolean {
+function checkURI(tagName: Nullable<string>, attribute: string): boolean {
   return (tagName === null || has(badTags, tagName)) && has(badAttributes, attribute);
 }
 
-function checkDataURI(tagName: Option<string>, attribute: string): boolean {
+function checkDataURI(tagName: Nullable<string>, attribute: string): boolean {
   if (tagName === null) return false;
   return has(badTagsForDataURI, tagName) && has(badAttributesForDataURI, attribute);
 }
@@ -93,7 +93,7 @@ export function sanitizeAttributeValue(
   attribute: string,
   value: unknown
 ): unknown {
-  let tagName: Option<string> = null;
+  let tagName: Nullable<string> = null;
 
   if (value === null || value === undefined) {
     return value;

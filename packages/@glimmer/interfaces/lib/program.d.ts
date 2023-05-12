@@ -1,16 +1,16 @@
-import { type Encoder } from './compile';
-import { type ComponentDefinition, type ComponentDefinitionState } from './components';
-import { type HelperDefinitionState } from './runtime';
-import { type ModifierDefinitionState } from './runtime/modifier';
-import { type CompileTimeResolver, type ResolvedComponentDefinition } from './serialize';
-import { type ContainingMetadata, type STDLib, type Template } from './template';
-import { type Op } from './vm-opcodes';
+import type { Encoder } from './compile';
+import type { ComponentDefinition, ComponentDefinitionState } from './components';
+import type { HelperDefinitionState } from './runtime';
+import type { ModifierDefinitionState } from './runtime/modifier';
+import type { CompileTimeResolver, ResolvedComponentDefinition } from './serialize';
+import type { ContainingMetadata, STDLib, Template } from './template';
+import type { SomeVmOp, VmMachineOp, VmOp } from './vm-opcodes';
 
 export type CreateRuntimeOp = (heap: CompileTimeHeap) => RuntimeOp;
 
 export interface RuntimeOp {
   offset: number;
-  type: number;
+  type: SomeVmOp;
   op1: number;
   op2: number;
   op3: number;
@@ -29,7 +29,9 @@ export interface OpcodeHeap {
 }
 
 export interface CompileTimeHeap extends OpcodeHeap {
-  push(name: Op, op1?: number, op2?: number, op3?: number): void;
+  pushRaw(value: number): void;
+  pushOp(name: VmOp, op1?: number, op2?: number, op3?: number): void;
+  pushMachine(name: VmMachineOp, op1?: number, op2?: number, op3?: number): void;
   malloc(): number;
   finishMalloc(handle: number, scopeSize: number): void;
   capture(offset?: number): SerializedHeap;

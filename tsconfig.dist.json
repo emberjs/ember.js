@@ -12,7 +12,6 @@
     "strict": true,
     "suppressImplicitAnyIndexErrors": false,
     "useDefineForClassFields": false,
-    "verbatimModuleSyntax": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,

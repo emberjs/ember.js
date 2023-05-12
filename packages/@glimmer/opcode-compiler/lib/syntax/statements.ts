@@ -1,17 +1,12 @@
-import {
-  type CompileTimeComponent,
-  ContentType,
-  HighLevelBuilderOpcode,
-  HighLevelResolutionOpcode,
-  MachineOp,
-  Op,
-  SexpOpcodes,
-  type StatementSexpOpcode,
-  type WellKnownAttrName,
-  type WellKnownTagName,
-  type WireFormat,
-} from '@glimmer/interfaces';
-import { $fp, $sp } from '@glimmer/vm';
+import type {
+  CompileTimeComponent,
+  StatementSexpOpcode,
+  WellKnownAttrName,
+  WellKnownTagName,
+  WireFormat,
+} from "@glimmer/interfaces";
+import { $fp, $sp, ContentType, MachineOp, Op } from '@glimmer/vm';
+import { SexpOpcodes } from '@glimmer/wire-format';
 
 import {
   InvokeStaticBlock,
@@ -38,6 +33,7 @@ import {
   DynamicScope,
   PushPrimitiveReference,
 } from '../opcode-builder/helpers/vm';
+import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
 import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { namedBlocks } from '../utils';
 import { Compilers, type PushStatementOp } from './compilers';
@@ -65,7 +61,7 @@ STATEMENTS.add(SexpOpcodes.FlushElement, (op) => op(Op.FlushElement));
 
 STATEMENTS.add(SexpOpcodes.Modifier, (op, [, expression, positional, named]) => {
   if (isGetFreeModifier(expression)) {
-    op(HighLevelResolutionOpcode.ResolveModifier, expression, (handle: number) => {
+    op(HighLevelResolutionOpcodes.Modifier, expression, (handle: number) => {
       op(MachineOp.PushFrame);
       SimpleArgs(op, positional, named, false);
       op(Op.Modifier, handle);
@@ -120,7 +116,7 @@ STATEMENTS.add(SexpOpcodes.OpenElementWithSplat, (op, [, tag]) => {
 
 STATEMENTS.add(SexpOpcodes.Component, (op, [, expr, elementBlock, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
-    op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+    op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
       InvokeComponent(op, component, elementBlock, null, named, blocks);
     });
   } else {
@@ -143,7 +139,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
   if (!Array.isArray(value)) {
     op(Op.Text, value === null || value === undefined ? '' : String(value));
   } else if (isGetFreeOptionalComponentOrHelper(value)) {
-    op(HighLevelResolutionOpcode.ResolveOptionalComponentOrHelper, value, {
+    op(HighLevelResolutionOpcodes.OptionalComponentOrHelper, value, {
       ifComponent(component: CompileTimeComponent) {
         InvokeComponent(op, component, null, null, null, null);
       },
@@ -166,7 +162,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
     let [, expression, positional, named] = value;
 
     if (isGetFreeComponentOrHelper(expression)) {
-      op(HighLevelResolutionOpcode.ResolveComponentOrHelper, expression, {
+      op(HighLevelResolutionOpcodes.ComponentOrHelper, expression, {
         ifComponent(component: CompileTimeComponent) {
           InvokeComponent(op, component, null, positional, hashToArgs(named), null);
         },
@@ -227,7 +223,7 @@ STATEMENTS.add(SexpOpcodes.TrustingAppend, (op, [, value]) => {
 
 STATEMENTS.add(SexpOpcodes.Block, (op, [, expr, positional, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
-    op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+    op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
       InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
     });
   } else {
@@ -305,17 +301,17 @@ STATEMENTS.add(SexpOpcodes.Each, (op, [, value, key, block, inverse]) =>
       op(MachineOp.PushFrame);
       op(Op.Dup, $fp, 1);
       op(MachineOp.ReturnTo, labelOperand('ITER'));
-      op(HighLevelBuilderOpcode.Label, 'ITER');
+      op(HighLevelBuilderOpcodes.Label, 'ITER');
       op(Op.Iterate, labelOperand('BREAK'));
-      op(HighLevelBuilderOpcode.Label, 'BODY');
+      op(HighLevelBuilderOpcodes.Label, 'BODY');
       InvokeStaticBlockWithStack(op, block, 2);
       op(Op.Pop, 2);
       op(MachineOp.Jump, labelOperand('FINALLY'));
-      op(HighLevelBuilderOpcode.Label, 'BREAK');
+      op(HighLevelBuilderOpcodes.Label, 'BREAK');
       op(MachineOp.PopFrame);
       op(Op.ExitList);
       op(MachineOp.Jump, labelOperand('FINALLY'));
-      op(HighLevelBuilderOpcode.Label, 'ELSE');
+      op(HighLevelBuilderOpcodes.Label, 'ELSE');
 
       if (inverse) {
         InvokeStaticBlock(op, inverse);
@@ -368,7 +364,7 @@ STATEMENTS.add(SexpOpcodes.WithDynamicVars, (op, [, named, block]) => {
 
 STATEMENTS.add(SexpOpcodes.InvokeComponent, (op, [, expr, positional, named, blocks]) => {
   if (isGetFreeComponent(expr)) {
-    op(HighLevelResolutionOpcode.ResolveComponent, expr, (component: CompileTimeComponent) => {
+    op(HighLevelResolutionOpcodes.Component, expr, (component: CompileTimeComponent) => {
       InvokeComponent(op, component, null, positional, hashToArgs(named), blocks);
     });
   } else {

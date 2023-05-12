@@ -3,10 +3,12 @@
     "composite": true,
     "strict": true,
     "baseUrl": ".",
+    "allowJs": true,
+    "checkJs": true,
 
     "target": "es2020",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
 
     "suppressImplicitAnyIndexErrors": false,
@@ -19,10 +21,21 @@
 
     "outDir": "../ts-dist/bench"
   },
-  "include": ["./index.js", "./lib/**/*.js", "./bin/**/*.js"],
+  "include": [
+    "./index.js",
+    "./lib/**/*.js",
+    "./bin/**/*.js",
+    "./benchmarks/krausest/*.js",
+    "./benchmarks/krausest/lib/**/*.js",
+    "./benchmarks/krausest/vite.config.mts"
+  ],
+  "exclude": ["**/.yalc"],
   "references": [
     {
       "path": "../packages/@glimmer/tsconfig.json"
+    },
+    {
+      "path": "../packages/@glimmer-workspace/tsconfig.json"
     }
   ]
 }

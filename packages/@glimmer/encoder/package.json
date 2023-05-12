@@ -2,7 +2,28 @@
   "name": "@glimmer/encoder",
   "version": "0.84.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/encoder",
+  "main": "index.ts",
+  "types": "index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
-    "@glimmer/interfaces": "workspace:^"
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/vm": "workspace:^"
+  },
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json",
+    "build": "rollup -c rollup.config.mjs"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:^"
   }
 }
