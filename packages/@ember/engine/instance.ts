@@ -16,8 +16,6 @@ import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
 
-const CEngine = Engine;
-
 export interface BootOptions {
   isBrowser?: boolean;
   shouldRender?: boolean;
@@ -190,17 +188,17 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     @return {EngineInstance,Error}
   */
   buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}) {
-    let Engine = this.lookup(`engine:${name}`);
+    let ChildEngine = this.lookup(`engine:${name}`);
 
-    if (!Engine) {
+    if (!ChildEngine) {
       throw new EmberError(
         `You attempted to mount the engine '${name}', but it is not registered with its parent.`
       );
     }
 
-    assert('expected an Engine', Engine instanceof CEngine);
+    assert('expected an Engine', ChildEngine instanceof Engine);
 
-    let engineInstance = Engine.buildInstance(options);
+    let engineInstance = ChildEngine.buildInstance(options);
 
     setEngineParent(engineInstance, this);
 
