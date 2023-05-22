@@ -1,5 +1,11 @@
 # Ember Changelog
 
+## v5.1.0-beta.1 (May 22, 2023)
+
+- [#20449](https://github.com/emberjs/ember.js/pull/20449) [FEATURE] Publish stable types for Ember per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20439](https://github.com/emberjs/ember.js/pull/20439) [CLEANUP] Update tsconfig to target ES2021.
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
 ## v5.0.0 (May 15, 2023)
 
 - [#20438](https://github.com/emberjs/ember.js/pull/20438) [BREAKING] Drop support for Node 14
@@ -17,8 +23,7 @@
 - [#20429](https://github.com/emberjs/ember.js/pull/20429) [BUGFIX] TS lint-level error in `mixins/-proxy.ts`
 - [#20410](https://github.com/emberjs/ember.js/pull/20410) [BUGFIX] Add missing type declarations in the preview types for @ember/template-compilation
 
-
-### v4.8.5 (May 4, 2023)
+## v4.8.5 (May 4, 2023)
 
 - [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
 
