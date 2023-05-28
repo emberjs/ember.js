@@ -17,8 +17,18 @@ moduleFor(
       this.assert = assert;
     }
     ['@test it can be invoked as a JS function']() {
-      let first = getValue(invokeHelper({}, uniqueId()));
-      let second = getValue(invokeHelper({}, uniqueId()));
+      let first = uniqueId();
+      let second = uniqueId();
+
+      this.assert.notStrictEqual(
+        first,
+        second,
+        `different invocations of uniqueId should produce different values`
+      );
+    }
+    ['@test it can be invoked via invokeHelper']() {
+      let first = getValue(invokeHelper({}, uniqueId));
+      let second = getValue(invokeHelper({}, uniqueId));
 
       this.assert.notStrictEqual(
         first,
