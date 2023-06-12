@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.12.1 (June 12, 2023)
+
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
 ## v4.12.0 (April 3, 2023)
 
 - [#20352](https://github.com/emberjs/ember.js/pull/20352) [FEATURE] Enable generating Typescript blueprints when `isTypeScriptProject` is true without additional environment variables per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
