@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v4.8.6 (June 12, 2023)
+
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
 ### v4.8.5 (May 4, 2023)
 
 - [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
