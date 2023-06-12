@@ -23,6 +23,10 @@
 - [#20429](https://github.com/emberjs/ember.js/pull/20429) [BUGFIX] TS lint-level error in `mixins/-proxy.ts`
 - [#20410](https://github.com/emberjs/ember.js/pull/20410) [BUGFIX] Add missing type declarations in the preview types for @ember/template-compilation
 
+### v4.8.6 (June 12, 2023)
+
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
 ## v4.8.5 (May 4, 2023)
 
 - [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
