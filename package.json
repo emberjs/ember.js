@@ -33,6 +33,8 @@
     "url": "git+https://github.com/emberjs/ember.js.git"
   },
   "scripts": {
+    "ci": "yarn install --frozen-lockfile --non-interactive",
+    "build:publish": "node bin/build-for-publishing.js",
     "build:js": "ember build --environment production",
     "build:types": "node types/publish.mjs",
     "build": "npm-run-all build:*",
