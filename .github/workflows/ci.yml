@@ -117,7 +117,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> "$GITHUB_ENV"
 
       - name: test:browserstack
         env:
@@ -284,7 +284,6 @@ jobs:
         node-test,
         blueprint-test,
         browser-test,
-        build,
       ]
     permissions:
       id-token: write # For signing
