@@ -52,7 +52,7 @@ jobs:
     needs: ['types']
     strategy:
       matrix:
-        ts-version: ['next']
+        ts-version: ['4.9', '5.0', 'next']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -394,8 +394,8 @@ jobs:
       - uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.FRAMEWORK_WEBHOOK }}
-          status: "Failure"
-          title: "Ember.js Nightly CI"
+          status: 'Failure'
+          title: 'Ember.js Nightly CI'
           color: 0xcc0000
-          url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
           username: GitHub Actions
