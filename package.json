@@ -96,7 +96,7 @@
     "resolve": "^1.22.0",
     "route-recognizer": "^0.3.4",
     "router_js": "^8.0.3",
-    "semver": "^7.3.8",
+    "semver": "^7.5.2",
     "silent-error": "^1.1.1"
   },
   "devDependencies": {
