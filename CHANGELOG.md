@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v5.1.0-beta.1 (May 22, 2023)
+## v5.1.0 (June 26, 2023)
 
 - [#20449](https://github.com/emberjs/ember.js/pull/20449) [FEATURE] Publish stable types for Ember per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
 - [#20439](https://github.com/emberjs/ember.js/pull/20439) [CLEANUP] Update tsconfig to target ES2021.
