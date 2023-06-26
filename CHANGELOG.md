@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v5.2.0-beta.1 (June 26, 2023)
+
+- [#20464](https://github.com/emberjs/ember.js/pull/20464) [FEATURE] Create public import for uniqueId helper per [RFC #659](https://rfcs.emberjs.com/id/0659-unique-id-helper).
+- [#20477](https://github.com/emberjs/ember.js/pull/20477) Upgrade TS and configure TS CI accordingly to test against TS 4.9, 5.0, and 5.1
+
 ## v5.1.0 (June 26, 2023)
 
 - [#20449](https://github.com/emberjs/ember.js/pull/20449) [FEATURE] Publish stable types for Ember per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
