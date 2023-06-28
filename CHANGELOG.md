@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.12.2 (June 28, 2023)
+
+- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
+
 ## v4.12.1 (June 12, 2023)
 
 - [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
