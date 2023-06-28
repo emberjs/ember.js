@@ -34,6 +34,9 @@
 import './ember';
 import './ember/-private/type-utils';
 
+import './@ember/-internals/runtime/lib/mixins/container_proxy';
+import './@ember/-internals/runtime/lib/mixins/registry_proxy';
+
 import './@ember/application';
 import './@ember/application/-private/event-dispatcher';
 import './@ember/application/-private/registry';
