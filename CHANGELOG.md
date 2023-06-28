@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.12.2 (June 28, 2023)
+
+- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
+
 ## v5.2.0-beta.1 (June 26, 2023)
 
 - [#20464](https://github.com/emberjs/ember.js/pull/20464) [FEATURE] Create public import for uniqueId helper per [RFC #659](https://rfcs.emberjs.com/id/0659-unique-id-helper).
