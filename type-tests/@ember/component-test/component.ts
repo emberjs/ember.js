@@ -20,6 +20,10 @@ const component1 = Component.extend({
 class AnotherComponent extends Component {
   name = '';
 
+  init() {
+    super.init();
+  }
+
   hello(name: string) {
     this.set('name', name);
     this.name = name;
