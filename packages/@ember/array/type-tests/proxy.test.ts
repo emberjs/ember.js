@@ -17,5 +17,5 @@ let proxy = ArrayProxy.create({ content }) as ArrayProxy<Foo>;
 expectTypeOf(proxy).toMatchTypeOf<EmberArray<Foo>>();
 expectTypeOf(proxy).toMatchTypeOf<MutableArray<Foo>>();
 
-expectTypeOf(proxy.content).toEqualTypeOf<EmberArray<Foo> | NativeArray<Foo> | null>();
+expectTypeOf(proxy.content).toEqualTypeOf<Foo[] | EmberArray<Foo> | NativeArray<Foo> | null>();
 expectTypeOf(proxy.arrangedContent).toEqualTypeOf<EmberArray<Foo> | null>();

@@ -763,14 +763,21 @@ class CoreObject {
     @param [arguments]*
     @public
   */
+  static create<C extends typeof CoreObject>(this: C): InstanceType<C>;
   static create<
     C extends typeof CoreObject,
     I extends InstanceType<C>,
     K extends keyof I,
-    Args extends Array<Partial<Record<K, I[K]>>>
+    Args extends Array<Partial<{ [Key in K]: I[Key] }>>
+  >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args>;
+  static create<
+    C extends typeof CoreObject,
+    I extends InstanceType<C>,
+    K extends keyof I,
+    Args extends Array<Partial<{ [Key in K]: I[Key] }>>
   >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args> {
     let props = args[0];
-    let instance;
+    let instance: InstanceType<C>;
 
     if (props !== undefined) {
       instance = new this(getOwner(props)) as InstanceType<C>;
