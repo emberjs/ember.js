@@ -1,4 +1,5 @@
 import type {
+  Factory,
   FactoryClass,
   FullName,
   InternalFactory,
@@ -18,9 +19,11 @@ export interface Injection {
   specifier: FullName;
 }
 
-export interface ResolverClass {
-  create(...args: unknown[]): Resolver;
-}
+export interface ResolverClass
+  extends Factory<Resolver>,
+    Partial<{
+      new (...args: any): Resolver;
+    }> {}
 
 export interface RegistryOptions {
   fallback?: Registry;

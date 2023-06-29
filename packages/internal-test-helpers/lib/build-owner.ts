@@ -4,9 +4,8 @@ import Engine from '@ember/engine';
 import { registerDestructor } from '@ember/destroyable';
 import type Resolver from './test-resolver';
 import type { EngineInstanceOptions } from '@ember/engine/instance';
-import type { ResolverClass } from '@ember/-internals/container';
 
-class ResolverWrapper implements ResolverClass {
+class ResolverWrapper {
   resolver: Resolver;
 
   constructor(resolver: Resolver) {
