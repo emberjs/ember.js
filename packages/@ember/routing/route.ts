@@ -335,7 +335,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @since 1.0.0
     @public
   */
-  serialize(model: Model | undefined, params: string[]): { [key: string]: unknown } | undefined {
+  serialize(model: Model, params: string[]): { [key: string]: unknown } | undefined {
     if (params.length < 1 || !model) {
       return;
     }

@@ -35,6 +35,27 @@ class ModelTest extends Route {
   }
 }
 
+class Model {
+  baseClass = true;
+}
+
+class Child extends Model {
+  baseClass = false;
+  extraStuff = true;
+}
+
+class FooRoute<T extends Model> extends Route<T> {
+  serialize(object: T): any {
+    return null;
+  }
+}
+
+class FooChildRoute extends FooRoute<Child> {
+  serialize(object: Child) {
+    return object.extraStuff;
+  }
+}
+
 class QPsTest extends Route {
   queryParams = {
     memberQp: { refreshModel: true },
