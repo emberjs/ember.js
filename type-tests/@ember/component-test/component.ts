@@ -155,3 +155,10 @@ class SigExample extends Component<MySig> {
     return `${name} is ${age} years old`;
   }
 }
+
+// There is no type safety mapping `Element` here
+class ElementOnComponent extends Component<{ Element: HTMLDivElement }> {
+  get hmm(): boolean {
+    return this.element.dispatchEvent(new Event('mousedown'));
+  }
+}

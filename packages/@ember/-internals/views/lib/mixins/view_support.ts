@@ -19,7 +19,7 @@ function K(this: unknown) {
 */
 interface ViewMixin {
   rerender(): unknown;
-  element: SimpleElement;
+  element: Element;
   appendTo(selector: string | Element | SimpleElement): this;
   append(): this;
   elementId: string | null;

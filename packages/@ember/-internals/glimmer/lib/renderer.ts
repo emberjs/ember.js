@@ -459,7 +459,7 @@ export class Renderer {
     this._clearAllRoots();
   }
 
-  getElement(view: View): Option<SimpleElement> {
+  getElement(view: View): Option<Element> {
     if (this._isInteractive) {
       return getViewElement(view);
     } else {
