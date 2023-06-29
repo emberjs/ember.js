@@ -843,7 +843,7 @@ class Component<S = unknown>
   declare [IS_DISPATCHING_ATTRS]: boolean;
   declare [DIRTY_TAG]: DirtyableTag;
 
-  init(properties: object | undefined) {
+  init(properties?: object | undefined) {
     super.init(properties);
 
     // Handle methods from ViewMixin.
