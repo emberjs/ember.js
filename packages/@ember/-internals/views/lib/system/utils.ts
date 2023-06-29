@@ -4,7 +4,6 @@ import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import type { Dict, Option } from '@glimmer/interfaces';
-import type { SimpleElement } from '@simple-dom/interface';
 
 /**
 @module ember
@@ -68,10 +67,10 @@ export function getViewId(view: View): string {
   }
 }
 
-const ELEMENT_VIEW: WeakMap<SimpleElement, View> = new WeakMap();
-const VIEW_ELEMENT: WeakMap<View, SimpleElement> = new WeakMap();
+const ELEMENT_VIEW: WeakMap<Element, View> = new WeakMap();
+const VIEW_ELEMENT: WeakMap<View, Element> = new WeakMap();
 
-export function getElementView(element: SimpleElement): Option<View> {
+export function getElementView(element: Element): Option<View> {
   return ELEMENT_VIEW.get(element) || null;
 }
 
@@ -80,15 +79,15 @@ export function getElementView(element: SimpleElement): Option<View> {
   @method getViewElement
   @param {Ember.View} view
  */
-export function getViewElement(view: View): Option<SimpleElement> {
+export function getViewElement(view: View): Option<Element> {
   return VIEW_ELEMENT.get(view) || null;
 }
 
-export function setElementView(element: SimpleElement, view: View): void {
+export function setElementView(element: Element, view: View): void {
   ELEMENT_VIEW.set(element, view);
 }
 
-export function setViewElement(view: View, element: SimpleElement): void {
+export function setViewElement(view: View, element: Element): void {
   VIEW_ELEMENT.set(view, element);
 }
 
@@ -97,7 +96,7 @@ export function setViewElement(view: View, element: SimpleElement): void {
 // this case, we want to prevent access to the element (and vice verse) during
 // destruction.
 
-export function clearElementView(element: SimpleElement): void {
+export function clearElementView(element: Element): void {
   ELEMENT_VIEW.delete(element);
 }
 

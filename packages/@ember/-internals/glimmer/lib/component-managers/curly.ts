@@ -38,7 +38,6 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import type { SimpleElement } from '@simple-dom/interface';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import type RuntimeResolver from '../resolver';
@@ -365,7 +364,7 @@ export default class CurlyComponentManager
 
   didCreateElement(
     { component, classRef, isInteractive, rootRef }: ComponentStateBucket,
-    element: SimpleElement,
+    element: Element,
     operations: ElementOperations
   ): void {
     setViewElement(component, element);

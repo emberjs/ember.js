@@ -20,7 +20,7 @@ import { isUpdatableRef, updateRef } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import type { DirtyableTag } from '@glimmer/validator';
 import { createTag, dirtyTag } from '@glimmer/validator';
-import { Namespace } from '@simple-dom/interface';
+import { Namespace, type SimpleElement } from '@simple-dom/interface';
 import {
   ARGS,
   BOUNDS,
@@ -1001,7 +1001,7 @@ class Component<S = unknown>
 
     let element = _element;
     let isSVG = element.namespaceURI === Namespace.SVG;
-    let { type, normalized } = normalizeProperty(element, name);
+    let { type, normalized } = normalizeProperty(element as unknown as SimpleElement, name);
 
     if (isSVG || type === 'attr') {
       return element.getAttribute(normalized);
