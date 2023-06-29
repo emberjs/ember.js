@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v5.1.1 (June 29, 2023)
+
+- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX stable] Fix type dependency issues
+- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX stable] Allow `store` to be injected on `Route`
+- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX stable] Fix types for Resolver contract
+- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX stable] Fix model arg to a Route `serialize`
+
 ## v4.12.2 (June 28, 2023)
 
 - [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
