@@ -1234,7 +1234,13 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @private
   */
   findModel(...args: any[]) {
-    return (get(this, 'store') as any).find(...args);
+    // SAFETY: it's all absurd lies; there is no explicit contract for `store`
+    // and we allow people to register *anything* here and we call it: GLHF! The
+    // fallback path here means we correctly handle the case where there is no
+    // explicit store injection on the route subclass.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let store = ('store' in this ? this.store : get(this, '_store')) as any;
+    return store.find(...args);
   }
 
   /**
@@ -1573,7 +1579,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @private
   */
   @computed
-  protected get store() {
+  protected get _store() {
     const owner = getOwner(this);
     assert('Route is unexpectedly missing an owner', owner);
     let routeName = this.routeName;
@@ -1618,10 +1624,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
         return modelClass.find(value);
       },
     };
-  }
-
-  protected set store(value: any) {
-    defineProperty(this, 'store', null, value);
   }
 
   /**
