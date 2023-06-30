@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.12.3 (June 30, 2023)
+
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX LTS] Backport more types fixes
+
 ## v4.12.2 (June 28, 2023)
 
 - [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
