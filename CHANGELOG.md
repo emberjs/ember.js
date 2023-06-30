@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v4.12.3 (June 30, 2023)
+
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX LTS] Backport more types fixes
+
 ## v5.2.0-beta.3 (June 30, 2023)
 
 - [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
