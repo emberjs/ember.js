@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v5.2.0-beta.3 (June 30, 2023)
+
+- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
+- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX stable] EmberComponent init can have no args
+
 ## v5.1.2 (June 30, 2023)
 
 - [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
