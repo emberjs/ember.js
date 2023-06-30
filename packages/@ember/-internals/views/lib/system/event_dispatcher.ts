@@ -7,7 +7,6 @@ import ActionManager from './action_manager';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type Component from '@ember/component';
 import type { ActionState } from '@ember/-internals/glimmer/lib/modifiers/action';
-import type { SimpleElement } from '@simple-dom/interface';
 
 /**
 @module ember
@@ -255,9 +254,7 @@ export default class EventDispatcher extends EmberObject {
     }
 
     let viewHandler = (target: Element, event: Event) => {
-      // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
-      // However, the types are more specific in some places which necessitates the `as`.
-      let view = getElementView(target as unknown as SimpleElement);
+      let view = getElementView(target);
       let result = true;
 
       if (view) {
@@ -325,9 +322,7 @@ export default class EventDispatcher extends EmberObject {
       );
 
       do {
-        // SAFETY: SimpleElement is supposed to be a subset of Element so this _should_ be safe.
-        // However, the types are more specific in some places which necessitates the `as`.
-        if (getElementView(target as unknown as SimpleElement)) {
+        if (getElementView(target)) {
           if (viewHandler(target, event) === false) {
             event.preventDefault();
             event.stopPropagation();
