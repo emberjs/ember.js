@@ -1,14 +1,12 @@
 declare module '@ember/application' {
   import Engine from '@ember/engine';
-  import ApplicationInstance from '@ember/application/instance';
+  import ApplicationInstance, { BootOptions } from '@ember/application/instance';
   import EventDispatcher from '@ember/application/-private/event-dispatcher';
   import { EventDispatcherEvents } from '@ember/application/types';
   import Router from '@ember/routing/router';
   import Registry from '@ember/application/-private/registry';
   import { AnyFn } from 'ember/-private/type-utils';
-  import Owner, { Resolver } from '@ember/owner';
-  import type GlimmerComponent from '@glimmer/component';
-  import EmberObject from '@ember/object';
+  import Owner from '@ember/owner';
 
   // Shut off default exporting; we don't want anything but the *intended*
   // public API present.
@@ -83,10 +81,6 @@ declare module '@ember/application' {
      */
     eventDispatcher: EventDispatcher;
     /**
-     * Set this to provide an alternate class to `DefaultResolver`
-     */
-    resolver: Resolver | null;
-    /**
      * The root DOM element of the Application. This can be specified as an
      * element or a jQuery-compatible selector string.
      *
@@ -114,6 +108,8 @@ declare module '@ember/application' {
      * Create an ApplicationInstance for this Application.
      */
     buildInstance(options?: object): ApplicationInstance;
+
+    visit(url: string, options: BootOptions): Promise<ApplicationInstance>;
   }
 
   /**
