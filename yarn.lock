@@ -2160,6 +2160,13 @@
   dependencies:
     "@simple-dom/interface" "^1.4.0"
 
+"@glimmer/interfaces@0.84.3":
+  version "0.84.3"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.84.3.tgz#629777a4abe373b0785656f6c8d08989f5784805"
+  integrity sha512-dk32ykoNojt0mvEaIW6Vli5MGTbQo58uy3Epj7ahCgTHmWOKuw/0G83f2UmFprRwFx689YTXG38I/vbpltEjzg==
+  dependencies:
+    "@simple-dom/interface" "^1.4.0"
+
 "@glimmer/low-level@0.78.2":
   version "0.78.2"
   resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.78.2.tgz#bca5f666760ce98345e87c5b3e37096e772cb2de"
