@@ -205,6 +205,10 @@ expectTypeOf(arr.without(foo)).toEqualTypeOf<NativeArray<Foo>>();
 // @ts-expect-error invalid type
 arr.without(1);
 
+expectTypeOf(arr.pushObjects(arr)).toEqualTypeOf<NativeArray<Foo>>();
+expectTypeOf(arr.pushObjects([foo] as Foo[])).toEqualTypeOf<NativeArray<Foo>>();
+expectTypeOf(arr.pushObjects([foo] as readonly Foo[])).toEqualTypeOf<NativeArray<Foo>>();
+
 expectTypeOf(isArray(arr)).toEqualTypeOf<boolean>();
 
 expectTypeOf(makeArray(arr)).toEqualTypeOf<NativeArray<Foo>>();
