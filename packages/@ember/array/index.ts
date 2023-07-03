@@ -1899,7 +1899,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 @module ember
 */
 
-type AnyArray<T> = EmberArray<T> | Array<T>;
+type AnyArray<T> = EmberArray<T> | Array<T> | ReadonlyArray<T>;
 
 /**
  * The final definition of NativeArray removes all native methods. This is the list of removed methods
