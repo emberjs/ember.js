@@ -16,16 +16,16 @@ class Person extends EmberObject {
 expectTypeOf(Person.prototype.firstName).toBeString();
 expectTypeOf(Person.prototype.fullName).toBeString();
 
+// We cannot forbid extra properties, but we do at least smush them onto the
+// resulting type.
 const person = Person.create({
   firstName: 'Joe',
   lastName: 'Blow',
-  // @ts-expect-error
   extra: 42,
 });
 
 expectTypeOf(person.fullName).toBeString();
-// @ts-expect-error
-person.extra;
+expectTypeOf(person.extra).toBeNumber();
 
 class PersonWithStatics extends EmberObject {
   static isPerson = true;

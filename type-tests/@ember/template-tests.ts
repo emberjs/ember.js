@@ -1,18 +1,17 @@
-import { SafeString } from '@ember/template/-private/handlebars';
-import { htmlSafe, isHTMLSafe } from '@ember/template';
+import { htmlSafe, isHTMLSafe, SafeString } from '@ember/template';
 import { expectTypeOf } from 'expect-type';
 
-const handlebarsSafeString: SafeString = htmlSafe('lorem ipsum...');
-expectTypeOf(htmlSafe('lorem ipsum...')).toEqualTypeOf<SafeString>();
-// @ts-expect-error
-const regularString: string = htmlSafe('lorem ipsum...');
-
+let trusted = htmlSafe('lorem ipsum...');
+expectTypeOf(trusted).toEqualTypeOf<SafeString>();
+expectTypeOf(trusted).not.toBeString();
 expectTypeOf(isHTMLSafe).guards.toEqualTypeOf<SafeString>();
+expectTypeOf(trusted.toHTML()).toBeString();
+expectTypeOf(trusted.toString()).toBeString();
 
-function isSafeTest(a: string | SafeString) {
-  if (isHTMLSafe(a)) {
-    a = a.toString();
-  }
+expectTypeOf<SafeString>().toMatchTypeOf<{
+  toString(): string;
+  toHTML(): string;
+}>();
 
-  a.toLowerCase();
-}
+// @ts-expect-error -- we do not allow construction by exporting only the type.
+new SafeString('whatever');

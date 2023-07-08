@@ -1,12 +1,113 @@
 # Ember Changelog
 
-## v4.10.0-beta.5 (December 28, 2022)
+## v4.12.3 (June 30, 2023)
 
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX LTS] Backport more types fixes
+
+## v5.2.0-beta.3 (June 30, 2023)
+
+- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
+- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX stable] EmberComponent init can have no args
+
+## v5.1.2 (June 30, 2023)
+
+- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
+- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX stable] EmberComponent init can have no args
+
+## v5.2.0-beta.2 (June 29, 2023)
+
+- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX stable] Fix type dependency issues
+- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX stable] Allow `store` to be injected on `Route`
+- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX stable] Fix types for Resolver contract
+- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX stable] Fix model arg to a Route `serialize`
+
+## v5.1.1 (June 29, 2023)
+
+- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX stable] Fix type dependency issues
+- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX stable] Allow `store` to be injected on `Route`
+- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX stable] Fix types for Resolver contract
+- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX stable] Fix model arg to a Route `serialize`
+
+## v4.12.2 (June 28, 2023)
+
+- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
+
+## v5.2.0-beta.1 (June 26, 2023)
+
+- [#20464](https://github.com/emberjs/ember.js/pull/20464) [FEATURE] Create public import for uniqueId helper per [RFC #659](https://rfcs.emberjs.com/id/0659-unique-id-helper).
+- [#20477](https://github.com/emberjs/ember.js/pull/20477) Upgrade TS and configure TS CI accordingly to test against TS 4.9, 5.0, and 5.1
+
+## v5.1.0 (June 26, 2023)
+
+- [#20449](https://github.com/emberjs/ember.js/pull/20449) [FEATURE] Publish stable types for Ember per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20439](https://github.com/emberjs/ember.js/pull/20439) [CLEANUP] Update tsconfig to target ES2021.
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
+## v5.0.0 (May 15, 2023)
+
+- [#20438](https://github.com/emberjs/ember.js/pull/20438) [BREAKING] Drop support for Node 14
+- [#20445](https://github.com/emberjs/ember.js/pull/20445) [CLEANUP] Update browser support per RFC #685. Minimum support has been updated to Chrome >= 103, Edge >= 110, Firefox >= 102, iOS >= 12, Safari >= 12, ChromeAndroid >= 112, FirefoxAndroid >= 110
+- [#20379](https://github.com/emberjs/ember.js/pull/20379) [CLEANUP] Remove deprecated `@ember/error` package
+- [#20380](https://github.com/emberjs/ember.js/pull/20380) [CLEANUP] Remove deprecated `assign` polyfill
+- [#20381](https://github.com/emberjs/ember.js/pull/20381) [CLEANUP] Remove deprecated `@ember/string` package
+- [#20382](https://github.com/emberjs/ember.js/pull/20382) [CLEANUP] Remove deprecated injection
+- [#20402](https://github.com/emberjs/ember.js/pull/20402) [CLEANUP] Remove support for `ember-cli-mocha` and `ember-mocha` when generating test blueprints
+- [#20406](https://github.com/emberjs/ember.js/pull/20406) [CLEANUP] Remove deprecated auto-location
+- [#20413](https://github.com/emberjs/ember.js/pull/20413) [CLEANUP] Remove deprecated routing.transition-methods
+- [#20416](https://github.com/emberjs/ember.js/pull/20416) [CLEANUP] Finish cleaning up `Location` interface
+- [#20434](https://github.com/emberjs/ember.js/pull/20434) [BUGFIX] Fix HistoryLocation preview types
+- [#20441](https://github.com/emberjs/ember.js/pull/20441) [BUGFIX] Fix for TS 5.1 nightly narrowing change
+- [#20429](https://github.com/emberjs/ember.js/pull/20429) [BUGFIX] TS lint-level error in `mixins/-proxy.ts`
+- [#20410](https://github.com/emberjs/ember.js/pull/20410) [BUGFIX] Add missing type declarations in the preview types for @ember/template-compilation
+
+## v4.12.1 (June 12, 2023)
+
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
+## v4.8.6 (June 12, 2023)
+
+- [#20461](https://github.com/emberjs/ember.js/pull/20461) [BUGFIX] Fix cyclic module crash with engines and fastboot.
+
+## v4.8.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
+## v4.4.5 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
+## v3.28.12 (May 4, 2023)
+
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+
+## v4.12.0 (April 3, 2023)
+
+- [#20352](https://github.com/emberjs/ember.js/pull/20352) [FEATURE] Enable generating Typescript blueprints when `isTypeScriptProject` is true without additional environment variables per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20355](https://github.com/emberjs/ember.js/pull/20355) [FEATURE] Enhance the Typescript blueprint for generated services per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20356](https://github.com/emberjs/ember.js/pull/20356) [FEATURE] Generate signature in Typescript component blueprints per [RFC #800](https://rfcs.emberjs.com/id/0800-ts-adoption-plan).
+- [#20388](https://github.com/emberjs/ember.js/pull/20388) [BUGFIX] Don't run getters while applying mixins
+- [#20398](https://github.com/emberjs/ember.js/pull/20398) [BUGFIX] Fix runloop types on TS 5.0+
+- [#20385](https://github.com/emberjs/ember.js/pull/20385) [BUGFIX] Improve error for owner methods called after destroy
+
+## v4.11.0 (February 20, 2023)
+
+- [#20288](https://github.com/emberjs/ember.js/pull/20288) [FEATURE] Stable types for `@ember/owner`
+- [#20323](https://github.com/emberjs/ember.js/pull/20323) [FEATURE] Introduce stable types for `@ember/error`
+- [#20361](https://github.com/emberjs/ember.js/pull/20361) [BUGFIX] Support a `router.ts` file when generating routes
+- [#20373](https://github.com/emberjs/ember.js/pull/20373) / [#20374](https://github.com/emberjs/ember.js/pull/20374) [BUGFIX] Make the type for `SafeString` public
+- [#20345](https://github.com/emberjs/ember.js/pull/20345) [CLEANUP] Remove flags for released features
+- [#20285](https://github.com/emberjs/ember.js/pull/20285) Update to TS v4.9
+
+## v4.10.0 (January 11, 2023)
+
+- [#20270](https://github.com/emberjs/ember.js/pull/20270) / [#20271](https://github.com/emberjs/ember.js/pull/20271) [FEATURE] Add new imports for `getOwner` and `setOwner` from `@ember/owner` and introduce new `@ember/routing` sub-modules as part of [RFC #821](https://rfcs.emberjs.com/id/0821-public-types).
+- [#20341](https://github.com/emberjs/ember.js/pull/20341) [DEPRECATION] Deprecations for importing `htmlSafe` and `isHTMLSafe` from `@ember/string`. They have moved to `@ember/template`. From [RFC #236](https://rfcs.emberjs.com/id/0236-deprecation-ember-string).
+- [#20344](https://github.com/emberjs/ember.js/pull/20344) [DEPRECATION] Deprecate @ember/string when used from ember-source; point users to add the `@ember/string` addon per [RFC #236](https://rfcs.emberjs.com/id/0236-deprecation-ember-string).
+- [#20342](https://github.com/emberjs/ember.js/pull/20342) [DEPRECATION] Deprecate @ember/error per [RFC #889](https://rfcs.emberjs.com/id/0889-deprecate-ember-error).
 - [#20327](https://github.com/emberjs/ember.js/pull/20327) [BUGFIX] Fix the types for the mutation-methods of `NativeArray`
-
-## v4.10.0-beta.4 (December 13, 2022)
-
-- [#20321](https://github.com/emberjs/ember.js/pull/20321) [BUGFIX] types: `ContainerDebugAdapter` extends `EmberObject`, not `Object`
+- [#20283](https://github.com/emberjs/ember.js/pull/20283) [BUGFIX] revert TS `compilerOptions.target` to ES2017
+- [#20253](https://github.com/emberjs/ember.js/pull/20253) Types: Add the `Resolver` type to preview types
+- [#20319](https://github.com/emberjs/ember.js/pull/20319) Types: resolve services with `Owner.lookup`
 
 ## v4.9.3 (December 13, 2022)
 
@@ -21,11 +122,6 @@
 - [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
 - [#20318](https://github.com/emberjs/ember.js/pull/20318) Backport `Resolver` to preview types
 
-## v4.10.0-beta.3 (December 12, 2022)
-
-- [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
-- [#20319](https://github.com/emberjs/ember.js/pull/20319) Types: resolve services with `Owner.lookup`
-
 ## v4.8.3 (December 12, 2022)
 
 - [#20296](https://github.com/emberjs/ember.js/pull/20296) Controller `queryParams` should support `readonly` arrays
@@ -35,19 +131,9 @@
 
 - [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
 
-## v4.10.0-beta.2 (November 30, 2022)
-
-- [#20283](https://github.com/emberjs/ember.js/pull/20283) [BUGFIX] revert TS `compilerOptions.target` to ES2017
-- [#20284](https://github.com/emberjs/ember.js/pull/20284) [BUGFIX] remove incorrect types for deprecation functions
-
 ## v3.28.11 (November 30, 2022)
 
 - [#20286](https://github.com/emberjs/ember.js/pull/20286) [BUGFIX] Allow class-based helpers in strict-mode
-
-## v4.10.0-beta.1 (November 28, 2022)
-
-- [#20253](https://github.com/emberjs/ember.js/pull/20253) [FEATURE] Add the `Resolver` type to preview types
-- [#20270](https://github.com/emberjs/ember.js/pull/20270) / [#20271](https://github.com/emberjs/ember.js/pull/20271) [FEATURE] Add new imports for `getOwner` and `setOwner` from `@ember/owner` and introduce new `@ember/routing` sub-modules as part of [RFC #821](https://rfcs.emberjs.com/id/0821-public-types).
 
 ## v4.9.0 (November 28, 2022)
 

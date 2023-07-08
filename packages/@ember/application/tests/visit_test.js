@@ -283,10 +283,9 @@ moduleFor(
       this.add(
         'route:a',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.replaceWith('b', 'zomg');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('b', 'zomg');
           },
         })
       );
@@ -294,10 +293,9 @@ moduleFor(
       this.add(
         'route:b',
         Route.extend({
+          router: service(),
           afterModel(params) {
-            expectDeprecation(() => {
-              this.transitionTo('c', params.b);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('c', params.b);
           },
         })
       );
@@ -325,10 +323,9 @@ moduleFor(
       this.add(
         'route:a',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.replaceWith('b', 'zomg');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('b', 'zomg');
           },
         })
       );
@@ -336,10 +333,9 @@ moduleFor(
       this.add(
         'route:b',
         Route.extend({
+          router: service(),
           afterModel(params) {
-            expectDeprecation(() => {
-              this.transitionTo('c', params.b);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('c', params.b);
           },
         })
       );

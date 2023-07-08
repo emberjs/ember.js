@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
       - beta
       - release
       # release branches
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -39,12 +39,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - name: Check published types
-        run: yarn type-check:types
+      - name: Check published and internal types
+        run: yarn type-check
 
   types-range:
     name: Type Checking (other supported versions)
@@ -52,12 +52,12 @@ jobs:
     needs: ['types']
     strategy:
       matrix:
-        ts-version: ['next']
+        ts-version: ['4.9', '5.0', 'next']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -65,8 +65,8 @@ jobs:
         run: yarn build:types
       - name: install TS@${{matrix.ts-version}}
         run: yarn add -D typescript@${{ matrix.ts-version }}
-      - name: Check published types with TS@${{matrix.ts-version}}
-        run: yarn type-check:types
+      - name: Check published and internal types with TS@${{matrix.ts-version}}
+        run: yarn type-check
 
   basic-test:
     name: Debug and Prebuilt (All Tests by Package + Canary Features)
@@ -75,7 +75,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -102,7 +102,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -112,6 +112,13 @@ jobs:
           BROCCOLI_ENV: production
           SHOULD_TRANSPILE: true
         run: yarn ember build
+
+      - name: Set BrowserStack Local Identifier
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
+
       - name: test:browserstack
         env:
           BROWSERSTACK_USERNAME: emberjscoreteam1
@@ -126,9 +133,9 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -151,7 +158,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -171,7 +178,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -192,7 +199,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -213,7 +220,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -234,14 +241,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist
       - name: test
         run: yarn test:blueprints
 
@@ -253,7 +256,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
@@ -264,7 +267,7 @@ jobs:
       - name: Setup firefox
         uses: browser-actions/setup-firefox@latest
         with:
-          firefox-version: 91.0.1
+          firefox-version: 102.0.1
       - run: firefox --version
       - name: test
         run: yarn ember test -c testem.ci-browsers.js
@@ -289,7 +292,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           registry-url: 'https://registry.npmjs.org'
           cache: yarn
       - name: install dependencies
@@ -322,14 +325,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           S3_BUCKET_NAME: 'builds.emberjs.com'
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
@@ -350,23 +353,49 @@ jobs:
         blueprint-test,
         browser-test,
       ]
-    # Only run on pushes to master
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    # Only run on pushes to main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
           cache: yarn
       - name: install dependencies
         run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           BUILD_TYPE: alpha
           OVERRIDE_FEATURES: ''
           S3_BUCKET_NAME: 'builds.emberjs.com'
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID}}
+
+  notify:
+    name: Notify Discord
+    runs-on: ubuntu-latest
+    needs:
+      [
+        basic-test,
+        lint,
+        browserstack-test,
+        production-test,
+        production-debug-render-test,
+        extend-prototypes-test,
+        node-test,
+        blueprint-test,
+        browser-test,
+      ]
+    if: failure() && contains(github.ref, 'cron') == true
+    steps:
+      - uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.FRAMEWORK_WEBHOOK }}
+          status: 'Failure'
+          title: 'Ember.js Nightly CI'
+          color: 0xcc0000
+          url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          username: GitHub Actions

@@ -5,6 +5,7 @@ const path = require('path');
 const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
+const SilentError = require('silent-error');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 
@@ -148,21 +149,42 @@ function updateRouter(action, options) {
   }
 }
 
-function findRouter(options) {
+function findRouterPath(options) {
   let routerPathParts = [options.project.root];
-  let root = 'app';
 
   if (options.dummy && options.project.isEmberCLIAddon()) {
-    routerPathParts = routerPathParts.concat(['tests', 'dummy', root, 'router.js']);
+    routerPathParts.push('tests', 'dummy', 'app');
   } else {
-    routerPathParts = routerPathParts.concat([root, 'router.js']);
+    routerPathParts.push('app');
   }
 
-  return routerPathParts;
+  let jsRouterPath = path.join(...routerPathParts, 'router.js');
+  let tsRouterPath = path.join(...routerPathParts, 'router.ts');
+
+  let jsRouterPathExists = fs.existsSync(jsRouterPath);
+  let tsRouterPathExists = fs.existsSync(tsRouterPath);
+
+  if (jsRouterPathExists && tsRouterPathExists) {
+    throw new SilentError(
+      'Found both a `router.js` and `router.ts` file. Please make sure your project only has one or the other.'
+    );
+  }
+
+  if (jsRouterPathExists) {
+    return jsRouterPath;
+  }
+
+  if (tsRouterPathExists) {
+    return tsRouterPath;
+  }
+
+  throw new SilentError(
+    'Could not find a router file. Please make sure your project has a `router.js` or `router.ts` file.'
+  );
 }
 
 function writeRoute(action, name, options) {
-  let routerPath = path.join.apply(null, findRouter(options));
+  let routerPath = findRouterPath(options);
   let source = fs.readFileSync(routerPath, 'utf-8');
 
   let routes = new EmberRouterGenerator(source);

@@ -17,7 +17,7 @@ import { get } from '@ember/object';
 import type { PropertyDidChange } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
-import EmberArray from '@ember/array';
+import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
 import { setCustomTagFor } from '@glimmer/manager';
@@ -116,7 +116,7 @@ function customTagForArrayProxy(proxy: object, key: string) {
   @uses MutableArray
   @public
 */
-interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArray<T> {
+interface ArrayProxy<T> extends MutableArray<T> {
   /**
     The content array. Must be an object that implements `Array` and/or
     `MutableArray.`
@@ -125,7 +125,7 @@ interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArra
     @type EmberArray
     @public
   */
-  content: C | null;
+  content: T[] | EmberArray<T> | NativeArray<T> | null;
   /**
     The array that the proxy pretends to be. In the default `ArrayProxy`
     implementation, this and `content` are the same. Subclasses of `ArrayProxy`
@@ -134,7 +134,7 @@ interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArra
     @property arrangedContent
     @public
   */
-  arrangedContent: C | null;
+  arrangedContent: EmberArray<T> | null;
   /**
     Should actually retrieve the object at the specified index from the
     content. You can override this method in subclasses to transform the
@@ -163,11 +163,10 @@ interface ArrayProxy<T, C extends EmberArray<T> | T[] = T[]> extends MutableArra
     @public
   */
   replaceContent(idx: number, amt: number, objects?: T[]): void;
+
+  create(init: { content: Array<T> }): ArrayProxy<T>;
 }
-class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
-  extends EmberObject
-  implements PropertyDidChange
-{
+class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   /*
     `this._objectsDirtyIndex` determines which indexes in the `this._objects`
     cache are dirty.
@@ -189,7 +188,7 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
   _length = 0;
 
   /** @internal */
-  _arrangedContent: C | null = null;
+  _arrangedContent: EmberArray<T> | null = null;
   /** @internal */
   _arrangedContentIsUpdating = false;
   /** @internal */
@@ -215,9 +214,9 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     this._removeArrangedContentArrayObserver();
   }
 
-  declare content: C | null;
+  declare content: T[] | EmberArray<T> | NativeArray<T> | null;
 
-  declare arrangedContent: C | null;
+  declare arrangedContent: EmberArray<T> | null;
 
   objectAtContent(idx: number) {
     let arrangedContent = get(this, 'arrangedContent');
@@ -251,7 +250,7 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     }
 
     if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
-      let arrangedContent = get(this, 'arrangedContent') as C | null;
+      let arrangedContent = get(this, 'arrangedContent');
       if (arrangedContent) {
         let length = (this._objects.length = get(arrangedContent, 'length'));
 
@@ -275,7 +274,7 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     this._revalidate();
 
     if (this._lengthDirty) {
-      let arrangedContent = get(this, 'arrangedContent') as C | null;
+      let arrangedContent = get(this, 'arrangedContent');
       this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
       this._lengthDirty = false;
     }
@@ -298,7 +297,7 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
       removedCount = 0;
     }
 
-    let content = get(this, 'content') as C | null;
+    let content = get(this, 'content');
     if (content) {
       assert('Mutating a non-mutable array is not allowed', isMutable(content));
       replace<T>(content, value, removedCount, added);
@@ -307,7 +306,7 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     }
   }
 
-  _updateArrangedContentArray(arrangedContent: C | null) {
+  _updateArrangedContentArray(arrangedContent: EmberArray<T> | null) {
     let oldLength = this._objects === null ? 0 : this._objects.length;
     let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
 
@@ -320,9 +319,8 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
     this._addArrangedContentArrayObserver(arrangedContent);
   }
 
-  _addArrangedContentArrayObserver(arrangedContent: C | null) {
+  _addArrangedContentArrayObserver(arrangedContent: EmberArray<T> | null) {
     if (arrangedContent && !(arrangedContent as any).isDestroyed) {
-      // @ts-expect-error This check is still good for ensuring correctness
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
         `ArrayProxy expects a native Array, EmberArray, or ArrayProxy, but you passed ${typeof arrangedContent}`,
@@ -384,7 +382,7 @@ class ArrayProxy<T, C extends EmberArray<T> | T[] = T[]>
       this._arrangedContentTag === null ||
       !validateTag(this._arrangedContentTag, this._arrangedContentRevision!)
     ) {
-      let arrangedContent = this.get('arrangedContent') as C | null;
+      let arrangedContent = this.get('arrangedContent');
 
       if (this._arrangedContentTag === null) {
         // This is the first time the proxy has been setup, only add the observer

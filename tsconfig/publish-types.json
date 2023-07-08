@@ -16,12 +16,7 @@
     "declarationDir": "../types/stable"
   },
   "include": [
-    // Note: these will also pull on all their transitive dependencies, so we
-    // will end up publishing the (private!) types for packages not named here
-    // until we update the actual internals to avoid referencing them!
-    "../packages/@ember/**/*",
-    "../packages/ember/**/*",
-    "../packages/@glimmer/**/*"
+    "../packages/**/*.ts"
   ],
   "exclude": [
     "../**/type-tests",

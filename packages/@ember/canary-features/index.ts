@@ -53,12 +53,14 @@ export function isEnabled(feature: string): boolean {
   }
 }
 
-function featureValue(value: null | boolean) {
-  if (ENV.ENABLE_OPTIONAL_FEATURES && value === null) {
-    return true;
-  }
+// Uncomment the below when features are present:
 
-  return value;
-}
+// function featureValue(value: null | boolean) {
+//   if (ENV.ENABLE_OPTIONAL_FEATURES && value === null) {
+//     return true;
+//   }
+
+//   return value;
+// }
 
 // export const FLAG_NAME = featureValue(FEATURES.FLAG_NAME);

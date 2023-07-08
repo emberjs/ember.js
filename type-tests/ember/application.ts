@@ -40,4 +40,7 @@ const App3 = BaseApp.create();
 
 const App3Instance1 = App3.buildInstance();
 
+// @ts-expect-error
 const App3Instance2 = App3.buildInstance({ foo: 'bar' });
+
+const App3Instance3 = App3.buildInstance({ mountPoint: 'somewhere', routable: true });

@@ -55,39 +55,6 @@ describe('Blueprint: util-test', function () {
         });
       });
     });
-
-    describe('with ember-cli-mocha', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-      });
-
-      it('util-test foo-bar', function () {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], (_file) => {
-          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/mocha.js'));
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.14.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.14.0');
-      });
-
-      it('util-test foo-bar', function () {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], (_file) => {
-          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/mocha-rfc232.js')
-          );
-        });
-      });
-    });
   });
 
   describe('in addon', function () {

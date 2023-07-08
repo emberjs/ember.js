@@ -11,7 +11,8 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
     return;
   }
   expectTypeOf(maybeUndefined).toBeString();
-  expectTypeOf(isNone()).toEqualTypeOf<boolean>();
+  // @ts-expect-error
+  isNone();
   expectTypeOf(isNone(null)).toEqualTypeOf<boolean>();
   expectTypeOf(isNone(undefined)).toEqualTypeOf<boolean>();
   expectTypeOf(isNone('')).toEqualTypeOf<boolean>();
@@ -21,7 +22,8 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
 
 (function () {
   /** isPresent */
-  expectTypeOf(isPresent()).toEqualTypeOf<boolean>();
+  // @ts-expect-error
+  isPresent();
   expectTypeOf(isPresent(null)).toEqualTypeOf<boolean>();
   expectTypeOf(isPresent(undefined)).toEqualTypeOf<boolean>();
   expectTypeOf(isPresent('')).toEqualTypeOf<boolean>();
@@ -42,24 +44,25 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
 
 (function () {
   /** typeOf */
-  expectTypeOf(typeOf(null)).toEqualTypeOf<'null'>();
-  expectTypeOf(typeOf(undefined)).toEqualTypeOf<'undefined'>();
-  expectTypeOf(typeOf('michael')).toEqualTypeOf<'string'>();
-  expectTypeOf(typeOf(new String('michael'))).toEqualTypeOf<'string'>();
-  expectTypeOf(typeOf(101)).toEqualTypeOf<'number'>();
-  expectTypeOf(typeOf(new Number(101))).toEqualTypeOf<'number'>();
-  expectTypeOf(typeOf(true)).toEqualTypeOf<'boolean'>();
-  expectTypeOf(typeOf(new Boolean(true))).toEqualTypeOf<'boolean'>();
-  expectTypeOf(typeOf(() => 4)).toEqualTypeOf<'function'>();
-  expectTypeOf(typeOf([1, 2, 90])).toEqualTypeOf<'array'>();
-  expectTypeOf(typeOf(/abc/)).toEqualTypeOf<'regexp'>();
-  expectTypeOf(typeOf(new Date())).toEqualTypeOf<'date'>();
-  expectTypeOf(typeOf(new FileList())).toEqualTypeOf<'filelist'>();
-  expectTypeOf(typeOf(EmberObject.extend())).toEqualTypeOf<'class'>();
-  expectTypeOf(typeOf(EmberObject.create())).toEqualTypeOf<'instance'>();
-  expectTypeOf(typeOf(new Error('teamocil'))).toEqualTypeOf<'error'>();
-  expectTypeOf(typeOf({ justAPojo: true })).toEqualTypeOf<'object'>();
+  expectTypeOf(typeOf(null)).toBeString();
+  expectTypeOf(typeOf(undefined)).toBeString();
+  expectTypeOf(typeOf('michael')).toBeString();
+  expectTypeOf(typeOf(new String('michael'))).toBeString();
+  expectTypeOf(typeOf(101)).toBeString();
+  expectTypeOf(typeOf(new Number(101))).toBeString();
+  expectTypeOf(typeOf(true)).toBeString();
+  expectTypeOf(typeOf(new Boolean(true))).toBeString();
+  expectTypeOf(typeOf(() => 4)).toBeString();
+  expectTypeOf(typeOf([1, 2, 90])).toBeString();
+  expectTypeOf(typeOf(/abc/)).toBeString();
+  expectTypeOf(typeOf(new Date())).toBeString();
+  expectTypeOf(typeOf(new FileList())).toBeString();
+  expectTypeOf(typeOf(EmberObject.extend())).toBeString();
+  expectTypeOf(typeOf(EmberObject.create())).toBeString();
+  expectTypeOf(typeOf(new Error('teamocil'))).toBeString();
+  expectTypeOf(typeOf({ justAPojo: true })).toBeString();
 
+  // @ts-expect-error
   typeOf();
   typeOf(null);
   typeOf(undefined);
@@ -99,8 +102,10 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
   expectTypeOf(compare('foo', 'bar')).toBeNumber();
   expectTypeOf(compare(14, 37)).toBeNumber();
   expectTypeOf(compare(class {}, class {})).toBeNumber();
+  // @ts-expect-error -- cannot compare different types
   expectTypeOf(compare([], class {})).toBeNumber();
   expectTypeOf(compare([], undefined)).toBeNumber();
+  // @ts-expect-error -- cannot compare different types
   expectTypeOf(compare({}, () => 4)).toBeNumber();
   // @ts-expect-error
   compare(14);
@@ -110,8 +115,8 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
 
 (function () {
   /** isBlank */
-
-  expectTypeOf(isBlank()).toEqualTypeOf<boolean>();
+  // @ts-expect-error
+  isBlank();
   expectTypeOf(isBlank(null)).toEqualTypeOf<boolean>();
   expectTypeOf(isBlank(undefined)).toEqualTypeOf<boolean>();
   expectTypeOf(isBlank('')).toEqualTypeOf<boolean>();
@@ -127,7 +132,8 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
 (function () {
   /** isEmpty */
 
-  expectTypeOf(isEmpty()).toEqualTypeOf<boolean>();
+  // @ts-expect-error
+  isEmpty();
   expectTypeOf(isEmpty(null)).toEqualTypeOf<boolean>();
   expectTypeOf(isEmpty(undefined)).toEqualTypeOf<boolean>();
   expectTypeOf(isEmpty('')).toEqualTypeOf<boolean>();

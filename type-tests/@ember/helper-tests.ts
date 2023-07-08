@@ -9,6 +9,8 @@ import {
   GetHelper,
   hash,
   HashHelper,
+  uniqueId,
+  UniqueIdHelper,
 } from '@ember/helper';
 import { expectTypeOf } from 'expect-type';
 
@@ -17,3 +19,4 @@ expectTypeOf(concat).toEqualTypeOf<ConcatHelper>();
 expectTypeOf(fn).toEqualTypeOf<FnHelper>();
 expectTypeOf(get).toEqualTypeOf<GetHelper>();
 expectTypeOf(hash).toEqualTypeOf<HashHelper>();
+expectTypeOf(uniqueId).toEqualTypeOf<UniqueIdHelper>();

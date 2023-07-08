@@ -1,16 +1,12 @@
 'use strict';
 
-const semver = require('semver');
-
-function fileMap(revision, tag, date) {
+function fileMap(revision, date) {
   let filesToPublish = {
-    '../docs/data.json': fileObject('ember-docs', '.json', 'application/json', revision, tag, date),
+    '../docs/data.json': fileObject('ember-docs', '.json', 'application/json', revision, date),
   };
 
   let version = require('../package').version;
-  // semver.parse(...).version drops the `+build-info-metadata` stuff
-  let sanitizedVersion = semver.parse(version).version;
-  filesToPublish[`../ember-source-${sanitizedVersion}.tgz`] = {
+  filesToPublish[`../ember-source-${version}.tgz`] = {
     contentType: 'application/x-gzip',
     destinations: {
       alpha: [`alpha/daily/${date}.tgz`, `alpha/shas/${revision}.tgz`],
@@ -32,7 +28,7 @@ function fileMap(revision, tag, date) {
   return filesToPublish;
 }
 
-function fileObject(baseName, extension, contentType, currentRevision, tag, date) {
+function fileObject(baseName, extension, contentType, currentRevision, date) {
   let fullName = '/' + baseName + extension;
   let obj = {
     contentType: contentType,

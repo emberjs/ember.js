@@ -72,9 +72,12 @@ function testGetProperties() {
     name: string;
     age: number;
   }>();
-  expectTypeOf(person.getProperties('name', 'age', 'capitalized')).toEqualTypeOf<
-    Pick<Person, 'name' | 'age' | 'capitalized'>
-  >();
+
+  expectTypeOf(person.getProperties('name', 'age', 'capitalized')).toEqualTypeOf<{
+    name: string;
+    age: number;
+    capitalized: string;
+  }>();
   expectTypeOf(getProperties(pojo, 'name', 'age')).toEqualTypeOf<{ name: string; age: number }>();
 }
 
@@ -82,9 +85,9 @@ function testSet() {
   expectTypeOf(set(person, 'name', 'Joe')).toEqualTypeOf<string>();
   expectTypeOf(set(person, 'age', 35)).toEqualTypeOf<number>();
   expectTypeOf(set(person, 'capitalized', 'JOE')).toEqualTypeOf<string>();
-  expectTypeOf(person.set('name', 'Joe')).toEqualTypeOf<string>();
-  expectTypeOf(person.set('age', 35)).toEqualTypeOf<number>();
-  expectTypeOf(person.set('capitalized', 'JOE')).toEqualTypeOf<string>();
+  expectTypeOf(person.set('name', 'Joe')).toEqualTypeOf<'Joe'>();
+  expectTypeOf(person.set('age', 35)).toEqualTypeOf<35>();
+  expectTypeOf(person.set('capitalized', 'JOE')).toEqualTypeOf<'JOE'>();
   expectTypeOf(set(pojo, 'name', 'Joe')).toEqualTypeOf<string>();
 }
 
@@ -101,9 +104,10 @@ function testSetProperties() {
   expectTypeOf(person.setProperties({ name: 'Joe', age: 35 })).toEqualTypeOf<
     Pick<Person, 'name' | 'age'>
   >();
-  expectTypeOf(person.setProperties({ name: 'Joe', capitalized: 'JOE' })).toEqualTypeOf<
-    Pick<Person, 'name' | 'capitalized'>
-  >();
+  expectTypeOf(person.setProperties({ name: 'Joe', capitalized: 'JOE' })).toEqualTypeOf<{
+    name: string;
+    capitalized: string;
+  }>();
   expectTypeOf(setProperties(pojo, { name: 'Joe', age: 35 })).toEqualTypeOf<
     Pick<Person, 'name' | 'age'>
   >();

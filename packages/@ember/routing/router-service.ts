@@ -55,12 +55,16 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface RouterService<R extends Route> extends Evented {}
-class RouterService<R extends Route> extends Service.extend(Evented) {
-  [ROUTER]?: EmberRouter<R>;
+interface RouterService extends Evented {
+  on(
+    eventName: 'routeWillChange' | 'routeDidChange',
+    callback: (transition: Transition) => void
+  ): this;
+}
+class RouterService extends Service.extend(Evented) {
+  [ROUTER]?: EmberRouter;
 
-  get _router(): EmberRouter<R> {
+  get _router(): EmberRouter {
     let router = this[ROUTER];
     if (router !== undefined) {
       return router;
@@ -127,7 +131,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
        attempted transition
      @public
    */
-  transitionTo(...args: RouteArgs<R>): Transition {
+  transitionTo(...args: RouteArgs): Transition {
     if (resemblesURL(args[0])) {
       // NOTE: this `args[0] as string` cast is safe and TS correctly infers it
       // in 3.6+, so it can be removed when TS is upgraded.
@@ -156,11 +160,13 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
 
      ```app/routes/application.js
      import Route from '@ember/routing/route';
+     import { service } from '@ember/service';
 
      export default class extends Route {
+       @service router;
        beforeModel() {
          if (!authorized()){
-           this.replaceWith('unauthorized');
+           this.router.replaceWith('unauthorized');
          }
        }
      });
@@ -176,7 +182,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
        attempted transition
      @public
    */
-  replaceWith(...args: RouteArgs<R>): Transition {
+  replaceWith(...args: RouteArgs): Transition {
     return this.transitionTo(...args).method('replace');
   }
 
@@ -248,7 +254,10 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      @return {String} the string representing the generated URL
      @public
    */
-  urlFor(routeName: string, ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]) {
+  urlFor<R extends Route>(
+    routeName: string,
+    ...args: ModelFor<R>[] | [...ModelFor<R>[], RouteOptions]
+  ) {
     this._router.setupRouter();
     return this._router.generate(routeName, ...args);
   }
@@ -300,7 +309,7 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
      @return {boolean} true if the provided routeName/models/queryParams are active
      @public
    */
-  isActive(...args: RouteArgs<R>) {
+  isActive(...args: RouteArgs) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
@@ -579,8 +588,6 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     assert('RouterService is unexpectedly missing an owner', owner);
     let pivotRoute = owner.lookup(`route:${pivotRouteName}`) as Route;
 
-    // R could be instantiated with a different sub-type
-    // @ts-ignore
     return this._router._routerMicrolib.refresh(pivotRoute);
   }
 
@@ -668,12 +675,11 @@ class RouterService<R extends Route> extends Service.extend(Evented) {
     ```
 
     The following location types are available by default:
-    `auto`, `hash`, `history`, `none`.
+    `hash`, `history`, `none`.
 
     See [HashLocation](/ember/release/classes/HashLocation).
     See [HistoryLocation](/ember/release/classes/HistoryLocation).
     See [NoneLocation](/ember/release/classes/NoneLocation).
-    See [AutoLocation](/ember/release/classes/AutoLocation).
 
     @property location
     @default 'hash'

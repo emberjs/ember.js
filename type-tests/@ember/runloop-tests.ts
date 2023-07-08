@@ -16,18 +16,8 @@ import {
   _backburner,
 } from '@ember/runloop';
 import EmberObject, { action } from '@ember/object';
-import type {
-  Backburner,
-  DebugInfo,
-  QueueItem,
-  DeferredActionQueues,
-} from '@ember/runloop/-private/backburner';
-
-// It will be the responsibility of each consuming package that needs access to the backburner property
-// to merge the private types in the public API.
-declare module '@ember/runloop' {
-  const _backburner: Backburner;
-}
+import { AnyFn, MethodsOf } from '@ember/-internals/utility-types';
+import { expectTypeOf } from 'expect-type';
 
 function testRun() {
   run(() => {
@@ -68,10 +58,27 @@ function testRun() {
 
 class TestBind extends EmberObject {
   init() {
-    // NOTE: these don't actually preserve the underlying type. Critically,
-    // though, our types have *never* supported that for `bind`.
     const bound = bind(this, this.setupEditor);
     bound('hello');
+    // @ts-expect-error
+    bound(123);
+    // @ts-expect-error
+    bound();
+
+    const boundWithArg = bind(this, this.setupEditor, 'hello');
+    boundWithArg();
+    // @ts-expect-error
+    boundWithArg('hello');
+    // @ts-expect-error
+    boundWithArg(123);
+
+    // @ts-expect-error
+    const badBind = bind(this, this.setupEditor, 123);
+
+    // We would like to make this safe in the same way as the version above,
+    // but TS cannot see the string relationship *specifically when doing a
+    // lookup against a `this` type*, so we fall back to the comparable types
+    // as in `Function.prototype.bind` here.
     const boundAgain = bind(this, 'setupEditor');
     boundAgain('hello');
   }
@@ -82,6 +89,27 @@ class TestBind extends EmberObject {
     this.set('editor', editor);
   }
 }
+
+// We *can* check that it works on a general instance, though.
+declare let testBindInstance: TestBind;
+let bound = bind(testBindInstance, 'setupEditor');
+bound('hello');
+// @ts-expect-error
+bound(123);
+// @ts-expect-error
+bound();
+
+let boundWithArg = bind(testBindInstance, 'setupEditor', 'hello');
+boundWithArg();
+// @ts-expect-error
+boundWithArg('hello');
+// @ts-expect-error
+boundWithArg(123);
+
+// @ts-expect-error
+const badBindValue = bind(testBindInstance, testBindInstance.setupEditor, 123);
+// This would be *nice* to check, bug it falls into the 'fallback' path.
+const badBindString = bind(testBindInstance, 'setupEditor', 123);
 
 function testCancel() {
   const myContext = {
@@ -298,10 +326,4 @@ function testThrottle() {
 
   throttle(runIt, 150);
   throttle(myContext, runIt, 150);
-}
-
-function testBackburner() {
-  const debugInfo: DebugInfo = _backburner.getDebugInfo();
-  const queueItems: QueueItem[] = debugInfo.timers;
-  const deferredActionQueues: DeferredActionQueues[] = debugInfo.instanceStack;
 }

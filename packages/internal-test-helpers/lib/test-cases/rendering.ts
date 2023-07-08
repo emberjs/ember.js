@@ -13,7 +13,6 @@ import { runAppend, runDestroy, runTask } from '../run';
 import type { InternalFactory } from '@ember/-internals/owner';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
-import type { HelperFunction } from '@ember/-internals/glimmer/lib/helper';
 
 const TextNode = window.Text;
 
@@ -162,7 +161,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   registerHelper<T, P extends unknown[], N extends Record<string, unknown>>(
     name: string,
-    funcOrClassBody: HelperFunction<T, P, N> | Record<string, unknown>
+    funcOrClassBody: (positional: P, named: N) => T | Record<string, unknown>
   ) {
     if (typeof funcOrClassBody === 'function') {
       this.owner.register(`helper:${name}`, helper(funcOrClassBody));

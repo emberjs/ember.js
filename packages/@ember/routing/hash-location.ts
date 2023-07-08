@@ -1,6 +1,6 @@
-import EmberObject, { set } from '@ember/object';
+import EmberObject from '@ember/object';
 import { bind } from '@ember/runloop';
-import type { ILocation as EmberLocation, UpdateCallback } from '@ember/routing/location';
+import type { default as EmberLocation, UpdateCallback } from '@ember/routing/location';
 import { getHash } from './lib/location-utils';
 
 /**
@@ -36,14 +36,13 @@ import { getHash } from './lib/location-utils';
   @protected
 */
 export default class HashLocation extends EmberObject implements EmberLocation {
-  implementation = 'hash';
   _hashchangeHandler?: EventListener;
 
   private _location?: Location;
   declare location: Location;
 
   init(): void {
-    set(this, 'location', this._location || window.location);
+    this.location = this._location ?? window.location;
     this._hashchangeHandler = undefined;
   }
 
@@ -100,7 +99,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   */
   setURL(path: string): void {
     this.location.hash = path;
-    set(this, 'lastSetURL', path);
+    this.lastSetURL = path;
   }
 
   /**
@@ -113,7 +112,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   */
   replaceURL(path: string): void {
     this.location.replace(`#${path}`);
-    set(this, 'lastSetURL', path);
+    this.lastSetURL = path;
   }
 
   lastSetURL: string | null = null;
@@ -135,7 +134,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
         return;
       }
 
-      set(this, 'lastSetURL', null);
+      this.lastSetURL = null;
 
       callback(path);
     });

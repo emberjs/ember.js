@@ -208,8 +208,6 @@ function templateCompilerBundle(emberPackages, transpileTree) {
           '@ember/canary-features/**',
           '@ember/debug/**',
           '@ember/deprecated-features/**',
-          '@ember/error/**',
-          '@ember/polyfills/**',
           'ember/version.js',
           'ember-babel.js',
           'ember-template-compiler/**',

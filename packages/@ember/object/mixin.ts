@@ -8,12 +8,13 @@ import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { _WeakSet } from '@glimmer/util';
-import type {
-  ComputedDecorator,
-  ComputedPropertyGetter,
-  ComputedPropertyObj,
-  ComputedPropertySetter,
-  ComputedDescriptor,
+import {
+  type ComputedDecorator,
+  type ComputedPropertyGetter,
+  type ComputedPropertyObj,
+  type ComputedPropertySetter,
+  type ComputedDescriptor,
+  isClassicDecorator,
 } from '@ember/-internals/metal';
 import {
   ComputedProperty,
@@ -235,7 +236,7 @@ function mergeMixins(
   keys: string[],
   keysWithSuper: string[]
 ): void {
-  let currentMixin;
+  let currentMixin: MixinLike | undefined;
 
   for (let i = 0; i < mixins.length; i++) {
     currentMixin = mixins[i];
@@ -309,12 +310,17 @@ function mergeProps(
       let desc = meta.peekDescriptors(key);
 
       if (desc === undefined) {
-        // The superclass did not have a CP, which means it may have
-        // observers or listeners on that property.
-        let prev = (values[key] = base[key]);
+        // If the value is a classic decorator, we don't want to actually
+        // access it, because that will execute the decorator while we're
+        // building the class.
+        if (!isClassicDecorator(value)) {
+          // The superclass did not have a CP, which means it may have
+          // observers or listeners on that property.
+          let prev = (values[key] = base[key]);
 
-        if (typeof prev === 'function') {
-          updateObserversAndListeners(base, key, prev, false);
+          if (typeof prev === 'function') {
+            updateObserversAndListeners(base, key, prev, false);
+          }
         }
       } else {
         descs[key] = desc;
@@ -579,10 +585,10 @@ export default class Mixin {
     @param arguments*
     @public
   */
-  static create(...args: any[]): Mixin {
+  static create<M extends typeof Mixin>(...args: any[]): InstanceType<M> {
     setUnprocessedMixins();
     let M = this;
-    return new M(args, undefined);
+    return new M(args, undefined) as InstanceType<M>;
   }
 
   // returns the mixins currently applied to the specified object
@@ -611,9 +617,9 @@ export default class Mixin {
     @private
     @internal
   */
-  reopen(...args: any[]): this | undefined {
+  reopen(...args: Array<Mixin | Record<string, unknown>>): this {
     if (args.length === 0) {
-      return;
+      return this;
     }
 
     if (this.properties) {

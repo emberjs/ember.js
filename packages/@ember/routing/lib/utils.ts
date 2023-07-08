@@ -1,9 +1,9 @@
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import type { ControllerQueryParam, ControllerQueryParamType } from '@ember/controller';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import type { InternalRouteInfo, ModelFor } from 'router_js';
+import type { InternalRouteInfo } from 'router_js';
 import type Router from 'router_js';
 import { STATE_SYMBOL } from 'router_js';
 import type { ExtendedInternalRouteInfo } from '@ember/routing/route';
@@ -18,28 +18,28 @@ export type ExpandedControllerQueryParam = {
   type?: ControllerQueryParamType;
 };
 
-export type NamedRouteArgs<R extends Route> =
-  | [routeNameOrUrl: string, ...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
-  | [routeNameOrUrl: string, ...models: ModelFor<R>[]];
+export type NamedRouteArgs =
+  | [routeNameOrUrl: string, ...modelsAndOptions: [...unknown[], RouteOptions]]
+  | [routeNameOrUrl: string, ...models: unknown[]];
 
-export type UnnamedRouteArgs<R extends Route> =
-  | [...modelsAndOptions: [...ModelFor<R>[], RouteOptions]]
-  | [...models: ModelFor<R>[]]
+export type UnnamedRouteArgs =
+  | [...modelsAndOptions: [...unknown[], RouteOptions]]
+  | [...models: unknown[]]
   | [options: RouteOptions];
 
-export type RouteArgs<R extends Route> = NamedRouteArgs<R> | UnnamedRouteArgs<R>;
+export type RouteArgs = NamedRouteArgs | UnnamedRouteArgs;
 
-type ExtractedArgs<R extends Route> = {
+type ExtractedArgs = {
   routeName: string | undefined;
-  models: ModelFor<R>[];
+  models: unknown[];
   queryParams: Record<string, unknown>;
 };
 
 export type RouteOptions = { queryParams: Record<string, unknown> };
 
-export function extractRouteArgs<R extends Route>(args: RouteArgs<R>): ExtractedArgs<R> {
+export function extractRouteArgs(args: RouteArgs): ExtractedArgs {
   // SAFETY: This should just be the same thing
-  args = args.slice() as RouteArgs<R>;
+  args = args.slice() as RouteArgs;
 
   let possibleOptions = args[args.length - 1];
 
@@ -60,7 +60,7 @@ export function extractRouteArgs<R extends Route>(args: RouteArgs<R>): Extracted
   }
 
   // SAFTEY: We removed the name and options if they existed, only models left.
-  let models = args as ModelFor<R>[];
+  let models = args;
 
   return { routeName, models, queryParams };
 }
@@ -74,9 +74,9 @@ export function getActiveTargetName(router: Router<Route>): string {
   return lastRouteInfo.name;
 }
 
-export function stashParamNames<R extends Route>(
-  router: EmberRouter<R>,
-  routeInfos: Array<ExtendedInternalRouteInfo<R>> & { _namesStashed?: boolean }
+export function stashParamNames(
+  router: EmberRouter,
+  routeInfos: Array<ExtendedInternalRouteInfo<Route>> & { _namesStashed?: boolean }
 ): void {
   if (routeInfos['_namesStashed']) {
     return;
@@ -90,7 +90,7 @@ export function stashParamNames<R extends Route>(
   assert('has route info', routeInfo);
   let targetRouteName = routeInfo.name;
   let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
-  let dynamicParent: InternalRouteInfo<R>;
+  let dynamicParent: InternalRouteInfo<Route>;
 
   for (let i = 0; i < routeInfos.length; ++i) {
     let routeInfo = routeInfos[i];
@@ -104,11 +104,7 @@ export function stashParamNames<R extends Route>(
     routeInfo['_names'] = names;
 
     let route = routeInfo.route!;
-    // SAFETY: This cast should be idential. I don't understand why it is needed.
-    route._stashNames(
-      routeInfo as InternalRouteInfo<NonNullable<R>>,
-      dynamicParent! as InternalRouteInfo<NonNullable<R>>
-    );
+    route._stashNames(routeInfo, dynamicParent!);
   }
 
   routeInfos['_namesStashed'] = true;
@@ -237,7 +233,7 @@ export function resemblesURL(str: unknown): str is string {
 
   @private
 */
-export function prefixRouteNameArg<T extends NamedRouteArgs<Route> | UnnamedRouteArgs<Route>>(
+export function prefixRouteNameArg<T extends NamedRouteArgs | UnnamedRouteArgs>(
   route: Route,
   args: T
 ): T {
@@ -282,23 +278,6 @@ export function shallowEqual<A extends object, B extends object>(a: A, b: B): bo
   }
 
   return aCount === bCount;
-}
-
-export function deprecateTransitionMethods(frameworkClass: string, methodName: string): void {
-  deprecate(
-    `Calling ${methodName} on a ${frameworkClass} is deprecated. Use the RouterService instead.`,
-    false,
-    {
-      id: 'routing.transition-methods',
-      for: 'ember-source',
-      since: {
-        available: '3.26.0',
-        enabled: '3.26.0',
-      },
-      until: '5.0.0',
-      url: 'https://deprecations.emberjs.com/v3.x/#toc_routing-transition-methods',
-    }
-  );
 }
 
 function isRouteOptions(value: unknown): value is RouteOptions {

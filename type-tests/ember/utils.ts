@@ -2,7 +2,8 @@ import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
 function testTypeOf() {
-  expectTypeOf(Ember.typeOf()).toEqualTypeOf<'undefined'>();
+  // @ts-expect-error
+  Ember.typeOf();
   const str: string = Ember.typeOf({});
 }
 
@@ -13,43 +14,35 @@ function testIsNoneType() {
   }
 
   const anotherString = maybeUndefined + 'another string';
-  expectTypeOf(Ember.isNone()).toBeBoolean();
+  expectTypeOf(Ember.isNone(anotherString)).toBeBoolean();
 }
 
 function testIsBlank() {
-  expectTypeOf(Ember.isBlank()).toBeBoolean();
+  expectTypeOf(Ember.isBlank(undefined)).toBeBoolean();
   expectTypeOf(Ember.isBlank('')).toBeBoolean();
   // @ts-expect-error
   Ember.isBlank('', '');
 }
 
 function testIsEmpty() {
-  expectTypeOf(Ember.isEmpty()).toBeBoolean();
+  expectTypeOf(Ember.isEmpty(undefined)).toBeBoolean();
   expectTypeOf(Ember.isEmpty('')).toBeBoolean();
   // @ts-expect-error
   Ember.isEmpty('', '');
 }
 
 function testIsPresent() {
-  expectTypeOf(Ember.isPresent()).toBeBoolean();
+  expectTypeOf(Ember.isPresent(undefined)).toBeBoolean();
   expectTypeOf(Ember.isPresent('')).toBeBoolean();
   // @ts-expect-error
   Ember.isPresent('', '');
 }
 
 function testIsNone() {
-  expectTypeOf(Ember.isNone()).toBeBoolean();
+  expectTypeOf(Ember.isNone(undefined)).toBeBoolean();
   expectTypeOf(Ember.isNone('')).toBeBoolean();
   // @ts-expect-error
   Ember.isNone('', '');
-}
-
-function testAssign() {
-  expectTypeOf(Ember.assign({ first: 'Tom' }, { middle: 'M' }, { last: 'Dale' })).toEqualTypeOf<{
-    first: string;
-    middle: string;
-    last: string;
-  }>();
 }
 
 function testOnError() {
@@ -94,47 +87,23 @@ declare const fileList: FileList;
 
 (() => {
   /** typeOf */
-  expectTypeOf(Ember.typeOf()).toEqualTypeOf<'undefined'>();
-  expectTypeOf(Ember.typeOf(null)).toEqualTypeOf<'null'>();
-  expectTypeOf(Ember.typeOf(undefined)).toEqualTypeOf<'undefined'>();
-  expectTypeOf(Ember.typeOf('michael')).toEqualTypeOf<'string'>();
-  expectTypeOf(Ember.typeOf(new String('michael'))).toEqualTypeOf<'string'>();
-  expectTypeOf(Ember.typeOf(101)).toEqualTypeOf<'number'>();
-  expectTypeOf(Ember.typeOf(new Number(101))).toEqualTypeOf<'number'>();
-  expectTypeOf(Ember.typeOf(true)).toEqualTypeOf<'boolean'>();
-  expectTypeOf(Ember.typeOf(new Boolean(true))).toEqualTypeOf<'boolean'>();
-  expectTypeOf(Ember.typeOf(() => 4)).toEqualTypeOf<'function'>();
-  // @ts-ignore -- this *should* work but the namespace version is not carrying
-  // it through correctly. However, people can *and should* simply use the
-  // module import instead!
-  expectTypeOf(Ember.typeOf([1, 2, 90])).toEqualTypeOf<'array'>();
-  expectTypeOf(Ember.typeOf(/abc/)).toEqualTypeOf<'regexp'>();
-  expectTypeOf(Ember.typeOf(new Date())).toEqualTypeOf<'date'>();
-  expectTypeOf(Ember.typeOf(fileList)).toEqualTypeOf<'filelist'>();
-  expectTypeOf(Ember.typeOf(Ember.Object.extend())).toEqualTypeOf<'class'>();
-  // @ts-ignore -- this *should* work but the namespace version is not carrying
-  // it through correctly. However, people can *and should* simply use the
-  // module import instead!
-  expectTypeOf(Ember.typeOf(Ember.Object.create())).toEqualTypeOf<'instance'>();
-  expectTypeOf(Ember.typeOf(new Error('teamocil'))).toEqualTypeOf<'error'>();
-  expectTypeOf(Ember.typeOf(new Date() as RegExp | Date)).toEqualTypeOf<'regexp' | 'date'>();
-  expectTypeOf(Ember.typeOf({ randomObject: true })).toEqualTypeOf<'object'>();
-})();
+  expectTypeOf(Ember.typeOf(null)).toBeString();
+  expectTypeOf(Ember.typeOf(undefined)).toBeString();
+  expectTypeOf(Ember.typeOf('michael')).toBeString();
+  expectTypeOf(Ember.typeOf(new String('michael'))).toBeString();
+  expectTypeOf(Ember.typeOf(101)).toBeString();
+  expectTypeOf(Ember.typeOf(new Number(101))).toBeString();
+  expectTypeOf(Ember.typeOf(true)).toBeString();
+  expectTypeOf(Ember.typeOf(new Boolean(true))).toBeString();
+  expectTypeOf(Ember.typeOf(() => 4)).toBeString();
 
-(() => {
-  /* assign */
-  Ember.assign({}, { a: 'b' });
-  expectTypeOf(Ember.assign({}, { a: 'b' }).a).toBeString();
-  expectTypeOf(Ember.assign({ a: 6 }, { a: 'b' }).a).toBeString();
-  expectTypeOf(Ember.assign({ a: 6 }, {}).a).toBeNumber();
-  // @ts-expect-error
-  Ember.assign({ b: 6 }, {}).a;
-  expectTypeOf(Ember.assign({}, { b: 6 }, {}).b).toBeNumber();
-  expectTypeOf(Ember.assign({ a: 'hello' }, { b: 6 }, {}).a).toBeString();
-  expectTypeOf(Ember.assign({ a: 'hello' }, { b: 6 }, { a: true }).a).toBeBoolean();
-  // @ts-expect-error
-  Ember.assign({ a: 'hello' }, '', { a: true }).a;
-  expectTypeOf(
-    Ember.assign({ d: ['gobias industries'] }, { a: 'hello' }, { b: 6 }, { a: true }).d
-  ).toEqualTypeOf<string[]>();
+  expectTypeOf(Ember.typeOf([1, 2, 90])).toBeString();
+  expectTypeOf(Ember.typeOf(/abc/)).toBeString();
+  expectTypeOf(Ember.typeOf(new Date())).toBeString();
+  expectTypeOf(Ember.typeOf(fileList)).toBeString();
+  expectTypeOf(Ember.typeOf(Ember.Object.extend())).toBeString();
+  expectTypeOf(Ember.typeOf(Ember.Object.create())).toBeString();
+  expectTypeOf(Ember.typeOf(new Error('teamocil'))).toBeString();
+  expectTypeOf(Ember.typeOf(new Date() as RegExp | Date)).toBeString();
+  expectTypeOf(Ember.typeOf({ randomObject: true })).toBeString();
 })();

@@ -1,4 +1,5 @@
 import type {
+  Factory,
   FactoryClass,
   FullName,
   InternalFactory,
@@ -7,7 +8,7 @@ import type {
   Resolver,
 } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import type { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import type { ContainerOptions, LazyInjection } from './container';
@@ -18,9 +19,11 @@ export interface Injection {
   specifier: FullName;
 }
 
-export interface ResolverClass {
-  create(...args: unknown[]): Resolver;
-}
+export interface ResolverClass
+  extends Factory<Resolver>,
+    Partial<{
+      new (...args: any): Resolver;
+    }> {}
 
 export interface RegistryOptions {
   fallback?: Registry;
@@ -424,35 +427,6 @@ export default class Registry {
       return this.fallback.getOption(fullName, optionName);
     }
     return undefined;
-  }
-
-  /**
-   This is deprecated in favor of explicit injection of dependencies.
-
-   Reference: https://deprecations.emberjs.com/v3.x#toc_implicit-injections
-   ```
-
-   @private
-   @method injection
-   @param {String} fullName
-   @param {String} property
-   @deprecated
-   */
-  injection(fullName: FullName, property: string): void {
-    deprecate(
-      `As of Ember 4.0.0, owner.inject no longer injects values into resolved instances, and calling the method has been deprecated. Since this method no longer does anything, it is fully safe to remove this injection. As an alternative to this API, you can refactor to explicitly inject \`${property}\` on \`${fullName}\`, or look it up directly using the \`getOwner\` API.`,
-      false,
-      {
-        id: 'remove-owner-inject',
-        until: '5.0.0',
-        url: 'https://deprecations.emberjs.com/v4.x#toc_implicit-injections',
-        for: 'ember-source',
-        since: {
-          available: '4.0.0',
-          enabled: '4.0.0',
-        },
-      }
-    );
   }
 
   /**

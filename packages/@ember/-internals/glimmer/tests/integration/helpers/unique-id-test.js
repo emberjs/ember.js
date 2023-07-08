@@ -1,6 +1,43 @@
-import { RenderingTestCase, strip, moduleFor, runTask } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  RenderingTestCase,
+  strip,
+  moduleFor,
+  runTask,
+} from 'internal-test-helpers';
 import { setProperties } from '@ember/object';
+import { uniqueId, invokeHelper } from '@ember/helper';
+import { getValue } from '@glimmer/validator';
 
+moduleFor(
+  'Helpers test: {{unique-id}} JS',
+  class extends AbstractTestCase {
+    constructor(assert) {
+      super(assert);
+      this.assert = assert;
+    }
+    ['@test it can be invoked as a JS function']() {
+      let first = uniqueId();
+      let second = uniqueId();
+
+      this.assert.notStrictEqual(
+        first,
+        second,
+        `different invocations of uniqueId should produce different values`
+      );
+    }
+    ['@test it can be invoked via invokeHelper']() {
+      let first = getValue(invokeHelper({}, uniqueId));
+      let second = getValue(invokeHelper({}, uniqueId));
+
+      this.assert.notStrictEqual(
+        first,
+        second,
+        `different invocations of uniqueId should produce different values`
+      );
+    }
+  }
+);
 moduleFor(
   'Helpers test: {{unique-id}}',
   class extends RenderingTestCase {

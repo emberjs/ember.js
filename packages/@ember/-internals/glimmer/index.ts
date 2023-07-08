@@ -450,7 +450,12 @@ export { default as Input } from './lib/components/input';
 export { default as LinkTo } from './lib/components/link-to';
 export { default as Textarea } from './lib/components/textarea';
 export { default as Component } from './lib/component';
-export { default as Helper, helper } from './lib/helper';
+export {
+  default as Helper,
+  helper,
+  type FunctionBasedHelper,
+  type FunctionBasedHelperInstance,
+} from './lib/helper';
 export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
 export { Renderer, _resetRenderers, renderSettled } from './lib/renderer';
 export {
@@ -476,3 +481,4 @@ export {
   setComponentManager,
 } from './lib/utils/managers';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
+export { uniqueId } from './lib/helpers/unique-id';

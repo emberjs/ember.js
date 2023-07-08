@@ -1,5 +1,4 @@
 import type Owner from '@ember/owner';
-import type { SafeString } from '@ember/template/-private/handlebars';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
@@ -12,7 +11,6 @@ expectTypeOf(Ember.A([1, 2])).toEqualTypeOf<Ember.NativeArray<number>>();
 // addListener
 Ember.addListener({ a: 'foo' }, 'event', {}, () => {});
 Ember.addListener({ a: 'foo' }, 'event', {}, 'a');
-// @ts-expect-error
 Ember.addListener({ a: 'foo' }, 'event', {}, 'b');
 Ember.addListener({ a: 'foo' }, 'event', null, () => {});
 // addObserver
@@ -21,18 +19,12 @@ Ember.addObserver({ a: 'foo' }, 'a', {}, () => {});
 // assert
 Ember.assert('2+2 should always be 4', 2 + 2 === 4);
 // assign
-const o1 = Ember.assign({ a: 1 }, { b: 2 });
-expectTypeOf(o1.a).toBeNumber();
-expectTypeOf(o1.b).toBeNumber();
-// @ts-expect-error
-o1.c;
 // Ember.bind // @ts-expect-error
 // cacheFor
 expectTypeOf(Ember.cacheFor({ a: 123 }, 'a')).toEqualTypeOf<number | undefined>();
-// @ts-expect-error
 Ember.cacheFor({ a: 123 }, 'x');
 // compare
-expectTypeOf(Ember.compare('31', '114')).toEqualTypeOf<number>();
+expectTypeOf(Ember.compare('31', '114')).toEqualTypeOf<-1 | 0 | 1>();
 // debug
 Ember.debug('some info for developers');
 // deprecate
@@ -45,20 +37,15 @@ Ember.deprecate("you shouldn't use this anymore", 3 === 3, {
 // get
 expectTypeOf(Ember.get({ z: 23 }, 'z')).toEqualTypeOf<number>();
 expectTypeOf(Ember.get({ z: 23 }, 'zz')).toEqualTypeOf<unknown>();
-// getEngineParent
-expectTypeOf(
-  Ember.getEngineParent(new Ember.EngineInstance())
-).toEqualTypeOf<Ember.EngineInstance>();
 // getOwner
 expectTypeOf(Ember.getOwner(new Ember.Component())).toEqualTypeOf<Owner | undefined>();
 // getProperties
 expectTypeOf(Ember.getProperties({ z: 23 }, 'z').z).toEqualTypeOf<number>();
 expectTypeOf(Ember.getProperties({ z: 23 }, 'z', 'z').z).toEqualTypeOf<number>();
-// @ts-expect-error
-Ember.getProperties({ z: 23 }, 'z', 'a').z;
+// We cannot get both known and  unknown keys at the same time.
+expectTypeOf(Ember.getProperties({ z: 23 }, 'z', 'a').z).toBeUnknown();
 expectTypeOf(Ember.getProperties({ z: 23 }, ['z', 'z']).z).toEqualTypeOf<number>();
-// @ts-expect-error
-Ember.getProperties({ z: 23 }, ['z', 'a']).z;
+expectTypeOf(Ember.getProperties({ z: 23 }, ['z', 'a'])['z']).toBeUnknown();
 
 // guidFor
 expectTypeOf(Ember.guidFor({})).toEqualTypeOf<string>();
@@ -103,11 +90,9 @@ const o3 = O3.create();
 // removeListener
 Ember.removeListener(O2, 'create', null, () => {});
 Ember.removeListener(O2, 'create', null, 'create');
-// @ts-expect-error
 Ember.removeListener({}, 'create', null, 'blah');
 // removeObserver
 Ember.removeObserver(O2, 'create', () => {});
-// @ts-expect-error
 Ember.removeObserver({}, 'create', () => {});
 // runInDebug
 Ember.runInDebug(() => {});
@@ -116,23 +101,19 @@ expectTypeOf(Ember.sendEvent(o2, 'clicked', [1, 2])).toBeBoolean();
 // set
 expectTypeOf(Ember.set(O2.create(), 'name', 'bar')).toEqualTypeOf<string>();
 expectTypeOf(Ember.set(O2.create(), 'age', 4)).toEqualTypeOf<number>();
-// @ts-expect-error
-Ember.set(O2.create(), 'nam', 'bar');
+// We allow setting arbitrary properties with `set`.
+expectTypeOf(Ember.set(O2.create(), 'nam', 'bar')).toBeString();
 // setOwner
 declare let app: Ember.ApplicationInstance;
 Ember.setOwner(O2.create(), app);
 // setProperties
 expectTypeOf(Ember.setProperties(O2.create(), { name: 'bar' }).name).toEqualTypeOf<string>();
 // trySet
-expectTypeOf(Ember.trySet(O2, 'nam', '')).toBeUnknown();
+expectTypeOf(Ember.trySet(O2, 'nam', '')).toEqualTypeOf<string | undefined>();
 // typeOf
-expectTypeOf(Ember.typeOf('')).toEqualTypeOf<'string'>();
-// @ts-ignore -- this *should* work but the namespace version is not carrying
-// it through correctly. However, people can *and should* simply use the
-// module import instead!
-expectTypeOf(Ember.typeOf(Ember.A())).toEqualTypeOf<'array'>();
+expectTypeOf(Ember.typeOf('')).toBeString();
+expectTypeOf(Ember.typeOf(Ember.A())).toBeString();
 // warn
-// @ts-expect-error
 Ember.warn('be caseful!');
 Ember.warn('be caseful!', { id: 'some-warning' });
 // VERSION
@@ -158,8 +139,10 @@ expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.Application
 const a1: Ember.NativeArray<string> = Ember.A([]);
 // @ts-expect-error
 const a2: Ember.Array<string> = {};
-// Ember.ArrayProxy
-expectTypeOf(new Ember.ArrayProxy<number>([3, 3, 2])).toEqualTypeOf<Ember.ArrayProxy<number>>();
+// Ember.ArrayProxy -- we cannot make this type safe with our limited types.
+expectTypeOf(Ember.ArrayProxy.create({ content: [3, 3, 2] })).toMatchTypeOf<
+  Ember.ArrayProxy<unknown>
+>();
 // Ember.Component
 const C1 = Ember.Component.extend({ classNames: ['foo'] });
 class C2 extends Ember.Component {
@@ -185,14 +168,16 @@ class Foo {
   }
 }
 
+declare let owner: Ember.ApplicationInstance;
+
 // Ember.ContainerDebugAdapter
-expectTypeOf(new Ember.ContainerDebugAdapter()).toEqualTypeOf<Ember.ContainerDebugAdapter>();
+expectTypeOf(new Ember.ContainerDebugAdapter(owner)).toEqualTypeOf<Ember.ContainerDebugAdapter>();
 // Ember.Controller
 expectTypeOf(new Ember.Controller()).toEqualTypeOf<Ember.Controller>();
 // Ember.CoreObject
 expectTypeOf(new Ember.CoreObject()).toEqualTypeOf<Ember.CoreObject>();
 // Ember.DataAdapter
-expectTypeOf(new Ember.DataAdapter()).toEqualTypeOf<Ember.DataAdapter>();
+expectTypeOf(new Ember.DataAdapter(owner)).toEqualTypeOf<Ember.DataAdapter<unknown>>();
 // Ember.Debug
 Ember.Debug.registerDeprecationHandler(() => {});
 Ember.Debug.registerWarnHandler(() => {});
@@ -202,8 +187,6 @@ e1.register('data:foo', {}, { instantiate: false });
 // Ember.EngineInstance
 const ei1 = new Ember.EngineInstance();
 ei1.lookup('data:foo');
-// Ember.Error
-new Ember.Error('Halp!');
 // Ember.Evented
 interface OE1 extends Ember.Evented {}
 class OE1 extends Ember.Object.extend(Ember.Evented) {}
@@ -272,28 +255,21 @@ class PPM<T> extends Ember.Object.extend(Ember.PromiseProxyMixin) {
   }
 }
 // Ember.Route
-new Ember.Route();
+new Ember.Route(owner);
 // Ember.Router
 new Ember.Router();
 // Ember.Service
 new Ember.Service();
 // Ember.Test
-Ember.Test;
-// Ember.Test.Adapter
-new Ember.Test.Adapter();
-// Ember.Test.QUnitAdapter
-new Ember.Test.QUnitAdapter();
+if (Ember.Test) {
+  new Ember.Test.Adapter();
+  new Ember.Test.QUnitAdapter();
+  // Ember.Test
+  expectTypeOf(Ember.Test.checkWaiters()).toEqualTypeOf<boolean>();
+}
 // Ember.Helper
 // helper
 Ember.Helper.helper(([a, b]: [number, number]) => a + b);
-// Ember.String
-Ember.String;
-// htmlSafe
-expectTypeOf(Ember.String.htmlSafe('foo')).toEqualTypeOf<SafeString>();
-// isHTMLSafe
-expectTypeOf(Ember.String.isHTMLSafe('foo')).toEqualTypeOf<boolean>();
-// Ember.Test
-expectTypeOf(Ember.Test.checkWaiters()).toEqualTypeOf<boolean>();
 // checkWaiters
 
 /**
@@ -319,9 +295,3 @@ Ember.create;
 Ember.reset;
 // @ts-expect-error
 Ember.unsubscribe;
-// @ts-expect-error
-Ember.subscribe;
-// @ts-expect-error
-Ember.instrument;
-// @ts-expect-error
-Ember.Instrumentation;

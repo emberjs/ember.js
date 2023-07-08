@@ -22,8 +22,8 @@ class MyObject30 extends Ember.Object {
 }
 
 class MyObject31 extends Ember.Object {
-  constructor(properties: object) {
-    super(properties);
+  constructor(owner: Ember.EngineInstance) {
+    super(owner);
   }
 }
 
@@ -70,8 +70,8 @@ export class Foo2 extends Ember.Object {
     expectTypeOf(Ember.get(this as Foo2, 'name')).toBeString();
     expectTypeOf((this as Foo2).get('name')).toBeString();
 
-    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<Pick<this, 'name'>>();
-    expectTypeOf(Ember.setProperties(this, { name })).toEqualTypeOf<Pick<this, 'name'>>();
+    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<{ name: string }>();
+    expectTypeOf(Ember.setProperties(this, { name })).toEqualTypeOf<{ name: string }>();
   }
 
   bar() {

@@ -6,21 +6,25 @@ import EmberObject from '@ember/object';
 import Controller from '@ember/controller';
 import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
+import { service } from '@ember/service';
+import RouterService from '@ember/routing/router-service';
 
 class Post extends EmberObject {}
 
 interface Posts extends Array<Post> {}
 
 class BeforeModelText extends Route {
+  @service declare router: RouterService;
   beforeModel(transition: Transition) {
-    this.transitionTo('someOtherRoute');
+    this.router.transitionTo('someOtherRoute');
   }
 }
 
 class AfterModel extends Route {
+  @service declare router: RouterService;
   afterModel(posts: Posts, transition: Transition) {
     if (posts.firstObject) {
-      this.transitionTo('post.show', posts.firstObject);
+      this.router.transitionTo('post.show', posts.firstObject);
     }
   }
 }
@@ -28,6 +32,27 @@ class AfterModel extends Route {
 class ModelTest extends Route {
   model() {
     return this.modelFor('post');
+  }
+}
+
+class Model {
+  baseClass = true;
+}
+
+class Child extends Model {
+  baseClass = false;
+  extraStuff = true;
+}
+
+class FooRoute<T extends Model> extends Route<T> {
+  serialize(object: T): any {
+    return null;
+  }
+}
+
+class FooChildRoute extends FooRoute<Child> {
+  serialize(object: Child) {
+    return object.extraStuff;
   }
 }
 
@@ -47,78 +72,39 @@ class ResetControllerTest extends Route {
 }
 
 class ActivateRoute extends Route {
+  @service declare router: RouterService;
   activate(transition: Transition) {
-    this.transitionTo('someOtherRoute');
+    this.router.transitionTo('someOtherRoute');
   }
 }
 
 class DeactivateRoute extends Route {
+  @service declare router: RouterService;
   deactivate(transition: Transition) {
-    this.transitionTo('someOtherRoute');
+    this.router.transitionTo('someOtherRoute');
   }
 }
 
 class RedirectRoute extends Route {
+  @service declare router: RouterService;
   redirect(model: {}, a: Transition) {
     if (!model) {
-      this.transitionTo('there');
+      this.router.transitionTo('there');
     }
   }
 }
 
 class InvalidRedirect extends Route {
+  @service declare router: RouterService;
   // @ts-expect-error
   redirect(model: {}, a: Transition, anOddArg: unknown) {
     if (!model) {
-      this.transitionTo('there');
+      this.router.transitionTo('there');
     }
   }
 }
 
-class TransitionToExamples extends Route {
-  // NOTE: this one won't check that `queryParams` has the right shape,
-  // because the overload for the version where `models` are passed
-  // necessarily includes all objects.
-  transitionToModelAndQP() {
-    expectTypeOf(
-      this.transitionTo('somewhere', { queryParams: { neat: true } })
-    ).toEqualTypeOf<Transition>();
-  }
-
-  transitionToJustQP() {
-    expectTypeOf(this.transitionTo({ queryParams: { neat: 'true' } })).toEqualTypeOf<Transition>();
-  }
-
-  transitionToNonsense() {
-    // @ts-expect-error
-    this.transitionTo({ cannotDoModelHere: true });
-  }
-
-  transitionToBadQP() {
-    // @ts-expect-error
-    this.transitionTo({ queryParams: 12 });
-  }
-
-  transitionToId() {
-    expectTypeOf(this.transitionTo('blog-post', 1)).toEqualTypeOf<Transition<unknown>>();
-  }
-
-  transitionToIdWithQP() {
-    expectTypeOf(
-      this.transitionTo('blog-post', 1, { queryParams: { includeComments: true } })
-    ).toEqualTypeOf<Transition<unknown>>();
-  }
-
-  transitionToIds() {
-    expectTypeOf(this.transitionTo('blog-comment', 1, '13')).toEqualTypeOf<Transition<unknown>>();
-  }
-
-  transitionToIdsWithQP() {
-    expectTypeOf(
-      this.transitionTo('blog-comment', 1, '13', { queryParams: { includePost: true } })
-    ).toEqualTypeOf<Transition<unknown>>();
-  }
-
+class BuidlRouteInfoMetadata extends Route {
   buildRouteInfoMetadata() {
     return { foo: 'bar' };
   }
@@ -141,27 +127,7 @@ class SetupControllerTest extends Route {
 
 const route = Route.create();
 expectTypeOf(route.controllerFor('whatever')).toEqualTypeOf<Controller>();
-expectTypeOf(route.paramsFor('whatever')).toEqualTypeOf<object>();
-
-class RouteUsingClass extends Route.extend({
-  randomProperty: 'the .extend + extends bit type-checks properly',
-}) {
-  beforeModel() {
-    return Promise.resolve('beforeModel can return promises');
-  }
-  afterModel(resolvedModel: unknown, transition: Transition) {
-    return Promise.resolve('afterModel can also return promises');
-  }
-  intermediateTransitionWithoutModel() {
-    this.intermediateTransitionTo('some-route');
-  }
-  intermediateTransitionWithModel() {
-    this.intermediateTransitionTo('some.other.route', {});
-  }
-  intermediateTransitionWithMultiModel() {
-    this.intermediateTransitionTo('some.other.route', 1, 2, {});
-  }
-}
+expectTypeOf(route.paramsFor('whatever')).toEqualTypeOf<Record<string, unknown>>();
 
 class WithNonReturningBeforeAndModelHooks extends Route {
   beforeModel(transition: Transition): void | Promise<unknown> {
@@ -189,8 +155,8 @@ interface RouteParams {
   cool: string;
 }
 
-class WithParamsInModel extends Route<boolean, RouteParams> {
-  model(params: RouteParams, transition: Transition) {
+class WithParamsInModel extends Route<boolean> {
+  model(params: { cool: string }, transition: Transition) {
     return true;
   }
 }
@@ -199,10 +165,7 @@ class WithParamsInModel extends Route<boolean, RouteParams> {
 class WithNonsenseParams extends Route<boolean, number> {}
 
 class WithImplicitParams extends Route {
-  model(params: RouteParams) {
+  model(params: { cool: string }) {
     return { whatUp: 'dog' };
   }
 }
-
-type ImplicitParams = WithImplicitParams extends Route<any, infer T> ? T : never;
-expectTypeOf<ImplicitParams>().toEqualTypeOf<RouteParams>();

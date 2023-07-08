@@ -4,9 +4,9 @@ import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
-import type Component from '@ember/component';
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
 import type { SimpleElement } from '@simple-dom/interface';
+import type CoreView from '../views/core_view';
 
 function K(this: unknown) {
   return this;
@@ -19,7 +19,7 @@ function K(this: unknown) {
 */
 interface ViewMixin {
   rerender(): unknown;
-  element: SimpleElement;
+  element: Element;
   appendTo(selector: string | Element | SimpleElement): this;
   append(): this;
   elementId: string | null;
@@ -101,7 +101,7 @@ const ViewMixin = Mixin.create({
    @deprecated use `yield` and contextual components for composition instead.
    @private
    */
-  nearestOfType(this: Component, klass: any) {
+  nearestOfType(klass: any) {
     let view = this.parentView;
     let isOfType =
       klass instanceof Mixin
@@ -173,7 +173,7 @@ const ViewMixin = Mixin.create({
   element: nativeDescDecorator({
     configurable: false,
     enumerable: false,
-    get(this: Component) {
+    get(this: CoreView) {
       return this.renderer.getElement(this);
     },
   }),
@@ -195,7 +195,7 @@ const ViewMixin = Mixin.create({
    @return {Ember.View} receiver
    @private
    */
-  appendTo(this: Component, selector: string | Element | SimpleElement) {
+  appendTo(selector: string | Element | SimpleElement) {
     let target;
 
     if (hasDOM) {
@@ -444,7 +444,7 @@ const ViewMixin = Mixin.create({
    @param evt {Event}
    @private
    */
-  handleEvent(this: Component, eventName: string, evt: Event) {
+  handleEvent(eventName: string, evt: Event) {
     return this._currentState.handleEvent(this, eventName, evt);
   },
 });

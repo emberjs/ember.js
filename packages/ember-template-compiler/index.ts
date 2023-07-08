@@ -4,14 +4,6 @@ import * as _GlimmerSyntax from '@glimmer/syntax';
 import VERSION from 'ember/version';
 import require from 'require';
 
-declare global {
-  interface NodeRequire {
-    has(name: string): boolean;
-  }
-
-  function define(path: string, deps: string[], module: () => void): void;
-}
-
 export let _Ember: unknown;
 
 try {
@@ -31,7 +23,7 @@ export {
   buildCompileOptions as _buildCompileOptions,
   transformsFor as _transformsFor,
 } from './lib/system/compile-options';
-export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins/index';
+export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins';
 export { EmberPrecompileOptions } from './lib/types';
 
 export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';

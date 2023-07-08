@@ -1,7 +1,7 @@
 import type Owner from '@ember/owner';
 import type EmberObject from '@ember/object';
 import type Evented from '@ember/object/evented';
-import type { ILocation } from '@ember/routing/location';
+import { default as Location, Registry as LocationRegistry } from '@ember/routing/location';
 import Router from '@ember/routing/router';
 import { expectTypeOf } from 'expect-type';
 import type { Transition } from 'router_js';
@@ -15,7 +15,7 @@ let router = new Router(owner);
 
 expectTypeOf(router.rootURL).toEqualTypeOf<string>();
 
-expectTypeOf(router.location).toEqualTypeOf<string | ILocation>();
+expectTypeOf(router.location).toEqualTypeOf<(keyof LocationRegistry & string) | Location>();
 
 let aPost = {};
 let aComment = {};

@@ -4,11 +4,15 @@ import { shallowEqual } from './utils';
 import type Route from '@ember/routing/route';
 import type EmberRouter from '@ember/routing/router';
 
-export default class RouterState<R extends Route> {
-  router: Router<R>;
-  emberRouter: EmberRouter<R>;
-  routerJsState: TransitionState<R>;
-  constructor(emberRouter: EmberRouter<R>, router: Router<R>, routerJsState: TransitionState<R>) {
+export default class RouterState {
+  router: Router<Route>;
+  emberRouter: EmberRouter;
+  routerJsState: TransitionState<Route>;
+  constructor(
+    emberRouter: EmberRouter,
+    router: Router<Route>,
+    routerJsState: TransitionState<Route>
+  ) {
     this.emberRouter = emberRouter;
     this.router = router;
     this.routerJsState = routerJsState;
@@ -16,7 +20,7 @@ export default class RouterState<R extends Route> {
 
   isActiveIntent(
     routeName: string,
-    models: ModelFor<R>[],
+    models: ModelFor<Route>[],
     queryParams?: Record<string, unknown>
   ): boolean {
     let state = this.routerJsState;

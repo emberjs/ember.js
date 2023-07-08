@@ -2,7 +2,6 @@ import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
-import require from 'require';
 
 moduleFor(
   'ember reexports',
@@ -18,63 +17,6 @@ moduleFor(
 
         confirmExport(Ember, assert, path, moduleId, exportName);
       });
-    }
-
-    ['@test Ember.String.htmlSafe exports correctly (but deprecated)'](assert) {
-      let glimmer = require('@ember/-internals/glimmer');
-      expectDeprecation(() => {
-        assert.equal(
-          Ember.String.htmlSafe,
-          glimmer.htmlSafe,
-          'Ember.String.htmlSafe is exported correctly'
-        );
-      }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
-      assert.notEqual(glimmer.htmlSafe, undefined, 'Ember.String.htmlSafe is not `undefined`');
-    }
-
-    ['@test Ember.String.isHTMLSafe exports correctly (but deprecated)'](assert) {
-      let glimmer = require('@ember/-internals/glimmer');
-      expectDeprecation(() => {
-        assert.equal(
-          Ember.String.isHTMLSafe,
-          glimmer.isHTMLSafe,
-          'Ember.String.isHTMLSafe is exported correctly'
-        );
-      }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
-      assert.notEqual(glimmer.isHTMLSafe, undefined, 'Ember.String.isHTMLSafe is not `undefined`');
-    }
-
-    ['@test Ember.String methods export correctly (but deprecated)'](assert) {
-      let string = require('@ember/string');
-      let methods = [
-        'camelize',
-        'capitalize',
-        'classify',
-        'dasherize',
-        'decamelize',
-        'underscore',
-        'w',
-      ];
-      methods.forEach((method) => {
-        expectDeprecation(() => {
-          assert.equal(
-            Ember.String[method],
-            string[method],
-            `Ember.String.${method} is exported correctly`
-          );
-        }, 'Using `Ember.String` is deprecated. Please import methods directly from `@ember/string`.');
-        assert.notEqual(string[method], undefined, `Ember.String.${method} is not \`undefined\``);
-      });
-    }
-
-    ['@test Ember.STRINGS is deprecated'](assert) {
-      expectDeprecation(() => {
-        assert.ok(Ember.STRINGS);
-      }, 'Ember.STRINGS is deprecated. It is no longer used by Ember.');
-
-      expectDeprecation(() => {
-        Ember.STRINGS = {};
-      }, 'Ember.STRINGS is deprecated. It is no longer used by Ember.');
     }
 
     '@test Ember.FEATURES is exported'(assert) {
@@ -110,6 +52,7 @@ let allExports = [
   // @ember/array
   ['Array', '@ember/array', 'default'],
   ['A', '@ember/array', 'A'],
+  ['NativeArray', '@ember/array', 'NativeArray'],
   ['isArray', '@ember/array', 'isArray'],
   ['makeArray', '@ember/array', 'makeArray'],
 
@@ -180,9 +123,6 @@ let allExports = [
 
   // @ember/enumerable
   ['Enumerable', '@ember/enumerable', 'default'],
-
-  // @ember/error
-  ['Error', '@ember/error', 'default'],
 
   // @ember/instrumentation
   ['instrument', '@ember/instrumentation', 'instrument'],
@@ -259,21 +199,11 @@ let allExports = [
   // @ember/object/proxy
   ['ObjectProxy', '@ember/object/proxy', 'default'],
 
-  // @ember/polyfills
-  ['assign', '@ember/polyfills', 'assign'],
-  ['platform.hasPropertyAccessors', '@ember/polyfills', 'hasPropertyAccessors'],
-
-  // @ember/routing/auto-location
-  ['AutoLocation', '@ember/routing/auto-location', 'default'],
-
   // @ember/routing/hash-location
   ['HashLocation', '@ember/routing/hash-location', 'default'],
 
   // @ember/routing/history-location
   ['HistoryLocation', '@ember/routing/history-location', 'default'],
-
-  // @ember/routing/location
-  ['Location', '@ember/routing/location', 'default'],
 
   // @ember/routing/none-location
   ['NoneLocation', '@ember/routing/none-location', 'default'],
@@ -290,9 +220,6 @@ let allExports = [
   // @ember/service
   ['Service', '@ember/service', 'default'],
   ['inject.service', '@ember/service', 'service'],
-
-  // @ember/string
-  ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],
 
   // @ember/template
   [null, '@ember/template', 'htmlSafe'],
@@ -395,7 +322,6 @@ let allExports = [
   ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin'],
   ['Comparable', '@ember/-internals/runtime'],
   ['ActionHandler', '@ember/-internals/runtime'],
-  ['NativeArray', '@ember/-internals/runtime'],
   ['MutableEnumerable', '@ember/-internals/runtime'],
   ['_ProxyMixin', '@ember/-internals/runtime'],
 
@@ -406,7 +332,7 @@ let allExports = [
   ['RouterDSL', '@ember/-internals/routing'],
 
   // backburner
-  ['_Backburner', 'backburner', 'default'],
+  ['_Backburner', 'backburner.js', 'default'],
 
   // rsvp
   [null, 'rsvp', 'default'],
@@ -424,7 +350,4 @@ let allExports = [
   [null, 'rsvp', 'race'],
   [null, 'rsvp', 'reject'],
   [null, 'rsvp', 'resolve'],
-
-  // misc.
-  ['platform.defineProperty', null, { value: true }],
 ].filter(Boolean);

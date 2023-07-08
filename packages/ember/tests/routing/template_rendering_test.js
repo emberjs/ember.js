@@ -6,6 +6,7 @@ import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
+import { service } from '@ember/service';
 
 let originalConsoleError;
 
@@ -185,10 +186,9 @@ moduleFor(
       this.add(
         'route:application',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.transitionTo('posts');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('posts');
           },
         })
       );

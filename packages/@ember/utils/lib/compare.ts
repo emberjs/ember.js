@@ -96,7 +96,7 @@ function spaceship(a: number, b: number): Compare {
  @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
  @public
 */
-export default function compare(v: unknown, w: unknown): Compare {
+export default function compare<T>(v: T, w: T): Compare {
   if (v === w) {
     return 0;
   }

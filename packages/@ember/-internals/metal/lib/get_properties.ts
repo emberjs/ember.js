@@ -31,14 +31,17 @@ import { get } from './property_get';
   @return {Object}
   @public
 */
-function getProperties<L extends string[]>(obj: unknown, list: L): Record<L[number], unknown>;
-function getProperties<L extends string[]>(obj: unknown, ...list: L): Record<L[number], unknown>;
-function getProperties<L extends string[]>(
+
+function getProperties<T, K extends keyof T>(obj: T, list: K[]): Pick<T, K>;
+function getProperties<T, K extends keyof T>(obj: T, ...list: K[]): Pick<T, K>;
+function getProperties<K extends string>(obj: unknown, list: K[]): Record<K, unknown>;
+function getProperties<K extends string>(obj: unknown, ...list: K[]): Record<K, unknown>;
+function getProperties<K extends string>(
   obj: unknown,
-  keys?: L | [L]
-): Record<L[number], unknown> {
-  let ret = {} as Record<L[number], unknown>;
-  let propertyNames: string[];
+  keys?: Array<K> | Array<Array<K>>
+): Record<K, unknown> {
+  let ret = {} as Record<K, unknown>;
+  let propertyNames: K[];
   let i = 1;
 
   if (arguments.length === 2 && Array.isArray(keys)) {
@@ -49,7 +52,10 @@ function getProperties<L extends string[]>(
   }
 
   for (; i < propertyNames.length; i++) {
-    ret[propertyNames[i] as L[number]] = get(obj, propertyNames[i]!);
+    // SAFETY: we are just walking the list of property names, so we know the
+    // index access never produces `undefined`.
+    let name = propertyNames[i] as K;
+    ret[name] = get(obj, name);
   }
   return ret;
 }

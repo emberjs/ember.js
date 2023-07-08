@@ -48,6 +48,6 @@ class CO5 extends CoreObject {
 }
 // @ts-expect-error
 class05.create({ foo: 99 });
-expectTypeOf(CO5.create({ foo: true })).toEqualTypeOf<CO5>();
-expectTypeOf(CO5.create({ foo: 'abc' })).toEqualTypeOf<CO5>();
+expectTypeOf(CO5.create({ foo: true })).toEqualTypeOf<CO5 & { foo: boolean }>();
+expectTypeOf(CO5.create({ foo: 'abc' })).toEqualTypeOf<CO5 & { foo: string }>();
 expectTypeOf(CO5.create().foo).toEqualTypeOf<boolean | string>();

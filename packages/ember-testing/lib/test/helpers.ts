@@ -1,4 +1,5 @@
 import type { AnyFn } from '@ember/-internals/utility-types';
+import type Application from '@ember/application';
 import TestPromise from './promise';
 
 export const helpers: Record<
@@ -49,7 +50,10 @@ export const helpers: Record<
   @param {Function} helperMethod
   @param options {Object}
 */
-export function registerHelper(name: string, helperMethod: AnyFn) {
+export function registerHelper(
+  name: string,
+  helperMethod: (app: Application, ...args: any[]) => unknown
+) {
   helpers[name] = {
     method: helperMethod,
     meta: { wait: false },

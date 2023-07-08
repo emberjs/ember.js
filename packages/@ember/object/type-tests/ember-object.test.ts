@@ -22,15 +22,11 @@ expectTypeOf(o.isDestroying).toEqualTypeOf<boolean>(); // from instance
 /**
  * One-argument case
  */
+// @ts-expect-error: there are *no* types in common here, so we reject them.
 const o1 = EmberObject.create({ x: 9, y: 'hello', z: false });
-expectTypeOf(o1.x).toEqualTypeOf<number>();
-expectTypeOf(o1.y).toEqualTypeOf<string>();
-expectTypeOf(o1.z).toEqualTypeOf<boolean>();
 
+// @ts-expect-error: there are *no* types in common here, so we reject them.
 const obj = EmberObject.create({ a: 1 }, { b: 2 }, { c: 3 });
-expectTypeOf(obj.b).toEqualTypeOf<number>();
-expectTypeOf(obj.a).toEqualTypeOf<number>();
-expectTypeOf(obj.c).toEqualTypeOf<number>();
 
 export class Person extends EmberObject {
   firstName!: string;
@@ -42,7 +38,7 @@ const p = new Person(owner);
 expectTypeOf(p.firstName).toEqualTypeOf<string>();
 
 // get not preferred for TS only returns unknown
-expectTypeOf(p.get('firstName')).toEqualTypeOf<unknown>();
+expectTypeOf(p.get('firstName')).toBeString();
 // Also returns unknown for invalid properties
 expectTypeOf(p.get('invalid')).toEqualTypeOf<unknown>();
 
@@ -70,7 +66,7 @@ expectTypeOf(getPropertiesResult).toEqualTypeOf<{
 // @ts-expect-error doesn't have unknown properties
 getPropertiesResult.unknown;
 
-expectTypeOf(p.set('firstName', 'Joe')).toEqualTypeOf<string>();
+expectTypeOf(p.set('firstName', 'Joe')).toBeString();
 expectTypeOf(p.set('invalid', 1)).toEqualTypeOf<number>();
 
 const setPropertiesResult = p.setProperties({ firstName: 'Joe', invalid: 1 });

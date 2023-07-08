@@ -1,4 +1,5 @@
 import Object, { computed, get, notifyPropertyChange, set, setProperties } from '@ember/object';
+import Owner from '@ember/owner';
 import { expectTypeOf } from 'expect-type';
 
 class LifetimeHooks extends Object {
@@ -22,8 +23,8 @@ class MyObject30 extends Object {
 }
 
 class MyObject31 extends Object {
-  constructor(properties: object) {
-    super(properties);
+  constructor(owner: Owner) {
+    super(owner);
   }
 }
 
@@ -82,8 +83,8 @@ export class Foo2 extends Object {
     expectTypeOf(get(this as Foo2, 'name')).toBeString();
     expectTypeOf((this as Foo2).get('name')).toBeString();
 
-    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<Pick<this, 'name'>>();
-    expectTypeOf(setProperties(this, { name })).toEqualTypeOf<Pick<this, 'name'>>();
+    expectTypeOf(this.setProperties({ name })).toEqualTypeOf<{ name: string }>();
+    expectTypeOf(setProperties(this, { name })).toEqualTypeOf<{ name: string }>();
   }
 
   bar() {

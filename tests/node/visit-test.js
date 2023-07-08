@@ -103,13 +103,13 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
 
     this.route('a', {
       beforeModel: function () {
-        this.replaceWith('b');
+        this.router.replaceWith('b');
       },
     });
 
     this.route('b', {
       afterModel: function () {
-        this.transitionTo('c');
+        this.router.transitionTo('c');
       },
     });
 
@@ -251,7 +251,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
         return network.fetch('/a');
       },
       afterModel: function () {
-        this.replaceWith('b');
+        this.router.replaceWith('b');
       },
     });
 
@@ -260,7 +260,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
         return network.fetch('/b');
       },
       afterModel: function () {
-        this.replaceWith('c');
+        this.router.replaceWith('c');
       },
     });
 
@@ -275,7 +275,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
         return network.fetch('/d');
       },
       afterModel: function () {
-        this.replaceWith('e');
+        this.router.replaceWith('e');
       },
     });
 

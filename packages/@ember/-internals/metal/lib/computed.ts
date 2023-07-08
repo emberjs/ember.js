@@ -699,7 +699,9 @@ class ComputedDecoratorImpl extends Function {
     @chainable
     @public
   */
-  meta(this: ExtendedMethodDecorator, meta?: unknown): unknown {
+  meta(): unknown;
+  meta(meta: unknown): ComputedDecorator;
+  meta(meta?: unknown): unknown {
     let prop = descriptorForDecorator(this) as ComputedProperty;
 
     if (arguments.length === 0) {

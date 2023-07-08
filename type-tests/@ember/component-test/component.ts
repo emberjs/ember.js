@@ -20,6 +20,10 @@ const component1 = Component.extend({
 class AnotherComponent extends Component {
   name = '';
 
+  init() {
+    super.init();
+  }
+
   hello(name: string) {
     this.set('name', name);
     this.name = name;
@@ -119,7 +123,6 @@ Component.extend({
   },
 });
 
-// @ts-expect-error
 Component.reopen({
   attributeBindings: ['metadata:data-my-metadata'],
   metadata: '',
@@ -150,5 +153,12 @@ class SigExample extends Component<MySig> {
     expectTypeOf(age).toBeNumber();
 
     return `${name} is ${age} years old`;
+  }
+}
+
+// There is no type safety mapping `Element` here
+class ElementOnComponent extends Component<{ Element: HTMLDivElement }> {
+  get hmm(): boolean {
+    return this.element.dispatchEvent(new Event('mousedown'));
   }
 }
