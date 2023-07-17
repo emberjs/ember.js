@@ -1,36 +1,40 @@
 # Ember Changelog
 
+## v5.2.0-beta.4 (July 17, 2023)
+
+- [#20501](https://github.com/emberjs/ember.js/pull/20501) [BUGFIX] Fix the types for the mutation-methods of `NativeArray`
+
 ## v4.12.3 (June 30, 2023)
 
-- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX LTS] Backport more types fixes
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX] Backport more types fixes
 
 ## v5.2.0-beta.3 (June 30, 2023)
 
-- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
-- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX stable] EmberComponent init can have no args
+- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX] Types: EmberComponent's `element` is an `Element`
+- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX] Types: EmberComponent init can have no args
 
 ## v5.1.2 (June 30, 2023)
 
-- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX stable] EmberComponent's `element` is an `Element`
-- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX stable] EmberComponent init can have no args
+- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX] Types: EmberComponent's `element` is an `Element`
+- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX] Types: EmberComponent init can have no args
 
 ## v5.2.0-beta.2 (June 29, 2023)
 
-- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX stable] Fix type dependency issues
-- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX stable] Allow `store` to be injected on `Route`
-- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX stable] Fix types for Resolver contract
-- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX stable] Fix model arg to a Route `serialize`
+- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX] Fix type dependency issues
+- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX] Types: Allow `store` to be injected on `Route`
+- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX] Fix types for Resolver contract
+- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX] Types: Fix model arg to a Route `serialize`
 
 ## v5.1.1 (June 29, 2023)
 
-- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX stable] Fix type dependency issues
-- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX stable] Allow `store` to be injected on `Route`
-- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX stable] Fix types for Resolver contract
-- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX stable] Fix model arg to a Route `serialize`
+- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX] Fix type dependency issues
+- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX] Types: Allow `store` to be injected on `Route`
+- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX] Fix types for Resolver contract
+- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX] Types Fix model arg to a Route `serialize`
 
 ## v4.12.2 (June 28, 2023)
 
-- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
+- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX] Backport some stable type import locations
 
 ## v5.2.0-beta.1 (June 26, 2023)
 
