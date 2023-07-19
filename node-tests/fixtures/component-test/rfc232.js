@@ -12,7 +12,7 @@ module('Integration | Component | x-foo', function (hooks) {
 
     await render(hbs`<XFoo />`);
 
-    assert.dom(this.element).hasText('');
+    assert.dom().hasText('');
 
     // Template block usage:
     await render(hbs`
@@ -21,6 +21,6 @@ module('Integration | Component | x-foo', function (hooks) {
       </XFoo>
     `);
 
-    assert.dom(this.element).hasText('template block text');
+    assert.dom().hasText('template block text');
   });
 });
