@@ -12,7 +12,7 @@ module('<%= friendlyTestDescription %>', function (hooks) {
 
     await render(hbs`<%= selfCloseComponent(componentName) %>`);
 
-    assert.dom(this.element).hasText('');
+    assert.dom().hasText('');
 
     // Template block usage:
     await render(hbs`
@@ -21,7 +21,7 @@ module('<%= friendlyTestDescription %>', function (hooks) {
       <%= closeComponent(componentName) %>
     `);
 
-    assert.dom(this.element).hasText('template block text');
+    assert.dom().hasText('template block text');
   });
 });<% } else if (testType === 'unit') { %>import { module, test } from 'qunit';
 import { setupTest } from '<%= modulePrefix %>/tests/helpers';
