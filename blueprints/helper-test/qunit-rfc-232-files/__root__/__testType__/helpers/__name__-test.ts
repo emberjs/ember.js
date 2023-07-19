@@ -12,6 +12,6 @@ module('<%= friendlyTestName %>', function (hooks) {
 
     await render(hbs`{{<%= dasherizedModuleName %> this.inputValue}}`);
 
-    assert.dom(this.element).hasText('1234');
+    assert.dom().hasText('1234');
   });
 });

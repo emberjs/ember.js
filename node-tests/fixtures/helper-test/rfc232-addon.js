@@ -12,6 +12,6 @@ module('Integration | Helper | foo', function (hooks) {
 
     await render(hbs`{{foo this.inputValue}}`);
 
-    assert.dom(this.element).hasText('1234');
+    assert.dom().hasText('1234');
   });
 });
