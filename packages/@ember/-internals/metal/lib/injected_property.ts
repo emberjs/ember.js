@@ -5,7 +5,12 @@ import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
-import { type ClassFieldDecorator, identify2023DecoratorArgs } from './decorator-util';
+import {
+  type ClassFieldDecorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+  type Decorator,
+} from './decorator-util';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
@@ -48,16 +53,8 @@ function inject(
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
 
-  let modernDecorator = identify2023DecoratorArgs(args);
-  if (modernDecorator) {
-    switch (modernDecorator.kind) {
-      case 'field':
-        return inject2023(type, modernDecorator.context);
-      default:
-        throw new Error(
-          `tried to use injection decorator on a ${modernDecorator.kind} but it only supports fields.`
-        );
-    }
+  if (isModernDecoratorArgs(args)) {
+    return inject2023(type, undefined, args);
   }
 
   let elementDescriptor;
@@ -98,24 +95,39 @@ function inject(
   if (elementDescriptor) {
     return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
   } else {
-    return decorator;
+    return function (...args: unknown[]) {
+      if (isModernDecoratorArgs(args)) {
+        return inject2023(type, name, args);
+      } else {
+        return decorator(...(args as Parameters<typeof decorator>));
+      }
+    };
   }
 }
 
 function inject2023(
   type: string,
-  context: Parameters<ClassFieldDecorator>[1]
+  customName: string | undefined,
+  args: Parameters<Decorator>
 ): ReturnType<ClassFieldDecorator> {
-  return function (this: object) {
-    let owner = getOwner(this) || (this as any).container; // fallback to `container` for backwards compat
+  let dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      return function (this: object) {
+        let owner = getOwner(this) || (this as any).container; // fallback to `container` for backwards compat
 
-    assert(
-      `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
-      Boolean(owner)
-    );
+        assert(
+          `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+          Boolean(owner)
+        );
 
-    return owner.lookup(`${type}:${String(context.name)}`);
-  };
+        return owner.lookup(`${type}:${customName ?? String(dec.context.name)}`);
+      };
+    default:
+      throw new Error(
+        `tried to use injection decorator on ${dec.kind} but it only supports fields`
+      );
+  }
 }
 
 export default inject;

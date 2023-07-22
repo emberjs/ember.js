@@ -8,7 +8,12 @@ import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
-import { type ClassAutoAccessorDecorator, identify2023DecoratorArgs } from './decorator-util';
+import {
+  type ClassAutoAccessorDecorator,
+  type Decorator,
+  isModernDecoratorArgs,
+  identifyModernDecoratorArgs,
+} from './decorator-util';
 
 /**
   @decorator
@@ -89,26 +94,8 @@ export function tracked(
 export function tracked(
   ...args: any[]
 ): ExtendedMethodDecorator | DecoratorPropertyDescriptor | ReturnType<ClassAutoAccessorDecorator> {
-  let modernDecorator = identify2023DecoratorArgs(args);
-  if (modernDecorator) {
-    if (modernDecorator.kind === 'field') {
-      // this is the most comment error case we expect, given that it was legal
-      // under legacy decorators.
-      throw new Error(
-        `You must replace "@tracked ${String(
-          modernDecorator.context.name
-        )}" with "@tracked accessor ${String(
-          modernDecorator.context.name
-        )}". @tracked without accessor only works when using the legacy decorators transform, and you are using modern decorators.`
-      );
-    }
-    if (modernDecorator.kind !== 'accessor') {
-      // we also need to error on other cases that don't make sense for tracked.
-      throw new Error(
-        `You used @tracked on a ${modernDecorator.context.kind}, but tracked only works on accessors. `
-      );
-    }
-    return tracked2023(modernDecorator.value, modernDecorator.context);
+  if (isModernDecoratorArgs(args)) {
+    return tracked2023(...args);
   }
 
   assert(
@@ -230,15 +217,33 @@ export class TrackedDescriptor {
   }
 }
 
-const tracked2023: ClassAutoAccessorDecorator = function (value, context) {
-  let { getter, setter } = trackedData<any, any>(context.name, value.get);
+function tracked2023(...args: Parameters<Decorator>): ReturnType<ClassAutoAccessorDecorator> {
+  let dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      // this is the most comment error case we expect, given that it was legal
+      // under legacy decorators.
+      throw new Error(
+        `You must replace "@tracked ${String(dec.context.name)}" with "@tracked accessor ${String(
+          dec.context.name
+        )}". @tracked without accessor only works when using the legacy decorators transform, and you are using modern decorators.`
+      );
+    case 'accessor': {
+      let { getter, setter } = trackedData<any, any>(dec.context.name, dec.value.get);
 
-  return {
-    get() {
-      return getter(this);
-    },
-    set(value) {
-      return setter(this, value);
-    },
-  };
-};
+      return {
+        get() {
+          return getter(this);
+        },
+        set(value) {
+          return setter(this, value);
+        },
+      };
+    }
+    default:
+      // we also need to error on other cases that don't make sense for tracked.
+      throw new Error(
+        `You used @tracked on a ${dec.context.kind}, but tracked only works on accessors. `
+      );
+  }
+}

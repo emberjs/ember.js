@@ -78,9 +78,21 @@ export type ClassAutoAccessorDecorator = (
   init?: (initialValue: unknown) => unknown;
 } | void;
 
+export type Decorator =
+  | ClassMethodDecorator
+  | ClassGetterDecorator
+  | ClassSetterDecorator
+  | ClassFieldDecorator
+  | ClassDecorator
+  | ClassAutoAccessorDecorator;
+
+export function isModernDecoratorArgs(args: unknown[]): args is Parameters<Decorator> {
+  return args.length === 2 && typeof args[1] === 'object' && args[1] != null && 'kind' in args[1];
+}
+
 // this is designed to turn the arguments into a discriminated union so you can
 // check the kind once and then have the right types for them.
-export function identify2023DecoratorArgs(args: unknown[]):
+export function identifyModernDecoratorArgs(args: Parameters<Decorator>):
   | {
       kind: 'method';
       value: Parameters<ClassMethodDecorator>[0];
@@ -110,15 +122,10 @@ export function identify2023DecoratorArgs(args: unknown[]):
       kind: 'accessor';
       value: Parameters<ClassAutoAccessorDecorator>[0];
       context: Parameters<ClassAutoAccessorDecorator>[1];
-    }
-  | undefined {
-  if (args.length !== 2 || typeof args[1] !== 'object' || args[1] == null || !('kind' in args[1])) {
-    return undefined;
-  }
-
+    } {
   return {
     kind: args[1].kind,
     value: args[0],
     context: args[1],
-  } as ReturnType<typeof identify2023DecoratorArgs>;
+  } as ReturnType<typeof identifyModernDecoratorArgs>;
 }
