@@ -8,6 +8,7 @@ import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
+import { type ClassAutoAccessorDecorator, identify2023DecoratorArgs } from './decorator-util';
 
 /**
   @decorator
@@ -81,7 +82,35 @@ export function tracked(
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorPropertyDescriptor {
+export function tracked(
+  value: Parameters<ClassAutoAccessorDecorator>[0],
+  context: Parameters<ClassAutoAccessorDecorator>[1]
+): ReturnType<ClassAutoAccessorDecorator>;
+export function tracked(
+  ...args: any[]
+): ExtendedMethodDecorator | DecoratorPropertyDescriptor | ReturnType<ClassAutoAccessorDecorator> {
+  let modernDecorator = identify2023DecoratorArgs(args);
+  if (modernDecorator) {
+    if (modernDecorator.kind === 'field') {
+      // this is the most comment error case we expect, given that it was legal
+      // under legacy decorators.
+      throw new Error(
+        `You must replace "@tracked ${String(
+          modernDecorator.context.name
+        )}" with "@tracked accessor ${String(
+          modernDecorator.context.name
+        )}". @tracked without accessor only works when using the legacy decorators transform, and you are using modern decorators.`
+      );
+    }
+    if (modernDecorator.kind !== 'accessor') {
+      // we also need to error on other cases that don't make sense for tracked.
+      throw new Error(
+        `You used @tracked on a ${modernDecorator.context.kind}, but tracked only works on accessors. `
+      );
+    }
+    return tracked2023(modernDecorator.value, modernDecorator.context);
+  }
+
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
@@ -200,3 +229,16 @@ export class TrackedDescriptor {
     this._set.call(obj, value);
   }
 }
+
+const tracked2023: ClassAutoAccessorDecorator = function (value, context) {
+  let { getter, setter } = trackedData<any, any>(context.name, value.get);
+
+  return {
+    get() {
+      return getter(this);
+    },
+    set(value) {
+      return setter(this, value);
+    },
+  };
+};
