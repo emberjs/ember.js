@@ -5,6 +5,7 @@ import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
+import { type ClassFieldDecorator, identify2023DecoratorArgs } from './decorator-util';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
@@ -46,6 +47,19 @@ function inject(
   ...args: [] | [name: string] | ElementDescriptor
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
+
+  let modernDecorator = identify2023DecoratorArgs(args);
+  if (modernDecorator) {
+    switch (modernDecorator.kind) {
+      case 'field':
+        return inject2023(type, modernDecorator.context);
+      default:
+        throw new Error(
+          `tried to use injection decorator on a ${modernDecorator.kind} but it only supports fields.`
+        );
+    }
+  }
+
   let elementDescriptor;
   let name: string | undefined;
 
@@ -86,6 +100,22 @@ function inject(
   } else {
     return decorator;
   }
+}
+
+function inject2023(
+  type: string,
+  context: Parameters<ClassFieldDecorator>[1]
+): ReturnType<ClassFieldDecorator> {
+  return function (this: object) {
+    let owner = getOwner(this) || (this as any).container; // fallback to `container` for backwards compat
+
+    assert(
+      `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+      Boolean(owner)
+    );
+
+    return owner.lookup(`${type}:${String(context.name)}`);
+  };
 }
 
 export default inject;
