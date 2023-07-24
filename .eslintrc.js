@@ -137,10 +137,8 @@ module.exports = {
         'testem.js',
         'testem.ci-browsers.js',
         'testem.browserstack.js',
-        'd8-runner.js',
         'broccoli/**/*.js',
         'ember-cli-build.js',
-        'rollup.config.js',
       ],
 
       parserOptions: {
