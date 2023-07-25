@@ -484,7 +484,6 @@ module.exports = {
     'sort',
     'sortBy',
     'startRouting',
-    'store',
     'subscribe',
     'sum',
     'tagName',

@@ -23,7 +23,7 @@ moduleFor(
     }
 
     ['@test default store utilizes the container to acquire the model factory'](assert) {
-      assert.expect(4);
+      assert.expect(5);
 
       let Post = EmberObject.extend();
       let post = {};
@@ -55,10 +55,32 @@ moduleFor(
       let owner = buildOwner(ownerOptions);
       setOwner(route, owner);
 
-      assert.equal(route.model({ post_id: 1 }), post);
-      assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+      expectDeprecation(
+        () =>
+          ignoreAssertion(() => {
+            assert.equal(route.model({ post_id: 1 }), post);
+            assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+          }),
+        /The implicit model loading behavior for routes is deprecated./
+      );
 
       runDestroy(owner);
+    }
+
+    ['@test default store can be overridden'](assert) {
+      runDestroy(route);
+
+      let calledFind = false;
+      route = EmberRoute.extend({
+        store: {
+          find() {
+            calledFind = true;
+          },
+        },
+      }).create();
+
+      route.store.find();
+      assert.true(calledFind, 'store.find was called');
     }
 
     ["@test assert if 'store.find' method is not found"]() {
@@ -77,21 +99,23 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function () {
-        route.findModel('post', 1);
-      }, `You used the dynamic segment \`post_id\` in your route ` +
-        `\`index\` for which Ember requires you provide a ` +
-        `data-loading implementation. Commonly, that is done by ` +
-        `adding a model hook implementation on the route ` +
-        `(\`model({post_id}) {\`) or by injecting an implemention of ` +
-        `a data store: \`@service store;\`.\n\n` +
-        `Rarely, applications may attempt to use a legacy behavior where ` +
-        `the model class (in this case \`post\`) is resolved and the ` +
-        `\`find\` method on that class is invoked to load data. In this ` +
-        `application, a model of \`post\` was found but it did not ` +
-        `provide a \`find\` method. You should not add a \`find\` ` +
-        `method to your model. Instead, please implement an appropriate ` +
-        `\`model\` hook on the \`index\` route.`);
+      ignoreDeprecation(() =>
+        expectAssertion(function () {
+          route.findModel('post', 1);
+        }, `You used the dynamic segment \`post_id\` in your route ` +
+          `\`index\` for which Ember requires you provide a ` +
+          `data-loading implementation. Commonly, that is done by ` +
+          `adding a model hook implementation on the route ` +
+          `(\`model({post_id}) {\`) or by injecting an implemention of ` +
+          `a data store: \`@service store;\`.\n\n` +
+          `Rarely, applications may attempt to use a legacy behavior where ` +
+          `the model class (in this case \`post\`) is resolved and the ` +
+          `\`find\` method on that class is invoked to load data. In this ` +
+          `application, a model of \`post\` was found but it did not ` +
+          `provide a \`find\` method. You should not add a \`find\` ` +
+          `method to your model. Instead, please implement an appropriate ` +
+          `\`model\` hook on the \`index\` route.`)
+      );
 
       runDestroy(owner);
     }
@@ -109,14 +133,16 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      expectAssertion(function () {
-        route.model({ post_id: 1 });
-      }, `You used the dynamic segment \`post_id\` in your route ` +
-        `\`index\` for which Ember requires you provide a ` +
-        `data-loading implementation. Commonly, that is done by ` +
-        `adding a model hook implementation on the route ` +
-        `(\`model({post_id}) {\`) or by injecting an implemention of ` +
-        `a data store: \`@service store;\`.`);
+      ignoreDeprecation(() =>
+        expectAssertion(function () {
+          route.model({ post_id: 1 });
+        }, `You used the dynamic segment \`post_id\` in your route ` +
+          `\`index\` for which Ember requires you provide a ` +
+          `data-loading implementation. Commonly, that is done by ` +
+          `adding a model hook implementation on the route ` +
+          `(\`model({post_id}) {\`) or by injecting an implemention of ` +
+          `a data store: \`@service store;\`.`)
+      );
 
       runDestroy(owner);
     }
@@ -130,9 +156,7 @@ moduleFor(
 
       route = owner.lookup('route:index');
 
-      ignoreAssertion(function () {
-        route.model({ post_id: 1 });
-      });
+      ignoreDeprecation(() => ignoreAssertion(() => route.model({ post_id: 1 })));
 
       assert.ok(true, 'no error was raised');
 

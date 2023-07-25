@@ -362,6 +362,14 @@ moduleFor(
       });
       this.add('model:menu_item', MenuItem);
 
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+
+      this.add('route:special', SpecialRoute);
+
       this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -389,6 +397,13 @@ moduleFor(
         },
       });
       this.add('model:menu_item', MenuItem);
+
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+      this.add('route:special', SpecialRoute);
 
       this.addTemplate('home', '<h3>Home</h3>');
       this.addTemplate('special', '<p>{{@model.id}}</p>');
@@ -813,13 +828,20 @@ moduleFor(
     ['@test Route model hook finds the same model as a manual find'](assert) {
       let post;
       let Post = EmberObject.extend();
-      this.add('model:post', Post);
       Post.reopenClass({
         find() {
           post = this;
           return {};
         },
       });
+      this.add('model:post', Post);
+
+      let PostRoute = class extends Route {
+        model({ post_id }) {
+          return Post.find(post_id);
+        }
+      };
+      this.add('route:post', PostRoute);
 
       this.router.map(function () {
         this.route('post', { path: '/post/:post_id' });
