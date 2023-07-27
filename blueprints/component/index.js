@@ -154,19 +154,7 @@ module.exports = {
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (commandOptions.authoringFormat === 'strict') {
-      return {
-        __path__() {
-          return 'components';
-        },
-        __templatepath__() {
-          return 'components';
-        },
-        __templatename__() {
-          return options.dasherizedModuleName;
-        },
-      };
-    } else if (commandOptions.pod) {
+    if (commandOptions.pod) {
       return {
         __path__() {
           return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
