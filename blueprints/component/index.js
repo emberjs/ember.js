@@ -140,14 +140,16 @@ module.exports = {
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
-    this.skippedJsFiles.forEach((file) => {
-      let mapped = this.mapFile(file, this.savedLocals);
-      this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
-    });
+    if (options.commandOptions.authoringFormat === 'loose') {
+      this.skippedJsFiles.forEach((file) => {
+        let mapped = this.mapFile(file, this.savedLocals);
+        this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
+      });
 
-    if (this.skippedJsFiles.size > 0) {
-      let command = `ember generate component-class ${options.entity.name}`;
-      this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+      if (this.skippedJsFiles.size > 0) {
+        let command = `ember generate component-class ${options.entity.name}`;
+        this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+      }
     }
   },
 
