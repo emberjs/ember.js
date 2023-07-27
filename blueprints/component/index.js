@@ -233,24 +233,12 @@ module.exports = {
       });
     }
     if (this.options.authoringFormat === 'strict') {
-      files = files.filter((file) => {
-        if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs')) {
-          this.skippedJsFiles.add(file);
-          return false;
-        } else {
-          return true;
-        }
-      });
+      files = files.filter(
+        (file) => !(file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs'))
+      );
     }
     if (this.options.authoringFormat === 'loose') {
-      files = files.filter((file) => {
-        if (file.endsWith('.gjs') || file.endsWith('.gts')) {
-          this.skippedJsFiles.add(file);
-          return false;
-        } else {
-          return true;
-        }
-      });
+      files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
     }
 
     return files;
