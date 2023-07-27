@@ -29,6 +29,14 @@ describe('Blueprint: component-test', function () {
           })
         );
       });
+
+      it('component-test x-foo --strict', function () {
+        return emberGenerateDestroy(['component-test', 'x-foo', '--strict'], (_file) => {
+          expect(_file('tests/integration/components/x-foo-test.gjs')).to.equal(
+            fixture('component-test/rfc232.gjs')
+          );
+        });
+      });
     });
 
     it('component-test x-foo --unit', function () {

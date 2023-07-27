@@ -14,6 +14,12 @@ function invocationFor(options) {
   return parts.map((p) => stringUtil.classify(p)).join('::');
 }
 
+function invocationForStrictComponentAuthoringFormat(options) {
+  let parts = options.entity.name.split('/');
+  let componentName = parts[parts.length - 1];
+  return stringUtil.classify(componentName);
+}
+
 module.exports = {
   description: 'Generates a component integration or unit test.',
 
@@ -36,6 +42,17 @@ module.exports = {
         { unit: 'unit' },
       ],
     },
+    {
+      name: 'component-authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [
+        { loose: 'loose' },
+        { strict: 'strict' },
+        { 'template-tag': 'strict' },
+        { tt: 'strict' },
+      ],
+    },
   ],
 
   fileMapTokens: function () {
@@ -53,6 +70,19 @@ module.exports = {
         return 'components';
       },
     };
+  },
+
+  files() {
+    let files = this._super.files.apply(this, arguments);
+
+    if (this.options.componentAuthoringFormat === 'strict') {
+      files = files.filter((file) => !(file.endsWith('.js') || file.endsWith('.ts')));
+    }
+    if (this.options.componentAuthoringFormat === 'loose') {
+      files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
+    }
+
+    return files;
   },
 
   locals: function (options) {
@@ -74,7 +104,10 @@ module.exports = {
       ? "import { hbs } from 'ember-cli-htmlbars';"
       : "import hbs from 'htmlbars-inline-precompile';";
 
-    let templateInvocation = invocationFor(options);
+    let templateInvocation =
+      this.options.componentAuthoringFormat === 'strict'
+        ? invocationForStrictComponentAuthoringFormat(options)
+        : invocationFor(options);
     let componentName = templateInvocation;
     let openComponent = (descriptor) => `<${descriptor}>`;
     let closeComponent = (descriptor) => `</${descriptor}>`;
