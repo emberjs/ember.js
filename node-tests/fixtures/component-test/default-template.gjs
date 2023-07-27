@@ -1,5 +1,5 @@
 import { moduleForComponent, test } from 'ember-qunit';
-import <%= componentInvocation =%> from '<%= path =%><%= component =%>';
+import <%= componentInvocation =%> from 'my-app/components/<%= path =%><%= component =%>';
 
 moduleForComponent('<%= path =%><%= component =%>', 'Integration | Component | <%= component =%>', {
   integration: true,
