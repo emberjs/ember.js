@@ -37,6 +37,16 @@ module.exports = useTestFrameworkDetector({
         { unit: 'unit' },
       ],
     },
+    {
+      name: 'loose',
+      type: Boolean,
+      default: true,
+    },
+    {
+      name: 'strict',
+      type: Boolean,
+      default: false,
+    },
   ],
 
   fileMapTokens: function () {
@@ -54,6 +64,33 @@ module.exports = useTestFrameworkDetector({
         return 'components';
       },
     };
+  },
+
+  files() {
+    let files = this._super.files.apply(this, arguments);
+
+    if (this.options.strict) {
+      files = files.filter((file) => {
+        if (file.endsWith('.js') || file.endsWith('.ts')) {
+          this.skippedJsFiles.add(file);
+          return false;
+        } else {
+          return true;
+        }
+      });
+    }
+    if (this.options.loose) {
+      files = files.filter((file) => {
+        if (file.endsWith('.gjs') || file.endsWith('.gts')) {
+          this.skippedJsFiles.add(file);
+          return false;
+        } else {
+          return true;
+        }
+      });
+    }
+
+    return files;
   },
 
   locals: function (options) {
