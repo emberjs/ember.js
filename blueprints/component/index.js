@@ -52,14 +52,10 @@ module.exports = {
       aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
     },
     {
-      name: 'loose',
-      type: Boolean,
-      default: true,
-    },
-    {
-      name: 'strict',
-      type: Boolean,
-      default: false,
+      name: 'authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [{ loose: 'loose' }, { strict: 'strict' }],
     },
   ],
 
@@ -158,7 +154,7 @@ module.exports = {
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (commandOptions.strict) {
+    if (commandOptions.authoringFormat === 'strict') {
       return {
         __path__() {
           return 'components';
@@ -246,7 +242,7 @@ module.exports = {
         }
       });
     }
-    if (this.options.strict) {
+    if (this.options.authoringFormat === 'strict') {
       files = files.filter((file) => {
         if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs')) {
           this.skippedJsFiles.add(file);
@@ -256,7 +252,7 @@ module.exports = {
         }
       });
     }
-    if (this.options.loose) {
+    if (this.options.authoringFormat === 'loose') {
       files = files.filter((file) => {
         if (file.endsWith('.gjs') || file.endsWith('.gts')) {
           this.skippedJsFiles.add(file);
