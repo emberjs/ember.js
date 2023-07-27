@@ -27,6 +27,11 @@ const templateOnlyContents = `import templateOnly from '@ember/component/templat
 export default templateOnly();
 `;
 
+const templateTagContents = `<template>
+  {{yield}}
+</template>
+`;
+
 describe('Blueprint: component', function () {
   setupTestHooks(this);
 
@@ -269,6 +274,12 @@ describe('Blueprint: component', function () {
           );
         }
       );
+    });
+
+    it('component foo --strict', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
+        expect(_file('app/components/foo.gjs')).to.equal(templateTagContents);
+      });
     });
   });
 

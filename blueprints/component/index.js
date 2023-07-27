@@ -40,6 +40,17 @@ module.exports = {
       default: 'flat',
       aliases: [{ fs: 'flat' }, { ns: 'nested' }],
     },
+    {
+      name: 'component-authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [
+        { loose: 'loose' },
+        { strict: 'strict' },
+        { 'template-tag': 'strict' },
+        { tt: 'strict' },
+      ],
+    },
   ],
 
   init() {
@@ -78,14 +89,16 @@ module.exports = {
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
-    this.skippedJsFiles.forEach((file) => {
-      let mapped = this.mapFile(file, this.savedLocals);
-      this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
-    });
+    if (options.componentAuthoringFormat === 'loose') {
+      this.skippedJsFiles.forEach((file) => {
+        let mapped = this.mapFile(file, this.savedLocals);
+        this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
+      });
 
-    if (this.skippedJsFiles.size > 0) {
-      let command = `ember generate component-class ${options.entity.name}`;
-      this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+      if (this.skippedJsFiles.size > 0) {
+        let command = `ember generate component-class ${options.entity.name}`;
+        this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
+      }
     }
   },
 
@@ -134,6 +147,14 @@ module.exports = {
           return true;
         }
       });
+    }
+    if (this.options.componentAuthoringFormat === 'strict') {
+      files = files.filter(
+        (file) => !(file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs'))
+      );
+    }
+    if (this.options.componentAuthoringFormat === 'loose') {
+      files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
     }
 
     return files;
