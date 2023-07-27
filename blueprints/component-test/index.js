@@ -38,14 +38,10 @@ module.exports = useTestFrameworkDetector({
       ],
     },
     {
-      name: 'loose',
-      type: Boolean,
-      default: true,
-    },
-    {
-      name: 'strict',
-      type: Boolean,
-      default: false,
+      name: 'authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [{ loose: 'loose' }, { strict: 'strict' }],
     },
   ],
 
@@ -69,7 +65,7 @@ module.exports = useTestFrameworkDetector({
   files() {
     let files = this._super.files.apply(this, arguments);
 
-    if (this.options.strict) {
+    if (this.options.authoringFormat === 'strict') {
       files = files.filter((file) => {
         if (file.endsWith('.js') || file.endsWith('.ts')) {
           this.skippedJsFiles.add(file);
@@ -79,7 +75,7 @@ module.exports = useTestFrameworkDetector({
         }
       });
     }
-    if (this.options.loose) {
+    if (this.options.authoringFormat === 'loose') {
       files = files.filter((file) => {
         if (file.endsWith('.gjs') || file.endsWith('.gts')) {
           this.skippedJsFiles.add(file);
