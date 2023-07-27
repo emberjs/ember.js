@@ -246,6 +246,26 @@ module.exports = {
         }
       });
     }
+    if (this.options.strict) {
+      files = files.filter((file) => {
+        if (file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs')) {
+          this.skippedJsFiles.add(file);
+          return false;
+        } else {
+          return true;
+        }
+      });
+    }
+    if (this.options.loose) {
+      files = files.filter((file) => {
+        if (file.endsWith('.gjs') || file.endsWith('.gts')) {
+          this.skippedJsFiles.add(file);
+          return false;
+        } else {
+          return true;
+        }
+      });
+    }
 
     return files;
   },
