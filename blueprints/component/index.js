@@ -51,6 +51,16 @@ module.exports = {
       default: OCTANE ? 'flat' : 'classic',
       aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
     },
+    {
+      name: 'loose',
+      type: Boolean,
+      default: true,
+    },
+    {
+      name: 'strict',
+      type: Boolean,
+      default: false,
+    },
   ],
 
   /**
