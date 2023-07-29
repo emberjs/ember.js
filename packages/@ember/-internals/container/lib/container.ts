@@ -7,7 +7,7 @@ import type {
   FullName,
 } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
-import { dictionary } from '@ember/-internals/utils';
+import { dictionary, guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { DebugRegistry } from './registry';
@@ -152,7 +152,20 @@ export default class Container {
     options?: RegisterOptions
   ): InternalFactory<object> | object | undefined {
     if (this.isDestroyed) {
-      throw new Error(`Cannot call \`.lookup('${fullName}')\` after the owner has been destroyed`);
+      if (macroCondition(isTesting())) {
+        let guid = guidFor(this.owner);
+        // SAFETY: cast is for accessing private data stored globally
+        let testInfo = (globalThis as any)['__OWNER_MAP__']?.get(guid);
+
+        throw new Error(
+          `Cannot call \`.lookup('${fullName}')\` after the owner has been destroyed. ` +
+            `owner is ${guid} (test ${testInfo?.testId} ${testInfo?.name})`
+        );
+      } else {
+        throw new Error(
+          `Cannot call \`.lookup('${fullName}')\` after the owner has been destroyed`
+        );
+      }
     }
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
