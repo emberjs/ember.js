@@ -18,7 +18,6 @@ function invocationFor(options) {
 function invocationForStrictAuthoringFormat(options) {
   let parts = options.entity.name.split('/');
   let componentName = parts[parts.length - 1];
-  console.log(componentName);
   return stringUtil.classify(componentName);
 }
 
