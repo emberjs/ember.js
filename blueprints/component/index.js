@@ -139,7 +139,6 @@ module.exports = {
 
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
-    console.log(options);
 
     if (options.authoringFormat === 'loose') {
       this.skippedJsFiles.forEach((file) => {
