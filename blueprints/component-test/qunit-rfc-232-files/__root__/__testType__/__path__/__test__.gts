@@ -1,7 +1,7 @@
 <% if (testType === 'integration') { %>import { module, test } from 'qunit';
 import { setupRenderingTest } from '<%= modulePrefix %>/tests/helpers';
 import { render } from '@ember/test-helpers';
-import <%= componentName %> from '<%= modulePrefix %>/<%= componentPathName %>';
+import <%= componentName %> from '<%= modulePrefix %>/components/<%= componentPathName %>';
 
 module('<%= friendlyTestDescription %>', function (hooks) {
   setupRenderingTest(hooks);
