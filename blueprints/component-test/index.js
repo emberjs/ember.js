@@ -15,6 +15,13 @@ function invocationFor(options) {
   return parts.map((p) => stringUtil.classify(p)).join('::');
 }
 
+function invocationForStrictAuthoringFormat(options) {
+  let parts = options.entity.name.split('/');
+  let componentName = parts[parts.length - 1];
+  console.log(componentName);
+  return stringUtil.classify(componentName);
+}
+
 module.exports = useTestFrameworkDetector({
   description: 'Generates a component integration or unit test.',
 
@@ -94,7 +101,10 @@ module.exports = useTestFrameworkDetector({
       ? "import { hbs } from 'ember-cli-htmlbars';"
       : "import hbs from 'htmlbars-inline-precompile';";
 
-    let templateInvocation = invocationFor(options);
+    let templateInvocation =
+      this.options.authoringFormat === 'strict'
+        ? invocationForStrictAuthoringFormat(options)
+        : invocationFor(options);
     let componentName = templateInvocation;
     let openComponent = (descriptor) => `<${descriptor}>`;
     let closeComponent = (descriptor) => `</${descriptor}>`;
