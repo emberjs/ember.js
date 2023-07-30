@@ -31,7 +31,9 @@ const templateOnlyContents = `import templateOnly from '@ember/component/templat
 export default templateOnly();
 `;
 
-const templateTagContents = `<template></template>
+const templateTagContents = `<template>
+  {{yield}}
+</template>
 `;
 
 describe('Blueprint: component', function () {
