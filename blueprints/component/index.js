@@ -139,8 +139,9 @@ module.exports = {
 
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
+    console.log(options);
 
-    if (options.commandOptions.authoringFormat === 'loose') {
+    if (options.authoringFormat === 'loose') {
       this.skippedJsFiles.forEach((file) => {
         let mapped = this.mapFile(file, this.savedLocals);
         this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
