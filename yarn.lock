@@ -2283,10 +2283,10 @@
     "@glimmer/env" "^0.1.7"
     "@glimmer/global-context" "0.84.2"
 
-"@glimmer/vm-babel-plugins@0.84.2":
-  version "0.84.2"
-  resolved "https://registry.yarnpkg.com/@glimmer/vm-babel-plugins/-/vm-babel-plugins-0.84.2.tgz#653ce82a6656b4396d87a479d8699450d35a17f0"
-  integrity sha512-HS2dEbJ3CgXn56wk/5QdudM7rE3vtNMvPIoG7Rrg+GhkGMNxBCIRxOeEF2g520j9rwlA2LAZFpc7MCDMFbTjNA==
+"@glimmer/vm-babel-plugins@0.84.3":
+  version "0.84.3"
+  resolved "https://registry.yarnpkg.com/@glimmer/vm-babel-plugins/-/vm-babel-plugins-0.84.3.tgz#82fc094a75ff20086a45b088825e4d97d49b779a"
+  integrity sha512-fucWuuN7Q9QFB0ODd+PCltcTkmH4fLqYyXGArrfLt/TYN8gLv0yo00mPwFOSY7MWti/MUx88xd20/PycvYtg8w==
   dependencies:
     babel-plugin-debug-macros "^0.3.4"
 
