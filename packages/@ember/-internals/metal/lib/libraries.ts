@@ -69,8 +69,8 @@ export class Libraries {
     }
   }
 
-  isRegistered?: (name: string) => boolean;
-  logVersions?: () => void;
+  declare isRegistered?: (name: string) => boolean;
+  declare logVersions?: () => void;
 }
 
 if (DEBUG) {
