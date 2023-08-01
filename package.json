@@ -120,6 +120,7 @@
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
     "aws-sdk": "^2.1388.0",
+    "babel-plugin-ember-template-compilation": "^2.1.1",
     "babel-template": "^6.26.0",
     "broccoli-babel-transpiler": "^7.8.1",
     "broccoli-persistent-filter": "^2.3.1",

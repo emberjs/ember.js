@@ -11,5 +11,6 @@ module.exports = {
     buildDebugMacroPlugin(process.env.EMBER_ENV === 'production'),
     ['@babel/plugin-proposal-decorators', { legacy: true }],
     ['@babel/plugin-proposal-class-properties', { loose: true }],
+    ['babel-plugin-ember-template-compilation', {}],
   ],
 };

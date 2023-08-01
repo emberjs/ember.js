@@ -202,6 +202,9 @@ importers:
       aws-sdk:
         specifier: ^2.1388.0
         version: 2.1426.0
+      babel-plugin-ember-template-compilation:
+        specifier: ^2.1.1
+        version: 2.1.1
       babel-template:
         specifier: ^6.26.0
         version: 6.26.0
@@ -3169,7 +3172,6 @@ packages:
 
   /@glimmer/env@0.1.7:
     resolution: {integrity: sha512-JKF/a9I9jw6fGoz8kA7LEQslrwJ5jms5CXhu/aqkBWk+PmZ6pTl8mlb/eJ/5ujBGTiQzBhy5AIWF712iA+4/mw==}
-    dev: false
 
   /@glimmer/global-context@0.84.2:
     resolution: {integrity: sha512-6FycLh/Eq0P3LA94bJL6WHPJyOTKeQD4KBWhowZ9TbeO3p4/WUr+POKPVEyfIx6YHybhpL9MGj45Y2r0hqVigw==}
@@ -3194,7 +3196,6 @@ packages:
     resolution: {integrity: sha512-dk32ykoNojt0mvEaIW6Vli5MGTbQo58uy3Epj7ahCgTHmWOKuw/0G83f2UmFprRwFx689YTXG38I/vbpltEjzg==}
     dependencies:
       '@simple-dom/interface': 1.4.0(patch_hash=wpvxdwdat46rqhgolmrv2rw4m4)
-    dev: false
 
   /@glimmer/low-level@0.78.2:
     resolution: {integrity: sha512-0S6TWOOd0fzLLysw1pWZN0TgasaHmYs1Sjz9Til1mTByIXU1S+1rhdyr2veSQPO/aRjPuEQyKXZQHvx23Zax6w==}
@@ -3295,7 +3296,6 @@ packages:
       '@glimmer/util': 0.84.3
       '@handlebars/parser': 2.0.0
       simple-html-tokenizer: 0.5.11
-    dev: false
 
   /@glimmer/util@0.44.0:
     resolution: {integrity: sha512-duAsm30uVK9jSysElCbLyU6QQYO2X9iLDLBIBUcCqck9qN1o3tK2qWiHbGK5d6g8E2AJ4H88UrfElkyaJlGrwg==}
@@ -3315,7 +3315,6 @@ packages:
       '@glimmer/env': 0.1.7
       '@glimmer/interfaces': 0.84.3
       '@simple-dom/interface': 1.4.0(patch_hash=wpvxdwdat46rqhgolmrv2rw4m4)
-    dev: false
 
   /@glimmer/validator@0.84.2:
     resolution: {integrity: sha512-9tpSmwiktsJDqriNEiFfyP+9prMSdk08THA6Ik71xS/sudBKxoDpul678uvyEYST/+Z23F8MxwKccC+QxCMXNA==}
@@ -3348,7 +3347,6 @@ packages:
 
   /@handlebars/parser@2.0.0:
     resolution: {integrity: sha512-EP9uEDZv/L5Qh9IWuMUGJRfwhXJ4h1dqKTT4/3+tY0eu7sPis7xh23j61SYUnNF4vqCQvvUXpDo9Bh/+q1zASA==}
-    dev: false
 
   /@humanwhocodes/config-array@0.11.10:
     resolution: {integrity: sha512-KVVjQmNUepDVGXNuoRRdmmEjruj0KfiGSbS8LVc12LMsWDQzRXJ0qdhN8L8uUigKpfEHRhlaQFY0ib1tnUbNeQ==}
@@ -4930,7 +4928,6 @@ packages:
     dependencies:
       '@glimmer/syntax': 0.84.3
       babel-import-util: 2.0.0
-    dev: false
 
   /babel-plugin-filter-imports@4.0.0:
     resolution: {integrity: sha512-jDLlxI8QnfKd7PtieH6pl4tZJzymzfCDCPGdTq/grgbiYAikwDPp/oL0IlFJn0HQjLpcLkyYhPKkUVneRESw5w==}
@@ -12083,7 +12080,6 @@ packages:
 
   /simple-html-tokenizer@0.5.11:
     resolution: {integrity: sha512-C2WEK/Z3HoSFbYq8tI7ni3eOo/NneSPRoPpcM7WdLjFOArFuyXEjAoCdOC3DgMfRyziZQ1hCNR4mrNdWEvD0og==}
-    dev: false
 
   /slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
