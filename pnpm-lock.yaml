@@ -388,9 +388,9 @@ importers:
       '@ember/service':
         specifier: workspace:*
         version: link:../service
-      '@ember/template-compilation':
+      '@ember/template-factory':
         specifier: workspace:*
-        version: link:../template-compilation
+        version: link:../template-factory
       '@ember/utils':
         specifier: workspace:*
         version: link:../utils

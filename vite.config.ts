@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 const babelPlugin = {
   enforce: 'pre',
   ...babel({
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.hbs'],
   }),
 } as Plugin;
 

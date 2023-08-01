@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,9 +7,17 @@
   </head>
   <body>
     <script src="./packages/loader/lib/index.js"></script>
-
     <script type="module">
-      import.meta.glob('./packages/@ember/-internals/utils/tests/to-string-test.js', { eager: true })
+      import 'qunit/qunit/qunit.js';
+      import 'qunit/qunit/qunit.css';
     </script>
+    <script type="module">
+      import.meta.glob('./packages/@ember/-internals/utils/tests/to-string-test.js', {
+        eager: true,
+      });
+    </script>
+
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
   </body>
 </html>

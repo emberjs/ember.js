@@ -32,7 +32,7 @@
     "@ember/routing": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
-    "@ember/template-compilation": "workspace:*",
+    "@ember/template-factory": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/component": "^1.1.2",
     "@glimmer/destroyable": "0.84.2",
