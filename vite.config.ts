@@ -1,7 +1,7 @@
 import { defineConfig, Plugin } from 'vite';
 import { babel } from '@rollup/plugin-babel';
 import { packageName as getPackageName, PackageCache, hbsToJS } from '@embroider/shared-internals';
-import { resolve } from 'path';
+import { relative, resolve } from 'path';
 import { readFileSync } from 'fs';
 
 const babelPlugin = {
@@ -61,7 +61,7 @@ const hbs: Plugin = {
   load(id) {
     if (id[0] !== '\0' && id.endsWith('.hbs')) {
       let input = readFileSync(id, 'utf8');
-      let code = hbsToJS(input);
+      let code = hbsToJS(input, { filename: relative(__dirname, id) });
       return {
         code,
       };

@@ -34,8 +34,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: 0.84.3
-        version: 0.84.3
+        specifier: 0.84.2
+        version: 0.84.2
       '@glimmer/interfaces':
         specifier: 0.84.2
         version: 0.84.2(patch_hash=rckuzlo5ebc3jtvcdaq6kyz6du)
@@ -425,8 +425,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: 0.84.3
-        version: 0.84.3
+        specifier: 0.84.2
+        version: 0.84.2
       '@glimmer/interfaces':
         specifier: 0.84.2
         version: 0.84.2(patch_hash=rckuzlo5ebc3jtvcdaq6kyz6du)
@@ -3763,12 +3763,6 @@ packages:
 
   /@glimmer/global-context@0.84.2:
     resolution: {integrity: sha512-6FycLh/Eq0P3LA94bJL6WHPJyOTKeQD4KBWhowZ9TbeO3p4/WUr+POKPVEyfIx6YHybhpL9MGj45Y2r0hqVigw==}
-    dependencies:
-      '@glimmer/env': 0.1.7
-    dev: false
-
-  /@glimmer/global-context@0.84.3:
-    resolution: {integrity: sha512-8Oy9Wg5IZxMEeAnVmzD2NkObf89BeHoFSzJgJROE/deutd3rxg83mvlOez4zBBGYwnTb+VGU2LYRpet92egJjA==}
     dependencies:
       '@glimmer/env': 0.1.7
     dev: false

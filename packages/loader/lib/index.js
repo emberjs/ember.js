@@ -61,9 +61,11 @@ var define, require;
     var deps = mod.deps;
     var callback = mod.callback;
     var reified = new Array(deps.length);
+    var hasExportsAsDep = false;
 
     for (var i = 0; i < deps.length; i++) {
       if (deps[i] === 'exports') {
+        hasExportsAsDep = true;
         reified[i] = exports;
       } else if (deps[i] === 'require') {
         reified[i] = require;
@@ -72,9 +74,12 @@ var define, require;
       }
     }
 
-    callback.apply(this, reified);
-
-    return exports;
+    let result = callback.apply(this, reified);
+    if (hasExportsAsDep) {
+      return exports;
+    } else {
+      return result;
+    }
   }
 
   require = function (name) {

@@ -14,7 +14,8 @@
     "./computed": "./computed.ts",
     "./compat": "./compat.ts",
     "./proxy": "./proxy.ts",
-    "./promise-proxy-mixin": "./promise-proxy-mixin"
+    "./promise-proxy-mixin": "./promise-proxy-mixin",
+    "./observers": "./observers.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
