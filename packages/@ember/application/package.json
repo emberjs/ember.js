@@ -5,5 +5,15 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/engine": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/owner": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@glimmer/env": "^0.1.7",
+    "expect-type": "^0.15.0"
+  }
 }

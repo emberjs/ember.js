@@ -6,6 +6,15 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@ember/-internals": "workspace:*"
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/util": "0.84.2",
+    "@glimmer/validator": "0.84.2",
+    "expect-type": "^0.15.0"
   }
 }

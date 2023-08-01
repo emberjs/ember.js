@@ -6,9 +6,33 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@ember/-internals": "workspace:*",
     "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/canary-features": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/destroyable": "workspace:*",
+    "@ember/engine": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/owner": "workspace:*",
     "@ember/routing": "workspace:*",
-    "ember-template-compiler": "workspace:*"
+    "@ember/runloop": "workspace:*",
+    "@ember/service": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/compiler": "0.84.2",
+    "@glimmer/destroyable": "0.84.2",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.84.2",
+    "@glimmer/opcode-compiler": "0.84.2",
+    "@glimmer/runtime": "0.84.2",
+    "@glimmer/syntax": "0.84.2",
+    "@glimmer/validator": "0.84.2",
+    "ember": "workspace:*",
+    "ember-template-compiler": "workspace:*",
+    "router_js": "^8.0.3",
+    "rsvp": "^4.8.5",
+    "simple-html-tokenizer": "^0.5.11"
   }
 }

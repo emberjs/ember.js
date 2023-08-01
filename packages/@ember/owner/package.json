@@ -5,5 +5,10 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@glimmer/component": "^1.1.2",
+    "expect-type": "^0.15.0"
+  }
 }

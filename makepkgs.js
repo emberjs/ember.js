@@ -64,10 +64,11 @@ function findDepsPlugin() {
   };
 }
 
-function findDeps(pkgDir) {
+function findDeps(pkgDir, rootDeps) {
   gathered = new Set();
   for (let name of glob.sync('**/*.ts', { cwd: pkgDir })) {
     babel.transform(fs.readFileSync(path.resolve(pkgDir, name), 'utf8'), {
+      configFile: false,
       plugins: [
         ['@babel/plugin-transform-typescript', { allowDeclareFields: true }],
         ['@babel/plugin-syntax-decorators', { version: 'legacy' }],
@@ -75,7 +76,16 @@ function findDeps(pkgDir) {
       ],
     });
   }
-  console.log([...gathered].join('\n'));
+  let pkg = JSON.parse(fs.readFileSync(path.resolve(pkgDir, 'package.json'), 'utf8'));
+  for (let name of Object.keys(pkg.dependencies)) {
+    gathered.add(name);
+  }
+  gathered.delete(pkg.name);
+  gathered.delete('require');
+  pkg.dependencies = Object.fromEntries(
+    [...gathered].sort().map((name) => [name, rootDeps.get(name) ?? 'workspace:*'])
+  );
+  fs.writeFileSync(path.resolve(pkgDir, 'package.json'), JSON.stringify(pkg, null, 2));
 }
 
 function absolutePackageName(specifier) {
@@ -99,4 +109,23 @@ function absolutePackageName(specifier) {
   }
 }
 
-findDeps('packages/@ember/-internals');
+function rootDeps() {
+  let pkg = JSON.parse(fs.readFileSync('package.json'));
+  let deps = new Map();
+  for (let [name, version] of Object.entries(pkg.dependencies)) {
+    deps.set(name, version);
+  }
+  for (let [name, version] of Object.entries(pkg.devDependencies)) {
+    deps.set(name, version);
+  }
+  return deps;
+}
+
+function findAllDeps() {
+  let r = rootDeps();
+  for (let pj of glob.sync('packages/**/package.json')) {
+    findDeps(path.dirname(pj), r);
+  }
+}
+
+findAllDeps();

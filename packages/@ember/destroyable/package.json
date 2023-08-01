@@ -5,5 +5,8 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@glimmer/destroyable": "0.84.2",
+    "expect-type": "^0.15.0"
+  }
 }

@@ -5,5 +5,12 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "@ember/runloop": "workspace:*"
+  }
 }

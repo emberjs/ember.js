@@ -5,5 +5,8 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/debug": "workspace:*"
+  }
 }

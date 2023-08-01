@@ -72,6 +72,7 @@
     "@glimmer/reference": "0.84.2",
     "@glimmer/runtime": "0.84.2",
     "@glimmer/syntax": "0.84.2",
+    "@glimmer/util": "0.84.2",
     "@glimmer/validator": "0.84.2",
     "@glimmer/vm-babel-plugins": "0.84.3",
     "@simple-dom/interface": "^1.4.0",
@@ -99,6 +100,7 @@
     "route-recognizer": "^0.3.4",
     "router_js": "^8.0.3",
     "semver": "^7.5.2",
+    "simple-html-tokenizer" : "^0.5.11",
     "silent-error": "^1.1.1"
   },
   "devDependencies": {

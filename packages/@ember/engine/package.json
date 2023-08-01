@@ -5,5 +5,14 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/controller": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "dag-map": "^2.0.2",
+    "expect-type": "^0.15.0"
+  }
 }

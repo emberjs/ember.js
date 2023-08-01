@@ -55,6 +55,9 @@ importers:
       '@glimmer/syntax':
         specifier: 0.84.2
         version: 0.84.2
+      '@glimmer/util':
+        specifier: 0.84.2
+        version: 0.84.2
       '@glimmer/validator':
         specifier: 0.84.2
         version: 0.84.2
@@ -139,6 +142,9 @@ importers:
       silent-error:
         specifier: ^1.1.1
         version: 1.1.1
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.321.1
@@ -335,70 +341,572 @@ importers:
 
   packages/@ember/-internals:
     dependencies:
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../instrumentation
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/component':
+        specifier: ^1.1.2
+        version: 1.1.2(@babel/core@7.22.9)
+      '@glimmer/destroyable':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/global-context':
+        specifier: 0.84.3
+        version: 0.84.3
+      '@glimmer/interfaces':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/node':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/opcode-compiler':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/owner':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/program':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/reference':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/runtime':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/util':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/validator':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@simple-dom/interface':
+        specifier: ^1.4.0
+        version: 1.4.0
+      ember:
+        specifier: workspace:*
+        version: link:../../ember
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../../ember-template-compiler
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
 
-  packages/@ember/application: {}
+  packages/@ember/application:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/array: {}
+  packages/@ember/array:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/util':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/validator':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/canary-features: {}
+  packages/@ember/canary-features:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/component: {}
+  packages/@ember/component:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/runtime':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/controller: {}
+  packages/@ember/controller:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
   packages/@ember/debug:
     dependencies:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/util':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/validator':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
   packages/@ember/deprecated-features: {}
 
-  packages/@ember/destroyable: {}
+  packages/@ember/destroyable:
+    dependencies:
+      '@glimmer/destroyable':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/engine: {}
+  packages/@ember/engine:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/enumerable: {}
+  packages/@ember/enumerable:
+    dependencies:
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
 
-  packages/@ember/helper: {}
+  packages/@ember/helper:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../component
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/runtime':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/instrumentation: {}
+  packages/@ember/instrumentation:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
 
-  packages/@ember/modifier: {}
+  packages/@ember/modifier:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/runtime':
+        specifier: 0.84.2
+        version: 0.84.2
 
-  packages/@ember/object: {}
+  packages/@ember/object:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/util':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/validator':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/owner: {}
+  packages/@ember/owner:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@glimmer/component':
+        specifier: ^1.1.2
+        version: 1.1.2(@babel/core@7.22.9)
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/renderer: {}
+  packages/@ember/renderer:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
 
-  packages/@ember/routing: {}
+  packages/@ember/routing:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/validator':
+        specifier: 0.84.2
+        version: 0.84.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
 
-  packages/@ember/runloop: {}
+  packages/@ember/runloop:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.7.0
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/service: {}
+  packages/@ember/service:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
 
-  packages/@ember/template: {}
+  packages/@ember/template:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/template-compilation: {}
+  packages/@ember/template-compilation:
+    dependencies:
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../../ember-template-compiler
 
-  packages/@ember/template-factory: {}
+  packages/@ember/template-factory:
+    dependencies:
+      '@glimmer/opcode-compiler':
+        specifier: 0.84.2
+        version: 0.84.2
 
-  packages/@ember/test: {}
+  packages/@ember/test:
+    dependencies:
+      ember-testing:
+        specifier: workspace:*
+        version: link:../../ember-testing
 
-  packages/@ember/utils: {}
+  packages/@ember/utils:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@ember/version: {}
+  packages/@ember/version:
+    dependencies:
+      ember:
+        specifier: workspace:*
+        version: link:../../ember
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
-  packages/@glimmer/tracking: {}
+  packages/@glimmer/tracking:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../../@ember/-internals
 
-  packages/ember: {}
+  packages/ember:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../@ember/application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../@ember/array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../@ember/canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../@ember/component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../@ember/controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../@ember/destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../@ember/engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../@ember/enumerable
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../@ember/instrumentation
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../@ember/service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../@ember/utils
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/runtime':
+        specifier: 0.84.2
+        version: 0.84.2
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.7.0
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
 
   packages/ember-template-compiler:
     dependencies:
@@ -408,25 +916,134 @@ importers:
       '@ember/canary-features':
         specifier: workspace:*
         version: link:../@ember/canary-features
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@glimmer/compiler':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/syntax':
+        specifier: 0.84.2
+        version: 0.84.2
+      ember:
+        specifier: workspace:*
+        version: link:../ember
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../internal-test-helpers
 
-  packages/ember-testing: {}
-
-  packages/external-helpers: {}
-
-  packages/internal-test-helpers:
+  packages/ember-testing:
     dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
       '@ember/application':
         specifier: workspace:*
         version: link:../@ember/application
       '@ember/debug':
         specifier: workspace:*
         version: link:../@ember/debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
       '@ember/routing':
         specifier: workspace:*
         version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+
+  packages/external-helpers: {}
+
+  packages/internal-test-helpers:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../@ember/application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../@ember/array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../@ember/canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../@ember/component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../@ember/controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../@ember/destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../@ember/engine
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../@ember/owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../@ember/service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../@ember/utils
+      '@glimmer/compiler':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/destroyable':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/opcode-compiler':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/runtime':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/syntax':
+        specifier: 0.84.2
+        version: 0.84.2
+      '@glimmer/validator':
+        specifier: 0.84.2
+        version: 0.84.2
+      ember:
+        specifier: workspace:*
+        version: link:../ember
       ember-template-compiler:
         specifier: workspace:*
         version: link:../ember-template-compiler
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
 
   packages/loader: {}
 
@@ -5945,7 +6562,6 @@ packages:
 
   /dag-map@2.0.2:
     resolution: {integrity: sha512-xnsprIzYuDeiyu5zSKwilV/ajRHxnoMlAhEREfyfTgTSViMVY2fGP1ZcHJbtwup26oCkofySU/m6oKJ3HrkW7w==}
-    dev: true
 
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -7264,7 +7880,6 @@ packages:
 
   /expect-type@0.15.0:
     resolution: {integrity: sha512-yWnriYB4e8G54M5/fAFj7rCIBiKs1HAACaY13kCz6Ku0dezjS9aMcfcdVK2X8Tv2tEV1BPz/wKfQ7WA4S/d8aA==}
-    dev: true
 
   /express@4.18.2:
     resolution: {integrity: sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==}

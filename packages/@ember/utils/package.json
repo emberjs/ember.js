@@ -5,5 +5,11 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "expect-type": "^0.15.0"
+  }
 }

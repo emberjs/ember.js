@@ -7,6 +7,12 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
-    "@ember/canary-features": "workspace:*"
+    "@ember/canary-features": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@glimmer/compiler": "0.84.2",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/syntax": "0.84.2",
+    "ember": "workspace:*",
+    "internal-test-helpers": "workspace:*"
   }
 }
