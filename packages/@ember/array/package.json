@@ -4,7 +4,9 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./-internals": "./-internals.ts"
+    "./-internals": "./-internals.ts",
+    "./proxy": "./proxy.ts",
+    "./mutable": "./mutable.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

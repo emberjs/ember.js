@@ -373,6 +373,9 @@ importers:
       '@ember/enumerable':
         specifier: workspace:*
         version: link:../enumerable
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../helper
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../instrumentation
