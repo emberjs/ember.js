@@ -7,8 +7,15 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/validator": "0.84.2",
     "backburner.js": "^2.7.0",
-    "expect-type": "^0.15.0"
+    "expect-type": "^0.15.0",
+    "internal-test-helpers": "workspace:*"
   }
 }

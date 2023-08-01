@@ -5,5 +5,7 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@glimmer/env": "^0.1.7"
+  }
 }

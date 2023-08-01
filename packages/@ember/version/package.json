@@ -6,6 +6,25 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/canary-features": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/controller": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/destroyable": "workspace:*",
+    "@ember/engine": "workspace:*",
+    "@ember/enumerable": "workspace:*",
+    "@ember/instrumentation": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/service": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/manager": "0.84.2",
+    "@glimmer/runtime": "0.84.2",
+    "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "expect-type": "^0.15.0"
   }

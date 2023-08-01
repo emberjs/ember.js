@@ -8,9 +8,24 @@
   "dependencies": {
     "@ember/-internals": "workspace:*",
     "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
+    "@ember/engine": "workspace:*",
     "@ember/object": "workspace:*",
+    "@ember/owner": "workspace:*",
     "@ember/routing": "workspace:*",
-    "@ember/runloop": "workspace:*"
+    "@ember/runloop": "workspace:*",
+    "@ember/service": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/destroyable": "0.84.2",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/owner": "0.84.2",
+    "@glimmer/util": "0.84.2",
+    "@glimmer/validator": "0.84.2",
+    "backburner.js": "^2.7.0",
+    "ember": "workspace:*",
+    "internal-test-helpers": "workspace:*",
+    "router_js": "^8.0.3"
   }
 }

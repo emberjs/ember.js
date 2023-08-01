@@ -7,6 +7,14 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
-    "@ember/debug": "workspace:*"
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/validator": "0.84.2",
+    "internal-test-helpers": "workspace:*"
   }
 }

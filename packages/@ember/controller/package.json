@@ -7,7 +7,16 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
     "@ember/object": "workspace:*",
-    "expect-type": "^0.15.0"
+    "@ember/service": "workspace:*",
+    "@glimmer/destroyable": "0.84.2",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/owner": "0.84.2",
+    "@glimmer/util": "0.84.2",
+    "@glimmer/validator": "0.84.2",
+    "expect-type": "^0.15.0",
+    "internal-test-helpers": "workspace:*"
   }
 }
