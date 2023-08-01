@@ -6,17 +6,18 @@ import { DEBUG } from '@glimmer/env';
 moduleFor(
   'ember reexports',
   class extends AbstractTestCase {
-    [`@test Ember exports correctly`](assert) {
-      allExports.forEach((reexport) => {
-        let [path, moduleId, exportName] = reexport;
+    async [`@test Ember exports correctly`](assert) {
+      for (let reexport of allExports) {
+        let [path, modulePromise, exportName] = reexport;
 
         // default path === exportName if none present
         if (!exportName) {
           exportName = path;
         }
 
-        confirmExport(Ember, assert, path, moduleId, exportName);
-      });
+        let module = await modulePromise;
+        confirmExport(Ember, assert, path, module, exportName);
+      }
     }
 
     '@test Ember.FEATURES is exported'(assert) {
@@ -37,317 +38,327 @@ moduleFor(
 
 let allExports = [
   // @ember/application
-  ['Application', '@ember/application', 'default'],
-  ['getOwner', '@ember/application', 'getOwner'],
-  ['onLoad', '@ember/application', 'onLoad'],
-  ['runLoadHooks', '@ember/application', 'runLoadHooks'],
-  ['setOwner', '@ember/application', 'setOwner'],
+  ['Application', import('@ember/application'), 'default'],
+  ['getOwner', import('@ember/application'), 'getOwner'],
+  ['onLoad', import('@ember/application'), 'onLoad'],
+  ['runLoadHooks', import('@ember/application'), 'runLoadHooks'],
+  ['setOwner', import('@ember/application'), 'setOwner'],
 
   // @ember/application/instance
-  ['ApplicationInstance', '@ember/application/instance', 'default'],
+  ['ApplicationInstance', import('@ember/application/instance'), 'default'],
 
   // @ember/application/namespace
-  ['Namespace', '@ember/application/namespace', 'default'],
+  ['Namespace', import('@ember/application/namespace'), 'default'],
 
   // @ember/array
-  ['Array', '@ember/array', 'default'],
-  ['A', '@ember/array', 'A'],
-  ['NativeArray', '@ember/array', 'NativeArray'],
-  ['isArray', '@ember/array', 'isArray'],
-  ['makeArray', '@ember/array', 'makeArray'],
+  ['Array', import('@ember/array'), 'default'],
+  ['A', import('@ember/array'), 'A'],
+  ['NativeArray', import('@ember/array'), 'NativeArray'],
+  ['isArray', import('@ember/array'), 'isArray'],
+  ['makeArray', import('@ember/array'), 'makeArray'],
 
   // @ember/array/mutable
-  ['MutableArray', '@ember/array/mutable', 'default'],
+  ['MutableArray', import('@ember/array/mutable'), 'default'],
 
   // @ember/array/proxy
-  ['ArrayProxy', '@ember/array/proxy', 'default'],
+  ['ArrayProxy', import('@ember/array/proxy'), 'default'],
 
   // @ember/canary-features
-  ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled'],
+  ['FEATURES.isEnabled', import('@ember/canary-features'), 'isEnabled'],
 
   // @ember/component
-  ['Component', '@ember/component', 'default'],
-  ['_componentManagerCapabilities', '@ember/component', 'capabilities'],
-  ['_getComponentTemplate', '@ember/component', 'getComponentTemplate'],
-  ['_setComponentManager', '@ember/component', 'setComponentManager'],
-  ['_setComponentTemplate', '@ember/component', 'setComponentTemplate'],
+  ['Component', import('@ember/component'), 'default'],
+  ['_componentManagerCapabilities', import('@ember/component'), 'capabilities'],
+  ['_getComponentTemplate', import('@ember/component'), 'getComponentTemplate'],
+  ['_setComponentManager', import('@ember/component'), 'setComponentManager'],
+  ['_setComponentTemplate', import('@ember/component'), 'setComponentTemplate'],
 
   // @ember/component/helper
-  ['Helper', '@ember/component/helper', 'default'],
-  ['Helper.helper', '@ember/component/helper', 'helper'],
+  ['Helper', import('@ember/component/helper'), 'default'],
+  ['Helper.helper', import('@ember/component/helper'), 'helper'],
 
   // @ember/component/template-only
-  ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
+  ['_templateOnlyComponent', import('@ember/component/template-only'), 'default'],
 
   // @ember/controller
-  ['Controller', '@ember/controller', 'default'],
-  ['ControllerMixin', '@ember/controller', 'ControllerMixin'],
-  ['inject.controller', '@ember/controller', 'inject'],
+  ['Controller', import('@ember/controller'), 'default'],
+  ['ControllerMixin', import('@ember/controller'), 'ControllerMixin'],
+  ['inject.controller', import('@ember/controller'), 'inject'],
 
   // @ember/debug
-  ['deprecateFunc', '@ember/debug', 'deprecateFunc'],
-  ['deprecate', '@ember/debug', 'deprecate'],
-  ['assert', '@ember/debug', 'assert'],
-  ['debug', '@ember/debug', 'debug'],
-  ['inspect', '@ember/debug', 'inspect'],
-  ['Debug.registerDeprecationHandler', '@ember/debug', 'registerDeprecationHandler'],
-  ['Debug.registerWarnHandler', '@ember/debug', 'registerWarnHandler'],
-  ['runInDebug', '@ember/debug', 'runInDebug'],
-  ['warn', '@ember/debug', 'warn'],
-  ['testing', '@ember/debug', { get: 'isTesting', set: 'setTesting' }],
-  ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
+  ['deprecateFunc', import('@ember/debug'), 'deprecateFunc'],
+  ['deprecate', import('@ember/debug'), 'deprecate'],
+  ['assert', import('@ember/debug'), 'assert'],
+  ['debug', import('@ember/debug'), 'debug'],
+  ['inspect', import('@ember/debug'), 'inspect'],
+  ['Debug.registerDeprecationHandler', import('@ember/debug'), 'registerDeprecationHandler'],
+  ['Debug.registerWarnHandler', import('@ember/debug'), 'registerWarnHandler'],
+  ['runInDebug', import('@ember/debug'), 'runInDebug'],
+  ['warn', import('@ember/debug'), 'warn'],
+  ['testing', import('@ember/debug'), { get: 'isTesting', set: 'setTesting' }],
+  ['_captureRenderTree', import('@ember/debug'), 'captureRenderTree'],
 
   // @ember/debug/container-debug-adapter
-  ['ContainerDebugAdapter', '@ember/debug/container-debug-adapter', 'default'],
+  ['ContainerDebugAdapter', import('@ember/debug/container-debug-adapter'), 'default'],
 
   // @ember/debug/data-adapter
-  ['DataAdapter', '@ember/debug/data-adapter', 'default'],
+  ['DataAdapter', import('@ember/debug/data-adapter'), 'default'],
 
   // @ember/destroyable
   DEBUG
-    ? ['_assertDestroyablesDestroyed', '@ember/destroyable', 'assertDestroyablesDestroyed']
+    ? ['_assertDestroyablesDestroyed', import('@ember/destroyable'), 'assertDestroyablesDestroyed']
     : null,
-  ['_associateDestroyableChild', '@ember/destroyable', 'associateDestroyableChild'],
-  ['destroy', '@ember/destroyable', 'destroy'],
-  DEBUG ? ['_enableDestroyableTracking', '@ember/destroyable', 'enableDestroyableTracking'] : null,
-  ['_isDestroyed', '@ember/destroyable', 'isDestroyed'],
-  ['_isDestroying', '@ember/destroyable', 'isDestroying'],
-  ['_registerDestructor', '@ember/destroyable', 'registerDestructor'],
-  ['_unregisterDestructor', '@ember/destroyable', 'unregisterDestructor'],
+  ['_associateDestroyableChild', import('@ember/destroyable'), 'associateDestroyableChild'],
+  ['destroy', import('@ember/destroyable'), 'destroy'],
+  DEBUG
+    ? ['_enableDestroyableTracking', import('@ember/destroyable'), 'enableDestroyableTracking']
+    : null,
+  ['_isDestroyed', import('@ember/destroyable'), 'isDestroyed'],
+  ['_isDestroying', import('@ember/destroyable'), 'isDestroying'],
+  ['_registerDestructor', import('@ember/destroyable'), 'registerDestructor'],
+  ['_unregisterDestructor', import('@ember/destroyable'), 'unregisterDestructor'],
 
   // @ember/engine
-  ['Engine', '@ember/engine', 'default'],
+  ['Engine', import('@ember/engine'), 'default'],
 
   // @ember/engine/instance
-  ['EngineInstance', '@ember/engine/instance', 'default'],
+  ['EngineInstance', import('@ember/engine/instance'), 'default'],
 
   // @ember/enumerable
-  ['Enumerable', '@ember/enumerable', 'default'],
+  ['Enumerable', import('@ember/enumerable'), 'default'],
 
   // @ember/instrumentation
-  ['instrument', '@ember/instrumentation', 'instrument'],
-  ['subscribe', '@ember/instrumentation', 'subscribe'],
-  ['Instrumentation.instrument', '@ember/instrumentation', 'instrument'],
-  ['Instrumentation.reset', '@ember/instrumentation', 'reset'],
-  ['Instrumentation.subscribe', '@ember/instrumentation', 'subscribe'],
-  ['Instrumentation.unsubscribe', '@ember/instrumentation', 'unsubscribe'],
+  ['instrument', import('@ember/instrumentation'), 'instrument'],
+  ['subscribe', import('@ember/instrumentation'), 'subscribe'],
+  ['Instrumentation.instrument', import('@ember/instrumentation'), 'instrument'],
+  ['Instrumentation.reset', import('@ember/instrumentation'), 'reset'],
+  ['Instrumentation.subscribe', import('@ember/instrumentation'), 'subscribe'],
+  ['Instrumentation.unsubscribe', import('@ember/instrumentation'), 'unsubscribe'],
 
   // @ember/modifier
-  ['_modifierManagerCapabilities', '@ember/modifier', 'capabilities'],
-  ['_setModifierManager', '@ember/modifier', 'setModifierManager'],
-  ['_on', '@ember/modifier', 'on'],
+  ['_modifierManagerCapabilities', import('@ember/modifier'), 'capabilities'],
+  ['_setModifierManager', import('@ember/modifier'), 'setModifierManager'],
+  ['_on', import('@ember/modifier'), 'on'],
 
   // @ember/helper
-  ['_helperManagerCapabilities', '@ember/helper', 'capabilities'],
-  ['_setHelperManager', '@ember/helper', 'setHelperManager'],
-  ['_invokeHelper', '@ember/helper', 'invokeHelper'],
-  ['_fn', '@ember/helper', 'fn'],
-  ['_array', '@ember/helper', 'array'],
-  ['_hash', '@ember/helper', 'hash'],
-  ['_get', '@ember/helper', 'get'],
-  ['_concat', '@ember/helper', 'concat'],
+  ['_helperManagerCapabilities', import('@ember/helper'), 'capabilities'],
+  ['_setHelperManager', import('@ember/helper'), 'setHelperManager'],
+  ['_invokeHelper', import('@ember/helper'), 'invokeHelper'],
+  ['_fn', import('@ember/helper'), 'fn'],
+  ['_array', import('@ember/helper'), 'array'],
+  ['_hash', import('@ember/helper'), 'hash'],
+  ['_get', import('@ember/helper'), 'get'],
+  ['_concat', import('@ember/helper'), 'concat'],
 
   // @ember/object
-  ['Object', '@ember/object', 'default'],
-  ['_action', '@ember/object', 'action'],
-  ['computed', '@ember/object', 'computed'],
-  ['defineProperty', '@ember/object', 'defineProperty'],
-  ['get', '@ember/object', 'get'],
-  ['getProperties', '@ember/object', 'getProperties'],
-  ['notifyPropertyChange', '@ember/object', 'notifyPropertyChange'],
-  ['observer', '@ember/object', 'observer'],
-  ['set', '@ember/object', 'set'],
-  ['setProperties', '@ember/object', 'setProperties'],
-  ['trySet', '@ember/object', 'trySet'],
+  ['Object', import('@ember/object'), 'default'],
+  ['_action', import('@ember/object'), 'action'],
+  ['computed', import('@ember/object'), 'computed'],
+  ['defineProperty', import('@ember/object'), 'defineProperty'],
+  ['get', import('@ember/object'), 'get'],
+  ['getProperties', import('@ember/object'), 'getProperties'],
+  ['notifyPropertyChange', import('@ember/object'), 'notifyPropertyChange'],
+  ['observer', import('@ember/object'), 'observer'],
+  ['set', import('@ember/object'), 'set'],
+  ['setProperties', import('@ember/object'), 'setProperties'],
+  ['trySet', import('@ember/object'), 'trySet'],
 
   // @ember/object/compat
-  ['_dependentKeyCompat', '@ember/object/compat', 'dependentKeyCompat'],
+  ['_dependentKeyCompat', import('@ember/object/compat'), 'dependentKeyCompat'],
 
   // @ember/object/computed
-  ['ComputedProperty', '@ember/object/computed', 'default'],
-  ['expandProperties', '@ember/object/computed', 'expandProperties'],
+  ['ComputedProperty', import('@ember/object/computed'), 'default'],
+  ['expandProperties', import('@ember/object/computed'), 'expandProperties'],
 
   // @ember/object/core
-  ['CoreObject', '@ember/object/core', 'default'],
+  ['CoreObject', import('@ember/object/core'), 'default'],
 
   // @ember/object/evented
-  ['Evented', '@ember/object/evented', 'default'],
-  ['on', '@ember/object/evented', 'on'],
+  ['Evented', import('@ember/object/evented'), 'default'],
+  ['on', import('@ember/object/evented'), 'on'],
 
   // @ember/object/events
-  ['addListener', '@ember/object/events', 'addListener'],
-  ['removeListener', '@ember/object/events', 'removeListener'],
-  ['sendEvent', '@ember/object/events', 'sendEvent'],
+  ['addListener', import('@ember/object/events'), 'addListener'],
+  ['removeListener', import('@ember/object/events'), 'removeListener'],
+  ['sendEvent', import('@ember/object/events'), 'sendEvent'],
 
   // @ember/object/internals
-  ['cacheFor', '@ember/object/internals', 'cacheFor'],
-  ['guidFor', '@ember/object/internals', 'guidFor'],
+  ['cacheFor', import('@ember/object/internals'), 'cacheFor'],
+  ['guidFor', import('@ember/object/internals'), 'guidFor'],
 
   // @ember/object/mixin
-  ['Mixin', '@ember/object/mixin', 'default'],
+  ['Mixin', import('@ember/object/mixin'), 'default'],
 
   // @ember/object/observable
-  ['Observable', '@ember/object/observable', 'default'],
+  ['Observable', import('@ember/object/observable'), 'default'],
 
   // @ember/object/observers
-  ['addObserver', '@ember/object/observers', 'addObserver'],
-  ['removeObserver', '@ember/object/observers', 'removeObserver'],
+  ['addObserver', import('@ember/object/observers'), 'addObserver'],
+  ['removeObserver', import('@ember/object/observers'), 'removeObserver'],
 
   // @ember/object/promise-proxy-mixin
-  ['PromiseProxyMixin', '@ember/object/promise-proxy-mixin', 'default'],
+  ['PromiseProxyMixin', import('@ember/object/promise-proxy-mixin'), 'default'],
 
   // @ember/object/proxy
-  ['ObjectProxy', '@ember/object/proxy', 'default'],
+  ['ObjectProxy', import('@ember/object/proxy'), 'default'],
 
   // @ember/routing/hash-location
-  ['HashLocation', '@ember/routing/hash-location', 'default'],
+  ['HashLocation', import('@ember/routing/hash-location'), 'default'],
 
   // @ember/routing/history-location
-  ['HistoryLocation', '@ember/routing/history-location', 'default'],
+  ['HistoryLocation', import('@ember/routing/history-location'), 'default'],
 
   // @ember/routing/none-location
-  ['NoneLocation', '@ember/routing/none-location', 'default'],
+  ['NoneLocation', import('@ember/routing/none-location'), 'default'],
 
   // @ember/routing/route
-  ['Route', '@ember/routing/route', 'default'],
+  ['Route', import('@ember/routing/route'), 'default'],
 
   // @ember/routing/router
-  ['Router', '@ember/routing/router', 'default'],
+  ['Router', import('@ember/routing/router'), 'default'],
 
   // @ember/runloop
-  ['run', '@ember/runloop', 'run'],
+  ['run', import('@ember/runloop'), 'run'],
 
   // @ember/service
-  ['Service', '@ember/service', 'default'],
-  ['inject.service', '@ember/service', 'service'],
+  ['Service', import('@ember/service'), 'default'],
+  ['inject.service', import('@ember/service'), 'service'],
 
   // @ember/template
-  [null, '@ember/template', 'htmlSafe'],
-  [null, '@ember/template', 'isHTMLSafe'],
+  [null, import('@ember/template'), 'htmlSafe'],
+  [null, import('@ember/template'), 'isHTMLSafe'],
 
   // @ember/template-compilation
-  ['HTMLBars.compile', '@ember/template-compilation', 'compileTemplate'],
+  ['HTMLBars.compile', import('@ember/template-compilation'), 'compileTemplate'],
 
   // @ember/template-factory
-  ['Handlebars.template', '@ember/template-factory', 'createTemplateFactory'],
-  ['HTMLBars.template', '@ember/template-factory', 'createTemplateFactory'],
+  ['Handlebars.template', import('@ember/template-factory'), 'createTemplateFactory'],
+  ['HTMLBars.template', import('@ember/template-factory'), 'createTemplateFactory'],
 
   // @ember/test
-  ['Test.registerAsyncHelper', '@ember/test', 'registerAsyncHelper'],
-  ['Test.registerHelper', '@ember/test', 'registerHelper'],
-  ['Test.registerWaiter', '@ember/test', 'registerWaiter'],
-  ['Test.unregisterHelper', '@ember/test', 'unregisterHelper'],
-  ['Test.unregisterWaiter', '@ember/test', 'unregisterWaiter'],
+  ['Test.registerAsyncHelper', import('@ember/test'), 'registerAsyncHelper'],
+  ['Test.registerHelper', import('@ember/test'), 'registerHelper'],
+  ['Test.registerWaiter', import('@ember/test'), 'registerWaiter'],
+  ['Test.unregisterHelper', import('@ember/test'), 'unregisterHelper'],
+  ['Test.unregisterWaiter', import('@ember/test'), 'unregisterWaiter'],
 
   // @ember/test/adapter
-  ['Test.Adapter', '@ember/test/adapter', 'default'],
+  ['Test.Adapter', import('@ember/test/adapter'), 'default'],
 
   // @ember/utils
-  ['compare', '@ember/utils', 'compare'],
-  ['isBlank', '@ember/utils', 'isBlank'],
-  ['isEmpty', '@ember/utils', 'isEmpty'],
-  ['isEqual', '@ember/utils', 'isEqual'],
-  ['isNone', '@ember/utils', 'isNone'],
-  ['isPresent', '@ember/utils', 'isPresent'],
-  ['typeOf', '@ember/utils', 'typeOf'],
+  ['compare', import('@ember/utils'), 'compare'],
+  ['isBlank', import('@ember/utils'), 'isBlank'],
+  ['isEmpty', import('@ember/utils'), 'isEmpty'],
+  ['isEqual', import('@ember/utils'), 'isEqual'],
+  ['isNone', import('@ember/utils'), 'isNone'],
+  ['isPresent', import('@ember/utils'), 'isPresent'],
+  ['typeOf', import('@ember/utils'), 'typeOf'],
 
   // @ember/version
-  ['VERSION', '@ember/version', 'VERSION'],
+  ['VERSION', import('@ember/version'), 'VERSION'],
 
   // @glimmer/tracking
-  ['_tracked', '@glimmer/tracking', 'tracked'],
+  ['_tracked', import('@glimmer/tracking'), 'tracked'],
 
   // @glimmer/tracking/primitives/cache
-  ['_createCache', '@glimmer/tracking/primitives/cache', 'createCache'],
-  ['_cacheGetValue', '@glimmer/tracking/primitives/cache', 'getValue'],
-  ['_cacheIsConst', '@glimmer/tracking/primitives/cache', 'isConst'],
+  ['_createCache', import('@glimmer/tracking/primitives/cache'), 'createCache'],
+  ['_cacheGetValue', import('@glimmer/tracking/primitives/cache'), 'getValue'],
+  ['_cacheIsConst', import('@glimmer/tracking/primitives/cache'), 'isConst'],
 
   // @ember/-internals/environment
-  ['ENV', '@ember/-internals/environment', { get: 'getENV' }],
-  ['lookup', '@ember/-internals/environment', { get: 'getLookup', set: 'setLookup' }],
+  ['ENV', import('@ember/-internals/environment'), { get: 'getENV' }],
+  ['lookup', import('@ember/-internals/environment'), { get: 'getLookup', set: 'setLookup' }],
 
   // @ember/-internals/utils
-  ['GUID_KEY', '@ember/-internals/utils'],
-  ['uuid', '@ember/-internals/utils'],
-  ['generateGuid', '@ember/-internals/utils'],
-  ['canInvoke', '@ember/-internals/utils'],
-  ['wrap', '@ember/-internals/utils'],
-  ['_Cache', '@ember/-internals/utils', 'Cache'],
+  ['GUID_KEY', import('@ember/-internals/utils')],
+  ['uuid', import('@ember/-internals/utils')],
+  ['generateGuid', import('@ember/-internals/utils')],
+  ['canInvoke', import('@ember/-internals/utils')],
+  ['wrap', import('@ember/-internals/utils')],
+  ['_Cache', import('@ember/-internals/utils'), 'Cache'],
 
   // @ember/-internals/container
-  ['Registry', '@ember/-internals/container', 'Registry'],
-  ['Container', '@ember/-internals/container', 'Container'],
+  ['Registry', import('@ember/-internals/container'), 'Registry'],
+  ['Container', import('@ember/-internals/container'), 'Container'],
 
   // @ember/-internals/metal
-  ['_descriptor', '@ember/-internals/metal', 'nativeDescDecorator'],
-  ['_setClassicDecorator', '@ember/-internals/metal', 'setClassicDecorator'],
-  ['_getPath', '@ember/-internals/metal'],
-  ['hasListeners', '@ember/-internals/metal'],
-  ['beginPropertyChanges', '@ember/-internals/metal'],
-  ['endPropertyChanges', '@ember/-internals/metal'],
-  ['changeProperties', '@ember/-internals/metal'],
-  ['libraries', '@ember/-internals/metal'],
+  ['_descriptor', import('@ember/-internals/metal'), 'nativeDescDecorator'],
+  ['_setClassicDecorator', import('@ember/-internals/metal'), 'setClassicDecorator'],
+  ['_getPath', import('@ember/-internals/metal')],
+  ['hasListeners', import('@ember/-internals/metal')],
+  ['beginPropertyChanges', import('@ember/-internals/metal')],
+  ['endPropertyChanges', import('@ember/-internals/metal')],
+  ['changeProperties', import('@ember/-internals/metal')],
+  ['libraries', import('@ember/-internals/metal')],
   [
     'BOOTED',
-    '@ember/-internals/metal',
+    import('@ember/-internals/metal'),
     { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
 
   // @ember/-internals/error-handling
-  ['onerror', '@ember/-internals/error-handling', { get: 'getOnerror', set: 'setOnerror' }],
+  ['onerror', import('@ember/-internals/error-handling'), { get: 'getOnerror', set: 'setOnerror' }],
 
   // @ember/-internals/meta
-  ['meta', '@ember/-internals/meta'],
+  ['meta', import('@ember/-internals/meta')],
 
   // @ember/-internals/views
-  ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick'],
-  ['ViewUtils.getElementView', '@ember/-internals/views', 'getElementView'],
-  ['ViewUtils.getViewElement', '@ember/-internals/views', 'getViewElement'],
-  ['ViewUtils.getViewBounds', '@ember/-internals/views', 'getViewBounds'],
-  ['ViewUtils.getViewClientRects', '@ember/-internals/views', 'getViewClientRects'],
-  ['ViewUtils.getViewBoundingClientRect', '@ember/-internals/views', 'getViewBoundingClientRect'],
-  ['ViewUtils.getRootViews', '@ember/-internals/views', 'getRootViews'],
-  ['ViewUtils.getChildViews', '@ember/-internals/views', 'getChildViews'],
-  ['ViewUtils.isSerializationFirstNode', '@ember/-internals/glimmer', 'isSerializationFirstNode'],
-  ['ComponentLookup', '@ember/-internals/views'],
-  ['EventDispatcher', '@ember/-internals/views'],
+  ['ViewUtils.isSimpleClick', import('@ember/-internals/views'), 'isSimpleClick'],
+  ['ViewUtils.getElementView', import('@ember/-internals/views'), 'getElementView'],
+  ['ViewUtils.getViewElement', import('@ember/-internals/views'), 'getViewElement'],
+  ['ViewUtils.getViewBounds', import('@ember/-internals/views'), 'getViewBounds'],
+  ['ViewUtils.getViewClientRects', import('@ember/-internals/views'), 'getViewClientRects'],
+  [
+    'ViewUtils.getViewBoundingClientRect',
+    import('@ember/-internals/views'),
+    'getViewBoundingClientRect',
+  ],
+  ['ViewUtils.getRootViews', import('@ember/-internals/views'), 'getRootViews'],
+  ['ViewUtils.getChildViews', import('@ember/-internals/views'), 'getChildViews'],
+  [
+    'ViewUtils.isSerializationFirstNode',
+    import('@ember/-internals/glimmer'),
+    'isSerializationFirstNode',
+  ],
+  ['ComponentLookup', import('@ember/-internals/views')],
+  ['EventDispatcher', import('@ember/-internals/views')],
 
   // @ember/-internals/glimmer
-  ['TEMPLATES', '@ember/-internals/glimmer', { get: 'getTemplates', set: 'setTemplates' }],
-  ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
-  ['_Input', '@ember/-internals/glimmer', 'Input'],
+  ['TEMPLATES', import('@ember/-internals/glimmer'), { get: 'getTemplates', set: 'setTemplates' }],
+  ['Handlebars.Utils.escapeExpression', import('@ember/-internals/glimmer'), 'escapeExpression'],
+  ['_Input', import('@ember/-internals/glimmer'), 'Input'],
 
   // @ember/-internals/runtime
-  ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin'],
-  ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin'],
-  ['Comparable', '@ember/-internals/runtime'],
-  ['ActionHandler', '@ember/-internals/runtime'],
-  ['MutableEnumerable', '@ember/-internals/runtime'],
-  ['_ProxyMixin', '@ember/-internals/runtime'],
+  ['_RegistryProxyMixin', import('@ember/-internals/runtime'), 'RegistryProxyMixin'],
+  ['_ContainerProxyMixin', import('@ember/-internals/runtime'), 'ContainerProxyMixin'],
+  ['Comparable', import('@ember/-internals/runtime')],
+  ['ActionHandler', import('@ember/-internals/runtime')],
+  ['MutableEnumerable', import('@ember/-internals/runtime')],
+  ['_ProxyMixin', import('@ember/-internals/runtime')],
 
   // @ember/-internals/routing
-  ['controllerFor', '@ember/-internals/routing'],
-  ['generateControllerFactory', '@ember/-internals/routing'],
-  ['generateController', '@ember/-internals/routing'],
-  ['RouterDSL', '@ember/-internals/routing'],
+  ['controllerFor', import('@ember/-internals/routing')],
+  ['generateControllerFactory', import('@ember/-internals/routing')],
+  ['generateController', import('@ember/-internals/routing')],
+  ['RouterDSL', import('@ember/-internals/routing')],
 
   // backburner
-  ['_Backburner', 'backburner.js', 'default'],
+  ['_Backburner', import('backburner.js'), 'default'],
 
   // rsvp
-  [null, 'rsvp', 'default'],
-  [null, 'rsvp', 'Promise'],
-  [null, 'rsvp', 'all'],
-  [null, 'rsvp', 'allSettled'],
-  [null, 'rsvp', 'defer'],
-  [null, 'rsvp', 'denodeify'],
-  [null, 'rsvp', 'filter'],
-  [null, 'rsvp', 'hash'],
-  [null, 'rsvp', 'hashSettled'],
-  [null, 'rsvp', 'map'],
-  [null, 'rsvp', 'off'],
-  [null, 'rsvp', 'on'],
-  [null, 'rsvp', 'race'],
-  [null, 'rsvp', 'reject'],
-  [null, 'rsvp', 'resolve'],
+  [null, import('rsvp'), 'default'],
+  [null, import('rsvp'), 'Promise'],
+  [null, import('rsvp'), 'all'],
+  [null, import('rsvp'), 'allSettled'],
+  [null, import('rsvp'), 'defer'],
+  [null, import('rsvp'), 'denodeify'],
+  [null, import('rsvp'), 'filter'],
+  [null, import('rsvp'), 'hash'],
+  [null, import('rsvp'), 'hashSettled'],
+  [null, import('rsvp'), 'map'],
+  [null, import('rsvp'), 'off'],
+  [null, import('rsvp'), 'on'],
+  [null, import('rsvp'), 'race'],
+  [null, import('rsvp'), 'reject'],
+  [null, import('rsvp'), 'resolve'],
 ].filter(Boolean);

@@ -53,6 +53,8 @@
       define('@ember/-internals/glimmer', [], () => $1);
       import * as $2 from './packages/ember-testing/index.ts';
       define('ember-testing', [], () => $2);
+      import * as $3 from './packages/ember-template-compiler/index.ts';
+      define('ember-template-compiler', [], () => $3);
 
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       setupQUnit();

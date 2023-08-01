@@ -1332,9 +1332,15 @@ importers:
       '@ember/enumerable':
         specifier: workspace:*
         version: link:../@ember/enumerable
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../@ember/helper
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../@ember/instrumentation
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../@ember/modifier
       '@ember/object':
         specifier: workspace:*
         version: link:../@ember/object
@@ -1350,9 +1356,24 @@ importers:
       '@ember/service':
         specifier: workspace:*
         version: link:../@ember/service
+      '@ember/template':
+        specifier: workspace:*
+        version: link:../@ember/template
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../@ember/template-compilation
+      '@ember/template-factory':
+        specifier: workspace:*
+        version: link:../@ember/template-factory
+      '@ember/test':
+        specifier: workspace:*
+        version: link:../@ember/test
       '@ember/utils':
         specifier: workspace:*
         version: link:../@ember/utils
+      '@ember/version':
+        specifier: workspace:*
+        version: link:../@ember/version
       '@glimmer/destroyable':
         specifier: 0.84.2
         version: 0.84.2
@@ -1368,6 +1389,9 @@ importers:
       '@glimmer/runtime':
         specifier: 0.84.2
         version: 0.84.2
+      '@glimmer/tracking':
+        specifier: workspace:*
+        version: link:../@glimmer/tracking
       '@glimmer/util':
         specifier: 0.84.2
         version: 0.84.2

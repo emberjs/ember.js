@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./helper": "./helper.ts"
+    "./helper": "./helper.ts",
+    "./template-only": "./template-only.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
