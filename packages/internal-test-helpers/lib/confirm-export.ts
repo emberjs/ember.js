@@ -1,5 +1,3 @@
-import require from 'require';
-
 function getDescriptor(obj: Record<string, unknown>, path: string) {
   let parts = path.split('.');
   let value: unknown = obj;
