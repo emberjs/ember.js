@@ -1,2 +1,1 @@
-// TODO
-export default '5.3.0-alpha.1';
+export default 'VERSION_GOES_HERE';
