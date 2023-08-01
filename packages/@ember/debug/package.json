@@ -1,0 +1,11 @@
+{
+  "name": "@ember/debug",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@ember/test",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {}
+}

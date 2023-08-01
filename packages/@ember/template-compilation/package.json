@@ -1,0 +1,9 @@
+{
+  "name": "@ember/template-compilation",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {}
+}

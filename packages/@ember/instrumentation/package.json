@@ -1,0 +1,9 @@
+{
+  "name": "@ember/instrumentation",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {}
+}

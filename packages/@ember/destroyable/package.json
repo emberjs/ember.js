@@ -1,0 +1,9 @@
+{
+  "name": "@ember/destroyable",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {}
+}

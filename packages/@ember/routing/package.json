@@ -1,0 +1,11 @@
+{
+  "name": "@ember/routing",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./router": "./router.ts",
+    "./none-location": "./none-location.ts"
+  },
+  "dependencies": {}
+}

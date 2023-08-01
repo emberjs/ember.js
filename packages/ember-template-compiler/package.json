@@ -1,0 +1,12 @@
+{
+  "name": "ember-template-compiler",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/canary-features": "workspace:*"
+  }
+}

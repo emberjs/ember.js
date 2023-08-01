@@ -1,0 +1,9 @@
+{
+  "name": "@glimmer/tracking",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {}
+}

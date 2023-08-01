@@ -1,0 +1,14 @@
+{
+  "name": "internal-test-helpers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/application": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "ember-template-compiler": "workspace:*"
+  }
+}

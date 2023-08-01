@@ -103,7 +103,10 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.321.1",
+    "@babel/core": "^7.22.9",
+    "@babel/plugin-transform-typescript": "^7.22.9",
     "@babel/preset-env": "^7.16.11",
+    "@rollup/plugin-babel": "^6.0.3",
     "@simple-dom/document": "^1.4.0",
     "@tsconfig/ember": "^2.0.0",
     "@types/node": "^18.11.11",
@@ -161,7 +164,8 @@
     "simple-dom": "^1.4.0",
     "testem": "^3.10.1",
     "testem-failure-only-reporter": "^1.0.0",
-    "typescript": "5.1"
+    "typescript": "5.1",
+    "vite": "^4.4.7"
   },
   "peerDependencies": {
     "@glimmer/component": "^1.1.2"
