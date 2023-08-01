@@ -139,7 +139,7 @@ module.exports = {
         'testem.browserstack.js',
         'broccoli/**/*.js',
         'ember-cli-build.js',
-        'babel.config.js',
+        'babel.config.mjs',
       ],
 
       parserOptions: {

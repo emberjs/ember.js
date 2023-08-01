@@ -1,7 +1,7 @@
 import { defineConfig, Plugin } from 'vite';
 import { babel } from '@rollup/plugin-babel';
 import { packageName as getPackageName, PackageCache, hbsToJS } from '@embroider/shared-internals';
-import { dirname, resolve } from 'path';
+import { resolve } from 'path';
 import { readFileSync } from 'fs';
 
 const babelPlugin = {
