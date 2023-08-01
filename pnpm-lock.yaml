@@ -160,6 +160,9 @@ importers:
       '@babel/core':
         specifier: ^7.22.9
         version: 7.22.9
+      '@babel/plugin-proposal-decorators':
+        specifier: ^7.22.7
+        version: 7.22.7(@babel/core@7.22.9)
       '@babel/plugin-transform-typescript':
         specifier: ^7.22.9
         version: 7.22.9(@babel/core@7.22.9)
@@ -1936,7 +1939,6 @@ packages:
       '@babel/helper-replace-supers': 7.22.9(@babel/core@7.22.9)
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/plugin-syntax-decorators': 7.22.5(@babel/core@7.22.9)
-    dev: false
 
   /@babel/plugin-proposal-private-methods@7.18.6(@babel/core@7.22.9):
     resolution: {integrity: sha512-nutsvktDItsNn4rpGItSNV2sz1XwS+nfU0Rg8aCx3W3NOKVzdMjJRu0O5OkgDp3ZGICSTbgRpxZoWsxoKRvbeA==}

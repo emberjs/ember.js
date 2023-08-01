@@ -66,18 +66,18 @@ function findDepsPlugin() {
 
 function findDeps(pkgDir, rootDeps) {
   gathered = new Set();
-  for (let name of glob.sync('**/*.ts', { cwd: pkgDir })) {
+  for (let name of glob.sync('**/*.{ts,js}', { cwd: pkgDir, nodir: true })) {
     babel.transform(fs.readFileSync(path.resolve(pkgDir, name), 'utf8'), {
       configFile: false,
       plugins: [
         ['@babel/plugin-transform-typescript', { allowDeclareFields: true }],
-        ['@babel/plugin-syntax-decorators', { version: 'legacy' }],
+        ['@babel/plugin-proposal-decorators', { version: 'legacy' }],
         findDepsPlugin,
       ],
     });
   }
   let pkg = JSON.parse(fs.readFileSync(path.resolve(pkgDir, 'package.json'), 'utf8'));
-  for (let name of Object.keys(pkg.dependencies)) {
+  for (let name of Object.keys(pkg.dependencies ?? {})) {
     gathered.add(name);
   }
   gathered.delete(pkg.name);
@@ -123,7 +123,8 @@ function rootDeps() {
 
 function findAllDeps() {
   let r = rootDeps();
-  for (let pj of glob.sync('packages/**/package.json')) {
+  for (let pj of glob.sync('packages/**/package.json', { ignore: '**/node_modules/**' })) {
+    console.log(pj);
     findDeps(path.dirname(pj), r);
   }
 }
