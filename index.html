@@ -48,13 +48,44 @@
     <script src="./packages/loader/lib/index.js"></script>
     <script type="module">
       // These are the places where Ember relies on the AMD loader to find parts
-      // of itself.
+      // of itself. (At least, all the ones needed to make the in-browser test
+      // suite work.)
       import * as $1 from './packages/@ember/-internals/glimmer/index.ts';
       define('@ember/-internals/glimmer', [], () => $1);
       import * as $2 from './packages/ember-testing/index.ts';
       define('ember-testing', [], () => $2);
       import * as $3 from './packages/ember-template-compiler/index.ts';
       define('ember-template-compiler', [], () => $3);
+
+      /*
+        List of things that are internally used with require (or require.has):
+
+          require('ember')
+           - while bootstrapping the prebuild ember bundle in node
+           - as a reexport from ember-template-compiler.js bundle for unknown reasons
+
+          require('ember-testing')
+           - how the testing API facade decides whether to use the real testing implementation
+           - used in the Ember global module to optionally include the testing-specific things
+
+          require('ember-template-compiler')
+           - used in the Ember global module to optionally include the runtime compiler
+          
+          require('@ember/-internals/glimmer')
+           - used inside the ember-template-compiler's actual "compile" function to get back out to the main ember bundle
+
+          Ember.__loader: exposes `require` and `define` directly
+           - so that Ember's "inner" loader has a backdoor from the outside.
+
+
+          has('@ember/application') &&
+          has('@ember/-internals/browser-environment') &&
+          has('@ember/-internals/glimmer')
+           - enables 'script[type="text/x-handlebars"]' compilation! 
+
+
+      */
+
 
       import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
       setupQUnit();
