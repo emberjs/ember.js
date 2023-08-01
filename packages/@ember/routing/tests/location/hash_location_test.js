@@ -6,8 +6,8 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 let location;
 
 function createLocation(options, assert) {
-  let HashTestLocation = HashLocation.extend({
-    _location: {
+  class HashTestLocation extends HashLocation {
+    _location = {
       href: 'http://test.com/',
       pathname: '/',
       hash: '',
@@ -15,13 +15,14 @@ function createLocation(options, assert) {
       replace() {
         assert.ok(false, 'location.replace should not be called during testing');
       },
-    },
-  });
+    };
 
-  if (!options) {
-    options = {};
+    init() {
+      Object.assign(this, options);
+      super.init();
+    }
   }
-  location = HashTestLocation.create(options);
+  location = HashTestLocation.create();
 }
 
 function mockBrowserLocation(path) {

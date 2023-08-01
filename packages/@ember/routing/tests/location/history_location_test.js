@@ -52,9 +52,9 @@ moduleFor(
         },
       };
 
-      HistoryTestLocation = HistoryLocation.extend({
-        history: FakeHistory,
-      });
+      HistoryTestLocation = class extends HistoryLocation {
+        history = FakeHistory;
+      };
     }
 
     teardown() {

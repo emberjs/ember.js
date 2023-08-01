@@ -1,10 +1,10 @@
 /* eslint-disable no-var */
-/* globals global globalThis self */
+/* globals global globalThis self Proxy */
 /* eslint-disable-next-line no-unused-vars */
 var define, require;
 
 (function () {
-  var globalObj =
+  let globalObj =
     typeof globalThis !== 'undefined'
       ? globalThis
       : typeof self !== 'undefined'
@@ -26,8 +26,8 @@ var define, require;
     return;
   }
 
-  var registry = Object.create(null);
-  var seen = Object.create(null);
+  let registry = Object.create(null);
+  let seen = Object.create(null);
 
   function missingModule(name, referrerName) {
     if (referrerName) {
@@ -38,34 +38,58 @@ var define, require;
   }
 
   function internalRequire(_name, referrerName) {
-    var name = _name;
-    var mod = registry[name];
+    let name = _name;
+    let mod = registry[name];
 
     if (!mod) {
       name = name + '/index';
       mod = registry[name];
     }
 
-    var exports = seen[name];
+    let exports = seen[name];
 
     if (exports !== undefined) {
       return exports;
     }
 
-    exports = seen[name] = {};
-
     if (!mod) {
+      seen[name] = {};
       missingModule(_name, referrerName);
     }
 
-    var deps = mod.deps;
-    var callback = mod.callback;
-    var reified = new Array(deps.length);
-    var hasExportsAsDep = false;
+    let deps = mod.deps;
+    let callback = mod.callback;
+    let reified = new Array(deps.length);
+    let moduleTarget;
 
-    for (var i = 0; i < deps.length; i++) {
+    if (deps.some((dep) => dep === 'exports')) {
+      exports = seen[name] = {};
+    } else {
+      exports = seen[name] = new Proxy(
+        {},
+        {
+          get(target, key) {
+            if (moduleTarget) {
+              return moduleTarget[key];
+            }
+          },
+          set() {
+            throw new Error('illegal module mutation');
+          },
+          deleteProperty() {
+            throw new Error('illegal module mutation');
+          },
+          ownKeys() {
+            if (moduleTarget) {
+              return Object.keys(moduleTarget);
+            }
+          },
+        }
+      );
+    }
+
+    for (let i = 0; i < deps.length; i++) {
       if (deps[i] === 'exports') {
-        hasExportsAsDep = true;
         reified[i] = exports;
       } else if (deps[i] === 'require') {
         reified[i] = require;
@@ -74,12 +98,8 @@ var define, require;
       }
     }
 
-    let result = callback.apply(this, reified);
-    if (hasExportsAsDep) {
-      return exports;
-    } else {
-      return result;
-    }
+    moduleTarget = callback.apply(this, reified);
+    return exports;
   }
 
   require = function (name) {
