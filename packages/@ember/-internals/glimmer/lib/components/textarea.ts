@@ -3,7 +3,7 @@
 */
 import { type Opaque } from '@ember/-internals/utility-types';
 import { action } from '@ember/object';
-import TextareaTemplate from '../templates/textarea';
+import TextareaTemplate from '../templates/textarea.hbs';
 import AbstractInput from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 

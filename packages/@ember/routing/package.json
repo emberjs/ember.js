@@ -5,7 +5,12 @@
   "exports": {
     ".": "./index.ts",
     "./router": "./router.ts",
-    "./none-location": "./none-location.ts"
+    "./none-location": "./none-location.ts",
+    "./hash-location": "./hash-location.ts",
+    "./history-location": "./history-location.ts",
+    "./route": "./route.ts",
+    "./-internals": "./-internals.ts",
+    "./router-service": "./router-service.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

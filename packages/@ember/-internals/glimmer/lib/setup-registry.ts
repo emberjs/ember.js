@@ -9,8 +9,8 @@ import LinkTo from './components/link-to';
 import Textarea from './components/textarea';
 import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import { Renderer } from './renderer';
-import OutletTemplate from './templates/outlet';
-import RootTemplate from './templates/root';
+import OutletTemplate from './templates/outlet.hbs';
+import RootTemplate from './templates/root.hbs';
 import OutletView from './views/outlet';
 
 export function setupApplicationRegistry(registry: Registry): void {

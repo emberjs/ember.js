@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./mutable": "./mutable.ts"
   },
   "dependencies": {
     "@ember/object": "workspace:*"

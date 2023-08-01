@@ -445,7 +445,7 @@
 
 export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
 
-export { default as RootTemplate } from './lib/templates/root';
+export { default as RootTemplate } from './lib/templates/root.hbs';
 export { default as Input } from './lib/components/input';
 export { default as LinkTo } from './lib/components/link-to';
 export { default as Textarea } from './lib/components/textarea';
@@ -464,7 +464,7 @@ export {
   hasTemplate,
   getTemplates,
   setTemplates,
-  TemplatesRegistry,
+  type TemplatesRegistry,
 } from './lib/template_registry';
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
@@ -473,8 +473,8 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
-export { default as OutletView, BootEnvironment } from './lib/views/outlet';
-export { OutletState } from './lib/utils/outlet';
+export { default as OutletView, type BootEnvironment } from './lib/views/outlet';
+export { type OutletState } from './lib/utils/outlet';
 export {
   componentCapabilities,
   modifierCapabilities,

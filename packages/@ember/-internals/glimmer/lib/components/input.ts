@@ -7,7 +7,7 @@ import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
 import { valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
-import InputTemplate from '../templates/input';
+import InputTemplate from '../templates/input.hbs';
 import AbstractInput, { valueFrom } from './abstract-input';
 import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 

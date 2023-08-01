@@ -1,0 +1,14 @@
+diff --git a/index.js b/index.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd117c3afeda7bf9552a0d84bf24911945c5d1be
+--- /dev/null
++++ b/index.js
+@@ -0,0 +1,8 @@
++export const Namespace = {
++  HTML: 'http://www.w3.org/1999/xhtml',
++  MathML: 'http://www.w3.org/1998/Math/MathML',
++  SVG: 'http://www.w3.org/2000/svg',
++  XLink: 'http://www.w3.org/1999/xlink',
++  XML: 'http://www.w3.org/XML/1998/namespace',
++  XMLNS: 'http://www.w3.org/2000/xmlns/'
++};

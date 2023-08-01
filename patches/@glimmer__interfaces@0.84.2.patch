@@ -1,0 +1,11 @@
+diff --git a/dist/modules/es2017/index.js b/dist/modules/es2017/index.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..82955a94295f78225364d0c50779cfb831936980
+--- /dev/null
++++ b/dist/modules/es2017/index.js
+@@ -0,0 +1,5 @@
++export const CurriedType  ={
++  Component: 0,
++  Helper: 1,
++  Modifier: 2,
++};

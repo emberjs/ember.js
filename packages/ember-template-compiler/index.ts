@@ -24,7 +24,7 @@ export {
   transformsFor as _transformsFor,
 } from './lib/system/compile-options';
 export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins';
-export { EmberPrecompileOptions } from './lib/types';
+export { type EmberPrecompileOptions } from './lib/types';
 
 export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';
 export { precompile as _precompile } from '@glimmer/compiler';

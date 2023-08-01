@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./instance": "./instance.ts",
+    "./namespace": "./namespace.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

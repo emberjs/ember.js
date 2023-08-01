@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./container-debug-adapter": "./container-debug-adapter.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

@@ -33,7 +33,7 @@
 // We need to provide a narrower public interface to `getOwner` so that we only
 // expose the `Owner` type, *not* our richer `InternalOwner` type and its
 // various bits of private API.
-import Owner, { getOwner as internalGetOwner } from '@ember/-internals/owner';
+import { type default as Owner, getOwner as internalGetOwner } from '@ember/-internals/owner';
 
 // NOTE: this documentation appears here instead of at the definition site so
 // it can appear correctly in both API docs and for TS, while providing a richer
@@ -92,11 +92,11 @@ export default Owner;
 
 export {
   setOwner,
-  FullName,
-  RegisterOptions,
-  Factory,
-  FactoryManager,
-  KnownForTypeResult,
-  Resolver,
-  DIRegistry,
+  type FullName,
+  type RegisterOptions,
+  type Factory,
+  type FactoryManager,
+  type KnownForTypeResult,
+  type Resolver,
+  type DIRegistry,
 } from '@ember/-internals/owner';

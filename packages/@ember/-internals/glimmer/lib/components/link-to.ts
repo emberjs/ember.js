@@ -11,7 +11,7 @@ import { DEBUG } from '@glimmer/env';
 import type { Maybe, Option } from '@glimmer/interfaces';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type { Transition } from 'router_js';
-import LinkToTemplate from '../templates/link-to';
+import LinkToTemplate from '../templates/link-to.hbs';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 import { type Opaque } from '@ember/-internals/utility-types';
 
