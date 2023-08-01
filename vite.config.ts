@@ -14,6 +14,16 @@ export default defineConfig({
   optimizeDeps: {
     disabled: true,
   },
+  build: {
+    lib: {
+      entry: {
+        // TODO: this builds but we still have internal usage of require.has
+        // that doesn't work this way yet.
+        'ember-template-compiler': './packages/ember-template-compiler/index.ts',
+      },
+      formats: ['es', 'cjs']
+    },
+  },
 });
 
 function babel(): Plugin {
@@ -36,9 +46,9 @@ function requireShim(): Plugin {
     load(id) {
       if (id === '\0require-shim') {
         return `export function has(name) {
-  return window.require.has(name);
+  return require.has(name);
 }
-export default window.require;`;
+export default require;`;
       }
     },
   };
@@ -95,7 +105,10 @@ function version(): Plugin {
       if (id[0] !== '\0' && id.endsWith('/ember/version.ts')) {
         let input = readFileSync(id, 'utf8');
         return {
-          code: input.replace('VERSION_GOES_HERE', JSON.parse(readFileSync('./package.json', 'utf8')).version)
+          code: input.replace(
+            'VERSION_GOES_HERE',
+            JSON.parse(readFileSync('./package.json', 'utf8')).version
+          ),
         };
       }
     },
