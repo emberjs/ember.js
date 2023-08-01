@@ -8,7 +8,7 @@ export default {
         allowDeclareFields: true,
       },
     ],
-    buildDebugMacroPlugin(process.env.EMBER_ENV === 'production'),
+    buildDebugMacroPlugin(process.env.EMBER_ENV !== 'production'),
     ['@babel/plugin-proposal-decorators', { legacy: true }],
     ['@babel/plugin-proposal-class-properties', { loose: true }],
     [

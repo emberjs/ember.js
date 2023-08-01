@@ -6,23 +6,72 @@
     <title>Ember.js</title>
   </head>
   <body>
-    <script src="./packages/loader/lib/index.js"></script>
-
     <script type="module">
       import 'qunit/qunit/qunit.js';
       import 'qunit/qunit/qunit.css';
-      import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
 
-      setupQUnit();
+      window.EmberENV = {};
 
+      // Determine edition, and apply correct EmberENV settings
+      let edition = QUnit.urlParams.edition || 'octane';
+
+      if (edition === 'octane') {
+        EmberENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+        EmberENV._APPLICATION_TEMPLATE_WRAPPER = false;
+        EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
+      }
+
+      // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+      EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
+      EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ =
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+      EmberENV.__test_hook_count__ = 0;
+      EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function (object) {
+        EmberENV.__test_hook_count__ += object;
+      });
+
+      // Handle extending prototypes
+      EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+
+      // Handle testing feature flags
+      if (QUnit.urlParams.enableoptionalfeatures) {
+        EmberENV.ENABLE_OPTIONAL_FEATURES = true;
+      }
+
+      EmberENV['RAISE_ON_DEPRECATION'] = true;
+
+      if (QUnit.urlParams.debugrendertree) {
+        EmberENV['_DEBUG_RENDER_TREE'] = true;
+      }
+    </script>
+
+    <script src="./packages/loader/lib/index.js"></script>
+    <script type="module">
       // These are the places where Ember relies on the AMD loader to find parts
       // of itself.
       import * as $1 from './packages/@ember/-internals/glimmer/index.ts';
       define('@ember/-internals/glimmer', [], () => $1);
+
+      import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
+      setupQUnit();
+
+      import { setTesting } from './packages/@ember/debug/index.ts';
+      setTesting(true);
     </script>
 
     <script type="module">
+      // tests in internal packages
       import.meta.glob('./packages/@ember/-internals/*/tests/**/*.{js,ts}', {
+        eager: true,
+      });
+
+      // tests in scoped packages
+      import.meta.glob('./packages/*/*/tests/**/*.{js,ts}', {
+        eager: true,
+      });
+
+      // tests in non-scoped packages
+      import.meta.glob('./packages/*/tests/**/*.{js,ts}', {
         eager: true,
       });
     </script>
