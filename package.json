@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@babel/helper-module-imports": "^7.16.7",
-    "@babel/plugin-transform-block-scoping": "^7.21.0",
+    "@babel/plugin-transform-block-scoping": "^7.22.5",
     "@ember/edition-utils": "^1.2.0",
     "@glimmer/compiler": "0.84.2",
     "@glimmer/component": "^1.1.2",
