@@ -962,15 +962,15 @@ moduleFor(
       let rootURL = '/blahzorz';
       this.add(
         'location:history-test',
-        HistoryLocation.extend({
-          rootURL: 'this is not the URL you are looking for',
-          history: {
+        class extends HistoryLocation {
+          rootURL = 'this is not the URL you are looking for';
+          history = {
             pushState() {},
-          },
+          };
           initState() {
             assert.equal(this.get('rootURL'), rootURL);
-          },
-        })
+          }
+        }
       );
 
       this.router.reopen({
