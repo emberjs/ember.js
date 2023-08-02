@@ -15,7 +15,7 @@ function invocationFor(options) {
   return parts.map((p) => stringUtil.classify(p)).join('::');
 }
 
-function invocationForStrictAuthoringFormat(options) {
+function invocationForStrictComponentAuthoringFormat(options) {
   let parts = options.entity.name.split('/');
   let componentName = parts[parts.length - 1];
   return stringUtil.classify(componentName);
@@ -44,7 +44,7 @@ module.exports = useTestFrameworkDetector({
       ],
     },
     {
-      name: 'authoring-format',
+      name: 'component-authoring-format',
       type: ['loose', 'strict'],
       default: 'loose',
       aliases: [
@@ -76,10 +76,10 @@ module.exports = useTestFrameworkDetector({
   files() {
     let files = this._super.files.apply(this, arguments);
 
-    if (this.options.authoringFormat === 'strict') {
+    if (this.options.componentAuthoringFormat === 'strict') {
       files = files.filter((file) => !(file.endsWith('.js') || file.endsWith('.ts')));
     }
-    if (this.options.authoringFormat === 'loose') {
+    if (this.options.componentAuthoringFormat === 'loose') {
       files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
     }
 
@@ -106,8 +106,8 @@ module.exports = useTestFrameworkDetector({
       : "import hbs from 'htmlbars-inline-precompile';";
 
     let templateInvocation =
-      this.options.authoringFormat === 'strict'
-        ? invocationForStrictAuthoringFormat(options)
+      this.options.componentAuthoringFormat === 'strict'
+        ? invocationForStrictComponentAuthoringFormat(options)
         : invocationFor(options);
     let componentName = templateInvocation;
     let openComponent = (descriptor) => `<${descriptor}>`;

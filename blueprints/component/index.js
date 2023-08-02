@@ -52,7 +52,7 @@ module.exports = {
       aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
     },
     {
-      name: 'authoring-format',
+      name: 'component-authoring-format',
       type: ['loose', 'strict'],
       default: 'loose',
       aliases: [
@@ -145,7 +145,7 @@ module.exports = {
   afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
-    if (options.authoringFormat === 'loose') {
+    if (options.componentAuthoringFormat === 'loose') {
       this.skippedJsFiles.forEach((file) => {
         let mapped = this.mapFile(file, this.savedLocals);
         this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
@@ -237,12 +237,12 @@ module.exports = {
         }
       });
     }
-    if (this.options.authoringFormat === 'strict') {
+    if (this.options.componentAuthoringFormat === 'strict') {
       files = files.filter(
         (file) => !(file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs'))
       );
     }
-    if (this.options.authoringFormat === 'loose') {
+    if (this.options.componentAuthoringFormat === 'loose') {
       files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
     }
 
