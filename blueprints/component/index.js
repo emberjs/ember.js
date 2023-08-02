@@ -55,7 +55,12 @@ module.exports = {
       name: 'authoring-format',
       type: ['loose', 'strict'],
       default: 'loose',
-      aliases: [{ loose: 'loose' }, { strict: 'strict' }],
+      aliases: [
+        { loose: 'loose' },
+        { strict: 'strict' },
+        { 'template-tag': 'strict' },
+        { tt: 'strict' },
+      ],
     },
   ],
 
