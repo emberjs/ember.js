@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.3.0-beta.1 (August 7, 2023)
+
+- [#20376](https://github.com/emberjs/ember.js/pull/20376) [DEPRECATION] Deprecate implicit record loading in Ember Route per [RFC #774](https://rfcs.emberjs.com/id/0774-implicit-record-route-loading).
+
 ## v5.2.0 (August 7, 2023)
 
 - [#20464](https://github.com/emberjs/ember.js/pull/20464) [FEATURE] Create public import for uniqueId helper per [RFC #659](https://rfcs.emberjs.com/id/0659-unique-id-helper).
