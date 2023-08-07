@@ -1,29 +1,20 @@
 # Ember Changelog
 
-## v5.2.0-beta.4 (July 17, 2023)
+## v5.2.0 (August 7, 2023)
 
+- [#20464](https://github.com/emberjs/ember.js/pull/20464) [FEATURE] Create public import for uniqueId helper per [RFC #659](https://rfcs.emberjs.com/id/0659-unique-id-helper).
+- [#20505](https://github.com/emberjs/ember.js/pull/20505) [BUGFIX] Remove use of `this.element` in `component-test` and `helper-test` blueprints
 - [#20501](https://github.com/emberjs/ember.js/pull/20501) [BUGFIX] Fix the types for the mutation-methods of `NativeArray`
-
-## v4.12.3 (June 30, 2023)
-
-- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX] Backport more types fixes
-
-## v5.2.0-beta.3 (June 30, 2023)
-
-- [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX] Types: EmberComponent's `element` is an `Element`
-- [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX] Types: EmberComponent init can have no args
+- [#20477](https://github.com/emberjs/ember.js/pull/20477) Upgrade TS and configure TS CI accordingly to test against TS 4.9, 5.0, and 5.1
 
 ## v5.1.2 (June 30, 2023)
 
 - [#20491](https://github.com/emberjs/ember.js/pull/20491) [BUGFIX] Types: EmberComponent's `element` is an `Element`
 - [#20492](https://github.com/emberjs/ember.js/pull/20492) [BUGFIX] Types: EmberComponent init can have no args
 
-## v5.2.0-beta.2 (June 29, 2023)
+## v4.12.3 (June 30, 2023)
 
-- [#20480](https://github.com/emberjs/ember.js/pull/20480) [BUGFIX] Fix type dependency issues
-- [#20482](https://github.com/emberjs/ember.js/pull/20482) [BUGFIX] Types: Allow `store` to be injected on `Route`
-- [#20489](https://github.com/emberjs/ember.js/pull/20489) [BUGFIX] Fix types for Resolver contract
-- [#20490](https://github.com/emberjs/ember.js/pull/20490) [BUGFIX] Types: Fix model arg to a Route `serialize`
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX] Backport more types fixes
 
 ## v5.1.1 (June 29, 2023)
 
@@ -35,11 +26,6 @@
 ## v4.12.2 (June 28, 2023)
 
 - [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX] Backport some stable type import locations
-
-## v5.2.0-beta.1 (June 26, 2023)
-
-- [#20464](https://github.com/emberjs/ember.js/pull/20464) [FEATURE] Create public import for uniqueId helper per [RFC #659](https://rfcs.emberjs.com/id/0659-unique-id-helper).
-- [#20477](https://github.com/emberjs/ember.js/pull/20477) Upgrade TS and configure TS CI accordingly to test against TS 4.9, 5.0, and 5.1
 
 ## v5.1.0 (June 26, 2023)
 
