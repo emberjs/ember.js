@@ -1,4 +1,6 @@
 import Controller, { ControllerQueryParam, inject } from '@ember/controller';
+import { expectTypeOf } from 'expect-type';
+import type Owner from '@ember/owner';
 
 class FirstController extends Controller {
   foo = 'bar';
@@ -36,3 +38,9 @@ declare module '@ember/controller' {
     second: InstanceType<typeof SecondController>;
   }
 }
+
+const owner = {} as Owner;
+
+expectTypeOf(owner.lookup('controller:first')).toEqualTypeOf<FirstController>();
+expectTypeOf(owner.lookup('controller:second')).toEqualTypeOf<InstanceType<typeof SecondController>>();
+expectTypeOf(owner.lookup('controller:non-registered')).toEqualTypeOf<Controller | undefined>();
