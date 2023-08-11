@@ -72,3 +72,14 @@ expectTypeOf(inject()).toMatchTypeOf<PropertyDecorator>();
 
 // @ts-expect-error Doesn't allow invalid types
 inject(1);
+
+class ExampleController extends Controller {}
+
+declare module '@ember/controller' {
+    export interface Registry {
+        example: ExampleController;
+    }
+}
+
+expectTypeOf(owner.lookup('controller:example')).toEqualTypeOf<ExampleController>();
+expectTypeOf(owner.lookup('controller:non-registered')).toEqualTypeOf<Controller | undefined>();
