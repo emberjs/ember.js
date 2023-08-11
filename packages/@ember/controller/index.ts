@@ -387,7 +387,7 @@ export { Controller as default, ControllerMixin };
   }
   ```
 
-  Then `@service` can check that the service is registered correctly, and APIs
+  Then `@inject` can check that the service is registered correctly, and APIs
   like `owner.lookup('controller:example')` can return `ExampleController`.
 */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
