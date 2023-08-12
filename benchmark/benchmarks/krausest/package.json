@@ -10,7 +10,7 @@
     "@glimmer/compiler": "workspace:^"
   },
   "devDependencies": {
-    "vite": "^4.3.5",
+    "vite": "^4.3.9",
     "@types/node": "^18.16.7"
   },
   "engines": {

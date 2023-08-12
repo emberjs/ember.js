@@ -2,6 +2,6 @@
   "private": true,
   "dependencies": {
     "@types/qunit": "workspace:^",
-    "vite": "^4.3.5"
+    "vite": "^4.3.9"
   }
 }
