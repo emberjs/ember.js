@@ -274,7 +274,7 @@ module.exports.glimmerES = function glimmerES(environment) {
   if (environment === 'development') {
     let hasGlimmerDebug = true;
     try {
-      require.resolve('@glimmer/debug'); // eslint-disable-line node/no-missing-require
+      require.resolve('@glimmer/debug'); // eslint-disable-line n/no-missing-require
     } catch (e) {
       hasGlimmerDebug = false;
     }
