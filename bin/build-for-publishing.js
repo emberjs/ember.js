@@ -93,6 +93,7 @@ Promise.resolve()
       // eslint-disable-next-line
       console.log('build-for-publishing failed');
       // failure, must manually exit non-zero
+      // eslint-disable-next-line n/no-process-exit
       process.exit(1);
     }
   );

@@ -32,7 +32,7 @@ function run(command, args = []) {
       ]);
 
       console.log('success');
-      process.exit(0);
+      process.exit(0); // eslint-disable-line n/no-process-exit
     } finally {
       if (process.env.GITHUB_RUN_ID) {
         await run('ember', ['browserstack:results']);
@@ -42,6 +42,6 @@ function run(command, args = []) {
   } catch (error) {
     console.log('error');
     console.log(error);
-    process.exit(1);
+    process.exit(1); // eslint-disable-line n/no-process-exit
   }
 })();

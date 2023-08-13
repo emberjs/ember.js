@@ -151,8 +151,8 @@ module.exports = {
         es6: true,
       },
 
-      plugins: ['node'],
-      extends: ['plugin:node/recommended'],
+      plugins: ['n'],
+      extends: ['plugin:n/recommended'],
       rules: {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
