@@ -1251,8 +1251,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       {
         id: 'deprecate-implicit-route-model',
         for: 'ember-source',
-        since: { available: '5.3.0' },
+        since: { available: '5.3.0', enabled: '5.3.0' },
         until: '6.0.0',
+        url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
       }
     );
 
