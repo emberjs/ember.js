@@ -5,7 +5,7 @@ import { assert, info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 /**
- @module ember/routing
+ @module @ember/routing
 */
 
 /**
