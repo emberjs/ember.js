@@ -1,47 +1,56 @@
 import Service, { inject, service } from '@ember/service';
 import EmberObject from '@ember/object';
 import { buildOwner, runDestroy } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, expectDeprecation, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '../../-internals/deprecations';
 
 moduleFor(
   'inject - decorator',
   class extends AbstractTestCase {
-    ['@test works with native decorators'](assert) {
-      let owner = buildOwner();
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPORT_INJECT.isRemoved
+    )} @test works with native decorators`](assert) {
+      expectDeprecation(() => {
+        let owner = buildOwner();
 
-      class MainService extends Service {}
+        class MainService extends Service {}
 
-      class Foo extends EmberObject {
-        @inject('main') main;
-      }
+        class Foo extends EmberObject {
+          @inject('main') main;
+        }
 
-      owner.register('service:main', MainService);
-      owner.register('foo:main', Foo);
+        owner.register('service:main', MainService);
+        owner.register('foo:main', Foo);
 
-      let foo = owner.lookup('foo:main');
+        let foo = owner.lookup('foo:main');
 
-      assert.ok(foo.main instanceof Service, 'service injected correctly');
+        assert.ok(foo.main instanceof Service, 'service injected correctly');
 
-      runDestroy(owner);
+        runDestroy(owner);
+      }, 'Importing `inject` from `@ember/service` is deprecated. Please import `service` instead.');
     }
 
-    ['@test uses the decorated property key if not provided'](assert) {
-      let owner = buildOwner();
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPORT_INJECT.isRemoved
+    )} @test uses the decorated property key if not provided`](assert) {
+      expectDeprecation(() => {
+        let owner = buildOwner();
 
-      class MainService extends Service {}
+        class MainService extends Service {}
 
-      class Foo extends EmberObject {
-        @inject main;
-      }
+        class Foo extends EmberObject {
+          @inject main;
+        }
 
-      owner.register('service:main', MainService);
-      owner.register('foo:main', Foo);
+        owner.register('service:main', MainService);
+        owner.register('foo:main', Foo);
 
-      let foo = owner.lookup('foo:main');
+        let foo = owner.lookup('foo:main');
 
-      assert.ok(foo.main instanceof Service, 'service injected correctly');
+        assert.ok(foo.main instanceof Service, 'service injected correctly');
 
-      runDestroy(owner);
+        runDestroy(owner);
+      }, 'Importing `inject` from `@ember/service` is deprecated. Please import `service` instead.');
     }
   }
 );
