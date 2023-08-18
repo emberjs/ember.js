@@ -1,3 +1,4 @@
+import { deprecate } from '@ember/debug';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 import { inject as metalInject } from '@ember/-internals/metal';
@@ -16,6 +17,7 @@ import { inject as metalInject } from '@ember/-internals/metal';
          the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
+  @deprecated Please import `service` instead.
 */
 export function inject(name: string): PropertyDecorator;
 export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
@@ -24,6 +26,21 @@ export function inject(): PropertyDecorator;
 export function inject(
   ...args: [] | [name: string] | ElementDescriptor
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  deprecate(
+    'Importing `inject` from `@ember/service` is deprecated. Please import `service` instead.',
+    false,
+    {
+      for: 'ember-source',
+      id: 'importing-inject-from-ember-service',
+      since: {
+        available: '5.4.0',
+        enabled: '5.4.0',
+      },
+      until: '6.0.0',
+      url: 'TODO',
+    }
+  );
+
   return metalInject('service', ...args);
 }
 
