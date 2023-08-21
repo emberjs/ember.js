@@ -45,13 +45,13 @@
         <ProfileCard @name={{this.person.name}} />
       `);
 
-      assert.dom(this.element).hasText('John');
+      assert.dom().hasText('John');
 
       this.person.name = 'Jane';
 
       await renderSettled(); // Wait until rendering has completed.
 
-      assert.dom(this.element).hasText('Jane');
+      assert.dom().hasText('Jane');
     });
   });
   ```
