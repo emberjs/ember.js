@@ -6,7 +6,6 @@ const babelHelpers = require('./broccoli/babel-helpers');
 const concatBundle = require('./lib/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
 const rollupPackage = require('./broccoli/rollup-package');
-const minify = require('./broccoli/minify');
 const debugTree = require('broccoli-debug').buildDebugCallback('ember-source:ember-cli-build');
 
 Error.stackTraceLimit = Infinity;
@@ -28,11 +27,10 @@ const {
   getPackagesES,
 } = require('./broccoli/packages');
 
-const { allSupportedBrowsers, modernBrowsers } = require('./config/browserlists');
+const { allSupportedBrowsers } = require('./config/browserlists');
 
 const ENV = process.env.EMBER_ENV || 'development';
 const SHOULD_ROLLUP = process.env.SHOULD_ROLLUP !== 'false';
-const SHOULD_MINIFY = Boolean(process.env.SHOULD_MINIFY);
 
 /**
  * There isn't a way for us to override targets through ember-cli-babel, and we
@@ -60,9 +58,16 @@ function withTargets(project, fn) {
 
 module.exports = function ({ project }) {
   let emberSource = project.addons.find((a) => a.name === 'ember-source');
+  let emberCliBabel = project.addons.find((a) => a.name === 'ember-cli-babel');
 
-  let transpileTree = withTargets(project, emberSource.transpileTree.bind(emberSource));
-  let emberBundles = withTargets(project, emberSource.buildEmberBundles.bind(emberSource));
+  let transpileTree = withTargets(project, function transpileTree(tree) {
+    let options = emberSource._addBabelConfig({
+      'ember-cli-babel': {
+        compileModules: true,
+      },
+    });
+    return emberCliBabel.transpileTree(tree, options);
+  });
 
   let packages = debugTree(
     new MergeTrees([
@@ -112,7 +117,7 @@ module.exports = function ({ project }) {
   let dist = debugTree(
     new MergeTrees([
       new Funnel(packages, {
-        destDir: 'packages',
+        destDir: 'addon',
         exclude: [
           '**/package.json',
           '@ember/-internals/*/tests/**' /* internal packages */,
@@ -123,48 +128,31 @@ module.exports = function ({ project }) {
           '*/type-tests/**' /* packages */,
           'ember-template-compiler/**',
           'internal-test-helpers/**',
+          'ember-testing/**' /* goes in the test-support tree instead */,
         ],
       }),
-      new Funnel(emberHeaderFiles(), { destDir: 'header' }),
-      new Funnel(emberDependencies(ENV), { destDir: 'dependencies' }),
+      new Funnel(packages, {
+        destDir: 'test-support',
+        include: ['ember-testing/index.js', 'ember-testing/lib/**'],
+      }),
+      new Funnel(emberDependencies(ENV), { destDir: 'addon' }),
     ]),
     'dist'
   );
 
   // Test builds, tests, and test harness
   let testFiles = debugTree(
-    new Funnel(
-      new MergeTrees([
-        emberBundles(dist),
-        testsBundle(packages, ENV, transpileTree),
-        testHarness(),
-      ]),
-      {
-        destDir: 'tests',
-      }
-    ),
+    new Funnel(new MergeTrees([testsBundle(packages, ENV, transpileTree), testHarness()]), {
+      destDir: 'tests',
+    }),
     'testFiles'
   );
-
-  let preBuilt = debugTree(
-    new Funnel(emberBundles(dist, false, { targets: modernBrowsers, loose: false }), {
-      getDestinationPath(path) {
-        return path.replace('ember.', 'ember.debug.');
-      },
-    }),
-    'preBuilt'
-  );
-
-  if (SHOULD_MINIFY) {
-    preBuilt = minify(preBuilt);
-  }
 
   return new MergeTrees([
     // Distributed files
     dist,
 
     // Pre-built bundles
-    preBuilt,
     debugTree(templateCompilerBundle(packages, transpileTree), 'template-compiler'),
 
     testFiles,
@@ -240,7 +228,7 @@ function templateCompilerBundle(emberPackages, transpileTree) {
   );
 
   return concatBundle(new MergeTrees([templateCompilerFiles, emberHeaderFiles()]), {
-    outputFile: 'ember-template-compiler.js',
+    outputFile: 'vendor/ember-template-compiler.js',
     footer:
       '(function (m) { if (typeof module === "object" && module.exports) { module.exports = m } }(require("ember-template-compiler")));',
   });
