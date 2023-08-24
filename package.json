@@ -163,6 +163,9 @@
     "testem-failure-only-reporter": "^1.0.0",
     "typescript": "5.1"
   },
+  "resolutions": {
+    "socket.io": "^4.7.0"
+  },
   "peerDependencies": {
     "@glimmer/component": "^1.1.2"
   },
