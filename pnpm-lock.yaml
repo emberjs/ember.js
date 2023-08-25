@@ -60,8 +60,16 @@ dependencies:
     specifier: 0.84.3
     version: 0.84.3
   '@glimmer/util':
+<<<<<<< HEAD
     specifier: 0.84.3
     version: 0.84.3
+||||||| parent of bd4558fd1 (Downgrade glimmer/util)
+    specifier: ^0.84.3
+    version: 0.84.3
+=======
+    specifier: 0.84.2
+    version: 0.84.2
+>>>>>>> bd4558fd1 (Downgrade glimmer/util)
   '@glimmer/validator':
     specifier: 0.84.3
     version: 0.84.3
