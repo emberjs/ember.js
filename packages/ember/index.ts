@@ -589,12 +589,12 @@ namespace Ember {
   export declare let HTMLBars: EmberHTMLBars;
   export declare let Handlebars: EmberHandlebars;
   export declare let Test:
-    | (typeof EmberTesting['Test'] & {
-        Adapter: typeof EmberTesting['Adapter'];
-        QUnitAdapter: typeof EmberTesting['QUnitAdapter'];
+    | ((typeof EmberTesting)['Test'] & {
+        Adapter: (typeof EmberTesting)['Adapter'];
+        QUnitAdapter: (typeof EmberTesting)['QUnitAdapter'];
       })
     | undefined;
-  export declare let setupForTesting: typeof EmberTesting['setupForTesting'] | undefined;
+  export declare let setupForTesting: (typeof EmberTesting)['setupForTesting'] | undefined;
 }
 
 interface EmberHandlebars {
