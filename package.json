@@ -72,6 +72,7 @@
     "@glimmer/reference": "0.84.3",
     "@glimmer/runtime": "0.84.3",
     "@glimmer/syntax": "0.84.3",
+    "@glimmer/util": "0.84.3",
     "@glimmer/validator": "0.84.3",
     "@glimmer/vm-babel-plugins": "0.84.3",
     "@simple-dom/interface": "^1.4.0",
