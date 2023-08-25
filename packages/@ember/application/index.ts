@@ -750,7 +750,7 @@ class Application extends Engine {
     return this._bootPromise;
   }
 
-  _bootResolver: ReturnType<typeof RSVP['defer']> | null = null;
+  _bootResolver: ReturnType<(typeof RSVP)['defer']> | null = null;
 
   /**
     Unfortunately, a lot of existing code assumes the booting process is
