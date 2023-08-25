@@ -23,28 +23,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: linting
-        run: yarn lint
+        run: pnpm lint
 
   types:
     name: Type Checking (current version)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: Check published and internal types
-        run: yarn type-check
+        run: pnpm type-check
 
   types-range:
     name: Type Checking (other supported versions)
@@ -55,35 +49,29 @@ jobs:
         ts-version: ['4.9', '5.0', 'next']
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build stable type definitions
-        run: yarn build:types
+        run: pnpm build:types
       - name: install TS@${{matrix.ts-version}}
-        run: yarn add -D typescript@${{ matrix.ts-version }}
+        run: pnpm add --save-dev typescript@${{ matrix.ts-version }}
       - name: Check published and internal types with TS@${{matrix.ts-version}}
-        run: yarn type-check
+        run: pnpm type-check
 
   basic-test:
     name: Debug and Prebuilt (All Tests by Package + Canary Features)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build
+        run: pnpm ember build
       - name: Upload build
         uses: actions/upload-artifact@v3
         with:
@@ -92,7 +80,7 @@ jobs:
       - name: test
         env:
           TEST_SUITE: each-package
-        run: yarn test
+        run: pnpm test
 
   browserstack-test:
     name: Browserstack Tests (Safari, Edge)
@@ -100,18 +88,15 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
           SHOULD_TRANSPILE: true
-        run: yarn ember build
+        run: pnpm ember build
 
       - name: Set BrowserStack Local Identifier
         if: startsWith(github.ref, 'refs/tags/v')
@@ -133,22 +118,17 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build
-        run: yarn ember build -prod
+        run: pnpm ember build -prod
       - name: test
         # todo: potentially more apps? use matrix?
         run: |
-          yarn link
           cd smoke-tests/ember-test-app/
-          yarn
-          yarn link ember-source
-          yarn test
+          pnpm link ../../
+          pnpm test
 
   production-test:
     name: Production (All Tests + Canary Features)
@@ -156,19 +136,16 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build -prod
+        run: pnpm ember build -prod
       - name: test
-        run: yarn test
+        run: pnpm test
 
   production-debug-render-test:
     name: Production (All Tests + Canary Features with Debug Render Tree)
@@ -176,20 +153,17 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
           DEBUG_RENDER_TREE: true
-        run: yarn ember build -prod
+        run: pnpm ember build -prod
       - name: test
-        run: yarn test
+        run: pnpm test
 
   extend-prototypes-test:
     name: Extend Prototypes
@@ -197,12 +171,9 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - uses: actions/download-artifact@v3
         with:
           name: dist
@@ -210,7 +181,7 @@ jobs:
       - name: test
         env:
           TEST_SUITE: extend-prototypes
-        run: yarn test
+        run: pnpm test
 
   node-test:
     name: Node.js Tests
@@ -218,20 +189,17 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
           SHOULD_TRANSPILE_FOR_NODE: true
-        run: yarn ember build -prod
+        run: pnpm ember build -prod
       - name: test
-        run: yarn test:node
+        run: pnpm test:node
 
   blueprint-test:
     name: Blueprint Tests
@@ -239,14 +207,11 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: test
-        run: yarn test:blueprints
+        run: pnpm test:blueprints
 
   browser-test:
     name: Browser Tests (Firefox)
@@ -254,12 +219,9 @@ jobs:
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - uses: actions/download-artifact@v3
         with:
           name: dist
@@ -270,7 +232,7 @@ jobs:
           firefox-version: 102.0.1
       - run: firefox --version
       - name: test
-        run: yarn ember test -c testem.ci-browsers.js
+        run: pnpm ember test -c testem.ci-browsers.js
 
   deploy-tag:
     name: Deploy tags to npm
@@ -290,13 +252,10 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          registry-url: 'https://registry.npmjs.org'
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+          node-registry-url: 'https://registry.npmjs.org'
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to npm
@@ -323,12 +282,9 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
@@ -357,12 +313,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action-setup-pnpm@v2
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3

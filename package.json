@@ -47,11 +47,11 @@
     "test": "node bin/run-tests.js",
     "test:blueprints:js": "EMBER_TYPESCRIPT_BLUEPRINTS=false yarn test:blueprints:ts",
     "test:blueprints:ts": "mocha node-tests/blueprints/**/*-test.js",
-    "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
+    "test:blueprints": "pnpm test:blueprints:js && yarn test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "yarn build:types && tsc --noEmit --project type-tests",
+    "type-check:types": "pnpm build:types && tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },
   "dependencies": {
@@ -187,7 +187,7 @@
     }
   },
   "volta": {
-    "node": "16.20.0",
-    "yarn": "1.22.19"
+    "node": "16.20.2",
+    "pnpm": "8.6.12"
   }
 }
