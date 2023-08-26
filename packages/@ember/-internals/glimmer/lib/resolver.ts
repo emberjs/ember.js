@@ -235,7 +235,7 @@ export default class ResolverImpl
 
   lookupBuiltInModifier<K extends keyof typeof BUILTIN_KEYWORD_MODIFIERS>(
     name: K
-  ): (typeof BUILTIN_KEYWORD_MODIFIERS)[K];
+  ): typeof BUILTIN_KEYWORD_MODIFIERS[K];
   lookupBuiltInModifier(name: string): null;
   lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
     return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
