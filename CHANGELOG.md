@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.3.0-beta.2 (August 28, 2023)
+
+- [#20524](https://github.com/emberjs/ember.js/pull/20524) [BUGFIX] Add url to `deprecate-implicit-route-model` deprecation
+
 ## v5.3.0-beta.1 (August 7, 2023)
 
 - [#20376](https://github.com/emberjs/ember.js/pull/20376) [DEPRECATION] Deprecate implicit record loading in Ember Route per [RFC #774](https://rfcs.emberjs.com/id/0774-implicit-record-route-loading).
