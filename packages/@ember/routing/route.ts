@@ -110,7 +110,7 @@ interface Route<T = unknown> extends IRoute<T> {
     ```
 
     You can also redirect elsewhere by calling
-    `router.transitionTo('elsewhere')` from within `willTransition`.
+    `this.router.transitionTo('elsewhere')` from within `willTransition`.
     Note that `willTransition` will not be fired for the
     redirecting `transitionTo`, since `willTransition` doesn't
     fire when there is already a transition underway. If you want
@@ -1318,12 +1318,12 @@ class Route<T = unknown>
   /**
     A hook you can implement to optionally redirect to another route.
 
-    Calling `router.transitionTo` from inside of the `redirect` hook will
+    Calling `this.router.transitionTo` from inside of the `redirect` hook will
     abort the current transition (into the route that has implemented `redirect`).
 
     `redirect` and `afterModel` behave very similarly and are
     called almost at the same time, but they have an important
-    distinction when calling `router.transitionTo` to a child route
+    distinction when calling `this.router.transitionTo` to a child route
     of the current route. From `afterModel`, this new transition
     invalidates the current transition, causing `beforeModel`,
     `model`, and `afterModel` hooks to be called again. But the
@@ -1386,19 +1386,19 @@ class Route<T = unknown>
 
     ```javascript
     // no dynamic segment, model hook always called
-    router.transitionTo('posts');
+    this.router.transitionTo('posts');
 
     // model passed in, so model hook not called
     thePost = store.findRecord('post', 1);
-    router.transitionTo('post', thePost);
+    this.router.transitionTo('post', thePost);
 
     // integer passed in, model hook is called
-    router.transitionTo('post', 1);
+    this.router.transitionTo('post', 1);
 
     // model id passed in, model hook is called
     // useful for forcing the hook to execute
     thePost = store.findRecord('post', 1);
-    router.transitionTo('post', thePost.id);
+    this.router.transitionTo('post', thePost.id);
     ```
 
     This hook follows the asynchronous/promise semantics
