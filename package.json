@@ -147,7 +147,7 @@
     "fs-extra": "^11.1.1",
     "git-repo-info": "^2.1.1",
     "github": "^0.2.3",
-    "glob": "^8.0.3",
+    "glob": "^10.3.4",
     "html-differ": "^1.4.0",
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^2.1.3",
