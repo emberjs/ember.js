@@ -104,7 +104,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.321.1",
-    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-env": "^7.22.14",
     "@simple-dom/document": "^1.4.0",
     "@tsconfig/ember": "^2.0.0",
     "@types/node": "^18.11.11",
