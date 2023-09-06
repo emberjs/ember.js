@@ -172,6 +172,9 @@ importers:
       '@babel/preset-env':
         specifier: ^7.16.11
         version: 7.22.9(@babel/core@7.22.9)
+      '@babel/types':
+        specifier: ^7.22.5
+        version: 7.22.5
       '@embroider/shared-internals':
         specifier: ^2.3.0
         version: 2.3.0
@@ -1536,6 +1539,9 @@ importers:
       '@ember/service':
         specifier: workspace:*
         version: link:../@ember/service
+      '@ember/test':
+        specifier: workspace:*
+        version: link:../@ember/test
       '@ember/utils':
         specifier: workspace:*
         version: link:../@ember/utils

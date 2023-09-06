@@ -155,7 +155,7 @@ import {
 
 import type * as EmberTemplateCompiler from 'ember-template-compiler';
 import type { precompile, compile } from 'ember-template-compiler';
-import type * as EmberTesting from 'ember-testing';
+import { _impl as EmberTestingImpl } from '@ember/test';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Ember {
@@ -589,12 +589,14 @@ namespace Ember {
   export declare let HTMLBars: EmberHTMLBars;
   export declare let Handlebars: EmberHandlebars;
   export declare let Test:
-    | ((typeof EmberTesting)['Test'] & {
-        Adapter: (typeof EmberTesting)['Adapter'];
-        QUnitAdapter: (typeof EmberTesting)['QUnitAdapter'];
+    | (NonNullable<typeof EmberTestingImpl>['Test'] & {
+        Adapter: NonNullable<typeof EmberTestingImpl>['Adapter'];
+        QUnitAdapter: NonNullable<typeof EmberTestingImpl>['QUnitAdapter'];
       })
     | undefined;
-  export declare let setupForTesting: (typeof EmberTesting)['setupForTesting'] | undefined;
+  export declare let setupForTesting:
+    | NonNullable<typeof EmberTestingImpl>['setupForTesting']
+    | undefined;
 }
 
 interface EmberHandlebars {
@@ -716,10 +718,8 @@ function defineEmberTestingLazyLoad(key: 'Test' | 'setupForTesting') {
     configurable: true,
     enumerable: true,
     get() {
-      if (has('ember-testing')) {
-        let testing = require('ember-testing') as typeof EmberTesting;
-
-        let { Test, Adapter, QUnitAdapter, setupForTesting } = testing;
+      if (EmberTestingImpl) {
+        let { Test, Adapter, QUnitAdapter, setupForTesting } = EmberTestingImpl;
         // @ts-expect-error We should not do this
         Test.Adapter = Adapter;
         // @ts-expect-error We should not do this

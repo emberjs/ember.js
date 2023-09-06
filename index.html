@@ -52,8 +52,6 @@
       // suite work.)
       import * as $1 from './packages/@ember/-internals/glimmer/index.ts';
       define('@ember/-internals/glimmer', [], () => $1);
-      import * as $2 from './packages/ember-testing/index.ts';
-      define('ember-testing', [], () => $2);
       import * as $3 from './packages/ember-template-compiler/index.ts';
       define('ember-template-compiler', [], () => $3);
 
@@ -63,10 +61,6 @@
           require('ember')
            - while bootstrapping the prebuild ember bundle in node
            - as a reexport from ember-template-compiler.js bundle for unknown reasons
-
-          require('ember-testing')
-           - how the testing API facade decides whether to use the real testing implementation
-           - used in the Ember global module to optionally include the testing-specific things
 
           require('ember-template-compiler')
            - used in the Ember global module to optionally include the runtime compiler
