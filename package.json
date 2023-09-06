@@ -200,7 +200,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@glimmer/interfaces@0.84.2": "patches/@glimmer__interfaces@0.84.2.patch",
+      "@glimmer/interfaces@0.84.3": "patches/@glimmer__interfaces@0.84.3.patch",
       "@simple-dom/interface@1.4.0": "patches/@simple-dom__interface@1.4.0.patch"
     }
   }
