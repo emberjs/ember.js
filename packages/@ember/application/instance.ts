@@ -262,7 +262,7 @@ class ApplicationInstance extends EngineInstance {
     };
 
     let handleTransitionReject = (error: any): unknown => {
-      if (error.error) {
+      if (error.error && error.error instanceof Error) {
         throw error.error;
       } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
         return router._routerMicrolib.activeTransition.then(

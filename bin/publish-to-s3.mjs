@@ -118,5 +118,5 @@ if (!buildInfo.isBuildForTag) {
 
 function exitGracefully(err) {
   console.log(err); // eslint-disable-line no-console
-  process.exit(1);
+  process.exit(1); // eslint-disable-line n/no-process-exit
 }

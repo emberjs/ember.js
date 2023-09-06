@@ -425,7 +425,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         routeInfos: InternalRouteInfo<Route>[],
         ignoreFailure: boolean,
         name: N,
-        args: OmitFirst<Parameters<typeof defaultActionHandlers[N]>>
+        args: OmitFirst<Parameters<(typeof defaultActionHandlers)[N]>>
       ) {
         return triggerEvent.bind(router)(routeInfos, ignoreFailure, name, args);
       }
@@ -1695,7 +1695,7 @@ export function triggerEvent<N extends MethodNamesOf<typeof defaultActionHandler
   routeInfos: InternalRouteInfo<Route>[],
   ignoreFailure: boolean,
   name: N,
-  args: OmitFirst<Parameters<typeof defaultActionHandlers[N]>>
+  args: OmitFirst<Parameters<(typeof defaultActionHandlers)[N]>>
 ): void {
   if (!routeInfos) {
     if (ignoreFailure) {

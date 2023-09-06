@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console, node/shebang */
+/* eslint-disable no-console, n/shebang */
 
 'use strict';
 

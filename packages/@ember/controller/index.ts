@@ -366,3 +366,29 @@ export function inject(
 }
 
 export { Controller as default, ControllerMixin };
+
+/**
+  A type registry for Ember `Controller`s. Meant to be declaration-merged so string
+  lookups resolve to the correct type.
+
+  Blueprints should include such a declaration merge for TypeScript:
+
+  ```ts
+  import Controller from '@ember/controller';
+
+  export default class ExampleController extends Controller {
+  // ...
+  }
+
+  declare module '@ember/controller' {
+    export interface Registry {
+      example: ExampleController;
+    }
+  }
+  ```
+
+  Then `@inject` can check that the service is registered correctly, and APIs
+  like `owner.lookup('controller:example')` can return `ExampleController`.
+*/
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface Registry extends Record<string, Controller | undefined> {}

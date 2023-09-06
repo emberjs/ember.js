@@ -104,12 +104,12 @@ function runAndExit() {
   runInSequence(testFunctions)
     .then(function () {
       console.log(chalk.green('Passed!'));
-      process.exit(0);
+      process.exit(0); // eslint-disable-line n/no-process-exit
     })
     .catch(function (err) {
       console.error(chalk.red(err.toString()));
       console.error(chalk.red('Failed!'));
-      process.exit(1);
+      process.exit(1); // eslint-disable-line n/no-process-exit
     });
 }
 

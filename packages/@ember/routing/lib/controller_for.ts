@@ -3,7 +3,7 @@ import type { FactoryClass, InternalFactory } from '@ember/-internals/owner';
 import type { RegisterOptions } from '@ember/owner';
 
 /**
-  @module ember/routing
+  @module @ember/routing
 */
 
 /**
