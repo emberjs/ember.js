@@ -509,13 +509,6 @@ namespace Ember {
   // ****@ember/service****
   inject.service = service;
 
-  export const __loader = {
-    require,
-    define,
-    // @ts-expect-error These properties don't appear as being defined
-    registry: typeof requirejs !== 'undefined' ? requirejs.entries : require.entries,
-  };
-
   // ------------------------------------------------------------------------ //
   // These properties are assigned to the namespace with getters (and, in some
   // cases setters) with `Object.defineProperty` below.
