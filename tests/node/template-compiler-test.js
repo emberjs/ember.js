@@ -28,33 +28,5 @@ QUnit.module('ember-template-compiler.js', function () {
         'compile function is present'
       );
     });
-
-    QUnit.test('can access _Ember.ENV (private API used by ember-cli-htmlbars)', function (assert) {
-      assert.equal(typeof templateCompiler._Ember.ENV, 'object', '_Ember.ENV is present');
-      assert.notEqual(typeof templateCompiler._Ember.ENV, null, '_Ember.ENV is not null');
-    });
-
-    QUnit.test(
-      'can access _Ember.FEATURES (private API used by ember-cli-htmlbars)',
-      function (assert) {
-        assert.equal(
-          typeof templateCompiler._Ember.FEATURES,
-          'object',
-          '_Ember.FEATURES is present'
-        );
-        assert.notEqual(
-          typeof templateCompiler._Ember.FEATURES,
-          null,
-          '_Ember.FEATURES is not null'
-        );
-      }
-    );
-
-    QUnit.test(
-      'can access _Ember.VERSION (private API used by ember-cli-htmlbars)',
-      function (assert) {
-        assert.equal(typeof templateCompiler._Ember.VERSION, 'string', '_Ember.VERSION is present');
-      }
-    );
   });
 });
