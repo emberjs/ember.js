@@ -89,10 +89,6 @@ import { createCache, getValue } from '@glimmer/validator';
   property from a getter is not a good practice anyway, even with a caching
   mechanism reducing reruns.
 
-  The cost of these edge-guards adds up to the trade-off calculation of using
-  a caching strategy, hence requiring a very sensitive and moderate approach
-  regarding performance.
-
   @method cached
   @static
   @for @glimmer/tracking
