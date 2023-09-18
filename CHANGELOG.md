@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v5.4.0-beta.1 (September 18, 2023)
+
+- [#20521](https://github.com/emberjs/ember.js/pull/20521) [FEATURE] Add TypeScript support for looking up controllers in DI registry
+- [#20529](https://github.com/emberjs/ember.js/pull/20529) [BUGFIX] Don't rethrow string errors in handleTransitionReject
+- [#20210](https://github.com/emberjs/ember.js/pull/20210) [BUGFIX] Fix hanging tests caused by legacy rsvp code
+- [#20530](https://github.com/emberjs/ember.js/pull/20530) Upgrade the Glimmer VM to 0.84.3
+
 ## v5.3.0 (September 18, 2023)
 
 - [#20376](https://github.com/emberjs/ember.js/pull/20376) / [#20524](https://github.com/emberjs/ember.js/pull/20524) [DEPRECATION] Deprecate implicit record loading in Ember Route per [RFC #774](https://rfcs.emberjs.com/id/0774-implicit-record-route-loading).
