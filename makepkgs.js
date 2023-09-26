@@ -1,6 +1,8 @@
+/* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
 
+// eslint-disable-next-line no-unused-vars
 function doit(dir, packagePrefix = undefined) {
   for (let name of fs.readdirSync(dir)) {
     if (name[0] === '@') {
