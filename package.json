@@ -197,7 +197,7 @@
   },
   "volta": {
     "node": "16.20.0",
-    "yarn": "1.22.19"
+    "pnpm": "8.8.0"
   },
   "pnpm": {
     "patchedDependencies": {
