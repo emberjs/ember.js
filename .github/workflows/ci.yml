@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: wyvox/action/setup-pnpm@v3
+      - uses: wyvox/action-setup-pnpm@v3
         with:
           node-version: 16.x
       - name: linting
