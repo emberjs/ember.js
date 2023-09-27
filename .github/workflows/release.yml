@@ -16,4 +16,18 @@ jobs:
         with:
           node-registry-url: "https://registry.npmjs.org"
       - run: pnpm build
+
+      # > This is not interactive right?
+      # correct
+      #
+      # > This doesn't bump the version, just publish right?
+      # correct
+      #
+      # > Do we have a way to tell it to ignore already published packages in case we need to re-run the job?
+      # this is default behavior
+      #
+      # > It will skip the private packages, presumably?
+      # yes
       - run: pnpm -r publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
