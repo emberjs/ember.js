@@ -41,6 +41,7 @@ module.exports = {
   overrides: [
     {
       files: ['*.ts'],
+      excludedFiles: ['packages/ember/version.d.ts', 'vite.config.ts'],
 
       extends: ['plugin:@typescript-eslint/recommended'],
 
@@ -124,6 +125,7 @@ module.exports = {
       // matches all node-land files
       files: [
         '.eslintrc.js',
+        'makepkgs.js',
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',

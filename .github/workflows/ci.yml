@@ -23,14 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: wyvox/action/setup-pnpm@v3
         with:
           node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
       - name: linting
-        run: yarn lint
+        run: pnpm lint
 
   types:
     name: Type Checking (current version)
