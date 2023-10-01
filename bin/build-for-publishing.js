@@ -80,9 +80,12 @@ Promise.resolve()
       encoding: 'utf-8',
     });
 
-    // using npm pack here because `yarn pack` does not honor the `package.json`'s `files`
-    // property properly, and therefore the tarball generated is quite large (~7MB).
-    return exec('npm', ['pack']);
+    // After this script runs, SLSA Node.js Builder will run 'npm pack' to
+    // package the tarball.
+    //
+    // Incidentally we do not use `yarn pack` because it does not honor the
+    // `package.json`'s `files` property properly, and therefore the
+    // tarball generated is quite large (~7MB).
   })
   .then(
     // eslint-disable-next-line
