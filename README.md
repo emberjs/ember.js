@@ -1,8 +1,8 @@
-<p align="center">
-  <a href="https://emberjs.com"><img width="300" src="https://raw.githubusercontent.com/emberjs/website/master/source/images/brand/ember_Ember-Light.png"></a>
+<p style="text-align:center">
+  <a href="https://emberjs.com"><img width="300" src="https://raw.githubusercontent.com/emberjs/website/master/source/images/brand/ember_Ember-Light.png" alt="emberjs logo"></a>
 </p>
 
-<p align="center">
+<p style="text-align:center">
   <a href="https://www.npmjs.com/package/ember-source"><img src="https://img.shields.io/npm/v/ember-source.svg?style=flat" alt="npm version"></a>
   <a href="https://github.com/emberjs/ember.js/actions?query=workflow%3ACI"><img src="https://github.com/emberjs/ember.js/workflows/CI/badge.svg" alt="CI Status"></a>
   <a href="https://codeclimate.com/github/emberjs/ember.js"><img src="https://codeclimate.com/github/emberjs/ember.js.svg" alt="Code Climate"></a>
