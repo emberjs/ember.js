@@ -29,7 +29,7 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-unused-imports": "^2.0.0",
     "magic-string": "^0.30.0",
-    "postcss": "^8.4.23",
+    "postcss": "^8.4.31",
     "rollup": "^3.21.6",
     "rollup-plugin-polyfill-node": "^0.12.0",
     "rollup-plugin-postcss": "^4.0.2",
