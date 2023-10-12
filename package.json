@@ -47,7 +47,6 @@
     }
   },
   "devDependencies": {
-    "@glimmer-workspace/eslint-plugin": "workspace:^",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-modules-commonjs": "^7.21.5",
     "@babel/plugin-transform-runtime": "^7.21.4",
@@ -57,8 +56,11 @@
     "@babel/traverse": "^7.21.5",
     "@babel/types": "^7.21.5",
     "@glimmer-workspace/build-support": "workspace:^",
+    "@glimmer-workspace/eslint-plugin": "workspace:^",
     "@glimmer-workspace/integration-tests": "workspace:^",
     "@glimmer/env": "0.1.7",
+    "@release-it-plugins/lerna-changelog": "^6.0.0",
+    "@release-it-plugins/workspaces": "^4.0.0",
     "@rollup/plugin-terser": "^0.4.1",
     "@types/babel-plugin-macros": "^3.1.0",
     "@types/babel__core": "^7.20.0",
@@ -99,6 +101,7 @@
     "puppeteer": "^20.1.2",
     "puppeteer-chromium-resolver": "^20.0.0",
     "qunit": "^2.19.4",
+    "release-it": "^16.2.1",
     "rimraf": "^5.0.0",
     "rollup": "^3.21.6",
     "semver": "^7.5.2",
@@ -112,6 +115,19 @@
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
+  },
+  "release-it": {
+    "plugins": {
+      "@release-it-plugins/workspaces": {
+        "publish": false,
+        "workspaces": ["packages/@glimmer/*"]
+      },
+      "@release-it-plugins/lerna-changelog": {
+        "infile": "CHANGELOG.md",
+        "launchEditor": true
+      }
+    },
+    "npm": false
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
