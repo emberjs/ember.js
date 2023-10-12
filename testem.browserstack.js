@@ -19,6 +19,42 @@ const BrowserStackLaunchers = {
     ],
     protocol: 'browser',
   },
+  BS_Safari_14: {
+    exe: 'node_modules/.bin/browserstack-launch',
+    args: [
+      '--os',
+      'OS X',
+      '--osv',
+      'Big Sur',
+      '--b',
+      'safari',
+      '--bv',
+      'latest', // Will always be 14.x on Big Sur
+      '-t',
+      '1200',
+      '--u',
+      '<url>',
+    ],
+    protocol: 'browser',
+  },
+  BS_Safari_17: {
+    exe: 'node_modules/.bin/browserstack-launch',
+    args: [
+      '--os',
+      'OS X',
+      '--osv',
+      'Sonoma',
+      '--b',
+      'safari',
+      '--bv',
+      'latest', // Will always be 17.x on Sonoma
+      '-t',
+      '1200',
+      '--u',
+      '<url>',
+    ],
+    protocol: 'browser',
+  },
   BS_MS_Edge: {
     exe: 'node_modules/.bin/browserstack-launch',
     args: [
