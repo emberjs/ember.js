@@ -122,7 +122,6 @@
         "publish": false,
         "workspaces": ["packages/@glimmer/*"],
         "additionalManifests": {
-          "versionUpdates": ["packages/@glimmer/*"],
           "dependencyUpdates": []
         }
       },
