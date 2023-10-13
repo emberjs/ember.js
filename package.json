@@ -120,7 +120,11 @@
     "plugins": {
       "@release-it-plugins/workspaces": {
         "publish": false,
-        "workspaces": ["packages/@glimmer/*"]
+        "workspaces": ["packages/@glimmer/*"],
+        "additionalManifests": {
+          "versionUpdates": ["packages/@glimmer/*"],
+          "dependencyUpdates": []
+        }
       },
       "@release-it-plugins/lerna-changelog": {
         "infile": "CHANGELOG.md",
