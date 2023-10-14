@@ -1,5 +1,5 @@
 <p style="text-align:center">
-  <a href="https://emberjs.com"><img width="300" src="https://raw.githubusercontent.com/emberjs/website/master/source/images/brand/ember_Ember-Light.png" alt="emberjs logo"></a>
+  <a href="https://emberjs.com"><img width="300" src="https://raw.githubusercontent.com/emberjs/website/master/source/images/brand/ember_Ember-Light.png" alt="emberjs logo" class="center"></a>
 </p>
 
 <p style="text-align:center">
