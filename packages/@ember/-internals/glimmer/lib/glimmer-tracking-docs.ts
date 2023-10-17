@@ -233,17 +233,12 @@
   the subsequent cache invalidations of the `@cached` properties who were
   using this `trackedProp`.
 
-  As a reminder, do not use this piece of code inside a tracked getter,
-  as the dependency chain could lead to an infinite loop. Mutating an adjacent
-  property from a getter is not a good practice anyway, even with a caching
-  mechanism reducing reruns.
-
-  The cost of these edge-guards adds up to the trade-off calculation of using
-  a caching strategy, hence requiring a very sensitive and moderate approach
-  regarding performance.
+  Remember that setting tracked data should only be done during initialization,
+  or as the result of a user action. Setting tracked data during render
+  (such as in a getter), is not supported.
 
   @method cached
   @static
   @for @glimmer/tracking
   @public
-*/
+ */
