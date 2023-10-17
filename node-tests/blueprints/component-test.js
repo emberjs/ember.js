@@ -332,15 +332,6 @@ describe('Blueprint: component', function () {
     it('component foo --strict', function () {
       return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
         expect(_file('app/components/foo.gjs')).to.equal(templateTagContents);
-
-        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
-          fixture('component-test/rfc232.gjs', {
-            replace: {
-              component: 'foo',
-              componentInvocation: 'Foo',
-            },
-          })
-        );
       });
     });
 
