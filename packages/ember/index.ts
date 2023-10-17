@@ -2,8 +2,6 @@
 @module ember
 */
 
-import require, { has } from 'require';
-
 import { getENV, getLookup, setLookup } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
 import {
@@ -153,9 +151,9 @@ import {
   unregisterDestructor,
 } from '@ember/destroyable';
 
-import type * as EmberTemplateCompiler from 'ember-template-compiler';
 import type { precompile, compile } from 'ember-template-compiler';
 import { _impl as EmberTestingImpl } from '@ember/test';
+import { EmberTemplateCompiler } from '@ember/template-compilation';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Ember {
@@ -676,11 +674,9 @@ function defineEmberTemplateCompilerLazyLoad(key: 'HTMLBars' | 'Handlebars') {
     configurable: true,
     enumerable: true,
     get() {
-      if (has('ember-template-compiler')) {
-        let templateCompiler = require('ember-template-compiler') as typeof EmberTemplateCompiler;
-
-        EmberHTMLBars.precompile = EmberHandlebars.precompile = templateCompiler.precompile;
-        EmberHTMLBars.compile = EmberHandlebars.compile = templateCompiler.compile;
+      if (EmberTemplateCompiler) {
+        EmberHTMLBars.precompile = EmberHandlebars.precompile = EmberTemplateCompiler.precompile;
+        EmberHTMLBars.compile = EmberHandlebars.compile = EmberTemplateCompiler.compile;
 
         Object.defineProperty(Ember, 'HTMLBars', {
           configurable: true,
