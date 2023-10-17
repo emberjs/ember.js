@@ -1,0 +1,11 @@
+{
+  "name": "@ember/template-factory",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@glimmer/opcode-compiler": "0.84.3"
+  }
+}
