@@ -104,9 +104,19 @@ Building Ember.js is a quick process:
 
 # ensure Node.js and yarn are installed
 
-# build ember.js
+# build ember.js using yarn
  - yarn install
  - yarn build
+
+# build ember.js using npm
+ - npm install
+ - npm run build
+
+# start ember.js locally using yarn
+ - yarn start
+
+# start ember.js locally using npm
+ - npm start
 ```
 
 ## Using Custom Builds in an Ember CLI App
