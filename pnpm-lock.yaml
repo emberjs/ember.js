@@ -131,9 +131,6 @@ dependencies:
   inflection:
     specifier: ^2.0.1
     version: 2.0.1
-  resolve:
-    specifier: ^1.22.2
-    version: 1.22.8
   route-recognizer:
     specifier: ^0.3.4
     version: 0.3.4
@@ -170,7 +167,7 @@ devDependencies:
     specifier: ^7.22.5
     version: 7.23.0
   '@embroider/shared-internals':
-    specifier: ^2.3.0
+    specifier: ^2.5.0
     version: 2.5.0
   '@rollup/plugin-babel':
     specifier: ^6.0.3
