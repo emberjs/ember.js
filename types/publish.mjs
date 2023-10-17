@@ -116,7 +116,7 @@ async function main() {
   await fs.rm(TYPES_DIR, { recursive: true, force: true });
   await fs.mkdir(TYPES_DIR, { recursive: true });
 
-  doOrDie(() => spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']));
+  doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']));
 
   let remappedLocationExcludes = await doOrDie(copyHandwrittenDefinitions);
   let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);

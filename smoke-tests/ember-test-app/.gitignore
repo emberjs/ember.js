@@ -2,6 +2,7 @@
 # This smoke test ensures that a stable new'd app can run with latest ember-source
 # and not having the lock file will help us catch issues that maybe come from elsewhere.
 yarn.lock
+pnpm-lock.yaml
 
 # compiled output
 /dist/
