@@ -21,6 +21,7 @@
     "@ember/routing": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/compiler": "0.84.3",
     "@glimmer/env": "^0.1.7",

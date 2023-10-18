@@ -78,7 +78,7 @@ function viteResolverBug(): Plugin {
             };
           }
         }
-      }`
+      }
     },
   };
 }

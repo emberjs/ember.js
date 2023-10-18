@@ -3,6 +3,9 @@ import { FEATURES } from '@ember/canary-features';
 import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
 
+// these tests assert that the test-only infrastructure is loaded
+import 'ember-testing';
+
 moduleFor(
   'ember reexports',
   class extends AbstractTestCase {

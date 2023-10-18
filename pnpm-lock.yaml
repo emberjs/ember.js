@@ -1414,6 +1414,9 @@ importers:
       ember-template-compiler:
         specifier: workspace:*
         version: link:../ember-template-compiler
+      ember-testing:
+        specifier: workspace:*
+        version: link:../ember-testing
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1474,6 +1477,9 @@ importers:
       '@ember/service':
         specifier: workspace:*
         version: link:../@ember/service
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../@ember/template-compilation
       '@ember/utils':
         specifier: workspace:*
         version: link:../@ember/utils

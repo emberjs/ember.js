@@ -44,14 +44,6 @@ import {
   sendEvent as emberSendEvent,
 } from '@ember/object/events';
 
-// This is available in global scope courtesy of `loader/lib/index.js`, but that
-// "module" is created as a runtime-only module and makes `define` available as
-// a global as one of the side effects of executing the script. Since our type
-// publishing infrastructure does not handle `declare global { }` blocks at this
-// point, we "just" define it here, which is the only place it is actually used
-// in Ember's own public or intimate APIs.
-declare function define(path: string, deps: string[], module: () => void): void;
-
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -153,7 +145,7 @@ import {
 
 import type { precompile, compile } from 'ember-template-compiler';
 import { _impl as EmberTestingImpl } from '@ember/test';
-import { EmberTemplateCompiler } from '@ember/template-compilation';
+import * as templateCompilation from '@ember/template-compilation';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Ember {
@@ -674,9 +666,10 @@ function defineEmberTemplateCompilerLazyLoad(key: 'HTMLBars' | 'Handlebars') {
     configurable: true,
     enumerable: true,
     get() {
-      if (EmberTemplateCompiler) {
-        EmberHTMLBars.precompile = EmberHandlebars.precompile = EmberTemplateCompiler.precompile;
-        EmberHTMLBars.compile = EmberHandlebars.compile = EmberTemplateCompiler.compile;
+      if (templateCompilation.__emberTemplateCompiler) {
+        EmberHTMLBars.precompile = EmberHandlebars.precompile =
+          templateCompilation.__emberTemplateCompiler.precompile;
+        EmberHTMLBars.compile = EmberHandlebars.compile = templateCompilation.compileTemplate;
 
         Object.defineProperty(Ember, 'HTMLBars', {
           configurable: true,
