@@ -8,19 +8,17 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: pnpm/action-setup@v2
+      name: Install pnpm
+      with:
+        version: 8
+        run_install: false  
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 16
         registry-url: 'https://registry.npmjs.org'
         cache: pnpm
-
-    - uses: pnpm/action-setup@v2
-      name: Install pnpm
-      with:
-        version: 8
-        run_install: false
-
     - uses: actions/cache@v3
       name: Setup cache for puppeteer
       with:
