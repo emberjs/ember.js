@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 overrides:
   socket.io: ^4.7.0
 
@@ -138,9 +142,6 @@ importers:
       inflection:
         specifier: ^2.0.1
         version: 2.0.1
-      resolve:
-        specifier: ^1.22.2
-        version: 1.22.2
       route-recognizer:
         specifier: ^0.3.4
         version: 0.3.4
@@ -176,8 +177,8 @@ importers:
         specifier: ^7.22.5
         version: 7.22.5
       '@embroider/shared-internals':
-        specifier: ^2.3.0
-        version: 2.3.0
+        specifier: ^2.5.0
+        version: 2.5.0
       '@rollup/plugin-babel':
         specifier: ^6.0.3
         version: 6.0.3(@babel/core@7.22.9)
@@ -3501,6 +3502,23 @@ packages:
       typescript-memoize: 1.1.1
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@embroider/shared-internals@2.5.0:
+    resolution: {integrity: sha512-7qzrb7GVIyNqeY0umxoeIvjDC+ay1b+wb2yCVuYTUYrFfLAkLEy9FNI3iWCi3RdQ9OFjgcAxAnwsAiPIMZZ3pQ==}
+    engines: {node: 12.* || 14.* || >= 16}
+    dependencies:
+      babel-import-util: 2.0.0
+      debug: 4.3.4(supports-color@8.1.1)
+      ember-rfc176-data: 0.3.18
+      fs-extra: 9.1.0
+      js-string-escape: 1.0.1
+      lodash: 4.17.21
+      resolve-package-path: 4.0.3
+      semver: 7.5.4
+      typescript-memoize: 1.1.1
+    transitivePeerDependencies:
+      - supports-color
 
   /@esbuild/android-arm64@0.18.17:
     resolution: {integrity: sha512-9np+YYdNDed5+Jgr1TdWBsozZ85U1Oa3xW0c7TWqH0y2aGghXtZsuT8nYRbzOMcl0bXZXjOGbksoTtVOlWrRZg==}
@@ -5323,6 +5341,7 @@ packages:
   /asn1@0.1.11:
     resolution: {integrity: sha512-Fh9zh3G2mZ8qM/kwsiKwL2U2FmXxVsboP4x1mXjnhKHv3SmzaBZoYvxEQJz/YS2gnCgd8xlAVWcZnQyC9qZBsA==}
     engines: {node: '>=0.4.9'}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -5333,6 +5352,7 @@ packages:
   /assert-plus@0.1.5:
     resolution: {integrity: sha512-brU24g7ryhRwGCI2y+1dGQmQXiZF7TtIj583S96y0jjdajIe6wn8BuXyELYhvD22dtIxDQVFk04YTJwwdwOYJw==}
     engines: {node: '>=0.8'}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -5407,6 +5427,7 @@ packages:
 
   /async@0.9.2:
     resolution: {integrity: sha512-l6ToIJIotphWahxxHyzK9bnLR6kM4jJIIgLShZeqLY7iboHoGkdgFl7W2/Ivi4SkMJYGKqW8vSuk0uKUj6qsSw==}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -5783,6 +5804,7 @@ packages:
     resolution: {integrity: sha512-OvfN8y1oAxxphzkl2SnCS+ztV/uVKTATtgLjWYg/7KwcNyf3rzpHxNQJZCKtsZd4+MteKczhWbSjtEX4bGgU9g==}
     engines: {node: '>=0.8.0'}
     deprecated: This version has been deprecated in accordance with the hapi support policy (hapi.im/support). Please upgrade to the latest version to get the best features, bug fixes, and security patches. If you are unable to upgrade at this time, paid support is available for older versions (hapi.im/commercial).
+    requiresBuild: true
     dependencies:
       hoek: 0.9.1
     dev: true
@@ -6767,6 +6789,7 @@ packages:
   /combined-stream@0.0.7:
     resolution: {integrity: sha512-qfexlmLp9MyrkajQVyjEDb0Vj+KhRgR/rxLiVhaihlT+ZkX0lReqtH6Ack40CvMDERR4b5eFp3CreskpBs1Pig==}
     engines: {node: '>= 0.8'}
+    requiresBuild: true
     dependencies:
       delayed-stream: 0.0.5
     dev: true
@@ -7146,6 +7169,7 @@ packages:
     resolution: {integrity: sha512-gvWSbgqP+569DdslUiCelxIv3IYK5Lgmq1UrRnk+s1WxQOQ16j3GPDcjdtgL5Au65DU/xQi6q3xPtf5Kta+3IQ==}
     engines: {node: '>=0.8.0'}
     deprecated: This version has been deprecated in accordance with the hapi support policy (hapi.im/support). Please upgrade to the latest version to get the best features, bug fixes, and security patches. If you are unable to upgrade at this time, paid support is available for older versions (hapi.im/commercial).
+    requiresBuild: true
     dependencies:
       boom: 0.4.2
     dev: true
@@ -7184,6 +7208,7 @@ packages:
   /ctype@0.5.3:
     resolution: {integrity: sha512-T6CEkoSV4q50zW3TlTHMbzy1E5+zlnNcY+yb7tWVYlTwPhx9LpnfAkd4wecpWknDyptp4k97LUZeInlf6jdzBg==}
     engines: {node: '>= 0.4'}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -7331,6 +7356,7 @@ packages:
   /delayed-stream@0.0.5:
     resolution: {integrity: sha512-v+7uBd1pqe5YtgPacIIbZ8HuHeLFVNe4mUEyFDXL6KiqzEykjbw+5mXZXpGFgNVasdL4jWKgaKIXrEHiynN1LA==}
     engines: {node: '>=0.4.0'}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -7443,7 +7469,7 @@ packages:
       '@babel/plugin-proposal-decorators': 7.22.7(@babel/core@7.22.9)
       '@babel/preset-env': 7.22.9(@babel/core@7.22.9)
       '@embroider/macros': 1.13.0
-      '@embroider/shared-internals': 2.3.0
+      '@embroider/shared-internals': 2.5.0
       babel-loader: 8.3.0(@babel/core@7.22.9)(webpack@5.88.2)
       babel-plugin-ember-modules-api-polyfill: 3.5.0
       babel-plugin-ember-template-compilation: 2.1.1
@@ -9579,6 +9605,7 @@ packages:
     resolution: {integrity: sha512-ZZ6eGyzGjyMTmpSPYVECXy9uNfqBR7x5CavhUaLOeD6W0vWK1mp/b7O3f86XE0Mtfo9rZ6Bh3fnuw9Xr8MF9zA==}
     engines: {node: '>=0.8.0'}
     deprecated: This version has been deprecated in accordance with the hapi support policy (hapi.im/support). Please upgrade to the latest version to get the best features, bug fixes, and security patches. If you are unable to upgrade at this time, paid support is available for older versions (hapi.im/commercial).
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -10890,6 +10917,7 @@ packages:
 
   /mime@1.2.11:
     resolution: {integrity: sha512-Ysa2F/nqTNGHhhm9MV8ure4+Hc+Y8AWiqUdHxsO7xu8zc92ND9f3kpALHjaP026Ft17UfxrMt95c50PLUeynBw==}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -11939,6 +11967,7 @@ packages:
 
   /psl@1.9.0:
     resolution: {integrity: sha512-E/ZsdU4HLs/68gYzgGTkMicWTLPdAftJLfJFlLUAAKZGkStNU72sZjT66SnMDVOfOWY/YAoiD7Jxa9iHvngcag==}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -12026,6 +12055,7 @@ packages:
 
   /querystringify@2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -12830,6 +12860,7 @@ packages:
     resolution: {integrity: sha512-bDLrKa/ywz65gCl+LmOiIhteP1bhEsAAzhfMedPoiHP3dyYnAevlaJshdqb9Yu0sRifyP/fRqSt8t+5qGIWlGQ==}
     engines: {node: '>=0.8.0'}
     deprecated: This module moved to @hapi/sntp. Please make sure to switch over as this distribution is no longer supported and may contain bugs and critical security issues.
+    requiresBuild: true
     dependencies:
       hoek: 0.9.1
     dev: true
@@ -13902,6 +13933,7 @@ packages:
   /universalify@0.2.0:
     resolution: {integrity: sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==}
     engines: {node: '>= 4.0.0'}
+    requiresBuild: true
     dev: true
     optional: true
 
@@ -13958,6 +13990,7 @@ packages:
 
   /url-parse@1.5.10:
     resolution: {integrity: sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==}
+    requiresBuild: true
     dependencies:
       querystringify: 2.2.0
       requires-port: 1.0.0

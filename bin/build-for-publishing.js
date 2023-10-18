@@ -60,11 +60,11 @@ Promise.resolve()
   })
   .then(() => {
     // do a production build
-    return exec('yarn', ['build']);
+    return exec('pnpm', ['build']);
   })
   .then(() => {
     // generate docs
-    return exec('yarn', ['docs']).then(() => {
+    return exec('pnpm', ['docs']).then(() => {
       updateDocumentationVersion();
     });
   })
