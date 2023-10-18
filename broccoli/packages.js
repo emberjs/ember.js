@@ -8,7 +8,7 @@ const MergeTrees = require('broccoli-merge-trees');
 const typescript = require('broccoli-typescript-compiler').default;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
-const findPackage = require('./find-package');
+const { findFromProject, entrypoint } = require('./find-package');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
 const PackageJSONWriter = require('./package-json-writer');
@@ -21,7 +21,7 @@ const canaryFeatures = require('./canary-features');
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
 module.exports.routerES = function _routerES() {
-  return new Rollup(findLib('router_js'), {
+  return new Rollup(findLib(['router_js']), {
     rollup: {
       external: ['route-recognizer', 'rsvp'],
       input: 'index.js',
@@ -45,7 +45,7 @@ module.exports.loader = function _loader() {
 };
 
 module.exports.qunit = function _qunit() {
-  return new Funnel(findLib('qunit'), {
+  return new Funnel(findLib(['qunit']), {
     files: ['qunit.js', 'qunit.css'],
     destDir: 'qunit',
     annotation: 'qunit',
@@ -108,7 +108,7 @@ module.exports.getPackagesES = function getPackagesES() {
 };
 
 module.exports.handlebarsES = function _handlebars() {
-  return new Rollup(findLib('@handlebars/parser', 'dist/esm'), {
+  return new Rollup(findLib(['@glimmer/syntax', '@handlebars/parser'], 'dist/esm'), {
     annotation: '@handlebars/parser',
     rollup: {
       input: 'index.js',
@@ -178,12 +178,15 @@ module.exports.routeRecognizerES = function _routeRecognizerES() {
 };
 
 module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
-  let packageInfo = findPackage('simple-html-tokenizer', '@glimmer/syntax');
-  let moduleInfo = packageInfo.module;
-  return new Rollup(moduleInfo.dir, {
+  let { dir, base } = entrypoint(
+    findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
+    'module'
+  );
+
+  return new Rollup(dir, {
     annotation: 'simple-html-tokenizer es',
     rollup: {
-      input: moduleInfo.base,
+      input: base,
       output: {
         file: 'simple-html-tokenizer.js',
         format: 'es',
@@ -202,15 +205,17 @@ function rollupGlimmerPackage(pkg) {
   // @glimmer/debug and @glimmer/local-debug-flags are external dependencies,
   // but exist in dev-dependencies because they are fully removed before
   // publishing. Including them here allows Rollup to work for local builds.
-  let externalDeps = (pkg.dependencies || []).concat([
+  let externalDeps = Object.keys(pkg.packageJSON.dependencies || {}).concat([
     '@glimmer/debug',
     '@glimmer/local-debug-flags',
   ]);
 
+  let pkgModule = entrypoint(pkg, 'module');
+
   if (tree === undefined) {
-    tree = new Rollup(pkg.module.dir, {
+    tree = new Rollup(pkgModule.dir, {
       rollup: {
-        input: pkg.module.base,
+        input: pkgModule.base,
         external: externalDeps,
         output: {
           file: name + '.js',
@@ -224,26 +229,26 @@ function rollupGlimmerPackage(pkg) {
   return tree;
 }
 
-function glimmerTrees(entries) {
+function glimmerTrees(packageNames) {
   let seen = new Set();
 
   let trees = [];
-  let queue = Array.isArray(entries) ? entries.slice() : [entries];
-  let name;
+  let queue = packageNames.map((name) => findFromProject(name));
+  let pkg;
 
-  while ((name = queue.pop()) !== undefined) {
-    if (seen.has(name)) {
+  while ((pkg = queue.pop()) !== undefined) {
+    if (seen.has(pkg)) {
       continue;
     }
-    seen.add(name);
+    seen.add(pkg);
 
-    if (!name.startsWith('@glimmer/') && !name.startsWith('@simple-dom/')) {
+    if (!pkg.name.startsWith('@glimmer/') && !pkg.name.startsWith('@simple-dom/')) {
       continue;
     }
 
-    let pkg = findPackage(name);
+    let pkgModule = entrypoint(pkg, 'module');
 
-    if (pkg.module && existsSync(pkg.module.path)) {
+    if (pkgModule && existsSync(pkgModule.path)) {
       trees.push(rollupGlimmerPackage(pkg));
     }
 

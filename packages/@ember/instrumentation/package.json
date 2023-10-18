@@ -1,0 +1,20 @@
+{
+  "name": "@ember/instrumentation",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/validator": "0.84.3",
+    "internal-test-helpers": "workspace:*"
+  }
+}

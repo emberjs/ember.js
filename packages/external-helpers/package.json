@@ -1,0 +1,11 @@
+{
+  "name": "external-helpers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@glimmer/env": "^0.1.7"
+  }
+}

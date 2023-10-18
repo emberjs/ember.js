@@ -1,0 +1,31 @@
+{
+  "name": "@ember/debug",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./container-debug-adapter": "./container-debug-adapter.ts",
+    "./data-adapter": "./data-adapter.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/engine": "workspace:*",
+    "@ember/enumerable": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/owner": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/destroyable": "0.84.3",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.84.3",
+    "@glimmer/owner": "0.84.3",
+    "@glimmer/util": "0.84.3",
+    "@glimmer/validator": "0.84.3",
+    "backburner.js": "^2.7.0",
+    "expect-type": "^0.15.0",
+    "internal-test-helpers": "workspace:*"
+  }
+}

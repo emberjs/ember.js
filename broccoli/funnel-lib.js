@@ -12,5 +12,5 @@ module.exports = function funnelLib(name) {
     options = arguments[1];
   }
 
-  return new Funnel(findLib(name, libPath), options);
+  return new Funnel(findLib([name], libPath), options);
 };

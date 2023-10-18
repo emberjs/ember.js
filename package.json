@@ -37,7 +37,6 @@
     "build:types": "node types/publish.mjs",
     "build": "npm-run-all build:*",
     "docs": "ember ember-cli-yuidoc",
-    "link:glimmer": "node bin/yarn-link-glimmer.js",
     "start": "ember serve",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
     "lint:docs": "qunit tests/docs/coverage-test.js",
@@ -45,13 +44,13 @@
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
-    "test:blueprints:js": "EMBER_TYPESCRIPT_BLUEPRINTS=false yarn test:blueprints:ts",
+    "test:blueprints:js": "EMBER_TYPESCRIPT_BLUEPRINTS=false pnpm test:blueprints:ts",
     "test:blueprints:ts": "mocha node-tests/blueprints/**/*-test.js",
-    "test:blueprints": "yarn test:blueprints:js && yarn test:blueprints:ts",
+    "test:blueprints": "pnpm test:blueprints:js && pnpm test:blueprints:ts",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "type-check:internals": "tsc --noEmit",
-    "type-check:types": "yarn build:types && tsc --noEmit --project type-tests",
+    "type-check:types": "pnpm build:types && tsc --noEmit --project type-tests",
     "type-check": "npm-run-all type-check:*"
   },
   "dependencies": {
@@ -96,15 +95,21 @@
     "ember-cli-version-checker": "^5.1.2",
     "ember-router-generator": "^2.0.0",
     "inflection": "^2.0.1",
-    "resolve": "^1.22.2",
     "route-recognizer": "^0.3.4",
     "router_js": "^8.0.3",
     "semver": "^7.5.2",
-    "silent-error": "^1.1.1"
+    "silent-error": "^1.1.1",
+    "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.321.1",
+    "@babel/core": "^7.22.9",
+    "@babel/plugin-proposal-decorators": "^7.22.7",
+    "@babel/plugin-transform-typescript": "^7.22.9",
     "@babel/preset-env": "^7.16.11",
+    "@babel/types": "^7.22.5",
+    "@embroider/shared-internals": "^2.5.0",
+    "@rollup/plugin-babel": "^6.0.3",
     "@simple-dom/document": "^1.4.0",
     "@tsconfig/ember": "^2.0.0",
     "@types/node": "^18.11.11",
@@ -115,6 +120,7 @@
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
     "aws-sdk": "^2.1388.0",
+    "babel-plugin-ember-template-compilation": "^2.1.1",
     "babel-template": "^6.26.0",
     "broccoli-babel-transpiler": "^7.8.1",
     "broccoli-persistent-filter": "^2.3.1",
@@ -162,7 +168,8 @@
     "simple-dom": "^1.4.0",
     "testem": "^3.10.1",
     "testem-failure-only-reporter": "^1.0.0",
-    "typescript": "5.1"
+    "typescript": "5.1",
+    "vite": "^4.4.7"
   },
   "resolutions": {
     "socket.io": "^4.7.0"
@@ -188,6 +195,6 @@
   },
   "volta": {
     "node": "16.20.0",
-    "yarn": "1.22.19"
+    "pnpm": "8.7.6"
   }
 }

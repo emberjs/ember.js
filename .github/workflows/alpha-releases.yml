@@ -10,21 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-          cache: yarn
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build
+        run: pnpm ember build
       - name: test
         env:
           TEST_SUITE: each-package
-        run: yarn test
+        run: pnpm test
 
   release:
     name: Tag + Release
@@ -32,13 +27,7 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-          cache: yarn
-          registry-url: 'https://registry.npmjs.org'
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: ./.github/actions/setup
       - name: setup git
         run: |
           git config --local user.email 'tomster@emberjs.com'
