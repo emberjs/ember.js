@@ -13,6 +13,7 @@ runs:
       with:
         node-version: 16
         registry-url: 'https://registry.npmjs.org'
+        cache: pnpm
 
     - uses: pnpm/action-setup@v2
       name: Install pnpm
@@ -20,21 +21,8 @@ runs:
         version: 8
         run_install: false
 
-    - name: Get pnpm store directory
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
     - uses: actions/cache@v3
-      name: Setup pnpm cache
-      with:
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-pnpm-store2-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-store2-
-
-    - uses: actions/cache@v3
-      name: Setup pnpm cache for puppeteer
+      name: Setup cache for puppeteer
       with:
         # See .puppeteerrc.cjs, where we set this as the place puppeteer
         # installs the browser. It needs to be cached the same as our pnpm
