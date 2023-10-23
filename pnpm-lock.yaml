@@ -1143,10 +1143,10 @@ importers:
   packages/@glimmer/wire-format:
     dependencies:
       '@glimmer/interfaces':
-        specifier: 0.84.3
+        specifier: workspace:^
         version: link:../interfaces
       '@glimmer/util':
-        specifier: 0.84.3
+        specifier: workspace:^
         version: link:../util
     devDependencies:
       '@glimmer-workspace/build-support':
