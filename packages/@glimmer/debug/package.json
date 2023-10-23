@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/debug",
-  "version": "0.85.1",
+  "version": "0.85.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/debug",
   "main": "index.ts",
   "types": "index.ts",
