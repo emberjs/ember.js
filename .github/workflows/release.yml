@@ -1,6 +1,12 @@
 name: Release
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: true
+        type: string
+        description: 'Which tag do we want to retry? this should begin with v, and match exactly one of the tags present on the repo'
   push:
     tags:
       - 'v*'
@@ -12,6 +18,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.events.inputs.tag || github.ref }}
       - uses: wyvox/action-setup-pnpm@v3
         with:
           node-registry-url: "https://registry.npmjs.org"
