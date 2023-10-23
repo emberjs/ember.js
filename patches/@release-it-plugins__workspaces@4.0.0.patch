@@ -1,0 +1,20 @@
+diff --git a/index.js b/index.js
+index e6bbba3081bc7327a1017425f41830dcc0342fa3..6b84982c9c675ed0a54ff34b4ac148216160d48b 100644
+--- a/index.js
++++ b/index.js
+@@ -331,6 +331,15 @@ export default class WorkspacesPlugin extends Plugin {
+         for (let dependency in dependencies) {
+           if (workspaces.find((w) => w.name === dependency)) {
+             const existingVersion = dependencies[dependency];
++
++           /**
++             * If pnpm is being used, the Workspace protocol may also be used
++             * https://pnpm.io/workspaces#workspace-protocol-workspace
++             * if it is, these version references are handled on publish
++             * by `pnpm publish`.
++             */
++            if (existingVersion.startsWith('workspace:')) continue;
++
+             const replacementVersion = this._buildReplacementDepencencyVersion(
+               existingVersion,
+               newVersion

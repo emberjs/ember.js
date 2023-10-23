@@ -44,6 +44,9 @@
         "@rollup/pluginutils": "5",
         "rollup": "3"
       }
+    },
+    "patchedDependencies": {
+      "@release-it-plugins/workspaces@4.0.0": "patches/@release-it-plugins__workspaces@4.0.0.patch"
     }
   },
   "devDependencies": {
@@ -120,7 +123,9 @@
     "plugins": {
       "@release-it-plugins/workspaces": {
         "publish": false,
-        "workspaces": ["packages/@glimmer/*"],
+        "workspaces": [
+          "packages/@glimmer/*"
+        ],
         "additionalManifests": {
           "dependencyUpdates": []
         }
