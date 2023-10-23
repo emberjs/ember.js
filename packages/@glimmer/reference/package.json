@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/reference",
-  "version": "0.85.1",
+  "version": "0.85.2",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "license": "MIT",
   "repository": {

@@ -1,5 +1,14 @@
 
 
+
+## 0.85.2 (2023-10-23)
+
+#### :house: Internal
+* [#1451](https://github.com/glimmerjs/glimmer-vm/pull/1451) Allow publishing from tags / non-branches ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## 0.85.1 (2023-10-23)
 
 #### :house: Internal
