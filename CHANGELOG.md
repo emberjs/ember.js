@@ -1,4 +1,14 @@
 
+
+## 0.85.1 (2023-10-23)
+
+#### :house: Internal
+* `@glimmer/wire-format`
+  * [#1450](https://github.com/glimmerjs/glimmer-vm/pull/1450) Use workspace protocol everywhere so release-it doesn't cause a diff,… ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## 0.85.0 (2023-10-23)
 
 #### :rocket: Enhancement
