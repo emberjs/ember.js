@@ -1,3 +1,37 @@
+
+## 0.85.0 (2023-10-23)
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/validator`, `@glimmer/vm`
+  * [#1421](https://github.com/glimmerjs/glimmer-vm/pull/1421) Improve lexical scope ([@wycats](https://github.com/wycats))
+* `@glimmer/syntax`
+  * [#1420](https://github.com/glimmerjs/glimmer-vm/pull/1420) [syntax] Remove v2-b and rename v2-a to v2 ([@wycats](https://github.com/wycats))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1412](https://github.com/glimmerjs/glimmer-vm/pull/1412) Fix another issue with getTemplateLocals and block params ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* Other
+  * [#1444](https://github.com/glimmerjs/glimmer-vm/pull/1444) Add release workflow ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1437](https://github.com/glimmerjs/glimmer-vm/pull/1437) GH Actions: Move to wyvox and off branch ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1415](https://github.com/glimmerjs/glimmer-vm/pull/1415) Try upgrading ember-cli-browserstack ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/build`, `@glimmer-workspace/eslint-plugin`, `@glimmer-workspace/integration-tests`, `@glimmer-workspace/test-utils`, `@glimmer`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/test-utils`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`, `@types`, `@types/qunit`, `build-utils`
+  * [#1427](https://github.com/glimmerjs/glimmer-vm/pull/1427) Restore performance tests ([@wycats](https://github.com/wycats))
+* `@glimmer`, `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@types`, `@types/puppeteer-chromium-resolver`, `@types/qunit`, `build-utils`
+  * [#1426](https://github.com/glimmerjs/glimmer-vm/pull/1426) Follow-up migrate to vite (restore type tests) ([@wycats](https://github.com/wycats))
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/test-utils`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@glimmer/wire-format`, `@types/js-reporters`, `@types/qunit`
+  * [#1423](https://github.com/glimmerjs/glimmer-vm/pull/1423) Migrate to Vite ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/debug`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/validator`
+  * [#1419](https://github.com/glimmerjs/glimmer-vm/pull/1419) Continue updating infrastructure ([@wycats](https://github.com/wycats))
+* `@glimmer/benchmark-env`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1418](https://github.com/glimmerjs/glimmer-vm/pull/1418) Modernize Infrastructure ([@wycats](https://github.com/wycats))
+
+#### Committers: 3
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- Yehuda Katz ([@wycats](https://github.com/wycats))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.84.3 (2023-03-23)
 
 #### :bug: Bug Fix
