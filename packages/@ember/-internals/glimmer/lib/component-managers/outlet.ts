@@ -8,11 +8,11 @@ import type {
   CapturedArguments,
   CompilableProgram,
   ComponentDefinition,
+  CapabilityMask,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
-  InternalComponentCapability,
   Template,
   VMArguments,
   WithCreateInstance,
@@ -70,8 +70,8 @@ const CAPABILITIES: InternalComponentCapabilities = {
 
 class OutletComponentManager
   implements
-  WithCreateInstance<OutletInstanceState>,
-  WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
+    WithCreateInstance<OutletInstanceState>,
+    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
 {
   create(
     _owner: InternalOwner,
@@ -170,14 +170,14 @@ class OutletComponentManager
     return self;
   }
 
-  didCreate() { }
-  didUpdate() { }
+  didCreate() {}
+  didUpdate() {}
 
   didRenderLayout(state: OutletInstanceState): void {
     state.finalize();
   }
 
-  didUpdateLayout() { }
+  didUpdateLayout() {}
 
   getDestroyable(): Option<Destroyable> {
     return null;
@@ -188,14 +188,14 @@ const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
   implements
-  ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
+    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
 {
   // handle is not used by this custom definition
   public handle = -1;
 
   public resolvedName: string;
   public compilable: CompilableProgram;
-  public capabilities: InternalComponentCapability;
+  public capabilities: CapabilityMask;
 
   constructor(
     public state: OutletDefinitionState,
