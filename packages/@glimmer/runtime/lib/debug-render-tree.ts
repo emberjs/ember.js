@@ -7,7 +7,7 @@ import type {
 } from "@glimmer/interfaces";
 import { assign, expect, Stack } from '@glimmer/util';
 
-import { reifyArgs } from './vm/arguments';
+import { reifyArgsDebug } from './vm/arguments';
 
 interface InternalRenderNode<T extends object> extends RenderNode {
   bounds: Nullable<Bounds>;
@@ -181,7 +181,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
     let template = this.captureTemplate(node);
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { id, type, name, args: reifyArgs(args), instance, template, bounds, children };
+    return { id, type, name, args: reifyArgsDebug(args), instance, template, bounds, children };
   }
 
   private captureTemplate({ template }: InternalRenderNode<TBucket>): Nullable<string> {
