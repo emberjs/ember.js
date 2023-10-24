@@ -138,29 +138,19 @@ class DebugRenderTreeTest extends RenderTest {
 
   @test 'emberish curly components'() {
     this.registerComponent('Curly', 'HelloWorld', 'Hello World');
-    let error: Error|null = null;
-    const obj = {
-      get getterWithError() {
-        error = new Error('error');
-        throw error;
-      }
-    }
 
     this.render(
-      `<HelloWorld @arg="first" @arg2={{this.obj.getterWithError}}/>{{#if this.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
+      `<HelloWorld @arg="first"/>{{#if this.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
       {
         showSecond: false,
-        obj,
       }
     );
-
-    this.assert.ok(error !== null, 'expecting an Error');
 
     this.assertRenderTree([
       {
         type: 'component',
         name: 'HelloWorld',
-        args: { positional: [], named: { arg: 'first', arg2: error } },
+        args: { positional: [], named: { arg: 'first' } },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
@@ -174,7 +164,7 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'component',
         name: 'HelloWorld',
-        args: { positional: [], named: { arg: 'first', arg2: error } },
+        args: { positional: [], named: { arg: 'first' } },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),
@@ -197,7 +187,7 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'component',
         name: 'HelloWorld',
-        args: { positional: [], named: { arg: 'first', arg2: error } },
+        args: { positional: [], named: { arg: 'first' } },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',
         template: '(unknown template module)',
         bounds: this.nodeBounds(this.element.firstChild),

@@ -483,24 +483,14 @@ export function reifyNamed(named: CapturedNamedArguments) {
   let reified = dict();
 
   for (const [key, value] of Object.entries(named)) {
-    try {
-      reified[key] = valueForRef(value);
-    } catch(e) {
-      reified[key] = e;
-    }
+    reified[key] = valueForRef(value);
   }
 
   return reified;
 }
 
 export function reifyPositional(positional: CapturedPositionalArguments) {
-  return positional.map((p) => {
-    try {
-      return valueForRef(p);
-    } catch(e) {
-      return e;
-    }
-  });
+  return positional.map(valueForRef);
 }
 
 export function reifyArgs(args: CapturedArguments) {
