@@ -40,4 +40,4 @@ jobs:
           npm whoami --registry=https://registry.npmjs.org/
           pnpm -r publish --access public --no-git-checks
         env:
-          NODE_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
