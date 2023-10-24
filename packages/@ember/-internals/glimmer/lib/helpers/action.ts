@@ -10,10 +10,9 @@ import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import { _WeakSet } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 
-export const ACTIONS = new _WeakSet();
+export const ACTIONS = new WeakSet();
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually

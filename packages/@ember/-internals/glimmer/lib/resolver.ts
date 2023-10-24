@@ -30,7 +30,6 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime';
-import { _WeakSet } from '@glimmer/util';
 import { isCurlyManager } from './component-managers/curly';
 import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
@@ -73,17 +72,17 @@ function layoutFor(
 
 type LookupResult =
   | {
-    component: InternalFactory<object>;
-    layout: TemplateFactory;
-  }
+      component: InternalFactory<object>;
+      layout: TemplateFactory;
+    }
   | {
-    component: InternalFactory<object>;
-    layout: null;
-  }
+      component: InternalFactory<object>;
+      layout: null;
+    }
   | {
-    component: null;
-    layout: TemplateFactory;
-  };
+      component: null;
+      layout: TemplateFactory;
+    };
 
 function lookupComponentPair(
   owner: InternalOwner,
@@ -157,7 +156,7 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
   on,
 };
 
-const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
+const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
 
 export default class ResolverImpl
   implements RuntimeResolver<InternalOwner>, CompileTimeResolver<InternalOwner>
