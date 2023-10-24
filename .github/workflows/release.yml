@@ -36,6 +36,8 @@ jobs:
       #
       # > It will skip the private packages, presumably?
       # yes
-      - run: pnpm -r publish --access public --no-git-checks
+      - run: |
+          npm whoami --registry=https://registry.npmjs.org/
+          pnpm -r publish --access public --no-git-checks
         env:
           NODE_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
