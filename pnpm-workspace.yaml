@@ -1,0 +1,7 @@
+packages:
+  - '.'
+  - './packages/*'
+  - './packages/@ember/*'
+  - './packages/@glimmer/tracking'
+  - './smoke-tests/ember-test-app'
+
