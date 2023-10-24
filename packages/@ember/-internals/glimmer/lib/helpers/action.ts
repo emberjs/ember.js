@@ -298,8 +298,13 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
   } else {
     fn = makeDynamicClosureAction(
       valueForRef(context) as object,
-      target!,
-      action,
+      // SAFETY: glimmer-vm should expose narrowing utilities for references
+      //         as is, `target` is still `Reference<unknown>`.
+      //         however, we never even tried to narrow `target`, so this is potentially risky code.
+      target! as Reference<MaybeActionHandler>,
+      // SAFETY: glimmer-vm should expose narrowing utilities for references
+      //         as is, `action` is still `Reference<unknown>`
+      action as Reference<string | AnyFn>,
       processArgs,
       debugKey
     );
@@ -307,7 +312,9 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
 
   ACTIONS.add(fn);
 
-  return createUnboundRef(fn, '(result of an `action` helper)');
+  // SAFETY: glimmer-vm should change the signature of createUnboundRef to use a generic
+  //         so that the type param to `Reference<?>` can infer from the first argument.
+  return createUnboundRef(fn, '(result of an `action` helper)') as Reference<Function>;
 });
 
 function NOOP(args: unknown[]) {

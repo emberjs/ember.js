@@ -30,7 +30,12 @@ import { createConstRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper((): Reference<string> => {
-  return createConstRef(uniqueId(), 'unique-id');
+  // SAFETY: glimmer-vm should change the signature of createUnboundRef to use a generic
+  //         so that the type param to `Reference<?>` can infer from the first argument.
+  //
+  //         However, since ember-source@4.5, we can use functions explicitly,
+  //         so we should investigate if we even need this "internalHelper" wrapper.
+  return createConstRef(uniqueId(), 'unique-id') as Reference<string>;
 });
 
 // From https://gist.github.com/selfish/fef2c0ba6cdfe07af76e64cecd74888b
