@@ -36,8 +36,15 @@ jobs:
       #
       # > It will skip the private packages, presumably?
       # yes
+      #
+      # > --force
+      #   Packages are proceeded to be published even if their current version is already in the
+      #   registry.
+      #
+      # > --no-git-checks
+      #   we publish from tags, and default behavior is to only allow publishing on main/master
       - run: |
           npm whoami --registry=https://registry.npmjs.org/
-          pnpm -r publish --access public --no-git-checks
+          pnpm -r publish --access public --no-git-checks --force
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
