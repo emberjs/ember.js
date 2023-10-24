@@ -1,7 +1,7 @@
 {
   "private": true,
   "dependencies": {
-    "@types/qunit": "workspace:^",
+    "@types/qunit": "^2.19.7",
     "vite": "^4.3.9"
   }
 }

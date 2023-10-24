@@ -7,6 +7,7 @@ export async function setupQunit() {
   await import('qunit/qunit/qunit.css');
 
   const runner = autoRegister();
+  // @ts-expect-error qunit types don't expose "reporters"
   const tap = qunit.reporters.tap;
   tap.init(runner, { log: console.info });
 
