@@ -9,7 +9,7 @@ import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime';
-import { setTrackingTransactionEnv } from '@glimmer/validator';
+import { debug } from '@glimmer/validator';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
@@ -92,7 +92,7 @@ setGlobalContext({
 });
 
 if (DEBUG) {
-  setTrackingTransactionEnv?.({
+  debug?.setTrackingTransactionEnv?.({
     debugMessage(obj, keyName) {
       let dirtyString = keyName
         ? `\`${keyName}\` on \`${getDebugName?.(obj)}\``
