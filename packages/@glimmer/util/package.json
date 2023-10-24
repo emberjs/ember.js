@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "workspace:^",
-    "@types/qunit": "workspace:^",
+    "@types/qunit": "^2.19.7",
     "@glimmer-workspace/build-support": "workspace:^"
   },
   "main": "index.ts",

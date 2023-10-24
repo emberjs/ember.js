@@ -34,7 +34,7 @@
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer/opcode-compiler": "workspace:^",
     "@glimmer/debug": "workspace:^",
-    "@types/qunit": "workspace:^",
+    "@types/qunit": "^2.19.7",
     "@glimmer-workspace/build-support": "workspace:^"
   },
   "scripts": {
