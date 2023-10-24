@@ -13,13 +13,13 @@ import type {
   Environment,
   InternalComponentCapabilities,
   InternalComponentCapability,
-  Option,
   Template,
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
@@ -70,8 +70,8 @@ const CAPABILITIES: InternalComponentCapabilities = {
 
 class OutletComponentManager
   implements
-    WithCreateInstance<OutletInstanceState>,
-    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
+  WithCreateInstance<OutletInstanceState>,
+  WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
 {
   create(
     _owner: InternalOwner,
@@ -170,14 +170,14 @@ class OutletComponentManager
     return self;
   }
 
-  didCreate() {}
-  didUpdate() {}
+  didCreate() { }
+  didUpdate() { }
 
   didRenderLayout(state: OutletInstanceState): void {
     state.finalize();
   }
 
-  didUpdateLayout() {}
+  didUpdateLayout() { }
 
   getDestroyable(): Option<Destroyable> {
     return null;
@@ -188,7 +188,7 @@ const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
   implements
-    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
+  ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
 {
   // handle is not used by this custom definition
   public handle = -1;

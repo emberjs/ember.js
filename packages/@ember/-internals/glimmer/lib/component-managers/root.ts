@@ -6,10 +6,10 @@ import type {
   ComponentDefinition,
   Environment,
   InternalComponentCapabilities,
-  Option,
   Owner,
   VMArguments,
 } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import type Component from '../component';

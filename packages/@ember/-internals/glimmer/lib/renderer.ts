@@ -16,13 +16,13 @@ import type {
   DynamicScope as GlimmerDynamicScope,
   ElementBuilder,
   Environment,
-  Option,
   RenderResult,
   RuntimeContext,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
 import { CurriedType } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts } from '@glimmer/program';
 import type { Reference } from '@glimmer/reference';
@@ -64,7 +64,7 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
-  constructor(public view: View | null, public outletState: Reference<OutletState | undefined>) {}
+  constructor(public view: View | null, public outletState: Reference<OutletState | undefined>) { }
 
   child() {
     return new DynamicScope(this.view, this.outletState);
@@ -88,7 +88,7 @@ export class DynamicScope implements GlimmerDynamicScope {
   }
 }
 
-const NO_OP = () => {};
+const NO_OP = () => { };
 
 // This wrapper logic prevents us from rerendering in case of a hard failure
 // during render. This prevents infinite revalidation type loops from occuring,

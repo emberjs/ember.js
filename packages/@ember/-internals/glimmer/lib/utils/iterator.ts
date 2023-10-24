@@ -2,7 +2,7 @@ import { objectAt } from '@ember/-internals/metal';
 import type EmberArray from '@ember/array';
 import { isEmberArray } from '@ember/array/-internals';
 import { isObject } from '@ember/-internals/utils';
-import type { Option } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
@@ -53,7 +53,7 @@ function toEachIterator(iterable: unknown) {
 abstract class BoundedIterator implements IteratorDelegate {
   private position = 0;
 
-  constructor(private length: number) {}
+  constructor(private length: number) { }
 
   isEmpty(): false {
     return false;
@@ -151,7 +151,7 @@ class ObjectIterator extends BoundedIterator {
     let isMapLike = false;
 
     // Not using an arrow function here so we can get an accurate `arguments`
-    obj.forEach(function (value: unknown, key: unknown) {
+    obj.forEach(function(value: unknown, key: unknown) {
       isMapLike = isMapLike || arguments.length >= 2;
 
       if (isMapLike) {
@@ -185,7 +185,7 @@ class ObjectIterator extends BoundedIterator {
 }
 
 interface NativeIteratorConstructor<T = unknown> {
-  new (iterable: Iterator<T>, result: IteratorResult<T>): NativeIterator<T>;
+  new(iterable: Iterator<T>, result: IteratorResult<T>): NativeIterator<T>;
 }
 
 abstract class NativeIterator<T = unknown> implements IteratorDelegate {
@@ -203,7 +203,7 @@ abstract class NativeIterator<T = unknown> implements IteratorDelegate {
 
   private position = 0;
 
-  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>) {}
+  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>) { }
 
   isEmpty(): false {
     return false;

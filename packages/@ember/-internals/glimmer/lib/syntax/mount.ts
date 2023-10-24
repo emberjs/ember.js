@@ -4,7 +4,8 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, Option } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
+import type { CapturedArguments } from '@glimmer/interfaces';
 import { CurriedType } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
@@ -70,8 +71,8 @@ export const mountHelper = internalHelper(
 
       assert(
         'You can only pass a `model` argument to the {{mount}} helper, ' +
-          'e.g. {{mount "profile-engine" model=this.profile}}. ' +
-          `You passed ${extra.join(',')}.`,
+        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
+        `You passed ${extra.join(',')}.`,
         extra.length === 0
       );
     }

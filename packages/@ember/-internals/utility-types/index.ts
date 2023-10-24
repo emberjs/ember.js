@@ -7,9 +7,9 @@ export type MethodsOf<T> = {
   // This `keyof` check is the thing which gives us *only* these keys, and no
   // `foo: never` appears in the final type.
   [K in keyof T as T[K] extends AnyFn ? K : never]:
-    // While this makes sure the resolved type only has `AnyFn` in it, so that
-    // the resulting type is known to be only function types.
-    T[K] extends AnyFn ? T[K] : never;
+  // While this makes sure the resolved type only has `AnyFn` in it, so that
+  // the resulting type is known to be only function types.
+  T[K] extends AnyFn ? T[K] : never;
 };
 
 export type MethodNamesOf<T> = keyof MethodsOf<T>;
@@ -28,3 +28,5 @@ declare const Data: unique symbol;
 export class Opaque<Data> {
   private declare [Data]: Data;
 }
+
+export type Option<T> = T | null;

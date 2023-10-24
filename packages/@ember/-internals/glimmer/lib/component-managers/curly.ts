@@ -6,6 +6,7 @@ import {
 } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
+import type { Option } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -17,7 +18,6 @@ import type {
   ElementOperations,
   Environment,
   InternalComponentCapabilities,
-  Option,
   PreparedArguments,
   TemplateFactory,
   VMArguments,
@@ -121,9 +121,9 @@ type ComponentFactory = InternalFactory<
 
 export default class CurlyComponentManager
   implements
-    WithCreateInstance<ComponentStateBucket>,
-    WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
-    WithDynamicTagName<ComponentStateBucket>
+  WithCreateInstance<ComponentStateBucket>,
+  WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
+  WithDynamicTagName<ComponentStateBucket>
 {
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
@@ -504,22 +504,22 @@ export function processComponentInitializationAssertions(component: Component, p
   assert(
     `You cannot use \`classNameBindings\` on a tag-less component: ${component}`,
     component.tagName !== '' ||
-      !component.classNameBindings ||
-      component.classNameBindings.length === 0
+    !component.classNameBindings ||
+    component.classNameBindings.length === 0
   );
 
   assert(
     `You cannot use \`elementId\` on a tag-less component: ${component}`,
     component.tagName !== '' ||
-      props.id === component.elementId ||
-      (!component.elementId && component.elementId !== '')
+    props.id === component.elementId ||
+    (!component.elementId && component.elementId !== '')
   );
 
   assert(
     `You cannot use \`attributeBindings\` on a tag-less component: ${component}`,
     component.tagName !== '' ||
-      !component.attributeBindings ||
-      component.attributeBindings.length === 0
+    !component.attributeBindings ||
+    component.attributeBindings.length === 0
   );
 }
 

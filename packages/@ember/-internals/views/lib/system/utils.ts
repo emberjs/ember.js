@@ -3,7 +3,9 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import type { Dict, Option } from '@glimmer/interfaces';
+import type { Dict } from '@glimmer/interfaces';
+
+import type { Option } from '@ember/-internals/utility-types';
 
 /**
 @module ember

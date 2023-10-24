@@ -9,12 +9,12 @@ import type {
   CompileTimeResolver,
   HelperDefinitionState,
   ModifierDefinitionState,
-  Option,
   ResolvedComponentDefinition,
   RuntimeResolver,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import {
   getComponentTemplate,
   getInternalComponentManager,
@@ -73,17 +73,17 @@ function layoutFor(
 
 type LookupResult =
   | {
-      component: InternalFactory<object>;
-      layout: TemplateFactory;
-    }
+    component: InternalFactory<object>;
+    layout: TemplateFactory;
+  }
   | {
-      component: InternalFactory<object>;
-      layout: null;
-    }
+    component: InternalFactory<object>;
+    layout: null;
+  }
   | {
-      component: null;
-      layout: TemplateFactory;
-    };
+    component: null;
+    layout: TemplateFactory;
+  };
 
 function lookupComponentPair(
   owner: InternalOwner,

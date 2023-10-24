@@ -1,6 +1,6 @@
 import type { InternalFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import type { Option } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import type { MatchCallback } from 'route-recognizer';
 import type { EngineInfo, EngineRouteInfo } from './engines';
 

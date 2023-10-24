@@ -1,5 +1,5 @@
 import { precompile } from '@glimmer/compiler';
-import type { Option } from '@glimmer/interfaces';
+import type { Option } from '@ember/-internals/utility-types';
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
