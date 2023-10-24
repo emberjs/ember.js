@@ -1,6 +1,20 @@
 
 
 
+
+## 0.85.3 (2023-10-24)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/integration-tests`, `@glimmer/runtime`
+  * [#1459](https://github.com/glimmerjs/glimmer-vm/pull/1459) Revert "fix: capture render tree can fail if args cannot be obtained" ([@patricklx](https://github.com/patricklx))
+
+#### :house: Internal
+* [#1452](https://github.com/glimmerjs/glimmer-vm/pull/1452) rename local token in release workflow ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## 0.85.2 (2023-10-23)
 
 #### :house: Internal
