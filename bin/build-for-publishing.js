@@ -64,7 +64,7 @@ Promise.resolve()
   })
   .then(() => {
     // generate docs
-    return exec('pnpm', ['docs']).then(() => {
+    return exec('pnpm', ['run', 'docs']).then(() => {
       updateDocumentationVersion();
     });
   })
