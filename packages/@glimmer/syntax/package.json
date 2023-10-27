@@ -1,5 +1,6 @@
 {
   "name": "@glimmer/syntax",
+  "type": "module",
   "version": "0.85.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/syntax",
   "dependencies": {
