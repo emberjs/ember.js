@@ -30,6 +30,7 @@
     }
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^"
+    "@glimmer-workspace/build-support": "workspace:^",
+    "rollup": "^3.21.6"
   }
 }

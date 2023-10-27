@@ -11,6 +11,7 @@
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
+    "rollup": "^3.21.6",
     "@glimmer/local-debug-flags": "workspace:^",
     "@types/qunit": "^2.19.7",
     "@glimmer-workspace/build-support": "workspace:^"
