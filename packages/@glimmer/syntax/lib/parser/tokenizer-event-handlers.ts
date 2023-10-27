@@ -106,7 +106,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         );
       }
 
-      if (voidMap[tag.name] || tag.selfClosing) {
+      if (voidMap.get(tag.name) || tag.selfClosing) {
         this.finishEndTag(true);
       }
     } else if (tag.type === 'EndTag') {
@@ -263,7 +263,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     element: ASTv1.ElementNode,
     selfClosing: boolean
   ): void {
-    if (voidMap[tag.name] && !selfClosing) {
+    if (voidMap.get(tag.name) && !selfClosing) {
       // EngTag is also called by StartTag for void and self-closing tags (i.e.
       // <input> or <br />, so we need to check for that here. Otherwise, we would
       // throw an error for those cases.
@@ -299,8 +299,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         } else {
           throw generateSyntaxError(
             `An unquoted attribute value must be a string or a mustache, ` +
-              `preceded by whitespace or a '=' character, and ` +
-              `followed by whitespace, a '>' character, or '/>'`,
+            `preceded by whitespace or a '=' character, and ` +
+            `followed by whitespace, a '>' character, or '/>'`,
             span
           );
         }
