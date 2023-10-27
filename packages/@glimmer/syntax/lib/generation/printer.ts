@@ -1,17 +1,28 @@
 import type * as ASTv1 from '../v1/api';
 import { escapeAttrValue, escapeText, sortByLoc } from './util';
 
-/**
-  * Not for future observers,
-  * Object access for small objects is significantly faster than using Set.has
-  * And Map access is even faster than Object.
-  */
-export const voidMap = new Map<string, boolean>();
-export const voidTagNames = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+export const voidMap = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'command',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'keygen',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
 
-voidTagNames.forEach((tagName) => {
-  voidMap.set(tagName, true);
-});
+export function getVoidTags() {
+  return [...voidMap.keys()];
+}
 
 const NON_WHITESPACE = /^\S/u;
 
@@ -43,7 +54,7 @@ export interface PrinterOptions {
  * Examples when false:
  *  - Link (component)
  */
-function isVoidTag(tag: string): boolean {
+export function isVoidTag(tag: string): boolean {
   return !!(voidMap.has(tag.toLowerCase()) && tag[0]?.toLowerCase() === tag[0]);
 }
 
