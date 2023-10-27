@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 overrides:
   typescript: ^5.0.4
   '@rollup/pluginutils': ^5.0.2
@@ -33,8 +37,8 @@ importers:
         specifier: ^7.21.5
         version: 7.21.5
       '@babel/traverse':
-        specifier: ^7.21.5
-        version: 7.21.5
+        specifier: ^7.23.2
+        version: 7.23.2
       '@babel/types':
         specifier: ^7.21.5
         version: 7.21.5
@@ -2277,24 +2281,6 @@ packages:
       '@babel/parser': 7.23.0
       '@babel/types': 7.23.0
 
-  /@babel/traverse@7.21.5:
-    resolution: {integrity: sha512-AhQoI3YjWi6u/y/ntv7k48mcrCXmus0t79J9qPNlk/lAsFlCiJ047RmbfMOawySTHtywXhbXgpx/8nXMYd+oFw==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      '@babel/code-frame': 7.22.13
-      '@babel/generator': 7.23.0
-      '@babel/helper-environment-visitor': 7.22.20
-      '@babel/helper-function-name': 7.23.0
-      '@babel/helper-hoist-variables': 7.22.5
-      '@babel/helper-split-export-declaration': 7.22.6
-      '@babel/parser': 7.23.0
-      '@babel/types': 7.23.0
-      debug: 4.3.4(supports-color@8.1.1)
-      globals: 11.12.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
   /@babel/traverse@7.23.2:
     resolution: {integrity: sha512-azpe59SQ48qG6nu2CzcMLbxUudtN+dOM9kDbUqGq3HXUJRlo7i8fvPoxQUzYgLZ4cMVmuZgm8vvBpNeRhd6XSw==}
     engines: {node: '>=6.9.0'}
@@ -2887,7 +2873,7 @@ packages:
     engines: {node: '>=16.0.0'}
     hasBin: true
     peerDependencies:
-      typescript: '>= 4.7.4 || 5'
+      typescript: ^5.0.4 || 5
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -5244,7 +5230,7 @@ packages:
     resolution: {integrity: sha512-fvO+AWcmbO7P1S+A3mwm3IGr74eHMeq5ZLhNhyNQc9mVDNHT4oe0Gg0ksdIFFNXLK7k7Z/TYcLAUSQdRgh1bsA==}
     engines: {node: '>=14.9.0'}
     peerDependencies:
-      typescript: '>=3.x || >= 4.x || 5'
+      typescript: ^5.0.4 || 5
     dependencies:
       helpertypes: 0.0.19
       typescript: 5.0.4
@@ -5612,7 +5598,7 @@ packages:
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: '>=4.9.5 || 5'
+      typescript: ^5.0.4 || 5
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -6624,7 +6610,7 @@ packages:
       '@typescript-eslint/eslint-plugin': '>=5.57.0'
       '@typescript-eslint/parser': '>=5.57.0'
       eslint: '>=8.0.0'
-      typescript: '>=4.4 || 5'
+      typescript: ^5.0.4 || 5
     dependencies:
       '@typescript-eslint/eslint-plugin': 5.59.5(@typescript-eslint/parser@5.59.5)(eslint@8.40.0)(typescript@5.0.4)
       '@typescript-eslint/parser': 5.59.5(eslint@8.40.0)(typescript@5.0.4)
@@ -8500,6 +8486,7 @@ packages:
   /iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
+    requiresBuild: true
     dependencies:
       safer-buffer: 2.1.2
     dev: true
@@ -11889,7 +11876,7 @@ packages:
     resolution: {integrity: sha512-S1BLte+jVC/ugZkNoxFW9Fvbyr30CKZ0IIumf98FFqLh06Vuc21fddsr34botKtz27T81pqkpDYXNXYomA01dg==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
-      typescript: '>= 4.7.4 || 5'
+      typescript: ^5.0.4 || 5
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -12484,7 +12471,7 @@ packages:
     resolution: {integrity: sha512-paFu+nT1xvuO1tPFYXGe+XnQvg4Hjqv/eIhG8i5EspfYYPBKL57X7iVbfv55aNVASg3dzWvES9dmWsL2KhfByw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
-      '@types/node': '>=10.0.0'
+      '@types/node': ^18.16.6
       rollup: '>=0.31.2 || 3'
     peerDependenciesMeta:
       '@types/node':
@@ -12508,7 +12495,7 @@ packages:
       '@swc/core': '>=1.x'
       '@swc/helpers': '>=0.2'
       rollup: '>=1.x || >=2.x || 3'
-      typescript: '>=3.2.x || >= 4.x || 5'
+      typescript: ^5.0.4 || 5
     peerDependenciesMeta:
       '@babel/core':
         optional: true
@@ -13875,7 +13862,7 @@ packages:
     resolution: {integrity: sha512-eG6FAgmQsenhIJOIFhUcO6yyYejBKZIKcI3y21jiQmIOrth5pD6GElyPAyeihbPSyBs3u/9PVNXy+5I7jGy8jA==}
     engines: {node: '>=14.9.0'}
     peerDependencies:
-      typescript: ^3.x || ^4.x || 5
+      typescript: ^5.0.4 || 5
     dependencies:
       compatfactory: 2.0.9(typescript@5.0.4)
       typescript: 5.0.4
@@ -13887,8 +13874,8 @@ packages:
     peerDependencies:
       '@swc/core': '>=1.2.50'
       '@swc/wasm': '>=1.2.50'
-      '@types/node': '*'
-      typescript: '>=2.7 || 5'
+      '@types/node': ^18.16.6
+      typescript: ^5.0.4 || 5
     peerDependenciesMeta:
       '@swc/core':
         optional: true
@@ -13929,7 +13916,7 @@ packages:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
     engines: {node: '>= 6'}
     peerDependencies:
-      typescript: '>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta || 5'
+      typescript: ^5.0.4 || 5
     dependencies:
       tslib: 1.14.1
       typescript: 5.0.4
@@ -14055,7 +14042,7 @@ packages:
     resolution: {integrity: sha512-hmAPf1datm+gt3c2mvu0sJyhFy6lTkIGf0GzyaZWxRLnabQfPUqg6tF95RPg6sLxKI7nFLGdFxBcf2/7+GXI+A==}
     engines: {node: '>=14.16'}
     peerDependencies:
-      typescript: '>=4.7.0 || 5'
+      typescript: ^5.0.4 || 5
     dependencies:
       typescript: 5.0.4
     dev: true
@@ -14425,7 +14412,7 @@ packages:
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
-      '@types/node': '>= 14'
+      '@types/node': ^18.16.6
       less: '*'
       sass: '*'
       stylus: '*'
@@ -14945,7 +14932,3 @@ packages:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
     dev: true
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
