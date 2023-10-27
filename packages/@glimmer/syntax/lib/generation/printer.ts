@@ -21,7 +21,7 @@ export const voidMap = new Set([
 ]);
 
 export function getVoidTags() {
-  return [...voidMap.keys()];
+  return [...voidMap];
 }
 
 const NON_WHITESPACE = /^\S/u;
