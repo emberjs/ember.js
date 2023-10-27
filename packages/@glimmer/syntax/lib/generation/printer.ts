@@ -44,7 +44,7 @@ export interface PrinterOptions {
  *  - Link (component)
  */
 function isVoidTag(tag: string): boolean {
-  return !!(voidMap.get(tag.toLowerCase()) && tag[0]?.toLowerCase() === tag[0]);
+  return !!(voidMap.has(tag.toLowerCase()) && tag[0]?.toLowerCase() === tag[0]);
 }
 
 export default class Printer {
