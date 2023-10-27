@@ -1,5 +1,6 @@
 {
   "name": "@glimmer/util",
+  "type": "module",
   "version": "0.85.3",
   "description": "Common utilities used in Glimmer",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",

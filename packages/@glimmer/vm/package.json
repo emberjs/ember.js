@@ -1,6 +1,7 @@
 {
   "name": "@glimmer/vm",
   "version": "0.85.3",
+  "type": "module",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/vm",
   "dependencies": {
     "@glimmer/util": "workspace:^",

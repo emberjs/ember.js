@@ -1,5 +1,6 @@
 {
   "name": "@glimmer/wire-format",
+  "type": "module",
   "version": "0.85.3",
   "description": "",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/wire-format",
