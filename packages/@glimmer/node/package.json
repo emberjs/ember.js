@@ -13,6 +13,7 @@
     "dist"
   ],
   "devDependencies": {
+    "rollup": "^3.21.6",
     "@types/qunit": "^2.19.7",
     "@glimmer/compiler": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^"

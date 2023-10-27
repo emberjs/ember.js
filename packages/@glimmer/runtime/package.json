@@ -35,6 +35,7 @@
     "@glimmer/wire-format": "workspace:^"
   },
   "devDependencies": {
+    "rollup": "^3.21.6",
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer/opcode-compiler": "workspace:^",
     "@glimmer/debug": "workspace:^",
