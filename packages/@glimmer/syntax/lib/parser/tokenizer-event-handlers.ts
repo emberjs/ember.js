@@ -106,7 +106,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         );
       }
 
-      if (voidMap.get(tag.name) || tag.selfClosing) {
+      if (voidMap.has(tag.name) || tag.selfClosing) {
         this.finishEndTag(true);
       }
     } else if (tag.type === 'EndTag') {
@@ -263,7 +263,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     element: ASTv1.ElementNode,
     selfClosing: boolean
   ): void {
-    if (voidMap.get(tag.name) && !selfClosing) {
+    if (voidMap.has(tag.name) && !selfClosing) {
       // EngTag is also called by StartTag for void and self-closing tags (i.e.
       // <input> or <br />, so we need to check for that here. Otherwise, we would
       // throw an error for those cases.
