@@ -9,6 +9,9 @@
     "url": "https://github.com/glimmerjs/glimmer-vm.git",
     "directory": "packages/@glimmer/reference"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "workspace:^",

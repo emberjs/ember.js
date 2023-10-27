@@ -11,6 +11,9 @@
   "engines": {
     "node": ">= 16.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public",
     "main": "dist/index.js",

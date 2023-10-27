@@ -15,6 +15,9 @@
     "@glimmer/vm": "workspace:^",
     "@glimmer/wire-format": "workspace:^"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^"
