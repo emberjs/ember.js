@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import rollupTS from 'rollup-plugin-ts';
 import ts from 'typescript';
 
+import importMetaEnvToGlimmerEnv from './import-meta-env-to-glimmer-env.js';
 import importMeta from './import-meta.js';
 import inline from './inline.js';
 
@@ -243,7 +244,12 @@ export class Package {
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
   config() {
-    return [...this.rollupESM(), ...this.rollupCJS()];
+    return [
+      ...this.rollupESM({ env: 'dev' }),
+      ...this.rollupESM({ env: 'prod' }),
+      ...this.rollupCJS({ env: 'dev' }),
+      ...this.rollupCJS({ env: 'prod' }),
+    ];
   }
 
   /**
@@ -272,10 +278,14 @@ export class Package {
   }
 
   /**
+   * @typedef {object} RollupConfigurationOptions
+   * @property {'dev' | 'prod'} env
+   *
+   * @param {RollupConfigurationOptions} options
    * @returns {RollupOptions[]}
    */
-  rollupESM() {
-    return this.#shared('esm').map((options) => ({
+  rollupESM({ env }) {
+    return this.#shared('esm', env).map((options) => ({
       ...options,
       external: this.#external,
       plugins: [
@@ -283,7 +293,11 @@ export class Package {
         nodePolyfills(),
         commonjs(),
         nodeResolve(),
-        importMeta,
+        env === 'prod'
+          ? // We only want importMeta stripped for production builds
+            importMeta
+          : importMetaEnvToGlimmerEnv,
+
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2022,
@@ -294,10 +308,12 @@ export class Package {
   }
 
   /**
+   *
+   * @param {RollupConfigurationOptions} options
    * @returns {import("rollup").RollupOptions[]}
    */
-  rollupCJS() {
-    return this.#shared('cjs').map((options) => ({
+  rollupCJS({ env }) {
+    return this.#shared('cjs', env).map((options) => ({
       ...options,
       external: this.#external,
       plugins: [
@@ -305,7 +321,10 @@ export class Package {
         nodePolyfills(),
         commonjs(),
         nodeResolve(),
-        importMeta,
+        env === 'prod'
+          ? // We only want importMeta stripped for production builds
+            importMeta
+          : importMetaEnvToGlimmerEnv,
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2021,
@@ -338,9 +357,10 @@ export class Package {
 
   /**
    * @param {"esm" | "cjs"} format
+   * @param {"dev" | "prod"} env
    * @returns {import("rollup").RollupOptions[]}
    */
-  #shared(format) {
+  #shared(format, env) {
     const { root, main } = this.#package;
 
     const ext = format === 'esm' ? 'js' : 'cjs';
@@ -358,7 +378,7 @@ export class Package {
       return {
         input: resolve(root, ts),
         output: {
-          file: resolve(root, 'dist', file),
+          file: resolve(root, 'dist', env, file),
           format,
           sourcemap: true,
           exports: format === 'cjs' ? 'named' : 'auto',
