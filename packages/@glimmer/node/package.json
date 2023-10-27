@@ -9,6 +9,9 @@
     "@glimmer/util": "workspace:^",
     "@simple-dom/document": "^1.4.0"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@types/qunit": "^2.19.7",
     "@glimmer/compiler": "workspace:^",

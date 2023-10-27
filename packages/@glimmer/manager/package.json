@@ -14,6 +14,9 @@
     "@glimmer/util": "workspace:^",
     "@glimmer/validator": "workspace:^"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^"
