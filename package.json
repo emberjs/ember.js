@@ -135,6 +135,15 @@
         "launchEditor": true
       }
     },
+    "git": {
+      "commitMessage": "v${version}",
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "v${version}",
+      "tokenRef": "GITHUB_AUTH"
+    },
     "npm": false
   },
   "changelog": {
