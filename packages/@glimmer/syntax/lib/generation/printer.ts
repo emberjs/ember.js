@@ -1,15 +1,28 @@
 import type * as ASTv1 from '../v1/api';
 import { escapeAttrValue, escapeText, sortByLoc } from './util';
 
-export const voidMap: {
-  [tagName: string]: boolean;
-} = Object.create(null);
+export const voidMap = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'command',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'keygen',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);
 
-let voidTagNames =
-  'area base br col command embed hr img input keygen link meta param source track wbr';
-voidTagNames.split(' ').forEach((tagName) => {
-  voidMap[tagName] = true;
-});
+export function getVoidTags() {
+  return [...voidMap];
+}
 
 const NON_WHITESPACE = /^\S/u;
 
@@ -41,8 +54,8 @@ export interface PrinterOptions {
  * Examples when false:
  *  - Link (component)
  */
-function isVoidTag(tag: string): boolean {
-  return !!(voidMap[tag.toLowerCase()] && tag[0]?.toLowerCase() === tag[0]);
+export function isVoidTag(tag: string): boolean {
+  return voidMap.has(tag.toLowerCase()) && tag[0]?.toLowerCase() === tag[0];
 }
 
 export default class Printer {
