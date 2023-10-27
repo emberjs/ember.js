@@ -26,6 +26,7 @@ QUnit.test('exports are not accidentally removed', function(assert) {
   assert.ok(syntax.ASTv1);
   assert.ok(syntax.builders);
   assert.ok(syntax.visitorKeys);
+  assert.ok(syntax.voidMap);
   assert.ok(syntax.ASTv2);
   assert.ok(syntax.normalize);
   assert.ok(syntax.node);
