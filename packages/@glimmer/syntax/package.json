@@ -15,6 +15,9 @@
     "@types/qunit": "^2.19.7",
     "@glimmer-workspace/build-support": "workspace:^"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json",

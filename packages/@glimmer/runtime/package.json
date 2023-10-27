@@ -6,6 +6,9 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/runtime",
   "license": "MIT",
   "main": "index.ts",
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public",
     "main": "dist/index.js",
