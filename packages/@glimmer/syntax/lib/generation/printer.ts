@@ -1,13 +1,17 @@
 import type * as ASTv1 from '../v1/api';
 import { escapeAttrValue, escapeText, sortByLoc } from './util';
 
+/**
+  * Not for future observers,
+  * Object access for small objects is significantly faster than using Set.has
+  */
 export const voidMap: {
   [tagName: string]: boolean;
 } = Object.create(null);
 
-let voidTagNames =
-  'area base br col command embed hr img input keygen link meta param source track wbr';
-voidTagNames.split(' ').forEach((tagName) => {
+export const voidTagNames = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+
+voidTagNames.forEach((tagName) => {
   voidMap[tagName] = true;
 });
 
