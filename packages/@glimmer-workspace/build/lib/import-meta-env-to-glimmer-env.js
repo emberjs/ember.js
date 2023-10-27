@@ -7,10 +7,11 @@
 //   import.meta.env.DEV with DEBUG and
 //   import.meta.env.PROD with !DEBUG
 // using the existing babel-plugin-debug-macros with fake-import from `@glimmer/env`
-export default function importMetaEnvToGlimmerEnv(options = {}) {
+export default function importMetaEnvToGlimmerEnv(_options = {}) {
   return {
-    transform(code) {
-      console.log(code);
+    transform(_code) {
+      // console.log(code);
+      return '';
     },
   };
 }
