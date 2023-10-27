@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 import rollupTS from 'rollup-plugin-ts';
 import ts from 'typescript';
-
-import importMetaEnvToGlimmerEnv from './import-meta-env-to-glimmer-env.js';
+import replace from '@rollup/plugin-replace';
+import * as insert from 'rollup-plugin-insert';
 import importMeta from './import-meta.js';
 import inline from './inline.js';
 
@@ -293,11 +293,7 @@ export class Package {
         nodePolyfills(),
         commonjs(),
         nodeResolve(),
-        env === 'prod'
-          ? // We only want importMeta stripped for production builds
-            importMeta
-          : importMetaEnvToGlimmerEnv,
-
+        ...this.replacements(env),
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2022,
@@ -305,6 +301,32 @@ export class Package {
         }),
       ],
     }));
+  }
+
+  /**
+   * We only want importMeta stripped for production builds
+   * @param {'dev' | 'prod'} env
+   * @returns {any}
+   */
+  replacements(env) {
+    return env === 'prod'
+      ? [importMeta]
+      : [
+          replace({
+            preventAssignment: true,
+            // include: ['lib/**/*'],
+            values: {
+              'import.meta.env.DEV': 'DEBUG',
+              'import.meta.env.PROD': '!DEBUG',
+            },
+          }),
+          insert.transform((_magicString, code, _id) => {
+            if (code.includes('DEBUG')) {
+              return `import { DEBUG } from '@glimmer/env';\n` + code;
+            }
+            return code;
+          }),
+        ];
   }
 
   /**
@@ -321,10 +343,7 @@ export class Package {
         nodePolyfills(),
         commonjs(),
         nodeResolve(),
-        env === 'prod'
-          ? // We only want importMeta stripped for production builds
-            importMeta
-          : importMetaEnvToGlimmerEnv,
+        ...this.replacements(env),
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2021,

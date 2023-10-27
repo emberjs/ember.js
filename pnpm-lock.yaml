@@ -391,6 +391,9 @@ importers:
       '@rollup/plugin-node-resolve':
         specifier: ^15.0.2
         version: 15.0.2(rollup@3.21.6)
+      '@rollup/plugin-replace':
+        specifier: ^5.0.4
+        version: 5.0.4(rollup@3.21.6)
       eslint:
         specifier: ^8.52.0
         version: 8.52.0
@@ -418,6 +421,9 @@ importers:
       rollup:
         specifier: ^3.21.6
         version: 3.21.6
+      rollup-plugin-insert:
+        specifier: ^1.3.2
+        version: 1.3.2(rollup@3.21.6)
       rollup-plugin-polyfill-node:
         specifier: ^0.12.0
         version: 0.12.0(rollup@3.21.6)
@@ -3120,6 +3126,20 @@ packages:
       is-builtin-module: 3.2.1
       is-module: 1.0.0
       resolve: 1.22.8
+      rollup: 3.21.6
+    dev: false
+
+  /@rollup/plugin-replace@5.0.4(rollup@3.21.6):
+    resolution: {integrity: sha512-E2hmRnlh09K8HGT0rOnnri9OTh+BILGr7NVJGB30S4E3cLRn3J0xjdiyOZ74adPs4NiAMgrjUMGAZNJDBgsdmQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0 || ^2.0.0 || ^3.0.0 || ^4.0.0 || 3
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+    dependencies:
+      '@rollup/pluginutils': 5.0.2(rollup@3.21.6)
+      magic-string: 0.30.5
       rollup: 3.21.6
     dev: false
 
@@ -10072,6 +10092,12 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dev: true
 
+  /magic-string@0.25.9:
+    resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
+    dependencies:
+      sourcemap-codec: 1.4.8
+    dev: false
+
   /magic-string@0.27.0:
     resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}
     engines: {node: '>=12'}
@@ -10080,6 +10106,13 @@ packages:
 
   /magic-string@0.30.0:
     resolution: {integrity: sha512-LA+31JYDJLs82r2ScLrlz1GjSgu66ZV518eyWT+S8VhyQn/JL0u9MeBOvQMGYiPk1DBiSN9DDMOcXvigJZaViQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.15
+    dev: false
+
+  /magic-string@0.30.5:
+    resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==}
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
@@ -12807,6 +12840,17 @@ packages:
       glob: 10.2.3
     dev: true
 
+  /rollup-plugin-insert@1.3.2(rollup@3.21.6):
+    resolution: {integrity: sha512-oTlUJikRZ1dYW9Kg9LHbG0T8pKNboHvMI0VZZoOUbqYPHE7rrKERHlGd3xsHH6W1KTr9Fcl4+UgrjpVkveWgPA==}
+    engines: {node: '>=8.0.0'}
+    peerDependencies:
+      rollup: '*'
+    dependencies:
+      magic-string: 0.25.9
+      rollup: 3.21.6
+      rollup-pluginutils: 2.8.2
+    dev: false
+
   /rollup-plugin-polyfill-node@0.12.0(rollup@3.21.6):
     resolution: {integrity: sha512-PWEVfDxLEKt8JX1nZ0NkUAgXpkZMTb85rO/Ru9AQ69wYW8VUCfDgP4CGRXXWYni5wDF0vIeR1UoF3Jmw/Lt3Ug==}
     peerDependencies:
@@ -13452,6 +13496,11 @@ packages:
   /source-map@0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+
+  /sourcemap-codec@1.4.8:
+    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    deprecated: Please use @jridgewell/sourcemap-codec instead
+    dev: false
 
   /sourcemap-validator@1.1.1:
     resolution: {integrity: sha512-pq6y03Vs6HUaKo9bE0aLoksAcpeOo9HZd7I8pI6O480W/zxNZ9U32GfzgtPP0Pgc/K1JHna569nAbOk3X8/Qtw==}
