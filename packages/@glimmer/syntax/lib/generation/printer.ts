@@ -4,15 +4,13 @@ import { escapeAttrValue, escapeText, sortByLoc } from './util';
 /**
   * Not for future observers,
   * Object access for small objects is significantly faster than using Set.has
+  * And Map access is even faster than Object.
   */
-export const voidMap: {
-  [tagName: string]: boolean;
-} = Object.create(null);
-
+export const voidMap = new Map<string, boolean>();
 export const voidTagNames = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 
 voidTagNames.forEach((tagName) => {
-  voidMap[tagName] = true;
+  voidMap.set(tagName, true);
 });
 
 const NON_WHITESPACE = /^\S/u;
@@ -46,7 +44,7 @@ export interface PrinterOptions {
  *  - Link (component)
  */
 function isVoidTag(tag: string): boolean {
-  return !!(voidMap[tag.toLowerCase()] && tag[0]?.toLowerCase() === tag[0]);
+  return !!(voidMap.get(tag.toLowerCase()) && tag[0]?.toLowerCase() === tag[0]);
 }
 
 export default class Printer {
