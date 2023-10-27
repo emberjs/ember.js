@@ -32,6 +32,7 @@
     "@glimmer/wire-format": "workspace:^"
   },
   "devDependencies": {
+    "rollup": "^3.21.6",
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^",
     "@types/node": "^18.16.6"

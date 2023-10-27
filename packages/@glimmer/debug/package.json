@@ -28,6 +28,7 @@
     "@glimmer/vm": "workspace:^"
   },
   "devDependencies": {
+    "rollup": "^3.21.6",
     "@glimmer/local-debug-flags": "workspace:^",
     "toml": "^3.0.0",
     "@glimmer-workspace/build-support": "workspace:^"
