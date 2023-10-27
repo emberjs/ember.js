@@ -314,7 +314,6 @@ export class Package {
       : [
           replace({
             preventAssignment: true,
-            // include: ['lib/**/*'],
             values: {
               'import.meta.env.DEV': 'DEBUG',
               'import.meta.env.PROD': '!DEBUG',
