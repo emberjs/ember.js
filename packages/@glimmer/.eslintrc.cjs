@@ -15,6 +15,10 @@ module.exports = {
       },
       plugins: ['@glimmer-workspace'],
       extends: ['plugin:@glimmer-workspace/recommended'],
+      rules: {
+        // We don't publish source, we build to a dist directory
+        'n/no-unpublished-import': ['off'],
+      },
     },
     // QUnit is a weird package, and there are some issues open about fixing it
     // - https://github.com/qunitjs/qunit/issues/1729

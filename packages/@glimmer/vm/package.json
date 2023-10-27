@@ -8,6 +8,9 @@
     "@glimmer/interfaces": "workspace:^"
   },
   "types": "index.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json",

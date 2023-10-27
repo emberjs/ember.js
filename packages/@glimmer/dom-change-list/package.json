@@ -15,6 +15,9 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@glimmer/util": "workspace:^",
     "@glimmer/interfaces": "workspace:^"

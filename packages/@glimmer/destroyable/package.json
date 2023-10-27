@@ -7,6 +7,9 @@
   "license": "MIT",
   "main": "index.ts",
   "types": "index.ts",
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public",
     "main": "dist/index.js",

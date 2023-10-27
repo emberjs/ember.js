@@ -3,6 +3,9 @@
   "type": "module",
   "version": "0.85.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "@glimmer/env": "0.1.7",
     "@glimmer/util": "workspace:^",
