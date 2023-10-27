@@ -28,6 +28,7 @@
     "build": "rollup -c rollup.config.mjs"
   },
   "devDependencies": {
+    "rollup": "^3.21.6",
     "@glimmer-workspace/build-support": "workspace:^"
   }
 }
