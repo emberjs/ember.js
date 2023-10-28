@@ -99,4 +99,5 @@ export {
   KnownForTypeResult,
   Resolver,
   DIRegistry,
+  setupOwnerTracker as _setupOwnerTracker,
 } from '@ember/-internals/owner';

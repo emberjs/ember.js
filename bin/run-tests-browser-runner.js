@@ -65,7 +65,10 @@ module.exports = class BrowserRunner {
   }
 
   async newBrowser() {
-    let browser = await puppeteer.launch({ dumpio: true });
+    let browser = await puppeteer.launch({
+      dumpio: true,
+      args: ['--js-flags=--expose-gc'],
+    });
     return browser;
   }
 
