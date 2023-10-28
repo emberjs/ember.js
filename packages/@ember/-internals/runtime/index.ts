@@ -7,3 +7,5 @@ export { default as MutableEnumerable } from '@ember/enumerable/mutable';
 export { default as TargetActionSupport } from './lib/mixins/target_action_support';
 
 export { default as RSVP, onerrorDefault } from './lib/ext/rsvp'; // just for side effect of extending Ember.RSVP
+
+export { isProxy, setProxy } from './lib/is_proxy';

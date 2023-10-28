@@ -12,12 +12,13 @@ import {
   computed,
   tagForProperty,
 } from '@ember/-internals/metal';
-import { setProxy, setupMandatorySetter, isObject, isProxy } from '@ember/-internals/utils';
+import { setupMandatorySetter, isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { setCustomTagFor } from '@glimmer/manager';
 import type { UpdatableTag, Tag } from '@glimmer/validator';
 import { combine, updateTag, tagFor, tagMetaFor } from '@glimmer/validator';
+import { setProxy, isProxy } from '@ember/-internals/runtime';
 
 export function contentFor<T>(proxy: ProxyMixin<T>): T | null {
   let content = get(proxy, 'content');

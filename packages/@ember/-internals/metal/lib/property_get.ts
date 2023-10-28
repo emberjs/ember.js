@@ -1,12 +1,11 @@
 /**
 @module @ember/object
 */
-import type ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
-import { setProxy, symbol } from '@ember/-internals/utils';
+import { symbol } from '@ember/-internals/utils';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
+import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { isPath } from './path_cache';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
@@ -172,11 +171,3 @@ _getProp({ unknownProperty() {} }, 1 as any);
 
 get({}, 'foo');
 get({}, 'foo.bar');
-
-let fakeProxy = {} as ProxyMixin<unknown>;
-setProxy(fakeProxy);
-
-track(() => _getProp({}, 'a'));
-track(() => _getProp({}, 1 as any));
-track(() => _getProp({ a: [] }, 'a'));
-track(() => _getProp({ a: fakeProxy }, 'a'));
