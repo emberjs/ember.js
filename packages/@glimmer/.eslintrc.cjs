@@ -60,6 +60,15 @@ module.exports = {
         'compiler/lib/builder/builder-interface.ts',
         'syntax/test/support.ts',
         'destroyable/test/destroyables-test.ts',
+        'syntax/test/plugin-node-test.ts',
+        'syntax/test/loc-node-test.ts',
+        'syntax/test/parser-node-test.ts',
+        'dom-change-list/test/support.ts',
+        'reference/test/iterable-test.ts',
+        'reference/test/references-test.ts',
+        'test/traversal/visiting-keys-node-test.ts',
+        'syntax/test/traversal/visiting-node-test.ts',
+        'syntax/test/traversal/visiting-keys-node-test.ts',
       ],
       rules: {
         '@typescript-eslint/no-redundant-type-constituents': 'off',
@@ -90,6 +99,12 @@ module.exports = {
       files: ['syntax/lib/source/source.ts'],
       rules: {
         '@typescript-eslint/no-inferrable-types': 'off',
+      },
+    },
+    {
+      files: ['validator/lib/utils.ts'],
+      rules: {
+        'n/no-unsupported-features/es-builtins': 'off',
       },
     },
   ],
