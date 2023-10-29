@@ -56,7 +56,11 @@ module.exports = {
       },
     },
     {
-      files: ['compiler/lib/builder/builder-interface.ts', 'syntax/test/support.ts'],
+      files: [
+        'compiler/lib/builder/builder-interface.ts',
+        'syntax/test/support.ts',
+        'destroyable/test/destroyables-test.ts',
+      ],
       rules: {
         '@typescript-eslint/no-redundant-type-constituents': 'off',
       },
