@@ -13,6 +13,7 @@
     "@types/puppeteer-chromium-resolver": "workspace:^"
   },
   "devDependencies": {
+    "eslint": "^8.52.0",
     "esno": "^0.16.3"
   },
   "engines": {

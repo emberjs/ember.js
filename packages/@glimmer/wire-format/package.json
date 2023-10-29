@@ -30,6 +30,7 @@
     }
   },
   "devDependencies": {
+    "eslint": "^8.52.0",
     "@glimmer-workspace/build-support": "workspace:^",
     "rollup": "^3.21.6"
   }
