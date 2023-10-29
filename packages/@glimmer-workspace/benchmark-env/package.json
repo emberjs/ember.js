@@ -18,6 +18,9 @@
     "@glimmer/util": "workspace:^",
     "@glimmer/validator": "workspace:^"
   },
+  "devDependencies": {
+    "eslint": "^8.52.0"
+  },
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
