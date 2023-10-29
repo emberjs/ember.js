@@ -26,5 +26,35 @@ module.exports = {
         '@typescript-eslint/unbound-method': 'off',
       },
     },
+    //////////////////////////////////////////////////////////
+    // Remove when https://github.com/glimmerjs/glimmer-vm/pull/1462
+    // is merged.
+    //////////////////////////////////////////////////////////
+    {
+      files: [
+        'integration-tests/lib/dom/assertions.ts',
+        'integration-tests/lib/dom/simple-utils.ts',
+        'integration-tests/lib/modes/rehydration/builder.ts',
+        'integration-tests/lib/snapshot.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-unsafe-enum-comparison': 'off',
+      },
+    },
+    {
+      files: ['integration-tests/test/updating-test.ts'],
+      rules: {
+        '@typescript-eslint/no-redundant-type-constituents': 'off',
+      },
+    },
+    {
+      files: [
+        'integration-tests/test/ember-component-test.ts',
+        'integration-tests/lib/render-test.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-base-to-string': 'off',
+      },
+    },
   ],
 };
