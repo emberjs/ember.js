@@ -1,11 +1,28 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "pnpm-lock.yaml",
+    "patches",
+    ".env",
+    ".env.testing",
+    ".eslintignore",
+    ".prettierrc.json",
+    ".eslintrc.cjs",
+    "rollup.config.mjs",
+    "tsconfig.json",
+    "tsconfig.*.json",
+    "vite.config.mts",
+    "packages/@glimmer/.eslintrc.cjs",
+    "packages/@glimmer-workspace/.eslintrc.cjs",
+    ".github/workflows/ci.yml"
+  ],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
     "lint": {
+      "cache": false,
       "dependsOn": ["test:lint"]
     },
     "test:lint": {},

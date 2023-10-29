@@ -30,5 +30,82 @@ module.exports = {
         '@typescript-eslint/unbound-method': 'off',
       },
     },
+    //////////////////////////////////////////////////////////
+    // Remove when https://github.com/glimmerjs/glimmer-vm/pull/1462
+    // is merged.
+    //////////////////////////////////////////////////////////
+    {
+      files: [
+        'vm/lib/registers.ts',
+        'dom-change-list/test/support.ts',
+        'node/lib/serialize-builder.ts',
+        'util/lib/immediate.ts',
+        'util/test/immediate-test.ts',
+        'runtime/lib/vm/rehydrate-builder.ts',
+        'runtime/lib/dom/normalize.ts',
+        'syntax/lib/parser/handlebars-node-visitors.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-unsafe-enum-comparison': 'off',
+      },
+    },
+    {
+      files: ['interfaces/lib/compile/encoder.ts'],
+      rules: {
+        '@typescript-eslint/no-duplicate-type-constituents': 'off',
+      },
+    },
+    {
+      files: [
+        'compiler/lib/builder/builder-interface.ts',
+        'syntax/test/support.ts',
+        'destroyable/test/destroyables-test.ts',
+        'syntax/test/plugin-node-test.ts',
+        'syntax/test/loc-node-test.ts',
+        'syntax/test/parser-node-test.ts',
+        'dom-change-list/test/support.ts',
+        'reference/test/iterable-test.ts',
+        'reference/test/references-test.ts',
+        'test/traversal/visiting-keys-node-test.ts',
+        'syntax/test/traversal/visiting-node-test.ts',
+        'syntax/test/traversal/visiting-keys-node-test.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-redundant-type-constituents': 'off',
+      },
+    },
+    {
+      files: [
+        'util/lib/debug-to-string.ts',
+        'debug/lib/debug.ts',
+        'manager/lib/public/component.ts',
+        'manager/lib/public/helper.ts',
+        'manager/lib/public/modifier.ts',
+        'runtime/lib/debug-render-tree.ts',
+        'runtime/lib/compiled/opcodes/content.ts',
+        'syntax/lib/v2/normalize.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-base-to-string': 'off',
+      },
+    },
+    {
+      files: ['util/lib/simple-cast.ts'],
+      rules: {
+        'valid-typeof': 'off',
+      },
+    },
+    {
+      files: ['syntax/lib/source/source.ts'],
+      rules: {
+        '@typescript-eslint/no-inferrable-types': 'off',
+      },
+    },
+    {
+      files: ['validator/lib/utils.ts'],
+      rules: {
+        'n/no-unsupported-features/es-builtins': 'off',
+      },
+    },
   ],
 };

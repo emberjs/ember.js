@@ -28,6 +28,15 @@ module.exports = {
         'prettier',
       ],
       rules: {
+        'no-restricted-imports': 'off',
+        '@typescript-eslint/no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              { group: ['**/generated/**'], message: "Don't import directly from generated files" },
+            ],
+          },
+        ],
         'no-console': 'error',
         'no-debugger': 'error',
         'no-loop-func': 'error',

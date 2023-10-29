@@ -19,6 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: wyvox/action-setup-pnpm@v2
+        with:
+          node-version: 20.1.0
 
   lint:
     name: Linting
@@ -29,6 +31,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: wyvox/action-setup-pnpm@v2
+        with:
+          node-version: 20.1.0
       - run: pnpm lint
 
   test-chrome:
@@ -50,6 +54,8 @@ jobs:
             xdg-utils wget libcairo2
       - uses: actions/checkout@v3
       - uses: wyvox/action-setup-pnpm@v2
+        with:
+          node-version: 20.1.0
       - run: pnpm test
 
   # test-browserstack:
@@ -97,6 +103,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: wyvox/action-setup-pnpm@v2
+        with:
+          node-version: 20.1.0
       - run: pnpm build
       - run: pnpm test:types
 
@@ -111,4 +119,5 @@ jobs:
       - uses: wyvox/action-setup-pnpm@v2
         with:
           args: '--no-lockfile'
+          node-version: 20.1.0
       - run: pnpm test

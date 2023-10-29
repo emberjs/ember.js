@@ -23,6 +23,7 @@
     "@glimmer/interfaces": "workspace:^"
   },
   "devDependencies": {
+    "eslint": "^8.52.0",
     "rollup": "^3.21.6",
     "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^"

@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "babel-plugin-tester": "^11.0.4",
+    "eslint": "^8.52.0",
     "mocha": "^10.2.0",
     "rollup": "^3.21.6",
     "@glimmer-workspace/build-support": "workspace:^"
