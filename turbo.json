@@ -22,6 +22,7 @@
       "outputs": ["dist/**"]
     },
     "lint": {
+      "cache": false,
       "dependsOn": ["test:lint"]
     },
     "test:lint": {},

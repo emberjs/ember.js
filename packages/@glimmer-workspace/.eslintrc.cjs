@@ -42,7 +42,15 @@ module.exports = {
       },
     },
     {
-      files: ['integration-tests/test/updating-test.ts'],
+      files: [
+        'integration-tests/test/updating-test.ts',
+        'integration-tests/lib/dom/simple-utils.ts',
+        'integration-tests/lib/modes/jit/delegate.ts',
+        'integration-tests/lib/modes/jit/register.ts',
+        'integration-tests/lib/render-delegate.ts',
+        'integration-tests/test/style-warnings-test.ts',
+        'integration-tests/test/updating-content-matrix-test.ts',
+      ],
       rules: {
         '@typescript-eslint/no-redundant-type-constituents': 'off',
       },
