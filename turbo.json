@@ -26,7 +26,9 @@
       "dependsOn": ["test:lint", "test:publint"]
     },
     "test:lint": {},
-    "test:publint": {},
+    "test:publint": {
+      "dependsOn": ["build"]
+    },
     "typecheck": {
       "inputs": ["dist/**"],
       "dependsOn": ["^build", "test:types"]
