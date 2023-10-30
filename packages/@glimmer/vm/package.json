@@ -30,7 +30,7 @@
           "default": "./dist/dev/index.js"
         },
         "require": "./dist/index.cjs",
-        "default": "./dist/index.js"
+        "default": "./dist/prod/index.d.ts"
       }
     }
   },

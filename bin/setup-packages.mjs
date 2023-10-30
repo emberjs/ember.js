@@ -6,6 +6,9 @@ for (let workspace of workspaces) {
   if (!workspace.includes('packages/@glimmer')) continue;
 
   packageJson.modify((json) => {
+    if (json.private) return;
+    if (!json.name) return;
+
     json.type = 'module';
 
     json.devDependencies ||= {};

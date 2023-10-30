@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:types": "tsc --noEmit -p ../tsconfig.json",
+    "test:publint": "publint"
   },
   "publishConfig": {
     "access": "public",
@@ -21,7 +22,14 @@
     "exports": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "default": "./dist/index.js",
+      ".": {
+        "types": "./dist/dev/index.d.ts",
+        "development": {
+          "default": "./dist/dev/index.js"
+        },
+        "default": "./dist/prod/index.d.ts"
+      }
     }
   },
   "dependencies": {
@@ -30,6 +38,7 @@
   "devDependencies": {
     "eslint": "^8.52.0",
     "rollup": "^3.21.6",
-    "@glimmer-workspace/build-support": "workspace:^"
+    "@glimmer-workspace/build-support": "workspace:^",
+    "publint": "^0.2.5"
   }
 }

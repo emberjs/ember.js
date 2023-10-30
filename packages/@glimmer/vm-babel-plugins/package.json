@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/vm-babel-plugins",
-  "type": "commonjs",
+  "type": "module",
   "version": "0.85.3",
   "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
   "repository": "https://github.com/glimmerjs/glimmer.js",
@@ -17,7 +17,8 @@
     "test": "mocha",
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs"
+    "build": "rollup -c rollup.config.mjs",
+    "test:publint": "publint"
   },
   "dependencies": {
     "babel-plugin-debug-macros": "^0.3.4"
@@ -27,7 +28,8 @@
     "eslint": "^8.52.0",
     "mocha": "^10.2.0",
     "rollup": "^3.21.6",
-    "@glimmer-workspace/build-support": "workspace:^"
+    "@glimmer-workspace/build-support": "workspace:^",
+    "publint": "^0.2.5"
   },
   "main": "index.ts",
   "types": "index.ts",
@@ -38,7 +40,14 @@
     "exports": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "default": "./dist/index.js",
+      ".": {
+        "types": "./dist/dev/index.d.ts",
+        "development": {
+          "default": "./dist/dev/index.js"
+        },
+        "default": "./dist/prod/index.d.ts"
+      }
     }
   }
 }

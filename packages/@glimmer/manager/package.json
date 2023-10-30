@@ -21,7 +21,8 @@
     "eslint": "^8.52.0",
     "rollup": "^3.21.6",
     "@glimmer/local-debug-flags": "workspace:^",
-    "@glimmer-workspace/build-support": "workspace:^"
+    "@glimmer-workspace/build-support": "workspace:^",
+    "publint": "^0.2.5"
   },
   "main": "index.ts",
   "types": "index.ts",
@@ -32,12 +33,20 @@
     "exports": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "default": "./dist/index.js",
+      ".": {
+        "types": "./dist/dev/index.d.ts",
+        "development": {
+          "default": "./dist/dev/index.js"
+        },
+        "default": "./dist/prod/index.d.ts"
+      }
     }
   },
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs"
+    "build": "rollup -c rollup.config.mjs",
+    "test:publint": "publint"
   }
 }
