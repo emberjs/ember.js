@@ -10,6 +10,7 @@
   "license": "MIT",
   "author": "Tilde, Inc.",
   "scripts": {
+    "clean": "node ./bin/clean.mjs",
     "benchmark:build": "node benchmark/bin/build.js",
     "benchmark:control": "node benchmark/bin/control.js",
     "benchmark:experiment": "node benchmark/bin/experiment.js",

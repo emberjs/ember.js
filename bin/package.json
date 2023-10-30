@@ -10,7 +10,8 @@
     "execa": "^7.1.1",
     "glob": "^10.2.3",
     "js-yaml": "^4.1.0",
-    "puppeteer-chromium-resolver": "^20.0.0"
+    "puppeteer-chromium-resolver": "^20.0.0",
+    "rimraf": "^5.0.0"
   },
   "devDependencies": {
     "eslint": "^8.52.0",
