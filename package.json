@@ -20,7 +20,7 @@
     "build:control": "rollup -c rollup.config.mjs",
     "build:flags": "RETAIN_FLAGS=true ember build --env production --suppress-sizes",
     "lint": "npm-run-all lint:*",
-    "lint:files": "dotenv -- turbo test:lint",
+    "lint:files": "dotenv -- turbo lint",
     "force:lint:files": "eslint .",
     "lint:types": "tsc -b",
     "start": "ember serve --port=7357",

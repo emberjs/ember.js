@@ -7,7 +7,6 @@
     "@types/node": "^18.16.7",
     "@types/puppeteer-chromium-resolver": "workspace:^",
     "chalk": "^5.2.0",
-    "ember-apply": "^2.10.2",
     "execa": "^7.1.1",
     "glob": "^10.2.3",
     "js-yaml": "^4.1.0",
