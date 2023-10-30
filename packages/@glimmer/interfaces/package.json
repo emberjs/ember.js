@@ -3,12 +3,13 @@
   "type": "module",
   "version": "0.85.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/interfaces",
-  "types": "index.ts",
+  "types": "index.d.ts",
   "exports": {
     "types": "./index.d.ts"
   },
   "files": [
-    "dist"
+    "lib",
+    "index.d.ts"
   ],
   "scripts": {
     "test:lint": "eslint .",
@@ -16,21 +17,7 @@
     "test:publint": "publint"
   },
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
-    "exports": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js",
-      ".": {
-        "types": "./dist/dev/index.d.ts",
-        "development": {
-          "default": "./dist/dev/index.js"
-        },
-        "default": "./dist/prod/index.d.ts"
-      }
-    }
+    "access": "public"
   },
   "dependencies": {
     "@simple-dom/interface": "^1.4.0"
