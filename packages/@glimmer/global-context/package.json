@@ -10,6 +10,8 @@
   ],
   "publishConfig": {
     "access": "public",
+    "main": "./dist/prod/index.js",
+    "types": "./dist/dev/index.d.ts",
     "exports": {
       ".": {
         "types": "./dist/dev/index.d.ts",
