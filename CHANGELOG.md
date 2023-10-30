@@ -2,6 +2,32 @@
 
 
 
+
+## v0.85.4 (2023-10-30)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/eslint-plugin`, `@glimmer`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1470](https://github.com/glimmerjs/glimmer-vm/pull/1470) Fix the package contents of each package, only publishing dist ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/syntax`
+  * [#1467](https://github.com/glimmerjs/glimmer-vm/pull/1467) visitorKeys is needed for prettier ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1468](https://github.com/glimmerjs/glimmer-vm/pull/1468) Use a Set for checking if an element is a void element, which is faster than object access ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1466](https://github.com/glimmerjs/glimmer-vm/pull/1466) declare type=module ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/build`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1472](https://github.com/glimmerjs/glimmer-vm/pull/1472) Fix the build. Split dev from prod. In dev, convert import.meta.env.DEV to DEBUG from `@glimmer/env` ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* Other
+  * [#1475](https://github.com/glimmerjs/glimmer-vm/pull/1475) dedupe lockfile ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1471](https://github.com/glimmerjs/glimmer-vm/pull/1471) Set default git config, add github config, per the rest of ember-family-of-projects-automation ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/build`, `@glimmer-workspace/eslint-plugin`, `@glimmer-workspace/integration-tests`, `@glimmer-workspace/test-utils`, `@glimmer`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1474](https://github.com/glimmerjs/glimmer-vm/pull/1474) Update lints ahead of #1462, so that #1462's diff is smaller ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1473](https://github.com/glimmerjs/glimmer-vm/pull/1473) Add rollup to every package with a rollup config ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## 0.85.3 (2023-10-24)
 
 #### :bug: Bug Fix
