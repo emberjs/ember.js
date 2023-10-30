@@ -11,7 +11,7 @@
   "devDependencies": {
     "@glimmer/compiler": "workspace:^",
     "@rollup/plugin-strip": "^3.0.2",
-    "@rollup/plugin-terser": "^0.4.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/express": "^4.17.17",
     "@types/fs-extra": "^11.0.1",
     "@types/symlink-or-copy": "^1.2.0",
