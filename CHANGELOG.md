@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.5.0-beta.1 (October 30, 2023)
+
+- [#20559](https://github.com/emberjs/ember.js/pull/20559) [INTERNAL] Switch to pnpm
+
 ## v5.4.0 (October 30, 2023)
 
 - [#20521](https://github.com/emberjs/ember.js/pull/20521) [FEATURE] Add TypeScript support for looking up controllers in DI registry
