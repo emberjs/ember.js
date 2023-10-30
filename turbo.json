@@ -23,9 +23,12 @@
     },
     "lint": {
       "cache": false,
-      "dependsOn": ["test:lint"]
+      "dependsOn": ["test:lint", "test:publint"]
     },
     "test:lint": {},
+    "test:publint": {
+      "dependsOn": ["build"]
+    },
     "typecheck": {
       "inputs": ["dist/**"],
       "dependsOn": ["^build", "test:types"]
