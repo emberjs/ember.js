@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 import rollupTS from 'rollup-plugin-ts';
 import ts from 'typescript';
-
+import replace from '@rollup/plugin-replace';
+import * as insert from 'rollup-plugin-insert';
 import importMeta from './import-meta.js';
 import inline from './inline.js';
 
@@ -243,7 +244,7 @@ export class Package {
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
   config() {
-    return [...this.rollupESM(), ...this.rollupCJS()];
+    return [...this.rollupESM({ env: 'dev' }), ...this.rollupESM({ env: 'prod' })];
   }
 
   /**
@@ -272,10 +273,14 @@ export class Package {
   }
 
   /**
+   * @typedef {object} RollupConfigurationOptions
+   * @property {'dev' | 'prod'} env
+   *
+   * @param {RollupConfigurationOptions} options
    * @returns {RollupOptions[]}
    */
-  rollupESM() {
-    return this.#shared('esm').map((options) => ({
+  rollupESM({ env }) {
+    return this.#shared('esm', env).map((options) => ({
       ...options,
       external: this.#external,
       plugins: [
@@ -283,7 +288,7 @@ export class Package {
         nodePolyfills(),
         commonjs(),
         nodeResolve(),
-        importMeta,
+        ...this.replacements(env),
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2022,
@@ -294,26 +299,28 @@ export class Package {
   }
 
   /**
-   * @returns {import("rollup").RollupOptions[]}
+   * We only want importMeta stripped for production builds
+   * @param {'dev' | 'prod'} env
+   * @returns {any}
    */
-  rollupCJS() {
-    return this.#shared('cjs').map((options) => ({
-      ...options,
-      external: this.#external,
-      plugins: [
-        inline(),
-        nodePolyfills(),
-        commonjs(),
-        nodeResolve(),
-        importMeta,
-        postcss(),
-        typescript(this.#package, {
-          target: ScriptTarget.ES2021,
-          module: ModuleKind.CommonJS,
-          moduleResolution: ModuleResolutionKind.NodeJs,
-        }),
-      ],
-    }));
+  replacements(env) {
+    return env === 'prod'
+      ? [importMeta]
+      : [
+          replace({
+            preventAssignment: true,
+            values: {
+              'import.meta.env.DEV': 'DEBUG',
+              'import.meta.env.PROD': '!DEBUG',
+            },
+          }),
+          insert.transform((_magicString, code, _id) => {
+            if (code.includes('DEBUG')) {
+              return `import { DEBUG } from '@glimmer/env';\n` + code;
+            }
+            return code;
+          }),
+        ];
   }
 
   /**
@@ -338,9 +345,10 @@ export class Package {
 
   /**
    * @param {"esm" | "cjs"} format
+   * @param {"dev" | "prod"} env
    * @returns {import("rollup").RollupOptions[]}
    */
-  #shared(format) {
+  #shared(format, env) {
     const { root, main } = this.#package;
 
     const ext = format === 'esm' ? 'js' : 'cjs';
@@ -358,7 +366,7 @@ export class Package {
       return {
         input: resolve(root, ts),
         output: {
-          file: resolve(root, 'dist', file),
+          file: resolve(root, 'dist', env, file),
           format,
           sourcemap: true,
           exports: format === 'cjs' ? 'named' : 'auto',
