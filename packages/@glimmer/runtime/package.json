@@ -16,7 +16,14 @@
     "exports": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "default": "./dist/index.js",
+      ".": {
+        "types": "./dist/dev/index.d.ts",
+        "development": {
+          "default": "./dist/dev/index.js"
+        },
+        "default": "./dist/prod/index.d.ts"
+      }
     }
   },
   "dependencies": {
@@ -41,12 +48,14 @@
     "@glimmer/opcode-compiler": "workspace:^",
     "@glimmer/debug": "workspace:^",
     "@types/qunit": "^2.19.7",
-    "@glimmer-workspace/build-support": "workspace:^"
+    "@glimmer-workspace/build-support": "workspace:^",
+    "publint": "^0.2.5"
   },
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs"
+    "build": "rollup -c rollup.config.mjs",
+    "test:publint": "publint"
   },
   "types": "index.ts"
 }
