@@ -53,10 +53,10 @@ const CAPABILITIES = {
 
 class MountManager
   implements
-  WithCreateInstance<EngineState>,
-  WithDynamicLayout<EngineState, RuntimeResolver>,
-  WithCustomDebugRenderTree<EngineState, EngineDefinitionState>,
-  WithSubOwner<EngineState>
+    WithCreateInstance<EngineState>,
+    WithDynamicLayout<EngineState, RuntimeResolver>,
+    WithCustomDebugRenderTree<EngineState, EngineDefinitionState>,
+    WithSubOwner<EngineState>
 {
   getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
@@ -153,11 +153,11 @@ class MountManager
     return bucket.engine;
   }
 
-  didCreate() { }
-  didUpdate() { }
+  didCreate() {}
+  didUpdate() {}
 
-  didRenderLayout(): void { }
-  didUpdateLayout(): void { }
+  didRenderLayout(): void {}
+  didUpdateLayout(): void {}
 
   update(bucket: EngineState): void {
     let { controller, modelRef } = bucket;

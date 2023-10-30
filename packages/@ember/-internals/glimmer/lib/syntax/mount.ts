@@ -71,8 +71,8 @@ export const mountHelper = internalHelper(
 
       assert(
         'You can only pass a `model` argument to the {{mount}} helper, ' +
-        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
-        `You passed ${extra.join(',')}.`,
+          'e.g. {{mount "profile-engine" model=this.profile}}. ' +
+          `You passed ${extra.join(',')}.`,
         extra.length === 0
       );
     }

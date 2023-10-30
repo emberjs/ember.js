@@ -284,17 +284,17 @@ class _LinkTo extends InternalComponent {
   validateArguments(): void {
     assert(
       'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
-      'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
-      'See https://ember-engines.com/docs/links for more info.',
+        'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
+        'See https://ember-engines.com/docs/links for more info.',
       !this.isEngine || this.engineMountPoint !== undefined
     );
 
     assert(
       'You must provide at least one of the `@route`, `@model`, `@models` or `@query` arguments to `<LinkTo>`.',
       'route' in this.args.named ||
-      'model' in this.args.named ||
-      'models' in this.args.named ||
-      'query' in this.args.named
+        'model' in this.args.named ||
+        'models' in this.args.named ||
+        'query' in this.args.named
     );
 
     assert(
@@ -383,7 +383,7 @@ class _LinkTo extends InternalComponent {
     if (this.isLoading) {
       warn(
         'This link is in an inactive loading state because at least one of its models ' +
-        'currently has a null/undefined value, or the provided route name is invalid.',
+          'currently has a null/undefined value, or the provided route name is invalid.',
         false,
         {
           id: 'ember-glimmer.link-to.inactive-loading-state',
@@ -695,5 +695,5 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
 }
 
 const LinkTo = opaquify(_LinkTo, LinkToTemplate) as LinkTo;
-interface LinkTo extends Opaque<'component:link-to'>, OpaqueInternalComponentConstructor { }
+interface LinkTo extends Opaque<'component:link-to'>, OpaqueInternalComponentConstructor {}
 export default LinkTo;
