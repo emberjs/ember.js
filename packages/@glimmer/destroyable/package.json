@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/destroyable",
   "type": "module",
-  "version": "0.85.4",
+  "version": "0.85.5",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/destroyable",
   "description": "Utilities for creating and managing a destroyable hierarchy of objects",
   "license": "MIT",

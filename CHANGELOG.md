@@ -3,6 +3,16 @@
 
 
 
+
+## v0.85.5 (2023-10-30)
+
+#### :bug: Bug Fix
+* `@glimmer/global-context`
+  * [#1476](https://github.com/glimmerjs/glimmer-vm/pull/1476) @glimmer/global-context forgot to override main/types during publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.4 (2023-10-30)
 
 #### :bug: Bug Fix
