@@ -244,12 +244,7 @@ export class Package {
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
   config() {
-    return [
-      ...this.rollupESM({ env: 'dev' }),
-      ...this.rollupESM({ env: 'prod' }),
-      ...this.rollupCJS({ env: 'dev' }),
-      ...this.rollupCJS({ env: 'prod' }),
-    ];
+    return [...this.rollupESM({ env: 'dev' }), ...this.rollupESM({ env: 'prod' })];
   }
 
   /**
@@ -326,31 +321,6 @@ export class Package {
             return code;
           }),
         ];
-  }
-
-  /**
-   *
-   * @param {RollupConfigurationOptions} options
-   * @returns {import("rollup").RollupOptions[]}
-   */
-  rollupCJS({ env }) {
-    return this.#shared('cjs', env).map((options) => ({
-      ...options,
-      external: this.#external,
-      plugins: [
-        inline(),
-        nodePolyfills(),
-        commonjs(),
-        nodeResolve(),
-        ...this.replacements(env),
-        postcss(),
-        typescript(this.#package, {
-          target: ScriptTarget.ES2021,
-          module: ModuleKind.CommonJS,
-          moduleResolution: ModuleResolutionKind.NodeJs,
-        }),
-      ],
-    }));
   }
 
   /**
