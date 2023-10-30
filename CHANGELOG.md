@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v5.4.0-beta.1 (September 18, 2023)
+## v5.4.0 (October 30, 2023)
 
 - [#20521](https://github.com/emberjs/ember.js/pull/20521) [FEATURE] Add TypeScript support for looking up controllers in DI registry
 - [#20529](https://github.com/emberjs/ember.js/pull/20529) [BUGFIX] Don't rethrow string errors in handleTransitionReject
