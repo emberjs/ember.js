@@ -186,13 +186,14 @@ export class Package {
 
   /**
    * @param {ImportMeta | string} meta
+   * @param {Formats} [formats]
    * @returns {import("./config.js").RollupExport}
    */
-  static config(meta) {
+  static config(meta, formats) {
     const pkg = Package.at(meta);
 
     if (pkg) {
-      return pkg.config();
+      return pkg.config(formats);
     } else {
       return [];
     }
@@ -242,10 +243,25 @@ export class Package {
   }
 
   /**
+   * @typedef {object} Formats
+   * @property {boolean} [ esm ] enabled by default
+   * @property {boolean} [ cjs ] disabled by default
+   *
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
-  config() {
-    return [...this.rollupESM({ env: 'dev' }), ...this.rollupESM({ env: 'prod' })];
+  config(formats = {}) {
+    let builds = [];
+
+    if (formats.esm ?? true) {
+      builds.push(...this.rollupESM({ env: 'dev' }));
+      builds.push(...this.rollupESM({ env: 'prod' }));
+    }
+
+    if (formats.cjs) {
+      builds.push(...this.rollupCJS({ env: 'dev' }));
+    }
+
+    return builds;
   }
 
   /**
@@ -295,6 +311,30 @@ export class Package {
         typescript(this.#package, {
           target: ScriptTarget.ES2022,
           importsNotUsedAsValues: ImportsNotUsedAsValues.Preserve,
+        }),
+      ],
+    }));
+  }
+
+  /**
+   * @param {RollupConfigurationOptions} options
+   * @returns {import("rollup").RollupOptions[]}
+   */
+  rollupCJS({ env }) {
+    return this.#shared('cjs', env).map((options) => ({
+      ...options,
+      external: this.#external,
+      plugins: [
+        inline(),
+        nodePolyfills(),
+        commonjs(),
+        nodeResolve(),
+        ...this.replacements(env),
+        postcss(),
+        typescript(this.#package, {
+          target: ScriptTarget.ES2021,
+          module: ModuleKind.CommonJS,
+          moduleResolution: ModuleResolutionKind.NodeJs,
         }),
       ],
     }));
