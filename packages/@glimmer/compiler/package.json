@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/compiler",
   "type": "module",
-  "version": "0.85.7",
+  "version": "0.85.8",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/compiler",
   "exports": {
     "types": "./index.ts",

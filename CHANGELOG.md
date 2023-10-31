@@ -6,6 +6,16 @@
 
 
 
+
+## v0.85.8 (2023-10-31)
+
+#### :house: Internal
+* `@glimmer/vm`
+  * [#1480](https://github.com/glimmerjs/glimmer-vm/pull/1480) Re-add CJS exports to the VM package ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.7 (2023-10-31)
 
 #### :house: Internal
