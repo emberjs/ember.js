@@ -65,7 +65,7 @@
     "@glimmer/env": "0.1.7",
     "@release-it-plugins/lerna-changelog": "^6.0.0",
     "@release-it-plugins/workspaces": "^4.0.0",
-    "@rollup/plugin-terser": "^0.4.1",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/babel-plugin-macros": "^3.1.0",
     "@types/babel__core": "^7.20.0",
     "@types/babel__traverse": "^7.18.5",
