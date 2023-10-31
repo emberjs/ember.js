@@ -245,7 +245,7 @@ export class Package {
   /**
    * @typedef {object} Formats
    * @property {boolean} [ esm ] enabled by default
-   * @property {boolean} [ cjs ] disabled by default
+   * @property {boolean} [ cjs ] enabled by default until eslint-plugin-ember and ember-source no longer need it
    *
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
@@ -257,7 +257,7 @@ export class Package {
       builds.push(...this.rollupESM({ env: 'prod' }));
     }
 
-    if (formats.cjs) {
+    if (formats.cjs ?? true) {
       builds.push(...this.rollupCJS({ env: 'dev' }));
     }
 

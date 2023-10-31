@@ -39,10 +39,14 @@
       ".": {
         "types": "./dist/dev/index.d.ts",
         "development": {
-          "default": "./dist/dev/index.js"
+          "require": "./dist/dev/index.cjs",
+          "import": "./dist/dev/index.js"
         },
-        "default": "./dist/prod/index.js"
+        "require": "./dist/dev/index.cjs",
+        "import": "./dist/prod/index.js"
       }
-    }
+    },
+    "main": null,
+    "module": null
   }
 }
