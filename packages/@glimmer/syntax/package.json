@@ -31,18 +31,19 @@
   "types": "index.ts",
   "publishConfig": {
     "access": "public",
-    "main": "dist/prod/index.js",
     "types": "dist/dev/index.d.ts",
     "exports": {
       ".": {
         "types": "./dist/dev/index.d.ts",
         "development": {
           "require": "./dist/dev/index.cjs",
-          "default": "./dist/dev/index.js"
+          "import": "./dist/dev/index.js"
         },
         "require": "./dist/dev/index.cjs",
-        "default": "./dist/prod/index.js"
+        "import": "./dist/prod/index.js"
       }
-    }
+    },
+    "main": null,
+    "module": null
   }
 }

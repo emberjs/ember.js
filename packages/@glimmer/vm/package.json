@@ -20,17 +20,18 @@
   "main": "index.ts",
   "publishConfig": {
     "access": "public",
-    "main": "dist/prod/index.js",
     "types": "dist/dev/index.d.ts",
     "exports": {
       ".": {
         "types": "./dist/dev/index.d.ts",
         "development": {
-          "default": "./dist/dev/index.js"
+          "import": "./dist/dev/index.js"
         },
-        "default": "./dist/prod/index.js"
+        "import": "./dist/prod/index.js"
       }
-    }
+    },
+    "main": null,
+    "module": null
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",

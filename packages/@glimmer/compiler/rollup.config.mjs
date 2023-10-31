@@ -1,3 +1,3 @@
 import { Package } from '@glimmer-workspace/build-support';
 
-export default Package.config(import.meta, { esm: true, cjs: true });
+export default Package.config(import.meta);
