@@ -11,7 +11,12 @@
     "exports": {
       ".": {
         "types": "./dist/dev/index.d.ts",
-        "development": {}
+        "development": {
+          "require": "./dist/dev/index.cjs",
+          "import": "./dist/dev/index.js"
+        },
+        "require": "./dist/dev/index.cjs",
+        "import": "./dist/prod/index.js"
       }
     },
     "main": null,

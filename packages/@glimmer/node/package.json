@@ -35,8 +35,10 @@
       ".": {
         "types": "./dist/dev/index.d.ts",
         "development": {
+          "require": "./dist/dev/index.cjs",
           "import": "./dist/dev/index.js"
         },
+        "require": "./dist/dev/index.cjs",
         "import": "./dist/prod/index.js"
       }
     },
