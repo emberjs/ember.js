@@ -4,6 +4,16 @@
 
 
 
+
+## v0.85.6 (2023-10-31)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/build`, `@glimmer/compiler`, `@glimmer/syntax`
+  * [#1478](https://github.com/glimmerjs/glimmer-vm/pull/1478) Add CJS back to glimmer/syntax,compiler ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.5 (2023-10-30)
 
 #### :bug: Bug Fix
