@@ -11,6 +11,7 @@ import replace from '@rollup/plugin-replace';
 import * as insert from 'rollup-plugin-insert';
 import importMeta from './import-meta.js';
 import inline from './inline.js';
+import terser from '@rollup/plugin-terser';
 
 // eslint-disable-next-line import/no-named-as-default-member
 const { ModuleKind, ModuleResolutionKind, ScriptTarget, ImportsNotUsedAsValues } = ts;
@@ -289,6 +290,7 @@ export class Package {
         commonjs(),
         nodeResolve(),
         ...this.replacements(env),
+        ...(env === 'prod' ? [terser()] : []),
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2022,
