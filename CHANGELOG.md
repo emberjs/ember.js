@@ -5,6 +5,16 @@
 
 
 
+
+## v0.85.7 (2023-10-31)
+
+#### :house: Internal
+* `@glimmer-workspace/build`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1479](https://github.com/glimmerjs/glimmer-vm/pull/1479) CJS needs to be enabled entirely, because ember-source requires it for now  ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.6 (2023-10-31)
 
 #### :bug: Bug Fix
