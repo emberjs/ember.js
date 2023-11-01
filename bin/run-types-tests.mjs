@@ -23,10 +23,14 @@ async function main() {
   for (const pkg of packages) {
     try {
       console.log(`# Smoke testing ${pkg.name}`);
-      await execa('tsc', ['-p', resolve(root, 'tsconfig.dist.json')], {
-        cwd: resolve(pkg.path, 'dist'),
-        preferLocal: true,
-      });
+      await execa(
+        resolve(root, 'node_modules/.bin/tsc'),
+        ['-p', resolve(root, 'tsconfig.dist.json')],
+        {
+          cwd: resolve(pkg.path, 'dist'),
+          preferLocal: true,
+        }
+      );
       console.log(`ok ${testNo++} - ${pkg.name} types passed`);
     } catch (err) {
       let message = getMessage(err);
