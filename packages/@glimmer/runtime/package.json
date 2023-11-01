@@ -29,7 +29,6 @@
     "@glimmer/env": "0.1.7",
     "@glimmer/global-context": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
-    "@glimmer/low-level": "0.78.2",
     "@glimmer/manager": "workspace:^",
     "@glimmer/owner": "workspace:^",
     "@glimmer/program": "workspace:^",
