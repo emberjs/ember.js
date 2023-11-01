@@ -56,8 +56,8 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
   }
 }
 
-export function createPrimitiveRef(value: unknown): Reference {
-  const ref = new ReferenceImpl(UNBOUND);
+export function createPrimitiveRef<T = unknown>(value: T): Reference<T> {
+  const ref = new ReferenceImpl<T>(UNBOUND);
 
   ref.tag = CONSTANT_TAG;
   ref.lastValue = value;
@@ -71,8 +71,8 @@ export function createPrimitiveRef(value: unknown): Reference {
 
 export const UNDEFINED_REFERENCE = createPrimitiveRef(undefined);
 export const NULL_REFERENCE = createPrimitiveRef(null);
-export const TRUE_REFERENCE = createPrimitiveRef(true);
-export const FALSE_REFERENCE = createPrimitiveRef(false);
+export const TRUE_REFERENCE = createPrimitiveRef(true as const);
+export const FALSE_REFERENCE = createPrimitiveRef(false as const);
 
 export function createConstRef(value: unknown, debugLabel: false | string): Reference {
   const ref = new ReferenceImpl(CONSTANT);
