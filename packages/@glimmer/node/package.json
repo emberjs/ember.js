@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/node",
   "type": "module",
-  "version": "0.85.8",
+  "version": "0.85.9",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/node",
   "dependencies": {
     "@glimmer/runtime": "workspace:^",
