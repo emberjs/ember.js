@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/local-debug-flags",
   "type": "module",
-  "version": "0.85.9",
+  "version": "0.85.10",
   "repository": {
     "type": "git",
     "url": "https://github.com/glimmerjs/glimmer-vm.git",
