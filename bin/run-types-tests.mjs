@@ -9,7 +9,11 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const root = resolve(__dirname, '..');
 
 async function main() {
-  const packages = getPackages().filter((pkg) => pkg.name !== '@glimmer/vm-babel-plugins');
+  // vm-babel-plugins is exclusively used by ember.
+  // dom-change-list isn't used by anyone, even in this repo.
+  const packages = getPackages().filter(
+    (pkg) => pkg.name !== '@glimmer/vm-babel-plugins' && pkg.name !== '@glimmer/dom-change-list'
+  );
 
   /**
    * Runs a smoke test of the generated type definitions by importing every module
