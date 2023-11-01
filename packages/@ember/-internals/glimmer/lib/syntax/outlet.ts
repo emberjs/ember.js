@@ -110,7 +110,12 @@ export const outletHelper = internalHelper(
   }
 );
 
-function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefinitionState | null {
+function stateFor(
+  // SAFETY: default type here is Reference<unknown>, which isn't assignable to the
+  //         type in OutletDefinitionState which is Reference<Outlet | undefiend>
+  ref: Reference<any>,
+  outlet: OutletState | undefined
+): OutletDefinitionState | null {
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;
