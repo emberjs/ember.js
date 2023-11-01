@@ -9,7 +9,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const root = resolve(__dirname, '..');
 
 async function main() {
-  const packages = getPackages();
+  const packages = getPackages().filter((pkg) => pkg.name !== '@glimmer/vm-babel-plugins');
 
   /**
    * Runs a smoke test of the generated type definitions by importing every module
