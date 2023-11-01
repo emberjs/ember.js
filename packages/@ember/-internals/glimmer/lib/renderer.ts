@@ -25,7 +25,7 @@ import type {
 import { CurriedType } from '@glimmer/vm';
 import type { Option } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
-import { artifacts } from '@glimmer/program';
+import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
@@ -336,7 +336,11 @@ export class Renderer {
 
     let sharedArtifacts = artifacts();
 
-    this._context = programCompilationContext(sharedArtifacts, resolver);
+    this._context = programCompilationContext(
+      sharedArtifacts,
+      resolver,
+      (heap) => new RuntimeOpImpl(heap)
+    );
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
     this._runtime = runtimeContext(
