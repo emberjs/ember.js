@@ -13,12 +13,13 @@
     "dist"
   ],
   "devDependencies": {
-    "eslint": "^8.52.0",
-    "rollup": "^3.21.6",
-    "@types/qunit": "^2.19.7",
-    "@glimmer/compiler": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^",
-    "publint": "^0.2.5"
+    "@glimmer/compiler": "workspace:^",
+    "@types/qunit": "^2.19.7",
+    "eslint": "^8.52.0",
+    "publint": "^0.2.5",
+    "rollup": "^3.21.6",
+    "typescript": "*"
   },
   "scripts": {
     "test:lint": "eslint .",

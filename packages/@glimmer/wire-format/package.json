@@ -38,9 +38,10 @@
     "module": null
   },
   "devDependencies": {
-    "eslint": "^8.52.0",
     "@glimmer-workspace/build-support": "workspace:^",
+    "eslint": "^8.52.0",
+    "publint": "^0.2.5",
     "rollup": "^3.21.6",
-    "publint": "^0.2.5"
+    "typescript": "*"
   }
 }
