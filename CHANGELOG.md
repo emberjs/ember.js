@@ -9,6 +9,16 @@
 
 
 
+
+## v0.85.11 (2023-11-01)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1485](https://github.com/glimmerjs/glimmer-vm/pull/1485) Remove dependency on @glimmer/low-level because it doesn't exist anymore (and is unused) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.10 (2023-11-01)
 
 #### :bug: Bug Fix
