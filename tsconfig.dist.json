@@ -21,7 +21,7 @@
 
     "paths": {
       "@glimmer/interfaces": ["./packages/@glimmer/interfaces/index.d.ts"],
-      "@glimmer/*": ["./packages/@glimmer/*/dist/index.d.ts"]
+      "@glimmer/*": ["./packages/@glimmer/*/dist/dev/index.d.ts"]
     }
   },
   "include": ["packages/@glimmer/*/dist/**/*.d.ts"],

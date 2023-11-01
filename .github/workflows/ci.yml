@@ -111,8 +111,7 @@ jobs:
         with:
           node-version: 20.1.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm build
-      - run: pnpm test:types
+      - run: pnpm turbo test:types
 
   floating-dependencies:
     name: Floating Dependencies
