@@ -33,8 +33,8 @@ dependencies:
     specifier: 0.84.3
     version: 0.84.3
   '@glimmer/interfaces':
-    specifier: 0.84.3
-    version: 0.84.3
+    specifier: 0.85.8
+    version: 0.85.8
   '@glimmer/manager':
     specifier: 0.84.3
     version: 0.84.3
@@ -2458,6 +2458,12 @@ packages:
     resolution: {integrity: sha512-dk32ykoNojt0mvEaIW6Vli5MGTbQo58uy3Epj7ahCgTHmWOKuw/0G83f2UmFprRwFx689YTXG38I/vbpltEjzg==}
     dependencies:
       '@simple-dom/interface': 1.4.0
+
+  /@glimmer/interfaces@0.85.8:
+    resolution: {integrity: sha512-Pzz05027itnvPTfjFQbXE7710bfOcPQIV8QLqvHk4+3iZZ+9C50xbv3NzbkUVkUKTkm+Acijc768bz4aVQkd9Q==}
+    dependencies:
+      '@simple-dom/interface': 1.4.0
+    dev: false
 
   /@glimmer/low-level@0.78.2:
     resolution: {integrity: sha512-0S6TWOOd0fzLLysw1pWZN0TgasaHmYs1Sjz9Til1mTByIXU1S+1rhdyr2veSQPO/aRjPuEQyKXZQHvx23Zax6w==}
@@ -8217,7 +8223,7 @@ packages:
       - supports-color
 
   /hawk@1.1.1:
-    resolution: {integrity: sha1-h81JH5tG5OKurKM1QWdmiF0tHtk=}
+    resolution: {integrity: sha512-am8sVA2bCJIw8fuuVcKvmmNnGFUGW8spTkVtj2fXTEZVkfN42bwFZFtDem57eFi+NSxurJB8EQ7Jd3uCHLn8Vw==}
     engines: {node: '>=0.8.0'}
     deprecated: This module moved to @hapi/hawk. Please make sure to switch over as this distribution is no longer supported and may contain bugs and critical security issues.
     requiresBuild: true
