@@ -8,6 +8,16 @@
 
 
 
+
+## v0.85.10 (2023-11-01)
+
+#### :bug: Bug Fix
+* `@glimmer/reference`
+  * [#1484](https://github.com/glimmerjs/glimmer-vm/pull/1484) Unify reference factory function signatures ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.9 (2023-11-01)
 
 #### :bug: Bug Fix
