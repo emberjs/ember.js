@@ -7,6 +7,16 @@
 
 
 
+
+## v0.85.9 (2023-11-01)
+
+#### :bug: Bug Fix
+* `@glimmer/reference`
+  * [#1481](https://github.com/glimmerjs/glimmer-vm/pull/1481) MakePrimitiveRef generic so that UNDEFINED_REFERENCE can be Reference<undefined> rather than Reference<unknown> ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.8 (2023-10-31)
 
 #### :house: Internal
