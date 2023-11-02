@@ -24,12 +24,13 @@
     "babel-plugin-debug-macros": "^0.3.4"
   },
   "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:^",
     "babel-plugin-tester": "^11.0.4",
     "eslint": "^8.52.0",
     "mocha": "^10.2.0",
+    "publint": "^0.2.5",
     "rollup": "^3.21.6",
-    "@glimmer-workspace/build-support": "workspace:^",
-    "publint": "^0.2.5"
+    "typescript": "*"
   },
   "main": "index.ts",
   "types": "index.ts",

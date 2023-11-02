@@ -19,11 +19,12 @@
     "dist"
   ],
   "devDependencies": {
-    "eslint": "^8.52.0",
-    "rollup": "^3.21.6",
-    "@glimmer/local-debug-flags": "workspace:^",
     "@glimmer-workspace/build-support": "workspace:^",
-    "publint": "^0.2.5"
+    "@glimmer/local-debug-flags": "workspace:^",
+    "eslint": "^8.52.0",
+    "publint": "^0.2.5",
+    "rollup": "^3.21.6",
+    "typescript": "*"
   },
   "scripts": {
     "test:lint": "eslint .",
