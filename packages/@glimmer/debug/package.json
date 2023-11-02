@@ -22,7 +22,7 @@
       }
     },
     "main": null,
-    "module": null
+    "module": "dist/dev/index.js"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:^",
