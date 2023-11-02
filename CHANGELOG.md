@@ -10,6 +10,25 @@
 
 
 
+
+## v0.85.12 (2023-11-02)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1488](https://github.com/glimmerjs/glimmer-vm/pull/1488) Add back package.json#module so the ember build can have fewer changes ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`, `@glimmer/vm-babel-plugins`
+  * [#1460](https://github.com/glimmerjs/glimmer-vm/pull/1460) fix capture render tree fails when errors in args ([@patricklx](https://github.com/patricklx))
+
+#### :house: Internal
+* `@glimmer`, `@glimmer/dom-change-list`
+  * [#1486](https://github.com/glimmerjs/glimmer-vm/pull/1486) Remove @glimmer/dom-change-list as nothing depends on it ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/dom-change-list`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1482](https://github.com/glimmerjs/glimmer-vm/pull/1482) Setup the cache server ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.11 (2023-11-01)
 
 #### :bug: Bug Fix
