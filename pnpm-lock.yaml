@@ -729,55 +729,6 @@ importers:
         specifier: workspace:^
         version: link:../../util
 
-  packages/@glimmer/dom-change-list:
-    dependencies:
-      '@glimmer/interfaces':
-        specifier: workspace:^
-        version: link:../interfaces
-      '@glimmer/util':
-        specifier: workspace:^
-        version: link:../util
-    devDependencies:
-      '@glimmer-workspace/build-support':
-        specifier: workspace:^
-        version: link:../../@glimmer-workspace/build
-      '@glimmer/local-debug-flags':
-        specifier: workspace:^
-        version: link:../local-debug-flags
-      eslint:
-        specifier: ^8.52.0
-        version: 8.52.0
-      publint:
-        specifier: ^0.2.5
-        version: 0.2.5
-      rollup:
-        specifier: ^3.21.6
-        version: 3.21.6
-      typescript:
-        specifier: ^5.0.4
-        version: 5.0.4
-
-  packages/@glimmer/dom-change-list/test:
-    dependencies:
-      '@glimmer/dom-change-list':
-        specifier: workspace:^
-        version: link:..
-      '@glimmer/interfaces':
-        specifier: workspace:^
-        version: link:../../interfaces
-      '@glimmer/util':
-        specifier: workspace:^
-        version: link:../../util
-      '@simple-dom/document':
-        specifier: ^1.4.0
-        version: 1.4.0
-      '@simple-dom/serializer':
-        specifier: ^1.4.0
-        version: 1.4.0
-      '@simple-dom/void-map':
-        specifier: ^1.4.0
-        version: 1.4.0
-
   packages/@glimmer/encoder:
     dependencies:
       '@glimmer/interfaces':
