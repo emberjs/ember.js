@@ -30,11 +30,10 @@
     "test:publint": {
       "dependsOn": ["build"]
     },
-    "typecheck": {
-      "inputs": ["dist/**"],
-      "dependsOn": ["^build", "test:types"]
-    },
-    "test:types": {}
+    "//#test:types": {
+      "inputs": ["**/dist/**", "tsconfig.dist.json"],
+      "dependsOn": ["^build"]
+    }
   },
   "globalDependencies": [
     "tsconfig.json",

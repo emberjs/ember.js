@@ -11,16 +11,22 @@ on:
   schedule:
     - cron: '0 3 * * *' # daily, at 3am
 
+env:
+  TURBO_API: http://127.0.0.1:9080
+  TURBO_TOKEN: this-is-not-a-secret
+  TURBO_TEAM: myself
+
 jobs:
   install_dependencies:
-    name: 'Install Dependencies'
+    name: 'Setup'
     runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: wyvox/action-setup-pnpm@v2
+      - uses: wyvox/action@v1
         with:
           node-version: 20.1.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm turbo build
 
   lint:
     name: Linting
@@ -29,10 +35,10 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: wyvox/action-setup-pnpm@v2
+      - uses: wyvox/action@v1
         with:
           node-version: 20.1.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm lint
 
   test-chrome:
@@ -52,10 +58,10 @@ jobs:
             libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
             libxss1 libxtst6 ca-certificates fonts-liberation libnss3 lsb-release \
             xdg-utils wget libcairo2
-      - uses: actions/checkout@v3
-      - uses: wyvox/action-setup-pnpm@v2
+      - uses: wyvox/action@v1
         with:
           node-version: 20.1.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm test
 
   # test-browserstack:
@@ -101,12 +107,11 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: wyvox/action-setup-pnpm@v2
+      - uses: wyvox/action@v1
         with:
           node-version: 20.1.0
-      - run: pnpm build
-      - run: pnpm test:types
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm turbo test:types
 
   floating-dependencies:
     name: Floating Dependencies
@@ -115,9 +120,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: wyvox/action-setup-pnpm@v2
+      - uses: wyvox/action@v1
         with:
-          args: '--no-lockfile'
+          pnpm-args: '--no-lockfile'
           node-version: 20.1.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm test

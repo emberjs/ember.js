@@ -30,8 +30,7 @@
     "test:node": "node bin/run-node-tests.mjs",
     "test:babel-plugins": "yarn workspace @glimmer/vm-babel-plugins test",
     "test:smoke": "SMOKE_TESTS=true ember test",
-    "test:types": "node bin/run-types-tests.mjs",
-    "test:typecheck": "tsc -b"
+    "test:types": "node bin/run-types-tests.mjs"
   },
   "pnpm": {
     "overrides": {
