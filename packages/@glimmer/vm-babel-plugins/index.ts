@@ -21,7 +21,7 @@ export default function generateVmPlugins(
   return [
     [
       __loadPlugins
-        ?  
+        ?
           require('babel-plugin-debug-macros')
         : require.resolve('babel-plugin-debug-macros'),
       {
