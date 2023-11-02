@@ -42,6 +42,6 @@
       }
     },
     "main": null,
-    "module": null
+    "module": "dist/dev/index.js"
   }
 }
