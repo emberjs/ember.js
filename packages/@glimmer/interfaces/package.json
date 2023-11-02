@@ -17,9 +17,7 @@
     "test:publint": "publint"
   },
   "publishConfig": {
-    "access": "public",
-    "main": null,
-    "module": "dist/dev/index.js"
+    "access": "public"
   },
   "dependencies": {
     "@simple-dom/interface": "^1.4.0"
