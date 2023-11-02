@@ -37,7 +37,6 @@ module.exports = {
     {
       files: [
         'vm/lib/registers.ts',
-        'dom-change-list/test/support.ts',
         'node/lib/serialize-builder.ts',
         'util/lib/immediate.ts',
         'util/test/immediate-test.ts',
@@ -63,7 +62,6 @@ module.exports = {
         'syntax/test/plugin-node-test.ts',
         'syntax/test/loc-node-test.ts',
         'syntax/test/parser-node-test.ts',
-        'dom-change-list/test/support.ts',
         'reference/test/iterable-test.ts',
         'reference/test/references-test.ts',
         'test/traversal/visiting-keys-node-test.ts',
