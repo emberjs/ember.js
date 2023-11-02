@@ -42,7 +42,7 @@
       }
     },
     "main": null,
-    "module": null
+    "module": "dist/dev/index.js"
   },
   "scripts": {
     "test:lint": "eslint .",

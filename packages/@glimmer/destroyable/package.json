@@ -20,7 +20,7 @@
       }
     },
     "main": null,
-    "module": null
+    "module": "dist/dev/index.js"
   },
   "dependencies": {
     "@glimmer/env": "0.1.7",

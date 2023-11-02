@@ -19,7 +19,7 @@
   "publishConfig": {
     "access": "public",
     "main": null,
-    "module": null
+    "module": "dist/dev/index.js"
   },
   "dependencies": {
     "@simple-dom/interface": "^1.4.0"
