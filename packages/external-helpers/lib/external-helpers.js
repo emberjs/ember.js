@@ -9,6 +9,19 @@ const hasReflectConstruct = typeof Reflect === 'object' && typeof Reflect.constr
 
 const nativeWrapperCache = new Map();
 
+// Implementations:
+// https://github.com/babel/babel/blob/436d78920883603668666210a4aacf524257bc3b/packages/babel-helpers/src/helpers.ts#L958
+let privateFieldId = 0;
+export function classPrivateFieldLooseKey(name) {
+  return '__private_' + privateFieldId++ + '_' + name;
+}
+export function classPrivateFieldLooseBase(receiver, privateKey) {
+  if (!Object.prototype.hasOwnProperty.call(receiver, privateKey)) {
+    throw new TypeError('attempted to use private field on non-instance');
+  }
+  return receiver;
+}
+
 // Super minimal version of Babel's wrapNativeSuper. We only use this for
 // extending Function, for ComputedDecoratorImpl and AliasDecoratorImpl. We know
 // we will never directly create an instance of these classes so no need to
