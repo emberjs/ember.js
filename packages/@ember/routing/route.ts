@@ -12,7 +12,7 @@ import EmberObject, { computed, get, set, getProperties, setProperties } from '@
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
-import { isEmpty, typeOf } from '@ember/utils';
+import { typeOf } from '@ember/utils';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
@@ -22,7 +22,8 @@ import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { Template, TemplateFactory } from '@glimmer/interfaces';
+import type { RenderState } from '@ember/-internals/glimmer';
+import type { TemplateFactory } from '@glimmer/interfaces';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { QueryParam } from '@ember/routing/router';
@@ -69,8 +70,8 @@ function isStoreLike(store: unknown): store is StoreLike {
   );
 }
 
-export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = Symbol('render');
+const RENDER_STATE = Symbol('render-state');
 
 /**
 @module @ember/routing/route
@@ -807,7 +808,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @method enter
   */
   enter(transition: Transition) {
-    ROUTE_CONNECTIONS.set(this, []);
+    this[RENDER_STATE] = undefined;
     this.activate(transition);
     this.trigger('activate', transition);
   }
@@ -1503,26 +1504,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     return route?.currentModel;
   }
 
-  /**
-    `this[RENDER]` is used to render a template into a region of another template
-    (indicated by an `{{outlet}}`).
+  [RENDER_STATE]: RenderState | undefined = undefined;
 
+  /**
+    `this[RENDER]` is used to set up the rendering option for the outlet state.
     @method this[RENDER]
-    @param {String} name the name of the template to render
-    @param {Object} [options] the options
-    @param {String} [options.into] the template to render into,
-                    referenced by name. Defaults to the parent template
-    @param {String} [options.outlet] the outlet inside `options.into` to render into.
-                    Defaults to 'main'
-    @param {String|Object} [options.controller] the controller to use for this template,
-                    referenced by name or as a controller instance. Defaults to the Route's paired controller
-    @param {Object} [options.model] the model object to set on `options.controller`.
-                    Defaults to the return value of the Route's model hook
     @private
    */
-  [RENDER](name?: string, options?: PartialRenderOptions) {
-    let renderOptions = buildRenderOptions(this, name, options);
-    ROUTE_CONNECTIONS.get(this).push(renderOptions);
+  [RENDER]() {
+    this[RENDER_STATE] = buildRenderState(this);
     once(this._router, '_setOutlets');
   }
 
@@ -1536,9 +1526,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @method teardownViews
   */
   teardownViews() {
-    let connections = ROUTE_CONNECTIONS.get(this);
-    if (connections !== undefined && connections.length > 0) {
-      ROUTE_CONNECTIONS.set(this, []);
+    if (this[RENDER_STATE]) {
+      this[RENDER_STATE] = undefined;
       once(this._router, '_setOutlets');
     }
   }
@@ -1841,122 +1830,33 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   >;
 }
 
-function parentRoute(route: Route) {
-  let routeInfo = routeInfoFor(route, route._router._routerMicrolib.state!.routeInfos, -1);
-  return routeInfo && routeInfo.route;
+export function getRenderState(route: Route): RenderState | undefined {
+  return route[RENDER_STATE];
 }
 
-function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offset = 0) {
-  if (!routeInfos) {
-    return;
-  }
-
-  let current: Route | undefined;
-  for (let i = 0; i < routeInfos.length; i++) {
-    let routeInfo = routeInfos[i];
-    assert('has current routeInfo', routeInfo);
-    current = routeInfo.route;
-    if (current === route) {
-      return routeInfos[i + offset];
-    }
-  }
-
-  return;
-}
-
-function buildRenderOptions(
-  route: Route,
-  nameOrOptions?: string | PartialRenderOptions,
-  options?: PartialRenderOptions
-): RenderOptions {
-  let isDefaultRender = !nameOrOptions && !options;
-  let _name: string;
-  if (!isDefaultRender) {
-    if (typeof nameOrOptions === 'object' && !options) {
-      _name = route.templateName || route.routeName;
-      options = nameOrOptions;
-    } else {
-      assert(
-        'The name in the given arguments is undefined or empty string',
-        !isEmpty(nameOrOptions)
-      );
-      // SAFETY: the check for `nameOrOptions` above should be validating this,
-      // and as of TS 5.1.0-dev.2023-0417 it is *not*. This cast can go away if
-      // TS validates it correctly *or* if we refactor this entire function to
-      // be less wildly dynamic in its argument handling.
-      _name = nameOrOptions as string;
-    }
-  }
-  assert(
-    'You passed undefined as the outlet name.',
-    isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
-  );
-
+function buildRenderState(route: Route): RenderState {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
-  let name, templateName, into, outlet, model;
-  let controller;
 
-  if (options) {
-    into = options.into && options.into.replace(/\//g, '.');
-    outlet = options.outlet;
-    controller = options.controller;
-    model = options.model;
-  }
-  outlet = outlet || 'main';
+  let name = route.routeName;
 
-  if (isDefaultRender) {
-    name = route.routeName;
-    templateName = route.templateName || name;
-  } else {
-    name = _name!.replace(/\//g, '.');
-    templateName = name;
-  }
-
-  if (controller === undefined) {
-    if (isDefaultRender) {
-      controller = route.controllerName || owner.lookup(`controller:${name}`);
-    } else {
-      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
-    }
-  }
-
-  if (typeof controller === 'string') {
-    let controllerName = controller;
-    controller = owner.lookup(`controller:${controllerName}`);
-    assert(
-      `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
-      isDefaultRender || controller !== undefined
-    );
-  }
-
+  let controller = owner.lookup(`controller:${route.controllerName || name}`);
   assert('Expected an instance of controller', controller instanceof Controller);
 
-  if (model === undefined) {
-    model = route.currentModel;
-  } else {
-    controller.set('model', model);
-  }
+  let model = route.currentModel;
 
-  let template = owner.lookup(`template:${templateName}`) as TemplateFactory;
-  assert(
-    `Could not find "${templateName}" template, view, or component.`,
-    isDefaultRender || template !== undefined
-  );
+  let template = owner.lookup(`template:${route.templateName || name}`) as
+    | TemplateFactory
+    | undefined;
 
-  let parent: any;
-  if (into && (parent = parentRoute(route)) && into === parent.routeName) {
-    into = undefined;
-  }
-
-  let renderOptions: RenderOptions = {
+  let render: RenderState = {
     owner,
-    into,
-    outlet,
+    into: undefined,
+    outlet: 'main',
     name,
     controller,
     model,
-    template: template !== undefined ? template(owner) : route._topLevelViewTemplate(owner),
+    template: template?.(owner) ?? route._topLevelViewTemplate(owner),
   };
 
   if (DEBUG) {
@@ -1968,22 +1868,8 @@ function buildRenderOptions(
     }
   }
 
-  return renderOptions;
+  return render;
 }
-
-export interface RenderOptions {
-  owner: Owner;
-  into?: string;
-  outlet: string;
-  name: string;
-  controller: Controller | string | undefined;
-  model: unknown;
-  template: Template;
-}
-
-type PartialRenderOptions = Partial<
-  Pick<RenderOptions, 'into' | 'outlet' | 'controller' | 'model'>
->;
 
 export function getFullQueryParams(router: EmberRouter, state: RouteTransitionState) {
   if (state.fullQueryParams) {
