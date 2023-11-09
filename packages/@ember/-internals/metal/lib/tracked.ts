@@ -171,10 +171,11 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
     dirtyTagFor(this, SELF_TAG);
   }
 
+  get.isTracked = true;
+
   let newDesc = {
     enumerable: true,
     configurable: true,
-    isTracked: true,
 
     get,
     set,
