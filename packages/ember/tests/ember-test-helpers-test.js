@@ -16,8 +16,14 @@ const { module, test } = QUnit;
   revision).
 */
 module('@ember/test-helpers emulation test', function () {
-  module('v1.6.0', function () {
+  module('v1.6.1', function () {
     let EMPTY_TEMPLATE = compile('');
+
+    function lookupTemplate(owner, templateFullName) {
+      let template = owner.lookup(templateFullName);
+      if (typeof template === 'function') return template(owner);
+      return template;
+    }
 
     function settled() {
       return new Promise(function (resolve) {
@@ -71,7 +77,7 @@ module('@ember/test-helpers emulation test', function () {
     function render(template, context) {
       let { owner } = context;
       let toplevelView = owner.lookup('-top-level-view:main');
-      let OutletTemplate = owner.lookup('template:-outlet');
+      let OutletTemplate = lookupTemplate(owner, 'template:-outlet');
       templateId += 1;
       let templateFullName = `template:-undertest-${templateId}`;
       owner.register(templateFullName, template);
@@ -96,7 +102,7 @@ module('@ember/test-helpers emulation test', function () {
               name: 'index',
               controller: context,
               ViewClass: undefined,
-              template: owner.lookup(templateFullName),
+              template: lookupTemplate(owner, templateFullName),
               outlets: {},
             },
             outlets: {},

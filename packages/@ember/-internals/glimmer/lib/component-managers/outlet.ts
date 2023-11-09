@@ -32,12 +32,13 @@ import type { OutletState } from '../utils/outlet';
 import type OutletView from '../views/outlet';
 
 function instrumentationPayload(def: OutletDefinitionState) {
-  return { object: `${def.name}:${def.outlet}` };
+  // "main" used to be the outlet name, keeping it around for compatibility
+  return { object: `${def.name}:main` };
 }
 
 interface OutletInstanceState {
   self: Reference;
-  outlet?: { name: string };
+  outletBucket?: {};
   engineBucket?: { mountPoint: string };
   engine?: EngineInstance;
   finalize: () => void;
@@ -46,7 +47,6 @@ interface OutletInstanceState {
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-  outlet: string;
   template: Template;
   controller: unknown;
   model: unknown;
@@ -91,7 +91,8 @@ class OutletComponentManager
     };
 
     if (env.debugRenderTree !== undefined) {
-      state.outlet = { name: definition.outlet };
+      state.outletBucket = {};
+
       let parentState = valueForRef(parentStateRef);
       let parentOwner = parentState && parentState.render && parentState.render.owner;
       let currentOwner = valueForRef(currentStateRef)!.render!.owner;
@@ -126,16 +127,17 @@ class OutletComponentManager
   ): CustomRenderNode[] {
     let nodes: CustomRenderNode[] = [];
 
-    if (state.outlet) {
-      nodes.push({
-        bucket: state.outlet,
-        type: 'outlet',
-        name: state.outlet.name,
-        args: EMPTY_ARGS,
-        instance: undefined,
-        template: undefined,
-      });
-    }
+    assert('[BUG] outletBucket must be set', state.outletBucket);
+
+    nodes.push({
+      bucket: state.outletBucket,
+      type: 'outlet',
+      // "main" used to be the outlet name, keeping it around for compatibility
+      name: 'main',
+      args: EMPTY_ARGS,
+      instance: undefined,
+      template: undefined,
+    });
 
     if (state.engineBucket) {
       nodes.push({

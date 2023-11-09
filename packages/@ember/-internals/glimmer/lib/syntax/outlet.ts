@@ -16,7 +16,6 @@ import { dict } from '@glimmer/util';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';
-import { isTemplateFactory } from '../template';
 import type { OutletState } from '../utils/outlet';
 
 /**
@@ -53,9 +52,7 @@ export const outletHelper = internalHelper(
 
     let outletRef = createComputeRef(() => {
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
-      let outlets = state !== undefined ? state.outlets : undefined;
-
-      return outlets !== undefined ? outlets['main'] : undefined;
+      return state?.outlets?.main;
     });
 
     let lastState: OutletDefinitionState | null = null;
@@ -120,16 +117,9 @@ function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefini
   let template = render.template;
   if (template === undefined) return null;
 
-  // this guard can be removed once @ember/test-helpers@1.6.0 has "aged out"
-  // and is no longer considered supported
-  if (isTemplateFactory(template)) {
-    template = template(render.owner);
-  }
-
   return {
     ref,
     name: render.name,
-    outlet: render.outlet,
     template,
     controller: render.controller,
     model: render.model,
