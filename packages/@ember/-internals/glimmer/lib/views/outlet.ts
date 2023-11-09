@@ -23,7 +23,6 @@ export interface BootEnvironment {
 }
 
 const TOP_LEVEL_NAME = '-top-level';
-const TOP_LEVEL_OUTLET = 'main';
 
 export default class OutletView {
   static extend(injections: any): typeof OutletView {
@@ -69,7 +68,7 @@ export default class OutletView {
       render: {
         owner: owner,
         into: undefined,
-        outlet: TOP_LEVEL_OUTLET,
+        outlet: 'main',
         name: TOP_LEVEL_NAME,
         controller: undefined,
         model: undefined,
@@ -91,7 +90,6 @@ export default class OutletView {
     this.state = {
       ref,
       name: TOP_LEVEL_NAME,
-      outlet: TOP_LEVEL_OUTLET,
       template,
       controller: undefined,
       model: undefined,

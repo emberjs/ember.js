@@ -474,7 +474,7 @@ export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
 export { default as OutletView, BootEnvironment } from './lib/views/outlet';
-export { OutletState } from './lib/utils/outlet';
+export { OutletState, RenderState } from './lib/utils/outlet';
 export {
   componentCapabilities,
   modifierCapabilities,
