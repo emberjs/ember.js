@@ -45,4 +45,5 @@ export interface Environment {
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree | undefined;
+  isArgumentCaptureError?: ((error: any) => boolean) | undefined;
 }
