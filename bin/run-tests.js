@@ -39,7 +39,7 @@ function run(queryString) {
     queryString = `${queryString}&debugrendertree`;
   }
 
-  let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
+  let url = 'http://localhost:' + PORT + '/tests/?disable_local_debug&' + queryString;
   return runInBrowser(url, 3);
 }
 
