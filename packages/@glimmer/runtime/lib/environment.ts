@@ -18,6 +18,7 @@ import { track, updateTag } from '@glimmer/validator';
 
 import DebugRenderTree from './debug-render-tree';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
+import { isArgumentError } from './vm/arguments';
 
 export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
 
@@ -101,6 +102,7 @@ export class EnvironmentImpl implements Environment {
   // Delegate methods and values
   public isInteractive: boolean;
 
+  isArgumentCaptureError: ((error: any) => boolean) | undefined;
   debugRenderTree: DebugRenderTree<object> | undefined;
 
   constructor(
@@ -109,6 +111,7 @@ export class EnvironmentImpl implements Environment {
   ) {
     this.isInteractive = delegate.isInteractive;
     this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
+    this.isArgumentCaptureError = this.delegate.enableDebugTooling ? isArgumentError : undefined;
     if (options.appendOperations) {
       this.appendOperations = options.appendOperations;
       this.updateOperations = options.updateOperations;
