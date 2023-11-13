@@ -500,48 +500,6 @@ export function reifyArgs(args: CapturedArguments) {
   };
 }
 
-export function reifyNamedDebug(named: CapturedNamedArguments) {
-  let reified = dict();
-  let errors: Record<string, Error> = dict();
-
-  for (const [key, value] of Object.entries(named)) {
-    try {
-      reified[key] = valueForRef(value);
-    } catch (e) {
-      reified[key] = e;
-      errors[key] = e as Error;
-    }
-  }
-
-  return { reified, errors };
-}
-
-export function reifyPositionalDebug(positional: CapturedPositionalArguments) {
-  let errors: Error[] = [];
-  let reified = positional.map((p) => {
-    try {
-      return valueForRef(p);
-    } catch(e) {
-      errors.push(e as Error);
-      return e;
-    }
-  });
-  return {
-    reified,
-    errors
-  }
-}
-
-export function reifyArgsDebug(args: CapturedArguments) {
-  let named = reifyNamedDebug(args.named);
-  let positional = reifyPositionalDebug(args.positional);
-  return {
-    named: named.reified,
-    positional: positional.reified,
-    errors: {...named.errors, ...positional.errors} as unknown as Record<string, Error >
-  };
-}
-
 export const EMPTY_NAMED = Object.freeze(Object.create(null)) as CapturedNamedArguments;
 export const EMPTY_POSITIONAL = EMPTY_REFERENCES as CapturedPositionalArguments;
 export const EMPTY_ARGS = createCapturedArgs(EMPTY_NAMED, EMPTY_POSITIONAL);

@@ -60,9 +60,3 @@ export interface Arguments {
   positional: readonly unknown[];
   named: Record<string, unknown>;
 }
-
-export interface ArgumentsDebug {
-  positional: readonly unknown[];
-  named: Record<string, unknown>;
-  errors: Record<string, Error>;
-}
