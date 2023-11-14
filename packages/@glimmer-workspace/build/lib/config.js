@@ -354,6 +354,7 @@ export class Package {
             values: {
               'import.meta.env.DEV': 'DEBUG',
               'import.meta.env.PROD': '!DEBUG',
+              'import.meta.env.VM_LOCAL_DEV': 'false',
             },
           }),
           insert.transform((_magicString, code, _id) => {
