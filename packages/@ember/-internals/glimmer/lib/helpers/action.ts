@@ -301,10 +301,10 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
       // SAFETY: glimmer-vm should expose narrowing utilities for references
       //         as is, `target` is still `Reference<unknown>`.
       //         however, we never even tried to narrow `target`, so this is potentially risky code.
-      target! as Reference<MaybeActionHandler>,
+      target!,
       // SAFETY: glimmer-vm should expose narrowing utilities for references
       //         as is, `action` is still `Reference<unknown>`
-      action as Reference<unknown>,
+      action,
       processArgs,
       debugKey
     );
@@ -353,7 +353,7 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 
 function makeDynamicClosureAction(
   context: object,
-  targetRef: Reference<MaybeActionHandler>,
+  targetRef: Reference<unknown>,
   actionRef: Reference<unknown>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
@@ -382,7 +382,7 @@ interface MaybeActionHandler {
 
 function makeClosureAction(
   context: object,
-  target: MaybeActionHandler,
+  target: unknown,
   action: unknown | null | undefined | string | Function,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
@@ -396,8 +396,8 @@ function makeClosureAction(
   );
 
   if (typeof action === 'string') {
-    self = target;
-    fn = (target.actions && target.actions[action as string])!;
+    self = target as object;
+    fn = (target as { actions: Record<string, Function> })?.actions?.[action as string] as Function;
 
     assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
   } else if (typeof action === 'function') {
