@@ -11,6 +11,18 @@
 
 
 
+
+## v0.85.13 (2023-11-14)
+
+#### :house: Internal
+* `@glimmer-workspace/build`, `@glimmer/local-debug-flags`
+  * [#1494](https://github.com/glimmerjs/glimmer-vm/pull/1494) Compile away local debug for publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`, `@glimmer/vm-babel-plugins`
+  * [#1493](https://github.com/glimmerjs/glimmer-vm/pull/1493) Revert "fix capture render tree fails when errors in args" ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.12 (2023-11-02)
 
 #### :bug: Bug Fix
