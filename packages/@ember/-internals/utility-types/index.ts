@@ -29,4 +29,4 @@ export class Opaque<Data> {
   private declare [Data]: Data;
 }
 
-export type Option<T> = T | null;
+export type Nullable<T> = T | null;

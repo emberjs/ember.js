@@ -9,7 +9,7 @@ import type {
   Owner,
   VMArguments,
 } from '@glimmer/interfaces';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
 import type Component from '../component';
@@ -32,7 +32,7 @@ class RootComponentManager extends CurlyComponentManager {
   create(
     _owner: Owner,
     _state: unknown,
-    _args: Option<VMArguments>,
+    _args: Nullable<VMArguments>,
     { isInteractive }: Environment,
     dynamicScope: DynamicScope
   ) {

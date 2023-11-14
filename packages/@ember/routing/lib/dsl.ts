@@ -1,6 +1,6 @@
 import type { InternalFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import type { MatchCallback } from 'route-recognizer';
 import type { EngineInfo, EngineRouteInfo } from './engines';
 
@@ -67,7 +67,7 @@ export default class DSLImpl implements DSL {
   route(name: string, options: RouteOptions, callback: DSLCallback): void;
   route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback): void {
     let options: RouteOptions;
-    let callback: Option<DSLCallback> = null;
+    let callback: Nullable<DSLCallback> = null;
 
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (isCallback(_options)) {

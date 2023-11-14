@@ -23,7 +23,7 @@ import type {
 } from '@glimmer/interfaces';
 
 import { CurriedType } from '@glimmer/vm';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import type { Reference } from '@glimmer/reference';
@@ -55,7 +55,7 @@ import OutletView from './views/outlet';
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
 export interface View {
-  parentView: Option<View>;
+  parentView: Nullable<View>;
   renderer: Renderer;
   tagName: string | null;
   elementId: string | null;
@@ -464,7 +464,7 @@ export class Renderer {
     this._clearAllRoots();
   }
 
-  getElement(view: View): Option<Element> {
+  getElement(view: View): Nullable<Element> {
     if (this._isInteractive) {
       return getViewElement(view);
     } else {

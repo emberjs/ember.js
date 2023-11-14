@@ -5,7 +5,7 @@ import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import type { Dict } from '@glimmer/interfaces';
 
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 
 /**
 @module ember
@@ -72,7 +72,7 @@ export function getViewId(view: View): string {
 const ELEMENT_VIEW: WeakMap<Element, View> = new WeakMap();
 const VIEW_ELEMENT: WeakMap<View, Element> = new WeakMap();
 
-export function getElementView(element: Element): Option<View> {
+export function getElementView(element: Element): Nullable<View> {
   return ELEMENT_VIEW.get(element) || null;
 }
 
@@ -81,7 +81,7 @@ export function getElementView(element: Element): Option<View> {
   @method getViewElement
   @param {Ember.View} view
  */
-export function getViewElement(view: View): Option<Element> {
+export function getViewElement(view: View): Nullable<Element> {
   return VIEW_ELEMENT.get(view) || null;
 }
 
@@ -228,7 +228,7 @@ export function contains(a: Node, b: Node): boolean {
     return a.contains(b);
   }
 
-  let current: Option<Node> = b.parentNode;
+  let current: Nullable<Node> = b.parentNode;
 
   while (current && (current = current.parentNode)) {
     if (current === a) {

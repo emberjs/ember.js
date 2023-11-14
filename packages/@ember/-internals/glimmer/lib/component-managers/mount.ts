@@ -17,7 +17,7 @@ import type {
   WithDynamicLayout,
   WithSubOwner,
 } from '@glimmer/interfaces';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
@@ -149,7 +149,7 @@ class MountManager
     return self;
   }
 
-  getDestroyable(bucket: EngineState): Option<Destroyable> {
+  getDestroyable(bucket: EngineState): Nullable<Destroyable> {
     return bucket.engine;
   }
 

@@ -19,7 +19,7 @@ import type {
   WithCustomDebugRenderTree,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
@@ -179,7 +179,7 @@ class OutletComponentManager
 
   didUpdateLayout() {}
 
-  getDestroyable(): Option<Destroyable> {
+  getDestroyable(): Nullable<Destroyable> {
     return null;
   }
 }

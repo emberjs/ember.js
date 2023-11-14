@@ -9,7 +9,7 @@ import { action } from '@ember/object';
 import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import type { Maybe } from '@glimmer/interfaces';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
@@ -32,7 +32,7 @@ function isPresent<T>(value: Maybe<T>): value is T {
 
 interface QueryParams {
   isQueryParams: true;
-  values: Option<{}>;
+  values: Nullable<{}>;
 }
 
 function isQueryParams(value: unknown): value is QueryParams {
@@ -474,7 +474,7 @@ class _LinkTo extends InternalComponent {
     return this.isActiveForState(this.routing.currentState as Maybe<RouterState>);
   }
 
-  private get willBeActive(): Option<boolean> {
+  private get willBeActive(): Nullable<boolean> {
     let current = this.routing.currentState;
     let target = this.routing.targetState;
 
@@ -586,7 +586,7 @@ class _LinkTo extends InternalComponent {
 
 let { prototype } = _LinkTo;
 
-let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
+let descriptorFor = (target: object, property: string): Nullable<PropertyDescriptor> => {
   if (target) {
     return (
       Object.getOwnPropertyDescriptor(target, property) ||

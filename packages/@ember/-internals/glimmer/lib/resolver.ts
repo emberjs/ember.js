@@ -14,7 +14,7 @@ import type {
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
-import type { Option } from '@ember/-internals/utility-types';
+import type { Nullable } from '@ember/-internals/utility-types';
 import {
   getComponentTemplate,
   getInternalComponentManager,
@@ -55,7 +55,7 @@ function instrumentationPayload(name: string) {
 function componentFor(
   name: string,
   owner: InternalOwner
-): Option<InternalFactory<object> | object> {
+): Nullable<InternalFactory<object> | object> {
   let fullName = `component:${name}` as const;
   return owner.factoryFor(fullName) || null;
 }
@@ -64,7 +64,7 @@ function layoutFor(
   name: string,
   owner: InternalOwner,
   options?: RegisterOptions
-): Option<Template> {
+): Nullable<Template> {
   let templateFullName = `template:components/${name}` as const;
 
   return (owner.lookup(templateFullName, options) as Template) || null;
@@ -88,7 +88,7 @@ function lookupComponentPair(
   owner: InternalOwner,
   name: string,
   options?: RegisterOptions
-): Option<LookupResult> {
+): Nullable<LookupResult> {
   let component = componentFor(name, owner);
 
   if (isFactory(component) && component.class) {
@@ -167,7 +167,7 @@ export default class ResolverImpl
     return null;
   }
 
-  lookupHelper(name: string, owner: InternalOwner): Option<HelperDefinitionState> {
+  lookupHelper(name: string, owner: InternalOwner): Nullable<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
       !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
@@ -216,7 +216,7 @@ export default class ResolverImpl
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
-  lookupModifier(name: string, owner: InternalOwner): Option<ModifierDefinitionState> {
+  lookupModifier(name: string, owner: InternalOwner): Nullable<ModifierDefinitionState> {
     let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
@@ -271,7 +271,7 @@ export default class ResolverImpl
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
-    let definition: Option<ResolvedComponentDefinition> = null;
+    let definition: Nullable<ResolvedComponentDefinition> = null;
 
     if (pair.component === null) {
       if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
