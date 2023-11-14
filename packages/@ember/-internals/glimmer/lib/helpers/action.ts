@@ -304,7 +304,7 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
       target! as Reference<MaybeActionHandler>,
       // SAFETY: glimmer-vm should expose narrowing utilities for references
       //         as is, `action` is still `Reference<unknown>`
-      action as Reference<string | AnyFn>,
+      action as Reference<unknown>,
       processArgs,
       debugKey
     );
@@ -312,9 +312,7 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
 
   ACTIONS.add(fn);
 
-  // SAFETY: glimmer-vm should change the signature of createUnboundRef to use a generic
-  //         so that the type param to `Reference<?>` can infer from the first argument.
-  return createUnboundRef(fn, '(result of an `action` helper)') as Reference<Function>;
+  return createUnboundRef(fn, '(result of an `action` helper)');
 });
 
 function NOOP(args: unknown[]) {
@@ -356,26 +354,22 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 function makeDynamicClosureAction(
   context: object,
   targetRef: Reference<MaybeActionHandler>,
-  actionRef: Reference<string | AnyFn>,
+  actionRef: Reference<unknown>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
+  const action = valueForRef(actionRef);
+
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
   if (DEBUG) {
-    makeClosureAction(
-      context,
-      valueForRef(targetRef),
-      valueForRef(actionRef),
-      processArgs,
-      debugKey
-    );
+    makeClosureAction(context, valueForRef(targetRef), action, processArgs, debugKey);
   }
 
   return (...args: any[]) => {
     return makeClosureAction(
       context,
       valueForRef(targetRef),
-      valueForRef(actionRef),
+      action,
       processArgs,
       debugKey
     )(...args);
@@ -383,18 +377,18 @@ function makeDynamicClosureAction(
 }
 
 interface MaybeActionHandler {
-  actions?: Record<string, AnyFn>;
+  actions?: Record<string, Function>;
 }
 
 function makeClosureAction(
   context: object,
   target: MaybeActionHandler,
-  action: string | AnyFn,
+  action: unknown | null | undefined | string | Function,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
   let self: object;
-  let fn: AnyFn;
+  let fn: Function;
 
   assert(
     `Action passed is null or undefined in (action) from ${target}.`,
@@ -423,7 +417,7 @@ function makeClosureAction(
   return (...args: any[]) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
-      return join(self, fn, ...processArgs(args));
+      return join(self, fn as AnyFn, ...processArgs(args));
     });
   };
 }
