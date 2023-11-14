@@ -1,4 +1,8 @@
+
+
 export const LOCAL_DEBUG: true | false =
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   import.meta.env.VM_LOCAL_DEV &&
   (() => {
     let location = typeof window !== 'undefined' && window.location;
@@ -9,6 +13,8 @@ export const LOCAL_DEBUG: true | false =
   })();
 
 export const LOCAL_SHOULD_LOG: true | false =
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   import.meta.env.VM_LOCAL_DEV &&
   (() => {
     let location = typeof window !== 'undefined' && window.location;
