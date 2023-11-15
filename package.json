@@ -55,25 +55,25 @@
   },
   "dependencies": {
     "@babel/helper-module-imports": "^7.16.7",
-    "@babel/plugin-transform-block-scoping": "^7.22.5",
     "@ember/edition-utils": "^1.2.0",
-    "@glimmer/compiler": "0.84.3",
+    "@glimmer/compiler": "0.85.13",
     "@glimmer/component": "^1.1.2",
-    "@glimmer/destroyable": "0.84.3",
+    "@glimmer/destroyable": "0.85.13",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/global-context": "0.84.3",
-    "@glimmer/interfaces": "0.84.3",
-    "@glimmer/manager": "0.84.3",
-    "@glimmer/node": "0.84.3",
-    "@glimmer/opcode-compiler": "0.84.3",
-    "@glimmer/owner": "0.84.3",
-    "@glimmer/program": "0.84.3",
-    "@glimmer/reference": "0.84.3",
-    "@glimmer/runtime": "0.84.3",
-    "@glimmer/syntax": "0.84.3",
-    "@glimmer/util": "0.84.3",
-    "@glimmer/validator": "0.84.3",
-    "@glimmer/vm-babel-plugins": "0.84.3",
+    "@glimmer/global-context": "0.85.13",
+    "@glimmer/interfaces": "0.85.13",
+    "@glimmer/manager": "0.85.13",
+    "@glimmer/node": "0.85.13",
+    "@glimmer/opcode-compiler": "0.85.13",
+    "@glimmer/owner": "0.85.13",
+    "@glimmer/program": "0.85.13",
+    "@glimmer/reference": "0.85.13",
+    "@glimmer/runtime": "0.85.13",
+    "@glimmer/syntax": "0.85.13",
+    "@glimmer/util": "0.85.13",
+    "@glimmer/validator": "0.85.13",
+    "@glimmer/vm": "0.85.13",
+    "@glimmer/vm-babel-plugins": "0.85.13",
     "@simple-dom/interface": "^1.4.0",
     "babel-plugin-debug-macros": "^0.3.4",
     "babel-plugin-filter-imports": "^4.0.0",
@@ -173,6 +173,11 @@
   "resolutions": {
     "socket.io": "^4.7.0"
   },
+  "pnpm": {
+    "overrides": {
+      "rollup": "^4.2.0"
+    }
+  },
   "peerDependencies": {
     "@glimmer/component": "^1.1.2"
   },
@@ -194,6 +199,6 @@
   },
   "volta": {
     "node": "16.20.0",
-    "pnpm": "8.7.6"
+    "pnpm": "8.10.0"
   }
 }

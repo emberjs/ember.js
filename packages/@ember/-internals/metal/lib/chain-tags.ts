@@ -2,7 +2,6 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { _WeakSet } from '@glimmer/util';
 import type { Tag, TagMeta } from '@glimmer/validator';
 import {
   combine,
@@ -14,7 +13,7 @@ import {
 import { objectAt } from './array';
 import { tagForProperty } from './tags';
 
-export const CHAIN_PASS_THROUGH = new _WeakSet();
+export const CHAIN_PASS_THROUGH = new WeakSet();
 
 export function finishLazyChains(meta: Meta, key: string, value: any) {
   let lazyTags = meta.readableLazyChainsFor(key);

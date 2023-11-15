@@ -10,10 +10,9 @@ import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import { _WeakSet } from '@glimmer/util';
 import { internalHelper } from './internal-helper';
 
-export const ACTIONS = new _WeakSet();
+export const ACTIONS = new WeakSet();
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -299,7 +298,12 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
   } else {
     fn = makeDynamicClosureAction(
       valueForRef(context) as object,
+      // SAFETY: glimmer-vm should expose narrowing utilities for references
+      //         as is, `target` is still `Reference<unknown>`.
+      //         however, we never even tried to narrow `target`, so this is potentially risky code.
       target!,
+      // SAFETY: glimmer-vm should expose narrowing utilities for references
+      //         as is, `action` is still `Reference<unknown>`
       action,
       processArgs,
       debugKey
@@ -349,27 +353,23 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 
 function makeDynamicClosureAction(
   context: object,
-  targetRef: Reference<MaybeActionHandler>,
-  actionRef: Reference<string | AnyFn>,
+  targetRef: Reference<unknown>,
+  actionRef: Reference<unknown>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
+  const action = valueForRef(actionRef);
+
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
   if (DEBUG) {
-    makeClosureAction(
-      context,
-      valueForRef(targetRef),
-      valueForRef(actionRef),
-      processArgs,
-      debugKey
-    );
+    makeClosureAction(context, valueForRef(targetRef), action, processArgs, debugKey);
   }
 
   return (...args: any[]) => {
     return makeClosureAction(
       context,
       valueForRef(targetRef),
-      valueForRef(actionRef),
+      action,
       processArgs,
       debugKey
     )(...args);
@@ -377,18 +377,18 @@ function makeDynamicClosureAction(
 }
 
 interface MaybeActionHandler {
-  actions?: Record<string, AnyFn>;
+  actions?: Record<string, Function>;
 }
 
 function makeClosureAction(
   context: object,
-  target: MaybeActionHandler,
-  action: string | AnyFn,
+  target: unknown,
+  action: unknown | null | undefined | string | Function,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
   let self: object;
-  let fn: AnyFn;
+  let fn: Function;
 
   assert(
     `Action passed is null or undefined in (action) from ${target}.`,
@@ -396,10 +396,15 @@ function makeClosureAction(
   );
 
   if (typeof action === 'string') {
+    assert('target must be an object', target !== null && typeof target === 'object');
     self = target;
-    fn = (target.actions && target.actions[action as string])!;
-
-    assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
+    let value = (target as { actions?: Record<string, unknown> }).actions?.[action];
+    assert(`An action named '${action}' was not found in ${target}`, Boolean(value));
+    assert(
+      `An action named '${action}' was found in ${target}, but is not a function`,
+      typeof value === 'function'
+    );
+    fn = value;
   } else if (typeof action === 'function') {
     self = context;
     fn = action;
@@ -417,7 +422,7 @@ function makeClosureAction(
   return (...args: any[]) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
-      return join(self, fn, ...processArgs(args));
+      return join(self, fn as AnyFn, ...processArgs(args));
     });
   };
 }

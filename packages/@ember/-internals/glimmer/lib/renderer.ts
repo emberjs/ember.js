@@ -16,15 +16,16 @@ import type {
   DynamicScope as GlimmerDynamicScope,
   ElementBuilder,
   Environment,
-  Option,
   RenderResult,
   RuntimeContext,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/interfaces';
+
+import { CurriedType } from '@glimmer/vm';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
-import { artifacts } from '@glimmer/program';
+import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
@@ -54,7 +55,7 @@ import OutletView from './views/outlet';
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
 export interface View {
-  parentView: Option<View>;
+  parentView: Nullable<View>;
   renderer: Renderer;
   tagName: string | null;
   elementId: string | null;
@@ -335,7 +336,11 @@ export class Renderer {
 
     let sharedArtifacts = artifacts();
 
-    this._context = programCompilationContext(sharedArtifacts, resolver);
+    this._context = programCompilationContext(
+      sharedArtifacts,
+      resolver,
+      (heap) => new RuntimeOpImpl(heap)
+    );
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
     this._runtime = runtimeContext(
@@ -459,7 +464,7 @@ export class Renderer {
     this._clearAllRoots();
   }
 
-  getElement(view: View): Option<Element> {
+  getElement(view: View): Nullable<Element> {
     if (this._isInteractive) {
       return getViewElement(view);
     } else {

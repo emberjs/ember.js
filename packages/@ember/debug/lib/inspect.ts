@@ -1,4 +1,3 @@
-import { _WeakSet as WeakSet } from '@glimmer/util';
 import { assert } from '@ember/debug';
 const { toString: objectToString } = Object.prototype;
 const { toString: functionToString } = Function.prototype;

@@ -22,7 +22,6 @@ import { ActionHandler } from '@ember/-internals/runtime';
 import { makeArray } from '@ember/array';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 

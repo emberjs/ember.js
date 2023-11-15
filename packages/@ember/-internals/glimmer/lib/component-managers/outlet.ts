@@ -8,18 +8,18 @@ import type {
   CapturedArguments,
   CompilableProgram,
   ComponentDefinition,
+  CapabilityMask,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
-  InternalComponentCapability,
-  Option,
   Template,
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
@@ -179,7 +179,7 @@ class OutletComponentManager
 
   didUpdateLayout() {}
 
-  getDestroyable(): Option<Destroyable> {
+  getDestroyable(): Nullable<Destroyable> {
     return null;
   }
 }
@@ -195,7 +195,7 @@ export class OutletComponentDefinition
 
   public resolvedName: string;
   public compilable: CompilableProgram;
-  public capabilities: InternalComponentCapability;
+  public capabilities: CapabilityMask;
 
   constructor(
     public state: OutletDefinitionState,

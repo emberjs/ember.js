@@ -1,5 +1,4 @@
 import type ProxyMixin from '@ember/-internals/runtime/lib/mixins/-proxy';
-import { _WeakSet as WeakSet } from '@glimmer/util';
 import { isObject } from './spec';
 
 const PROXIES = new WeakSet();
