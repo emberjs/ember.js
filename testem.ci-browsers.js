@@ -1,7 +1,7 @@
 const FailureOnlyReporter = require('testem-failure-only-reporter');
 
 module.exports = {
-  test_page: 'tests/index.html?hidepassed&hideskipped&timeout=60000&disable_local_debug',
+  test_page: 'tests/index.html?hidepassed&hideskipped&timeout=60000',
   browser_disconnect_timeout: 120,
   timeout: 540,
   parallel: 1,
