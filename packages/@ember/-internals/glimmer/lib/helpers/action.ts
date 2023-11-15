@@ -405,8 +405,6 @@ function makeClosureAction(
       typeof value === 'function'
     );
     fn = value;
-
-    assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
   } else if (typeof action === 'function') {
     self = context;
     fn = action;
