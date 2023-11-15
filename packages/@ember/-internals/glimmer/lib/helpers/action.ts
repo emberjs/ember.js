@@ -396,8 +396,12 @@ function makeClosureAction(
   );
 
   if (typeof action === 'string') {
-    self = target as object;
-    fn = (target as { actions: Record<string, Function> })?.actions?.[action as string] as Function;
+    assert('target must be an object', target !== null && typeof target === 'object');
+    self = target;
+    let value = (target as { actions?: Record<string, unknown> }).actions?.[action];
+    assert(`An action named '${action}' was not found in ${target}`, Boolean(value));
+    assert(`An action named '${action}' was found in ${target}, but is not a function`, typeof value === 'function');
+    fn = value;
 
     assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
   } else if (typeof action === 'function') {
