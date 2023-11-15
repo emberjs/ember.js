@@ -400,7 +400,10 @@ function makeClosureAction(
     self = target;
     let value = (target as { actions?: Record<string, unknown> }).actions?.[action];
     assert(`An action named '${action}' was not found in ${target}`, Boolean(value));
-    assert(`An action named '${action}' was found in ${target}, but is not a function`, typeof value === 'function');
+    assert(
+      `An action named '${action}' was found in ${target}, but is not a function`,
+      typeof value === 'function'
+    );
     fn = value;
 
     assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
