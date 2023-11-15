@@ -136,7 +136,7 @@
     "ember-cli-browserstack": "^2.0.1",
     "ember-cli-dependency-checker": "^3.3.1",
     "ember-cli-yuidoc": "^0.9.1",
-    "eslint": "^8.39.0",
+    "eslint": "^8.53.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-node": "^0.3.7",
     "eslint-plugin-disable-features": "^0.1.3",
