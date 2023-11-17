@@ -78,8 +78,8 @@ dependencies:
     specifier: ^4.0.0
     version: 4.0.0
   backburner.js:
-    specifier: ^2.7.0
-    version: 2.7.0
+    specifier: ^2.8.0
+    version: 2.8.0
   broccoli-concat:
     specifier: ^4.2.5
     version: 4.2.5
@@ -4342,8 +4342,8 @@ packages:
       underscore: 1.13.6
     dev: true
 
-  /backburner.js@2.7.0:
-    resolution: {integrity: sha512-eBZC6r7wT+YYAOKeru8IqgzOimz3VgyspXiZ1k6MI8i10zUdU8cnNII56rlnItQ89cHgQO3C/nPuFW3V9di+zg==}
+  /backburner.js@2.8.0:
+    resolution: {integrity: sha512-zYXY0KvpD7/CWeOLF576mV8S+bQsaIoj/GNLXXB+Eb8SJcQy5lqSjkRrZ0MZhdKUs9QoqmGNIEIe3NQfGiiscQ==}
     dev: false
 
   /balanced-match@1.0.2:
