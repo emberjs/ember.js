@@ -78,7 +78,7 @@
     "@simple-dom/interface": "^1.4.0",
     "babel-plugin-debug-macros": "^0.3.4",
     "babel-plugin-filter-imports": "^4.0.0",
-    "backburner.js": "^2.7.0",
+    "backburner.js": "^2.8.0",
     "broccoli-concat": "^4.2.5",
     "broccoli-debug": "^0.6.4",
     "broccoli-file-creator": "^2.1.1",
