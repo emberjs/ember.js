@@ -110,6 +110,10 @@ module('@ember/test-helpers emulation test', function () {
 
     module('setupRenderingContext', function (hooks) {
       hooks.beforeEach(async function () {
+        expectDeprecation(
+          /The `template` property of `OutletState` should be a `Template` rather than a `TemplateFactory`/
+        );
+
         this.application = Application.create({
           rootElement: '#qunit-fixture',
           autoboot: false,

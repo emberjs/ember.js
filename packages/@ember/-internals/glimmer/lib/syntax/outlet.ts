@@ -1,5 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
 import { CurriedType } from '@glimmer/interfaces';
@@ -124,6 +124,36 @@ function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefini
   // and is no longer considered supported
   if (isTemplateFactory(template)) {
     template = template(render.owner);
+
+    if (DEBUG) {
+      let message =
+        'The `template` property of `OutletState` should be a ' +
+        '`Template` rather than a `TemplateFactory`. This is known to be a ' +
+        "problem in older versions of `@ember/test-helpers`. If you haven't " +
+        'done so already, try upgrading to the latest version.\n\n';
+
+      if (template.result === 'ok' && typeof template.moduleName === 'string') {
+        message +=
+          'The offending template has a moduleName `' +
+          template.moduleName +
+          '`, which might be helpful for identifying ' +
+          'source of this issue.\n\n';
+      }
+
+      message +=
+        'Please note that `OutletState` is a private API in Ember.js ' +
+        "and not meant to be used outside of the framework's internal code.";
+
+      deprecate(message, false, {
+        id: 'outlet-state-template-factory',
+        until: '5.9.0',
+        for: 'ember-source',
+        since: {
+          available: '5.5.0',
+          enabled: '5.5.0',
+        },
+      });
+    }
   }
 
   return {
