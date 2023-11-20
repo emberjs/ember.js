@@ -56,7 +56,7 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
   }
 }
 
-export function createPrimitiveRef<T>(value: T): Reference<T> {
+export function createPrimitiveRef<T extends string| symbol | number | boolean | null | undefined>(value: T): Reference<T> {
   const ref = new ReferenceImpl<T>(UNBOUND);
 
   ref.tag = CONSTANT_TAG;
