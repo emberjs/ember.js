@@ -9,11 +9,10 @@
   "[javascript][typescript]": {
     "editor.formatOnSave": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
+    "editor.codeActionsOnSave": ["source.fixAll", "source.formatDocument"]
   },
   "editor.formatOnSave": true,
   "eslint.enable": true,
-  "eslint.packageManager": "npm",
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },
@@ -41,15 +40,186 @@
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
 
-  "typescript.preferences.importModuleSpecifier": "project-relative",
   "javascript.preferences.importModuleSpecifier": "project-relative",
+  "typescript.preferences.importModuleSpecifier": "project-relative",
 
   "typescript.preferences.importModuleSpecifierEnding": "minimal",
   "typescript.preferences.useAliasesForRenames": false,
 
   "typescript.tsc.autoDetect": "on",
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
   "typescript.workspaceSymbols.scope": "currentProject",
-  "eslint.problems.shortenToSingleLine": true
+  "eslint.problems.shortenToSingleLine": true,
+  "inline-bookmarks.expert.custom.words.mapping": {
+    "warn": ["@premerge(\\s|$)"],
+    "active": ["@active(\\s|$)"],
+    "fixme": ["@fixme(\\s|$)"]
+  },
+  "inline-bookmarks.expert.custom.styles": {
+    "active": {
+      // teal
+      "gutterIconColor": "#009999",
+      "overviewRulerColor": "rgba(0, 150, 150, 0.7)",
+      "light": {
+        "fontWeight": "bold",
+        "color": "#009999"
+      },
+      "dark": {
+        "fontWeight": "bold",
+        "color": "#00ffff"
+      }
+    },
+    "fixme": {
+      // yellow
+      "gutterIconColor": "#990000",
+      "overviewRulerColor": "rgba(150, 0, 0, 0.7)",
+      "light": {
+        "fontWeight": "bold",
+        "color": "#990000"
+      },
+      "dark": {
+        "fontWeight": "bold",
+        "color": "#ff0000"
+      }
+    },
+    "warn": {
+      // yellow
+      "gutterIconColor": "#999900",
+      "overviewRulerColor": "rgba(150, 150, 0, 0.7)",
+      "light": {
+        "fontWeight": "bold",
+        "color": "#999900"
+      },
+      "dark": {
+        "fontWeight": "bold",
+        "color": "#ffff00"
+      }
+    }
+  },
+  "inline-bookmarks.view.showVisibleFilesOnly": true,
+  "commit-message-editor.staticTemplate": [
+    "feat: Short description",
+    "",
+    "Message body",
+    "",
+    "Message footer"
+  ],
+  "commit-message-editor.dynamicTemplate": [
+    "{type}{scope}: {description}",
+    "",
+    "{body}",
+    "",
+    "{breaking_change}{footer}"
+  ],
+  "commit-message-editor.tokens": [
+    {
+      "label": "Type",
+      "name": "type",
+      "type": "enum",
+      "options": [
+        {
+          "label": "---",
+          "value": ""
+        },
+        {
+          "label": "build",
+          "description": "Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)"
+        },
+        {
+          "label": "chore",
+          "description": "Updating grunt tasks etc; no production code change"
+        },
+        {
+          "label": "ci",
+          "description": "Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)"
+        },
+        {
+          "label": "docs",
+          "description": "Documentation only changes"
+        },
+        {
+          "label": "feat",
+          "description": "A new feature"
+        },
+        {
+          "label": "fix",
+          "description": "A bug fix"
+        },
+        {
+          "label": "editor",
+          "description": "A change to editor/IDE support"
+        },
+        {
+          "label": "infra",
+          "description": "A change to the build, test or CI infrastructure"
+        },
+        {
+          "label": "perf",
+          "description": "A code change that improves performance"
+        },
+        {
+          "label": "refactor",
+          "description": "A code change that neither fixes a bug nor adds a feature"
+        },
+        {
+          "label": "revert"
+        },
+        {
+          "label": "style",
+          "description": "Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)"
+        },
+        {
+          "label": "test",
+          "description": "Adding missing tests or correcting existing tests"
+        }
+      ],
+      "description": "Type of changes"
+    },
+    {
+      "label": "Scope",
+      "name": "scope",
+      "description": "A scope may be provided to a commit’s type, to provide additional contextual information and is contained within parenthesis, e.g., \"feat(parser): add ability to parse arrays\".",
+      "type": "text",
+      "multiline": false,
+      "prefix": "(",
+      "suffix": ")"
+    },
+    {
+      "label": "Short description",
+      "name": "description",
+      "description": "Short description in the subject line.",
+      "type": "text",
+      "multiline": false
+    },
+    {
+      "label": "Body",
+      "name": "body",
+      "description": "Optional body",
+      "type": "text",
+      "multiline": true,
+      "lines": 5,
+      "maxLines": 10
+    },
+    {
+      "label": "Breaking change",
+      "name": "breaking_change",
+      "type": "boolean",
+      "value": "BREAKING CHANGE: ",
+      "default": false
+    },
+    {
+      "label": "Footer",
+      "name": "footer",
+      "description": "Optional footer",
+      "type": "text",
+      "multiline": true
+    }
+  ],
+  "surround.custom": {
+    "register": {
+      "label": "register helper",
+      "snippet": "{ ${1:helper}: $TM_SELECTED_TEXT }"
+    }
+  }
 }
