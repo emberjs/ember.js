@@ -1,0 +1,189 @@
+{
+  "folders": [
+    {
+      "name": "✨ glimmer-engine",
+      "path": "."
+    },
+    {
+      "name": "glimmer-benchmark",
+      "path": "benchmark"
+    },
+    {
+      "name": "@glimmer-workspace/krausest",
+      "path": "benchmark/benchmarks/krausest"
+    },
+    {
+      "name": "@glimmer-workspace/bin",
+      "path": "bin"
+    },
+    {
+      "name": "📦 local-linker",
+      "path": "lib/local-linker"
+    },
+    {
+      "name": "📦 /home/wycats/Code/Ember/glimmer-vm/packages",
+      "path": "packages"
+    },
+    {
+      "name": "📦 @glimmer-workspace/benchmark-env",
+      "path": "packages/@glimmer-workspace/benchmark-env"
+    },
+    {
+      "name": "📦 @glimmer-workspace/build-support",
+      "path": "packages/@glimmer-workspace/build"
+    },
+    {
+      "name": "📦 @glimmer-workspace/eslint-plugin",
+      "path": "packages/@glimmer-workspace/eslint-plugin"
+    },
+    {
+      "name": "📦 @glimmer-workspace/integration-tests",
+      "path": "packages/@glimmer-workspace/integration-tests"
+    },
+    {
+      "name": "📦 @glimmer-workspace/test-utils",
+      "path": "packages/@glimmer-workspace/test-utils"
+    },
+    {
+      "name": "📦 @glimmer/compiler",
+      "path": "packages/@glimmer/compiler"
+    },
+    {
+      "name": "📦 @glimmer-test/compiler",
+      "path": "packages/@glimmer/compiler/test"
+    },
+    {
+      "name": "📦 @glimmer/debug",
+      "path": "packages/@glimmer/debug"
+    },
+    {
+      "name": "📦 @glimmer/destroyable",
+      "path": "packages/@glimmer/destroyable"
+    },
+    {
+      "name": "📦 @glimmer-test/destroyable",
+      "path": "packages/@glimmer/destroyable/test"
+    },
+    {
+      "name": "📦 @glimmer/dom-change-list",
+      "path": "packages/@glimmer/dom-change-list"
+    },
+    {
+      "name": "📦 @glimmer-test/dom-change-list",
+      "path": "packages/@glimmer/dom-change-list/test"
+    },
+    {
+      "name": "📦 @glimmer/encoder",
+      "path": "packages/@glimmer/encoder"
+    },
+    {
+      "name": "📦 @glimmer/global-context",
+      "path": "packages/@glimmer/global-context"
+    },
+    {
+      "name": "📦 @glimmer/interfaces",
+      "path": "packages/@glimmer/interfaces"
+    },
+    {
+      "name": "📦 @glimmer/local-debug-flags",
+      "path": "packages/@glimmer/local-debug-flags"
+    },
+    {
+      "name": "📦 @glimmer/manager",
+      "path": "packages/@glimmer/manager"
+    },
+    {
+      "name": "📦 @glimmer-test/manager",
+      "path": "packages/@glimmer/manager/test"
+    },
+    {
+      "name": "📦 @glimmer/node",
+      "path": "packages/@glimmer/node"
+    },
+    {
+      "name": "📦 @glimmer/opcode-compiler",
+      "path": "packages/@glimmer/opcode-compiler"
+    },
+    {
+      "name": "📦 @glimmer/owner",
+      "path": "packages/@glimmer/owner"
+    },
+    {
+      "name": "📦 @glimmer-test/owner",
+      "path": "packages/@glimmer/owner/test"
+    },
+    {
+      "name": "📦 @glimmer/program",
+      "path": "packages/@glimmer/program"
+    },
+    {
+      "name": "📦 @glimmer-test/program",
+      "path": "packages/@glimmer/program/test"
+    },
+    {
+      "name": "📦 @glimmer/reference",
+      "path": "packages/@glimmer/reference"
+    },
+    {
+      "name": "📦 @glimmer-test/reference",
+      "path": "packages/@glimmer/reference/test"
+    },
+    {
+      "name": "📦 @glimmer/runtime",
+      "path": "packages/@glimmer/runtime"
+    },
+    {
+      "name": "📦 @glimmer/syntax",
+      "path": "packages/@glimmer/syntax"
+    },
+    {
+      "name": "📦 @glimmer-test/syntax",
+      "path": "packages/@glimmer/syntax/test"
+    },
+    {
+      "name": "📦 @glimmer/util",
+      "path": "packages/@glimmer/util"
+    },
+    {
+      "name": "📦 @glimmer-test/util",
+      "path": "packages/@glimmer/util/test"
+    },
+    {
+      "name": "📦 @glimmer/validator",
+      "path": "packages/@glimmer/validator"
+    },
+    {
+      "name": "📦 @glimmer-test/validator",
+      "path": "packages/@glimmer/validator/test"
+    },
+    {
+      "name": "📦 @glimmer/vm",
+      "path": "packages/@glimmer/vm"
+    },
+    {
+      "name": "📦 @glimmer/vm-babel-plugins",
+      "path": "packages/@glimmer/vm-babel-plugins"
+    },
+    {
+      "name": "📦 @glimmer/wire-format",
+      "path": "packages/@glimmer/wire-format"
+    },
+    {
+      "name": "📦 @types/js-reporters",
+      "path": "packages/@types/js-reporters"
+    },
+    {
+      "name": "📦 @types/puppeteer-chromium-resolver",
+      "path": "packages/@types/puppeteer-chromium-resolver"
+    },
+    {
+      "name": "📦 @types/qunit",
+      "path": "packages/@types/qunit"
+    }
+  ],
+  "settings": {
+    "typescript.tsc.autoDetect": "on",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true
+  }
+}
