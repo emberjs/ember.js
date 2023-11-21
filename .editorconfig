@@ -22,3 +22,4 @@ insert_final_newline = false
 
 [*.{diff,md}]
 trim_trailing_whitespace = false
+max_line_length = 80
