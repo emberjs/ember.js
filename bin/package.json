@@ -2,19 +2,17 @@
   "name": "@glimmer-workspace/bin",
   "private": true,
   "dependencies": {
+    "puppeteer-chromium-resolver": "^20.0.0",
+    "chalk": "^5.2.0",
+    "execa": "^7.1.1",
+    "js-yaml": "^4.1.0",
+    "glob": "^10.2.3",
     "@types/glob": "^8.1.0",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^18.16.7",
-    "@types/puppeteer-chromium-resolver": "workspace:^",
-    "chalk": "^5.2.0",
-    "execa": "^7.1.1",
-    "glob": "^10.2.3",
-    "js-yaml": "^4.1.0",
-    "puppeteer-chromium-resolver": "^20.0.0",
-    "rimraf": "^5.0.0"
+    "@types/puppeteer-chromium-resolver": "workspace:^"
   },
   "devDependencies": {
-    "eslint": "^8.52.0",
     "esno": "^0.16.3"
   },
   "engines": {

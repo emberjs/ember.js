@@ -319,13 +319,7 @@ importers:
       puppeteer-chromium-resolver:
         specifier: ^20.0.0
         version: 20.0.0(typescript@5.0.4)
-      rimraf:
-        specifier: ^5.0.0
-        version: 5.0.0
     devDependencies:
-      eslint:
-        specifier: ^8.52.0
-        version: 8.52.0
       esno:
         specifier: ^0.16.3
         version: 0.16.3
@@ -13093,6 +13087,7 @@ packages:
     hasBin: true
     dependencies:
       glob: 10.2.3
+    dev: true
 
   /rollup-plugin-insert@1.3.2(rollup@3.21.6):
     resolution: {integrity: sha512-oTlUJikRZ1dYW9Kg9LHbG0T8pKNboHvMI0VZZoOUbqYPHE7rrKERHlGd3xsHH6W1KTr9Fcl4+UgrjpVkveWgPA==}

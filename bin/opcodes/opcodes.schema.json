@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["outputs", "machine", "syscall"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "path"
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "interface": { "type": "string" },
+        "code": { "type": "string" },
+        "debug": { "type": "string" }
+      },
+      "required": ["interface", "code", "debug"]
+    },
+    "machine": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "syscall": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

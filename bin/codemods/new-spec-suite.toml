@@ -1,0 +1,21 @@
+[test]
+match = """
+export class :[class] extends :[extends] {
+  static suiteName = :[suite];
+  :[block]
+}
+"""
+rewrite = """
+import { matrix } from "@glimmer-workspace/integration-tests";
+matrix(:[suite], (spec) => { :[block] }).client();
+"""
+rule = """
+where
+rewrite :[block] { "this" -> "ctx" },
+rewrite :[block] {
+  "@render(:[type]) :[string]() { :[body] }" -> "spec({ type: :[type] }, :[string], (ctx) => { :[body] })"
+},
+rewrite :[block] {
+  "@render :[string]() { :[body] }" -> "spec(:[string], (ctx) => { :[body] })"
+}
+"""

@@ -7,7 +7,6 @@ module.exports = {
   root: false,
   env: {
     es6: true,
-    node: true,
   },
   overrides: [
     {

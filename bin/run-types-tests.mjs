@@ -9,11 +9,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const root = resolve(__dirname, '..');
 
 async function main() {
-  // vm-babel-plugins is exclusively used by ember.
-  // dom-change-list isn't used by anyone, even in this repo.
-  const packages = getPackages().filter(
-    (pkg) => pkg.name !== '@glimmer/vm-babel-plugins' && pkg.name !== '@glimmer/dom-change-list'
-  );
+  const packages = getPackages().filter((pkg) => pkg.name !== '@glimmer/vm-babel-plugins');
 
   /**
    * Runs a smoke test of the generated type definitions by importing every module
@@ -27,14 +23,10 @@ async function main() {
   for (const pkg of packages) {
     try {
       console.log(`# Smoke testing ${pkg.name}`);
-      await execa(
-        resolve(root, 'node_modules/.bin/tsc'),
-        ['-p', resolve(root, 'tsconfig.dist.json')],
-        {
-          cwd: resolve(pkg.path, 'dist'),
-          preferLocal: true,
-        }
-      );
+      await execa('tsc', ['-p', resolve(root, 'tsconfig.dist.json')], {
+        cwd: resolve(pkg.path, 'dist'),
+        preferLocal: true,
+      });
       console.log(`ok ${testNo++} - ${pkg.name} types passed`);
     } catch (err) {
       let message = getMessage(err);

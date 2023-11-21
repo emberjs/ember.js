@@ -22,5 +22,5 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["*.mjs", "*.mts", "*.ts"]
+  "include": ["*.mjs", "*.mts", "*.ts", "*/*.mjs", "*/*.mts", "*/*.ts"]
 }
