@@ -90,11 +90,18 @@ export function typescript(pkg, config) {
 
   const ts = tsconfig(typeScriptConfig);
 
+  /**
+   * TODO: migrate off of rollupTS, it has too many bugs
+   */
   return rollupTS({
     transpiler: 'babel',
     transpileOnly: true,
     babelConfig: { presets },
-
+    /**
+     * This shouldn't be required, but it is.
+     * If we use @rollup/plugin-babel, we can remove this.
+     */
+    browserslist: [`last 1 chrome versions`],
     tsconfig: ts,
   });
 }
