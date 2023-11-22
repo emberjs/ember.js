@@ -79,6 +79,10 @@ module.exports = {
         'runtime/lib/modifiers/on.ts',
         'syntax/lib/parser/tokenizer-event-handlers.ts',
         'syntax/lib/get-template-locals.ts',
+        'syntax/lib/generation/printer.ts',
+        'syntax/lib/v2/normalize.ts',
+        'syntax/test/traversal/manipulating-node-test.ts',
+        'node/lib/node-dom-helper.ts',
       ],
       rules: {
         'deprecation/deprecation': 'warn',

@@ -9,4 +9,8 @@ module.exports = {
     require: true,
     __dirname: true,
   },
+  rules: {
+    '@typescript-eslint/no-require-imports': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+  },
 };

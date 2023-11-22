@@ -26,11 +26,11 @@
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",
     "babel-plugin-tester": "^11.0.4",
-    "eslint": "^8.52.0",
     "mocha": "^10.2.0",
     "publint": "^0.2.5",
     "rollup": "^3.21.6",
-    "typescript": "*"
+    "typescript": "*",
+    "eslint": "^8.54.0"
   },
   "main": "index.ts",
   "types": "index.ts",
