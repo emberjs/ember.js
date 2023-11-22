@@ -1,12 +1,12 @@
 import type { CurriedType, PresentArray } from '@glimmer/interfaces';
-import {
-  type ASTv2,
-  type BlockSymbolTable,
-  node,
-  type ProgramSymbolTable,
-  type SourceSlice,
-  type SymbolTable,
+import type {
+  ASTv2,
+  BlockSymbolTable,
+  ProgramSymbolTable,
+  SourceSlice,
+  SymbolTable,
 } from '@glimmer/syntax';
+import { node } from '@glimmer/syntax';
 
 import type { AnyOptionalList, OptionalList, PresentList } from '../../shared/list';
 

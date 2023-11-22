@@ -13,7 +13,7 @@ import type {
   HighLevelStart,
   HighLevelStartLabels,
   HighLevelStopLabels,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 export const HighLevelResolutionOpcodes = {
   Modifier: 1003 satisfies HighLevelResolveModifier,

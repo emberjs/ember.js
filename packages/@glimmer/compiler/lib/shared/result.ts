@@ -1,6 +1,8 @@
 import type { GlimmerSyntaxError } from '@glimmer/syntax';
 
-import { type AnyOptionalList, OptionalList } from './list';
+import type { AnyOptionalList } from './list';
+
+import { OptionalList } from './list';
 
 abstract class ResultImpl<T> {
   static all<T extends Result<unknown>[]>(...results: T): MapAll<T> {

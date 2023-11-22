@@ -9,11 +9,11 @@ import {
   LOCAL_LOGGER,
 } from '@glimmer/util';
 
+import type { ComponentBlueprint, Content } from '..';
+
 import {
   blockStack,
   CLOSE,
-  type ComponentBlueprint,
-  type Content,
   content,
   equalTokens,
   OPEN,

@@ -1096,7 +1096,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'GH#13999 The compiler can handle simple helpers with inline null parameter'() {
     let value;
-    this.registerHelper('say-hello', function (params) {
+    this.registerHelper('say-hello', (params) => {
       value = params[0];
       return 'hello';
     });
@@ -1109,7 +1109,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'GH#13999 The compiler can handle simple helpers with inline string literal null parameter'() {
     let value;
-    this.registerHelper('say-hello', function (params) {
+    this.registerHelper('say-hello', (params) => {
       value = params[0];
       return 'hello';
     });
@@ -1124,7 +1124,7 @@ export class InitialRenderSuite extends RenderTest {
   'GH#13999 The compiler can handle simple helpers with inline undefined parameter'() {
     let value: unknown = 'PLACEHOLDER';
     let length;
-    this.registerHelper('say-hello', function (params) {
+    this.registerHelper('say-hello', (params) => {
       length = params.length;
       value = params[0];
       return 'hello';
@@ -1141,7 +1141,7 @@ export class InitialRenderSuite extends RenderTest {
   'GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal'() {
     let value: unknown = 'PLACEHOLDER';
     let length;
-    this.registerHelper('say-hello', function (params) {
+    this.registerHelper('say-hello', (params) => {
       length = params.length;
       value = params[0];
       return 'hello';
@@ -1157,7 +1157,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'GH#13999 The compiler can handle components with undefined named arguments'() {
     let value: unknown = 'PLACEHOLDER';
-    this.registerHelper('say-hello', function (_, hash) {
+    this.registerHelper('say-hello', (_, hash) => {
       value = hash['foo'];
       return 'hello';
     });
@@ -1171,7 +1171,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'GH#13999 The compiler can handle components with undefined string literal named arguments'() {
     let value: unknown = 'PLACEHOLDER';
-    this.registerHelper('say-hello', function (_, hash) {
+    this.registerHelper('say-hello', (_, hash) => {
       value = hash['foo'];
       return 'hello';
     });
@@ -1185,7 +1185,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'GH#13999 The compiler can handle components with null named arguments'() {
     let value;
-    this.registerHelper('say-hello', function (_, hash) {
+    this.registerHelper('say-hello', (_, hash) => {
       value = hash['foo'];
       return 'hello';
     });
@@ -1199,7 +1199,7 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'GH#13999 The compiler can handle components with null string literal named arguments'() {
     let value;
-    this.registerHelper('say-hello', function (_, hash) {
+    this.registerHelper('say-hello', (_, hash) => {
       value = hash['foo'];
       return 'hello';
     });
@@ -1226,7 +1226,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Sexpr helpers'() {
-    this.registerHelper('testing', function (params) {
+    this.registerHelper('testing', (params) => {
       return `${params[0]}!`;
     });
 
@@ -1237,7 +1237,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'The compiler can handle multiple invocations of sexprs'() {
-    this.registerHelper('testing', function (params) {
+    this.registerHelper('testing', (params) => {
       return `${params[0]}${params[1]}`;
     });
 
@@ -1255,7 +1255,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'The compiler passes along the hash arguments'() {
-    this.registerHelper('testing', function (_, hash) {
+    this.registerHelper('testing', (_, hash) => {
       return `${hash['first']}-${hash['second']}`;
     });
 
@@ -1266,7 +1266,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Attributes can be populated with helpers that generate a string'() {
-    this.registerHelper('testing', function (params) {
+    this.registerHelper('testing', (params) => {
       return params[0];
     });
 
@@ -1277,7 +1277,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Attribute helpers take a hash'() {
-    this.registerHelper('testing', function (_, hash) {
+    this.registerHelper('testing', (_, hash) => {
       return hash['path'];
     });
 
@@ -1288,7 +1288,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'Attributes containing multiple helpers are treated like a block'() {
-    this.registerHelper('testing', function (params) {
+    this.registerHelper('testing', (params) => {
       return params[0];
     });
 

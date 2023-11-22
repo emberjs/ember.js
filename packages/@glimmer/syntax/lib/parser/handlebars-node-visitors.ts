@@ -1,13 +1,15 @@
 import type { Nullable, Recast } from '@glimmer/interfaces';
-import { getLast, isPresentArray, unwrap } from '@glimmer/util';
 import type { TokenizerState } from 'simple-html-tokenizer';
+import { getLast, isPresentArray, unwrap } from '@glimmer/util';
 
-import { Parser, type ParserNodeBuilder, type Tag } from '../parser';
+import type { ParserNodeBuilder, Tag } from '../parser';
+import type * as ASTv1 from '../v1/api';
+import type * as HBS from '../v1/handlebars-ast';
+
+import { Parser } from '../parser';
 import { NON_EXISTENT_LOCATION } from '../source/location';
 import { generateSyntaxError } from '../syntax-error';
 import { appendChild, isHBSLiteral, printLiteral } from '../utils';
-import type * as ASTv1 from '../v1/api';
-import type * as HBS from '../v1/handlebars-ast';
 import { PathExpressionImplV1 } from '../v1/legacy-interop';
 import b from '../v1/parser-builders';
 

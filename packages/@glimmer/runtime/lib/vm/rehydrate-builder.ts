@@ -10,16 +10,9 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from "@glimmer/interfaces";
-import {
-  assert,
-  castToBrowser,
-  castToSimple,
-  COMMENT_NODE,
-  expect,
-  NS_SVG,
-  type Stack,
-} from '@glimmer/util';
+} from '@glimmer/interfaces';
+import type { Stack } from '@glimmer/util';
+import { assert, castToBrowser, castToSimple, COMMENT_NODE, expect, NS_SVG } from '@glimmer/util';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';

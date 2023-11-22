@@ -1,9 +1,10 @@
 import type { PresentArray } from '@glimmer/interfaces';
 
-import { SourceSlice } from '../../source/slice';
 import type { CallFields } from './base';
-import { node } from './node';
 import type { FreeVarReference, VariableReference } from './refs';
+
+import { SourceSlice } from '../../source/slice';
+import { node } from './node';
 
 /**
  * A Handlebars literal.

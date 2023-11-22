@@ -9,7 +9,7 @@ import type {
   ResolvedComponentDefinition,
   RuntimeConstants,
   Template,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import {
   capabilityFlagsFrom,
   getComponentTemplate,

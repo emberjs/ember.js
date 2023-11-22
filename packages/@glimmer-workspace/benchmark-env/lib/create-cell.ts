@@ -1,11 +1,5 @@
-import {
-  consumeTag,
-  dirtyTagFor,
-  tagFor,
-  type TagMeta,
-  tagMetaFor,
-  type UpdatableTag,
-} from '@glimmer/validator';
+import type { TagMeta, UpdatableTag } from '@glimmer/validator';
+import { consumeTag, dirtyTagFor, tagFor, tagMetaFor } from '@glimmer/validator';
 
 import type { Cell } from './interfaces';
 

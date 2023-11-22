@@ -1,11 +1,12 @@
 import type { ASTv2 } from '@glimmer/syntax';
 
 import type { Result } from '../../../../shared/result';
-import * as mir from '../../../2-encoding/mir';
 import type { NormalizationState } from '../../context';
+import type { Classified, ClassifiedElement, PreparedArgs } from './classified';
+
+import * as mir from '../../../2-encoding/mir';
 import { convertPathToCallIfKeyword, VISIT_EXPRS } from '../expressions';
 import { VISIT_STMTS } from '../statements';
-import type { Classified, ClassifiedElement, PreparedArgs } from './classified';
 
 export class ClassifiedComponent implements Classified {
   readonly dynamicFeatures = true;

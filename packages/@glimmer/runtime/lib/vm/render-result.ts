@@ -1,4 +1,3 @@
-import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import type {
   Environment,
   LiveBlock,
@@ -7,6 +6,7 @@ import type {
   SimpleNode,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
+import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 
 import { clear } from '../bounds';
 import { UpdatingVM } from './update';

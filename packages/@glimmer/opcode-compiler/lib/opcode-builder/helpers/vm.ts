@@ -1,8 +1,9 @@
-import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from "@glimmer/interfaces";
+import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
 import { encodeImmediate, isSmallInt } from '@glimmer/util';
 import { $fp, $v0, MachineOp, Op } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+
 import { isStrictMode, nonSmallIntOperand } from '../operands';
 import { expr } from './expr';
 import { SimpleArgs } from './shared';

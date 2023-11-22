@@ -1,4 +1,3 @@
-import { registerDestructor } from '@glimmer/destroyable';
 import type {
   Arguments,
   ComponentCapabilities,
@@ -15,12 +14,15 @@ import type {
   Nullable,
   Owner,
   VMArguments,
-} from "@glimmer/interfaces";
-import { createConstRef, type Reference } from '@glimmer/reference';
+} from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import { registerDestructor } from '@glimmer/destroyable';
+import { createConstRef } from '@glimmer/reference';
+
+import type { ManagerFactory } from './api';
 
 import { argsProxyFor } from '../util/args-proxy';
 import { buildCapabilities, FROM_CAPABILITIES } from '../util/capabilities';
-import type { ManagerFactory } from './api';
 
 const CAPABILITIES = {
   dynamicLayout: false,

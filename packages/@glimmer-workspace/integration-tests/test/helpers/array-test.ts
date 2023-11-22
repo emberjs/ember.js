@@ -288,7 +288,7 @@ class ArrayTest extends RenderTest {
   'capture array values in JS to assert deep equal'() {
     let captured;
 
-    this.registerHelper('capture', function ([array]) {
+    this.registerHelper('capture', ([array]) => {
       captured = array;
       return 'captured';
     });

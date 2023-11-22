@@ -1,15 +1,10 @@
-import type { Tag } from "@glimmer/interfaces";
+import type { Tag } from '@glimmer/interfaces';
+
+import type { Revision } from './validators';
 
 import { debug } from './debug';
 import { unwrap } from './utils';
-import {
-  combine,
-  CONSTANT_TAG,
-  isConstTag,
-  type Revision,
-  validateTag,
-  valueForTag,
-} from './validators';
+import { combine, CONSTANT_TAG, isConstTag, validateTag, valueForTag } from './validators';
 
 /**
  * An object that that tracks @tracked properties that were consumed.

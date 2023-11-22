@@ -1,9 +1,11 @@
 import { ASTv2, generateSyntaxError, SourceSlice } from '@glimmer/syntax';
 
-import { Err, Ok, type Result } from '../../../../shared/result';
-import * as mir from '../../../2-encoding/mir';
+import type { Result } from '../../../../shared/result';
 import type { NormalizationState } from '../../context';
 import type { GenericKeywordNode, KeywordDelegate } from '../impl';
+
+import { Err, Ok } from '../../../../shared/result';
+import * as mir from '../../../2-encoding/mir';
 
 function assertHasBlockKeyword(type: string) {
   return (node: GenericKeywordNode): Result<SourceSlice> => {

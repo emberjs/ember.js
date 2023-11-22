@@ -1,4 +1,5 @@
-import { KEYWORDS_TYPES, type KeywordType } from '@glimmer/syntax';
+import type { KeywordType } from '@glimmer/syntax';
+import { KEYWORDS_TYPES } from '@glimmer/syntax';
 
 import { jitSuite, preprocess, RenderTest, test } from '../..';
 

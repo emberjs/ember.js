@@ -7,7 +7,7 @@ import type {
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 export interface Checker<T> {
   type: T;

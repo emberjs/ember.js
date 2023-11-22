@@ -1,17 +1,13 @@
-import { type GlobalContext, testOverrideGlobalContext } from '@glimmer/global-context';
-import {
-  createComputeRef,
-  createIteratorRef,
-  type OpaqueIterationItem,
-  type Reference,
-  valueForRef,
-} from '@glimmer/reference';
+import type { GlobalContext } from '@glimmer/global-context';
+import type { OpaqueIterationItem, Reference } from '@glimmer/reference';
+import { testOverrideGlobalContext } from '@glimmer/global-context';
+import { createComputeRef, createIteratorRef, valueForRef } from '@glimmer/reference';
+import { unwrap } from '@glimmer/util';
 import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
 
 import objectValues from './utils/platform';
 import { module, test } from './utils/qunit';
 import { TestContext } from './utils/template';
-import { unwrap } from '@glimmer/util';
 
 class IterableWrapper {
   private iterable: Reference<{ next(): OpaqueIterationItem | null }>;

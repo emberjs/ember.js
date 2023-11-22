@@ -6,10 +6,11 @@ import type {
   SimpleDocument,
   SimpleElement,
 } from '@glimmer/interfaces';
-import { NS_SVG, castToSimple } from '@glimmer/util';
-import { DOMOperations } from './operations';
-import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
+import { castToSimple, NS_SVG } from '@glimmer/util';
+
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
+import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
+import { DOMOperations } from './operations';
 
 const doc: Nullable<SimpleDocument> =
   typeof document === 'undefined' ? null : castToSimple(document);

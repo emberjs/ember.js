@@ -1,4 +1,4 @@
-import type { Nullable, SimpleElement } from "@glimmer/interfaces";
+import type { Nullable, SimpleElement } from '@glimmer/interfaces';
 
 import { isSafeString, normalizeStringValue } from '../dom/normalize';
 

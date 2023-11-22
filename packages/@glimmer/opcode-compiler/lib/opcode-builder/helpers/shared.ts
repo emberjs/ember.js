@@ -4,11 +4,12 @@ import type {
   NamedBlocks,
   Nullable,
   WireFormat,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
 import { Op } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+
 import { PushYieldableBlock } from './blocks';
 import { expr } from './expr';
 

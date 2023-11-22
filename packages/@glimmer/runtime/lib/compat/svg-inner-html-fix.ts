@@ -15,7 +15,9 @@ import {
   unwrap,
 } from '@glimmer/util';
 
-import { type DOMOperations, moveNodesBefore } from '../dom/operations';
+import type { DOMOperations } from '../dom/operations';
+
+import { moveNodesBefore } from '../dom/operations';
 
 export enum InsertPosition {
   beforebegin = 'beforebegin',

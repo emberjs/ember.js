@@ -1,4 +1,3 @@
-import { scheduleRevalidate } from '@glimmer/global-context';
 import type {
   COMBINATOR_TAG_ID as ICOMBINATOR_TAG_ID,
   CONSTANT_TAG_ID as ICONSTANT_TAG_ID,
@@ -14,6 +13,7 @@ import type {
   UpdatableTag,
   VOLATILE_TAG_ID as IVOLATILE_TAG_ID,
 } from '@glimmer/interfaces';
+import { scheduleRevalidate } from '@glimmer/global-context';
 
 import { debug } from './debug';
 import { unwrap } from './utils';

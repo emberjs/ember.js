@@ -654,7 +654,6 @@ export class EachSuite extends RenderTest {
       shuffleArray(arr);
       this.rerender({ arr });
 
-       
       verifySteps?.('list-updates', (steps) => {
         let stats = getStepStats(steps as ListStep[]);
 
@@ -681,7 +680,6 @@ export class EachSuite extends RenderTest {
       let semiArr = newArr.slice(0, 5);
       this.rerender({ arr: semiArr });
 
-       
       verifySteps?.('list-updates', (steps) => {
         let stats = getStepStats(steps as ListStep[]);
 
@@ -708,7 +706,6 @@ export class EachSuite extends RenderTest {
       let semiArr = newArr.slice(0, 5).concat([11, 12]);
       this.rerender({ arr: semiArr });
 
-       
       verifySteps?.('list-updates', (steps) => {
         let stats = getStepStats(steps as ListStep[]);
 

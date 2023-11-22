@@ -1,15 +1,16 @@
-import { check, CheckFunction, CheckString } from '@glimmer/debug';
-import { registerDestructor } from '@glimmer/destroyable';
 import type {
   CapturedArguments,
   InternalModifierManager,
   Owner,
   SimpleElement,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
+import type { UpdatableTag } from '@glimmer/validator';
+import { check, CheckFunction, CheckString } from '@glimmer/debug';
+import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
 import { buildUntouchableThis, expect } from '@glimmer/util';
-import { createUpdatableTag, type UpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag } from '@glimmer/validator';
 
 import { reifyNamed } from '../vm/arguments';
 

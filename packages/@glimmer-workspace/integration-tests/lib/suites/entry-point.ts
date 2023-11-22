@@ -3,6 +3,7 @@ import { DynamicScopeImpl } from '@glimmer/runtime';
 import { castToBrowser } from '@glimmer/util';
 
 import type { ComponentKind } from '../components/types';
+
 import { JitRenderDelegate } from '../modes/jit/delegate';
 import { Count, RenderTest } from '../render-test';
 import { test } from '../test-decorator';

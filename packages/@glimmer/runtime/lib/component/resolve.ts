@@ -4,7 +4,7 @@ import type {
   Owner,
   ResolutionTimeConstants,
   RuntimeResolver,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
 export function resolveComponent(

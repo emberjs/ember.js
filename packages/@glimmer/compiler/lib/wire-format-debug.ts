@@ -279,7 +279,9 @@ export default class WireFormatDebugger {
     }
   }
 
-  private formatElementParams(opcodes: Nullable<WireFormat.ElementParameter[]>): Nullable<unknown[]> {
+  private formatElementParams(
+    opcodes: Nullable<WireFormat.ElementParameter[]>
+  ): Nullable<unknown[]> {
     if (opcodes === null) return null;
     return opcodes.map((o) => this.formatOpcode(o));
   }

@@ -8,7 +8,6 @@ import { module } from './support';
 module('Render Tests: I-N-U-R', ({ test }) => {
   let doc = castToSimple(document);
 
-   
   test('Can set properties', (assert) => {
     new (class extends RenderTest {
       constructor(delegate: JitRenderDelegate) {
@@ -19,7 +18,6 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
-   
   test('Can take basic snapshots', (assert) => {
     let div = doc.createElement('div');
     let text = doc.createTextNode('Foo');
@@ -35,7 +33,6 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
-   
   test('Can take nested snapshots', (assert) => {
     let div = doc.createElement('div');
     let p = doc.createElement('p');
@@ -53,7 +50,6 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     })(new JitRenderDelegate());
   });
 
-   
   test('Can take nested snapshots of serialized blocks', (assert) => {
     let div = doc.createElement('div');
     let open = doc.createComment('<!--%+b:0%-->');

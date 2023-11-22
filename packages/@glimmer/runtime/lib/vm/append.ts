@@ -1,5 +1,3 @@
-import { associateDestroyableChild } from '@glimmer/destroyable';
-import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import type {
   CompilableTemplate,
   CompileTimeCompilationContext,
@@ -21,54 +19,35 @@ import type {
   UpdatingOpcode,
   VM as PublicVM,
 } from '@glimmer/interfaces';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import type { RuntimeOpImpl } from '@glimmer/program';
-import {
-  createIteratorItemRef,
-  type OpaqueIterationItem,
-  type OpaqueIterator,
-  type Reference,
-  UNDEFINED_REFERENCE,
-} from '@glimmer/reference';
+import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
+import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
+import { associateDestroyableChild } from '@glimmer/destroyable';
+import { assertGlobalContextWasSet } from '@glimmer/global-context';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { createIteratorItemRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { assert, expect, LOCAL_LOGGER, reverse, Stack, unwrapHandle } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
-import {
-  $fp,
-  $pc,
-  $s0,
-  $s1,
-  $sp,
-  $t0,
-  $t1,
-  $v0,
-  isLowLevelRegister,
-  type MachineRegister,
-  type Register,
-  type SyscallRegister,
-} from '@glimmer/vm';
+import { $fp, $pc, $s0, $s1, $sp, $t0, $t1, $v0, isLowLevelRegister } from '@glimmer/vm';
+
+import type { DebugState } from '../opcodes';
+import type { LiveBlockList } from './element-builder';
+import type { EvaluationStack } from './stack';
+import type { BlockOpcode, ResumableVMState, VMState } from './update';
 
 import {
   BeginTrackFrameOpcode,
   EndTrackFrameOpcode,
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
-import { APPEND_OPCODES, type DebugState } from '../opcodes';
+import { APPEND_OPCODES } from '../opcodes';
 import { PartialScopeImpl } from '../scope';
 import { ARGS, CONSTANTS, DESTROYABLE_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';
-import type { LiveBlockList } from './element-builder';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
-import EvaluationStackImpl, { type EvaluationStack } from './stack';
-import {
-  type BlockOpcode,
-  ListBlockOpcode,
-  ListItemOpcode,
-  type ResumableVMState,
-  ResumableVMStateImpl,
-  TryOpcode,
-  type VMState,
-} from './update';
+import EvaluationStackImpl from './stack';
+import { ListBlockOpcode, ListItemOpcode, ResumableVMStateImpl, TryOpcode } from './update';
 
 /**
  * This interface is used by internal opcodes, and is more stable than

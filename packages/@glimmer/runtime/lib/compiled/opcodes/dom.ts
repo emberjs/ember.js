@@ -1,12 +1,3 @@
-import {
-  check,
-  CheckElement,
-  CheckMaybe,
-  CheckNode,
-  CheckOption,
-  CheckString,
-} from '@glimmer/debug';
-import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import type {
   CapturedPositionalArguments,
   Environment,
@@ -17,23 +8,29 @@ import type {
   Owner,
   UpdatingOpcode,
   UpdatingVM,
-} from "@glimmer/interfaces";
-import { createComputeRef, isConstRef, type Reference, valueForRef } from '@glimmer/reference';
-import { assign, debugToString, expect, isObject } from '@glimmer/util';
+} from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import type { Revision, Tag } from '@glimmer/validator';
 import {
-  consumeTag,
-  CURRENT_TAG,
-  type Revision,
-  type Tag,
-  validateTag,
-  valueForTag,
-} from '@glimmer/validator';
+  check,
+  CheckElement,
+  CheckMaybe,
+  CheckNode,
+  CheckOption,
+  CheckString,
+} from '@glimmer/debug';
+import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
+import { assign, debugToString, expect, isObject } from '@glimmer/util';
+import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0, CurriedTypes, Op } from '@glimmer/vm';
 
-import { type CurriedValue, isCurriedType, resolveCurriedValue } from '../../curried-value';
+import type { CurriedValue } from '../../curried-value';
+import type { DynamicAttribute } from '../../vm/attributes/dynamic';
+
+import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
-import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 

@@ -1,4 +1,3 @@
-import { check, CheckBlockSymbolTable, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
 import type {
   BlockArguments,
   BlockSymbolTable,
@@ -15,20 +14,19 @@ import type {
   Scope,
   ScopeBlock,
   VMArguments,
-} from "@glimmer/interfaces";
-import {
-  createDebugAliasRef,
-  type Reference,
-  UNDEFINED_REFERENCE,
-  valueForRef,
-} from '@glimmer/reference';
+} from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import type { Tag } from '@glimmer/validator';
+import { check, CheckBlockSymbolTable, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
+import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate, unwrap } from '@glimmer/util';
-import { CONSTANT_TAG, type Tag } from '@glimmer/validator';
+import { CONSTANT_TAG } from '@glimmer/validator';
 import { $sp } from '@glimmer/vm';
+
+import type { EvaluationStack } from './stack';
 
 import { CheckCompilableBlock, CheckReference, CheckScope } from '../compiled/opcodes/-debug-strip';
 import { REGISTERS } from '../symbols';
-import type { EvaluationStack } from './stack';
 
 /*
   The calling convention is:

@@ -1,6 +1,7 @@
-import { deprecate } from '@glimmer/global-context';
 import type { CapturedArguments, Dict } from '@glimmer/interfaces';
-import { createComputeRef, type Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { deprecate } from '@glimmer/global-context';
+import { createComputeRef } from '@glimmer/reference';
 
 import { reifyNamed } from '../vm/arguments';
 import { internalHelper } from './internal-helper';

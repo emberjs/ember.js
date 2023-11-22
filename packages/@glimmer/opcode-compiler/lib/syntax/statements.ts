@@ -4,9 +4,11 @@ import type {
   WellKnownAttrName,
   WellKnownTagName,
   WireFormat,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import { $fp, $sp, ContentType, MachineOp, Op } from '@glimmer/vm';
 import { SexpOpcodes } from '@glimmer/wire-format';
+
+import type { PushStatementOp } from './compilers';
 
 import {
   InvokeStaticBlock,
@@ -36,7 +38,7 @@ import {
 import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from '../opcode-builder/opcodes';
 import { debugSymbolsOperand, labelOperand, stdlibOperand } from '../opcode-builder/operands';
 import { namedBlocks } from '../utils';
-import { Compilers, type PushStatementOp } from './compilers';
+import { Compilers } from './compilers';
 
 export const STATEMENTS = new Compilers<PushStatementOp, StatementSexpOpcode>();
 

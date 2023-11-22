@@ -1,4 +1,3 @@
-import { check, CheckNumber } from '@glimmer/debug';
 import type {
   AttributeHookCapability,
   Capabilities,
@@ -24,6 +23,7 @@ import type {
   WithUpdateHook,
   WrappedCapability,
 } from '@glimmer/interfaces';
+import { check, CheckNumber } from '@glimmer/debug';
 import { InternalComponentCapabilities } from '@glimmer/vm';
 
 export const FROM_CAPABILITIES = import.meta.env.DEV ? new WeakSet() : undefined;

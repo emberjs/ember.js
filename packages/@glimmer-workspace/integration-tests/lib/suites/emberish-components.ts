@@ -1,12 +1,14 @@
 import type { SimpleElement } from '@glimmer/interfaces';
+import { unwrap } from '@glimmer/util';
+
+import type { Count } from '../render-test';
 
 import { EmberishCurlyComponent } from '../components';
 import { assertEmberishElement, classes } from '../dom/assertions';
 import { assertingElement, toInnerHTML } from '../dom/simple-utils';
-import { type Count, RenderTest } from '../render-test';
+import { RenderTest } from '../render-test';
 import { equalTokens } from '../snapshot';
 import { test } from '../test-decorator';
-import { unwrap } from '@glimmer/util';
 
 export class EmberishComponentTests extends RenderTest {
   static suiteName = 'Emberish';

@@ -5,9 +5,10 @@ import type {
 } from '@glimmer/interfaces';
 import createHTMLDocument from '@simple-dom/document';
 
-import { assertingElement, toInnerHTML } from '../../dom/simple-utils';
 import type RenderDelegate from '../../render-delegate';
 import type { RenderDelegateOptions } from '../../render-delegate';
+
+import { assertingElement, toInnerHTML } from '../../dom/simple-utils';
 import { RenderTest } from '../../render-test';
 import { JitRenderDelegate } from '../jit/delegate';
 

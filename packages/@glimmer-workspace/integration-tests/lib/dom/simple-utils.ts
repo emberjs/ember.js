@@ -10,15 +10,8 @@ import type {
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
-import {
-  clearElement,
-  type COMMENT_NODE,
-  type DOCUMENT_FRAGMENT_NODE,
-  type DOCUMENT_NODE,
-  ELEMENT_NODE,
-  INSERT_AFTER_BEGIN,
-  type TEXT_NODE,
-} from '@glimmer/util';
+import type { COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, TEXT_NODE } from '@glimmer/util';
+import { clearElement, ELEMENT_NODE, INSERT_AFTER_BEGIN } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 

@@ -1,4 +1,4 @@
-import type { OpcodeHeap, RuntimeOp, SomeVmOp } from "@glimmer/interfaces";
+import type { OpcodeHeap, RuntimeOp, SomeVmOp } from '@glimmer/interfaces';
 import { ARG_SHIFT, MACHINE_MASK, OPERAND_LEN_MASK, TYPE_MASK } from '@glimmer/vm';
 
 export class RuntimeOpImpl implements RuntimeOp {

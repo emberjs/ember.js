@@ -2,6 +2,8 @@ import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
 import { castToBrowser, expect } from '@glimmer/util';
 
+import type { ComponentBlueprint, Content } from '..';
+
 import {
   assertElementShape,
   assertEmberishElement,
@@ -9,9 +11,7 @@ import {
   assertSerializedInElement,
   blockStack,
   CLOSE,
-  type ComponentBlueprint,
   componentSuite,
-  type Content,
   content,
   EMPTY,
   equalTokens,

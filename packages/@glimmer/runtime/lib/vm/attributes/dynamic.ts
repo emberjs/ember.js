@@ -1,4 +1,3 @@
-import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 import type {
   AttributeCursor,
   AttributeOperation,
@@ -8,7 +7,8 @@ import type {
   Environment,
   Nullable,
   SimpleElement,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
+import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 import { castToBrowser, NS_SVG } from '@glimmer/util';
 
 import { normalizeStringValue } from '../../dom/normalize';

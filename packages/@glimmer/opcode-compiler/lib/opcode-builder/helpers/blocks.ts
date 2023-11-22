@@ -1,7 +1,8 @@
-import type { Nullable, WireFormat } from "@glimmer/interfaces";
+import type { Nullable, WireFormat } from '@glimmer/interfaces';
 import { $fp, MachineOp, Op } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
+
 import { blockOperand, symbolTableOperand } from '../operands';
 import { SimpleArgs } from './shared';
 import { PushPrimitive } from './vm';

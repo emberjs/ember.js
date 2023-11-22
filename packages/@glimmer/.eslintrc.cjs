@@ -16,8 +16,20 @@ module.exports = {
       plugins: ['@glimmer-workspace'],
       extends: ['plugin:@glimmer-workspace/recommended'],
       rules: {
-        // We don't publish source, we build to a dist directory
-        'n/no-unpublished-import': ['off'],
+        'n/no-unpublished-import': 'off',
+      },
+    },
+    {
+      files: ['./reference/lib/**/*.ts'],
+      rules: {
+        'import/no-relative-parent-imports': 'error',
+
+        'import/no-internal-modules': [
+          'error',
+          {
+            allow: ['**/internal/*', '**/index.*'],
+          },
+        ],
       },
     },
     // QUnit is a weird package, and there are some issues open about fixing it
@@ -30,79 +42,52 @@ module.exports = {
         '@typescript-eslint/unbound-method': 'off',
       },
     },
-    //////////////////////////////////////////////////////////
-    // Remove when https://github.com/glimmerjs/glimmer-vm/pull/1462
-    // is merged.
-    //////////////////////////////////////////////////////////
+
+    // TODO: / CLEANUP: / TECHDEBT:
     {
       files: [
         'vm/lib/registers.ts',
         'node/lib/serialize-builder.ts',
         'util/lib/immediate.ts',
-        'util/test/immediate-test.ts',
-        'runtime/lib/vm/rehydrate-builder.ts',
         'runtime/lib/dom/normalize.ts',
+        'runtime/lib/vm/rehydrate-builder.ts',
         'syntax/lib/parser/handlebars-node-visitors.ts',
+        'util/test/immediate-test.ts',
       ],
       rules: {
-        '@typescript-eslint/no-unsafe-enum-comparison': 'off',
-      },
-    },
-    {
-      files: ['interfaces/lib/compile/encoder.ts'],
-      rules: {
-        '@typescript-eslint/no-duplicate-type-constituents': 'off',
+        '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
       },
     },
     {
       files: [
-        'compiler/lib/builder/builder-interface.ts',
-        'syntax/test/support.ts',
-        'destroyable/test/destroyables-test.ts',
-        'syntax/test/plugin-node-test.ts',
-        'syntax/test/loc-node-test.ts',
-        'syntax/test/parser-node-test.ts',
-        'reference/test/iterable-test.ts',
-        'reference/test/references-test.ts',
-        'test/traversal/visiting-keys-node-test.ts',
-        'syntax/test/traversal/visiting-node-test.ts',
-        'syntax/test/traversal/visiting-keys-node-test.ts',
-      ],
-      rules: {
-        '@typescript-eslint/no-redundant-type-constituents': 'off',
-      },
-    },
-    {
-      files: [
-        'util/lib/debug-to-string.ts',
         'debug/lib/debug.ts',
-        'manager/lib/public/component.ts',
-        'manager/lib/public/helper.ts',
+        'util/lib/debug-to-string.ts',
         'manager/lib/public/modifier.ts',
+        'manager/lib/public/helper.ts',
+        'manager/lib/public/component.ts',
         'runtime/lib/debug-render-tree.ts',
         'runtime/lib/compiled/opcodes/content.ts',
         'syntax/lib/v2/normalize.ts',
       ],
       rules: {
-        '@typescript-eslint/no-base-to-string': 'off',
+        '@typescript-eslint/no-base-to-string': 'warn',
+      },
+    },
+    {
+      files: [
+        'validator/lib/debug.ts',
+        'runtime/lib/modifiers/on.ts',
+        'syntax/lib/parser/tokenizer-event-handlers.ts',
+        'syntax/lib/get-template-locals.ts',
+      ],
+      rules: {
+        'deprecation/deprecation': 'warn',
       },
     },
     {
       files: ['util/lib/simple-cast.ts'],
       rules: {
-        'valid-typeof': 'off',
-      },
-    },
-    {
-      files: ['syntax/lib/source/source.ts'],
-      rules: {
-        '@typescript-eslint/no-inferrable-types': 'off',
-      },
-    },
-    {
-      files: ['validator/lib/utils.ts'],
-      rules: {
-        'n/no-unsupported-features/es-builtins': 'off',
+        'valid-typeof': 'warn',
       },
     },
   ],

@@ -4,14 +4,13 @@ import type {
   SerializedTemplateWithLazyBlock,
   TemplateJavascript,
 } from '@glimmer/interfaces';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import {
-  normalize,
-  type PrecompileOptions,
-  type PrecompileOptionsWithLexicalScope,
-  src,
-  type TemplateIdFn,
+import type {
+  PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
+  TemplateIdFn,
 } from '@glimmer/syntax';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { normalize, src } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
 import pass0 from './passes/1-normalization/index';

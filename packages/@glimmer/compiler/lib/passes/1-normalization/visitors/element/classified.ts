@@ -1,10 +1,11 @@
 import { ASTv2, maybeLoc, src } from '@glimmer/syntax';
 
+import type { NormalizationState } from '../../context';
+
 import { OptionalList } from '../../../../shared/list';
 import { Ok, Result, ResultArray } from '../../../../shared/result';
 import { getAttrNamespace } from '../../../../utils';
 import * as mir from '../../../2-encoding/mir';
-import type { NormalizationState } from '../../context';
 import { MODIFIER_KEYWORDS } from '../../keywords';
 import { assertIsValidModifier, isHelperInvocation } from '../../utils/is-node';
 import { convertPathToCallIfKeyword, VISIT_EXPRS } from '../expressions';

@@ -1,4 +1,3 @@
-import { destroy } from '@glimmer/destroyable';
 import type {
   ComponentDefinitionState,
   Dict,
@@ -10,25 +9,23 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import { inTransaction } from '@glimmer/runtime';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
+import type { NTuple } from '@glimmer-workspace/test-utils';
+import { destroy } from '@glimmer/destroyable';
+import { inTransaction } from '@glimmer/runtime';
 import { assert, clearElement, dict, expect, isPresent, unwrap } from '@glimmer/util';
 import { dirtyTagFor } from '@glimmer/validator';
-import type { NTuple } from '@glimmer-workspace/test-utils';
 
-import {
-  type ComponentBlueprint,
-  type ComponentKind,
-  type ComponentTypes,
-  CURLY_TEST_COMPONENT,
-  GLIMMER_TEST_COMPONENT,
-} from './components';
-import { assertElementShape, assertEmberishElement } from './dom/assertions';
-import { assertingElement, toInnerHTML } from './dom/simple-utils';
+import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './components';
 import type { UserHelper } from './helpers';
 import type { TestModifierConstructor } from './modifiers';
 import type RenderDelegate from './render-delegate';
-import { equalTokens, isServerMarker, type NodesSnapshot, normalizeSnapshot } from './snapshot';
+import type { NodesSnapshot } from './snapshot';
+
+import { CURLY_TEST_COMPONENT, GLIMMER_TEST_COMPONENT } from './components';
+import { assertElementShape, assertEmberishElement } from './dom/assertions';
+import { assertingElement, toInnerHTML } from './dom/simple-utils';
+import { equalTokens, isServerMarker, normalizeSnapshot } from './snapshot';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 type Present<T> = Exclude<T, null | undefined>;

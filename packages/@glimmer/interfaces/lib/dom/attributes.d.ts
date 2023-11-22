@@ -26,7 +26,7 @@ export interface SimpleLiveBlock extends LiveBlock {
   lastNode(): SimpleNode;
 }
 
-export type RemoteLiveBlock = SimpleLiveBlock
+export type RemoteLiveBlock = SimpleLiveBlock;
 
 export interface UpdatableBlock extends SimpleLiveBlock {
   reset(env: Environment): Nullable<SimpleNode>;

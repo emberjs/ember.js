@@ -33,7 +33,7 @@ export class AttributesTests extends RenderTest {
 
   @test
   'helpers shadow self'() {
-    this.registerHelper('foo', function () {
+    this.registerHelper('foo', () => {
       return 'hello';
     });
 

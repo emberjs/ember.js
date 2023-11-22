@@ -1,6 +1,5 @@
-import { testOverrideGlobalContext } from '@glimmer/global-context';
 import type { UpdatableTag } from '@glimmer/interfaces';
-
+import { testOverrideGlobalContext } from '@glimmer/global-context';
 import {
   ALLOW_CYCLES,
   bump,
@@ -15,6 +14,7 @@ import {
   valueForTag,
   VOLATILE_TAG,
 } from '@glimmer/validator';
+
 import { module, test } from './-utils';
 
 function unwrap<T>(value: T | null | undefined): T {
