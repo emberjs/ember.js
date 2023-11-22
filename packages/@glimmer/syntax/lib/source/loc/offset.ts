@@ -135,7 +135,10 @@ export class CharPosition implements PositionData {
   /** Computed from char offset */
   _locPos: HbsPosition | BROKEN | null = null;
 
-  constructor(readonly source: Source, readonly charPos: number) {}
+  constructor(
+    readonly source: Source,
+    readonly charPos: number
+  ) {}
 
   /**
    * This is already a `CharPosition`.

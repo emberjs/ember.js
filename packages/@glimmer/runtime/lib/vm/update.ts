@@ -110,7 +110,10 @@ export interface ResumableVMState {
 }
 
 export class ResumableVMStateImpl implements ResumableVMState {
-  constructor(readonly state: VMState, private resumeCallback: VmInitCallback) {}
+  constructor(
+    readonly state: VMState,
+    private resumeCallback: VmInitCallback
+  ) {}
 
   resume(runtime: RuntimeContext, builder: ElementBuilder): InternalVM {
     return this.resumeCallback(runtime, this.state, builder);

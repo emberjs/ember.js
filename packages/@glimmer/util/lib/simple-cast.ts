@@ -26,10 +26,10 @@ type SugaryNodeCheck<K extends BrowserTag = BrowserTag> = NodeCheck<BrowserTags[
 type NodeForSugaryCheck<S extends SugaryNodeCheck<BrowserTag>> = S extends NodeCheck<infer N>
   ? N
   : S extends keyof BrowserTags
-  ? BrowserTags[S]
-  : S extends (keyof BrowserTags)[]
-  ? BrowserTags[S[number]]
-  : never;
+    ? BrowserTags[S]
+    : S extends (keyof BrowserTags)[]
+      ? BrowserTags[S[number]]
+      : never;
 
 type BrowserNode = Element | Document | DocumentFragment | Text | Comment | Node;
 

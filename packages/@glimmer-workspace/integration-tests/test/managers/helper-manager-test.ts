@@ -399,7 +399,7 @@ class HelperManagerTest extends RenderTest {
   @test 'helper manager and modifier manager can be associated with the same value'() {
     abstract class TestModifierHelper extends TestHelper {}
 
-    setModifierManager(() => ({} as any), TestHelper);
+    setModifierManager(() => ({}) as any, TestHelper);
 
     class Hello extends TestModifierHelper {
       value() {

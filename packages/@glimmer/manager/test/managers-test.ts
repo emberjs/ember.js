@@ -378,32 +378,32 @@ function assertPrimitiveUsage(assert: Assert, setManager: any) {
   }
 
   assert.throws(() => {
-    setManager(() => ({} as any), null as any);
+    setManager(() => ({}) as any, null as any);
   }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
-    setManager(() => ({} as any), undefined as any);
+    setManager(() => ({}) as any, undefined as any);
   }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
-    setManager(() => ({} as any), true as any);
+    setManager(() => ({}) as any, true as any);
   }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
-    setManager(() => ({} as any), false as any);
+    setManager(() => ({}) as any, false as any);
   }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
-    setManager(() => ({} as any), 123 as any);
+    setManager(() => ({}) as any, 123 as any);
   }, /Attempted to set a manager on a non-object value/u);
 
   assert.throws(() => {
-    setManager(() => ({} as any), 'foo' as any);
+    setManager(() => ({}) as any, 'foo' as any);
   }, /Attempted to set a manager on a non-object value/u);
 
   if (typeof Symbol === 'function') {
     assert.throws(() => {
-      setManager(() => ({} as any), Symbol('foo') as any);
+      setManager(() => ({}) as any, Symbol('foo') as any);
     }, /Attempted to set a manager on a non-object value/u);
   }
 }

@@ -31,7 +31,10 @@ export default class EvaluationStackImpl implements EvaluationStack {
   readonly [REGISTERS]: LowLevelRegisters;
 
   // fp -> sp
-  constructor(private stack: unknown[] = [], registers: LowLevelRegisters) {
+  constructor(
+    private stack: unknown[] = [],
+    registers: LowLevelRegisters
+  ) {
     this[REGISTERS] = registers;
 
     if (LOCAL_DEBUG) {

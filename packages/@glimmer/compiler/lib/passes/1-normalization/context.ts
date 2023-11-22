@@ -13,7 +13,10 @@ export class NormalizationState {
   _currentScope: SymbolTable;
   _cursorCount = 0;
 
-  constructor(block: SymbolTable, readonly isStrict: boolean) {
+  constructor(
+    block: SymbolTable,
+    readonly isStrict: boolean
+  ) {
     this._currentScope = block;
   }
 

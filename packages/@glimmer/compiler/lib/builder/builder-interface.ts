@@ -676,7 +676,7 @@ export function normalizeAppendExpression(
           type: ExpressionKind.Concat,
           params: normalizeParams(expression.slice(1)) as [
             NormalizedExpression,
-            ...NormalizedExpression[]
+            ...NormalizedExpression[],
           ],
         };
 
@@ -764,7 +764,7 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
           type: ExpressionKind.Concat,
           params: normalizeParams(expression.slice(1)) as [
             NormalizedExpression,
-            ...NormalizedExpression[]
+            ...NormalizedExpression[],
           ],
         };
 

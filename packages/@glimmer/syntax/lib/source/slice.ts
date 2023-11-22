@@ -2,7 +2,7 @@ import * as src from './api';
 
 export type SerializedSourceSlice<Chars extends string = string> = [
   chars: Chars,
-  span: src.SerializedSourceSpan
+  span: src.SerializedSourceSpan,
 ];
 
 export class SourceSlice<Chars extends string = string> {

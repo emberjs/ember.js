@@ -54,7 +54,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     let [statements] = wire.block;
     let [[, componentNameExpr], ...divExpr] = statements as [
       WireFormat.Statements.Component,
-      ...WireFormat.Statement[]
+      ...WireFormat.Statement[],
     ];
 
     assert.deepEqual(wire.scope?.(), [hello]);
@@ -81,7 +81,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     let [statements] = wire.block;
     let [[, componentNameExpr], ...divExpr] = statements as [
       WireFormat.Statements.Component,
-      ...WireFormat.Statement[]
+      ...WireFormat.Statement[],
     ];
 
     assert.deepEqual(wire.scope?.(), [f]);

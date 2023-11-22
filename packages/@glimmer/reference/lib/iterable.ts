@@ -195,7 +195,10 @@ export function createIteratorItemRef(_value: unknown) {
 }
 
 class IteratorWrapper implements OpaqueIterator {
-  constructor(private inner: IteratorDelegate, private keyFor: KeyFor) {}
+  constructor(
+    private inner: IteratorDelegate,
+    private keyFor: KeyFor
+  ) {}
 
   isEmpty() {
     return this.inner.isEmpty();
@@ -216,7 +219,10 @@ class ArrayIterator implements OpaqueIterator {
   private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
   private pos = 0;
 
-  constructor(private iterator: unknown[] | readonly unknown[], private keyFor: KeyFor) {
+  constructor(
+    private iterator: unknown[] | readonly unknown[],
+    private keyFor: KeyFor
+  ) {
     if (iterator.length === 0) {
       this.current = { kind: 'empty' };
     } else {

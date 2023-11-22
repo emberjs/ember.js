@@ -41,7 +41,10 @@ export abstract class SymbolTable {
 }
 
 export class ProgramSymbolTable extends SymbolTable {
-  constructor(private templateLocals: string[], private options: SymbolTableOptions) {
+  constructor(
+    private templateLocals: string[],
+    private options: SymbolTableOptions
+  ) {
     super();
   }
 
@@ -151,7 +154,11 @@ export class ProgramSymbolTable extends SymbolTable {
 }
 
 export class BlockSymbolTable extends SymbolTable {
-  constructor(private parent: SymbolTable, public symbols: string[], public slots: number[]) {
+  constructor(
+    private parent: SymbolTable,
+    public symbols: string[],
+    public slots: number[]
+  ) {
     super();
   }
 

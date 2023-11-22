@@ -247,7 +247,10 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
 export class UpdateModifierOpcode implements UpdatingOpcode {
   private lastUpdated: Revision;
 
-  constructor(private tag: Tag, private modifier: ModifierInstance) {
+  constructor(
+    private tag: Tag,
+    private modifier: ModifierInstance
+  ) {
     this.lastUpdated = valueForTag(tag);
   }
 

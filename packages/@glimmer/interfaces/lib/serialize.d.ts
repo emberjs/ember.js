@@ -68,7 +68,7 @@ export interface CompileTimeComponent {
 export interface ResolvedComponentDefinition<
   D = ComponentDefinitionState,
   I = ComponentInstanceState,
-  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>
+  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>,
 > {
   state: D;
   manager: M;

@@ -147,7 +147,7 @@ export type InternalComponentCapability =
 
 export interface InternalComponentManager<
   TComponentStateBucket = unknown,
-  TComponentDefinition = object
+  TComponentDefinition = object,
 > {
   getCapabilities(state: TComponentDefinition): InternalComponentCapabilities;
   getSelf(state: TComponentStateBucket): Reference;
@@ -161,7 +161,7 @@ export interface CustomRenderNode extends RenderNode {
 
 export interface WithCustomDebugRenderTree<
   ComponentInstanceState = unknown,
-  ComponentDefinitionState = unknown
+  ComponentDefinitionState = unknown,
 > extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   // APIs for hooking into the debug render tree, used by components that
   // represent multiple logical components. Specifically, {{mount}} and {{outlet}}
@@ -175,7 +175,7 @@ export interface WithCustomDebugRenderTree<
 
 export interface WithPrepareArgs<
   ComponentInstanceState = unknown,
-  ComponentDefinitionState = unknown
+  ComponentDefinitionState = unknown,
 > extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   // The component manager is asked to prepare the arguments needed
   // for `create`. This allows for things like closure> components where the
@@ -192,7 +192,7 @@ export interface WithSubOwner<ComponentInstanceState = unknown, ComponentDefinit
 export interface WithCreateInstance<
   ComponentInstanceState = unknown,
   ComponentDefinitionState = unknown,
-  O extends Owner = Owner
+  O extends Owner = Owner,
 > extends InternalComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   // The component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
@@ -237,7 +237,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
 
 export interface WithDynamicLayout<
   I = ComponentInstanceState,
-  R extends RuntimeResolver = RuntimeResolver
+  R extends RuntimeResolver = RuntimeResolver,
 > extends InternalComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might

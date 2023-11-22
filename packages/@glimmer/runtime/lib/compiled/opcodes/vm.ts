@@ -263,7 +263,10 @@ export class Assert implements UpdatingOpcode {
 export class AssertFilter<T, U> implements UpdatingOpcode {
   private last: U;
 
-  constructor(private ref: Reference<T>, private filter: (from: T) => U) {
+  constructor(
+    private ref: Reference<T>,
+    private filter: (from: T) => U
+  ) {
     this.last = filter(valueForRef(ref));
   }
 

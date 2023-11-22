@@ -11,7 +11,10 @@ import { VISIT_STMTS } from '../statements';
 export class ClassifiedComponent implements Classified {
   readonly dynamicFeatures = true;
 
-  constructor(private tag: mir.ExpressionNode, private element: ASTv2.InvokeComponent) {}
+  constructor(
+    private tag: mir.ExpressionNode,
+    private element: ASTv2.InvokeComponent
+  ) {}
 
   arg(attr: ASTv2.ComponentArg, { state }: ClassifiedElement): Result<mir.NamedArgument> {
     let name = attr.name;

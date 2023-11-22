@@ -99,7 +99,10 @@ class InstanceofChecker<T> implements Checker<T> {
 class OptionChecker<T> implements Checker<Nullable<T>> {
   declare type: Nullable<T>;
 
-  constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
+  constructor(
+    private checker: Checker<T>,
+    private emptyValue: null | undefined
+  ) {}
 
   validate(value: unknown): value is Nullable<T> {
     if (value === this.emptyValue) return true;
@@ -129,7 +132,10 @@ class MaybeChecker<T> implements Checker<Maybe<T>> {
 class OrChecker<T, U> implements Checker<T | U> {
   declare type: T | U;
 
-  constructor(private left: Checker<T>, private right: Checker<U>) {}
+  constructor(
+    private left: Checker<T>,
+    private right: Checker<U>
+  ) {}
 
   validate(value: unknown): value is T | U {
     return this.left.validate(value) || this.right.validate(value);
@@ -143,7 +149,10 @@ class OrChecker<T, U> implements Checker<T | U> {
 class ExactValueChecker<T> implements Checker<T> {
   declare type: T;
 
-  constructor(private value: T, private desc: string) {}
+  constructor(
+    private value: T,
+    private desc: string
+  ) {}
 
   validate(obj: unknown): obj is T {
     return obj === this.value;
@@ -277,7 +286,7 @@ export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
 
 export function CheckInterface<
   I extends { [P in keyof O]: O[P]['type'] },
-  O extends Dict<Checker<unknown>>
+  O extends Dict<Checker<unknown>>,
 >(obj: O): Checker<I> {
   return new PropertyChecker(obj);
 }

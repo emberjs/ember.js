@@ -129,9 +129,18 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
 
   @test
   'Cannot invoke a modifier definition based on this fallback lookup in resolution mode'() {
-    this.assert.throws(() => {
-      this.registerComponent('TemplateOnly', 'Bar', '<div {{x.foo}}></div>');
-    }, syntaxErrorFor('You attempted to invoke a path (`{{#x.foo}}`) as a modifier, but x was not in scope. Try adding `this` to the beginning of the path', '{{x.foo}}', 'an unknown module', 1, 5));
+    this.assert.throws(
+      () => {
+        this.registerComponent('TemplateOnly', 'Bar', '<div {{x.foo}}></div>');
+      },
+      syntaxErrorFor(
+        'You attempted to invoke a path (`{{#x.foo}}`) as a modifier, but x was not in scope. Try adding `this` to the beginning of the path',
+        '{{x.foo}}',
+        'an unknown module',
+        1,
+        5
+      )
+    );
   }
 
   @test

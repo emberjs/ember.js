@@ -23,7 +23,10 @@ export class WrappedBuilder implements CompilableProgram {
   private compiled: Nullable<number> = null;
   private attrsBlockNumber: number;
 
-  constructor(private layout: LayoutWithContext, public moduleName: string) {
+  constructor(
+    private layout: LayoutWithContext,
+    public moduleName: string
+  ) {
     let { block } = layout;
     let [, symbols, hasEval] = block;
 

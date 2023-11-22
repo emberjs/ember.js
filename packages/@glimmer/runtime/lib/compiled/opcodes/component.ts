@@ -400,7 +400,7 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
     import.meta.env.DEV &&
     !managerHasCapability(manager, capabilities, InternalComponentCapabilities.willDestroy) &&
     d !== null &&
-    typeof 'willDestroy' in d
+    (typeof 'willDestroy') in d
   ) {
     throw new Error(
       'BUG: Destructor has willDestroy, but the willDestroy capability was not enabled for this component. Pre-destruction hooks must be explicitly opted into'
@@ -878,7 +878,10 @@ export class UpdateComponentOpcode implements UpdatingOpcode {
 }
 
 export class DidUpdateLayoutOpcode implements UpdatingOpcode {
-  constructor(private component: ComponentInstanceWithCreate, private bounds: Bounds) {}
+  constructor(
+    private component: ComponentInstanceWithCreate,
+    private bounds: Bounds
+  ) {}
 
   evaluate(vm: UpdatingVM) {
     let { component, bounds } = this;
@@ -899,7 +902,10 @@ class DebugRenderTreeUpdateOpcode implements UpdatingOpcode {
 }
 
 class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
-  constructor(private bucket: object, private bounds: Bounds) {}
+  constructor(
+    private bucket: object,
+    private bounds: Bounds
+  ) {}
 
   evaluate(vm: UpdatingVM) {
     vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);

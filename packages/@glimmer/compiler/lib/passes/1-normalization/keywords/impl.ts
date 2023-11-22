@@ -24,7 +24,7 @@ class KeywordImpl<
   K extends KeywordType,
   S extends string = string,
   Param = unknown,
-  Out = unknown
+  Out = unknown,
 > {
   protected types: Set<KeywordCandidates[K]['type']>;
 
@@ -132,7 +132,7 @@ export type KeywordNode =
 export function keyword<
   K extends KeywordType,
   D extends KeywordDelegate<KeywordMatches[K], unknown, Out>,
-  Out = unknown
+  Out = unknown,
 >(keyword: string, type: K, delegate: D): Keyword<K, Out> {
   return new KeywordImpl(keyword, type, delegate as KeywordDelegate<KeywordMatch, unknown, Out>);
 }
@@ -141,8 +141,8 @@ export type PossibleKeyword = KeywordNode;
 type OutFor<K extends Keyword | BlockKeyword> = K extends BlockKeyword<infer Out>
   ? Out
   : K extends Keyword<KeywordType, infer Out>
-  ? Out
-  : never;
+    ? Out
+    : never;
 
 function getCalleeExpression(
   node: KeywordNode | ASTv2.ExpressionNode

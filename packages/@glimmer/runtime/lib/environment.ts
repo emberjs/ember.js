@@ -103,7 +103,10 @@ export class EnvironmentImpl implements Environment {
 
   debugRenderTree: DebugRenderTree<object> | undefined;
 
-  constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate) {
+  constructor(
+    options: EnvironmentOptions,
+    private delegate: EnvironmentDelegate
+  ) {
     this.isInteractive = delegate.isInteractive;
     this.debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
     if (options.appendOperations) {

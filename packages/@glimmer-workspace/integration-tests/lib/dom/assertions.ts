@@ -119,7 +119,7 @@ export function assertIsElement(node: SimpleNode | null): node is SimpleElement 
 
 export function assertNodeTagName<
   T extends keyof CompatibleTagNameMap,
-  U extends CompatibleTagNameMap[T]
+  U extends CompatibleTagNameMap[T],
 >(node: SimpleNode | null, tagName: T): node is SimpleNode & U {
   if (assertIsElement(node)) {
     const lowerTagName = node.tagName.toLowerCase();

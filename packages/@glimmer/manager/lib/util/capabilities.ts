@@ -74,30 +74,30 @@ export type InternalComponentCapabilityFor<C extends InternalComponentCapability
   C extends DynamicLayoutCapability
     ? WithDynamicLayout
     : C extends DynamicTagCapability
-    ? InternalComponentManager
-    : C extends PrepareArgsCapability
-    ? WithPrepareArgs
-    : C extends CreateArgsCapability
-    ? InternalComponentManager
-    : C extends AttributeHookCapability
-    ? InternalComponentManager
-    : C extends ElementHookCapability
-    ? InternalComponentManager
-    : C extends DynamicScopeCapability
-    ? InternalComponentManager
-    : C extends CreateCallerCapability
-    ? InternalComponentManager
-    : C extends UpdateHookCapability
-    ? WithUpdateHook
-    : C extends CreateInstanceCapability
-    ? WithCreateInstance
-    : C extends WrappedCapability
-    ? InternalComponentManager
-    : C extends WillDestroyCapability
-    ? InternalComponentManager
-    : C extends HasSubOwnerCapability
-    ? WithSubOwner
-    : never;
+      ? InternalComponentManager
+      : C extends PrepareArgsCapability
+        ? WithPrepareArgs
+        : C extends CreateArgsCapability
+          ? InternalComponentManager
+          : C extends AttributeHookCapability
+            ? InternalComponentManager
+            : C extends ElementHookCapability
+              ? InternalComponentManager
+              : C extends DynamicScopeCapability
+                ? InternalComponentManager
+                : C extends CreateCallerCapability
+                  ? InternalComponentManager
+                  : C extends UpdateHookCapability
+                    ? WithUpdateHook
+                    : C extends CreateInstanceCapability
+                      ? WithCreateInstance
+                      : C extends WrappedCapability
+                        ? InternalComponentManager
+                        : C extends WillDestroyCapability
+                          ? InternalComponentManager
+                          : C extends HasSubOwnerCapability
+                            ? WithSubOwner
+                            : never;
 
 export function managerHasCapability<F extends InternalComponentCapability>(
   _manager: InternalComponentManager,

@@ -486,7 +486,10 @@ export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBloc
 
 // FIXME: All the noops in here indicate a modelling problem
 export class LiveBlockList implements LiveBlock {
-  constructor(private readonly parent: SimpleElement, public boundList: LiveBlock[]) {
+  constructor(
+    private readonly parent: SimpleElement,
+    public boundList: LiveBlock[]
+  ) {
     this.parent = parent;
     this.boundList = boundList;
   }

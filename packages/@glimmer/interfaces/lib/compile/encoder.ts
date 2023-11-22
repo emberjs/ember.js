@@ -61,13 +61,13 @@ export type HighLevelBuilderOp = StartLabelsOp | StopLabelsOp | LabelOp;
 export type ResolveModifierOp = [
   op: HighLevelResolveModifier,
   op1: WireFormat.Expressions.Expression,
-  op2: (handle: number) => void
+  op2: (handle: number) => void,
 ];
 
 export type ResolveComponentOp = [
   op: HighLevelResolveComponent,
   op1: WireFormat.Expressions.Expression,
-  op2: (component: CompileTimeComponent) => void
+  op2: (component: CompileTimeComponent) => void,
 ];
 
 export type ResolveComponentOrHelperOp = [
@@ -76,13 +76,13 @@ export type ResolveComponentOrHelperOp = [
   op2: {
     ifComponent: (component: CompileTimeComponent) => void;
     ifHelper: (handle: number) => void;
-  }
+  },
 ];
 
 export type ResolveHelperOp = [
   op: HighLevelResolveHelper,
   op1: WireFormat.Expressions.Expression,
-  op2: (handle: number) => void
+  op2: (handle: number) => void,
 ];
 
 export type ResolveOptionalHelperOp = [
@@ -90,7 +90,7 @@ export type ResolveOptionalHelperOp = [
   op1: WireFormat.Expressions.Expression,
   op2: {
     ifHelper: (handle: number, name: string, moduleName: string) => void;
-  }
+  },
 ];
 
 export type ResolveOptionalComponentOrHelperOp = [
@@ -100,7 +100,7 @@ export type ResolveOptionalComponentOrHelperOp = [
     ifComponent: (component: CompileTimeComponent) => void;
     ifHelper: (handle: number) => void;
     ifValue: (handle: number) => void;
-  }
+  },
 ];
 
 export type ResolveFreeOp = [op: HighLevelResolveFree, op1: number, op2: (handle: number) => void];
@@ -108,13 +108,13 @@ export type ResolveFreeOp = [op: HighLevelResolveFree, op1: number, op2: (handle
 export type ResolveTemplateLocalOp = [
   op: HighLevelResolveTemplateLocal,
   op1: number,
-  op2: (handle: number) => void
+  op2: (handle: number) => void,
 ];
 
 export type ResolveLocalOp = [
   op: HighLevelResolveLocal,
   op1: number,
-  op2: (name: string, moduleName: string) => void
+  op2: (name: string, moduleName: string) => void,
 ];
 
 export type HighLevelResolutionOp =
@@ -136,7 +136,7 @@ export type BuilderOp = [
   op: BuilderOpcode,
   op1?: SingleBuilderOperand,
   op1?: SingleBuilderOperand,
-  op1?: SingleBuilderOperand
+  op1?: SingleBuilderOperand,
 ];
 
 export interface EncoderError {

@@ -26,16 +26,22 @@ test('elements can have empty attributes', () => {
 
 test('disallowed quote in element space is rejected', (assert) => {
   let t = '<img foo="bar"" >';
-  assert.throws(() => {
-    parse(t, { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('" is not a valid character within attribute names', '', 'test-module', 1, 14));
+  assert.throws(
+    () => {
+      parse(t, { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('" is not a valid character within attribute names', '', 'test-module', 1, 14)
+  );
 });
 
 test('disallowed equals sign in element space is rejected', (assert) => {
   let t = '<img =foo >';
-  assert.throws(() => {
-    parse(t, { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('attribute name cannot start with equals sign', '', 'test-module', 1, 5));
+  assert.throws(
+    () => {
+      parse(t, { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('attribute name cannot start with equals sign', '', 'test-module', 1, 5)
+  );
 });
 
 test('svg content', () => {
@@ -552,23 +558,50 @@ test('a Handlebars comment after a valueless attribute', () => {
 });
 
 test('a Handlebars comment in invalid element space', (assert) => {
-  assert.throws(() => {
-    parse('\nbefore <div \n  a{{! some comment }} data-foo="bar"></div> after', {
-      meta: { moduleName: 'test-module' },
-    });
-  }, syntaxErrorFor('Using a Handlebars comment when in the `attributeName` state is not supported', '{{! some comment }}', 'test-module', 3, 3));
+  assert.throws(
+    () => {
+      parse('\nbefore <div \n  a{{! some comment }} data-foo="bar"></div> after', {
+        meta: { moduleName: 'test-module' },
+      });
+    },
+    syntaxErrorFor(
+      'Using a Handlebars comment when in the `attributeName` state is not supported',
+      '{{! some comment }}',
+      'test-module',
+      3,
+      3
+    )
+  );
 
-  assert.throws(() => {
-    parse('\nbefore <div \n  a={{! some comment }} data-foo="bar"></div> after', {
-      meta: { moduleName: 'test-module' },
-    });
-  }, syntaxErrorFor('Using a Handlebars comment when in the `beforeAttributeValue` state is not supported', '{{! some comment }}', 'test-module', 3, 4));
+  assert.throws(
+    () => {
+      parse('\nbefore <div \n  a={{! some comment }} data-foo="bar"></div> after', {
+        meta: { moduleName: 'test-module' },
+      });
+    },
+    syntaxErrorFor(
+      'Using a Handlebars comment when in the `beforeAttributeValue` state is not supported',
+      '{{! some comment }}',
+      'test-module',
+      3,
+      4
+    )
+  );
 
-  assert.throws(() => {
-    parse('\nbefore <div \n  a="{{! some comment }}" data-foo="bar"></div> after', {
-      meta: { moduleName: 'test-module' },
-    });
-  }, syntaxErrorFor('Using a Handlebars comment when in the `attributeValueDoubleQuoted` state is not supported', '{{! some comment }}', 'test-module', 3, 5));
+  assert.throws(
+    () => {
+      parse('\nbefore <div \n  a="{{! some comment }}" data-foo="bar"></div> after', {
+        meta: { moduleName: 'test-module' },
+      });
+    },
+    syntaxErrorFor(
+      'Using a Handlebars comment when in the `attributeValueDoubleQuoted` state is not supported',
+      '{{! some comment }}',
+      'test-module',
+      3,
+      5
+    )
+  );
 });
 
 test('allow {{null}} to be passed as helper name', () => {
@@ -596,37 +629,67 @@ test('allow {{undefined}} to be passed as a param', () => {
 });
 
 test('Handlebars partial should error', (assert) => {
-  assert.throws(() => {
-    parse('{{> foo}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('Handlebars partials are not supported', '{{> foo}}', 'test-module', 1, 0));
+  assert.throws(
+    () => {
+      parse('{{> foo}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Handlebars partials are not supported', '{{> foo}}', 'test-module', 1, 0)
+  );
 });
 
 test('Handlebars partial block should error', (assert) => {
-  assert.throws(() => {
-    parse('{{#> foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('Handlebars partial blocks are not supported', '{{#> foo}}{{/foo}}', 'test-module', 1, 0));
+  assert.throws(
+    () => {
+      parse('{{#> foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      'Handlebars partial blocks are not supported',
+      '{{#> foo}}{{/foo}}',
+      'test-module',
+      1,
+      0
+    )
+  );
 });
 
 test('Handlebars decorator should error', (assert) => {
-  assert.throws(() => {
-    parse('{{* foo}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('Handlebars decorators are not supported', '{{* foo}}', 'test-module', 1, 0));
+  assert.throws(
+    () => {
+      parse('{{* foo}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Handlebars decorators are not supported', '{{* foo}}', 'test-module', 1, 0)
+  );
 });
 
 test('Handlebars decorator block should error', (assert) => {
-  assert.throws(() => {
-    parse('{{#* foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('Handlebars decorator blocks are not supported', '{{#* foo}}{{/foo}}', 'test-module', 1, 0));
+  assert.throws(
+    () => {
+      parse('{{#* foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      'Handlebars decorator blocks are not supported',
+      '{{#* foo}}{{/foo}}',
+      'test-module',
+      1,
+      0
+    )
+  );
 });
 
 test('disallowed mustaches in the tagName space', (assert) => {
-  assert.throws(() => {
-    parse('<{{"asdf"}}></{{"asdf"}}>', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{"asdf"}}', 'test-module', 1, 1));
+  assert.throws(
+    () => {
+      parse('<{{"asdf"}}></{{"asdf"}}>', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{"asdf"}}', 'test-module', 1, 1)
+  );
 
-  assert.throws(() => {
-    parse('<input{{bar}}>', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{bar}}', 'test-module', 1, 6));
+  assert.throws(
+    () => {
+      parse('<input{{bar}}>', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{bar}}', 'test-module', 1, 6)
+  );
 });
 
 test('mustache immediately followed by self closing tag does not error', () => {
@@ -663,39 +726,93 @@ test('named blocks', () => {
 });
 
 test('path expression with "dangling dot" throws error', (assert) => {
-  assert.throws(() => {
-    parse('{{if foo. bar baz}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor("'.' is not a supported path in Glimmer; check for a path with a trailing '.'", '.', 'test-module', 1, 8));
+  assert.throws(
+    () => {
+      parse('{{if foo. bar baz}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      "'.' is not a supported path in Glimmer; check for a path with a trailing '.'",
+      '.',
+      'test-module',
+      1,
+      8
+    )
+  );
 });
 
 test('string literal as path throws error', (assert) => {
-  assert.throws(() => {
-    parse('{{("foo-baz")}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor(`StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`, '"foo-baz"', 'test-module', 1, 3));
+  assert.throws(
+    () => {
+      parse('{{("foo-baz")}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      `StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`,
+      '"foo-baz"',
+      'test-module',
+      1,
+      3
+    )
+  );
 });
 
 test('boolean literal as path throws error', (assert) => {
-  assert.throws(() => {
-    parse('{{(true)}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor(`BooleanLiteral "true" cannot be called as a sub-expression, replace (true) with true`, 'true', 'test-module', 1, 3));
+  assert.throws(
+    () => {
+      parse('{{(true)}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      `BooleanLiteral "true" cannot be called as a sub-expression, replace (true) with true`,
+      'true',
+      'test-module',
+      1,
+      3
+    )
+  );
 });
 
 test('undefined literal as path throws error', (assert) => {
-  assert.throws(() => {
-    parse('{{(undefined)}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor(`UndefinedLiteral "undefined" cannot be called as a sub-expression, replace (undefined) with undefined`, 'undefined', 'test-module', 1, 3));
+  assert.throws(
+    () => {
+      parse('{{(undefined)}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      `UndefinedLiteral "undefined" cannot be called as a sub-expression, replace (undefined) with undefined`,
+      'undefined',
+      'test-module',
+      1,
+      3
+    )
+  );
 });
 
 test('null literal as path throws error', (assert) => {
-  assert.throws(() => {
-    parse('{{(null)}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor(`NullLiteral "null" cannot be called as a sub-expression, replace (null) with null`, 'null', 'test-module', 1, 3));
+  assert.throws(
+    () => {
+      parse('{{(null)}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      `NullLiteral "null" cannot be called as a sub-expression, replace (null) with null`,
+      'null',
+      'test-module',
+      1,
+      3
+    )
+  );
 });
 
 test('number literal as path throws error', (assert) => {
-  assert.throws(() => {
-    parse('{{(42)}}', { meta: { moduleName: 'test-module' } });
-  }, syntaxErrorFor(`NumberLiteral "42" cannot be called as a sub-expression, replace (42) with 42`, '42', 'test-module', 1, 3));
+  assert.throws(
+    () => {
+      parse('{{(42)}}', { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor(
+      `NumberLiteral "42" cannot be called as a sub-expression, replace (42) with 42`,
+      '42',
+      'test-module',
+      1,
+      3
+    )
+  );
 });
 
 export function strip(strings: TemplateStringsArray, ...args: string[]) {
