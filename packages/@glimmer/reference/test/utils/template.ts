@@ -45,7 +45,10 @@ class ObjectIterator extends BoundedIterator {
     return new this(keys, values);
   }
 
-  constructor(private keys: unknown[], private values: unknown[]) {
+  constructor(
+    private keys: unknown[],
+    private values: unknown[]
+  ) {
     super(values.length);
   }
 

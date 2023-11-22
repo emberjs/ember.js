@@ -15,7 +15,10 @@ export class NativeIteratorDelegate<T = unknown> implements IteratorDelegate {
 
   private position = 0;
 
-  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>) {}
+  constructor(
+    private iterable: Iterator<T>,
+    private result: IteratorResult<T>
+  ) {}
 
   isEmpty(): false {
     return false;

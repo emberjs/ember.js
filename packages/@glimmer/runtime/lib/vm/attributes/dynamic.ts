@@ -103,7 +103,10 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
 }
 
 export class DefaultDynamicProperty extends DynamicAttribute {
-  constructor(private normalizedName: string, attribute: AttributeCursor) {
+  constructor(
+    private normalizedName: string,
+    attribute: AttributeCursor
+  ) {
     super(attribute);
   }
 

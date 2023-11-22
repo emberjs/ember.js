@@ -379,9 +379,18 @@ class StaticStrictModeTest extends RenderTest {
 
   @test
   'Throws an error if component is not in scope'() {
-    this.assert.throws(() => {
-      defineComponent({}, '<Foo/>');
-    }, syntaxErrorFor('Attempted to invoke a component that was not in scope in a strict mode template, `<Foo>`. If you wanted to create an element with that name, convert it to lowercase - `<foo>`', '<Foo/>', 'an unknown module', 1, 0));
+    this.assert.throws(
+      () => {
+        defineComponent({}, '<Foo/>');
+      },
+      syntaxErrorFor(
+        'Attempted to invoke a component that was not in scope in a strict mode template, `<Foo>`. If you wanted to create an element with that name, convert it to lowercase - `<foo>`',
+        '<Foo/>',
+        'an unknown module',
+        1,
+        0
+      )
+    );
   }
 
   @test

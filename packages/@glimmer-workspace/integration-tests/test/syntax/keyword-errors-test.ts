@@ -148,9 +148,14 @@ for (let keyword of KEYWORDS) {
         return;
       }
 
-      this.assert.throws(() => {
-        preprocess(`{{#${keyword}}}{{/${keyword}}}`, { meta: { moduleName: 'test-module' } });
-      }, new RegExp(`The \`${keyword}\` keyword was used incorrectly. It was used as a block statement, but its valid usages are:`));
+      this.assert.throws(
+        () => {
+          preprocess(`{{#${keyword}}}{{/${keyword}}}`, { meta: { moduleName: 'test-module' } });
+        },
+        new RegExp(
+          `The \`${keyword}\` keyword was used incorrectly. It was used as a block statement, but its valid usages are:`
+        )
+      );
     }
 
     @test
@@ -159,9 +164,14 @@ for (let keyword of KEYWORDS) {
         return;
       }
 
-      this.assert.throws(() => {
-        preprocess(`{{${keyword}}}`, { meta: { moduleName: 'test-module' } });
-      }, new RegExp(`The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`));
+      this.assert.throws(
+        () => {
+          preprocess(`{{${keyword}}}`, { meta: { moduleName: 'test-module' } });
+        },
+        new RegExp(
+          `The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`
+        )
+      );
     }
 
     @test
@@ -170,9 +180,14 @@ for (let keyword of KEYWORDS) {
         return;
       }
 
-      this.assert.throws(() => {
-        preprocess(`{{some-helper (${keyword})}}`, { meta: { moduleName: 'test-module' } });
-      }, new RegExp(`The \`${keyword}\` keyword was used incorrectly. It was used as a call expression, but its valid usages are:`));
+      this.assert.throws(
+        () => {
+          preprocess(`{{some-helper (${keyword})}}`, { meta: { moduleName: 'test-module' } });
+        },
+        new RegExp(
+          `The \`${keyword}\` keyword was used incorrectly. It was used as a call expression, but its valid usages are:`
+        )
+      );
     }
 
     @test
@@ -181,9 +196,14 @@ for (let keyword of KEYWORDS) {
         return;
       }
 
-      this.assert.throws(() => {
-        preprocess(`<div {{${keyword}}}></div>`, { meta: { moduleName: 'test-module' } });
-      }, new RegExp(`The \`${keyword}\` keyword was used incorrectly. It was used as a modifier, but its valid usages are:`));
+      this.assert.throws(
+        () => {
+          preprocess(`<div {{${keyword}}}></div>`, { meta: { moduleName: 'test-module' } });
+        },
+        new RegExp(
+          `The \`${keyword}\` keyword was used incorrectly. It was used as a modifier, but its valid usages are:`
+        )
+      );
     }
   }
 

@@ -8,7 +8,7 @@ import type { UpdatableTag } from '../../tags';
 
 export interface InternalModifierManager<
   TModifierInstanceState = ModifierInstanceState,
-  TModifierDefinitionState extends ModifierDefinitionState = ModifierDefinitionState
+  TModifierDefinitionState extends ModifierDefinitionState = ModifierDefinitionState,
 > {
   // Create is meant to only produce the state bucket
   create(

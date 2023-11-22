@@ -11,7 +11,12 @@ export class PathExpressionImplV1 implements PathExpression {
   public this = false;
   public data = false;
 
-  constructor(public original: string, head: PathHead, tail: string[], public loc: SourceSpan) {
+  constructor(
+    public original: string,
+    head: PathHead,
+    tail: string[],
+    public loc: SourceSpan
+  ) {
     let parts = tail.slice();
 
     if (head.type === 'ThisHead') {

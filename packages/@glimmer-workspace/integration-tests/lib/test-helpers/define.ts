@@ -153,7 +153,10 @@ export class TestHelperManager {
 }
 
 export abstract class TestHelper {
-  constructor(owner: Owner, public args: Arguments) {
+  constructor(
+    owner: Owner,
+    public args: Arguments
+  ) {
     setOwner(this, owner);
 
     registerDestructor(this, () => this.willDestroy());

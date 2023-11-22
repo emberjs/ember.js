@@ -24,7 +24,7 @@ export class AttributesTests extends RenderTest {
 
   protected nativeValueForElementProperty<
     T extends keyof HTMLElementTagNameMap,
-    P extends keyof HTMLElementTagNameMap[T]
+    P extends keyof HTMLElementTagNameMap[T],
   >(tagName: T, property: P, value: HTMLElementTagNameMap[T][P]) {
     const element = document.createElement<T>(tagName);
     element[property] = value;

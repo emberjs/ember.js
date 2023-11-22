@@ -147,7 +147,10 @@ export class LooseModeResolution {
     return new LooseModeResolution({ namespaces: [FreeVarNamespace.Helper], fallback: true });
   }
 
-  constructor(readonly ambiguity: Ambiguity, readonly isAngleBracket = false) {}
+  constructor(
+    readonly ambiguity: Ambiguity,
+    readonly isAngleBracket = false
+  ) {}
 
   resolution(): GetContextualFreeOpcode {
     if (this.ambiguity.namespaces.length === 0) {

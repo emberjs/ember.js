@@ -2,7 +2,10 @@ import type { Bounds, Cursor, Nullable, SimpleElement, SimpleNode } from '@glimm
 import { expect } from '@glimmer/util';
 
 export class CursorImpl implements Cursor {
-  constructor(public element: SimpleElement, public nextSibling: Nullable<SimpleNode>) {}
+  constructor(
+    public element: SimpleElement,
+    public nextSibling: Nullable<SimpleNode>
+  ) {}
 }
 
 export type DestroyableBounds = Bounds;
@@ -28,7 +31,10 @@ export class ConcreteBounds implements Bounds {
 }
 
 export class SingleNodeBounds implements Bounds {
-  constructor(private parentNode: SimpleElement, private node: SimpleNode) {}
+  constructor(
+    private parentNode: SimpleElement,
+    private node: SimpleNode
+  ) {}
 
   parentElement(): SimpleElement {
     return this.parentNode;

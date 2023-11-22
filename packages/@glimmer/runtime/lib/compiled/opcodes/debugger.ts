@@ -36,7 +36,11 @@ export function resetDebuggerCallback() {
 class ScopeInspector {
   private locals = dict<Reference>();
 
-  constructor(private scope: Scope, symbols: string[], debugInfo: number[]) {
+  constructor(
+    private scope: Scope,
+    symbols: string[],
+    debugInfo: number[]
+  ) {
     for (const slot of debugInfo) {
       let name = unwrap(symbols[slot - 1]);
       let ref = scope.getSymbol(slot);

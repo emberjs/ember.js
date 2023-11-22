@@ -16,7 +16,7 @@ export type CapabilityMask = number & {
 export interface ComponentDefinition<
   D extends ComponentDefinitionState = ComponentDefinitionState,
   I = ComponentInstanceState,
-  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>
+  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>,
 > {
   resolvedName: string | null;
   handle: number;
@@ -29,7 +29,7 @@ export interface ComponentDefinition<
 export interface ComponentInstance<
   D extends ComponentDefinitionState = ComponentDefinitionState,
   I = ComponentInstanceState,
-  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>
+  M extends InternalComponentManager<I, D> = InternalComponentManager<I, D>,
 > {
   definition: ComponentDefinition<D, I>;
   manager: M;

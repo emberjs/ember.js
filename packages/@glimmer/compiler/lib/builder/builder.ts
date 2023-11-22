@@ -113,7 +113,10 @@ export class ProgramSymbols implements Symbols {
 class LocalSymbols implements Symbols {
   private locals: Dict<number> = dict();
 
-  constructor(private parent: Symbols, locals: string[]) {
+  constructor(
+    private parent: Symbols,
+    locals: string[]
+  ) {
     for (let local of locals) {
       this.locals[local] = parent.top.symbol(local);
     }

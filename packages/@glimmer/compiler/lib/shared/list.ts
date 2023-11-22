@@ -83,5 +83,5 @@ export type AnyOptionalList<T> = (PresentList<T> | EmptyList<T>) & OptionalList<
 export type MapList<T, U, L extends OptionalList<T>> = L extends PresentList<T>
   ? PresentList<U>
   : L extends EmptyList<T>
-  ? EmptyList<U>
-  : never;
+    ? EmptyList<U>
+    : never;

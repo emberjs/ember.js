@@ -166,9 +166,12 @@ export function valueForRef<T>(_ref: Reference<T>): T {
   if (tag === null || !validateTag(tag, lastRevision)) {
     const { compute } = ref;
 
-    const newTag = track(() => {
-      lastValue = ref.lastValue = compute!();
-    }, import.meta.env.DEV && ref.debugLabel);
+    const newTag = track(
+      () => {
+        lastValue = ref.lastValue = compute!();
+      },
+      import.meta.env.DEV && ref.debugLabel
+    );
 
     tag = ref.tag = newTag;
 

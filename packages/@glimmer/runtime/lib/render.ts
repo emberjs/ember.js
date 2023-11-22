@@ -138,8 +138,11 @@ export function renderComponent(
 function recordToReference(record: Record<string, unknown>): Record<string, Reference> {
   const root = createConstRef(record, 'args');
 
-  return Object.keys(record).reduce((acc, key) => {
-    acc[key] = childRefFor(root, key);
-    return acc;
-  }, {} as Record<string, Reference>);
+  return Object.keys(record).reduce(
+    (acc, key) => {
+      acc[key] = childRefFor(root, key);
+      return acc;
+    },
+    {} as Record<string, Reference>
+  );
 }

@@ -261,7 +261,7 @@ function staticAttr({ name, value, namespace }: mir.StaticAttr): StaticAttrArgs 
 export type DynamicAttrArgs = [
   name: string | WellKnownAttrName,
   value: WireFormat.Expression,
-  namespace?: string
+  namespace?: string,
 ];
 
 function dynamicAttr({ name, value, namespace }: mir.DynamicAttr): DynamicAttrArgs {

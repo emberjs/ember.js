@@ -449,7 +449,10 @@ export class BlockArgumentsImpl implements BlockArguments {
 class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   public length: number;
 
-  constructor(public names: readonly string[], public values: readonly Nullable<BlockValue>[]) {
+  constructor(
+    public names: readonly string[],
+    public values: readonly Nullable<BlockValue>[]
+  ) {
     this.length = names.length;
   }
 

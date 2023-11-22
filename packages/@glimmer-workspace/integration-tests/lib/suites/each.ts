@@ -788,6 +788,6 @@ function numbers() {
     number,
     number,
     number,
-    number
+    number,
   ];
 }

@@ -12,7 +12,10 @@ abstract class CustomModifier {
     return new this(getOwner(args)!, args) as InstanceType<This>;
   }
 
-  constructor(owner: Owner, public args: Arguments) {
+  constructor(
+    owner: Owner,
+    public args: Arguments
+  ) {
     setOwner(this, owner);
   }
 
