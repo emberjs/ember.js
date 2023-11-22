@@ -1,11 +1,12 @@
 import type { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import { renderMain, renderSync } from '@glimmer/runtime';
 import type { PrecompileOptions } from '@glimmer/syntax';
+import { renderMain, renderSync } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 
-import { preprocess } from '../../compile';
 import type { JitTestDelegateContext } from './delegate';
+
+import { preprocess } from '../../compile';
 
 export function renderTemplate(
   src: string,

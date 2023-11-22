@@ -1,9 +1,7 @@
- 
 import type { Dict } from '@glimmer/interfaces';
 import { src } from '@glimmer/syntax';
 import { unwrap } from '@glimmer/util';
 
- 
 const test = QUnit.test;
 
 const cases: Dict<[string, number | null][]> = {

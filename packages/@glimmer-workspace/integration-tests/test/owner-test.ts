@@ -5,8 +5,11 @@ import type {
   WithCreateInstance,
   WithSubOwner,
 } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
 import { setInternalComponentManager } from '@glimmer/manager';
-import { NULL_REFERENCE, type Reference } from '@glimmer/reference';
+import { NULL_REFERENCE } from '@glimmer/reference';
+
+import type { RenderDelegateOptions } from '..';
 
 import {
   createTemplate,
@@ -14,7 +17,6 @@ import {
   EmberishCurlyComponent,
   GlimmerishComponent,
   JitRenderDelegate,
-  type RenderDelegateOptions,
   RenderTest,
   suite,
   test,

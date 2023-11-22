@@ -2,7 +2,7 @@ import type {
   CapturedArguments as Arguments,
   HelperCapabilities,
   HelperManagerWithValue,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 import { buildCapabilities } from '../util/capabilities';
 

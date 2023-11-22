@@ -1,0 +1,13 @@
+
+node_modules/
+
+# output directories
+dist/
+ts-dist/
+
+
+# We don't need prettier here
+*.md
+*.yaml
+*.yml
+guides/

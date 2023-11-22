@@ -6,7 +6,7 @@ import type {
   ModifierDefinitionState,
   ResolvedComponentDefinition,
   SimpleElement,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import {
   getComponentTemplate,
   getInternalComponentManager,
@@ -17,6 +17,7 @@ import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 
 import type { UpdateBenchmark } from '../interfaces';
+
 import renderBenchmark from './render-benchmark';
 
 export interface Registry {

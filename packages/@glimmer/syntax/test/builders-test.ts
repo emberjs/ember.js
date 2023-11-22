@@ -5,7 +5,7 @@ import { astEqual } from './support';
 
 QUnit.module('[glimmer-syntax] AST Builders');
 
-QUnit.test('element uses comments as loc when comments is not an array', function () {
+QUnit.test('element uses comments as loc when comments is not an array', () => {
   let actual = element('div', ['loc', b.loc(1, 1, 1, 1)]);
   let expected = element('div', ['loc', b.loc(1, 1, 1, 1)]);
 

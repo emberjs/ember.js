@@ -10,19 +10,19 @@
       // Do this first so that `@glimmer-workspace/integration-tests` will see the global
       // `QUnit`. We should change the code structure here so that we don't
       // rely on the global to bootstrap QUnit, but this is fine for now.
-      const QUnit = await import('qunit');
+      const QUnit = await import("qunit");
       QUnit.config.autostart = false;
     </script>
     <script type="module">
-      import { setupQunit } from '@glimmer-workspace/integration-tests';
+      import { setupQunit } from "@glimmer-workspace/integration-tests";
       const { smokeTest } = await setupQunit();
 
-      const packages = await import.meta.glob('./packages/@glimmer/*/test/**/*-test.ts');
+      const packages = await import.meta.glob("./packages/@glimmer/*/test/**/*-test.ts");
       const integrationTestFiles = await import.meta.glob(
-        './packages/@glimmer-workspace/*/test/**/*-test.ts'
+        "./packages/@glimmer-workspace/*/test/**/*-test.ts"
       );
 
-      let smokeTestFile = './packages/@glimmer-workspace/integration-tests/test/smoke-test.ts';
+      let smokeTestFile = "./packages/@glimmer-workspace/integration-tests/test/smoke-test.ts";
 
       // evaluate the tests before starting QUnit
       for (const [name, pkg] of Object.entries(packages)) {

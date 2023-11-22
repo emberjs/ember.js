@@ -1,53 +1,54 @@
 import type { Dict } from '@glimmer/interfaces';
+import type { ASTv1 } from '@glimmer/syntax';
+import { builders as b, preprocess as parse } from '@glimmer/syntax';
 import { syntaxErrorFor } from '@glimmer-workspace/test-utils';
 
-import { type ASTv1, builders as b, preprocess as parse } from '@glimmer/syntax';
 import { astEqual } from './support';
 
 const { test, skip } = QUnit;
 
 QUnit.module('[glimmer-syntax] Parser - AST');
 
-test('a simple piece of content', function () {
+test('a simple piece of content', () => {
   let t = 'some content';
   astEqual(t, b.program([b.text('some content')]));
 });
 
-test('self-closed element', function () {
+test('self-closed element', () => {
   let t = '<g />';
   astEqual(t, b.program([element('g/')]));
 });
 
-test('elements can have empty attributes', function () {
+test('elements can have empty attributes', () => {
   let t = '<img id="">';
   astEqual(t, b.program([element('img', ['attrs', ['id', '']])]));
 });
 
-test('disallowed quote in element space is rejected', function (assert) {
+test('disallowed quote in element space is rejected', (assert) => {
   let t = '<img foo="bar"" >';
   assert.throws(() => {
     parse(t, { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('" is not a valid character within attribute names', '', 'test-module', 1, 14));
 });
 
-test('disallowed equals sign in element space is rejected', function (assert) {
+test('disallowed equals sign in element space is rejected', (assert) => {
   let t = '<img =foo >';
   assert.throws(() => {
     parse(t, { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('attribute name cannot start with equals sign', '', 'test-module', 1, 5));
 });
 
-test('svg content', function () {
+test('svg content', () => {
   let t = '<svg></svg>';
   astEqual(t, b.program([element('svg')]));
 });
 
-test('html content with html content inline', function () {
+test('html content with html content inline', () => {
   let t = '<div><p></p></div>';
   astEqual(t, b.program([element('div', ['body', element('p')])]));
 });
 
-test('html content with svg content inline', function () {
+test('html content with svg content inline', () => {
   let t = '<div><svg></svg></div>';
   astEqual(t, b.program([element('div', ['body', element('svg')])]));
 });
@@ -70,7 +71,7 @@ for (const integrationPoint of integrationPoints) {
   );
 }
 
-test('svg title with html content', function () {
+test('svg title with html content', () => {
   let t = '<svg><title><div></div></title></svg>';
   astEqual(
     t,
@@ -78,7 +79,7 @@ test('svg title with html content', function () {
   );
 });
 
-test('a piece of content with HTML', function () {
+test('a piece of content with HTML', () => {
   let t = 'some <div>content</div> done';
   astEqual(
     t,
@@ -86,7 +87,7 @@ test('a piece of content with HTML', function () {
   );
 });
 
-test('a piece of Handlebars with HTML', function () {
+test('a piece of Handlebars with HTML', () => {
   let t = 'some <div>{{content}}</div> done';
   astEqual(
     t,
@@ -98,7 +99,7 @@ test('a piece of Handlebars with HTML', function () {
   );
 });
 
-test('Handlebars embedded in an attribute (quoted)', function () {
+test('Handlebars embedded in an attribute (quoted)', () => {
   let t = 'some <div class="{{foo}}">content</div> done';
   astEqual(
     t,
@@ -114,7 +115,7 @@ test('Handlebars embedded in an attribute (quoted)', function () {
   );
 });
 
-test('Handlebars embedded in an attribute (unquoted)', function () {
+test('Handlebars embedded in an attribute (unquoted)', () => {
   let t = 'some <div class={{foo}}>content</div> done';
   astEqual(
     t,
@@ -126,14 +127,14 @@ test('Handlebars embedded in an attribute (unquoted)', function () {
   );
 });
 
-test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', function () {
+test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', () => {
   let t = '<input value={{foo}}/>';
 
   let el = element('input/', ['attrs', ['value', b.mustache(b.path('foo'))]]);
   astEqual(t, b.program([el]));
 });
 
-test('Handlebars embedded in an attribute (sexprs)', function () {
+test('Handlebars embedded in an attribute (sexprs)', () => {
   let t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
   astEqual(
     t,
@@ -155,7 +156,7 @@ test('Handlebars embedded in an attribute (sexprs)', function () {
   );
 });
 
-test('Handlebars embedded in an attribute with other content surrounding it', function () {
+test('Handlebars embedded in an attribute with other content surrounding it', () => {
   let t = 'some <a href="http://{{link}}/">content</a> done';
   astEqual(
     t,
@@ -171,7 +172,7 @@ test('Handlebars embedded in an attribute with other content surrounding it', fu
   );
 });
 
-test('A more complete embedding example', function () {
+test('A more complete embedding example', () => {
   let t =
     "{{embed}} {{some 'content'}} " +
     "<div class='{{foo}} {{bind-class isEnabled truthy='enabled'}}'>{{ content }}</div>" +
@@ -208,7 +209,7 @@ test('A more complete embedding example', function () {
   );
 });
 
-test('Simple embedded block helpers', function () {
+test('Simple embedded block helpers', () => {
   let t = '{{#if foo}}<div>{{content}}</div>{{/if}}';
   astEqual(
     t,
@@ -223,7 +224,7 @@ test('Simple embedded block helpers', function () {
   );
 });
 
-test('Involved block helper', function () {
+test('Involved block helper', () => {
   let t =
     '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
   astEqual(
@@ -244,7 +245,7 @@ test('Involved block helper', function () {
   );
 });
 
-test('Element modifiers', function () {
+test('Element modifiers', () => {
   let t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(
     t,
@@ -259,32 +260,32 @@ test('Element modifiers', function () {
   );
 });
 
-test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', function () {
+test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', () => {
   let t = '<input {{bar}}>';
   astEqual(t, b.program([element('input', ['modifiers', 'bar'])]));
 });
 
-test('Tokenizer: MustacheStatement encountered in attributeName state', function () {
+test('Tokenizer: MustacheStatement encountered in attributeName state', () => {
   let t = '<input foo{{bar}}>';
   astEqual(t, b.program([element('input', ['attrs', ['foo', '']], ['modifiers', ['bar']])]));
 });
 
-test('Tokenizer: MustacheStatement encountered in afterAttributeName state', function () {
+test('Tokenizer: MustacheStatement encountered in afterAttributeName state', () => {
   let t = '<input foo {{bar}}>';
   astEqual(t, b.program([element('input', ['attrs', ['foo', '']], ['modifiers', 'bar'])]));
 });
 
-test('Tokenizer: MustacheStatement encountered in afterAttributeValue state', function () {
+test('Tokenizer: MustacheStatement encountered in afterAttributeValue state', () => {
   let t = '<input foo=1 {{bar}}>';
   astEqual(t, b.program([element('input', ['attrs', ['foo', '1']], ['modifiers', ['bar']])]));
 });
 
-test('Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state', function () {
+test('Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state', () => {
   let t = "<input foo='1'{{bar}}>";
   astEqual(t, b.program([element('input', ['attrs', ['foo', '1']], ['modifiers', 'bar'])]));
 });
 
-test('Stripping - mustaches', function () {
+test('Stripping - mustaches', () => {
   let t = 'foo {{~content}} bar';
   astEqual(
     t,
@@ -312,7 +313,7 @@ test('Stripping - mustaches', function () {
   );
 });
 
-test('Stripping - blocks', function () {
+test('Stripping - blocks', () => {
   let t = 'foo {{~#wat}}{{/wat}} bar';
   astEqual(
     t,
@@ -347,7 +348,7 @@ test('Stripping - blocks', function () {
   );
 });
 
-test('Stripping - programs', function () {
+test('Stripping - programs', () => {
   let t = '{{#wat~}} foo {{else}}{{/wat}}';
   astEqual(
     t,
@@ -417,7 +418,7 @@ test('Stripping - programs', function () {
   );
 });
 
-test('Stripping - removes unnecessary text nodes', function () {
+test('Stripping - removes unnecessary text nodes', () => {
   let t = '{{#each~}}\n  <li> foo </li>\n{{~/each}}';
 
   astEqual(
@@ -438,7 +439,7 @@ test('Stripping - removes unnecessary text nodes', function () {
   );
 });
 
-test('Whitespace control - linebreaks after blocks removed by default', function () {
+test('Whitespace control - linebreaks after blocks removed by default', () => {
   let t = '{{#each}}\n  <li> foo </li>\n{{/each}}';
 
   astEqual(
@@ -455,7 +456,7 @@ test('Whitespace control - linebreaks after blocks removed by default', function
   );
 });
 
-test('Whitespace control - preserve all whitespace if config is set', function () {
+test('Whitespace control - preserve all whitespace if config is set', () => {
   let t = '{{#each}}\n  <li> foo </li>\n{{/each}}';
 
   astEqual(
@@ -477,7 +478,7 @@ test('Whitespace control - preserve all whitespace if config is set', function (
 });
 
 // TODO: Make these throw an error.
-skip('Awkward mustache in unquoted attribute value', function () {
+skip('Awkward mustache in unquoted attribute value', () => {
   let t = '<div class=a{{foo}}></div>';
   astEqual(
     t,
@@ -499,12 +500,12 @@ skip('Awkward mustache in unquoted attribute value', function () {
   );
 });
 
-test('an HTML comment', function () {
+test('an HTML comment', () => {
   let t = 'before <!-- some comment --> after';
   astEqual(t, b.program([b.text('before '), b.comment(' some comment '), b.text(' after')]));
 });
 
-test('a Handlebars comment inside an HTML comment', function () {
+test('a Handlebars comment inside an HTML comment', () => {
   let t = 'before <!-- some {{! nested thing }} comment --> after';
   astEqual(
     t,
@@ -516,7 +517,7 @@ test('a Handlebars comment inside an HTML comment', function () {
   );
 });
 
-test('a Handlebars comment', function () {
+test('a Handlebars comment', () => {
   let t = 'before {{! some comment }} after';
   astEqual(
     t,
@@ -524,7 +525,7 @@ test('a Handlebars comment', function () {
   );
 });
 
-test('a Handlebars comment in proper element space', function () {
+test('a Handlebars comment in proper element space', () => {
   let t = 'before <div {{! some comment }} data-foo="bar" {{! other comment }}></div> after';
   astEqual(
     t,
@@ -540,7 +541,7 @@ test('a Handlebars comment in proper element space', function () {
   );
 });
 
-test('a Handlebars comment after a valueless attribute', function () {
+test('a Handlebars comment after a valueless attribute', () => {
   let t = '<input foo {{! comment }}>';
   astEqual(
     t,
@@ -550,7 +551,7 @@ test('a Handlebars comment after a valueless attribute', function () {
   );
 });
 
-test('a Handlebars comment in invalid element space', function (assert) {
+test('a Handlebars comment in invalid element space', (assert) => {
   assert.throws(() => {
     parse('\nbefore <div \n  a{{! some comment }} data-foo="bar"></div> after', {
       meta: { moduleName: 'test-module' },
@@ -570,55 +571,55 @@ test('a Handlebars comment in invalid element space', function (assert) {
   }, syntaxErrorFor('Using a Handlebars comment when in the `attributeValueDoubleQuoted` state is not supported', '{{! some comment }}', 'test-module', 3, 5));
 });
 
-test('allow {{null}} to be passed as helper name', function () {
+test('allow {{null}} to be passed as helper name', () => {
   let ast = parse('{{null}}');
 
   astEqual(ast, b.program([b.mustache(b.null())]));
 });
 
-test('allow {{null}} to be passed as a param', function () {
+test('allow {{null}} to be passed as a param', () => {
   let ast = parse('{{foo null}}');
 
   astEqual(ast, b.program([b.mustache(b.path('foo'), [b.null()])]));
 });
 
-test('allow {{undefined}} to be passed as helper name', function () {
+test('allow {{undefined}} to be passed as helper name', () => {
   let ast = parse('{{undefined}}');
 
   astEqual(ast, b.program([b.mustache(b.undefined())]));
 });
 
-test('allow {{undefined}} to be passed as a param', function () {
+test('allow {{undefined}} to be passed as a param', () => {
   let ast = parse('{{foo undefined}}');
 
   astEqual(ast, b.program([b.mustache(b.path('foo'), [b.undefined()])]));
 });
 
-test('Handlebars partial should error', function (assert) {
+test('Handlebars partial should error', (assert) => {
   assert.throws(() => {
     parse('{{> foo}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('Handlebars partials are not supported', '{{> foo}}', 'test-module', 1, 0));
 });
 
-test('Handlebars partial block should error', function (assert) {
+test('Handlebars partial block should error', (assert) => {
   assert.throws(() => {
     parse('{{#> foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('Handlebars partial blocks are not supported', '{{#> foo}}{{/foo}}', 'test-module', 1, 0));
 });
 
-test('Handlebars decorator should error', function (assert) {
+test('Handlebars decorator should error', (assert) => {
   assert.throws(() => {
     parse('{{* foo}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('Handlebars decorators are not supported', '{{* foo}}', 'test-module', 1, 0));
 });
 
-test('Handlebars decorator block should error', function (assert) {
+test('Handlebars decorator block should error', (assert) => {
   assert.throws(() => {
     parse('{{#* foo}}{{/foo}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('Handlebars decorator blocks are not supported', '{{#* foo}}{{/foo}}', 'test-module', 1, 0));
 });
 
-test('disallowed mustaches in the tagName space', function (assert) {
+test('disallowed mustaches in the tagName space', (assert) => {
   assert.throws(() => {
     parse('<{{"asdf"}}></{{"asdf"}}>', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{"asdf"}}', 'test-module', 1, 1));
@@ -628,7 +629,7 @@ test('disallowed mustaches in the tagName space', function (assert) {
   }, syntaxErrorFor('Cannot use mustaches in an elements tagname', '{{bar}}', 'test-module', 1, 6));
 });
 
-test('mustache immediately followed by self closing tag does not error', function () {
+test('mustache immediately followed by self closing tag does not error', () => {
   let ast = parse('<FooBar data-foo={{blah}}/>');
   let el = element('FooBar/', ['attrs', ['data-foo', b.mustache('blah')]]);
   astEqual(ast, b.program([el]));
@@ -661,37 +662,37 @@ test('named blocks', () => {
   astEqual(ast, b.program([el]));
 });
 
-test('path expression with "dangling dot" throws error', function (assert) {
+test('path expression with "dangling dot" throws error', (assert) => {
   assert.throws(() => {
     parse('{{if foo. bar baz}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor("'.' is not a supported path in Glimmer; check for a path with a trailing '.'", '.', 'test-module', 1, 8));
 });
 
-test('string literal as path throws error', function (assert) {
+test('string literal as path throws error', (assert) => {
   assert.throws(() => {
     parse('{{("foo-baz")}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor(`StringLiteral "foo-baz" cannot be called as a sub-expression, replace ("foo-baz") with "foo-baz"`, '"foo-baz"', 'test-module', 1, 3));
 });
 
-test('boolean literal as path throws error', function (assert) {
+test('boolean literal as path throws error', (assert) => {
   assert.throws(() => {
     parse('{{(true)}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor(`BooleanLiteral "true" cannot be called as a sub-expression, replace (true) with true`, 'true', 'test-module', 1, 3));
 });
 
-test('undefined literal as path throws error', function (assert) {
+test('undefined literal as path throws error', (assert) => {
   assert.throws(() => {
     parse('{{(undefined)}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor(`UndefinedLiteral "undefined" cannot be called as a sub-expression, replace (undefined) with undefined`, 'undefined', 'test-module', 1, 3));
 });
 
-test('null literal as path throws error', function (assert) {
+test('null literal as path throws error', (assert) => {
   assert.throws(() => {
     parse('{{(null)}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor(`NullLiteral "null" cannot be called as a sub-expression, replace (null) with null`, 'null', 'test-module', 1, 3));
 });
 
-test('number literal as path throws error', function (assert) {
+test('number literal as path throws error', (assert) => {
   assert.throws(() => {
     parse('{{(42)}}', { meta: { moduleName: 'test-module' } });
   }, syntaxErrorFor(`NumberLiteral "42" cannot be called as a sub-expression, replace (42) with 42`, '42', 'test-module', 1, 3));

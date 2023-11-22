@@ -8,9 +8,7 @@ added to your Babel configuration.
 let vmBabelPlugins = require('@glimmer/vm-babel-plugins');
 
 module.exports = {
-  plugins: [
-    ...vmBabelPlugins({ isDebug: true }),
-  ],
+  plugins: [...vmBabelPlugins({ isDebug: true })],
 };
 ```
 

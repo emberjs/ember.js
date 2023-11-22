@@ -1,5 +1,25 @@
 {
-  "singleQuote": true,
-  "trailingComma": "es5",
-  "printWidth": 100
+  "printWidth": 100,
+  "plugins": [],
+  "overrides": [
+    {
+      "files": ["**/*.{js,ts,cjs,mjs,cts,mts,cts}"],
+      "options": {
+        "singleQuote": true,
+        "trailingComma": "es5"
+      }
+    },
+    {
+      "files": ["*.json"],
+      "options": {
+        "singleQuote": false
+      }
+    },
+    {
+      "files": ["*.hbs"],
+      "options": {
+        "singleQuote": false
+      }
+    }
+  ]
 }

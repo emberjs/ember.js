@@ -1,7 +1,8 @@
 import type { SourceSlice } from '../../source/slice';
-import { NamedArgument } from './args';
 import type { CallFields } from './base';
 import type { ExpressionNode } from './expr';
+
+import { NamedArgument } from './args';
 import { node } from './node';
 
 /**

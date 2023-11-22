@@ -2,8 +2,10 @@ import type { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
 import { NS_SVG } from '@glimmer/util';
 
-import { jitSuite, RenderTest, type RenderTestConstructor } from '..';
+import type { RenderTestConstructor } from '..';
 import type RenderDelegate from '../lib/render-delegate';
+
+import { jitSuite, RenderTest } from '..';
 
 function makeSafeString(value: string): SafeString {
   return new SafeStringImpl(value);

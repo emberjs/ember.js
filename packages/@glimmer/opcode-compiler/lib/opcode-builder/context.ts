@@ -5,7 +5,7 @@ import type {
   ContainingMetadata,
   CreateRuntimeOp,
   TemplateCompilationContext,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 import { CompileTimeCompilationContextImpl } from '../program-context';
 import { EncoderImpl } from './encoder';

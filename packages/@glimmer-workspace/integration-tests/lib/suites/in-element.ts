@@ -1,5 +1,5 @@
-import { destroy } from '@glimmer/destroyable';
 import type { AST } from '@glimmer/syntax';
+import { destroy } from '@glimmer/destroyable';
 import { assign, unwrap } from '@glimmer/util';
 
 import { GlimmerishComponent } from '../components/emberish-glimmer';

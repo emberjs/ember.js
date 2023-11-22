@@ -11,7 +11,12 @@ export interface TraversalError extends Error {
 }
 
 export interface TraversalErrorConstructor {
-  new (message: string, node: ASTv1.Node, parent: Nullable<ASTv1.Node>, key: string): TraversalError;
+  new (
+    message: string,
+    node: ASTv1.Node,
+    parent: Nullable<ASTv1.Node>,
+    key: string
+  ): TraversalError;
   readonly prototype: TraversalError;
 }
 

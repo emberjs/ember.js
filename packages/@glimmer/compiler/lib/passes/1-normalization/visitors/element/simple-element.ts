@@ -1,9 +1,12 @@
-import { type ASTv2, generateSyntaxError, type SourceSlice } from '@glimmer/syntax';
+import type { ASTv2, SourceSlice } from '@glimmer/syntax';
+import { generateSyntaxError } from '@glimmer/syntax';
 
-import { Err, type Result } from '../../../../shared/result';
+import type { Result } from '../../../../shared/result';
+import type { Classified, ClassifiedElement, PreparedArgs } from './classified';
+
+import { Err } from '../../../../shared/result';
 import * as mir from '../../../2-encoding/mir';
 import { VISIT_STMTS } from '../statements';
-import type { Classified, ClassifiedElement, PreparedArgs } from './classified';
 
 export class ClassifiedSimpleElement implements Classified {
   constructor(

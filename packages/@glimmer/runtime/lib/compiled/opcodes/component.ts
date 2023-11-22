@@ -1,14 +1,3 @@
-import {
-  check,
-  CheckFunction,
-  CheckHandle,
-  CheckInstanceof,
-  CheckInterface,
-  CheckOr,
-  CheckProgramSymbolTable,
-  CheckString,
-} from '@glimmer/debug';
-import { registerDestructor } from '@glimmer/destroyable';
 import type {
   Bounds,
   CapabilityMask,
@@ -34,9 +23,21 @@ import type {
   WithDynamicTagName,
   WithElementHook,
   WithUpdateHook,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import {
+  check,
+  CheckFunction,
+  CheckHandle,
+  CheckInstanceof,
+  CheckInterface,
+  CheckOr,
+  CheckProgramSymbolTable,
+  CheckString,
+} from '@glimmer/debug';
+import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
-import { isConstRef, type Reference, valueForRef } from '@glimmer/reference';
+import { isConstRef, valueForRef } from '@glimmer/reference';
 import {
   assert,
   assign,
@@ -50,20 +51,18 @@ import {
 } from '@glimmer/util';
 import { $t0, $t1, CurriedTypes, InternalComponentCapabilities, Op } from '@glimmer/vm';
 
+import type { CurriedValue } from '../../curried-value';
+import type { UpdatingVM } from '../../vm';
+import type { InternalVM } from '../../vm/append';
+import type { BlockArgumentsImpl } from '../../vm/arguments';
+
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
-import {
-  type CurriedValue,
-  isCurriedType,
-  isCurriedValue,
-  resolveCurriedValue,
-} from '../../curried-value';
+import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import { ARGS, CONSTANTS } from '../../symbols';
-import type { UpdatingVM } from '../../vm';
-import type { InternalVM } from '../../vm/append';
-import { type BlockArgumentsImpl, EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
+import { EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
   CheckComponentDefinition,

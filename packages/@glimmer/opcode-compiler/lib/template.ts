@@ -8,7 +8,7 @@ import type {
   Template,
   TemplateFactory,
   TemplateOk,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 
 import { compilable } from './compilable-template';

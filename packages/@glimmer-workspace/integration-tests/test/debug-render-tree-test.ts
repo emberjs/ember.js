@@ -8,19 +8,16 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import type { TemplateOnlyComponent } from '@glimmer/runtime';
 import { setComponentTemplate } from '@glimmer/manager';
-import {
-  EMPTY_ARGS,
-  type TemplateOnlyComponent,
-  templateOnlyComponent,
-  TemplateOnlyComponentManager,
-} from '@glimmer/runtime';
+import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { assign, expect } from '@glimmer/util';
+
+import type { EmberishCurlyComponent } from '..';
 
 import {
   BaseEnv,
   createTemplate,
-  type EmberishCurlyComponent,
   GlimmerishComponent,
   JitRenderDelegate,
   RenderTest,

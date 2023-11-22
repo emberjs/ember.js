@@ -1,4 +1,3 @@
-import { destroy, registerDestructor } from '@glimmer/destroyable';
 import type {
   AttrNamespace,
   Bounds,
@@ -19,11 +18,14 @@ import type {
   SimpleNode,
   SimpleText,
   UpdatableBlock,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
+import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { assert, expect, Stack } from '@glimmer/util';
 
+import type { DynamicAttribute } from './attributes/dynamic';
+
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
-import { type DynamicAttribute, dynamicAttribute } from './attributes/dynamic';
+import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
   firstNode(): SimpleNode;

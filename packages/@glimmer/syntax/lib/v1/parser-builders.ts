@@ -5,6 +5,7 @@ import type { ParserNodeBuilder } from '../parser';
 import type { SourceLocation } from '../source/location';
 import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
+
 import { PathExpressionImplV1 } from './legacy-interop';
 
 const DEFAULT_STRIP = {

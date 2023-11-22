@@ -1,4 +1,5 @@
 export { default as print } from './lib/generation/print';
+export { getVoidTags, isVoidTag } from './lib/generation/printer';
 export { sortByLoc } from './lib/generation/util';
 export { getTemplateLocals } from './lib/get-template-locals';
 export { isKeyword, KEYWORDS_TYPES, type KeywordType } from './lib/keywords';
@@ -33,7 +34,6 @@ export { default as Walker } from './lib/traversal/walker';
 export * as ASTv1 from './lib/v1/api';
 export { default as builders } from './lib/v1/public-builders';
 export { default as visitorKeys } from './lib/v1/visitor-keys';
-export { getVoidTags, isVoidTag } from './lib/generation/printer';
 export * as ASTv2 from './lib/v2/api';
 export { normalize } from './lib/v2/normalize';
 export { node } from './lib/v2/objects/node';

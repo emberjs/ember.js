@@ -7,7 +7,7 @@ import type {
   CreateRuntimeOp,
   ResolutionTimeConstants,
   STDLib,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 import { compileStd } from './opcode-builder/helpers/stdlib';
 

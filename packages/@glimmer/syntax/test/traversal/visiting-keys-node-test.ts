@@ -1,4 +1,5 @@
-import { type AST, preprocess as parse, traverse } from '@glimmer/syntax';
+import type { AST } from '@glimmer/syntax';
+import { preprocess as parse, traverse } from '@glimmer/syntax';
 
 function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.Node | undefined]>) {
   let actualTraversal: Array<[string, AST.BaseNode]> = [];
@@ -43,7 +44,7 @@ function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.No
 
 QUnit.module('[glimmer-syntax] Traversal - visiting keys');
 
-QUnit.test('Blocks', function () {
+QUnit.test('Blocks', () => {
   let ast = parse(`{{#block param1 param2 key1=value key2=value}}<b></b><b></b>{{/block}}`);
   let block = ast.body[0] as AST.BlockStatement;
   let program = block.program;

@@ -11,14 +11,17 @@ import type {
   RuntimeContext,
   TemplateIterator,
 } from '@glimmer/interfaces';
-import { childRefFor, createConstRef, type Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { childRefFor, createConstRef } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/util';
 import { debug } from '@glimmer/validator';
+
+import type { InternalVM } from './vm/append';
 
 import { inTransaction } from './environment';
 import { DynamicScopeImpl } from './scope';
 import { ARGS, CONSTANTS } from './symbols';
-import { VM, type InternalVM } from './vm/append';
+import { VM } from './vm/append';
 
 class TemplateIteratorImpl implements TemplateIterator {
   constructor(private vm: InternalVM) {}

@@ -1,4 +1,4 @@
-import type { Helper, HelperDefinitionState } from "@glimmer/interfaces";
+import type { Helper, HelperDefinitionState } from '@glimmer/interfaces';
 import { setInternalHelperManager } from '@glimmer/manager';
 
 export function internalHelper(helper: Helper): HelperDefinitionState {

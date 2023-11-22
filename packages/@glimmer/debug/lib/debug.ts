@@ -6,13 +6,15 @@ import type {
   ResolutionTimeConstants,
   RuntimeOp,
   TemplateCompilationContext,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
+import type { Register } from '@glimmer/vm';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { decodeHandle, decodeImmediate, enumerate, LOCAL_LOGGER } from '@glimmer/util';
-import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0, type Register } from '@glimmer/vm';
+import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
+
+import type { Primitive } from './stack-check';
 
 import { opcodeMetadata } from './opcode-metadata';
-import type { Primitive } from './stack-check';
 
 export interface DebugConstants {
   getValue<T>(handle: number): T;

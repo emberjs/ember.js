@@ -1,4 +1,3 @@
-import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import type {
   Bounds,
   DynamicScope,
@@ -15,20 +14,18 @@ import type {
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
+import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
+import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import {
-  type OpaqueIterationItem,
-  type OpaqueIterator,
-  type Reference,
-  updateRef,
-  valueForRef,
-} from '@glimmer/reference';
+import { updateRef, valueForRef } from '@glimmer/reference';
 import { expect, logStep, Stack, unwrap } from '@glimmer/util';
 import { debug, resetTracking } from '@glimmer/validator';
 
-import { clear, move as moveBounds } from '../bounds';
 import type { InternalVM, VmInitCallback } from './append';
-import { type LiveBlockList, NewElementBuilder } from './element-builder';
+import type { LiveBlockList } from './element-builder';
+
+import { clear, move as moveBounds } from '../bounds';
+import { NewElementBuilder } from './element-builder';
 
 export class UpdatingVM implements IUpdatingVM {
   public env: Environment;

@@ -4,7 +4,7 @@ import type {
   DebugRenderTree,
   Nullable,
   RenderNode,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import { assign, expect, Stack } from '@glimmer/util';
 
 import { reifyArgs } from './vm/arguments';

@@ -1,9 +1,11 @@
-import { type ASTv2, generateSyntaxError } from '@glimmer/syntax';
+import type { ASTv2 } from '@glimmer/syntax';
+import { generateSyntaxError } from '@glimmer/syntax';
 import { CurriedTypes } from '@glimmer/vm';
+
+import type { NormalizationState } from '../context';
 
 import { Err, Ok, Result } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
-import type { NormalizationState } from '../context';
 import { VISIT_EXPRS } from '../visitors/expressions';
 import { VISIT_STMTS } from '../visitors/statements';
 import { keywords } from './impl';

@@ -3,7 +3,7 @@ import type {
   InternalComponentManager,
   InternalModifierManager,
   Owner,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/util';
 
 import { CustomHelperManager } from '../public/helper';

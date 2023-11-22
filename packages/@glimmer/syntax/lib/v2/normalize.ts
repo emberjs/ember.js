@@ -1,31 +1,34 @@
 import type { PresentArray } from '@glimmer/interfaces';
 import { asPresentArray, assert, assign, isPresentArray } from '@glimmer/util';
 
-import Printer from '../generation/printer';
-import {
-  type PrecompileOptions,
-  type PrecompileOptionsWithLexicalScope,
-  preprocess,
+import type {
+  PrecompileOptions,
+  PrecompileOptionsWithLexicalScope,
 } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation } from '../source/location';
-import { SourceSlice } from '../source/slice';
 import type { Source } from '../source/source';
 import type { SourceSpan } from '../source/span';
+import type { BlockSymbolTable, ProgramSymbolTable } from '../symbol-table';
+import type * as ASTv1 from '../v1/api';
+import type { BuildElement, CallParts } from './builders';
+import type { Resolution } from './loose-resolution';
+
+import Printer from '../generation/printer';
+import { preprocess } from '../parser/tokenizer-event-handlers';
+import { SourceSlice } from '../source/slice';
 import { SpanList } from '../source/span-list';
-import { type BlockSymbolTable, type ProgramSymbolTable, SymbolTable } from '../symbol-table';
+import { SymbolTable } from '../symbol-table';
 import { generateSyntaxError } from '../syntax-error';
 import { isLowerCase, isUpperCase } from '../utils';
-import type * as ASTv1 from '../v1/api';
 import b from '../v1/parser-builders';
 import * as ASTv2 from './api';
-import { type BuildElement, Builder, type CallParts } from './builders';
+import { Builder } from './builders';
 import {
   AppendSyntaxContext,
   AttrValueSyntaxContext,
   BlockSyntaxContext,
   ComponentSyntaxContext,
   ModifierSyntaxContext,
-  type Resolution,
   SexpSyntaxContext,
 } from './loose-resolution';
 
@@ -43,7 +46,7 @@ export function normalize(
 
   let top = SymbolTable.top(
     normalizeOptions.locals,
-     
+
     {
       customizeComponentName: options.customizeComponentName ?? ((name) => name),
       lexicalScope: options.lexicalScope,

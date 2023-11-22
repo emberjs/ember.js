@@ -1,9 +1,11 @@
- 
-import { type SourcePosition, UNKNOWN_POSITION } from '../location';
+import type { SourcePosition } from '../location';
 import type { Source } from '../source';
+import type { SourceSpan } from './span';
+
+import { UNKNOWN_POSITION } from '../location';
 import { OffsetKind } from './kinds';
 import { match, MatchAny } from './match';
-import { type SourceSpan, span } from './span';
+import { span } from './span';
 
 /**
  * All positions have these details in common. Most notably, all three kinds of positions can

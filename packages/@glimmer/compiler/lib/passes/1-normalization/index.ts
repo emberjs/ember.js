@@ -1,8 +1,9 @@
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import type { ASTv2, src } from '@glimmer/syntax';
+import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
 import type { Result } from '../../shared/result';
+
 import * as mir from '../2-encoding/mir';
 import { NormalizationState } from './context';
 import { VISIT_STMTS } from './visitors/statements';

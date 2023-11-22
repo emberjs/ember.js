@@ -14,12 +14,7 @@ export type HighLevelStopLabels = 1002;
 export type HighLevelStart = HighLevelLabel;
 export type HighLevelEnd = HighLevelStopLabels;
 
-export type HighLevelBuilderOpcode =
-  | HighLevelLabel
-  | HighLevelStartLabels
-  | HighLevelStopLabels
-  | HighLevelStart
-  | HighLevelEnd;
+export type HighLevelBuilderOpcode = HighLevelLabel | HighLevelStartLabels | HighLevelStopLabels;
 
 export type HighLevelResolveModifier = 1003;
 export type HighLevelResolveComponent = 1004;
@@ -42,9 +37,7 @@ export type HighLevelResolutionOpcode =
   | HighLevelResolveOptionalComponentOrHelper
   | HighLevelResolveFree
   | HighLevelResolveLocal
-  | HighLevelResolveTemplateLocal
-  | HighLevelResolveStart
-  | HighLevelRevolveEnd;
+  | HighLevelResolveTemplateLocal;
 
 export interface SimpleArgsOptions {
   positional: Nullable<WireFormat.Core.Params>;

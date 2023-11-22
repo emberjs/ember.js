@@ -123,7 +123,7 @@ abstract class ModifierManagerTest extends RenderTest {
 
         override didInsertElement() {
           // consume first positional argument (ensures updates run)
-           
+
           this.args.positional[0];
 
           assert.strictEqual(this.element.tagName, 'H1');
@@ -165,14 +165,14 @@ abstract class ModifierManagerTest extends RenderTest {
       class extends CustomModifier {
         override didInsertElement() {
           // track the count of the first item
-           
+
           trackedOne.count;
           insertCount++;
         }
 
         override didUpdate() {
           // track the count of the second item
-           
+
           trackedTwo.count;
           updateCount++;
         }
@@ -215,7 +215,7 @@ abstract class ModifierManagerTest extends RenderTest {
         super(owner, args);
 
         // first read the tracked property
-         
+
         this.foo;
 
         // then attempt to update the tracked property
@@ -324,7 +324,7 @@ class ModifierManagerTest322 extends ModifierManagerTest {
           insertCount++;
 
           // consume the second positional
-           
+
           this.args.positional[1];
         }
 
@@ -332,7 +332,7 @@ class ModifierManagerTest322 extends ModifierManagerTest {
           updateCount++;
 
           // consume the second positional
-           
+
           this.args.positional[1];
         }
       }
@@ -376,9 +376,9 @@ class ModifierManagerTest322 extends ModifierManagerTest {
           insertCount++;
 
           // consume the second positional
-           
+
           // consume the second positional
-           
+
           this.args.named['qux'];
         }
 

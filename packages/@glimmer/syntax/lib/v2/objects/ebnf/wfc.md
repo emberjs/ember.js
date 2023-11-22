@@ -13,5 +13,3 @@ The literal characters of the `ExpressionNode` that appear in the opening and cl
 The literal characters of the `ExpressionNode` that appear in the opening and closing of an `InvokeComponent` (before the first whitespace character) must be identical.
 
 > This might not be literally true, and we should try to figure out what the Handlebars parser does here
-
-

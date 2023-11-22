@@ -1,6 +1,5 @@
 // @ts-check
 
- 
 const path = require('path');
 const rollup = /** @type {{rollup: import("rollup").rollup}} */ (
   /** @type {unknown} */
@@ -42,7 +41,6 @@ async function build(dist, out) {
       }),
       terser({
         compress: {
-           
           negate_iife: false,
           sequences: 0,
         },

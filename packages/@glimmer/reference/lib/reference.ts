@@ -1,4 +1,3 @@
-import { getProp, setProp } from '@glimmer/global-context';
 import type {
   ComputeReference,
   ConstantReference,
@@ -8,14 +7,14 @@ import type {
   ReferenceSymbol,
   ReferenceType,
   UnboundReference,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
+import type { Revision, Tag } from '@glimmer/validator';
+import { getProp, setProp } from '@glimmer/global-context';
 import { expect, isDict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   consumeTag,
   INITIAL,
-  type Revision,
-  type Tag,
   track,
   validateTag,
   valueForTag,
@@ -56,7 +55,9 @@ class ReferenceImpl<T = unknown> implements Reference<T> {
   }
 }
 
-export function createPrimitiveRef<T extends string| symbol | number | boolean | null | undefined>(value: T): Reference<T> {
+export function createPrimitiveRef<T extends string | symbol | number | boolean | null | undefined>(
+  value: T
+): Reference<T> {
   const ref = new ReferenceImpl<T>(UNBOUND);
 
   ref.tag = CONSTANT_TAG;

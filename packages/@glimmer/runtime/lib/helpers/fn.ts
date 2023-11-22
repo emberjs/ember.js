@@ -1,12 +1,7 @@
+import type { CapturedArguments } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
 import { check } from '@glimmer/debug';
-import type { CapturedArguments } from "@glimmer/interfaces";
-import {
-  createComputeRef,
-  isInvokableRef,
-  type Reference,
-  updateRef,
-  valueForRef,
-} from '@glimmer/reference';
+import { createComputeRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { buildUntouchableThis } from '@glimmer/util';
 
 import { reifyPositional } from '../vm/arguments';

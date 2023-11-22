@@ -1,5 +1,3 @@
- 
-
 'use strict';
 
 const FailureOnlyReporterGroupedByBrowser = require('testem-failure-only-reporter/grouped-by-browser');

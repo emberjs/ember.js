@@ -9,13 +9,16 @@
     ".prettierrc.json",
     ".eslintrc.cjs",
     "rollup.config.mjs",
-    "tsconfig.json",
-    "tsconfig.*.json",
     "vite.config.mts",
+    ".github/workflows/ci.yml",
+    "tsconfig.json",
+    "tsconfig.dist.json",
+    "*/tsconfig.json",
+    "packages/*/tsconfig.json",
     "packages/@glimmer/.eslintrc.cjs",
     "packages/@glimmer-workspace/.eslintrc.cjs",
-    "packages/@glimmer-workspace/build/lib/config.js",
-    ".github/workflows/ci.yml"
+    "packages/@glimmer-workspace/eslint-plugin/**/*",
+    "packages/@glimmer-workspace/build/lib/config.js"
   ],
   "pipeline": {
     "build": {
@@ -34,13 +37,5 @@
       "inputs": ["**/dist/**", "tsconfig.dist.json"],
       "dependsOn": ["^build"]
     }
-  },
-  "globalDependencies": [
-    "tsconfig.json",
-    "tsconfig.dist.json",
-    "*/tsconfig.json",
-    "packages/*/tsconfig.json",
-    "packages/@glimmer-workspace/eslint-plugin/**/*"
-  ],
-  "globalEnv": ["NODE_OPTIONS"]
+  }
 }

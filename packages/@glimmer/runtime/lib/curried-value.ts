@@ -5,7 +5,7 @@ import type {
   CurriedModifier,
   CurriedType,
   Owner,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 
 const TYPE: unique symbol = Symbol('TYPE');

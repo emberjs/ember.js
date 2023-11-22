@@ -3,7 +3,7 @@ import type {
   ComponentInstanceState,
   InternalComponentManager,
   WithCustomDebugRenderTree,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 /** @internal */
 export function hasCustomDebugRenderTreeLifecycle<

@@ -5,10 +5,10 @@ import type {
   InternalHelperManager,
   ModifierManager,
 } from '@glimmer/interfaces';
+import type { CustomHelperManager } from '@glimmer/manager';
 import {
   componentCapabilities,
   CustomComponentManager,
-  type CustomHelperManager,
   CustomModifierManager,
   getInternalComponentManager,
   getInternalHelperManager,

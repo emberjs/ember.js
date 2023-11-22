@@ -2,7 +2,7 @@ import type {
   CompileTimeComponent,
   InternalComponentCapabilities,
   Nullable,
-} from "@glimmer/interfaces";
+} from '@glimmer/interfaces';
 
 export const DEFAULT_CAPABILITIES: InternalComponentCapabilities = {
   dynamicLayout: true,

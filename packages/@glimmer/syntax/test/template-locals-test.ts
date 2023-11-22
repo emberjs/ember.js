@@ -2,7 +2,7 @@ import { getTemplateLocals } from '@glimmer/syntax';
 
 QUnit.module('[glimmer-syntax] getTemplateLocals');
 
-QUnit.test('it works', function (assert) {
+QUnit.test('it works', (assert) => {
   let locals = getTemplateLocals(`
     <Component/>
 
@@ -60,7 +60,7 @@ QUnit.test('it works', function (assert) {
   ]);
 });
 
-QUnit.test('it does not include locals', function (assert) {
+QUnit.test('it does not include locals', (assert) => {
   let locals = getTemplateLocals(
     `
       <SomeComponent as |button|>
@@ -76,7 +76,7 @@ QUnit.test('it does not include locals', function (assert) {
   assert.deepEqual(locals, ['SomeComponent']);
 });
 
-QUnit.test('it excludes object locals', function (assert) {
+QUnit.test('it excludes object locals', (assert) => {
   let locals = getTemplateLocals(
     `
       <SomeComponent as |b|>
@@ -88,7 +88,7 @@ QUnit.test('it excludes object locals', function (assert) {
   assert.deepEqual(locals, ['SomeComponent']);
 });
 
-QUnit.test('it excludes object locals from nested blocks', function (assert) {
+QUnit.test('it excludes object locals from nested blocks', (assert) => {
   let locals = getTemplateLocals(
     `
       <SomeComponent as |some|>
@@ -104,7 +104,7 @@ QUnit.test('it excludes object locals from nested blocks', function (assert) {
   assert.deepEqual(locals, ['SomeComponent']);
 });
 
-QUnit.test('it can include keywords', function (assert) {
+QUnit.test('it can include keywords', (assert) => {
   let locals = getTemplateLocals(
     `
       <Component/>
@@ -155,7 +155,7 @@ QUnit.test('it can include keywords', function (assert) {
   ]);
 });
 
-QUnit.test('it can include html elements', function (assert) {
+QUnit.test('it can include html elements', (assert) => {
   let locals = getTemplateLocals(
     `
       <button></button>

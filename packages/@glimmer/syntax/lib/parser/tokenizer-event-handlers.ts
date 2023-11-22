@@ -3,17 +3,18 @@ import { assertPresentArray, assign, getFirst, getLast, isPresentArray } from '@
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 
+import type { Tag } from '../parser';
+import type { NodeVisitor } from '../traversal/visitor';
+import type * as ASTv1 from '../v1/api';
+import type * as HBS from '../v1/handlebars-ast';
+
 import print from '../generation/print';
 import { voidMap } from '../generation/printer';
-import type { Tag } from '../parser';
 import * as src from '../source/api';
 import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
-import type { NodeVisitor } from '../traversal/visitor';
 import Walker from '../traversal/walker';
 import { appendChild, parseElementBlockParams } from '../utils';
-import type * as ASTv1 from '../v1/api';
-import type * as HBS from '../v1/handlebars-ast';
 import b from '../v1/parser-builders';
 import publicBuilder from '../v1/public-builders';
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
@@ -299,8 +300,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         } else {
           throw generateSyntaxError(
             `An unquoted attribute value must be a string or a mustache, ` +
-            `preceded by whitespace or a '=' character, and ` +
-            `followed by whitespace, a '>' character, or '/>'`,
+              `preceded by whitespace or a '=' character, and ` +
+              `followed by whitespace, a '>' character, or '/>'`,
             span
           );
         }

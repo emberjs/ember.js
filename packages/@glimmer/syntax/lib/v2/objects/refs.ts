@@ -1,6 +1,7 @@
 import type { SourceSlice } from '../../source/slice';
-import { node } from './node';
 import type { FreeVarResolution } from './resolution';
+
+import { node } from './node';
 
 /**
  * Corresponds to `this` at the head of an expression.

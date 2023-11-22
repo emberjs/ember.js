@@ -1,8 +1,13 @@
 /* eslint-disable qunit/no-test-expect-argument */
 
+import type { BuilderStatement } from '@glimmer/compiler';
+import type {
+  SerializedTemplate,
+  SerializedTemplateBlock,
+  SerializedTemplateWithLazyBlock,
+} from '@glimmer/interfaces';
 import {
   Builder,
-  type BuilderStatement,
   buildStatements,
   c,
   NEWLINE,
@@ -12,11 +17,6 @@ import {
   unicode,
   WireFormatDebugger,
 } from '@glimmer/compiler';
-import type {
-  SerializedTemplate,
-  SerializedTemplateBlock,
-  SerializedTemplateWithLazyBlock,
-} from '@glimmer/interfaces';
 import { assign, strip } from '@glimmer/util';
 
 QUnit.module('@glimmer/compiler - compiling source to wire format');
@@ -55,7 +55,7 @@ const Concat = Builder.Concat;
 
 QUnit.test(
   '@arguments are on regular non-component/regular HTML nodes throws syntax error',
-  function (assert) {
+  (assert) => {
     const template = strip`
     <a @onClick={{action "hi"}}>Link</a>
   `;

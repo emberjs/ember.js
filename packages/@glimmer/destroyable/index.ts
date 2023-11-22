@@ -1,5 +1,5 @@
-import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 import type { Destroyable, Destructor } from '@glimmer/interfaces';
+import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 import { debugToString } from '@glimmer/util';
 
 const enum DestroyingState {

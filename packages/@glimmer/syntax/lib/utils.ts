@@ -1,9 +1,10 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/util';
 
-import { generateSyntaxError } from './syntax-error';
 import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
+
+import { generateSyntaxError } from './syntax-error';
 
 // Regex to validate the identifier for block parameters.
 // Based on the ID validation regex in Handlebars.

@@ -1,7 +1,5 @@
 let vmBabelPlugins = require('../../../index');
 
 module.exports = {
-  plugins: [
-    ...vmBabelPlugins({ isDebug: true })
-  ]
-}
+  plugins: [...vmBabelPlugins({ isDebug: true })],
+};

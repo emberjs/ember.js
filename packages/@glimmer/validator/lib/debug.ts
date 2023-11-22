@@ -1,5 +1,5 @@
+import type { Tag } from '@glimmer/interfaces';
 import { assert } from '@glimmer/global-context';
-import type { Tag } from "@glimmer/interfaces";
 import { asPresentArray, getLast } from '@glimmer/util';
 
 interface DebugTransaction {

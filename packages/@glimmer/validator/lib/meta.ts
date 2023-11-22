@@ -1,7 +1,9 @@
-import type { ConstantTag, UpdatableTag } from "@glimmer/interfaces";
+import type { ConstantTag, UpdatableTag } from '@glimmer/interfaces';
+
+import type { Indexable } from './utils';
 
 import { debug } from './debug';
-import { type Indexable, unwrap } from './utils';
+import { unwrap } from './utils';
 import { createUpdatableTag, DIRTY_TAG } from './validators';
 
 function isObjectLike<T>(u: T): u is Indexable & T {

@@ -17,15 +17,16 @@ import type {
   SimpleElement,
   SimpleText,
 } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import type { CurriedValue, EnvironmentDelegate } from '@glimmer/runtime';
+import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import { createConstRef, type Reference } from '@glimmer/reference';
+import { createConstRef } from '@glimmer/reference';
 import {
   array,
   clientBuilder,
   concat,
-  type CurriedValue,
-  type EnvironmentDelegate,
   fn,
   get,
   hash,
@@ -34,16 +35,16 @@ import {
   renderSync,
   runtimeContext,
 } from '@glimmer/runtime';
-import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { assign, castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/util';
 
-import { BaseEnv } from '../../base-env';
-import { preprocess } from '../../compile';
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
 import type { RenderDelegateOptions } from '../../render-delegate';
+
+import { BaseEnv } from '../../base-env';
+import { preprocess } from '../../compile';
 import JitCompileTimeLookup from './compilation-context';
 import {
   componentHelper,

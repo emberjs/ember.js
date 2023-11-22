@@ -1,7 +1,5 @@
-import { type GlobalContext, testOverrideGlobalContext } from '@glimmer/global-context';
-import { dict, unwrap } from '@glimmer/util';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
-
+import type { GlobalContext } from '@glimmer/global-context';
+import { testOverrideGlobalContext } from '@glimmer/global-context';
 import {
   childRefFor,
   createComputeRef,
@@ -15,6 +13,9 @@ import {
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
+import { dict, unwrap } from '@glimmer/util';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+
 import { tracked } from './support';
 
 const { module, test } = QUnit;

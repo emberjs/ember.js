@@ -1,13 +1,13 @@
-import { guardArray } from '@glimmer-workspace/test-utils';
-
+import type { AST } from '@glimmer/syntax';
 import {
-  type AST,
   builders as b,
   cannotRemoveNode,
   cannotReplaceNode,
   preprocess as parse,
   traverse,
 } from '@glimmer/syntax';
+import { guardArray } from '@glimmer-workspace/test-utils';
+
 import { astEqual } from '../support';
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');
