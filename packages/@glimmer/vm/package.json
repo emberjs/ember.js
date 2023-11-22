@@ -1,23 +1,10 @@
 {
   "name": "@glimmer/vm",
   "version": "0.85.13",
-  "type": "module",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/vm",
-  "dependencies": {
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/util": "workspace:^"
-  },
-  "types": "index.ts",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:publint": "publint",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs"
-  },
+  "type": "module",
   "main": "index.ts",
+  "types": "index.ts",
   "publishConfig": {
     "access": "public",
     "types": "dist/dev/index.d.ts",
@@ -34,6 +21,19 @@
     },
     "main": null,
     "module": "dist/dev/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",

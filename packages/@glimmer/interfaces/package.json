@@ -1,11 +1,14 @@
 {
   "name": "@glimmer/interfaces",
-  "type": "module",
   "version": "0.85.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/interfaces",
+  "type": "module",
   "types": "index.d.ts",
   "exports": {
     "types": "./index.d.ts"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "lib",
@@ -13,11 +16,8 @@
   ],
   "scripts": {
     "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "test:publint": "publint"
-  },
-  "publishConfig": {
-    "access": "public"
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
     "@simple-dom/interface": "^1.4.0"

@@ -1,13 +1,10 @@
 {
   "name": "@glimmer/global-context",
-  "type": "module",
   "version": "0.85.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/global-context",
+  "type": "module",
   "main": "index.ts",
   "types": "index.ts",
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public",
     "types": "./dist/dev/index.d.ts",
@@ -25,11 +22,14 @@
     "main": null,
     "module": "dist/dev/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
     "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",

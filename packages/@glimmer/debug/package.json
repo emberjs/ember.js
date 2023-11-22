@@ -1,17 +1,14 @@
 {
   "name": "@glimmer/debug",
-  "type": "module",
   "version": "0.85.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/debug",
+  "type": "module",
   "main": "index.ts",
   "types": "index.ts",
   "exports": {
     "types": "./index.ts",
     "development": "./index.ts"
   },
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public",
     "types": "dist/dev/index.d.ts",
@@ -23,6 +20,15 @@
     },
     "main": null,
     "module": "dist/dev/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:^",
@@ -37,11 +43,5 @@
     "rollup": "^4.5.1",
     "toml": "^3.0.0",
     "typescript": "*"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
   }
 }

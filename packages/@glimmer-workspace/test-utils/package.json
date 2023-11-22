@@ -2,15 +2,15 @@
   "private": true,
   "name": "@glimmer-workspace/test-utils",
   "main": "index.ts",
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
   "dependencies": {
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/util": "workspace:^"
   },
   "devDependencies": {
     "eslint": "^8.52.0"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
   }
 }

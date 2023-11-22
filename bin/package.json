@@ -1,6 +1,10 @@
 {
   "name": "@glimmer-workspace/bin",
   "private": true,
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ./tsconfig.json"
+  },
   "dependencies": {
     "@types/glob": "^8.1.0",
     "@types/js-yaml": "^4.0.9",
@@ -21,9 +25,5 @@
   },
   "config": {
     "tsconfig": "./tsconfig.json"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ./tsconfig.json"
   }
 }

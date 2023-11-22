@@ -1,21 +1,21 @@
 {
   "name": "@glimmer/local-debug-flags",
-  "type": "module",
   "version": "0.85.13",
+  "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
   "repository": {
     "type": "git",
     "url": "https://github.com/glimmerjs/glimmer-vm.git",
     "directory": "packages/@glimmer/local-debug-flags"
   },
-  "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
+  "type": "module",
   "private": true,
   "main": "index.ts",
   "types": "index.ts",
-  "devDependencies": {
-    "eslint": "^8.52.0"
-  },
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "devDependencies": {
+    "eslint": "^8.52.0"
   }
 }

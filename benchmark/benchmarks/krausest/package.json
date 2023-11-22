@@ -1,6 +1,10 @@
 {
   "private": true,
   "name": "@glimmer-workspace/krausest",
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../../tsconfig.json"
+  },
   "dependencies": {
     "@glimmer-workspace/benchmark-env": "workspace:^",
     "@glimmer/compiler": "workspace:^",
@@ -19,9 +23,5 @@
   },
   "config": {
     "tsconfig": "../../tsconfig.json"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../../tsconfig.json"
   }
 }

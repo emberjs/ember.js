@@ -2,11 +2,12 @@
   "name": "@glimmer-workspace/benchmark-env",
   "version": "0.84.3",
   "private": true,
-  "engines": {
-    "node": ">=16"
-  },
-  "main": "index.ts",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer-workspace/benchmark-env",
+  "main": "index.ts",
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
   "dependencies": {
     "@glimmer/global-context": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
@@ -21,8 +22,7 @@
   "devDependencies": {
     "eslint": "^8.52.0"
   },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  "engines": {
+    "node": ">=16"
   }
 }

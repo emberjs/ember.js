@@ -1,26 +1,10 @@
 {
   "name": "@glimmer/util",
-  "type": "module",
   "version": "0.85.13",
+  "license": "MIT",
   "description": "Common utilities used in Glimmer",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",
-  "license": "MIT",
-  "dependencies": {
-    "@glimmer/env": "0.1.7",
-    "@glimmer/interfaces": "workspace:^"
-  },
-  "files": [
-    "dist"
-  ],
-  "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
-    "@glimmer/local-debug-flags": "workspace:^",
-    "@types/qunit": "^2.19.9",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
-    "typescript": "*"
-  },
+  "type": "module",
   "main": "index.ts",
   "types": "index.ts",
   "publishConfig": {
@@ -40,10 +24,26 @@
     "main": null,
     "module": "dist/dev/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
     "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "dependencies": {
+    "@glimmer/env": "0.1.7",
+    "@glimmer/interfaces": "workspace:^"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:^",
+    "@glimmer/local-debug-flags": "workspace:^",
+    "@types/qunit": "^2.19.9",
+    "eslint": "^8.52.0",
+    "publint": "^0.2.5",
+    "rollup": "^4.5.1",
+    "typescript": "*"
   }
 }
