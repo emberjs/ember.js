@@ -41,7 +41,7 @@
     "vite": "4.3.9"
   },
   "devDependencies": {
-    "@types/node": "^18.16.6",
+    "@types/node": "^20.9.4",
     "eslint": "^8.52.0",
     "typescript": "*"
   }

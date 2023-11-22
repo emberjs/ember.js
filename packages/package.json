@@ -1,7 +1,7 @@
 {
   "private": true,
   "dependencies": {
-    "@types/qunit": "^2.19.7",
+    "@types/qunit": "^2.19.9",
     "vite": "^4.3.9"
   }
 }
