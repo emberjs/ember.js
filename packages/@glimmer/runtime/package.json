@@ -1,14 +1,12 @@
 {
   "name": "@glimmer/runtime",
-  "type": "module",
   "version": "0.85.13",
+  "license": "MIT",
   "description": "Minimal runtime needed to render Glimmer templates",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/runtime",
-  "license": "MIT",
+  "type": "module",
   "main": "index.ts",
-  "files": [
-    "dist"
-  ],
+  "types": "index.ts",
   "publishConfig": {
     "access": "public",
     "types": "dist/dev/index.d.ts",
@@ -23,6 +21,15 @@
     },
     "main": null,
     "module": "dist/dev/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
     "@glimmer/destroyable": "workspace:^",
@@ -48,12 +55,5 @@
     "publint": "^0.2.5",
     "rollup": "^4.5.1",
     "typescript": "*"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
-  },
-  "types": "index.ts"
+  }
 }

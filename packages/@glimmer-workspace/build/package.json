@@ -1,19 +1,12 @@
 {
   "private": true,
   "name": "@glimmer-workspace/build-support",
-  "type": "module",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.mjs",
   "types": "index.d.mts",
-  "engines": {
-    "node": ">=16"
-  },
   "exports": {
     "default": "./index.js"
-  },
-  "starbeam": {
-    "source": "js:typed",
-    "type": "library:build-support"
   },
   "scripts": {
     "test:lint": "eslint .",
@@ -44,5 +37,12 @@
     "@types/node": "^20.9.4",
     "eslint": "^8.52.0",
     "typescript": "*"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "starbeam": {
+    "source": "js:typed",
+    "type": "library:build-support"
   }
 }

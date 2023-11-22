@@ -1,8 +1,8 @@
 {
   "name": "@glimmer/encoder",
-  "type": "module",
   "version": "0.85.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/encoder",
+  "type": "module",
   "main": "index.ts",
   "types": "index.ts",
   "publishConfig": {
@@ -25,15 +25,15 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
   "dependencies": {
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/vm": "workspace:^"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",

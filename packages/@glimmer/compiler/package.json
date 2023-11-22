@@ -1,19 +1,15 @@
 {
   "name": "@glimmer/compiler",
-  "type": "module",
   "version": "0.85.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/compiler",
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
   "exports": {
     "types": "./index.ts",
     "development": "./index.ts",
     "import": "./dist/index.js"
   },
-  "engines": {
-    "node": ">= 16.0.0"
-  },
-  "files": [
-    "dist"
-  ],
   "publishConfig": {
     "access": "public",
     "types": "dist/dev/index.d.ts",
@@ -31,6 +27,15 @@
     "main": null,
     "module": "dist/dev/index.js"
   },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
   "dependencies": {
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/syntax": "workspace:^",
@@ -47,12 +52,7 @@
     "rollup": "^4.5.1",
     "typescript": "*"
   },
-  "scripts": {
-    "build": "rollup -c rollup.config.mjs",
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "test:publint": "publint"
-  },
-  "main": "index.ts",
-  "types": "index.ts"
+  "engines": {
+    "node": ">= 16.0.0"
+  }
 }

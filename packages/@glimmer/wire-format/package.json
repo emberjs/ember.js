@@ -1,23 +1,10 @@
 {
   "name": "@glimmer/wire-format",
-  "type": "module",
   "version": "0.85.13",
+  "license": "MIT",
   "description": "",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/wire-format",
-  "license": "MIT",
-  "dependencies": {
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/util": "workspace:^"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
-  },
+  "type": "module",
   "main": "index.ts",
   "types": "index.ts",
   "publishConfig": {
@@ -36,6 +23,19 @@
     },
     "main": null,
     "module": "dist/dev/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",

@@ -1,37 +1,12 @@
 {
   "name": "@glimmer/vm-babel-plugins",
-  "type": "module",
   "version": "0.85.13",
+  "license": "MIT",
   "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
   "repository": "https://github.com/glimmerjs/glimmer.js",
   "author": "Tom Dale <tom@tomdale.net>",
-  "license": "MIT",
+  "type": "module",
   "private": false,
-  "engines": {
-    "node": ">=16"
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "test": "mocha",
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
-  },
-  "dependencies": {
-    "babel-plugin-debug-macros": "^0.3.4"
-  },
-  "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
-    "babel-plugin-tester": "^11.0.4",
-    "eslint": "^8.54.0",
-    "mocha": "^10.2.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
-    "typescript": "*"
-  },
   "main": "index.ts",
   "types": "index.ts",
   "publishConfig": {
@@ -49,5 +24,30 @@
     },
     "main": null,
     "module": "dist/dev/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test": "mocha",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "dependencies": {
+    "babel-plugin-debug-macros": "^0.3.4"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:^",
+    "babel-plugin-tester": "^11.0.4",
+    "eslint": "^8.54.0",
+    "mocha": "^10.2.0",
+    "publint": "^0.2.5",
+    "rollup": "^4.5.1",
+    "typescript": "*"
+  },
+  "engines": {
+    "node": ">=16"
   }
 }

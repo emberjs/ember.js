@@ -1,37 +1,14 @@
 {
   "name": "@glimmer/validator",
-  "type": "module",
   "version": "0.85.13",
-  "description": "Objects used to track values and their dirtiness in Glimmer",
   "license": "MIT",
+  "description": "Objects used to track values and their dirtiness in Glimmer",
   "repository": {
     "type": "git",
     "url": "https://github.com/glimmerjs/glimmer-vm",
     "directory": "packages/@glimmer/validator"
   },
-  "files": [
-    "dist"
-  ],
-  "dependencies": {
-    "@glimmer/env": "^0.1.7",
-    "@glimmer/global-context": "workspace:^",
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/util": "workspace:^"
-  },
-  "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
-    "@glimmer/local-debug-flags": "workspace:^",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
-    "typescript": "*"
-  },
-  "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json",
-    "build": "rollup -c rollup.config.mjs",
-    "test:publint": "publint"
-  },
+  "type": "module",
   "main": "index.ts",
   "types": "index.ts",
   "publishConfig": {
@@ -50,5 +27,28 @@
     },
     "main": null,
     "module": "dist/dev/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "dependencies": {
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/global-context": "workspace:^",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:^",
+    "@glimmer/local-debug-flags": "workspace:^",
+    "eslint": "^8.52.0",
+    "publint": "^0.2.5",
+    "rollup": "^4.5.1",
+    "typescript": "*"
   }
 }
