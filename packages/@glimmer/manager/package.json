@@ -7,12 +7,12 @@
     "@glimmer/debug": "workspace:^",
     "@glimmer/destroyable": "workspace:^",
     "@glimmer/env": "0.1.7",
-    "@glimmer/vm": "workspace:^",
     "@glimmer/global-context": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
     "@glimmer/reference": "workspace:^",
     "@glimmer/util": "workspace:^",
-    "@glimmer/validator": "workspace:^"
+    "@glimmer/validator": "workspace:^",
+    "@glimmer/vm": "workspace:^"
   },
   "files": [
     "dist"
@@ -22,7 +22,7 @@
     "@glimmer/local-debug-flags": "workspace:^",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
-    "rollup": "^3.21.6",
+    "rollup": "^4.5.1",
     "typescript": "*"
   },
   "main": "index.ts",

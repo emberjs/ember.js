@@ -4,8 +4,8 @@
   "version": "0.85.13",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/node",
   "dependencies": {
-    "@glimmer/runtime": "workspace:^",
     "@glimmer/interfaces": "workspace:^",
+    "@glimmer/runtime": "workspace:^",
     "@glimmer/util": "workspace:^",
     "@simple-dom/document": "^1.4.0"
   },
@@ -18,7 +18,7 @@
     "@types/qunit": "^2.19.7",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
-    "rollup": "^3.21.6",
+    "rollup": "^4.5.1",
     "typescript": "*"
   },
   "scripts": {

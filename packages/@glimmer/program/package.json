@@ -7,21 +7,21 @@
     "dist"
   ],
   "dependencies": {
-    "@glimmer/env": "0.1.7",
-    "@glimmer/util": "workspace:^",
-    "@glimmer/opcode-compiler": "workspace:^",
-    "@glimmer/manager": "workspace:^",
-    "@glimmer/interfaces": "workspace:^",
     "@glimmer/encoder": "workspace:^",
-    "@glimmer/wire-format": "workspace:^",
-    "@glimmer/vm": "workspace:^"
+    "@glimmer/env": "0.1.7",
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/manager": "workspace:^",
+    "@glimmer/opcode-compiler": "workspace:^",
+    "@glimmer/util": "workspace:^",
+    "@glimmer/vm": "workspace:^",
+    "@glimmer/wire-format": "workspace:^"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:^",
     "@glimmer/local-debug-flags": "workspace:^",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
-    "rollup": "^3.21.6",
+    "rollup": "^4.5.1",
     "typescript": "*"
   },
   "main": "index.ts",
