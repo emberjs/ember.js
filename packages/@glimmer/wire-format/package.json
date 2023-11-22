@@ -6,8 +6,8 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/wire-format",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "workspace:^",
-    "@glimmer/interfaces": "workspace:^"
+    "@glimmer/interfaces": "workspace:^",
+    "@glimmer/util": "workspace:^"
   },
   "files": [
     "dist"
@@ -41,7 +41,7 @@
     "@glimmer-workspace/build-support": "workspace:^",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
-    "rollup": "^3.21.6",
+    "rollup": "^4.5.1",
     "typescript": "*"
   }
 }

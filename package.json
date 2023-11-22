@@ -107,7 +107,7 @@
     "qunit": "^2.19.4",
     "release-it": "^16.2.1",
     "rimraf": "^5.0.0",
-    "rollup": "^3.21.6",
+    "rollup": "^4.5.1",
     "semver": "^7.5.2",
     "testem-failure-only-reporter": "^1.0.0",
     "toml": "^3.0.0",
