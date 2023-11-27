@@ -4,8 +4,9 @@ import { execSync } from 'child_process';
 import { execa } from 'execa';
 import yaml from 'js-yaml';
 import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
-const __dirname = new URL('.', import.meta.url).pathname;
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const root = resolve(__dirname, '..');
 
 async function main() {
