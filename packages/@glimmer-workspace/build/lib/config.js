@@ -110,7 +110,7 @@ export function typescript(pkg, config) {
 const EXTERNAL_OPTIONS = [
   ['is', ['tslib', '@glimmer/local-debug-flags'], 'inline'],
   ['is', ['@handlebars/parser', 'simple-html-tokenizer', 'babel-plugin-debug-macros'], 'external'],
-  ['startsWith', ['.', '/', '#', '@babel/runtime/'], 'inline'],
+  ['startsWith', ['.', '/', '#', '@babel/runtime/', process.cwd().replace(/\\/gu, '/')], 'inline'],
   ['startsWith', ['@glimmer/', '@simple-dom/', '@babel/', 'node:'], 'external'],
 ];
 
@@ -119,6 +119,7 @@ const EXTERNAL_OPTIONS = [
  * @returns {boolean | null}
  */
 function matchExternals(id) {
+  id = id.replace(/\\/gu, '/');
   for (const [operator, prefixes, kind] of EXTERNAL_OPTIONS) {
     const result = match(id, operator, prefixes);
 
