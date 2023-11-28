@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import type { TemplateFactory } from '@glimmer/interfaces';
-
-export { compile as compileTemplate } from 'ember-template-compiler';
+import type * as ETC from 'ember-template-compiler';
 
 interface CommonOptions {
   moduleName?: string;
@@ -27,6 +26,16 @@ interface PrecompileTemplate {
   (templateString: string, options: StrictModeOptions): TemplateFactory;
 }
 
+export let __emberTemplateCompiler: undefined | typeof ETC;
+export const compileTemplate: typeof ETC.compile = (...args: Parameters<typeof ETC.compile>) => {
+  if (!__emberTemplateCompiler) {
+    throw new Error(
+      'Attempted to call `compileTemplate` without first loading the runtime template compiler.'
+    );
+  }
+  return __emberTemplateCompiler.compile(...args);
+};
+
 export let precompileTemplate: PrecompileTemplate;
 
 if (DEBUG) {
@@ -35,4 +44,8 @@ if (DEBUG) {
       'Attempted to call `precompileTemplate` at runtime, but this API is meant to be used at compile time. You should use `compileTemplate` instead.'
     );
   };
+}
+
+export function __registerTemplateCompiler(c: typeof ETC) {
+  __emberTemplateCompiler = c;
 }
