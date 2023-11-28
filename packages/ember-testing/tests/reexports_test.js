@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import * as emberTesting from 'ember-testing';
 
 class ReexportsTestCase extends AbstractTestCase {}
 
@@ -19,7 +20,7 @@ class ReexportsTestCase extends AbstractTestCase {}
   }
 
   ReexportsTestCase.prototype[`@test Ember.${path} exports correctly`] = function (assert) {
-    confirmExport(Ember, assert, path, moduleId, exportName);
+    confirmExport(Ember, assert, path, moduleId, exportName, emberTesting);
   };
 });
 
