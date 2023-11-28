@@ -200,3 +200,7 @@ export class TrackedDescriptor {
     this._set.call(obj, value);
   }
 }
+
+export function isTrackedProperty(object: object, prop: string): boolean {
+  return metaFor(object).peekDescriptors(prop) instanceof TrackedDescriptor;
+}

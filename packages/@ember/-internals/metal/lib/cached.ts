@@ -4,6 +4,8 @@
 import { DEBUG } from '@glimmer/env';
 import { createCache, getValue } from '@glimmer/validator';
 
+const CacheMap = new WeakMap();
+
 /**
  * @decorator
  *
@@ -84,7 +86,7 @@ import { createCache, getValue } from '@glimmer/validator';
   the subsequent cache invalidations of the `@cached` properties who were
   using this `trackedProp`.
 
-  Remember that setting tracked data should only be done during initialization, 
+  Remember that setting tracked data should only be done during initialization,
   or as the result of a user action. Setting tracked data during render
   (such as in a getter), is not supported.
 
@@ -110,6 +112,8 @@ export const cached: MethodDecorator = (...args: any[]) => {
   if (DEBUG && (!('get' in descriptor) || typeof descriptor.get !== 'function')) {
     throwCachedGetterOnlyError(key);
   }
+
+  CacheMap.set(target, [...(CacheMap.get(target) || []), key]);
 
   const caches = new WeakMap();
   const getter = descriptor.get;
@@ -143,4 +147,8 @@ function throwCachedInvalidArgsError(args: unknown[] = []): never {
         ', '
       )}), which is not supported. Dependencies are automatically tracked, so you can just use ${'`@cached`'}`
   );
+}
+
+export function isCachedProperty(object: object, prop: string) {
+  return (CacheMap.get(object) || []).includes(prop);
 }

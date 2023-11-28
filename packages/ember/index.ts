@@ -13,6 +13,7 @@ import { meta as internalMeta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
 import { FEATURES as EmberFEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
+import { setupInspectorSupport } from '@ember/debug/ember-inspector';
 import { assert as emberAssert, captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner.js';
 import EmberController, {
@@ -745,6 +746,7 @@ function defineEmberTestingLazyLoad(key: 'Test' | 'setupForTesting') {
 defineEmberTestingLazyLoad('Test');
 defineEmberTestingLazyLoad('setupForTesting');
 
+setupInspectorSupport();
 // @ts-expect-error Per types, runLoadHooks requires a second parameter. Should we loosen types?
 applicationRunLoadHooks('Ember');
 
