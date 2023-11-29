@@ -262,6 +262,9 @@ function templateCompilerBundle(emberPackages, transpileTree) {
           VERSION: ver.default,
         };
       });
+      define('@ember/-internals/glimmer', ['exports'], function(e) {
+        e.template = undefined;
+      });
     }
     
     (function (m) {
