@@ -1,20 +1,7 @@
-import { ENV } from '@ember/-internals/environment';
-import { FEATURES } from '@ember/canary-features';
-import * as _GlimmerSyntax from '@glimmer/syntax';
+export { default as _Ember } from 'ember';
+
 import VERSION from 'ember/version';
-import require from 'require';
-
-export let _Ember: unknown;
-
-try {
-  _Ember = require('ember');
-} catch (e) {
-  _Ember = {
-    ENV,
-    FEATURES,
-    VERSION,
-  };
-}
+import * as _GlimmerSyntax from '@glimmer/syntax';
 
 export { default as precompile } from './system/precompile';
 export { default as compile } from './system/compile';

@@ -244,12 +244,33 @@ function templateCompilerBundle(emberPackages, transpileTree) {
     footer: `
     try {
       // in the browser, the ember-template-compiler.js and ember.js bundles find each other via globalThis.require.
-      require("@ember/template-compilation");
+      require('@ember/template-compilation');
     } catch (err) {
       // in node, that coordination is a no-op
-      define("@ember/template-compilation", ["exports"], function(e) { e.__registerTemplateCompiler = function(){}; });
+      define('@ember/template-compilation', ['exports'], function (e) {
+        e.__registerTemplateCompiler = function () {};
+      });
+      define('ember', [
+        'exports',
+        '@ember/-internals/environment',
+        '@ember/canary-features',
+        'ember/version',
+      ], function (e, env, fea, ver) {
+        e.default = {
+          ENV: env.ENV,
+          FEATURES: fea.FEATURES,
+          VERSION: ver.default,
+        };
+      });
     }
-    (function (m) { if (typeof module === "object" && module.exports) { module.exports = m } }(require("ember-template-compiler")));`,
+    
+    (function (m) {
+      if (typeof module === 'object' && module.exports) {
+        module.exports = m;
+      }
+    })(require('ember-template-compiler'));
+    
+      `,
   });
 }
 
