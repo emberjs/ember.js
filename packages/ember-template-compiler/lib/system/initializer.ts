@@ -1,16 +1,11 @@
-import require, { has } from 'require';
 import bootstrap from './bootstrap';
+import * as emberEnv from '@ember/-internals/browser-environment';
+import * as emberGlimmer from '@ember/-internals/glimmer';
+import emberApp from '@ember/application';
 
 // Globals mode template compiler
-if (
-  has('@ember/application') &&
-  has('@ember/-internals/browser-environment') &&
-  has('@ember/-internals/glimmer')
-) {
-  let emberEnv = require('@ember/-internals/browser-environment');
-  let emberGlimmer = require('@ember/-internals/glimmer');
-  let emberApp = require('@ember/application');
-  let Application = emberApp.default;
+if (emberEnv && emberGlimmer && emberApp) {
+  let Application = emberApp;
   let { hasTemplate, setTemplate } = emberGlimmer;
   let { hasDOM } = emberEnv;
 

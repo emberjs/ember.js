@@ -265,6 +265,7 @@ function templateCompilerBundle(emberPackages, transpileTree) {
       define('@ember/-internals/glimmer', ['exports'], function(e) {
         e.template = undefined;
       });
+      define('@ember/application', ['exports'], function(e) {});
     }
     
     (function (m) {
