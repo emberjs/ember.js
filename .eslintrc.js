@@ -55,7 +55,7 @@ module.exports = {
         '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-this-alias': 'off',
-        '@typescript-eslint/no-var-requires': 'warn',
+        '@typescript-eslint/no-var-requires': 'error',
         '@typescript-eslint/consistent-type-imports': 'error',
 
         // TODO: Enable and fix these rules
