@@ -1,5 +1,3 @@
-import require from 'require';
-
 function getDescriptor(obj: Record<string, unknown>, path: string) {
   let parts = path.split('.');
   let value: unknown = obj;
@@ -20,7 +18,8 @@ export default function confirmExport(
   assert: QUnit['assert'],
   path: string,
   moduleId: string,
-  exportName: string | { value: unknown; get: string; set: string }
+  exportName: string | { value: unknown; get: string; set: string },
+  mod: any
 ) {
   try {
     let desc: PropertyDescriptor | null | undefined;
@@ -33,21 +32,18 @@ export default function confirmExport(
     }
 
     if (desc == null) {
-      let mod = require(moduleId);
       assert.notEqual(
         mod[exportName as string],
         undefined,
         `${moduleId}#${exportName} is not \`undefined\``
       );
     } else if (typeof exportName === 'string') {
-      let mod = require(moduleId);
       let value = 'value' in desc ? desc.value : desc.get!.call(Ember);
       assert.equal(value, mod[exportName], `Ember.${path} is exported correctly`);
       assert.notEqual(mod[exportName], undefined, `Ember.${path} is not \`undefined\``);
     } else if ('value' in desc) {
       assert.equal(desc.value, exportName.value, `Ember.${path} is exported correctly`);
     } else {
-      let mod = require(moduleId);
       assert.equal(desc.get, mod[exportName.get], `Ember.${path} getter is exported correctly`);
       assert.notEqual(desc.get, undefined, `Ember.${path} getter is not undefined`);
 

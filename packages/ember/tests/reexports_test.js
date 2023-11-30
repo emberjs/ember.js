@@ -8,14 +8,14 @@ moduleFor(
   class extends AbstractTestCase {
     [`@test Ember exports correctly`](assert) {
       allExports.forEach((reexport) => {
-        let [path, moduleId, exportName] = reexport;
+        let [path, moduleId, exportName, mod] = reexport;
 
         // default path === exportName if none present
         if (!exportName) {
           exportName = path;
         }
 
-        confirmExport(Ember, assert, path, moduleId, exportName);
+        confirmExport(Ember, assert, path, moduleId, exportName, mod);
       });
     }
 
@@ -35,319 +35,315 @@ moduleFor(
   }
 );
 
+import * as test0 from '@ember/application';
+import * as test1 from '@ember/application/instance';
+import * as test2 from '@ember/application/namespace';
+import * as test3 from '@ember/array';
+import * as test4 from '@ember/array/mutable';
+import * as test5 from '@ember/array/proxy';
+import * as test6 from '@ember/canary-features';
+import * as test7 from '@ember/component';
+import * as test8 from '@ember/component/helper';
+import * as test9 from '@ember/component/template-only';
+import * as test10 from '@ember/controller';
+import * as test11 from '@ember/debug';
+import * as test12 from '@ember/debug/container-debug-adapter';
+import * as test13 from '@ember/debug/data-adapter';
+import * as test14 from '@ember/destroyable';
+import * as test15 from '@ember/engine';
+import * as test16 from '@ember/engine/instance';
+import * as test17 from '@ember/enumerable';
+import * as test18 from '@ember/instrumentation';
+import * as test19 from '@ember/modifier';
+import * as test20 from '@ember/helper';
+import * as test21 from '@ember/object';
+import * as test22 from '@ember/object/compat';
+import * as test23 from '@ember/object/computed';
+import * as test24 from '@ember/object/core';
+import * as test25 from '@ember/object/evented';
+import * as test26 from '@ember/object/events';
+import * as test27 from '@ember/object/internals';
+import * as test28 from '@ember/object/mixin';
+import * as test29 from '@ember/object/observable';
+import * as test30 from '@ember/object/observers';
+import * as test31 from '@ember/object/promise-proxy-mixin';
+import * as test32 from '@ember/object/proxy';
+import * as test33 from '@ember/routing/hash-location';
+import * as test34 from '@ember/routing/history-location';
+import * as test35 from '@ember/routing/none-location';
+import * as test36 from '@ember/routing/route';
+import * as test37 from '@ember/routing/router';
+import * as test38 from '@ember/runloop';
+import * as test39 from '@ember/service';
+import * as test40 from '@ember/template';
+import * as test41 from '@ember/template-compilation';
+import * as test42 from '@ember/template-factory';
+import * as test43 from '@ember/test';
+import * as test44 from '@ember/test/adapter';
+import * as test45 from '@ember/utils';
+import * as test46 from '@ember/version';
+import * as test47 from '@glimmer/tracking';
+import * as test48 from '@glimmer/tracking/primitives/cache';
+import * as test49 from '@ember/-internals/environment';
+import * as test50 from '@ember/-internals/utils';
+import * as test51 from '@ember/-internals/container';
+import * as test52 from '@ember/-internals/metal';
+import * as test53 from '@ember/-internals/error-handling';
+import * as test54 from '@ember/-internals/meta';
+import * as test55 from '@ember/-internals/views';
+import * as test56 from '@ember/-internals/glimmer';
+import * as test57 from '@ember/-internals/runtime';
+import * as test58 from '@ember/-internals/routing';
+import * as test59 from 'backburner.js';
+import * as test60 from 'rsvp';
+
 let allExports = [
-  // @ember/application
-  ['Application', '@ember/application', 'default'],
-  ['getOwner', '@ember/application', 'getOwner'],
-  ['onLoad', '@ember/application', 'onLoad'],
-  ['runLoadHooks', '@ember/application', 'runLoadHooks'],
-  ['setOwner', '@ember/application', 'setOwner'],
-
-  // @ember/application/instance
-  ['ApplicationInstance', '@ember/application/instance', 'default'],
-
-  // @ember/application/namespace
-  ['Namespace', '@ember/application/namespace', 'default'],
-
-  // @ember/array
-  ['Array', '@ember/array', 'default'],
-  ['A', '@ember/array', 'A'],
-  ['NativeArray', '@ember/array', 'NativeArray'],
-  ['isArray', '@ember/array', 'isArray'],
-  ['makeArray', '@ember/array', 'makeArray'],
-
-  // @ember/array/mutable
-  ['MutableArray', '@ember/array/mutable', 'default'],
-
-  // @ember/array/proxy
-  ['ArrayProxy', '@ember/array/proxy', 'default'],
-
-  // @ember/canary-features
-  ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled'],
-
-  // @ember/component
-  ['Component', '@ember/component', 'default'],
-  ['_componentManagerCapabilities', '@ember/component', 'capabilities'],
-  ['_getComponentTemplate', '@ember/component', 'getComponentTemplate'],
-  ['_setComponentManager', '@ember/component', 'setComponentManager'],
-  ['_setComponentTemplate', '@ember/component', 'setComponentTemplate'],
-
-  // @ember/component/helper
-  ['Helper', '@ember/component/helper', 'default'],
-  ['Helper.helper', '@ember/component/helper', 'helper'],
-
-  // @ember/component/template-only
-  ['_templateOnlyComponent', '@ember/component/template-only', 'default'],
-
-  // @ember/controller
-  ['Controller', '@ember/controller', 'default'],
-  ['ControllerMixin', '@ember/controller', 'ControllerMixin'],
-  ['inject.controller', '@ember/controller', 'inject'],
-
-  // @ember/debug
-  ['deprecateFunc', '@ember/debug', 'deprecateFunc'],
-  ['deprecate', '@ember/debug', 'deprecate'],
-  ['assert', '@ember/debug', 'assert'],
-  ['debug', '@ember/debug', 'debug'],
-  ['inspect', '@ember/debug', 'inspect'],
-  ['Debug.registerDeprecationHandler', '@ember/debug', 'registerDeprecationHandler'],
-  ['Debug.registerWarnHandler', '@ember/debug', 'registerWarnHandler'],
-  ['runInDebug', '@ember/debug', 'runInDebug'],
-  ['warn', '@ember/debug', 'warn'],
-  ['testing', '@ember/debug', { get: 'isTesting', set: 'setTesting' }],
-  ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
-
-  // @ember/debug/container-debug-adapter
-  ['ContainerDebugAdapter', '@ember/debug/container-debug-adapter', 'default'],
-
-  // @ember/debug/data-adapter
-  ['DataAdapter', '@ember/debug/data-adapter', 'default'],
-
-  // @ember/destroyable
+  ['Application', '@ember/application', 'default', test0],
+  ['getOwner', '@ember/application', 'getOwner', test0],
+  ['onLoad', '@ember/application', 'onLoad', test0],
+  ['runLoadHooks', '@ember/application', 'runLoadHooks', test0],
+  ['setOwner', '@ember/application', 'setOwner', test0],
+  ['ApplicationInstance', '@ember/application/instance', 'default', test1],
+  ['Namespace', '@ember/application/namespace', 'default', test2],
+  ['Array', '@ember/array', 'default', test3],
+  ['A', '@ember/array', 'A', test3],
+  ['NativeArray', '@ember/array', 'NativeArray', test3],
+  ['isArray', '@ember/array', 'isArray', test3],
+  ['makeArray', '@ember/array', 'makeArray', test3],
+  ['MutableArray', '@ember/array/mutable', 'default', test4],
+  ['ArrayProxy', '@ember/array/proxy', 'default', test5],
+  ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled', test6],
+  ['Component', '@ember/component', 'default', test7],
+  ['_componentManagerCapabilities', '@ember/component', 'capabilities', test7],
+  ['_getComponentTemplate', '@ember/component', 'getComponentTemplate', test7],
+  ['_setComponentManager', '@ember/component', 'setComponentManager', test7],
+  ['_setComponentTemplate', '@ember/component', 'setComponentTemplate', test7],
+  ['Helper', '@ember/component/helper', 'default', test8],
+  ['Helper.helper', '@ember/component/helper', 'helper', test8],
+  ['_templateOnlyComponent', '@ember/component/template-only', 'default', test9],
+  ['Controller', '@ember/controller', 'default', test10],
+  ['ControllerMixin', '@ember/controller', 'ControllerMixin', test10],
+  ['inject.controller', '@ember/controller', 'inject', test10],
+  ['deprecateFunc', '@ember/debug', 'deprecateFunc', test11],
+  ['deprecate', '@ember/debug', 'deprecate', test11],
+  ['assert', '@ember/debug', 'assert', test11],
+  ['debug', '@ember/debug', 'debug', test11],
+  ['inspect', '@ember/debug', 'inspect', test11],
+  ['Debug.registerDeprecationHandler', '@ember/debug', 'registerDeprecationHandler', test11],
+  ['Debug.registerWarnHandler', '@ember/debug', 'registerWarnHandler', test11],
+  ['runInDebug', '@ember/debug', 'runInDebug', test11],
+  ['warn', '@ember/debug', 'warn', test11],
+  [
+    'testing',
+    '@ember/debug',
+    {
+      get: 'isTesting',
+      set: 'setTesting',
+    },
+    test11,
+  ],
+  ['_captureRenderTree', '@ember/debug', 'captureRenderTree', test11],
+  ['ContainerDebugAdapter', '@ember/debug/container-debug-adapter', 'default', test12],
+  ['DataAdapter', '@ember/debug/data-adapter', 'default', test13],
   DEBUG
-    ? ['_assertDestroyablesDestroyed', '@ember/destroyable', 'assertDestroyablesDestroyed']
+    ? ['_assertDestroyablesDestroyed', '@ember/destroyable', 'assertDestroyablesDestroyed', test14]
     : null,
-  ['_associateDestroyableChild', '@ember/destroyable', 'associateDestroyableChild'],
-  ['destroy', '@ember/destroyable', 'destroy'],
-  DEBUG ? ['_enableDestroyableTracking', '@ember/destroyable', 'enableDestroyableTracking'] : null,
-  ['_isDestroyed', '@ember/destroyable', 'isDestroyed'],
-  ['_isDestroying', '@ember/destroyable', 'isDestroying'],
-  ['_registerDestructor', '@ember/destroyable', 'registerDestructor'],
-  ['_unregisterDestructor', '@ember/destroyable', 'unregisterDestructor'],
-
-  // @ember/engine
-  ['Engine', '@ember/engine', 'default'],
-
-  // @ember/engine/instance
-  ['EngineInstance', '@ember/engine/instance', 'default'],
-
-  // @ember/enumerable
-  ['Enumerable', '@ember/enumerable', 'default'],
-
-  // @ember/instrumentation
-  ['instrument', '@ember/instrumentation', 'instrument'],
-  ['subscribe', '@ember/instrumentation', 'subscribe'],
-  ['Instrumentation.instrument', '@ember/instrumentation', 'instrument'],
-  ['Instrumentation.reset', '@ember/instrumentation', 'reset'],
-  ['Instrumentation.subscribe', '@ember/instrumentation', 'subscribe'],
-  ['Instrumentation.unsubscribe', '@ember/instrumentation', 'unsubscribe'],
-
-  // @ember/modifier
-  ['_modifierManagerCapabilities', '@ember/modifier', 'capabilities'],
-  ['_setModifierManager', '@ember/modifier', 'setModifierManager'],
-  ['_on', '@ember/modifier', 'on'],
-
-  // @ember/helper
-  ['_helperManagerCapabilities', '@ember/helper', 'capabilities'],
-  ['_setHelperManager', '@ember/helper', 'setHelperManager'],
-  ['_invokeHelper', '@ember/helper', 'invokeHelper'],
-  ['_fn', '@ember/helper', 'fn'],
-  ['_array', '@ember/helper', 'array'],
-  ['_hash', '@ember/helper', 'hash'],
-  ['_get', '@ember/helper', 'get'],
-  ['_concat', '@ember/helper', 'concat'],
-
-  // @ember/object
-  ['Object', '@ember/object', 'default'],
-  ['_action', '@ember/object', 'action'],
-  ['computed', '@ember/object', 'computed'],
-  ['defineProperty', '@ember/object', 'defineProperty'],
-  ['get', '@ember/object', 'get'],
-  ['getProperties', '@ember/object', 'getProperties'],
-  ['notifyPropertyChange', '@ember/object', 'notifyPropertyChange'],
-  ['observer', '@ember/object', 'observer'],
-  ['set', '@ember/object', 'set'],
-  ['setProperties', '@ember/object', 'setProperties'],
-  ['trySet', '@ember/object', 'trySet'],
-
-  // @ember/object/compat
-  ['_dependentKeyCompat', '@ember/object/compat', 'dependentKeyCompat'],
-
-  // @ember/object/computed
-  ['ComputedProperty', '@ember/object/computed', 'default'],
-  ['expandProperties', '@ember/object/computed', 'expandProperties'],
-
-  // @ember/object/core
-  ['CoreObject', '@ember/object/core', 'default'],
-
-  // @ember/object/evented
-  ['Evented', '@ember/object/evented', 'default'],
-  ['on', '@ember/object/evented', 'on'],
-
-  // @ember/object/events
-  ['addListener', '@ember/object/events', 'addListener'],
-  ['removeListener', '@ember/object/events', 'removeListener'],
-  ['sendEvent', '@ember/object/events', 'sendEvent'],
-
-  // @ember/object/internals
-  ['cacheFor', '@ember/object/internals', 'cacheFor'],
-  ['guidFor', '@ember/object/internals', 'guidFor'],
-
-  // @ember/object/mixin
-  ['Mixin', '@ember/object/mixin', 'default'],
-
-  // @ember/object/observable
-  ['Observable', '@ember/object/observable', 'default'],
-
-  // @ember/object/observers
-  ['addObserver', '@ember/object/observers', 'addObserver'],
-  ['removeObserver', '@ember/object/observers', 'removeObserver'],
-
-  // @ember/object/promise-proxy-mixin
-  ['PromiseProxyMixin', '@ember/object/promise-proxy-mixin', 'default'],
-
-  // @ember/object/proxy
-  ['ObjectProxy', '@ember/object/proxy', 'default'],
-
-  // @ember/routing/hash-location
-  ['HashLocation', '@ember/routing/hash-location', 'default'],
-
-  // @ember/routing/history-location
-  ['HistoryLocation', '@ember/routing/history-location', 'default'],
-
-  // @ember/routing/none-location
-  ['NoneLocation', '@ember/routing/none-location', 'default'],
-
-  // @ember/routing/route
-  ['Route', '@ember/routing/route', 'default'],
-
-  // @ember/routing/router
-  ['Router', '@ember/routing/router', 'default'],
-
-  // @ember/runloop
-  ['run', '@ember/runloop', 'run'],
-
-  // @ember/service
-  ['Service', '@ember/service', 'default'],
-  ['inject.service', '@ember/service', 'service'],
-
-  // @ember/template
-  [null, '@ember/template', 'htmlSafe'],
-  [null, '@ember/template', 'isHTMLSafe'],
-
-  // @ember/template-compilation
-  ['HTMLBars.compile', '@ember/template-compilation', 'compileTemplate'],
-
-  // @ember/template-factory
-  ['Handlebars.template', '@ember/template-factory', 'createTemplateFactory'],
-  ['HTMLBars.template', '@ember/template-factory', 'createTemplateFactory'],
-
-  // @ember/test
-  ['Test.registerAsyncHelper', '@ember/test', 'registerAsyncHelper'],
-  ['Test.registerHelper', '@ember/test', 'registerHelper'],
-  ['Test.registerWaiter', '@ember/test', 'registerWaiter'],
-  ['Test.unregisterHelper', '@ember/test', 'unregisterHelper'],
-  ['Test.unregisterWaiter', '@ember/test', 'unregisterWaiter'],
-
-  // @ember/test/adapter
-  ['Test.Adapter', '@ember/test/adapter', 'default'],
-
-  // @ember/utils
-  ['compare', '@ember/utils', 'compare'],
-  ['isBlank', '@ember/utils', 'isBlank'],
-  ['isEmpty', '@ember/utils', 'isEmpty'],
-  ['isEqual', '@ember/utils', 'isEqual'],
-  ['isNone', '@ember/utils', 'isNone'],
-  ['isPresent', '@ember/utils', 'isPresent'],
-  ['typeOf', '@ember/utils', 'typeOf'],
-
-  // @ember/version
-  ['VERSION', '@ember/version', 'VERSION'],
-
-  // @glimmer/tracking
-  ['_tracked', '@glimmer/tracking', 'tracked'],
-
-  // @glimmer/tracking/primitives/cache
-  ['_createCache', '@glimmer/tracking/primitives/cache', 'createCache'],
-  ['_cacheGetValue', '@glimmer/tracking/primitives/cache', 'getValue'],
-  ['_cacheIsConst', '@glimmer/tracking/primitives/cache', 'isConst'],
-
-  // @ember/-internals/environment
-  ['ENV', '@ember/-internals/environment', { get: 'getENV' }],
-  ['lookup', '@ember/-internals/environment', { get: 'getLookup', set: 'setLookup' }],
-
-  // @ember/-internals/utils
-  ['GUID_KEY', '@ember/-internals/utils'],
-  ['uuid', '@ember/-internals/utils'],
-  ['generateGuid', '@ember/-internals/utils'],
-  ['canInvoke', '@ember/-internals/utils'],
-  ['wrap', '@ember/-internals/utils'],
-  ['_Cache', '@ember/-internals/utils', 'Cache'],
-
-  // @ember/-internals/container
-  ['Registry', '@ember/-internals/container', 'Registry'],
-  ['Container', '@ember/-internals/container', 'Container'],
-
-  // @ember/-internals/metal
-  ['_descriptor', '@ember/-internals/metal', 'nativeDescDecorator'],
-  ['_setClassicDecorator', '@ember/-internals/metal', 'setClassicDecorator'],
-  ['_getPath', '@ember/-internals/metal'],
-  ['hasListeners', '@ember/-internals/metal'],
-  ['beginPropertyChanges', '@ember/-internals/metal'],
-  ['endPropertyChanges', '@ember/-internals/metal'],
-  ['changeProperties', '@ember/-internals/metal'],
-  ['libraries', '@ember/-internals/metal'],
+  ['_associateDestroyableChild', '@ember/destroyable', 'associateDestroyableChild', test14],
+  ['destroy', '@ember/destroyable', 'destroy', test14],
+  DEBUG
+    ? ['_enableDestroyableTracking', '@ember/destroyable', 'enableDestroyableTracking', test14]
+    : null,
+  ['_isDestroyed', '@ember/destroyable', 'isDestroyed', test14],
+  ['_isDestroying', '@ember/destroyable', 'isDestroying', test14],
+  ['_registerDestructor', '@ember/destroyable', 'registerDestructor', test14],
+  ['_unregisterDestructor', '@ember/destroyable', 'unregisterDestructor', test14],
+  ['Engine', '@ember/engine', 'default', test15],
+  ['EngineInstance', '@ember/engine/instance', 'default', test16],
+  ['Enumerable', '@ember/enumerable', 'default', test17],
+  ['instrument', '@ember/instrumentation', 'instrument', test18],
+  ['subscribe', '@ember/instrumentation', 'subscribe', test18],
+  ['Instrumentation.instrument', '@ember/instrumentation', 'instrument', test18],
+  ['Instrumentation.reset', '@ember/instrumentation', 'reset', test18],
+  ['Instrumentation.subscribe', '@ember/instrumentation', 'subscribe', test18],
+  ['Instrumentation.unsubscribe', '@ember/instrumentation', 'unsubscribe', test18],
+  ['_modifierManagerCapabilities', '@ember/modifier', 'capabilities', test19],
+  ['_setModifierManager', '@ember/modifier', 'setModifierManager', test19],
+  ['_on', '@ember/modifier', 'on', test19],
+  ['_helperManagerCapabilities', '@ember/helper', 'capabilities', test20],
+  ['_setHelperManager', '@ember/helper', 'setHelperManager', test20],
+  ['_invokeHelper', '@ember/helper', 'invokeHelper', test20],
+  ['_fn', '@ember/helper', 'fn', test20],
+  ['_array', '@ember/helper', 'array', test20],
+  ['_hash', '@ember/helper', 'hash', test20],
+  ['_get', '@ember/helper', 'get', test20],
+  ['_concat', '@ember/helper', 'concat', test20],
+  ['Object', '@ember/object', 'default', test21],
+  ['_action', '@ember/object', 'action', test21],
+  ['computed', '@ember/object', 'computed', test21],
+  ['defineProperty', '@ember/object', 'defineProperty', test21],
+  ['get', '@ember/object', 'get', test21],
+  ['getProperties', '@ember/object', 'getProperties', test21],
+  ['notifyPropertyChange', '@ember/object', 'notifyPropertyChange', test21],
+  ['observer', '@ember/object', 'observer', test21],
+  ['set', '@ember/object', 'set', test21],
+  ['setProperties', '@ember/object', 'setProperties', test21],
+  ['trySet', '@ember/object', 'trySet', test21],
+  ['_dependentKeyCompat', '@ember/object/compat', 'dependentKeyCompat', test22],
+  ['ComputedProperty', '@ember/object/computed', 'default', test23],
+  ['expandProperties', '@ember/object/computed', 'expandProperties', test23],
+  ['CoreObject', '@ember/object/core', 'default', test24],
+  ['Evented', '@ember/object/evented', 'default', test25],
+  ['on', '@ember/object/evented', 'on', test25],
+  ['addListener', '@ember/object/events', 'addListener', test26],
+  ['removeListener', '@ember/object/events', 'removeListener', test26],
+  ['sendEvent', '@ember/object/events', 'sendEvent', test26],
+  ['cacheFor', '@ember/object/internals', 'cacheFor', test27],
+  ['guidFor', '@ember/object/internals', 'guidFor', test27],
+  ['Mixin', '@ember/object/mixin', 'default', test28],
+  ['Observable', '@ember/object/observable', 'default', test29],
+  ['addObserver', '@ember/object/observers', 'addObserver', test30],
+  ['removeObserver', '@ember/object/observers', 'removeObserver', test30],
+  ['PromiseProxyMixin', '@ember/object/promise-proxy-mixin', 'default', test31],
+  ['ObjectProxy', '@ember/object/proxy', 'default', test32],
+  ['HashLocation', '@ember/routing/hash-location', 'default', test33],
+  ['HistoryLocation', '@ember/routing/history-location', 'default', test34],
+  ['NoneLocation', '@ember/routing/none-location', 'default', test35],
+  ['Route', '@ember/routing/route', 'default', test36],
+  ['Router', '@ember/routing/router', 'default', test37],
+  ['run', '@ember/runloop', 'run', test38],
+  ['Service', '@ember/service', 'default', test39],
+  ['inject.service', '@ember/service', 'service', test39],
+  [null, '@ember/template', 'htmlSafe', test40],
+  [null, '@ember/template', 'isHTMLSafe', test40],
+  ['HTMLBars.compile', '@ember/template-compilation', 'compileTemplate', test41],
+  ['Handlebars.template', '@ember/template-factory', 'createTemplateFactory', test42],
+  ['HTMLBars.template', '@ember/template-factory', 'createTemplateFactory', test42],
+  ['Test.registerAsyncHelper', '@ember/test', 'registerAsyncHelper', test43],
+  ['Test.registerHelper', '@ember/test', 'registerHelper', test43],
+  ['Test.registerWaiter', '@ember/test', 'registerWaiter', test43],
+  ['Test.unregisterHelper', '@ember/test', 'unregisterHelper', test43],
+  ['Test.unregisterWaiter', '@ember/test', 'unregisterWaiter', test43],
+  ['Test.Adapter', '@ember/test/adapter', 'default', test44],
+  ['compare', '@ember/utils', 'compare', test45],
+  ['isBlank', '@ember/utils', 'isBlank', test45],
+  ['isEmpty', '@ember/utils', 'isEmpty', test45],
+  ['isEqual', '@ember/utils', 'isEqual', test45],
+  ['isNone', '@ember/utils', 'isNone', test45],
+  ['isPresent', '@ember/utils', 'isPresent', test45],
+  ['typeOf', '@ember/utils', 'typeOf', test45],
+  ['VERSION', '@ember/version', 'VERSION', test46],
+  ['_tracked', '@glimmer/tracking', 'tracked', test47],
+  ['_createCache', '@glimmer/tracking/primitives/cache', 'createCache', test48],
+  ['_cacheGetValue', '@glimmer/tracking/primitives/cache', 'getValue', test48],
+  ['_cacheIsConst', '@glimmer/tracking/primitives/cache', 'isConst', test48],
+  [
+    'ENV',
+    '@ember/-internals/environment',
+    {
+      get: 'getENV',
+    },
+    test49,
+  ],
+  [
+    'lookup',
+    '@ember/-internals/environment',
+    {
+      get: 'getLookup',
+      set: 'setLookup',
+    },
+    test49,
+  ],
+  ['GUID_KEY', '@ember/-internals/utils', null, test50],
+  ['uuid', '@ember/-internals/utils', null, test50],
+  ['generateGuid', '@ember/-internals/utils', null, test50],
+  ['canInvoke', '@ember/-internals/utils', null, test50],
+  ['wrap', '@ember/-internals/utils', null, test50],
+  ['_Cache', '@ember/-internals/utils', 'Cache', test50],
+  ['Registry', '@ember/-internals/container', 'Registry', test51],
+  ['Container', '@ember/-internals/container', 'Container', test51],
+  ['_descriptor', '@ember/-internals/metal', 'nativeDescDecorator', test52],
+  ['_setClassicDecorator', '@ember/-internals/metal', 'setClassicDecorator', test52],
+  ['_getPath', '@ember/-internals/metal', null, test52],
+  ['hasListeners', '@ember/-internals/metal', null, test52],
+  ['beginPropertyChanges', '@ember/-internals/metal', null, test52],
+  ['endPropertyChanges', '@ember/-internals/metal', null, test52],
+  ['changeProperties', '@ember/-internals/metal', null, test52],
+  ['libraries', '@ember/-internals/metal', null, test52],
   [
     'BOOTED',
     '@ember/-internals/metal',
-    { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
+    {
+      get: 'isNamespaceSearchDisabled',
+      set: 'setNamespaceSearchDisabled',
+    },
+    test52,
   ],
-
-  // @ember/-internals/error-handling
-  ['onerror', '@ember/-internals/error-handling', { get: 'getOnerror', set: 'setOnerror' }],
-
-  // @ember/-internals/meta
-  ['meta', '@ember/-internals/meta'],
-
-  // @ember/-internals/views
-  ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick'],
-  ['ViewUtils.getElementView', '@ember/-internals/views', 'getElementView'],
-  ['ViewUtils.getViewElement', '@ember/-internals/views', 'getViewElement'],
-  ['ViewUtils.getViewBounds', '@ember/-internals/views', 'getViewBounds'],
-  ['ViewUtils.getViewClientRects', '@ember/-internals/views', 'getViewClientRects'],
-  ['ViewUtils.getViewBoundingClientRect', '@ember/-internals/views', 'getViewBoundingClientRect'],
-  ['ViewUtils.getRootViews', '@ember/-internals/views', 'getRootViews'],
-  ['ViewUtils.getChildViews', '@ember/-internals/views', 'getChildViews'],
-  ['ViewUtils.isSerializationFirstNode', '@ember/-internals/glimmer', 'isSerializationFirstNode'],
-  ['ComponentLookup', '@ember/-internals/views'],
-  ['EventDispatcher', '@ember/-internals/views'],
-
-  // @ember/-internals/glimmer
-  ['TEMPLATES', '@ember/-internals/glimmer', { get: 'getTemplates', set: 'setTemplates' }],
-  ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
-  ['_Input', '@ember/-internals/glimmer', 'Input'],
-
-  // @ember/-internals/runtime
-  ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin'],
-  ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin'],
-  ['Comparable', '@ember/-internals/runtime'],
-  ['ActionHandler', '@ember/-internals/runtime'],
-  ['MutableEnumerable', '@ember/-internals/runtime'],
-  ['_ProxyMixin', '@ember/-internals/runtime'],
-
-  // @ember/-internals/routing
-  ['controllerFor', '@ember/-internals/routing'],
-  ['generateControllerFactory', '@ember/-internals/routing'],
-  ['generateController', '@ember/-internals/routing'],
-  ['RouterDSL', '@ember/-internals/routing'],
-
-  // backburner
-  ['_Backburner', 'backburner.js', 'default'],
-
-  // rsvp
-  [null, 'rsvp', 'default'],
-  [null, 'rsvp', 'Promise'],
-  [null, 'rsvp', 'all'],
-  [null, 'rsvp', 'allSettled'],
-  [null, 'rsvp', 'defer'],
-  [null, 'rsvp', 'denodeify'],
-  [null, 'rsvp', 'filter'],
-  [null, 'rsvp', 'hash'],
-  [null, 'rsvp', 'hashSettled'],
-  [null, 'rsvp', 'map'],
-  [null, 'rsvp', 'off'],
-  [null, 'rsvp', 'on'],
-  [null, 'rsvp', 'race'],
-  [null, 'rsvp', 'reject'],
-  [null, 'rsvp', 'resolve'],
+  [
+    'onerror',
+    '@ember/-internals/error-handling',
+    {
+      get: 'getOnerror',
+      set: 'setOnerror',
+    },
+    test53,
+  ],
+  ['meta', '@ember/-internals/meta', null, test54],
+  ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick', test55],
+  ['ViewUtils.getElementView', '@ember/-internals/views', 'getElementView', test55],
+  ['ViewUtils.getViewElement', '@ember/-internals/views', 'getViewElement', test55],
+  ['ViewUtils.getViewBounds', '@ember/-internals/views', 'getViewBounds', test55],
+  ['ViewUtils.getViewClientRects', '@ember/-internals/views', 'getViewClientRects', test55],
+  [
+    'ViewUtils.getViewBoundingClientRect',
+    '@ember/-internals/views',
+    'getViewBoundingClientRect',
+    test55,
+  ],
+  ['ViewUtils.getRootViews', '@ember/-internals/views', 'getRootViews', test55],
+  ['ViewUtils.getChildViews', '@ember/-internals/views', 'getChildViews', test55],
+  [
+    'ViewUtils.isSerializationFirstNode',
+    '@ember/-internals/glimmer',
+    'isSerializationFirstNode',
+    test56,
+  ],
+  ['ComponentLookup', '@ember/-internals/views', null, test55],
+  ['EventDispatcher', '@ember/-internals/views', null, test55],
+  [
+    'TEMPLATES',
+    '@ember/-internals/glimmer',
+    {
+      get: 'getTemplates',
+      set: 'setTemplates',
+    },
+    test56,
+  ],
+  ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression', test56],
+  ['_Input', '@ember/-internals/glimmer', 'Input', test56],
+  ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
+  ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
+  ['Comparable', '@ember/-internals/runtime', null, test57],
+  ['ActionHandler', '@ember/-internals/runtime', null, test57],
+  ['MutableEnumerable', '@ember/-internals/runtime', null, test57],
+  ['_ProxyMixin', '@ember/-internals/runtime', null, test57],
+  ['controllerFor', '@ember/-internals/routing', null, test58],
+  ['generateControllerFactory', '@ember/-internals/routing', null, test58],
+  ['generateController', '@ember/-internals/routing', null, test58],
+  ['RouterDSL', '@ember/-internals/routing', null, test58],
+  ['_Backburner', 'backburner.js', 'default', test59],
+  [null, 'rsvp', 'default', test60],
+  [null, 'rsvp', 'Promise', test60],
+  [null, 'rsvp', 'all', test60],
+  [null, 'rsvp', 'allSettled', test60],
+  [null, 'rsvp', 'defer', test60],
+  [null, 'rsvp', 'denodeify', test60],
+  [null, 'rsvp', 'filter', test60],
+  [null, 'rsvp', 'hash', test60],
+  [null, 'rsvp', 'hashSettled', test60],
+  [null, 'rsvp', 'map', test60],
+  [null, 'rsvp', 'off', test60],
+  [null, 'rsvp', 'on', test60],
+  [null, 'rsvp', 'race', test60],
+  [null, 'rsvp', 'reject', test60],
+  [null, 'rsvp', 'resolve', test60],
 ].filter(Boolean);
