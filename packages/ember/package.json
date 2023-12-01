@@ -42,6 +42,7 @@
     "backburner.js": "^2.7.0",
     "dag-map": "^2.0.2",
     "ember-template-compiler": "workspace:*",
+    "ember-testing": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
     "router_js": "^8.0.3",
