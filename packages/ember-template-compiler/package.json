@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./minimal": "./minimal.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -21,6 +22,7 @@
     "@ember/routing": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/compiler": "0.85.13",
     "@glimmer/env": "^0.1.7",

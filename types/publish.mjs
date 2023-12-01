@@ -98,20 +98,6 @@ ${MODULES_PLACEHOLDER}
 
 const TYPES_DIR = path.join('types', 'stable');
 
-// These modules need to be copied over *and* post-processed: they need to be
-// locally-importable as regular modules, but `tsc` will not move them over
-// itself, but unlike some modules which need to be left unchanged (e.g. the
-// `*-ext.d.ts` modules) these still need the module wrapper added.
-const HAND_COPIED_BUT_NEEDS_POSTPROCESSING = [
-  'ember/version.d.ts',
-  '@ember/-internals/glimmer/lib/templates/empty.d.ts',
-  '@ember/-internals/glimmer/lib/templates/input.d.ts',
-  '@ember/-internals/glimmer/lib/templates/link-to.d.ts',
-  '@ember/-internals/glimmer/lib/templates/outlet.d.ts',
-  '@ember/-internals/glimmer/lib/templates/root.d.ts',
-  '@ember/-internals/glimmer/lib/templates/textarea.d.ts',
-];
-
 async function main() {
   await fs.rm(TYPES_DIR, { recursive: true, force: true });
   await fs.mkdir(TYPES_DIR, { recursive: true });
@@ -124,8 +110,7 @@ async function main() {
   // The majority of those items should be excluded entirely, but in some cases
   // we still need to post-process them.
   let excludes = remappedLocationExcludes
-    .concat(sideEffectExcludes)
-    .filter((excluded) => !HAND_COPIED_BUT_NEEDS_POSTPROCESSING.includes(excluded));
+    .concat(sideEffectExcludes);
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
@@ -204,6 +189,7 @@ async function copyHandwrittenDefinitions() {
   let definitionModules = glob
     .sync('**/*.d.ts', {
       cwd: inputDir,
+      ignore: ['**/node_modules/**'],
     })
     .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 

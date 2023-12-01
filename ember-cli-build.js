@@ -65,16 +65,21 @@ module.exports = function ({ project }) {
   let emberBundles = withTargets(project, emberSource.buildEmberBundles.bind(emberSource));
 
   let packages = debugTree(
-    new MergeTrees([
-      // dynamically generated packages
-      emberVersionES(),
+    new MergeTrees(
+      [
+        // packages/** (after typescript compilation)
+        getPackagesES(),
 
-      // packages/** (after typescript compilation)
-      getPackagesES(),
+        emberVersionES(),
 
-      // externalized helpers
-      babelHelpers(),
-    ]),
+        // externalized helpers
+        babelHelpers(),
+      ],
+      {
+        // we're replacing the ember/verion file with the actual version number
+        overwrite: true,
+      }
+    ),
     'packages:initial'
   );
 

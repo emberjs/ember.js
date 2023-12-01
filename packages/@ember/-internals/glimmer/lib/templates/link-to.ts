@@ -1,4 +1,6 @@
-<a
+import { precompileTemplate } from '@ember/template-compilation';
+export default precompileTemplate(
+  `<a
   {{!-- for compatibility --}}
   id={{this.id}}
   class={{this.class}}
@@ -15,4 +17,6 @@
   href={{this.href}}
 
   {{on 'click' this.click}}
->{{yield}}</a>
+>{{yield}}</a>`,
+  { moduleName: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs' }
+);

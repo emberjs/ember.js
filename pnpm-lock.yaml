@@ -8,348 +8,1689 @@ overrides:
   socket.io: ^4.7.0
   rollup: ^4.2.0
 
-dependencies:
-  '@babel/helper-module-imports':
-    specifier: ^7.16.7
-    version: 7.22.15
-  '@ember/edition-utils':
-    specifier: ^1.2.0
-    version: 1.2.0
-  '@glimmer/compiler':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/component':
-    specifier: ^1.1.2
-    version: 1.1.2(@babel/core@7.23.2)
-  '@glimmer/destroyable':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/env':
-    specifier: ^0.1.7
-    version: 0.1.7
-  '@glimmer/global-context':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/interfaces':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/manager':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/node':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/opcode-compiler':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/owner':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/program':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/reference':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/runtime':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/syntax':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/util':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/validator':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/vm':
-    specifier: 0.85.13
-    version: 0.85.13
-  '@glimmer/vm-babel-plugins':
-    specifier: 0.85.13
-    version: 0.85.13(@babel/core@7.23.2)
-  '@simple-dom/interface':
-    specifier: ^1.4.0
-    version: 1.4.0
-  babel-plugin-debug-macros:
-    specifier: ^0.3.4
-    version: 0.3.4(@babel/core@7.23.2)
-  babel-plugin-filter-imports:
-    specifier: ^4.0.0
-    version: 4.0.0
-  backburner.js:
-    specifier: ^2.8.0
-    version: 2.8.0
-  broccoli-concat:
-    specifier: ^4.2.5
-    version: 4.2.5
-  broccoli-debug:
-    specifier: ^0.6.4
-    version: 0.6.5
-  broccoli-file-creator:
-    specifier: ^2.1.1
-    version: 2.1.1
-  broccoli-funnel:
-    specifier: ^3.0.8
-    version: 3.0.8
-  broccoli-merge-trees:
-    specifier: ^4.2.0
-    version: 4.2.0
-  chalk:
-    specifier: ^4.0.0
-    version: 4.1.2
-  ember-auto-import:
-    specifier: ^2.6.3
-    version: 2.6.3
-  ember-cli-babel:
-    specifier: ^7.26.11
-    version: 7.26.11
-  ember-cli-get-component-path-option:
-    specifier: ^1.0.0
-    version: 1.0.0
-  ember-cli-is-package-missing:
-    specifier: ^1.0.0
-    version: 1.0.0
-  ember-cli-normalize-entity-name:
-    specifier: ^1.0.0
-    version: 1.0.0
-  ember-cli-path-utils:
-    specifier: ^1.0.0
-    version: 1.0.0
-  ember-cli-string-utils:
-    specifier: ^1.1.0
-    version: 1.1.0
-  ember-cli-typescript-blueprint-polyfill:
-    specifier: ^0.1.0
-    version: 0.1.0
-  ember-cli-version-checker:
-    specifier: ^5.1.2
-    version: 5.1.2
-  ember-router-generator:
-    specifier: ^2.0.0
-    version: 2.0.0
-  inflection:
-    specifier: ^2.0.1
-    version: 2.0.1
-  route-recognizer:
-    specifier: ^0.3.4
-    version: 0.3.4
-  router_js:
-    specifier: ^8.0.3
-    version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
-  semver:
-    specifier: ^7.5.2
-    version: 7.5.4
-  silent-error:
-    specifier: ^1.1.1
-    version: 1.1.1
-  simple-html-tokenizer:
-    specifier: ^0.5.11
-    version: 0.5.11
+importers:
 
-devDependencies:
-  '@aws-sdk/client-s3':
-    specifier: ^3.321.1
-    version: 3.430.0
-  '@babel/core':
-    specifier: ^7.22.9
-    version: 7.23.2
-  '@babel/plugin-proposal-decorators':
-    specifier: ^7.22.7
-    version: 7.23.2(@babel/core@7.23.2)
-  '@babel/plugin-transform-typescript':
-    specifier: ^7.22.9
-    version: 7.22.15(@babel/core@7.23.2)
-  '@babel/preset-env':
-    specifier: ^7.16.11
-    version: 7.23.2(@babel/core@7.23.2)
-  '@babel/types':
-    specifier: ^7.22.5
-    version: 7.23.0
-  '@embroider/shared-internals':
-    specifier: ^2.5.0
-    version: 2.5.0
-  '@rollup/plugin-babel':
-    specifier: ^6.0.3
-    version: 6.0.4(@babel/core@7.23.2)
-  '@simple-dom/document':
-    specifier: ^1.4.0
-    version: 1.4.0
-  '@tsconfig/ember':
-    specifier: ^2.0.0
-    version: 2.0.0
-  '@types/node':
-    specifier: ^18.11.11
-    version: 18.18.5
-  '@types/qunit':
-    specifier: ^2.19.4
-    version: 2.19.6
-  '@types/rsvp':
-    specifier: ^4.0.4
-    version: 4.0.5
-  '@typescript-eslint/eslint-plugin':
-    specifier: ^5.59.8
-    version: 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.53.0)(typescript@5.1.6)
-  '@typescript-eslint/parser':
-    specifier: ^5.62.0
-    version: 5.62.0(eslint@8.53.0)(typescript@5.1.6)
-  ast-types:
-    specifier: ^0.14.2
-    version: 0.14.2
-  auto-dist-tag:
-    specifier: ^2.1.1
-    version: 2.1.1
-  babel-plugin-ember-template-compilation:
-    specifier: ^2.1.1
-    version: 2.2.0
-  babel-template:
-    specifier: ^6.26.0
-    version: 6.26.0
-  broccoli-babel-transpiler:
-    specifier: ^7.8.1
-    version: 7.8.1
-  broccoli-persistent-filter:
-    specifier: ^2.3.1
-    version: 2.3.1
-  broccoli-plugin:
-    specifier: ^4.0.3
-    version: 4.0.7
-  broccoli-rollup:
-    specifier: ^3
-    version: 3.0.0
-  broccoli-source:
-    specifier: ^3.0.1
-    version: 3.0.1
-  broccoli-string-replace:
-    specifier: ^0.1.2
-    version: 0.1.2
-  broccoli-typescript-compiler:
-    specifier: ^8.0.0
-    version: 8.0.0(typescript@5.1.6)
-  broccoli-uglify-sourcemap:
-    specifier: ^4.0.0
-    version: 4.0.0
-  common-tags:
-    specifier: ^1.8.2
-    version: 1.8.2
-  dag-map:
-    specifier: ^2.0.2
-    version: 2.0.2
-  ember-cli:
-    specifier: ^4.10.0
-    version: 4.12.2
-  ember-cli-blueprint-test-helpers:
-    specifier: ^0.19.2
-    version: 0.19.2
-  ember-cli-browserstack:
-    specifier: ^2.0.1
-    version: 2.0.1
-  ember-cli-dependency-checker:
-    specifier: ^3.3.1
-    version: 3.3.2(ember-cli@4.12.2)
-  ember-cli-yuidoc:
-    specifier: ^0.9.1
-    version: 0.9.1
-  eslint:
-    specifier: ^8.53.0
-    version: 8.53.0
-  eslint-config-prettier:
-    specifier: ^8.5.0
-    version: 8.10.0(eslint@8.53.0)
-  eslint-import-resolver-node:
-    specifier: ^0.3.7
-    version: 0.3.9
-  eslint-plugin-disable-features:
-    specifier: ^0.1.3
-    version: 0.1.3
-  eslint-plugin-ember-internal:
-    specifier: ^3.0.0
-    version: 3.0.0(eslint@8.53.0)
-  eslint-plugin-import:
-    specifier: ^2.27.5
-    version: 2.28.1(@typescript-eslint/parser@5.62.0)(eslint@8.53.0)
-  eslint-plugin-n:
-    specifier: ^16.0.1
-    version: 16.2.0(eslint@8.53.0)
-  eslint-plugin-prettier:
-    specifier: ^4.2.1
-    version: 4.2.1(eslint-config-prettier@8.10.0)(eslint@8.53.0)(prettier@2.8.8)
-  eslint-plugin-qunit:
-    specifier: ^7.3.4
-    version: 7.3.4(eslint@8.53.0)
-  execa:
-    specifier: ^5.1.1
-    version: 5.1.1
-  expect-type:
-    specifier: ^0.15.0
-    version: 0.15.0
-  express:
-    specifier: ^4.18.2
-    version: 4.18.2
-  finalhandler:
-    specifier: ^1.1.2
-    version: 1.2.0
-  fs-extra:
-    specifier: ^11.1.1
-    version: 11.1.1
-  git-repo-info:
-    specifier: ^2.1.1
-    version: 2.1.1
-  github:
-    specifier: ^0.2.3
-    version: 0.2.4
-  glob:
-    specifier: ^8.0.3
-    version: 8.1.0
-  html-differ:
-    specifier: ^1.4.0
-    version: 1.4.0
-  lodash.uniq:
-    specifier: ^4.5.0
-    version: 4.5.0
-  mkdirp:
-    specifier: ^2.1.3
-    version: 2.1.6
-  mocha:
-    specifier: ^10.2.0
-    version: 10.2.0
-  npm-run-all:
-    specifier: ^4.1.5
-    version: 4.1.5
-  prettier:
-    specifier: ^2.8.0
-    version: 2.8.8
-  puppeteer:
-    specifier: ^20.9.0
-    version: 20.9.0(typescript@5.1.6)
-  qunit:
-    specifier: ^2.19.4
-    version: 2.20.0
-  recast:
-    specifier: ^0.22.0
-    version: 0.22.0
-  rsvp:
-    specifier: ^4.8.5
-    version: 4.8.5
-  serve-static:
-    specifier: ^1.14.2
-    version: 1.15.0
-  simple-dom:
-    specifier: ^1.4.0
-    version: 1.4.0
-  testem:
-    specifier: ^3.10.1
-    version: 3.10.1
-  testem-failure-only-reporter:
-    specifier: ^1.0.0
-    version: 1.0.0
-  typescript:
-    specifier: '5.1'
-    version: 5.1.6
-  vite:
-    specifier: ^4.4.7
-    version: 4.4.11(@types/node@18.18.5)
+  .:
+    dependencies:
+      '@babel/helper-module-imports':
+        specifier: ^7.16.7
+        version: 7.22.15
+      '@ember/edition-utils':
+        specifier: ^1.2.0
+        version: 1.2.0
+      '@glimmer/compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/component':
+        specifier: ^1.1.2
+        version: 1.1.2(@babel/core@7.23.2)
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/global-context':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/interfaces':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/node':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/opcode-compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/program':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/reference':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/syntax':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/vm':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/vm-babel-plugins':
+        specifier: 0.85.13
+        version: 0.85.13(@babel/core@7.23.2)
+      '@simple-dom/interface':
+        specifier: ^1.4.0
+        version: 1.4.0
+      babel-plugin-debug-macros:
+        specifier: ^0.3.4
+        version: 0.3.4(@babel/core@7.23.2)
+      babel-plugin-filter-imports:
+        specifier: ^4.0.0
+        version: 4.0.0
+      backburner.js:
+        specifier: ^2.8.0
+        version: 2.8.0
+      broccoli-concat:
+        specifier: ^4.2.5
+        version: 4.2.5
+      broccoli-debug:
+        specifier: ^0.6.4
+        version: 0.6.5
+      broccoli-file-creator:
+        specifier: ^2.1.1
+        version: 2.1.1
+      broccoli-funnel:
+        specifier: ^3.0.8
+        version: 3.0.8
+      broccoli-merge-trees:
+        specifier: ^4.2.0
+        version: 4.2.0
+      chalk:
+        specifier: ^4.0.0
+        version: 4.1.2
+      ember-auto-import:
+        specifier: ^2.6.3
+        version: 2.6.3
+      ember-cli-babel:
+        specifier: ^7.26.11
+        version: 7.26.11
+      ember-cli-get-component-path-option:
+        specifier: ^1.0.0
+        version: 1.0.0
+      ember-cli-is-package-missing:
+        specifier: ^1.0.0
+        version: 1.0.0
+      ember-cli-normalize-entity-name:
+        specifier: ^1.0.0
+        version: 1.0.0
+      ember-cli-path-utils:
+        specifier: ^1.0.0
+        version: 1.0.0
+      ember-cli-string-utils:
+        specifier: ^1.1.0
+        version: 1.1.0
+      ember-cli-typescript-blueprint-polyfill:
+        specifier: ^0.1.0
+        version: 0.1.0
+      ember-cli-version-checker:
+        specifier: ^5.1.2
+        version: 5.1.2
+      ember-router-generator:
+        specifier: ^2.0.0
+        version: 2.0.0
+      inflection:
+        specifier: ^2.0.1
+        version: 2.0.1
+      route-recognizer:
+        specifier: ^0.3.4
+        version: 0.3.4
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+      semver:
+        specifier: ^7.5.2
+        version: 7.5.4
+      silent-error:
+        specifier: ^1.1.1
+        version: 1.1.1
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
+    devDependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.321.1
+        version: 3.430.0
+      '@babel/core':
+        specifier: ^7.22.9
+        version: 7.23.2
+      '@babel/plugin-proposal-decorators':
+        specifier: ^7.22.7
+        version: 7.23.2(@babel/core@7.23.2)
+      '@babel/plugin-transform-typescript':
+        specifier: ^7.22.9
+        version: 7.22.15(@babel/core@7.23.2)
+      '@babel/preset-env':
+        specifier: ^7.16.11
+        version: 7.23.2(@babel/core@7.23.2)
+      '@babel/types':
+        specifier: ^7.22.5
+        version: 7.23.0
+      '@embroider/shared-internals':
+        specifier: ^2.5.0
+        version: 2.5.0
+      '@rollup/plugin-babel':
+        specifier: ^6.0.3
+        version: 6.0.4(@babel/core@7.23.2)
+      '@simple-dom/document':
+        specifier: ^1.4.0
+        version: 1.4.0
+      '@swc-node/register':
+        specifier: ^1.6.8
+        version: 1.6.8(@swc/core@1.3.100)(typescript@5.1.6)
+      '@swc/core':
+        specifier: ^1.3.100
+        version: 1.3.100
+      '@tsconfig/ember':
+        specifier: ^2.0.0
+        version: 2.0.0
+      '@types/node':
+        specifier: ^18.11.11
+        version: 18.18.5
+      '@types/qunit':
+        specifier: ^2.19.4
+        version: 2.19.6
+      '@types/rsvp':
+        specifier: ^4.0.4
+        version: 4.0.5
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.59.8
+        version: 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.53.0)(typescript@5.1.6)
+      '@typescript-eslint/parser':
+        specifier: ^5.62.0
+        version: 5.62.0(eslint@8.53.0)(typescript@5.1.6)
+      ast-types:
+        specifier: ^0.14.2
+        version: 0.14.2
+      auto-dist-tag:
+        specifier: ^2.1.1
+        version: 2.1.1
+      babel-plugin-ember-template-compilation:
+        specifier: ^2.1.1
+        version: 2.2.0
+      babel-template:
+        specifier: ^6.26.0
+        version: 6.26.0
+      broccoli-babel-transpiler:
+        specifier: ^7.8.1
+        version: 7.8.1
+      broccoli-persistent-filter:
+        specifier: ^2.3.1
+        version: 2.3.1
+      broccoli-plugin:
+        specifier: ^4.0.3
+        version: 4.0.7
+      broccoli-rollup:
+        specifier: ^3
+        version: 3.0.0
+      broccoli-source:
+        specifier: ^3.0.1
+        version: 3.0.1
+      broccoli-string-replace:
+        specifier: ^0.1.2
+        version: 0.1.2
+      broccoli-typescript-compiler:
+        specifier: ^8.0.0
+        version: 8.0.0(typescript@5.1.6)
+      broccoli-uglify-sourcemap:
+        specifier: ^4.0.0
+        version: 4.0.0
+      common-tags:
+        specifier: ^1.8.2
+        version: 1.8.2
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ember-cli:
+        specifier: ^4.10.0
+        version: 4.12.2
+      ember-cli-blueprint-test-helpers:
+        specifier: ^0.19.2
+        version: 0.19.2
+      ember-cli-browserstack:
+        specifier: ^2.0.1
+        version: 2.0.1
+      ember-cli-dependency-checker:
+        specifier: ^3.3.1
+        version: 3.3.2(ember-cli@4.12.2)
+      ember-cli-yuidoc:
+        specifier: ^0.9.1
+        version: 0.9.1
+      eslint:
+        specifier: ^8.53.0
+        version: 8.53.0
+      eslint-config-prettier:
+        specifier: ^8.5.0
+        version: 8.10.0(eslint@8.53.0)
+      eslint-import-resolver-node:
+        specifier: ^0.3.7
+        version: 0.3.9
+      eslint-plugin-disable-features:
+        specifier: ^0.1.3
+        version: 0.1.3
+      eslint-plugin-ember-internal:
+        specifier: ^3.0.0
+        version: 3.0.0(eslint@8.53.0)
+      eslint-plugin-import:
+        specifier: ^2.27.5
+        version: 2.28.1(@typescript-eslint/parser@5.62.0)(eslint@8.53.0)
+      eslint-plugin-n:
+        specifier: ^16.0.1
+        version: 16.2.0(eslint@8.53.0)
+      eslint-plugin-prettier:
+        specifier: ^4.2.1
+        version: 4.2.1(eslint-config-prettier@8.10.0)(eslint@8.53.0)(prettier@2.8.8)
+      eslint-plugin-qunit:
+        specifier: ^7.3.4
+        version: 7.3.4(eslint@8.53.0)
+      execa:
+        specifier: ^5.1.1
+        version: 5.1.1
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      express:
+        specifier: ^4.18.2
+        version: 4.18.2
+      finalhandler:
+        specifier: ^1.1.2
+        version: 1.2.0
+      fs-extra:
+        specifier: ^11.1.1
+        version: 11.1.1
+      git-repo-info:
+        specifier: ^2.1.1
+        version: 2.1.1
+      github:
+        specifier: ^0.2.3
+        version: 0.2.4
+      glob:
+        specifier: ^8.0.3
+        version: 8.1.0
+      html-differ:
+        specifier: ^1.4.0
+        version: 1.4.0
+      lodash.uniq:
+        specifier: ^4.5.0
+        version: 4.5.0
+      mkdirp:
+        specifier: ^2.1.3
+        version: 2.1.6
+      mocha:
+        specifier: ^10.2.0
+        version: 10.2.0
+      npm-run-all:
+        specifier: ^4.1.5
+        version: 4.1.5
+      prettier:
+        specifier: ^2.8.0
+        version: 2.8.8
+      puppeteer:
+        specifier: ^20.9.0
+        version: 20.9.0(typescript@5.1.6)
+      qunit:
+        specifier: ^2.19.4
+        version: 2.20.0
+      recast:
+        specifier: ^0.22.0
+        version: 0.22.0
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
+      serve-static:
+        specifier: ^1.14.2
+        version: 1.15.0
+      simple-dom:
+        specifier: ^1.4.0
+        version: 1.4.0
+      testem:
+        specifier: ^3.10.1
+        version: 3.10.1
+      testem-failure-only-reporter:
+        specifier: ^1.0.0
+        version: 1.0.0
+      typescript:
+        specifier: '5.1'
+        version: 5.1.6
+      vite:
+        specifier: ^4.4.7
+        version: 4.4.11(@types/node@18.18.5)
+
+  packages/@ember/-internals:
+    dependencies:
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../helper
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../instrumentation
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/template-factory':
+        specifier: workspace:*
+        version: link:../template-factory
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/component':
+        specifier: ^1.1.2
+        version: 1.1.2(@babel/core@7.23.2)
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/global-context':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/interfaces':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/node':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/opcode-compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/program':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/reference':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/syntax':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/vm':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@simple-dom/interface':
+        specifier: ^1.4.0
+        version: 1.4.0
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ember:
+        specifier: workspace:*
+        version: link:../../ember
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../../ember-template-compiler
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
+
+  packages/@ember/application:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ember:
+        specifier: workspace:*
+        version: link:../../ember
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../../ember-template-compiler
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+
+  packages/@ember/array:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/canary-features:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@ember/component:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@ember/controller:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/debug:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/deprecated-features: {}
+
+  packages/@ember/destroyable:
+    dependencies:
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@ember/engine:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+
+  packages/@ember/enumerable:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/helper:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../component
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@ember/instrumentation:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/modifier:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+
+  packages/@ember/object:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/owner:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@glimmer/component':
+        specifier: ^1.1.2
+        version: 1.1.2(@babel/core@7.23.2)
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@ember/renderer:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+
+  packages/@ember/routing:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+
+  packages/@ember/runloop:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/service:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/template:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@ember/template-compilation:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../canary-features
+      '@glimmer/compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/syntax':
+        specifier: 0.85.13
+        version: 0.85.13
+      ember:
+        specifier: workspace:*
+        version: link:../../ember
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../../ember-template-compiler
+
+  packages/@ember/template-factory:
+    dependencies:
+      '@glimmer/opcode-compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+
+  packages/@ember/test:
+    dependencies:
+      ember-testing:
+        specifier: workspace:*
+        version: link:../../ember-testing
+
+  packages/@ember/utils:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../../internal-test-helpers
+
+  packages/@ember/version:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../enumerable
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../instrumentation
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      ember:
+        specifier: workspace:*
+        version: link:../../ember
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+
+  packages/@glimmer/tracking:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../../@ember/-internals
+
+  packages/ember:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../@ember/application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../@ember/array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../@ember/canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../@ember/component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../@ember/controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../@ember/destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../@ember/engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../@ember/enumerable
+      '@ember/helper':
+        specifier: workspace:*
+        version: link:../@ember/helper
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../@ember/instrumentation
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../@ember/modifier
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../@ember/owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../@ember/service
+      '@ember/template':
+        specifier: workspace:*
+        version: link:../@ember/template
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../@ember/template-compilation
+      '@ember/template-factory':
+        specifier: workspace:*
+        version: link:../@ember/template-factory
+      '@ember/test':
+        specifier: workspace:*
+        version: link:../@ember/test
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../@ember/utils
+      '@ember/version':
+        specifier: workspace:*
+        version: link:../@ember/version
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/tracking':
+        specifier: workspace:*
+        version: link:../@glimmer/tracking
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../ember-template-compiler
+      ember-testing:
+        specifier: workspace:*
+        version: link:../ember-testing
+      expect-type:
+        specifier: ^0.15.0
+        version: 0.15.0
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../internal-test-helpers
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
+
+  packages/ember-template-compiler:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../@ember/application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../@ember/array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../@ember/canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../@ember/component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../@ember/controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../@ember/destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../@ember/engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../@ember/enumerable
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../@ember/instrumentation
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../@ember/service
+      '@ember/template-compilation':
+        specifier: workspace:*
+        version: link:../@ember/template-compilation
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../@ember/utils
+      '@glimmer/compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/syntax':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      ember:
+        specifier: workspace:*
+        version: link:../ember
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../internal-test-helpers
+
+  packages/ember-testing:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../@ember/application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../@ember/array
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../@ember/controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../@ember/engine
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../@ember/owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../@ember/service
+      '@ember/test':
+        specifier: workspace:*
+        version: link:../@ember/test
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../@ember/utils
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      ember:
+        specifier: workspace:*
+        version: link:../ember
+      internal-test-helpers:
+        specifier: workspace:*
+        version: link:../internal-test-helpers
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+
+  packages/external-helpers:
+    dependencies:
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+
+  packages/internal-test-helpers:
+    dependencies:
+      '@ember/-internals':
+        specifier: workspace:*
+        version: link:../@ember/-internals
+      '@ember/application':
+        specifier: workspace:*
+        version: link:../@ember/application
+      '@ember/array':
+        specifier: workspace:*
+        version: link:../@ember/array
+      '@ember/canary-features':
+        specifier: workspace:*
+        version: link:../@ember/canary-features
+      '@ember/component':
+        specifier: workspace:*
+        version: link:../@ember/component
+      '@ember/controller':
+        specifier: workspace:*
+        version: link:../@ember/controller
+      '@ember/debug':
+        specifier: workspace:*
+        version: link:../@ember/debug
+      '@ember/destroyable':
+        specifier: workspace:*
+        version: link:../@ember/destroyable
+      '@ember/engine':
+        specifier: workspace:*
+        version: link:../@ember/engine
+      '@ember/enumerable':
+        specifier: workspace:*
+        version: link:../@ember/enumerable
+      '@ember/instrumentation':
+        specifier: workspace:*
+        version: link:../@ember/instrumentation
+      '@ember/object':
+        specifier: workspace:*
+        version: link:../@ember/object
+      '@ember/owner':
+        specifier: workspace:*
+        version: link:../@ember/owner
+      '@ember/routing':
+        specifier: workspace:*
+        version: link:../@ember/routing
+      '@ember/runloop':
+        specifier: workspace:*
+        version: link:../@ember/runloop
+      '@ember/service':
+        specifier: workspace:*
+        version: link:../@ember/service
+      '@ember/utils':
+        specifier: workspace:*
+        version: link:../@ember/utils
+      '@glimmer/compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/destroyable':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
+      '@glimmer/manager':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/opcode-compiler':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/owner':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/runtime':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/syntax':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/util':
+        specifier: 0.85.13
+        version: 0.85.13
+      '@glimmer/validator':
+        specifier: 0.85.13
+        version: 0.85.13
+      backburner.js:
+        specifier: ^2.7.0
+        version: 2.8.0
+      dag-map:
+        specifier: ^2.0.2
+        version: 2.0.2
+      ember:
+        specifier: workspace:*
+        version: link:../ember
+      ember-template-compiler:
+        specifier: workspace:*
+        version: link:../ember-template-compiler
+      router_js:
+        specifier: ^8.0.3
+        version: 8.0.3(route-recognizer@0.3.4)(rsvp@4.8.5)
+      rsvp:
+        specifier: ^4.8.5
+        version: 4.8.5
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
+
+  packages/loader: {}
 
 packages:
 
@@ -3309,6 +4650,153 @@ packages:
     resolution: {integrity: sha512-+9jVqKhRSpsc591z5vX+X5Yyw+he/HCB4iQ/RYxw35CEPaY1gnsNE43nf9n9AaYjAQrTiI/mOwKUKdUs9vf7Xg==}
     dev: true
 
+  /@swc-node/core@1.10.6(@swc/core@1.3.100):
+    resolution: {integrity: sha512-lDIi/rPosmKIknWzvs2/Fi9zWRtbkx8OJ9pQaevhsoGzJSal8Pd315k1W5AIrnknfdAB4HqRN12fk6AhqnrEEw==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      '@swc/core': '>= 1.3'
+    dependencies:
+      '@swc/core': 1.3.100
+    dev: true
+
+  /@swc-node/register@1.6.8(@swc/core@1.3.100)(typescript@5.1.6):
+    resolution: {integrity: sha512-74ijy7J9CWr1Z88yO+ykXphV29giCrSpANQPQRooE0bObpkTO1g4RzQovIfbIaniBiGDDVsYwDoQ3FIrCE8HcQ==}
+    peerDependencies:
+      '@swc/core': '>= 1.3'
+      typescript: '>= 4.3'
+    dependencies:
+      '@swc-node/core': 1.10.6(@swc/core@1.3.100)
+      '@swc-node/sourcemap-support': 0.3.0
+      '@swc/core': 1.3.100
+      colorette: 2.0.20
+      debug: 4.3.4(supports-color@8.1.1)
+      pirates: 4.0.6
+      tslib: 2.6.2
+      typescript: 5.1.6
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@swc-node/sourcemap-support@0.3.0:
+    resolution: {integrity: sha512-gqBJSmJMWomZFxlppaKea7NeAqFrDrrS0RMt24No92M3nJWcyI9YKGEQKl+EyJqZ5gh6w1s0cTklMHMzRwA1NA==}
+    dependencies:
+      source-map-support: 0.5.21
+      tslib: 2.6.2
+    dev: true
+
+  /@swc/core-darwin-arm64@1.3.100:
+    resolution: {integrity: sha512-XVWFsKe6ei+SsDbwmsuRkYck1SXRpO60Hioa4hoLwR8fxbA9eVp6enZtMxzVVMBi8ej5seZ4HZQeAWepbukiBw==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-darwin-x64@1.3.100:
+    resolution: {integrity: sha512-KF/MXrnH1nakm1wbt4XV8FS7kvqD9TGmVxeJ0U4bbvxXMvzeYUurzg3AJUTXYmXDhH/VXOYJE5N5RkwZZPs5iA==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-arm64-gnu@1.3.100:
+    resolution: {integrity: sha512-p8hikNnAEJrw5vHCtKiFT4hdlQxk1V7vqPmvUDgL/qe2menQDK/i12tbz7/3BEQ4UqUPnvwpmVn2d19RdEMNxw==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-arm64-musl@1.3.100:
+    resolution: {integrity: sha512-BWx/0EeY89WC4q3AaIaBSGfQxkYxIlS3mX19dwy2FWJs/O+fMvF9oLk/CyJPOZzbp+1DjGeeoGFuDYpiNO91JA==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-x64-gnu@1.3.100:
+    resolution: {integrity: sha512-XUdGu3dxAkjsahLYnm8WijPfKebo+jHgHphDxaW0ovI6sTdmEGFDew7QzKZRlbYL2jRkUuuKuDGvD6lO5frmhA==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-linux-x64-musl@1.3.100:
+    resolution: {integrity: sha512-PhoXKf+f0OaNW/GCuXjJ0/KfK9EJX7z2gko+7nVnEA0p3aaPtbP6cq1Ubbl6CMoPL+Ci3gZ7nYumDqXNc3CtLQ==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-win32-arm64-msvc@1.3.100:
+    resolution: {integrity: sha512-PwLADZN6F9cXn4Jw52FeP/MCLVHm8vwouZZSOoOScDtihjY495SSjdPnlosMaRSR4wJQssGwiD/4MbpgQPqbAw==}
+    engines: {node: '>=10'}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-win32-ia32-msvc@1.3.100:
+    resolution: {integrity: sha512-0f6nicKSLlDKlyPRl2JEmkpBV4aeDfRQg6n8mPqgL7bliZIcDahG0ej+HxgNjZfS3e0yjDxsNRa6sAqWU2Z60A==}
+    engines: {node: '>=10'}
+    cpu: [ia32]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core-win32-x64-msvc@1.3.100:
+    resolution: {integrity: sha512-b7J0rPoMkRTa3XyUGt8PwCaIBuYWsL2DqbirrQKRESzgCvif5iNpqaM6kjIjI/5y5q1Ycv564CB51YDpiS8EtQ==}
+    engines: {node: '>=10'}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@swc/core@1.3.100:
+    resolution: {integrity: sha512-7dKgTyxJjlrMwFZYb1auj3Xq0D8ZBe+5oeIgfMlRU05doXZypYJe0LAk0yjj3WdbwYzpF+T1PLxwTWizI0pckw==}
+    engines: {node: '>=10'}
+    requiresBuild: true
+    peerDependencies:
+      '@swc/helpers': ^0.5.0
+    peerDependenciesMeta:
+      '@swc/helpers':
+        optional: true
+    dependencies:
+      '@swc/counter': 0.1.2
+      '@swc/types': 0.1.5
+    optionalDependencies:
+      '@swc/core-darwin-arm64': 1.3.100
+      '@swc/core-darwin-x64': 1.3.100
+      '@swc/core-linux-arm64-gnu': 1.3.100
+      '@swc/core-linux-arm64-musl': 1.3.100
+      '@swc/core-linux-x64-gnu': 1.3.100
+      '@swc/core-linux-x64-musl': 1.3.100
+      '@swc/core-win32-arm64-msvc': 1.3.100
+      '@swc/core-win32-ia32-msvc': 1.3.100
+      '@swc/core-win32-x64-msvc': 1.3.100
+    dev: true
+
+  /@swc/counter@0.1.2:
+    resolution: {integrity: sha512-9F4ys4C74eSTEUNndnER3VJ15oru2NumfQxS8geE+f3eB5xvfxpWyqE5XlVnxb/R14uoXi6SLbBwwiDSkv+XEw==}
+    dev: true
+
+  /@swc/types@0.1.5:
+    resolution: {integrity: sha512-myfUej5naTBWnqOCc/MdVOLVjXUXtIA+NpDrDBKJtLLg2shUjBu3cZmB/85RyitKc55+lUUyl7oRfLOvkr2hsw==}
+    dev: true
+
   /@szmarczak/http-timer@1.1.2:
     resolution: {integrity: sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==}
     engines: {node: '>=6'}
@@ -5388,6 +6876,10 @@ packages:
     hasBin: true
     dev: true
 
+  /colorette@2.0.20:
+    resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
+    dev: true
+
   /colors@1.0.3:
     resolution: {integrity: sha512-pFGrxThWcWQ2MsAz6RtgeWe4NK2kUE1WfsrvvlctdII745EW9I0yflqhe7++M5LEc7bV2c/9/5zc8sFcpL0Drw==}
     engines: {node: '>=0.1.90'}
@@ -5821,7 +7313,6 @@ packages:
 
   /dag-map@2.0.2:
     resolution: {integrity: sha512-xnsprIzYuDeiyu5zSKwilV/ajRHxnoMlAhEREfyfTgTSViMVY2fGP1ZcHJbtwup26oCkofySU/m6oKJ3HrkW7w==}
-    dev: true
 
   /data-uri-to-buffer@6.0.1:
     resolution: {integrity: sha512-MZd3VlchQkp8rdend6vrx7MmVDJzSNTBvghvKjirLkD+WTChA3KUf0jkE68Q4UyctNqI11zZO9/x2Yx+ub5Cvg==}
@@ -7144,7 +8635,6 @@ packages:
 
   /expect-type@0.15.0:
     resolution: {integrity: sha512-yWnriYB4e8G54M5/fAFj7rCIBiKs1HAACaY13kCz6Ku0dezjS9aMcfcdVK2X8Tv2tEV1BPz/wKfQ7WA4S/d8aA==}
-    dev: true
 
   /express@4.18.2:
     resolution: {integrity: sha512-5/PsL6iGPdfQ/lKM1UuielYgv3BUoJfz1aUwU9vHZ+J7gyvwdQXFEBIEIaxeGf0GIcreATNyBExtalisDbuMqQ==}
@@ -8157,7 +9647,7 @@ packages:
       - supports-color
 
   /hawk@1.1.1:
-    resolution: {integrity: sha512-am8sVA2bCJIw8fuuVcKvmmNnGFUGW8spTkVtj2fXTEZVkfN42bwFZFtDem57eFi+NSxurJB8EQ7Jd3uCHLn8Vw==}
+    resolution: {integrity: sha1-h81JH5tG5OKurKM1QWdmiF0tHtk=}
     engines: {node: '>=0.8.0'}
     deprecated: This module moved to @hapi/hawk. Please make sure to switch over as this distribution is no longer supported and may contain bugs and critical security issues.
     requiresBuild: true
@@ -10365,6 +11855,11 @@ packages:
   /pinkie@2.0.4:
     resolution: {integrity: sha512-MnUuEycAemtSaeFSjXKW/aroV7akBbY+Sv+RkyqFjgAe73F+MR0TBWKBRDkmfWq/HiFmdavfZ1G7h4SPZXaCSg==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /pirates@4.0.6:
+    resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
+    engines: {node: '>= 6'}
     dev: true
 
   /pkg-dir@4.2.0:
