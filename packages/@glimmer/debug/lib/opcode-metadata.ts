@@ -5,16 +5,6 @@ import { MachineOp, Op } from '@glimmer/vm';
 
 import type { NormalizedMetadata } from './metadata';
 
-function fillNulls<T>(count: number): T[] {
-  let arr = new Array(count);
-
-  for (let i = 0; i < count; i++) {
-    arr[i] = null;
-  }
-
-  return arr;
-}
-
 export function opcodeMetadata(
   op: VmMachineOp | VmOp,
   isMachine: 0 | 1
@@ -24,8 +14,8 @@ export function opcodeMetadata(
   return value || null;
 }
 
-const METADATA: Nullable<NormalizedMetadata>[] = fillNulls(Op.Size);
-const MACHINE_METADATA: Nullable<NormalizedMetadata>[] = fillNulls(MachineOp.Size);
+const METADATA: Nullable<NormalizedMetadata>[] = new Array(Op.Size).fill(null);
+const MACHINE_METADATA: Nullable<NormalizedMetadata>[] = new Array(Op.Size).fill(null);
 MACHINE_METADATA[MachineOp.PushFrame] = {
   name: 'PushFrame',
   mnemonic: 'pushf',
