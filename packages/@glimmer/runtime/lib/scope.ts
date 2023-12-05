@@ -43,21 +43,13 @@ export function isScopeReference(s: ScopeSlot): s is Reference {
 
 export class PartialScopeImpl implements PartialScope {
   static root(self: Reference<unknown>, size = 0, owner: Owner): PartialScope {
-    let refs: Reference<unknown>[] = new Array(size + 1);
-
-    for (let i = 0; i <= size; i++) {
-      refs[i] = UNDEFINED_REFERENCE;
-    }
+    let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
     return new PartialScopeImpl(refs, owner, null, null, null).init({ self });
   }
 
   static sized(size = 0, owner: Owner): Scope {
-    let refs: Reference<unknown>[] = new Array(size + 1);
-
-    for (let i = 0; i <= size; i++) {
-      refs[i] = UNDEFINED_REFERENCE;
-    }
+    let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
     return new PartialScopeImpl(refs, owner, null, null, null);
   }

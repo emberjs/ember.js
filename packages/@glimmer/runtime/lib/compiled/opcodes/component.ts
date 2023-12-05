@@ -534,12 +534,7 @@ function mergeClasses(classes: (string | Reference)[]): string | Reference<unkno
 }
 
 function allStringClasses(classes: (string | Reference<unknown>)[]): classes is string[] {
-  for (let i = 0; i < classes.length; i++) {
-    if (typeof classes[i] !== 'string') {
-      return false;
-    }
-  }
-  return true;
+  return classes.every((c) => typeof c === 'string');
 }
 
 function setDeferredAttr(
