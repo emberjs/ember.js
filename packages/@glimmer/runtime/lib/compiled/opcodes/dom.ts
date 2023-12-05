@@ -91,13 +91,12 @@ APPEND_OPCODES.add(Op.FlushElement, (vm) => {
 APPEND_OPCODES.add(Op.CloseElement, (vm) => {
   let modifiers = vm.elements().closeElement();
 
-  if (modifiers) {
+  if (modifiers !== null) {
     modifiers.forEach((modifier) => {
       vm.env.scheduleInstallModifier(modifier);
-      let { manager, state } = modifier;
-      let d = manager.getDestroyable(state);
+      const d = modifier.manager.getDestroyable(modifier.state);
 
-      if (d) {
+      if (d !== null) {
         vm.associateDestroyable(d);
       }
     });
