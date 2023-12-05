@@ -30,25 +30,6 @@ export class ConcreteBounds implements Bounds {
   }
 }
 
-export class SingleNodeBounds implements Bounds {
-  constructor(
-    private parentNode: SimpleElement,
-    private node: SimpleNode
-  ) {}
-
-  parentElement(): SimpleElement {
-    return this.parentNode;
-  }
-
-  firstNode(): SimpleNode {
-    return this.node;
-  }
-
-  lastNode(): SimpleNode {
-    return this.node;
-  }
-}
-
 export function move(bounds: Bounds, reference: Nullable<SimpleNode>): Nullable<SimpleNode> {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
