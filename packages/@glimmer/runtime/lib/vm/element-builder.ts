@@ -24,7 +24,7 @@ import { assert, expect, Stack } from '@glimmer/util';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 
-import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
+import { clear, ConcreteBounds, CursorImpl } from '../bounds';
 import { dynamicAttribute } from './attributes/dynamic';
 
 export interface FirstNode {
@@ -296,7 +296,8 @@ export class NewElementBuilder implements ElementBuilder {
       this.dom.insertBefore(this.element, fragment, this.nextSibling);
       return ret;
     } else {
-      return new SingleNodeBounds(this.element, this.__appendComment(''));
+      const comment = this.__appendComment('');
+      return new ConcreteBounds(this.element, comment, comment);
     }
   }
 
@@ -322,7 +323,7 @@ export class NewElementBuilder implements ElementBuilder {
 
   appendDynamicNode(value: SimpleNode): void {
     let node = this.__appendNode(value);
-    let bounds = new SingleNodeBounds(this.element, node);
+    let bounds = new ConcreteBounds(this.element, node, node);
     this.didAppendBounds(bounds);
   }
 
