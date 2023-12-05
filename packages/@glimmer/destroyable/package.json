@@ -13,7 +13,9 @@
     "exports": {
       ".": {
         "types": "./dist/dev/index.d.ts",
-        "development": {}
+        "development": {
+          "import": "./dist/dev/index.js"
+        }
       }
     },
     "main": null,
