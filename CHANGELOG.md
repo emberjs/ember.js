@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.6.0-beta.1 (December 11, 2023)
+
+- [#20570](https://github.com/emberjs/ember.js/pull/20570) [CLEANUP] Remove all traces of named outlets code
+
 ## v5.5.0 (December 11, 2023)
 
 - [#20575](https://github.com/emberjs/ember.js/pull/20575) [BUGFIX] Update backburner.js to 2.4.2
