@@ -225,10 +225,10 @@ function glimmerTrees(packageNames) {
   let pkg;
 
   while ((pkg = queue.pop()) !== undefined) {
-    if (seen.has(pkg)) {
+    if (seen.has(pkg.name)) {
       continue;
     }
-    seen.add(pkg);
+    seen.add(pkg.name);
 
     if (!pkg.name.startsWith('@glimmer/') && !pkg.name.startsWith('@simple-dom/')) {
       continue;

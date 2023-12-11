@@ -38,6 +38,7 @@
     "build": "npm-run-all build:*",
     "docs": "ember ember-cli-yuidoc",
     "start": "ember serve",
+    "link:glimmer-vm": "node bin/link-glimmer-vm-packages.mjs",
     "lint": "npm-run-all --continue-on-error --aggregate-output --parallel \"lint:!(fix)\"",
     "lint:docs": "qunit tests/docs/coverage-test.js",
     "lint:eslint": "eslint --report-unused-disable-directives --cache .",
