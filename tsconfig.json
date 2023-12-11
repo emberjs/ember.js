@@ -14,7 +14,6 @@
     { "path": "packages/@glimmer/tsconfig.test.json" },
     { "path": "packages/@glimmer-workspace/tsconfig.json" },
     { "path": "server/tsconfig.json" },
-    { "path": "lib/tsconfig.json" },
     { "path": "tsconfig.cjs.json" }
   ]
 }

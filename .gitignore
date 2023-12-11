@@ -13,5 +13,4 @@ tmp/
 *.pdf
 instrumentation.*.json
 .cache
-**/.yalc
 **/*.tgz

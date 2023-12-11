@@ -10,11 +10,14 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.9.4",
     "@types/puppeteer-chromium-resolver": "workspace:^",
+    "@types/tar": "^6.1.10",
     "chalk": "^5.2.0",
     "execa": "^7.1.1",
     "glob": "^10.2.3",
     "js-yaml": "^4.1.0",
-    "puppeteer-chromium-resolver": "^20.0.0"
+    "mkdirp": "^3.0.1",
+    "puppeteer-chromium-resolver": "^20.0.0",
+    "tar": "^6.2.0"
   },
   "devDependencies": {
     "eslint": "^8.54.0",

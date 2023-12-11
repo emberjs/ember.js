@@ -17,10 +17,6 @@
       "path": "bin"
     },
     {
-      "name": "📦 local-linker",
-      "path": "lib/local-linker"
-    },
-    {
       "name": "📦 /home/wycats/Code/Ember/glimmer-vm/packages",
       "path": "packages"
     },

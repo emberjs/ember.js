@@ -20,6 +20,7 @@
     "build": "dotenv -- turbo build",
     "build:control": "rollup -c rollup.config.mjs",
     "build:flags": "RETAIN_FLAGS=true ember build --env production --suppress-sizes",
+    "link:all": "esyes ./bin/link-all.mts",
     "lint": "npm-run-all lint:*",
     "lint:format": "prettier -c .",
     "lint:files": "turbo lint",
@@ -31,7 +32,8 @@
     "test:node": "node bin/run-node-tests.mjs",
     "test:babel-plugins": "yarn workspace @glimmer/vm-babel-plugins test",
     "test:smoke": "SMOKE_TESTS=true ember test",
-    "test:types": "node bin/run-types-tests.mjs"
+    "test:types": "node bin/run-types-tests.mjs",
+    "unlink:all": "esyes ./bin/unlink-all.mts"
   },
   "pnpm": {
     "overrides": {
@@ -94,6 +96,7 @@
     "eslint-plugin-qunit": "^8.0.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "eslint-plugin-unused-imports": "^3.0.0",
+    "esyes": "^1.0.1",
     "execa": "^7.1.1",
     "fast-glob": "^3.2.12",
     "glob": "^10.2.3",
@@ -158,16 +161,11 @@
       "internal": ":house: Internal"
     }
   },
-  "ember-addon": {
-    "paths": [
-      "lib/local-linker"
-    ]
-  },
   "engines": {
     "node": ">=16.0.0"
   },
   "volta": {
-    "node": "20.1.0",
+    "node": "20.9.0",
     "pnpm": "8.5.0"
   }
 }

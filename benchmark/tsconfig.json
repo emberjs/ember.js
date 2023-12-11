@@ -29,7 +29,6 @@
     "./benchmarks/krausest/lib/**/*.js",
     "./benchmarks/krausest/vite.config.mts"
   ],
-  "exclude": ["**/.yalc"],
   "references": [
     {
       "path": "../packages/@glimmer/tsconfig.json"
