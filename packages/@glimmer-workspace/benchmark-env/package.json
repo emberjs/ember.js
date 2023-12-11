@@ -2,7 +2,7 @@
   "name": "@glimmer-workspace/benchmark-env",
   "version": "0.84.3",
   "private": true,
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer-workspace/benchmark-env",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer-workspace/benchmark-env",
   "main": "index.ts",
   "scripts": {
     "test:lint": "eslint .",

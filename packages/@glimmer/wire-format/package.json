@@ -3,7 +3,7 @@
   "version": "0.85.13",
   "license": "MIT",
   "description": "",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/wire-format",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/wire-format",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",

@@ -3,7 +3,7 @@
   "version": "0.85.13",
   "license": "MIT",
   "description": "Implementation for the owner in Glimmer apps",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/owner",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/owner",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",

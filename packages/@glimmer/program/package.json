@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/program",
   "version": "0.85.13",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/program",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/program",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",

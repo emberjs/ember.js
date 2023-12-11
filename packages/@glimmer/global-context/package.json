@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/global-context",
   "version": "0.85.13",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/global-context",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/global-context",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",

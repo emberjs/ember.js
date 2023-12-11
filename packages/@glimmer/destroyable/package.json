@@ -3,7 +3,7 @@
   "version": "0.85.13",
   "license": "MIT",
   "description": "Utilities for creating and managing a destroyable hierarchy of objects",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/destroyable",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/destroyable",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",

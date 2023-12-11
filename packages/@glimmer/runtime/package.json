@@ -3,7 +3,7 @@
   "version": "0.85.13",
   "license": "MIT",
   "description": "Minimal runtime needed to render Glimmer templates",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/runtime",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/runtime",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
