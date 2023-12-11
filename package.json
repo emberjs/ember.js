@@ -104,7 +104,7 @@
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.321.1",
     "@babel/core": "^7.22.9",
-    "@babel/plugin-proposal-decorators": "^7.22.7",
+    "@babel/plugin-proposal-decorators": "^7.23.5",
     "@babel/plugin-transform-typescript": "^7.22.9",
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
