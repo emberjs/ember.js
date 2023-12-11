@@ -1,7 +1,7 @@
 {
   "name": "@glimmer/interfaces",
   "version": "0.85.13",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/interfaces",
+  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/interfaces",
   "type": "module",
   "types": "index.d.ts",
   "exports": {

@@ -3,7 +3,7 @@
   "version": "0.85.13",
   "license": "MIT",
   "description": "Common utilities used in Glimmer",
-  "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",
+  "repository": "https://github.com/tildeio/glimmer/tree/main/packages/@glimmer/util",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
