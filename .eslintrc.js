@@ -124,6 +124,8 @@ module.exports = {
       // matches all node-land files
       files: [
         '.eslintrc.js',
+        'rollup.config.mjs',
+        'babel.config.mjs',
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',

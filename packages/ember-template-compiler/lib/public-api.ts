@@ -10,7 +10,7 @@ export {
   buildCompileOptions as _buildCompileOptions,
   transformsFor as _transformsFor,
 } from './system/compile-options';
-export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './plugins';
+export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './plugins/index';
 export type { EmberPrecompileOptions } from './types';
 
 export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';
