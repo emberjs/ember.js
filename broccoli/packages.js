@@ -14,7 +14,6 @@ const { VERSION } = require('./version');
 const PackageJSONWriter = require('./package-json-writer');
 const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
-const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
 const canaryFeatures = require('./canary-features');
 
@@ -54,32 +53,21 @@ module.exports.qunit = function _qunit() {
 
 module.exports.getPackagesES = function getPackagesES() {
   let input = new Funnel(`packages`, {
-    exclude: ['loader/**', 'external-helpers/**'],
+    exclude: ['loader/**', 'external-helpers/**', '**/node_modules'],
     destDir: `packages`,
   });
 
   let debuggedInput = debugTree(input, `get-packages-es:input`);
 
-  let compiledTemplatesAndTypescript = new GlimmerTemplatePrecompiler(debuggedInput, {
-    persist: true,
-    glimmer: require('@glimmer/compiler'),
-    annotation: `get-packages-es templates -> es`,
-  });
-
-  let debuggedCompiledTemplatesAndTypeScript = debugTree(
-    compiledTemplatesAndTypescript,
-    `get-packages-es:templates-output`
-  );
-
   let nonTypeScriptContents = debugTree(
-    new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+    new Funnel(debuggedInput, {
       srcDir: 'packages',
       exclude: ['**/*.ts'],
     }),
     'get-packages-es:js:output'
   );
 
-  let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+  let typescriptContents = new Funnel(debuggedInput, {
     include: ['**/*.ts'],
   });
 

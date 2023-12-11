@@ -111,6 +111,8 @@
     "@embroider/shared-internals": "^2.5.0",
     "@rollup/plugin-babel": "^6.0.3",
     "@simple-dom/document": "^1.4.0",
+    "@swc/core": "^1.3.100",
+    "@swc-node/register": "^1.6.8",
     "@tsconfig/ember": "^2.0.0",
     "@types/node": "^18.11.11",
     "@types/qunit": "^2.19.4",

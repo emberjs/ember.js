@@ -1,0 +1,2 @@
+# this tells pnpm we are a separate project with a separate install, not part of
+# the monorepo's workspaces.

@@ -1,4 +1,6 @@
-<input
+import { precompileTemplate } from '@ember/template-compilation';
+export default precompileTemplate(
+  `<input
   {{!-- for compatibility --}}
   id={{this.id}}
   class={{this.class}}
@@ -14,4 +16,6 @@
   {{on "keyup" this.keyUp}}
   {{on "paste" this.valueDidChange}}
   {{on "cut" this.valueDidChange}}
-/>
+/>`,
+  { moduleName: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs' }
+);

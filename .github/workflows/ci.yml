@@ -49,7 +49,7 @@ jobs:
       - name: build stable type definitions
         run: pnpm build:types
       - name: install TS@${{matrix.ts-version}}
-        run: pnpm add --save-dev typescript@${{ matrix.ts-version }}
+        run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
       - name: Check published and internal types with TS@${{matrix.ts-version}}
         run: pnpm type-check
 
