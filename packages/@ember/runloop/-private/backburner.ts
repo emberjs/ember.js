@@ -12,5 +12,5 @@ import type Backburner from 'backburner.js';
 export type { Backburner };
 export type DebugInfo = ReturnType<Backburner['getDebugInfo']>;
 
-export { IQueueItem as QueueItem } from 'backburner.js/dist/backburner/interfaces';
-export { DeferredActionQueues } from 'backburner.js';
+export type { IQueueItem as QueueItem } from 'backburner.js/dist/backburner/interfaces';
+export type { DeferredActionQueues } from 'backburner.js';
