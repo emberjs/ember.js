@@ -1,10 +1,10 @@
 import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
-import Backburner, { Timer, type DeferredActionQueues } from 'backburner.js';
+import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
-export { Timer };
+export type { Timer };
 
 // Partial types from https://medium.com/codex/currying-in-typescript-ca5226c85b85
 

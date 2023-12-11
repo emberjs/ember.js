@@ -10,7 +10,7 @@ import { consumeTag, tagFor } from '@glimmer/validator';
 import type { ModelFor, Transition } from 'router_js';
 import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';
-import { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/-internals';
+import type { RouteInfo, RouteInfoWithAttributes } from '@ember/routing/-internals';
 import type { RouteArgs, RouteOptions } from './lib/utils';
 import { extractRouteArgs, resemblesURL, shallowEqual } from './lib/utils';
 
@@ -751,4 +751,4 @@ class RouterService extends Service.extend(Evented) {
   declare readonly currentRoute: this['_router']['currentRoute'];
 }
 
-export { RouterService as default, RouteInfo, RouteInfoWithAttributes };
+export { RouterService as default, type RouteInfo, type RouteInfoWithAttributes };

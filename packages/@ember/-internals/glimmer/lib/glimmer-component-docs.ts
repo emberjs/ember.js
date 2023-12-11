@@ -383,3 +383,5 @@
   @module @glimmer/component
   @public
 */
+
+export {};

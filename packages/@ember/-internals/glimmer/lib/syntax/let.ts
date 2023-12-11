@@ -51,3 +51,5 @@
   @for Ember.Templates.helpers
   @public
 */
+
+export {};

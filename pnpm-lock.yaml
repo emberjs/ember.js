@@ -187,9 +187,6 @@ importers:
       '@tsconfig/ember':
         specifier: ^2.0.0
         version: 2.0.0
-      '@types/node':
-        specifier: ^18.11.11
-        version: 18.18.5
       '@types/qunit':
         specifier: ^2.19.4
         version: 2.19.6
@@ -357,7 +354,7 @@ importers:
         version: 5.1.6
       vite:
         specifier: ^4.4.7
-        version: 4.4.11(@types/node@18.18.5)
+        version: 4.4.11
 
   packages/@ember/-internals:
     dependencies:
@@ -14119,7 +14116,7 @@ packages:
     engines: {node: '>= 0.8'}
     dev: true
 
-  /vite@4.4.11(@types/node@18.18.5):
+  /vite@4.4.11:
     resolution: {integrity: sha512-ksNZJlkcU9b0lBwAGZGGaZHCMqHsc8OpgtoYhsQ4/I2v5cnpmmmqe5pM4nv/4Hn6G/2GhTdj0DhZh2e+Er1q5A==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -14147,7 +14144,6 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 18.18.5
       esbuild: 0.18.20
       postcss: 8.4.31
       rollup: 4.4.1
