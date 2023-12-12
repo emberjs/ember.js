@@ -391,6 +391,9 @@ importers:
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../instrumentation
+      '@ember/modifier':
+        specifier: workspace:*
+        version: link:../modifier
       '@ember/object':
         specifier: workspace:*
         version: link:../object
