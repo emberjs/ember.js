@@ -109,11 +109,6 @@ export {
 /**
  * Tells Glimmer what capabilities a Component Manager will have
  *
- * @method capabilities
- * @static
- * @for @ember/component
- * @public
- *
  * ```js
  * import { capabilities } from '@ember/component';
  *
@@ -127,20 +122,12 @@ export {
  *
  * For a full list of capabilities, their defaults, and how they are used, see [@glimmer/manager](https://github.com/glimmerjs/glimmer-vm/blob/4f1bef0d9a8a3c3ebd934c5b6e09de4c5f6e4468/packages/%40glimmer/manager/lib/public/component.ts#L26)
  *
+ *
+ * @method capabilities
+ * @static
+ * @for @ember/component
+ * @public
  * @param {'3.13'} managerApiVersion
- * @param {object} options
- * @property {boolean} dynamicLayout
- * @property {boolean} dynamicTag
- * @property {boolean} prepareArgs
- * @property {boolean} createArgs
- * @property {boolean} attributeHook
- * @property {boolean} elementHook
- * @property {boolean} createCaller
- * @property {boolean} dynamicScope
- * @property {boolean} updateHook
- * @property {boolean} createInstance
- * @property {boolean} wrapped
- * @property {boolean} willDestroy
- * @property {boolean} hasSubOwner
+ * @param {Parameters<import('@ember/-internals/glimmer').componentCapabilities>[1]} options
  *
  */
