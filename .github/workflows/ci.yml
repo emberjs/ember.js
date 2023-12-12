@@ -42,7 +42,7 @@ jobs:
     needs: ['types']
     strategy:
       matrix:
-        ts-version: ['4.9', '5.0', 'next']
+        ts-version: ['4.9', '5.0', '5.1', '5.2', '5.3', 'next']
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
