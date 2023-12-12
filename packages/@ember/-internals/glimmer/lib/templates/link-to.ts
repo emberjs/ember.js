@@ -1,4 +1,6 @@
 import { precompileTemplate } from '@ember/template-compilation';
+import { on } from '@ember/modifier';
+
 export default precompileTemplate(
   `<a
   {{!-- for compatibility --}}
@@ -18,5 +20,11 @@ export default precompileTemplate(
 
   {{on 'click' this.click}}
 >{{yield}}</a>`,
-  { moduleName: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs' }
+  {
+    moduleName: 'packages/@ember/-internals/glimmer/lib/templates/link-to.hbs',
+    strictMode: true,
+    scope() {
+      return { on };
+    },
+  }
 );
