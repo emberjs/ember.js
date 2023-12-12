@@ -112,8 +112,10 @@ if (DEBUG) {
     assert(missingOptionsDeprecation, Boolean(options));
     assert(missingOptionsIdDeprecation, Boolean(options && options.id));
 
-    // SAFETY: we checked this by way of the `arguments` check above.
-    invoke('warn', message, test as boolean, options);
+    // SAFETY: we have explicitly assigned `false` if the user invoked the
+    // arity-2 version of the overload, so we know `test` is always either
+    // `undefined` or a `boolean` for type-safe callers.
+    invoke('warn', message, test as boolean | undefined, options);
   };
 }
 
