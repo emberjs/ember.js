@@ -281,8 +281,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0)(eslint@8.53.0)(prettier@2.8.8)
       eslint-plugin-qunit:
-        specifier: ^7.3.4
-        version: 7.3.4(eslint@8.53.0)
+        specifier: ^8.0.1
+        version: 8.0.1(eslint@8.53.0)
       execa:
         specifier: ^5.1.1
         version: 5.1.1
@@ -8401,9 +8401,9 @@ packages:
       prettier-linter-helpers: 1.0.0
     dev: true
 
-  /eslint-plugin-qunit@7.3.4(eslint@8.53.0):
-    resolution: {integrity: sha512-EbDM0zJerH9zVdUswMJpcFF7wrrpvsGuYfNexUpa5hZkkdFhaFcX+yD+RSK4Nrauw4psMGlcqeWUMhaVo+Manw==}
-    engines: {node: 12.x || 14.x || >=16.0.0}
+  /eslint-plugin-qunit@8.0.1(eslint@8.53.0):
+    resolution: {integrity: sha512-3bFOPryXoQOez95oP/JfWTxHBc/bgDQQZqTuv9uYTwH5sdIvSM2TES1iHDcy/F/LvqiqIpscDAOPAjlqSCnNPg==}
+    engines: {node: ^16.0.0 || ^18.0.0 || >=20.0.0}
     dependencies:
       eslint-utils: 3.0.0(eslint@8.53.0)
       requireindex: 1.2.0
