@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read # to fetch code (actions/checkout)
+  contents: read
 
 jobs:
   trigger-ci:
     permissions:
-      contents: read # to fetch code (actions/checkout)
-      checks: read # to list check suites
+      contents: read # the push uses a non-default token so it will trigger workflows
+      checks: read
 
     name: Trigger cron build
     runs-on: ubuntu-latest

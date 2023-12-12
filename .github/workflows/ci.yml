@@ -18,7 +18,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read # to fetch code (actions/checkout)
+  contents: read
 
 jobs:
   lint:

@@ -1,5 +1,8 @@
 name: Nightly TypeScript Run
 
+permissions:
+  contents: read
+
 jobs:
   ts-next:
     name: typescript@next
