@@ -3,7 +3,7 @@
 */
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
+import { isUpdatableRef, toMut } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 /**
@@ -81,7 +81,7 @@ import { internalHelper } from './internal-helper';
 */
 
 export default internalHelper(({ positional }: CapturedArguments) => {
-  let ref = positional[0];
+  const ref = positional[0];
   assert('expected at least one positional arg', ref);
 
   // TODO: Improve this error message. This covers at least two distinct
@@ -98,5 +98,5 @@ export default internalHelper(({ positional }: CapturedArguments) => {
   // confusing for the second case.
   assert('You can only pass a path to mut', isUpdatableRef(ref));
 
-  return createInvokableRef(ref);
+  return toMut(ref);
 });

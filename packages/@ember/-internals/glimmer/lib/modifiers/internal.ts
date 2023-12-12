@@ -8,7 +8,7 @@ import type {
   Destroyable,
   InternalModifierManager as ModifierManager,
 } from '@glimmer/interfaces';
-import { valueForRef } from '@glimmer/reference';
+import { unwrapReactive } from '@glimmer/reference';
 import type { SimpleElement } from '@simple-dom/interface';
 
 export default class InternalModifier {
@@ -31,12 +31,12 @@ export default class InternalModifier {
 
   protected positional(index: number): unknown {
     let ref = this.args.positional[index];
-    return ref ? valueForRef(ref) : undefined;
+    return ref ? unwrapReactive(ref) : undefined;
   }
 
   protected named(key: string): unknown {
     let ref = this.args.named[key];
-    return ref ? valueForRef(ref) : undefined;
+    return ref ? unwrapReactive(ref) : undefined;
   }
 
   toString(): string {

@@ -2,7 +2,7 @@
 @module ember
 */
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createReadOnlyRef } from '@glimmer/reference';
+import { isAccessor, toReadonly } from '@glimmer/reference';
 import { assert } from '@ember/debug';
 import { internalHelper } from './internal-helper';
 
@@ -124,5 +124,5 @@ import { internalHelper } from './internal-helper';
 export default internalHelper(({ positional }: CapturedArguments) => {
   let firstArg = positional[0];
   assert('has first arg', firstArg);
-  return createReadOnlyRef(firstArg);
+  return toReadonly(firstArg);
 });

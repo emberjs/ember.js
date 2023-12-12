@@ -19,16 +19,16 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { ReadonlyCell, unwrapReactive } from '@glimmer/reference';
 import { unwrapTemplate } from '@glimmer/util';
 import type RuntimeResolver from '../resolver';
 
 interface EngineState {
   engine: EngineInstance;
   controller: any;
-  self: Reference;
-  modelRef?: Reference;
+  self: Reactive;
+  modelRef?: Reactive;
 }
 
 interface EngineDefinitionState {
@@ -90,7 +90,7 @@ class MountManager
     let applicationFactory = engine.factoryFor(`controller:application`);
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller: any;
-    let self: Reference;
+    let self: Reactive;
     let bucket: EngineState;
     let modelRef;
 
@@ -100,12 +100,12 @@ class MountManager
 
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = createConstRef(controller, 'this');
+      self = ReadonlyCell(controller, 'this');
       bucket = { engine, controller, self, modelRef };
     } else {
-      let model = valueForRef(modelRef);
+      let model = unwrapReactive(modelRef);
       controller = controllerFactory.create({ model });
-      self = createConstRef(controller, 'this');
+      self = ReadonlyCell(controller, 'this');
       bucket = { engine, controller, self, modelRef };
     }
 
@@ -145,7 +145,7 @@ class MountManager
     ];
   }
 
-  getSelf({ self }: EngineState): Reference {
+  getSelf({ self }: EngineState): Reactive {
     return self;
   }
 
@@ -163,7 +163,7 @@ class MountManager
     let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', valueForRef(modelRef));
+      controller.set('model', unwrapReactive(modelRef));
     }
   }
 }

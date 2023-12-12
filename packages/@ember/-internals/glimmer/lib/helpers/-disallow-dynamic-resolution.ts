@@ -3,7 +3,7 @@
 */
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { Formula, unwrapReactive } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(({ positional, named }: CapturedArguments) => {
@@ -27,9 +27,9 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
   // assert('[BUG] expecting a string literal for the `loc` argument', isConstRef(locRef));
   // assert('[BUG] expecting a string literal for the `original` argument', isConstRef(originalRef));
 
-  const type = valueForRef(typeRef);
-  const loc = valueForRef(locRef);
-  const original = valueForRef(originalRef);
+  const type = unwrapReactive(typeRef);
+  const loc = unwrapReactive(locRef);
+  const original = unwrapReactive(originalRef);
 
   assert('[BUG] expecting a string literal for the `type` argument', typeof type === 'string');
   assert('[BUG] expecting a string literal for the `loc` argument', typeof loc === 'string');
@@ -38,8 +38,8 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
     typeof original === 'string'
   );
 
-  return createComputeRef(() => {
-    let nameOrValue = valueForRef(nameOrValueRef);
+  return Formula(() => {
+    let nameOrValue = unwrapReactive(nameOrValueRef);
 
     assert(
       `Passing a dynamic string to the \`(${type})\` keyword is disallowed. ` +
