@@ -1,15 +1,15 @@
-import { Owner } from '@ember/-internals/owner';
-import { generateControllerFactory } from '@ember/-internals/routing';
+import type { InternalOwner } from '@ember/-internals/owner';
+import { generateControllerFactory } from '@ember/routing/-internals';
+import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { associateDestroyableChild } from '@glimmer/destroyable';
-import {
+import type {
   CapturedArguments,
   ComponentDefinition,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
-  Option,
   TemplateFactory,
   VMArguments,
   WithCreateInstance,
@@ -17,10 +17,12 @@ import {
   WithDynamicLayout,
   WithSubOwner,
 } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference';
 import { unwrapTemplate } from '@glimmer/util';
-import RuntimeResolver from '../resolver';
+import type RuntimeResolver from '../resolver';
 
 interface EngineState {
   engine: EngineInstance;
@@ -54,7 +56,8 @@ class MountManager
     WithCreateInstance<EngineState>,
     WithDynamicLayout<EngineState, RuntimeResolver>,
     WithCustomDebugRenderTree<EngineState, EngineDefinitionState>,
-    WithSubOwner<EngineState> {
+    WithSubOwner<EngineState>
+{
   getDynamicLayout(state: EngineState) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     return unwrapTemplate(templateFactory(state.engine)).asLayout();
@@ -68,12 +71,18 @@ class MountManager
     return state.engine;
   }
 
-  create(owner: Owner, { name }: EngineDefinitionState, args: VMArguments, env: Environment) {
+  create(
+    owner: InternalOwner,
+    { name }: EngineDefinitionState,
+    args: VMArguments,
+    env: Environment
+  ) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
+    assert('Expected owner to be an EngineInstance', owner instanceof EngineInstance);
     let engine = owner.buildChildEngineInstance(name);
 
     engine.boot();
@@ -140,7 +149,7 @@ class MountManager
     return self;
   }
 
-  getDestroyable(bucket: EngineState): Option<Destroyable> {
+  getDestroyable(bucket: EngineState): Nullable<Destroyable> {
     return bucket.engine;
   }
 
@@ -154,7 +163,7 @@ class MountManager
     let { controller, modelRef } = bucket;
 
     if (modelRef !== undefined) {
-      controller.set('model', valueForRef(modelRef!));
+      controller.set('model', valueForRef(modelRef));
     }
   }
 }

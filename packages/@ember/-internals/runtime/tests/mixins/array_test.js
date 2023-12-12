@@ -1,17 +1,13 @@
 import {
-  get,
-  set,
   objectAt,
   addObserver,
-  observer as emberObserver,
-  computed,
   addArrayObserver,
   removeArrayObserver,
   arrayContentDidChange,
   arrayContentWillChange,
 } from '@ember/-internals/metal';
-import EmberObject from '../../lib/system/object';
-import EmberArray, { A as emberA } from '../../lib/mixins/array';
+import EmberObject, { get, set, computed, observer as emberObserver } from '@ember/object';
+import EmberArray, { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*
@@ -193,11 +189,9 @@ moduleFor(
 //
 
 moduleFor(
-  'notify array observers',
+  'notify array observers (internal)',
   class extends AbstractTestCase {
     beforeEach(assert) {
-      expectDeprecation(/Array observers have been deprecated/);
-
       obj = DummyArray.create();
 
       observer = EmberObject.extend({
@@ -215,7 +209,10 @@ moduleFor(
         _after: null,
       });
 
-      addArrayObserver(obj, observer);
+      addArrayObserver(obj, observer, {
+        willChange: 'arrayWillChange',
+        didChange: 'arrayDidChange',
+      });
     }
 
     afterEach() {
@@ -248,28 +245,15 @@ moduleFor(
     }
 
     ['@test removing array observer should disable'](assert) {
-      removeArrayObserver(obj, observer);
+      removeArrayObserver(obj, observer, {
+        willChange: 'arrayWillChange',
+        didChange: 'arrayDidChange',
+      });
       arrayContentWillChange(obj);
       assert.deepEqual(observer._before, null);
 
       arrayContentDidChange(obj);
       assert.deepEqual(observer._after, null);
-    }
-
-    ['@test hasArrayObservers should work'](assert) {
-      assert.equal(
-        obj.hasArrayObservers,
-        true,
-        'correctly shows it has an array observer when one exists'
-      );
-
-      removeArrayObserver(obj, observer);
-
-      assert.equal(
-        obj.hasArrayObservers,
-        false,
-        'correctly shows it has an array observer when one exists'
-      );
     }
   }
 );

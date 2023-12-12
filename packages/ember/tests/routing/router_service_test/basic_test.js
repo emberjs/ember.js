@@ -1,7 +1,8 @@
-import { Route, NoneLocation } from '@ember/-internals/routing';
-import { set } from '@ember/-internals/metal';
+import Route from '@ember/routing/route';
+import NoneLocation from '@ember/routing/none-location';
+import { set } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { inject as injectService } from '@ember/service';
+import { service } from '@ember/service';
 
 moduleFor(
   'Router Service - main',
@@ -156,7 +157,7 @@ moduleFor(
       assert.expect(1);
 
       this.router.reopen({
-        routerService: injectService('router'),
+        routerService: service('router'),
         init() {
           this.routerService.one('routeDidChange', () => {
             assert.ok(true, 'routeDidChange event listener called');

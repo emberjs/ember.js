@@ -2,6 +2,18 @@
 @module @ember/helper
 */
 
+import { setHelperManager as glimmerSetHelperManager, helperCapabilities } from '@glimmer/manager';
+import {
+  invokeHelper as glimmerInvokeHelper,
+  hash as glimmerHash,
+  array as glimmerArray,
+  concat as glimmerConcat,
+  get as glimmerGet,
+  fn as glimmerFn,
+} from '@glimmer/runtime';
+import { uniqueId as glimmerUniqueId } from '@ember/-internals/glimmer';
+import { type Opaque } from '@ember/-internals/utility-types';
+
 /**
   `capabilities` returns a capabilities configuration which can be used to modify
   the behavior of the manager. Manager capabilities _must_ be provided using the
@@ -54,6 +66,7 @@
   @return {Capabilities} The capabilities object instance
   @public
 */
+export const capabilities = helperCapabilities;
 
 /**
   Sets the helper manager for an object or function.
@@ -247,33 +260,42 @@
   @return {object} The definition passed into setHelperManager
   @public
 */
+export const setHelperManager = glimmerSetHelperManager;
 
 /**
   The `invokeHelper` function can be used to create a helper instance in
   JavaScript.
 
+  To access a helper's value you have to use `getValue` from
+  `@glimmer/tracking/primitives/cache`.
+
   ```js
   // app/components/data-loader.js
   import Component from '@glimmer/component';
+  import { getValue } from '@glimmer/tracking/primitives/cache';
   import Helper from '@ember/component/helper';
   import { invokeHelper } from '@ember/helper';
 
   class PlusOne extends Helper {
-    compute([num]) {
+    compute([number]) {
       return number + 1;
     }
   }
 
-  export default class PlusOne extends Component {
-    plusOne = invokeHelper(this, RemoteData, () => {
+  export default class PlusOneComponent extends Component {
+    plusOne = invokeHelper(this, PlusOne, () => {
       return {
         positional: [this.args.number],
       };
     });
+
+    get value() {
+      return getValue(this.plusOne);
+    }
   }
   ```
-  ```hbs
-  {{this.plusOne.value}}
+  ```js
+  {{this.value}}
   ```
 
   It receives three arguments:
@@ -303,6 +325,170 @@
   @returns
   @public
 */
+export const invokeHelper = glimmerInvokeHelper;
 
-export { setHelperManager, helperCapabilities as capabilities } from '@glimmer/manager';
-export { invokeHelper, hash, array, concat, get, fn } from '@glimmer/runtime';
+// SAFETY: we need to provide interfaces that Glint can declaration-merge with
+// to provide appropriate completions. In each case, the imported item is
+// currently typed only as `object`, and we are replacing it with a similarly
+// low-information interface type: these are empty objects which are simply able
+// to be distinguished so that Glint can provide the relevant extensions.
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
+/**
+ * Using the `{{hash}}` helper, you can pass objects directly from the template
+ * as an argument to your components.
+ *
+ * ```
+ * import { hash } from '@ember/helper';
+ *
+ * <template>
+ *   {{#each-in (hash givenName='Jen' familyName='Weber') as |key value|}}
+ *     <p>{{key}}: {{value}}</p>
+ *   {{/each-in}}
+ * </template>
+ * ```
+ *
+ * **NOTE:** this example uses the experimental `<template>` feature, which is
+ * the only place you need to import `hash` to use it (it is a built-in when
+ * writing standalone `.hbs` files).
+ */
+export const hash = glimmerHash as HashHelper;
+export interface HashHelper extends Opaque<'helper:hash'> {}
+
+/**
+ * Using the `{{array}}` helper, you can pass arrays directly from the template
+ * as an argument to your components.
+ *
+ * ```js
+ * import { array } from '@ember/helper';
+ *
+ * <template>
+ *   <ul>
+ *   {{#each (array 'Tom Dale' 'Yehuda Katz' @anotherPerson) as |person|}}
+ *     <li>{{person}}</li>
+ *   {{/each}}
+ *   </ul>
+ * </template>
+ *
+ * **NOTE:** this example uses the experimental `<template>` feature, which is
+ * the only place you need to import `array` to use it (it is a built-in when
+ * writing standalone `.hbs` files).
+ * ```
+ */
+export const array = glimmerArray as ArrayHelper;
+export interface ArrayHelper extends Opaque<'helper:array'> {}
+
+/**
+ * The `{{concat}}` helper makes it easy to dynamically send a number of
+ * parameters to a component or helper as a single parameter in the format of a
+ * concatenated string.
+ *
+ * For example:
+ *
+ * ```js
+ * import { concat } from '@ember/helper';
+ *
+ * <template>
+ *   {{get @foo (concat "item" @index)}}
+ * </template>
+ * ```
+ *
+ * This will display the result of `@foo.item1` when `index` is `1`, and
+ * `this.foo.item2` when `index` is `2`, etc.
+ *
+ * **NOTE:** this example uses the experimental `<template>` feature, which is
+ * the only place you need to import `concat` to use it (it is a built-in when
+ * writing standalone `.hbs` files).
+ */
+export const concat = glimmerConcat as ConcatHelper;
+export interface ConcatHelper extends Opaque<'helper:concat'> {}
+
+/**
+ * The `{{get}}` helper makes it easy to dynamically look up a property on an
+ * object or an element in an array. The second argument to `{{get}}` can be a
+ * string or a number, depending on the object being accessed.
+ *
+ * To access a property on an object with a string key:
+ *
+ * ```js
+ * import { get } from '@ember/helper';
+ *
+ * <template>
+ *   {{get @someObject "objectKey"}}
+ * </template>
+ * ```
+ *
+ * To access the first element in an array:
+ *
+ * ```js
+ * import { get } from '@ember/helper';
+ *
+ * <template>
+ *   {{get @someArray 0}}
+ * </template>
+ * ```
+ *
+ * To access a property on an object with a dynamic key:
+ *
+ * ```js
+ * import { get } from '@ember/helper';
+ *
+ * <template>
+ *   {{get @address @field}}
+ * </template>
+ * ```
+ *
+ * This will display the result of `@foo.item1` when `index` is `1`, and
+ * `this.foo.item2` when `index` is `2`, etc.
+ *
+ * **NOTE:** this example uses the experimental `<template>` feature, which is
+ * the only place you need to import `concat` to use it (it is a built-in when
+ * writing standalone `.hbs` files).
+ */
+export const get = glimmerGet as GetHelper;
+export interface GetHelper extends Opaque<'helper:get'> {}
+
+/**
+ * `{{fn}}` is a helper that receives a function and some arguments, and returns
+ * a new function that combines. This allows you to pass parameters along to
+ * functions in your templates:
+ *
+ * ```js
+ * import { fn } from '@ember/helper';
+ *
+ * function showAlert(message) {
+ *   alert(`The message is: '${message}'`);
+ * }
+ *
+ * <template>
+ *   <button type="button" {{on "click" (fn showAlert "Hello!")}}>
+ *     Click me!
+ *   </button>
+ * </template>
+ * ```
+ */
+export const fn = glimmerFn as FnHelper;
+export interface FnHelper extends Opaque<'helper:fn'> {}
+
+/**
+ * Use the {{uniqueId}} helper to generate a unique ID string suitable for use as
+ * an ID attribute in the DOM.
+ *
+ * Each invocation of {{uniqueId}} will return a new, unique ID string.
+ * You can use the `let` helper to create an ID that can be reused within a template.
+ *
+ * ```js
+ * import { uniqueId } from '@ember/helper';
+ *
+ * <template>
+ *   {{#let (uniqueId) as |emailId|}}
+ *     <label for={{emailId}}>Email address</label>
+ *     <input id={{emailId}} type="email" />
+ *   {{/let}}
+ * </template>
+ * ```
+ */
+export const uniqueId = glimmerUniqueId;
+export type UniqueIdHelper = typeof uniqueId;
+
+/* eslint-enable @typescript-eslint/no-empty-interface */

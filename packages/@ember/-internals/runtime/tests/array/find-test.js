@@ -1,4 +1,4 @@
-import EmberObject from '../../lib/system/object';
+import EmberObject from '@ember/object';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 

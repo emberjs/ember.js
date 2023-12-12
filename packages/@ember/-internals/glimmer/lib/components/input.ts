@@ -2,20 +2,18 @@
 @module @ember/component
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
+import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
 import { valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 import InputTemplate from '../templates/input';
-import AbstractInput, { handleDeprecatedFeatures, valueFrom } from './abstract-input';
-import Checkbox from './checkbox';
-import { opaquify } from './internal';
-import TextField from './text-field';
+import AbstractInput, { valueFrom } from './abstract-input';
+import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 
 let isValidInputType: (type: string) => boolean;
 
-if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
+if (hasDOM) {
   const INPUT_TYPES: Record<string, boolean | undefined> = Object.create(null);
   const INPUT_ELEMENT = document.createElement('input');
 
@@ -53,6 +51,18 @@ if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   @param {Hash} options
   @public
   */
+
+/**
+  An opaque interface which can be imported and used in strict-mode
+  templates to call <Input>.
+
+  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
+
+  @for @ember/component
+  @method Input
+  @see {Ember.Templates.components.Input}
+  @public
+**/
 
 /**
   The `Input` component lets you create an HTML `<input>` element.
@@ -132,14 +142,6 @@ if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
     onto the element. If you wanted a one-way binding, use `<input type="checkbox">` with
     `checked` and the `input` event instead.
 
-  ### Extending `TextField`
-
-  Internally, `<Input @type="text" />` creates an instance of `TextField`, passing arguments from
-  the helper to `TextField`'s `create` method. Subclassing `TextField` is supported but not
-  recommended.
-
-  See [TextField](/ember/release/classes/TextField)
-
   ### Checkbox
 
   To create an `<input type="checkbox">`:
@@ -152,21 +154,12 @@ if (hasDOM && EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
   This will bind the checked state of this checkbox to the value of `isEmberized` -- if either one
   changes, it will be reflected in the other.
 
-  ### Extending `Checkbox`
-
-  Internally, `<Input @type="checkbox" />` creates an instance of `Checkbox`. Subclassing
-  `TextField` is supported but not recommended.
-
-  See [Checkbox](/ember/release/classes/Checkbox)
-
   @method Input
   @for Ember.Templates.components
-  @see {TextField}
-  @see {Checkbox}
   @param {Hash} options
   @public
 */
-class Input extends AbstractInput {
+class _Input extends AbstractInput {
   static toString(): string {
     return 'Input';
   }
@@ -204,7 +197,7 @@ class Input extends AbstractInput {
     return this.named('type') === 'checkbox';
   }
 
-  private _checked = valueFrom(this.args.named.checked);
+  private _checked = valueFrom(this.args.named['checked']);
 
   get checked(): unknown {
     if (this.isCheckbox) {
@@ -214,9 +207,9 @@ class Input extends AbstractInput {
           'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
         untrack(
           () =>
-            this.args.named.checked !== undefined ||
-            this.args.named.value === undefined ||
-            typeof valueForRef(this.args.named.value) === 'string'
+            this.args.named['checked'] !== undefined ||
+            this.args.named['value'] === undefined ||
+            typeof valueForRef(this.args.named['value']) === 'string'
         ),
         { id: 'ember.built-in-components.input-checkbox-value' }
       );
@@ -234,9 +227,9 @@ class Input extends AbstractInput {
         'Did you mean `<Input @type="checkbox" @checked={{...}} />`?',
       untrack(
         () =>
-          this.args.named.checked !== undefined ||
-          this.args.named.value === undefined ||
-          typeof valueForRef(this.args.named.value) === 'string'
+          this.args.named['checked'] !== undefined ||
+          this.args.named['value'] === undefined ||
+          typeof valueForRef(this.args.named['value']) === 'string'
       ),
       { id: 'ember.built-in-components.input-checkbox-value' }
     );
@@ -264,12 +257,6 @@ class Input extends AbstractInput {
     this.checked = element.checked;
   }
 
-  protected shouldModernize(): boolean {
-    return (
-      super.shouldModernize() && TextField._wasReopened === false && Checkbox._wasReopened === false
-    );
-  }
-
   protected isSupportedArgument(name: string): boolean {
     let supportedArguments = [
       'type',
@@ -284,57 +271,6 @@ class Input extends AbstractInput {
   }
 }
 
-if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-  handleDeprecatedFeatures(Input, [
-    // Component
-    'id',
-    ['id', 'elementId'],
-    'class',
-    ['class', 'classNames'],
-    ['role', 'ariaRole'],
-
-    // TextSupport
-    'autocapitalize',
-    'autocorrect',
-    'autofocus',
-    'disabled',
-    'form',
-    'maxlength',
-    'minlength',
-    'placeholder',
-    'readonly',
-    'required',
-    'selectionDirection',
-    'spellcheck',
-    'tabindex',
-    'title',
-
-    // TextField
-    'accept',
-    'autocomplete',
-    'autosave',
-    'dir',
-    'formaction',
-    'formenctype',
-    'formmethod',
-    'formnovalidate',
-    'formtarget',
-    'height',
-    'inputmode',
-    'lang',
-    'list',
-    'max',
-    'min',
-    'multiple',
-    'name',
-    'pattern',
-    'size',
-    'step',
-    'width',
-
-    // Checkbox
-    'indeterminate',
-  ]);
-}
-
-export default opaquify(Input, InputTemplate);
+const Input = opaquify(_Input, InputTemplate) as Input;
+interface Input extends Opaque<'component:input'>, OpaqueInternalComponentConstructor {}
+export default Input;

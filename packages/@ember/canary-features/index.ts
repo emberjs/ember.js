@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { assign } from '@ember/polyfills';
 
 /**
   Set `EmberENV.FEATURES` in your application's `config/environment.js` file
@@ -13,15 +12,7 @@ import { assign } from '@ember/polyfills';
 */
 
 export const DEFAULT_FEATURES = {
-  EMBER_LIBRARIES_ISREGISTERED: null,
-  EMBER_IMPROVED_INSTRUMENTATION: null,
-  EMBER_NAMED_BLOCKS: true,
-  EMBER_GLIMMER_HELPER_MANAGER: true,
-  EMBER_GLIMMER_INVOKE_HELPER: true,
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS: true,
-  EMBER_STRICT_MODE: true,
-  EMBER_DYNAMIC_HELPERS_AND_MODIFIERS: true,
-  EMBER_ROUTING_ROUTER_SERVICE_REFRESH: null,
+  // FLAG_NAME: true/false
 };
 
 /**
@@ -33,7 +24,7 @@ export const DEFAULT_FEATURES = {
   @since 1.1.0
   @public
 */
-export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
+export const FEATURES = Object.assign(DEFAULT_FEATURES, ENV.FEATURES);
 
 /**
   Determine whether the specified `feature` is enabled. Used by Ember's
@@ -62,26 +53,14 @@ export function isEnabled(feature: string): boolean {
   }
 }
 
-function featureValue(value: null | boolean) {
-  if (ENV.ENABLE_OPTIONAL_FEATURES && value === null) {
-    return true;
-  }
+// Uncomment the below when features are present:
 
-  return value;
-}
+// function featureValue(value: null | boolean) {
+//   if (ENV.ENABLE_OPTIONAL_FEATURES && value === null) {
+//     return true;
+//   }
 
-export const EMBER_LIBRARIES_ISREGISTERED = featureValue(FEATURES.EMBER_LIBRARIES_ISREGISTERED);
-export const EMBER_IMPROVED_INSTRUMENTATION = featureValue(FEATURES.EMBER_IMPROVED_INSTRUMENTATION);
-export const EMBER_NAMED_BLOCKS = featureValue(FEATURES.EMBER_NAMED_BLOCKS);
-export const EMBER_GLIMMER_HELPER_MANAGER = featureValue(FEATURES.EMBER_GLIMMER_HELPER_MANAGER);
-export const EMBER_GLIMMER_INVOKE_HELPER = featureValue(FEATURES.EMBER_GLIMMER_INVOKE_HELPER);
-export const EMBER_MODERNIZED_BUILT_IN_COMPONENTS = featureValue(
-  FEATURES.EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-);
-export const EMBER_STRICT_MODE = featureValue(FEATURES.EMBER_STRICT_MODE);
-export const EMBER_DYNAMIC_HELPERS_AND_MODIFIERS = featureValue(
-  FEATURES.EMBER_DYNAMIC_HELPERS_AND_MODIFIERS
-);
-export const EMBER_ROUTING_ROUTER_SERVICE_REFRESH = featureValue(
-  FEATURES.EMBER_ROUTING_ROUTER_SERVICE_REFRESH
-);
+//   return value;
+// }
+
+// export const FLAG_NAME = featureValue(FEATURES.FLAG_NAME);

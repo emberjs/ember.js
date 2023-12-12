@@ -1,12 +1,11 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
-import { _WeakSet } from '@glimmer/util';
+import { assert } from '@ember/debug';
+import type { Tag, TagMeta } from '@glimmer/validator';
 import {
   combine,
   createUpdatableTag,
-  Tag,
-  TagMeta,
   tagMetaFor,
   updateTag,
   validateTag,
@@ -14,7 +13,7 @@ import {
 import { objectAt } from './array';
 import { tagForProperty } from './tags';
 
-export const CHAIN_PASS_THROUGH = new _WeakSet();
+export const CHAIN_PASS_THROUGH = new WeakSet();
 
 export function finishLazyChains(meta: Meta, key: string, value: any) {
   let lazyTags = meta.readableLazyChainsFor(key);
@@ -24,8 +23,7 @@ export function finishLazyChains(meta: Meta, key: string, value: any) {
   }
 
   if (isObject(value)) {
-    for (let i = 0; i < lazyTags.length; i++) {
-      let [tag, deps] = lazyTags[i];
+    for (let [tag, deps] of lazyTags) {
       updateTag(tag, getChainTagsForKey(value, deps as string, tagMetaFor(value), peekMeta(value)));
     }
   }
@@ -41,8 +39,8 @@ export function getChainTagsForKeys(
 ): Tag {
   let tags: Tag[] = [];
 
-  for (let i = 0; i < keys.length; i++) {
-    getChainTags(tags, obj, keys[i], tagMeta, meta);
+  for (let key of keys) {
+    getChainTags(tags, obj, key, tagMeta, meta);
   }
 
   return combine(tags);
@@ -89,33 +87,6 @@ function getChainTags(
       lastSegmentEnd = segmentEnd + 1;
       segmentEnd = path.indexOf('.', lastSegmentEnd);
 
-      // There should be exactly one segment after an `@each` (i.e. `@each.foo`, not `@each.foo.bar`)
-      deprecate(
-        `When using @each in a dependent-key or an observer, ` +
-          `you can only chain one property level deep after ` +
-          `the @each. That is, \`${path.slice(0, segmentEnd)}\` ` +
-          `is allowed but \`${path}\` (which is what you passed) ` +
-          `is not.\n\n` +
-          `This was never supported. Currently, the extra segments ` +
-          `are silently ignored, i.e. \`${path}\` behaves exactly ` +
-          `the same as \`${path.slice(0, segmentEnd)}\`. ` +
-          `In the future, this will throw an error.\n\n` +
-          `If the current behavior is acceptable for your use case, ` +
-          `please remove the extraneous segments by changing your ` +
-          `key to \`${path.slice(0, segmentEnd)}\`. ` +
-          `Otherwise, please create an intermediary computed property ` +
-          `or switch to using tracked properties.`,
-        segmentEnd === -1,
-        {
-          until: '3.17.0',
-          id: 'ember-metal.computed-deep-each',
-          for: 'ember-source',
-          since: {
-            enabled: '3.13.0-beta.3',
-          },
-        }
-      );
-
       let arrLength = current.length;
 
       if (
@@ -156,7 +127,6 @@ function getChainTags(
 
           // If the key is an alias, we need to bootstrap it
           if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
-            // tslint:disable-next-line: no-unused-expression
             item[segment];
           }
         }
@@ -181,7 +151,6 @@ function getChainTags(
       // bootstrap the alias. This is because aliases, unlike other CPs, should
       // always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
-        // tslint:disable-next-line: no-unused-expression
         current[segment];
       }
       break;
@@ -212,7 +181,7 @@ function getChainTags(
       } else {
         // use metaFor here to ensure we have the meta for the instance
         let lazyChains = instanceMeta.writableLazyChainsFor(segment);
-        let rest = path.substr(segmentEnd + 1);
+        let rest = path.substring(segmentEnd + 1);
 
         let placeholderTag = createUpdatableTag();
 

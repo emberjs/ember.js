@@ -6,7 +6,8 @@ import {
   runTask,
 } from 'internal-test-helpers';
 
-import { set } from '@ember/-internals/metal';
+import { DEBUG } from '@ember/debug';
+import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
@@ -113,6 +114,11 @@ moduleFor(
     }
 
     async ['@test it emits a useful backtracking re-render assertion message'](assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
+
       this.router.map(function () {
         this.route('route-with-mount');
       });
@@ -295,9 +301,8 @@ moduleFor(
         this.assertInnerHTML('<h2>Foo Engine: Tagless Component</h2>');
 
         let controllerOwnerEventDispatcher = getOwner(controller).lookup('event_dispatcher:main');
-        let taglessComponentOwnerEventDispatcher = getOwner(component).lookup(
-          'event_dispatcher:main'
-        );
+        let taglessComponentOwnerEventDispatcher =
+          getOwner(component).lookup('event_dispatcher:main');
 
         this.assert.strictEqual(
           controllerOwnerEventDispatcher,

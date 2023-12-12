@@ -8,8 +8,7 @@ import {
   defineSimpleHelper,
 } from 'internal-test-helpers';
 import { Helper, Component } from '@ember/-internals/glimmer';
-import { set, tracked } from '@ember/-internals/metal';
-import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { set } from '@ember/object';
 
 moduleFor(
   'Helpers test: custom helpers',
@@ -34,36 +33,19 @@ moduleFor(
       this.assertText('hello | hello world');
     }
 
-    ['@test it does not resolve helpers with a `.` (period)']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
+    ['@test it does not resolve helpers with a `.` (period)'](assert) {
+      if (!DEBUG) {
+        assert.ok(true, 'nothing to do in prod builds, assertion is stripped');
+        return;
+      }
 
       this.registerHelper('hello.world', () => 'hello world');
 
-      this.render('{{hello.world}}', {
-        hello: {
-          world: '',
-        },
-      });
-
-      this.assertText('');
-
-      this.assertStableRerender();
-
-      this.assertText('');
-
-      runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
-
-      this.assertText('hello world!');
-
-      runTask(() => {
-        set(this.context, 'hello', {
-          world: '',
-        });
-      });
-
-      this.assertText('');
+      // cannot use `expectAssertion` because the error is thrown in glimmer-vm
+      // (and doesn't go through Ember's own assertion internals)
+      assert.throws(() => {
+        this.render('{{hello.world}}');
+      }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: hello/);
     }
 
     ['@test it can resolve custom class-based helpers with or without dashes']() {
@@ -731,56 +713,7 @@ moduleFor(
       this.assertText('huzza!');
     }
 
-    ['@test class-based helper gives helpful warning when mutating a value that was tracked already']() {
-      this.add(
-        'helper:hello-world',
-        class extends Helper {
-          compute() {
-            this.get('value');
-            this.set('value', 123);
-          }
-        }
-      );
-
-      let expectedMessage = backtrackingMessageFor('value', '<.+?>', {
-        renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        // TODO: this must be a bug??
-        expectDeprecation(
-          backtrackingMessageFor('undefined', undefined, {
-            renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
-          })
-        );
-
-        this.render('{{hello-world}}');
-      }, expectedMessage);
-    }
-
-    ['@test class-based helper gives helpful deprecation when mutating a tracked property that was tracked already']() {
-      this.add(
-        'helper:hello-world',
-        class HelloWorld extends Helper {
-          @tracked value;
-
-          compute() {
-            this.value;
-            this.value = 123;
-          }
-        }
-      );
-
-      let expectedMessage = backtrackingMessageFor('value', '<HelloWorld.+?>', {
-        renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
-      });
-
-      expectDeprecation(() => {
-        this.render('{{hello-world}}');
-      }, expectedMessage);
-    }
-
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a helper'() {
+    '@test Can resolve a helper'() {
       this.registerHelper('hello-world', ([text]) => text ?? 'Hello, world!');
 
       this.render('[{{helper "hello-world"}}][{{helper (helper "hello-world") "wow"}}]');
@@ -788,7 +721,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a helper'(assert) {
+    '@test Cannot dynamically resolve a helper'(assert) {
       this.registerHelper('hello-world', () => 'Hello, world!');
 
       if (DEBUG) {
@@ -801,7 +734,7 @@ moduleFor(
       }
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
+    '@test Can use a curried dynamic helper'() {
       let val = defineSimpleHelper((value) => value);
 
       this.registerComponent('foo', {
@@ -818,15 +751,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a curried dynamic helper'() {
-      expectAssertion(() => {
-        this.registerComponent('bar', {
-          template: '<Foo @value={{helper this.val "Hello, world!"}}/>',
-        });
-      }, /Cannot use the \(helper\) keyword yet, as it has not been implemented/);
-    }
-
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic helper with nested helpers'() {
+    '@test Can use a dynamic helper with nested helpers'() {
       let foo = defineSimpleHelper(() => 'world!');
       let bar = defineSimpleHelper((value) => 'Hello, ' + value);
 
@@ -937,25 +862,21 @@ if (DEBUG) {
         this.registerHelper('is-string', ([value]) => typeof value === 'string');
       }
 
-      ['@test invoking an argument-less helper without parens in named argument position is deprecated']() {
+      ['@test invoking an argument-less helper without parens in named argument position throws'](
+        assert
+      ) {
         this.registerHelper('foo', () => 'Hello, world!');
 
-        expectDeprecation(
+        assert.throws(
           () => this.render('<Bar @content={{foo}} />', { foo: 'Not it!' }),
-          new RegExp(
-            /The `foo` helper was used in the `-top-level` template as /.source +
-              /`@content={{foo}}`\. This is ambigious between wanting the `@content` /.source +
-              /argument to be the `foo` helper itself, or the result of invoking the /.source +
-              /`foo` helper \(current behavior\)\. This implicit invocation behavior /.source +
-              /has been deprecated\./.source
-          )
+          `A resolved helper cannot be passed as a named argument as the syntax is ` +
+            `ambiguously a pass-by-reference or invocation. Use the ` +
+            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
         );
-
-        this.assertText('[true][Hello, world!]');
-        this.assertStableRerender();
       }
 
-      ['@test invoking an argument-less helper with parens in named argument position is not deprecated']() {
+      ['@test invoking an argument-less helper with parens in named argument position']() {
         this.registerHelper('foo', () => 'Hello, world!');
 
         expectNoDeprecation(() => this.render('<Bar @content={{(foo)}} />', { foo: 'Not it!' }));
@@ -964,7 +885,7 @@ if (DEBUG) {
         this.assertStableRerender();
       }
 
-      ['@test invoking an argument-less helper with quotes in named argument position is not deprecated']() {
+      ['@test invoking an argument-less helper with quotes in named argument position']() {
         this.registerHelper('foo', () => 'Hello, world!');
 
         expectNoDeprecation(() => this.render('<Bar @content="{{foo}}" />', { foo: 'Not it!' }));
@@ -973,7 +894,7 @@ if (DEBUG) {
         this.assertStableRerender();
       }
 
-      ['@test passing a local helper in named argument position is not deprecated']() {
+      ['@test passing a local helper in named argument position']() {
         let foo = defineSimpleHelper(() => 'Hello, world!');
 
         expectNoDeprecation(() =>
@@ -989,7 +910,7 @@ if (DEBUG) {
       // is trying to call `block.compile()` but `block` is the reference for `this.foo`.
       // So the execution stack is probably off-by-one or something.
 
-      ['@test invoking a local helper with parens in named argument position is not deprecated']() {
+      ['@test invoking a local helper with parens in named argument position']() {
         let foo = defineSimpleHelper(() => 'Hello, world!');
 
         expectNoDeprecation(() =>
@@ -1000,9 +921,7 @@ if (DEBUG) {
         this.assertStableRerender();
       }
 
-      // TODO: this one doesn't work yet, and there is a failing test in glimmer-vm
-
-      ['@skip invoking a helper with quotes in named argument position is not deprecated']() {
+      ['@skip invoking a helper with quotes in named argument position']() {
         let foo = defineSimpleHelper(() => 'Hello, world!');
 
         expectNoDeprecation(() =>

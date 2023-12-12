@@ -1,43 +1,44 @@
 import { ENV } from '@ember/-internals/environment';
-import { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
-import { assign } from '@ember/polyfills';
-import {
+import type {
   CapturedArguments,
   CompilableProgram,
   ComponentDefinition,
+  CapabilityMask,
   CustomRenderNode,
   Destroyable,
   Environment,
   InternalComponentCapabilities,
-  InternalComponentCapability,
-  Option,
   Template,
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import { createConstRef, Reference, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { createConstRef, valueForRef } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 
-import { SimpleElement } from '@simple-dom/interface';
-import { DynamicScope } from '../renderer';
-import { OutletState } from '../utils/outlet';
-import OutletView from '../views/outlet';
+import type { SimpleElement } from '@simple-dom/interface';
+import type { DynamicScope } from '../renderer';
+import type { OutletState } from '../utils/outlet';
+import type OutletView from '../views/outlet';
 
 function instrumentationPayload(def: OutletDefinitionState) {
-  return { object: `${def.name}:${def.outlet}` };
+  // "main" used to be the outlet name, keeping it around for compatibility
+  return { object: `${def.name}:main` };
 }
 
 interface OutletInstanceState {
   self: Reference;
-  outlet?: { name: string };
+  outletBucket?: {};
   engineBucket?: { mountPoint: string };
   engine?: EngineInstance;
   finalize: () => void;
@@ -46,7 +47,6 @@ interface OutletInstanceState {
 export interface OutletDefinitionState {
   ref: Reference<OutletState | undefined>;
   name: string;
-  outlet: string;
   template: Template;
   controller: unknown;
   model: unknown;
@@ -71,9 +71,10 @@ const CAPABILITIES: InternalComponentCapabilities = {
 class OutletComponentManager
   implements
     WithCreateInstance<OutletInstanceState>,
-    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState> {
+    WithCustomDebugRenderTree<OutletInstanceState, OutletDefinitionState>
+{
   create(
-    _owner: Owner,
+    _owner: InternalOwner,
     definition: OutletDefinitionState,
     _args: VMArguments,
     env: Environment,
@@ -90,21 +91,25 @@ class OutletComponentManager
     };
 
     if (env.debugRenderTree !== undefined) {
-      state.outlet = { name: definition.outlet };
+      state.outletBucket = {};
+
       let parentState = valueForRef(parentStateRef);
       let parentOwner = parentState && parentState.render && parentState.render.owner;
       let currentOwner = valueForRef(currentStateRef)!.render!.owner;
 
       if (parentOwner && parentOwner !== currentOwner) {
-        let engine = currentOwner as EngineInstance;
+        assert(
+          'Expected currentOwner to be an EngineInstance',
+          currentOwner instanceof EngineInstance
+        );
 
-        assert('invalid engine: missing mountPoint', typeof currentOwner.mountPoint === 'string');
-        assert('invalid engine: missing routable', currentOwner.routable === true);
+        let mountPoint = currentOwner.mountPoint;
 
-        let mountPoint = engine.mountPoint!;
+        state.engine = currentOwner;
 
-        state.engine = engine;
-        state.engineBucket = { mountPoint };
+        if (mountPoint) {
+          state.engineBucket = { mountPoint };
+        }
       }
     }
 
@@ -122,16 +127,17 @@ class OutletComponentManager
   ): CustomRenderNode[] {
     let nodes: CustomRenderNode[] = [];
 
-    if (state.outlet) {
-      nodes.push({
-        bucket: state.outlet,
-        type: 'outlet',
-        name: state.outlet.name,
-        args: EMPTY_ARGS,
-        instance: undefined,
-        template: undefined,
-      });
-    }
+    assert('[BUG] outletBucket must be set', state.outletBucket);
+
+    nodes.push({
+      bucket: state.outletBucket,
+      type: 'outlet',
+      // "main" used to be the outlet name, keeping it around for compatibility
+      name: 'main',
+      args: EMPTY_ARGS,
+      instance: undefined,
+      template: undefined,
+    });
 
     if (state.engineBucket) {
       nodes.push({
@@ -173,7 +179,7 @@ class OutletComponentManager
 
   didUpdateLayout() {}
 
-  getDestroyable(): Option<Destroyable> {
+  getDestroyable(): Nullable<Destroyable> {
     return null;
   }
 }
@@ -182,13 +188,14 @@ const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
   implements
-    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
+    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
+{
   // handle is not used by this custom definition
   public handle = -1;
 
   public resolvedName: string;
   public compilable: CompilableProgram;
-  public capabilities: InternalComponentCapability;
+  public capabilities: CapabilityMask;
 
   constructor(
     public state: OutletDefinitionState,
@@ -205,7 +212,7 @@ export class OutletComponentDefinition
 
 export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
   if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-    const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
+    const WRAPPED_CAPABILITIES = Object.assign({}, CAPABILITIES, {
       dynamicTag: true,
       elementHook: true,
       wrapped: true,
@@ -213,7 +220,8 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
 
     const WrappedOutletComponentManager = class
       extends OutletComponentManager
-      implements WithDynamicTagName<OutletInstanceState> {
+      implements WithDynamicTagName<OutletInstanceState>
+    {
       getTagName() {
         return 'div';
       }

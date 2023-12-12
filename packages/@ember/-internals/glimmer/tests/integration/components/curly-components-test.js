@@ -5,20 +5,21 @@ import {
   classes,
   equalTokens,
   equalsElement,
-  styles,
   runTask,
   runLoopSettled,
 } from 'internal-test-helpers';
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { alias, set, get, observer, on, computed, tracked } from '@ember/-internals/metal';
-import Service, { inject as injectService } from '@ember/service';
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { jQueryDisabled } from '@ember/-internals/views';
+import { tracked } from '@ember/-internals/metal';
+import { alias } from '@ember/object/computed';
+import { on } from '@ember/object/evented';
+import Service, { service } from '@ember/service';
+import EmberObject, { set, get, computed, observer } from '@ember/object';
+import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
-import { backtrackingMessageFor, debugStackMessageFor } from '../../utils/debug-stack';
+import { backtrackingMessageFor } from '../../utils/debug-stack';
 
 moduleFor(
   'Components test: curly components',
@@ -748,50 +749,6 @@ moduleFor(
       });
     }
 
-    ['@test it can render a basic component with a block when the yield is in a partial']() {
-      this.registerPartial('_partialWithYield', 'yielded: [{{yield}}]');
-
-      this.registerComponent('foo-bar', {
-        template: '{{partial "partialWithYield"}} - In component',
-      });
-
-      expectDeprecation(() => {
-        this.render('{{#foo-bar}}hello{{/foo-bar}}');
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-    }
-
-    ['@test it can render a basic component with a block param when the yield is in a partial']() {
-      this.registerPartial('_partialWithYield', 'yielded: [{{yield "hello"}}]');
-
-      this.registerComponent('foo-bar', {
-        template: '{{partial "partialWithYield"}} - In component',
-      });
-
-      expectDeprecation(() => {
-        this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
-      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        content: 'yielded: [hello] - In component',
-      });
-    }
-
     ['@test it renders the layout with the component instance as the context']() {
       let instance;
 
@@ -1302,13 +1259,17 @@ moduleFor(
       this.assertText('somecomponent');
     }
 
-    ['@test non-block with properties on attrs']() {
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) "
-      );
+    ['@test non-block with properties access via attrs is asserted against']() {
+      expectAssertion(() => {
+        this.registerComponent('non-block', {
+          template: 'In layout - someProp: {{attrs.someProp}}',
+        });
+      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) ");
+    }
 
+    ['@test non-block with properties on this.attrs']() {
       this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{attrs.someProp}}',
+        template: 'In layout - someProp: {{this.attrs.someProp}}',
       });
 
       this.render('{{non-block someProp=this.prop}}', {
@@ -1515,30 +1476,11 @@ moduleFor(
       );
     }
 
-    ['@test this.attrs.foo === attrs.foo === @foo === foo']() {
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.value}} should be updated to {{@value}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C8) "
-      );
-
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.value}} should be updated to {{@value}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C31) "
-      );
-
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.items}} should be updated to {{@items}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C82) "
-      );
-
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.items}} should be updated to {{@items}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C135) "
-      );
-
+    ['@test this.attrs.foo === @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
-        Args: {{this.attrs.value}} | {{attrs.value}} | {{@value}} | {{this.value}}
+        Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
         {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each attrs.items as |item|}}
           {{item}}
         {{/each}}
         {{#each @items as |item|}}
@@ -1564,11 +1506,11 @@ moduleFor(
         this.context.set('model.items', [1]);
       });
 
-      this.assertText(strip`Args: lul | lul | lul | lul1111`);
+      this.assertText(strip`Args: lul | lul | lul111`);
 
       runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
-      this.assertText('Args: wat | wat | wat | wat123123123123');
+      this.assertText('Args: wat | wat | wat123123123');
     }
 
     ['@test non-block with properties on self']() {
@@ -1625,13 +1567,17 @@ moduleFor(
       this.assertText('In layout - someProp: something here - In template');
     }
 
-    ['@test block with properties on attrs']() {
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) "
-      );
+    ['@test block with properties on attrs is asserted against']() {
+      expectAssertion(() => {
+        this.registerComponent('with-block', {
+          template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
+        });
+      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
+    }
 
+    ['@test block with properties on this.attrs']() {
       this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
+        template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
       });
 
       this.render(
@@ -1951,14 +1897,10 @@ moduleFor(
       );
     }
 
-    ['@test hasBlock is true when block supplied']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block) is true when block supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlock}}
+        {{#if (has-block)}}
           {{yield}}
         {{else}}
           No Block!
@@ -1977,14 +1919,10 @@ moduleFor(
       this.assertText('In template');
     }
 
-    ['@test hasBlock is false when no block supplied']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block) is false when no block supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlock}}
+        {{#if (has-block)}}
           {{yield}}
         {{else}}
           No Block!
@@ -2000,14 +1938,10 @@ moduleFor(
       this.assertText('No Block!');
     }
 
-    ['@test hasBlockParams is true when block param supplied']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block-params) is true when block param supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlockParams}}
+        {{#if (has-block-params)}}
           {{yield this}} - In Component
         {{else}}
           {{yield}} No Block!
@@ -2026,14 +1960,10 @@ moduleFor(
       this.assertText('In template - In Component');
     }
 
-    ['@test hasBlockParams is false when no block param supplied']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/with-block.hbs' @ L1:C6) `
-      );
-
+    ['@test (has-block-params) is false when no block param supplied']() {
       this.registerComponent('with-block', {
         template: strip`
-        {{#if hasBlockParams}}
+        {{#if (has-block-params)}}
           {{yield this}}
         {{else}}
           {{yield}} No Block Param!
@@ -2157,14 +2087,10 @@ moduleFor(
       this.assertText('Yes:Hello42');
     }
 
-    ['@test expression hasBlock inverse']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-inverse.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block) inverse']() {
       this.registerComponent('check-inverse', {
         template: strip`
-        {{#if (hasBlock "inverse")}}
+        {{#if (has-block "inverse")}}
           Yes
         {{else}}
           No
@@ -2181,14 +2107,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test expression hasBlock default']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block) default']() {
       this.registerComponent('check-block', {
         template: strip`
-        {{#if (hasBlock)}}
+        {{#if (has-block)}}
           Yes
         {{else}}
           No
@@ -2205,14 +2127,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test expression hasBlockParams inverse']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-inverse.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block-params) inverse']() {
       this.registerComponent('check-inverse', {
         template: strip`
-        {{#if (hasBlockParams "inverse")}}
+        {{#if (has-block-params "inverse")}}
           Yes
         {{else}}
           No
@@ -2229,14 +2147,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test expression hasBlockParams default']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
-      );
-
+    ['@test expression (has-block-params) default']() {
       this.registerComponent('check-block', {
         template: strip`
-        {{#if (hasBlockParams)}}
+        {{#if (has-block-params)}}
           Yes
         {{else}}
           No
@@ -2253,85 +2167,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test non-expression hasBlock']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-block.hbs' @ L1:C6) `
-      );
-
-      this.registerComponent('check-block', {
-        template: strip`
-        {{#if hasBlock}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
-      });
-
-      this.render(strip`
-      {{check-block}}
-      {{#check-block}}{{/check-block}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test expression hasBlockParams']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-params.hbs' @ L1:C6) `
-      );
-
-      this.registerComponent('check-params', {
-        template: strip`
-        {{#if (hasBlockParams)}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
-      });
-
-      this.render(strip`
-      {{#check-params}}{{/check-params}}
-      {{#check-params as |foo|}}{{/check-params}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test non-expression hasBlockParams']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-params.hbs' @ L1:C6) `
-      );
-
-      this.registerComponent('check-params', {
-        template: strip`
-        {{#if hasBlockParams}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
-      });
-
-      this.render(strip`
-      {{#check-params}}{{/check-params}}
-      {{#check-params as |foo|}}{{/check-params}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'No' });
-      this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test hasBlock expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block) expression in an attribute'](assert) {
       this.registerComponent('check-attr', {
-        template: '<button name={{hasBlock}}></button>',
+        template: '<button name={{(has-block)}}></button>',
       });
 
       this.render(strip`
@@ -2344,15 +2182,11 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlock inverse expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block) inverse expression in an attribute'](assert) {
       this.registerComponent(
         'check-attr',
         {
-          template: '<button name={{hasBlock "inverse"}}></button>',
+          template: '<button name={{(has-block "inverse")}}></button>',
         },
         ''
       );
@@ -2367,13 +2201,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block-params) expression in an attribute'](assert) {
       this.registerComponent('check-attr', {
-        template: '<button name={{hasBlockParams}}></button>',
+        template: '<button name={{(has-block-params)}}></button>',
       });
 
       this.render(strip`
@@ -2386,15 +2216,11 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams inverse expression in an attribute'](assert) {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-attr.hbs' @ L1:C13) `
-      );
-
+    ['@test (has-block-params) inverse expression in an attribute'](assert) {
       this.registerComponent(
         'check-attr',
         {
-          template: '<button name={{hasBlockParams "inverse"}}></button>',
+          template: '<button name={{(has-block-params "inverse")}}></button>',
         },
         ''
       );
@@ -2409,13 +2235,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlock as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block) as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if hasBlock "true" "false"}}',
+        template: '{{if (has-block) "true" "false"}}',
       });
 
       this.render(strip`
@@ -2428,32 +2250,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlock as an expression param to a helper']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block) inverse as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlock) "true" "false"}}',
-      });
-
-      this.render(strip`
-      {{check-helper}}
-      {{#check-helper}}{{/check-helper}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test hasBlock inverse as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
-      this.registerComponent('check-helper', {
-        template: '{{if (hasBlock "inverse") "true" "false"}}',
+        template: '{{if (has-block "inverse") "true" "false"}}',
       });
 
       this.render(strip`
@@ -2466,13 +2265,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block-params) as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if hasBlockParams "true" "false"}}',
+        template: '{{if (has-block-params) "true" "false"}}',
       });
 
       this.render(strip`
@@ -2485,32 +2280,9 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test hasBlockParams as an expression param to a helper']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
+    ['@test (has-block-params) inverse as a param to a helper']() {
       this.registerComponent('check-helper', {
-        template: '{{if (hasBlockParams) "true" "false"}}',
-      });
-
-      this.render(strip`
-      {{#check-helper}}{{/check-helper}}
-      {{#check-helper as |something|}}{{/check-helper}}`);
-
-      this.assertComponentElement(this.firstChild, { content: 'false' });
-      this.assertComponentElement(this.nthChild(1), { content: 'true' });
-
-      this.assertStableRerender();
-    }
-
-    ['@test hasBlockParams inverse as a param to a helper']() {
-      expectDeprecation(
-        `\`hasBlockParams\` is deprecated. Use \`has-block-params\` instead. ('my-app/templates/components/check-helper.hbs' @ L1:C5) `
-      );
-
-      this.registerComponent('check-helper', {
-        template: '{{if (hasBlockParams "inverse") "true" "false"}}',
+        template: '{{if (has-block-params "inverse") "true" "false"}}',
       });
 
       this.render(strip`
@@ -3086,13 +2858,13 @@ moduleFor(
     }
 
     ['@test services can be injected into components']() {
-      let service;
+      let serviceInstance;
       this.registerService(
         'name',
         Service.extend({
           init() {
             this._super(...arguments);
-            service = this;
+            serviceInstance = this;
           },
           last: 'Jackson',
         })
@@ -3100,7 +2872,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          name: injectService(),
+          name: service(),
         }),
         template: '{{this.name.last}}',
       });
@@ -3114,13 +2886,13 @@ moduleFor(
       this.assertText('Jackson');
 
       runTask(() => {
-        service.set('last', 'McGuffey');
+        serviceInstance.set('last', 'McGuffey');
       });
 
       this.assertText('McGuffey');
 
       runTask(() => {
-        service.set('last', 'Jackson');
+        serviceInstance.set('last', 'Jackson');
       });
 
       this.assertText('Jackson');
@@ -3129,7 +2901,7 @@ moduleFor(
     ['@test injecting an unknown service raises an exception']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          missingService: injectService(),
+          missingService: service(),
         }),
       });
 
@@ -3148,149 +2920,6 @@ moduleFor(
       expectAssertion(() => {
         this.render('{{foo-bar}}');
       }, /You must call `super.init\(...arguments\);` or `this._super\(...arguments\)` when overriding `init` on a framework object. Please update .*/);
-    }
-
-    ['@test should toggle visibility with isVisible'](assert) {
-      let assertStyle = (expected) => {
-        let matcher = styles(expected);
-        let actual = this.firstChild.getAttribute('style');
-
-        assert.pushResult({
-          result: matcher.match(actual),
-          message: matcher.message(),
-          actual,
-          expected,
-        });
-      };
-
-      this.registerComponent('foo-bar', {
-        template: `<p>foo</p>`,
-      });
-
-      expectDeprecation(() => {
-        this.render(`{{foo-bar id="foo-bar" isVisible=this.visible}}`, {
-          visible: false,
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-
-      this.assertStableRerender();
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', true);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('');
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', false);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-    }
-
-    ['@test isVisible does not overwrite component style']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['style'],
-          style: htmlSafe('color: blue;'),
-        }),
-
-        template: `<p>foo</p>`,
-      });
-
-      expectDeprecation(() => {
-        this.render(`{{foo-bar id="foo-bar" isVisible=this.visible}}`, {
-          visible: false,
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') },
-      });
-
-      this.assertStableRerender();
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', true);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue;') },
-      });
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', false);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'foo-bar', style: styles('color: blue; display: none;') },
-      });
-    }
-
-    ['@test adds isVisible binding when style binding is missing and other bindings exist'](
-      assert
-    ) {
-      let assertStyle = (expected) => {
-        let matcher = styles(expected);
-        let actual = this.firstChild.getAttribute('style');
-
-        assert.pushResult({
-          result: matcher.match(actual),
-          message: matcher.message(),
-          actual,
-          expected,
-        });
-      };
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          attributeBindings: ['foo'],
-          foo: 'bar',
-        }),
-        template: `<p>foo</p>`,
-      });
-
-      expectDeprecation(() => {
-        this.render(`{{foo-bar id="foo-bar" foo=this.foo isVisible=this.visible}}`, {
-          visible: false,
-          foo: 'baz',
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-
-      this.assertStableRerender();
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', true);
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('');
-
-      expectDeprecation(() => {
-        runTask(() => {
-          set(this.context, 'visible', false);
-          set(this.context, 'foo', 'woo');
-        });
-      }, debugStackMessageFor('The `isVisible` property on classic component classes is deprecated. Was accessed:', { renderTree: ['foo-bar'] }));
-
-      assertStyle('display: none;');
-      assert.equal(this.firstChild.getAttribute('foo'), 'woo');
     }
 
     ['@test it can use readDOMAttr to read input value']() {
@@ -3661,21 +3290,29 @@ moduleFor(
       this.assertText('hello');
     }
 
-    ['@test using attrs for positional params']() {
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) "
-      );
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.myVar2}} should be updated to {{@myVar2}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C65) "
-      );
+    ['@test using attrs for positional params is asserted against']() {
+      let MyComponent = Component.extend();
 
+      expectAssertion(() => {
+        this.registerComponent('foo-bar', {
+          ComponentClass: MyComponent.reopenClass({
+            positionalParams: ['myVar'],
+          }),
+          template:
+            'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
+        });
+      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) ");
+    }
+
+    ['@test using this.attrs for positional params']() {
       let MyComponent = Component.extend();
 
       this.registerComponent('foo-bar', {
         ComponentClass: MyComponent.reopenClass({
           positionalParams: ['myVar'],
         }),
-        template: 'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
+        template:
+          'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
       });
 
       this.render('{{foo-bar 1 myVar2=2}}');
@@ -3881,24 +3518,6 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
 
-    ['@test can use `{{component.foo}}` in a template GH#19313']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
-      this.registerComponent('foo-bar', {
-        template: '{{component.foo}}',
-      });
-
-      this.render('{{foo-bar component=(hash foo="bar")}}');
-
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { content: 'bar' });
-    }
-
     ['@test can use `{{@component.foo}}` in a template GH#19313']() {
       this.registerComponent('foo-bar', {
         template: '{{@component.foo}}',
@@ -4026,108 +3645,3 @@ moduleFor(
     }
   }
 );
-
-if (jQueryDisabled) {
-  moduleFor(
-    'Components test: curly components: jQuery disabled',
-    class extends RenderingTestCase {
-      ['@test jQuery proxy is not available without jQuery']() {
-        let instance;
-
-        let FooBarComponent = Component.extend({
-          init() {
-            this._super();
-            instance = this;
-          },
-        });
-
-        this.registerComponent('foo-bar', {
-          ComponentClass: FooBarComponent,
-          template: 'hello',
-        });
-
-        this.render('{{foo-bar}}');
-
-        expectAssertion(() => {
-          instance.$()[0];
-        }, 'You cannot access this.$() with `jQuery` disabled.');
-      }
-    }
-  );
-} else {
-  moduleFor(
-    'Components test: curly components: jQuery enabled',
-    class extends RenderingTestCase {
-      ['@test it has a jQuery proxy to the element']() {
-        let instance;
-        let element1;
-        let element2;
-
-        let FooBarComponent = Component.extend({
-          init() {
-            this._super();
-            instance = this;
-          },
-        });
-
-        this.registerComponent('foo-bar', {
-          ComponentClass: FooBarComponent,
-          template: 'hello',
-        });
-
-        this.render('{{foo-bar}}');
-
-        expectDeprecation(() => {
-          element1 = instance.$()[0];
-        }, 'Using this.$() in a component has been deprecated, consider using this.element');
-
-        this.assertComponentElement(element1, { content: 'hello' });
-
-        runTask(() => this.rerender());
-
-        expectDeprecation(() => {
-          element2 = instance.$()[0];
-        }, 'Using this.$() in a component has been deprecated, consider using this.element');
-
-        this.assertComponentElement(element2, { content: 'hello' });
-
-        this.assertSameNode(element2, element1);
-      }
-
-      ['@test it scopes the jQuery proxy to the component element'](assert) {
-        let instance;
-        let $span;
-
-        let FooBarComponent = Component.extend({
-          init() {
-            this._super();
-            instance = this;
-          },
-        });
-
-        this.registerComponent('foo-bar', {
-          ComponentClass: FooBarComponent,
-          template: '<span class="inner">inner</span>',
-        });
-
-        this.render('<span class="outer">outer</span>{{foo-bar}}');
-
-        expectDeprecation(() => {
-          $span = instance.$('span');
-        }, 'Using this.$() in a component has been deprecated, consider using this.element');
-
-        assert.equal($span.length, 1);
-        assert.equal($span.attr('class'), 'inner');
-
-        runTask(() => this.rerender());
-
-        expectDeprecation(() => {
-          $span = instance.$('span');
-        }, 'Using this.$() in a component has been deprecated, consider using this.element');
-
-        assert.equal($span.length, 1);
-        assert.equal($span.attr('class'), 'inner');
-      }
-    }
-  );
-}

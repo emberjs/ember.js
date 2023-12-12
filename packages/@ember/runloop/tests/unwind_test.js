@@ -1,5 +1,4 @@
 import { run, schedule, _getCurrentRunLoop } from '..';
-import EmberError from '@ember/error';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -12,7 +11,7 @@ moduleFor(
         () => {
           run(() => {
             schedule('actions', function () {
-              throw new EmberError('boom!');
+              throw new Error('boom!');
             });
           });
         },
@@ -37,10 +36,10 @@ moduleFor(
       assert.throws(
         () => {
           run(function () {
-            throw new EmberError('boom!');
+            throw new Error('boom!');
           });
         },
-        EmberError,
+        Error,
         'boom!'
       );
 

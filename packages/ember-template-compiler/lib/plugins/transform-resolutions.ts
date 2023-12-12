@@ -1,8 +1,9 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { AST, ASTPlugin, print } from '@glimmer/syntax';
+import type { AST, ASTPlugin } from '@glimmer/syntax';
+import { print } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
-import { EmberASTPluginEnvironment } from '../types';
+import type { EmberASTPluginEnvironment } from '../types';
 import { isPath, isStringLiteral, trackLocals } from './utils';
 
 /**
@@ -148,7 +149,7 @@ export default function transformResolutions(env: EmberASTPluginEnvironment): AS
 }
 
 function isLocalVariable(node: AST.PathExpression, hasLocal: (k: string) => boolean): boolean {
-  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]);
+  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]!);
 }
 
 function transformParams(

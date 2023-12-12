@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
+import { A as emberA } from '@ember/array';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { computed, set } from '@ember/-internals/metal';
+import { computed, set } from '@ember/object';
+import { service } from '@ember/service';
 
 let originalConsoleError;
 
@@ -27,41 +29,6 @@ moduleFor(
     teardown() {
       super.teardown();
       console.error = originalConsoleError;
-    }
-
-    handleURLAborts(assert, path, deprecated) {
-      run(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        let result;
-
-        if (deprecated !== undefined) {
-          expectDeprecation(() => {
-            result = router.handleURL(path);
-          });
-        } else {
-          result = router.handleURL(path);
-        }
-
-        result.then(
-          function () {
-            assert.ok(false, 'url: `' + path + '` was NOT to be handled');
-          },
-          function (reason) {
-            assert.ok(
-              reason && reason.message === 'TransitionAborted',
-              'url: `' + path + '` was to be aborted'
-            );
-          }
-        );
-      });
-    }
-
-    get currentPath() {
-      let currentPath;
-      expectDeprecation(() => {
-        currentPath = this.applicationInstance.lookup('controller:application').get('currentPath');
-      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-      return currentPath;
     }
 
     async ['@test warn on URLs not included in the route set'](assert) {
@@ -198,53 +165,6 @@ moduleFor(
         assert.equal(
           text,
           'foo',
-          'The homepage template was rendered with data from the custom controller'
-        );
-      });
-    }
-
-    [`@test The route controller specified via controllerName is used in render`](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
-      this.router.map(function () {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          controllerName: 'myController',
-          renderTemplate() {
-            expectDeprecation(
-              () => this.render('alternative_home'),
-              /Usage of `render` is deprecated/
-            );
-          },
-        })
-      );
-
-      this.add(
-        'controller:myController',
-        Controller.extend({
-          myValue: 'foo',
-        })
-      );
-
-      this.addTemplate('alternative_home', '<p>alternative home: {{this.myValue}}</p>');
-
-      return this.visit('/').then(() => {
-        let homeRoute = this.applicationInstance.lookup('route:home');
-        let myController = this.applicationInstance.lookup('controller:myController');
-        let text = this.$('p').text();
-
-        assert.equal(
-          homeRoute.controller,
-          myController,
-          'route controller is set by controllerName'
-        );
-
-        assert.equal(
-          text,
-          'alternative home: foo',
           'The homepage template was rendered with data from the custom controller'
         );
       });
@@ -442,6 +362,14 @@ moduleFor(
       });
       this.add('model:menu_item', MenuItem);
 
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+
+      this.add('route:special', SpecialRoute);
+
       this.router.map(function () {
         this.route('home', { path: '/' });
         this.route('special', { path: '/specials/:menu_item_id' });
@@ -470,6 +398,13 @@ moduleFor(
       });
       this.add('model:menu_item', MenuItem);
 
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+      this.add('route:special', SpecialRoute);
+
       this.addTemplate('home', '<h3>Home</h3>');
       this.addTemplate('special', '<p>{{@model.id}}</p>');
 
@@ -488,9 +423,7 @@ moduleFor(
     }
 
     ['@test Nested callbacks are not exited when moving to siblings'](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       let rootSetup = 0;
-      let rootRender = 0;
       let rootModel = 0;
       let rootSerialize = 0;
       let menuItem;
@@ -523,10 +456,6 @@ moduleFor(
 
           setupController() {
             rootSetup++;
-          },
-
-          renderTemplate() {
-            rootRender++;
           },
 
           serialize() {
@@ -563,7 +492,6 @@ moduleFor(
           'The app is now in the initial state'
         );
         assert.equal(rootSetup, 1, 'The root setup was triggered');
-        assert.equal(rootRender, 1, 'The root render was triggered');
         assert.equal(rootSerialize, 0, 'The root serialize was not called');
         assert.equal(rootModel, 1, 'The root model was called');
 
@@ -572,7 +500,6 @@ moduleFor(
 
         return router.transitionTo('special', menuItem).then(function () {
           assert.equal(rootSetup, 1, 'The root setup was not triggered again');
-          assert.equal(rootRender, 1, 'The root render was not triggered again');
           assert.equal(rootSerialize, 0, 'The root serialize was not called');
 
           // TODO: Should this be changed?
@@ -810,11 +737,10 @@ moduleFor(
       this.add(
         'route:posts',
         Route.extend({
+          router: service(),
           actions: {
             showPost(context) {
-              expectDeprecation(() => {
-                this.transitionTo('post', context);
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('post', context);
             },
           },
         })
@@ -823,6 +749,8 @@ moduleFor(
       this.add(
         'route:post',
         Route.extend({
+          router: service(),
+
           model(params) {
             return { id: params.postId };
           },
@@ -833,9 +761,7 @@ moduleFor(
 
           actions: {
             editPost() {
-              expectDeprecation(() => {
-                this.transitionTo('post.edit');
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('post.edit');
             },
           },
         })
@@ -902,13 +828,20 @@ moduleFor(
     ['@test Route model hook finds the same model as a manual find'](assert) {
       let post;
       let Post = EmberObject.extend();
-      this.add('model:post', Post);
       Post.reopenClass({
         find() {
           post = this;
           return {};
         },
       });
+      this.add('model:post', Post);
+
+      let PostRoute = class extends Route {
+        model({ post_id }) {
+          return Post.find(post_id);
+        }
+      };
+      this.add('route:post', PostRoute);
 
       this.router.map(function () {
         this.route('post', { path: '/post/:post_id' });

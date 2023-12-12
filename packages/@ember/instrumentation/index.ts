@@ -2,7 +2,7 @@
 /* global console */
 
 import { ENV } from '@ember/-internals/environment';
-import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { assert } from '@ember/debug';
 
 export interface Listener<T> {
   before: (name: string, timestamp: number, payload: object) => T;
@@ -91,10 +91,8 @@ let cache: { [key: string]: Listener<any>[] } = {};
 
 function populateListeners(name: string) {
   let listeners: Listener<any>[] = [];
-  let subscriber;
 
-  for (let i = 0; i < subscribers.length; i++) {
-    subscriber = subscribers[i];
+  for (let subscriber of subscribers) {
     if (subscriber.regex.test(name)) {
       listeners.push(subscriber.object);
     }
@@ -187,21 +185,13 @@ export function instrument<Binding, Result>(
   }
 }
 
-let flaggedInstrument: <Result>(name: string, payload: object, callback: () => Result) => Result;
-
-if (EMBER_IMPROVED_INSTRUMENTATION) {
-  flaggedInstrument = instrument;
-} else {
-  flaggedInstrument = function instrument<Result>(
-    _name: string,
-    _payload: object,
-    callback: () => Result
-  ): Result {
-    return callback();
-  };
+export function flaggedInstrument<Result>(
+  _name: string,
+  _payload: object,
+  callback: () => Result
+): Result {
+  return callback();
 }
-
-export { flaggedInstrument };
 
 function withFinalizer<Binding, Result>(
   callback: InstrumentCallback<Binding, Result>,
@@ -258,15 +248,17 @@ export function _instrumentStart<Arg>(
 
   let beforeValues: any[] = [];
   let timestamp = time();
-  for (let i = 0; i < listeners.length; i++) {
-    let listener = listeners[i];
+  for (let listener of listeners) {
     beforeValues.push(listener.before(name, timestamp, payload));
   }
 
+  const constListeners = listeners;
+
   return function _instrumentEnd(): void {
     let timestamp = time();
-    for (let i = 0; i < listeners.length; i++) {
-      let listener = listeners[i];
+    for (let i = 0; i < constListeners.length; i++) {
+      let listener = constListeners[i];
+      assert('has listener', listener); // Iterating over values
       if (typeof listener.after === 'function') {
         listener.after(name, timestamp, payload, beforeValues[i]);
       }
@@ -293,11 +285,9 @@ export function _instrumentStart<Arg>(
 */
 export function subscribe<T>(pattern: string, object: Listener<T>): Subscriber<T> {
   let paths = pattern.split('.');
-  let path;
   let regexes: string[] = [];
 
-  for (let i = 0; i < paths.length; i++) {
-    path = paths[i];
+  for (let path of paths) {
     if (path === '*') {
       regexes.push('[^\\.]*');
     } else {

@@ -1,9 +1,9 @@
-import { TemplateFactory } from '@glimmer/interfaces';
+import type { TemplateFactory } from '@glimmer/interfaces';
 
 // STATE within a module is frowned upon, this exists
 // to support Ember.TEMPLATES but shield ember internals from this legacy
 // global API.
-interface TemplatesRegistry {
+export interface TemplatesRegistry {
   [name: string]: TemplateFactory;
 }
 let TEMPLATES: TemplatesRegistry = {};

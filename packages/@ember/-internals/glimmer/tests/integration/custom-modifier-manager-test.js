@@ -9,8 +9,8 @@ import {
 
 import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
-import { Object as EmberObject } from '@ember/-internals/runtime';
-import { set, tracked } from '@ember/-internals/metal';
+import EmberObject, { set } from '@ember/object';
+import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
 
 class ModifierManagerTest extends RenderingTestCase {
@@ -241,50 +241,6 @@ class ModifierManagerTest extends RenderingTestCase {
     assert.equal(updateCount, 2);
   }
 
-  '@test provides a helpful deprecation when mutating a tracked value that was consumed already within constructor'(
-    assert
-  ) {
-    let ModifierClass = setModifierManager(
-      (owner) => {
-        return new this.CustomModifierManager(owner);
-      },
-      class {
-        static create() {
-          return new this();
-        }
-
-        @tracked foo = 123;
-
-        constructor() {
-          // first read the tracked property
-          this.foo;
-
-          // then attempt to update the tracked property
-          this.foo = 456;
-        }
-
-        didInsertElement() {}
-        didUpdate() {}
-        willDestroyElement() {}
-      }
-    );
-
-    this.registerModifier(
-      'foo-bar',
-      class extends ModifierClass {
-        didInsertElement() {
-          assert.ok(true, 'modifiers didInsertElement was called');
-        }
-      }
-    );
-
-    let expectedMessage = backtrackingMessageFor('foo');
-
-    expectDeprecation(() => {
-      this.render('<h1 {{foo-bar}}>hello world</h1>');
-    }, expectedMessage);
-  }
-
   '@test provides a helpful assertion when mutating a value that was consumed already'() {
     class Person {
       @tracked name = 'bob';
@@ -360,95 +316,11 @@ class ModifierManagerTest extends RenderingTestCase {
 
     assert.throws(() => {
       this.render('<h1 {{foo-bar}}>hello world</h1>');
-    }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.13' \| '3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
+    }, /Custom modifier managers must have a `capabilities` property that is the result of calling the `capabilities\('3.22'\)` \(imported via `import \{ capabilities \} from '@ember\/modifier';`\). /);
 
     assert.verifySteps([]);
   }
 }
-
-moduleFor(
-  'Basic Custom Modifier Manager: 3.13',
-  class extends ModifierManagerTest {
-    CustomModifierManager = class CustomModifierManager {
-      capabilities = modifierCapabilities('3.13');
-
-      constructor(owner) {
-        this.owner = owner;
-      }
-
-      createModifier(factory, args) {
-        // factory is the owner.factoryFor result
-        return factory.create(args);
-      }
-
-      installModifier(instance, element, args) {
-        instance.element = element;
-        let { positional, named } = args;
-        instance.didInsertElement(positional, named);
-      }
-
-      updateModifier(instance, args) {
-        let { positional, named } = args;
-        instance.didUpdate(positional, named);
-      }
-
-      destroyModifier(instance) {
-        instance.willDestroyElement();
-      }
-    };
-
-    '@test modifers consume all arguments'(assert) {
-      let insertCount = 0;
-      let updateCount = 0;
-
-      let ModifierClass = setModifierManager(
-        (owner) => {
-          return new this.CustomModifierManager(owner);
-        },
-        EmberObject.extend({
-          didInsertElement() {},
-          didUpdate() {},
-          willDestroyElement() {},
-        })
-      );
-
-      this.registerModifier(
-        'foo-bar',
-        ModifierClass.extend({
-          didInsertElement(_positional, named) {
-            insertCount++;
-
-            // consume qux
-            named.qux;
-          },
-
-          didUpdate(_positiona, named) {
-            updateCount++;
-
-            // consume qux
-            named.qux;
-          },
-        })
-      );
-
-      this.render('<h1 {{foo-bar bar=this.bar qux=this.qux}}>hello world</h1>', {
-        bar: 'bar',
-        qux: 'quz',
-      });
-
-      this.assertHTML(`<h1>hello world</h1>`);
-
-      assert.equal(insertCount, 1);
-      assert.equal(updateCount, 0);
-
-      runTask(() => set(this.context, 'bar', 'other bar'));
-      assert.equal(updateCount, 1);
-
-      runTask(() => set(this.context, 'qux', 'quuuuxxxxxx'));
-      assert.equal(updateCount, 2);
-    }
-  }
-);
 
 moduleFor(
   'Basic Custom Modifier Manager: 3.22',
@@ -587,7 +459,7 @@ moduleFor(
       assert.equal(updateCount, 1);
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can resolve a modifier'() {
+    '@test Can resolve a modifier'() {
       this.registerModifier(
         'replace',
         defineSimpleModifier((element, [text]) => (element.innerHTML = text ?? 'Hello, world!'))
@@ -604,7 +476,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot dynamically resolve a modifier'(assert) {
+    '@test Cannot dynamically resolve a modifier'(assert) {
       this.registerModifier(
         'replace',
         defineSimpleModifier((element) => (element.innerHTML = 'Hello, world!'))
@@ -626,7 +498,7 @@ moduleFor(
       }
     }
 
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can be curried'() {
+    '@test Can be curried'() {
       let val = defineSimpleModifier((element, [text]) => (element.innerHTML = text));
 
       this.registerComponent('foo', {
@@ -643,15 +515,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    '@feature(!EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Cannot be curried when flag is not enabled'() {
-      expectAssertion(() => {
-        this.registerComponent('bar', {
-          template: '<Foo @value={{modifier this.val "Hello, world!"}}/>',
-        });
-      }, /Cannot use the \(modifier\) keyword yet, as it has not been implemented/);
-    }
-
-    '@feature(EMBER_DYNAMIC_HELPERS_AND_MODIFIERS) Can use a dynamic modifier with a nested dynamic helper'() {
+    '@test Can use a dynamic modifier with a nested dynamic helper'() {
       let foo = defineSimpleHelper(() => 'Hello, world!');
       let bar = defineSimpleModifier((element, [value]) => (element.innerHTML = value));
 
@@ -672,60 +536,6 @@ moduleFor(
   class extends RenderingTestCase {
     getBootOptions() {
       return { isInteractive: false };
-    }
-
-    [`@test doesn't trigger lifecycle hooks when non-interactive: modifierCapabilities('3.13')`](
-      assert
-    ) {
-      class CustomModifierManager {
-        capabilities = modifierCapabilities('3.13');
-
-        constructor(owner) {
-          this.owner = owner;
-        }
-
-        createModifier(factory, args) {
-          return factory.create(args);
-        }
-
-        installModifier(instance, element, args) {
-          instance.element = element;
-          let { positional, named } = args;
-          instance.didInsertElement(positional, named);
-        }
-
-        updateModifier(instance, args) {
-          let { positional, named } = args;
-          instance.didUpdate(positional, named);
-        }
-
-        destroyModifier(instance) {
-          instance.willDestroyElement();
-        }
-      }
-      let ModifierClass = setModifierManager(
-        (owner) => {
-          return new CustomModifierManager(owner);
-        },
-        EmberObject.extend({
-          didInsertElement() {
-            assert.ok(false);
-          },
-          didUpdate() {
-            assert.ok(false);
-          },
-          willDestroyElement() {
-            assert.ok(false);
-          },
-        })
-      );
-
-      this.registerModifier('foo-bar', ModifierClass);
-
-      this.render('<h1 {{foo-bar this.baz}}>hello world</h1>');
-      runTask(() => this.context.set('baz', 'Hello'));
-
-      this.assertHTML('<h1>hello world</h1>');
     }
 
     [`@test doesn't trigger lifecycle hooks when non-interactive: modifierCapabilities('3.22')`](

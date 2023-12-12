@@ -1,16 +1,20 @@
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
-import EmberError from '@ember/error';
+import type { AnyFn } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
-import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
+import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
+import _deprecate from './lib/deprecate';
 import { isTesting } from './lib/testing';
-import _warn, { WarnFunc } from './lib/warn';
+import type { WarnFunc } from './lib/warn';
+import _warn from './lib/warn';
 
-export { inspect } from '@ember/-internals/utils';
 export { registerHandler as registerWarnHandler } from './lib/warn';
-export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
+export {
+  registerHandler as registerDeprecationHandler,
+  type DeprecationOptions,
+} from './lib/deprecate';
+export { default as inspect } from './lib/inspect';
 export { isTesting, setTesting } from './lib/testing';
 export { default as captureRenderTree } from './lib/capture-render-tree';
-export { DeprecationOptions } from './lib/deprecate';
 
 export type DebugFunctionType =
   | 'assert'
@@ -23,11 +27,14 @@ export type DebugFunctionType =
   | 'runInDebug'
   | 'deprecateFunc';
 
-export type AssertFunc = (desc: string, condition?: unknown) => asserts condition;
+export interface AssertFunc {
+  (desc: string, condition: unknown): asserts condition;
+  (desc: string): never;
+}
 export type DebugFunc = (message: string) => void;
 export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
-export type InfoFunc = (message: string, options: object) => void;
+export type InfoFunc = (message: string, options?: object) => void;
 export type RunInDebugFunc = (func: () => void) => void;
 export type DeprecateFuncFunc = (
   message: string,
@@ -62,7 +69,9 @@ export type SetDebugFunction = {
 // These are the default production build versions:
 const noop = () => {};
 
-let assert: AssertFunc = noop;
+// SAFETY: these casts are just straight-up lies, but the point is that they do
+// not do anything in production builds.
+let assert: AssertFunc = noop as unknown as AssertFunc;
 let info: InfoFunc = noop;
 let warn: WarnFunc = noop;
 let debug: DebugFunc = noop;
@@ -70,8 +79,8 @@ let deprecate: DeprecateFunc = noop;
 let debugSeal: DebugSealFunc = noop;
 let debugFreeze: DebugFreezeFunc = noop;
 let runInDebug: RunInDebugFunc = noop;
-let setDebugFunction: SetDebugFunction = noop as any;
-let getDebugFunction: GetDebugFunction = noop as any;
+let setDebugFunction: SetDebugFunction = noop as unknown as SetDebugFunction;
+let getDebugFunction: GetDebugFunction = noop as unknown as GetDebugFunction;
 
 let deprecateFunc: DeprecateFuncFunc = function () {
   return arguments[arguments.length - 1];
@@ -164,11 +173,16 @@ if (DEBUG) {
     @public
     @since 1.0.0
   */
-  setDebugFunction('assert', function assert(desc, test) {
+  function assert(desc: string): never;
+  function assert(desc: string, test: unknown): asserts test;
+  // eslint-disable-next-line no-inner-declarations
+  function assert(desc: string, test?: unknown): asserts test {
     if (!test) {
-      throw new EmberError(`Assertion Failed: ${desc}`);
+      throw new Error(`Assertion Failed: ${desc}`);
     }
-  });
+  }
+
+  setDebugFunction('assert', assert);
 
   /**
     Display a debug notice.
@@ -188,13 +202,7 @@ if (DEBUG) {
     @public
   */
   setDebugFunction('debug', function debug(message) {
-    /* eslint-disable no-console */
-    if (console.debug) {
-      console.debug(`DEBUG: ${message}`);
-    } else {
-      console.log(`DEBUG: ${message}`);
-    }
-    /* eslint-ensable no-console */
+    console.debug(`DEBUG: ${message}`); /* eslint-disable-line no-console */
   });
 
   /**
@@ -243,7 +251,7 @@ if (DEBUG) {
   */
   setDebugFunction('deprecateFunc', function deprecateFunc(...args: any[]) {
     if (args.length === 3) {
-      let [message, options, func] = args as [string, DeprecationOptions, (...args: any[]) => any];
+      let [message, options, func] = args as [string, DeprecationOptions, AnyFn];
       return function (this: any, ...args: any[]) {
         deprecate(message, false, options);
         return func.apply(this, args);
@@ -321,7 +329,7 @@ if (DEBUG && !isTesting()) {
         if (
           document.documentElement &&
           document.documentElement.dataset &&
-          !document.documentElement.dataset.emberExtension
+          !document.documentElement.dataset['emberExtension']
         ) {
           let downloadURL;
 

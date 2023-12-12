@@ -2,55 +2,49 @@ name: Alpha Releases
 
 on:
   schedule:
-    - cron:  '0 20 * * 3' # weekly (Wednesday)
+    - cron: '0 20 * * 3' # weekly (Wednesday)
+
+permissions:
+  contents: read
 
 jobs:
   test:
     name: Basic Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build
+        run: pnpm ember build
       - name: test
         env:
           TEST_SUITE: each-package
-        run: yarn test
+        run: pnpm test
 
   release:
+    permissions:
+      contents: write # to push tag
+
     name: Tag + Release
     runs-on: ubuntu-latest
     needs: [test]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-          registry-url: 'https://registry.npmjs.org'
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: setup git
         run: |
           git config --local user.email 'tomster@emberjs.com'
           git config --local user.name 'Ember.js Alpha Releaser'
+      - name: Find next alpha
+        run: |
+          LATEST_ALPHA=`npm view ember-source dist-tags.alpha`
+          export NEXT_ALPHA=`node bin/next-alpha-version.js ${LATEST_ALPHA}`
+          echo "NEXT_ALPHA=$NEXT_ALPHA" >> $GITHUB_ENV
       - name: tag the next alpha
-        run: npm version prerelease --preid alpha
+        run: npm version ${{env.NEXT_ALPHA}} --allow-same-version
       - name: build for publish
         env:
           BUILD_TYPE: alpha
@@ -60,5 +54,6 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - name: push branch + tag
-        run: git push origin HEAD --follow-tags
+      - name: push tag
+        # Push in a way that will NOT trigger other workflows
+        run: git push origin v${{env.NEXT_ALPHA}}

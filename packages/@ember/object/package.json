@@ -1,0 +1,38 @@
+{
+  "name": "@ember/object",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./mixin": "./mixin.ts",
+    "./-internals": "./-internals.ts",
+    "./internals": "./internals.ts",
+    "./evented": "./evented.ts",
+    "./core": "./core.ts",
+    "./observable": "./observable.ts",
+    "./events": "./events.ts",
+    "./computed": "./computed.ts",
+    "./compat": "./compat.ts",
+    "./proxy": "./proxy.ts",
+    "./promise-proxy-mixin": "./promise-proxy-mixin",
+    "./observers": "./observers.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/enumerable": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/service": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/destroyable": "0.85.13",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.85.13",
+    "@glimmer/owner": "0.85.13",
+    "@glimmer/util": "0.85.13",
+    "@glimmer/validator": "0.85.13",
+    "expect-type": "^0.15.0",
+    "internal-test-helpers": "workspace:*"
+  }
+}

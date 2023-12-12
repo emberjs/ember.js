@@ -5,8 +5,6 @@ import { on } from '@glimmer/runtime';
 
 import { Component } from '../../utils/helpers';
 
-const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
-
 moduleFor(
   '{{on}} Modifier',
   class extends RenderingTestCase {
@@ -41,8 +39,6 @@ moduleFor(
 
       if (isChrome || isFirefox) {
         assert.strictEqual(SUPPORTS_EVENT_OPTIONS, true, 'is true in chrome and firefox');
-      } else if (isIE11) {
-        assert.strictEqual(SUPPORTS_EVENT_OPTIONS, false, 'is false in IE11');
       } else {
         assert.expect(0);
       }
@@ -136,11 +132,7 @@ moduleFor(
       runTask(() => this.$('button').click());
       assert.equal(count, 1, 'has been called 1 times');
 
-      if (isIE11) {
-        this.assertCounts({ adds: 1, removes: 1 });
-      } else {
-        this.assertCounts({ adds: 1, removes: 0 });
-      }
+      this.assertCounts({ adds: 1, removes: 0 });
     }
 
     '@test changing from `once=false` to `once=true` ensures the callback can only be called once'(
@@ -169,11 +161,7 @@ moduleFor(
       runTask(() => this.$('button').click());
       assert.equal(count, 3, 'is not called again');
 
-      if (isIE11) {
-        this.assertCounts({ adds: 2, removes: 2 });
-      } else {
-        this.assertCounts({ adds: 2, removes: 1 });
-      }
+      this.assertCounts({ adds: 2, removes: 1 });
     }
 
     '@test by default bubbling is used (capture: false)'(assert) {

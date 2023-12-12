@@ -1,21 +1,16 @@
 import { get } from '@ember/-internals/metal';
-import { assert, deprecate } from '@ember/debug';
-import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
-import { dasherize } from '@ember/string';
-import { DEBUG } from '@glimmer/env';
-import { ElementOperations } from '@glimmer/interfaces';
+import { assert } from '@ember/debug';
+import { dasherize } from '@ember/-internals/string';
+import type { ElementOperations } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
 import {
   childRefFor,
   childRefFromParts,
   createComputeRef,
   createPrimitiveRef,
-  Reference,
-  UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { logTrackingStack } from '@glimmer/validator';
-import { Component } from './curly-component-state-bucket';
-import { htmlSafe, isHTMLSafe, SafeString } from './string';
+import type Component from '../component';
 
 function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
@@ -25,7 +20,7 @@ function referenceForParts(rootRef: Reference<Component>, parts: string[]): Refe
     parts.shift();
 
     if (parts.length === 1) {
-      return childRefFor(rootRef, parts[0]);
+      return childRefFor(rootRef, parts[0]!);
     }
   }
 
@@ -67,8 +62,8 @@ export function installAttributeBinding(
     if (elementId === undefined || elementId === null) {
       elementId = component.elementId;
     }
-    elementId = createPrimitiveRef(elementId);
-    operations.setAttribute('id', elementId, true, null);
+    let elementIdRef = createPrimitiveRef(elementId);
+    operations.setAttribute('id', elementIdRef, true, null);
     return;
   }
 
@@ -80,65 +75,7 @@ export function installAttributeBinding(
     !(isSimple && isPath)
   );
 
-  if (EMBER_COMPONENT_IS_VISIBLE && attribute === 'style' && createStyleBindingRef !== undefined) {
-    reference = createStyleBindingRef(reference, childRefFor(rootRef, 'isVisible'));
-  }
-
   operations.setAttribute(attribute, reference, false, null);
-}
-
-const DISPLAY_NONE = 'display: none;';
-const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
-
-let createStyleBindingRef:
-  | undefined
-  | ((inner: Reference, isVisible: Reference) => Reference<string | SafeString>);
-
-export let installIsVisibleBinding:
-  | undefined
-  | ((rootRef: Reference<Component>, operations: ElementOperations) => void);
-
-if (EMBER_COMPONENT_IS_VISIBLE) {
-  createStyleBindingRef = (inner: Reference, isVisibleRef: Reference) => {
-    return createComputeRef(() => {
-      let value = valueForRef(inner);
-      let isVisible = valueForRef(isVisibleRef);
-
-      if (DEBUG && isVisible !== undefined) {
-        deprecate(
-          `The \`isVisible\` property on classic component classes is deprecated. Was accessed:\n\n${logTrackingStack!()}`,
-          false,
-          {
-            id: 'ember-component.is-visible',
-            until: '4.0.0',
-            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-is-visible',
-            for: 'ember-source',
-            since: {
-              enabled: '3.15.0-beta.1',
-            },
-          }
-        );
-      }
-
-      if (isVisible !== false) {
-        return value as string;
-      } else if (!value) {
-        return SAFE_DISPLAY_NONE;
-      } else {
-        let style = value + ' ' + DISPLAY_NONE;
-        return isHTMLSafe(value) ? htmlSafe(style) : style;
-      }
-    });
-  };
-
-  installIsVisibleBinding = (rootRef: Reference<Component>, operations: ElementOperations) => {
-    operations.setAttribute(
-      'style',
-      createStyleBindingRef!(UNDEFINED_REFERENCE, childRefFor(rootRef, 'isVisible')),
-      false,
-      null
-    );
-  };
 }
 
 export function createClassNameBindingRef(
@@ -146,7 +83,11 @@ export function createClassNameBindingRef(
   microsyntax: string,
   operations: ElementOperations
 ) {
-  let [prop, truthy, falsy] = microsyntax.split(':');
+  let parts = microsyntax.split(':');
+  let [prop, truthy, falsy] = parts;
+  // NOTE: This could be an empty string
+  assert('has prop', prop !== undefined); // Will always have at least one part
+
   let isStatic = prop === '';
 
   if (isStatic) {
@@ -179,7 +120,7 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
         path !== undefined
       );
 
-      return dasherizedPath || (dasherizedPath = dasherize(path!));
+      return dasherizedPath || (dasherizedPath = dasherize(path));
     } else if (value || value === 0) {
       return String(value);
     } else {
@@ -188,7 +129,11 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
   });
 }
 
-export function createColonClassNameBindingRef(inner: Reference, truthy: string, falsy: string) {
+export function createColonClassNameBindingRef(
+  inner: Reference,
+  truthy: string,
+  falsy: string | undefined
+) {
   return createComputeRef(() => {
     return valueForRef(inner) ? truthy : falsy;
   });

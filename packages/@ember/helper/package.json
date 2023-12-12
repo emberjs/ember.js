@@ -1,0 +1,15 @@
+{
+  "name": "@ember/helper",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@glimmer/manager": "0.85.13",
+    "@glimmer/runtime": "0.85.13",
+    "expect-type": "^0.15.0"
+  }
+}

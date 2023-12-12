@@ -2,7 +2,8 @@ import VERSION from 'ember/version';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 // From https://github.com/semver/semver.org/issues/59 & https://regex101.com/r/vW1jA8/6
-const SEMVER_REGEX = /^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$/;
+const SEMVER_REGEX =
+  /^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$/;
 
 moduleFor(
   '@ember/-internals/metal/core/main',

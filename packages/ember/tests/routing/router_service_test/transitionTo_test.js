@@ -1,12 +1,12 @@
-import { inject as injectService } from '@ember/service';
+import { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
-import { Route, NoneLocation } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
+import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { get } from '@ember/-internals/metal';
+import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
-import { inject as service } from '@ember/service';
 
 moduleFor(
   'Router Service - transitionTo',
@@ -103,7 +103,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -135,7 +135,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -169,7 +169,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -214,7 +214,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super();
             componentInstance = this;
@@ -239,7 +239,7 @@ moduleFor(
       this.assertText('much dynamicism');
     }
 
-    ['@test RouterService#transitionTo with basic query params does not remove query param defaults'](
+    ['@test RouterService#transitionTo with basic query params removes query param defaults'](
       assert
     ) {
       assert.expect(1);
@@ -259,7 +259,7 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          assert.equal(this.routerService.get('currentURL'), '/child');
         });
     }
 
@@ -303,14 +303,14 @@ moduleFor(
         })
       );
 
-      let queryParams = this.buildQueryParams({ sort: 'ASC' });
+      let queryParams = this.buildQueryParams({ sort: 'DESC' });
 
       return this.visit('/')
         .then(() => {
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
         });
     }
 
@@ -329,14 +329,14 @@ moduleFor(
         })
       );
 
-      let queryParams = this.buildQueryParams({ url_sort: 'ASC' });
+      let queryParams = this.buildQueryParams({ url_sort: 'DESC' });
 
       return this.visit('/')
         .then(() => {
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+          assert.equal(this.routerService.get('currentURL'), '/child?url_sort=DESC');
         });
     }
 

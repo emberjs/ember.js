@@ -4,13 +4,14 @@ import {
   ApplicationTestCase,
   runTask,
 } from 'internal-test-helpers';
-import { inject as injectService } from '@ember/service';
-import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
+import { service } from '@ember/service';
+import EmberObject from '@ember/object';
+import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
@@ -282,10 +283,9 @@ moduleFor(
       this.add(
         'route:a',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.replaceWith('b', 'zomg');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('b', 'zomg');
           },
         })
       );
@@ -293,10 +293,9 @@ moduleFor(
       this.add(
         'route:b',
         Route.extend({
+          router: service(),
           afterModel(params) {
-            expectDeprecation(() => {
-              this.transitionTo('c', params.b);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('c', params.b);
           },
         })
       );
@@ -324,10 +323,9 @@ moduleFor(
       this.add(
         'route:a',
         Route.extend({
+          router: service(),
           afterModel() {
-            expectDeprecation(() => {
-              this.replaceWith('b', 'zomg');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('b', 'zomg');
           },
         })
       );
@@ -335,10 +333,9 @@ moduleFor(
       this.add(
         'route:b',
         Route.extend({
+          router: service(),
           afterModel(params) {
-            expectDeprecation(() => {
-              this.transitionTo('c', params.b);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('c', params.b);
           },
         })
       );
@@ -683,8 +680,8 @@ moduleFor(
         Component.extend({
           tagName: 'x-foo',
 
-          isolatedCounter: injectService(),
-          sharedCounter: injectService(),
+          isolatedCounter: service(),
+          sharedCounter: service(),
 
           init() {
             this._super();
@@ -713,7 +710,7 @@ moduleFor(
       this.add(
         'component:x-bar',
         Component.extend({
-          counter: injectService('sharedCounter'),
+          counter: service('sharedCounter'),
 
           actions: {
             incrementCounter() {

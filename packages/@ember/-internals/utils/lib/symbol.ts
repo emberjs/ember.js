@@ -1,7 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { GUID_KEY } from './guid';
 import intern from './intern';
-import { HAS_NATIVE_SYMBOL } from './symbol-utils';
 
 const GENERATED_SYMBOLS: string[] = [];
 
@@ -16,7 +15,7 @@ export function enumerableSymbol(debugName: string): string {
   // TODO: Investigate using platform symbols, but we do not
   // want to require non-enumerability for this API, which
   // would introduce a large cost.
-  let id = GUID_KEY + Math.floor(Math.random() * Date.now());
+  let id = GUID_KEY + Math.floor(Math.random() * Date.now()).toString();
   let symbol = intern(`__${debugName}${id}__`);
 
   if (DEBUG) {
@@ -26,4 +25,4 @@ export function enumerableSymbol(debugName: string): string {
   return symbol;
 }
 
-export const symbol = HAS_NATIVE_SYMBOL ? Symbol : enumerableSymbol;
+export const symbol = Symbol;

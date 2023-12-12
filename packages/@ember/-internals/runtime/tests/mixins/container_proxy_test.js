@@ -1,7 +1,7 @@
 import { getOwner } from '@ember/-internals/owner';
 import { Container, Registry } from '@ember/-internals/container';
 import ContainerProxy from '../../lib/mixins/container_proxy';
-import EmberObject from '../../lib/system/object';
+import EmberObject from '@ember/object';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';

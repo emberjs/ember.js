@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import EmberApplication from '@ember/application';
 import {
   moduleFor,
@@ -70,24 +70,6 @@ moduleFor(
         locator.lookup('model:user') !== locator.lookup('model:user'),
         'non-singleton lookup worked'
       );
-    }
-
-    ['@test injections'](assert) {
-      expectDeprecation(
-        /A value was injected implicitly on the 'fruit' property of an instance of <.*>. Implicit injection is now deprecated, please add an explicit injection for this value/
-      );
-
-      application.inject('model', 'fruit', 'fruit:favorite');
-      application.inject('model:user', 'communication', 'communication:main');
-
-      let user = locator.lookup('model:user');
-      let person = locator.lookup('model:person');
-      let fruit = locator.lookup('fruit:favorite');
-
-      assert.equal(user.get('fruit'), fruit);
-      assert.equal(person.get('fruit'), fruit);
-
-      assert.ok(application.Email.detectInstance(user.get('communication')));
     }
   }
 );

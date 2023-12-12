@@ -1,15 +1,15 @@
 import { ENV } from '@ember/-internals/environment';
-import { _getProp, _setProp, get, set } from '@ember/-internals/metal';
-import { Owner } from '@ember/-internals/owner';
+import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { assert, deprecate, warn } from '@ember/debug';
-import { DeprecationOptions } from '@ember/debug/lib/deprecate';
-import { _backburner, schedule } from '@ember/runloop';
+import type { DeprecationOptions } from '@ember/debug';
+import { schedule, _backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
-import { EnvironmentDelegate } from '@glimmer/runtime';
-import { setTrackingTransactionEnv } from '@glimmer/validator';
+import type { EnvironmentDelegate } from '@glimmer/runtime';
+import { debug } from '@glimmer/validator';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
 import toBool from './utils/to-bool';
@@ -19,6 +19,10 @@ import toBool from './utils/to-bool';
 // Setup global context
 
 setGlobalContext({
+  FEATURES: {
+    DEFAULT_HELPER_MANAGER: true,
+  },
+
   scheduleRevalidate() {
     _backburner.ensureInstance();
   },
@@ -41,7 +45,7 @@ setGlobalContext({
 
   warnIfStyleNotTrusted(value: unknown) {
     warn(
-      constructStyleDeprecationMessage(value),
+      constructStyleDeprecationMessage(String(value)),
       (() => {
         if (value === null || value === undefined || isHTMLSafe(value)) {
           return true;
@@ -66,6 +70,15 @@ setGlobalContext({
     if (DEBUG) {
       let { id } = options;
 
+      if (id === 'argument-less-helper-paren-less-invocation') {
+        throw new Error(
+          `A resolved helper cannot be passed as a named argument as the syntax is ` +
+            `ambiguously a pass-by-reference or invocation. Use the ` +
+            `\`{{helper 'foo-helper}}\` helper to pass by reference or explicitly ` +
+            `invoke the helper with parens: \`{{(fooHelper)}}\`.`
+        );
+      }
+
       let override = VM_DEPRECATION_OVERRIDES.filter((o) => o.id === id)[0];
 
       if (!override) throw new Error(`deprecation override for ${id} not found`);
@@ -79,7 +92,7 @@ setGlobalContext({
 });
 
 if (DEBUG) {
-  setTrackingTransactionEnv?.({
+  debug?.setTrackingTransactionEnv?.({
     debugMessage(obj, keyName) {
       let dirtyString = keyName
         ? `\`${keyName}\` on \`${getDebugName?.(obj)}\``
@@ -99,37 +112,11 @@ const VM_DEPRECATION_OVERRIDES: (DeprecationOptions & {
   message?: string;
 })[] = [
   {
-    id: 'autotracking.mutation-after-consumption',
-    until: '4.0.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.21.0',
-    },
-  },
-  {
-    id: 'this-property-fallback',
-    disabled: ENV._DISABLE_PROPERTY_FALLBACK_DEPRECATION,
-    url: 'https://deprecations.emberjs.com/v3.x#toc_this-property-fallback',
-    until: '4.0.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.26.0',
-    },
-  },
-  {
-    id: 'argument-less-helper-paren-less-invocation',
-    url: 'https://deprecations.emberjs.com/v3.x#toc_argument-less-helper-paren-less-invocation',
-    until: '4.0.0',
-    for: 'ember-source',
-    since: {
-      enabled: '3.27.0',
-    },
-  },
-  {
     id: 'setting-on-hash',
     until: '4.4.0',
     for: 'ember-source',
     since: {
+      available: '3.28.0',
       enabled: '3.28.0',
     },
   },
@@ -144,7 +131,7 @@ const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
   public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
 
-  constructor(public owner: Owner, public isInteractive: boolean) {}
+  constructor(public owner: InternalOwner, public isInteractive: boolean) {}
 
   onTransactionCommit(): void {}
 }

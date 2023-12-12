@@ -1,0 +1,35 @@
+name: Setup node and pnpm
+description: Setup node and install dependencies using pnpm
+inputs:
+  use_lockfile:
+    description: 'Whether to use the lockfile vs latest floating dependencies'
+    required: false
+    default: true
+runs:
+  using: 'composite'
+  steps:
+    - uses: pnpm/action-setup@v2
+      name: Install pnpm
+      with:
+        version: 8
+        run_install: false  
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        registry-url: 'https://registry.npmjs.org'
+        cache: pnpm
+    - uses: actions/cache@v3
+      name: Setup cache for puppeteer
+      with:
+        # See .puppeteerrc.cjs, where we set this as the place puppeteer
+        # installs the browser. It needs to be cached the same as our pnpm
+        # packages are because it won't get reinstalled if our modules are
+        # cached.
+        path: .puppeteer-cache
+        key: ${{ runner.os }}-puppeteer-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-puppeteer-          
+
+    - run: pnpm install ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
+      shell: bash

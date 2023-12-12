@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import { addObserver, observer, computed, get, set, removeObserver } from '@ember/-internals/metal';
-import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import ObjectProxy from '../../lib/system/object_proxy';
+import { addObserver, removeObserver } from '@ember/-internals/metal';
+import { computed, get, set, observer } from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -101,9 +101,10 @@ moduleFor(
     }
 
     ['@test calling a function on the proxy avoids the assertion'](assert) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
+      if (DEBUG) {
         let proxy = ObjectProxy.extend({
           init() {
+            this._super();
             if (!this.foobar) {
               this.foobar = function () {
                 let content = get(this, 'content');
@@ -153,7 +154,7 @@ moduleFor(
     }
 
     ['@test getting proxied properties with [] should be an error'](assert) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
+      if (DEBUG) {
         let proxy = ObjectProxy.create({
           content: {
             foo: 'FOO',

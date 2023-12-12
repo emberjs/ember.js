@@ -1,23 +1,19 @@
 import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
-import { ENV, context } from '@ember/-internals/environment';
-import { libraries, processAllNamespaces } from '@ember/-internals/metal';
-import { getName } from '@ember/-internals/utils';
+import { ENV } from '@ember/-internals/environment';
+import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
-import { jQueryDisabled, jQuery } from '@ember/-internals/views';
+import EmberRoute from '@ember/routing/route';
+import Router from '@ember/routing/router';
+import NoneLocation from '@ember/routing/none-location';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from '@ember/-internals/runtime';
-import { setTemplates } from '@ember/-internals/glimmer';
-import { assign } from '@ember/polyfills';
+import EmberObject from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,
   AbstractTestCase,
   AutobootApplicationTestCase,
-  DefaultResolverApplicationTestCase,
-  verifyInjection,
   verifyRegistration,
   runTask,
 } from 'internal-test-helpers';
@@ -37,7 +33,7 @@ moduleFor(
     }
 
     get applicationOptions() {
-      return assign(super.applicationOptions, {
+      return Object.assign(super.applicationOptions, {
         rootElement: '#one',
         router: null,
         autoboot: true,
@@ -45,7 +41,7 @@ moduleFor(
     }
 
     createSecondApplication(options) {
-      let myOptions = assign(this.applicationOptions, options);
+      let myOptions = Object.assign(this.applicationOptions, options);
       return (this.secondApp = Application.create(myOptions));
     }
 
@@ -131,15 +127,11 @@ moduleFor(
       verifyRegistration(assert, application, '-view-registry:main');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
-      verifyInjection(assert, application, 'view:-outlet', 'namespace', 'application:main');
 
-      verifyRegistration(assert, application, 'location:auto');
       verifyRegistration(assert, application, 'location:hash');
       verifyRegistration(assert, application, 'location:history');
       verifyRegistration(assert, application, 'location:none');
 
-      verifyRegistration(assert, application, 'component:-text-field');
-      verifyRegistration(assert, application, 'component:-checkbox');
       verifyRegistration(assert, application, 'component:link-to');
 
       verifyRegistration(assert, application, 'component:textarea');
@@ -148,74 +140,18 @@ moduleFor(
 
       // DEBUGGING
       verifyRegistration(assert, application, 'resolver-for-debugging:main');
-      verifyInjection(
-        assert,
-        application,
-        'container-debug-adapter:main',
-        'resolver',
-        'resolver-for-debugging:main'
-      );
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');
 
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
       verifyRegistration(assert, application, 'template:-outlet');
-      verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
 
       assert.deepEqual(
         application.registeredOptionsForType('helper'),
         { instantiate: false },
         `optionsForType 'helper'`
       );
-    }
-  }
-);
-
-moduleFor(
-  'Application, default resolver with autoboot',
-  class extends DefaultResolverApplicationTestCase {
-    constructor() {
-      super(...arguments);
-      this.originalLookup = context.lookup;
-    }
-
-    teardown() {
-      context.lookup = this.originalLookup;
-      super.teardown();
-      setTemplates({});
-    }
-
-    get applicationOptions() {
-      return assign(super.applicationOptions, {
-        autoboot: true,
-      });
-    }
-
-    [`@test acts like a namespace`](assert) {
-      this.application = runTask(() => this.createApplication());
-      let Foo = (this.application.Foo = EmberObject.extend());
-      processAllNamespaces();
-      assert.equal(getName(Foo), 'TestApp.Foo', 'Classes pick up their parent namespace');
-    }
-
-    [`@test can specify custom router`](assert) {
-      let MyRouter = Router.extend();
-      runTask(() => {
-        this.createApplication();
-        this.application.Router = MyRouter;
-      });
-
-      assert.ok(
-        this.application.__deprecatedInstance__.lookup('router:main') instanceof MyRouter,
-        'application resolved the correct router'
-      );
-    }
-
-    [`@test Minimal Application initialized with just an application template`]() {
-      this.setupFixture('<script type="text/x-handlebars">Hello World</script>');
-      runTask(() => this.createApplication());
-      this.assertInnerHTML('Hello World');
     }
   }
 );
@@ -331,12 +267,7 @@ moduleFor(
       runTask(() => this.createApplication());
 
       assert.equal(messages[1], 'Ember  : ' + VERSION);
-      if (jQueryDisabled) {
-        assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
-      } else {
-        assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
-        assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
-      }
+      assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
 
       libraries.deRegister('my-lib');
     }

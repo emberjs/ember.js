@@ -1,81 +1,28 @@
-import { Owner } from '@ember/-internals/owner';
-import { deprecate } from '@ember/debug';
-import { COMPONENT_MANAGER_STRING_LOOKUP } from '@ember/deprecated-features';
-import { DEBUG } from '@glimmer/env';
-import { ComponentManager } from '@glimmer/interfaces';
+import type { InternalOwner } from '@ember/-internals/owner';
+import type { ComponentManager } from '@glimmer/interfaces';
 import {
   componentCapabilities as glimmerComponentCapabilities,
   modifierCapabilities as glimmerModifierCapabilities,
   setComponentManager as glimmerSetComponentManager,
 } from '@glimmer/manager';
 
-export function setComponentManager(
-  stringOrFunction: string | ((owner: Owner) => ComponentManager<unknown>),
-  obj: object
-): object {
-  let factory: (owner: Owner) => ComponentManager<unknown>;
+/**
+   Associate a class with a component manager (an object that is responsible for
+   coordinating the lifecycle events that occurs when invoking, rendering and
+   re-rendering a component).
 
-  if (COMPONENT_MANAGER_STRING_LOOKUP && typeof stringOrFunction === 'string') {
-    deprecate(
-      'Passing the name of the component manager to "setupComponentManager" is deprecated. Please pass a function that produces an instance of the manager.',
-      false,
-      {
-        id: 'deprecate-string-based-component-manager',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x/#toc_component-manager-string-lookup',
-        for: 'ember-source',
-        since: {
-          enabled: '3.8.0',
-        },
-      }
-    );
-    factory = function (owner: Owner) {
-      return owner.lookup<ComponentManager<unknown>>(`component-manager:${stringOrFunction}`)!;
-    };
-  } else {
-    factory = stringOrFunction as (owner: Owner) => ComponentManager<unknown>;
-  }
-
-  return glimmerSetComponentManager(factory, obj);
+   @method setComponentManager
+   @param {Function} factory a function to create the owner for an object
+   @param {Object} obj the object to associate with the componetn manager
+   @return {Object} the same object passed in
+   @public
+  */
+export function setComponentManager<T extends object>(
+  manager: (owner: InternalOwner) => ComponentManager<unknown>,
+  obj: T
+): T {
+  return glimmerSetComponentManager(manager, obj);
 }
 
 export let componentCapabilities = glimmerComponentCapabilities;
 export let modifierCapabilities = glimmerModifierCapabilities;
-
-if (DEBUG) {
-  componentCapabilities = (version, options) => {
-    deprecate(
-      'Versions of component manager capabilities prior to 3.13 have been deprecated. You must update to the 3.13 capabilities.',
-      version === '3.13',
-      {
-        id: 'manager-capabilities.components-3-4',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_manager-capabilities-components-3-4',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.26.0',
-        },
-      }
-    );
-
-    return glimmerComponentCapabilities(version, options);
-  };
-
-  modifierCapabilities = (version, options) => {
-    deprecate(
-      'Versions of modifier manager capabilities prior to 3.22 have been deprecated. You must update to the 3.22 capabilities.',
-      version === '3.22',
-      {
-        id: 'manager-capabilities.modifiers-3-13',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_manager-capabilities-modifiers-3-13',
-        until: '4.0.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.26.0',
-        },
-      }
-    );
-
-    return glimmerModifierCapabilities(version, options);
-  };
-}

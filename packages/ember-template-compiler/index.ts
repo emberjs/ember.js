@@ -1,47 +1,8 @@
-import { ENV } from '@ember/-internals/environment';
-import { FEATURES } from '@ember/canary-features';
-import * as _GlimmerSyntax from '@glimmer/syntax';
-import VERSION from 'ember/version';
-import require from 'require';
+export * from './lib/public-api';
+import * as ETC from './lib/public-api';
+import { __registerTemplateCompiler } from '@ember/template-compilation';
 
-declare global {
-  interface NodeRequire {
-    has(name: string): boolean;
-  }
-
-  function define(path: string, deps: string[], module: () => void): void;
-}
-
-export let _Ember: unknown;
-
-try {
-  // tslint:disable-next-line: no-require-imports
-  _Ember = require('ember');
-} catch (e) {
-  _Ember = {
-    ENV,
-    FEATURES,
-    VERSION,
-  };
-}
-
-export { default as precompile } from './lib/system/precompile';
-export { default as compile } from './lib/system/compile';
-export {
-  default as compileOptions,
-  buildCompileOptions as _buildCompileOptions,
-  transformsFor as _transformsFor,
-  registerPlugin,
-  unregisterPlugin,
-} from './lib/system/compile-options';
-export { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from './lib/plugins/index';
-export { EmberPrecompileOptions } from './lib/types';
-
-export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';
-export { precompile as _precompile } from '@glimmer/compiler';
-
-export { _GlimmerSyntax, VERSION };
-
+__registerTemplateCompiler(ETC);
 // used to bootstrap templates
 import './lib/system/bootstrap';
 

@@ -1,13 +1,13 @@
-import { moduleFor, RenderingTestCase, strip, applyMixins, runTask } from 'internal-test-helpers';
+import { applyMixins, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
-import { get, set } from '@ember/-internals/metal';
-import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
+import { get, set } from '@ember/object';
+import EmberObject from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
 
 import {
+  FalsyGenerator,
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
-  FalsyGenerator,
 } from '../../utils/shared-conditional-tests';
 
 function EmptyFunction() {}
@@ -677,31 +677,29 @@ moduleFor(
   }
 );
 
-if (HAS_NATIVE_SYMBOL) {
-  moduleFor(
-    'Syntax test: {{#each-in}} with custom iterables',
-    class extends EachInTest {
-      createHash(pojo) {
-        let ary = Object.keys(pojo).reduce((accum, key) => {
-          return accum.concat([[key, pojo[key]]]);
-        }, []);
-        let iterable = {
-          [Symbol.iterator]: () => makeIterator(ary),
-        };
-        return {
-          hash: iterable,
-          delegate: {
-            updateNestedValue(context, key, innerKey, value) {
-              let ary = Array.from(context.hash);
-              let target = ary.find(([k]) => k === key)[1];
-              set(target, innerKey, value);
-            },
+moduleFor(
+  'Syntax test: {{#each-in}} with custom iterables',
+  class extends EachInTest {
+    createHash(pojo) {
+      let ary = Object.keys(pojo).reduce((accum, key) => {
+        return accum.concat([[key, pojo[key]]]);
+      }, []);
+      let iterable = {
+        [Symbol.iterator]: () => makeIterator(ary),
+      };
+      return {
+        hash: iterable,
+        delegate: {
+          updateNestedValue(context, key, innerKey, value) {
+            let ary = Array.from(context.hash);
+            let target = ary.find(([k]) => k === key)[1];
+            set(target, innerKey, value);
           },
-        };
-      }
+        },
+      };
     }
-  );
-}
+  }
+);
 
 // Utils
 function makeIterator(ary) {

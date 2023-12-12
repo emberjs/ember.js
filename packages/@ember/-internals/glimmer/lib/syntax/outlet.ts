@@ -1,21 +1,23 @@
-import { Owner } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import type { InternalOwner } from '@ember/-internals/owner';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, CurriedType, DynamicScope } from '@glimmer/interfaces';
+import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
+import { CurriedType } from '@glimmer/vm';
+import type { Reference } from '@glimmer/reference';
 import {
   childRefFromParts,
   createComputeRef,
   createDebugAliasRef,
-  createPrimitiveRef,
-  Reference,
   valueForRef,
 } from '@glimmer/reference';
-import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
+import type { CurriedValue } from '@glimmer/runtime';
+import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
+import type { OutletDefinitionState } from '../component-managers/outlet';
+import { OutletComponentDefinition } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';
+import type { OutletState } from '../utils/outlet';
 import { isTemplateFactory } from '../template';
-import { OutletState } from '../utils/outlet';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -33,57 +35,25 @@ import { OutletState } from '../utils/outlet';
   <MyFooter />
   ```
 
-  You may also specify a name for the `{{outlet}}`, which is useful when using more than one
-  `{{outlet}}` in a template:
-
-  ```app/templates/application.hbs
-  {{outlet "menu"}}
-  {{outlet "sidebar"}}
-  {{outlet "main"}}
-  ```
-
-  Your routes can then render into a specific one of these `outlet`s by specifying the `outlet`
-  attribute in your `renderTemplate` function:
-
-  ```app/routes/menu.js
-  import Route from '@ember/routing/route';
-
-  export default class MenuRoute extends Route {
-    renderTemplate() {
-      this.render({ outlet: 'menu' });
-    }
-  }
-  ```
-
   See the [routing guide](https://guides.emberjs.com/release/routing/rendering-a-template/) for more
   information on how your `route` interacts with the `{{outlet}}` helper.
   Note: Your content __will not render__ if there isn't an `{{outlet}}` for it.
 
   @method outlet
-  @param {String} [name]
   @for Ember.Templates.helpers
   @public
 */
 export const outletHelper = internalHelper(
-  (args: CapturedArguments, owner?: Owner, scope?: DynamicScope) => {
+  (_args: CapturedArguments, owner?: InternalOwner, scope?: DynamicScope) => {
     assert('Expected owner to be present, {{outlet}} requires an owner', owner);
     assert(
       'Expected dynamic scope to be present. You may have attempted to use the {{outlet}} keyword dynamically. This keyword cannot be used dynamically.',
       scope
     );
-    let nameRef: Reference<string>;
-
-    if (args.positional.length === 0) {
-      nameRef = createPrimitiveRef('main');
-    } else {
-      nameRef = args.positional[0];
-    }
 
     let outletRef = createComputeRef(() => {
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
-      let outlets = state !== undefined ? state.outlets : undefined;
-
-      return outlets !== undefined ? outlets[valueForRef(nameRef)] : undefined;
+      return state?.outlets?.main;
     });
 
     let lastState: OutletDefinitionState | null = null;
@@ -111,7 +81,7 @@ export const outletHelper = internalHelper(
           // dynamic scope also changes, and so the original model ref would not
           // provide the correct updated value. So we stop updating and return
           // the _last_ model value for that outlet.
-          named.model = createComputeRef(() => {
+          named['model'] = createComputeRef(() => {
             if (lastState === state) {
               model = valueForRef(modelRef);
             }
@@ -120,7 +90,7 @@ export const outletHelper = internalHelper(
           });
 
           if (DEBUG) {
-            named.model = createDebugAliasRef!('@model', named.model);
+            named['model'] = createDebugAliasRef!('@model', named['model']);
           }
 
           let args = createCapturedArgs(named, EMPTY_POSITIONAL);
@@ -141,23 +111,53 @@ export const outletHelper = internalHelper(
   }
 );
 
-function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefinitionState | null {
+function stateFor(
+  ref: Reference<OutletState | undefined>,
+  outlet: OutletState | undefined
+): OutletDefinitionState | null {
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;
   let template = render.template;
   if (template === undefined) return null;
 
-  // this guard can be removed once @ember/test-helpers@1.6.0 has "aged out"
-  // and is no longer considered supported
   if (isTemplateFactory(template)) {
     template = template(render.owner);
+
+    if (DEBUG) {
+      let message =
+        'The `template` property of `OutletState` should be a ' +
+        '`Template` rather than a `TemplateFactory`. This is known to be a ' +
+        "problem in older versions of `@ember/test-helpers`. If you haven't " +
+        'done so already, try upgrading to the latest version.\n\n';
+
+      if (template.result === 'ok' && typeof template.moduleName === 'string') {
+        message +=
+          'The offending template has a moduleName `' +
+          template.moduleName +
+          '`, which might be helpful for identifying ' +
+          'source of this issue.\n\n';
+      }
+
+      message +=
+        'Please note that `OutletState` is a private API in Ember.js ' +
+        "and not meant to be used outside of the framework's internal code.";
+
+      deprecate(message, false, {
+        id: 'outlet-state-template-factory',
+        until: '5.9.0',
+        for: 'ember-source',
+        since: {
+          available: '5.6.0',
+          enabled: '5.6.0',
+        },
+      });
+    }
   }
 
   return {
     ref,
     name: render.name,
-    outlet: render.outlet,
     template,
     controller: render.controller,
     model: render.model,

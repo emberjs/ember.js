@@ -1,5 +1,5 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 
 moduleFor(
   'Router Service - recognize',
@@ -97,15 +97,8 @@ moduleFor(
         })
         .then((routeInfoWithAttributes) => {
           assert.ok(routeInfoWithAttributes);
-          let {
-            name,
-            localName,
-            parent,
-            attributes,
-            paramNames,
-            params,
-            queryParams,
-          } = routeInfoWithAttributes;
+          let { name, localName, parent, attributes, paramNames, params, queryParams } =
+            routeInfoWithAttributes;
           assert.equal(name, 'dynamicWithChild.child');
           assert.equal(localName, 'child');
           assert.equal(parent.name, 'dynamicWithChild');

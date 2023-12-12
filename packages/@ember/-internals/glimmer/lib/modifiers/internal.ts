@@ -1,14 +1,15 @@
-import { Owner, setOwner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
+import { setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@glimmer/destroyable';
-import {
+import type {
   CapturedArguments,
   Destroyable,
   InternalModifierManager as ModifierManager,
 } from '@glimmer/interfaces';
 import { valueForRef } from '@glimmer/reference';
-import { SimpleElement } from '@simple-dom/interface';
+import type { SimpleElement } from '@simple-dom/interface';
 
 export default class InternalModifier {
   // Override this
@@ -17,7 +18,7 @@ export default class InternalModifier {
   }
 
   constructor(
-    protected owner: Owner,
+    protected owner: InternalOwner,
     protected readonly element: Element,
     protected readonly args: CapturedArguments
   ) {
@@ -52,11 +53,12 @@ class InternalModifierState implements Destroyable {
 }
 
 export class InternalModifierManager
-  implements ModifierManager<InternalModifierState, typeof InternalModifier> {
+  implements ModifierManager<InternalModifierState, typeof InternalModifier>
+{
   constructor(private ModifierClass: typeof InternalModifier, private name: string) {}
 
   create(
-    owner: Owner,
+    owner: InternalOwner,
     element: SimpleElement,
     _definition: unknown,
     args: CapturedArguments

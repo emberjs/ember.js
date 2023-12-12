@@ -1,6 +1,7 @@
-import { inject as injectService } from '@ember/service';
-import { Router, NoneLocation } from '@ember/-internals/routing';
-import { get } from '@ember/-internals/metal';
+import { service } from '@ember/service';
+import Router from '@ember/routing/router';
+import NoneLocation from '@ember/routing/none-location';
+import { get } from '@ember/object';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
 import { RouterNonApplicationTestCase, moduleFor } from 'internal-test-helpers';
@@ -66,14 +67,15 @@ moduleFor(
     }
 
     ['@test RouterService#urlFor returns url'](assert) {
-      let router = this.owner.lookup('router:main');
-      router.setupRouter();
       assert.equal(this.routerService.urlFor('parent.child'), '/child');
     }
 
     ['@test RouterService#transitionTo with basic route'](assert) {
       assert.expect(2);
 
+      // Callers who want to actually execute a transition in a non-application
+      // test are doing something weird and therefore should do
+      // `owner.setupRouter()` explicitly in their tests.
       let componentInstance;
       let router = this.owner.lookup('router:main');
       router.setupRouter();
@@ -82,7 +84,7 @@ moduleFor(
 
       this.addComponent('foo-bar', {
         ComponentClass: Component.extend({
-          routerService: injectService('router'),
+          routerService: service('router'),
           init() {
             this._super(...arguments);
             componentInstance = this;
@@ -107,8 +109,6 @@ moduleFor(
     }
 
     ['@test RouterService#recognize recognize returns routeInfo'](assert) {
-      let router = this.owner.lookup('router:main');
-      router.setupRouter();
       let routeInfo = this.routerService.recognize('/dynamic-with-child/123/1?a=b');
       assert.ok(routeInfo);
       let { name, localName, parent, child, params, queryParams, paramNames } = routeInfo;

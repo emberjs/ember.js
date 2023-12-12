@@ -36,21 +36,6 @@ describe('Blueprint: mixin-test', function () {
       });
     });
 
-    describe('with ember-cli-mocha', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-mocha', dev: true },
-        ]);
-      });
-
-      it('mixin-test foo', function () {
-        return emberGenerateDestroy(['mixin-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/mocha.js'));
-        });
-      });
-    });
-
     describe('with ember-cli-qunit@4.2.0', function () {
       beforeEach(function () {
         modifyPackages([
@@ -63,24 +48,6 @@ describe('Blueprint: mixin-test', function () {
       it('mixin-test foo', function () {
         return emberGenerateDestroy(['mixin-test', 'foo'], (_file) => {
           expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/rfc232.js'));
-        });
-      });
-    });
-
-    describe('with ember-mocha@0.14.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
-        generateFakePackageManifest('ember-mocha', '0.14.0');
-      });
-
-      it('mixin-test foo', function () {
-        return emberGenerateDestroy(['mixin-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/mixins/foo-test.js')).to.equal(
-            fixture('mixin-test/mocha-rfc232.js')
-          );
         });
       });
     });

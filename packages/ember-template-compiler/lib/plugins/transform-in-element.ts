@@ -1,7 +1,6 @@
-import { assert, deprecate } from '@ember/debug';
-import { AST, ASTPlugin } from '@glimmer/syntax';
-import calculateLocationDisplay from '../system/calculate-location-display';
-import { EmberASTPluginEnvironment } from '../types';
+import { assert } from '@ember/debug';
+import type { AST, ASTPlugin } from '@glimmer/syntax';
+import type { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 
 /**
@@ -9,26 +8,7 @@ import { isPath } from './utils';
 */
 
 /**
-  A Glimmer2 AST transformation that handles the public `{{in-element}}` as per RFC287, and deprecates but still
-  continues support for the private `{{-in-element}}`.
-
-  Transforms:
-
-  ```handlebars
-  {{#-in-element someElement}}
-    {{modal-display text=text}}
-  {{/-in-element}}
-  ```
-
-  into:
-
-  ```handlebars
-  {{#in-element someElement}}
-    {{modal-display text=text}}
-  {{/in-element}}
-  ```
-
-  And issues a deprecation message.
+  A Glimmer2 AST transformation that handles the public `{{in-element}}` as per RFC287.
 
   Issues a build time assertion for:
 
@@ -42,7 +22,6 @@ import { isPath } from './utils';
   @class TransformInElement
 */
 export default function transformInElement(env: EmberASTPluginEnvironment): ASTPlugin {
-  let moduleName = env.meta?.moduleName;
   let { builders: b } = env.syntax;
 
   return {
@@ -72,47 +51,6 @@ export default function transformInElement(env: EmberASTPluginEnvironment): ASTP
               );
             }
           });
-        } else if (node.path.original === '-in-element') {
-          let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
-          deprecate(
-            `The use of the private \`{{-in-element}}\` is deprecated, please refactor to the public \`{{in-element}}\`. ${sourceInformation}`,
-            false,
-            {
-              id: 'glimmer.private-in-element',
-              until: '3.25.0',
-              for: 'ember-source',
-              since: {
-                enabled: '3.20.0',
-              },
-            }
-          );
-
-          node.path.original = 'in-element';
-          node.path.parts = ['in-element'];
-
-          // replicate special hash arguments added here:
-          // https://github.com/glimmerjs/glimmer-vm/blob/ba9b37d44b85fa1385eeeea71910ff5798198c8e/packages/%40glimmer/syntax/lib/parser/handlebars-node-visitors.ts#L340-L363
-          let needsInsertBefore = true;
-          let hash = node.hash;
-          hash.pairs.forEach((pair) => {
-            if (pair.key === 'insertBefore') {
-              assert(
-                `Can only pass a null or undefined literals to insertBefore in -in-element, received: ${JSON.stringify(
-                  pair.value
-                )}`,
-                pair.value.type === 'NullLiteral' || pair.value.type === 'UndefinedLiteral'
-              );
-
-              needsInsertBefore = false;
-            }
-          });
-
-          // Maintain compatibility with previous -in-element behavior (defaults to append, not clear)
-          if (needsInsertBefore) {
-            let nullLiteral = b.literal('NullLiteral', null);
-            let nextSibling = b.pair('insertBefore', nullLiteral);
-            hash.pairs.push(nextSibling);
-          }
         }
       },
     },

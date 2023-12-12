@@ -1,2 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
+
+# Tell GH to render all tsconfigs in the tsconfig dir correctly.
+tsconfig/*.json linguist-language=JSON-with-Comments

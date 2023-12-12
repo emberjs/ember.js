@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import Service, { inject as service } from '@ember/service';
+import Service, { service } from '@ember/service';
 
 moduleFor(
   'Router Service - isActive',
@@ -117,9 +117,10 @@ moduleFor(
           return this.routerService.transitionTo('parent.child', queryParams);
         })
         .then(() => {
-          assert.ok(this.routerService.isActive('parent.child', queryParams));
+          assert.ok(this.routerService.isActive('parent.child', queryParams), 'route is active');
           assert.notOk(
-            this.routerService.isActive('parent.child', this.buildQueryParams({ sort: 'DESC' }))
+            this.routerService.isActive('parent.child', this.buildQueryParams({ sort: 'DESC' })),
+            'route with QPs is not active'
           );
         });
     }

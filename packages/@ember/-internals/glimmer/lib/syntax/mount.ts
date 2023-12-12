@@ -1,12 +1,16 @@
 /**
 @module ember
 */
-import { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, CurriedType, Option } from '@glimmer/interfaces';
-import { createComputeRef, Reference, valueForRef } from '@glimmer/reference';
-import { createCapturedArgs, CurriedValue, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
+import type { Nullable } from '@ember/-internals/utility-types';
+import type { CapturedArguments } from '@glimmer/interfaces';
+import { CurriedType } from '@glimmer/vm';
+import type { Reference } from '@glimmer/reference';
+import { createComputeRef, valueForRef } from '@glimmer/reference';
+import type { CurriedValue } from '@glimmer/runtime';
+import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
 import { internalHelper } from '../helpers/internal-helper';
 
@@ -51,9 +55,9 @@ import { internalHelper } from '../helpers/internal-helper';
   @public
 */
 export const mountHelper = internalHelper(
-  (args: CapturedArguments, owner?: Owner): Reference<CurriedValue | null> => {
+  (args: CapturedArguments, owner?: InternalOwner): Reference<CurriedValue | null> => {
     assert('{{mount}} must be used within a component that has an owner', owner);
-    let nameRef = args.positional[0] as Reference<Option<string>>;
+    let nameRef = args.positional[0] as Reference<Nullable<string>>;
     let captured: CapturedArguments | null;
 
     assert(
@@ -87,7 +91,7 @@ export const mountHelper = internalHelper(
 
         assert(
           `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-          (owner as Owner).hasRegistration(`engine:${name}`)
+          owner.hasRegistration(`engine:${name}`)
         );
 
         lastName = name;

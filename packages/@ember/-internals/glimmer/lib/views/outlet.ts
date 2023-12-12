@@ -1,28 +1,35 @@
-import { getOwner, Owner } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
+// We use the `InternalOwner` notion here because we actually need all of its
+// API for using with renderers (normally, it will be `EngineInstance`).
+// We use `getOwner` from our internal home for it rather than the narrower
+// public API for the same reason.
+import { type InternalOwner, getOwner } from '@ember/-internals/owner';
+import type { BootOptions } from '@ember/engine/instance';
+import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
-import { Template } from '@glimmer/interfaces';
-import { createComputeRef, Reference, updateRef } from '@glimmer/reference';
+import type { Template, TemplateFactory } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import { createComputeRef, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
-import { OutletDefinitionState } from '../component-managers/outlet';
-import { OutletState } from '../utils/outlet';
+import type { SimpleElement } from '@simple-dom/interface';
+import type { OutletDefinitionState } from '../component-managers/outlet';
+import type { Renderer } from '../renderer';
+import type { OutletState } from '../utils/outlet';
 
 export interface BootEnvironment {
   hasDOM: boolean;
   isInteractive: boolean;
-  options: any;
+  _renderMode?: string;
+  options: BootOptions;
 }
 
 const TOP_LEVEL_NAME = '-top-level';
-const TOP_LEVEL_OUTLET = 'main';
 
 export default class OutletView {
   static extend(injections: any): typeof OutletView {
     return class extends OutletView {
       static create(options: any) {
         if (options) {
-          return super.create(assign({}, injections, options));
+          return super.create(Object.assign({}, injections, options));
         } else {
           return super.create(injections);
         }
@@ -31,14 +38,19 @@ export default class OutletView {
   }
 
   static reopenClass(injections: any): void {
-    assign(this, injections);
+    Object.assign(this, injections);
   }
 
-  static create(options: any): OutletView {
-    let { _environment, template: templateFactory } = options;
+  static create(options: {
+    environment: BootEnvironment;
+    application: InternalOwner;
+    template: TemplateFactory;
+  }): OutletView {
+    let { environment: _environment, application: namespace, template: templateFactory } = options;
     let owner = getOwner(options);
+    assert('OutletView is unexpectedly missing an owner', owner);
     let template = templateFactory(owner);
-    return new OutletView(_environment, owner, template);
+    return new OutletView(_environment, owner, template, namespace);
   }
 
   private ref: Reference;
@@ -46,8 +58,9 @@ export default class OutletView {
 
   constructor(
     private _environment: BootEnvironment,
-    public owner: Owner,
-    public template: Template
+    public owner: InternalOwner,
+    public template: Template,
+    public namespace: any
   ) {
     let outletStateTag = createTag();
     let outletState: OutletState = {
@@ -55,7 +68,7 @@ export default class OutletView {
       render: {
         owner: owner,
         into: undefined,
-        outlet: TOP_LEVEL_OUTLET,
+        outlet: 'main',
         name: TOP_LEVEL_NAME,
         controller: undefined,
         model: undefined,
@@ -70,14 +83,13 @@ export default class OutletView {
       },
       (state: OutletState) => {
         dirtyTag(outletStateTag);
-        outletState.outlets.main = state;
+        outletState.outlets['main'] = state;
       }
     ));
 
     this.state = {
       ref,
       name: TOP_LEVEL_NAME,
-      outlet: TOP_LEVEL_OUTLET,
       template,
       controller: undefined,
       model: undefined,
@@ -93,9 +105,11 @@ export default class OutletView {
       target = selector;
     }
 
-    let renderer = this.owner.lookup('renderer:-dom');
+    let renderer = this.owner.lookup('renderer:-dom') as Renderer;
 
-    schedule('render', renderer, 'appendOutletView', this, target);
+    // SAFETY: It's not clear that this cast is safe.
+    // The types for appendOutletView may be incorrect or this is a potential bug.
+    schedule('render', renderer, 'appendOutletView', this, target as SimpleElement);
   }
 
   rerender(): void {

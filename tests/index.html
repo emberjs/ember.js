@@ -9,7 +9,6 @@
         display: none;
       }
     </style>
-    <script src="./polyfill.js"></script>
     <script src="./loader.js"></script>
     <script src="./qunit/qunit.js"></script>
     <script src="/testem.js"></script>
@@ -18,23 +17,6 @@
       window.loadScript = function(url) {
         document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
       };
-    </script>
-
-    <script type="text/javascript">
-      // Load custom version of jQuery if possible
-      var jQueryVersion = QUnit.urlParams.jquery;
-      if (jQueryVersion && jQueryVersion !== 'none') {
-        loadScript('https://code.jquery.com/jquery-'+jQueryVersion+'.js');
-      }
-      // Close the script tag to make sure document.write happens
-    </script>
-
-    <script type="text/javascript">
-      // Fallback to default jQuery
-      if (jQueryVersion !== 'none' && !window.jQuery) {
-        loadScript('./jquery/jquery.js');
-      }
-      // Close the script tag to make sure document.write happens
     </script>
 
     <script>
@@ -67,13 +49,7 @@
           EmberENV.ENABLE_OPTIONAL_FEATURES = true;
         }
 
-        var isIE = Boolean(window.MSInputMethodContext) && Boolean(document.documentMode);
-
-        // ignore deprecations for IE11 specifically (due to browser support
-        // policy deprecation, which happens before we can `expectDeprecation`)
-        if (!isIE) {
-          EmberENV['RAISE_ON_DEPRECATION'] = true;
-        }
+        EmberENV['RAISE_ON_DEPRECATION'] = true;
 
         if (QUnit.urlParams.debugrendertree) {
           EmberENV['_DEBUG_RENDER_TREE'] = true;
@@ -140,7 +116,7 @@
           testsTotal = testsPassed = testsFailed = 0;
 
           if (QUnit.urlParams.hideskipped) {
-            $('#qunit-tests').addClass('hideskipped');
+            document.getElementById('qunit-tests').classList.add('hideskipped');
           }
         });
 

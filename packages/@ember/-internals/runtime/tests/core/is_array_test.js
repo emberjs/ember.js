@@ -1,6 +1,6 @@
-import { A as emberA, isArray } from '../../lib/mixins/array';
-import ArrayProxy from '../../lib/system/array_proxy';
-import EmberObject from '../../lib/system/object';
+import { A as emberA, isArray } from '@ember/array';
+import ArrayProxy from '@ember/array/proxy';
+import EmberObject from '@ember/object';
 import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

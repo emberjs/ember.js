@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console, node/shebang */
+/* eslint-disable no-console, n/shebang */
 
 'use strict';
 
@@ -120,9 +120,9 @@ async function getCommitMessage(commitInfo) {
       message = execSync(
         'commit=$((git rev-list ' +
           originalCommit +
-          '..origin/master --ancestry-path | cat -n; git rev-list ' +
+          '..origin/main --ancestry-path | cat -n; git rev-list ' +
           originalCommit +
-          '..origin/master --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit',
+          '..origin/main --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit',
         { encoding: 'utf8' }
       );
     } catch (e) {

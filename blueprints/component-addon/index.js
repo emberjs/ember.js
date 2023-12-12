@@ -4,10 +4,18 @@ const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const useEditionDetector = require('../edition-detector');
 
-module.exports = useEditionDetector({
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+
+module.exports = {
   description: 'Generates a component.',
+
+  shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
+  },
 
   fileMapTokens: function () {
     return {
@@ -73,4 +81,4 @@ module.exports = useEditionDetector({
       path: getPathOption(options),
     };
   },
-});
+};

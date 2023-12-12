@@ -1,7 +1,7 @@
 import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import { A as emberA } from '@ember/-internals/runtime';
-import { set } from '@ember/-internals/metal';
+import { A as emberA } from '@ember/array';
+import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';

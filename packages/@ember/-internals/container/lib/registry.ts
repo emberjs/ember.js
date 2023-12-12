@@ -1,66 +1,34 @@
-import { Factory } from '@ember/-internals/owner';
+import type {
+  Factory,
+  FactoryClass,
+  FullName,
+  InternalFactory,
+  KnownForTypeResult,
+  RegisterOptions,
+  Resolver,
+} from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
+import type { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import Container, { ContainerOptions, LazyInjection } from './container';
+import type { ContainerOptions, LazyInjection } from './container';
+import Container from './container';
 
 export interface Injection {
   property: string;
-  specifier: string;
+  specifier: FullName;
 }
 
-export type ResolveOptions = {
-  specifier?: string;
-};
-
-export interface TypeOptions {
-  instantiate?: boolean;
-  singleton?: boolean;
-}
-
-export interface KnownForTypeResult {
-  [fullName: string]: boolean;
-}
-
-export interface IRegistry {
-  describe(fullName: string): string;
-  getInjections(fullName: string): Injection[];
-  getOption<K extends keyof TypeOptions>(
-    fullName: string,
-    optionName: K
-  ): TypeOptions[K] | undefined;
-  getOptions(fullName: string): TypeOptions;
-  getOptionsForType(type: string): TypeOptions;
-  getTypeInjections(type: string): Injection[];
-  knownForType(type: string): KnownForTypeResult;
-  makeToString<T, C>(factory: Factory<T, C>, fullName: string): string;
-  normalizeFullName(fullName: string): string;
-  resolve<T, C>(fullName: string, options?: ResolveOptions): Factory<T, C> | undefined;
-}
-
-export type NotResolver = {
-  knownForType: never;
-  lookupDescription: never;
-  makeToString: never;
-  normalize: never;
-  resolve: never;
-};
-
-export type Resolve = <T, C>(name: string) => Factory<T, C> | undefined;
-
-export interface Resolver {
-  knownForType?: (type: string) => KnownForTypeResult;
-  lookupDescription?: (fullName: string) => string;
-  makeToString?: <T, C>(factory: Factory<T, C>, fullName: string) => string;
-  normalize?: (fullName: string) => string;
-  resolve: Resolve;
-}
+export interface ResolverClass
+  extends Factory<Resolver>,
+    Partial<{
+      new (...args: any): Resolver;
+    }> {}
 
 export interface RegistryOptions {
-  fallback?: IRegistry;
+  fallback?: Registry;
   registrations?: { [key: string]: object };
-  resolver?: Resolver | (Resolve & NotResolver);
+  resolver?: Resolver;
 }
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
@@ -78,18 +46,17 @@ const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
  @class Registry
  @since 1.11.0
 */
-export default class Registry implements IRegistry {
+export default class Registry {
   readonly _failSet: Set<string>;
-  resolver: Resolver | (Resolve & NotResolver) | null;
-  readonly fallback: IRegistry | null;
-  readonly registrations: { [key: string]: object };
-  readonly _injections: { [key: string]: Injection[] };
-  _localLookupCache: { [key: string]: object };
-  readonly _normalizeCache: { [key: string]: string };
-  readonly _options: { [key: string]: TypeOptions };
-  readonly _resolveCache: { [key: string]: object };
-  readonly _typeInjections: { [key: string]: Injection[] };
-  readonly _typeOptions: { [key: string]: TypeOptions };
+  resolver: Resolver | null;
+  readonly fallback: Registry | null;
+  readonly registrations: Record<string, InternalFactory<object> | object>;
+  readonly _normalizeCache: Record<FullName, FullName>;
+  readonly _options: Record<string, RegisterOptions>;
+  readonly _resolveCache: Record<string, InternalFactory<object> | object>;
+  readonly _typeOptions: Record<string, RegisterOptions>;
+
+  set?: typeof set;
 
   constructor(options: RegistryOptions = {}) {
     this.fallback = options.fallback || null;
@@ -97,10 +64,6 @@ export default class Registry implements IRegistry {
 
     this.registrations = dictionary(options.registrations || null);
 
-    this._typeInjections = dictionary(null);
-    this._injections = dictionary(null);
-
-    this._localLookupCache = Object.create(null);
     this._normalizeCache = dictionary(null);
     this._resolveCache = dictionary(null);
     this._failSet = new Set();
@@ -128,20 +91,6 @@ export default class Registry implements IRegistry {
   /**
    @private
    @property registrations
-   @type InheritingDict
-   */
-
-  /**
-   @private
-
-   @property _typeInjections
-   @type InheritingDict
-   */
-
-  /**
-   @private
-
-   @property _injections
    @type InheritingDict
    */
 
@@ -181,7 +130,7 @@ export default class Registry implements IRegistry {
    @param {Object} options
    @return {Container} created container
    */
-  container(options?: ContainerOptions) {
+  container(options?: ContainerOptions): Container {
     return new Container(this, options);
   }
 
@@ -204,11 +153,26 @@ export default class Registry implements IRegistry {
    @param {Function} factory
    @param {Object} options
    */
-  register<T, C>(fullName: string, factory: Factory<T, C>, options: object = {}): void {
+  register(
+    fullName: FullName,
+    factory: object,
+    options: RegisterOptions & { instantiate: false }
+  ): void;
+  register<T extends object, C extends FactoryClass | object>(
+    fullName: FullName,
+    factory: InternalFactory<T, C>,
+    options?: RegisterOptions
+  ): void;
+  register(
+    fullName: FullName,
+    factory: object | InternalFactory<object>,
+    options: RegisterOptions = {}
+  ): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
     let normalizedName = this.normalize(fullName);
+
     assert(
       `Cannot re-register: '${fullName}', as it has already been resolved.`,
       !this._resolveCache[normalizedName]
@@ -236,12 +200,10 @@ export default class Registry implements IRegistry {
    @method unregister
    @param {String} fullName
    */
-  unregister(fullName: string): void {
+  unregister(fullName: FullName): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
-
-    this._localLookupCache = Object.create(null);
 
     delete this.registrations[normalizedName];
     delete this._resolveCache[normalizedName];
@@ -280,14 +242,12 @@ export default class Registry implements IRegistry {
    @private
    @method resolve
    @param {String} fullName
-   @param {Object} [options]
-   @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Function} fullName's factory
    */
-  resolve<T, C>(fullName: string): Factory<T, C> | undefined {
-    let factory = resolve<T, C>(this, this.normalize(fullName));
+  resolve(fullName: FullName): InternalFactory<object> | object | undefined {
+    let factory = resolve(this, this.normalize(fullName));
     if (factory === undefined && this.fallback !== null) {
-      factory = (this.fallback as any).resolve(...arguments);
+      factory = this.fallback.resolve(fullName);
     }
     return factory;
   }
@@ -305,7 +265,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {string} described fullName
    */
-  describe(fullName: string): string {
+  describe(fullName: FullName): string {
     if (this.resolver !== null && this.resolver.lookupDescription) {
       return this.resolver.lookupDescription(fullName);
     } else if (this.fallback !== null) {
@@ -323,7 +283,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalizeFullName(fullName: string): string {
+  normalizeFullName(fullName: FullName): FullName {
     if (this.resolver !== null && this.resolver.normalize) {
       return this.resolver.normalize(fullName);
     } else if (this.fallback !== null) {
@@ -341,7 +301,7 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalize(fullName: string): string {
+  normalize(fullName: FullName): FullName {
     return (
       this._normalizeCache[fullName] ||
       (this._normalizeCache[fullName] = this.normalizeFullName(fullName))
@@ -356,7 +316,7 @@ export default class Registry implements IRegistry {
    @param {string} fullName
    @return {function} toString function
    */
-  makeToString<T, C>(factory: Factory<T, C>, fullName: string): string {
+  makeToString(factory: InternalFactory<object>, fullName: FullName): string {
     if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
     } else if (this.fallback !== null) {
@@ -377,7 +337,7 @@ export default class Registry implements IRegistry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName: string) {
+  has(fullName: FullName): boolean {
     if (!this.isValidFullName(fullName)) {
       return false;
     }
@@ -414,11 +374,11 @@ export default class Registry implements IRegistry {
    @param {String} type
    @param {Object} options
    */
-  optionsForType(type: string, options: TypeOptions) {
+  optionsForType(type: string, options: RegisterOptions): void {
     this._typeOptions[type] = options;
   }
 
-  getOptionsForType(type: string): TypeOptions {
+  getOptionsForType(type: string): RegisterOptions | undefined {
     let optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
@@ -432,12 +392,12 @@ export default class Registry implements IRegistry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName: string, options: TypeOptions) {
+  options(fullName: FullName, options: RegisterOptions): void {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
 
-  getOptions(fullName: string): TypeOptions {
+  getOptions(fullName: FullName): RegisterOptions | undefined {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
@@ -447,10 +407,10 @@ export default class Registry implements IRegistry {
     return options;
   }
 
-  getOption<K extends keyof TypeOptions>(
-    fullName: string,
+  getOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
     optionName: K
-  ): TypeOptions[K] | undefined {
+  ): RegisterOptions[K] | undefined {
     let options = this._options[fullName];
 
     if (options !== undefined && options[optionName] !== undefined) {
@@ -458,6 +418,7 @@ export default class Registry implements IRegistry {
     }
 
     let type = fullName.split(':')[0];
+    assert('has type', type); // split always will have at least one value
     options = this._typeOptions[type];
 
     if (options && options[optionName] !== undefined) {
@@ -469,128 +430,14 @@ export default class Registry implements IRegistry {
   }
 
   /**
-   Used only via `injection`.
-
-   Provides a specialized form of injection, specifically enabling
-   all objects of one type to be injected with a reference to another
-   object.
-
-   For example, provided each object of type `controller` needed a `router`.
-   one would do the following:
-
-   ```javascript
-   let registry = new Registry();
-   let container = registry.container();
-
-   registry.register('router:main', Router);
-   registry.register('controller:user', UserController);
-   registry.register('controller:post', PostController);
-
-   registry.typeInjection('controller', 'router', 'router:main');
-
-   let user = container.lookup('controller:user');
-   let post = container.lookup('controller:post');
-
-   user.router instanceof Router; //=> true
-   post.router instanceof Router; //=> true
-
-   // both controllers share the same router
-   user.router === post.router; //=> true
-   ```
-
-   @private
-   @method typeInjection
-   @param {String} type
-   @param {String} property
-   @param {String} fullName
-   */
-  typeInjection(type: string, property: string, fullName: string): void {
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
-
-    let fullNameType = fullName.split(':')[0];
-    assert(`Cannot inject a '${fullName}' on other ${type}(s).`, fullNameType !== type);
-
-    let injections = this._typeInjections[type] || (this._typeInjections[type] = []);
-
-    injections.push({ property, specifier: fullName });
-  }
-
-  /**
-   Defines injection rules.
-
-   These rules are used to inject dependencies onto objects when they
-   are instantiated.
-
-   Two forms of injections are possible:
-
-   * Injecting one fullName on another fullName
-   * Injecting one fullName on a type
-
-   Example:
-
-   ```javascript
-   let registry = new Registry();
-   let container = registry.container();
-
-   registry.register('source:main', Source);
-   registry.register('model:user', User);
-   registry.register('model:post', Post);
-
-   // injecting one fullName on another fullName
-   // eg. each user model gets a post model
-   registry.injection('model:user', 'post', 'model:post');
-
-   // injecting one fullName on another type
-   registry.injection('model', 'source', 'source:main');
-
-   let user = container.lookup('model:user');
-   let post = container.lookup('model:post');
-
-   user.source instanceof Source; //=> true
-   post.source instanceof Source; //=> true
-
-   user.post instanceof Post; //=> true
-
-   // and both models share the same source
-   user.source === post.source; //=> true
-   ```
-
-   @private
-   @method injection
-   @param {String} factoryName
-   @param {String} property
-   @param {String} injectionName
-   */
-  injection(fullName: string, property: string, injectionName: string) {
-    assert(
-      `Invalid injectionName, expected: 'type:name' got: ${injectionName}`,
-      this.isValidFullName(injectionName)
-    );
-
-    let normalizedInjectionName = this.normalize(injectionName);
-
-    if (fullName.indexOf(':') === -1) {
-      return this.typeInjection(fullName, property, normalizedInjectionName);
-    }
-
-    assert('fullName must be a proper full name', this.isValidFullName(fullName));
-    let normalizedName = this.normalize(fullName);
-
-    let injections = this._injections[normalizedName] || (this._injections[normalizedName] = []);
-
-    injections.push({ property, specifier: normalizedInjectionName });
-  }
-
-  /**
    @private
    @method knownForType
    @param {String} type the type to iterate over
   */
-  knownForType(type: string): KnownForTypeResult {
+  knownForType<T extends string>(type: T): KnownForTypeResult<T> {
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
-    for (let index = 0; index < registeredNames.length; index++) {
-      let fullName = registeredNames[index];
+    for (let fullName of registeredNames) {
       let itemType = fullName.split(':')[0];
 
       if (itemType === type) {
@@ -607,39 +454,11 @@ export default class Registry implements IRegistry {
       resolverKnown = this.resolver.knownForType(type);
     }
 
-    return assign({}, fallbackKnown, localKnown, resolverKnown);
+    return Object.assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
-  isValidFullName(fullName: string): boolean {
+  isValidFullName(fullName: string): fullName is FullName {
     return VALID_FULL_NAME_REGEXP.test(fullName);
-  }
-
-  getInjections(fullName: string) {
-    let injections = this._injections[fullName];
-    if (this.fallback !== null) {
-      let fallbackInjections = this.fallback.getInjections(fullName);
-
-      if (fallbackInjections !== undefined) {
-        injections =
-          injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
-      }
-    }
-
-    return injections;
-  }
-
-  getTypeInjections(type: string): Injection[] {
-    let injections = this._typeInjections[type];
-    if (this.fallback !== null) {
-      let fallbackInjections = this.fallback.getTypeInjections(type);
-
-      if (fallbackInjections !== undefined) {
-        injections =
-          injections === undefined ? fallbackInjections : injections.concat(fallbackInjections);
-      }
-    }
-
-    return injections;
   }
 }
 
@@ -655,7 +474,9 @@ if (DEBUG) {
 
     for (let key in hash) {
       if (Object.prototype.hasOwnProperty.call(hash, key)) {
-        let { specifier } = hash[key];
+        let value = hash[key];
+        assert('has value', value);
+        let { specifier } = value;
         assert(
           `Expected a proper full name, given '${specifier}'`,
           this.isValidFullName(specifier)
@@ -676,33 +497,35 @@ if (DEBUG) {
       return;
     }
 
-    for (let i = 0; i < injections.length; i++) {
-      let { specifier } = injections[i];
-
+    for (let injection of injections) {
+      let { specifier } = injection;
       assert(`Attempting to inject an unknown injection: '${specifier}'`, this.has(specifier));
     }
   };
 }
 
-function resolve<T, C>(registry: Registry, _normalizedName: string): Factory<T, C> | undefined {
+function resolve(
+  registry: Registry,
+  _normalizedName: FullName
+): InternalFactory<object> | object | undefined {
   let normalizedName = _normalizedName;
 
   let cached = registry._resolveCache[normalizedName];
   if (cached !== undefined) {
-    return cached as Factory<T, C>;
+    return cached;
   }
   if (registry._failSet.has(normalizedName)) {
     return;
   }
 
-  let resolved: Factory<T, C> | undefined;
+  let resolved: InternalFactory<object> | object | undefined;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve<T, C>(normalizedName);
+    resolved = registry.resolver.resolve(normalizedName);
   }
 
   if (resolved === undefined) {
-    resolved = registry.registrations[normalizedName] as Factory<T, C> | undefined;
+    resolved = registry.registrations[normalizedName];
   }
 
   if (resolved === undefined) {
@@ -714,14 +537,16 @@ function resolve<T, C>(registry: Registry, _normalizedName: string): Factory<T, 
   return resolved;
 }
 
-function has(registry: Registry, fullName: string) {
+function has(registry: Registry, fullName: FullName): boolean {
   return registry.resolve(fullName) !== undefined;
 }
 
-const privateNames: { [key: string]: string } = dictionary(null);
+const privateNames: Record<string, FullName> = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
-export function privatize([fullName]: TemplateStringsArray): string {
+export function privatize([fullName]: TemplateStringsArray): FullName {
+  assert('has a single string argument', arguments.length === 1 && fullName);
+
   let name = privateNames[fullName];
   if (name) {
     return name;

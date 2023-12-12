@@ -1,12 +1,16 @@
-import { Factory, getOwner, Owner, setOwner } from '@ember/-internals/owner';
-import { enumerableSymbol, guidFor, symbol } from '@ember/-internals/utils';
-import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
-import { assert, debugFreeze } from '@ember/debug';
-import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
-import { _instrumentStart } from '@ember/instrumentation';
-import { assign } from '@ember/polyfills';
-import { DEBUG } from '@glimmer/env';
 import {
+  type default as Owner,
+  type InternalFactory,
+  getOwner,
+  setOwner,
+} from '@ember/-internals/owner';
+import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
+import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
+import type { Nullable } from '@ember/-internals/utility-types';
+import { assert, debugFreeze } from '@ember/debug';
+import { _instrumentStart } from '@ember/instrumentation';
+import { DEBUG } from '@glimmer/env';
+import type {
   Bounds,
   CapturedArguments,
   CompilableProgram,
@@ -14,7 +18,6 @@ import {
   ElementOperations,
   Environment,
   InternalComponentCapabilities,
-  Option,
   PreparedArguments,
   TemplateFactory,
   VMArguments,
@@ -22,13 +25,8 @@ import {
   WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
-import {
-  childRefFor,
-  createComputeRef,
-  createPrimitiveRef,
-  Reference,
-  valueForRef,
-} from '@glimmer/reference';
+import type { Reference } from '@glimmer/reference';
+import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {
@@ -40,33 +38,31 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
-import { DynamicScope } from '../renderer';
-import RuntimeResolver from '../resolver';
+import type Component from '../component';
+import type { DynamicScope } from '../renderer';
+import type RuntimeResolver from '../resolver';
 import { isTemplateFactory } from '../template';
 import {
   createClassNameBindingRef,
   createSimpleClassNameBindingRef,
   installAttributeBinding,
-  installIsVisibleBinding,
   parseAttributeBinding,
 } from '../utils/bindings';
 
-import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
+import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
 
-export const DIRTY_TAG = symbol('DIRTY_TAG');
-export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
-export const BOUNDS = symbol('BOUNDS');
+export const DIRTY_TAG = Symbol('DIRTY_TAG');
+export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
+export const BOUNDS = Symbol('BOUNDS');
 
 const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
-    // tslint:disable-next-line:max-line-length
     assert(
       `You cannot invoke a component with both 'id' and 'elementId' at the same time.`,
       !args.named.has('elementId')
@@ -89,6 +85,7 @@ function applyAttributeBindings(
 
   while (i !== -1) {
     let binding = attributeBindings[i];
+    assert('has binding', binding);
     let parsed: [string, string, boolean] = parseAttributeBinding(binding);
     let attribute = parsed[1];
 
@@ -104,21 +101,13 @@ function applyAttributeBindings(
     let id = component.elementId ? component.elementId : guidFor(component);
     operations.setAttribute('id', createPrimitiveRef(id), false, null);
   }
-
-  if (
-    EMBER_COMPONENT_IS_VISIBLE &&
-    installIsVisibleBinding !== undefined &&
-    seen.indexOf('style') === -1
-  ) {
-    installIsVisibleBinding(rootRef, operations);
-  }
 }
 
 const EMPTY_POSITIONAL_ARGS: Reference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
-type ComponentFactory = Factory<
+type ComponentFactory = InternalFactory<
   Component,
   {
     create(props?: any): Component;
@@ -134,16 +123,18 @@ export default class CurlyComponentManager
   implements
     WithCreateInstance<ComponentStateBucket>,
     WithDynamicLayout<ComponentStateBucket, RuntimeResolver>,
-    WithDynamicTagName<ComponentStateBucket> {
+    WithDynamicTagName<ComponentStateBucket>
+{
   protected templateFor(component: Component): CompilableProgram | null {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
+    assert('Component is unexpectedly missing an owner', owner);
 
     let factory: TemplateFactory;
 
     if (layout === undefined) {
       if (layoutName !== undefined) {
-        let _factory = owner.lookup<TemplateFactory>(`template:${layoutName}`);
+        let _factory = owner.lookup(`template:${layoutName}`) as TemplateFactory;
         assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
         factory = _factory;
       } else {
@@ -163,7 +154,7 @@ export default class CurlyComponentManager
     return this.templateFor(bucket.component);
   }
 
-  getTagName(state: ComponentStateBucket): Option<string> {
+  getTagName(state: ComponentStateBucket): Nullable<string> {
     let { component, hasWrappedElement } = state;
 
     if (!hasWrappedElement) {
@@ -177,7 +168,7 @@ export default class CurlyComponentManager
     return CURLY_CAPABILITIES;
   }
 
-  prepareArgs(ComponentClass: ComponentFactory, args: VMArguments): Option<PreparedArguments> {
+  prepareArgs(ComponentClass: ComponentFactory, args: VMArguments): Nullable<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
       assert(
         '[BUG] cannot pass both __ARGS__ and positional arguments',
@@ -185,6 +176,7 @@ export default class CurlyComponentManager
       );
 
       let { __ARGS__, ...rest } = args.named.capture();
+      assert('[BUG] unexpectedly missing __ARGS__ after check', __ARGS__);
 
       // does this need to be untracked?
       let __args__ = valueForRef(__ARGS__) as CapturedArguments;
@@ -219,21 +211,15 @@ export default class CurlyComponentManager
       named = {
         [positionalParams]: createComputeRef(() => reifyPositional(captured)),
       };
-      assign(named, args.named.capture());
+      Object.assign(named, args.named.capture());
     } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
       const count = Math.min(positionalParams.length, args.positional.length);
       named = {};
-      assign(named, args.named.capture());
+      Object.assign(named, args.named.capture());
 
       for (let i = 0; i < count; i++) {
-        // As of TS 3.7, tsc is giving us the following error on this line without the type annotation
-        //
-        //   TS7022: 'name' implicitly has type 'any' because it does not have a type annotation and is
-        //   referenced directly or indirectly in its own initializer.
-        //
-        // This is almost certainly a TypeScript bug, feel free to try and remove the annotation after
-        // upgrading if it is not needed anymore.
-        const name: string = positionalParams[i];
+        let name: string | undefined = positionalParams[i];
+        assert('Expected at least one positional param', name);
 
         assert(
           `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
@@ -378,7 +364,7 @@ export default class CurlyComponentManager
 
   didCreateElement(
     { component, classRef, isInteractive, rootRef }: ComponentStateBucket,
-    element: SimpleElement,
+    element: Element,
     operations: ElementOperations
   ): void {
     setViewElement(component, element);
@@ -391,9 +377,6 @@ export default class CurlyComponentManager
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', createPrimitiveRef(id), false, null);
-      if (EMBER_COMPONENT_IS_VISIBLE) {
-        installIsVisibleBinding!(rootRef, operations);
-      }
     }
 
     if (classRef) {
@@ -449,7 +432,7 @@ export default class CurlyComponentManager
 
     if (args !== null && !validateTag(argsTag, argsRevision)) {
       beginTrackFrame();
-      let props = processComponentArgs(args!);
+      let props = processComponentArgs(args);
       argsTag = bucket.argsTag = endTrackFrame();
 
       bucket.argsRevision = valueForTag(argsTag);
@@ -484,7 +467,7 @@ export default class CurlyComponentManager
     }
   }
 
-  getDestroyable(bucket: ComponentStateBucket): Option<Destroyable> {
+  getDestroyable(bucket: ComponentStateBucket): Nullable<Destroyable> {
     return bucket;
   }
 }
@@ -509,8 +492,7 @@ export function processComponentInitializationAssertions(component: Component, p
     `classNameBindings must not have spaces in them: ${component}`,
     (() => {
       let { classNameBindings } = component;
-      for (let i = 0; i < classNameBindings.length; i++) {
-        let binding = classNameBindings[i];
+      for (let binding of classNameBindings) {
         if (binding.split(' ').length > 1) {
           return false;
         }

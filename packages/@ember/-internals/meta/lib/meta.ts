@@ -1,8 +1,9 @@
+import type { ComputedProperty } from '@ember/-internals/metal';
 import { symbol, toString } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
-import { isDestroyed, isDestroying } from '@glimmer/destroyable';
+import { assert } from '@ember/debug';
+import { isDestroyed } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { Revision, UpdatableTag } from '@glimmer/validator';
+import type { Revision, UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };
 
@@ -86,22 +87,36 @@ type Listener = StringListener | FunctionListener;
 let currentListenerVersion = 1;
 
 export class Meta {
+  /** @internal */
   _descriptors: Map<string, any> | undefined;
+  /** @internal */
   _mixins: any | undefined;
+  /** @internal */
   _isInit: boolean;
+  /** @internal */
   _lazyChains: ObjMap<[UpdatableTag, unknown][]> | undefined;
+  /** @internal */
   _values: ObjMap<unknown> | undefined;
+  /** @internal */
   _revisions: ObjMap<Revision> | undefined;
+  /** @internal */
   source: object;
+  /** @internal */
   proto: object | undefined;
+  /** @internal */
   _parent: Meta | undefined | null;
 
+  /** @internal */
   _listeners: Listener[] | undefined;
+  /** @internal */
   _listenersVersion = 1;
+  /** @internal */
   _inheritedEnd = -1;
+  /** @internal */
   _flattenedVersion = 0;
 
   // DEBUG
+  /** @internal */
   constructor(obj: object) {
     if (DEBUG) {
       counters!.metaInstantiated++;
@@ -124,7 +139,8 @@ export class Meta {
     this._listeners = undefined;
   }
 
-  get parent() {
+  /** @internal */
+  get parent(): Meta | null {
     let parent = this._parent;
     if (parent === undefined) {
       let proto = getPrototypeOf(this.source);
@@ -133,97 +149,37 @@ export class Meta {
     return parent;
   }
 
-  // These methods are here to prevent errors in legacy compat with some addons
-  // that used them as intimate API
-  setSourceDestroying() {
-    deprecate(
-      'setSourceDestroying is deprecated, use the destroy() API to destroy the object directly instead',
-      false,
-      {
-        id: 'meta-destruction-apis',
-        until: '3.25.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.21.0',
-        },
-      }
-    );
-  }
-
-  setSourceDestroyed() {
-    deprecate(
-      'setSourceDestroyed is deprecated, use the destroy() API to destroy the object directly instead',
-      false,
-      {
-        id: 'meta-destruction-apis',
-        until: '3.25.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.21.0',
-        },
-      }
-    );
-  }
-
-  isSourceDestroying() {
-    deprecate(
-      'isSourceDestroying is deprecated, use the isDestroying() API to check the object destruction state directly instead',
-      false,
-      {
-        id: 'meta-destruction-apis',
-        until: '3.25.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.21.0',
-        },
-      }
-    );
-
-    return isDestroying(this.source);
-  }
-
-  isSourceDestroyed() {
-    deprecate(
-      'isSourceDestroyed is deprecated, use the isDestroyed() API to check the object destruction state directly instead',
-      false,
-      {
-        id: 'meta-destruction-apis',
-        until: '3.25.0',
-        for: 'ember-source',
-        since: {
-          enabled: '3.21.0',
-        },
-      }
-    );
-
-    return isDestroyed(this.source);
-  }
-
   setInitializing() {
     this._isInit = true;
   }
 
+  /** @internal */
   unsetInitializing() {
     this._isInit = false;
   }
 
+  /** @internal */
   isInitializing() {
     return this._isInit;
   }
 
+  /** @internal */
   isPrototypeMeta(obj: object) {
     return this.proto === this.source && this.source === obj;
   }
 
-  _getOrCreateOwnMap(key: string) {
+  /** @internal */
+  _getOrCreateOwnMap(key: '_values' | '_revisions' | '_lazyChains') {
     return this[key] || (this[key] = Object.create(null));
   }
 
-  _getOrCreateOwnSet(key: string) {
+  /** @internal */
+  _getOrCreateOwnSet(key: '_mixins') {
     return this[key] || (this[key] = new Set());
   }
 
-  _findInheritedMap(key: string, subkey: string): any | undefined {
+  /** @internal */
+  _findInheritedMap(key: keyof Meta, subkey: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let map: Map<string, any> = pointer[key];
@@ -237,7 +193,8 @@ export class Meta {
     }
   }
 
-  _hasInInheritedSet(key: string, value: any) {
+  /** @internal */
+  _hasInInheritedSet(key: keyof Meta, value: any) {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let set = pointer[key];
@@ -249,30 +206,35 @@ export class Meta {
     return false;
   }
 
+  /** @internal */
   valueFor(key: string): unknown {
     let values = this._values;
 
     return values !== undefined ? values[key] : undefined;
   }
 
+  /** @internal */
   setValueFor(key: string, value: unknown) {
     let values = this._getOrCreateOwnMap('_values');
 
     values[key] = value;
   }
 
+  /** @internal */
   revisionFor(key: string): Revision | undefined {
     let revisions = this._revisions;
 
     return revisions !== undefined ? revisions[key] : undefined;
   }
 
+  /** @internal */
   setRevisionFor(key: string, revision: Revision | undefined) {
     let revisions = this._getOrCreateOwnMap('_revisions');
 
     revisions[key] = revision;
   }
 
+  /** @internal */
   writableLazyChainsFor(key: string): [UpdatableTag, unknown][] {
     if (DEBUG) {
       counters!.writableLazyChainsCalls++;
@@ -289,6 +251,7 @@ export class Meta {
     return chains;
   }
 
+  /** @internal */
   readableLazyChainsFor(key: string): [UpdatableTag, unknown][] | undefined {
     if (DEBUG) {
       counters!.readableLazyChainsCalls++;
@@ -303,6 +266,7 @@ export class Meta {
     return undefined;
   }
 
+  /** @internal */
   addMixin(mixin: any) {
     assert(
       isDestroyed(this.source)
@@ -316,10 +280,12 @@ export class Meta {
     set.add(mixin);
   }
 
+  /** @internal */
   hasMixin(mixin: any) {
     return this._hasInInheritedSet('_mixins', mixin);
   }
 
+  /** @internal */
   forEachMixins(fn: Function) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
@@ -339,6 +305,7 @@ export class Meta {
     }
   }
 
+  /** @internal */
   writeDescriptors(subkey: string, value: any) {
     assert(
       isDestroyed(this.source)
@@ -352,16 +319,19 @@ export class Meta {
     map.set(subkey, value);
   }
 
+  /** @internal */
   peekDescriptors(subkey: string) {
     let possibleDesc = this._findInheritedMap('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
+  /** @internal */
   removeDescriptors(subkey: string) {
     this.writeDescriptors(subkey, UNDEFINED);
   }
 
-  forEachDescriptors(fn: Function) {
+  /** @internal */
+  forEachDescriptors(fn: (key: string, value: ComputedProperty) => void) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
     while (pointer !== null) {
@@ -381,10 +351,11 @@ export class Meta {
     }
   }
 
+  /** @internal */
   addToListeners(
     eventName: string,
     target: object | null,
-    method: Function | string,
+    method: Function | PropertyKey,
     once: boolean,
     sync: boolean
   ) {
@@ -395,6 +366,7 @@ export class Meta {
     this.pushListener(eventName, target, method, once ? ListenerKind.ONCE : ListenerKind.ADD, sync);
   }
 
+  /** @internal */
   removeFromListeners(eventName: string, target: object | null, method: Function | string): void {
     if (DEBUG) {
       counters!.removeFromListenersCalls++;
@@ -406,13 +378,13 @@ export class Meta {
   private pushListener(
     event: string,
     target: object | null,
-    method: Function | string,
+    method: Function | PropertyKey,
     kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE,
     sync = false
   ): void {
     let listeners = this.writableListeners();
 
-    let i = indexOfListener(listeners, event, target, method!);
+    let i = indexOfListener(listeners, event, target, method);
 
     // remove if found listener was inherited
     if (i !== -1 && i < this._inheritedEnd) {
@@ -448,6 +420,7 @@ export class Meta {
       } as Listener);
     } else {
       let listener = listeners[i];
+      assert('has listener', listener);
 
       // If the listener is our own listener and we are trying to remove it, we
       // want to splice it out entirely so we don't hold onto a reference.
@@ -457,7 +430,9 @@ export class Meta {
         assert(
           `You attempted to add an observer for the same method on '${
             event.split(':')[0]
-          }' twice to ${target} as both sync and async. Observers must be either sync or async, they cannot be both. This is likely a mistake, you should either remove the code that added the observer a second time, or update it to always be sync or async. The method was ${method}.`,
+          }' twice to ${target} as both sync and async. Observers must be either sync or async, they cannot be both. This is likely a mistake, you should either remove the code that added the observer a second time, or update it to always be sync or async. The method was ${String(
+            method
+          )}.`,
           !(
             listener.kind === ListenerKind.ADD &&
             kind === ListenerKind.ADD &&
@@ -545,8 +520,7 @@ export class Meta {
               this._inheritedEnd = 0;
             }
 
-            for (let i = 0; i < parentListeners.length; i++) {
-              let listener = parentListeners[i];
+            for (let listener of parentListeners) {
               let index = indexOfListener(
                 listeners,
                 listener.event,
@@ -573,6 +547,7 @@ export class Meta {
     return this._listeners;
   }
 
+  /** @internal */
   matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined {
     let listeners = this.flattenedListeners();
     let result;
@@ -582,9 +557,7 @@ export class Meta {
     }
 
     if (listeners !== undefined) {
-      for (let index = 0; index < listeners.length; index++) {
-        let listener = listeners[index];
-
+      for (let listener of listeners) {
         // REMOVE listeners are placeholders that tell us not to
         // inherit, so they never match. Only ADD and ONCE can match.
         if (
@@ -605,6 +578,7 @@ export class Meta {
     return result;
   }
 
+  /** @internal */
   observerEvents() {
     let listeners = this.flattenedListeners();
     let result;
@@ -614,9 +588,7 @@ export class Meta {
     }
 
     if (listeners !== undefined) {
-      for (let index = 0; index < listeners.length; index++) {
-        let listener = listeners[index];
-
+      for (let listener of listeners) {
         // REMOVE listeners are placeholders that tell us not to
         // inherit, so they never match. Only ADD and ONCE can match.
         if (
@@ -753,10 +725,11 @@ function indexOfListener(
   listeners: Listener[],
   event: string,
   target: object | null,
-  method: Function | string | null
+  method: Function | PropertyKey | null
 ) {
   for (let i = listeners.length - 1; i >= 0; i--) {
     let listener = listeners[i];
+    assert('has listener', listener);
 
     if (listener.event === event && listener.target === target && listener.method === method) {
       return i;

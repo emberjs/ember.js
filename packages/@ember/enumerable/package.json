@@ -1,0 +1,21 @@
+{
+  "name": "@ember/enumerable",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./mutable": "./mutable.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@glimmer/destroyable": "0.85.13",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/owner": "0.85.13",
+    "@glimmer/util": "0.85.13",
+    "@glimmer/validator": "0.85.13",
+    "internal-test-helpers": "workspace:*"
+  }
+}

@@ -1,6 +1,6 @@
-import { get, set, addObserver } from '@ember/-internals/metal';
-import EmberObject from '../../../../lib/system/object';
-import { A as emberA } from '../../../../lib/mixins/array';
+import { addObserver } from '@ember/-internals/metal';
+import EmberObject, { get, set } from '@ember/object';
+import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*

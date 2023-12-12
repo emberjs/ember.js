@@ -1,16 +1,9 @@
-import {
-  moduleFor,
-  RenderingTestCase,
-  classes,
-  strip,
-  runAppend,
-  runTask,
-} from 'internal-test-helpers';
+import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
-import { set, setProperties } from '@ember/-internals/metal';
-import { A as emberA } from '@ember/-internals/runtime';
-import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
+import { set, setProperties } from '@ember/object';
+import { A as emberA } from '@ember/array';
+import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
 
@@ -1603,54 +1596,6 @@ moduleFor(
     }
   }
 );
-
-if (!jQueryDisabled) {
-  moduleFor(
-    'Run loop and lifecycle hooks - jQuery only',
-    class extends RenderingTestCase {
-      ['@test lifecycle hooks have proper access to this.$()'](assert) {
-        assert.expect(7);
-        let component;
-        let FooBarComponent = Component.extend({
-          tagName: 'div',
-          init() {
-            assert.notOk(this.$(), 'no access to element via this.$() on init() enter');
-            this._super(...arguments);
-            assert.notOk(this.$(), 'no access to element via this.$() after init() finished');
-          },
-          willInsertElement() {
-            component = this;
-            assert.ok(this.$(), 'willInsertElement has access to element via this.$()');
-          },
-          didInsertElement() {
-            assert.ok(this.$(), 'didInsertElement has access to element via this.$()');
-          },
-          willDestroyElement() {
-            assert.ok(this.$(), 'willDestroyElement has access to element via this.$()');
-          },
-          didDestroyElement() {
-            assert.notOk(
-              this.$(),
-              'didDestroyElement does not have access to element via this.$()'
-            );
-          },
-        });
-        this.registerComponent('foo-bar', {
-          ComponentClass: FooBarComponent,
-          template: 'hello',
-        });
-        let { owner } = this;
-
-        expectDeprecation(() => {
-          let comp = owner.lookup('component:foo-bar');
-          runAppend(comp);
-          runTask(() => component.destroy?.());
-        }, 'Using this.$() in a component has been deprecated, consider using this.element');
-        runTask(() => component.destroy?.());
-      }
-    }
-  );
-}
 
 function assertDestroyHooks(assert, _actual, _expected) {
   _expected.forEach((expected, i) => {

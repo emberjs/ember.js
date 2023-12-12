@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: monthly
+  open-pull-requests-limit: 10
+  versioning-strategy: increase
+  ignore:
+  - dependency-name: github
+    versions:
+    - "> 0.2.4"
+  - dependency-name: ember-cli
+    versions:
+    - 3.25.0
+  - dependency-name: broccoli-rollup
+    versions:
+    - 4.1.1
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10

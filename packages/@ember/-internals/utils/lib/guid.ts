@@ -6,9 +6,6 @@ import { isObject } from './spec';
 */
 
 /**
- Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
- jQuery master. We'll just bootstrap our own uuid now.
-
  @private
  @return {Number} the uuid
  */
@@ -22,7 +19,7 @@ let _uuid = 0;
  @public
  @return {Number} [description]
  */
-export function uuid() {
+export function uuid(): number {
   return ++_uuid;
 }
 
@@ -73,8 +70,8 @@ export const GUID_KEY = intern(`__ember${Date.now()}`);
     separate the guid into separate namespaces.
   @return {String} the guid
 */
-export function generateGuid(obj: object, prefix = GUID_PREFIX) {
-  let guid = prefix + uuid();
+export function generateGuid(obj: object, prefix = GUID_PREFIX): String {
+  let guid = prefix + uuid().toString();
 
   if (isObject(obj)) {
     OBJECT_GUIDS.set(obj, guid);
@@ -97,14 +94,14 @@ export function generateGuid(obj: object, prefix = GUID_PREFIX) {
   @param {Object} obj any object, string, number, Element, or primitive
   @return {String} the unique guid for this instance.
 */
-export function guidFor(value: any | null | undefined) {
+export function guidFor(value: any | null | undefined): string {
   let guid;
 
   if (isObject(value)) {
     guid = OBJECT_GUIDS.get(value);
 
     if (guid === undefined) {
-      guid = GUID_PREFIX + uuid();
+      guid = `${GUID_PREFIX}${uuid()}`;
       OBJECT_GUIDS.set(value, guid);
     }
   } else {
@@ -114,13 +111,13 @@ export function guidFor(value: any | null | undefined) {
       let type = typeof value;
 
       if (type === 'string') {
-        guid = 'st' + uuid();
+        guid = `st${uuid()}`;
       } else if (type === 'number') {
-        guid = 'nu' + uuid();
+        guid = `nu${uuid()}`;
       } else if (type === 'symbol') {
-        guid = 'sy' + uuid();
+        guid = `sy${uuid()}`;
       } else {
-        guid = '(' + value + ')';
+        guid = `(${value})`;
       }
 
       NON_OBJECT_GUIDS.set(value, guid);

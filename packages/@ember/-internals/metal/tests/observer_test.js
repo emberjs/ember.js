@@ -1,4 +1,3 @@
-import { ENV } from '@ember/-internals/environment';
 import {
   changeProperties,
   addObserver,
@@ -6,16 +5,14 @@ import {
   notifyPropertyChange,
   defineProperty,
   computed,
-  Mixin,
-  mixin,
-  observer,
   beginPropertyChanges,
   endPropertyChanges,
   get,
   set,
 } from '..';
+import { observer } from '@ember/object';
+import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
-import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 import { destroy } from '@glimmer/destroyable';
 import { meta as metaFor } from '@ember/-internals/meta';
 
@@ -190,91 +187,6 @@ moduleFor(
       }
 
       assert.equal(observerCount, 10, 'should continue to fire indefinitely');
-    }
-
-    async ['@test observer added via Function.prototype extensions and brace expansion should fire when property changes'](
-      assert
-    ) {
-      if (!FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
-        obj = {};
-        let count = 0;
-
-        expectDeprecation(() => {
-          mixin(obj, {
-            observeFooAndBar: function () {
-              count++;
-            }.observes('{foo,bar}'),
-          });
-        }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
-
-        set(obj, 'foo', 'foo');
-        await runLoopSettled();
-
-        assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
-
-        set(obj, 'bar', 'bar');
-        await runLoopSettled();
-
-        assert.equal(count, 2, 'observer specified via brace expansion invoked on property change');
-
-        set(obj, 'baz', 'baz');
-        await runLoopSettled();
-
-        assert.equal(count, 2, 'observer not invoked on unspecified property');
-      } else {
-        assert.expect(0);
-      }
-    }
-
-    async ['@test observer specified via Function.prototype extensions via brace expansion should fire when dependent property changes'](
-      assert
-    ) {
-      if (!FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
-        obj = { baz: 'Initial' };
-        let count = 0;
-
-        defineProperty(
-          obj,
-          'foo',
-          computed('bar', function () {
-            return get(this, 'bar').toLowerCase();
-          })
-        );
-
-        defineProperty(
-          obj,
-          'bar',
-          computed('baz', function () {
-            return get(this, 'baz').toUpperCase();
-          })
-        );
-
-        expectDeprecation(() => {
-          mixin(obj, {
-            fooAndBarWatcher: function () {
-              count++;
-            }.observes('{foo,bar}'),
-          });
-        }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
-
-        get(obj, 'foo');
-        set(obj, 'baz', 'Baz');
-        await runLoopSettled();
-
-        // fire once for foo, once for bar
-        assert.equal(
-          count,
-          2,
-          'observer specified via brace expansion invoked on dependent property change'
-        );
-
-        set(obj, 'quux', 'Quux');
-        await runLoopSettled();
-
-        assert.equal(count, 2, 'observer not fired on unspecified property');
-      } else {
-        assert.expect(0);
-      }
     }
 
     async ['@test observers watching multiple properties via brace expansion should fire when the properties change'](

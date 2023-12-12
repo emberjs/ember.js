@@ -1,7 +1,5 @@
-export function initialize(/* appInstance */) {
-  // appInstance.inject('route', 'foo', 'service:foo');
-}
+export function initialize(owner) {}
 
 export default {
-  initialize
+  initialize,
 };

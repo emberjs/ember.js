@@ -2,16 +2,12 @@
 
 import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
 import { htmlSafe } from '@ember/-internals/glimmer';
-import { get, set } from '@ember/-internals/metal';
-import {
-  Object as EmberObject,
-  ObjectProxy,
-  A as emberA,
-  ArrayProxy,
-  removeAt,
-} from '@ember/-internals/runtime';
+import { get, set } from '@ember/object';
+import EmberObject from '@ember/object';
+import ObjectProxy from '@ember/object/proxy';
+import { A as emberA, removeAt } from '@ember/array';
+import ArrayProxy from '@ember/array/proxy';
 
 import { Component } from './helpers';
 
@@ -115,7 +111,7 @@ export class FalsyGenerator extends AbstractGenerator {
 
 export class StableTruthyGenerator extends TruthyGenerator {
   generate(value, idx) {
-    return assign(super.generate(value, idx), {
+    return Object.assign(super.generate(value, idx), {
       [`@test it maintains DOM stability when condition changes from ${value} to another truthy value and back [${idx}]`]() {
         this.renderValues(value);
 
@@ -141,7 +137,7 @@ export class StableTruthyGenerator extends TruthyGenerator {
 
 export class StableFalsyGenerator extends FalsyGenerator {
   generate(value, idx) {
-    return assign(super.generate(value), {
+    return Object.assign(super.generate(value), {
       [`@test it maintains DOM stability when condition changes from ${value} to another falsy value and back [${idx}]`]() {
         this.renderValues(value);
 
@@ -218,7 +214,7 @@ class ObjectProxyGenerator extends AbstractGenerator {
 }
 
 // Testing behaviors shared across all conditionals, i.e. {{#if}}, {{#unless}},
-// {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+// {{#each}}, {{#each-in}}, (if) and (unless)
 export class BasicConditionalsTest extends AbstractConditionalsTest {
   ['@test it renders the corresponding block based on the conditional']() {
     this.renderValues(this.truthyValue, this.falsyValue);
@@ -462,7 +458,7 @@ const IfUnlessWithTestCases = [
 ];
 
 // Testing behaviors shared across the "toggling" conditionals, i.e. {{#if}},
-// {{#unless}}, {{#with}}, {{#each}}, {{#each-in}}, (if) and (unless)
+// {{#unless}}, {{#each}}, {{#each-in}}, (if) and (unless)
 export class TogglingConditionalsTest extends BasicConditionalsTest {}
 
 // Testing behaviors shared across the (if) and (unless) helpers
@@ -633,7 +629,7 @@ export class IfUnlessHelperTest extends TogglingHelperConditionalsTest {}
 applyMixins(IfUnlessHelperTest, ...IfUnlessWithTestCases);
 
 // Testing behaviors shared across the "toggling" syntatical constructs,
-// i.e. {{#if}}, {{#unless}}, {{#with}}, {{#each}} and {{#each-in}}
+// i.e. {{#if}}, {{#unless}}, {{#each}} and {{#each-in}}
 export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
   renderValues(...values) {
     let templates = [];
@@ -651,7 +647,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     }
 
     let wrappedTemplate = this.wrapperFor(templates);
-    this.render(wrappedTemplate, assign({ t: 'T', f: 'F' }, context));
+    this.render(wrappedTemplate, Object.assign({ t: 'T', f: 'F' }, context));
   }
 
   ['@test it does not update when the unbound helper is used']() {

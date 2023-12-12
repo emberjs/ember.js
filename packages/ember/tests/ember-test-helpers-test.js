@@ -16,6 +16,129 @@ const { module, test } = QUnit;
   revision).
 */
 module('@ember/test-helpers emulation test', function () {
+  module('v1.6.1', function () {
+    let EMPTY_TEMPLATE = compile('');
+
+    function lookupTemplate(owner, templateFullName) {
+      let template = owner.lookup(templateFullName);
+      if (typeof template === 'function') return template(owner);
+      return template;
+    }
+
+    function settled() {
+      return new Promise(function (resolve) {
+        let watcher = setInterval(() => {
+          if (_getCurrentRunLoop() || _hasScheduledTimers()) {
+            return;
+          }
+
+          // Stop polling
+          clearInterval(watcher);
+
+          // Synchronously resolve the promise
+          run(null, resolve);
+        }, 10);
+      });
+    }
+
+    async function setupContext(context) {
+      // condensed version of https://github.com/emberjs/ember-test-helpers/blob/v1.6.0/addon-test-support/%40ember/test-helpers/build-owner.ts#L38
+      // without support for "custom resolver"
+      await context.application.boot();
+
+      context.owner = await context.application.buildInstance().boot();
+    }
+
+    function setupRenderingContext(context) {
+      let { owner } = context;
+      let OutletView = owner.factoryFor('view:-outlet');
+      let environment = owner.lookup('-environment:main');
+      let outletTemplateFactory = owner.lookup('template:-outlet');
+      let toplevelView = OutletView.create({ environment, template: outletTemplateFactory });
+
+      owner.register('-top-level-view:main', {
+        create() {
+          return toplevelView;
+        },
+      });
+
+      // initially render a simple empty template
+      return render(EMPTY_TEMPLATE, context).then(() => {
+        let rootElement = document.querySelector(owner.rootElement);
+        run(toplevelView, 'appendTo', rootElement);
+
+        context.element = rootElement;
+
+        return settled();
+      });
+    }
+
+    let templateId = 0;
+    function render(template, context) {
+      let { owner } = context;
+      let toplevelView = owner.lookup('-top-level-view:main');
+      let OutletTemplate = lookupTemplate(owner, 'template:-outlet');
+      templateId += 1;
+      let templateFullName = `template:-undertest-${templateId}`;
+      owner.register(templateFullName, template);
+
+      let outletState = {
+        render: {
+          owner,
+          into: undefined,
+          outlet: 'main',
+          name: 'application',
+          controller: undefined,
+          ViewClass: undefined,
+          template: OutletTemplate,
+        },
+
+        outlets: {
+          main: {
+            render: {
+              owner,
+              into: undefined,
+              outlet: 'main',
+              name: 'index',
+              controller: context,
+              ViewClass: undefined,
+              template: lookupTemplate(owner, templateFullName),
+              outlets: {},
+            },
+            outlets: {},
+          },
+        },
+      };
+      toplevelView.setOutletState(outletState);
+
+      return settled();
+    }
+
+    module('setupRenderingContext', function (hooks) {
+      hooks.beforeEach(async function () {
+        this.application = Application.create({
+          rootElement: '#qunit-fixture',
+          autoboot: false,
+          Resolver: ModuleBasedTestResolver,
+        });
+
+        await setupContext(this);
+        await setupRenderingContext(this);
+      });
+
+      hooks.afterEach(function () {
+        run(this.owner, 'destroy');
+        run(this.application, 'destroy');
+      });
+
+      test('it basically works', async function (assert) {
+        await render(compile('Hi!'), this);
+
+        assert.equal(this.element.textContent, 'Hi!');
+      });
+    });
+  });
+
   module('v1.6.0', function () {
     let EMPTY_TEMPLATE = compile('');
 
@@ -46,7 +169,9 @@ module('@ember/test-helpers emulation test', function () {
     function setupRenderingContext(context) {
       let { owner } = context;
       let OutletView = owner.factoryFor('view:-outlet');
-      let toplevelView = OutletView.create();
+      let environment = owner.lookup('-environment:main');
+      let outletTemplateFactory = owner.lookup('template:-outlet');
+      let toplevelView = OutletView.create({ environment, template: outletTemplateFactory });
 
       owner.register('-top-level-view:main', {
         create() {
@@ -69,7 +194,6 @@ module('@ember/test-helpers emulation test', function () {
     function render(template, context) {
       let { owner } = context;
       let toplevelView = owner.lookup('-top-level-view:main');
-      let OutletTemplate = owner.lookup('template:-outlet');
       templateId += 1;
       let templateFullName = `template:-undertest-${templateId}`;
       owner.register(templateFullName, template);
@@ -82,7 +206,7 @@ module('@ember/test-helpers emulation test', function () {
           name: 'application',
           controller: undefined,
           ViewClass: undefined,
-          template: OutletTemplate,
+          template: owner.lookup('template:-outlet'),
         },
 
         outlets: {
@@ -108,6 +232,10 @@ module('@ember/test-helpers emulation test', function () {
 
     module('setupRenderingContext', function (hooks) {
       hooks.beforeEach(async function () {
+        expectDeprecation(
+          /The `template` property of `OutletState` should be a `Template` rather than a `TemplateFactory`/
+        );
+
         this.application = Application.create({
           rootElement: '#qunit-fixture',
           autoboot: false,

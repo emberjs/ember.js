@@ -1,5 +1,6 @@
 /* eslint-disable no-var */
 /* globals global globalThis self */
+/* eslint-disable-next-line no-unused-vars */
 var define, require;
 
 (function () {
@@ -80,7 +81,6 @@ var define, require;
     return internalRequire(name, null);
   };
 
-  // eslint-disable-next-line no-unused-vars
   define = function (name, deps, callback) {
     registry[name] = { deps: deps, callback: callback };
   };

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./compiler-options.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    // It'd be really nice to be able to supply sourcemaps, and at some point we
+    // will be able to by using e.g. rollup-plugin-ts once we solve other issues
+    // blocking that in our publishing pipeline by way of circular and repeated
+    // dependencies in the graph, but at the moment we are using `magic-string`
+    // to post-process these to add `declare module` declarations (see the
+    // `types/publish.mjs` script or details), and that doesn't support updating
+    // *existing* source maps, unfortunately.
+    "declarationMap": false,
+    "declarationDir": "../types/stable"
+  },
+  "include": [
+    "../packages/**/*.ts"
+  ],
+  "exclude": [
+    "../**/type-tests",
+    "../**/tests",
+    "../**/internal-test-helpers"
+  ]
+}

@@ -1,56 +1,44 @@
 'use strict';
 
-const stringUtils = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const semver = require('semver');
+
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 module.exports = useTestFrameworkDetector({
-  description: 'Generates a helper integration test or a unit test.',
+  description: 'Generates a helper integration test.',
 
-  availableOptions: [
-    {
-      name: 'test-type',
-      type: ['integration', 'unit'],
-      default: 'integration',
-      aliases: [
-        { i: 'integration' },
-        { u: 'unit' },
-        { integration: 'integration' },
-        { unit: 'unit' },
-      ],
-    },
-  ],
+  shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
+  },
 
   fileMapTokens: function () {
     return {
       __root__() {
         return 'tests';
       },
-      __testType__(options) {
-        return options.locals.testType || 'integration';
-      },
-      __collection__() {
-        return 'helpers';
+      __testType__() {
+        return 'integration';
       },
     };
   },
 
   locals: function (options) {
-    let testType = options.testType || 'integration';
-    let testName = testType === 'integration' ? 'Integration' : 'Unit';
-    let friendlyTestName = [testName, 'Helper', options.entity.name].join(' | ');
-    let dasherizedModulePrefix = stringUtils.dasherize(options.project.config().modulePrefix);
+    let friendlyTestName = ['Integration', 'Helper', options.entity.name].join(' | ');
 
     let hbsImportStatement = this._useNamedHbsImport()
       ? "import { hbs } from 'ember-cli-htmlbars';"
       : "import hbs from 'htmlbars-inline-precompile';";
 
     return {
-      testType,
+      modulePrefix: modulePrefixForProject(options.project),
       friendlyTestName,
-      dasherizedModulePrefix,
       hbsImportStatement,
     };
   },
@@ -68,7 +56,6 @@ module.exports = useTestFrameworkDetector({
   afterInstall: function (options) {
     if (
       !options.dryRun &&
-      options.testType === 'integration' &&
       !this._useNamedHbsImport() &&
       isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
     ) {

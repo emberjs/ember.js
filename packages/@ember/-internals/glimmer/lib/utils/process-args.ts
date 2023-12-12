@@ -1,7 +1,8 @@
-import { symbol } from '@ember/-internals/utils';
 import { MUTABLE_CELL } from '@ember/-internals/views';
-import { CapturedNamedArguments } from '@glimmer/interfaces';
+import type { CapturedNamedArguments } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import { assert } from '@ember/debug';
 import { ARGS } from '../component-managers/curly';
 import { ACTIONS } from '../helpers/action';
 
@@ -16,6 +17,7 @@ export function processComponentArgs(namedArgs: CapturedNamedArguments) {
 
   for (let name in namedArgs) {
     let ref = namedArgs[name];
+    assert('expected ref', ref);
     let value = valueForRef(ref);
 
     let isAction = typeof value === 'function' && ACTIONS.has(value);
@@ -34,11 +36,14 @@ export function processComponentArgs(namedArgs: CapturedNamedArguments) {
   return props;
 }
 
-const REF = symbol('REF');
+const REF = Symbol('REF');
 
 class MutableCell {
   public value: any;
-  constructor(ref: any, value: any) {
+  [MUTABLE_CELL]: boolean;
+  [REF]: Reference<unknown>;
+
+  constructor(ref: Reference<unknown>, value: any) {
     this[MUTABLE_CELL] = true;
     this[REF] = ref;
     this.value = value;

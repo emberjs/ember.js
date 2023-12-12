@@ -1,8 +1,10 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { get, set, notifyPropertyChange, computed, on } from '@ember/-internals/metal';
-import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
-import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
+import { notifyPropertyChange, on } from '@ember/-internals/metal';
+import { get, set, computed } from '@ember/object';
+import { A as emberA } from '@ember/array';
+import ArrayProxy from '@ember/array/proxy';
+import { RSVP } from '@ember/-internals/runtime';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 import {
@@ -136,13 +138,11 @@ class ForEachable extends ArrayDelegate {
 
 let ArrayIterable;
 
-if (HAS_NATIVE_SYMBOL) {
-  ArrayIterable = class extends ArrayDelegate {
-    [Symbol.iterator]() {
-      return this._array[Symbol.iterator]();
-    }
-  };
-}
+ArrayIterable = class extends ArrayDelegate {
+  [Symbol.iterator]() {
+    return this._array[Symbol.iterator]();
+  }
+};
 
 class TogglingEachTest extends TogglingSyntaxConditionalsTest {
   get truthyValue() {
@@ -162,6 +162,7 @@ const TRUTHY_CASES = [
   new ForEachable(['hello']),
   ArrayProxy.create({ content: ['hello'] }),
   ArrayProxy.create({ content: emberA(['hello']) }),
+  new ArrayIterable(['hello']),
 ];
 
 const FALSY_CASES = [
@@ -176,12 +177,8 @@ const FALSY_CASES = [
   new ForEachable([]),
   ArrayProxy.create({ content: [] }),
   ArrayProxy.create({ content: emberA([]) }),
+  new ArrayIterable([]),
 ];
-
-if (HAS_NATIVE_SYMBOL) {
-  TRUTHY_CASES.push(new ArrayIterable(['hello']));
-  FALSY_CASES.push(new ArrayIterable([]));
-}
 
 applyMixins(
   BasicEachTest,
@@ -731,34 +728,28 @@ class EachTest extends AbstractEachTest {
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block.']() {
-    expectDeprecation(
-      /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-    );
-
     this.makeList(['Yehuda']);
 
-    this.render(`{{name}}-{{#each this.list as |name|}}{{name}}{{/each}}-{{name}}`, {
-      name: 'Stef',
-    });
+    this.render(`{{name}}-{{#each this.list as |name|}}{{name}}{{/each}}-{{name}}`);
 
-    this.assertText('Stef-Yehuda-Stef');
+    this.assertText('-Yehuda-');
 
     runTask(() => this.rerender());
 
-    this.assertText('Stef-Yehuda-Stef');
+    this.assertText('-Yehuda-');
 
     runTask(() => this.pushObjects([' ', 'Katz']));
 
-    this.assertText('Stef-Yehuda Katz-Stef');
+    this.assertText('-Yehuda Katz-');
 
     runTask(() => set(this.context, 'name', 'Tom'));
 
-    this.assertText('Tom-Yehuda Katz-Tom');
+    this.assertText('-Yehuda Katz-');
 
     runTask(() => set(this.context, 'name', 'Stef'));
     this.replaceList(['Yehuda']);
 
-    this.assertText('Stef-Yehuda-Stef');
+    this.assertText('-Yehuda-');
   }
 
   ['@test inverse template is displayed with context']() {
@@ -952,10 +943,6 @@ class EachTest extends AbstractEachTest {
   }
 
   ['@test the scoped variable is not available outside the {{#each}} block']() {
-    expectDeprecation(
-      /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-    );
-
     let first = this.createList(['Limbo']);
     let fifth = this.createList(['Wrath']);
     let ninth = this.createList(['Treachery']);
@@ -963,41 +950,38 @@ class EachTest extends AbstractEachTest {
     this.render(
       `{{ring}}-{{#each this.first as |ring|}}{{ring}}-{{#each this.fifth as |ring|}}{{ring}}-{{#each this.ninth as |ring|}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}-{{/each}}{{ring}}`,
       {
-        ring: 'Greed',
         first: first.list,
         fifth: fifth.list,
         ninth: ninth.list,
       }
     );
 
-    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+    this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
 
     runTask(() => this.rerender());
 
-    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+    this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
 
     runTask(() => {
-      set(this.context, 'ring', 'O');
       fifth.delegate.insertAt(0, 'D');
     });
 
-    this.assertText('O-Limbo-D-Treachery-D-Wrath-Treachery-Wrath-Limbo-O');
+    this.assertText('-Limbo-D-Treachery-D-Wrath-Treachery-Wrath-Limbo-');
 
     runTask(() => {
       first.delegate.pushObject('I');
       ninth.delegate.replace(0, 1, ['K']);
     });
 
-    this.assertText('O-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-O');
+    this.assertText('-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-');
 
     runTask(() => {
-      set(this.context, 'ring', 'Greed');
       set(this.context, 'first', this.createList(['Limbo']).list);
       set(this.context, 'fifth', this.createList(['Wrath']).list);
       set(this.context, 'ninth', this.createList(['Treachery']).list);
     });
 
-    this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
+    this.assertText('-Limbo-Wrath-Treachery-Wrath-Limbo-');
   }
 
   ['@test it should support {{#each this.name as |foo|}}, then {{#each foo as |bar|}}']() {
@@ -1079,17 +1063,15 @@ moduleFor(
   }
 );
 
-if (HAS_NATIVE_SYMBOL) {
-  moduleFor(
-    'Syntax test: {{#each}} with array-like objects implementing Symbol.iterator',
-    class extends EachTest {
-      createList(items) {
-        let iterable = new ArrayIterable(items);
-        return { list: iterable, delegate: iterable };
-      }
+moduleFor(
+  'Syntax test: {{#each}} with array-like objects implementing Symbol.iterator',
+  class extends EachTest {
+    createList(items) {
+      let iterable = new ArrayIterable(items);
+      return { list: iterable, delegate: iterable };
     }
-  );
-}
+  }
+);
 
 moduleFor(
   'Syntax test: {{#each}} with array proxies, modifying itself',

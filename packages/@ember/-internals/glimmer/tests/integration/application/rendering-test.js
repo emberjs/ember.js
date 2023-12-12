@@ -2,9 +2,11 @@ import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
+import { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
-import { set, tracked } from '@ember/-internals/metal';
+import { tracked } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
@@ -105,47 +107,7 @@ moduleFor(
       });
     }
 
-    ['@test it can access the model provided by the route via implicit this fallback']() {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            return ['red', 'yellow', 'blue'];
-          },
-        })
-      );
-
-      this.addTemplate(
-        'application',
-        strip`
-        <ul>
-          {{#each model as |item|}}
-            <li>{{item}}</li>
-          {{/each}}
-        </ul>
-        `
-      );
-
-      return this.visit('/').then(() => {
-        this.assertInnerHTML(strip`
-        <ul>
-          <li>red</li>
-          <li>yellow</li>
-          <li>blue</li>
-        </ul>
-      `);
-      });
-    }
-
     async ['@test interior mutations on the model with set'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -164,7 +126,7 @@ moduleFor(
         strip`
         [@model: {{@model.color}}]
         [this.model: {{this.model.color}}]
-        [model: {{model.color}}]
+        [model: {{this.model.color}}]
         `
       );
 
@@ -203,10 +165,6 @@ moduleFor(
     }
 
     async ['@test interior mutations on the model with tracked properties'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       class Model {
         @tracked color;
 
@@ -233,7 +191,7 @@ moduleFor(
         strip`
         [@model: {{@model.color}}]
         [this.model: {{this.model.color}}]
-        [model: {{model.color}}]
+        [model: {{this.model.color}}]
         `
       );
 
@@ -271,10 +229,6 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with set'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -293,7 +247,7 @@ moduleFor(
         strip`
         [@model: {{@model}}]
         [this.model: {{this.model}}]
-        [model: {{model}}]
+        [model: {{this.model}}]
         `
       );
 
@@ -332,10 +286,6 @@ moduleFor(
     }
 
     async ['@test exterior mutations on the model with tracked properties'](assert) {
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
-
       this.router.map(function () {
         this.route('color', { path: '/:color' });
       });
@@ -361,7 +311,7 @@ moduleFor(
         strip`
         [@model: {{@model}}]
         [this.model: {{this.model}}]
-        [model: {{model}}]
+        [model: {{this.model}}]
         `
       );
 
@@ -435,78 +385,6 @@ moduleFor(
             <li>yellow</li>
             <li>blue</li>
           </ul>
-        `);
-      });
-    }
-
-    ['@test it can render into named outlets']() {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
-      this.router.map(function () {
-        this.route('colors');
-      });
-
-      this.addTemplate(
-        'application',
-        strip`
-        <nav>{{outlet "nav"}}</nav>
-        <main>{{outlet}}</main>
-        `
-      );
-
-      this.addTemplate(
-        'nav',
-        strip`
-        <a href="https://emberjs.com/">Ember</a>
-        `
-      );
-
-      this.add(
-        'route:application',
-        Route.extend({
-          renderTemplate() {
-            expectDeprecation(() => {
-              this.render();
-              this.render('nav', {
-                into: 'application',
-                outlet: 'nav',
-              });
-            }, /Usage of `render` is deprecated/);
-          },
-        })
-      );
-
-      this.add(
-        'route:colors',
-        Route.extend({
-          model() {
-            return ['red', 'yellow', 'blue'];
-          },
-        })
-      );
-
-      this.addTemplate(
-        'colors',
-        strip`
-        <ul>
-          {{#each @model as |item|}}
-            <li>{{item}}</li>
-          {{/each}}
-        </ul>
-        `
-      );
-
-      return this.visit('/colors').then(() => {
-        this.assertInnerHTML(strip`
-          <nav>
-            <a href="https://emberjs.com/">Ember</a>
-          </nav>
-          <main>
-            <ul>
-              <li>red</li>
-              <li>yellow</li>
-              <li>blue</li>
-            </ul>
-          </main>
         `);
       });
     }
@@ -601,114 +479,6 @@ moduleFor(
         .then(() => this.assertText('b'));
     }
 
-    ['@test it should update correctly when the controller changes']() {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
-      this.router.map(function () {
-        this.route('color', { path: '/colors/:color' });
-      });
-
-      this.add(
-        'route:color',
-        Route.extend({
-          model(params) {
-            return { color: params.color };
-          },
-
-          renderTemplate(controller, model) {
-            expectDeprecation(
-              () => this.render({ controller: model.color, model }),
-              /Usage of `render` is deprecated/
-            );
-          },
-        })
-      );
-
-      this.add(
-        'controller:red',
-        Controller.extend({
-          color: 'red',
-        })
-      );
-
-      this.add(
-        'controller:green',
-        Controller.extend({
-          color: 'green',
-        })
-      );
-
-      this.addTemplate('color', 'model color: {{@model.color}}, controller color: {{this.color}}');
-
-      return this.visit('/colors/red')
-        .then(() => {
-          this.assertInnerHTML('model color: red, controller color: red');
-          return this.visit('/colors/green');
-        })
-        .then(() => {
-          this.assertInnerHTML('model color: green, controller color: green');
-        });
-    }
-
-    ['@test it should produce a stable DOM when two routes render the same template']() {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
-      this.router.map(function () {
-        this.route('a');
-        this.route('b');
-      });
-
-      this.add(
-        'route:a',
-        Route.extend({
-          model() {
-            return 'A';
-          },
-
-          renderTemplate(controller, model) {
-            expectDeprecation(
-              () => this.render('common', { controller: 'common', model }),
-              /Usage of `render` is deprecated/
-            );
-          },
-        })
-      );
-
-      this.add(
-        'route:b',
-        Route.extend({
-          model() {
-            return 'B';
-          },
-
-          renderTemplate(controller, model) {
-            expectDeprecation(
-              () => this.render('common', { controller: 'common', model }),
-              /Usage of `render` is deprecated/
-            );
-          },
-        })
-      );
-
-      this.add(
-        'controller:common',
-        Controller.extend({
-          prefix: 'common',
-        })
-      );
-
-      this.addTemplate('common', '{{this.prefix}} {{@model}}');
-
-      return this.visit('/a')
-        .then(() => {
-          this.assertInnerHTML('common A');
-          this.takeSnapshot();
-          return this.visit('/b');
-        })
-        .then(() => {
-          this.assertInnerHTML('common B');
-          this.assertInvariants();
-        });
-    }
-
     // Regression test, glimmer child outlets tried to assume the first element.
     // but the if put-args clobbered the args used by did-create-element.
     // I wish there was a way to assert that the OutletComponentManager did not
@@ -729,10 +499,10 @@ moduleFor(
       this.add(
         'route:index',
         Route.extend({
+          router: service(),
+
           activate() {
-            expectDeprecation(() => {
-              this.transitionTo('a');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('a');
           },
         })
       );

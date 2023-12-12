@@ -21,6 +21,8 @@
 
   @public
   @method concat
-  @for Ember.Templates.helpers
+  @for @ember/helper
   @since 1.13.0
 */
+
+export {};

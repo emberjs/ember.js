@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 
 moduleFor(
   '{{in-element}}',

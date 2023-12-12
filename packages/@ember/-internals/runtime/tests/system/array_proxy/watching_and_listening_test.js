@@ -1,6 +1,6 @@
 import { peekMeta } from '@ember/-internals/meta';
-import ArrayProxy from '../../../lib/system/array_proxy';
-import { A } from '../../../lib/mixins/array';
+import ArrayProxy from '@ember/array/proxy';
+import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function sortedListenersFor(obj, eventName) {

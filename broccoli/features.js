@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs');
-const ts = require('./typescript');
+const ts = require('typescript');
 
 function getFeatures() {
   let fileName = 'packages/@ember/canary-features/index.ts';

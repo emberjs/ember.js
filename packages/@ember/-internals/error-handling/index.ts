@@ -10,16 +10,16 @@ export function getOnerror() {
   return onerror;
 }
 // Ember.onerror setter
-export function setOnerror(handler: Function) {
+export function setOnerror(handler: Function | undefined) {
   onerror = handler;
 }
 
-let dispatchOverride: Function | undefined;
+let dispatchOverride: Function | null = null;
 
 // allows testing adapter to override dispatch
 export function getDispatchOverride() {
   return dispatchOverride;
 }
-export function setDispatchOverride(handler: Function) {
+export function setDispatchOverride(handler: Function | null) {
   dispatchOverride = handler;
 }

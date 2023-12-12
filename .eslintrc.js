@@ -3,6 +3,7 @@ const path = require('path');
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
+  reportUnusedDisableDirectives: true,
   extends: [
     'eslint:recommended',
     'plugin:import/errors',
@@ -12,13 +13,17 @@ module.exports = {
   ],
   plugins: ['ember-internal', 'import', 'qunit', 'disable-features'],
   rules: {
+    'no-console': 'error',
     'no-implicit-coercion': 'error',
     'no-new-wrappers': 'error',
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-var': 'error',
+
+    'qunit/no-assert-equal': 'off',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
+
     'disable-features/disable-async-await': 'error',
     'disable-features/disable-generator-functions': 'error',
   },
@@ -37,7 +42,7 @@ module.exports = {
     {
       files: ['*.ts'],
 
-      extends: ['plugin:@typescript-eslint/recommended', 'prettier/@typescript-eslint'],
+      extends: ['plugin:@typescript-eslint/recommended'],
 
       parserOptions: {
         sourceType: 'module',
@@ -50,7 +55,8 @@ module.exports = {
         '@typescript-eslint/ban-types': 'off',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-this-alias': 'off',
-        '@typescript-eslint/no-var-requires': 'warn',
+        '@typescript-eslint/no-var-requires': 'error',
+        '@typescript-eslint/consistent-type-imports': 'error',
 
         // TODO: Enable and fix these rules
         // Typescript provides better types with these rules enabled
@@ -81,6 +87,7 @@ module.exports = {
         Set: true,
         Symbol: true,
         WeakMap: true,
+        Event: true,
       },
 
       rules: {
@@ -120,7 +127,9 @@ module.exports = {
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',
+        'blueprints-js/**/*.js',
         'bin/**/*.js',
+        'bin/**/*.mjs',
         'tests/docs/*.js',
         'config/**/*.js',
         'lib/**/*.js',
@@ -128,10 +137,8 @@ module.exports = {
         'testem.js',
         'testem.ci-browsers.js',
         'testem.browserstack.js',
-        'd8-runner.js',
         'broccoli/**/*.js',
         'ember-cli-build.js',
-        'rollup.config.js',
       ],
 
       parserOptions: {
@@ -144,14 +151,15 @@ module.exports = {
         es6: true,
       },
 
-      plugins: ['node'],
-      rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
+      plugins: ['n'],
+      extends: ['plugin:n/recommended'],
+      rules: {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
         'no-throw-literal': 'error',
         'disable-features/disable-async-await': 'off',
         'disable-features/disable-generator-functions': 'off',
-      }),
+      },
     },
     {
       files: ['node-tests/**/*.js'],

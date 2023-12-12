@@ -1,15 +1,10 @@
 /**
 @module ember
 */
-import require, { has } from 'require';
-import { EmberPrecompileOptions } from '../types';
+import type { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
-
-// FIXME
-type StaticTemplate = unknown;
-type Factory = any;
-
-let template: (templateJS: StaticTemplate) => Factory;
+import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
+import { template } from '@ember/-internals/glimmer';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -22,12 +17,7 @@ let template: (templateJS: StaticTemplate) => Factory;
 export default function compile(
   templateString: string,
   options: Partial<EmberPrecompileOptions> = {}
-): Factory {
-  if (!template && has('@ember/-internals/glimmer')) {
-    // tslint:disable-next-line:no-require-imports
-    template = require('@ember/-internals/glimmer').template;
-  }
-
+): TemplateFactory {
   if (!template) {
     throw new Error(
       'Cannot call `compile` with only the template compiler loaded. Please load `ember.debug.js` or `ember.prod.js` prior to calling `compile`.'
@@ -37,6 +27,6 @@ export default function compile(
   return template(evaluate(precompile(templateString, options)));
 }
 
-function evaluate(precompiled: string): StaticTemplate {
+function evaluate(precompiled: string): SerializedTemplateWithLazyBlock {
   return new Function(`return ${precompiled}`)();
 }

@@ -1,4 +1,4 @@
-import { AST } from '@glimmer/syntax';
+import type { AST } from '@glimmer/syntax';
 
 export function isPath(node: AST.Node): node is AST.PathExpression {
   return node.type === 'PathExpression';

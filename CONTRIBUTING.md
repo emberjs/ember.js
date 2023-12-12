@@ -102,11 +102,11 @@ Building Ember.js is a quick process:
 # cd to the cloned ember.js directory
  - cd ember.js
 
-# ensure Node.js and yarn are installed
+# ensure Node.js and pnpm are installed
 
 # build ember.js
- - yarn install
- - yarn build
+ - pnpm install
+ - pnpm build
 ```
 
 ## Using Custom Builds in an Ember CLI App
@@ -115,12 +115,11 @@ While testing custom behavior (maybe that you'd like to write an RFC for...), he
 ```sh
 # cd to the directory from Building Ember.js (above)
 cd ember.js
-yarn link
-yarn start
+pnpm start
 
 # in a new terminal
 cd ../your-app-directory/
-yarn link ember-source
+pnpm link ../../path/to/ember-source
 ```
 
 # How to Run Unit Tests
@@ -129,7 +128,7 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 
 1. Follow the setup steps listed above under [Building Ember.js](#building-emberjs).
 
-2. To start the development server, run `yarn start`.
+2. To start the development server, run `pnpm start`.
 
 3. To run all tests, visit <http://localhost:4200/>.
 
@@ -141,13 +140,9 @@ example:
 
 To test multiple packages, you can separate them with commas.
 
-You can also pass `jquery=VERSION` in the test URL to test different
-versions of jQuery. You can also pass `jquery=none` to run tests without jQuery
-integration.
-
 ## From the CLI
 
-Run `yarn test` to run a basic test suite or run `TEST_SUITE=all yarn test` to
+Run `pnpm test` to run a basic test suite or run `TEST_SUITE=all pnpm test` to
 run a more comprehensive suite.
 
 ## From ember-cli
@@ -170,8 +165,8 @@ We love pull requests. Here's a quick guide:
 1. Fork the repo.
 
 2. Run the tests. We only take pull requests with passing tests, and it's great
-to know that you have a clean slate: `yarn install && yarn test`.
-(To see tests in the browser, run `yarn start` and open `http://localhost:4200/tests/index.html`.)
+to know that you have a clean slate: `pnpm install && pnpm test`.
+(To see tests in the browser, run `pnpm start` and open `http://localhost:4200/tests/index.html`.)
 
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need

@@ -1,4 +1,3 @@
-import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import global from './global';
 
@@ -17,7 +16,7 @@ export const ENV = {
   ENABLE_OPTIONAL_FEATURES: false,
 
   /**
-    Determines whether Ember should add to `Array`, `Function`, and `String`
+    Determines whether Ember should add to `Array`
     native object prototypes, a few extra methods in order to provide a more
     friendly API.
 
@@ -37,8 +36,6 @@ export const ENV = {
   */
   EXTEND_PROTOTYPES: {
     Array: true,
-    Function: true,
-    String: true,
   },
 
   /**
@@ -132,20 +129,6 @@ export const ENV = {
   _DEBUG_RENDER_TREE: DEBUG,
 
   /**
-    Whether the app is using jQuery. See RFC #294.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _JQUERY_INTEGRATION
-    @for EmberENV
-    @type Boolean
-    @default true
-    @private
-  */
-  _JQUERY_INTEGRATION: true,
-
-  /**
     Whether the app defaults to using async observers.
 
     This is not intended to be set directly, as the implementation may change in
@@ -172,23 +155,6 @@ export const ENV = {
    */
   _RERENDER_LOOP_LIMIT: 1000,
 
-  /**
-    Allows disabling the implicit this property fallback deprecation. This could be useful
-    as a way to control the volume of deprecations that are issued by temporarily disabling
-    the implicit this fallback deprecations, which would allow the other deprecations to be more easily
-    identified in the console).
-
-    NOTE: The fallback behavior **will be removed** in Ember 4.0.0, disabling **_IS NOT_**
-    a viable strategy for handling this deprecation.
-
-    @property _DISABLE_PROPERTY_FALLBACK_DEPRECATION
-    @for EmberENV
-    @type boolean
-    @default false
-    @private
-   */
-  _DISABLE_PROPERTY_FALLBACK_DEPRECATION: false,
-
   EMBER_LOAD_HOOKS: {} as {
     [hook: string]: Function[];
   },
@@ -198,7 +164,13 @@ export const ENV = {
   },
 };
 
-((EmberENV) => {
+((
+  EmberENV: Record<string, unknown> & {
+    EXTEND_PROTOTYPES?: { Array?: boolean } | boolean;
+    EMBER_LOAD_HOOKS?: Record<string, unknown>;
+    FEATURES?: Record<string, unknown>;
+  }
+) => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
   for (let flag in EmberENV) {
@@ -208,29 +180,20 @@ export const ENV = {
       flag === 'EMBER_LOAD_HOOKS'
     )
       continue;
-    let defaultValue = ENV[flag];
+    let defaultValue = (ENV as Record<string, unknown>)[flag];
     if (defaultValue === true) {
-      ENV[flag] = EmberENV[flag] !== false;
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;
     } else if (defaultValue === false) {
-      ENV[flag] = EmberENV[flag] === true;
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
     }
   }
 
   let { EXTEND_PROTOTYPES } = EmberENV;
   if (EXTEND_PROTOTYPES !== undefined) {
     if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
-      ENV.EXTEND_PROTOTYPES.String = EXTEND_PROTOTYPES.String !== false;
-      if (FUNCTION_PROTOTYPE_EXTENSIONS) {
-        ENV.EXTEND_PROTOTYPES.Function = EXTEND_PROTOTYPES.Function !== false;
-      }
       ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
     } else {
-      let isEnabled = EXTEND_PROTOTYPES !== false;
-      ENV.EXTEND_PROTOTYPES.String = isEnabled;
-      if (FUNCTION_PROTOTYPE_EXTENSIONS) {
-        ENV.EXTEND_PROTOTYPES.Function = isEnabled;
-      }
-      ENV.EXTEND_PROTOTYPES.Array = isEnabled;
+      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES !== false;
     }
   }
 
@@ -259,6 +222,6 @@ export const ENV = {
   }
 })(global.EmberENV);
 
-export function getENV() {
+export function getENV(): object {
   return ENV;
 }

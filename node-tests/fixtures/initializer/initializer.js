@@ -1,7 +1,5 @@
-export function initialize(/* application */) {
-  // application.inject('route', 'foo', 'service:foo');
-}
+export function initialize(application) {}
 
 export default {
-  initialize
+  initialize,
 };

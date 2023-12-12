@@ -125,22 +125,6 @@ function infoForApp({
 //   };
 // }
 
-function evalJS(overrides) {
-  return eval(`
-    (function () {
-      let onEmberGlobalAccess, onComputedDotAccess, onRunloopDotAccess;
-
-      ${overrides.toJS()}
-
-      return {
-        onEmberGlobalAccess: onEmberGlobalAccess,
-        onComputedDotAccess: onComputedDotAccess,
-        onRunloopDotAccess: onRunloopDotAccess,
-      };
-    })()
-  `);
-}
-
 QUnit.module('Overrides', function () {
   QUnit.module('.addonsInfoFor', function () {
     // app
@@ -230,24 +214,25 @@ QUnit.module('Overrides', function () {
       );
     });
 
-    QUnit.test('it returns old but compatible babel added by a dormant dependency', function (
-      assert
-    ) {
-      assert.deepEqual(
-        addonsInfoFor(Project.withDep({ emberCliBabel: '^7.0.0', hasJSFiles: false })),
-        [
-          {
-            parent: 'my-addon@1.0.0',
-            topLevel: 'my-addon',
-            version: '7.0.0',
-            requirement: '^7.0.0',
-            compatible: true,
-            dormant: true,
-            path: ['my-addon@1.0.0'],
-          },
-        ]
-      );
-    });
+    QUnit.test(
+      'it returns old but compatible babel added by a dormant dependency',
+      function (assert) {
+        assert.deepEqual(
+          addonsInfoFor(Project.withDep({ emberCliBabel: '^7.0.0', hasJSFiles: false })),
+          [
+            {
+              parent: 'my-addon@1.0.0',
+              topLevel: 'my-addon',
+              version: '7.0.0',
+              requirement: '^7.0.0',
+              compatible: true,
+              dormant: true,
+              path: ['my-addon@1.0.0'],
+            },
+          ]
+        );
+      }
+    );
 
     QUnit.test('it does not return new babel added by a dormant dependency', function (assert) {
       assert.deepEqual(
@@ -272,21 +257,22 @@ QUnit.module('Overrides', function () {
       ]);
     });
 
-    QUnit.test('it returns old but compatible babel added by a transient dependency', function (
-      assert
-    ) {
-      assert.deepEqual(addonsInfoFor(Project.withTransientDep({ emberCliBabel: '^7.0.0' })), [
-        {
-          parent: 'my-nested-addon@0.1.0',
-          topLevel: 'my-addon',
-          version: '7.0.0',
-          requirement: '^7.0.0',
-          compatible: true,
-          dormant: false,
-          path: ['my-addon@1.0.0', 'my-nested-addon@0.1.0'],
-        },
-      ]);
-    });
+    QUnit.test(
+      'it returns old but compatible babel added by a transient dependency',
+      function (assert) {
+        assert.deepEqual(addonsInfoFor(Project.withTransientDep({ emberCliBabel: '^7.0.0' })), [
+          {
+            parent: 'my-nested-addon@0.1.0',
+            topLevel: 'my-addon',
+            version: '7.0.0',
+            requirement: '^7.0.0',
+            compatible: true,
+            dormant: false,
+            path: ['my-addon@1.0.0', 'my-nested-addon@0.1.0'],
+          },
+        ]);
+      }
+    );
 
     QUnit.test('it does not return new babel added by a transient dependency', function (assert) {
       assert.deepEqual(addonsInfoFor(Project.withDep({ emberCliBabel: '^7.26.6' })), []);
@@ -331,14 +317,15 @@ QUnit.module('Overrides', function () {
       }
     );
 
-    QUnit.test('it does not return new babel added by a dormant transient dependency', function (
-      assert
-    ) {
-      assert.deepEqual(
-        addonsInfoFor(Project.withDep({ emberCliBabel: '^7.26.6', hasJSFiles: false })),
-        []
-      );
-    });
+    QUnit.test(
+      'it does not return new babel added by a dormant transient dependency',
+      function (assert) {
+        assert.deepEqual(
+          addonsInfoFor(Project.withDep({ emberCliBabel: '^7.26.6', hasJSFiles: false })),
+          []
+        );
+      }
+    );
 
     // transient dep through a dormant dep
 
@@ -427,36 +414,37 @@ QUnit.module('Overrides', function () {
       );
     });
 
-    QUnit.test('it returns old but compatible babel added by a linked dependency', function (
-      assert
-    ) {
-      assert.deepEqual(
-        addonsInfoFor(
-          new Project({
-            devDependencies: {
-              'ember-source': 'link:3.27.3',
-            },
-            addons: [
-              {
-                name: 'ember-source',
-                emberCliBabel: '^7.0.0',
+    QUnit.test(
+      'it returns old but compatible babel added by a linked dependency',
+      function (assert) {
+        assert.deepEqual(
+          addonsInfoFor(
+            new Project({
+              devDependencies: {
+                'ember-source': 'link:3.27.3',
               },
-            ],
-          })
-        ),
-        [
-          {
-            parent: 'ember-source@3.27.3',
-            topLevel: 'ember-source',
-            version: '7.0.0',
-            requirement: '^7.0.0',
-            compatible: true,
-            dormant: false,
-            path: ['ember-source@3.27.3'],
-          },
-        ]
-      );
-    });
+              addons: [
+                {
+                  name: 'ember-source',
+                  emberCliBabel: '^7.0.0',
+                },
+              ],
+            })
+          ),
+          [
+            {
+              parent: 'ember-source@3.27.3',
+              topLevel: 'ember-source',
+              version: '7.0.0',
+              requirement: '^7.0.0',
+              compatible: true,
+              dormant: false,
+              path: ['ember-source@3.27.3'],
+            },
+          ]
+        );
+      }
+    );
 
     QUnit.test('it does not return new babel added by a linked dependency', function (assert) {
       assert.deepEqual(
@@ -576,93 +564,25 @@ QUnit.module('Overrides', function () {
     let project = new Project(fullExample());
     let overrides = Overrides.for(project, { EMBER_ENV: 'production' });
 
-    assert.strictEqual(overrides.hasOverrides, false, 'hasOverrides');
-    assert.strictEqual(overrides.hasBuildTimeWarning, false, 'hasBuildTimeWarning');
+    assert.false(overrides.hasOverrides, 'hasOverrides');
+    assert.false(overrides.hasBuildTimeWarning, 'hasBuildTimeWarning');
   });
 
   QUnit.test('it does nothing when everything is on new babel', function (assert) {
     let overrides = new Overrides([]);
 
-    assert.strictEqual(overrides.hasOverrides, false, 'hasOverrides');
-    assert.strictEqual(overrides.hasBuildTimeWarning, false, 'hasBuildTimeWarning');
+    assert.false(overrides.hasOverrides, 'hasOverrides');
+    assert.false(overrides.hasBuildTimeWarning, 'hasBuildTimeWarning');
   });
 
   QUnit.test('when app is on old babel', function (assert) {
     let overrides = new Overrides([infoForApp({ version: '6.0.0' })]);
 
-    assert.strictEqual(overrides.hasOverrides, true, 'hasOverrides');
-    assert.strictEqual(overrides.hasBuildTimeWarning, true, 'hasBuildTimeWarning');
-    assert.strictEqual(overrides.hasActionableSuggestions, true, 'hasActionableSuggestions');
-    assert.strictEqual(overrides.hasCompatibleAddons, false, 'hasCompatibleAddons');
-    assert.strictEqual(overrides.hasDormantAddons, false, 'hasDormantAddons');
-    assert.strictEqual(
-      overrides.showAllEmberGlobalDeprecations,
-      false,
-      'showAllEmberGlobalDeprecations'
-    );
-    assert.strictEqual(
-      overrides.showAllDotAccessDeprecations,
-      false,
-      'showAllDotAccessDeprecations'
-    );
-    assert.deepEqual(overrides.suggestions, [
-      'Upgrade your `devDependencies` on `ember-cli-babel` to `^7.26.6`.',
-    ]);
-    assert.equal(
-      overrides.outdated.length,
-      1 /* number of different old babel versions */,
-      'outdated.length'
-    );
-    assert.ok(
-      overrides.buildTimeWarning.startsWith(
-        '[DEPRECATION] Usage of the Ember Global is deprecated.'
-      ),
-      'overrides.buildTimeWarning'
-    );
-    assert.ok(
-      overrides.globalMessage.startsWith('Usage of the Ember Global is deprecated.'),
-      'overrides.globalMessage'
-    );
-
-    let { onEmberGlobalAccess, onComputedDotAccess, onRunloopDotAccess } = evalJS(overrides);
-
-    assert.equal(
-      onEmberGlobalAccess(),
-      overrides.globalMessage,
-      'onEmberGlobalAccess() (first call)'
-    );
-
-    assert.strictEqual(onEmberGlobalAccess(), null, 'onEmberGlobalAccess() (second call)');
-
-    assert.ok(
-      onComputedDotAccess('computed.reads', 'reads', '@ember/object/computed').startsWith(
-        'Using `computed.reads` has been deprecated. ' +
-          'Instead, import the value directly from @ember/object/computed:\n\n' +
-          "  import { reads } from '@ember/object/computed';\n\n"
-      ),
-      'onComputedDotAccess() (first call)'
-    );
-
-    assert.strictEqual(
-      onComputedDotAccess('computed.reads', 'reads', '@ember/object/computed'),
-      null,
-      'onComputedDotAccess() (second call)'
-    );
-
-    assert.ok(
-      onRunloopDotAccess('run.next', 'next', '@ember/runloop').startsWith(
-        'Using `run.next` has been deprecated. ' +
-          'Instead, import the value directly from @ember/runloop:\n\n' +
-          "  import { next } from '@ember/runloop';\n\n"
-      ),
-      'onRunloopDotAccess() (first call)'
-    );
-
-    assert.strictEqual(
-      onRunloopDotAccess('run.next', 'next', '@ember/runloop'),
-      null,
-      'onRunloopDotAccess() (second call)'
-    );
+    assert.true(overrides.hasOverrides, 'hasOverrides');
+    assert.true(overrides.hasBuildTimeWarning, 'hasBuildTimeWarning');
+    assert.true(overrides.hasActionableSuggestions, 'hasActionableSuggestions');
+    assert.false(overrides.hasCompatibleAddons, 'hasCompatibleAddons');
+    assert.false(overrides.hasDormantAddons, 'hasDormantAddons');
   });
 
   // let project, env;

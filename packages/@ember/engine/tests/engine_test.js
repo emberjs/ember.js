@@ -1,14 +1,13 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import { processAllNamespaces } from '@ember/-internals/metal';
 import { getName } from '@ember/-internals/utils';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
   ModuleBasedTestResolver,
-  verifyInjection,
   verifyRegistration,
 } from 'internal-test-helpers';
 
@@ -60,11 +59,7 @@ moduleFor(
         `optionsForType 'view'`
       );
       verifyRegistration(assert, engine, 'controller:basic');
-      verifyInjection(assert, engine, 'renderer', '_viewRegistry', '-view-registry:main');
-      verifyInjection(assert, engine, 'view:-outlet', 'namespace', 'application:main');
 
-      verifyRegistration(assert, engine, 'component:-text-field');
-      verifyRegistration(assert, engine, 'component:-checkbox');
       verifyRegistration(assert, engine, 'component:link-to');
 
       verifyRegistration(assert, engine, 'component:textarea');
@@ -73,19 +68,11 @@ moduleFor(
 
       // DEBUGGING
       verifyRegistration(assert, engine, 'resolver-for-debugging:main');
-      verifyInjection(
-        assert,
-        engine,
-        'container-debug-adapter:main',
-        'resolver',
-        'resolver-for-debugging:main'
-      );
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
       verifyRegistration(assert, engine, 'component-lookup:main');
 
       verifyRegistration(assert, engine, 'view:-outlet');
       verifyRegistration(assert, engine, 'template:-outlet');
-      verifyInjection(assert, engine, 'view:-outlet', 'template', 'template:-outlet');
       assert.deepEqual(
         engine.registeredOptionsForType('helper'),
         { instantiate: false },

@@ -1,18 +1,20 @@
 import { getFactoryFor } from '@ember/-internals/container';
+import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import {
+import type {
   ComponentDefinition,
   Environment,
   InternalComponentCapabilities,
-  Option,
   Owner,
   VMArguments,
 } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
-import { DynamicScope } from '../renderer';
-import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
+import type Component from '../component';
+import type { DynamicScope } from '../renderer';
+import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   DIRTY_TAG,
   initialRenderInstrumentDetails,
@@ -30,7 +32,7 @@ class RootComponentManager extends CurlyComponentManager {
   create(
     _owner: Owner,
     _state: unknown,
-    _args: Option<VMArguments>,
+    _args: Nullable<VMArguments>,
     { isInteractive }: Environment,
     dynamicScope: DynamicScope
   ) {
@@ -104,6 +106,8 @@ export class RootComponentDefinition implements ComponentDefinition {
 
   constructor(component: Component) {
     this.manager = new RootComponentManager(component);
-    this.state = getFactoryFor(component);
+    let factory = getFactoryFor(component);
+    assert('missing factory for component', factory !== undefined);
+    this.state = factory;
   }
 }

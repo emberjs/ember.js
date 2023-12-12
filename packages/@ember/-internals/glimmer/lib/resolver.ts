@@ -1,28 +1,25 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
-import { assert, deprecate } from '@ember/debug';
-import { PARTIALS } from '@ember/deprecated-features';
-import EmberError from '@ember/error';
+import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
+import { isFactory } from '@ember/-internals/owner';
+import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import {
+import type {
   CompileTimeResolver,
   HelperDefinitionState,
   ModifierDefinitionState,
-  Option,
-  PartialDefinition,
   ResolvedComponentDefinition,
   RuntimeResolver,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import {
   getComponentTemplate,
   getInternalComponentManager,
   setInternalHelperManager,
 } from '@glimmer/manager';
-import { PartialDefinitionImpl } from '@glimmer/opcode-compiler';
 import {
   array,
   concat,
@@ -30,18 +27,11 @@ import {
   get,
   hash,
   on,
-  TEMPLATE_ONLY_COMPONENT_MANAGER,
   templateOnlyComponent,
+  TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime';
-import { _WeakSet } from '@glimmer/util';
 import { isCurlyManager } from './component-managers/curly';
-import {
-  CLASSIC_HELPER_MANAGER,
-  HelperFactory,
-  HelperInstance,
-  isClassicHelper,
-  SimpleHelper,
-} from './helper';
+import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
 import { default as inElementNullCheckHelper } from './helpers/-in-element-null-check';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
@@ -50,9 +40,10 @@ import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
 import { default as eachIn } from './helpers/each-in';
 import { default as mut } from './helpers/mut';
-import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
+import { default as uniqueId } from './helpers/unique-id';
+
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -63,26 +54,29 @@ function instrumentationPayload(name: string) {
 
 function componentFor(
   name: string,
-  owner: Owner,
-  options?: LookupOptions
-): Option<Factory<{}, {}>> {
-  let fullName = `component:${name}`;
-  return owner.factoryFor(fullName, options) || null;
+  owner: InternalOwner
+): Nullable<InternalFactory<object> | object> {
+  let fullName = `component:${name}` as const;
+  return owner.factoryFor(fullName) || null;
 }
 
-function layoutFor(name: string, owner: Owner, options?: LookupOptions): Option<Template> {
-  let templateFullName = `template:components/${name}`;
+function layoutFor(
+  name: string,
+  owner: InternalOwner,
+  options?: RegisterOptions
+): Nullable<Template> {
+  let templateFullName = `template:components/${name}` as const;
 
-  return owner.lookup(templateFullName, options) || null;
+  return (owner.lookup(templateFullName, options) as Template) || null;
 }
 
 type LookupResult =
   | {
-      component: Factory<{}, {}>;
+      component: InternalFactory<object>;
       layout: TemplateFactory;
     }
   | {
-      component: Factory<{}, {}>;
+      component: InternalFactory<object>;
       layout: null;
     }
   | {
@@ -91,13 +85,13 @@ type LookupResult =
     };
 
 function lookupComponentPair(
-  owner: Owner,
+  owner: InternalOwner,
   name: string,
-  options?: LookupOptions
-): Option<LookupResult> {
-  let component = componentFor(name, owner, options);
+  options?: RegisterOptions
+): Nullable<LookupResult> {
+  let component = componentFor(name, owner);
 
-  if (component !== null && component.class !== undefined) {
+  if (isFactory(component) && component.class) {
     let layout = getComponentTemplate(component.class);
 
     if (layout !== undefined) {
@@ -114,72 +108,11 @@ function lookupComponentPair(
   }
 }
 
-let lookupPartial: { templateName: string; owner: Owner } | any;
-let templateFor: { owner: Owner; underscored: string; name: string } | any;
-let parseUnderscoredName: { templateName: string } | any;
-
-if (PARTIALS) {
-  lookupPartial = function (templateName: string, owner: Owner) {
-    deprecate(
-      `The use of \`{{partial}}\` is deprecated, please refactor the "${templateName}" partial to a component`,
-      false,
-      {
-        id: 'ember-views.partial',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-views-partial',
-        for: 'ember-source',
-        since: {
-          enabled: '3.15.0-beta.1',
-        },
-      }
-    );
-
-    if (templateName === null) {
-      return;
-    }
-
-    let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
-
-    assert(`Unable to find partial with name "${templateName}"`, Boolean(template));
-
-    return template;
-  };
-
-  templateFor = function (owner: any, underscored: string, name: string) {
-    if (PARTIALS) {
-      if (!name) {
-        return;
-      }
-      assert(`templateNames are not allowed to contain periods: ${name}`, name.indexOf('.') === -1);
-
-      if (!owner) {
-        throw new EmberError(
-          'Container was not found when looking up a views template. ' +
-            'This is most likely due to manually instantiating an Ember.View. ' +
-            'See: http://git.io/EKPpnA'
-        );
-      }
-
-      return owner.lookup(`template:${underscored}`) || owner.lookup(`template:${name}`);
-    }
-  };
-
-  parseUnderscoredName = function (templateName: string) {
-    let nameParts = templateName.split('/');
-    let lastPart = nameParts[nameParts.length - 1];
-
-    nameParts[nameParts.length - 1] = `_${lastPart}`;
-
-    return nameParts.join('/');
-  };
-}
-
-const BUILTIN_KEYWORD_HELPERS = {
+const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   action,
   mut,
   readonly,
   unbound,
-  'query-params': queryParams,
   '-hash': hash,
   '-each-in': eachIn,
   '-normalize-class': normalizeClassHelper,
@@ -190,8 +123,18 @@ const BUILTIN_KEYWORD_HELPERS = {
   '-in-el-null': inElementNullCheckHelper,
 };
 
+const BUILTIN_HELPERS: Record<string, object> = {
+  ...BUILTIN_KEYWORD_HELPERS,
+  array,
+  concat,
+  fn,
+  get,
+  hash,
+  'unique-id': uniqueId,
+};
+
 if (DEBUG) {
-  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+  BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 } else {
   // Bug: this may be a quirk of our test setup?
   // In prod builds, this is a no-op helper and is unused in practice. We shouldn't need
@@ -201,58 +144,41 @@ if (DEBUG) {
   // not really harm anything, since it's just a no-op pass-through helper and the bytes
   // has to be included anyway. In the future, perhaps we can avoid the latter by using
   // `import(...)`?
-  BUILTIN_KEYWORD_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
+  BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 }
 
-const BUILTIN_HELPERS = {
-  ...BUILTIN_KEYWORD_HELPERS,
-  array,
-  concat,
-  fn,
-  get,
-  hash,
-};
-
-const BUILTIN_KEYWORD_MODIFIERS = {
+const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {
   action: actionModifier,
 };
 
-const BUILTIN_MODIFIERS = {
+const BUILTIN_MODIFIERS: Record<string, object> = {
   ...BUILTIN_KEYWORD_MODIFIERS,
   on,
 };
 
-const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
+const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
 
-export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTimeResolver<Owner> {
+export default class ResolverImpl
+  implements RuntimeResolver<InternalOwner>, CompileTimeResolver<InternalOwner>
+{
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
-  lookupPartial(name: string, owner: Owner): Option<PartialDefinition> {
-    if (PARTIALS) {
-      let templateFactory = lookupPartial(name, owner);
-      let template = templateFactory(owner);
-
-      return new PartialDefinitionImpl(name, template);
-    } else {
-      return null;
-    }
+  lookupPartial(): null {
+    return null;
   }
 
-  lookupHelper(name: string, owner: Owner): Option<HelperDefinitionState> {
+  lookupHelper(name: string, owner: InternalOwner): Nullable<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
       !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
     );
 
-    const helper = BUILTIN_HELPERS[name];
+    let helper = BUILTIN_HELPERS[name];
     if (helper !== undefined) {
       return helper;
     }
 
-    const factory = owner.factoryFor<
-      SimpleHelper | HelperInstance,
-      HelperFactory<SimpleHelper | HelperInstance>
-    >(`helper:${name}`);
+    let factory = owner.factoryFor(`helper:${name}`);
 
     if (factory === undefined) {
       return null;
@@ -290,14 +216,14 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
-  lookupModifier(name: string, owner: Owner): Option<ModifierDefinitionState> {
+  lookupModifier(name: string, owner: InternalOwner): Nullable<ModifierDefinitionState> {
     let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
       return builtin;
     }
 
-    let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
+    let modifier = owner.factoryFor(`modifier:${name}`);
 
     if (modifier === undefined) {
       return null;
@@ -306,11 +232,15 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     return modifier.class || null;
   }
 
+  lookupBuiltInModifier<K extends keyof typeof BUILTIN_KEYWORD_MODIFIERS>(
+    name: K
+  ): (typeof BUILTIN_KEYWORD_MODIFIERS)[K];
+  lookupBuiltInModifier(name: string): null;
   lookupBuiltInModifier(name: string): ModifierDefinitionState | null {
     return BUILTIN_KEYWORD_MODIFIERS[name] ?? null;
   }
 
-  lookupComponent(name: string, owner: Owner): ResolvedComponentDefinition | null {
+  lookupComponent(name: string, owner: InternalOwner): ResolvedComponentDefinition | null {
     let pair = lookupComponentPair(owner, name);
 
     if (pair === null) {
@@ -325,7 +255,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
     let key: object;
 
     if (pair.component === null) {
-      key = template = pair.layout!(owner);
+      key = template = pair.layout(owner);
     } else {
       key = pair.component;
     }
@@ -341,7 +271,7 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
-    let definition: Option<ResolvedComponentDefinition> = null;
+    let definition: Nullable<ResolvedComponentDefinition> = null;
 
     if (pair.component === null) {
       if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
@@ -361,10 +291,9 @@ export default class ResolverImpl implements RuntimeResolver<Owner>, CompileTime
         };
       }
     } else {
-      assert(`missing component class ${name}`, pair.component.class !== undefined);
-
       let factory = pair.component;
-      let ComponentClass = factory.class!;
+      assert(`missing component class ${name}`, factory.class !== undefined);
+      let ComponentClass = factory.class;
       let manager = getInternalComponentManager(ComponentClass);
 
       definition = {

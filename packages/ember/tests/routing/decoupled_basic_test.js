@@ -2,9 +2,11 @@
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
+import NoneLocation from '@ember/routing/none-location';
+import HistoryLocation from '@ember/routing/history-location';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject, { set } from '@ember/object';
 import {
   moduleFor,
   ApplicationTestCase,
@@ -14,7 +16,9 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, set, addObserver } from '@ember/-internals/metal';
+import { addObserver } from '@ember/-internals/metal';
+import Mixin from '@ember/object/mixin';
+import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -52,20 +56,10 @@ moduleFor(
       console.error = originalConsoleError;
     }
 
-    handleURLAborts(assert, path, deprecated) {
+    handleURLAborts(assert, path) {
       run(() => {
         let router = this.applicationInstance.lookup('router:main');
-        let result;
-
-        if (deprecated !== undefined) {
-          expectDeprecation(() => {
-            result = router.handleURL(path);
-          });
-        } else {
-          result = router.handleURL(path);
-        }
-
-        result.then(
+        router.handleURL(path).then(
           function () {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
@@ -79,14 +73,6 @@ moduleFor(
       });
     }
 
-    get currentPath() {
-      let currentPath;
-      expectDeprecation(() => {
-        currentPath = this.applicationInstance.lookup('controller:application').get('currentPath');
-      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-      return currentPath;
-    }
-
     async ['@test warn on URLs not included in the route set'](assert) {
       await this.visit('/');
 
@@ -95,7 +81,7 @@ moduleFor(
 
     ['@test The Homepage'](assert) {
       return this.visit('/').then(() => {
-        assert.equal(this.currentPath, 'home', 'currently on the home route');
+        assert.equal(this.appRouter.currentPath, 'home', 'currently on the home route');
 
         let text = this.$('.hours').text();
         assert.equal(text, 'Hours', 'the home template was rendered');
@@ -109,7 +95,7 @@ moduleFor(
 
       return this.visit('/camelot')
         .then(() => {
-          assert.equal(this.currentPath, 'camelot');
+          assert.equal(this.appRouter.currentPath, 'camelot');
 
           let text = this.$('#camelot').text();
           assert.equal(text, 'Is a silly place', 'the camelot template was rendered');
@@ -117,7 +103,7 @@ moduleFor(
           return this.visit('/');
         })
         .then(() => {
-          assert.equal(this.currentPath, 'home');
+          assert.equal(this.appRouter.currentPath, 'home');
 
           let text = this.$('.hours').text();
           assert.equal(text, 'Hours', 'the home template was rendered');
@@ -145,17 +131,29 @@ moduleFor(
 
       this.add('model:menu_item', MenuItem);
 
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+
+      this.add('route:special', SpecialRoute);
+
       this.addTemplate('special', '<p>{{@model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
-      let visited = runTask(() => this.visit('/specials/1'));
-      this.assertText('LOADING!', 'The app is in the loading state');
+      let promise;
+      ignoreDeprecation(() => {
+        let visited = runTask(() => this.visit('/specials/1'));
+        this.assertText('LOADING!', 'The app is in the loading state');
 
-      resolve(menuItem);
+        resolve(menuItem);
 
-      return visited.then(() => {
-        this.assertText('1', 'The app is now in the specials state');
+        promise = visited.then(() => {
+          this.assertText('1', 'The app is now in the specials state');
+        });
       });
+      return promise;
     }
 
     [`@test The loading state doesn't get entered for promises that resolve on the same run loop`](
@@ -174,6 +172,14 @@ moduleFor(
       });
 
       this.add('model:menu_item', MenuItem);
+
+      let SpecialRoute = class extends Route {
+        model({ menu_item_id }) {
+          return MenuItem.find(menu_item_id);
+        }
+      };
+
+      this.add('route:special', SpecialRoute);
 
       this.add(
         'route:loading',
@@ -233,7 +239,9 @@ moduleFor(
         })
       );
 
-      runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
+      ignoreDeprecation(() => {
+        runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
+      });
 
       resolve(menuItem);
     }
@@ -277,6 +285,10 @@ moduleFor(
       this.add(
         'route:special',
         Route.extend({
+          model({ menu_item_id }) {
+            return MenuItem.find(menu_item_id);
+          },
+
           setup() {
             throw new Error('Setup error');
           },
@@ -682,11 +694,10 @@ moduleFor(
       this.add(
         'route:choose',
         Route.extend({
+          router: service(),
           redirect() {
             if (destination) {
-              expectDeprecation(() => {
-                this.transitionTo(destination);
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo(destination);
             }
           },
 
@@ -708,12 +719,12 @@ moduleFor(
           1,
           'The home template was rendered'
         );
-        assert.equal(this.currentPath, 'home');
+        assert.equal(this.appRouter.currentPath, 'home');
       });
     }
 
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
-      assert.expect(5);
+      assert.expect(3);
 
       this.router.map(function () {
         this.route('home');
@@ -727,10 +738,9 @@ moduleFor(
       this.add(
         'route:bar',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('home');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('home');
           },
           setupController() {
             assert.ok(false, 'Should transition before setupController');
@@ -750,13 +760,7 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'home');
+        assert.equal(router.currentPath, 'home');
         assert.equal(router.get('location').getURL(), '/home');
       });
     }
@@ -764,7 +768,7 @@ moduleFor(
     ['@test Redirecting to the current target in the middle of a route does not abort initial routing'](
       assert
     ) {
-      assert.expect(7);
+      assert.expect(5);
 
       this.router.map(function () {
         this.route('home');
@@ -780,12 +784,11 @@ moduleFor(
       this.add(
         'route:bar',
         Route.extend({
+          router: service(),
           redirect() {
-            return expectDeprecation(() => {
-              return this.transitionTo('bar.baz').then(function () {
-                successCount++;
-              });
-            }, /Calling transitionTo on a route is deprecated/);
+            return this.router.transitionTo('bar.baz').then(function () {
+              successCount++;
+            });
           },
 
           setupController() {
@@ -805,13 +808,7 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.bar.baz');
+        assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
         assert.equal(successCount, 1, 'transitionTo success handler was called once');
       });
     }
@@ -819,7 +816,7 @@ moduleFor(
     ['@test Redirecting to the current target with a different context aborts the remainder of the routes'](
       assert
     ) {
-      assert.expect(7);
+      assert.expect(4);
 
       this.router.map(function () {
         this.route('home');
@@ -837,13 +834,12 @@ moduleFor(
       this.add(
         'route:bar',
         Route.extend({
+          router: service(),
           afterModel() {
             if (count++ > 10) {
               assert.ok(false, 'infinite loop');
             } else {
-              expectDeprecation(() => {
-                this.transitionTo('bar.baz', model);
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('bar.baz', model);
             }
           },
         })
@@ -860,13 +856,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.bar.baz');
+        assert.equal(this.appRouter.currentPath, 'foo.bar.baz');
         assert.equal(
           this.applicationInstance.lookup('router:main').get('location').getURL(),
           '/foo/bar/2/baz'
@@ -889,11 +879,10 @@ moduleFor(
       this.add(
         'route:foo',
         Route.extend({
+          router: service(),
           actions: {
             goToQux() {
-              expectDeprecation(() => {
-                this.transitionTo('foo.qux');
-              }, /Calling transitionTo on a route is deprecated/);
+              this.router.transitionTo('foo.qux');
             },
           },
         })
@@ -901,25 +890,16 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        let applicationController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
 
-        let currentPath;
-        expectDeprecation(() => {
-          currentPath = applicationController.get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.bar.baz');
+        assert.equal(router.currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
-        expectDeprecation(() => {
-          currentPath = applicationController.get('currentPath');
-        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-        assert.equal(currentPath, 'foo.qux');
+        assert.equal(router.currentPath, 'foo.qux');
         assert.equal(router.get('location').getURL(), '/foo/qux');
       });
     }
 
     ['@test Router accounts for rootURL on page load when using history location'](assert) {
-      expectDeprecation('Usage of `renderTemplate` is deprecated.');
       let rootURL = window.location.pathname + '/app';
       let postsTemplateRendered = false;
       let setHistory;
@@ -962,8 +942,9 @@ moduleFor(
         'route:posts',
         Route.extend({
           model() {},
-          renderTemplate() {
+          setupController() {
             postsTemplateRendered = true;
+            this._super(...arguments);
           },
         })
       );
@@ -1089,63 +1070,10 @@ moduleFor(
       );
     }
 
-    ['@test Router `willTransition` hook passes in cancellable transition'](assert) {
-      assert.expect(8);
-      this.router.reopen({
-        willTransition(_, _2, transition) {
-          assert.ok(true, 'willTransition was called');
-          if (transition.intent.url !== '/') {
-            transition.abort();
-          }
-        },
-      });
-
-      this.router.map(function () {
-        this.route('nork');
-        this.route('about');
-      });
-
-      this.add(
-        'route:loading',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'LoadingRoute was not entered');
-          },
-        })
-      );
-
-      this.add(
-        'route:nork',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'NorkRoute was not entered');
-          },
-        })
-      );
-
-      this.add(
-        'route:about',
-        Route.extend({
-          activate() {
-            assert.ok(false, 'AboutRoute was not entered');
-          },
-        })
-      );
-
-      let deprecation = /You attempted to override the "willTransition" method which is deprecated\./;
-
-      return expectDeprecationAsync(() => {
-        return this.visit('/').then(() => {
-          this.handleURLAborts(assert, '/nork', deprecation);
-          this.handleURLAborts(assert, '/about', deprecation);
-        });
-      }, deprecation);
-    }
-
     ['@test Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered'](
       assert
     ) {
-      assert.expect(6);
+      assert.expect(5);
 
       this.router.map(function () {
         this.route('index');
@@ -1158,14 +1086,13 @@ moduleFor(
       this.add(
         'route:index',
         Route.extend({
+          router: service(),
           actions: {
             willTransition(transition) {
               assert.ok(true, 'willTransition was called');
               if (redirect) {
                 // router.js won't refire `willTransition` for this redirect
-                expectDeprecation(() => {
-                  this.transitionTo('about');
-                }, /Calling transitionTo on a route is deprecated/);
+                this.router.transitionTo('about');
               } else {
                 transition.abort();
               }
@@ -1274,34 +1201,6 @@ moduleFor(
       );
 
       return this.visit('/users');
-    }
-
-    async ['@test `didTransition` event fires on the router'](assert) {
-      assert.expect(3);
-
-      this.router.map(function () {
-        this.route('nork');
-      });
-
-      await this.visit('/');
-
-      let router = this.applicationInstance.lookup('router:main');
-      router.one('didTransition', function () {
-        assert.ok(true, 'didTransition fired on initial routing');
-      });
-
-      await this.visit('/');
-
-      router.one('didTransition', function () {
-        assert.ok(true, 'didTransition fired on the router');
-        assert.equal(
-          router.get('url'),
-          '/nork',
-          'The url property is updated by the time didTransition fires'
-        );
-      });
-
-      await this.visit('/nork');
     }
 
     ['@test `activate` event fires on the route'](assert) {
@@ -1450,10 +1349,10 @@ moduleFor(
       });
     }
 
-    ['@test currentRouteName is a property installed on ApplicationController that can be used in transitionTo'](
+    ['@test currentRouteName is a property installed on Router that can be used in transitionTo'](
       assert
     ) {
-      assert.expect(36);
+      assert.expect(24);
 
       this.router.map(function () {
         this.route('index', { path: '/' });
@@ -1469,17 +1368,15 @@ moduleFor(
       });
 
       return this.visit('/').then(() => {
-        let appController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
 
         function transitionAndCheck(path, expectedPath, expectedRouteName) {
           if (path) {
             run(router, 'transitionTo', path);
           }
-          expectDeprecation(() => {
-            assert.equal(appController.get('currentPath'), expectedPath);
-            assert.equal(appController.get('currentRouteName'), expectedRouteName);
-          }, /Accessing `(currentPath|currentRouteName)` on `controller:application` is deprecated, use the `(currentPath|currentRouteName)` property on `service:router` instead\./);
+
+          assert.equal(router.currentPath, expectedPath);
+          assert.equal(router.currentRouteName, expectedRouteName);
         }
 
         transitionAndCheck(null, 'index', 'index');
@@ -1522,10 +1419,9 @@ moduleFor(
       this.add(
         'route:home',
         Route.extend({
+          router: service(),
           beforeModel() {
-            expectDeprecation(() => {
-              this.transitionTo('about', null);
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('about', null);
           },
         })
       );
@@ -1726,7 +1622,7 @@ moduleFor(
     }
 
     async ['@test Errors in transitionTo within redirect hook are logged'](assert) {
-      assert.expect(5);
+      assert.expect(4);
       let actual = [];
 
       this.router.map(function () {
@@ -1737,10 +1633,9 @@ moduleFor(
       this.add(
         'route:yondo',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('stink-bomb', { something: 'goes boom' });
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('stink-bomb', { something: 'goes boom' });
           },
         })
       );
@@ -1773,10 +1668,9 @@ moduleFor(
       this.add(
         'route:yondo',
         Route.extend({
+          router: service(),
           redirect() {
-            expectDeprecation(() => {
-              this.transitionTo('stink-bomb', { something: 'goes boom' });
-            }, /Calling transitionTo on a route is deprecated/);
+            this.transitionTo('stink-bomb', { something: 'goes boom' });
           },
         })
       );

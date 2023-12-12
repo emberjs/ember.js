@@ -1,12 +1,14 @@
 import { objectAt } from '@ember/-internals/metal';
-import { _contentFor } from '@ember/-internals/runtime';
-import { EmberArray, HAS_NATIVE_SYMBOL, isEmberArray, isObject } from '@ember/-internals/utils';
-import { Option } from '@glimmer/interfaces';
-import { IteratorDelegate } from '@glimmer/reference';
+import type EmberArray from '@ember/array';
+import { isEmberArray } from '@ember/array/-internals';
+import { isObject } from '@ember/-internals/utils';
+import type { Nullable } from '@ember/-internals/utility-types';
+import type { IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
+import type { NativeArray } from '@ember/array';
 
-export default function toIterator(iterable: unknown): Option<IteratorDelegate> {
+export default function toIterator(iterable: unknown): Nullable<IteratorDelegate> {
   if (iterable instanceof EachInWrapper) {
     return toEachInIterator(iterable.inner);
   } else {
@@ -21,8 +23,8 @@ function toEachInIterator(iterable: unknown) {
 
   if (Array.isArray(iterable) || isEmberArray(iterable)) {
     return ObjectIterator.fromIndexable(iterable);
-  } else if (HAS_NATIVE_SYMBOL && isNativeIterable<[unknown, unknown]>(iterable)) {
-    return MapLikeNativeIterator.from(iterable);
+  } else if (isNativeIterable(iterable)) {
+    return MapLikeNativeIterator.from(iterable as Iterable<[unknown, unknown]>);
   } else if (hasForEach(iterable)) {
     return ObjectIterator.fromForEachable(iterable);
   } else {
@@ -39,7 +41,7 @@ function toEachIterator(iterable: unknown) {
     return ArrayIterator.from(iterable);
   } else if (isEmberArray(iterable)) {
     return EmberArrayIterator.from(iterable);
-  } else if (HAS_NATIVE_SYMBOL && isNativeIterable(iterable)) {
+  } else if (isNativeIterable(iterable)) {
     return ArrayLikeNativeIterator.from(iterable);
   } else if (hasForEach(iterable)) {
     return ArrayIterator.fromForEachable(iterable);
@@ -100,11 +102,11 @@ class ArrayIterator extends BoundedIterator {
 }
 
 class EmberArrayIterator extends BoundedIterator {
-  static from(iterable: EmberArray<unknown>) {
+  static from(iterable: EmberArray<unknown> | NativeArray<unknown>) {
     return iterable.length > 0 ? new this(iterable) : null;
   }
 
-  constructor(private array: EmberArray<unknown>) {
+  constructor(private array: EmberArray<unknown> | NativeArray<unknown>) {
     super(array.length);
   }
 
@@ -116,15 +118,13 @@ class EmberArrayIterator extends BoundedIterator {
 class ObjectIterator extends BoundedIterator {
   static fromIndexable(obj: Indexable) {
     let keys = Object.keys(obj);
-    let { length } = keys;
 
-    if (length === 0) {
+    if (keys.length === 0) {
       return null;
     } else {
       let values: unknown[] = [];
-      for (let i = 0; i < length; i++) {
+      for (let key of keys) {
         let value: any;
-        let key = keys[i];
 
         value = obj[key];
 
@@ -253,12 +253,12 @@ interface ForEachable {
   forEach(callback: (item: unknown, key: unknown) => void): void;
 }
 
-function hasForEach(value: object): value is ForEachable {
-  return typeof value['forEach'] === 'function';
+function hasForEach(value: unknown): value is ForEachable {
+  return value != null && typeof (value as ForEachable)['forEach'] === 'function';
 }
 
-function isNativeIterable<T = unknown>(value: object): value is Iterable<T> {
-  return typeof value[Symbol.iterator] === 'function';
+function isNativeIterable(value: unknown): value is Iterable<unknown> {
+  return value != null && typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function';
 }
 
 interface Indexable {

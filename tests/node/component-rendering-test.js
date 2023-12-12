@@ -12,27 +12,28 @@ QUnit.module('Components can be rendered without a DOM dependency', function (ho
   QUnit.test('Component with dynamic value', function (assert) {
     this.set('location', 'World');
 
-    let html = this.render('<h1>Hello {{location}}</h1>');
+    let html = this.render('<h1>Hello {{this.location}}</h1>');
 
     assert.ok(html.match(/<h1>Hello World<\/h1>/));
   });
 
-  QUnit.test('Ensure undefined attributes requiring protocol sanitization do not error', function (
-    assert
-  ) {
-    this.owner.register(
-      'component:fake-link',
-      this.Ember.Component.extend({
-        tagName: 'link',
-        attributeBindings: ['href', 'rel'],
-        rel: 'canonical',
-      })
-    );
+  QUnit.test(
+    'Ensure undefined attributes requiring protocol sanitization do not error',
+    function (assert) {
+      this.owner.register(
+        'component:fake-link',
+        this.Ember.Component.extend({
+          tagName: 'link',
+          attributeBindings: ['href', 'rel'],
+          rel: 'canonical',
+        })
+      );
 
-    let html = this.render('{{fake-link}}');
+      let html = this.render('{{fake-link}}');
 
-    assert.ok(html.match(/rel="canonical"/));
-  });
+      assert.ok(html.match(/rel="canonical"/));
+    }
+  );
 
   QUnit.test('attributes requiring protocol sanitization do not error', function (assert) {
     this.set('someHref', 'https://foo.com/');

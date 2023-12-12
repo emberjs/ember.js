@@ -1,15 +1,11 @@
 import { ENV } from '@ember/-internals/environment';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import { HANDLERS } from '../lib/handlers';
 import {
   registerHandler,
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation,
-  missingOptionsForDeprecation,
-  missingOptionsSinceDeprecation,
-  FOR_MISSING_DEPRECATIONS,
-  SINCE_MISSING_DEPRECATIONS,
+  missingOptionDeprecation,
 } from '../lib/deprecate';
 
 import {
@@ -45,8 +41,6 @@ moduleFor(
     teardown() {
       HANDLERS.deprecate = originalDeprecateHandler;
       HANDLERS.warn = originalWarnHandler;
-      FOR_MISSING_DEPRECATIONS.clear();
-      SINCE_MISSING_DEPRECATIONS.clear();
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
     }
 
@@ -65,7 +59,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         });
         assert.ok(true, 'deprecate did not throw');
       } catch (e) {
@@ -86,7 +80,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         });
         assert.ok(true, 'deprecate did not throw');
       } catch (e) {
@@ -100,7 +94,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         });
       }, /Should throw/);
     }
@@ -122,7 +116,7 @@ moduleFor(
           id: 'my-deprecation',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         });
         assert.ok(true, 'Did not throw when level is set by id');
       } catch (e) {
@@ -134,7 +128,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         });
       }, /Should throw with no matching id/);
 
@@ -143,7 +137,7 @@ moduleFor(
           id: 'other-id',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         });
       }, /Should throw with non-matching id/);
     }
@@ -156,7 +150,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         })
       );
       assert.throws(() =>
@@ -164,7 +158,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         })
       );
       assert.throws(() =>
@@ -172,7 +166,7 @@ moduleFor(
           id: 'test',
           until: 'forever',
           for: 'me',
-          since: { enabled: '1.0.0' },
+          since: { available: '1.0.0', enabled: '1.0.0' },
         })
       );
     }
@@ -185,7 +179,7 @@ moduleFor(
         function () {
           assert.ok(false, 'this function should not be invoked');
         },
-        { id: 'test', until: 'forever', for: 'me', since: { enabled: '1.0.0' } }
+        { id: 'test', until: 'forever', for: 'me', since: { available: '1.0.0', enabled: '1.0.0' } }
       );
 
       assert.ok(true, 'deprecations were not thrown');
@@ -198,19 +192,19 @@ moduleFor(
         id: 'test',
         until: 'forever',
         for: 'me',
-        since: { enabled: '1.0.0' },
+        since: { available: '1.0.0', enabled: '1.0.0' },
       });
       deprecate('Deprecation is thrown', '1', {
         id: 'test',
         until: 'forever',
         for: 'me',
-        since: { enabled: '1.0.0' },
+        since: { available: '1.0.0', enabled: '1.0.0' },
       });
       deprecate('Deprecation is thrown', 1, {
         id: 'test',
         until: 'forever',
         for: 'me',
-        since: { enabled: '1.0.0' },
+        since: { available: '1.0.0', enabled: '1.0.0' },
       });
 
       assert.ok(true, 'deprecations were not thrown');
@@ -256,6 +250,7 @@ moduleFor(
       assert.expect(4);
       let id = 'ABC';
       let until = 'forever';
+      let since = 'forever';
       let shouldThrow = false;
 
       registerHandler(function (message, options) {
@@ -267,14 +262,24 @@ moduleFor(
       });
 
       try {
-        deprecate('Deprecation for testing purposes', false, { id, until });
+        deprecate('Deprecation for testing purposes', false, {
+          id,
+          until,
+          since,
+          for: 'namespace',
+        });
         assert.ok(true, 'Deprecation did not throw');
       } catch (e) {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
       }
 
       try {
-        deprecate('Deprecation for testing purposes', false, { id, until });
+        deprecate('Deprecation for testing purposes', false, {
+          id,
+          until,
+          since,
+          for: 'namespace',
+        });
         assert.ok(true, 'Deprecation did not throw');
       } catch (e) {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
@@ -311,7 +316,12 @@ moduleFor(
       assert.expect(1);
 
       assert.throws(
-        () => deprecate('foo', false, { until: 'forever', for: 'me', since: { enabled: '1.0.0' } }),
+        () =>
+          deprecate('foo', false, {
+            until: 'forever',
+            for: 'me',
+            since: { available: '1.0.0', enabled: '1.0.0' },
+          }),
         new RegExp(missingOptionsIdDeprecation),
         'proper assertion is triggered when options.id is missing'
       );
@@ -322,7 +332,7 @@ moduleFor(
 
       assert.throws(
         () => deprecate('foo', false, { id: 'test' }),
-        new RegExp(missingOptionsUntilDeprecation),
+        new RegExp(missingOptionDeprecation('test', 'until')),
         'proper assertion is triggered when options.until is missing'
       );
     }
@@ -332,32 +342,8 @@ moduleFor(
 
       assert.throws(
         () => deprecate('message1', false, { id: 'test', until: 'forever' }),
-        new RegExp(missingOptionsForDeprecation('test')),
+        new RegExp(missingOptionDeprecation('test', 'for')),
         'proper assertion is triggered when options.for is missing'
-      );
-    }
-
-    ['@test deprecate without options.for only triggers once per id'](assert) {
-      ENV.RAISE_ON_DEPRECATION = false;
-      let messages = [];
-      registerHandler(function (message, options, next) {
-        if (options.id === 'ember-source.deprecation-without-for') {
-          messages.push(message);
-        }
-        next(...arguments);
-      });
-
-      deprecate('message1', false, { id: 'test', until: 'forever' });
-      deprecate('message2', false, { id: 'test', until: 'forever' });
-      deprecate('message3', false, { id: 'another', until: 'forever' });
-
-      assert.equal(messages.length, 2, 'correct number of deprecations');
-      assert.equal(messages[0], missingOptionsForDeprecation('test'), 'first message is correct');
-
-      assert.equal(
-        messages[1],
-        missingOptionsForDeprecation('another'),
-        'second message is correct'
       );
     }
 
@@ -371,30 +357,8 @@ moduleFor(
             until: 'forever',
             for: 'me',
           }),
-        new RegExp(missingOptionsSinceDeprecation('test')),
+        new RegExp(missingOptionDeprecation('test', 'since')),
         'proper assertion is triggered when options.since is missing'
-      );
-    }
-
-    ['@test deprecate without options.since only triggers once per id'](assert) {
-      ENV.RAISE_ON_DEPRECATION = false;
-      let messages = [];
-      registerHandler(function (message, options, next) {
-        if (options.id === 'ember-source.deprecation-without-since') {
-          messages.push(message);
-        }
-        next(...arguments);
-      });
-      deprecate('foo', false, { id: 'test', until: 'forever', for: 'me' });
-      deprecate('foobar', false, { id: 'test', until: 'forever', for: 'me' });
-      deprecate('baz', false, { id: 'another', until: 'forever', for: 'me' });
-
-      assert.equal(messages.length, 2, 'deprecation message only sent once');
-      assert.equal(messages[0], missingOptionsSinceDeprecation('test'), 'first message is correct');
-      assert.equal(
-        messages[1],
-        missingOptionsSinceDeprecation('another'),
-        'second message is correct'
       );
     }
 

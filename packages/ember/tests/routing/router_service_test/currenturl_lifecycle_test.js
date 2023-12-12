@@ -1,8 +1,8 @@
-import { inject as injectService } from '@ember/service';
+import { service } from '@ember/service';
 import { readOnly } from '@ember/object/computed';
 import { Component } from '@ember/-internals/glimmer';
-import { Route } from '@ember/-internals/routing';
-import { get } from '@ember/-internals/metal';
+import Route from '@ember/routing/route';
+import { get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
 
@@ -10,7 +10,7 @@ let results = [];
 let ROUTE_NAMES = ['index', 'child', 'sister', 'brother', 'loading'];
 
 let InstrumentedRoute = Route.extend({
-  routerService: injectService('router'),
+  routerService: service('router'),
 
   init() {
     this._super(...arguments);
@@ -122,7 +122,7 @@ moduleFor(
       });
 
       let CurrenURLComponent = Component.extend({
-        routerService: injectService('router'),
+        routerService: service('router'),
         currentURL: readOnly('routerService.currentURL'),
         currentRouteName: readOnly('routerService.currentRouteName'),
         currentRoute: readOnly('routerService.currentRoute'),

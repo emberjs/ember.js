@@ -19,7 +19,7 @@ import {
 
   This destroyables API exposes the basic building blocks for destruction:
 
-  * registering a function to be ran when an object is destroyyed
+  * registering a function to be ran when an object is destroyed
   * checking if an object is in a destroying state
   * associate an object as a child of another so that the child object will be destroyed
     when the associated parent object is destroyed.
@@ -34,7 +34,9 @@ import {
 
   ```js
   class CustomSelect extends Component {
-    constructor() {
+    constructor(...args) {
+      super(...args);
+
       // obj is now a child of the component. When the component is destroyed,
       // obj will also be destroyed, and have all of its destructors triggered.
       this.obj = associateDestroyableChild(this, {});
@@ -165,12 +167,15 @@ import {
   parent is destroyed, the destructor function will be called.
 
   ```js
+  import Component from '@glimmer/component';
   import { registerDestructor } from '@ember/destroyable';
 
   class Modal extends Component {
     @service resize;
 
-    constructor() {
+    constructor(...args) {
+      super(...args);
+
       this.resize.register(this, this.layout);
 
       registerDestructor(this, () => this.resize.unregister(this));
@@ -187,6 +192,7 @@ import {
   than creating a closure function per destroyable.
 
   ```js
+  import Component from '@glimmer/component';
   import { registerDestructor } from '@ember/destroyable';
 
   function unregisterResize(instance) {
@@ -196,7 +202,9 @@ import {
   class Modal extends Component {
     @service resize;
 
-    constructor() {
+    constructor(...args) {
+      super(...args);
+
       this.resize.register(this, this.layout);
 
       registerDestructor(this, unregisterResize);
@@ -223,12 +231,15 @@ export function registerDestructor<T extends object>(
   from the destroyable.
 
   ```js
+  import Component from '@glimmer/component';
   import { registerDestructor, unregisterDestructor } from '@ember/destroyable';
 
   class Modal extends Component {
     @service modals;
 
-    constructor() {
+    constructor(...args) {
+      super(...args);
+
       this.modals.add(this);
 
       this.modalDestructor = registerDestructor(this, () => this.modals.remove(this));

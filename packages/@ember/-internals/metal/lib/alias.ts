@@ -1,21 +1,20 @@
-import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { inspect } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor } from '@ember/-internals/meta';
+import { assert, inspect } from '@ember/debug';
+import type { UpdatableTag } from '@glimmer/validator';
 import {
   consumeTag,
   tagFor,
   tagMetaFor,
   untrack,
-  UpdatableTag,
   updateTag,
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
+import type { ExtendedMethodDecorator } from './decorator';
 import {
   ComputedDescriptor,
-  Decorator,
   descriptorForDecorator,
   isElementDescriptor,
   makeComputedDecorator,
@@ -24,7 +23,7 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 
-export type AliasDecorator = Decorator & PropertyDecorator & AliasDecoratorImpl;
+export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & AliasDecoratorImpl;
 
 export default function alias(altKey: string): AliasDecorator {
   assert(
@@ -32,22 +31,23 @@ export default function alias(altKey: string): AliasDecorator {
     !isElementDescriptor(Array.prototype.slice.call(arguments))
   );
 
+  // SAFETY: We passed in the impl for this class
   return makeComputedDecorator(new AliasedProperty(altKey), AliasDecoratorImpl) as AliasDecorator;
 }
 
 // TODO: This class can be svelted once `meta` has been deprecated
 class AliasDecoratorImpl extends Function {
-  readOnly(this: Decorator) {
+  readOnly(this: ExtendedMethodDecorator) {
     (descriptorForDecorator(this) as AliasedProperty).readOnly();
     return this;
   }
 
-  oneWay(this: Decorator) {
+  oneWay(this: ExtendedMethodDecorator) {
     (descriptorForDecorator(this) as AliasedProperty).oneWay();
     return this;
   }
 
-  meta(this: Decorator, meta?: any): any {
+  meta(this: ExtendedMethodDecorator, meta?: any): any {
     let prop = descriptorForDecorator(this) as AliasedProperty;
 
     if (arguments.length === 0) {
@@ -113,8 +113,7 @@ export class AliasedProperty extends ComputedDescriptor {
 }
 
 function AliasedProperty_readOnlySet(obj: object, keyName: string): never {
-  // eslint-disable-line no-unused-vars
-  throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
+  throw new Error(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
 }
 
 function AliasedProperty_oneWaySet(obj: object, keyName: string, value: any): any {

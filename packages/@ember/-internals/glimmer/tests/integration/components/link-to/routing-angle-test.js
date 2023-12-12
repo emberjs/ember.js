@@ -5,13 +5,11 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA, RSVP } from '@ember/-internals/runtime';
-import { subscribe, reset } from '@ember/instrumentation';
-import { Route, NoneLocation } from '@ember/-internals/routing';
-import {
-  EMBER_IMPROVED_INSTRUMENTATION,
-  EMBER_MODERNIZED_BUILT_IN_COMPONENTS,
-} from '@ember/canary-features';
+import { A as emberA } from '@ember/array';
+import { RSVP } from '@ember/-internals/runtime';
+import Route from '@ember/routing/route';
+import NoneLocation from '@ember/routing/none-location';
+import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
@@ -92,75 +90,44 @@ moduleFor(
       );
     }
 
-    async [`@test [DEPRECATED] it doesn't add an href when the tagName isn't 'a'`](assert) {
+    async ['@test [GH#19546] it navigates into the named route when containing other elements'](
+      assert
+    ) {
       this.addTemplate(
-        'index',
-        `<LinkTo @route='about' id='about-link' @tagName='div'>About</LinkTo>`
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@tagName` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-      assert.strictEqual(this.$('#about-link').attr('href'), null, 'there is no href attribute');
-    }
-
-    async [`@test [DEPRECATED] it applies a 'disabled' class when disabledWhen`](assert) {
-      this.addTemplate(
-        'index',
+        'about',
         `
-        <LinkTo id="about-link-static" @route="about" @disabledWhen="truthy">About</LinkTo>
-        <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{this.dynamicDisabledWhen}}>About</LinkTo>
+        <h3 class="about">About</h3>
+        <LinkTo @route='index' id='home-link'><span id='inside'>Home</span></LinkTo>
+        <LinkTo @route='about' id='self-link'>Self</LinkTo>
         `
       );
 
-      let controller;
+      await this.visit('/about');
 
-      this.add(
-        'controller:index',
-        class extends Controller {
-          constructor(...args) {
-            super(...args);
-            controller = this;
-          }
-
-          dynamicDisabledWhen = true;
-        }
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
+      assert.equal(this.$('h3.about').length, 1, 'The about template was rendered');
       assert.equal(
-        this.$('#about-link-static.disabled').length,
+        this.$('#self-link.active').length,
         1,
-        'The static link is disabled when its disabledWhen is true'
+        'The self-link was rendered with active class'
       );
       assert.equal(
-        this.$('#about-link-dynamic.disabled').length,
+        this.$('#home-link:not(.active)').length,
         1,
-        'The dynamic link is disabled when its disabledWhen is true'
+        'The other link was rendered without active class'
       );
 
-      expectDeprecation(
-        () => runTask(() => controller.set('dynamicDisabledWhen', false)),
-        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
+      await this.click('#inside');
 
+      assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
       assert.equal(
-        this.$('#about-link-static.disabled').length,
+        this.$('#self-link.active').length,
         1,
-        'The static link is disabled when its disabledWhen is true'
+        'The self-link was rendered with active class'
       );
-      assert.strictEqual(
-        this.$('#about-link-dynamic.disabled').length,
-        0,
-        'The dynamic link is re-enabled when its disabledWhen becomes false'
+      assert.equal(
+        this.$('#about-link:not(.active)').length,
+        1,
+        'The other link was rendered without active class'
       );
     }
 
@@ -343,27 +310,6 @@ moduleFor(
       );
     }
 
-    async [`@test [DEPRECATED] it does not respond to clicks when disabledWhen`](assert) {
-      this.addTemplate(
-        'index',
-        `<LinkTo id="about-link" @route="about" @disabledWhen={{true}}>About</LinkTo>`
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      await expectDeprecationAsync(
-        () => this.click('#about-link'),
-        'Passing the `@disabledWhen` argument to <LinkTo> is deprecated. Use the `@disabled` argument instead.',
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assert.strictEqual(this.$('h3.about').length, 0, 'Transitioning did not occur');
-    }
-
     async [`@test it does not respond to clicks when disabled`](assert) {
       this.addTemplate(
         'index',
@@ -410,7 +356,7 @@ moduleFor(
       assert.equal(
         this.$('h3.about').length,
         1,
-        'Transitioning did occur when disabledWhen became false'
+        'Transitioning did occur when disabled became false'
       );
     }
 
@@ -879,99 +825,6 @@ moduleFor(
   }
 );
 
-if (EMBER_IMPROVED_INSTRUMENTATION) {
-  moduleFor(
-    'The <LinkTo /> component with EMBER_IMPROVED_INSTRUMENTATION',
-    class extends ApplicationTestCase {
-      constructor() {
-        super();
-
-        this.router.map(function () {
-          this.route('about');
-        });
-
-        this.addTemplate(
-          'index',
-          `
-          <h3 class="home">Home</h3>
-          <LinkTo id='about-link' @route='about'>About</LinkTo>
-          <LinkTo id='self-link' @route='index'>Self</LinkTo>
-          `
-        );
-        this.addTemplate(
-          'about',
-          `
-          <h3 class="about">About</h3>
-          <LinkTo id='home-link' @route='index'>Home</LinkTo>
-          <LinkTo id='self-link' @route='about'>Self</LinkTo>
-          `
-        );
-      }
-
-      beforeEach() {
-        return this.visit('/');
-      }
-
-      afterEach() {
-        reset();
-
-        return super.afterEach();
-      }
-
-      async ['@test it fires an interaction event'](assert) {
-        let before = 0;
-        let after = 0;
-
-        subscribe('interaction.link-to', {
-          before() {
-            before++;
-          },
-          after() {
-            after++;
-          },
-        });
-
-        assert.strictEqual(before, 0, 'instrumentation subscriber (before) was not called');
-        assert.strictEqual(after, 0, 'instrumentation subscriber (after) was not called');
-
-        await this.click('#about-link');
-
-        assert.strictEqual(before, 1, 'instrumentation subscriber (before) was called');
-        assert.strictEqual(after, 1, 'instrumentation subscriber (after) was called');
-      }
-
-      async ['@test it interaction event includes the route name and transition object'](assert) {
-        let before = 0;
-        let after = 0;
-
-        subscribe('interaction.link-to', {
-          before(name, timestamp, { routeName }) {
-            before++;
-            assert.equal(routeName, 'about', 'instrumentation subscriber was passed route name');
-          },
-          after(name, timestamp, { routeName, transition }) {
-            after++;
-            assert.equal(routeName, 'about', 'instrumentation subscriber was passed route name');
-            assert.equal(
-              transition.targetName,
-              'about',
-              'instrumentation subscriber was passed transition object in the after hook'
-            );
-          },
-        });
-
-        assert.strictEqual(before, 0, 'instrumentation subscriber (before) was not called');
-        assert.strictEqual(after, 0, 'instrumentation subscriber (after) was not called');
-
-        await this.click('#about-link');
-
-        assert.strictEqual(before, 1, 'instrumentation subscriber (before) was called');
-        assert.strictEqual(after, 1, 'instrumentation subscriber (after) was called');
-      }
-    }
-  );
-}
-
 moduleFor(
   'The <LinkTo /> component - nested routes and link-to arguments',
   class extends ApplicationTestCase {
@@ -1212,136 +1065,7 @@ moduleFor(
       assert.equal(hidden, 1, 'The link bubbles');
     }
 
-    async [`@test [DEPRECATED] it supports bubbles=false`](assert) {
-      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-        this.addTemplate(
-          'about',
-          `
-          <div {{on 'click' this.hide}}>
-            <LinkTo id='about-contact' @route='about.contact' @bubbles={{false}}>
-              About
-            </LinkTo>
-          </div>
-          {{outlet}}
-          `
-        );
-      } else {
-        this.addTemplate(
-          'about',
-          `
-          <div {{action this.hide}}>
-            <LinkTo id='about-contact' @route='about.contact' @bubbles={{false}}>
-              About
-            </LinkTo>
-          </div>
-          {{outlet}}
-          `
-        );
-      }
-
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
-
-      this.router.map(function () {
-        this.route('about', function () {
-          this.route('contact');
-        });
-      });
-
-      let hidden = 0;
-
-      this.add(
-        'controller:about',
-        class extends Controller {
-          hide() {
-            hidden++;
-          }
-        }
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/about'),
-        'Passing the `@bubbles` argument to <LinkTo> is deprecated. Use the {{on}} modifier to attach a custom event handler to control event propagation.',
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      await expectDeprecationAsync(
-        () => this.click('#about-contact'),
-        'Passing the `@bubbles` argument to <LinkTo> is deprecated. Use the {{on}} modifier to attach a custom event handler to control event propagation.',
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-
-      assert.strictEqual(hidden, 0, "The link didn't bubble");
-    }
-
-    async [`@test [DEPRECATED] it supports bubbles=boundFalseyThing`](assert) {
-      if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-        this.addTemplate(
-          'about',
-          `
-          <div {{on 'click' this.hide}}>
-            <LinkTo id='about-contact' @route='about.contact' @bubbles={{this.boundFalseyThing}}>
-              About
-            </LinkTo>
-          </div>
-          {{outlet}}
-          `
-        );
-      } else {
-        this.addTemplate(
-          'about',
-          `
-          <div {{action this.hide}}>
-            <LinkTo id='about-contact' @route='about.contact' @bubbles={{this.boundFalseyThing}}>
-              About
-            </LinkTo>
-          </div>
-          {{outlet}}
-          `
-        );
-      }
-
-      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
-
-      let hidden = 0;
-
-      this.add(
-        'controller:about',
-        class extends Controller {
-          boundFalseyThing = false;
-
-          hide() {
-            hidden++;
-          }
-        }
-      );
-
-      this.router.map(function () {
-        this.route('about', function () {
-          this.route('contact');
-        });
-      });
-
-      await expectDeprecationAsync(
-        () => this.visit('/about'),
-        /Passing the `@bubbles` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      await expectDeprecationAsync(
-        () => this.click('#about-contact'),
-        /Passing the `@bubbles` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-      assert.strictEqual(hidden, 0, "The link didn't bubble");
-    }
-
-    async [`@feature(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) The propagation of the click event can be stopped`](
-      assert
-    ) {
+    async [`The propagation of the click event can be stopped`](assert) {
       this.addTemplate(
         'about',
         `
@@ -1546,99 +1270,6 @@ moduleFor(
       assertNav({ prevented: true }, () => this.$('#about-link').click(), assert);
     }
 
-    async [`@test [DEPRECATED] it does not call preventDefault if '@preventDefault={{false}}]' is passed as an option`](
-      assert
-    ) {
-      this.router.map(function () {
-        this.route('about');
-      });
-
-      this.addTemplate(
-        'index',
-        `<LinkTo id='about-link' @route='about' @preventDefault={{false}}>About</LinkTo>`
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assertNav(
-        { prevented: false },
-        () =>
-          expectDeprecation(
-            () => this.$('#about-link').trigger('click'),
-            /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
-            EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-          ),
-        assert
-      );
-    }
-
-    async [`@test [DEPRECATED] it does not call preventDefault if '@preventDefault={{this.boundThing}}' is passed as an option`](
-      assert
-    ) {
-      this.router.map(function () {
-        this.route('about');
-      });
-
-      this.addTemplate(
-        'index',
-        `<LinkTo id='about-link' @route='about' @preventDefault={{this.boundThing}}>About</LinkTo>`
-      );
-
-      let controller;
-
-      this.add(
-        'controller:index',
-        class extends Controller {
-          constructor(...args) {
-            super(...args);
-            controller = this;
-          }
-
-          boundThing = false;
-        }
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assertNav(
-        { prevented: false },
-        () =>
-          expectDeprecation(
-            () => this.$('#about-link').trigger('click'),
-            /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
-            EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-          ),
-        assert
-      );
-
-      runTask(() => controller.set('boundThing', true));
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
-        EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-      );
-
-      assertNav(
-        { prevented: true },
-        () =>
-          expectDeprecation(
-            () => this.$('#about-link').trigger('click'),
-            /Passing the `@preventDefault` argument to <LinkTo> is deprecated\./,
-            EMBER_MODERNIZED_BUILT_IN_COMPONENTS
-          ),
-        assert
-      );
-    }
-
     async [`@test it does not call preventDefault if 'target' attribute is provided`](assert) {
       this.addTemplate(
         'index',
@@ -1685,16 +1316,11 @@ moduleFor(
 
       await this.click('#about-link');
 
-      expectDeprecation(() => {
-        let currentRouteName = this.applicationInstance
-          .lookup('controller:application')
-          .get('currentRouteName');
-        assert.notEqual(
-          currentRouteName,
-          'about',
-          'link-to should not transition if target is not equal to _self or empty'
-        );
-      }, 'Accessing `currentRouteName` on `controller:application` is deprecated, use the `currentRouteName` property on `service:router` instead.');
+      assert.notEqual(
+        this.appRouter.currentRouteName,
+        'about',
+        'link-to should not transition if target is not equal to _self or empty'
+      );
     }
 
     async [`@test it accepts string/numeric arguments`](assert) {
@@ -2161,51 +1787,6 @@ moduleFor(
       this.assertText('Post: Papa Smurf');
     }
 
-    async [`@test [DEPRECATED] The <LinkTo /> component can use dynamic params`](assert) {
-      this.router.map(function () {
-        this.route('foo', { path: 'foo/:some/:thing' });
-        this.route('bar', { path: 'bar/:some/:thing/:else' });
-      });
-
-      let controller;
-
-      this.add(
-        'controller:index',
-        class extends Controller {
-          constructor(...args) {
-            super(...args);
-            controller = this;
-          }
-
-          dynamicLinkParams = ['foo', 'one', 'two'];
-        }
-      );
-
-      this.addTemplate(
-        'index',
-        `
-        <h3 class="home">Home</h3>
-        <LinkTo id="dynamic-link" @params={{this.dynamicLinkParams}}>Dynamic</LinkTo>
-        `
-      );
-
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        /Invoking the `<LinkTo>` component with positional arguments is deprecated/
-      );
-
-      let link = this.$('#dynamic-link');
-
-      assert.equal(link.attr('href'), '/foo/one/two');
-
-      expectDeprecation(
-        () => runTask(() => controller.set('dynamicLinkParams', ['bar', 'one', 'two', 'three'])),
-        /Invoking the `<LinkTo>` component with positional arguments is deprecated/
-      );
-
-      assert.equal(link.attr('href'), '/bar/one/two/three');
-    }
-
     async [`@test [GH#13256]: <LinkTo /> to a parent root model hook which performs a 'transitionTo' has correct active class`](
       assert
     ) {
@@ -2218,10 +1799,9 @@ moduleFor(
       this.add(
         'route:parent',
         class extends Route {
+          @service router;
           afterModel() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.child');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.child');
           }
         }
       );

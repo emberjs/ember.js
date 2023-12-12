@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - main
       - beta
       - release
       # release branches
@@ -17,237 +17,222 @@ on:
       - 'CHANGELOG.md'
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: linting
-        run: yarn lint
+        run: pnpm lint
 
-  basic-test:
-    name: Debug and Prebuilt (All Tests by Package + Canary Features + Optional Jquery)
+  types:
+    name: Type Checking (current version)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - name: Check published and internal types
+        run: pnpm type-check
+
+  types-range:
+    name: Type Checking (other supported versions)
+    runs-on: ubuntu-latest
+    needs: ['types']
+    strategy:
+      matrix:
+        ts-version: ['4.9', '5.0', '5.1', '5.2', '5.3', 'next']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - name: build stable type definitions
+        run: pnpm build:types
+      - name: install TS@${{matrix.ts-version}}
+        run: pnpm add --save-dev --workspace-root typescript@${{ matrix.ts-version }}
+      - name: Check published and internal types with TS@${{matrix.ts-version}}
+        run: pnpm type-check
+
+  basic-test:
+    name: Debug and Prebuilt (All Tests by Package + Canary Features)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build
+        run: pnpm ember build
       - name: Upload build
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist
       - name: test
         env:
           TEST_SUITE: each-package
-        run: yarn test
+        run: pnpm test
 
   browserstack-test:
-    name: Browserstack Tests (Safari, Edge, IE11)
+    name: Browserstack Tests (Safari, Edge)
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
           SHOULD_TRANSPILE: true
-        run: yarn ember build
+        run: pnpm ember build
+
+      - name: Set BrowserStack Local Identifier
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          BROWSERSTACK_LOCAL_IDENTIFIER="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER=$BROWSERSTACK_LOCAL_IDENTIFIER" >> $GITHUB_ENV
+
       - name: test:browserstack
         env:
           BROWSERSTACK_USERNAME: emberjscoreteam1
           # This is in plaintext on purpose. It has no privileged access to anything (this is a free
           # account) and it allows us to run browserstack tests against PRs.
           BROWSERSTACK_ACCESS_KEY: o5LNEdygq1SP4L9kst4s
-        run: yarn test:browserstack
+        run: pnpm test:browserstack
+
+  smoke-test:
+    name: Smoke tests (Full Ember Apps)
+    runs-on: ubuntu-latest
+    needs: [basic-test, lint, types]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - name: build
+        run: pnpm ember build -prod
+      - name: test
+        # todo: potentially more apps? use matrix?
+        run: |
+          cd smoke-tests/ember-test-app/
+          pnpm install
+          pnpm link ../..
+          pnpm test
 
   production-test:
     name: Production (All Tests + Canary Features)
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build -prod
+        run: pnpm ember build -prod
       - name: test
-        run: yarn test
+        run: pnpm test
 
   production-debug-render-test:
     name: Production (All Tests + Canary Features with Debug Render Tree)
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
           DEBUG_RENDER_TREE: true
-        run: yarn ember build -prod
+        run: pnpm ember build -prod
       - name: test
-        run: yarn test
+        run: pnpm test
 
   extend-prototypes-test:
     name: Extend Prototypes
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v1
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
       - name: test
         env:
           TEST_SUITE: extend-prototypes
-        run: yarn test
+        run: pnpm test
 
   node-test:
     name: Node.js Tests
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build
         env:
           DISABLE_SOURCE_MAPS: true
           BROCCOLI_ENV: production
-        run: yarn ember build -prod
+          SHOULD_TRANSPILE_FOR_NODE: true
+        run: pnpm ember build -prod
       - name: test
-        run: yarn test:node
+        run: pnpm test:node
 
   blueprint-test:
     name: Blueprint Tests
     runs-on: ubuntu-latest
     needs: [lint]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v1
-        with:
-          name: dist
-          path: dist
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: test
-        run: yarn test:blueprints
+        run: pnpm test:blueprints
 
   browser-test:
     name: Browser Tests (Firefox)
     runs-on: ubuntu-latest
-    needs: [basic-test, lint]
+    needs: [basic-test, lint, types]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
-      - uses: actions/download-artifact@v1
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v3
         with:
           name: dist
           path: dist
+      - name: Setup firefox
+        uses: browser-actions/setup-firefox@latest
+        with:
+          firefox-version: 102.0.1
+      - run: firefox --version
       - name: test
-        run: yarn ember test -c testem.ci-browsers.js
+        run: pnpm ember test -c testem.ci-browsers.js
 
   deploy-tag:
     name: Deploy tags to npm
     runs-on: ubuntu-latest
-    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    needs:
+      [
+        basic-test,
+        lint,
+        browserstack-test,
+        production-test,
+        production-debug-render-test,
+        extend-prototypes-test,
+        node-test,
+        blueprint-test,
+        browser-test,
+      ]
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-          registry-url: 'https://registry.npmjs.org'
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to npm
@@ -258,24 +243,27 @@ jobs:
   publish:
     name: Publish channel to s3
     runs-on: ubuntu-latest
-    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
+    needs:
+      [
+        basic-test,
+        lint,
+        browserstack-test,
+        production-test,
+        production-debug-render-test,
+        extend-prototypes-test,
+        node-test,
+        blueprint-test,
+        browser-test,
+      ]
     # Only run on pushes to branches that are not from the cron workflow
     if: github.event_name == 'push' && contains(github.ref, 'cron') != true
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           S3_BUCKET_NAME: 'builds.emberjs.com'
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
@@ -284,24 +272,27 @@ jobs:
   publish-alpha:
     name: Publish alpha from default branch
     runs-on: ubuntu-latest
-    needs: [basic-test, lint, browserstack-test, production-test, production-debug-render-test, extend-prototypes-test, node-test, blueprint-test, browser-test]
-    # Only run on pushes to master
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs:
+      [
+        basic-test,
+        lint,
+        browserstack-test,
+        production-test,
+        production-debug-render-test,
+        extend-prototypes-test,
+        node-test,
+        blueprint-test,
+        browser-test,
+      ]
+    # Only run on pushes to main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-      - uses: actions/cache@v2
-        with:
-          path: '**/node_modules'
-          key: ci-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: install dependencies
-        run: yarn install --frozen-lockfile --non-interactive
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup
       - name: build for publish
         run: node bin/build-for-publishing.js
       - name: publish to s3
-        run: node bin/publish_to_s3.js
+        run: node bin/publish-to-s3.mjs
         env:
           BUILD_TYPE: alpha
           OVERRIDE_FEATURES: ''
@@ -309,3 +300,28 @@ jobs:
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY}}
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID}}
 
+  notify:
+    name: Notify Discord
+    runs-on: ubuntu-latest
+    needs:
+      [
+        basic-test,
+        lint,
+        browserstack-test,
+        production-test,
+        production-debug-render-test,
+        extend-prototypes-test,
+        node-test,
+        blueprint-test,
+        browser-test,
+      ]
+    if: failure() && contains(github.ref, 'cron') == true
+    steps:
+      - uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.FRAMEWORK_WEBHOOK }}
+          status: 'Failure'
+          title: 'Ember.js Nightly CI'
+          color: 0xcc0000
+          url: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          username: GitHub Actions

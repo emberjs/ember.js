@@ -1,16 +1,12 @@
 import { meta as metaFor } from '@ember/-internals/meta';
-import { isEmberArray } from '@ember/-internals/utils';
+import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
-import {
-  COMPUTED_SETTERS,
-  Decorator,
-  DecoratorPropertyDescriptor,
-  isElementDescriptor,
-  setClassicDecorator,
-} from './decorator';
+import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
+import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
 
 /**
@@ -32,7 +28,8 @@ import { SELF_TAG } from './tags';
   will be tracked:
 
   ```typescript
-  import Component, { tracked } from '@glimmer/component';
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   export default class MyComponent extends Component {
     @tracked
@@ -53,7 +50,8 @@ import { SELF_TAG } from './tags';
   `eatenApples`, and `remainingApples`.
 
   ```typescript
-  import Component, { tracked } from '@glimmer/component';
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   const totalApples = 100;
 
@@ -61,7 +59,6 @@ import { SELF_TAG } from './tags';
     @tracked
     eatenApples = 0
 
-    @tracked('eatenApples')
     get remainingApples() {
       return totalApples - this.eatenApples;
     }
@@ -74,14 +71,17 @@ import { SELF_TAG } from './tags';
 
   @param dependencies Optional dependents to be tracked.
 */
-export function tracked(propertyDesc: { value: any; initializer: () => any }): Decorator;
+export function tracked(propertyDesc: {
+  value: any;
+  initializer: () => any;
+}): ExtendedMethodDecorator;
 export function tracked(target: object, key: string): void;
 export function tracked(
   target: object,
   key: string,
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
-export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor {
+export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorPropertyDescriptor {
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
@@ -116,7 +116,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
     let decorator = function (
       target: object,
       key: string,
-      _desc: DecoratorPropertyDescriptor,
+      _desc?: DecoratorPropertyDescriptor,
       _meta?: any,
       isClassicDecorator?: boolean
     ): DecoratorPropertyDescriptor {
@@ -146,11 +146,7 @@ if (DEBUG) {
   setClassicDecorator(tracked);
 }
 
-function descriptorForField([target, key, desc]: [
-  object,
-  string,
-  DecoratorPropertyDescriptor
-]): DecoratorPropertyDescriptor {
+function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPropertyDescriptor {
   assert(
     `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
     !desc || (!desc.value && !desc.get && !desc.set)

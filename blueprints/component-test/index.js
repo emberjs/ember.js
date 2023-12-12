@@ -6,6 +6,8 @@ const isPackageMissing = require('ember-cli-is-package-missing');
 const getPathOption = require('ember-cli-get-component-path-option');
 const semver = require('semver');
 
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
 function invocationFor(options) {
@@ -15,6 +17,13 @@ function invocationFor(options) {
 
 module.exports = useTestFrameworkDetector({
   description: 'Generates a component integration or unit test.',
+
+  shouldTransformTypeScript: true,
+
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
+  },
 
   availableOptions: [
     {
@@ -73,6 +82,7 @@ module.exports = useTestFrameworkDetector({
     let selfCloseComponent = (descriptor) => `<${descriptor} />`;
 
     return {
+      modulePrefix: modulePrefixForProject(options.project),
       path: getPathOption(options),
       testType: testType,
       componentName,

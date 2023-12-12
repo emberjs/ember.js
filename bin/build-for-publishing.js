@@ -1,5 +1,5 @@
 'use strict';
-/* eslint-env node, es6 */
+/* eslint-env node */
 
 const fs = require('fs');
 const path = require('path');
@@ -60,11 +60,11 @@ Promise.resolve()
   })
   .then(() => {
     // do a production build
-    return exec('yarn', ['build']);
+    return exec('pnpm', ['build']);
   })
   .then(() => {
     // generate docs
-    return exec('yarn', ['docs']).then(() => {
+    return exec('pnpm', ['run', 'docs']).then(() => {
       updateDocumentationVersion();
     });
   })
@@ -93,6 +93,7 @@ Promise.resolve()
       // eslint-disable-next-line
       console.log('build-for-publishing failed');
       // failure, must manually exit non-zero
+      // eslint-disable-next-line n/no-process-exit
       process.exit(1);
     }
   );

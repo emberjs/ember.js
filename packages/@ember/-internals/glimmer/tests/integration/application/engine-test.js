@@ -7,7 +7,7 @@ import {
 } from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
-import { Route } from '@ember/-internals/routing';
+import Route from '@ember/routing/route';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';
@@ -157,44 +157,6 @@ moduleFor(
       );
     }
 
-    setupAppAndRoutableEngineWithPartial(hooks) {
-      this.addTemplate('application', 'Application{{outlet}}');
-
-      this.router.map(function () {
-        this.mount('blog');
-      });
-      this.add('route-map:blog', function () {});
-      this.add(
-        'route:application',
-        Route.extend({
-          model() {
-            hooks.push('application - application');
-          },
-        })
-      );
-
-      this.add(
-        'engine:blog',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
-
-          init() {
-            this._super(...arguments);
-            this.register('template:foo', compile('foo partial'));
-            this.register('template:application', compile('Engine{{outlet}} {{partial "foo"}}'));
-            this.register(
-              'route:application',
-              Route.extend({
-                model() {
-                  hooks.push('engine - application');
-                },
-              })
-            );
-          },
-        })
-      );
-    }
-
     setupRoutelessEngine(hooks) {
       this.addTemplate('application', 'Application{{mount "chat-engine"}}');
       this.add(
@@ -207,84 +169,16 @@ moduleFor(
       );
     }
 
-    setupAppAndRoutlessEngineWithPartial(hooks) {
-      this.setupRoutelessEngine(hooks);
-
-      this.add(
-        'engine:chat-engine',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
-
-          init() {
-            this._super(...arguments);
-            this.register('template:foo', compile('foo partial'));
-            this.register('template:application', compile('Engine {{partial "foo"}}'));
-            this.register(
-              'controller:application',
-              Controller.extend({
-                init() {
-                  this._super(...arguments);
-                  hooks.push('engine - application');
-                },
-              })
-            );
-          },
-        })
-      );
-    }
-
     additionalEngineRegistrations(callback) {
       this._additionalEngineRegistrations = callback;
-    }
-
-    setupEngineWithAttrs() {
-      this.addTemplate('application', 'Application{{mount "chat-engine"}}');
-
-      this.add(
-        'engine:chat-engine',
-        Engine.extend({
-          Resolver: ModuleBasedTestResolver,
-
-          init() {
-            this._super(...arguments);
-            this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
-            this.register('template:troll', compile('{{attrs.wat}}'));
-            this.register(
-              'controller:application',
-              Controller.extend({
-                contextType: 'Engine',
-              })
-            );
-            this.register(
-              'template:application',
-              compile('Engine {{foo-bar wat=this.contextType}}')
-            );
-          },
-        })
-      );
     }
 
     stringsEndWith(str, suffix) {
       return str.indexOf(suffix, str.length - suffix.length) !== -1;
     }
 
-    ['@test attrs in an engine']() {
-      expectDeprecation(
-        `The use of \`{{partial}}\` is deprecated, please refactor the "troll" partial to a component`
-      );
-      expectDeprecation(
-        'Using {{attrs}} to reference named arguments has been deprecated. {{attrs.wat}} should be updated to {{@wat}}. (L1:C2) '
-      );
-
-      this.setupEngineWithAttrs([]);
-
-      return this.visit('/').then(() => {
-        this.assertText('ApplicationEngine Engine');
-      });
-    }
-
     ['@test sharing a template between engine and application has separate refinements']() {
-      this.assert.expect(2);
+      this.assert.expect(1);
 
       let sharedTemplate = compile(strip`
       <h1>{{this.contextType}}</h1>
@@ -292,10 +186,6 @@ moduleFor(
 
       {{outlet}}
     `);
-
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
 
       this.add('template:application', sharedTemplate);
       this.add(
@@ -337,16 +227,12 @@ moduleFor(
       );
 
       return this.visit('/blog').then(() => {
-        this.assertText('ApplicationController Data!EngineComponent!');
+        this.assertText('ApplicationEngineComponent!');
       });
     }
 
     ['@test sharing a layout between engine and application has separate refinements']() {
-      this.assert.expect(2);
-
-      expectDeprecation(
-        /The `[^`]+` property(?: path)? was used in the `[^`]+` template without using `this`. This fallback behavior has been deprecated, all properties must be looked up on `this` when used in the template: {{[^}]+}}/
-      );
+      this.assert.expect(1);
 
       let sharedLayout = compile(strip`
         {{ambiguous-curlies}}
@@ -399,7 +285,7 @@ moduleFor(
       );
 
       return this.visit('/blog').then(() => {
-        this.assertText('ApplicationLocal Data!EngineComponent!');
+        this.assertText('ApplicationEngineComponent!');
       });
     }
 
@@ -458,50 +344,6 @@ moduleFor(
 
       return this.visit('/', { shouldRender: true }).then(() => {
         this.assertText('ApplicationEngine');
-
-        this.assert.deepEqual(
-          hooks,
-          ['application - application', 'engine - application'],
-          'the expected hooks were fired'
-        );
-      });
-    }
-
-    ['@test visit() with partials in routable engine'](assert) {
-      assert.expect(3);
-
-      expectDeprecation(
-        `The use of \`{{partial}}\` is deprecated, please refactor the "foo" partial to a component`
-      );
-
-      let hooks = [];
-
-      this.setupAppAndRoutableEngineWithPartial(hooks);
-
-      return this.visit('/blog', { shouldRender: true }).then(() => {
-        this.assertText('ApplicationEngine foo partial');
-
-        this.assert.deepEqual(
-          hooks,
-          ['application - application', 'engine - application'],
-          'the expected hooks were fired'
-        );
-      });
-    }
-
-    ['@test visit() with partials in non-routable engine'](assert) {
-      assert.expect(3);
-
-      expectDeprecation(
-        `The use of \`{{partial}}\` is deprecated, please refactor the "foo" partial to a component`
-      );
-
-      let hooks = [];
-
-      this.setupAppAndRoutlessEngineWithPartial(hooks);
-
-      return this.visit('/', { shouldRender: true }).then(() => {
-        this.assertText('ApplicationEngine foo partial');
 
         this.assert.deepEqual(
           hooks,
@@ -973,6 +815,65 @@ moduleFor(
         .catch((error) => {
           assert.equal(error.message, 'Whoops! Something went wrong...');
         });
+    }
+
+    ['@test visit() with `shouldRender: true` queryParams are properly deserialized for lazy routes'](
+      assert
+    ) {
+      assert.expect(2);
+
+      let hooks = [];
+
+      this.setupAppAndRoutableEngine(hooks);
+
+      this.add(
+        'engine:blog',
+        Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
+          init() {
+            this._super(...arguments);
+            this.register(
+              'controller:application',
+              Controller.extend({
+                queryParams: ['lazyQueryParam'],
+              })
+            );
+
+            this.register(
+              'template:application',
+              compile('Engine<div class="lazy-query-param">{{this.lazyQueryParam}}</div>{{outlet}}')
+            );
+
+            this.register(
+              'route:application',
+              Route.extend({
+                queryParams: {
+                  lazyQueryParam: {
+                    defaultValue: null,
+                  },
+                },
+                deserializeQueryParam() {
+                  hooks.push('engine - deserialize query param');
+                  return 'foo';
+                },
+                model() {
+                  hooks.push('engine - application');
+                },
+              })
+            );
+          },
+        })
+      );
+
+      return this.visit('/blog?lazyQueryParam=bar', { shouldRender: true }).then(() => {
+        assert.deepEqual(
+          hooks,
+          ['application - application', 'engine - deserialize query param', 'engine - application'],
+          'the expected hooks were fired'
+        );
+        assert.strictEqual(this.element.querySelector('.lazy-query-param').innerHTML, 'foo');
+      });
     }
   }
 );

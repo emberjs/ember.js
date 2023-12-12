@@ -1,4 +1,4 @@
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import EmberObject from '@ember/object';
 import { computed, get, set, setProperties } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

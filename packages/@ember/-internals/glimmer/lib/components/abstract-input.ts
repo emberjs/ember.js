@@ -1,23 +1,10 @@
 import { tracked } from '@ember/-internals/metal';
-import { TargetActionSupport } from '@ember/-internals/runtime';
-import { TextSupport } from '@ember/-internals/views';
-import { EMBER_MODERNIZED_BUILT_IN_COMPONENTS } from '@ember/canary-features';
-import { assert, deprecate } from '@ember/debug';
-import { JQUERY_INTEGRATION, SEND_ACTION } from '@ember/deprecated-features';
+import { assert } from '@ember/debug';
 import { action } from '@ember/object';
-import { isConstRef, isUpdatableRef, Reference, updateRef, valueForRef } from '@glimmer/reference';
-import Component from '../component';
-import InternalComponent, {
-  DeprecatingInternalComponent,
-  EventListener,
-  handleDeprecatedArguments,
-  handleDeprecatedAttributeArguments,
-  handleDeprecatedEventArguments,
-  InternalComponentConstructor,
-  jQueryEventShim,
-  ObjectEntries,
-  ObjectValues,
-} from './internal';
+import type { Reference } from '@glimmer/reference';
+import { isConstRef, isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import type { EventListener } from './internal';
+import InternalComponent from './internal';
 
 const UNINITIALIZED: unknown = Object.freeze({});
 
@@ -113,11 +100,7 @@ class ForkedValue implements Value {
   }
 }
 
-export default abstract class AbstractInput
-  extends InternalComponent
-  implements DeprecatingInternalComponent {
-  modernized = this.shouldModernize();
-
+export default abstract class AbstractInput extends InternalComponent {
   validateArguments(): void {
     assert(
       `The ${this.constructor} component does not take any positional arguments`,
@@ -127,16 +110,7 @@ export default abstract class AbstractInput
     super.validateArguments();
   }
 
-  protected shouldModernize(): boolean {
-    return (
-      Boolean(EMBER_MODERNIZED_BUILT_IN_COMPONENTS) &&
-      Component._wasReopened === false &&
-      TextSupport._wasReopened === false &&
-      TargetActionSupport._wasReopened === false
-    );
-  }
-
-  private _value = valueFrom(this.args.named.value);
+  private _value = valueFrom(this.args.named['value']);
 
   get value(): unknown {
     return this._value.get();
@@ -202,131 +176,5 @@ export default abstract class AbstractInput
     let virtualEvents = ['enter', 'insert-newline', 'escape-press'];
 
     return virtualEvents.indexOf(name) !== -1;
-  }
-}
-
-export function handleDeprecatedFeatures(
-  target: InternalComponentConstructor<AbstractInput>,
-  attributeBindings: Array<string | [attribute: string, argument: string]>
-): void {
-  if (SEND_ACTION) {
-    let angle = target.toString();
-    let { prototype } = target;
-
-    interface View {
-      send(action: string, ...args: unknown[]): void;
-    }
-
-    let isView = (target: {}): target is View => {
-      return typeof (target as Partial<View>).send === 'function';
-    };
-
-    let superListenerFor = prototype['listenerFor'];
-
-    Object.defineProperty(prototype, 'listenerFor', {
-      configurable: true,
-      enumerable: false,
-      value: function listenerFor(this: AbstractInput, name: string): EventListener {
-        const actionName = this.named(name);
-
-        if (typeof actionName === 'string') {
-          deprecate(
-            `Passing actions to components as strings (like \`<${angle} @${name}="${actionName}" />\`) is deprecated. ` +
-              `Please use closure actions instead (\`<${angle} @${name}={{action "${actionName}"}} />\`).`,
-            false,
-            {
-              id: 'ember-component.send-action',
-              for: 'ember-source',
-              since: {},
-              until: '4.0.0',
-              url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
-            }
-          );
-
-          const { caller } = this;
-
-          assert('[BUG] missing caller', caller && typeof caller === 'object');
-
-          let listener: Function;
-
-          if (isView(caller)) {
-            listener = (...args: unknown[]) => caller.send(actionName, ...args);
-          } else {
-            assert(
-              `The action '${actionName}' did not exist on ${caller}`,
-              typeof caller[actionName] === 'function'
-            );
-
-            listener = caller[actionName];
-          }
-
-          let deprecatedListener = (...args: unknown[]) => {
-            deprecate(
-              `Passing actions to components as strings (like \`<${angle} @${name}="${actionName}" />\`) is deprecated. ` +
-                `Please use closure actions instead (\`<${angle} @${name}={{action "${actionName}"}} />\`).`,
-              false,
-              {
-                id: 'ember-component.send-action',
-                for: 'ember-source',
-                since: {},
-                until: '4.0.0',
-                url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-send-action',
-              }
-            );
-
-            return listener(...args);
-          };
-
-          if (this.isVirtualEventListener(name, deprecatedListener)) {
-            return devirtualize(deprecatedListener);
-          } else {
-            return deprecatedListener as EventListener;
-          }
-        } else {
-          return superListenerFor.call(this, name);
-        }
-      },
-    });
-  }
-
-  if (EMBER_MODERNIZED_BUILT_IN_COMPONENTS) {
-    let { prototype } = target;
-
-    let virtualEvents = {
-      focusin: 'focus-in',
-      focusout: 'focus-out',
-      keypress: 'key-press',
-      keyup: 'key-up',
-      keydown: 'key-down',
-    };
-
-    handleDeprecatedArguments(target);
-
-    handleDeprecatedAttributeArguments(target, attributeBindings);
-
-    handleDeprecatedEventArguments(target, ObjectEntries(virtualEvents));
-
-    {
-      let superIsVirtualEventListener = prototype['isVirtualEventListener'];
-
-      Object.defineProperty(prototype, 'isVirtualEventListener', {
-        configurable: true,
-        enumerable: false,
-        value: function isVirtualEventListener(
-          this: AbstractInput,
-          name: string,
-          listener: Function
-        ): listener is VirtualEventListener {
-          return (
-            ObjectValues(virtualEvents).indexOf(name) !== -1 ||
-            superIsVirtualEventListener.call(this, name, listener)
-          );
-        },
-      });
-    }
-  }
-
-  if (JQUERY_INTEGRATION) {
-    jQueryEventShim(target);
   }
 }

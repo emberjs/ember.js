@@ -1,5 +1,5 @@
-import { get, set, computed, alias, defineProperty } from '@ember/-internals/metal';
 import {
+  alias,
   empty,
   notEmpty,
   not,
@@ -16,14 +16,14 @@ import {
   and,
   or,
 } from '@ember/object/computed';
-
-import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
+import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    ['@test Ember.computed.empty'](assert) {
+    ['@test empty part 1/2'](assert) {
       let obj = EmberObject.extend({
         bestLannister: null,
         lannisters: null,
@@ -44,7 +44,7 @@ moduleFor(
       assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
     }
 
-    ['@test Ember.computed.notEmpty'](assert) {
+    ['@test notEmpty part 1/2'](assert) {
       let obj = EmberObject.extend({
         bestLannister: null,
         lannisters: null,
@@ -65,7 +65,7 @@ moduleFor(
       assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
     }
 
-    ['@test computed.not'](assert) {
+    ['@test not'](assert) {
       let obj = { foo: true };
       defineProperty(obj, 'notFoo', not('foo'));
       assert.equal(get(obj, 'notFoo'), false);
@@ -75,7 +75,7 @@ moduleFor(
       assert.equal(get(obj, 'notFoo'), false);
     }
 
-    ['@test computed.empty'](assert) {
+    ['@test empty part 2/2'](assert) {
       let obj = { foo: [], bar: undefined, baz: null, quz: '' };
       defineProperty(obj, 'fooEmpty', empty('foo'));
       defineProperty(obj, 'barEmpty', empty('bar'));
@@ -92,7 +92,7 @@ moduleFor(
       assert.equal(get(obj, 'quzEmpty'), false);
     }
 
-    ['@test computed.bool'](assert) {
+    ['@test bool'](assert) {
       let obj = { foo() {}, bar: 'asdf', baz: null, quz: false };
       defineProperty(obj, 'fooBool', bool('foo'));
       defineProperty(obj, 'barBool', bool('bar'));
@@ -104,7 +104,7 @@ moduleFor(
       assert.equal(get(obj, 'quzBool'), false);
     }
 
-    ['@test computed.alias'](assert) {
+    ['@test alias'](assert) {
       let obj = { bar: 'asdf', baz: null, quz: false };
       defineProperty(
         obj,
@@ -137,7 +137,7 @@ moduleFor(
       assert.equal(get(obj, 'quz'), null);
     }
 
-    ['@test computed.alias set'](assert) {
+    ['@test alias set'](assert) {
       let obj = {};
       let constantValue = 'always `a`';
 
@@ -164,7 +164,7 @@ moduleFor(
       assert.equal(get(obj, 'aliased'), constantValue);
     }
 
-    ['@test computed.match'](assert) {
+    ['@test match'](assert) {
       let obj = { name: 'Paul' };
       defineProperty(obj, 'isPaul', match('name', /Paul/));
 
@@ -175,7 +175,7 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    ['@test computed.notEmpty'](assert) {
+    ['@test notEmpty part 2/2'](assert) {
       let obj = { items: [1] };
       defineProperty(obj, 'hasItems', notEmpty('items'));
 
@@ -186,7 +186,7 @@ moduleFor(
       assert.equal(get(obj, 'hasItems'), false, 'is empty');
     }
 
-    ['@test computed.equal'](assert) {
+    ['@test equal'](assert) {
       let obj = { name: 'Paul' };
       defineProperty(obj, 'isPaul', computedEqual('name', 'Paul'));
 
@@ -197,7 +197,7 @@ moduleFor(
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
     }
 
-    ['@test computed.gt'](assert) {
+    ['@test gt'](assert) {
       let obj = { number: 2 };
       defineProperty(obj, 'isGreaterThenOne', gt('number', 1));
 
@@ -212,7 +212,7 @@ moduleFor(
       assert.equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
     }
 
-    ['@test computed.gte'](assert) {
+    ['@test gte'](assert) {
       let obj = { number: 2 };
       defineProperty(obj, 'isGreaterOrEqualThenOne', gte('number', 1));
 
@@ -227,7 +227,7 @@ moduleFor(
       assert.equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
     }
 
-    ['@test computed.lt'](assert) {
+    ['@test lt'](assert) {
       let obj = { number: 0 };
       defineProperty(obj, 'isLesserThenOne', lt('number', 1));
 
@@ -242,7 +242,7 @@ moduleFor(
       assert.equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
     }
 
-    ['@test computed.lte'](assert) {
+    ['@test lte'](assert) {
       let obj = { number: 0 };
       defineProperty(obj, 'isLesserOrEqualThenOne', lte('number', 1));
 
@@ -257,7 +257,7 @@ moduleFor(
       assert.equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
     }
 
-    ['@test computed.and two properties'](assert) {
+    ['@test and, with two properties'](assert) {
       let obj = { one: true, two: true };
       defineProperty(obj, 'oneAndTwo', and('one', 'two'));
 
@@ -278,7 +278,7 @@ moduleFor(
       assert.equal(get(obj, 'oneAndTwo'), 2, 'returns truthy value as in &&');
     }
 
-    ['@test computed.and three properties'](assert) {
+    ['@test and, with three properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', and('one', 'two', 'three'));
 
@@ -295,7 +295,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
-    ['@test computed.and expand properties'](assert) {
+    ['@test and, with expand properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', and('{one,two,three}'));
 
@@ -312,7 +312,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 3, 'returns truthy value as in &&');
     }
 
-    ['@test computed.or two properties'](assert) {
+    ['@test or, with two properties'](assert) {
       let obj = { one: true, two: true };
       defineProperty(obj, 'oneOrTwo', or('one', 'two'));
 
@@ -339,7 +339,7 @@ moduleFor(
       assert.equal(get(obj, 'oneOrTwo'), 1, 'returns truthy value as in ||');
     }
 
-    ['@test computed.or three properties'](assert) {
+    ['@test or, with three properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', or('one', 'two', 'three'));
 
@@ -370,7 +370,7 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
-    ['@test computed.or expand properties'](assert) {
+    ['@test or, with expand properties'](assert) {
       let obj = { one: true, two: true, three: true };
       defineProperty(obj, 'oneTwoThree', or('{one,two,three}'));
 
@@ -401,18 +401,18 @@ moduleFor(
       assert.equal(get(obj, 'oneTwoThree'), 1, 'returns truthy value as in ||');
     }
 
-    ['@test computed.or and computed.and warn about dependent keys with spaces']() {
+    ['@test or and and, warn about dependent keys with spaces']() {
       let obj = { one: true, two: true };
       expectAssertion(function () {
         defineProperty(obj, 'oneOrTwo', or('one', 'two three'));
-      }, /Dependent keys passed to computed\.or\(\) can't have spaces\./);
+      }, /Dependent keys passed to `or` computed macro can't have spaces\./);
 
       expectAssertion(function () {
         defineProperty(obj, 'oneAndTwo', and('one', 'two three'));
-      }, /Dependent keys passed to computed\.and\(\) can't have spaces\./);
+      }, /Dependent keys passed to `and` computed macro can't have spaces\./);
     }
 
-    ['@test computed.oneWay'](assert) {
+    ['@test oneWay'](assert) {
       let obj = {
         firstName: 'Teddy',
         lastName: 'Zeenny',
@@ -436,7 +436,7 @@ moduleFor(
       assert.equal(get(obj, 'nickName'), 'TeddyBear');
     }
 
-    ['@test computed.readOnly'](assert) {
+    ['@test readOnly'](assert) {
       let obj = {
         firstName: 'Teddy',
         lastName: 'Zeenny',
@@ -462,7 +462,7 @@ moduleFor(
       assert.equal(get(obj, 'nickName'), 'TEDDDDDDDDYYY');
     }
 
-    ['@test computed.deprecatingAlias'](assert) {
+    ['@test deprecatingAlias'](assert) {
       let obj = { bar: 'asdf', baz: null, quz: false };
       defineProperty(
         obj,

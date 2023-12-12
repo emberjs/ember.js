@@ -1,5 +1,5 @@
-import EmberArray from '../../../lib/mixins/array';
-import { A } from '../../../lib/mixins/array';
+import EmberArray from '@ember/array';
+import { A } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

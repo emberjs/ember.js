@@ -1,9 +1,8 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { assign } from '@ember/polyfills';
-import { isEmpty } from '@ember/-internals/metal';
-import { A as emberA } from '@ember/-internals/runtime';
+import { isEmpty } from '@ember/utils';
+import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
 
@@ -1358,13 +1357,10 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#18732 hasBlock works within a yielded curried component invoked within mustaches']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
-      );
+    ['@test GH#18732 (has-block) works within a yielded curried component invoked within mustaches']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>',
+        template: '<div>{{(has-block)}}</div>',
       });
 
       this.registerComponent('yielding-component', {
@@ -1383,14 +1379,10 @@ moduleFor(
       this.assertText('false');
     }
 
-    ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
-      );
-
+    ['@test GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (falsy)']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>',
+        template: '<div>{{(has-block)}}</div>',
       });
 
       this.registerComponent('yielding-component', {
@@ -1409,14 +1401,10 @@ moduleFor(
       this.assertText('false');
     }
 
-    ['@test GH#18732 has-block works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
-      expectDeprecation(
-        `\`hasBlock\` is deprecated. Use \`has-block\` instead. ('my-app/templates/components/component-with-has-block.hbs' @ L1:C5) `
-      );
-
+    ['@test GH#18732 (has-block) works within a yielded curried component invoked with angle bracket invocation (truthy)']() {
       this.registerComponent('component-with-has-block', {
         ComponentClass: Component.extend(),
-        template: '<div>{{hasBlock}}</div>',
+        template: '<div>{{(has-block)}}</div>',
       });
 
       this.registerComponent('yielding-component', {
@@ -1441,7 +1429,7 @@ class ContextualComponentMutableParamsTest extends RenderingTestCase {
   render(templateStr, context = {}) {
     super.render(
       `${templateStr}<span class="value">{{this.model.val2}}</span>`,
-      assign(context, { model: { val2: 8 } })
+      Object.assign(context, { model: { val2: 8 } })
     );
   }
 }

@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/-internals/metal';
+import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -67,7 +67,7 @@ moduleFor(
 
       expectAssertion(() => {
         this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You can not define `click,mouseEnter` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
+      }, /You can not define `click` function\(s\) to handle DOM event in the .* tagless component since it doesn't have any DOM element./);
     }
 
     ['@test throws an error if a custom defined event function is defined in a tagless component']() {
@@ -225,26 +225,6 @@ moduleFor(
       });
       this.render(`{{#foo-bar id='baz'}}{{/foo-bar}}`);
       this.assertText('baz');
-    }
-
-    ['@test throws an error if when $() is accessed on component where `tagName` is an empty string']() {
-      let template = `hit dem folks`;
-      let FooBarComponent = Component.extend({
-        tagName: '',
-        init() {
-          this._super();
-          this.$();
-        },
-      });
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template,
-      });
-
-      expectAssertion(() => {
-        this.render(`{{#foo-bar}}{{/foo-bar}}`);
-      }, /You cannot access this.\$\(\) on a component with `tagName: ''` specified/);
     }
 
     ['@test renders a contained view with omitted start tag and tagless parent view context']() {

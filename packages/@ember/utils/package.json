@@ -1,0 +1,25 @@
+{
+  "name": "@ember/utils",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/enumerable": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@glimmer/destroyable": "0.85.13",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.85.13",
+    "@glimmer/owner": "0.85.13",
+    "@glimmer/util": "0.85.13",
+    "@glimmer/validator": "0.85.13",
+    "expect-type": "^0.15.0",
+    "internal-test-helpers": "workspace:*"
+  }
+}

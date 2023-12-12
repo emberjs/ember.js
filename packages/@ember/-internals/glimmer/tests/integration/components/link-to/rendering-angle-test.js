@@ -5,10 +5,10 @@ import {
   RouterNonApplicationTestCase,
   runTask,
 } from 'internal-test-helpers';
-import { Router, Route } from '@ember/-internals/routing';
+import Router from '@ember/routing/router';
+import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import { set } from '@ember/-internals/metal';
-import { LinkComponent } from '@ember/-internals/glimmer';
+import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(
@@ -19,7 +19,7 @@ moduleFor(
 
       return assert.rejectsAssertion(
         this.visit('/'),
-        /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo>`/
+        /You must provide at least one of the `@route`, `@model`, `@models` or `@query` arguments to `<LinkTo>`/
       );
     }
 
@@ -100,26 +100,7 @@ moduleFor(
       assert.equal(this.firstChild.classList.contains('active'), true);
     }
 
-    async ['@test able to safely extend the built-in component and use the normal path']() {
-      this.addComponent('custom-link-to', {
-        ComponentClass: class extends LinkComponent {},
-      });
-
-      this.addTemplate('application', `<CustomLinkTo @route='index'>{{this.title}}</CustomLinkTo>`);
-
-      this.add(
-        'controller:application',
-        class extends Controller {
-          title = 'Hello';
-        }
-      );
-
-      await this.visit('/');
-
-      this.assertText('Hello');
-    }
-
-    async ['@test able to pupolate innermost dynamic segment when immediate parent route is active']() {
+    async ['@test able to popolate innermost dynamic segment when immediate parent route is active']() {
       this.addTemplate('application', '{{outlet}}');
 
       this.addTemplate('parents', '{{outlet}}');

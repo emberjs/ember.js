@@ -1,184 +1,9 @@
 import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import {
-  subscribe as instrumentationSubscribe,
-  unsubscribe as instrumentationUnsubscribe,
-} from '@ember/instrumentation';
 import { _getCurrentRunLoop } from '@ember/runloop';
-import { set, computed } from '@ember/-internals/metal';
-import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { set, computed } from '@ember/object';
 
-import { Component, INVOKE } from '../../utils/helpers';
-
-if (EMBER_IMPROVED_INSTRUMENTATION) {
-  moduleFor(
-    'Helpers test: closure {{action}} improved instrumentation',
-    class extends RenderingTestCase {
-      subscribe(eventName, options) {
-        this.subscriber = instrumentationSubscribe(eventName, options);
-      }
-
-      teardown() {
-        if (this.subscriber) {
-          instrumentationUnsubscribe(this.subscriber);
-        }
-
-        super.teardown();
-      }
-
-      ['@test interaction event subscriber should be passed parameters']() {
-        let actionParam = 'So krispy';
-        let beforeParameters = [];
-        let afterParameters = [];
-
-        let InnerComponent = Component.extend({
-          actions: {
-            fireAction() {
-              this.attrs.submit(actionParam);
-            },
-          },
-        });
-
-        let OuterComponent = Component.extend({
-          outerSubmit() {},
-        });
-
-        this.registerComponent('inner-component', {
-          ComponentClass: InnerComponent,
-          template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>',
-        });
-
-        this.registerComponent('outer-component', {
-          ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action this.outerSubmit)}}',
-        });
-
-        this.subscribe('interaction.ember-action', {
-          before(name, timestamp, payload) {
-            beforeParameters.push(payload.args);
-          },
-          after(name, timestamp, payload) {
-            afterParameters.push(payload.args);
-          },
-        });
-
-        this.render(`{{outer-component}}`);
-
-        runTask(() => {
-          this.$('#instrument-button').trigger('click');
-        });
-
-        this.assert.deepEqual(
-          beforeParameters,
-          [[], [actionParam]],
-          'instrumentation subscriber before function was passed closure action parameters'
-        );
-        this.assert.deepEqual(
-          afterParameters,
-          [[actionParam], []],
-          'instrumentation subscriber after function was passed closure action parameters'
-        );
-      }
-
-      ['@test interaction event subscriber should be passed target']() {
-        let beforeParameters = [];
-        let afterParameters = [];
-
-        let InnerComponent = Component.extend({
-          myProperty: 'inner-thing',
-          actions: {
-            fireAction() {
-              this.attrs.submit();
-            },
-          },
-        });
-
-        let OuterComponent = Component.extend({
-          myProperty: 'outer-thing',
-          outerSubmit() {},
-        });
-
-        this.registerComponent('inner-component', {
-          ComponentClass: InnerComponent,
-          template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>',
-        });
-
-        this.registerComponent('outer-component', {
-          ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action this.outerSubmit)}}',
-        });
-
-        this.subscribe('interaction.ember-action', {
-          before(name, timestamp, payload) {
-            beforeParameters.push(payload.target.get('myProperty'));
-          },
-          after(name, timestamp, payload) {
-            afterParameters.push(payload.target.get('myProperty'));
-          },
-        });
-
-        this.render(`{{outer-component}}`);
-
-        runTask(() => {
-          this.$('#instrument-button').trigger('click');
-        });
-
-        this.assert.deepEqual(
-          beforeParameters,
-          ['inner-thing', 'outer-thing'],
-          'instrumentation subscriber before function was passed target'
-        );
-        this.assert.deepEqual(
-          afterParameters,
-          ['outer-thing', 'inner-thing'],
-          'instrumentation subscriber after function was passed target'
-        );
-      }
-
-      ['@test instrumented action should return value']() {
-        let returnedValue = 'Chris P is so krispy';
-        let actualReturnedValue;
-
-        let InnerComponent = Component.extend({
-          actions: {
-            fireAction() {
-              actualReturnedValue = this.attrs.submit();
-            },
-          },
-        });
-
-        let OuterComponent = Component.extend({
-          outerSubmit() {
-            return returnedValue;
-          },
-        });
-
-        this.registerComponent('inner-component', {
-          ComponentClass: InnerComponent,
-          template: '<button id="instrument-button" {{action "fireAction"}}>What it do</button>',
-        });
-
-        this.registerComponent('outer-component', {
-          ComponentClass: OuterComponent,
-          template: '{{inner-component submit=(action this.outerSubmit)}}',
-        });
-
-        this.subscribe('interaction.ember-action', {
-          before() {},
-          after() {},
-        });
-
-        this.render(`{{outer-component}}`);
-
-        runTask(() => {
-          this.$('#instrument-button').trigger('click');
-        });
-
-        this.assert.equal(actualReturnedValue, returnedValue, 'action can return to caller');
-      }
-    }
-  );
-}
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: closure {{action}}',
@@ -250,14 +75,10 @@ moduleFor(
       }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
     }
 
-    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as attrs.foo']() {
-      expectDeprecation(
-        "Using {{attrs}} to reference named arguments has been deprecated. {{attrs.external-action}} should be updated to {{@external-action}}. ('my-app/templates/components/inner-component.hbs' @ L1:C43) "
-      );
-
+    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as @foo']() {
       this.registerComponent('inner-component', {
         template:
-          '<button id="inner-button" {{action (action attrs.external-action)}}>Click me</button>',
+          '<button id="inner-button" {{action (action @external-action)}}>Click me</button>',
       });
 
       this.registerComponent('outer-component', {
@@ -377,7 +198,6 @@ moduleFor(
       let OuterComponent = Component.extend({
         third,
         outerSubmit() {
-          // eslint-disable-line no-unused-vars
           actualArgs = [...arguments];
         },
       });
@@ -1041,56 +861,6 @@ moduleFor(
       });
 
       this.assert.ok(capturedRunLoop, 'action is called within a run loop');
-    }
-
-    // TODO: This is for intimate APIs, specifically ember-concurrency
-    ['@test objects that define INVOKE can be casted to actions']() {
-      expectDeprecation(() => {
-        let innerComponent;
-        let actionArgs;
-        let invokableArgs;
-
-        let InnerComponent = Component.extend({
-          init() {
-            this._super(...arguments);
-            innerComponent = this;
-          },
-          fireAction() {
-            actionArgs = this.attrs.submit(4, 5, 6);
-          },
-        });
-
-        let OuterComponent = Component.extend({
-          foo: 123,
-          submitTask: computed(function () {
-            return {
-              [INVOKE]: (...args) => {
-                invokableArgs = args;
-                return this.foo;
-              },
-            };
-          }),
-        });
-
-        this.registerComponent('inner-component', {
-          ComponentClass: InnerComponent,
-          template: 'inner',
-        });
-
-        this.registerComponent('outer-component', {
-          ComponentClass: OuterComponent,
-          template: `{{inner-component submit=(action this.submitTask 1 2 3)}}`,
-        });
-
-        this.render('{{outer-component}}');
-
-        runTask(() => {
-          innerComponent.fireAction();
-        });
-
-        this.assert.equal(actionArgs, 123);
-        this.assert.deepEqual(invokableArgs, [1, 2, 3, 4, 5, 6]);
-      }, /Usage of the private INVOKE API to make an object callable/);
     }
 
     ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {

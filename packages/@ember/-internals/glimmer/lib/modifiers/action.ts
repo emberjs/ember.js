@@ -1,12 +1,12 @@
-import { Owner } from '@ember/-internals/owner';
+import type { InternalOwner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
-import {
+import type {
   CapturedArguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
@@ -14,9 +14,9 @@ import {
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
-import { SimpleElement } from '@simple-dom/interface';
-import { INVOKE } from '../helpers/action';
+import type { UpdatableTag } from '@glimmer/validator';
+import { createUpdatableTag } from '@glimmer/validator';
+import type { SimpleElement } from '@simple-dom/interface';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -35,7 +35,7 @@ function isAllowedEvent(event: Event, allowedKeys: any) {
   }
 
   for (let i = 0; i < MODIFIERS.length; i++) {
-    if (event[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
+    if ((event as any)[MODIFIERS[i] + 'Key'] && allowedKeys.indexOf(MODIFIERS[i]) === -1) {
       return false;
     }
   }
@@ -65,7 +65,7 @@ export let ActionHelper = {
 
 export class ActionState {
   public element: SimpleElement;
-  public owner: Owner;
+  public owner: InternalOwner;
   public actionId: number;
   public actionName: any;
   public actionArgs: any;
@@ -77,7 +77,7 @@ export class ActionState {
 
   constructor(
     element: SimpleElement,
-    owner: Owner,
+    owner: InternalOwner,
     actionId: number,
     actionArgs: any[],
     namedArgs: CapturedNamedArguments,
@@ -148,27 +148,6 @@ export class ActionState {
         target,
         name: null,
       };
-      if (typeof actionName[INVOKE] === 'function') {
-        deprecate(
-          `Usage of the private INVOKE API to make an object callable via action or fn is no longer supported. Please update to pass in a callback function instead. Received: ${String(
-            actionName
-          )}`,
-          false,
-          {
-            until: '3.25.0',
-            id: 'actions.custom-invoke-invokable',
-            for: 'ember-source',
-            since: {
-              enabled: '3.23.0-beta.1',
-            },
-          }
-        );
-
-        flaggedInstrument('interaction.ember-action', payload, () => {
-          actionName[INVOKE].apply(actionName, args);
-        });
-        return;
-      }
       if (isInvokableRef(actionName)) {
         flaggedInstrument('interaction.ember-action', payload, () => {
           updateRef(actionName, args[0]);
@@ -203,7 +182,7 @@ export class ActionState {
 
 class ActionModifierManager implements InternalModifierManager<ActionState, object> {
   create(
-    owner: Owner,
+    owner: InternalOwner,
     element: SimpleElement,
     _state: object,
     { named, positional }: CapturedArguments
@@ -216,25 +195,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     }
 
     let actionId = uuid();
-    let actionState = new ActionState(element, owner, actionId, actionArgs, named, positional);
 
-    deprecate(
-      `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
-      actionState.eventName !== 'mouseEnter' &&
-        actionState.eventName !== 'mouseLeave' &&
-        actionState.eventName !== 'mouseMove',
-      {
-        id: 'ember-views.event-dispatcher.mouseenter-leave-move',
-        until: '4.0.0',
-        url: 'https://deprecations.emberjs.com/v3.x#toc_action-mouseenter-leave-move',
-        for: 'ember-source',
-        since: {
-          enabled: '3.13.0-beta.1',
-        },
-      }
-    );
-
-    return actionState;
+    return new ActionState(element, owner, actionId, actionArgs, named, positional);
   }
 
   getDebugName(): string {
@@ -290,6 +252,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
   update(actionState: ActionState): void {
     let { positional } = actionState;
     let actionNameRef = positional[1];
+    assert('Expected at least one positional arg', actionNameRef);
 
     if (!isInvokableRef(actionNameRef)) {
       actionState.actionName = valueForRef(actionNameRef);
@@ -303,7 +266,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
   }
 
   ensureEventSetup(actionState: ActionState): void {
-    let dispatcher = actionState.owner.lookup<EventDispatcher>('event_dispatcher:main');
+    let dispatcher = actionState.owner.lookup('event_dispatcher:main');
+    assert('Expected dispatcher to be an EventDispatcher', dispatcher instanceof EventDispatcher);
     dispatcher?.setupHandlerForEmberEvent(actionState.eventName);
   }
 

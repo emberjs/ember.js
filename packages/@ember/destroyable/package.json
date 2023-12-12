@@ -1,0 +1,12 @@
+{
+  "name": "@ember/destroyable",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@glimmer/destroyable": "0.85.13",
+    "expect-type": "^0.15.0"
+  }
+}

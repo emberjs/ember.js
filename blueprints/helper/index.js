@@ -2,22 +2,16 @@
 
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 
-const path = require('path');
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 
 module.exports = {
   description: 'Generates a helper function.',
 
-  filesPath() {
-    let rootPath = 'files';
-    return path.join(this.path, rootPath);
-  },
+  shouldTransformTypeScript: true,
 
-  fileMapTokens() {
-    return {
-      __collection__() {
-        return 'helpers';
-      },
-    };
+  init() {
+    this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
   },
 
   normalizeEntityName: function (entityName) {

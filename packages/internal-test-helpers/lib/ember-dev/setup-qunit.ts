@@ -9,7 +9,7 @@ import { setupDeprecationHelpers } from './deprecation';
 import { setupNamespacesCheck } from './namespaces';
 import { setupObserversCheck } from './observers';
 import { setupRunLoopCheck } from './run-loop';
-import { DebugEnv } from './utils';
+import type { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
 
 declare global {
@@ -54,7 +54,7 @@ export default function setupQUnit() {
     expected?: RegExp | string,
     message?: string
   ) {
-    let error: Error;
+    let error: unknown;
     let prevOnError = Ember.onerror;
 
     Ember.onerror = (e: Error) => {

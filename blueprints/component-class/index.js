@@ -9,6 +9,8 @@ const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 
+const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+
 const OCTANE = has('octane');
 
 // TODO: this should be reading from the @ember/canary-features module
@@ -19,6 +21,8 @@ const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 // intentionally avoiding use-edition-detector
 module.exports = {
   description: 'Generates a component class.',
+
+  shouldTransformTypeScript: true,
 
   availableOptions: [
     {
@@ -47,6 +51,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
+    maybePolyfillTypeScriptBlueprints(this);
     let isOctane = has('octane');
 
     this.availableOptions.forEach((option) => {
@@ -151,12 +156,12 @@ module.exports = {
           importTemplate = `import layout from '${templatePath}';${EOL}`;
           defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
         } else {
-          defaultExport = `Component.extend({${EOL}});`;
+          defaultExport = `Component.extend({});`;
         }
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {\n}`;
+        defaultExport = `class ${classifiedModuleName}Component extends Component {}`;
         break;
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;

@@ -3,7 +3,8 @@
 */
 import { tagForProperty } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
-import { CapturedArguments } from '@glimmer/interfaces';
+import { assert } from '@ember/debug';
+import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import { consumeTag } from '@glimmer/validator';
 import { internalHelper } from './internal-helper';
@@ -14,7 +15,8 @@ import { internalHelper } from './internal-helper';
   transform at build time, similar to the (-each-in) helper
 */
 export default internalHelper(({ positional }: CapturedArguments) => {
-  let inner = positional[0];
+  const inner = positional[0];
+  assert('expected at least one positional arg', inner);
 
   return createComputeRef(() => {
     let iterable = valueForRef(inner);

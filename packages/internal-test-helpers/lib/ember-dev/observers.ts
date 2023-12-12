@@ -42,5 +42,5 @@ export function setupObserversCheck(hooks: NestedHooks): void {
 }
 
 function isDestroyable(obj: object): obj is { destroy(): void } {
-  return 'destroy' in obj && typeof obj['destroy'] === 'function';
+  return 'destroy' in obj && typeof (obj as any)['destroy'] === 'function';
 }

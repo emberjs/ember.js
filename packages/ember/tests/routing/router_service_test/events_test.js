@@ -1,6 +1,6 @@
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { inject as service } from '@ember/service';
-import { Route } from '@ember/-internals/routing';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 import { later } from '@ember/runloop';
 
 moduleFor(
@@ -126,17 +126,16 @@ moduleFor(
     }
 
     '@test redirection with `transitionTo`'(assert) {
-      assert.expect(11);
+      assert.expect(8);
       let toChild = false;
       let toSister = false;
 
       this.add(
         `route:parent`,
         Route.extend({
+          router: service(),
           model() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.child');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.child');
           },
         })
       );
@@ -144,10 +143,9 @@ moduleFor(
       this.add(
         `route:parent.child`,
         Route.extend({
+          router: service(),
           model() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.sister');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.sister');
           },
         })
       );
@@ -186,17 +184,16 @@ moduleFor(
     }
 
     '@test redirection with `replaceWith`'(assert) {
-      assert.expect(11);
+      assert.expect(8);
       let toChild = false;
       let toSister = false;
 
       this.add(
         `route:parent`,
         Route.extend({
+          router: service(),
           model() {
-            expectDeprecation(() => {
-              this.replaceWith('parent.child');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('parent.child');
           },
         })
       );
@@ -204,10 +201,9 @@ moduleFor(
       this.add(
         `route:parent.child`,
         Route.extend({
+          router: service(),
           model() {
-            expectDeprecation(() => {
-              this.replaceWith('parent.sister');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('parent.sister');
           },
         })
       );
@@ -246,17 +242,16 @@ moduleFor(
     }
 
     '@test nested redirection with `transitionTo`'(assert) {
-      assert.expect(12);
+      assert.expect(11);
       let toChild = false;
       let toSister = false;
 
       this.add(
         `route:parent.child`,
         Route.extend({
+          router: service(),
           model() {
-            expectDeprecation(() => {
-              this.transitionTo('parent.sister');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('parent.sister');
           },
         })
       );
@@ -305,17 +300,16 @@ moduleFor(
     }
 
     '@test nested redirection with `replaceWith`'(assert) {
-      assert.expect(12);
+      assert.expect(11);
       let toChild = false;
       let toSister = false;
 
       this.add(
         `route:parent.child`,
         Route.extend({
+          router: service(),
           model() {
-            expectDeprecation(() => {
-              this.replaceWith('parent.sister');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('parent.sister');
           },
         })
       );
@@ -479,17 +473,16 @@ moduleFor(
     }
 
     '@test query param redirects with `transitionTo`'(assert) {
-      assert.expect(7);
+      assert.expect(6);
       let toSister = false;
 
       this.add(
         `route:parent.child`,
         Route.extend({
+          router: service(),
           model() {
             toSister = true;
-            expectDeprecation(() => {
-              this.transitionTo('/sister?a=a');
-            }, /Calling transitionTo on a route is deprecated/);
+            this.router.transitionTo('/sister?a=a');
           },
         })
       );
@@ -522,17 +515,16 @@ moduleFor(
       return this.visit('/child');
     }
     '@test query param redirects with `replaceWith`'(assert) {
-      assert.expect(7);
+      assert.expect(6);
       let toSister = false;
 
       this.add(
         `route:parent.child`,
         Route.extend({
+          router: service(),
           model() {
             toSister = true;
-            expectDeprecation(() => {
-              this.replaceWith('/sister?a=a');
-            }, /Calling replaceWith on a route is deprecated/);
+            this.router.replaceWith('/sister?a=a');
           },
         })
       );
@@ -693,123 +685,6 @@ moduleFor(
         initial = false;
         return this.routerService.transitionTo('/dynamic-with-child/456/456');
       });
-    }
-  }
-);
-
-moduleFor(
-  'Router Service - deprecated events',
-  class extends RouterTestCase {
-    '@test willTransition events are deprecated'() {
-      return this.visit('/').then(() => {
-        expectDeprecation(() => {
-          this.routerService['_router'].on('willTransition', () => {});
-        }, 'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.');
-      });
-    }
-
-    async '@test willTransition events are deprecated on routes'() {
-      this.add(
-        'route:application',
-        Route.extend({
-          init() {
-            this._super(...arguments);
-            this.on('willTransition', () => {});
-          },
-        })
-      );
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.'
-      );
-    }
-
-    async '@test didTransition events are deprecated on routes'() {
-      this.add(
-        'route:application',
-        Route.extend({
-          init() {
-            this._super(...arguments);
-            this.on('didTransition', () => {});
-          },
-        })
-      );
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.'
-      );
-    }
-
-    '@test other events are not deprecated on routes'() {
-      this.add(
-        'route:application',
-        Route.extend({
-          init() {
-            this._super(...arguments);
-            this.on('fixx', () => {});
-          },
-        })
-      );
-      expectNoDeprecation(() => {
-        return this.visit('/');
-      });
-    }
-
-    '@test didTransition events are deprecated'() {
-      return this.visit('/').then(() => {
-        expectDeprecation(() => {
-          this.routerService['_router'].on('didTransition', () => {});
-        }, 'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.');
-      });
-    }
-
-    '@test other events are not deprecated'() {
-      return this.visit('/').then(() => {
-        expectNoDeprecation(() => {
-          this.routerService['_router'].on('wat', () => {});
-        });
-      });
-    }
-  }
-);
-
-moduleFor(
-  'Router Service: deprecated willTransition hook',
-  class extends RouterTestCase {
-    get routerOptions() {
-      return {
-        willTransition() {
-          this._super(...arguments);
-          // Overrides
-        },
-      };
-    }
-
-    async '@test willTransition hook is deprecated'() {
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.'
-      );
-    }
-  }
-);
-moduleFor(
-  'Router Service: deprecated didTransition hook',
-  class extends RouterTestCase {
-    get routerOptions() {
-      return {
-        didTransition() {
-          this._super(...arguments);
-          // Overrides
-        },
-      };
-    }
-
-    async '@test didTransition hook is deprecated'() {
-      await expectDeprecationAsync(
-        () => this.visit('/'),
-        'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.'
-      );
     }
   }
 );

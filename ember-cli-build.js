@@ -5,7 +5,6 @@ const Funnel = require('broccoli-funnel');
 const babelHelpers = require('./broccoli/babel-helpers');
 const concatBundle = require('./lib/concat-bundle');
 const testIndexHTML = require('./broccoli/test-index-html');
-const testPolyfills = require('./broccoli/test-polyfills');
 const rollupPackage = require('./broccoli/rollup-package');
 const minify = require('./broccoli/minify');
 const debugTree = require('broccoli-debug').buildDebugCallback('ember-source:ember-cli-build');
@@ -14,7 +13,6 @@ Error.stackTraceLimit = Infinity;
 
 const {
   routerES,
-  jquery,
   loader,
   qunit,
   handlebarsES,
@@ -67,16 +65,21 @@ module.exports = function ({ project }) {
   let emberBundles = withTargets(project, emberSource.buildEmberBundles.bind(emberSource));
 
   let packages = debugTree(
-    new MergeTrees([
-      // dynamically generated packages
-      emberVersionES(),
+    new MergeTrees(
+      [
+        // packages/** (after typescript compilation)
+        getPackagesES(),
 
-      // packages/** (after typescript compilation)
-      getPackagesES(),
+        emberVersionES(),
 
-      // externalized helpers
-      babelHelpers(),
-    ]),
+        // externalized helpers
+        babelHelpers(),
+      ],
+      {
+        // we're replacing the ember/verion file with the actual version number
+        overwrite: true,
+      }
+    ),
     'packages:initial'
   );
 
@@ -222,8 +225,6 @@ function templateCompilerBundle(emberPackages, transpileTree) {
           '@ember/canary-features/**',
           '@ember/debug/**',
           '@ember/deprecated-features/**',
-          '@ember/error/**',
-          '@ember/polyfills/**',
           'ember/version.js',
           'ember-babel.js',
           'ember-template-compiler/**',
@@ -233,6 +234,8 @@ function templateCompilerBundle(emberPackages, transpileTree) {
           '@ember/-internals/*/tests/**' /* internal packages */,
           '*/*/tests/**' /* scoped packages */,
           '*/tests/**' /* packages */,
+          '*/*/type-tests/**' /* scoped packages */,
+          '*/type-tests/**' /* packages */,
         ],
       }),
       templateCompilerDependencies(),
@@ -243,20 +246,45 @@ function templateCompilerBundle(emberPackages, transpileTree) {
 
   return concatBundle(new MergeTrees([templateCompilerFiles, emberHeaderFiles()]), {
     outputFile: 'ember-template-compiler.js',
-    footer:
-      '(function (m) { if (typeof module === "object" && module.exports) { module.exports = m } }(require("ember-template-compiler")));',
+    footer: `
+    try {
+      // in the browser, the ember-template-compiler.js and ember.js bundles find each other via globalThis.require.
+      require('@ember/template-compilation');
+    } catch (err) {
+      // in node, that coordination is a no-op
+      define('@ember/template-compilation', ['exports'], function (e) {
+        e.__registerTemplateCompiler = function () {};
+      });
+      define('ember', [
+        'exports',
+        '@ember/-internals/environment',
+        '@ember/canary-features',
+        'ember/version',
+      ], function (e, env, fea, ver) {
+        e.default = {
+          ENV: env.ENV,
+          FEATURES: fea.FEATURES,
+          VERSION: ver.default,
+        };
+      });
+      define('@ember/-internals/glimmer', ['exports'], function(e) {
+        e.template = undefined;
+      });
+      define('@ember/application', ['exports'], function(e) {});
+    }
+    
+    (function (m) {
+      if (typeof module === 'object' && module.exports) {
+        module.exports = m;
+      }
+    })(require('ember-template-compiler'));
+    
+      `,
   });
 }
 
 function testHarness() {
-  return new MergeTrees([
-    emptyTestem(),
-    testPolyfills(),
-    testIndexHTML(),
-    loader(),
-    qunit(),
-    jquery(),
-  ]);
+  return new MergeTrees([emptyTestem(), testIndexHTML(), loader(), qunit()]);
 }
 
 function emptyTestem() {

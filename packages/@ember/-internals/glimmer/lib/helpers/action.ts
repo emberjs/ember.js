@@ -2,24 +2,17 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
-import { symbol } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import type { AnyFn } from '@ember/-internals/utility-types';
+import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments } from '@glimmer/interfaces';
-import {
-  createUnboundRef,
-  isInvokableRef,
-  Reference,
-  updateRef,
-  valueForRef,
-} from '@glimmer/reference';
-import { _WeakSet } from '@glimmer/util';
+import type { CapturedArguments } from '@glimmer/interfaces';
+import type { Reference } from '@glimmer/reference';
+import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
-export const ACTIONS = new _WeakSet();
-export const INVOKE: unique symbol = symbol('INVOKE') as any;
+export const ACTIONS = new WeakSet();
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -97,10 +90,10 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
 
   Closure actions curry both their scope and any arguments. When invoked, any
   additional arguments are added to the already curried list.
-  Actions should be invoked using the [sendAction](/ember/release/classes/Component/methods/sendAction?anchor=sendAction)
-  method. The first argument to `sendAction` is the action to be called, and
-  additional arguments are passed to the action function. This has interesting
-  properties combined with currying of arguments. For example:
+  Actions are presented in JavaScript as callbacks, and are
+  invoked like any other JavaScript function.
+
+  For example
 
   ```app/components/update-name.js
   import Component from '@glimmer/component';
@@ -154,7 +147,7 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
   export default Component.extend({
     click() {
       // Note that model is not passed, it was curried in the template
-      this.sendAction('submit', 'bob');
+      this.submit('bob');
     }
   });
   ```
@@ -273,7 +266,7 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
 
   ```app/controllers/application.js
   import Controller from '@ember/controller';
-  import { inject as service } from '@ember/service';
+  import { service } from '@ember/service';
 
   export default class extends Controller {
     @service someService;
@@ -284,45 +277,43 @@ export const INVOKE: unique symbol = symbol('INVOKE') as any;
   @for Ember.Templates.helpers
   @public
 */
-export default internalHelper(
-  (args: CapturedArguments): Reference<Function> => {
-    let { named, positional } = args;
-    // The first two argument slots are reserved.
-    // pos[0] is the context (or `this`)
-    // pos[1] is the action name or function
-    // Anything else is an action argument.
-    let [context, action, ...restArgs] = positional;
+export default internalHelper((args: CapturedArguments): Reference<Function> => {
+  let { named, positional } = args;
+  // The first two argument slots are reserved.
+  // pos[0] is the context (or `this`)
+  // pos[1] is the action name or function
+  // Anything else is an action argument.
+  let [context, action, ...restArgs] = positional;
+  assert('hash position arguments', context && action);
 
-    let debugKey: string = action.debugLabel!;
+  let debugKey: string = action.debugLabel!;
 
-    let target = 'target' in named ? named.target : context;
-    let processArgs = makeArgsProcessor('value' in named && named.value, restArgs);
+  let target = 'target' in named ? named['target'] : context;
+  let processArgs = makeArgsProcessor(('value' in named && named['value']) || false, restArgs);
 
-    let fn: Function;
+  let fn: Function;
 
-    if (isInvokableRef(action)) {
-      fn = makeClosureAction(
-        action,
-        action as MaybeActionHandler,
-        invokeRef,
-        processArgs,
-        debugKey
-      );
-    } else {
-      fn = makeDynamicClosureAction(
-        valueForRef(context) as object,
-        target,
-        action,
-        processArgs,
-        debugKey
-      );
-    }
-
-    ACTIONS.add(fn);
-
-    return createUnboundRef(fn, '(result of an `action` helper)');
+  if (isInvokableRef(action)) {
+    fn = makeClosureAction(action, action as MaybeActionHandler, invokeRef, processArgs, debugKey);
+  } else {
+    fn = makeDynamicClosureAction(
+      valueForRef(context) as object,
+      // SAFETY: glimmer-vm should expose narrowing utilities for references
+      //         as is, `target` is still `Reference<unknown>`.
+      //         however, we never even tried to narrow `target`, so this is potentially risky code.
+      target!,
+      // SAFETY: glimmer-vm should expose narrowing utilities for references
+      //         as is, `action` is still `Reference<unknown>`
+      action,
+      processArgs,
+      debugKey
+    );
   }
-);
+
+  ACTIONS.add(fn);
+
+  return createUnboundRef(fn, '(result of an `action` helper)');
+});
 
 function NOOP(args: unknown[]) {
   return args;
@@ -362,27 +353,23 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 
 function makeDynamicClosureAction(
   context: object,
-  targetRef: Reference<MaybeActionHandler>,
-  actionRef: Reference<string | Function | Invokable>,
+  targetRef: Reference<unknown>,
+  actionRef: Reference<unknown>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
+  const action = valueForRef(actionRef);
+
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
   if (DEBUG) {
-    makeClosureAction(
-      context,
-      valueForRef(targetRef),
-      valueForRef(actionRef),
-      processArgs,
-      debugKey
-    );
+    makeClosureAction(context, valueForRef(targetRef), action, processArgs, debugKey);
   }
 
   return (...args: any[]) => {
     return makeClosureAction(
       context,
       valueForRef(targetRef),
-      valueForRef(actionRef),
+      action,
       processArgs,
       debugKey
     )(...args);
@@ -393,14 +380,10 @@ interface MaybeActionHandler {
   actions?: Record<string, Function>;
 }
 
-interface Invokable {
-  [INVOKE]: Function;
-}
-
 function makeClosureAction(
   context: object,
-  target: MaybeActionHandler,
-  action: string | Function | Invokable,
+  target: unknown,
+  action: unknown | null | undefined | string | Function,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
@@ -412,52 +395,34 @@ function makeClosureAction(
     action !== undefined && action !== null
   );
 
-  if (typeof action[INVOKE] === 'function') {
-    deprecate(
-      `Usage of the private INVOKE API to make an object callable via action or fn is no longer supported. Please update to pass in a callback function instead. Received: ${String(
-        action
-      )}`,
-      false,
-      {
-        until: '3.25.0',
-        id: 'actions.custom-invoke-invokable',
-        for: 'ember-source',
-        since: {
-          enabled: '3.23.0-beta.1',
-        },
-      }
+  if (typeof action === 'string') {
+    assert('target must be an object', target !== null && typeof target === 'object');
+    self = target;
+    let value = (target as { actions?: Record<string, unknown> }).actions?.[action];
+    assert(`An action named '${action}' was not found in ${target}`, Boolean(value));
+    assert(
+      `An action named '${action}' was found in ${target}, but is not a function`,
+      typeof value === 'function'
     );
-
-    self = action as Invokable;
-    fn = action[INVOKE];
+    fn = value;
+  } else if (typeof action === 'function') {
+    self = context;
+    fn = action;
   } else {
-    let typeofAction = typeof action;
-
-    if (typeofAction === 'string') {
-      self = target;
-      fn = target.actions! && target.actions![action as string];
-
-      assert(`An action named '${action}' was not found in ${target}`, Boolean(fn));
-    } else if (typeofAction === 'function') {
-      self = context;
-      fn = action as Function;
-    } else {
-      // tslint:disable-next-line:max-line-length
-      assert(
-        `An action could not be made for \`${
-          debugKey || action
-        }\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${
-          debugKey || 'myAction'
-        }')\`) or a function available in ${target}.`,
-        false
-      );
-    }
+    assert(
+      `An action could not be made for \`${
+        debugKey || action
+      }\` in ${target}. Please confirm that you are using either a quoted action name (i.e. \`(action '${
+        debugKey || 'myAction'
+      }')\`) or a function available in ${target}.`,
+      false
+    );
   }
 
   return (...args: any[]) => {
     let payload = { target: self, args, label: '@glimmer/closure-action' };
     return flaggedInstrument('interaction.ember-action', payload, () => {
-      return join(self, fn, ...processArgs(args));
+      return join(self, fn as AnyFn, ...processArgs(args));
     });
   };
 }

@@ -1,28 +1,41 @@
 import { DEBUG } from '@glimmer/env';
 
 export type Options = object;
-export type Handler = (message: string, options?: Options) => void;
-export type HandlerCallback = (message: string, options: any, nextHandler: Handler) => void;
+export type Handler<O extends Options> = (message: string, options?: O) => void;
+export type HandlerCallback<O extends Options> = (
+  message: string,
+  options: O | undefined,
+  nextHandler: Handler<O>
+) => void;
 
 export interface Handlers {
-  [key: string]: Handler;
+  [key: string]: Handler<Options>;
 }
 
 export let HANDLERS: Handlers = {};
 
-export type RegisterHandlerFunc = (type: string, callback: HandlerCallback) => void;
+export type RegisterHandlerFunc<O extends Options> = (
+  type: string,
+  callback: HandlerCallback<O>
+) => void;
 export type InvokeFunc = (type: string, message: string, test?: boolean, options?: Options) => void;
 
-let registerHandler: RegisterHandlerFunc = () => {};
+let registerHandler = function registerHandler<O extends Options>(
+  _type: string,
+  _callback: HandlerCallback<O>
+) {};
 let invoke: InvokeFunc = () => {};
 
 if (DEBUG) {
-  registerHandler = function registerHandler(type, callback) {
-    let nextHandler = HANDLERS[type] || (() => {});
+  registerHandler = function registerHandler<O extends Options>(
+    type: string,
+    callback: HandlerCallback<O>
+  ): void {
+    let nextHandler: Handler<O> = HANDLERS[type] || (() => {});
 
-    HANDLERS[type] = (message, options) => {
+    HANDLERS[type] = ((message: string, options?: O) => {
       callback(message, options, nextHandler);
-    };
+    }) as Handler<Options>;
   };
 
   invoke = function invoke(type, message, test, options) {

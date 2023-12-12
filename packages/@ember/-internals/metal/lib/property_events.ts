@@ -1,5 +1,6 @@
-import { Meta, peekMeta } from '@ember/-internals/meta';
-import { enumerableSymbol } from '@ember/-internals/utils';
+import type { Meta } from '@ember/-internals/meta';
+import { peekMeta } from '@ember/-internals/meta';
+import { assert } from '@ember/debug';
 import {
   flushSyncObservers,
   resumeObserverDeactivation,
@@ -12,7 +13,19 @@ import { markObjectAsDirty } from './tags';
  @private
  */
 
-export const PROPERTY_DID_CHANGE = enumerableSymbol('PROPERTY_DID_CHANGE');
+export const PROPERTY_DID_CHANGE = Symbol('PROPERTY_DID_CHANGE');
+
+export interface PropertyDidChange {
+  [PROPERTY_DID_CHANGE]: (keyName: string, value?: unknown) => void;
+}
+
+export function hasPropertyDidChange(obj: unknown): obj is PropertyDidChange {
+  return (
+    obj != null &&
+    typeof obj === 'object' &&
+    typeof (obj as PropertyDidChange)[PROPERTY_DID_CHANGE] === 'function'
+  );
+}
 
 let deferred = 0;
 
@@ -53,7 +66,10 @@ function notifyPropertyChange(
   }
 
   if (PROPERTY_DID_CHANGE in obj) {
-    // we need to check the arguments length here; there's a check in `PROPERTY_DID_CHANGE`
+    // It's redundant to do this here, but we don't want to check above so we can avoid an extra function call in prod.
+    assert('property did change hook is invalid', hasPropertyDidChange(obj));
+
+    // we need to check the arguments length here; there's a check in Component's `PROPERTY_DID_CHANGE`
     // that checks its arguments length, so we have to explicitly not call this with `value`
     // if it is not passed to `notifyPropertyChange`
     if (arguments.length === 4) {

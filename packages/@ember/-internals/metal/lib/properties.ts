@@ -2,10 +2,12 @@
 @module @ember/object
 */
 
-import { Meta, meta as metaFor } from '@ember/-internals/meta';
+import type { Meta } from '@ember/-internals/meta';
+import { meta as metaFor } from '@ember/-internals/meta';
 import { setWithMandatorySetter } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
-import { Decorator, descriptorForProperty, isClassicDecorator } from './decorator';
+import type { ExtendedMethodDecorator } from './decorator';
+import { descriptorForProperty, isClassicDecorator } from './decorator';
 import { revalidateObservers } from './observer';
 
 /**
@@ -59,7 +61,7 @@ import { revalidateObservers } from './observer';
 export function defineProperty(
   obj: object,
   keyName: string,
-  desc?: Decorator | undefined | null,
+  desc?: ExtendedMethodDecorator | PropertyDescriptor | undefined | null,
   data?: any | undefined | null,
   _meta?: Meta
 ): void {
@@ -72,7 +74,7 @@ export function defineProperty(
   }
 
   if (isClassicDecorator(desc)) {
-    defineDecorator(obj, keyName, desc!, meta);
+    defineDecorator(obj, keyName, desc, meta);
   } else if (desc === null || desc === undefined) {
     defineValue(obj, keyName, data, wasDescriptor, true);
   } else {
@@ -87,13 +89,18 @@ export function defineProperty(
   }
 }
 
-export function defineDecorator(obj: object, keyName: string, desc: Decorator, meta: Meta) {
+export function defineDecorator(
+  obj: object,
+  keyName: string,
+  desc: ExtendedMethodDecorator,
+  meta: Meta
+) {
   let propertyDesc;
 
   if (DEBUG) {
-    propertyDesc = desc!(obj, keyName, undefined, meta, true);
+    propertyDesc = desc(obj, keyName, undefined, meta, true);
   } else {
-    propertyDesc = desc!(obj, keyName, undefined, meta);
+    propertyDesc = desc(obj, keyName, undefined, meta);
   }
 
   Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);
@@ -120,7 +127,7 @@ export function defineValue(
     if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
-      obj[keyName] = value;
+      (obj as any)[keyName] = value;
     }
   }
 

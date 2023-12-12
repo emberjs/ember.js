@@ -1,16 +1,13 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet as WeakSet } from '@glimmer/util';
-import { Tag } from '@glimmer/validator';
+import type { Tag } from '@glimmer/validator';
 import lookupDescriptor from './lookup-descriptor';
 
 export let setupMandatorySetter:
   | ((tag: Tag, obj: object, keyName: string | symbol) => void)
   | undefined;
 export let teardownMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
-export let setWithMandatorySetter:
-  | ((obj: object, keyName: string | symbol, value: any) => void)
-  | undefined;
+export let setWithMandatorySetter: ((obj: object, keyName: string, value: any) => void) | undefined;
 
 type PropertyDescriptorWithMeta = PropertyDescriptor & { hadOwnProperty?: boolean };
 
@@ -30,11 +27,8 @@ function isPositiveInt(num: number) {
 if (DEBUG) {
   let SEEN_TAGS = new WeakSet();
 
-  let MANDATORY_SETTERS: WeakMap<
-    object,
-    // @ts-ignore
-    { [key: string | symbol]: PropertyDescriptorWithMeta }
-  > = new WeakMap();
+  let MANDATORY_SETTERS: WeakMap<object, { [key: string | symbol]: PropertyDescriptorWithMeta }> =
+    new WeakMap();
 
   let propertyIsEnumerable = function (obj: object, key: string | symbol) {
     return Object.prototype.propertyIsEnumerable.call(obj, key);
@@ -45,7 +39,7 @@ if (DEBUG) {
       return;
     }
 
-    SEEN_TAGS!.add(tag);
+    SEEN_TAGS.add(tag);
 
     if (Array.isArray(obj) && isElementKey(keyName)) {
       return;
@@ -103,17 +97,17 @@ if (DEBUG) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
-      Object.defineProperty(obj, keyName, setters[keyName]);
+      Object.defineProperty(obj, keyName, setters[keyName]!);
 
-      setters[keyName] = undefined;
+      delete setters[keyName];
     }
   };
 
-  setWithMandatorySetter = function (obj: object, keyName: string | symbol, value: any) {
+  setWithMandatorySetter = function (obj: object, keyName: string, value: any) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
-      let setter = setters[keyName];
+      let setter = setters[keyName]!;
 
       if (setter.set) {
         setter.set.call(obj, value);
@@ -130,7 +124,7 @@ if (DEBUG) {
         }
       }
     } else {
-      obj[keyName] = value;
+      (obj as any)[keyName] = value;
     }
   };
 }

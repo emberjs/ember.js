@@ -1,4 +1,4 @@
-import { NoneLocation } from '@ember/-internals/routing';
+import NoneLocation from '@ember/routing/none-location';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 import Controller from '@ember/controller';
@@ -107,7 +107,7 @@ moduleFor(
         });
     }
 
-    ['@test RouterService#replaceWith with basic query params does not remove query param defaults'](
+    ['@test RouterService#replaceWith with basic query params removes query param defaults'](
       assert
     ) {
       assert.expect(1);
@@ -133,7 +133,7 @@ moduleFor(
           return this.routerService.replaceWith('parent.child', queryParams);
         })
         .then(() => {
-          assert.deepEqual(this.state, ['/', '/child?sort=ASC']);
+          assert.deepEqual(this.state, ['/', '/child']);
         });
     }
   }

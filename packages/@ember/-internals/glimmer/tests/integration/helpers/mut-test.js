@@ -1,6 +1,6 @@
 import { RenderingTestCase, moduleFor, styles, runTask } from 'internal-test-helpers';
 
-import { set, get, computed } from '@ember/-internals/metal';
+import { set, get, computed } from '@ember/object';
 
 import { Component, htmlSafe } from '../../utils/helpers';
 

@@ -1,16 +1,10 @@
-import {
-  HAS_NATIVE_PROXY,
-  lookupDescriptor,
-  setWithMandatorySetter,
-  toString,
-} from '@ember/-internals/utils';
+import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { COMPUTED_SETTERS } from './decorator';
 import { isPath } from './path_cache';
 import { notifyPropertyChange } from './property_events';
-import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
+import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 
 interface ExtendedObject {
   isDestroyed?: boolean;
@@ -42,7 +36,7 @@ interface ExtendedObject {
   @return {Object} the passed value.
   @public
 */
-export function set<T = unknown>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
+export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolean): T {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -75,15 +69,15 @@ export function _setProp(obj: object, keyName: string, value: any) {
   let descriptor = lookupDescriptor(obj, keyName);
 
   if (descriptor !== null && COMPUTED_SETTERS.has(descriptor.set!)) {
-    obj[keyName] = value;
+    (obj as any)[keyName] = value;
     return value;
   }
 
   let currentValue: any;
-  if (DEBUG && HAS_NATIVE_PROXY) {
+  if (DEBUG) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
-    currentValue = obj[keyName];
+    currentValue = (obj as any)[keyName];
   }
 
   if (
@@ -98,7 +92,7 @@ export function _setProp(obj: object, keyName: string, value: any) {
     if (DEBUG) {
       setWithMandatorySetter!(obj, keyName, value);
     } else {
-      obj[keyName] = value;
+      (obj as any)[keyName] = value;
     }
 
     if (currentValue !== value) {
@@ -115,14 +109,12 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
 
   assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
 
-  let newRoot = getPath(root, parts);
+  let newRoot = getPath(root, parts, true);
 
   if (newRoot !== null && newRoot !== undefined) {
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
-    throw new EmberError(
-      `Property set failed: object in path "${parts.join('.')}" could not be found.`
-    );
+    throw new Error(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
   }
 }
 
@@ -148,6 +140,6 @@ function _setPath(root: object, path: string, value: any, tolerant?: boolean): a
   @param {Object} value The value to set
   @public
 */
-export function trySet(root: object, path: string, value: any): any {
+export function trySet<T>(root: object, path: string, value: T): T | undefined {
   return set(root, path, value, true);
 }
