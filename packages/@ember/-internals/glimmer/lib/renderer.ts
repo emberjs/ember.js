@@ -10,7 +10,7 @@ import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
-  CompileTimeCompilationContext,
+  JitContext,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
@@ -22,12 +22,12 @@ import type {
   TemplateFactory,
 } from '@glimmer/interfaces';
 
-import { CurriedType } from '@glimmer/vm';
+import { CurriedTypes } from '@glimmer/vm';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { ReadonlyCell, UNDEFINED_REFERENCE, unwrapReactive } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import {
   clientBuilder,
@@ -65,13 +65,13 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
-  constructor(public view: View | null, public outletState: Reference<OutletState | undefined>) {}
+  constructor(public view: View | null, public outletState: Reactive<OutletState | undefined>) {}
 
   child() {
     return new DynamicScope(this.view, this.outletState);
   }
 
-  get(key: 'outletState'): Reference<OutletState | undefined> {
+  get(key: 'outletState'): Reactive<OutletState | undefined> {
     assert(
       `Using \`-get-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
@@ -79,7 +79,7 @@ export class DynamicScope implements GlimmerDynamicScope {
     return this.outletState;
   }
 
-  set(key: 'outletState', value: Reference<OutletState | undefined>) {
+  set(key: 'outletState', value: Reactive<OutletState | undefined>) {
     assert(
       `Using \`-with-dynamic-scope\` is only supported for \`outletState\` (you used \`${key}\`).`,
       key === 'outletState'
@@ -129,16 +129,16 @@ class RootState {
   constructor(
     public root: Component | OutletView,
     public runtime: RuntimeContext,
-    context: CompileTimeCompilationContext,
+    context: JitContext,
     owner: InternalOwner,
     template: Template,
-    self: Reference<unknown>,
+    self: Reactive<unknown>,
     parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
   ) {
     assert(
-      `You cannot render \`${valueForRef(self)}\` without a template.`,
+      `You cannot render \`${unwrapReactive(self)}\` without a template.`,
       template !== undefined
     );
 
@@ -290,7 +290,7 @@ export class Renderer {
   private _inRenderTransaction = false;
 
   private _owner: InternalOwner;
-  private _context: CompileTimeCompilationContext;
+  private _context: JitContext;
   private _runtime: RuntimeContext;
 
   private _lastRevision = -1;
@@ -373,7 +373,7 @@ export class Renderer {
     let definition = createRootOutlet(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, view.owner, null, true),
+      curry(CurriedTypes.Component, definition, view.owner, null, true),
       target
     );
   }
@@ -382,7 +382,7 @@ export class Renderer {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, this._owner, null, true),
+      curry(CurriedTypes.Component, definition, this._owner, null, true),
       target
     );
   }
@@ -392,7 +392,7 @@ export class Renderer {
     definition: CurriedValue,
     target: SimpleElement
   ): void {
-    let self = createConstRef(definition, 'this');
+    let self = ReadonlyCell(definition, 'this');
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
@@ -483,6 +483,7 @@ export class Renderer {
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', bounds);
 
+    assert('[BUG] unexpected partial bounds', 'parentElement' in bounds);
     let parentElement = bounds.parentElement();
     let firstNode = bounds.firstNode();
     let lastNode = bounds.lastNode();

@@ -1,19 +1,19 @@
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/-internals/string';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { Formula, unwrapReactive } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(({ positional }: CapturedArguments) => {
-  return createComputeRef(() => {
+  return Formula(() => {
     let classNameArg = positional[0];
     let valueArg = positional[1];
     assert('expected at least two positional args', classNameArg && valueArg);
 
-    let classNameParts = (valueForRef(classNameArg) as string).split('.');
+    let classNameParts = (unwrapReactive(classNameArg) as string).split('.');
     let className = classNameParts[classNameParts.length - 1];
     assert('has className', className); // Always at least one split result
-    let value = valueForRef(valueArg);
+    let value = unwrapReactive(valueArg);
 
     if (value === true) {
       return dasherize(className);
