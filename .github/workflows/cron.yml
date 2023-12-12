@@ -5,8 +5,15 @@ on:
     - cron:  '0 7 * * *' # daily, 7am
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   trigger-ci:
+    permissions:
+      contents: read # the push uses a non-default token so it will trigger workflows
+      checks: read
+
     name: Trigger cron build
     runs-on: ubuntu-latest
     strategy:
