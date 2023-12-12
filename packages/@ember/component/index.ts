@@ -1,14 +1,21 @@
+/**
+  @module @ember/component
+  @public
+ */
+
 export { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
-export { componentCapabilities, setComponentManager } from '@ember/-internals/glimmer';
 
 export { Component as default, Input, Textarea } from '@ember/-internals/glimmer';
+export {
+  componentCapabilities as capabilities,
+  setComponentManager,
+} from '@ember/-internals/glimmer';
 
 /**
  * Assigns a TemplateFactory to a component class.
  *
  * @method setComponentTemplate
- * @module @ember/component
- * @sttic
+ * @static
  * @for @ember/component
  * @public
  *
@@ -34,7 +41,6 @@ export { Component as default, Input, Textarea } from '@ember/-internals/glimmer
  * Returns the TemplateFactory associated with a component
  *
  * @method getComponentTemplate
- * @module @ember/component
  * @static
  * @for @ember/component
  * @public
@@ -67,7 +73,6 @@ export { Component as default, Input, Textarea } from '@ember/-internals/glimmer
  * - getContext()
  *
  * @method setComponentManager
- * @module @ember/component
  * @static
  * @for @ember/component
  * @public
@@ -104,7 +109,6 @@ export { Component as default, Input, Textarea } from '@ember/-internals/glimmer
 /**
  * Tells Glimmer what capabilities a Component Manager will have
  *
- * @module @ember/component
  * @method capabilities
  * @static
  * @for @ember/component
