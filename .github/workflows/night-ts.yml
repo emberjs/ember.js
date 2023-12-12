@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
-      - run: pnpm add --save-dev typescript@next
+      - run: pnpm add --save-dev typescript@next --workspace-root
       - run: pnpm type-check
   notify:
     name: Notify Discord
