@@ -21,8 +21,8 @@ function esmConfig() {
       format: 'es',
       dir: 'dist',
       hoistTransitiveImports: false,
+      preserveModules: true,
       generatedCode: 'es2015',
-      chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
     plugins: [
       babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
