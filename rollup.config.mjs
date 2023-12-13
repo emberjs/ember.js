@@ -9,20 +9,61 @@ const require = createRequire(import.meta.url);
 const { PackageCache } = require('@embroider/shared-internals');
 const packageCache = PackageCache.shared('ember-source', dirname(fileURLToPath(import.meta.url)));
 
-export default {
-  input: {
-    ...dependencies(),
-    ...packages(),
-  },
-  output: {
-    format: 'es',
-    dir: 'dist',
-    hoistTransitiveImports: false,
-    generatedCode: 'es2015',
-    chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
-  },
-  plugins: [babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }), resolveTS(), version()],
-};
+export default [esmConfig(), amdConfig()];
+
+function esmConfig() {
+  return {
+    input: {
+      ...dependencies(),
+      ...packages(),
+    },
+    output: {
+      format: 'es',
+      dir: 'dist',
+      hoistTransitiveImports: false,
+      generatedCode: 'es2015',
+      chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
+    },
+    plugins: [
+      babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
+      resolveTS(),
+      version(),
+    ],
+  };
+}
+
+function amdConfig() {
+  return {
+    input: {
+      ...withAMDNaming(dependencies()),
+      ...withAMDNaming(packages()),
+    },
+    output: {
+      format: 'amd',
+      dir: 'dist',
+      generatedCode: 'es2015',
+      preserveModules: true,
+      amd: {
+        autoId: true,
+      },
+    },
+    plugins: [
+      babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
+      resolveTS(),
+      version(),
+      concatenate(),
+    ],
+  };
+}
+
+function withAMDNaming(bundles) {
+  return Object.fromEntries(
+    Object.entries(bundles).map(([bundleName, filename]) => [
+      bundleName.replace(/^dependencies\//, '').replace(/^packages\//, ''),
+      filename,
+    ])
+  );
+}
 
 function packages() {
   // Start by treating every module as an entrypoint
@@ -184,6 +225,27 @@ function version() {
           ),
         };
       }
+    },
+  };
+}
+
+function concatenate() {
+  return {
+    name: 'custom-bundle-concatenate',
+    generateBundle(options, bundles) {
+      let code = [];
+      for (let [key, bundle] of Object.entries(bundles)) {
+        code.push(bundle.code);
+        delete bundles[key];
+      }
+      // NEXT: this gets organized into ember.debug.js, ember-testing.js, and
+      // ember-template-compiler.js
+      bundles['all'] = {
+        fileName: 'all.js',
+        needsCodeReference: false,
+        source: code.join('\n'),
+        type: 'asset',
+      };
     },
   };
 }
