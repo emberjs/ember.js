@@ -42,7 +42,6 @@ function amdConfig() {
       format: 'amd',
       dir: 'dist',
       generatedCode: 'es2015',
-      preserveModules: true,
       amd: {
         autoId: true,
       },
@@ -238,10 +237,16 @@ function concatenate() {
         code.push(bundle.code);
         delete bundles[key];
       }
-      // NEXT: this gets organized into ember.debug.js, ember-testing.js, and
-      // ember-template-compiler.js
-      bundles['all'] = {
-        fileName: 'all.js',
+
+      // One might think: "hang on, we have an ember-testing.js bundle
+      // specifically to hold the test-only stuff, so shouldn't you be removing
+      // that from the main bundle?".
+      //
+      // But it turns out that since Ember 3.14 all the test-only stuff is
+      // always in the prebuilt main bundle (and it's OK because prod builds
+      // never use the prebuilt main bundle).
+      bundles['ember'] = {
+        fileName: 'ember.debug.js',
         needsCodeReference: false,
         source: code.join('\n'),
         type: 'asset',
