@@ -4,8 +4,6 @@ import type {
   Helper,
   HelperDefinitionState,
   Owner,
-  ResolutionTimeConstants,
-  RuntimeConstants,
   ScopeBlock,
   VM as PublicVM,
 } from '@glimmer/interfaces';
@@ -20,6 +18,7 @@ import {
 } from '@glimmer/debug';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { toBool } from '@glimmer/global-context';
+import { getInternalHelperManager } from '@glimmer/manager';
 import {
   childRefFor,
   createComputeRef,
@@ -90,7 +89,7 @@ APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
     if (isCurriedType(definition, CurriedTypes.Helper)) {
       let { definition: resolvedDef, owner, positional, named } = resolveCurriedValue(definition);
 
-      let helper = resolveHelper(vm[CONSTANTS], resolvedDef, ref);
+      let helper = resolveHelper(resolvedDef, ref);
 
       if (named !== undefined) {
         args.named = assign({}, ...named, args.named);
@@ -104,7 +103,7 @@ APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
 
       associateDestroyableChild(helperInstanceRef, helperRef);
     } else if (isObject(definition)) {
-      let helper = resolveHelper(vm[CONSTANTS], definition, ref);
+      let helper = resolveHelper(definition, ref);
       helperRef = helper(args, initialOwner);
 
       if (_hasDestroyableChildren(helperRef)) {
@@ -124,14 +123,20 @@ APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
   vm.loadValue($v0, helperValueRef);
 });
 
-function resolveHelper(
-  constants: RuntimeConstants & ResolutionTimeConstants,
-  definition: HelperDefinitionState,
-  ref: Reference
-): Helper {
-  let handle = constants.helper(definition, null, true)!;
+function resolveHelper(definition: HelperDefinitionState, ref: Reference): Helper {
+  let managerOrHelper = getInternalHelperManager(definition, true);
+  let helper;
+  if (managerOrHelper === null) {
+    helper = null;
+  } else {
+    helper =
+      typeof managerOrHelper === 'function'
+        ? managerOrHelper
+        : managerOrHelper.getHelper(definition);
+    assert(managerOrHelper, 'BUG: expected manager or helper');
+  }
 
-  if (import.meta.env.DEV && handle === null) {
+  if (import.meta.env.DEV && helper === null) {
     throw new Error(
       `Expected a dynamic helper definition, but received an object or function that did not have a helper manager associated with it. The dynamic invocation was \`{{${
         ref.debugLabel
@@ -141,7 +146,7 @@ function resolveHelper(
     );
   }
 
-  return constants.getValue(handle);
+  return helper!;
 }
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
