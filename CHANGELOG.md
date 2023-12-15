@@ -1,12 +1,13 @@
 # Ember Changelog
 
-## v5.5.0-beta.2 (November 20, 2023)
+## v5.6.0-beta.1 (December 11, 2023)
+
+- [#20570](https://github.com/emberjs/ember.js/pull/20570) [CLEANUP] Remove all traces of named outlets code
+
+## v5.5.0 (December 11, 2023)
 
 - [#20575](https://github.com/emberjs/ember.js/pull/20575) [BUGFIX] Update backburner.js to 2.4.2
 - [#20578](https://github.com/emberjs/ember.js/pull/20578) [BUGFIX] Deprecate outlet `TemplateFactory` support
-
-## v5.5.0-beta.1 (October 30, 2023)
-
 - [#20559](https://github.com/emberjs/ember.js/pull/20559) [INTERNAL] Switch to pnpm
 
 ## v5.4.0 (October 30, 2023)

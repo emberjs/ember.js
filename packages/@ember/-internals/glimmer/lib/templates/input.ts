@@ -1,4 +1,5 @@
 import { precompileTemplate } from '@ember/template-compilation';
+import { on } from '@ember/modifier';
 export default precompileTemplate(
   `<input
   {{!-- for compatibility --}}
@@ -17,5 +18,11 @@ export default precompileTemplate(
   {{on "paste" this.valueDidChange}}
   {{on "cut" this.valueDidChange}}
 />`,
-  { moduleName: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs' }
+  {
+    moduleName: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
+    strictMode: true,
+    scope() {
+      return { on };
+    },
+  }
 );

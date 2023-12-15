@@ -93,7 +93,7 @@ import { createCache, getValue } from '@glimmer/validator';
   @for @glimmer/tracking
   @public
  */
-export const cached: PropertyDecorator = (...args: any[]) => {
+export const cached: MethodDecorator = (...args: any[]) => {
   const [target, key, descriptor] = args;
 
   // Error on `@cached()`, `@cached(...args)`, and `@cached propName = value;`

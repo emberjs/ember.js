@@ -1,4 +1,6 @@
 import { precompileTemplate } from '@ember/template-compilation';
+import { on } from '@ember/modifier';
+
 export default precompileTemplate(
   `<textarea
   {{!-- for compatibility --}}
@@ -15,5 +17,11 @@ export default precompileTemplate(
   {{on "paste" this.valueDidChange}}
   {{on "cut" this.valueDidChange}}
 />`,
-  { moduleName: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs' }
+  {
+    moduleName: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
+    strictMode: true,
+    scope() {
+      return { on };
+    },
+  }
 );

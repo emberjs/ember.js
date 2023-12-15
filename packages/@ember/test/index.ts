@@ -17,7 +17,7 @@ registerWaiter = testingNotAvailableMessage;
 unregisterHelper = testingNotAvailableMessage;
 unregisterWaiter = testingNotAvailableMessage;
 
-export function registerTestImplementaiton(impl: typeof EmberTesting) {
+export function registerTestImplementation(impl: typeof EmberTesting) {
   let { Test } = impl;
   registerAsyncHelper = Test.registerAsyncHelper;
   registerHelper = Test.registerHelper;
