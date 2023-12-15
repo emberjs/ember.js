@@ -20,6 +20,7 @@ import {
   CheckString,
 } from '@glimmer/debug';
 import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { assign, debugToString, expect, isObject } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
@@ -149,7 +150,7 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
     return;
   }
 
-  let { stack, [CONSTANTS]: constants } = vm;
+  let { stack } = vm;
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
   let { constructing } = vm.elements();
@@ -188,23 +189,27 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
       owner = initialOwner;
     }
 
-    let handle = constants.modifier(hostDefinition, null, true);
+    let manager = getInternalModifierManager(hostDefinition, true);
 
-    if (import.meta.env.DEV && handle === null) {
-      throw new Error(
-        `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
-          ref.debugLabel
-        }}}\`, and the incorrect definition is the value at the path \`${
-          ref.debugLabel
-        }\`, which was: ${debugToString!(hostDefinition)}`
-      );
+    if (manager === null) {
+      if (import.meta.env.DEV) {
+        throw new Error(
+          `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
+            ref.debugLabel
+          }}}\`, and the incorrect definition is the value at the path \`${
+            ref.debugLabel
+          }\`, which was: ${debugToString!(hostDefinition)}`
+        );
+      } else {
+        throw new Error('BUG: modifier manager expected');
+      }
     }
 
-    let definition = constants.getValue<ModifierDefinition>(
-      expect(handle, 'BUG: modifier handle expected')
-    );
-
-    let { manager } = definition;
+    let definition = {
+      resolvedName: null,
+      manager,
+      state: hostDefinition,
+    };
 
     let state = manager.create(
       owner,
