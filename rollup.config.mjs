@@ -36,7 +36,9 @@ function amdConfig() {
   return {
     input: {
       ...withAMDNaming(dependencies()),
+      ...withAMDNaming(compilerDependencies()),
       ...withAMDNaming(packages()),
+      ...withAMDNaming(compilerPackages()),
     },
     output: {
       format: 'amd',
@@ -104,6 +106,26 @@ function packages() {
   );
 }
 
+function compilerPackages() {
+  let entryFiles = glob.sync('packages/ember-template-compiler/**/*.{ts,js}', {
+    ignore: [
+      // d.ts is not .ts
+      '**/*.d.ts',
+
+      // don't traverse into node_modules
+      '**/node_modules/**',
+
+      // don't include tests
+      'packages/*/tests/**',
+      'packages/*/type-tests/**',
+    ],
+  });
+
+  return Object.fromEntries(
+    entryFiles.map((filename) => [filename.replace(/\.[jt]s$/, ''), filename])
+  );
+}
+
 function rolledUpPackages() {
   return [
     '@ember/-internals/browser-environment',
@@ -133,6 +155,20 @@ function dependencies() {
       '@glimmer/opcode-compiler',
       '@glimmer/runtime',
     ]),
+  };
+}
+
+function compilerDependencies() {
+  return {
+    'dependencies/simple-html-tokenizer': entrypoint(
+      findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
+      'module'
+    ).path,
+    'dependencies/@handlebars/parser': entrypoint(
+      findFromProject('@glimmer/syntax', '@handlebars/parser'),
+      'module'
+    ).path,
+    ...walkGlimmerDeps(['@glimmer/compiler']),
   };
 }
 
@@ -228,13 +264,61 @@ function version() {
   };
 }
 
+function inEmberBundle(filename) {
+  for (let prefix of [
+    '@glimmer/compiler',
+    '@glimmer/syntax',
+    'simple-html-tokenizer',
+    '@handlebars/parser',
+    'ember-template-compiler',
+  ]) {
+    if (filename.startsWith(prefix)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function inTemplateCompilerBundle(filename) {
+  for (let prefix of [
+    '@glimmer/compiler',
+    '@glimmer/env',
+    '@glimmer/syntax',
+    '@glimmer/util',
+    '@glimmer/vm',
+    '@glimmer/wire-format',
+    '@handlebars/parser',
+    'simple-html-tokenizer',
+    '@ember/-internals/utils/',
+    '@ember/-internals/environment/',
+    '@ember/-internals/browser-environment/',
+    '@ember/canary-features/',
+    '@ember/debug/',
+    '@ember/deprecated-features/',
+    'ember/version.js',
+    'ember-template-compiler/',
+  ]) {
+    if (filename.startsWith(prefix)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function concatenate() {
   return {
     name: 'custom-bundle-concatenate',
     generateBundle(options, bundles) {
-      let code = [];
+      let emberBundle = [];
+      let compilerBundle = [];
+
       for (let [key, bundle] of Object.entries(bundles)) {
-        code.push(bundle.code);
+        if (inEmberBundle(key)) {
+          emberBundle.push(bundle.code);
+        }
+        if (inTemplateCompilerBundle(key)) {
+          compilerBundle.push(bundle.code);
+        }
         delete bundles[key];
       }
 
@@ -248,7 +332,14 @@ function concatenate() {
       bundles['ember'] = {
         fileName: 'ember.debug.js',
         needsCodeReference: false,
-        source: code.join('\n'),
+        source: emberBundle.join('\n'),
+        type: 'asset',
+      };
+
+      bundles['ember-template-compiler'] = {
+        fileName: 'ember-template-compiler.js',
+        needsCodeReference: false,
+        source: compilerBundle.join('\n'),
         type: 'asset',
       };
     },
