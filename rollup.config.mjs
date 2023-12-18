@@ -8,6 +8,7 @@ import { babel } from '@rollup/plugin-babel';
 const require = createRequire(import.meta.url);
 const { PackageCache } = require('@embroider/shared-internals');
 const packageCache = PackageCache.shared('ember-source', dirname(fileURLToPath(import.meta.url)));
+const { buildInfo } = require('./broccoli/build-info');
 
 export default [esmConfig(), amdConfig()];
 
@@ -305,12 +306,31 @@ function inTemplateCompilerBundle(filename) {
   return false;
 }
 
+function license() {
+  return `/*!
+ * @overview  Ember - JavaScript Application Framework
+ * @copyright Copyright 2011 Tilde Inc. and contributors
+ *            Portions Copyright 2006-2011 Strobe Inc.
+ *            Portions Copyright 2008-2011 Apple Inc. All rights reserved.
+ * @license   Licensed under MIT license
+ *            See https://raw.github.com/emberjs/ember.js/master/LICENSE
+ * @version   ${buildInfo().version}
+ */
+`;
+}
+
+function loader() {
+  return readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), 'packages', 'loader', 'lib', 'index.js')
+  );
+}
+
 function concatenate() {
   return {
     name: 'custom-bundle-concatenate',
     generateBundle(options, bundles) {
-      let emberBundle = [];
-      let compilerBundle = [];
+      let emberBundle = [license(), loader()];
+      let compilerBundle = [license(), loader()];
 
       for (let [key, bundle] of Object.entries(bundles)) {
         if (inEmberBundle(key)) {
