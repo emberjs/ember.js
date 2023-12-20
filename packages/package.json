@@ -2,6 +2,6 @@
   "private": true,
   "dependencies": {
     "@types/qunit": "^2.19.9",
-    "vite": "^4.3.9"
+    "vite": "^5.0.10"
   }
 }
