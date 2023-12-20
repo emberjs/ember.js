@@ -5,7 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  socket.io: ^4.7.0
   rollup: ^4.2.0
 
 importers:
