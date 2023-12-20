@@ -8,8 +8,8 @@
   "dependencies": {
     "@ember/-internals": "workspace:*",
     "@ember/component": "workspace:*",
-    "@glimmer/manager": "0.85.13",
-    "@glimmer/runtime": "0.85.13",
+    "@glimmer/manager": "0.86.0",
+    "@glimmer/runtime": "0.86.0",
     "expect-type": "^0.15.0"
   }
 }
