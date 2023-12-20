@@ -11,7 +11,14 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
 const { buildInfo } = require('./broccoli/build-info');
 
-export default [esmConfig(), emberBundleConfig(), templateCompilerBundleConfig()];
+export default [
+  esmConfig(),
+  legacyBundleConfig('./lib/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js'),
+  legacyBundleConfig(
+    './lib/amd-compat-entrypoints/ember-template-compiler.js',
+    'ember-template-compiler.js'
+  ),
+];
 
 function esmConfig() {
   return {
@@ -30,7 +37,7 @@ function esmConfig() {
       babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
       resolveTS(),
       version(),
-      resolvePackages(Object.assign({}, exposedDependencies(), hiddenDependencies())),
+      resolvePackages(exposedDependencies(), hiddenDependencies()),
     ],
   };
 }
@@ -39,37 +46,19 @@ function inSubdir(entrypoints, subdir) {
   return Object.fromEntries(Object.entries(entrypoints).map(([k, v]) => [join(subdir, k), v]));
 }
 
-function emberBundleConfig() {
+function legacyBundleConfig(input, output) {
   return {
-    input: './lib/amd-compat-entrypoints/ember.debug.js',
+    input,
     output: {
       format: 'iife',
-      file: 'dist/ember.debug.js',
+      file: `dist/${output}`,
       generatedCode: 'es2015',
     },
     plugins: [
       babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
       resolveTS(),
       version(),
-      resolvePackages(Object.assign({}, exposedDependencies(), hiddenDependencies())),
-      licenseAndLoader(),
-    ],
-  };
-}
-
-function templateCompilerBundleConfig() {
-  return {
-    input: './lib/amd-compat-entrypoints/ember-template-compiler.js',
-    output: {
-      format: 'iife',
-      file: 'dist/ember-template-compiler.js',
-      generatedCode: 'es2015',
-    },
-    plugins: [
-      babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
-      resolveTS(),
-      version(),
-      resolvePackages(Object.assign({}, exposedDependencies(), hiddenDependencies())),
+      resolvePackages(exposedDependencies(), hiddenDependencies()),
       licenseAndLoader(),
     ],
   };
@@ -241,7 +230,7 @@ function resolveTS() {
   };
 }
 
-function resolvePackages(deps) {
+function resolvePackages(...depsList) {
   return {
     name: 'resolve-packages',
     async resolveId(source) {
@@ -249,8 +238,10 @@ function resolvePackages(deps) {
       if (pkgName) {
         // having a pkgName means this is not a relative import
 
-        if (deps[source]) {
-          return deps[source];
+        for (let deps of depsList) {
+          if (deps[source]) {
+            return deps[source];
+          }
         }
 
         let candidateStem = resolve(projectRoot, 'packages', source);
