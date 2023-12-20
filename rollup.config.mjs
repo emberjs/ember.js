@@ -1,74 +1,83 @@
-import { dirname, parse, resolve } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
+import { dirname, parse, resolve, join } from 'node:path';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
 import { babel } from '@rollup/plugin-babel';
 
 const require = createRequire(import.meta.url);
-const { PackageCache } = require('@embroider/shared-internals');
-const packageCache = PackageCache.shared('ember-source', dirname(fileURLToPath(import.meta.url)));
+const { PackageCache, packageName } = require('@embroider/shared-internals');
+const projectRoot = dirname(fileURLToPath(import.meta.url));
+const packageCache = PackageCache.shared('ember-source', projectRoot);
 const { buildInfo } = require('./broccoli/build-info');
 
-export default [esmConfig(), amdConfig()];
+export default [esmConfig(), emberBundleConfig(), templateCompilerBundleConfig()];
 
 function esmConfig() {
   return {
     input: {
-      ...dependencies(),
-      ...packages(),
+      ...inSubdir(exposedDependencies(), 'dependencies'),
+      ...inSubdir(packages(), 'packages'),
     },
     output: {
       format: 'es',
       dir: 'dist',
       hoistTransitiveImports: false,
       generatedCode: 'es2015',
+      chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
     plugins: [
       babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
       resolveTS(),
       version(),
+      resolvePackages(Object.assign({}, exposedDependencies(), hiddenDependencies())),
     ],
   };
 }
 
-function amdConfig() {
+function inSubdir(entrypoints, subdir) {
+  return Object.fromEntries(Object.entries(entrypoints).map(([k, v]) => [join(subdir, k), v]));
+}
+
+function emberBundleConfig() {
   return {
-    input: {
-      ...withAMDNaming(dependencies()),
-      ...withAMDNaming(compilerDependencies()),
-      ...withAMDNaming(packages()),
-      ...withAMDNaming(compilerPackages()),
-    },
+    input: './lib/amd-compat-entrypoints/ember.debug.js',
     output: {
-      format: 'amd',
-      dir: 'dist',
+      format: 'iife',
+      file: 'dist/ember.debug.js',
       generatedCode: 'es2015',
-      amd: {
-        autoId: true,
-      },
     },
     plugins: [
       babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
       resolveTS(),
       version(),
-      concatenate(),
+      resolvePackages(Object.assign({}, exposedDependencies(), hiddenDependencies())),
+      licenseAndLoader(),
     ],
   };
 }
 
-function withAMDNaming(bundles) {
-  return Object.fromEntries(
-    Object.entries(bundles).map(([bundleName, filename]) => [
-      bundleName.replace(/^dependencies\//, '').replace(/^packages\//, ''),
-      filename,
-    ])
-  );
+function templateCompilerBundleConfig() {
+  return {
+    input: './lib/amd-compat-entrypoints/ember-template-compiler.js',
+    output: {
+      format: 'iife',
+      file: 'dist/ember-template-compiler.js',
+      generatedCode: 'es2015',
+    },
+    plugins: [
+      babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
+      resolveTS(),
+      version(),
+      resolvePackages(Object.assign({}, exposedDependencies(), hiddenDependencies())),
+      licenseAndLoader(),
+    ],
+  };
 }
 
 function packages() {
   // Start by treating every module as an entrypoint
-  let entryFiles = glob.sync('packages/**/*.{ts,js}', {
+  let entryFiles = glob.sync('**/*.{ts,js}', {
     ignore: [
       // d.ts is not .ts
       '**/*.d.ts',
@@ -77,49 +86,27 @@ function packages() {
       '**/node_modules/**',
 
       // these packages are special and don't get included here
-      'packages/loader/**',
-      'packages/external-helpers/**',
-      'packages/ember-template-compiler/**',
-      'packages/internal-test-helpers/**',
+      'loader/**',
+      'external-helpers/**',
+      'ember-template-compiler/**',
+      'internal-test-helpers/**',
 
       // exclude these so we can add only their entrypoints below
-      ...rolledUpPackages().map((name) => `packages/${name}/**`),
+      ...rolledUpPackages().map((name) => `${name}/**`),
 
       // don't include tests
-      'packages/@ember/-internals/*/tests/**' /* internal packages */,
-      'packages/*/*/tests/**' /* scoped packages */,
-      'packages/*/tests/**' /* packages */,
-      'packages/@ember/-internals/*/type-tests/**' /* internal packages */,
-      'packages/*/*/type-tests/**' /* scoped packages */,
-      'packages/*/type-tests/**' /* packages */,
+      '@ember/-internals/*/tests/**' /* internal packages */,
+      '*/*/tests/**' /* scoped packages */,
+      '*/tests/**' /* packages */,
+      '@ember/-internals/*/type-tests/**' /* internal packages */,
+      '*/*/type-tests/**' /* scoped packages */,
+      '*/type-tests/**' /* packages */,
     ],
+    cwd: 'packages',
   });
 
   // add only the entrypoints of the rolledUpPackages
-  entryFiles = [
-    ...entryFiles,
-    ...glob.sync(`packages/{${rolledUpPackages().join(',')}}/index.{js,ts}`),
-  ];
-
-  return Object.fromEntries(
-    entryFiles.map((filename) => [filename.replace(/\.[jt]s$/, ''), filename])
-  );
-}
-
-function compilerPackages() {
-  let entryFiles = glob.sync('packages/ember-template-compiler/**/*.{ts,js}', {
-    ignore: [
-      // d.ts is not .ts
-      '**/*.d.ts',
-
-      // don't traverse into node_modules
-      '**/node_modules/**',
-
-      // don't include tests
-      'packages/*/tests/**',
-      'packages/*/type-tests/**',
-    ],
-  });
+  entryFiles = [...entryFiles, ...glob.sync(`{${rolledUpPackages().join(',')}}/index.{js,ts}`)];
 
   return Object.fromEntries(
     entryFiles.map((filename) => [filename.replace(/\.[jt]s$/, ''), filename])
@@ -137,15 +124,16 @@ function rolledUpPackages() {
   ];
 }
 
-function dependencies() {
+// these are the external packages that we historically "provided" from within
+// ember-source. That is, other packages could actually depend on the copies of
+// these that we publish.
+function exposedDependencies() {
   return {
-    'dependencies/backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
-    'dependencies/rsvp': require.resolve('rsvp/lib/rsvp.js'),
-    'dependencies/dag-map': require.resolve('dag-map/dag-map.js'),
-    'dependencies/router_js': require.resolve('router_js/dist/modules/index.js'),
-    'dependencies/route-recognizer': require.resolve(
-      'route-recognizer/dist/route-recognizer.es.js'
-    ),
+    'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
+    rsvp: require.resolve('rsvp/lib/rsvp.js'),
+    'dag-map': require.resolve('dag-map/dag-map.js'),
+    router_js: require.resolve('router_js/dist/modules/index.js'),
+    'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
     ...walkGlimmerDeps([
       '@glimmer/node',
       '@simple-dom/document',
@@ -158,17 +146,23 @@ function dependencies() {
   };
 }
 
-function compilerDependencies() {
+// these are dependencies that we inline into our own published code but do not
+// expose to consumers
+function hiddenDependencies() {
   return {
-    'dependencies/simple-html-tokenizer': entrypoint(
+    'simple-html-tokenizer': entrypoint(
       findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
       'module'
     ).path,
-    'dependencies/@handlebars/parser': entrypoint(
+    '@handlebars/parser': entrypoint(
       findFromProject('@glimmer/syntax', '@handlebars/parser'),
       'module'
     ).path,
     ...walkGlimmerDeps(['@glimmer/compiler']),
+    'decorator-transforms/runtime': resolve(
+      findFromProject('decorator-transforms').root,
+      'dist/runtime.js'
+    ),
   };
 }
 
@@ -191,7 +185,7 @@ function walkGlimmerDeps(packageNames) {
     let pkgModule = entrypoint(pkg, 'module');
 
     if (pkgModule && existsSync(pkgModule.path)) {
-      entrypoints[`dependencies/${pkg.name}`] = pkgModule.path;
+      entrypoints[pkg.name] = pkgModule.path;
     }
 
     let dependencies = pkg.dependencies;
@@ -247,6 +241,31 @@ function resolveTS() {
   };
 }
 
+function resolvePackages(deps) {
+  return {
+    name: 'resolve-packages',
+    async resolveId(source) {
+      let pkgName = packageName(source);
+      if (pkgName) {
+        // having a pkgName means this is not a relative import
+
+        if (deps[source]) {
+          return deps[source];
+        }
+
+        let candidateStem = resolve(projectRoot, 'packages', source);
+        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+          let candidate = candidateStem + suffix;
+          if (existsSync(candidate) && statSync(candidate).isFile()) {
+            return candidate;
+          }
+        }
+        throw new Error(`missing ${source}`);
+      }
+    },
+  };
+}
+
 function version() {
   return {
     name: 'ember-version',
@@ -262,47 +281,6 @@ function version() {
       }
     },
   };
-}
-
-function inEmberBundle(filename) {
-  for (let prefix of [
-    '@glimmer/compiler',
-    '@glimmer/syntax',
-    'simple-html-tokenizer',
-    '@handlebars/parser',
-    'ember-template-compiler',
-  ]) {
-    if (filename.startsWith(prefix)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function inTemplateCompilerBundle(filename) {
-  for (let prefix of [
-    '@glimmer/compiler',
-    '@glimmer/env',
-    '@glimmer/syntax',
-    '@glimmer/util',
-    '@glimmer/vm',
-    '@glimmer/wire-format',
-    '@handlebars/parser',
-    'simple-html-tokenizer',
-    '@ember/-internals/utils/',
-    '@ember/-internals/environment/',
-    '@ember/-internals/browser-environment/',
-    '@ember/canary-features/',
-    '@ember/debug/',
-    '@ember/deprecated-features/',
-    'ember/version.js',
-    'ember-template-compiler/',
-  ]) {
-    if (filename.startsWith(prefix)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 function license() {
@@ -324,82 +302,13 @@ function loader() {
   );
 }
 
-function concatenate() {
+function licenseAndLoader() {
   return {
-    name: 'custom-bundle-concatenate',
+    name: 'license-and-loader',
     generateBundle(options, bundles) {
-      let emberBundle = [license(), loader()];
-      let compilerBundle = [license(), loader()];
-
-      for (let [key, bundle] of Object.entries(bundles)) {
-        if (inEmberBundle(key)) {
-          emberBundle.push(bundle.code);
-        }
-        if (inTemplateCompilerBundle(key)) {
-          compilerBundle.push(bundle.code);
-        }
-        delete bundles[key];
+      for (let bundle of Object.values(bundles)) {
+        bundle.code = license() + loader() + bundle.code;
       }
-
-      emberBundle.push(`(function bootstrap() {
-  // Bootstrap Node module
-  if (typeof module === 'object' && typeof module.require === 'function') {
-    module.exports = require('ember').default;
-  }
-})();`);
-
-      compilerBundle.push(`try {
-  // in the browser, the ember-template-compiler.js and ember.js bundles find each other via globalThis.require.
-  require('@ember/template-compilation');
-} catch (err) {
-  // in node, that coordination is a no-op
-  define('@ember/template-compilation', ['exports'], function (e) {
-    e.__registerTemplateCompiler = function () {};
-  });
-  define('ember', [
-    'exports',
-    '@ember/-internals/environment',
-    '@ember/canary-features',
-    'ember/version',
-  ], function (e, env, fea, ver) {
-    e.default = {
-      ENV: env.ENV,
-      FEATURES: fea.FEATURES,
-      VERSION: ver.default,
-    };
-  });
-  define('@ember/-internals/glimmer', ['exports'], function(e) {
-    e.template = undefined;
-  });
-  define('@ember/application', ['exports'], function(e) {});
-}
-
-(function (m) {
-  if (typeof module === 'object' && module.exports) {
-    module.exports = m;
-  }
-})(require('ember-template-compiler'));`);
-
-      // One might think: "hang on, we have an ember-testing.js bundle
-      // specifically to hold the test-only stuff, so shouldn't you be removing
-      // that from the main bundle?".
-      //
-      // But it turns out that since Ember 3.14 all the test-only stuff is
-      // always in the prebuilt main bundle (and it's OK because prod builds
-      // never use the prebuilt main bundle).
-      bundles['ember'] = {
-        fileName: 'ember.debug.js',
-        needsCodeReference: false,
-        source: emberBundle.join('\n'),
-        type: 'asset',
-      };
-
-      bundles['ember-template-compiler'] = {
-        fileName: 'ember-template-compiler.js',
-        needsCodeReference: false,
-        source: compilerBundle.join('\n'),
-        type: 'asset',
-      };
     },
   };
 }
