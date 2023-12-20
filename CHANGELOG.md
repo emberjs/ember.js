@@ -12,6 +12,43 @@
 
 
 
+
+## v0.86.0 (2023-12-20)
+
+#### :rocket: Enhancement
+* `@glimmer/debug`, `@glimmer/runtime`, `@glimmer/util`
+  * [#1518](https://github.com/glimmerjs/glimmer-vm/pull/1518) [perf] avoid double memory usage in append opcodes ([@lifeart](https://github.com/lifeart))
+* `@glimmer/validator`
+  * [#1520](https://github.com/glimmerjs/glimmer-vm/pull/1520) [perf] replace Math.max usage with reduce and pure compare ([@lifeart](https://github.com/lifeart))
+  * [#1522](https://github.com/glimmerjs/glimmer-vm/pull/1522) [memory] replace forEach with arrayFrom ([@lifeart](https://github.com/lifeart))
+* `@glimmer/runtime`
+  * [#1510](https://github.com/glimmerjs/glimmer-vm/pull/1510) [perf | trim] Remove extra class ([@lifeart](https://github.com/lifeart))
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1440](https://github.com/glimmerjs/glimmer-vm/pull/1440) Fix helper/modifier memory leak ([@bendemboski](https://github.com/bendemboski))
+* `@glimmer/debug`, `@glimmer/destroyable`
+  * [#1516](https://github.com/glimmerjs/glimmer-vm/pull/1516) fix `exports` config for @glimmer/destroyable and @glimmer/debug ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/build`
+  * [#1530](https://github.com/glimmerjs/glimmer-vm/pull/1530) Upgrade to vite 5 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1495](https://github.com/glimmerjs/glimmer-vm/pull/1495) make it run on windows ([@patricklx](https://github.com/patricklx))
+* Other
+  * [#1523](https://github.com/glimmerjs/glimmer-vm/pull/1523) Restore a working linking setup ([@chancancode](https://github.com/chancancode))
+  * [#1497](https://github.com/glimmerjs/glimmer-vm/pull/1497) Create codemods and opcode generator ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/build`, `@glimmer-workspace/integration-tests`, `@glimmer-workspace/test-utils`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1506](https://github.com/glimmerjs/glimmer-vm/pull/1506) Sort package.json files to reduce diff from the Error Recovery PR ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/reference`
+  * [#1483](https://github.com/glimmerjs/glimmer-vm/pull/1483) Use stricter type for createPrimitiveRef ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 5
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Ben Demboski ([@bendemboski](https://github.com/bendemboski))
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.85.13 (2023-11-14)
 
 #### :house: Internal
