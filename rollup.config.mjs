@@ -18,6 +18,7 @@ export default [
     './lib/amd-compat-entrypoints/ember-template-compiler.js',
     'ember-template-compiler.js'
   ),
+  legacyBundleConfig('./lib/amd-compat-entrypoints/ember-testing.js', 'ember-testing.js'),
 ];
 
 function esmConfig() {
