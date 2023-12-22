@@ -10,6 +10,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
+    "noErrorTruncation": true,
 
     "suppressImplicitAnyIndexErrors": false,
     "useDefineForClassFields": false,

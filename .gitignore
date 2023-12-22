@@ -14,3 +14,4 @@ tmp/
 instrumentation.*.json
 .cache
 **/*.tgz
+tracerbench-results

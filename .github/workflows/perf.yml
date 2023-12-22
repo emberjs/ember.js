@@ -1,0 +1,46 @@
+name: PerformanceCheck
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+
+env:
+  EXPERIMENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  CONTROL_BRANCH_NAME: 'main'
+  FIDELITY: 100
+  FORK_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+
+jobs:
+  master-krausest-comparison:
+    name: Glimmer Krausest Benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wyvox/action-setup-pnpm@v3
+        with:
+          node-version: '20.1.0'
+
+      - name: RUN
+        run: pnpm run benchmark:setup
+
+      - name: Upload Tracerbench Artifacts
+        if: failure() || success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Trace Artifacts
+          path: tracerbench-results
+
+      - name: Write message
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-path: "tracerbench-results/msg.txt"
+          update-only: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

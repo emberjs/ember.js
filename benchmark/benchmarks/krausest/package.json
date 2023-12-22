@@ -1,7 +1,9 @@
 {
   "private": true,
   "name": "@glimmer-workspace/krausest",
+  "type": "module",
   "scripts": {
+    "start": "vite --mode production",
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../../tsconfig.json"
   },
