@@ -8,7 +8,7 @@
   },
   "files": [],
   "references": [
-    { "path": "benchmark/tsconfig.json" },
+    { "path": "benchmark/benchmarks/krausest/tsconfig.json" },
     { "path": "bin/tsconfig.json" },
     { "path": "packages/@glimmer/tsconfig.json" },
     { "path": "packages/@glimmer/tsconfig.test.json" },

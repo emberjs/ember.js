@@ -12,13 +12,14 @@ env:
   EXPERIMENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   CONTROL_BRANCH_NAME: 'main'
   FIDELITY: 100
+  THROTTLE: 2
   FORK_NAME: ${{ github.event.pull_request.head.repo.full_name }}
 
 jobs:
   master-krausest-comparison:
     name: Glimmer Krausest Benchmark
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,6 +30,9 @@ jobs:
 
       - name: RUN
         run: pnpm run benchmark:setup
+
+      - name: Remove unused artifacts
+        run: rm -rf ./tracerbench-results/traces && rm -rf ./tracerbench-results/traces.zip
 
       - name: Upload Tracerbench Artifacts
         if: failure() || success()

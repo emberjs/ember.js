@@ -19,23 +19,20 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-
-    "outDir": "../ts-dist/bench"
+    "noEmit": true,
+    "paths": {
+      "@/components/*": ["./lib/components/*"],
+      "@/utils/*": ["./lib/utils/*"],
+      "@glimmer-workspace/benchmark-env": ["../../../packages/@glimmer-workspace/benchmark-env"]
+    }
   },
-  "include": [
-    "./index.js",
-    "./lib/**/*.js",
-    "./bin/**/*.js",
-    "./benchmarks/krausest/*.js",
-    "./benchmarks/krausest/lib/**/*.js",
-    "./benchmarks/krausest/vite.config.mts"
-  ],
+  "include": ["./lib/", "./browser.js"],
   "references": [
     {
-      "path": "../packages/@glimmer/tsconfig.json"
+      "path": "../../../packages/@glimmer/tsconfig.json"
     },
     {
-      "path": "../packages/@glimmer-workspace/tsconfig.json"
+      "path": "../../../packages/@glimmer-workspace/tsconfig.json"
     }
   ]
 }

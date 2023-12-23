@@ -18,11 +18,33 @@ import { join } from 'node:path';
 const experimentBranchName =
   process.env['EXPERIMENT_BRANCH_NAME'] || (await $`git rev-parse --abbrev-ref HEAD`).stdout.trim();
 const controlBranchName = process.env['CONTROL_BRANCH_NAME'] || 'main';
-const markers =
-  process.env['MARKERS'] ||
-  'navigationStart,renderStart,renderEnd,glimmer-render-1000-rows-start,glimmer-render-1000-rows-finished';
+
+// same order as in benchmark/benchmarks/krausest/lib/index.ts
+const appMarkers = [
+  'render1000Items1',
+  'clearItems1',
+  'render1000Items2',
+  'clearItems2',
+  'render10000Items1',
+  'clearItems3',
+  'render1000Items3',
+  'append1000Items1',
+  'updateEvery10thItem1',
+  'selectFirstRow1',
+  'selectSecondRow1',
+  'removeFirstRow1',
+  'removeSecondRow1',
+  'swapRows1',
+  'clearItems4',
+].reduce((acc, marker) => {
+  return acc + ',' + marker + 'Start,' + marker + 'End';
+}, '');
+const markers = (process.env['MARKERS'] || appMarkers)
+  .split(',')
+  .filter((el) => el.length)
+  .join(',');
 const fidelity = process.env['FIDELITY'] || '20';
-const throttleRate = process.env['THROTTLE'] || '4';
+const throttleRate = process.env['THROTTLE'] || '2';
 const FORK_NAME = process.env['FORK_NAME'] || '';
 
 const tempDir = os.tmpdir();

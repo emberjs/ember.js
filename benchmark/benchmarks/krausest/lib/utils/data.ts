@@ -5,19 +5,20 @@ export class Item {
   id;
 
   /** @type {string} */
-  label;
+  _label = createCell(this, 'label', '');
 
   _selected = createCell(this, 'selected', false);
 
-  /**
-   * @param {number} id
-   * @param {string} label
-   */
-  constructor(id, label) {
+  constructor(id: number, label: string) {
     this.id = id;
     this.label = label;
   }
-
+  get label() {
+    return this._label.get();
+  }
+  set label(value: string) {
+    this._label.set(value);
+  }
   get selected() {
     return this._selected.get();
   }
@@ -27,16 +28,13 @@ export class Item {
   }
 }
 
-/**
- * @param {number} max
- */
-function _random(max) {
+function _random(max: number) {
   return (Math.random() * max) | 0;
 }
 
 let rowId = 1;
 
-export default function buildData(count = 1000) {
+export function buildData(count = 1000) {
   const adjectives = [
       'pretty',
       'large',
@@ -106,3 +104,21 @@ export default function buildData(count = 1000) {
     );
   return data;
 }
+
+export const swapRows = (data: Item[]): Item[] => {
+  const newData: Item[] = [...data];
+  if (newData.length > 998) {
+    const temp = newData[1];
+    newData[1] = newData[998] as Item;
+    newData[998] = temp as Item;
+  }
+  return newData;
+};
+
+export const updateData = (data: Item[], mod = 10): Item[] => {
+  for (let i = 0; i < data.length; i += mod) {
+    let item = data[i] as Item;
+    item.label = item.label + ' !!!';
+  }
+  return data;
+};

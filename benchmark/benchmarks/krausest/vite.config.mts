@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 const self = import.meta.url;
 
-const packagesPath = path.resolve(path.dirname(fileURLToPath(self)), '..', '..', './../packages');
+const currentPath = path.dirname(fileURLToPath(self));
+const packagesPath = path.resolve(currentPath, '..', '..', './../packages');
 
 const packagePath = (name: string) => {
   return path.join(packagesPath, name, 'dist/prod/index.js');
@@ -19,6 +20,8 @@ export default defineConfig({
     alias: {
       '@glimmer-workspace/benchmark-env': '@glimmer-workspace/benchmark-env/index.ts',
       '@glimmer/debug': packagePath('@glimmer/debug'),
+      '@/components': path.join(currentPath, 'lib', 'components'),
+      '@/utils': path.join(currentPath, 'lib', 'utils'),
     },
   },
 });
