@@ -16,41 +16,6 @@ import { reifyNamed } from '../vm/arguments';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
 
-/*
-  Internet Explorer 11 does not support `once` and also does not support
-  passing `eventOptions`. In some situations it then throws a weird script
-  error, like:
-
-  ```
-  Could not complete the operation due to error 80020101
-  ```
-
-  This flag determines, whether `{ once: true }` and thus also event options in
-  general are supported.
-*/
-const SUPPORTS_EVENT_OPTIONS = (() => {
-  try {
-    const div = document.createElement('div');
-    let counter = 0;
-    div.addEventListener('click', () => counter++, { once: true });
-
-    let event;
-    if (typeof Event === 'function') {
-      event = new Event('click');
-    } else {
-      event = document.createEvent('Event');
-      event.initEvent('click', true, true);
-    }
-
-    div.dispatchEvent(event);
-    div.dispatchEvent(event);
-
-    return counter === 1;
-  } catch (error) {
-    return false;
-  }
-})();
-
 export class OnModifierState {
   public tag = createUpdatableTag();
   public element: Element;
@@ -88,11 +53,10 @@ export class OnModifierState {
       this.shouldUpdate = true;
     }
 
-    let options: AddEventListenerOptions;
     // we want to handle both `true` and `false` because both have a meaning:
     // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
     if (once !== undefined || passive !== undefined || capture !== undefined) {
-      options = this.options = { once, passive, capture } as AddEventListenerOptions;
+      this.options = { once, passive, capture } as AddEventListenerOptions;
     } else {
       this.options = undefined;
     }
@@ -139,13 +103,11 @@ export class OnModifierState {
       );
     }
 
-    let needsCustomCallback =
-      (SUPPORTS_EVENT_OPTIONS === false && once) /* needs manual once implementation */ ||
-      (import.meta.env.DEV && passive); /* needs passive enforcement */
+    let needsCustomCallback = import.meta.env.DEV && passive; /* needs passive enforcement */
 
     if (this.shouldUpdate) {
       if (needsCustomCallback) {
-        let callback = (this.callback = function (this: Element, event) {
+        this.callback = function (this: Element, event) {
           if (import.meta.env.DEV && passive) {
             event.preventDefault = () => {
               throw new Error(
@@ -155,12 +117,8 @@ export class OnModifierState {
               );
             };
           }
-
-          if (!SUPPORTS_EVENT_OPTIONS && once) {
-            removeEventListener(this, eventName, callback, options);
-          }
           return userProvidedCallback.call(untouchableContext, event);
-        });
+        };
       } else if (import.meta.env.DEV) {
         // prevent the callback from being bound to the element
         this.callback = userProvidedCallback.bind(untouchableContext);
@@ -182,24 +140,7 @@ function removeEventListener(
 ): void {
   removes++;
 
-  if (SUPPORTS_EVENT_OPTIONS) {
-    // when options are supported, use them across the board
-    element.removeEventListener(eventName, callback, options);
-  } else if (options !== undefined && options.capture) {
-    // used only in the following case:
-    //
-    // `{ once: true | false, passive: true | false, capture: true }
-    //
-    // `once` is handled via a custom callback that removes after first
-    // invocation so we only care about capture here as a boolean
-    element.removeEventListener(eventName, callback, true);
-  } else {
-    // used only in the following cases:
-    //
-    // * where there is no options
-    // * `{ once: true | false, passive: true | false, capture: false }
-    element.removeEventListener(eventName, callback);
-  }
+  element.removeEventListener(eventName, callback, options);
 }
 
 function addEventListener(
@@ -209,25 +150,7 @@ function addEventListener(
   options?: AddEventListenerOptions
 ): void {
   adds++;
-
-  if (SUPPORTS_EVENT_OPTIONS) {
-    // when options are supported, use them across the board
-    element.addEventListener(eventName, callback, options);
-  } else if (options !== undefined && options.capture) {
-    // used only in the following case:
-    //
-    // `{ once: true | false, passive: true | false, capture: true }
-    //
-    // `once` is handled via a custom callback that removes after first
-    // invocation so we only care about capture here as a boolean
-    element.addEventListener(eventName, callback, true);
-  } else {
-    // used only in the following cases:
-    //
-    // * where there is no options
-    // * `{ once: true | false, passive: true | false, capture: false }
-    element.addEventListener(eventName, callback);
-  }
+  element.addEventListener(eventName, callback, options);
 }
 
 /**
@@ -317,8 +240,6 @@ function addEventListener(
   @public
 */
 class OnModifierManager implements InternalModifierManager<OnModifierState | null, object> {
-  public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
-
   getDebugName(): string {
     return 'on';
   }
