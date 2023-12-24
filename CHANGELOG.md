@@ -14,6 +14,16 @@
 
 
 
+
+## v0.87.1 (2023-12-24)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/runtime`
+  * [#1535](https://github.com/glimmerjs/glimmer-vm/pull/1535) [chore] remove ie11 `on` fallback ([@lifeart](https://github.com/lifeart))
+
+#### Committers: 1
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+
 ## v0.87.0 (2023-12-24)
 
 #### :rocket: Enhancement
