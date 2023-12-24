@@ -1,8 +1,4 @@
 import { debugToString as maybeDebugToString } from '@glimmer/util';
-// `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
-// `"ActiveXObject" in window` returns `true` in all IE versions
-// only IE11 will pass _both_ of these conditions
-const isIE11 = !(window as any).ActiveXObject && 'ActiveXObject' in window;
 
 QUnit.module('debug-to-string tests');
 
@@ -37,11 +33,9 @@ if (import.meta.env.DEV) {
   QUnit.test('should return debug name for primitive [Infinity]', (assert) => {
     assert.deepEqual(debugToString(Infinity), 'Infinity');
   });
-  if (!isIE11) {
-    QUnit.test('should return debug name for primitive [Symbol]', (assert) => {
-      assert.deepEqual(debugToString(Symbol('Foo')), 'Symbol(Foo)');
-    });
-  }
+  QUnit.test('should return debug name for primitive [Symbol]', (assert) => {
+    assert.deepEqual(debugToString(Symbol('Foo')), 'Symbol(Foo)');
+  });
   QUnit.test('should return debug name for object', (assert) => {
     assert.deepEqual(debugToString({}), 'Object');
   });
