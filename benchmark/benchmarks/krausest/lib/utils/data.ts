@@ -7,8 +7,6 @@ export class Item {
   /** @type {string} */
   _label = createCell(this, 'label', '');
 
-  _selected = createCell(this, 'selected', false);
-
   constructor(id: number, label: string) {
     this.id = id;
     this.label = label;
@@ -18,13 +16,6 @@ export class Item {
   }
   set label(value: string) {
     this._label.set(value);
-  }
-  get selected() {
-    return this._selected.get();
-  }
-
-  set selected(value) {
-    this._selected.set(value);
   }
 }
 

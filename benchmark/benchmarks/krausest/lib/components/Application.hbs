@@ -13,7 +13,7 @@
           </div>
           <div class="col-sm-6 smallpad">
             <BsButton id="runlots" {{on "click" this.runLots}}>
-              Create 10,000 rows
+              Create 5,000 rows
             </BsButton>
           </div>
           <div class="col-sm-6 smallpad">
@@ -44,7 +44,12 @@
   <table class="table table-hover table-striped test-data">
     <tbody>
       {{#each this.items as |item|}}
-        <Row @select={{this.select}} @remove={{this.remove}} @item={{item}} />
+        <Row
+          @select={{this.fn this.select item}}
+          @remove={{this.remove}}
+          @item={{item}}
+          class="{{if (this.eq item this.selectedItem) 'danger'}}"
+        />
       {{/each}}
     </tbody>
   </table>

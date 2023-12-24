@@ -8,18 +8,22 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   EXPERIMENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   CONTROL_BRANCH_NAME: 'main'
   FIDELITY: 100
-  THROTTLE: 2
+  THROTTLE: 4
   FORK_NAME: ${{ github.event.pull_request.head.repo.full_name }}
 
 jobs:
   master-krausest-comparison:
     name: Glimmer Krausest Benchmark
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
         with:

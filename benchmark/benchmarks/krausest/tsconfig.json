@@ -23,7 +23,8 @@
     "paths": {
       "@/components/*": ["./lib/components/*"],
       "@/utils/*": ["./lib/utils/*"],
-      "@glimmer-workspace/benchmark-env": ["../../../packages/@glimmer-workspace/benchmark-env"]
+      "@glimmer-workspace/benchmark-env": ["../../../packages/@glimmer-workspace/benchmark-env"],
+      "@glimmer/runtime": ["../../../packages/@glimmer/runtime"]
     }
   },
   "include": ["./lib/", "./browser.js"],

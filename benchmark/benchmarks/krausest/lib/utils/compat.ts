@@ -1,6 +1,6 @@
 export enum ButtonSelectors {
   Create1000 = '#run',
-  Create10000 = '#runlots',
+  Create5000 = '#runlots',
   Append1000 = '#add',
   UpdateEvery10th = '#update',
   SelectFirstRow = 'tr:nth-child(1) a[data-test-select]',
@@ -24,6 +24,12 @@ export function emitDomClickEvent(selector: ButtonSelectors) {
   } else {
     throw new Error(`Could not find element with selector ${selector}`);
   }
+}
+
+export function waitForIdle() {
+  return new Promise((resolve) => {
+    requestIdleCallback(resolve);
+  });
 }
 
 export function enforcePaintEvent() {
