@@ -25,13 +25,6 @@ const hasDom =
   self.navigator === navigator &&
   typeof navigator.userAgent === 'string';
 
-// do this to get around type issues for these values
-let global = window as any;
-const isChrome = hasDom
-  ? typeof global.chrome === 'object' && !(typeof global.opera === 'object')
-  : false;
-const isFirefox = hasDom ? /Firefox|FxiOS/u.test(navigator.userAgent) : false;
-
 interface Counters {
   adds: number;
   removes: number;
@@ -39,7 +32,6 @@ interface Counters {
 
 interface OnManager {
   counters: Counters;
-  SUPPORTS_EVENT_OPTIONS: boolean;
 }
 
 function getOnManager() {
@@ -73,15 +65,6 @@ if (hasDom) {
         },
         `counters have incremented by ${JSON.stringify(expected)}`
       );
-    }
-
-    @test
-    'SUPPORTS_EVENT_OPTIONS is correct (private API usage)'(assert: Assert) {
-      let { SUPPORTS_EVENT_OPTIONS } = getOnManager();
-
-      if (isChrome || isFirefox) {
-        assert.strictEqual(SUPPORTS_EVENT_OPTIONS, true, 'is true in chrome and firefox');
-      }
     }
 
     @test
