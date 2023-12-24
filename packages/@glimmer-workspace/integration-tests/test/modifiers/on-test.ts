@@ -31,7 +31,6 @@ const isChrome = hasDom
   ? typeof global.chrome === 'object' && !(typeof global.opera === 'object')
   : false;
 const isFirefox = hasDom ? /Firefox|FxiOS/u.test(navigator.userAgent) : false;
-const isIE11 = !global.ActiveXObject && 'ActiveXObject' in window;
 
 interface Counters {
   adds: number;
@@ -82,8 +81,6 @@ if (hasDom) {
 
       if (isChrome || isFirefox) {
         assert.strictEqual(SUPPORTS_EVENT_OPTIONS, true, 'is true in chrome and firefox');
-      } else if (isIE11) {
-        assert.strictEqual(SUPPORTS_EVENT_OPTIONS, false, 'is false in IE11');
       }
     }
 
@@ -189,11 +186,7 @@ if (hasDom) {
 
       assert.strictEqual(count, 1, 'has been called 1 times');
 
-      if (isIE11) {
-        this.assertCounts({ adds: 1, removes: 1 });
-      } else {
-        this.assertCounts({ adds: 1, removes: 0 });
-      }
+      this.assertCounts({ adds: 1, removes: 0 });
     }
 
     @test
@@ -226,11 +219,7 @@ if (hasDom) {
       button.click();
       assert.strictEqual(count, 3, 'is not called again');
 
-      if (isIE11) {
-        this.assertCounts({ adds: 2, removes: 2 });
-      } else {
-        this.assertCounts({ adds: 2, removes: 1 });
-      }
+      this.assertCounts({ adds: 2, removes: 1 });
     }
 
     @test

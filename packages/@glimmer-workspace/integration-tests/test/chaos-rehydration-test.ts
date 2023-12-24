@@ -26,11 +26,6 @@ import {
   test,
 } from '..';
 
-// `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
-// `"ActiveXObject" in window` returns `true` in all IE versions
-// only IE11 will pass _both_ of these conditions
-const isIE11 = !(window as any).ActiveXObject && 'ActiveXObject' in window;
-
 abstract class AbstractChaosMonkeyTest extends RenderTest {
   abstract renderClientSide(template: string | ComponentBlueprint, context: Dict<unknown>): void;
 
@@ -247,13 +242,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
     const b = blockStack();
 
     // assert that we are in a "browser corrected" state (note the `</p>` before the `<div>world!</div>`)
-    if (isIE11) {
-      // IE11 doesn't behave the same as modern browsers
-      this.assertServerOutput(`<p>hello ${b(1)}<div>world!</div>${b(1)}<p></p>`);
-    } else {
-      this.assertServerOutput(`<p>hello ${b(1)}</p><div>world!</div>${b(1)}<p></p>`);
-    }
-
+    this.assertServerOutput(`<p>hello ${b(1)}</p><div>world!</div>${b(1)}<p></p>`);
     this.runIterations(template, context, '<p>hello <div>world!</div></p>', 100);
   }
 }

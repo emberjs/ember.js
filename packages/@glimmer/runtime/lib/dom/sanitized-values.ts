@@ -78,12 +78,7 @@ function findProtocolForURL() {
       }
     };
   } else {
-    // fallback for IE11 support
-    let parsingNode = document.createElement('a');
-    return (url: string) => {
-      parsingNode.href = url;
-      return parsingNode.protocol;
-    };
+    throw new Error(`@glimmer/runtime needs a valid "globalThis.URL"`);
   }
 }
 
