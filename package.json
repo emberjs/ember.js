@@ -180,6 +180,9 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.2.0"
+    },
+    "patchedDependencies": {
+      "@glimmer/runtime@0.85.13": "patches/@glimmer__runtime@0.85.13.patch"
     }
   },
   "peerDependencies": {

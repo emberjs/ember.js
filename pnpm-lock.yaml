@@ -5,7 +5,13 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  socket.io: ^4.7.0
   rollup: ^4.2.0
+
+patchedDependencies:
+  '@glimmer/runtime@0.85.13':
+    hash: kcqci6i5dl3ddxryul6nvp32au
+    path: patches/@glimmer__runtime@0.85.13.patch
 
 importers:
 
@@ -55,7 +61,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       '@glimmer/syntax':
         specifier: 0.85.13
         version: 0.85.13
@@ -455,7 +461,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       '@glimmer/syntax':
         specifier: 0.85.13
         version: 0.85.13
@@ -635,7 +641,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -859,7 +865,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -907,7 +913,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
 
   packages/@ember/object:
     dependencies:
@@ -1291,7 +1297,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1396,7 +1402,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       '@glimmer/tracking':
         specifier: workspace:*
         version: link:../@glimmer/tracking
@@ -1495,7 +1501,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       '@glimmer/syntax':
         specifier: 0.85.13
         version: 0.85.13
@@ -1660,7 +1666,7 @@ importers:
         version: 0.85.13
       '@glimmer/runtime':
         specifier: 0.85.13
-        version: 0.85.13
+        version: 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       '@glimmer/syntax':
         specifier: 0.85.13
         version: 0.85.13
@@ -3843,7 +3849,7 @@ packages:
     resolution: {integrity: sha512-Lb/0zPoucm8hQ/qd6A8RYgdoLSC5tulZJ7LahAq1/bpG42vJyQMGYBjxVL2ffQv+Yxao/nEQxUP5ssoLXS+gvw==}
     dependencies:
       '@glimmer/interfaces': 0.85.13
-      '@glimmer/runtime': 0.85.13
+      '@glimmer/runtime': 0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au)
       '@glimmer/util': 0.85.13
       '@simple-dom/document': 1.4.0
     dev: false
@@ -3892,7 +3898,7 @@ packages:
       '@glimmer/validator': 0.85.13
     dev: false
 
-  /@glimmer/runtime@0.85.13:
+  /@glimmer/runtime@0.85.13(patch_hash=kcqci6i5dl3ddxryul6nvp32au):
     resolution: {integrity: sha512-jum5u2mX0WOAAF3L0pVZ/AOAMjJRKfGIqcStUYldmnf/xCFucKsh2WzSBS5KxlHDt4OGs00GflkpoTZkqPnCmg==}
     dependencies:
       '@glimmer/destroyable': 0.85.13
@@ -3908,6 +3914,7 @@ packages:
       '@glimmer/vm': 0.85.13
       '@glimmer/wire-format': 0.85.13
     dev: false
+    patched: true
 
   /@glimmer/syntax@0.84.3:
     resolution: {integrity: sha512-ioVbTic6ZisLxqTgRBL2PCjYZTFIwobifCustrozRU2xGDiYvVIL0vt25h2c1ioDsX59UgVlDkIK4YTAQQSd2A==}
