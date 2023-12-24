@@ -2,7 +2,7 @@ import type { Item } from '@/utils/data';
 
 type RowArgs = {
   item: Item;
-  select: (item: Item) => void;
+  select: () => void;
   remove: (item: Item) => void;
 };
 
@@ -15,6 +15,6 @@ export default class Row {
     this.args.remove(this.args.item);
   };
   onSelect = () => {
-    this.args.select(this.args.item);
+    this.args.select();
   };
 }
