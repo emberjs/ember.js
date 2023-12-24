@@ -171,7 +171,7 @@ if (import.meta.env.DEV) {
       current = current.parent;
     }
 
-    return trackingStack.map((label, index) => ' '.repeat(2*index) + label).join('\n');
+    return trackingStack.map((label, index) => ' '.repeat(2 * index) + label).join('\n');
   };
 
   debug.markTagAsConsumed = (_tag: Tag) => {
