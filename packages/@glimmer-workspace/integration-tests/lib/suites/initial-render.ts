@@ -1060,12 +1060,12 @@ export class InitialRenderSuite extends RenderTest {
   @test
   'Integer powers of 2'() {
     const ints = [];
-    let i = 9007199254740991; // Number.MAX_SAFE_INTEGER isn't available on IE11
+    let i = Number.MAX_SAFE_INTEGER;
     while (i > 1) {
       ints.push(i);
       i = Math.round(i / 2);
     }
-    i = -9007199254740991; // Number.MIN_SAFE_INTEGER isn't available on IE11
+    i = Number.MIN_SAFE_INTEGER;
     while (i < -1) {
       ints.push(i);
       i = Math.round(i / 2);

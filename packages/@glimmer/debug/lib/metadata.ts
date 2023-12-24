@@ -197,7 +197,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   // eslint-disable-next-line regexp/no-super-linear-backtracking
   out = /^\s*?\n?([\s\S]*?)\s*$/u.exec(out)![1] as string;
 
-  let min = 9007199254740991; // Number.MAX_SAFE_INTEGER isn't available on IE11
+  let min = Number.MAX_SAFE_INTEGER;
 
   for (let line of out.split('\n')) {
     let leading = /^\s*/u.exec(line)![0].length;

@@ -29,11 +29,6 @@ import {
   toTextContent,
 } from '..';
 
-// `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
-// `"ActiveXObject" in window` returns `true` in all IE versions
-// only IE11 will pass _both_ of these conditions
-const isIE11 = !(window as any).ActiveXObject && 'ActiveXObject' in window;
-
 class RenderTests extends InitialRenderSuite {
   static override suiteName = 'initial render (client)';
   override name = 'client';
@@ -1062,13 +1057,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
 
     let id = this.testType === 'Dynamic' ? 3 : 2;
 
-    // assert that we are in a "browser corrected" state (note the `</p>` before the `<div>world!</div>`)
-    if (isIE11) {
-      // IE11 doesn't behave the same as modern browsers
-      this.assertServerComponent(`<p>hello ${b(id)}<div>world!</div>${b(id)}<p></p>`);
-    } else {
-      this.assertServerComponent(`<p>hello ${b(id)}</p><div>world!</div>${b(id)}<p></p>`);
-    }
+    this.assertServerComponent(`<p>hello ${b(id)}</p><div>world!</div>${b(id)}<p></p>`);
 
     this.renderClientSide(componentToRender, { show: true });
     this.assertComponent('<p>hello <div>world!</div></p>');
