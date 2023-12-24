@@ -37,55 +37,62 @@ interface NodeUrlModule {
   parse(url: string): NodeUrlParseResult;
 }
 
-let protocolForUrl: (url: string) => string;
+function findProtocolForURL() {
+  if (
+    typeof URL === 'object' &&
+    URL !== null &&
+    // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
+    // thinks it is `never` without this `as unknown as any`
+    typeof (URL as unknown as any).parse === 'function'
+  ) {
+    // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
+    // ultimately, this should be changed (so that we can either rely on the natural `URL` global
+    // that exists) but for now we have to detect the specific `FastBoot` case first
+    //
+    // a future version of `fastboot` will detect if this legacy URL setup is required (by
+    // inspecting Ember version) and if new enough, it will avoid shadowing the `URL` global
+    // constructor with `require('url')`.
+    let nodeURL = URL as NodeUrlModule;
 
-if (
-  typeof URL === 'object' &&
-  URL !== null &&
-  // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
-  // thinks it is `never` without this `as unknown as any`
-  typeof (URL as unknown as any).parse === 'function'
-) {
-  // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
-  // ultimately, this should be changed (so that we can either rely on the natural `URL` global
-  // that exists) but for now we have to detect the specific `FastBoot` case first
-  //
-  // a future version of `fastboot` will detect if this legacy URL setup is required (by
-  // inspecting Ember version) and if new enough, it will avoid shadowing the `URL` global
-  // constructor with `require('url')`.
-  let nodeURL = URL as NodeUrlModule;
+    return (url: string) => {
+      let protocol = null;
 
-  protocolForUrl = (url: string) => {
-    let protocol = null;
+      if (typeof url === 'string') {
+        protocol = nodeURL.parse(url).protocol;
+      }
 
-    if (typeof url === 'string') {
-      protocol = nodeURL.parse(url).protocol;
-    }
+      return protocol === null ? ':' : protocol;
+    };
+  } else if (typeof URL === 'function') {
+    return (_url: string) => {
+      try {
+        let url = new URL(_url);
 
-    return protocol === null ? ':' : protocol;
-  };
-} else if (typeof URL === 'function') {
-  protocolForUrl = (_url: string) => {
-    try {
-      let url = new URL(_url);
+        return url.protocol;
+      } catch (error) {
+        // any non-fully qualified url string will trigger an error (because there is no
+        // baseURI that we can provide; in that case we **know** that the protocol is
+        // "safe" because it isn't specifically one of the `badProtocols` listed above
+        // (and those protocols can never be the default baseURI)
+        return ':';
+      }
+    };
+  } else {
+    // fallback for IE11 support
+    let parsingNode = document.createElement('a');
+    return (url: string) => {
+      parsingNode.href = url;
+      return parsingNode.protocol;
+    };
+  }
+}
 
-      return url.protocol;
-    } catch (error) {
-      // any non-fully qualified url string will trigger an error (because there is no
-      // baseURI that we can provide; in that case we **know** that the protocol is
-      // "safe" because it isn't specifically one of the `badProtocols` listed above
-      // (and those protocols can never be the default baseURI)
-      return ':';
-    }
-  };
-} else {
-  // fallback for IE11 support
-  let parsingNode = document.createElement('a');
-
-  protocolForUrl = (url: string) => {
-    parsingNode.href = url;
-    return parsingNode.protocol;
-  };
+let _protocolForUrlImplementation: typeof protocolForUrl | undefined;
+function protocolForUrl(url: string): string {
+  if (!_protocolForUrlImplementation) {
+    _protocolForUrlImplementation = findProtocolForURL();
+  }
+  return _protocolForUrlImplementation(url);
 }
 
 export function sanitizeAttributeValue(
