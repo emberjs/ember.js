@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/encoder",
-  "version": "0.86.0",
+  "version": "0.87.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/encoder",
   "type": "module",
   "main": "index.ts",
