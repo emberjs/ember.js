@@ -13,6 +13,24 @@
 
 
 
+
+## v0.87.0 (2023-12-24)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/debug`, `@glimmer/runtime`, `@glimmer/util`, `@glimmer/validator`
+  * [#1539](https://github.com/glimmerjs/glimmer-vm/pull/1539) Drop ie11 code ([@ef4](https://github.com/ef4))
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#1538](https://github.com/glimmerjs/glimmer-vm/pull/1538) Make feature discovery lazy ([@ef4](https://github.com/ef4))
+
+#### :house: Internal
+* [#1537](https://github.com/glimmerjs/glimmer-vm/pull/1537) adjust benchmark close to real-life usage ([@lifeart](https://github.com/lifeart))
+
+#### Committers: 2
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+
 ## v0.86.0 (2023-12-20)
 
 #### :rocket: Enhancement
