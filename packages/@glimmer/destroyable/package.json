@@ -15,7 +15,8 @@
         "types": "./dist/dev/index.d.ts",
         "development": {
           "import": "./dist/dev/index.js"
-        }
+        },
+        "import": "./dist/prod/index.js"
       }
     },
     "main": null,
