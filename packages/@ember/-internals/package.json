@@ -44,7 +44,7 @@
     "@glimmer/destroyable": "0.85.13",
     "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.85.13",
-    "@glimmer/interfaces": "0.85.13",
+    "@glimmer/interfaces": "0.87.1",
     "@glimmer/manager": "0.85.13",
     "@glimmer/node": "0.85.13",
     "@glimmer/opcode-compiler": "0.85.13",
