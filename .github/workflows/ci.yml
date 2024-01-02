@@ -45,7 +45,9 @@ jobs:
     needs: ['types']
     strategy:
       matrix:
-        ts-version: ['4.9', '5.0', '5.1', '5.2', '5.3', 'next']
+        # I removed 'next' from this list because we're seeing buggy behavior in
+        # the so-far unreleased 5.4. -ef4
+        ts-version: ['4.9', '5.0', '5.1', '5.2', '5.3']
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
