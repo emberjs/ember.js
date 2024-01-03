@@ -506,8 +506,10 @@ namespace Ember {
     get define() {
       return (globalThis as any).define;
     },
-    // @ts-expect-error These properties don't appear as being defined
-    registry: typeof requirejs !== 'undefined' ? requirejs.entries : require.entries,
+    get registry() {
+      let g = globalThis as any;
+      return g.requirejs?.entries ?? g.require.entries;
+    },
   };
 
   // ------------------------------------------------------------------------ //
