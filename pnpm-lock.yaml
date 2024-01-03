@@ -239,8 +239,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       decorator-transforms:
-        specifier: ^1.0.1
-        version: 1.0.1(@babel/core@7.23.2)
+        specifier: ^1.0.2
+        version: 1.0.2(@babel/core@7.23.2)
       ember-cli:
         specifier: ^4.10.0
         version: 4.12.2
@@ -7418,8 +7418,8 @@ packages:
       mimic-response: 1.0.1
     dev: true
 
-  /decorator-transforms@1.0.1(@babel/core@7.23.2):
-    resolution: {integrity: sha512-ZOaiw4tqiyhtqiMKCNzjS+nGsYPZltToqRAFc5rOUcc4u8d7MTlgelw1qXfL6ieg2l6xZcz6lTZ5M94Ohnk2xA==}
+  /decorator-transforms@1.0.2(@babel/core@7.23.2):
+    resolution: {integrity: sha512-Pj2U7Pt9SZYNq+FLomhHhEqkVUEIuGTAY18yzeq6jn2O4ryqAp0rlHQvAwBuoAUlsxSr4tZJAaWYqgbMORahAQ==}
     dependencies:
       '@babel/plugin-syntax-decorators': 7.23.3(@babel/core@7.23.2)
       babel-import-util: 2.0.1
