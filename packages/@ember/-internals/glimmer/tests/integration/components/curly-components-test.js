@@ -2527,7 +2527,7 @@ moduleFor(
         template: '<div id="inner-value">{{this.wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = backtrackingMessageFor('content', 'Wrapper', {
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', '_?Wrapper', {
         renderTree: ['x-outer', 'this.wrapper.content'],
       });
 

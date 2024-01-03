@@ -11,6 +11,8 @@ const projectRoot = dirname(fileURLToPath(import.meta.url));
 const packageCache = PackageCache.shared('ember-source', projectRoot);
 const { buildInfo } = require('./broccoli/build-info');
 
+const testDependencies = ['qunit', 'vite'];
+
 export default [
   esmConfig(),
   legacyBundleConfig('./lib/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js'),
@@ -117,7 +119,7 @@ function rolledUpPackages() {
 // these are the external packages that we historically "provided" from within
 // ember-source. That is, other packages could actually depend on the copies of
 // these that we publish.
-function exposedDependencies() {
+export function exposedDependencies() {
   return {
     'backburner.js': require.resolve('backburner.js/dist/es6/backburner.js'),
     rsvp: require.resolve('rsvp/lib/rsvp.js'),
@@ -138,7 +140,7 @@ function exposedDependencies() {
 
 // these are dependencies that we inline into our own published code but do not
 // expose to consumers
-function hiddenDependencies() {
+export function hiddenDependencies() {
   return {
     'simple-html-tokenizer': entrypoint(
       findFromProject('@glimmer/syntax', 'simple-html-tokenizer'),
@@ -231,8 +233,9 @@ function resolveTS() {
   };
 }
 
-function resolvePackages(...depsList) {
+export function resolvePackages(...depsList) {
   return {
+    enforce: 'pre',
     name: 'resolve-packages',
     async resolveId(source) {
       let pkgName = packageName(source);
@@ -252,13 +255,22 @@ function resolvePackages(...depsList) {
             return candidate;
           }
         }
+
+        if (testDependencies.includes(pkgName)) {
+          // these are allowed to fall through and get resolved noramlly by vite
+          // within our test suite.
+          return;
+        }
+
+        // Anything not explicitliy handled above is an error, because we don't
+        // want to accidentally incorporate anything else into the build.
         throw new Error(`missing ${source}`);
       }
     },
   };
 }
 
-function version() {
+export function version() {
   return {
     name: 'ember-version',
     load(id) {
