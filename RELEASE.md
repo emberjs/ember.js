@@ -18,7 +18,7 @@
 ## Ember Notes on Point Releases (Not Release Notes)
 
 1. Check out `beta` branch and `git pull`
-1. Make sure any master commits that are conceptually `[{BUGFIX,DOC} {beta,release}]` are cherry-picked.
+1. Make sure any main commits that are conceptually `[{BUGFIX,DOC} {beta,release}]` are cherry-picked.
 1. `git push origin beta`, and `let ciBranch = kick off a CI build`
 1. `PRIOR_VERSION=v2.5.0-beta.1 ./bin/changelog.js | uniq | pbcopy`
 1. Open `CHANGELOG.md`, paste in the results of the previous script, and clean it up for human-readability.
@@ -26,10 +26,10 @@
     1. Revert [BUGFIX ...] -> [BUGFIX] Revert ...
     1. rm [DOC] (usually)
     1. rm other trivial things
-1. Backport CHANGELOG to master
+1. Backport CHANGELOG to main
 1. `await ciBranch`
     1. if CI succeeds, process
-    1. if CI fails and it's a fix that doesn't need to be on master (e.g. linting or merge conflicts accidentally checked in), fix and retry.
+    1. if CI fails and it's a fix that doesn't need to be on main (e.g. linting or merge conflicts accidentally checked in), fix and retry.
     1. otherwise, start over
 1. Update `package.json` and `VERSION` file to use new version number
 1. git add/commit -m "Release v2.5.0-beta.2."
@@ -123,7 +123,7 @@ end
 
 ## On to the Beta Release…
 
-1. Check out `master` branch and pull to get latest `canary` on your local machine
+1. Check out `main` branch and pull to get latest `canary` on your local machine
 1. `nombom` and run those tests!
 1. Branch locally to `beta`
     1. `git checkout -b beta`
@@ -137,7 +137,7 @@ end
 
 ### Changelog
 
-1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=master ./bin/changelog.js | uniq | pbcopy`
+1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=main ./bin/changelog.js | uniq | pbcopy`
 1. Clean up changelog. Make sure the changelog from the stable release you just did is included.
 
 #### Tag & Release
