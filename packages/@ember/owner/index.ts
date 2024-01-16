@@ -77,7 +77,7 @@ import { type default as Owner, getOwner as internalGetOwner } from '@ember/-int
   @for @ember/owner
   @param {Object} object An object with an owner.
   @return {Object} An owner object.
-  @since 2.3.0
+  @since 4.10.0
   @public
 */
 // SAFETY: the cast here is necessary, instead of using an assignment, because
