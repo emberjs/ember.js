@@ -8,7 +8,7 @@ import { expectTypeOf } from 'expect-type';
 // NOTE: The types should probably be stricter, but they're from glimmer itself
 
 class PlusOne extends Helper {
-  compute([number]: [number]) {
+  override compute([number]: [number]) {
     return number + 1;
   }
 }

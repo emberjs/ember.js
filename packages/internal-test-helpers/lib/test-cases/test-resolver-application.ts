@@ -7,7 +7,7 @@ import type { InternalFactory } from '@ember/-internals/owner';
 export default abstract class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   abstract resolver?: Resolver;
 
-  get applicationOptions() {
+  override get applicationOptions() {
     return Object.assign(super.applicationOptions, {
       Resolver: ModuleBasedResolver,
     });

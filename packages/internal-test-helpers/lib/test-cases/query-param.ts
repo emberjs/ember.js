@@ -20,7 +20,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     this.add(
       'location:test',
       class extends NoneLocation {
-        setURL(path: string) {
+        override setURL(path: string) {
           if (testCase.expectedReplaceURL) {
             testCase.assert.ok(false, 'pushState occurred but a replaceState was expected');
           }
@@ -67,7 +67,7 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     return this.applicationInstance!.lookup(`route:${name}`);
   }
 
-  get routerOptions() {
+  override get routerOptions() {
     return {
       location: 'test',
     };

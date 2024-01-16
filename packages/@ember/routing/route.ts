@@ -1516,7 +1516,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     once(this._router, '_setOutlets');
   }
 
-  willDestroy() {
+  override willDestroy() {
     this.teardownViews();
   }
 

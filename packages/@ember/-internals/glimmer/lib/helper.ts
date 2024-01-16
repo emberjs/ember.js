@@ -128,7 +128,7 @@ export default class Helper<S = unknown> extends FrameworkObject {
   // here to preserve the type param.
   private declare [SIGNATURE]: S;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
     this[RECOMPUTE_TAG] = createTag();
 

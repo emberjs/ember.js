@@ -61,7 +61,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
       }
 
-      teardown() {
+      override teardown() {
         super.teardown();
         ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
       }
@@ -85,7 +85,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         });
 
         class PassThroughRoute extends Route {
-          model({ model }: { model: string }) {
+          override model({ model }: { model: string }) {
             return model;
           }
         }
@@ -197,9 +197,9 @@ if (ENV._DEBUG_RENDER_TREE) {
           'engine:foo',
           class extends Engine {
             isFooEngine = true;
-            Resolver = ModuleBasedTestResolver;
+            override Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
+            override init(properties: object | undefined) {
               super.init(properties);
               this.register(
                 'template:application',
@@ -222,7 +222,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               );
             }
 
-            buildInstance(options?: EngineInstanceOptions): EngineInstance {
+            override buildInstance(options?: EngineInstanceOptions): EngineInstance {
               let instance: EngineInstance & {
                 isFooEngineInstance?: boolean;
               } = super.buildInstance(options);
@@ -235,9 +235,9 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.add(
           'engine:bar',
           class extends Engine {
-            Resolver = ModuleBasedTestResolver;
+            override Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
+            override init(properties: object | undefined) {
               super.init(properties);
               this.register(
                 'template:application',
@@ -260,7 +260,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               );
             }
 
-            buildInstance(options?: EngineInstanceOptions): EngineInstance {
+            override buildInstance(options?: EngineInstanceOptions): EngineInstance {
               let instance: EngineInstance & {
                 isBarEngineInstance?: boolean;
               } = super.buildInstance(options);
@@ -593,9 +593,9 @@ if (ENV._DEBUG_RENDER_TREE) {
           'engine:foo',
           class extends Engine {
             isFooEngine = true;
-            Resolver = ModuleBasedTestResolver;
+            override Resolver = ModuleBasedTestResolver;
 
-            init(properties: object | undefined) {
+            override init(properties: object | undefined) {
               super.init(properties);
               this.register(
                 'template:application',
@@ -626,7 +626,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               );
             }
 
-            buildInstance(options?: EngineInstanceOptions): EngineInstance {
+            override buildInstance(options?: EngineInstanceOptions): EngineInstance {
               return (instance = super.buildInstance(options));
             }
           }

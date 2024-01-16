@@ -843,7 +843,7 @@ class Component<S = unknown>
   declare [IS_DISPATCHING_ATTRS]: boolean;
   declare [DIRTY_TAG]: DirtyableTag;
 
-  init(properties?: object | undefined) {
+  override init(properties?: object | undefined) {
     super.init(properties);
 
     // Handle methods from ViewMixin.
@@ -921,13 +921,13 @@ class Component<S = unknown>
     return this.__dispatcher;
   }
 
-  on<Target>(
+  override on<Target>(
     name: string,
     target: Target,
     method: string | ((this: Target, ...args: any[]) => void)
   ): this;
-  on(name: string, method: ((...args: any[]) => void) | string): this;
-  on(name: string, target: any, method?: any) {
+  override on(name: string, method: ((...args: any[]) => void) | string): this;
+  override on(name: string, target: any, method?: any) {
     this._dispatcher?.setupHandlerForEmberEvent(name);
     // The `on` method here comes from the Evented mixin. Since this mixin
     // is applied to the parent of this class, however, we are still able
@@ -1177,7 +1177,7 @@ class Component<S = unknown>
 
   static isComponentFactory = true;
 
-  static toString() {
+  static override toString() {
     return '@ember/component';
   }
 }

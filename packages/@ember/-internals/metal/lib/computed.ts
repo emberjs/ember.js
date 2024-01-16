@@ -319,7 +319,12 @@ export class ComputedProperty extends ComputedDescriptor {
     }
   }
 
-  setup(obj: object, keyName: string, propertyDesc: DecoratorPropertyDescriptor, meta: Meta) {
+  override setup(
+    obj: object,
+    keyName: string,
+    propertyDesc: DecoratorPropertyDescriptor,
+    meta: Meta
+  ) {
     super.setup(obj, keyName, propertyDesc, meta);
 
     assert(
@@ -543,7 +548,7 @@ export class ComputedProperty extends ComputedDescriptor {
   }
 
   /* called before property is overridden */
-  teardown(obj: object, keyName: string, meta: Meta): void {
+  override teardown(obj: object, keyName: string, meta: Meta): void {
     if (meta.revisionFor(keyName) !== undefined) {
       meta.setRevisionFor(keyName, undefined);
       meta.setValueFor(keyName, undefined);
@@ -554,7 +559,7 @@ export class ComputedProperty extends ComputedDescriptor {
 }
 
 class AutoComputedProperty extends ComputedProperty {
-  get(obj: object, keyName: string): unknown {
+  override get(obj: object, keyName: string): unknown {
     let meta = metaFor(obj);
     let tagMeta = tagMetaFor(obj);
 

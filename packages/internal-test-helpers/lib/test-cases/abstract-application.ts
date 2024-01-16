@@ -59,7 +59,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
     this._element = element;
   }
 
-  afterEach() {
+  override afterEach() {
     runDestroy(this.applicationInstance);
     runDestroy(this.application);
 

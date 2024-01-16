@@ -8,12 +8,12 @@ import { expectTypeOf } from 'expect-type';
 declare let owner: Owner;
 
 class App extends Application {
-  rootElement = '#ember-application';
-  customEvents = {
+  override rootElement = '#ember-application';
+  override customEvents = {
     mouseenter: null,
     paste: 'paste',
   };
-  ready(): this {
+  override ready(): this {
     // I'm ready!
     return this;
   }

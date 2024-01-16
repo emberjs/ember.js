@@ -348,7 +348,7 @@ export default class EventDispatcher extends EmberObject {
     this.lazyEvents.delete(event);
   }
 
-  destroy() {
+  override destroy() {
     if (this._didSetup === false) {
       return;
     }
@@ -368,7 +368,7 @@ export default class EventDispatcher extends EmberObject {
     return this._super(...arguments);
   }
 
-  toString() {
+  override toString() {
     return '(EventDispatcher)';
   }
 }

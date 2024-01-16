@@ -42,12 +42,12 @@ class Namespace extends EmberObject {
 
   declare isNamespace: true;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
     addNamespace(this);
   }
 
-  toString(): string {
+  override toString(): string {
     let existing_name = get(this, 'name') || get(this, 'modulePrefix');
     if (existing_name) {
       assert("name wasn't a string", typeof existing_name === 'string');
@@ -66,7 +66,7 @@ class Namespace extends EmberObject {
     processNamespace(this);
   }
 
-  destroy() {
+  override destroy() {
     removeNamespace(this);
     return super.destroy();
   }
