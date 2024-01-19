@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/node": "^20.9.4",
     "eslint": "^8.52.0",
-    "vite": "^5.0.10"
+    "vite": "^5.0.12"
   },
   "engines": {
     "node": ">=18.0.0"
