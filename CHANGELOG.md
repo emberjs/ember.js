@@ -1,13 +1,10 @@
 # Ember Changelog
 
-## v5.6.0-beta.2 (December 19, 2023)
+## v5.6.0 (January 22, 2024)
 
 - [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] An addon re-export should always be a JavaScript file
 - [#20603](https://github.com/emberjs/ember.js/pull/20603) [BUGFIX] Internal templates should be strictMode
 - [#20605](https://github.com/emberjs/ember.js/pull/20605) [BUGFIX] Move babel-plugin-ember-template-compilation to dependencies
-
-## v5.6.0-beta.1 (December 11, 2023)
-
 - [#20570](https://github.com/emberjs/ember.js/pull/20570) [CLEANUP] Remove all traces of named outlets code
 
 ## v5.5.0 (December 11, 2023)
