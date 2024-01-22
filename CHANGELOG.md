@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v5.4.1 (January 22, 2024)
+
+- [#20575](https://github.com/emberjs/ember.js/pull/20575) [BUGFIX] Update backburner.js to 2.4.2
+- [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] Blueprints: An addon re-export should always be a JavaScript file
+
 ## v5.4.0 (October 30, 2023)
 
 - [#20521](https://github.com/emberjs/ember.js/pull/20521) [FEATURE] Add TypeScript support for looking up controllers in DI registry
