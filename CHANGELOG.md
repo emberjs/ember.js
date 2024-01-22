@@ -1,5 +1,14 @@
 # Ember Changelog
 
+## v5.7.0-beta.1 (January 22, 2024)
+
+- [#20597](https://github.com/emberjs/ember.js/pull/20597) [FEATURE] Add explicit support TS 5.1, 5.2, and 5.3
+- [#20224](https://github.com/emberjs/ember.js/pull/20224) Integrate types for the `warn` method
+- [#20579](https://github.com/emberjs/ember.js/pull/20579) Mark `cached` as a `MethodDecorator` instead of `PropertyDecorator`
+- [#20609](https://github.com/emberjs/ember.js/pull/20609) Bump all glimmer-vm dependencies to 0.87.1
+- [#20619](https://github.com/emberjs/ember.js/pull/20619) [CLEANUP] Cleanup incorrect module usage
+- [#20620](https://github.com/emberjs/ember.js/pull/20620) [CLEANUP] Remove final eager consumption of AMD loader
+
 ## v5.6.0 (January 22, 2024)
 
 - [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] An addon re-export should always be a JavaScript file
