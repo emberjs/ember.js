@@ -56,7 +56,6 @@ import {
   componentCapabilities,
   modifierCapabilities,
   setComponentManager,
-  escapeExpression,
   getTemplates,
   setTemplates,
   template,
