@@ -1,12 +1,16 @@
 # Ember Changelog
 
+## v4.12.4 (January 22, 2024)
+
+- [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] Blueprints: An addon re-export should always be a JavaScript file
+
 ## v4.12.3 (June 30, 2023)
 
-- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX LTS] Backport more types fixes
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX] Backport more types fixes
 
 ## v4.12.2 (June 28, 2023)
 
-- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX LTS] Backport some stable type import locations
+- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX] Backport some stable type import locations
 
 ## v4.12.1 (June 12, 2023)
 
