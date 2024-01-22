@@ -339,7 +339,6 @@ let allExports = [
     },
     test56,
   ],
-  ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression', test56],
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
   ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
   ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
