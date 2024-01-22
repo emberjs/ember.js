@@ -18,7 +18,7 @@ Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels)
 Think you've found a bug or have a new feature to suggest? Let us know!
 
 ## Reporting a Bug
-1. Update to the most recent master release if possible. We may have already
+1. Update to the most recent main release if possible. We may have already
 fixed your bug.
 
 2. Search for similar issues. It's possible somebody has encountered
@@ -53,7 +53,7 @@ might close the issue if we do not hear from you after two weeks since the
 original notice.
 
 * If you submit a feature request as an issue, you will be invited to follow the
-[instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
+[instructions in this document](https://github.com/emberjs/ember.js/blob/main/CONTRIBUTING.md#requesting-a-feature)
 and the issue will be closed
 * Issues that become inactive will be labeled accordingly
   to inform the original poster and Ember contributors that the issue
@@ -174,7 +174,7 @@ a test! If your change is a new feature, please
 [wrap it in a feature flag](https://guides.emberjs.com/release/contributing/adding-new-features/).
 
 4. Make sure to check out the
-   [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
+   [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/main/STYLEGUIDE.md) and
    ensure that your code complies with the rules. If you missed a rule or two, don't worry, our
    tests will warn you.
 
@@ -299,7 +299,7 @@ In general bug fixes are pulled into the beta branch. As such, the prefix is: `[
 
 For bugs related to canary features, follow the prefixing rules for features.
 
-The vast majority of bug fixes apply to the current stable or beta releases, so submit your PR against `emberjs:master` with one of the above mentioned BUGFIX tags.  (In the unusual case of a bug fix specifically for a past release, tag for that release `[BUGFIX release-1-13]` and submit the PR against the stable branch for that release: `emberjs:stable-1-13`.)
+The vast majority of bug fixes apply to the current stable or beta releases, so submit your PR against `emberjs:main` with one of the above mentioned BUGFIX tags.  (In the unusual case of a bug fix specifically for a past release, tag for that release `[BUGFIX release-1-13]` and submit the PR against the stable branch for that release: `emberjs:stable-1-13`.)
 
 ### Cleanup
 
