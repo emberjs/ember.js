@@ -7,6 +7,10 @@
 - [#20605](https://github.com/emberjs/ember.js/pull/20605) [BUGFIX] Move babel-plugin-ember-template-compilation to dependencies
 - [#20570](https://github.com/emberjs/ember.js/pull/20570) [CLEANUP] Remove all traces of named outlets code
 
+## v4.12.4 (January 22, 2024)
+
+- [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] Blueprints: An addon re-export should always be a JavaScript file
+
 ## v5.5.0 (December 11, 2023)
 
 - [#20575](https://github.com/emberjs/ember.js/pull/20575) [BUGFIX] Update backburner.js to 2.4.2
@@ -39,6 +43,7 @@
 ## v4.12.3 (June 30, 2023)
 
 - [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX] Backport more types fixes
+- [#20493](https://github.com/emberjs/ember.js/pull/20493) [BUGFIX] Backport more types fixes
 
 ## v5.1.1 (June 29, 2023)
 
@@ -49,6 +54,7 @@
 
 ## v4.12.2 (June 28, 2023)
 
+- [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX] Backport some stable type import locations
 - [#20481](https://github.com/emberjs/ember.js/pull/20481) [BUGFIX] Backport some stable type import locations
 
 ## v5.1.0 (June 26, 2023)
