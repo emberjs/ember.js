@@ -16,7 +16,11 @@ const { packageName: getPackageName, PackageCache } = require('@embroider/shared
 
 export default defineConfig({
   plugins: [
-    babel({ babelHelpers: 'bundled', extensions: ['.js', '.ts'] }),
+    babel({
+      babelHelpers: 'bundled',
+      extensions: ['.js', '.ts'],
+      configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
+    }),
     resolvePackages(exposedDependencies(), hiddenDependencies()),
     viteResolverBug(),
     version(),

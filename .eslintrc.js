@@ -126,6 +126,7 @@ module.exports = {
         '.eslintrc.js',
         'rollup.config.mjs',
         'babel.config.mjs',
+        'babel.test.config.mjs',
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',
