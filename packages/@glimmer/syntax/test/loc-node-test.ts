@@ -337,6 +337,30 @@ data-barf="herpy"
   }
 });
 
+test('element block params', () => {
+  let ast = parse(`<Foo as |ab cd efg|></Foo>`);
+
+  let [Foo] = ast.body;
+  if (assertNodeType(Foo, 'ElementNode')) {
+    let [ab, cd, efg] = guardArray({ blockParamNodes: Foo.blockParamNodes }, { min: 3 });
+    locEqual(ab, 1, 8, 1, 12);
+    locEqual(cd, 1, 12, 1, 15);
+    locEqual(efg, 1, 15, 1, 19);
+  }
+});
+
+test('mustache block params', () => {
+  let ast = parse(`{{#Foo as |ab cd efg|}}{{/Foo}}`);
+
+  let [Foo] = ast.body;
+  if (assertNodeType(Foo, 'BlockStatement')) {
+    let [ab, cd, efg] = guardArray({ blockParamNodes: Foo.program.blockParamNodes }, { min: 3 });
+    locEqual(ab, 1, 11, 1, 13);
+    locEqual(cd, 1, 14, 1, 16);
+    locEqual(efg, 1, 17, 1, 20);
+  }
+});
+
 test('element dynamic attribute', () => {
   let ast = parse(`<img src={{blah}}>`);
 
