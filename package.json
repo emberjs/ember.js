@@ -57,7 +57,6 @@
     "unlink:all": "node bin/unlink-all.mjs"
   },
   "dependencies": {
-    "@babel/helper-module-imports": "^7.16.7",
     "@ember/edition-utils": "^1.2.0",
     "@glimmer/compiler": "0.87.1",
     "@glimmer/component": "^1.1.2",
