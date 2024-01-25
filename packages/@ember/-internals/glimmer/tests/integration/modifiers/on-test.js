@@ -267,6 +267,37 @@ moduleFor(
 
       this.assertCounts({ adds: 1, removes: 1 });
     }
+
+    [`@test can be set or unset dynamically multiple times on an element`](assert) {
+      let wasCalled = false;
+      let toggle = () => (wasCalled = !wasCalled);
+
+      this.render(
+        '<button {{(if this.bindClick (modifier this.on "click" this.toggle))}}></button>',
+        {
+          bindClick: false,
+          toggle,
+          on,
+        }
+      );
+
+      this.$('button').click();
+      assert.false(wasCalled);
+
+      runTask(() => this.context.set('bindClick', true));
+
+      this.$('button').click();
+      assert.true(wasCalled);
+
+      wasCalled = false;
+      runTask(() => this.context.set('bindClick', false));
+      this.$('button').click();
+      assert.false(wasCalled);
+
+      runTask(() => this.context.set('bindClick', true));
+      this.$('button').click();
+      assert.true(wasCalled);
+    }
   }
 );
 
