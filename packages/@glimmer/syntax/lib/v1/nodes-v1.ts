@@ -48,6 +48,7 @@ export interface Program extends CommonProgram {
 
 export interface Block extends CommonProgram {
   type: 'Block';
+  blockParamNodes: BlockParam[];
 }
 
 export type EntityEncodingState = 'transformed' | 'raw';
@@ -180,6 +181,7 @@ export interface ElementNode extends BaseNode {
   selfClosing: boolean;
   attributes: AttrNode[];
   blockParams: string[];
+  blockParamNodes: BlockParam[];
   modifiers: ElementModifierStatement[];
   comments: MustacheCommentStatement[];
   children: Statement[];
@@ -326,6 +328,16 @@ export interface HashPair extends BaseNode {
   value: Expression;
 }
 
+/**
+ * a param inside the pipes of elements or mustache blocks,
+ * <Foo as |bar|>... bar is a BlockParam.
+ * {{#Foo as |bar|}}... bar is a BlockParam.
+ */
+export interface BlockParam extends BaseNode {
+  type: 'BlockParam';
+  value: string;
+}
+
 export interface StripFlags {
   open: boolean;
   close: boolean;
@@ -361,6 +373,7 @@ export type Nodes = SharedNodes & {
   PathExpression: PathExpression;
   Hash: Hash;
   HashPair: HashPair;
+  BlockParam: BlockParam;
 };
 
 export type NodeType = keyof Nodes;

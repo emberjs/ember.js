@@ -242,6 +242,8 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
     selfClosing: selfClosing,
     attributes: attrs || [],
     blockParams: blockParams || [],
+    blockParamNodes:
+      blockParams?.map((x) => ({ type: 'BlockParam', value: x }) as ASTv1.BlockParam) || [],
     modifiers: modifiers || [],
     comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
     children: children || [],
@@ -484,6 +486,8 @@ function buildBlockItself(
     type: 'Block',
     body: body || [],
     blockParams: blockParams || [],
+    blockParamNodes:
+      blockParams?.map((b) => ({ type: 'BlockParam', value: b }) as ASTv1.BlockParam) || [],
     chained,
     loc: buildLoc(loc || null),
   };

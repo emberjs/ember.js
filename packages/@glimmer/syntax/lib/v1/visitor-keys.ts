@@ -34,6 +34,7 @@ const visitorKeys = {
 
   Hash: ['pairs'],
   HashPair: ['value'],
+  BlockParam: [],
 
   // v2 new nodes
   NamedBlock: ['attributes', 'modifiers', 'children', 'comments'],

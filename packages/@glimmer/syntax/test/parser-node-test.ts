@@ -921,6 +921,8 @@ export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.E
     selfClosing: selfClosing,
     attributes: attrs || [],
     blockParams: blockParams || [],
+    blockParamNodes:
+      blockParams?.map((b) => ({ type: 'BlockParam', value: b }) as ASTv1.BlockParam) || [],
     modifiers: modifiers || [],
     comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
     children: children || [],
