@@ -42,6 +42,9 @@ class Builders {
       type: 'Block',
       body: body,
       blockParams: blockParams,
+      blockParamNodes: blockParams?.map(
+        (b) => ({ type: 'BlockParam', value: b }) as ASTv1.BlockParam
+      ),
       chained,
       loc,
     };
@@ -183,7 +186,9 @@ class Builders {
         .map((t) => ({ type: 'ElementPartNode', value: t }) as ASTv1.ElementPartNode),
       selfClosing: selfClosing,
       attributes: attrs || [],
-      blockParams: blockParams || [],
+      blockParams: blockParams,
+      blockParamNodes:
+        blockParams.map((x) => ({ type: 'BlockParam', value: x }) as ASTv1.BlockParam) || [],
       modifiers: modifiers || [],
       comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
       children: children || [],
