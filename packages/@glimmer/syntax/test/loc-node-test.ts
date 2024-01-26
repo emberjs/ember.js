@@ -137,17 +137,18 @@ test('html elements', () => {
 test('html elements with paths', () => {
   let ast = parse(`
     <Foo as |bar|>
-      <bar.x.y/>
-      <bar.x.y></bar.x.y>
+      <bar.x.y class='bar'/>
+      <bar.x.y class='bar'></bar.x.y>
     </Foo>
   `);
 
-  let [, section] = ast.body;
-  locEqual(section, 2, 4, 5, 10, 'Foo element');
-  if (assertNodeType(section, 'ElementNode')) {
-    locEqual(section.startTag, 2, 4, 2, 18, 'Foo start tag');
-    locEqual(section.endTag, 5, 4, 5, 10, 'Foo end tag');
-    let [, barSelfClosed] = section.children;
+  let [, foo] = ast.body;
+  locEqual(foo, 2, 4, 5, 10, 'Foo element');
+  if (assertNodeType(foo, 'ElementNode')) {
+    locEqual(foo.startTag, 2, 4, 2, 18, 'Foo start tag');
+    locEqual(foo.nameNode, 2, 5, 2, 8, 'Foo name node');
+    locEqual(foo.endTag, 5, 4, 5, 10, 'Foo end tag');
+    let [, barSelfClosed] = foo.children;
     if (assertNodeType(barSelfClosed, 'ElementNode')) {
       locEqual(barSelfClosed.parts[0], 3, 7, 3, 10, 'bar.x.y bar part');
       locEqual(barSelfClosed.parts[1], 3, 11, 3, 12, 'bar.x.y x part');
