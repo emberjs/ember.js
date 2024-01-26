@@ -140,6 +140,15 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       value: name,
       loc: loc,
     };
+    element.nameNode = {
+      type: 'ElementNameNode',
+      value: name,
+      loc: loc
+        .withStart(this.source.offsetFor(loc.startPosition.line, loc.startPosition.column + 1))
+        .withEnd(
+          this.source.offsetFor(loc.startPosition.line, loc.startPosition.column + 1 + name.length)
+        ),
+    };
     parseElementPartLocs(this.source, element);
     this.elementStack.push(element);
   }

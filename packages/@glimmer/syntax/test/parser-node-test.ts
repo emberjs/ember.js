@@ -266,6 +266,17 @@ test('Element modifiers', () => {
   );
 });
 
+test('Element paths', (assert) => {
+  let t = "<bar.x.y class='bar'></bar.x.y>";
+  const elem = element('bar.x.y', ['attrs', ['class', 'bar']]);
+  astEqual(t, b.program([elem]));
+  assert.strictEqual(elem.parts.length, 3);
+  assert.deepEqual(
+    elem.parts.map((p) => p.value),
+    ['bar', 'x', 'y']
+  );
+});
+
 test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', () => {
   let t = '<input {{bar}}>';
   astEqual(t, b.program([element('input', ['modifiers', 'bar'])]));
