@@ -9,7 +9,7 @@ import type * as HBS from '../v1/handlebars-ast';
 import { Parser } from '../parser';
 import { NON_EXISTENT_LOCATION } from '../source/location';
 import { generateSyntaxError } from '../syntax-error';
-import { appendChild, isHBSLiteral, printLiteral } from '../utils';
+import { appendChild, isHBSLiteral, parseProgramBlockParamsLocs, printLiteral } from '../utils';
 import { PathExpressionImplV1 } from '../v1/legacy-interop';
 import b from '../v1/parser-builders';
 
@@ -109,6 +109,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       inverseStrip: block.inverseStrip,
       closeStrip: block.closeStrip,
     });
+    parseProgramBlockParamsLocs(this.source, node);
 
     const parentProgram = this.currentElement();
 
