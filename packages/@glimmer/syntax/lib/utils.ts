@@ -1,7 +1,7 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/util';
 
-import type { src } from '..';
+import type * as src from './source/api';
 import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
 
@@ -109,10 +109,25 @@ function parseBlockParams(element: ASTv1.ElementNode): Nullable<ASTv1.BlockParam
             element.loc
           );
         }
+        let loc = element.attributes[i]!.loc;
+        if (attrNames[i]!.startsWith('|')) {
+          loc = loc.slice({ skipStart: 1 });
+        }
+        if (attrNames[i]!.endsWith('|')) {
+          loc = loc.slice({ skipEnd: 1 });
+        }
+
+        // fix hbs parser bug, the range contains the whitespace between attributes...
+        if (loc.endPosition.column - loc.startPosition.column > param.length) {
+          loc = loc.slice({
+            skipEnd: loc.endPosition.column - loc.startPosition.column - param.length,
+          });
+        }
+
         params.push({
           type: 'BlockParam',
           value: param,
-          loc: element.attributes[i]!.loc,
+          loc,
         });
       }
     }
