@@ -343,14 +343,16 @@ test('element block params', () => {
   let [Foo] = ast.body;
   if (assertNodeType(Foo, 'ElementNode')) {
     let [ab, cd, efg] = guardArray({ blockParamNodes: Foo.blockParamNodes }, { min: 3 });
-    locEqual(ab, 1, 8, 1, 12);
-    locEqual(cd, 1, 12, 1, 15);
-    locEqual(efg, 1, 15, 1, 19);
+    locEqual(ab, 1, 9, 1, 11);
+    locEqual(cd, 1, 12, 1, 14);
+    locEqual(efg, 1, 15, 1, 18);
   }
 });
 
 test('mustache block params', () => {
   let ast = parse(`{{#Foo as |ab cd efg|}}{{/Foo}}`);
+  `
+{{#Foo as |ab cd efg|}}{{/Foo}}`;
 
   let [Foo] = ast.body;
   if (assertNodeType(Foo, 'BlockStatement')) {
