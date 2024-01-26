@@ -15,6 +15,26 @@
 
 
 
+
+## v0.88.0 (2024-01-26)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1552](https://github.com/glimmerjs/glimmer-vm/pull/1552) add block param nodes ([@patricklx](https://github.com/patricklx))
+  * [#1553](https://github.com/glimmerjs/glimmer-vm/pull/1553) add element parts, startTag & endTag ([@patricklx](https://github.com/patricklx))
+
+#### :bug: Bug Fix
+* `@glimmer/destroyable`
+  * [#1543](https://github.com/glimmerjs/glimmer-vm/pull/1543) Fix @glimmer/destroyable dev exports ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* [#1554](https://github.com/glimmerjs/glimmer-vm/pull/1554) support run tests on windows ([@patricklx](https://github.com/patricklx))
+* [#1544](https://github.com/glimmerjs/glimmer-vm/pull/1544) Upgrade esyes ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.87.1 (2023-12-24)
 
 #### :rocket: Enhancement
