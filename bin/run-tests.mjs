@@ -4,18 +4,19 @@
 import child from 'child_process';
 import { resolve } from 'path';
 import PCR from 'puppeteer-chromium-resolver';
+import { fileURLToPath } from 'url';
 
 // eslint-disable-next-line new-cap
 const { puppeteer, executablePath } = await PCR({});
 
-const __root = new URL('..', import.meta.url).pathname;
+const __root = fileURLToPath(new URL('..', import.meta.url));
 
 console.log('[ci] starting');
 
 await /** @type {Promise<void>} */ (
   new Promise((fulfill) => {
-    const runvite = child.spawn(
-      resolve(__root, 'node_modules', '.bin', 'vite'),
+    const runvite = child.fork(
+      resolve(__root, 'node_modules', 'vite', 'bin', 'vite.js'),
       ['--port', '60173', '--no-open'],
       {
         stdio: 'pipe',
@@ -24,11 +25,11 @@ await /** @type {Promise<void>} */ (
 
     process.on('exit', () => runvite.kill());
 
-    runvite.stderr.on('data', (data) => {
+    runvite.stderr?.on('data', (data) => {
       console.log('stderr', String(data));
     });
 
-    runvite.stdout.on('data', (data) => {
+    runvite.stdout?.on('data', (data) => {
       const chunk = String(data);
       console.log('stdout', chunk);
       if (chunk.includes('Local') && chunk.includes('60173')) {
