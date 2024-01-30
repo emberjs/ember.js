@@ -44,11 +44,11 @@ export interface BlockOperand {
 export interface StdLibOperand {
   type: StdLibOperandType;
   value:
-  | 'main'
-  | 'trusting-append'
-  | 'cautious-append'
-  | 'trusting-non-dynamic-append'
-  | 'cautious-non-dynamic-append';
+    | 'main'
+    | 'trusting-append'
+    | 'cautious-append'
+    | 'trusting-non-dynamic-append'
+    | 'cautious-non-dynamic-append';
 }
 
 export interface NonSmallIntOperand {
