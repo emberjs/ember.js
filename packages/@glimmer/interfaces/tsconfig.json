@@ -1,0 +1,11 @@
+{
+  "extends": ["../tsconfig.json"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "moduleResolution": "Node16"
+  },
+  "include": [
+    "index.d.ts",
+    "lib"
+  ]
+}

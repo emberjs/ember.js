@@ -1,9 +1,9 @@
-import type { Dict } from './core';
-import type { InternalComponentManager } from './managers';
-import type { Reference } from './references';
-import type { ScopeSlot } from './runtime';
-import type { CompilableProgram } from './template';
-import type { ProgramSymbolTable } from './tier1/symbol-table';
+import type { Dict } from './core.js';
+import type { InternalComponentManager } from './managers.js';
+import type { Reference } from './references.js';
+import type { ScopeSlot } from './runtime.js';
+import type { CompilableProgram } from './template.js';
+import type { ProgramSymbolTable } from './tier1/symbol-table.js';
 
 export type ComponentDefinitionState = object;
 export type ComponentInstanceState = unknown;

@@ -1,8 +1,8 @@
-import type { Dict, Nullable } from '../core';
-import type { Reference } from '../references';
-import type { CompilableBlock } from '../template';
-import type { BlockSymbolTable } from '../tier1/symbol-table';
-import type { Owner } from './owner';
+import type { Dict, Nullable } from '../core.js';
+import type { Reference } from '../references.js';
+import type { CompilableBlock } from '../template.js';
+import type { BlockSymbolTable } from '../tier1/symbol-table.js';
+import type { Owner } from './owner.js';
 
 export type Block = CompilableBlock | number;
 

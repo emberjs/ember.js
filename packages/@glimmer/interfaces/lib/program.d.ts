@@ -1,10 +1,10 @@
-import type { Encoder } from './compile';
-import type { ComponentDefinition, ComponentDefinitionState } from './components';
-import type { HelperDefinitionState } from './runtime';
-import type { ModifierDefinitionState } from './runtime/modifier';
-import type { CompileTimeResolver, ResolvedComponentDefinition } from './serialize';
-import type { ContainingMetadata, STDLib, Template } from './template';
-import type { SomeVmOp, VmMachineOp, VmOp } from './vm-opcodes';
+import type { Encoder } from './compile/index.js';
+import type { ComponentDefinition, ComponentDefinitionState } from './components.js';
+import type { HelperDefinitionState } from './runtime.js';
+import type { ModifierDefinitionState } from './runtime/modifier.js';
+import type { CompileTimeResolver, ResolvedComponentDefinition } from './serialize.js';
+import type { ContainingMetadata, STDLib, Template } from './template.js';
+import type { SomeVmOp, VmMachineOp, VmOp } from './vm-opcodes.js';
 
 export type CreateRuntimeOp = (heap: CompileTimeHeap) => RuntimeOp;
 

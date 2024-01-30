@@ -1,4 +1,4 @@
-import type { Nullable } from './core';
+import type { Nullable } from './core.js';
 
 export type ConstantReference = 0;
 export type ComputeReference = 1;

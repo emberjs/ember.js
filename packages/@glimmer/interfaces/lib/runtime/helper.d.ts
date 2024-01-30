@@ -1,7 +1,7 @@
-import type { Reference } from '../references';
-import type { CapturedArguments } from './arguments';
-import type { Owner } from './owner';
-import type { DynamicScope } from './scope';
+import type { Reference } from '../references.js';
+import type { CapturedArguments } from './arguments.js';
+import type { Owner } from './owner.js';
+import type { DynamicScope } from './scope.js';
 
 export type HelperDefinitionState = object;
 

@@ -1,7 +1,7 @@
 import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
-import type { Bounds } from '../dom/bounds';
-import type { Arguments, CapturedArguments } from './arguments';
+import type { Bounds } from '../dom/bounds.js';
+import type { Arguments, CapturedArguments } from './arguments.js';
 
 export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component';
 
