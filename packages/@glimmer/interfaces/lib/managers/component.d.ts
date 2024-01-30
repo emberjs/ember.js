@@ -38,7 +38,7 @@ export interface ComponentManagerWithUpdateHook<ComponentStateBucket>
 
 export interface ComponentManagerWithAsyncUpdateHook<ComponentStateBucket>
   extends ComponentManagerWithAsyncLifeCycleCallbacks<ComponentStateBucket>,
-  ComponentManagerWithUpdateHook<ComponentStateBucket> {
+    ComponentManagerWithUpdateHook<ComponentStateBucket> {
   didUpdateComponent(instance: ComponentStateBucket): void;
 }
 

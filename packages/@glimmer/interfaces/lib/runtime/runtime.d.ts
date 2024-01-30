@@ -1,5 +1,9 @@
-import type { ResolutionTimeConstants, RuntimeConstants, RuntimeHeap, RuntimeOp } from
-  '../program.js';
+import type {
+  ResolutionTimeConstants,
+  RuntimeConstants,
+  RuntimeHeap,
+  RuntimeOp,
+} from '../program.js';
 import type { RuntimeResolver } from '../serialize.js';
 import type { Environment } from './environment.js';
 

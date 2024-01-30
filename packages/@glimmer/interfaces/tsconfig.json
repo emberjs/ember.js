@@ -4,8 +4,5 @@
     "rootDir": ".",
     "moduleResolution": "Node16"
   },
-  "include": [
-    "index.d.ts",
-    "lib"
-  ]
+  "include": ["index.d.ts", "lib"]
 }
