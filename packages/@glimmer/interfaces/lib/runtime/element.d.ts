@@ -1,5 +1,5 @@
-import type { Nullable } from '../core';
-import type { Reference } from '../references';
+import type { Nullable } from '../core.js';
+import type { Reference } from '../references.js';
 
 export interface ElementOperations {
   setAttribute(

@@ -1,5 +1,5 @@
-import type { Helper, HelperDefinitionState, Owner } from '../../runtime';
-import type { HelperManager } from '../helper';
+import type { Helper, HelperDefinitionState, Owner } from '../../runtime.js';
+import type { HelperManager } from '../helper.js';
 
 export interface InternalHelperManager<TOwner extends Owner> {
   getDelegateFor(owner: TOwner | undefined): HelperManager<unknown>;

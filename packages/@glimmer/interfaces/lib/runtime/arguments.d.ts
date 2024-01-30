@@ -1,6 +1,6 @@
-import type { Nullable } from '../core';
-import type { Reference } from '../references';
-import type { ScopeBlock } from './scope';
+import type { Nullable } from '../core.js';
+import type { Reference } from '../references.js';
+import type { ScopeBlock } from './scope.js';
 
 declare const CAPTURED_ARGS: unique symbol;
 

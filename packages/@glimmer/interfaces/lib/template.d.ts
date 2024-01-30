@@ -1,11 +1,11 @@
-import type { PresentArray } from './array';
-import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile';
-import type { EncoderError } from './compile/encoder';
-import type { Nullable } from './core';
-import type { InternalComponentCapabilities } from './managers/internal/component';
-import type { CompileTimeCompilationContext, ConstantPool, SerializedHeap } from './program';
-import type { Owner } from './runtime';
-import type { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
+import type { PresentArray } from './array.js';
+import type { EncoderError } from './compile/encoder.js';
+import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile/index.js';
+import type { Nullable } from './core.js';
+import type { InternalComponentCapabilities } from './managers/internal/component.js';
+import type { CompileTimeCompilationContext, ConstantPool, SerializedHeap } from './program.js';
+import type { Owner } from './runtime.js';
+import type { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table.js';
 
 export interface CompilableProgram extends CompilableTemplate<ProgramSymbolTable> {
   moduleName: string;

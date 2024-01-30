@@ -1,5 +1,5 @@
-import type { Arguments } from '../runtime';
-import type { Capabilities } from './capabilities';
+import type { Arguments } from '../runtime.js';
+import type { Capabilities } from './capabilities.js';
 
 export interface ComponentCapabilitiesVersions {
   '3.4': {
@@ -38,7 +38,7 @@ export interface ComponentManagerWithUpdateHook<ComponentStateBucket>
 
 export interface ComponentManagerWithAsyncUpdateHook<ComponentStateBucket>
   extends ComponentManagerWithAsyncLifeCycleCallbacks<ComponentStateBucket>,
-    ComponentManagerWithUpdateHook<ComponentStateBucket> {
+  ComponentManagerWithUpdateHook<ComponentStateBucket> {
   didUpdateComponent(instance: ComponentStateBucket): void;
 }
 

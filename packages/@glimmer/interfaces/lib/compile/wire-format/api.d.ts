@@ -1,6 +1,6 @@
-import type { PresentArray } from '../../array';
-import type { Nullable } from '../../core';
-import type { CurriedType } from '../../curry';
+import type { PresentArray } from '../../array.js';
+import type { Nullable } from '../../core.js';
+import type { CurriedType } from '../../curry.js';
 import type {
   AppendOpcode,
   AttrOpcode,
@@ -51,10 +51,10 @@ import type {
   WithDynamicVarsOpcode,
   WithOpcode,
   YieldOpcode,
-} from './opcodes';
+} from './opcodes.js';
 
-export * from './opcodes';
-export * from './resolution';
+export * from './opcodes.js';
+export * from './resolution.js';
 
 export type TupleSyntax = Statement | TupleExpression;
 
@@ -70,7 +70,7 @@ export type ExpressionSexpOpcodeMap = {
   [TSexpOpcode in TupleExpression[0]]: Extract<TupleExpression, { 0: TSexpOpcode }>;
 };
 
-export interface SexpOpcodeMap extends ExpressionSexpOpcodeMap, StatementSexpOpcodeMap {}
+export interface SexpOpcodeMap extends ExpressionSexpOpcodeMap, StatementSexpOpcodeMap { }
 export type SexpOpcode = keyof SexpOpcodeMap;
 
 export namespace Core {
