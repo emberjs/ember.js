@@ -16,6 +16,16 @@
 
 
 
+
+## v0.88.1 (2024-01-31)
+
+#### :bug: Bug Fix
+* `@glimmer/interfaces`
+  * [#1555](https://github.com/glimmerjs/glimmer-vm/pull/1555) @glimmer/interfaces now uses extensions in its imports. ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.88.0 (2024-01-26)
 
 #### :rocket: Enhancement
