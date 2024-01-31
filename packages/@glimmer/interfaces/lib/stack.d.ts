@@ -1,4 +1,4 @@
-import type { Nullable } from './core';
+import type { Nullable } from './core.js';
 
 export interface Stack<T> {
   current: Nullable<T>;

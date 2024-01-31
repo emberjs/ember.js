@@ -53,11 +53,11 @@ import type {
   CapabilityMask,
   ComponentDefinitionState,
   ComponentInstanceState,
-} from './components';
-import type { Nullable } from './core';
-import type { InternalComponentManager } from './managers';
-import type { HelperDefinitionState, ModifierDefinitionState, Owner } from './runtime';
-import type { CompilableProgram, Template } from './template';
+} from './components.js';
+import type { Nullable } from './core.js';
+import type { InternalComponentManager } from './managers.js';
+import type { HelperDefinitionState, ModifierDefinitionState, Owner } from './runtime.js';
+import type { CompilableProgram, Template } from './template.js';
 
 export interface CompileTimeComponent {
   handle: number;

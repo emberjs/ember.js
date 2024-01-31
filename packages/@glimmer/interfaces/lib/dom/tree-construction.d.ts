@@ -1,4 +1,4 @@
-import type { Namespace, SimpleDocumentFragment, SimpleElement, SimpleNode } from './simple';
+import type { Namespace, SimpleDocumentFragment, SimpleElement, SimpleNode } from './simple.js';
 
 export type NodeToken = number;
 

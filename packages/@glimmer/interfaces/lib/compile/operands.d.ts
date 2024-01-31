@@ -1,6 +1,6 @@
-import type { CompilableTemplate } from '../template';
-import type { SymbolTable } from '../tier1/symbol-table';
-import type * as WireFormat from './wire-format/api';
+import type { CompilableTemplate } from '../template.js';
+import type { SymbolTable } from '../tier1/symbol-table.js';
+import type * as WireFormat from './wire-format/api.js';
 
 export type LabelOperandType = 1;
 export type IsStrictModeOperandType = 2;
