@@ -1,10 +1,10 @@
-import type { CompileTimeComponent } from '../..';
-import type { Nullable } from '../core';
-import type { CompileTimeConstants } from '../program';
-import type { HandleResult, NamedBlocks } from '../template';
-import type { VmMachineOp as MachineOp, VmOp as Op } from '../vm-opcodes';
-import type { SingleBuilderOperand } from './operands';
-import type * as WireFormat from './wire-format/api';
+import type { CompileTimeComponent } from '../../index.js';
+import type { Nullable } from '../core.js';
+import type { CompileTimeConstants } from '../program.js';
+import type { HandleResult, NamedBlocks } from '../template.js';
+import type { VmMachineOp as MachineOp, VmOp as Op } from '../vm-opcodes.js';
+import type { SingleBuilderOperand } from './operands.js';
+import type * as WireFormat from './wire-format/api.js';
 
 // These values are used in the same space as standard opcodes, so we need to
 // start them at a higher value to prevent collisions

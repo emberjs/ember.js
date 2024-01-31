@@ -1,6 +1,6 @@
-import type { CompilerBuffer } from '../template';
-import type { VmMachineOp, VmOp } from '../vm-opcodes';
-import type { Operand } from './operands';
+import type { CompilerBuffer } from '../template.js';
+import type { VmMachineOp, VmOp } from '../vm-opcodes.js';
+import type { Operand } from './operands.js';
 
 export type ARG_SHIFT = 8;
 export type MAX_SIZE = 0x7fffffff;

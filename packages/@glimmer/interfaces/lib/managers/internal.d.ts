@@ -1,3 +1,3 @@
-export * from './internal/component';
-export * from './internal/helper';
-export * from './internal/modifier';
+export * from './internal/component.js';
+export * from './internal/helper.js';
+export * from './internal/modifier.js';

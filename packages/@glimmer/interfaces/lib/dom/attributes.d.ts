@@ -1,8 +1,8 @@
-import type { Maybe, Nullable } from '../core';
-import type { ElementOperations, Environment, ModifierInstance } from '../runtime';
-import type { Stack } from '../stack';
-import type { Bounds, Cursor } from './bounds';
-import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes';
+import type { Maybe, Nullable } from '../core.js';
+import type { ElementOperations, Environment, ModifierInstance } from '../runtime.js';
+import type { Stack } from '../stack.js';
+import type { Bounds, Cursor } from './bounds.js';
+import type { GlimmerTreeChanges, GlimmerTreeConstruction } from './changes.js';
 import type {
   AttrNamespace,
   SimpleComment,
@@ -10,7 +10,7 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
-} from './simple';
+} from './simple.js';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;

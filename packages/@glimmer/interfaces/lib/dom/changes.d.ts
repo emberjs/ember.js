@@ -1,6 +1,6 @@
-import type { Nullable } from '../core';
-import type { Bounds } from './bounds';
-import type { Namespace, SimpleComment, SimpleElement, SimpleNode, SimpleText } from './simple';
+import type { Nullable } from '../core.js';
+import type { Bounds } from './bounds.js';
+import type { Namespace, SimpleComment, SimpleElement, SimpleNode, SimpleText } from './simple.js';
 
 export interface GlimmerDOMOperations {
   createElement(tag: string, context?: SimpleElement): SimpleElement;

@@ -4,12 +4,12 @@ import type {
   ComponentDefinitionState,
   ComponentInstance,
   ComponentInstanceState,
-} from '../components';
-import type { Nullable } from '../core';
-import type { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
-import type { WithCreateInstance } from '../managers';
-import type { DebugRenderTree } from './debug-render-tree';
-import type { ModifierInstance } from './modifier';
+} from '../components.js';
+import type { Nullable } from '../core.js';
+import type { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes.js';
+import type { WithCreateInstance } from '../managers.js';
+import type { DebugRenderTree } from './debug-render-tree.js';
+import type { ModifierInstance } from './modifier.js';
 
 export interface EnvironmentOptions {
   document?: SimpleDocument;

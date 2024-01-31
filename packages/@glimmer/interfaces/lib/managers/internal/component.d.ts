@@ -1,17 +1,17 @@
-import type { ComponentInstanceState, PreparedArguments } from '../../components';
-import type { Destroyable, Nullable } from '../../core';
-import type { Bounds } from '../../dom/bounds';
-import type { SimpleElement } from '../../dom/simple';
-import type { Reference } from '../../references';
-import type { Owner } from '../../runtime';
-import type { CapturedArguments, VMArguments } from '../../runtime/arguments';
-import type { RenderNode } from '../../runtime/debug-render-tree';
-import type { ElementOperations } from '../../runtime/element';
-import type { Environment } from '../../runtime/environment';
-import type { DynamicScope } from '../../runtime/scope';
-import type { RuntimeResolver } from '../../serialize';
-import type { CompilableProgram } from '../../template';
-import type { ProgramSymbolTable } from '../../tier1/symbol-table';
+import type { ComponentInstanceState, PreparedArguments } from '../../components.js';
+import type { Destroyable, Nullable } from '../../core.js';
+import type { Bounds } from '../../dom/bounds.js';
+import type { SimpleElement } from '../../dom/simple.js';
+import type { Reference } from '../../references.js';
+import type { Owner } from '../../runtime.js';
+import type { CapturedArguments, VMArguments } from '../../runtime/arguments.js';
+import type { RenderNode } from '../../runtime/debug-render-tree.js';
+import type { ElementOperations } from '../../runtime/element.js';
+import type { Environment } from '../../runtime/environment.js';
+import type { DynamicScope } from '../../runtime/scope.js';
+import type { RuntimeResolver } from '../../serialize.js';
+import type { CompilableProgram } from '../../template.js';
+import type { ProgramSymbolTable } from '../../tier1/symbol-table.js';
 
 /**
  * Describes the capabilities of a particular component. The capabilities are

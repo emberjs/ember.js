@@ -17,7 +17,7 @@
   "scripts": {
     "test:lint": "eslint .",
     "test:publint": "publint",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:types": "tsc --noEmit"
   },
   "dependencies": {
     "@simple-dom/interface": "^1.4.0"
