@@ -161,7 +161,7 @@
     "mkdirp": "^3.0.1",
     "mocha": "^10.2.0",
     "npm-run-all2": "^6.0.6",
-    "prettier": "^2.8.0",
+    "prettier": "^3.2.4",
     "puppeteer": "^20.9.0",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
