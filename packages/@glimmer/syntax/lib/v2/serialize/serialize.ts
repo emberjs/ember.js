@@ -9,7 +9,6 @@ import type {
   SerializedBlock,
   SerializedCallExpression,
   SerializedContentNode,
-  SerializedDeprecatedCallExpression,
   SerializedElementModifier,
   SerializedExpressionNode,
   SerializedFreeVarReference,
@@ -95,14 +94,6 @@ export class ExprSerializer {
       loc: call.loc.serialize(),
       callee: visit.expr(call.callee),
       args: ARGS.args(call.args),
-    };
-  }
-
-  deprecatedCall(call: ASTv2.DeprecatedCallExpression): SerializedDeprecatedCallExpression {
-    return {
-      type: 'DeprecatedCall',
-      loc: call.loc.serialize(),
-      callee: REF.free(call.callee),
     };
   }
 
@@ -281,8 +272,6 @@ const visit = {
         return EXPR.path(expr);
       case 'Call':
         return EXPR.call(expr);
-      case 'DeprecatedCall':
-        return EXPR.deprecatedCall(expr);
       case 'Interpolate':
         return EXPR.interpolate(expr);
     }

@@ -19,10 +19,8 @@ export type HighLevelBuilderOpcode = HighLevelLabel | HighLevelStartLabels | Hig
 export type HighLevelResolveModifier = 1003;
 export type HighLevelResolveComponent = 1004;
 export type HighLevelResolveHelper = 1005;
-export type HighLevelResolveOptionalHelper = 1006;
 export type HighLevelResolveComponentOrHelper = 1007;
 export type HighLevelResolveOptionalComponentOrHelper = 1008;
-export type HighLevelResolveFree = 1009;
 export type HighLevelResolveLocal = 1010;
 export type HighLevelResolveTemplateLocal = 1011;
 export type HighLevelResolveStart = HighLevelResolveModifier;
@@ -32,10 +30,8 @@ export type HighLevelResolutionOpcode =
   | HighLevelResolveModifier
   | HighLevelResolveComponent
   | HighLevelResolveHelper
-  | HighLevelResolveOptionalHelper
   | HighLevelResolveComponentOrHelper
   | HighLevelResolveOptionalComponentOrHelper
-  | HighLevelResolveFree
   | HighLevelResolveLocal
   | HighLevelResolveTemplateLocal;
 
@@ -85,14 +81,6 @@ export type ResolveHelperOp = [
   op2: (handle: number) => void,
 ];
 
-export type ResolveOptionalHelperOp = [
-  op: HighLevelResolveOptionalHelper,
-  op1: WireFormat.Expressions.Expression,
-  op2: {
-    ifHelper: (handle: number, name: string, moduleName: string) => void;
-  },
-];
-
 export type ResolveOptionalComponentOrHelperOp = [
   op: HighLevelResolveOptionalComponentOrHelper,
   op1: WireFormat.Expressions.Expression,
@@ -102,8 +90,6 @@ export type ResolveOptionalComponentOrHelperOp = [
     ifValue: (handle: number) => void;
   },
 ];
-
-export type ResolveFreeOp = [op: HighLevelResolveFree, op1: number, op2: (handle: number) => void];
 
 export type ResolveTemplateLocalOp = [
   op: HighLevelResolveTemplateLocal,
@@ -122,9 +108,7 @@ export type HighLevelResolutionOp =
   | ResolveComponentOp
   | ResolveComponentOrHelperOp
   | ResolveHelperOp
-  | ResolveOptionalHelperOp
   | ResolveOptionalComponentOrHelperOp
-  | ResolveFreeOp
   | ResolveTemplateLocalOp
   | ResolveLocalOp;
 

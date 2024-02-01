@@ -28,8 +28,6 @@ export class NormalizeExpressions {
 
         return this.CallExpression(node, state);
       }
-      case 'DeprecatedCall':
-        return this.DeprecaedCallExpression(node, state);
     }
   }
 
@@ -110,13 +108,6 @@ export class NormalizeExpressions {
           })
       );
     }
-  }
-
-  DeprecaedCallExpression(
-    { arg, callee, loc }: ASTv2.DeprecatedCallExpression,
-    _state: NormalizationState
-  ): Result<mir.ExpressionNode> {
-    return Ok(new mir.DeprecatedCallExpression({ loc, arg, callee }));
   }
 
   Args({ positional, named, loc }: ASTv2.Args, state: NormalizationState): Result<mir.Args> {

@@ -17,10 +17,7 @@ import type {
   GetDynamicVarOpcode,
   GetFreeAsComponentHeadOpcode,
   GetFreeAsComponentOrHelperHeadOpcode,
-  GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode,
-  GetFreeAsDeprecatedHelperHeadOrThisFallbackOpcode,
   GetFreeAsHelperHeadOpcode,
-  GetFreeAsHelperHeadOrThisFallbackOpcode,
   GetFreeAsModifierHeadOpcode,
   GetLexicalSymbolOpcode,
   GetStrictKeywordOpcode,
@@ -47,7 +44,6 @@ import type {
   TrustingDynamicAttrOpcode,
   UndefinedOpcode,
   WithDynamicVarsOpcode,
-  WithOpcode,
   YieldOpcode,
 } from '@glimmer/interfaces';
 
@@ -81,19 +77,13 @@ export const opcodes = {
   GetSymbol: 30 satisfies GetSymbolOpcode,
   GetLexicalSymbol: 32 satisfies GetLexicalSymbolOpcode,
   GetStrictKeyword: 31 satisfies GetStrictKeywordOpcode,
-  GetFreeAsComponentOrHelperHeadOrThisFallback:
-    34 satisfies GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode,
   GetFreeAsComponentOrHelperHead: 35 satisfies GetFreeAsComponentOrHelperHeadOpcode,
-  GetFreeAsHelperHeadOrThisFallback: 36 satisfies GetFreeAsHelperHeadOrThisFallbackOpcode,
-  GetFreeAsDeprecatedHelperHeadOrThisFallback:
-    99 satisfies GetFreeAsDeprecatedHelperHeadOrThisFallbackOpcode,
   GetFreeAsHelperHead: 37 satisfies GetFreeAsHelperHeadOpcode,
   GetFreeAsModifierHead: 38 satisfies GetFreeAsModifierHeadOpcode,
   GetFreeAsComponentHead: 39 satisfies GetFreeAsComponentHeadOpcode,
   InElement: 40 satisfies InElementOpcode,
   If: 41 satisfies IfOpcode,
   Each: 42 satisfies EachOpcode,
-  With: 43 satisfies WithOpcode,
   Let: 44 satisfies LetOpcode,
   WithDynamicVars: 45 satisfies WithDynamicVarsOpcode,
   InvokeComponent: 46 satisfies InvokeComponentOpcode,

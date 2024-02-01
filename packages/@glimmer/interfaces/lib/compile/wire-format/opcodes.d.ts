@@ -41,14 +41,8 @@ export type GetLexicalSymbolOpcode = 32;
 // FIXME: Why does this make it to the wire format in the first place?
 export type GetStrictKeywordOpcode = 31;
 
-// `{{x}}` in append position (might be a helper or component invocation, otherwise fall back to `this`)
-export type GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode = 34;
 // a component or helper (`{{<expr> x}}` in append position)
 export type GetFreeAsComponentOrHelperHeadOpcode = 35;
-// a helper or `this` fallback `attr={{x}}`
-export type GetFreeAsHelperHeadOrThisFallbackOpcode = 36;
-// a helper or `this` fallback (deprecated) `@arg={{x}}`
-export type GetFreeAsDeprecatedHelperHeadOrThisFallbackOpcode = 99;
 // a call head `(x)`
 export type GetFreeAsHelperHeadOpcode = 37;
 export type GetFreeAsModifierHeadOpcode = 38;
@@ -58,7 +52,6 @@ export type GetFreeAsComponentHeadOpcode = 39;
 export type InElementOpcode = 40;
 export type IfOpcode = 41;
 export type EachOpcode = 42;
-export type WithOpcode = 43;
 export type LetOpcode = 44;
 export type WithDynamicVarsOpcode = 45;
 export type InvokeComponentOpcode = 46;
@@ -74,14 +67,10 @@ export type LogOpcode = 54;
 
 export type GetStartOpcode = GetSymbolOpcode;
 export type GetEndOpcode = GetFreeAsComponentHeadOpcode;
-export type GetLooseFreeStartOpcode = GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode;
 export type GetLooseFreeEndOpcode = GetFreeAsComponentHeadOpcode;
-export type GetContextualFreeStartOpcode = GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode;
 
 export type GetContextualFreeOpcode =
-  | GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode
   | GetFreeAsComponentOrHelperHeadOpcode
-  | GetFreeAsHelperHeadOrThisFallbackOpcode
   | GetFreeAsHelperHeadOpcode
   | GetFreeAsModifierHeadOpcode
   | GetFreeAsComponentHeadOpcode

@@ -49,14 +49,6 @@ class KeywordImpl<
     let path = getCalleeExpression(node);
 
     if (path !== null && path.type === 'Path' && path.ref.type === 'Free') {
-      if (path.tail.length > 0) {
-        if (path.ref.resolution.serialize() === 'Loose') {
-          // cannot be a keyword reference, keywords do not allow paths (must be
-          // relying on implicit this fallback)
-          return false;
-        }
-      }
-
       return path.ref.name === this.keyword;
     } else {
       return false;

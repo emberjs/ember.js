@@ -156,7 +156,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
         this.registerComponent('TemplateOnly', 'Bar', '<div {{x.foo}}></div>');
       },
       syntaxErrorFor(
-        'You attempted to invoke a path (`{{#x.foo}}`) as a modifier, but x was not in scope. Try adding `this` to the beginning of the path',
+        'You attempted to invoke a path (`{{x.foo}}`) as a modifier, but x was not in scope',
         '{{x.foo}}',
         'an unknown module',
         1,

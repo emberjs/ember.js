@@ -26,7 +26,6 @@ import {
   isGetFreeComponent,
   isGetFreeComponentOrHelper,
   isGetFreeModifier,
-  isGetFreeOptionalComponentOrHelper,
 } from '../opcode-builder/helpers/resolution';
 import { CompilePositional, SimpleArgs } from '../opcode-builder/helpers/shared';
 import {
@@ -140,7 +139,7 @@ STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
   // Special case for static values
   if (!Array.isArray(value)) {
     op(Op.Text, value === null || value === undefined ? '' : String(value));
-  } else if (isGetFreeOptionalComponentOrHelper(value)) {
+  } else if (isGetFreeComponentOrHelper(value)) {
     op(HighLevelResolutionOpcodes.OptionalComponentOrHelper, value, {
       ifComponent(component: CompileTimeComponent) {
         InvokeComponent(op, component, null, null, null, null);
