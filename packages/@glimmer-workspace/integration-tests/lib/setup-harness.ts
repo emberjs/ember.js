@@ -63,8 +63,12 @@ export async function setupQunit() {
     qunit.moduleDone(pause);
   }
 
-  qunit.done(() => {
-    console.log('[HARNESS] done');
+  qunit.done(({ failed }) => {
+    if (failed > 0) {
+      console.log('[HARNESS] fail');
+    } else {
+      console.log('[HARNESS] done');
+    }
   });
 
   return {
