@@ -105,7 +105,7 @@
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.321.1",
+    "@aws-sdk/client-s3": "^3.504.0",
     "@babel/core": "^7.22.9",
     "@babel/plugin-proposal-decorators": "^7.23.6",
     "@babel/plugin-transform-typescript": "^7.22.9",
