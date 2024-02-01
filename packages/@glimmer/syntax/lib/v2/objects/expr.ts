@@ -1,7 +1,7 @@
 import type { PresentArray } from '@glimmer/interfaces';
 
 import type { CallFields } from './base';
-import type { FreeVarReference, VariableReference } from './refs';
+import type { VariableReference } from './refs';
 
 import { SourceSlice } from '../../source/slice';
 import { node } from './node';
@@ -84,24 +84,6 @@ export class PathExpression extends node('Path').fields<{
 export class CallExpression extends node('Call').fields<CallFields>() {}
 
 /**
- * Corresponds to a possible deprecated helper call. Must be:
- *
- * 1. A free variable (not this.foo, not @foo, not local).
- * 2. Argument-less.
- * 3. In a component invocation's named argument position.
- * 4. Not parenthesized (not @bar={{(helper)}}).
- * 5. Not interpolated (not @bar="{{helper}}").
- *
- * ```hbs
- * <Foo @bar={{helper}} />
- * ```
- */
-export class DeprecatedCallExpression extends node('DeprecatedCall').fields<{
-  arg: SourceSlice;
-  callee: FreeVarReference;
-}>() {}
-
-/**
  * Corresponds to an interpolation in attribute value position.
  *
  * ```hbs
@@ -116,5 +98,4 @@ export type ExpressionNode =
   | LiteralExpression
   | PathExpression
   | CallExpression
-  | DeprecatedCallExpression
   | InterpolateExpression;

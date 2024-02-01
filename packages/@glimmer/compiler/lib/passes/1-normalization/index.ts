@@ -7,6 +7,7 @@ import type { Result } from '../../shared/result';
 import * as mir from '../2-encoding/mir';
 import { NormalizationState } from './context';
 import { VISIT_STMTS } from './visitors/statements';
+import StrictModeValidationPass from './visitors/strict-mode';
 
 /**
  * Normalize the AST from @glimmer/syntax into the HIR. The HIR has special
@@ -71,7 +72,13 @@ export default function normalize(
     }
   }
 
-  return body.mapOk(
+  let template = body.mapOk(
     (body) => new mir.Template({ loc: root.loc, scope: root.table, body: body.toArray() })
   );
+
+  if (isStrict) {
+    template = template.andThen((template) => StrictModeValidationPass.validate(template));
+  }
+
+  return template;
 }

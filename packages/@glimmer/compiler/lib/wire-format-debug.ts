@@ -172,21 +172,8 @@ export default class WireFormatDebugger {
         case Op.GetStrictKeyword:
           return ['get-strict-free', this.upvars[opcode[1]], opcode[2]];
 
-        case Op.GetFreeAsComponentOrHelperHeadOrThisFallback:
-          return [
-            'GetFreeAsComponentOrHelperHeadOrThisFallback',
-            this.upvars[opcode[1]],
-            opcode[2],
-          ];
-
         case Op.GetFreeAsComponentOrHelperHead:
           return ['GetFreeAsComponentOrHelperHead', this.upvars[opcode[1]], opcode[2]];
-
-        case Op.GetFreeAsHelperHeadOrThisFallback:
-          return ['GetFreeAsHelperHeadOrThisFallback', this.upvars[opcode[1]], opcode[2]];
-
-        case Op.GetFreeAsDeprecatedHelperHeadOrThisFallback:
-          return ['GetFreeAsDeprecatedHelperHeadOrThisFallback', this.upvars[opcode[1]]];
 
         case Op.GetFreeAsHelperHead:
           return ['GetFreeAsHelperHead', this.upvars[opcode[1]], opcode[2]];

@@ -34,7 +34,7 @@ for (let keyword of KEYWORDS) {
     'keyword can be yielded as a parameter in other keywords in non-strict mode'() {
       preprocess(
         `
-          {{#let value as |${keyword}|}}
+          {{#let this.value as |${keyword}|}}
             {{some-helper ${keyword}}}
           {{/let}}
         `,
@@ -46,7 +46,7 @@ for (let keyword of KEYWORDS) {
     'keyword can be yielded as a parameter in other keywords in strict mode'() {
       preprocess(
         `
-          {{#let value as |${keyword}|}}
+          {{#let this.value as |${keyword}|}}
             {{some-helper ${keyword}}}
           {{/let}}
         `,
@@ -58,7 +58,7 @@ for (let keyword of KEYWORDS) {
     'keyword can be yielded as a parameter in curly invocation in non-strict mode'() {
       preprocess(
         `
-          {{#my-component value as |${keyword}|}}
+          {{#my-component this.value as |${keyword}|}}
             {{some-helper ${keyword}}}
           {{/my-component}}
         `,
@@ -70,7 +70,7 @@ for (let keyword of KEYWORDS) {
     'keyword can be yielded as a parameter in curly invocation in strict mode'() {
       preprocess(
         `
-          {{#my-component value as |${keyword}|}}
+          {{#my-component this.value as |${keyword}|}}
             {{some-helper ${keyword}}}
           {{/my-component}}
         `,

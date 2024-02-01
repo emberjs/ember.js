@@ -170,16 +170,16 @@ class ExpressionNormalizer {
    *
    * @see {SyntaxContext}
    */
-  normalize(expr: ASTv1.Literal, resolution: ASTv2.FreeVarResolution): ASTv2.LiteralExpression;
+  normalize(expr: ASTv1.Literal): ASTv2.LiteralExpression;
+  normalize(expr: ASTv1.SubExpression): ASTv2.CallExpression;
   normalize(
     expr: ASTv1.MinimalPathExpression,
     resolution: ASTv2.FreeVarResolution
   ): ASTv2.PathExpression;
-  normalize(expr: ASTv1.SubExpression, resolution: ASTv2.FreeVarResolution): ASTv2.CallExpression;
   normalize(expr: ASTv1.Expression, resolution: ASTv2.FreeVarResolution): ASTv2.ExpressionNode;
   normalize(
     expr: ASTv1.Expression | ASTv1.MinimalPathExpression,
-    resolution: ASTv2.FreeVarResolution
+    resolution?: ASTv2.FreeVarResolution
   ): ASTv2.ExpressionNode {
     switch (expr.type) {
       case 'NullLiteral':
@@ -189,6 +189,7 @@ class ExpressionNormalizer {
       case 'UndefinedLiteral':
         return this.block.builder.literal(expr.value, this.block.loc(expr.loc));
       case 'PathExpression':
+        assert(resolution, '[BUG] resolution is required');
         return this.path(expr, resolution);
       case 'SubExpression': {
         // expr.path used to incorrectly have the type ASTv1.Expression
@@ -245,13 +246,13 @@ class ExpressionNormalizer {
     let { path, params, hash } = parts;
 
     let callee = this.normalize(path, context);
-    let paramList = params.map((p) => this.normalize(p, ASTv2.ARGUMENT_RESOLUTION));
+    let paramList = params.map((p) => this.normalize(p, ASTv2.STRICT_RESOLUTION));
     let paramLoc = SpanList.range(paramList, callee.loc.collapse('end'));
     let namedLoc = this.block.loc(hash.loc);
     let argsLoc = SpanList.range([paramLoc, namedLoc]);
 
     let positional = this.block.builder.positional(
-      params.map((p) => this.normalize(p, ASTv2.ARGUMENT_RESOLUTION)),
+      params.map((p) => this.normalize(p, ASTv2.STRICT_RESOLUTION)),
       paramLoc
     );
 
@@ -273,7 +274,7 @@ class ExpressionNormalizer {
 
     return this.block.builder.namedArgument(
       new SourceSlice({ chars: pair.key, loc: keyOffsets }),
-      this.normalize(pair.value, ASTv2.ARGUMENT_RESOLUTION)
+      this.normalize(pair.value, ASTv2.STRICT_RESOLUTION)
     );
   }
 
@@ -377,16 +378,24 @@ class StatementNormalizer {
   MustacheStatement(mustache: ASTv1.MustacheStatement): ASTv2.AppendContent {
     let { path, params, hash, trusting } = mustache;
     let loc = this.block.loc(mustache.loc);
-    let context = AppendSyntaxContext(mustache);
     let value: ASTv2.ExpressionNode;
 
     if (isLiteral(path)) {
       if (params.length === 0 && hash.pairs.length === 0) {
-        value = this.expr.normalize(path, context);
+        value = this.expr.normalize(path);
       } else {
         assertIllegalLiteral(path, loc);
       }
     } else {
+      let resolution = this.block.resolutionFor(mustache, AppendSyntaxContext);
+
+      if (resolution.result === 'error') {
+        throw generateSyntaxError(
+          `You attempted to render a path (\`{{${resolution.path}}}\`), but ${resolution.head} was not in scope`,
+          loc
+        );
+      }
+
       // Normalize the call parts in AppendSyntaxContext
       let callParts = this.expr.callParts(
         {
@@ -394,7 +403,7 @@ class StatementNormalizer {
           params,
           hash,
         },
-        AppendSyntaxContext(mustache)
+        resolution.result
       );
 
       value = callParts.args.isEmpty() ? callParts.callee : this.block.builder.sexp(callParts, loc);
@@ -540,7 +549,7 @@ class ElementNormalizer {
 
     if (resolution.result === 'error') {
       throw generateSyntaxError(
-        `You attempted to invoke a path (\`{{#${resolution.path}}}\`) as a modifier, but ${resolution.head} was not in scope. Try adding \`this\` to the beginning of the path`,
+        `You attempted to invoke a path (\`{{${resolution.path}}}\`) as a modifier, but ${resolution.head} was not in scope`,
         m.loc
       );
     }
@@ -560,20 +569,28 @@ class ElementNormalizer {
    */
   private mustacheAttr(mustache: ASTv1.MustacheStatement): ASTv2.ExpressionNode {
     let { path, params, hash, loc } = mustache;
-    let context = AttrValueSyntaxContext(mustache);
 
     if (isLiteral(path)) {
       if (params.length === 0 && hash.pairs.length === 0) {
-        return this.expr.normalize(path, context);
+        return this.expr.normalize(path);
       } else {
         assertIllegalLiteral(path, loc);
       }
     }
 
     // Normalize the call parts in AttrValueSyntaxContext
+    let resolution = this.ctx.resolutionFor(mustache, AttrValueSyntaxContext);
+
+    if (resolution.result === 'error') {
+      throw generateSyntaxError(
+        `You attempted to render a path (\`{{${resolution.path}}}\`), but ${resolution.head} was not in scope`,
+        mustache.loc
+      );
+    }
+
     let sexp = this.ctx.builder.sexp(
-      this.expr.callParts(mustache as ASTv1.CallParts, AttrValueSyntaxContext(mustache)),
-      this.ctx.loc(loc)
+      this.expr.callParts(mustache as ASTv1.CallParts, resolution.result),
+      this.ctx.loc(mustache.loc)
     );
 
     // If there are no params or hash, just return the function part as its own expression
@@ -629,76 +646,63 @@ class ElementNormalizer {
 
     let offsets = this.ctx.loc(m.loc);
     let nameSlice = offsets.sliceStartChars({ chars: m.name.length }).toSlice(m.name);
-
     let value = this.attrValue(m.value);
+
     return this.ctx.builder.attr(
       { name: nameSlice, value: value.expr, trusting: value.trusting },
       offsets
     );
   }
 
-  private maybeDeprecatedCall(
-    arg: SourceSlice,
-    part: ASTv1.MustacheStatement | ASTv1.TextNode | ASTv1.ConcatStatement
-  ): { expr: ASTv2.DeprecatedCallExpression; trusting: boolean } | null {
-    if (this.ctx.strict) {
-      return null;
+  // An arg curly <Foo @bar={{...}} /> is the same as an attribute curly for
+  // our purposes, except that in loose mode <Foo @bar={{baz}} /> is an error:
+  private checkArgCall(arg: ASTv1.AttrNode): void {
+    let { value } = arg;
+
+    if (value.type !== 'MustacheStatement') {
+      return;
     }
 
-    if (part.type !== 'MustacheStatement') {
-      return null;
+    if (value.params.length !== 0 || value.hash.pairs.length !== 0) {
+      return;
     }
 
-    let { path } = part;
+    let { path } = value;
 
     if (path.type !== 'PathExpression') {
-      return null;
+      return;
     }
 
-    if (path.head.type !== 'VarHead') {
-      return null;
+    if (path.tail.length > 0) {
+      return;
     }
 
-    let { name } = path.head;
-
-    if (name === 'has-block' || name === 'has-block-params') {
+    let resolution = this.ctx.resolutionFor(path, () => {
+      // We deliberately don't want this to resolve anything. The purpose of
+      // calling `resolutionFor` here is to check for strict mode, in-scope
+      // local variables, etc.
       return null;
-    }
-
-    if (this.ctx.hasBinding(name)) {
-      return null;
-    }
-
-    if (path.tail.length !== 0) {
-      return null;
-    }
-
-    if (part.params.length !== 0 || part.hash.pairs.length !== 0) {
-      return null;
-    }
-
-    let context = ASTv2.LooseModeResolution.attr();
-
-    let callee = this.ctx.builder.freeVar({
-      name,
-      context,
-      symbol: this.ctx.table.allocateFree(name, context),
-      loc: path.loc,
     });
 
-    return {
-      expr: this.ctx.builder.deprecatedCall(arg, callee, part.loc),
-      trusting: false,
-    };
+    if (resolution.result === 'error' && resolution.path !== 'has-block') {
+      throw generateSyntaxError(
+        `You attempted to pass a path as argument (\`${arg.name}={{${resolution.path}}}\`) but ${resolution.head} was not in scope. Try:\n` +
+          `* \`${arg.name}={{this.${resolution.path}}}\` if this is meant to be a property lookup, or\n` +
+          `* \`${arg.name}={{(${resolution.path})}}\` if this is meant to invoke the resolved helper, or\n` +
+          `* \`${arg.name}={{helper "${resolution.path}"}}\` if this is meant to pass the resolved helper by value`,
+        arg.loc
+      );
+    }
   }
 
   private arg(arg: ASTv1.AttrNode): ASTv2.ComponentArg {
     assert(arg.name[0] === '@', 'An arg name must start with `@`');
+    this.checkArgCall(arg);
 
     let offsets = this.ctx.loc(arg.loc);
     let nameSlice = offsets.sliceStartChars({ chars: arg.name.length }).toSlice(arg.name);
+    let value = this.attrValue(arg.value);
 
-    let value = this.maybeDeprecatedCall(nameSlice, arg.value) || this.attrValue(arg.value);
     return this.ctx.builder.arg(
       { name: nameSlice, value: value.expr, trusting: value.trusting },
       offsets
@@ -899,7 +903,7 @@ class ElementChildren extends Children {
   assertElement(name: SourceSlice, hasBlockParams: boolean): ASTv2.SimpleElement {
     if (hasBlockParams) {
       throw generateSyntaxError(
-        `Unexpected block params in <${name}>: simple elements cannot have block params`,
+        `Unexpected block params in <${name.chars}>: simple elements cannot have block params`,
         this.loc
       );
     }
