@@ -137,19 +137,19 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
 
         if (subtag !== null) {
           if (Array.isArray(subtag)) {
-            revision = subtag.reduce((prev, currentTag: Tag) => {
-              let current = currentTag[COMPUTE]();
-              return current > prev ? current : prev;
-            }, revision);
+            for (const tag of subtag) {
+              let value = tag[COMPUTE]();
+              revision = Math.max(value, revision);
+            }
           } else {
             let subtagValue = subtag[COMPUTE]();
 
             if (subtagValue === this.subtagBufferCache) {
-              revision = revision > this.lastValue ? revision : this.lastValue;
+              revision = Math.max(revision, this.lastValue);
             } else {
               // Clear the temporary buffer cache
               this.subtagBufferCache = null;
-              revision = revision > subtagValue ? revision : subtagValue;
+              revision = Math.max(revision, subtagValue);
             }
           }
         }
