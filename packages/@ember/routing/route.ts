@@ -7,6 +7,7 @@ import {
 } from '@ember/-internals/metal';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
+import { ENV } from '@ember/-internals/environment';
 import { BucketCache } from '@ember/routing/-internals';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
@@ -1251,6 +1252,9 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @private
   */
   findModel(type: string, value: unknown) {
+    if (ENV._NO_IMPLICIT_ROUTE_MODEL) {
+      return;
+    }
     deprecate(
       `The implicit model loading behavior for routes is deprecated. ` +
         `Please define an explicit model hook for ${this.fullRouteName}.`,

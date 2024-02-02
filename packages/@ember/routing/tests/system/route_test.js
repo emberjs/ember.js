@@ -1,4 +1,5 @@
 import { setOwner } from '@ember/-internals/owner';
+import { ENV } from '@ember/-internals/environment';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberObject from '@ember/object';
@@ -20,6 +21,17 @@ moduleFor(
       super.teardown();
       runDestroy(route);
       route = routeOne = routeTwo = lookupHash = undefined;
+    }
+
+    ['@test noops if _NO_IMPLICIT_ROUTE_MODEL is true'](assert) {
+      this._NO_IMPLICIT_ROUTE_MODEL = ENV._NO_IMPLICIT_ROUTE_MODEL;
+      ENV._NO_IMPLICIT_ROUTE_MODEL = true;
+      assert.equal(
+        route.findModel('post', 1),
+        undefined,
+        'When _NO_IMPLICIT_ROUTE_MODEL is true, findModel does nothing'
+      );
+      ENV._NO_IMPLICIT_ROUTE_MODEL = this._NO_IMPLICIT_ROUTE_MODEL;
     }
 
     ['@test default store utilizes the container to acquire the model factory'](assert) {
