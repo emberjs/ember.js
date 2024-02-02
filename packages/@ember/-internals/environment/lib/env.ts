@@ -143,6 +143,22 @@ export const ENV = {
   _DEFAULT_ASYNC_OBSERVERS: false,
 
   /**
+   Whether the app still has default record-loading behavior in the model
+   hook from RFC https://rfcs.emberjs.com/id/0774-implicit-record-route-loading
+   This will also remove the default store property from the route.
+
+   This is not intended to be set directly, as the implementation may change in
+   the future. Use `@ember/optional-features` instead.
+
+   @property _NO_IMPLICIT_ROUTE_MODEL
+   @for EmberENV
+   @type Boolean
+   @default false
+   @private
+   */
+  _NO_IMPLICIT_ROUTE_MODEL: false,
+
+  /**
     Controls the maximum number of scheduled rerenders without "settling". In general,
     applications should not need to modify this environment variable, but please
     open an issue so that we can determine if a better default value is needed.
