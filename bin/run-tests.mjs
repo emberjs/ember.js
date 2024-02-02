@@ -51,25 +51,31 @@ const browser = await puppeteer.launch({
 
 console.log('[ci] puppeteer launched');
 
-await /** @type {Promise<void>} */ (
-  // eslint-disable-next-line no-async-promise-executor
-  new Promise(async (fulfill) => {
-    const page = await browser.newPage();
+try {
+  await /** @type {Promise<void>} */ (
+    new Promise(async (fulfill, reject) => {
+      const page = await browser.newPage();
 
-    page.on('console', (msg) => {
-      const location = msg.location();
-      const text = msg.text();
+      page.on('console', (msg) => {
+        const location = msg.location();
+        const text = msg.text();
 
-      if (location.url?.includes(`/qunit.js`)) {
-        console.log(text);
-      } else if (text === `[HARNESS] done`) {
-        fulfill();
-      }
-    });
+        if (location.url?.includes(`/qunit.js`)) {
+          console.log(text);
+        } else if (text === `[HARNESS] done`) {
+          fulfill();
+        } else if (text === `[HARNESS] fail`) {
+          reject();
+        }
+      });
 
-    await page.goto('http://localhost:60173?hidepassed&ci');
-  })
-);
+      await page.goto('http://localhost:60173?hidepassed&ci');
+    })
+  );
+} catch {
+  await browser.close();
+  process.exit(1);
+}
 
 await browser.close();
 
