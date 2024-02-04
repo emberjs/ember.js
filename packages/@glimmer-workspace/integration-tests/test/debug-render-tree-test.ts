@@ -283,6 +283,54 @@ class DebugRenderTreeTest extends RenderTest {
     ]);
   }
 
+  @test 'in-element in tree'() {
+    this.registerComponent('Glimmer', 'HiWorld', 'Hi World');
+    this.registerComponent(
+      'Glimmer',
+      'HelloWorld',
+      '{{#in-element this.destinationElement}}<HiWorld />{{/in-element}}',
+      class extends GlimmerishComponent {
+        get destinationElement() {
+          return document.getElementById('target');
+        }
+      }
+    );
+
+    this.render(`<div id='target'></div><HelloWorld @arg="first"/>`);
+
+    this.assertRenderTree([
+      {
+        type: 'component',
+        name: 'HelloWorld',
+        args: { positional: [], named: { arg: 'first' } },
+        instance: (instance: GlimmerishComponent) => instance.args['arg'] === 'first',
+        template: '(unknown template module)',
+        bounds: this.nodeBounds(this.element.firstChild!.nextSibling),
+        children: [
+          {
+            type: 'keyword',
+            name: 'in-element',
+            args: { positional: [this.element.firstChild], named: {} },
+            instance: (instance: GlimmerishComponent) => instance === null,
+            template: null,
+            bounds: this.nodeBounds(this.element.firstChild!.firstChild, this.element),
+            children: [
+              {
+                type: 'component',
+                name: 'HiWorld',
+                args: { positional: [], named: {} },
+                instance: (instance: GlimmerishComponent) => instance,
+                template: '(unknown template module)',
+                bounds: this.nodeBounds(this.element.firstChild!.firstChild),
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+  }
+
   @test 'getDebugCustomRenderTree works'() {
     let bucket1 = {};
     let instance1 = {};
@@ -471,12 +519,12 @@ class DebugRenderTreeTest extends RenderTest {
     assert.deepEqual(this.delegate.getCapturedRenderTree(), [], 'there was no output');
   }
 
-  nodeBounds(_node: SimpleNode | null): CapturedBounds {
+  nodeBounds(_node: SimpleNode | null, parent?: SimpleNode): CapturedBounds {
     let node = expect(_node, 'BUG: Expected node');
 
     return {
       parentElement: expect(
-        node.parentNode,
+        parent || node.parentNode,
         'BUG: detached node'
       ) as unknown as SimpleNode as SimpleElement,
       firstNode: node as unknown as SimpleNode,
@@ -532,7 +580,7 @@ class DebugRenderTreeTest extends RenderTest {
         this.assertRenderNode(actualNode, expected, `${actualNode.type}:${actualNode.name}`);
       });
     } else {
-      this.assert.deepEqual(actual, [], path);
+      this.assert.deepEqual(actual, expectedNodes, path);
     }
   }
 

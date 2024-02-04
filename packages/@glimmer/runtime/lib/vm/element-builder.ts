@@ -1,6 +1,7 @@
 import type {
   AttrNamespace,
   Bounds,
+  CapturedArguments,
   Cursor,
   CursorStackSymbol,
   ElementBuilder,
@@ -12,6 +13,7 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
+  Reference,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
@@ -20,6 +22,7 @@ import type {
   UpdatableBlock,
 } from '@glimmer/interfaces';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
+import { createConstRef } from '@glimmer/reference';
 import { assert, expect, Stack } from '@glimmer/util';
 
 import type { DynamicAttribute } from './attributes/dynamic';
@@ -100,7 +103,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
     this.pushElement(parentNode, nextSibling);
-
     this.env = env;
     this.dom = env.getAppendOperations();
     this.updateOperations = env.getDOM();
@@ -214,15 +216,31 @@ export class NewElementBuilder implements ElementBuilder {
     element: SimpleElement,
     guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Nullable<RemoteLiveBlock> {
-    return this.__pushRemoteElement(element, guid, insertBefore);
+  ): RemoteLiveBlock {
+    const block = this.__pushRemoteElement(element, guid, insertBefore);
+    if (this.env.debugRenderTree) {
+      const namedArgs: Record<string, Reference> = {};
+      if (insertBefore !== undefined) {
+        namedArgs['insertBefore'] = createConstRef(insertBefore, false);
+      }
+      this.env.debugRenderTree.create(block, {
+        type: 'keyword',
+        name: 'in-element',
+        args: {
+          named: namedArgs,
+          positional: [createConstRef(element, false)],
+        } as CapturedArguments,
+        instance: null,
+      });
+    }
+    return block;
   }
 
   __pushRemoteElement(
     element: SimpleElement,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Nullable<RemoteLiveBlock> {
+  ): RemoteLiveBlock {
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
@@ -236,12 +254,20 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushLiveBlock(block, true);
   }
 
-  popRemoteElement() {
-    this.popBlock();
+  popRemoteElement(): void {
+    const block = this.popBlock();
     this.popElement();
+    const parentElement = this.element;
+    if (this.env.debugRenderTree) {
+      this.env.debugRenderTree?.didRender(block, {
+        parentElement: () => parentElement,
+        firstNode: () => block.firstNode(),
+        lastNode: () => block.lastNode(),
+      });
+    }
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null) {
+  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
     this[CURSOR_STACK].push(new CursorImpl(element, nextSibling));
   }
 
@@ -268,7 +294,7 @@ export class NewElementBuilder implements ElementBuilder {
     return element;
   }
 
-  willCloseElement() {
+  willCloseElement(): void {
     this.block().closeElement();
   }
 
