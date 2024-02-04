@@ -144,11 +144,12 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
 
   let { constructing } = vm.elements();
 
+  let capturedArgs = args.capture();
   let state = manager.create(
     owner,
     expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
     definition.state,
-    args.capture()
+    capturedArgs
   );
 
   let instance: ModifierInstance = {
@@ -162,7 +163,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
     'BUG: ElementModifier could not find operations to append to'
   );
 
-  operations.addModifier(instance);
+  operations.addModifier(vm, instance, capturedArgs);
 
   let tag = manager.getTag(state);
 
@@ -263,7 +264,7 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
       'BUG: ElementModifier could not find operations to append to'
     );
 
-    operations.addModifier(instance);
+    operations.addModifier(vm, instance, args);
 
     tag = instance.manager.getTag(instance.state);
 
