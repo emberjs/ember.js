@@ -374,14 +374,6 @@ function buildHeadFromString(head: string, loc: SourceLocation): ASTv1.PathHead 
   }
 }
 
-function buildNamedBlockName(name: string, loc?: SourceLocation): ASTv1.NamedBlockName {
-  return {
-    type: 'NamedBlockName',
-    name,
-    loc: buildLoc(loc || null),
-  };
-}
-
 function buildCleanPath(
   head: ASTv1.PathHead,
   tail: string[],
@@ -577,7 +569,6 @@ export default {
   at: buildAtName,
   var: buildVar,
   this: buildThis,
-  blockName: buildNamedBlockName,
 
   string: literal('StringLiteral') as (value: string) => ASTv1.StringLiteral,
   boolean: literal('BooleanLiteral') as (value: boolean) => ASTv1.BooleanLiteral,
