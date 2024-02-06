@@ -1,5 +1,4 @@
 import type { Dict, Nullable } from '@glimmer/interfaces';
-import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { asPresentArray, assert, assign, deprecate, isPresentArray } from '@glimmer/util';
 
 import type { SourceLocation, SourcePosition } from '../source/location';
@@ -66,9 +65,7 @@ function buildBlock(
   let elseBlock: Nullable<ASTv1.Block> | undefined;
 
   if (_defaultBlock.type === 'Template') {
-    if (LOCAL_DEBUG) {
-      deprecate(`b.program is deprecated. Use b.blockItself instead.`);
-    }
+    deprecate(`b.program is deprecated. Use b.blockItself instead.`);
 
     defaultBlock = assign({}, _defaultBlock, { type: 'Block' }) as unknown as ASTv1.Block;
   } else {
@@ -76,9 +73,7 @@ function buildBlock(
   }
 
   if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
-    if (LOCAL_DEBUG) {
-      deprecate(`b.program is deprecated. Use b.blockItself instead.`);
-    }
+    deprecate(`b.program is deprecated. Use b.blockItself instead.`);
 
     elseBlock = assign({}, _elseBlock, { type: 'Block' }) as unknown as ASTv1.Block;
   } else {
