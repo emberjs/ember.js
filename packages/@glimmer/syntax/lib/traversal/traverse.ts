@@ -1,4 +1,3 @@
-import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { deprecate, unwrap } from '@glimmer/util';
 
 import type * as ASTv1 from '../v1/api';
@@ -70,11 +69,9 @@ function getNodeHandler<N extends ASTv1.Node>(
 ): NodeTraversal<ASTv1.Node> | undefined {
   if (nodeType === 'Template' || nodeType === 'Block') {
     if (visitor.Program) {
-      if (LOCAL_DEBUG) {
-        deprecate(
-          `The 'Program' visitor node is deprecated. Use 'Template' or 'Block' instead (node was '${nodeType}') `
-        );
-      }
+      deprecate(
+        `The 'Program' visitor node is deprecated. Use 'Template' or 'Block' instead (node was '${nodeType}') `
+      );
 
       return visitor.Program as NodeTraversal<ASTv1.Node>;
     }
