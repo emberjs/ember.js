@@ -9,6 +9,7 @@ const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
+const { generateComponentSignature } = require('../-utils');
 
 const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
 
@@ -273,7 +274,7 @@ module.exports = {
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
         if (this._isUsingTS) {
-          componentSignature = signatureFor(classifiedModuleName);
+          componentSignature = generateComponentSignature(classifiedModuleName);
           defaultExport = `class ${classifiedModuleName}Component extends Component<${classifiedModuleName}Signature> {}`;
         } else {
           defaultExport = `class ${classifiedModuleName}Component extends Component {}`;
@@ -282,7 +283,7 @@ module.exports = {
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
         if (this._isUsingTS) {
-          componentSignature = signatureFor(classifiedModuleName);
+          componentSignature = generateComponentSignature(classifiedModuleName);
           defaultExport = `templateOnly<${classifiedModuleName}Signature>();`;
         } else {
           defaultExport = `templateOnly();`;
@@ -300,25 +301,3 @@ module.exports = {
     };
   },
 };
-
-function signatureFor(classifiedModuleName) {
-  let args = `  // The arguments accepted by the component${EOL}  Args: {};`;
-
-  let blocks =
-    `  // Any blocks yielded by the component${EOL}` +
-    `  Blocks: {${EOL}` +
-    `    default: []${EOL}` +
-    `  };`;
-
-  let element =
-    `  // The element to which \`...attributes\` is applied in the component template${EOL}` +
-    `  Element: null;`;
-
-  return (
-    `interface ${classifiedModuleName}Signature {${EOL}` +
-    `${args}${EOL}` +
-    `${blocks}${EOL}` +
-    `${element}${EOL}` +
-    `}${EOL}`
-  );
-}
