@@ -28,7 +28,7 @@ export function getVoidTags() {
 const NON_WHITESPACE = /^\S/u;
 
 export interface PrinterOptions {
-  entityEncoding: 'transformed' | 'raw';
+  entityEncoding: ASTv1.EntityEncodingState;
 
   /**
    * Used to override the mechanism of printing a given AST.Node.

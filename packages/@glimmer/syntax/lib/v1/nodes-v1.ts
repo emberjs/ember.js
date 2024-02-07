@@ -1,31 +1,6 @@
-import type { Dict, Nullable, PresentArray, WireFormat } from '@glimmer/interfaces';
+import type { Nullable, PresentArray } from '@glimmer/interfaces';
 
 import type * as src from '../source/api';
-
-export interface Symbols {
-  symbols: string[];
-
-  has(name: string): boolean;
-  get(name: string): number;
-
-  getLocalsMap(): Dict<number>;
-  getDebugInfo(): WireFormat.Core.DebugInfo;
-
-  allocateFree(name: string): number;
-  allocateNamed(name: string): number;
-  allocateBlock(name: string): number;
-  allocate(identifier: string): number;
-
-  child(locals: string[]): BlockSymbols;
-}
-
-export interface BlockSymbols extends Symbols {
-  slots: number[];
-}
-
-export interface ProgramSymbols extends Symbols {
-  freeVariables: string[];
-}
 
 export interface BaseNode {
   // Every leaf interface that extends BaseNode must specify a type property.
@@ -43,7 +18,6 @@ export interface CommonProgram extends BaseNode {
 
 export interface Program extends CommonProgram {
   type: 'Program';
-  symbols?: Symbols;
 }
 
 export interface Block extends CommonProgram {
@@ -128,12 +102,6 @@ export interface CommentStatement extends BaseNode {
 export interface MustacheCommentStatement extends BaseNode {
   type: 'MustacheCommentStatement';
   value: string;
-}
-
-export interface NamedBlockName {
-  type: 'NamedBlockName';
-  name: string;
-  loc: src.SourceLocation;
 }
 
 export interface ElementName {
@@ -237,18 +205,6 @@ export interface AtHead {
 
 export interface VarHead {
   type: 'VarHead';
-  name: string;
-  loc: src.SourceLocation;
-}
-
-export interface FreeVarHead {
-  type: 'FreeVarHead';
-  name: string;
-  loc: src.SourceLocation;
-}
-
-export interface LocalVarHead {
-  type: 'LocalVarHead';
   name: string;
   loc: src.SourceLocation;
 }
