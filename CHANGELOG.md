@@ -15,6 +15,7 @@
 - [#20603](https://github.com/emberjs/ember.js/pull/20603) [BUGFIX] Internal templates should be strictMode
 - [#20605](https://github.com/emberjs/ember.js/pull/20605) [BUGFIX] Move babel-plugin-ember-template-compilation to dependencies
 - [#20570](https://github.com/emberjs/ember.js/pull/20570) [CLEANUP] Remove all traces of named outlets code
+- [#20561](https://github.com/emberjs/ember.js/pull/20561) Upgrade the Glimmer VM from 0.84.3 to 0.85.13
 
 ## v5.4.1 (January 22, 2024)
 
