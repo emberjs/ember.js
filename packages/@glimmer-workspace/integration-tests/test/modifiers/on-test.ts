@@ -320,10 +320,16 @@ if (hasDom) {
       Assert) {
       let calledCount = 0;
 
-      this.render('<button {{on "click" this.callback}}>Click Me</button>', {
+      this.render(`
+        <button {{
+          (if this.condition
+            (modifier this.on "click" this.callback)
+          )
+        }}>Click Me</button>`, {
         callback() {
           calledCount++;
         },
+        on,
         condition: true,
       });
 
