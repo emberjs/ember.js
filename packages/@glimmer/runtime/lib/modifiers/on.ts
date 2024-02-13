@@ -86,9 +86,8 @@ export class OnModifierState {
       valueForRef(userProvidedCallbackReference),
       CheckFunction,
       (actual) => {
-        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
-          actual === null ? 'null' : typeof actual
-        }. While rendering:\n\n${userProvidedCallbackReference.debugLabel ?? `{unlabeled value}`}`;
+        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${actual === null ? 'null' : typeof actual
+          }. While rendering:\n\n${userProvidedCallbackReference.debugLabel ?? `{unlabeled value}`}`;
       }
     ) as EventListener;
 
@@ -107,12 +106,11 @@ export class OnModifierState {
 
     if (this.shouldUpdate) {
       if (needsCustomCallback) {
-        this.callback = function (this: Element, event) {
+        this.callback = function(this: Element, event) {
           if (import.meta.env.DEV && passive) {
             event.preventDefault = () => {
               throw new Error(
-                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
-                  userProvidedCallback.name ?? `{anonymous function}`
+                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${userProvidedCallback.name ?? `{anonymous function}`
                 }`
               );
             };
