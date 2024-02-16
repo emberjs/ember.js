@@ -68,15 +68,16 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
   @test
   'Modifiers with dynamic arguments receive the correct number of arguments'(assert) {
     let receivedArgs: unknown[] = [];
-    const foo = defineSimpleModifier(
-      (_element: unknown, args: unknown[]) => (receivedArgs = args)
-    );
+    const foo = defineSimpleModifier((_element: unknown, args: unknown[]) => (receivedArgs = args));
 
-    this.render(`
+    this.render(
+      `
       {{~#let (modifier this.foo this.outer) as |foo|~}}
         <div {{ (if this.cond (modifier foo this.inner)) }}>General Kenobi!</div>
       {{~/let~}}
-      `, { foo, inner: 'x', outer: 'y', cond: true });
+      `,
+      { foo, inner: 'x', outer: 'y', cond: true }
+    );
 
     this.assertHTML('<div>General Kenobi!</div>');
     this.assertStableRerender();
@@ -84,7 +85,6 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
     this.rerender({ cond: false });
     this.rerender({ cond: true });
     assert.deepEqual(receivedArgs, ['y', 'x']);
-
   }
 
   @test
