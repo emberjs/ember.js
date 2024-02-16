@@ -319,7 +319,7 @@ if (hasDom) {
     'asserts when eventName is missing'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on undefined this.callback}}>Click Me</button>`, {
-          callback() { },
+          callback() {},
         });
       }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
     }
@@ -328,7 +328,7 @@ if (hasDom) {
     'asserts when eventName is a bound undefined value'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on this.someUndefinedThing this.callback}}>Click Me</button>`, {
-          callback() { },
+          callback() {},
         });
       }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
     }
@@ -337,7 +337,7 @@ if (hasDom) {
     'asserts when eventName is a function'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on this.callback}}>Click Me</button>`, {
-          callback() { },
+          callback() {},
         });
       }, /You must pass a valid DOM event name as the first argument to the `on` modifier/u);
     }
@@ -384,7 +384,7 @@ if (hasDom) {
     'asserts if more than 2 positional parameters are provided'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on 'click' this.callback this.someArg}}>Click Me</button>`, {
-          callback() { },
+          callback() {},
           someArg: 'foo',
         });
       }, /You can only pass two positional arguments \(event name and callback\) to the `on` modifier, but you provided 3. Consider using the `fn` helper to provide additional arguments to the `on` callback./u);
