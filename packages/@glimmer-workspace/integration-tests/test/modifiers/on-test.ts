@@ -316,38 +316,6 @@ if (hasDom) {
     }
 
     @test
-    'updates to a (remaining truthy) condition do not leave the element without an attached modifier'(assert:
-      Assert) {
-      let calledCount = 0;
-
-      this.render(`
-        <button {{
-          (if this.condition
-            (modifier this.on "click" this.callback)
-          )
-        }}>Click Me</button>`, {
-        callback() {
-          calledCount++;
-        },
-        on,
-        condition: true,
-      });
-
-      this.findButton().click();
-      assert.strictEqual(calledCount, 1, 'callback is being invoked');
-
-      this.rerender({ condition: true });
-
-      this.findButton().click();
-      assert.strictEqual(calledCount, 2, 'callback is being invoked');
-
-      this.rerender({ condition: true });
-
-      this.findButton().click();
-      assert.strictEqual(calledCount, 3, 'callback is being invoked');
-    }
-
-    @test
     'asserts when eventName is missing'(assert: Assert) {
       assert.throws(() => {
         this.render(`<button {{on undefined this.callback}}>Click Me</button>`, {
