@@ -366,11 +366,14 @@ class _LinkTo extends InternalComponent {
     }
 
     let element = event.currentTarget;
-    assert('[BUG] must be an <a> element', element instanceof HTMLAnchorElement);
+    assert(
+      '[BUG] must be an <a> element',
+      element instanceof HTMLAnchorElement || element instanceof SVGAElement
+    );
 
     let isSelf = element.target === '' || element.target === '_self';
 
-    if (isSelf) {
+    if (isSelf || element instanceof SVGAElement) {
       this.preventDefault(event);
     } else {
       return;
