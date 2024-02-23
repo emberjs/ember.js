@@ -22,7 +22,7 @@ import {
 import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { debugToString, expect, isObject } from '@glimmer/util';
+import { assign, debugToString, expect, isObject } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0, CurriedTypes, Op } from '@glimmer/vm';
 
@@ -180,11 +180,11 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
       owner = curriedOwner;
 
       if (positional !== undefined) {
-        args.positional = [...positional, ...outerPositional] as CapturedPositionalArguments;
+        args.positional = positional.concat(outerPositional) as CapturedPositionalArguments;
       }
 
       if (named !== undefined) {
-        args.named = Object.assign({}, named, outerNamed);
+        args.named = assign({}, ...named, outerNamed);
       }
     } else {
       hostDefinition = value;
@@ -196,10 +196,8 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
     if (manager === null) {
       if (import.meta.env.DEV) {
         throw new Error(
-          `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
-            ref.debugLabel
-          }}}\`, and the incorrect definition is the value at the path \`${
-            ref.debugLabel
+          `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${ref.debugLabel
+          }}}\`, and the incorrect definition is the value at the path \`${ref.debugLabel
           }\`, which was: ${debugToString!(hostDefinition)}`
         );
       } else {
