@@ -66,7 +66,7 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
   }
 
   @test
-  'Modifiers with dynamic arguments receive the correct number of arguments'(assert) {
+  'Modifiers with dynamic arguments receive the correct number of arguments'(assert: Assert) {
     let receivedArgs: unknown[] = [];
     const foo = defineSimpleModifier((_element: unknown, args: unknown[]) => (receivedArgs = args));
 
