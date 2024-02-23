@@ -1,11 +1,39 @@
-import { asPresentArray, assertPresentArray, getFirst } from '@glimmer/util';
+import { asPresentArray, assertPresentArray, deprecate, getFirst } from '@glimmer/util';
 
 import type { SourceSpan } from '../source/span';
-import type { PathExpression, PathHead } from './nodes-v1';
+import type * as ASTv1 from './nodes-v1';
 
 import b from './public-builders';
 
-export class PathExpressionImplV1 implements PathExpression {
+export type TemplateParams = Omit<ASTv1.Template, 'type' | 'blockParams'>;
+
+export function buildLegacyTemplate({ body, locals, loc }: TemplateParams): ASTv1.Template {
+  const node = {
+    type: 'Template',
+    body,
+    loc,
+  };
+
+  Object.defineProperty(node, 'locals', {
+    enumerable: true,
+    writable: false,
+    value: Object.freeze([...locals]),
+  });
+
+  Object.defineProperty(node, 'blockParams', {
+    enumerable: false,
+    get(): readonly string[] {
+      deprecate(
+        `Template nodes can never have block params, for in-scope variables, use locals instead`
+      );
+      return this.locals;
+    },
+  });
+
+  return node as ASTv1.Template;
+}
+
+export class PathExpressionImplV1 implements ASTv1.PathExpression {
   type = 'PathExpression' as const;
   public parts: string[];
   public this = false;
@@ -13,7 +41,7 @@ export class PathExpressionImplV1 implements PathExpression {
 
   constructor(
     public original: string,
-    head: PathHead,
+    head: ASTv1.PathHead,
     tail: string[],
     public loc: SourceSpan
   ) {
@@ -32,9 +60,9 @@ export class PathExpressionImplV1 implements PathExpression {
   }
 
   // Cache for the head value.
-  _head?: PathHead = undefined;
+  _head?: ASTv1.PathHead = undefined;
 
-  get head(): PathHead {
+  get head(): ASTv1.PathHead {
     if (this._head) {
       return this._head;
     }

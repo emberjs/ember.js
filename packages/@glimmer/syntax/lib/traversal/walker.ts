@@ -33,39 +33,20 @@ export default class Walker {
     switch (node.type) {
       case 'Block':
       case 'Template':
-        return visitors.Program(this, node as unknown as ASTv1.Program, callback);
+        walkBody(this, node.body, callback);
+        return;
       case 'ElementNode':
-        return visitors.ElementNode(this, node, callback);
+        walkBody(this, node.children, callback);
+        return;
       case 'BlockStatement':
-        return visitors.BlockStatement(this, node, callback);
+        this.visit(node.program, callback);
+        this.visit(node.inverse || null, callback);
+        return;
       default:
         return;
     }
   }
 }
-
-const visitors = {
-  Program(walker: Walker, node: ASTv1.Program, callback: NodeCallback<ASTv1.Statement>) {
-    walkBody(walker, node.body, callback);
-  },
-
-  Template(walker: Walker, node: ASTv1.Template, callback: NodeCallback<ASTv1.Node>) {
-    walkBody(walker, node.body, callback);
-  },
-
-  Block(walker: Walker, node: ASTv1.Block, callback: NodeCallback<ASTv1.Node>) {
-    walkBody(walker, node.body, callback);
-  },
-
-  ElementNode(walker: Walker, node: ASTv1.ElementNode, callback: NodeCallback<ASTv1.Node>) {
-    walkBody(walker, node.children, callback);
-  },
-
-  BlockStatement(walker: Walker, node: ASTv1.BlockStatement, callback: NodeCallback<ASTv1.Block>) {
-    walker.visit(node.program, callback);
-    walker.visit(node.inverse || null, callback);
-  },
-} as const;
 
 function walkBody(
   walker: Walker,

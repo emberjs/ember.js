@@ -113,8 +113,6 @@ export default class Printer {
       case 'PathExpression':
       case 'SubExpression':
         return this.Expression(node);
-      case 'Program':
-        return this.Block(node);
       case 'ConcatStatement':
         // should have an AttrNode parent
         return this.ConcatStatement(node);
@@ -174,15 +172,20 @@ export default class Printer {
       case 'ElementNode':
         return this.ElementNode(statement);
       case 'Block':
-      case 'Template':
         return this.Block(statement);
+      case 'Template':
+        return this.Template(statement);
       case 'AttrNode':
         // should have element
         return this.AttrNode(statement);
     }
   }
 
-  Block(block: ASTv1.Block | ASTv1.Program | ASTv1.Template): void {
+  Template(template: ASTv1.Template): void {
+    this.TopLevelStatements(template.body);
+  }
+
+  Block(block: ASTv1.Block): void {
     /*
       When processing a template like:
 

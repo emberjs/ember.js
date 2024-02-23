@@ -35,7 +35,6 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     if (this.isTopLevel) {
       node = b.template({
         body,
-        blockParams: program.blockParams,
         loc: this.source.spanFor(program.loc),
       });
     } else {
