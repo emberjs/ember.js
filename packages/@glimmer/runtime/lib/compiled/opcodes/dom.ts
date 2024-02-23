@@ -22,7 +22,7 @@ import {
 import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { assign, debugToString, expect, isObject } from '@glimmer/util';
+import { debugToString, expect, isObject } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0, CurriedTypes, Op } from '@glimmer/vm';
 
@@ -184,7 +184,7 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
       }
 
       if (named !== undefined) {
-        args.named = assign({}, ...named, outerNamed);
+        args.named = Object.assign({}, ...named, outerNamed);
       }
     } else {
       hostDefinition = value;
