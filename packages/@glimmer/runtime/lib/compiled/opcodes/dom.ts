@@ -196,8 +196,10 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
     if (manager === null) {
       if (import.meta.env.DEV) {
         throw new Error(
-          `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${ref.debugLabel
-          }}}\`, and the incorrect definition is the value at the path \`${ref.debugLabel
+          `Expected a dynamic modifier definition, but received an object or function that did not have a modifier manager associated with it. The dynamic invocation was \`{{${
+            ref.debugLabel
+          }}}\`, and the incorrect definition is the value at the path \`${
+            ref.debugLabel
           }\`, which was: ${debugToString!(hostDefinition)}`
         );
       } else {
