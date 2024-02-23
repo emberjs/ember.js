@@ -150,7 +150,9 @@ export abstract class Parser {
   }
 
   acceptTemplate(node: HBS.Program): ASTv1.Template {
-    return this[node.type as 'Program'](node) as ASTv1.Template;
+    let result = this.Program(node);
+    assert(result.type === 'Template', 'expected a template');
+    return result;
   }
 
   acceptNode(node: HBS.Program): ASTv1.Block | ASTv1.Template;

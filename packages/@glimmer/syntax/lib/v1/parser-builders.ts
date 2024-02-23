@@ -6,7 +6,7 @@ import type { SourceLocation } from '../source/location';
 import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
 
-import { PathExpressionImplV1 } from './legacy-interop';
+import { buildLegacyTemplate, PathExpressionImplV1 } from './legacy-interop';
 
 const DEFAULT_STRIP = {
   close: false,
@@ -51,20 +51,19 @@ class Builders {
   }
 
   template({
-    body,
-    blockParams,
+    body = [],
+    locals = [],
     loc,
   }: {
     body?: ASTv1.Statement[];
-    blockParams?: string[];
+    locals?: string[];
     loc: SourceSpan;
   }): ASTv1.Template {
-    return {
-      type: 'Template',
-      body: body || [],
-      blockParams: blockParams || [],
+    return buildLegacyTemplate({
+      body,
+      locals,
       loc,
-    };
+    });
   }
 
   mustache({

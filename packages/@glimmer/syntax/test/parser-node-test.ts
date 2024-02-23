@@ -11,17 +11,17 @@ QUnit.module('[glimmer-syntax] Parser - AST');
 
 test('a simple piece of content', () => {
   let t = 'some content';
-  astEqual(t, b.program([b.text('some content')]));
+  astEqual(t, b.template([b.text('some content')]));
 });
 
 test('self-closed element', () => {
   let t = '<g />';
-  astEqual(t, b.program([element('g/')]));
+  astEqual(t, b.template([element('g/')]));
 });
 
 test('elements can have empty attributes', () => {
   let t = '<img id="">';
-  astEqual(t, b.program([element('img', ['attrs', ['id', '']])]));
+  astEqual(t, b.template([element('img', ['attrs', ['id', '']])]));
 });
 
 test('disallowed quote in element space is rejected', (assert) => {
@@ -46,17 +46,17 @@ test('disallowed equals sign in element space is rejected', (assert) => {
 
 test('svg content', () => {
   let t = '<svg></svg>';
-  astEqual(t, b.program([element('svg')]));
+  astEqual(t, b.template([element('svg')]));
 });
 
 test('html content with html content inline', () => {
   let t = '<div><p></p></div>';
-  astEqual(t, b.program([element('div', ['body', element('p')])]));
+  astEqual(t, b.template([element('div', ['body', element('p')])]));
 });
 
 test('html content with svg content inline', () => {
   let t = '<div><svg></svg></div>';
-  astEqual(t, b.program([element('div', ['body', element('svg')])]));
+  astEqual(t, b.template([element('div', ['body', element('svg')])]));
 });
 
 let integrationPoints = ['foreignObject', 'desc'];
@@ -65,7 +65,7 @@ function buildIntegrationPointTest(integrationPoint: string) {
     let t = '<svg><' + integrationPoint + '><div></div></' + integrationPoint + '></svg>';
     astEqual(
       t,
-      b.program([element('svg', ['body', element(integrationPoint, ['body', element('div')])])])
+      b.template([element('svg', ['body', element(integrationPoint, ['body', element('div')])])])
     );
   };
 }
@@ -81,7 +81,7 @@ test('svg title with html content', () => {
   let t = '<svg><title><div></div></title></svg>';
   astEqual(
     t,
-    b.program([element('svg', ['body', element('title', ['body', b.text('<div></div>')])])])
+    b.template([element('svg', ['body', element('title', ['body', b.text('<div></div>')])])])
   );
 });
 
@@ -89,7 +89,7 @@ test('a piece of content with HTML', () => {
   let t = 'some <div>content</div> done';
   astEqual(
     t,
-    b.program([b.text('some '), element('div', ['body', b.text('content')]), b.text(' done')])
+    b.template([b.text('some '), element('div', ['body', b.text('content')]), b.text(' done')])
   );
 });
 
@@ -97,7 +97,7 @@ test('a piece of Handlebars with HTML', () => {
   let t = 'some <div>{{content}}</div> done';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('some '),
       element('div', ['body', b.mustache(b.path('content'))]),
       b.text(' done'),
@@ -109,7 +109,7 @@ test('Handlebars embedded in an attribute (quoted)', () => {
   let t = 'some <div class="{{foo}}">content</div> done';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('some '),
       element(
         'div',
@@ -125,7 +125,7 @@ test('Handlebars embedded in an attribute (unquoted)', () => {
   let t = 'some <div class={{foo}}>content</div> done';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('some '),
       element('div', ['attrs', ['class', b.mustache(b.path('foo'))]], ['body', b.text('content')]),
       b.text(' done'),
@@ -137,14 +137,14 @@ test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', () 
   let t = '<input value={{foo}}/>';
 
   let el = element('input/', ['attrs', ['value', b.mustache(b.path('foo'))]]);
-  astEqual(t, b.program([el]));
+  astEqual(t, b.template([el]));
 });
 
 test('Handlebars embedded in an attribute (sexprs)', () => {
   let t = 'some <div class="{{foo (foo "abc")}}">content</div> done';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('some '),
       element(
         'div',
@@ -166,7 +166,7 @@ test('Handlebars embedded in an attribute with other content surrounding it', ()
   let t = 'some <a href="http://{{link}}/">content</a> done';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('some '),
       element(
         'a',
@@ -185,7 +185,7 @@ test('A more complete embedding example', () => {
     " {{more 'embed'}}";
   astEqual(
     t,
-    b.program([
+    b.template([
       b.mustache(b.path('embed')),
       b.text(' '),
       b.mustache(b.path('some'), [b.string('content')]),
@@ -219,7 +219,7 @@ test('Simple embedded block helpers', () => {
   let t = '{{#if foo}}<div>{{content}}</div>{{/if}}';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('if'),
         [b.path('foo')],
@@ -236,7 +236,7 @@ test('block params', (assert) => {
     blockParams: ['bar', 'baz', 'qux'],
   });
   let mustache = b.block(b.path('Foo'), [], b.hash(), b.blockItself([], ['bar', 'baz', 'qux']));
-  astEqual(t, b.program([element, mustache]));
+  astEqual(t, b.template([element, mustache]));
   assert.strictEqual(element.blockParamNodes.length, 3);
   assert.strictEqual(mustache.program.blockParamNodes.length, 3);
   assert.deepEqual(
@@ -254,7 +254,7 @@ test('Involved block helper', () => {
     '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
   astEqual(
     t,
-    b.program([
+    b.template([
       element('p', ['body', b.text('hi')]),
       b.text(' content '),
       b.block(
@@ -274,7 +274,7 @@ test('Element modifiers', () => {
   let t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(
     t,
-    b.program([
+    b.template([
       element(
         'p',
         ['attrs', ['class', 'bar']],
@@ -288,7 +288,7 @@ test('Element modifiers', () => {
 test('Element paths', (assert) => {
   let t = "<bar.x.y class='bar'></bar.x.y>";
   const elem = element('bar.x.y', ['attrs', ['class', 'bar']]);
-  astEqual(t, b.program([elem]));
+  astEqual(t, b.template([elem]));
   assert.strictEqual(elem.parts.length, 3);
   assert.deepEqual(
     elem.parts.map((p) => p.value),
@@ -298,34 +298,34 @@ test('Element paths', (assert) => {
 
 test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', () => {
   let t = '<input {{bar}}>';
-  astEqual(t, b.program([element('input', ['modifiers', 'bar'])]));
+  astEqual(t, b.template([element('input', ['modifiers', 'bar'])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in attributeName state', () => {
   let t = '<input foo{{bar}}>';
-  astEqual(t, b.program([element('input', ['attrs', ['foo', '']], ['modifiers', ['bar']])]));
+  astEqual(t, b.template([element('input', ['attrs', ['foo', '']], ['modifiers', ['bar']])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeName state', () => {
   let t = '<input foo {{bar}}>';
-  astEqual(t, b.program([element('input', ['attrs', ['foo', '']], ['modifiers', 'bar'])]));
+  astEqual(t, b.template([element('input', ['attrs', ['foo', '']], ['modifiers', 'bar'])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeValue state', () => {
   let t = '<input foo=1 {{bar}}>';
-  astEqual(t, b.program([element('input', ['attrs', ['foo', '1']], ['modifiers', ['bar']])]));
+  astEqual(t, b.template([element('input', ['attrs', ['foo', '1']], ['modifiers', ['bar']])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state', () => {
   let t = "<input foo='1'{{bar}}>";
-  astEqual(t, b.program([element('input', ['attrs', ['foo', '1']], ['modifiers', 'bar'])]));
+  astEqual(t, b.template([element('input', ['attrs', ['foo', '1']], ['modifiers', 'bar'])]));
 });
 
 test('Stripping - mustaches', () => {
   let t = 'foo {{~content}} bar';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('foo'),
       b.mustache(b.path('content'), undefined, undefined, undefined, undefined, {
         open: true,
@@ -338,7 +338,7 @@ test('Stripping - mustaches', () => {
   t = 'foo {{content~}} bar';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('foo '),
       b.mustache(b.path('content'), undefined, undefined, undefined, undefined, {
         open: false,
@@ -353,7 +353,7 @@ test('Stripping - blocks', () => {
   let t = 'foo {{~#wat}}{{/wat}} bar';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('foo'),
       b.block(b.path('wat'), [], b.hash(), b.blockItself(), undefined, undefined, {
         open: true,
@@ -366,7 +366,7 @@ test('Stripping - blocks', () => {
   t = 'foo {{#wat}}{{/wat~}} bar';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('foo '),
       b.block(
         b.path('wat'),
@@ -388,7 +388,7 @@ test('Stripping - programs', () => {
   let t = '{{#wat~}} foo {{else}}{{/wat}}';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('wat'),
         [],
@@ -404,7 +404,7 @@ test('Stripping - programs', () => {
   t = '{{#wat}} foo {{~else}}{{/wat}}';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('wat'),
         [],
@@ -421,7 +421,7 @@ test('Stripping - programs', () => {
   t = '{{#wat}}{{else~}} foo {{/wat}}';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('wat'),
         [],
@@ -438,7 +438,7 @@ test('Stripping - programs', () => {
   t = '{{#wat}}{{else}} foo {{~/wat}}';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('wat'),
         [],
@@ -459,7 +459,7 @@ test('Stripping - removes unnecessary text nodes', () => {
 
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('each'),
         [],
@@ -480,7 +480,7 @@ test('Whitespace control - linebreaks after blocks removed by default', () => {
 
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('each'),
         [],
@@ -497,7 +497,7 @@ test('Whitespace control - preserve all whitespace if config is set', () => {
 
   astEqual(
     t,
-    b.program([
+    b.template([
       b.block(
         b.path('each'),
         [],
@@ -518,13 +518,13 @@ skip('Awkward mustache in unquoted attribute value', () => {
   let t = '<div class=a{{foo}}></div>';
   astEqual(
     t,
-    b.program([element('div', ['attrs', ['class', b.concat([b.text('a'), b.mustache('foo')])]])])
+    b.template([element('div', ['attrs', ['class', b.concat([b.text('a'), b.mustache('foo')])]])])
   );
 
   t = '<div class=a{{foo}}b></div>';
   astEqual(
     t,
-    b.program([
+    b.template([
       element('div', ['attrs', ['class', b.concat([b.text('a'), b.mustache('foo'), b.text('b')])]]),
     ])
   );
@@ -532,20 +532,20 @@ skip('Awkward mustache in unquoted attribute value', () => {
   t = '<div class={{foo}}b></div>';
   astEqual(
     t,
-    b.program([element('div', ['attrs', ['class', b.concat([b.mustache('foo'), b.text('b')])]])])
+    b.template([element('div', ['attrs', ['class', b.concat([b.mustache('foo'), b.text('b')])]])])
   );
 });
 
 test('an HTML comment', () => {
   let t = 'before <!-- some comment --> after';
-  astEqual(t, b.program([b.text('before '), b.comment(' some comment '), b.text(' after')]));
+  astEqual(t, b.template([b.text('before '), b.comment(' some comment '), b.text(' after')]));
 });
 
 test('a Handlebars comment inside an HTML comment', () => {
   let t = 'before <!-- some {{! nested thing }} comment --> after';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('before '),
       b.comment(' some {{! nested thing }} comment '),
       b.text(' after'),
@@ -557,7 +557,7 @@ test('a Handlebars comment', () => {
   let t = 'before {{! some comment }} after';
   astEqual(
     t,
-    b.program([b.text('before '), b.mustacheComment(' some comment '), b.text(' after')])
+    b.template([b.text('before '), b.mustacheComment(' some comment '), b.text(' after')])
   );
 });
 
@@ -565,7 +565,7 @@ test('a Handlebars comment in proper element space', () => {
   let t = 'before <div {{! some comment }} data-foo="bar" {{! other comment }}></div> after';
   astEqual(
     t,
-    b.program([
+    b.template([
       b.text('before '),
       element(
         'div',
@@ -581,7 +581,7 @@ test('a Handlebars comment after a valueless attribute', () => {
   let t = '<input foo {{! comment }}>';
   astEqual(
     t,
-    b.program([
+    b.template([
       element('input', ['attrs', ['foo', '']], ['comments', b.mustacheComment(' comment ')]),
     ])
   );
@@ -637,25 +637,25 @@ test('a Handlebars comment in invalid element space', (assert) => {
 test('allow {{null}} to be passed as helper name', () => {
   let ast = parse('{{null}}');
 
-  astEqual(ast, b.program([b.mustache(b.null())]));
+  astEqual(ast, b.template([b.mustache(b.null())]));
 });
 
 test('allow {{null}} to be passed as a param', () => {
   let ast = parse('{{foo null}}');
 
-  astEqual(ast, b.program([b.mustache(b.path('foo'), [b.null()])]));
+  astEqual(ast, b.template([b.mustache(b.path('foo'), [b.null()])]));
 });
 
 test('allow {{undefined}} to be passed as helper name', () => {
   let ast = parse('{{undefined}}');
 
-  astEqual(ast, b.program([b.mustache(b.undefined())]));
+  astEqual(ast, b.template([b.mustache(b.undefined())]));
 });
 
 test('allow {{undefined}} to be passed as a param', () => {
   let ast = parse('{{foo undefined}}');
 
-  astEqual(ast, b.program([b.mustache(b.path('foo'), [b.undefined()])]));
+  astEqual(ast, b.template([b.mustache(b.path('foo'), [b.undefined()])]));
 });
 
 test('Handlebars partial should error', (assert) => {
@@ -725,7 +725,7 @@ test('disallowed mustaches in the tagName space', (assert) => {
 test('mustache immediately followed by self closing tag does not error', () => {
   let ast = parse('<FooBar data-foo={{blah}}/>');
   let el = element('FooBar/', ['attrs', ['data-foo', b.mustache('blah')]]);
-  astEqual(ast, b.program([el]));
+  astEqual(ast, b.template([el]));
 });
 
 QUnit.dump.maxDepth = 100;
@@ -752,7 +752,7 @@ test('named blocks', () => {
       ['as', 'contents']
     ),
   ]);
-  astEqual(ast, b.program([el]));
+  astEqual(ast, b.template([el]));
 });
 
 test('path expression with "dangling dot" throws error', (assert) => {

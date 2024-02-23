@@ -3,7 +3,6 @@ import type * as ASTv1 from './api';
 // ensure stays in sync with typing
 // ParentNode and ChildKey types are derived from VisitorKeysMap
 const visitorKeys = {
-  Program: ['body'],
   Template: ['body'],
   Block: ['body'],
 
@@ -35,11 +34,6 @@ const visitorKeys = {
   Hash: ['pairs'],
   HashPair: ['value'],
   BlockParam: [],
-
-  // v2 new nodes
-  NamedBlock: ['attributes', 'modifiers', 'children', 'comments'],
-  SimpleElement: ['attributes', 'modifiers', 'children', 'comments'],
-  Component: ['head', 'attributes', 'modifiers', 'children', 'comments'],
 } as const;
 
 type VisitorKeysMap = typeof visitorKeys;

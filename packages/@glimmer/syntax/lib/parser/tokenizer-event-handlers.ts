@@ -461,21 +461,21 @@ export function preprocess(
     end: offsets.endPosition,
   };
 
-  let program = new TokenizerEventHandlers(source, entityParser, mode).acceptTemplate(ast);
+  let template = new TokenizerEventHandlers(source, entityParser, mode).acceptTemplate(ast);
 
-  if (options.strictMode) {
-    program.blockParams = options.locals ?? [];
+  if (options.strictMode && options.locals?.length) {
+    template = b.template({ ...template, locals: options.locals });
   }
 
-  if (options && options.plugins && options.plugins.ast) {
+  if (options?.plugins?.ast) {
     for (const transform of options.plugins.ast) {
       let env: ASTPluginEnvironment = assign({}, options, { syntax }, { plugins: undefined });
 
       let pluginResult = transform(env);
 
-      traverse(program, pluginResult.visitor);
+      traverse(template, pluginResult.visitor);
     }
   }
 
-  return program;
+  return template;
 }

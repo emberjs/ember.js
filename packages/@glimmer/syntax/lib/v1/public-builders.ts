@@ -7,7 +7,7 @@ import type * as ASTv1 from './api';
 import { SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
-import { PathExpressionImplV1 } from './legacy-interop';
+import { buildLegacyTemplate, PathExpressionImplV1 } from './legacy-interop';
 
 let _SOURCE: Source | undefined;
 
@@ -50,12 +50,14 @@ function buildMustache(
   };
 }
 
+type PossiblyDeprecatedBlock = ASTv1.Block | ASTv1.Template;
+
 function buildBlock(
   path: BuilderHead,
   params: Nullable<ASTv1.Expression[]>,
   hash: Nullable<ASTv1.Hash>,
-  _defaultBlock: ASTv1.PossiblyDeprecatedBlock,
-  _elseBlock?: Nullable<ASTv1.PossiblyDeprecatedBlock>,
+  _defaultBlock: PossiblyDeprecatedBlock,
+  _elseBlock?: Nullable<PossiblyDeprecatedBlock>,
   loc?: SourceLocation,
   openStrip?: ASTv1.StripFlags,
   inverseStrip?: ASTv1.StripFlags,
@@ -454,13 +456,14 @@ function buildProgram(
   body?: ASTv1.Statement[],
   blockParams?: string[],
   loc?: SourceLocation
-): ASTv1.Template {
-  return {
-    type: 'Template',
-    body: body || [],
-    blockParams: blockParams || [],
-    loc: buildLoc(loc || null),
-  };
+): ASTv1.Template | ASTv1.Block {
+  deprecate(`b.program is deprecated. Use b.template or b.blockItself instead.`);
+
+  if (blockParams && blockParams.length) {
+    return buildBlockItself(body, blockParams, false, loc);
+  } else {
+    return buildTemplate(body, [], loc);
+  }
 }
 
 function buildBlockItself(
@@ -481,16 +484,15 @@ function buildBlockItself(
 }
 
 function buildTemplate(
-  body?: ASTv1.Statement[],
-  blockParams?: string[],
+  body: ASTv1.Statement[] = [],
+  locals: string[] = [],
   loc?: SourceLocation
 ): ASTv1.Template {
-  return {
-    type: 'Template',
-    body: body || [],
-    blockParams: blockParams || [],
+  return buildLegacyTemplate({
+    body,
+    locals,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildPosition(line: number, column: number): SourcePosition {

@@ -12,26 +12,31 @@ export interface BaseNode {
 
 export interface CommonProgram extends BaseNode {
   body: Statement[];
-  blockParams: string[];
-  chained?: boolean;
-}
-
-export interface Program extends CommonProgram {
-  type: 'Program';
 }
 
 export interface Block extends CommonProgram {
   type: 'Block';
+  blockParams: string[];
   blockParamNodes: BlockParam[];
+  chained?: boolean;
 }
 
 export type EntityEncodingState = 'transformed' | 'raw';
 
 export interface Template extends CommonProgram {
   type: 'Template';
+  readonly locals: readonly string[];
+
+  /**
+   * @deprecated use locals instead
+   */
+  readonly blockParams: readonly string[];
 }
 
-export type PossiblyDeprecatedBlock = Block | Template;
+/**
+ * @deprecated use Template or Block instead
+ */
+export type Program = Template | Block;
 
 export interface CallParts {
   path: Expression;
@@ -320,7 +325,6 @@ export type Nodes = SharedNodes & {
   ElementStartNode: ElementStartNode;
   ElementPartNode: ElementPartNode;
   ElementNameNode: ElementNameNode;
-  Program: Program;
   Template: Template;
   Block: Block;
   BlockStatement: BlockStatement;
