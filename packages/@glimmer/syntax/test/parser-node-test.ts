@@ -266,17 +266,6 @@ test('Element modifiers', () => {
   );
 });
 
-test('Element paths', (assert) => {
-  let t = "<bar.x.y class='bar'></bar.x.y>";
-  const elem = element('bar.x.y', ['attrs', ['class', 'bar']]);
-  astEqual(t, b.template([elem]));
-  assert.strictEqual(elem.parts.length, 3);
-  assert.deepEqual(
-    elem.parts.map((p) => p.value),
-    ['bar', 'x', 'y']
-  );
-});
-
 test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', () => {
   let t = '<input {{bar}}>';
   astEqual(t, b.template([element('input', ['modifiers', 'bar'])]));
@@ -902,22 +891,7 @@ export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.E
 
   return {
     type: 'ElementNode',
-    tag: tag,
-    nameNode: {
-      type: 'ElementNameNode',
-      value: tag,
-    } as ASTv1.ElementNameNode,
-    startTag: {
-      type: 'ElementStartNode',
-      value: tag,
-    } as ASTv1.ElementStartNode,
-    endTag: {
-      type: 'ElementEndNode',
-      value: selfClosing ? '' : tag,
-    } as ASTv1.ElementEndNode,
-    parts: tag
-      .split('.')
-      .map((t) => ({ type: 'ElementPartNode', value: t }) as ASTv1.ElementPartNode),
+    tag: tag || '',
     selfClosing: selfClosing,
     attributes: attrs || [],
     blockParams: blockParams || [],

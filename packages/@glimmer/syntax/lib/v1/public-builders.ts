@@ -197,21 +197,6 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
   return {
     type: 'ElementNode',
     tag: tagName,
-    nameNode: {
-      type: 'ElementNameNode',
-      value: tag,
-    } as ASTv1.ElementNameNode,
-    startTag: {
-      type: 'ElementStartNode',
-      value: tag,
-    } as ASTv1.ElementStartNode,
-    endTag: {
-      type: 'ElementEndNode',
-      value: selfClosing ? '' : tag,
-    } as ASTv1.ElementEndNode,
-    parts: tagName
-      .split('.')
-      .map((t) => ({ type: 'ElementPartNode', value: t }) as ASTv1.ElementPartNode),
     selfClosing: selfClosing,
     attributes: attrs || [],
     blockParams: blockParams || [],

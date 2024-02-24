@@ -1,7 +1,6 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/util';
 
-import type { src } from '..';
 import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
 
@@ -19,26 +18,6 @@ let ID_INVERSE_PATTERN = /[!"#%&'()*+./;<=>@[\\\]^`{|}~]/u;
 export function parseElementBlockParams(element: ASTv1.ElementNode): void {
   let params = parseBlockParams(element);
   if (params) element.blockParams = params;
-}
-
-export function parseElementPartLocs(code: src.Source, element: ASTv1.ElementNode) {
-  const elementRange = [element.loc.getStart().offset!, element.loc.getEnd().offset!] as [
-    number,
-    number,
-  ];
-  let start = elementRange[0];
-  let codeSlice = code.slice(...elementRange);
-  for (const part of element.parts) {
-    const idx = codeSlice.indexOf(part.value);
-    const range = [start + idx, 0] as [number, number];
-    range[1] = range[0] + part.value.length;
-    codeSlice = code.slice(range[1], elementRange[1]);
-    start = range[1];
-    part.loc = code.spanFor({
-      start: code.hbsPosFor(range[0])!,
-      end: code.hbsPosFor(range[1])!,
-    });
-  }
 }
 
 function parseBlockParams(element: ASTv1.ElementNode): Nullable<string[]> {
