@@ -247,24 +247,28 @@ export interface StripFlags {
 }
 
 export type Nodes = {
+  Template: Template;
+  Block: Block;
+
+  MustacheStatement: MustacheStatement;
+  BlockStatement: BlockStatement;
+  ElementModifierStatement: ElementModifierStatement;
   CommentStatement: CommentStatement;
   MustacheCommentStatement: MustacheCommentStatement;
+  ElementNode: ElementNode;
+  AttrNode: AttrNode;
   TextNode: TextNode;
+
+  ConcatStatement: ConcatStatement;
+  SubExpression: SubExpression;
+  PathExpression: PathExpression;
+
   StringLiteral: StringLiteral;
   BooleanLiteral: BooleanLiteral;
   NumberLiteral: NumberLiteral;
   NullLiteral: NullLiteral;
   UndefinedLiteral: UndefinedLiteral;
-  MustacheStatement: MustacheStatement;
-  ElementModifierStatement: ElementModifierStatement;
-  AttrNode: AttrNode;
-  ConcatStatement: ConcatStatement;
-  Template: Template;
-  Block: Block;
-  BlockStatement: BlockStatement;
-  ElementNode: ElementNode;
-  SubExpression: SubExpression;
-  PathExpression: PathExpression;
+
   Hash: Hash;
   HashPair: HashPair;
 };
