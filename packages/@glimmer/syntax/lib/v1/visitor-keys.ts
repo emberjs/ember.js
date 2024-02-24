@@ -9,7 +9,6 @@ const visitorKeys = {
   MustacheStatement: ['path', 'params', 'hash'],
   BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'],
   ElementModifierStatement: ['path', 'params', 'hash'],
-  PartialStatement: ['name', 'params', 'hash'],
   CommentStatement: [],
   MustacheCommentStatement: [],
   ElementNode: ['attributes', 'modifiers', 'children', 'comments'],

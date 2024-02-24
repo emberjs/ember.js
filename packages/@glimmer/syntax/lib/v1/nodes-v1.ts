@@ -93,15 +93,6 @@ export interface ElementModifierStatement extends BaseNode {
   hash: Hash;
 }
 
-export interface PartialStatement extends BaseNode {
-  type: 'PartialStatement';
-  name: PathExpression | SubExpression;
-  params: Expression[];
-  hash: Hash;
-  indent: string;
-  strip: StripFlags;
-}
-
 export interface CommentStatement extends BaseNode {
   type: 'CommentStatement';
   value: string;
@@ -167,7 +158,6 @@ export type StatementName =
   | 'MustacheStatement'
   | 'CommentStatement'
   | 'BlockStatement'
-  | 'PartialStatement'
   | 'MustacheCommentStatement'
   | 'TextNode'
   | 'ElementNode';
@@ -318,7 +308,6 @@ export type SharedNodes = {
   UndefinedLiteral: UndefinedLiteral;
   MustacheStatement: MustacheStatement;
   ElementModifierStatement: ElementModifierStatement;
-  PartialStatement: PartialStatement;
   AttrNode: AttrNode;
   ConcatStatement: ConcatStatement;
 };
