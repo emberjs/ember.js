@@ -1,7 +1,7 @@
 import type { Nullable } from '@glimmer/interfaces';
 import { expect, unwrap } from '@glimmer/util';
 
-import type * as src from './source/api';
+import type { src } from '..';
 import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
 
@@ -18,31 +18,7 @@ let ID_INVERSE_PATTERN = /[!"#%&'()*+./;<=>@[\\\]^`{|}~]/u;
 
 export function parseElementBlockParams(element: ASTv1.ElementNode): void {
   let params = parseBlockParams(element);
-  if (params) {
-    element.blockParamNodes = params;
-    element.blockParams = params.map((p) => p.value);
-  }
-}
-
-export function parseProgramBlockParamsLocs(code: src.Source, block: ASTv1.BlockStatement) {
-  const blockRange = [block.loc.getStart().offset!, block.loc.getEnd().offset!] as [number, number];
-  let part = code.slice(...blockRange);
-  let start = blockRange[0];
-  let idx = part.indexOf('|') + 1;
-  start += idx;
-  part = part.slice(idx, -1);
-  idx = part.indexOf('|');
-  part = part.slice(0, idx);
-  for (const param of block.program.blockParamNodes) {
-    const regex = new RegExp(`\\b${param.value}\\b`);
-    const match = regex.exec(part)!;
-    const range = [start + match.index, 0] as [number, number];
-    range[1] = range[0] + param.value.length;
-    param.loc = code.spanFor({
-      start: code.hbsPosFor(range[0])!,
-      end: code.hbsPosFor(range[1])!,
-    });
-  }
+  if (params) element.blockParams = params;
 }
 
 export function parseElementPartLocs(code: src.Source, element: ASTv1.ElementNode) {
@@ -65,7 +41,7 @@ export function parseElementPartLocs(code: src.Source, element: ASTv1.ElementNod
   }
 }
 
-function parseBlockParams(element: ASTv1.ElementNode): Nullable<ASTv1.BlockParam[]> {
+function parseBlockParams(element: ASTv1.ElementNode): Nullable<string[]> {
   let l = element.attributes.length;
   let attrNames = [];
 
@@ -99,7 +75,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Nullable<ASTv1.BlockParam
       );
     }
 
-    let params: ASTv1.BlockParam[] = [];
+    let params = [];
     for (let i = asIndex + 1; i < l; i++) {
       let param = unwrap(attrNames[i]).replace(/\|/gu, '');
       if (param !== '') {
@@ -109,26 +85,7 @@ function parseBlockParams(element: ASTv1.ElementNode): Nullable<ASTv1.BlockParam
             element.loc
           );
         }
-        let loc = element.attributes[i]!.loc;
-        if (attrNames[i]!.startsWith('|')) {
-          loc = loc.slice({ skipStart: 1 });
-        }
-        if (attrNames[i]!.endsWith('|')) {
-          loc = loc.slice({ skipEnd: 1 });
-        }
-
-        // fix hbs parser bug, the range contains the whitespace between attributes...
-        if (loc.endPosition.column - loc.startPosition.column > param.length) {
-          loc = loc.slice({
-            skipEnd: loc.endPosition.column - loc.startPosition.column - param.length,
-          });
-        }
-
-        params.push({
-          type: 'BlockParam',
-          value: param,
-          loc,
-        });
+        params.push(param);
       }
     }
 

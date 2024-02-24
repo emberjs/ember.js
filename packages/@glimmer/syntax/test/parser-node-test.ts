@@ -230,25 +230,6 @@ test('Simple embedded block helpers', () => {
   );
 });
 
-test('block params', (assert) => {
-  let t = '<Foo as |bar baz qux|></Foo>{{#Foo as |bar baz qux|}}{{/Foo}}';
-  let element = b.element('Foo', {
-    blockParams: ['bar', 'baz', 'qux'],
-  });
-  let mustache = b.block(b.path('Foo'), [], b.hash(), b.blockItself([], ['bar', 'baz', 'qux']));
-  astEqual(t, b.template([element, mustache]));
-  assert.strictEqual(element.blockParamNodes.length, 3);
-  assert.strictEqual(mustache.program.blockParamNodes.length, 3);
-  assert.deepEqual(
-    element.blockParamNodes.map((b) => b.value),
-    ['bar', 'baz', 'qux']
-  );
-  assert.deepEqual(
-    mustache.program.blockParamNodes.map((b) => b.value),
-    ['bar', 'baz', 'qux']
-  );
-});
-
 test('Involved block helper', () => {
   let t =
     '<p>hi</p> content {{#testing shouldRender}}<p>Appears!</p>{{/testing}} more <em>content</em> here';
@@ -940,8 +921,6 @@ export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.E
     selfClosing: selfClosing,
     attributes: attrs || [],
     blockParams: blockParams || [],
-    blockParamNodes:
-      blockParams?.map((b) => ({ type: 'BlockParam', value: b }) as ASTv1.BlockParam) || [],
     modifiers: modifiers || [],
     comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
     children: children || [],
