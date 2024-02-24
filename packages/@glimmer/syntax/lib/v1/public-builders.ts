@@ -105,24 +105,6 @@ function buildElementModifier(
   };
 }
 
-function buildPartial(
-  name: ASTv1.PathExpression,
-  params?: ASTv1.Expression[],
-  hash?: ASTv1.Hash,
-  indent?: string,
-  loc?: SourceLocation
-): ASTv1.PartialStatement {
-  return {
-    type: 'PartialStatement',
-    name: name,
-    params: params || [],
-    hash: hash || buildHash([]),
-    indent: indent || '',
-    strip: { open: false, close: false },
-    loc: buildLoc(loc || null),
-  };
-}
-
 function buildComment(value: string, loc?: SourceLocation): ASTv1.CommentStatement {
   return {
     type: 'CommentStatement',
@@ -512,7 +494,6 @@ function buildLoc(...args: any[]): SourceSpan {
 export default {
   mustache: buildMustache,
   block: buildBlock,
-  partial: buildPartial,
   comment: buildComment,
   mustacheComment: buildMustacheComment,
   element: buildElement,

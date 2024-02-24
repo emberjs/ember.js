@@ -96,7 +96,6 @@ export default class Printer {
     switch (node.type) {
       case 'MustacheStatement':
       case 'BlockStatement':
-      case 'PartialStatement':
       case 'MustacheCommentStatement':
       case 'CommentStatement':
       case 'TextNode':
@@ -161,8 +160,6 @@ export default class Printer {
         return this.MustacheStatement(statement);
       case 'BlockStatement':
         return this.BlockStatement(statement);
-      case 'PartialStatement':
-        return this.PartialStatement(statement);
       case 'MustacheCommentStatement':
         return this.MustacheCommentStatement(statement);
       case 'CommentStatement':
@@ -386,18 +383,6 @@ export default class Printer {
 
   BlockParams(blockParams: string[]): void {
     this.buffer += ` as |${blockParams.join(' ')}|`;
-  }
-
-  PartialStatement(partial: ASTv1.PartialStatement): void {
-    if (this.handledByOverride(partial)) {
-      return;
-    }
-
-    this.buffer += '{{>';
-    this.Expression(partial.name);
-    this.Params(partial.params);
-    this.Hash(partial.hash);
-    this.buffer += '}}';
   }
 
   ConcatStatement(concat: ASTv1.ConcatStatement): void {
