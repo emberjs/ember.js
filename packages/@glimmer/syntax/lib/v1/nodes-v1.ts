@@ -62,10 +62,13 @@ export interface MustacheStatement extends BaseNode {
   path: Expression;
   params: Expression[];
   hash: Hash;
-  /** @deprecated */
-  escaped: boolean;
   trusting: boolean;
   strip: StripFlags;
+
+  /**
+   * @deprecated use trusting instead
+   */
+  escaped: boolean;
 }
 
 export interface BlockStatement extends BaseNode {
@@ -230,15 +233,15 @@ export interface PathExpression extends MinimalPathExpression {
   /**
    * @deprecated use `head` and `tail` instead
    */
-  parts: string[];
+  parts: readonly string[];
   /**
    * @deprecated use `head.type` instead
    */
-  this: boolean;
+  readonly this: boolean;
   /**
    * @deprecated use `head.type' instead
    */
-  data: boolean;
+  readonly data: boolean;
 }
 
 export type LiteralName =
