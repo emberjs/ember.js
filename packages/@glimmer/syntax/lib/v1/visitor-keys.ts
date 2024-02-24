@@ -18,7 +18,6 @@ const visitorKeys = {
   ConcatStatement: ['parts'],
   SubExpression: ['path', 'params', 'hash'],
   PathExpression: [],
-  PathHead: [],
 
   StringLiteral: [],
   BooleanLiteral: [],
