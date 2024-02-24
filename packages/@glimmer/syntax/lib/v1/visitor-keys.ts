@@ -32,7 +32,6 @@ const visitorKeys = {
 
   Hash: ['pairs'],
   HashPair: ['value'],
-  BlockParam: [],
 } as const;
 
 type VisitorKeysMap = typeof visitorKeys;
