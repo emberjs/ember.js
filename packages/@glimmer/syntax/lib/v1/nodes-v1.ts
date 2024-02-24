@@ -102,48 +102,9 @@ export interface MustacheCommentStatement extends BaseNode {
   value: string;
 }
 
-export interface ElementName {
-  type: 'ElementName';
-  name: string;
-  loc: src.SourceLocation;
-}
-
-export interface ElementStartNode extends BaseNode {
-  type: 'ElementStartNode';
-  value: string;
-}
-
-export interface ElementNameNode extends BaseNode {
-  type: 'ElementNameNode';
-  value: string;
-}
-
-export interface ElementEndNode extends BaseNode {
-  type: 'ElementEndNode';
-  value: string;
-}
-
-export interface ElementPartNode extends BaseNode {
-  type: 'ElementPartNode';
-  value: string;
-}
-
-/*
-  <Foo.bar.x attr='2'></Foo.bar.x>
-   ^-- ElementPartNode
-       ^-- ElementPartNode
-          ^- ElementPartNode
-   ^-------- ElementNameNode
-  ^------------------ ElementStartNode
-                      ^----------- ElementEndNode
- */
 export interface ElementNode extends BaseNode {
   type: 'ElementNode';
   tag: string;
-  nameNode: ElementNameNode;
-  startTag: ElementStartNode;
-  endTag: ElementEndNode;
-  parts: ElementPartNode[];
   selfClosing: boolean;
   attributes: AttrNode[];
   blockParams: string[];
@@ -285,7 +246,7 @@ export interface StripFlags {
   close: boolean;
 }
 
-export type SharedNodes = {
+export type Nodes = {
   CommentStatement: CommentStatement;
   MustacheCommentStatement: MustacheCommentStatement;
   TextNode: TextNode;
@@ -298,13 +259,6 @@ export type SharedNodes = {
   ElementModifierStatement: ElementModifierStatement;
   AttrNode: AttrNode;
   ConcatStatement: ConcatStatement;
-};
-
-export type Nodes = SharedNodes & {
-  ElementEndNode: ElementEndNode;
-  ElementStartNode: ElementStartNode;
-  ElementPartNode: ElementPartNode;
-  ElementNameNode: ElementNameNode;
   Template: Template;
   Block: Block;
   BlockStatement: BlockStatement;

@@ -12,10 +12,6 @@ const visitorKeys = {
   CommentStatement: [],
   MustacheCommentStatement: [],
   ElementNode: ['attributes', 'modifiers', 'children', 'comments'],
-  ElementStartNode: [],
-  ElementPartNode: [],
-  ElementEndNode: [],
-  ElementNameNode: [],
   AttrNode: ['value'],
   TextNode: [],
 

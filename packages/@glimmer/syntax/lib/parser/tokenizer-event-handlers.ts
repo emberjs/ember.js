@@ -14,7 +14,7 @@ import * as src from '../source/api';
 import { generateSyntaxError } from '../syntax-error';
 import traverse from '../traversal/traverse';
 import Walker from '../traversal/walker';
-import { appendChild, parseElementBlockParams, parseElementPartLocs } from '../utils';
+import { appendChild, parseElementBlockParams } from '../utils';
 import b from '../v1/parser-builders';
 import publicBuilder from '../v1/public-builders';
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
@@ -135,21 +135,6 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       blockParams: [],
       loc,
     });
-    element.startTag = {
-      type: 'ElementStartNode',
-      value: name,
-      loc: loc,
-    };
-    element.nameNode = {
-      type: 'ElementNameNode',
-      value: name,
-      loc: loc
-        .withStart(this.source.offsetFor(loc.startPosition.line, loc.startPosition.column + 1))
-        .withEnd(
-          this.source.offsetFor(loc.startPosition.line, loc.startPosition.column + 1 + name.length)
-        ),
-    };
-    parseElementPartLocs(this.source, element);
     this.elementStack.push(element);
   }
 
@@ -157,12 +142,6 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let tag = this.finish(this.currentTag);
 
     let element = this.elementStack.pop() as ASTv1.ElementNode;
-
-    element.endTag = {
-      type: 'ElementEndNode',
-      loc: tag.loc,
-      value: element.selfClosing ? '' : tag.name,
-    };
 
     this.validateEndTag(tag, element, isVoid);
     let parent = this.currentElement();
