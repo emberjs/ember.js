@@ -6,7 +6,7 @@ import type { SourceLocation } from '../source/location';
 import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
 
-import { buildLegacyTemplate, PathExpressionImplV1 } from './legacy-interop';
+import { buildLegacyMustache, buildLegacyPath, buildLegacyTemplate } from './legacy-interop';
 
 const DEFAULT_STRIP = {
   close: false,
@@ -81,16 +81,14 @@ class Builders {
     loc: SourceSpan;
     strip: ASTv1.StripFlags;
   }): ASTv1.MustacheStatement {
-    return {
-      type: 'MustacheStatement',
+    return buildLegacyMustache({
       path,
       params,
       hash,
-      escaped: !trusting,
       trusting,
+      strip,
       loc,
-      strip: strip || { open: false, close: false },
-    };
+    });
   }
 
   block({
@@ -269,10 +267,7 @@ class Builders {
     tail: string[];
     loc: SourceSpan;
   }): ASTv1.PathExpression {
-    let { original: originalHead } = headToString(head);
-    let original = [...originalHead, ...tail].join('.');
-
-    return new PathExpressionImplV1(original, head, tail, loc);
+    return buildLegacyPath({ head, tail, loc });
   }
 
   head(head: string, loc: SourceSpan): ASTv1.PathHead {
@@ -421,19 +416,6 @@ export interface BuildElementOptions {
   comments: ElementComment[];
   blockParams: string[];
   loc: SourceSpan;
-}
-
-// Expressions
-
-function headToString(head: ASTv1.PathHead): { original: string; parts: string[] } {
-  switch (head.type) {
-    case 'AtHead':
-      return { original: head.name, parts: [head.name] };
-    case 'ThisHead':
-      return { original: `this`, parts: [] };
-    case 'VarHead':
-      return { original: head.name, parts: [head.name] };
-  }
 }
 
 export default new Builders();

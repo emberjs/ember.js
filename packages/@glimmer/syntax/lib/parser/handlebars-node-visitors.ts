@@ -10,7 +10,7 @@ import { Parser } from '../parser';
 import { NON_EXISTENT_LOCATION } from '../source/location';
 import { generateSyntaxError } from '../syntax-error';
 import { appendChild, isHBSLiteral, parseProgramBlockParamsLocs, printLiteral } from '../utils';
-import { PathExpressionImplV1 } from '../v1/legacy-interop';
+import { buildLegacyPath } from '../v1/legacy-interop';
 import b from '../v1/parser-builders';
 
 const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState;
@@ -382,7 +382,11 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       };
     }
 
-    return new PathExpressionImplV1(path.original, pathHead, parts, this.source.spanFor(path.loc));
+    return buildLegacyPath({
+      head: pathHead,
+      tail: parts,
+      loc: this.source.spanFor(path.loc),
+    });
   }
 
   Hash(hash: HBS.Hash): ASTv1.Hash {

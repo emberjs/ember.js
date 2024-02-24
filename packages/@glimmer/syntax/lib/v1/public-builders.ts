@@ -7,7 +7,7 @@ import type * as ASTv1 from './api';
 import { SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
-import { buildLegacyTemplate, PathExpressionImplV1 } from './legacy-interop';
+import { buildLegacyMustache, buildLegacyPath, buildLegacyTemplate } from './legacy-interop';
 
 let _SOURCE: Source | undefined;
 
@@ -28,26 +28,20 @@ export type TagDescriptor = string | { name: string; selfClosing: boolean };
 
 function buildMustache(
   path: BuilderHead | ASTv1.Literal,
-  params?: ASTv1.Expression[],
-  hash?: ASTv1.Hash,
-  raw?: boolean,
+  params: ASTv1.Expression[] = [],
+  hash: ASTv1.Hash = buildHash([]),
+  trusting = false,
   loc?: SourceLocation,
-  strip?: ASTv1.StripFlags
+  strip: ASTv1.StripFlags = { open: false, close: false }
 ): ASTv1.MustacheStatement {
-  if (typeof path === 'string') {
-    path = buildPath(path);
-  }
-
-  return {
-    type: 'MustacheStatement',
-    path,
-    params: params || [],
-    hash: hash || buildHash([]),
-    escaped: !raw,
-    trusting: !!raw,
+  return buildLegacyMustache({
+    path: buildPath(path),
+    params,
+    hash,
+    trusting,
+    strip,
     loc: buildLoc(loc || null),
-    strip: strip || { open: false, close: false },
-  };
+  });
 }
 
 type PossiblyDeprecatedBlock = ASTv1.Block | ASTv1.Template;
@@ -286,17 +280,6 @@ function buildSexpr(
   };
 }
 
-function headToString(head: ASTv1.PathHead): { original: string; parts: string[] } {
-  switch (head.type) {
-    case 'AtHead':
-      return { original: head.name, parts: [head.name] };
-    case 'ThisHead':
-      return { original: `this`, parts: [] };
-    case 'VarHead':
-      return { original: head.name, parts: [head.name] };
-  }
-}
-
 function buildHead(
   original: string,
   loc: SourceLocation
@@ -376,11 +359,7 @@ function buildCleanPath(
   tail: string[],
   loc: SourceLocation
 ): ASTv1.PathExpression {
-  let { original: originalHead, parts: headParts } = headToString(head);
-  let parts = [...headParts, ...tail];
-  let original = [...originalHead, ...parts].join('.');
-
-  return new PathExpressionImplV1(original, head, tail, buildLoc(loc || null));
+  return buildLegacyPath({ head, tail, loc: buildLoc(loc || null) });
 }
 
 function buildPath(
@@ -404,20 +383,13 @@ function buildPath(
         `builder.path({ head, tail }) should not be called with a head with dots in it`
       );
 
-      let { original: originalHead } = headToString(head);
-
-      return new PathExpressionImplV1(
-        [originalHead, ...tail].join('.'),
-        head,
-        tail,
-        buildLoc(loc || null)
-      );
+      return buildLegacyPath({ head, tail, loc: buildLoc(loc || null) });
     }
   }
 
   let { head, tail } = buildHead(path, SourceSpan.broken());
 
-  return new PathExpressionImplV1(path, head, tail, buildLoc(loc || null));
+  return buildLegacyPath({ head, tail, loc: buildLoc(loc || null) });
 }
 
 function buildLiteral<T extends ASTv1.Literal>(

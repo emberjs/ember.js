@@ -372,7 +372,7 @@ class StatementNormalizer {
    * Normalizes an ASTv1.MustacheStatement to an ASTv2.AppendStatement
    */
   MustacheStatement(mustache: ASTv1.MustacheStatement): ASTv2.AppendContent {
-    let { escaped } = mustache;
+    let { trusting } = mustache;
     let loc = this.block.loc(mustache.loc);
 
     // Normalize the call parts in AppendSyntaxContext
@@ -392,7 +392,7 @@ class StatementNormalizer {
     return this.block.builder.append(
       {
         table: this.block.table,
-        trusting: !escaped,
+        trusting,
         value,
       },
       loc
@@ -562,7 +562,7 @@ class ElementNormalizer {
   } {
     switch (part.type) {
       case 'MustacheStatement':
-        return { expr: this.mustacheAttr(part), trusting: !part.escaped };
+        return { expr: this.mustacheAttr(part), trusting: part.trusting };
       case 'TextNode':
         return {
           expr: this.ctx.builder.literal(part.chars, this.ctx.loc(part.loc)),

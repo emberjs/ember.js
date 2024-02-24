@@ -323,7 +323,7 @@ export default class Printer {
       return;
     }
 
-    this.buffer += mustache.escaped ? '{{' : '{{{';
+    this.buffer += mustache.trusting ? '{{{' : '{{';
 
     if (mustache.strip.open) {
       this.buffer += '~';
@@ -337,7 +337,7 @@ export default class Printer {
       this.buffer += '~';
     }
 
-    this.buffer += mustache.escaped ? '}}' : '}}}';
+    this.buffer += mustache.trusting ? '}}}' : '}}';
   }
 
   BlockStatement(block: ASTv1.BlockStatement): void {
