@@ -151,19 +151,19 @@ export interface SubExpression extends Call {
 
 export interface ThisHead {
   type: 'ThisHead';
-  loc: src.SourceLocation;
+  loc: src.SourceSpan;
 }
 
 export interface AtHead {
   type: 'AtHead';
   name: string;
-  loc: src.SourceLocation;
+  loc: src.SourceSpan;
 }
 
 export interface VarHead {
   type: 'VarHead';
   name: string;
-  loc: src.SourceLocation;
+  loc: src.SourceSpan;
 }
 
 export type PathHead = ThisHead | AtHead | VarHead;

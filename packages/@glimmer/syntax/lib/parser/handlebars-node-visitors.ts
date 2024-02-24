@@ -338,10 +338,10 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     if (thisHead) {
       pathHead = {
         type: 'ThisHead',
-        loc: {
+        loc: this.source.spanFor({
           start: path.loc.start,
           end: { line: path.loc.start.line, column: path.loc.start.column + 4 },
-        },
+        }),
       };
     } else if (path.data) {
       const head = parts.shift();
@@ -356,10 +356,10 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       pathHead = {
         type: 'AtHead',
         name: `@${head}`,
-        loc: {
+        loc: this.source.spanFor({
           start: path.loc.start,
           end: { line: path.loc.start.line, column: path.loc.start.column + head.length + 1 },
-        },
+        }),
       };
     } else {
       const head = parts.shift();
@@ -374,10 +374,10 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       pathHead = {
         type: 'VarHead',
         name: head,
-        loc: {
+        loc: this.source.spanFor({
           start: path.loc.start,
           end: { line: path.loc.start.line, column: path.loc.start.column + head.length },
-        },
+        }),
       };
     }
 
