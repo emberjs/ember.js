@@ -70,35 +70,21 @@ export function buildLegacyMustache({
 
 export type PathExpressionParams = Omit<ASTv1.MinimalPathExpression, 'type'>;
 
-function original(head: ASTv1.PathHead, tail: readonly string[]): string {
-  switch (head.type) {
-    case 'ThisHead':
-      return ['this', ...tail].join('.');
-    case 'AtHead':
-    case 'VarHead':
-      return [head.name, ...tail].join('.');
-  }
-}
-
 export function buildLegacyPath({ head, tail, loc }: PathExpressionParams): ASTv1.PathExpression {
   const node = {
     type: 'PathExpression',
     head,
     tail,
-    loc,
-  };
-
-  Object.defineProperty(node, 'original', {
-    enumerable: true,
-    get(this: typeof node): string {
-      return original(this.head, this.tail);
+    get original() {
+      return [this.head.original, ...this.tail].join('.');
     },
-    set(this: typeof node, value: string) {
+    set original(value: string) {
       let [head, ...tail] = asPresentArray(value.split('.'));
       this.head = b.head(head, this.head.loc);
       this.tail = tail;
     },
-  });
+    loc,
+  };
 
   Object.defineProperty(node, 'parts', {
     enumerable: false,

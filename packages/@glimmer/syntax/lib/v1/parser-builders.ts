@@ -286,41 +286,80 @@ class Builders {
   this({ loc }: { loc: SourceSpan }): ASTv1.ThisHead {
     return {
       type: 'ThisHead',
+      get original() {
+        return 'this' as const;
+      },
       loc,
     };
   }
 
   atName({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.PathHead {
-    // the `@` should be included so we have a complete source range
-    assert(name[0] === '@', `call builders.at() with a string that starts with '@'`);
-    assert(
-      name.indexOf('.') === -1,
-      `builder.at() should not be called with a name with dots in it`
-    );
+    let _name = '';
 
-    return {
-      type: 'AtHead',
-      name,
+    const node = {
+      type: 'AtHead' as const,
+      get name() {
+        return _name;
+      },
+      set name(value) {
+        assert(value[0] === '@', `call builders.at() with a string that starts with '@'`);
+        assert(
+          value.indexOf('.') === -1,
+          `builder.at() should not be called with a name with dots in it`
+        );
+        _name = value;
+      },
+      get original() {
+        return this.name;
+      },
+      set original(value) {
+        this.name = value;
+      },
       loc,
     };
+
+    // trigger the assertions
+    node.name = name;
+
+    return node;
   }
 
   var({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.PathHead {
-    assert(name !== 'this', `You called builders.var() with 'this'. Call builders.this instead`);
-    assert(
-      name[0] !== '@',
-      `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
-    );
-    assert(
-      name.indexOf('.') === -1,
-      `builder.var() should not be called with a name with dots in it`
-    );
+    let _name = '';
 
-    return {
-      type: 'VarHead',
-      name,
+    const node = {
+      type: 'VarHead' as const,
+      get name() {
+        return _name;
+      },
+      set name(value) {
+        assert(
+          value !== 'this',
+          `You called builders.var() with 'this'. Call builders.this instead`
+        );
+        assert(
+          value[0] !== '@',
+          `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
+        );
+        assert(
+          value.indexOf('.') === -1,
+          `builder.var() should not be called with a name with dots in it`
+        );
+        _name = value;
+      },
+      get original() {
+        return this.name;
+      },
+      set original(value) {
+        this.name = value;
+      },
       loc,
     };
+
+    // trigger the assertions
+    node.name = name;
+
+    return node;
   }
 
   hash({ pairs, loc }: { pairs: ASTv1.HashPair[]; loc: SourceSpan }): ASTv1.Hash {
