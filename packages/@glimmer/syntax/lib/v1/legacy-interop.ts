@@ -130,3 +130,33 @@ export function buildLegacyPath({ head, tail, loc }: PathExpressionParams): ASTv
 
   return node as ASTv1.PathExpression;
 }
+
+export function buildLegacyLiteral<T extends ASTv1.Literal>({
+  type,
+  value,
+  loc,
+}: {
+  type: T['type'];
+  value: T['value'];
+  loc: T['loc'];
+}): T {
+  const node = {
+    type,
+    value,
+    loc,
+  };
+
+  Object.defineProperty(node, 'original', {
+    enumerable: false,
+    get(this: typeof node): T['original'] {
+      deprecate(`The original property on literal nodes is deprecated, use value instead`);
+      return this.value;
+    },
+    set(this: typeof node, value: T['original']) {
+      deprecate(`The original property on literal nodes is deprecated, use value instead`);
+      this.value = value;
+    },
+  });
+
+  return node as T;
+}

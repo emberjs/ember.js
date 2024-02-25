@@ -7,7 +7,12 @@ import type * as ASTv1 from './api';
 import { SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
-import { buildLegacyMustache, buildLegacyPath, buildLegacyTemplate } from './legacy-interop';
+import {
+  buildLegacyLiteral,
+  buildLegacyMustache,
+  buildLegacyPath,
+  buildLegacyTemplate,
+} from './legacy-interop';
 
 let _SOURCE: Source | undefined;
 
@@ -363,12 +368,11 @@ function buildLiteral<T extends ASTv1.Literal>(
   value: T['value'],
   loc?: SourceLocation
 ): T {
-  return {
+  return buildLegacyLiteral({
     type,
     value,
-    original: value,
     loc: buildLoc(loc || null),
-  } as T;
+  });
 }
 
 // Miscellaneous

@@ -401,23 +401,43 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   StringLiteral(string: HBS.StringLiteral): ASTv1.StringLiteral {
-    return b.literal({ type: 'StringLiteral', value: string.value, loc: string.loc });
+    return b.literal({
+      type: 'StringLiteral',
+      value: string.value,
+      loc: this.source.spanFor(string.loc),
+    });
   }
 
   BooleanLiteral(boolean: HBS.BooleanLiteral): ASTv1.BooleanLiteral {
-    return b.literal({ type: 'BooleanLiteral', value: boolean.value, loc: boolean.loc });
+    return b.literal({
+      type: 'BooleanLiteral',
+      value: boolean.value,
+      loc: this.source.spanFor(boolean.loc),
+    });
   }
 
   NumberLiteral(number: HBS.NumberLiteral): ASTv1.NumberLiteral {
-    return b.literal({ type: 'NumberLiteral', value: number.value, loc: number.loc });
+    return b.literal({
+      type: 'NumberLiteral',
+      value: number.value,
+      loc: this.source.spanFor(number.loc),
+    });
   }
 
   UndefinedLiteral(undef: HBS.UndefinedLiteral): ASTv1.UndefinedLiteral {
-    return b.literal({ type: 'UndefinedLiteral', value: undefined, loc: undef.loc });
+    return b.literal({
+      type: 'UndefinedLiteral',
+      value: undefined,
+      loc: this.source.spanFor(undef.loc),
+    });
   }
 
   NullLiteral(nul: HBS.NullLiteral): ASTv1.NullLiteral {
-    return b.literal({ type: 'NullLiteral', value: null, loc: nul.loc });
+    return b.literal({
+      type: 'NullLiteral',
+      value: null,
+      loc: this.source.spanFor(nul.loc),
+    });
   }
 }
 
