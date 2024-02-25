@@ -198,30 +198,50 @@ export type LiteralName =
 export interface StringLiteral extends BaseNode {
   type: 'StringLiteral';
   value: string;
+
+  /**
+   * @deprecated use value instead
+   */
   original: string;
 }
 
 export interface BooleanLiteral extends BaseNode {
   type: 'BooleanLiteral';
   value: boolean;
+
+  /**
+   * @deprecated use value instead
+   */
   original: boolean;
 }
 
 export interface NumberLiteral extends BaseNode {
   type: 'NumberLiteral';
   value: number;
+
+  /**
+   * @deprecated use value instead
+   */
   original: number;
 }
 
 export interface UndefinedLiteral extends BaseNode {
   type: 'UndefinedLiteral';
   value: undefined;
+
+  /**
+   * @deprecated use value instead
+   */
   original: undefined;
 }
 
 export interface NullLiteral extends BaseNode {
   type: 'NullLiteral';
   value: null;
+
+  /**
+   * @deprecated use value instead
+   */
   original: null;
 }
 

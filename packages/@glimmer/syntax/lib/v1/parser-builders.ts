@@ -6,7 +6,12 @@ import type { SourceLocation } from '../source/location';
 import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
 
-import { buildLegacyMustache, buildLegacyPath, buildLegacyTemplate } from './legacy-interop';
+import {
+  buildLegacyLiteral,
+  buildLegacyMustache,
+  buildLegacyPath,
+  buildLegacyTemplate,
+} from './legacy-interop';
 
 const DEFAULT_STRIP = {
   close: false,
@@ -324,34 +329,9 @@ class Builders {
   }: {
     type: T['type'];
     value: T['value'];
-    loc?: SourceLocation;
+    loc: SourceSpan;
   }): T {
-    return {
-      type,
-      value,
-      original: value,
-      loc,
-    } as T;
-  }
-
-  undefined(): ASTv1.UndefinedLiteral {
-    return this.literal({ type: 'UndefinedLiteral', value: undefined });
-  }
-
-  null(): ASTv1.NullLiteral {
-    return this.literal({ type: 'NullLiteral', value: null });
-  }
-
-  string(value: string, loc: SourceSpan): ASTv1.StringLiteral {
-    return this.literal({ type: 'StringLiteral', value, loc });
-  }
-
-  boolean(value: boolean, loc: SourceSpan): ASTv1.BooleanLiteral {
-    return this.literal({ type: 'BooleanLiteral', value, loc });
-  }
-
-  number(value: number, loc: SourceSpan): ASTv1.NumberLiteral {
-    return this.literal({ type: 'NumberLiteral', value, loc });
+    return buildLegacyLiteral({ type, value, loc });
   }
 }
 
