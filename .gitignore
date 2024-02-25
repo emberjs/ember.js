@@ -4,6 +4,7 @@
 node_modules/
 **/node_modules/
 **/.turbo
+**/*.tsbuildinfo
 tmp/
 /ts-dist/
 **/ts-dist
