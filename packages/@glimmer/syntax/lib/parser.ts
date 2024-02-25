@@ -11,7 +11,7 @@ import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
 
 export type ParserNodeBuilder<N extends { loc: src.SourceSpan }> = Omit<N, 'loc'> & {
-  loc: src.SourceOffset;
+  start: src.SourceOffset;
 };
 
 export interface Tag<T extends 'StartTag' | 'EndTag'> {
@@ -42,7 +42,7 @@ export abstract class Parser {
   public currentNode: Nullable<
     Readonly<
       | ParserNodeBuilder<ASTv1.CommentStatement>
-      | ASTv1.TextNode
+      | ParserNodeBuilder<ASTv1.TextNode>
       | ParserNodeBuilder<Tag<'StartTag'>>
       | ParserNodeBuilder<Tag<'EndTag'>>
     >
@@ -70,7 +70,7 @@ export abstract class Parser {
 
   finish<T extends { loc: src.SourceSpan }>(node: ParserNodeBuilder<T>): T {
     return assign({}, node, {
-      loc: node.loc.until(this.offset()),
+      loc: node.start.until(this.offset()),
     } as const) as unknown as T;
 
     // node.loc = node.loc.withEnd(end);
@@ -143,7 +143,7 @@ export abstract class Parser {
     return node;
   }
 
-  get currentData(): ASTv1.TextNode {
+  get currentData(): ParserNodeBuilder<ASTv1.TextNode> {
     let node = this.currentNode;
     assert(node && node.type === 'TextNode', 'expected a text node');
     return node;

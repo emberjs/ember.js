@@ -10,7 +10,6 @@ import { Parser } from '../parser';
 import { NON_EXISTENT_LOCATION } from '../source/location';
 import { generateSyntaxError } from '../syntax-error';
 import { appendChild, isHBSLiteral, printLiteral } from '../utils';
-import { buildLegacyPath } from '../v1/legacy-interop';
 import b from '../v1/parser-builders';
 
 const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState;
@@ -129,7 +128,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       mustache = b.mustache({
         path: this.acceptNode<ASTv1.Literal>(rawMustache.path),
         params: [],
-        hash: b.hash([], this.source.spanFor(rawMustache.path.loc).collapse('end')),
+        hash: b.hash({ pairs: [], loc: this.source.spanFor(rawMustache.path.loc).collapse('end') }),
         trusting: !escaped,
         loc: this.source.spanFor(loc),
         strip,
@@ -229,7 +228,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     }
 
     const { value, loc } = rawComment;
-    const comment = b.mustacheComment(value, this.source.spanFor(loc));
+    const comment = b.mustacheComment({ value, loc: this.source.spanFor(loc) });
 
     switch (tokenizer.state) {
       case 'beforeAttributeName':
@@ -336,13 +335,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     let pathHead: ASTv1.PathHead;
     if (thisHead) {
-      pathHead = {
-        type: 'ThisHead',
+      pathHead = b.this({
         loc: this.source.spanFor({
           start: path.loc.start,
           end: { line: path.loc.start.line, column: path.loc.start.column + 4 },
         }),
-      };
+      });
     } else if (path.data) {
       const head = parts.shift();
 
@@ -353,14 +351,13 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         );
       }
 
-      pathHead = {
-        type: 'AtHead',
+      pathHead = b.atName({
         name: `@${head}`,
         loc: this.source.spanFor({
           start: path.loc.start,
           end: { line: path.loc.start.line, column: path.loc.start.column + head.length + 1 },
         }),
-      };
+      });
     } else {
       const head = parts.shift();
 
@@ -371,17 +368,16 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         );
       }
 
-      pathHead = {
-        type: 'VarHead',
+      pathHead = b.var({
         name: head,
         loc: this.source.spanFor({
           start: path.loc.start,
           end: { line: path.loc.start.line, column: path.loc.start.column + head.length },
         }),
-      };
+      });
     }
 
-    return buildLegacyPath({
+    return b.path({
       head: pathHead,
       tail: parts,
       loc: this.source.spanFor(path.loc),
@@ -397,7 +393,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       })
     );
 
-    return b.hash(pairs, this.source.spanFor(hash.loc));
+    return b.hash({ pairs, loc: this.source.spanFor(hash.loc) });
   }
 
   StringLiteral(string: HBS.StringLiteral): ASTv1.StringLiteral {
@@ -502,38 +498,43 @@ function acceptCallNodes(
   params: ASTv1.Expression[];
   hash: ASTv1.Hash;
 } {
-  if (node.path.type.endsWith('Literal')) {
-    const path = node.path as unknown as
-      | HBS.StringLiteral
-      | HBS.UndefinedLiteral
-      | HBS.NullLiteral
-      | HBS.NumberLiteral
-      | HBS.BooleanLiteral;
+  let path: ASTv1.PathExpression | ASTv1.SubExpression;
 
-    let value = '';
-    if (path.type === 'BooleanLiteral') {
-      value = path.original.toString();
-    } else if (path.type === 'StringLiteral') {
-      value = `"${path.original}"`;
-    } else if (path.type === 'NullLiteral') {
-      value = 'null';
-    } else if (path.type === 'NumberLiteral') {
-      value = path.value.toString();
-    } else {
-      value = 'undefined';
+  switch (node.path.type) {
+    case 'PathExpression':
+      path = compiler.PathExpression(node.path);
+      break;
+
+    case 'SubExpression':
+      path = compiler.SubExpression(node.path);
+      break;
+
+    case 'StringLiteral':
+    case 'UndefinedLiteral':
+    case 'NullLiteral':
+    case 'NumberLiteral':
+    case 'BooleanLiteral': {
+      let value: string;
+      if (node.path.type === 'BooleanLiteral') {
+        value = node.path.original.toString();
+      } else if (node.path.type === 'StringLiteral') {
+        value = `"${node.path.original}"`;
+      } else if (node.path.type === 'NullLiteral') {
+        value = 'null';
+      } else if (node.path.type === 'NumberLiteral') {
+        value = node.path.value.toString();
+      } else {
+        value = 'undefined';
+      }
+      throw generateSyntaxError(
+        `${node.path.type} "${
+          node.path.type === 'StringLiteral' ? node.path.original : value
+        }" cannot be called as a sub-expression, replace (${value}) with ${value}`,
+        compiler.source.spanFor(node.path.loc)
+      );
     }
-    throw generateSyntaxError(
-      `${path.type} "${
-        path.type === 'StringLiteral' ? path.original : value
-      }" cannot be called as a sub-expression, replace (${value}) with ${value}`,
-      compiler.source.spanFor(path.loc)
-    );
   }
 
-  const path =
-    node.path.type === 'PathExpression'
-      ? compiler.PathExpression(node.path)
-      : compiler.SubExpression(node.path as unknown as HBS.SubExpression);
   const params = node.params
     ? node.params.map((e) => compiler.acceptNode<ASTv1.Expression>(e))
     : [];
@@ -544,11 +545,10 @@ function acceptCallNodes(
 
   const hash = node.hash
     ? compiler.Hash(node.hash)
-    : ({
-        type: 'Hash',
-        pairs: [] as ASTv1.HashPair[],
+    : b.hash({
+        pairs: [],
         loc: compiler.source.spanFor(end).collapse('end'),
-      } as const);
+      });
 
   return { path, params, hash };
 }

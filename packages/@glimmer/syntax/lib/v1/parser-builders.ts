@@ -1,9 +1,8 @@
-import type { Dict, Nullable, PresentArray } from '@glimmer/interfaces';
+import type { Dict, Nullable, Optional, PresentArray } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 
-import type { ParserNodeBuilder } from '../parser';
 import type { SourceLocation } from '../source/location';
-import type { SourceOffset, SourceSpan } from '../source/span';
+import type { SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
 
 import {
@@ -25,7 +24,7 @@ const DEFAULT_STRIP = {
  * 2. Mandating source locations
  */
 class Builders {
-  pos(line: number, column: number) {
+  pos({ line, column }: { line: number; column: number }) {
     return {
       line,
       column,
@@ -81,7 +80,7 @@ class Builders {
     hash: ASTv1.Hash;
     trusting: boolean;
     loc: SourceSpan;
-    strip: ASTv1.StripFlags;
+    strip?: Optional<ASTv1.StripFlags>;
   }): ASTv1.MustacheStatement {
     return buildLegacyMustache({
       path,
@@ -108,11 +107,11 @@ class Builders {
     params: ASTv1.Expression[];
     hash: ASTv1.Hash;
     defaultBlock: ASTv1.Block;
-    elseBlock?: Nullable<ASTv1.Block>;
+    elseBlock: Nullable<ASTv1.Block>;
     loc: SourceSpan;
-    openStrip: ASTv1.StripFlags;
-    inverseStrip: ASTv1.StripFlags;
-    closeStrip: ASTv1.StripFlags;
+    openStrip?: Optional<ASTv1.StripFlags>;
+    inverseStrip?: Optional<ASTv1.StripFlags>;
+    closeStrip?: Optional<ASTv1.StripFlags>;
   }): ASTv1.BlockStatement {
     return {
       type: 'BlockStatement',
@@ -121,33 +120,42 @@ class Builders {
       hash,
       program: defaultBlock,
       inverse: elseBlock,
-      loc: loc,
-      openStrip: openStrip,
-      inverseStrip: inverseStrip,
-      closeStrip: closeStrip,
+      loc,
+      openStrip,
+      inverseStrip,
+      closeStrip,
     };
   }
 
-  comment(value: string, loc: SourceOffset): ParserNodeBuilder<ASTv1.CommentStatement> {
+  comment({ value, loc }: { value: string; loc: SourceSpan }): ASTv1.CommentStatement {
     return {
       type: 'CommentStatement',
-      value: value,
+      value,
       loc,
     };
   }
 
-  mustacheComment(value: string, loc: SourceSpan): ASTv1.MustacheCommentStatement {
+  mustacheComment({
+    value,
+    loc,
+  }: {
+    value: string;
+    loc: SourceSpan;
+  }): ASTv1.MustacheCommentStatement {
     return {
       type: 'MustacheCommentStatement',
-      value: value,
+      value,
       loc,
     };
   }
 
-  concat(
-    parts: PresentArray<ASTv1.TextNode | ASTv1.MustacheStatement>,
-    loc: SourceSpan
-  ): ASTv1.ConcatStatement {
+  concat({
+    parts,
+    loc,
+  }: {
+    parts: PresentArray<ASTv1.TextNode | ASTv1.MustacheStatement>;
+    loc: SourceSpan;
+  }): ASTv1.ConcatStatement {
     return {
       type: 'ConcatStatement',
       parts,
@@ -158,22 +166,31 @@ class Builders {
   element({
     tag,
     selfClosing,
-    attrs,
+    attributes,
     blockParams,
     modifiers,
     comments,
     children,
     loc,
-  }: BuildElementOptions): ASTv1.ElementNode {
+  }: {
+    tag: string;
+    selfClosing: boolean;
+    attributes: ASTv1.AttrNode[];
+    modifiers: ASTv1.ElementModifierStatement[];
+    children: ASTv1.Statement[];
+    comments: ASTv1.MustacheCommentStatement[];
+    blockParams: string[];
+    loc: SourceSpan;
+  }): ASTv1.ElementNode {
     return {
       type: 'ElementNode',
       tag,
       selfClosing: selfClosing,
-      attributes: attrs || [],
-      blockParams: blockParams || [],
-      modifiers: modifiers || [],
-      comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
-      children: children || [],
+      attributes,
+      blockParams,
+      modifiers,
+      comments,
+      children,
       loc,
     };
   }
@@ -255,26 +272,31 @@ class Builders {
     return buildLegacyPath({ head, tail, loc });
   }
 
-  head(head: string, loc: SourceSpan): ASTv1.PathHead {
-    if (head[0] === '@') {
-      return this.atName(head, loc);
-    } else if (head === 'this') {
-      return this.this(loc);
+  head({ original, loc }: { original: string; loc: SourceSpan }): ASTv1.PathHead {
+    if (original === 'this') {
+      return this.this({ loc });
+    }
+    if (original[0] === '@') {
+      return this.atName({ name: original, loc });
     } else {
-      return this.var(head, loc);
+      return this.var({ name: original, loc });
     }
   }
 
-  this(loc: SourceSpan): ASTv1.PathHead {
+  this({ loc }: { loc: SourceSpan }): ASTv1.ThisHead {
     return {
       type: 'ThisHead',
       loc,
     };
   }
 
-  atName(name: string, loc: SourceSpan): ASTv1.PathHead {
+  atName({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.PathHead {
     // the `@` should be included so we have a complete source range
     assert(name[0] === '@', `call builders.at() with a string that starts with '@'`);
+    assert(
+      name.indexOf('.') === -1,
+      `builder.at() should not be called with a name with dots in it`
+    );
 
     return {
       type: 'AtHead',
@@ -283,11 +305,15 @@ class Builders {
     };
   }
 
-  var(name: string, loc: SourceSpan): ASTv1.PathHead {
+  var({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.PathHead {
     assert(name !== 'this', `You called builders.var() with 'this'. Call builders.this instead`);
     assert(
       name[0] !== '@',
       `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
+    );
+    assert(
+      name.indexOf('.') === -1,
+      `builder.var() should not be called with a name with dots in it`
     );
 
     return {
@@ -297,10 +323,10 @@ class Builders {
     };
   }
 
-  hash(pairs: ASTv1.HashPair[], loc: SourceSpan): ASTv1.Hash {
+  hash({ pairs, loc }: { pairs: ASTv1.HashPair[]; loc: SourceSpan }): ASTv1.Hash {
     return {
       type: 'Hash',
-      pairs: pairs || [],
+      pairs,
       loc,
     };
   }
@@ -316,7 +342,7 @@ class Builders {
   }): ASTv1.HashPair {
     return {
       type: 'HashPair',
-      key: key,
+      key,
       value,
       loc,
     };
@@ -341,7 +367,7 @@ export type ElementParts =
   | ['attrs', ...AttrSexp[]]
   | ['modifiers', ...ModifierSexp[]]
   | ['body', ...ASTv1.Statement[]]
-  | ['comments', ...ElementComment[]]
+  | ['comments', ...ASTv1.MustacheCommentStatement[]]
   | ['as', ...string[]]
   | ['loc', SourceLocation];
 
@@ -357,8 +383,6 @@ export type AttrSexp = [string, ASTv1.AttrNode['value'] | string, LocSexp?];
 
 export type LocSexp = ['loc', SourceLocation];
 
-export type ElementComment = ASTv1.MustacheCommentStatement | SourceLocation | string;
-
 export type SexpValue =
   | string
   | ASTv1.Expression[]
@@ -366,16 +390,5 @@ export type SexpValue =
   | LocSexp
   | PathSexp
   | undefined;
-
-export interface BuildElementOptions {
-  tag: string;
-  selfClosing: boolean;
-  attrs: ASTv1.AttrNode[];
-  modifiers: ASTv1.ElementModifierStatement[];
-  children: ASTv1.Statement[];
-  comments: ElementComment[];
-  blockParams: string[];
-  loc: SourceSpan;
-}
 
 export default new Builders();

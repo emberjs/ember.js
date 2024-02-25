@@ -86,9 +86,9 @@ export interface CommonBlock extends CommonNode {
   hash: Hash;
   program: Program;
   inverse: Program;
-  openStrip: StripFlags;
-  inverseStrip: StripFlags;
-  closeStrip: StripFlags;
+  openStrip?: StripFlags;
+  inverseStrip?: StripFlags;
+  closeStrip?: StripFlags;
 }
 
 export interface BlockStatement extends CommonBlock {
