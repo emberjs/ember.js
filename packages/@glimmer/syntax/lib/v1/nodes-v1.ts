@@ -146,6 +146,7 @@ export interface SubExpression extends BaseNode {
 
 export interface ThisHead {
   type: 'ThisHead';
+  original: 'this';
   loc: src.SourceSpan;
 }
 
@@ -153,12 +154,22 @@ export interface AtHead {
   type: 'AtHead';
   name: string;
   loc: src.SourceSpan;
+
+  /**
+   * alias for name
+   */
+  original: string;
 }
 
 export interface VarHead {
   type: 'VarHead';
   name: string;
   loc: src.SourceSpan;
+
+  /**
+   * alias for name
+   */
+  original: string;
 }
 
 export type PathHead = ThisHead | AtHead | VarHead;

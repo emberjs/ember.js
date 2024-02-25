@@ -1010,13 +1010,7 @@ function printPath(node: ASTv1.PathExpression | ASTv1.CallNode): string {
 
 function printHead(node: ASTv1.PathExpression | ASTv1.CallNode): string {
   if (node.type === 'PathExpression') {
-    switch (node.head.type) {
-      case 'AtHead':
-      case 'VarHead':
-        return node.head.name;
-      case 'ThisHead':
-        return 'this';
-    }
+    return node.head.original;
   } else if (node.path.type === 'PathExpression') {
     return printHead(node.path);
   } else {
