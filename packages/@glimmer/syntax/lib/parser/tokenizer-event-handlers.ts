@@ -441,7 +441,10 @@ export function preprocess(
     end: offsets.endPosition,
   };
 
-  let template = new TokenizerEventHandlers(source, entityParser, mode).acceptTemplate(ast);
+  let template = new TokenizerEventHandlers(source, entityParser, mode).parse(
+    ast,
+    options.locals ?? []
+  );
 
   if (options.strictMode && options.locals?.length) {
     template = b.template({ ...template, locals: options.locals });

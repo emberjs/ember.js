@@ -1,8 +1,9 @@
 import type { Nullable, Recast } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
-import { getLast, isPresentArray, unwrap } from '@glimmer/util';
+import { assert, getLast, isPresentArray, unwrap } from '@glimmer/util';
 
 import type { ParserNodeBuilder, Tag } from '../parser';
+import type { SourceSpan } from '../source/span';
 import type * as ASTv1 from '../v1/api';
 import type * as HBS from '../v1/handlebars-ast';
 
@@ -24,46 +25,62 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return this.elementStack.length === 0;
   }
 
-  Program(program: HBS.Program): ASTv1.Block;
-  Program(program: HBS.Program): ASTv1.Template;
-  Program(program: HBS.Program): ASTv1.Template | ASTv1.Block;
-  Program(program: HBS.Program): ASTv1.Block | ASTv1.Template {
-    const body: ASTv1.Statement[] = [];
-    let node;
+  parse(program: HBS.Program, locals: string[]): ASTv1.Template {
+    let node = b.template({
+      body: [],
+      locals,
+      loc: this.source.spanFor(program.loc),
+    });
 
-    if (this.isTopLevel) {
-      node = b.template({
-        body,
-        loc: this.source.spanFor(program.loc),
-      });
-    } else {
-      node = b.blockItself({
-        body,
-        blockParams: program.blockParams,
-        chained: program.chained,
-        loc: this.source.spanFor(program.loc),
-      });
+    return this.parseProgram(node, program);
+  }
+
+  Program(program: HBS.Program, blockParams?: ASTv1.VarHead[]): ASTv1.Block {
+    // The abstract signature doesn't have the blockParams argument, but in
+    // practice we can only come from this.BlockStatement() which adds the
+    // extra argument for us
+    assert(
+      Array.isArray(blockParams),
+      '[BUG] Program in parser unexpectedly called without block params'
+    );
+
+    let node = b.blockItself({
+      body: [],
+      params: blockParams,
+      chained: program.chained,
+      loc: this.source.spanFor(program.loc),
+    });
+
+    return this.parseProgram(node, program);
+  }
+
+  private parseProgram<T extends ASTv1.ParentNode>(node: T, program: HBS.Program): T {
+    if (program.body.length === 0) {
+      return node;
     }
 
-    let i,
-      l = program.body.length;
+    let poppedNode;
 
-    this.elementStack.push(node);
+    try {
+      this.elementStack.push(node);
 
-    if (l === 0) {
-      return this.elementStack.pop() as ASTv1.Block | ASTv1.Template;
-    }
-
-    for (i = 0; i < l; i++) {
-      this.acceptNode(unwrap(program.body[i]));
+      for (let child of program.body) {
+        this.acceptNode(child);
+      }
+    } finally {
+      poppedNode = this.elementStack.pop();
     }
 
     // Ensure that that the element stack is balanced properly.
-    const poppedNode = this.elementStack.pop();
-    if (poppedNode !== node) {
-      const elementNode = poppedNode as ASTv1.ElementNode;
-
-      throw generateSyntaxError(`Unclosed element \`${elementNode.tag}\``, elementNode.loc);
+    if (node !== poppedNode) {
+      if (poppedNode?.type === 'ElementNode') {
+        throw generateSyntaxError(`Unclosed element \`${poppedNode.tag}\``, poppedNode.loc);
+      } else {
+        // If the stack is not balanced, then it is likely our own bug, because
+        // any unclosed Handlebars blocks should already been caught by now
+        assert(poppedNode !== undefined, '[BUG] empty parser elementStack');
+        assert(false, `[BUG] mismatched parser elementStack node: ${node.type}`);
+      }
     }
 
     return node;
@@ -83,6 +100,65 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     }
 
     const { path, params, hash } = acceptCallNodes(this, block);
+    const loc = this.source.spanFor(block.loc);
+
+    // Backfill block params loc for the default block
+    let blockParams: ASTv1.VarHead[] = [];
+
+    if (block.program.blockParams?.length) {
+      // Start from right after the hash
+      let span = hash.loc.collapse('end');
+
+      // Extend till the beginning of the block
+      if (block.program.loc) {
+        span = span.withEnd(this.source.spanFor(block.program.loc).getStart());
+      } else if (block.program.body[0]) {
+        span = span.withEnd(this.source.spanFor(block.program.body[0].loc).getStart());
+      } else {
+        // ...or if all else fail, use the end of the block statement
+        // this can only happen if the block statement is empty anyway
+        span = span.withEnd(loc.getEnd());
+      }
+
+      // Now we have a span for something like this:
+      //
+      //   {{#foo bar baz=bat as |wow wat|}}
+      //                     ~~~~~~~~~~~~~~~
+      //
+      // Or, if we are unlucky:
+      //
+      // {{#foo bar baz=bat as |wow wat|}}{{/foo}}
+      //                   ~~~~~~~~~~~~~~~~~~~~~~~
+      //
+      // Either way, within this span, there should be exactly two pipes
+      // fencing our block params, neatly whitespace separated and with
+      // legal identifiers only
+      const content = span.asString();
+      let skipStart = content.indexOf('|') + 1;
+      const limit = content.indexOf('|', skipStart);
+
+      for (const name of block.program.blockParams) {
+        let nameStart: number;
+        let loc: SourceSpan;
+
+        if (skipStart >= limit) {
+          nameStart = -1;
+        } else {
+          nameStart = content.indexOf(name, skipStart);
+        }
+
+        if (nameStart === -1 || nameStart + name.length > limit) {
+          skipStart = limit;
+          loc = this.source.spanFor(NON_EXISTENT_LOCATION);
+        } else {
+          skipStart = nameStart;
+          loc = span.sliceStartChars({ skipStart, chars: name.length });
+          skipStart += name.length;
+        }
+
+        blockParams.push(b.var({ name, loc }));
+      }
+    }
 
     // These are bugs in Handlebars upstream
     if (!block.program.loc) {
@@ -93,8 +169,8 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       block.inverse.loc = NON_EXISTENT_LOCATION;
     }
 
-    const program = this.Program(block.program);
-    const inverse = block.inverse ? this.Program(block.inverse) : null;
+    const program = this.Program(block.program, blockParams);
+    const inverse = block.inverse ? this.Program(block.inverse, []) : null;
 
     const node = b.block({
       path,
@@ -126,7 +202,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     if (isHBSLiteral(rawMustache.path)) {
       mustache = b.mustache({
-        path: this.acceptNode<ASTv1.Literal>(rawMustache.path),
+        path: this.acceptNode<(typeof rawMustache.path)['type']>(rawMustache.path),
         params: [],
         hash: b.hash({ pairs: [], loc: this.source.spanFor(rawMustache.path.loc).collapse('end') }),
         trusting: !escaped,
@@ -388,7 +464,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     const pairs = hash.pairs.map((pair) =>
       b.pair({
         key: pair.key,
-        value: this.acceptNode(pair.value),
+        value: this.acceptNode<HBS.Expression['type']>(pair.value),
         loc: this.source.spanFor(pair.loc),
       })
     );
@@ -536,7 +612,7 @@ function acceptCallNodes(
   }
 
   const params = node.params
-    ? node.params.map((e) => compiler.acceptNode<ASTv1.Expression>(e))
+    ? node.params.map((e) => compiler.acceptNode<HBS.Expression['type']>(e))
     : [];
 
   // if there is no hash, position it as a collapsed node immediately after the last param (or the

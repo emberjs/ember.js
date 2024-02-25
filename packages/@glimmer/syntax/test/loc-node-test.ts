@@ -4,24 +4,28 @@ import { guardArray } from '@glimmer-workspace/test-utils';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
 
-function assertNodeType<T extends keyof AST.Nodes>(
-  node: AST.Node | null | undefined,
+function assertNodeType<T extends keyof AST.Nodes>(node: unknown, type: T): node is AST.Nodes[T];
+function assertNodeType<T extends keyof AST.SubNodes>(
+  node: unknown,
   type: T
-): node is AST.Nodes[T] {
-  let nodeType = node && node.type;
-  QUnit.assert.pushResult({
-    result: nodeType === type,
-    actual: nodeType,
-    expected: type,
-    message: `expected node type to be ${type} but was ${String(nodeType)}`,
-  });
+): node is AST.SubNodes[T];
+function assertNodeType(node: unknown, type: string): boolean {
+  let nodeType: unknown = undefined;
+
+  try {
+    nodeType = (node as { type?: unknown } | null | undefined)?.type;
+  } catch {
+    // no-op
+  }
+
+  QUnit.assert.strictEqual(nodeType, type, `expected node type to be ${type}`);
   return nodeType === type;
 }
 
 const { test } = QUnit;
 
 function locEqual(
-  node: AST.Node | null | undefined,
+  node: AST.Node | AST.SubNode | null | undefined,
   startLine: number,
   startColumn: number,
   endLine: number,
@@ -199,6 +203,116 @@ test('mustache + newline + element ', () => {
 
   locEqual(fooMustache, 2, 4, 2, 11, 'if block');
   locEqual(p, 3, 4, 3, 14, 'p element');
+});
+
+test('block with block params', () => {
+  let ast = parse(`
+    {{#foo as |bar bat baz|}}
+      {{bar}} {{bat}} {{baz}}
+    {{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 2, 15, 2, 18, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 2, 19, 2, 22, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 2, 23, 2, 26, 'baz');
+    }
+  }
+});
+
+test('block with block params edge case: multiline', () => {
+  let ast = parse(`
+    {{#foo as
+|bar bat
+      b
+a
+      z|}}
+      {{bar}} {{bat}} {{baz}}
+    {{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 3, 1, 3, 4, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 3, 5, 3, 8, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 4, 6, 4, 7, 'b');
+    }
+
+    if (assertNodeType(block.params[3], 'VarHead')) {
+      locEqual(block.params[3], 5, 0, 5, 1, 'a');
+    }
+
+    if (assertNodeType(block.params[4], 'VarHead')) {
+      locEqual(block.params[4], 6, 6, 6, 7, 'z');
+    }
+  }
+});
+
+test('block with block params edge case: block-params like params', () => {
+  let ast = parse(`
+    {{#foo "as |bar bat baz|" as |bar bat baz|}}
+      {{bar}} {{bat}} {{baz}}
+    {{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 2, 34, 2, 37, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 2, 38, 2, 41, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 2, 42, 2, 45, 'baz');
+    }
+  }
+});
+
+test('block with block params edge case: block-params like content', () => {
+  let ast = parse(`
+    {{#foo as |bar bat baz|}}as |bar bat baz|{{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 2, 15, 2, 18, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 2, 19, 2, 22, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 2, 23, 2, 26, 'baz');
+    }
+  }
 });
 
 test('blocks with nested html elements', () => {

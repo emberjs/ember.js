@@ -251,6 +251,83 @@ test('Involved block helper', () => {
   );
 });
 
+test('block with block params', () => {
+  let t = `{{#foo as |bar bat baz|}}{{bar}} {{bat}} {{baz}}{{/foo}}`;
+
+  astEqual(
+    t,
+    b.template([
+      b.block(
+        b.path('foo'),
+        null,
+        null,
+        b.blockItself(
+          [b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')],
+          ['bar', 'bat', 'baz']
+        )
+      ),
+    ])
+  );
+});
+
+test('block with block params edge case: multiline', () => {
+  let t = `{{#foo as
+|bar bat
+      b
+a
+      z|}}{{bar}} {{bat}} {{baz}}{{/foo}}`;
+
+  astEqual(
+    t,
+    b.template([
+      b.block(
+        b.path('foo'),
+        null,
+        null,
+        b.blockItself(
+          [b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')],
+          ['bar', 'bat', 'b', 'a', 'z']
+        )
+      ),
+    ])
+  );
+});
+
+test('block with block params edge case: block-params like params', () => {
+  let t = `{{#foo "as |a b c|" as |bar bat baz|}}{{bar}} {{bat}} {{baz}}{{/foo}}`;
+
+  astEqual(
+    t,
+    b.template([
+      b.block(
+        b.path('foo'),
+        [b.string('as |a b c|')],
+        null,
+        b.blockItself(
+          [b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')],
+          ['bar', 'bat', 'baz']
+        )
+      ),
+    ])
+  );
+});
+
+test('block with block params edge case: block-params like content', () => {
+  let t = `{{#foo as |bar bat baz|}}as |a b c|{{/foo}}`;
+
+  astEqual(
+    t,
+    b.template([
+      b.block(
+        b.path('foo'),
+        null,
+        null,
+        b.blockItself([b.text('as |a b c|')], ['bar', 'bat', 'baz'])
+      ),
+    ])
+  );
+});
+
 test('Element modifiers', () => {
   let t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(
