@@ -30,7 +30,11 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   // Comment
 
   beginComment(): void {
-    this.currentNode = b.comment('', this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn));
+    this.currentNode = {
+      type: 'CommentStatement',
+      value: '',
+      start: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
+    };
   }
 
   appendToCommentData(char: string): void {
@@ -38,16 +42,17 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   finishComment(): void {
-    appendChild(this.currentElement(), this.finish(this.currentComment));
+    appendChild(this.currentElement(), b.comment(this.finish(this.currentComment)));
   }
 
   // Data
 
   beginData(): void {
-    this.currentNode = b.text({
+    this.currentNode = {
+      type: 'TextNode',
       chars: '',
-      loc: this.offset().collapsed(),
-    });
+      start: this.offset(),
+    };
   }
 
   appendToData(char: string): void {
@@ -55,9 +60,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   finishData(): void {
-    this.currentData.loc = this.currentData.loc.withEnd(this.offset());
-
-    appendChild(this.currentElement(), this.currentData);
+    appendChild(this.currentElement(), b.text(this.finish(this.currentData)));
   }
 
   // Tags - basic
@@ -75,7 +78,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       modifiers: [],
       comments: [],
       selfClosing: false,
-      loc: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
+      start: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
     };
   }
 
@@ -87,7 +90,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       modifiers: [],
       comments: [],
       selfClosing: false,
-      loc: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
+      start: this.source.offsetFor(this.tagOpenLine, this.tagOpenColumn),
     };
   }
 
@@ -101,7 +104,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         throw generateSyntaxError(
           'Invalid named block named detected, you may have created a named block without a name, or you may have began your name with a number. Named blocks must have names that are at least one character long, and begin with a lower case letter',
           this.source.spanFor({
-            start: this.currentTag.loc.toJSON(),
+            start: this.currentTag.start.toJSON(),
             end: this.offset().toJSON(),
           })
         );
@@ -116,19 +119,14 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   finishStartTag(): void {
-    let {
-      name,
-      attributes: attrs,
-      modifiers,
-      comments,
-      selfClosing,
-      loc,
-    } = this.finish(this.currentStartTag);
+    let { name, attributes, modifiers, comments, selfClosing, loc } = this.finish(
+      this.currentStartTag
+    );
 
     let element = b.element({
       tag: name,
       selfClosing,
-      attrs,
+      attributes,
       modifiers,
       comments,
       children: [],
@@ -148,7 +146,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     element.loc = element.loc.withEnd(this.offset());
     parseElementBlockParams(element);
-    appendChild(parent, element);
+    appendChild(parent, b.element(element));
   }
 
   markTagAsSelfClosing(): void {
@@ -222,7 +220,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     if (tag.type === 'EndTag') {
       throw generateSyntaxError(
         `Invalid end tag: closing tag must not have attributes`,
-        this.source.spanFor({ start: tag.loc.toJSON(), end: tokenizerPos.toJSON() })
+        this.source.spanFor({ start: tag.start.toJSON(), end: tokenizerPos.toJSON() })
       );
     }
 
@@ -256,7 +254,10 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let first = getFirst(parts);
     let last = getLast(parts);
 
-    return b.concat(parts, this.source.spanFor(first.loc).extend(this.source.spanFor(last.loc)));
+    return b.concat({
+      parts,
+      loc: this.source.spanFor(first.loc).extend(this.source.spanFor(last.loc)),
+    });
   }
 
   validateEndTag(

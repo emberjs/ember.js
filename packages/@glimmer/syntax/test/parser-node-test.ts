@@ -5,7 +5,7 @@ import { syntaxErrorFor } from '@glimmer-workspace/test-utils';
 
 import { astEqual } from './support';
 
-const { test, skip } = QUnit;
+const { test } = QUnit;
 
 QUnit.module('[glimmer-syntax] Parser - AST');
 
@@ -484,25 +484,50 @@ test('Whitespace control - preserve all whitespace if config is set', () => {
 });
 
 // TODO: Make these throw an error.
-skip('Awkward mustache in unquoted attribute value', () => {
-  let t = '<div class=a{{foo}}></div>';
-  astEqual(
-    t,
-    b.template([element('div', ['attrs', ['class', b.concat([b.text('a'), b.mustache('foo')])]])])
+test('Awkward mustache in unquoted attribute value', (assert) => {
+  assert.throws(
+    () => {
+      parse('<div class=a{{foo}}></div>', {
+        meta: { moduleName: 'test-module' },
+      });
+    },
+    syntaxErrorFor(
+      `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
+      'class=a{{foo}}',
+      'test-module',
+      1,
+      5
+    )
   );
 
-  t = '<div class=a{{foo}}b></div>';
-  astEqual(
-    t,
-    b.template([
-      element('div', ['attrs', ['class', b.concat([b.text('a'), b.mustache('foo'), b.text('b')])]]),
-    ])
+  assert.throws(
+    () => {
+      parse('<div class=a{{foo}}b></div>', {
+        meta: { moduleName: 'test-module' },
+      });
+    },
+    syntaxErrorFor(
+      `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
+      'class=a{{foo}}b',
+      'test-module',
+      1,
+      5
+    )
   );
 
-  t = '<div class={{foo}}b></div>';
-  astEqual(
-    t,
-    b.template([element('div', ['attrs', ['class', b.concat([b.mustache('foo'), b.text('b')])]])])
+  assert.throws(
+    () => {
+      parse('<div class={{foo}}b></div>', {
+        meta: { moduleName: 'test-module' },
+      });
+    },
+    syntaxErrorFor(
+      `An unquoted attribute value must be a string or a mustache, preceded by whitespace or a '=' character, and followed by whitespace, a '>' character, or '/>'`,
+      'class={{foo}}b',
+      'test-module',
+      1,
+      5
+    )
   );
 });
 
@@ -990,13 +1015,7 @@ export function normalizeModifier(sexp: ModifierSexp): ASTv1.ElementModifierStat
     loc = next[1];
   }
 
-  return {
-    type: 'ElementModifierStatement',
-    path,
-    params: params || [],
-    hash: hash || b.hash([]),
-    loc: b.loc(loc || null),
-  };
+  return b.elementModifier(path as ASTv1.CallableExpression, params, hash, b.loc(loc || null));
 }
 
 export function normalizeHead(path: PathSexp): ASTv1.Expression {

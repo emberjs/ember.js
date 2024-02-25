@@ -753,7 +753,7 @@ class ElementNormalizer {
 
     if (isComponent) {
       let path = b.path({
-        head: b.head(variable, variableLoc),
+        head: b.head({ original: variable, loc: variableLoc }),
         tail,
         loc: pathLoc,
       });
