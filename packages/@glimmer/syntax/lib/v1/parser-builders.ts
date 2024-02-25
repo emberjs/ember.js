@@ -1,10 +1,9 @@
-import type { Dict, Nullable, Optional, PresentArray } from '@glimmer/interfaces';
+import type { Nullable, Optional, PresentArray } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
 
-import type { SourceLocation } from '../source/location';
-import type { SourceSpan } from '../source/span';
 import type * as ASTv1 from './api';
 
+import { SourceSpan } from '../source/span';
 import {
   buildLegacyLiteral,
   buildLegacyMustache,
@@ -32,32 +31,40 @@ class Builders {
   }
 
   blockItself({
-    body = [],
-    blockParams = [],
+    body,
+    params,
     chained = false,
     loc,
   }: {
-    body?: ASTv1.Statement[] | undefined;
-    blockParams?: string[] | undefined;
-    chained?: boolean | undefined;
+    body: ASTv1.Statement[];
+    params: ASTv1.VarHead[];
+    chained?: Optional<boolean>;
     loc: SourceSpan;
   }): ASTv1.Block {
     return {
       type: 'Block',
-      body: body,
-      blockParams: blockParams,
+      body,
+      params,
+      get blockParams() {
+        return this.params.map((p) => p.name);
+      },
+      set blockParams(params: string[]) {
+        this.params = params.map((name) => {
+          return b.var({ name, loc: SourceSpan.synthetic(name) });
+        });
+      },
       chained,
       loc,
     };
   }
 
   template({
-    body = [],
-    locals = [],
+    body,
+    locals,
     loc,
   }: {
-    body?: ASTv1.Statement[];
-    locals?: string[];
+    body: ASTv1.Statement[];
+    locals: string[];
     loc: SourceSpan;
   }): ASTv1.Template {
     return buildLegacyTemplate({
@@ -293,7 +300,7 @@ class Builders {
     };
   }
 
-  atName({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.PathHead {
+  atName({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.AtHead {
     let _name = '';
 
     const node = {
@@ -324,7 +331,7 @@ class Builders {
     return node;
   }
 
-  var({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.PathHead {
+  var({ name, loc }: { name: string; loc: SourceSpan }): ASTv1.VarHead {
     let _name = '';
 
     const node = {
@@ -400,34 +407,6 @@ class Builders {
   }
 }
 
-// Nodes
+const b = new Builders();
 
-export type ElementParts =
-  | ['attrs', ...AttrSexp[]]
-  | ['modifiers', ...ModifierSexp[]]
-  | ['body', ...ASTv1.Statement[]]
-  | ['comments', ...ASTv1.MustacheCommentStatement[]]
-  | ['as', ...string[]]
-  | ['loc', SourceLocation];
-
-export type PathSexp = string | ['path', string, LocSexp?];
-
-export type ModifierSexp =
-  | string
-  | [PathSexp, LocSexp?]
-  | [PathSexp, ASTv1.Expression[], LocSexp?]
-  | [PathSexp, ASTv1.Expression[], Dict<ASTv1.Expression>, LocSexp?];
-
-export type AttrSexp = [string, ASTv1.AttrNode['value'] | string, LocSexp?];
-
-export type LocSexp = ['loc', SourceLocation];
-
-export type SexpValue =
-  | string
-  | ASTv1.Expression[]
-  | Dict<ASTv1.Expression>
-  | LocSexp
-  | PathSexp
-  | undefined;
-
-export default new Builders();
+export default b;

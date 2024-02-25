@@ -76,6 +76,8 @@ export abstract class Parser {
     // node.loc = node.loc.withEnd(end);
   }
 
+  abstract parse(node: HBS.Program, locals: string[]): ASTv1.Template;
+
   abstract Program(node: HBS.Program): HBS.Output<'Program'>;
   abstract MustacheStatement(node: HBS.MustacheStatement): HBS.Output<'MustacheStatement'>;
   abstract Decorator(node: HBS.Decorator): HBS.Output<'Decorator'>;
@@ -149,14 +151,6 @@ export abstract class Parser {
     return node;
   }
 
-  acceptTemplate(node: HBS.Program): ASTv1.Template {
-    let result = this.Program(node);
-    assert(result.type === 'Template', 'expected a template');
-    return result;
-  }
-
-  acceptNode(node: HBS.Program): ASTv1.Block | ASTv1.Template;
-  acceptNode<U extends HBS.Node | ASTv1.Node>(node: HBS.Node): U;
   acceptNode<T extends HBS.NodeType>(node: HBS.Node<T>): HBS.Output<T> {
     return (this[node.type as T] as (node: HBS.Node<T>) => HBS.Output<T>)(node);
   }

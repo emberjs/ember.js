@@ -63,7 +63,7 @@ function buildBlock(
   if (_defaultBlock.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     defaultBlock = b.blockItself({
-      blockParams: [..._defaultBlock.locals],
+      params: buildBlockParams(_defaultBlock.locals),
       body: _defaultBlock.body,
       loc: _defaultBlock.loc,
     });
@@ -73,9 +73,10 @@ function buildBlock(
 
   if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
+    assert(_elseBlock.locals.length === 0, '{{else}} block cannot have block params');
 
     elseBlock = b.blockItself({
-      blockParams: [..._elseBlock.locals],
+      params: [],
       body: _elseBlock.body,
       loc: _elseBlock.loc,
     });
@@ -280,6 +281,8 @@ function buildPath(
   path: BuilderHead | ASTv1.Expression | { head: string; tail: string[] },
   loc?: SourceLocation
 ): ASTv1.Expression {
+  let span = buildLoc(loc || null);
+
   if (typeof path !== 'string') {
     if ('type' in path) {
       return path;
@@ -292,16 +295,16 @@ function buildPath(
       let { head, tail } = path;
 
       return b.path({
-        head: b.head({ original: head, loc: SourceSpan.broken() }),
+        head: b.head({ original: head, loc: span.sliceStartChars({ chars: head.length }) }),
         tail,
         loc: buildLoc(loc || null),
       });
     }
   }
 
-  let { head, tail } = buildHead(path, SourceSpan.broken());
+  let { head, tail } = buildHead(path, span);
 
-  return b.path({ head, tail, loc: buildLoc(loc || null) });
+  return b.path({ head, tail, loc: span });
 }
 
 function buildLiteral<T extends ASTv1.Literal>(
@@ -347,15 +350,21 @@ function buildProgram(
   }
 }
 
+function buildBlockParams(params: ReadonlyArray<ASTv1.VarHead | string>): ASTv1.VarHead[] {
+  return params.map((p) =>
+    typeof p === 'string' ? b.var({ name: p, loc: SourceSpan.synthetic(p) }) : p
+  );
+}
+
 function buildBlockItself(
   body: ASTv1.Statement[] = [],
-  blockParams: string[] = [],
+  params: Array<ASTv1.VarHead | string> = [],
   chained = false,
   loc?: SourceLocation
 ): ASTv1.Block {
   return b.blockItself({
     body,
-    blockParams,
+    params: buildBlockParams(params),
     chained,
     loc: buildLoc(loc || null),
   });

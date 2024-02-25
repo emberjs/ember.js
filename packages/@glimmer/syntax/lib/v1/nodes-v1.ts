@@ -16,8 +16,13 @@ export interface CommonProgram extends BaseNode {
 
 export interface Block extends CommonProgram {
   type: 'Block';
-  blockParams: string[];
+  params: VarHead[];
   chained?: boolean;
+
+  /**
+   * string accessor for params.name
+   */
+  blockParams: string[];
 }
 
 export type EntityEncodingState = 'transformed' | 'raw';
@@ -301,6 +306,34 @@ export type Nodes = {
 
 export type NodeType = keyof Nodes;
 export type Node = Nodes[NodeType];
+
+// These "sub-node" cannot appear standalone, they are only used inside another
+// "real" AST node to provide richer information. The distinction mostly exists
+// for backwards compatibility reason. These nodes are not traversed and do not
+// have visitor keys for them, so it won't break existing AST consumers (e.g.
+// those that implemented an `All` visitor may not be expecting these new types
+// of nodes).
+//
+// Conceptually, the idea of "sub-node" does make sense, and you can say source
+// locations are another kind of these things. However, in these cases, they
+// actually fully implement the `BaseNode` interface, and only not extending
+// `BaseNode` because the `type` field is not `keyof Nodes` (which is circular
+// reasoning). If these are not "real" nodes because they can only appear in
+// very limited context, then the same reasoning probably applies for, say,
+// HashPair.
+//
+// If we do eventually make some kind of breaking change here, perhaps with
+// some kind of opt-in, then we can consider upgrading these into "real" nodes,
+// but for now, this is where they go, and it isn't a huge problem in practice
+// because there are little utility in traversing these kind of nodes anyway.
+export type SubNodes = {
+  ThisHead: ThisHead;
+  AtHead: AtHead;
+  VarHead: VarHead;
+};
+
+export type SubNodeType = keyof SubNodes;
+export type SubNode = SubNodes[SubNodeType];
 
 export type Statement = Nodes[StatementName];
 export type Statements = Pick<Nodes, StatementName>;
