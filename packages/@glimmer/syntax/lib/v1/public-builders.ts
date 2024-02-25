@@ -23,7 +23,7 @@ function SOURCE(): Source {
 
 // Statements
 
-export type BuilderHead = string | ASTv1.Expression;
+export type BuilderHead = string | ASTv1.CallableExpression;
 export type TagDescriptor = string | { name: string; selfClosing: boolean };
 
 function buildMustache(
@@ -91,7 +91,7 @@ function buildBlock(
 }
 
 function buildElementModifier(
-  path: BuilderHead | ASTv1.Expression,
+  path: BuilderHead,
   params?: ASTv1.Expression[],
   hash?: ASTv1.Hash,
   loc?: Nullable<SourceLocation>
@@ -331,8 +331,9 @@ function buildPath(
   path: ASTv1.PathExpression | string | { head: string; tail: string[] },
   loc?: SourceLocation
 ): ASTv1.PathExpression;
+function buildPath(path: BuilderHead, loc?: SourceLocation): ASTv1.CallableExpression;
+function buildPath(path: BuilderHead | ASTv1.Literal, loc?: SourceLocation): ASTv1.Expression;
 function buildPath(path: ASTv1.Expression, loc?: SourceLocation): ASTv1.Expression;
-function buildPath(path: BuilderHead | ASTv1.Expression, loc?: SourceLocation): ASTv1.Expression;
 function buildPath(
   path: BuilderHead | ASTv1.Expression | { head: string; tail: string[] },
   loc?: SourceLocation

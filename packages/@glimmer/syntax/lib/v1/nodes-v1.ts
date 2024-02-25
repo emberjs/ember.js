@@ -37,15 +37,10 @@ export interface Template extends CommonProgram {
  */
 export type Program = Template | Block;
 
-export interface CallParts {
-  path: Expression;
-  params: Expression[];
-  hash: Hash;
-}
+export type CallableExpression = SubExpression | PathExpression;
 
-export interface Call extends BaseNode {
-  name?: Expression;
-  path: Expression;
+export interface CallParts {
+  path: CallableExpression;
   params: Expression[];
   hash: Hash;
 }
@@ -72,7 +67,7 @@ export interface MustacheStatement extends BaseNode {
 
 export interface BlockStatement extends BaseNode {
   type: 'BlockStatement';
-  path: Expression;
+  path: CallableExpression;
   params: Expression[];
   hash: Hash;
   program: Block;
@@ -87,7 +82,7 @@ export interface BlockStatement extends BaseNode {
 
 export interface ElementModifierStatement extends BaseNode {
   type: 'ElementModifierStatement';
-  path: Expression;
+  path: CallableExpression;
   params: Expression[];
   hash: Hash;
 }
@@ -142,9 +137,9 @@ export interface ConcatStatement extends BaseNode {
 
 export type ExpressionName = 'SubExpression' | 'PathExpression' | LiteralName;
 
-export interface SubExpression extends Call {
+export interface SubExpression extends BaseNode {
   type: 'SubExpression';
-  path: Expression;
+  path: CallableExpression;
   params: Expression[];
   hash: Hash;
 }
