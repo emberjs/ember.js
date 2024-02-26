@@ -60,3 +60,14 @@ export interface Arguments {
   positional: readonly unknown[];
   named: Record<string, unknown>;
 }
+
+export interface ArgumentsDebug {
+  positional: readonly unknown[];
+  named: Record<string, unknown>;
+}
+
+export interface ArgumentError {
+  error: any;
+}
+
+export function isArgumentError(arg: unknown): arg is ArgumentError;

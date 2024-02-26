@@ -1,4 +1,5 @@
 import type {
+  ArgumentError,
   BlockArguments,
   BlockSymbolTable,
   BlockValue,
@@ -498,6 +499,55 @@ export function reifyArgs(args: CapturedArguments) {
   return {
     named: reifyNamed(args.named),
     positional: reifyPositional(args.positional),
+  };
+}
+
+const ARGUMENT_ERROR = Symbol('ARGUMENT_ERROR');
+
+export function isArgumentError(arg: unknown): arg is ArgumentError {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    (arg as { [ARGUMENT_ERROR]: boolean })[ARGUMENT_ERROR]
+  );
+}
+
+function ArgumentErrorImpl(error: any) {
+  return {
+    [ARGUMENT_ERROR]: true,
+    error,
+  };
+}
+
+export function reifyNamedDebug(named: CapturedNamedArguments) {
+  let reified = dict();
+  for (const [key, value] of Object.entries(named)) {
+    try {
+      reified[key] = valueForRef(value);
+    } catch (e) {
+      reified[key] = ArgumentErrorImpl(e);
+    }
+  }
+
+  return reified;
+}
+
+export function reifyPositionalDebug(positional: CapturedPositionalArguments) {
+  return positional.map((p) => {
+    try {
+      return valueForRef(p);
+    } catch (e) {
+      return ArgumentErrorImpl(e);
+    }
+  });
+}
+
+export function reifyArgsDebug(args: CapturedArguments) {
+  let named = reifyNamedDebug(args.named);
+  let positional = reifyPositionalDebug(args.positional);
+  return {
+    named,
+    positional,
   };
 }
 
