@@ -2,8 +2,8 @@ import type { Nullable, Recast } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
 import { assert, getLast, isPresentArray, unwrap } from '@glimmer/util';
 
-import type { ParserNodeBuilder, Tag } from '../parser';
-import type { SourceSpan } from '../source/span';
+import type { ParserNodeBuilder, StartTag } from '../parser';
+import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from '../v1/api';
 import type * as HBS from '../v1/handlebars-ast';
 
@@ -13,17 +13,27 @@ import { generateSyntaxError } from '../syntax-error';
 import { appendChild, isHBSLiteral, printLiteral } from '../utils';
 import b from '../v1/parser-builders';
 
-const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState;
-const ATTRIBUTE_VALUE_UNQUOTED = 'attributeValueUnquoted' as TokenizerState;
+const BEFORE_ATTRIBUTE_NAME = 'beforeAttributeName' as TokenizerState.beforeAttributeName;
+const ATTRIBUTE_VALUE_UNQUOTED = 'attributeValueUnquoted' as TokenizerState.attributeValueUnquoted;
+
+export interface PendingError {
+  mustache(span: SourceSpan): never;
+  eof(offset: SourceOffset): never;
+}
 
 export abstract class HandlebarsNodeVisitors extends Parser {
+  // Because we interleave the HTML and HBS parsing, sometimes the HTML
+  // tokenizer can run out of tokens when we switch into {{...}} or reached
+  // EOF. There are positions where neither of these are expected, and it would
+  // like to generate an error, but there is no span to attach the error to.
+  // This allows the HTML tokenization to stash an error message and the next
+  // mustache visitor will attach the message to the appropriate span and throw
+  // the error.
+  protected pendingError: Nullable<PendingError> = null;
+
   abstract override appendToCommentData(s: string): void;
   abstract override beginAttributeValue(quoted: boolean): void;
   abstract override finishAttributeValue(): void;
-
-  private get isTopLevel() {
-    return this.elementStack.length === 0;
-  }
 
   parse(program: HBS.Program, locals: string[]): ASTv1.Template {
     let node = b.template({
@@ -32,7 +42,15 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       loc: this.source.spanFor(program.loc),
     });
 
-    return this.parseProgram(node, program);
+    let template = this.parseProgram(node, program);
+
+    // TODO: we really need to verify that the tokenizer is in an acceptable
+    // state when we are "done" parsing. For example, right now, `<foo` parses
+    // into `Template { body: [] }` which is obviously incorrect
+
+    this.pendingError?.eof(template.loc.getEnd());
+
+    return template;
   }
 
   Program(program: HBS.Program, blockParams?: ASTv1.VarHead[]): ASTv1.Block {
@@ -190,6 +208,8 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   }
 
   MustacheStatement(rawMustache: HBS.MustacheStatement): ASTv1.MustacheStatement | void {
+    this.pendingError?.mustache(this.source.spanFor(rawMustache.loc));
+
     const { tokenizer } = this;
 
     if (tokenizer.state === 'comment') {
@@ -630,7 +650,7 @@ function acceptCallNodes(
 }
 
 function addElementModifier(
-  element: ParserNodeBuilder<Tag<'StartTag'>>,
+  element: ParserNodeBuilder<StartTag>,
   mustache: ASTv1.MustacheStatement
 ) {
   const { path, params, hash, loc } = mustache;

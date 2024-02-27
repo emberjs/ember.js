@@ -14,13 +14,20 @@ export type ParserNodeBuilder<N extends { loc: src.SourceSpan }> = Omit<N, 'loc'
   start: src.SourceOffset;
 };
 
-export interface Tag<T extends 'StartTag' | 'EndTag'> {
-  readonly type: T;
+export interface StartTag {
+  readonly type: 'StartTag';
   name: string;
   readonly attributes: ASTv1.AttrNode[];
   readonly modifiers: ASTv1.ElementModifierStatement[];
   readonly comments: ASTv1.MustacheCommentStatement[];
+  readonly params: ASTv1.VarHead[];
   selfClosing: boolean;
+  readonly loc: src.SourceSpan;
+}
+
+export interface EndTag {
+  readonly type: 'EndTag';
+  name: string;
   readonly loc: src.SourceSpan;
 }
 
@@ -43,8 +50,8 @@ export abstract class Parser {
     Readonly<
       | ParserNodeBuilder<ASTv1.CommentStatement>
       | ParserNodeBuilder<ASTv1.TextNode>
-      | ParserNodeBuilder<Tag<'StartTag'>>
-      | ParserNodeBuilder<Tag<'EndTag'>>
+      | ParserNodeBuilder<StartTag>
+      | ParserNodeBuilder<EndTag>
     >
   > = null;
   public tokenizer: EventedTokenizer;
@@ -121,19 +128,19 @@ export abstract class Parser {
     return expect(this.currentAttribute, 'expected attribute');
   }
 
-  get currentTag(): ParserNodeBuilder<Tag<'StartTag' | 'EndTag'>> {
+  get currentTag(): ParserNodeBuilder<StartTag> | ParserNodeBuilder<EndTag> {
     let node = this.currentNode;
     assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
     return node;
   }
 
-  get currentStartTag(): ParserNodeBuilder<Tag<'StartTag'>> {
+  get currentStartTag(): ParserNodeBuilder<StartTag> {
     let node = this.currentNode;
     assert(node && node.type === 'StartTag', 'expected start tag');
     return node;
   }
 
-  get currentEndTag(): ParserNodeBuilder<Tag<'EndTag'>> {
+  get currentEndTag(): ParserNodeBuilder<EndTag> {
     let node = this.currentNode;
     assert(node && node.type === 'EndTag', 'expected end tag');
     return node;

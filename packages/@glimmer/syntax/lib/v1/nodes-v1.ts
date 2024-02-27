@@ -107,10 +107,15 @@ export interface ElementNode extends BaseNode {
   tag: string;
   selfClosing: boolean;
   attributes: AttrNode[];
-  blockParams: string[];
+  params: VarHead[];
   modifiers: ElementModifierStatement[];
   comments: MustacheCommentStatement[];
   children: Statement[];
+
+  /**
+   * string accessor for params.name
+   */
+  blockParams: string[];
 }
 
 export type StatementName =
