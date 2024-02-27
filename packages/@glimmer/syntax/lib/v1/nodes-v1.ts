@@ -104,13 +104,28 @@ export interface MustacheCommentStatement extends BaseNode {
 
 export interface ElementNode extends BaseNode {
   type: 'ElementNode';
-  tag: string;
+  path: PathExpression;
   selfClosing: boolean;
   attributes: AttrNode[];
   params: VarHead[];
   modifiers: ElementModifierStatement[];
   comments: MustacheCommentStatement[];
   children: Statement[];
+
+  /**
+   * span for the open tag
+   */
+  openTag: src.SourceSpan;
+
+  /**
+   * span for the close tag, null for void or self-closing tags
+   */
+  closeTag: Nullable<src.SourceSpan>;
+
+  /**
+   * string accessor for path.original
+   */
+  tag: string;
 
   /**
    * string accessor for params.name

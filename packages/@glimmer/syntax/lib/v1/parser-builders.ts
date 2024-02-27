@@ -171,34 +171,47 @@ class Builders {
   }
 
   element({
-    tag,
+    path,
     selfClosing,
     attributes,
     modifiers,
     params,
     comments,
     children,
+    openTag,
+    closeTag,
     loc,
   }: {
-    tag: string;
+    path: ASTv1.PathExpression;
     selfClosing: boolean;
     attributes: ASTv1.AttrNode[];
     modifiers: ASTv1.ElementModifierStatement[];
     params: ASTv1.VarHead[];
     children: ASTv1.Statement[];
     comments: ASTv1.MustacheCommentStatement[];
+    openTag: SourceSpan;
+    closeTag: Nullable<SourceSpan>;
     loc: SourceSpan;
   }): ASTv1.ElementNode {
+    let _selfClosing = selfClosing;
+
     return {
       type: 'ElementNode',
-      tag,
-      selfClosing: selfClosing,
+      path,
       attributes,
       modifiers,
       params,
       comments,
       children,
+      openTag,
+      closeTag,
       loc,
+      get tag() {
+        return this.path.original;
+      },
+      set tag(name: string) {
+        this.path.original = name;
+      },
       get blockParams() {
         return this.params.map((p) => p.name);
       },
@@ -206,6 +219,18 @@ class Builders {
         this.params = params.map((name) => {
           return b.var({ name, loc: SourceSpan.synthetic(name) });
         });
+      },
+      get selfClosing() {
+        return _selfClosing;
+      },
+      set selfClosing(selfClosing: boolean) {
+        _selfClosing = selfClosing;
+
+        if (selfClosing) {
+          this.closeTag = null;
+        } else {
+          this.closeTag = SourceSpan.synthetic(`</${this.tag}>`);
+        }
       },
     };
   }

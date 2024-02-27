@@ -1,6 +1,7 @@
 import type { Nullable } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
 import {
+  asPresentArray,
   assert,
   assertPresentArray,
   assign,
@@ -87,6 +88,8 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.currentNode = {
       type: 'StartTag',
       name: '',
+      nameStart: null,
+      nameEnd: null,
       attributes: [],
       modifiers: [],
       comments: [],
@@ -129,24 +132,42 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   finishStartTag(): void {
-    let { name, attributes, modifiers, comments, params, selfClosing, loc } = this.finish(
+    let { name, nameStart, nameEnd } = this.currentStartTag;
+
+    // <> should probably be a syntax error, but s-h-t is currently broken for that case
+    assert(name !== '', 'tag name cannot be empty');
+    assert(nameStart !== null, 'nameStart unexpectedly null');
+    assert(nameEnd !== null, 'nameEnd unexpectedly null');
+
+    let nameLoc = nameStart.until(nameEnd);
+    let [head, ...tail] = asPresentArray(name.split('.'));
+    let path = b.path({
+      head: b.head({ original: head, loc: nameLoc.sliceStartChars({ chars: head.length }) }),
+      tail,
+      loc: nameLoc,
+    });
+
+    let { attributes, modifiers, comments, params, selfClosing, loc } = this.finish(
       this.currentStartTag
     );
 
     let element = b.element({
-      tag: name,
+      path,
       selfClosing,
       attributes,
       modifiers,
       comments,
       params,
       children: [],
+      openTag: loc,
+      closeTag: selfClosing ? null : src.SourceSpan.broken(),
       loc,
     });
     this.elementStack.push(element);
   }
 
   finishEndTag(isVoid: boolean): void {
+    let { start: closeTagStart } = this.currentTag;
     let tag = this.finish<StartTag | EndTag>(this.currentTag);
 
     let element = this.elementStack.pop() as ASTv1.ElementNode;
@@ -154,7 +175,16 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.validateEndTag(tag, element, isVoid);
     let parent = this.currentElement();
 
+    if (isVoid) {
+      element.closeTag = null;
+    } else if (element.selfClosing) {
+      assert(element.closeTag === null, 'element.closeTag unexpectedly present');
+    } else {
+      element.closeTag = closeTagStart.until(this.offset());
+    }
+
     element.loc = element.loc.withEnd(this.offset());
+
     appendChild(parent, b.element(element));
   }
 
@@ -174,7 +204,21 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   // Tags - name
 
   appendToTagName(char: string): void {
-    this.currentTag.name += char;
+    let tag = this.currentTag;
+    tag.name += char;
+
+    if (tag.type === 'StartTag') {
+      let offset = this.offset();
+
+      if (tag.nameStart === null) {
+        assert(tag.nameEnd === null, 'nameStart and nameEnd must both be null');
+
+        // Note that the tokenizer already consumed the token here
+        tag.nameStart = offset.move(-1);
+      }
+
+      tag.nameEnd = offset;
+    }
   }
 
   // Tags - attributes

@@ -4,6 +4,7 @@ import { asPresentArray, assert, deprecate, isPresentArray } from '@glimmer/util
 import type { SourceLocation, SourcePosition } from '../source/location';
 import type * as ASTv1 from './api';
 
+import { isVoidTag } from '../generation/printer';
 import { SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
@@ -24,7 +25,11 @@ function SOURCE(): Source {
 // Statements
 
 export type BuilderHead = string | ASTv1.CallableExpression;
-export type TagDescriptor = string | { name: string; selfClosing: boolean };
+export type TagDescriptor =
+  | string
+  | ASTv1.PathExpression
+  | { path: ASTv1.PathExpression; selfClosing?: boolean }
+  | { name: string; selfClosing?: boolean };
 
 function buildMustache(
   path: BuilderHead | ASTv1.Literal,
@@ -71,7 +76,7 @@ function buildBlock(
     defaultBlock = _defaultBlock;
   }
 
-  if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
+  if (_elseBlock?.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     assert(_elseBlock.locals.length === 0, '{{else}} block cannot have block params');
 
@@ -177,23 +182,51 @@ export interface BuildElementOptions {
   children?: ASTv1.Statement[];
   comments?: ASTv1.MustacheCommentStatement[];
   blockParams?: ASTv1.VarHead[] | string[];
+  openTag?: SourceLocation;
+  closeTag?: Nullable<SourceLocation>;
   loc?: SourceLocation;
 }
 
 function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): ASTv1.ElementNode {
-  let { attrs, blockParams, modifiers, comments, children, loc } = options;
+  let {
+    attrs,
+    blockParams,
+    modifiers,
+    comments,
+    children,
+    openTag,
+    closeTag: _closeTag,
+    loc,
+  } = options;
 
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
-  let tagName: string;
-  let selfClosing = false;
-  if (typeof tag === 'object') {
+  let path: ASTv1.PathExpression;
+  let selfClosing: boolean | undefined;
+
+  if (typeof tag === 'string') {
+    if (tag.endsWith('/')) {
+      path = buildPath(tag.slice(0, -1));
+      selfClosing = true;
+    } else {
+      path = buildPath(tag);
+    }
+  } else if ('type' in tag) {
+    assert(tag.type === 'PathExpression', `Invalid tag type ${tag.type}`);
+    path = tag;
+  } else if ('path' in tag) {
+    assert(tag.path.type === 'PathExpression', `Invalid tag type ${tag.path.type}`);
+    path = tag.path;
     selfClosing = tag.selfClosing;
-    tagName = tag.name;
-  } else if (tag.slice(-1) === '/') {
-    tagName = tag.slice(0, -1);
-    selfClosing = true;
   } else {
-    tagName = tag;
+    path = buildPath(tag.name);
+    selfClosing = tag.selfClosing;
+  }
+
+  if (selfClosing) {
+    assert(
+      _closeTag === null || _closeTag === undefined,
+      'Cannot build a self-closing tag with a closeTag source location'
+    );
   }
 
   let params = blockParams?.map((param) => {
@@ -204,14 +237,24 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
     }
   });
 
+  let closeTag: Nullable<SourceSpan> = null;
+
+  if (_closeTag) {
+    closeTag = buildLoc(_closeTag || null);
+  } else if (_closeTag === undefined) {
+    closeTag = selfClosing || isVoidTag(path.original) ? null : buildLoc(null);
+  }
+
   return b.element({
-    tag: tagName,
-    selfClosing,
+    path,
+    selfClosing: selfClosing || false,
     attributes: attrs || [],
     params: params || [],
     modifiers: modifiers || [],
     comments: comments || [],
     children: children || [],
+    openTag: buildLoc(openTag || null),
+    closeTag,
     loc: buildLoc(loc || null),
   });
 }
@@ -253,7 +296,7 @@ function buildHead(original: string, loc?: SourceLocation): ASTv1.PathExpression
   return b.path({ head: headNode, tail, loc: buildLoc(loc || null) });
 }
 
-function buildThis(loc: SourceLocation): ASTv1.ThisHead {
+function buildThis(loc?: SourceLocation): ASTv1.ThisHead {
   return b.this({ loc: buildLoc(loc || null) });
 }
 
@@ -271,8 +314,8 @@ function buildHeadFromString(original: string, loc?: SourceLocation): ASTv1.Path
 
 function buildCleanPath(
   head: ASTv1.PathHead,
-  tail: string[],
-  loc: SourceLocation
+  tail: string[] = [],
+  loc?: SourceLocation
 ): ASTv1.PathExpression {
   return b.path({ head, tail, loc: buildLoc(loc || null) });
 }

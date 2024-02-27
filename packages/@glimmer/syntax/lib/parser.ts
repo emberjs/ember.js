@@ -17,6 +17,8 @@ export type ParserNodeBuilder<N extends { loc: src.SourceSpan }> = Omit<N, 'loc'
 export interface StartTag {
   readonly type: 'StartTag';
   name: string;
+  nameStart: Nullable<src.SourceOffset>;
+  nameEnd: Nullable<src.SourceOffset>;
   readonly attributes: ASTv1.AttrNode[];
   readonly modifiers: ASTv1.ElementModifierStatement[];
   readonly comments: ASTv1.MustacheCommentStatement[];

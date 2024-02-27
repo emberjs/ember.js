@@ -19,6 +19,22 @@ test('self-closed element', () => {
   astEqual(t, b.template([element('g/')]));
 });
 
+test('various html element paths', () => {
+  const cases = [
+    [`<Foo />`, b.fullPath(b.var('Foo'))],
+    [`<Foo.bar.baz />`, b.fullPath(b.var('Foo'), ['bar', 'baz'])],
+    [`<this />`, b.fullPath(b.this())],
+    [`<this.foo.bar />`, b.fullPath(b.this(), ['foo', 'bar'])],
+    [`<@Foo />`, b.fullPath(b.at('@Foo'))],
+    [`<@Foo.bar.baz />`, b.fullPath(b.at('@Foo'), ['bar', 'baz'])],
+    [`<:foo />`, b.fullPath(b.var(':foo'))],
+  ] satisfies Array<[string, ASTv1.PathExpression]>;
+
+  for (const [t, path] of cases) {
+    astEqual(t, b.template([b.element({ path, selfClosing: true })]));
+  }
+});
+
 test('elements can have empty attributes', () => {
   let t = '<img id="">';
   astEqual(t, b.template([element('img', ['attrs', ['id', '']])]));
