@@ -232,6 +232,9 @@ export class NewElementBuilder implements ElementBuilder {
         } as CapturedArguments,
         instance: null,
       });
+      registerDestructor(block, () => {
+        this.env.debugRenderTree?.willDestroy(block);
+      });
     }
     return block;
   }
