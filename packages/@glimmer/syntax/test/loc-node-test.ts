@@ -315,6 +315,131 @@ test('block with block params edge case: block-params like content', () => {
   }
 });
 
+test('element with block params', () => {
+  let ast = parse(`
+    <Foo as |bar bat baz|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 13, 2, 16, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 17, 2, 20, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 21, 2, 24, 'baz');
+    }
+  }
+});
+
+test('element with block params edge case: multiline', () => {
+  let ast = parse(`
+    <Foo as
+|bar bat
+      b
+a
+      z|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 3, 1, 3, 4, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 3, 5, 3, 8, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 4, 6, 4, 7, 'b');
+    }
+
+    if (assertNodeType(element.params[3], 'VarHead')) {
+      locEqual(element.params[3], 5, 0, 5, 1, 'a');
+    }
+
+    if (assertNodeType(element.params[4], 'VarHead')) {
+      locEqual(element.params[4], 6, 6, 6, 7, 'z');
+    }
+  }
+});
+
+test('elment with block params edge case: block-params like attribute names', () => {
+  let ast = parse(`
+    <Foo as="a" async="b" as |bar bat baz|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 30, 2, 33, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 34, 2, 37, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 38, 2, 41, 'baz');
+    }
+  }
+});
+
+test('elment with block params edge case: block-params like attribute values', () => {
+  let ast = parse(`
+    <Foo foo="as |bar bat baz|" as |bar bat baz|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 36, 2, 39, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 40, 2, 43, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 44, 2, 47, 'baz');
+    }
+  }
+});
+
+test('element with block params edge case: block-params like content', () => {
+  let ast = parse(`
+    <Foo as |bar bat baz|>as |bar bat baz|</Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 13, 2, 16, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 17, 2, 20, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 21, 2, 24, 'baz');
+    }
+  }
+});
+
 test('blocks with nested html elements', () => {
   let ast = parse(`
     {{#foo-bar}}<div>Foo</div>{{/foo-bar}} <p>Hi!</p>

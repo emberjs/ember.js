@@ -176,16 +176,15 @@ export interface BuildElementOptions {
   modifiers?: ASTv1.ElementModifierStatement[];
   children?: ASTv1.Statement[];
   comments?: ASTv1.MustacheCommentStatement[];
-  blockParams?: string[];
-  loc?: SourceSpan;
+  blockParams?: ASTv1.VarHead[] | string[];
+  loc?: SourceLocation;
 }
 
 function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): ASTv1.ElementNode {
   let { attrs, blockParams, modifiers, comments, children, loc } = options;
 
-  let tagName: string;
-
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
+  let tagName: string;
   let selfClosing = false;
   if (typeof tag === 'object') {
     selfClosing = tag.selfClosing;
@@ -197,11 +196,19 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
     tagName = tag;
   }
 
+  let params = blockParams?.map((param) => {
+    if (typeof param === 'string') {
+      return buildVar(param);
+    } else {
+      return param;
+    }
+  });
+
   return b.element({
     tag: tagName,
     selfClosing,
     attributes: attrs || [],
-    blockParams: blockParams || [],
+    params: params || [],
     modifiers: modifiers || [],
     comments: comments || [],
     children: children || [],
@@ -240,25 +247,25 @@ function buildSexpr(
   });
 }
 
-function buildHead(original: string, loc: SourceLocation): ASTv1.PathExpression {
+function buildHead(original: string, loc?: SourceLocation): ASTv1.PathExpression {
   let [head, ...tail] = asPresentArray(original.split('.'));
   let headNode = b.head({ original: head, loc: buildLoc(loc || null) });
   return b.path({ head: headNode, tail, loc: buildLoc(loc || null) });
 }
 
-function buildThis(loc: SourceLocation): ASTv1.PathHead {
+function buildThis(loc: SourceLocation): ASTv1.ThisHead {
   return b.this({ loc: buildLoc(loc || null) });
 }
 
-function buildAtName(name: string, loc: SourceLocation): ASTv1.PathHead {
+function buildAtName(name: string, loc?: SourceLocation): ASTv1.AtHead {
   return b.atName({ name, loc: buildLoc(loc || null) });
 }
 
-function buildVar(name: string, loc: SourceLocation): ASTv1.PathHead {
+function buildVar(name: string, loc?: SourceLocation): ASTv1.VarHead {
   return b.var({ name, loc: buildLoc(loc || null) });
 }
 
-function buildHeadFromString(original: string, loc: SourceLocation): ASTv1.PathHead {
+function buildHeadFromString(original: string, loc?: SourceLocation): ASTv1.PathHead {
   return b.head({ original, loc: buildLoc(loc || null) });
 }
 

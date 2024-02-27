@@ -174,8 +174,8 @@ class Builders {
     tag,
     selfClosing,
     attributes,
-    blockParams,
     modifiers,
+    params,
     comments,
     children,
     loc,
@@ -184,9 +184,9 @@ class Builders {
     selfClosing: boolean;
     attributes: ASTv1.AttrNode[];
     modifiers: ASTv1.ElementModifierStatement[];
+    params: ASTv1.VarHead[];
     children: ASTv1.Statement[];
     comments: ASTv1.MustacheCommentStatement[];
-    blockParams: string[];
     loc: SourceSpan;
   }): ASTv1.ElementNode {
     return {
@@ -194,11 +194,19 @@ class Builders {
       tag,
       selfClosing: selfClosing,
       attributes,
-      blockParams,
       modifiers,
+      params,
       comments,
       children,
       loc,
+      get blockParams() {
+        return this.params.map((p) => p.name);
+      },
+      set blockParams(params: string[]) {
+        this.params = params.map((name) => {
+          return b.var({ name, loc: SourceSpan.synthetic(name) });
+        });
+      },
     };
   }
 

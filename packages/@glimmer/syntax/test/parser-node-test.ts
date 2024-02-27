@@ -328,6 +328,87 @@ test('block with block params edge case: block-params like content', () => {
   );
 });
 
+test('element with block params', () => {
+  let t = `<Foo as |bar bat baz|>{{bar}} {{bat}} {{baz}}</Foo>`;
+
+  astEqual(
+    t,
+    b.template([
+      element(
+        'Foo',
+        ['as', b.var('bar'), b.var('bat'), b.var('baz')],
+        ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
+      ),
+    ])
+  );
+});
+
+test('element with block params edge case: multiline', () => {
+  let t = `<Foo as
+|bar bat
+      b
+a
+      z|>{{bar}} {{bat}} {{baz}}</Foo>`;
+
+  astEqual(
+    t,
+    b.template([
+      element(
+        'Foo',
+        ['as', b.var('bar'), b.var('bat'), b.var('b'), b.var('a'), b.var('z')],
+        ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
+      ),
+    ])
+  );
+});
+
+test('element with block params edge case: block-params like attribute names', () => {
+  let t = `<Foo as="a" async="b" as |bar bat baz|>as |a b c|</Foo>`;
+
+  astEqual(
+    t,
+    b.template([
+      element(
+        'Foo',
+        ['attrs', ['as', 'a'], ['async', 'b']],
+        ['as', b.var('bar'), b.var('bat'), b.var('baz')],
+        ['body', b.text('as |a b c|')]
+      ),
+    ])
+  );
+});
+
+test('element with block params edge case: block-params like attribute values', () => {
+  let t = `<Foo foo="as |a b c|" as |bar bat baz|>{{bar}} {{bat}} {{baz}}</Foo>`;
+
+  astEqual(
+    t,
+    b.template([
+      element(
+        'Foo',
+        ['attrs', ['foo', 'as |a b c|']],
+        ['as', b.var('bar'), b.var('bat'), b.var('baz')],
+        ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
+      ),
+    ])
+  );
+});
+
+test('element with block params edge case: block-params like content', () => {
+  let t = `<Foo as |bar bat baz|>as |a b c|</Foo>`;
+
+  astEqual(
+    t,
+    b.template([
+      element(
+        'Foo',
+        ['as', b.var('bar'), b.var('bat'), b.var('baz')],
+        ['body', b.text('as |a b c|')]
+      ),
+    ])
+  );
+});
+
 test('Element modifiers', () => {
   let t = "<p {{action 'boom'}} class='bar'>Some content</p>";
   astEqual(
@@ -821,7 +902,7 @@ test('named blocks', () => {
     element(
       ':body',
       ['body', element('div', ['body', b.mustache('contents')])],
-      ['as', 'contents']
+      ['as', b.var('contents')]
     ),
   ]);
   astEqual(ast, b.template([el]));
@@ -932,8 +1013,8 @@ export type ElementParts =
   | ['attrs', ...AttrSexp[]]
   | ['modifiers', ...ModifierSexp[]]
   | ['body', ...ASTv1.Statement[]]
-  | ['comments', ...ElementComment[]]
-  | ['as', ...string[]]
+  | ['comments', ...ASTv1.MustacheCommentStatement[]]
+  | ['as', ...ASTv1.VarHead[]]
   | ['loc', ASTv1.SourceLocation];
 
 export type PathSexp = string | ['path', string, LocSexp?];
@@ -948,8 +1029,6 @@ export type AttrSexp = [string, ASTv1.AttrNode['value'] | string, LocSexp?];
 
 export type LocSexp = ['loc', ASTv1.SourceLocation];
 
-export type ElementComment = ASTv1.MustacheCommentStatement | ASTv1.SourceLocation | string;
-
 export type SexpValue =
   | string
   | ASTv1.Expression[]
@@ -958,16 +1037,9 @@ export type SexpValue =
   | PathSexp
   | undefined;
 
-export interface BuildElementOptions {
-  attrs?: ASTv1.AttrNode[];
-  modifiers?: ASTv1.ElementModifierStatement[];
-  children?: ASTv1.Statement[];
-  comments?: ElementComment[];
-  blockParams?: string[];
-  loc?: ASTv1.SourceLocation;
-}
-
-export type TagDescriptor = string | { name: string; selfClosing: boolean };
+export type BuildElementParams = Parameters<typeof b.element>;
+export type TagDescriptor = BuildElementParams[0];
+export type BuildElementOptions = NonNullable<BuildElementParams[1]>;
 
 export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.ElementNode {
   let normalized: BuildElementOptions;
@@ -977,31 +1049,7 @@ export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.E
     normalized = options || {};
   }
 
-  let { attrs, blockParams, modifiers, comments, children, loc } = normalized;
-
-  // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
-  let selfClosing = false;
-  if (typeof tag === 'object') {
-    selfClosing = tag.selfClosing;
-    tag = tag.name;
-  } else {
-    if (tag.slice(-1) === '/') {
-      tag = tag.slice(0, -1);
-      selfClosing = true;
-    }
-  }
-
-  return {
-    type: 'ElementNode',
-    tag: tag || '',
-    selfClosing: selfClosing,
-    attributes: attrs || [],
-    blockParams: blockParams || [],
-    modifiers: modifiers || [],
-    comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
-    children: children || [],
-    loc: b.loc(loc || null),
-  };
+  return b.element(tag, normalized);
 }
 
 export function normalizeElementParts(...args: ElementParts[]): BuildElementOptions {
