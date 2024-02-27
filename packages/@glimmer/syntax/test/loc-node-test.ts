@@ -25,7 +25,7 @@ function assertNodeType(node: unknown, type: string): boolean {
 const { test } = QUnit;
 
 function locEqual(
-  node: AST.Node | AST.SubNode | null | undefined,
+  node: AST.Node | AST.SubNode | src.SourceSpan | null | undefined,
   startLine: number,
   startColumn: number,
   endLine: number,
@@ -37,11 +37,15 @@ function locEqual(
     end: { line: endLine, column: endColumn },
   };
 
-  QUnit.assert.deepEqual(
-    node && { start: node.loc.startPosition, end: node.loc.endPosition },
-    expected,
-    message
-  );
+  let actual: src.SourceLocation | null | undefined;
+
+  if (node && 'type' in node) {
+    actual = node.loc.toJSON();
+  } else if (node && 'toJSON' in node) {
+    actual = node.toJSON();
+  }
+
+  QUnit.assert.deepEqual(actual, expected, message);
 }
 
 test('programs', () => {
@@ -114,7 +118,7 @@ test('element modifier', () => {
   }
 });
 
-test('html elements', () => {
+test('html elements', (assert) => {
   let ast = parse(`
     <section>
       <br>
@@ -125,16 +129,92 @@ test('html elements', () => {
   `);
 
   let [, section] = ast.body;
-  locEqual(section, 2, 4, 7, 14, 'section element');
+
   if (assertNodeType(section, 'ElementNode')) {
+    locEqual(section, 2, 4, 7, 14, 'section element');
+    locEqual(section.path, 2, 5, 2, 12);
+    locEqual(section.path.head, 2, 5, 2, 12);
+    locEqual(section.openTag, 2, 4, 2, 13, '<section>');
+    locEqual(section.closeTag, 7, 4, 7, 14, '</section>');
+
     let [, br, , div] = section.children;
-    locEqual(br, 3, 6, 3, 10, 'br element');
-    locEqual(div, 4, 6, 6, 12, 'div element');
+
+    if (assertNodeType(br, 'ElementNode')) {
+      locEqual(br, 3, 6, 3, 10, 'br element');
+      locEqual(br.path, 3, 7, 3, 9);
+      locEqual(br.path.head, 3, 7, 3, 9);
+      locEqual(br.openTag, 3, 6, 3, 10, '<section>');
+      assert.strictEqual(br.closeTag, null);
+    }
+
     if (assertNodeType(div, 'ElementNode')) {
+      locEqual(div, 4, 6, 6, 12, 'div element');
+
+      locEqual(div, 4, 6, 6, 12, 'div element');
+      locEqual(div.path, 4, 7, 4, 10);
+      locEqual(div.path.head, 4, 7, 4, 10);
+      locEqual(div.openTag, 4, 6, 4, 11, '<div>');
+      locEqual(div.closeTag, 6, 6, 6, 12, '</div>');
+
       let [, hr] = div.children;
 
-      locEqual(hr, 5, 8, 5, 14, 'hr element');
+      if (assertNodeType(hr, 'ElementNode')) {
+        locEqual(hr, 5, 8, 5, 14, 'hr element');
+        locEqual(hr.path, 5, 9, 5, 11);
+        locEqual(hr.path.head, 5, 9, 5, 11);
+        locEqual(hr.openTag, 5, 8, 5, 14, '<hr />');
+        assert.strictEqual(hr.closeTag, null);
+      }
     }
+  }
+});
+
+test('various html element paths', () => {
+  let ast = parse(`
+    <Foo />
+    <Foo.bar.baz />
+    <this />
+    <this.foo.bar />
+    <@Foo />
+    <@Foo.bar.baz />
+    <:foo />
+  `);
+
+  let [, Foo, , FooDotBar, , This, , ThisDotFoo, , AtFoo, , AtFooDotBar, , NamedBlock] = ast.body;
+
+  if (assertNodeType(Foo, 'ElementNode')) {
+    locEqual(Foo.path, 2, 5, 2, 8);
+    locEqual(Foo.path.head, 2, 5, 2, 8);
+  }
+
+  if (assertNodeType(FooDotBar, 'ElementNode')) {
+    locEqual(FooDotBar.path, 3, 5, 3, 16);
+    locEqual(FooDotBar.path.head, 3, 5, 3, 8);
+  }
+
+  if (assertNodeType(This, 'ElementNode')) {
+    locEqual(This.path, 4, 5, 4, 9);
+    locEqual(This.path.head, 4, 5, 4, 9);
+  }
+
+  if (assertNodeType(ThisDotFoo, 'ElementNode')) {
+    locEqual(ThisDotFoo.path, 5, 5, 5, 17);
+    locEqual(ThisDotFoo.path.head, 5, 5, 5, 9);
+  }
+
+  if (assertNodeType(AtFoo, 'ElementNode')) {
+    locEqual(AtFoo.path, 6, 5, 6, 9);
+    locEqual(AtFoo.path.head, 6, 5, 6, 9);
+  }
+
+  if (assertNodeType(AtFooDotBar, 'ElementNode')) {
+    locEqual(AtFooDotBar.path, 7, 5, 7, 17);
+    locEqual(AtFooDotBar.path.head, 7, 5, 7, 9);
+  }
+
+  if (assertNodeType(NamedBlock, 'ElementNode')) {
+    locEqual(NamedBlock.path, 8, 5, 8, 9);
+    locEqual(NamedBlock.path.head, 8, 5, 8, 9);
   }
 });
 
