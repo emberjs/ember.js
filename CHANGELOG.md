@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.8.0-beta.1 (March 4, 2024)
+
+- No user-facing changes that were not backported.
+
 ## v5.7.0 (March 4, 2024)
 
 - [#20639](https://github.com/emberjs/ember.js/pull/20639) [FEATURE] Add an optional feature "no-implicit-route-model" to allow the removal of the implicit loading of a model per [RFC #774](https://rfcs.emberjs.com/id/0774-implicit-record-route-loading).
