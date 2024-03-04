@@ -1,13 +1,10 @@
 # Ember Changelog
 
-## v5.7.0-beta.2 (February 20, 2024)
+## v5.7.0 (March 4, 2024)
 
 - [#20639](https://github.com/emberjs/ember.js/pull/20639) [FEATURE] Add an optional feature "no-implicit-route-model" to allow the removal of the implicit loading of a model per [RFC #774](https://rfcs.emberjs.com/id/0774-implicit-record-route-loading).
-- [#20645](https://github.com/emberjs/ember.js/pull/20645) [BUGFIX] Make sure the `component-class` blueprint generates a signature in a TS project
-
-## v5.7.0-beta.1 (January 22, 2024)
-
 - [#20597](https://github.com/emberjs/ember.js/pull/20597) [FEATURE] Add explicit support TS 5.1, 5.2, and 5.3
+- [#20645](https://github.com/emberjs/ember.js/pull/20645) [BUGFIX] Make sure the `component-class` blueprint generates a signature in a TS project
 - [#20224](https://github.com/emberjs/ember.js/pull/20224) Integrate types for the `warn` method
 - [#20579](https://github.com/emberjs/ember.js/pull/20579) Mark `cached` as a `MethodDecorator` instead of `PropertyDecorator`
 - [#20609](https://github.com/emberjs/ember.js/pull/20609) Bump all glimmer-vm dependencies to 0.87.1
