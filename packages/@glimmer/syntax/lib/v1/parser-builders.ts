@@ -4,12 +4,7 @@ import { assert } from '@glimmer/util';
 import type * as ASTv1 from './api';
 
 import { SourceSpan } from '../source/span';
-import {
-  buildLegacyLiteral,
-  buildLegacyMustache,
-  buildLegacyPath,
-  buildLegacyTemplate,
-} from './legacy-interop';
+import { buildLegacyLiteral, buildLegacyMustache, buildLegacyPath } from './legacy-interop';
 
 const DEFAULT_STRIP = {
   close: false,
@@ -60,18 +55,19 @@ class Builders {
 
   template({
     body,
-    locals,
+    blockParams,
     loc,
   }: {
     body: ASTv1.Statement[];
-    locals: string[];
+    blockParams: string[];
     loc: SourceSpan;
   }): ASTv1.Template {
-    return buildLegacyTemplate({
+    return {
+      type: 'Template',
       body,
-      locals,
+      blockParams,
       loc,
-    });
+    };
   }
 
   mustache({

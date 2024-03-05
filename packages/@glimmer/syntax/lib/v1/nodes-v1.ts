@@ -29,11 +29,6 @@ export type EntityEncodingState = 'transformed' | 'raw';
 
 export interface Template extends CommonProgram {
   type: 'Template';
-  locals: string[];
-
-  /**
-   * @deprecated use locals instead
-   */
   blockParams: string[];
 }
 

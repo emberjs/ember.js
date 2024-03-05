@@ -35,10 +35,10 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   abstract override beginAttributeValue(quoted: boolean): void;
   abstract override finishAttributeValue(): void;
 
-  parse(program: HBS.Program, locals: string[]): ASTv1.Template {
+  parse(program: HBS.Program, blockParams: string[]): ASTv1.Template {
     let node = b.template({
       body: [],
-      locals,
+      blockParams,
       loc: this.source.spanFor(program.loc),
     });
 

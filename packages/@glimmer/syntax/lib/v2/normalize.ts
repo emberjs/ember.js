@@ -41,7 +41,7 @@ export function normalize(
   let normalizeOptions = {
     strictMode: false,
     ...options,
-    locals: ast.locals,
+    locals: ast.blockParams,
   };
 
   let top = SymbolTable.top(
