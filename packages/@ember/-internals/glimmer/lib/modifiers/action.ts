@@ -209,6 +209,7 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
       false,
       {
         id: 'template-action',
+        url: 'https://deprecations.emberjs.com/v5.x/#toc_template-action',
         until: '6.0.0',
         for: 'ember-source',
         since: {
