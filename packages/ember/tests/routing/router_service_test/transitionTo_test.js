@@ -463,5 +463,106 @@ moduleFor(
       assert.equal(this.routerService.get('currentURL'), '/sister', 'transitioned');
       assert.equal(parentBeforeModelCount, 1, 'parent.beforeModel still called only once');
     }
+
+    async ['@test RouterService#transitionTo query param transition during initial transition'](
+      assert
+    ) {
+      assert.expect(1);
+
+      let initialTransition = true;
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          queryParams: {
+            foo: {
+              refreshModel: true,
+            },
+          },
+        })
+      );
+
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['foo'],
+          foo: 'default',
+        })
+      );
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          routerService: service('router'),
+          afterModel() {
+            if (initialTransition) {
+              initialTransition = false;
+              this.routerService.transitionTo('parent.child', {
+                queryParams: {
+                  foo: 'bar',
+                },
+              });
+            }
+          },
+        })
+      );
+
+      await this.visit('/child');
+
+      assert.equal(this.routerService.get('currentURL'), '/child?foo=bar');
+    }
+
+    async ['@test RouterService#transitionTo query param transition during later transition'](
+      assert
+    ) {
+      assert.expect(2);
+
+      let initialTransition = true;
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          queryParams: {
+            foo: {
+              refreshModel: true,
+            },
+          },
+        })
+      );
+
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['foo'],
+          foo: 'default',
+        })
+      );
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          routerService: service('router'),
+          afterModel() {
+            if (initialTransition) {
+              initialTransition = false;
+              this.routerService.transitionTo('parent.child', {
+                queryParams: {
+                  foo: 'bar',
+                },
+              });
+            }
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.routerService.get('currentURL'), '/');
+
+      this.routerService.transitionTo('parent.child');
+      await runLoopSettled();
+
+      assert.equal(this.routerService.get('currentURL'), '/child?foo=bar');
+    }
   }
 );
