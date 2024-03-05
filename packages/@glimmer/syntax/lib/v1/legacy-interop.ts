@@ -5,35 +5,6 @@ import type * as ASTv1 from './nodes-v1';
 
 import b from './public-builders';
 
-export type TemplateParams = Omit<ASTv1.Template, 'type' | 'blockParams'>;
-
-export function buildLegacyTemplate({ body, locals, loc }: TemplateParams): ASTv1.Template {
-  const node = {
-    type: 'Template',
-    body,
-    locals,
-    loc,
-  };
-
-  Object.defineProperty(node, 'blockParams', {
-    enumerable: false,
-    get(): string[] {
-      deprecate(
-        `Template nodes can never have block params, for in-scope variables, use locals instead`
-      );
-      return this.locals;
-    },
-    set(value: string[]) {
-      deprecate(
-        `Template nodes can never have block params, for in-scope variables, use locals instead`
-      );
-      this.locals = value;
-    },
-  });
-
-  return node as ASTv1.Template;
-}
-
 export type MustacheStatementParams = Omit<ASTv1.MustacheStatement, 'type' | 'escaped'>;
 
 export function buildLegacyMustache({

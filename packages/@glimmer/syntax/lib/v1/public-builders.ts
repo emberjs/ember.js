@@ -68,7 +68,7 @@ function buildBlock(
   if (_defaultBlock.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     defaultBlock = b.blockItself({
-      params: buildBlockParams(_defaultBlock.locals),
+      params: buildBlockParams(_defaultBlock.blockParams),
       body: _defaultBlock.body,
       loc: _defaultBlock.loc,
     });
@@ -78,7 +78,7 @@ function buildBlock(
 
   if (_elseBlock?.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
-    assert(_elseBlock.locals.length === 0, '{{else}} block cannot have block params');
+    assert(_elseBlock.blockParams.length === 0, '{{else}} block cannot have block params');
 
     elseBlock = b.blockItself({
       params: [],
@@ -422,12 +422,12 @@ function buildBlockItself(
 
 function buildTemplate(
   body: ASTv1.Statement[] = [],
-  locals: string[] = [],
+  blockParams: string[] = [],
   loc?: SourceLocation
 ): ASTv1.Template {
   return b.template({
     body,
-    locals,
+    blockParams,
     loc: buildLoc(loc || null),
   });
 }
