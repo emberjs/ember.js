@@ -1,7 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
@@ -204,6 +204,19 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
   }
 
   install(actionState: ActionState): void {
+    deprecate(
+      `Usage of the \`{{action}}\` modifier is deprecated. Migrate to native functions and function invocation.`,
+      false,
+      {
+        id: 'template-action',
+        until: '6.0.0',
+        for: 'ember-source',
+        since: {
+          available: '5.10.0',
+          enabled: '5.10.0',
+        },
+      }
+    );
     let { element, actionId, positional } = actionState;
 
     let actionName;
