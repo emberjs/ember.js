@@ -762,10 +762,6 @@ export function preprocess(
     options.locals ?? []
   );
 
-  if (options.strictMode && options.locals?.length) {
-    template = b.template({ ...template, locals: options.locals });
-  }
-
   if (options?.plugins?.ast) {
     for (const transform of options.plugins.ast) {
       let env: ASTPluginEnvironment = assign({}, options, { syntax }, { plugins: undefined });

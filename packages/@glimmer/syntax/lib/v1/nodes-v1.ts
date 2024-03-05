@@ -29,12 +29,12 @@ export type EntityEncodingState = 'transformed' | 'raw';
 
 export interface Template extends CommonProgram {
   type: 'Template';
-  readonly locals: readonly string[];
+  locals: string[];
 
   /**
    * @deprecated use locals instead
    */
-  readonly blockParams: readonly string[];
+  blockParams: string[];
 }
 
 /**
