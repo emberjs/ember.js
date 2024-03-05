@@ -4,11 +4,17 @@ import { _getCurrentRunLoop } from '@ember/runloop';
 import { set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Helpers test: closure {{action}}',
   class extends RenderingTestCase {
     ['@test action should be called']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let outerActionCalled = false;
       let component;
 
@@ -47,6 +53,11 @@ moduleFor(
     }
 
     ['@test an error is triggered when bound action function is undefined']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('inner-component', {
         template: 'inner',
       });
@@ -60,6 +71,11 @@ moduleFor(
     }
 
     ['@test an error is triggered when bound action being passed in is a non-function']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('inner-component', {
         template: 'inner',
       });
@@ -76,6 +92,15 @@ moduleFor(
     }
 
     ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as @foo']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('inner-component', {
         template:
           '<button id="inner-button" {{action (action @external-action)}}>Click me</button>',
@@ -91,6 +116,11 @@ moduleFor(
     }
 
     ['@test action value is returned']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let expectedValue = 'terrible tom';
       let returnedValue;
       let innerComponent;
@@ -131,6 +161,11 @@ moduleFor(
     }
 
     ['@test action should be called on the correct scope']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let innerComponent;
       let outerComponent;
       let actualComponent;
@@ -177,6 +212,11 @@ moduleFor(
     }
 
     ['@test arguments to action are passed, curry']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let first = 'mitch';
       let second = 'martin';
       let third = 'matt';
@@ -226,6 +266,11 @@ moduleFor(
     }
 
     ['@test `this` can be passed as an argument']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let value = {};
       let component;
       let innerComponent;
@@ -271,6 +316,11 @@ moduleFor(
     }
 
     ['@test arguments to action are bound']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let value = 'lazy leah';
 
       let innerComponent;
@@ -328,6 +378,11 @@ moduleFor(
     }
 
     ['@test array arguments are passed correctly to action']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let first = 'foo';
       let second = [3, 5];
       let third = [4, 9];
@@ -388,6 +443,11 @@ moduleFor(
     }
 
     ['@test mut values can be wrapped in actions, are settable']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let newValue = 'trollin trek';
 
       let innerComponent;
@@ -431,6 +491,11 @@ moduleFor(
     }
 
     ['@test mut values can be wrapped in actions, are settable with a curry']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let newValue = 'trollin trek';
 
       let innerComponent;
@@ -474,6 +539,11 @@ moduleFor(
     }
 
     ['@test action can create closures over actions']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let first = 'raging robert';
       let second = 'mild machty';
       let returnValue = 'butch brian';
@@ -526,6 +596,11 @@ moduleFor(
     }
 
     ['@test provides a helpful error if an action is not present']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let InnerComponent = Component.extend({});
 
       let OuterComponent = Component.extend({
@@ -554,6 +629,11 @@ moduleFor(
     }
 
     ['@test provides a helpful error if actions hash is not present']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let InnerComponent = Component.extend({});
 
       let OuterComponent = Component.extend({});
@@ -574,6 +654,11 @@ moduleFor(
     }
 
     ['@test action can create closures over actions with target']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let innerComponent;
       let actionCalled = false;
 
@@ -619,6 +704,11 @@ moduleFor(
     }
 
     ['@test value can be used with action over actions']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let newValue = 'yelping yehuda';
 
       let innerComponent;
@@ -667,6 +757,11 @@ moduleFor(
     }
 
     ['@test action will read the value of a first property']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let newValue = 'irate igor';
 
       let innerComponent;
@@ -710,6 +805,11 @@ moduleFor(
     }
 
     ['@test action will read the value of a curried first argument property']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let newValue = 'kissing kris';
 
       let innerComponent;
@@ -754,6 +854,11 @@ moduleFor(
     }
 
     ['@test action closure does not get auto-mut wrapped'](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let first = 'raging robert';
       let second = 'mild machty';
       let returnValue = 'butch brian';
@@ -823,6 +928,11 @@ moduleFor(
     }
 
     ['@test action should be called within a run loop']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let innerComponent;
       let capturedRunLoop;
 
@@ -864,6 +974,11 @@ moduleFor(
     }
 
     ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let component;
 
       let ExampleComponent = Component.extend({
@@ -914,6 +1029,11 @@ moduleFor(
     ['@test closure actions does not cause component hooks to fire unnecessarily [GH#14305] [GH#14654]'](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let clicked = 0;
       let didReceiveAttrsFired = 0;
 

@@ -20,6 +20,7 @@ import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: curly components',
@@ -1427,6 +1428,11 @@ moduleFor(
       assert
     ) {
       let componentInstance = null;
+
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       this.registerComponent('non-block', {
         ComponentClass: Component.extend({
@@ -3149,6 +3155,11 @@ moduleFor(
     ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
           actions: {
@@ -3174,7 +3185,12 @@ moduleFor(
     }
 
     ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
-      assert.expect(4);
+      assert.expect(5);
+
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({

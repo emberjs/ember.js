@@ -4,6 +4,7 @@ import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'inter
 import { isEmpty } from '@ember/utils';
 import { A as emberA } from '@ember/array';
 
+import { DEPRECATIONS } from '../../../../deprecations';
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -757,6 +758,11 @@ moduleFor(
     }
 
     ['@test renders with dot path and updates attributes'](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('my-nested-component', {
         ComponentClass: Component.extend({
           didReceiveAttrs() {
@@ -839,6 +845,14 @@ moduleFor(
     ['@test parameters in a contextual component are mutable when value is a param'](assert) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       this.registerComponent('change-button', {
         ComponentClass: Component.extend().reopenClass({
@@ -889,6 +903,10 @@ moduleFor(
     }
 
     ['@test GH#13494 tagless blockless component with property binding'](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
           message: 'hello',
@@ -1442,6 +1460,14 @@ class MutableParamTestGenerator {
   generate({ title, setup }) {
     return {
       [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
+        expectDeprecation(
+          /Usage of the `\(action\)` helper is deprecated./,
+          DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+        );
+        expectDeprecation(
+          /Usage of the `\{\{action\}\}` modifier is deprecated./,
+          DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+        );
         this.registerComponent('change-button', {
           ComponentClass: Component.extend().reopenClass({
             positionalParams: ['val'],

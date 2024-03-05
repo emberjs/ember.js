@@ -4,6 +4,7 @@
 import { get } from '@ember/-internals/metal';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -278,6 +279,10 @@ export const ACTIONS = new WeakSet();
   @public
 */
 export default internalHelper((args: CapturedArguments): Reference<Function> => {
+  deprecateUntil(
+    `Usage of the \`(action)\` helper is deprecated. Migrate to native functions and function invocation.`,
+    DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION
+  );
   let { named, positional } = args;
   // The first two argument slots are reserved.
   // pos[0] is the context (or `this`)

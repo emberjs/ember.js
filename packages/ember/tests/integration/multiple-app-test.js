@@ -3,6 +3,7 @@ import Application from '@ember/application';
 import { Component } from '@ember/-internals/glimmer';
 import { getOwner } from '@ember/-internals/owner';
 import { resolve } from 'rsvp';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   'View Integration',
@@ -82,6 +83,10 @@ moduleFor(
     }
 
     [`@test booting multiple applications can properly handle events`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let actions = [];
       this.addFactoriesToResolver(actions, this.resolver);
       this.addFactoriesToResolver(actions, this.secondResolver);

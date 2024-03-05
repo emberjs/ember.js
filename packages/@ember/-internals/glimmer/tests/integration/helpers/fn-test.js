@@ -2,6 +2,7 @@ import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Helpers test: {{fn}}',
@@ -135,6 +136,10 @@ moduleFor(
     }
 
     '@test can use `this` if bound prior to passing to fn'(assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       this.render(`{{stash stashedFn=(fn (action this.myFunc) this.arg1)}}`, {
         myFunc(arg1) {
           return `arg1: ${arg1}, arg2: ${this.arg2}`;

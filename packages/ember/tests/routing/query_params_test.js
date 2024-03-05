@@ -8,6 +8,7 @@ import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
 import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { service } from '@ember/service';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
@@ -743,6 +744,10 @@ moduleFor(
     async ['@test queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  '](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       this.addTemplate(
         'application',
         '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'

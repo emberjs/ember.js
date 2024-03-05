@@ -15,6 +15,7 @@ import Route from '@ember/routing/route';
 import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -625,6 +626,10 @@ moduleFor(
     }
 
     [`@test Ember Islands-style setup`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let xFooInitCalled = false;
       let xFooDidInsertElementCalled = false;
 

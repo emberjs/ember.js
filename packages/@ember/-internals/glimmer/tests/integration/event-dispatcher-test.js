@@ -2,6 +2,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
+import { DEPRECATIONS } from '../../../deprecations';
 
 let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
 
@@ -134,6 +135,11 @@ moduleFor(
     }
 
     ['@test case insensitive events'](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let receivedEvent;
 
       this.registerComponent('x-bar', {
@@ -153,6 +159,10 @@ moduleFor(
     }
 
     ['@test case sensitive events'](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let receivedEvent;
 
       this.registerComponent('x-bar', {

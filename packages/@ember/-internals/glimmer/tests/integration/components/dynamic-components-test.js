@@ -5,6 +5,7 @@ import { set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: dynamic components',
@@ -448,6 +449,11 @@ moduleFor(
           },
         }),
       });
+
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       let actionTriggered = 0;
       this.registerComponent('outer-component', {

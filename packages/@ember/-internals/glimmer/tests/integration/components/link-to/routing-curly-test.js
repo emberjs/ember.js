@@ -13,6 +13,7 @@ import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
+import { DEPRECATIONS } from '../../../../../deprecations';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -1097,6 +1098,11 @@ moduleFor(
     }
 
     async ['@test it defaults to bubbling'](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.addTemplate(
         'about',
         `

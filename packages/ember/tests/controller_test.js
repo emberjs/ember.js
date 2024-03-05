@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope
@@ -14,6 +15,10 @@ moduleFor(
   'Template scoping examples',
   class extends ApplicationTestCase {
     ['@test Actions inside an outlet go to the associated controller'](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       this.add(
         'controller:index',
         Controller.extend({

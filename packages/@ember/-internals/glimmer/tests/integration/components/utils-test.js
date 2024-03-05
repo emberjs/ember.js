@@ -10,6 +10,7 @@ import {
 } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'View tree tests',
@@ -48,6 +49,11 @@ moduleFor(
           },
         },
       });
+
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       this.add('controller:application', ToggleController);
 
