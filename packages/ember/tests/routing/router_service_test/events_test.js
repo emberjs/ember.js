@@ -299,6 +299,44 @@ moduleFor(
       });
     }
 
+    '@test chained redirection with `transitionTo` and url params'(assert) {
+      this.add(
+        `route:dynamic`,
+        Route.extend({
+          router: service(),
+          model(params) {
+            assert.step(`loaded-${params.dynamic_id}`);
+          },
+        })
+      );
+
+      return this.visit('/').then(() => {
+        this.routerService.on('routeWillChange', (transition) => {
+          let to = transition.to;
+          if (to.name === 'dynamic') {
+            assert.step(`willchange-to-${to.params.dynamic_id}`);
+            if (to.params.dynamic_id === '1') {
+              this.routerService.transitionTo('dynamic', '2');
+            } else if (to.params.dynamic_id === '2') {
+              this.routerService.transitionTo('dynamic', '3');
+            }
+          }
+        });
+
+        return this.routerService
+          .transitionTo('/dynamic/1')
+          .followRedirects()
+          .then(() => {
+            assert.verifySteps([
+              'willchange-to-1',
+              'willchange-to-2',
+              'willchange-to-3',
+              'loaded-3',
+            ]);
+          });
+      });
+    }
+
     '@test nested redirection with `replaceWith`'(assert) {
       assert.expect(11);
       let toChild = false;
