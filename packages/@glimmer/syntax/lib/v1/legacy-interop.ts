@@ -11,22 +11,23 @@ export function buildLegacyTemplate({ body, locals, loc }: TemplateParams): ASTv
   const node = {
     type: 'Template',
     body,
+    locals,
     loc,
   };
 
-  Object.defineProperty(node, 'locals', {
-    enumerable: true,
-    writable: false,
-    value: Object.freeze([...locals]),
-  });
-
   Object.defineProperty(node, 'blockParams', {
     enumerable: false,
-    get(): readonly string[] {
+    get(): string[] {
       deprecate(
         `Template nodes can never have block params, for in-scope variables, use locals instead`
       );
       return this.locals;
+    },
+    set(value: string[]) {
+      deprecate(
+        `Template nodes can never have block params, for in-scope variables, use locals instead`
+      );
+      this.locals = value;
     },
   });
 
