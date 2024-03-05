@@ -5,7 +5,7 @@ import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
 import { get } from '@ember/object';
-import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { RouterTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
 moduleFor(
@@ -422,6 +422,46 @@ moduleFor(
       return this.visit('/child?url_sort=a').then(() => {
         assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
+    }
+
+    async ['@test RouterService#transitionTo with `refreshModel: true` query param does not always refresh'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let parentBeforeModelCount = 0;
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          beforeModel() {
+            parentBeforeModelCount++;
+          },
+          queryParams: {
+            foo: {
+              refreshModel: true,
+            },
+          },
+        })
+      );
+
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['foo'],
+          foo: 'default',
+        })
+      );
+
+      await this.visit('/child');
+
+      assert.equal(parentBeforeModelCount, 1, 'parent.beforeModel called once');
+
+      this.routerService.transitionTo('parent.sister');
+      await runLoopSettled();
+
+      assert.equal(this.routerService.get('currentURL'), '/sister', 'transitioned');
+      assert.equal(parentBeforeModelCount, 1, 'parent.beforeModel still called only once');
     }
   }
 );
