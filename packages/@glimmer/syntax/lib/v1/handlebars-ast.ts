@@ -13,7 +13,7 @@ export interface CommonNode {
 }
 
 export interface NodeMap {
-  Program: { input: Program; output: ASTv1.Template | ASTv1.Block };
+  Program: { input: Program; output: ASTv1.Block };
   MustacheStatement: { input: MustacheStatement; output: ASTv1.MustacheStatement | void };
   Decorator: { input: Decorator; output: never };
   BlockStatement: { input: BlockStatement; output: ASTv1.BlockStatement | void };
@@ -50,7 +50,7 @@ export interface Position {
 export interface Program extends CommonNode {
   type: 'Program';
   body: Statement[];
-  blockParams: string[];
+  blockParams?: string[];
   chained?: boolean;
 }
 
@@ -86,9 +86,9 @@ export interface CommonBlock extends CommonNode {
   hash: Hash;
   program: Program;
   inverse: Program;
-  openStrip: StripFlags;
-  inverseStrip: StripFlags;
-  closeStrip: StripFlags;
+  openStrip?: StripFlags;
+  inverseStrip?: StripFlags;
+  closeStrip?: StripFlags;
 }
 
 export interface BlockStatement extends CommonBlock {

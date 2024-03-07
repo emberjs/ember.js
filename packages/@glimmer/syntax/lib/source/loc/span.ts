@@ -190,7 +190,7 @@ export class SourceSpan implements SourceLocation {
   /**
    * Create a new span with the current span's beginning and a new ending.
    */
-  withEnd(this: SourceSpan, other: SourceOffset): SourceSpan {
+  withEnd(other: SourceOffset): SourceSpan {
     return span(this.data.getStart(), other.data);
   }
 

@@ -13,8 +13,8 @@ test('function based AST plugins can be provided to the compiler', (assert) => {
         () => ({
           name: 'plugin-a',
           visitor: {
-            Program() {
-              assert.step('Program');
+            Template() {
+              assert.step('Template');
               assert.ok(true, 'transform was called!');
             },
           },
@@ -23,7 +23,7 @@ test('function based AST plugins can be provided to the compiler', (assert) => {
     },
   });
 
-  assert.verifySteps(['Program']);
+  assert.verifySteps(['Template']);
 });
 
 test('plugins are provided the syntax package', (assert) => {
@@ -43,6 +43,32 @@ test('plugins are provided the syntax package', (assert) => {
   assert.verifySteps(['syntax']);
 });
 
+test('deprecated program visitor', (assert) => {
+  let plugin = () => {
+    return {
+      name: 'plugin',
+      visitor: {
+        // eslint-disable-next-line deprecation/deprecation
+        Program(node: AST.Program) {
+          assert.step(node.type);
+        },
+
+        BlockStatement(node: AST.BlockStatement) {
+          assert.step(node.type);
+        },
+      },
+    };
+  };
+
+  preprocess('Hello {{#inner}}world{{/inner}}', {
+    plugins: {
+      ast: [plugin],
+    },
+  });
+
+  assert.verifySteps(['Template', 'BlockStatement', 'Block']);
+});
+
 test('can support the legacy AST transform API via ASTPlugin', (assert) => {
   function ensurePlugin(FunctionOrPlugin: any): ASTPluginBuilder {
     if (FunctionOrPlugin.prototype && FunctionOrPlugin.prototype.transform) {
@@ -51,7 +77,7 @@ test('can support the legacy AST transform API via ASTPlugin', (assert) => {
           name: 'plugin-a',
 
           visitor: {
-            Program(node: AST.Program) {
+            Template(node: AST.Template) {
               let plugin = new FunctionOrPlugin(env);
 
               plugin.syntax = env.syntax;
@@ -69,9 +95,9 @@ test('can support the legacy AST transform API via ASTPlugin', (assert) => {
   class Plugin {
     declare syntax: Syntax;
 
-    transform(program: AST.Program): AST.Program {
+    transform(template: AST.Template): AST.Template {
       assert.ok(true, 'transform was called!');
-      return program;
+      return template;
     }
   }
 
@@ -82,18 +108,18 @@ test('can support the legacy AST transform API via ASTPlugin', (assert) => {
   });
 });
 
-const FIRST_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
-const SECOND_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
-const THIRD_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
+const FIRST_PLUGIN = new WeakMap<AST.Template, boolean>();
+const SECOND_PLUGIN = new WeakMap<AST.Template, boolean>();
+const THIRD_PLUGIN = new WeakMap<AST.Template, boolean>();
 
 test('AST plugins can be chained', (assert) => {
   let first = () => {
     return {
       name: 'first',
       visitor: {
-        Program(program: AST.Program | AST.Template | AST.Block) {
-          assert.step('Program first');
-          FIRST_PLUGIN.set(program, true);
+        Template(template: AST.Template) {
+          assert.step('Template first');
+          FIRST_PLUGIN.set(template, true);
         },
       },
     };
@@ -103,8 +129,8 @@ test('AST plugins can be chained', (assert) => {
     return {
       name: 'second',
       visitor: {
-        Program(node: AST.Program | AST.Block | AST.Template) {
-          assert.step('Program second');
+        Template(node: AST.Template) {
+          assert.step('Template second');
           assert.true(FIRST_PLUGIN.get(node), 'AST from first plugin is passed to second');
 
           SECOND_PLUGIN.set(node, true);
@@ -117,8 +143,8 @@ test('AST plugins can be chained', (assert) => {
     return {
       name: 'third',
       visitor: {
-        Program(node: AST.Program | AST.Block | AST.Template) {
-          assert.step('Program third');
+        Template(node: AST.Template) {
+          assert.step('Template third');
           assert.true(SECOND_PLUGIN.get(node), 'AST from second plugin is passed to third');
 
           THIRD_PLUGIN.set(node, true);
@@ -135,7 +161,7 @@ test('AST plugins can be chained', (assert) => {
 
   assert.true(THIRD_PLUGIN.get(ast), 'return value from last AST transform is used');
 
-  assert.verifySteps(['Program first', 'Program second', 'Program third']);
+  assert.verifySteps(['Template first', 'Template second', 'Template third']);
 });
 
 test('AST plugins can access meta from environment', (assert) => {
@@ -143,8 +169,8 @@ test('AST plugins can access meta from environment', (assert) => {
     return {
       name: 'exposedMetaTemplateData',
       visitor: {
-        Program() {
-          assert.step('Program');
+        Template() {
+          assert.step('Template');
           const { meta } = env;
           const { moduleName } = expectPresent(
             meta as { moduleName: 'string' },
@@ -170,5 +196,5 @@ test('AST plugins can access meta from environment', (assert) => {
     },
   });
 
-  assert.verifySteps(['Program']);
+  assert.verifySteps(['Template']);
 });

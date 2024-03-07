@@ -96,7 +96,6 @@ export default class Printer {
     switch (node.type) {
       case 'MustacheStatement':
       case 'BlockStatement':
-      case 'PartialStatement':
       case 'MustacheCommentStatement':
       case 'CommentStatement':
       case 'TextNode':
@@ -113,8 +112,6 @@ export default class Printer {
       case 'PathExpression':
       case 'SubExpression':
         return this.Expression(node);
-      case 'Program':
-        return this.Block(node);
       case 'ConcatStatement':
         // should have an AttrNode parent
         return this.ConcatStatement(node);
@@ -163,8 +160,6 @@ export default class Printer {
         return this.MustacheStatement(statement);
       case 'BlockStatement':
         return this.BlockStatement(statement);
-      case 'PartialStatement':
-        return this.PartialStatement(statement);
       case 'MustacheCommentStatement':
         return this.MustacheCommentStatement(statement);
       case 'CommentStatement':
@@ -174,15 +169,20 @@ export default class Printer {
       case 'ElementNode':
         return this.ElementNode(statement);
       case 'Block':
-      case 'Template':
         return this.Block(statement);
+      case 'Template':
+        return this.Template(statement);
       case 'AttrNode':
         // should have element
         return this.AttrNode(statement);
     }
   }
 
-  Block(block: ASTv1.Block | ASTv1.Program | ASTv1.Template): void {
+  Template(template: ASTv1.Template): void {
+    this.TopLevelStatements(template.body);
+  }
+
+  Block(block: ASTv1.Block): void {
     /*
       When processing a template like:
 
@@ -320,7 +320,7 @@ export default class Printer {
       return;
     }
 
-    this.buffer += mustache.escaped ? '{{' : '{{{';
+    this.buffer += mustache.trusting ? '{{{' : '{{';
 
     if (mustache.strip.open) {
       this.buffer += '~';
@@ -334,7 +334,7 @@ export default class Printer {
       this.buffer += '~';
     }
 
-    this.buffer += mustache.escaped ? '}}' : '}}}';
+    this.buffer += mustache.trusting ? '}}}' : '}}';
   }
 
   BlockStatement(block: ASTv1.BlockStatement): void {
@@ -383,18 +383,6 @@ export default class Printer {
 
   BlockParams(blockParams: string[]): void {
     this.buffer += ` as |${blockParams.join(' ')}|`;
-  }
-
-  PartialStatement(partial: ASTv1.PartialStatement): void {
-    if (this.handledByOverride(partial)) {
-      return;
-    }
-
-    this.buffer += '{{>';
-    this.Expression(partial.name);
-    this.Params(partial.params);
-    this.Hash(partial.hash);
-    this.buffer += '}}';
   }
 
   ConcatStatement(concat: ASTv1.ConcatStatement): void {

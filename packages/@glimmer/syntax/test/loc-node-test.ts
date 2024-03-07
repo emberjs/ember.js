@@ -4,24 +4,28 @@ import { guardArray } from '@glimmer-workspace/test-utils';
 
 QUnit.module('[glimmer-syntax] Parser - Location Info');
 
-function assertNodeType<T extends keyof AST.Nodes>(
-  node: AST.Node | null | undefined,
+function assertNodeType<T extends keyof AST.Nodes>(node: unknown, type: T): node is AST.Nodes[T];
+function assertNodeType<T extends keyof AST.SubNodes>(
+  node: unknown,
   type: T
-): node is AST.Nodes[T] {
-  let nodeType = node && node.type;
-  QUnit.assert.pushResult({
-    result: nodeType === type,
-    actual: nodeType,
-    expected: type,
-    message: `expected node type to be ${type} but was ${String(nodeType)}`,
-  });
+): node is AST.SubNodes[T];
+function assertNodeType(node: unknown, type: string): boolean {
+  let nodeType: unknown = undefined;
+
+  try {
+    nodeType = (node as { type?: unknown } | null | undefined)?.type;
+  } catch {
+    // no-op
+  }
+
+  QUnit.assert.strictEqual(nodeType, type, `expected node type to be ${type}`);
   return nodeType === type;
 }
 
 const { test } = QUnit;
 
 function locEqual(
-  node: AST.Node | null | undefined,
+  node: AST.Node | AST.SubNode | src.SourceSpan | null | undefined,
   startLine: number,
   startColumn: number,
   endLine: number,
@@ -33,11 +37,15 @@ function locEqual(
     end: { line: endLine, column: endColumn },
   };
 
-  QUnit.assert.deepEqual(
-    node && { start: node.loc.startPosition, end: node.loc.endPosition },
-    expected,
-    message
-  );
+  let actual: src.SourceLocation | null | undefined;
+
+  if (node && 'type' in node) {
+    actual = node.loc.toJSON();
+  } else if (node && 'toJSON' in node) {
+    actual = node.toJSON();
+  }
+
+  QUnit.assert.deepEqual(actual, expected, message);
 }
 
 test('programs', () => {
@@ -110,7 +118,7 @@ test('element modifier', () => {
   }
 });
 
-test('html elements', () => {
+test('html elements', (assert) => {
   let ast = parse(`
     <section>
       <br>
@@ -121,39 +129,92 @@ test('html elements', () => {
   `);
 
   let [, section] = ast.body;
-  locEqual(section, 2, 4, 7, 14, 'section element');
+
   if (assertNodeType(section, 'ElementNode')) {
+    locEqual(section, 2, 4, 7, 14, 'section element');
+    locEqual(section.path, 2, 5, 2, 12);
+    locEqual(section.path.head, 2, 5, 2, 12);
+    locEqual(section.openTag, 2, 4, 2, 13, '<section>');
+    locEqual(section.closeTag, 7, 4, 7, 14, '</section>');
+
     let [, br, , div] = section.children;
-    locEqual(br, 3, 6, 3, 10, 'br element');
-    locEqual(div, 4, 6, 6, 12, 'div element');
+
+    if (assertNodeType(br, 'ElementNode')) {
+      locEqual(br, 3, 6, 3, 10, 'br element');
+      locEqual(br.path, 3, 7, 3, 9);
+      locEqual(br.path.head, 3, 7, 3, 9);
+      locEqual(br.openTag, 3, 6, 3, 10, '<section>');
+      assert.strictEqual(br.closeTag, null);
+    }
+
     if (assertNodeType(div, 'ElementNode')) {
+      locEqual(div, 4, 6, 6, 12, 'div element');
+
+      locEqual(div, 4, 6, 6, 12, 'div element');
+      locEqual(div.path, 4, 7, 4, 10);
+      locEqual(div.path.head, 4, 7, 4, 10);
+      locEqual(div.openTag, 4, 6, 4, 11, '<div>');
+      locEqual(div.closeTag, 6, 6, 6, 12, '</div>');
+
       let [, hr] = div.children;
 
-      locEqual(hr, 5, 8, 5, 14, 'hr element');
+      if (assertNodeType(hr, 'ElementNode')) {
+        locEqual(hr, 5, 8, 5, 14, 'hr element');
+        locEqual(hr.path, 5, 9, 5, 11);
+        locEqual(hr.path.head, 5, 9, 5, 11);
+        locEqual(hr.openTag, 5, 8, 5, 14, '<hr />');
+        assert.strictEqual(hr.closeTag, null);
+      }
     }
   }
 });
 
-test('html elements with paths', () => {
+test('various html element paths', () => {
   let ast = parse(`
-    <Foo as |bar|>
-      <bar.x.y class='bar'/>
-      <bar.x.y class='bar'></bar.x.y>
-    </Foo>
+    <Foo />
+    <Foo.bar.baz />
+    <this />
+    <this.foo.bar />
+    <@Foo />
+    <@Foo.bar.baz />
+    <:foo />
   `);
 
-  let [, foo] = ast.body;
-  locEqual(foo, 2, 4, 5, 10, 'Foo element');
-  if (assertNodeType(foo, 'ElementNode')) {
-    locEqual(foo.startTag, 2, 4, 2, 18, 'Foo start tag');
-    locEqual(foo.nameNode, 2, 5, 2, 8, 'Foo name node');
-    locEqual(foo.endTag, 5, 4, 5, 10, 'Foo end tag');
-    let [, barSelfClosed] = foo.children;
-    if (assertNodeType(barSelfClosed, 'ElementNode')) {
-      locEqual(barSelfClosed.parts[0], 3, 7, 3, 10, 'bar.x.y bar part');
-      locEqual(barSelfClosed.parts[1], 3, 11, 3, 12, 'bar.x.y x part');
-      locEqual(barSelfClosed.parts[2], 3, 13, 3, 14, 'bar.x.y y part');
-    }
+  let [, Foo, , FooDotBar, , This, , ThisDotFoo, , AtFoo, , AtFooDotBar, , NamedBlock] = ast.body;
+
+  if (assertNodeType(Foo, 'ElementNode')) {
+    locEqual(Foo.path, 2, 5, 2, 8);
+    locEqual(Foo.path.head, 2, 5, 2, 8);
+  }
+
+  if (assertNodeType(FooDotBar, 'ElementNode')) {
+    locEqual(FooDotBar.path, 3, 5, 3, 16);
+    locEqual(FooDotBar.path.head, 3, 5, 3, 8);
+  }
+
+  if (assertNodeType(This, 'ElementNode')) {
+    locEqual(This.path, 4, 5, 4, 9);
+    locEqual(This.path.head, 4, 5, 4, 9);
+  }
+
+  if (assertNodeType(ThisDotFoo, 'ElementNode')) {
+    locEqual(ThisDotFoo.path, 5, 5, 5, 17);
+    locEqual(ThisDotFoo.path.head, 5, 5, 5, 9);
+  }
+
+  if (assertNodeType(AtFoo, 'ElementNode')) {
+    locEqual(AtFoo.path, 6, 5, 6, 9);
+    locEqual(AtFoo.path.head, 6, 5, 6, 9);
+  }
+
+  if (assertNodeType(AtFooDotBar, 'ElementNode')) {
+    locEqual(AtFooDotBar.path, 7, 5, 7, 17);
+    locEqual(AtFooDotBar.path.head, 7, 5, 7, 9);
+  }
+
+  if (assertNodeType(NamedBlock, 'ElementNode')) {
+    locEqual(NamedBlock.path, 8, 5, 8, 9);
+    locEqual(NamedBlock.path.head, 8, 5, 8, 9);
   }
 });
 
@@ -222,6 +283,241 @@ test('mustache + newline + element ', () => {
 
   locEqual(fooMustache, 2, 4, 2, 11, 'if block');
   locEqual(p, 3, 4, 3, 14, 'p element');
+});
+
+test('block with block params', () => {
+  let ast = parse(`
+    {{#foo as |bar bat baz|}}
+      {{bar}} {{bat}} {{baz}}
+    {{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 2, 15, 2, 18, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 2, 19, 2, 22, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 2, 23, 2, 26, 'baz');
+    }
+  }
+});
+
+test('block with block params edge case: multiline', () => {
+  let ast = parse(`
+    {{#foo as
+|bar bat
+      b
+a
+      z|}}
+      {{bar}} {{bat}} {{baz}}
+    {{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 3, 1, 3, 4, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 3, 5, 3, 8, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 4, 6, 4, 7, 'b');
+    }
+
+    if (assertNodeType(block.params[3], 'VarHead')) {
+      locEqual(block.params[3], 5, 0, 5, 1, 'a');
+    }
+
+    if (assertNodeType(block.params[4], 'VarHead')) {
+      locEqual(block.params[4], 6, 6, 6, 7, 'z');
+    }
+  }
+});
+
+test('block with block params edge case: block-params like params', () => {
+  let ast = parse(`
+    {{#foo "as |bar bat baz|" as |bar bat baz|}}
+      {{bar}} {{bat}} {{baz}}
+    {{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 2, 34, 2, 37, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 2, 38, 2, 41, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 2, 42, 2, 45, 'baz');
+    }
+  }
+});
+
+test('block with block params edge case: block-params like content', () => {
+  let ast = parse(`
+    {{#foo as |bar bat baz|}}as |bar bat baz|{{/foo}}
+  `);
+
+  let statement = ast.body[1];
+  if (assertNodeType(statement, 'BlockStatement')) {
+    let block = statement.program;
+
+    if (assertNodeType(block.params[0], 'VarHead')) {
+      locEqual(block.params[0], 2, 15, 2, 18, 'bar');
+    }
+
+    if (assertNodeType(block.params[1], 'VarHead')) {
+      locEqual(block.params[1], 2, 19, 2, 22, 'bat');
+    }
+
+    if (assertNodeType(block.params[2], 'VarHead')) {
+      locEqual(block.params[2], 2, 23, 2, 26, 'baz');
+    }
+  }
+});
+
+test('element with block params', () => {
+  let ast = parse(`
+    <Foo as |bar bat baz|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 13, 2, 16, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 17, 2, 20, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 21, 2, 24, 'baz');
+    }
+  }
+});
+
+test('element with block params edge case: multiline', () => {
+  let ast = parse(`
+    <Foo as
+|bar bat
+      b
+a
+      z|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 3, 1, 3, 4, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 3, 5, 3, 8, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 4, 6, 4, 7, 'b');
+    }
+
+    if (assertNodeType(element.params[3], 'VarHead')) {
+      locEqual(element.params[3], 5, 0, 5, 1, 'a');
+    }
+
+    if (assertNodeType(element.params[4], 'VarHead')) {
+      locEqual(element.params[4], 6, 6, 6, 7, 'z');
+    }
+  }
+});
+
+test('elment with block params edge case: block-params like attribute names', () => {
+  let ast = parse(`
+    <Foo as="a" async="b" as |bar bat baz|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 30, 2, 33, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 34, 2, 37, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 38, 2, 41, 'baz');
+    }
+  }
+});
+
+test('elment with block params edge case: block-params like attribute values', () => {
+  let ast = parse(`
+    <Foo foo="as |bar bat baz|" as |bar bat baz|>
+      {{bar}} {{bat}} {{baz}}
+    </Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 36, 2, 39, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 40, 2, 43, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 44, 2, 47, 'baz');
+    }
+  }
+});
+
+test('element with block params edge case: block-params like content', () => {
+  let ast = parse(`
+    <Foo as |bar bat baz|>as |bar bat baz|</Foo>
+  `);
+
+  let element = ast.body[1];
+  if (assertNodeType(element, 'ElementNode')) {
+    if (assertNodeType(element.params[0], 'VarHead')) {
+      locEqual(element.params[0], 2, 13, 2, 16, 'bar');
+    }
+
+    if (assertNodeType(element.params[1], 'VarHead')) {
+      locEqual(element.params[1], 2, 17, 2, 20, 'bat');
+    }
+
+    if (assertNodeType(element.params[2], 'VarHead')) {
+      locEqual(element.params[2], 2, 21, 2, 24, 'baz');
+    }
+  }
 });
 
 test('blocks with nested html elements', () => {
@@ -334,32 +630,6 @@ data-barf="herpy"
     locEqual(dataBarf.value, 4, 10, 4, 17, 'data-barf value');
     locEqual(dataQux.value, 5, 11, 5, 22, 'data-qux value');
     locEqual(dataHurky.value, 7, 15, 7, 36, 'data-hurky value');
-  }
-});
-
-test('element block params', () => {
-  let ast = parse(`<Foo as |ab cd efg|></Foo>`);
-
-  let [Foo] = ast.body;
-  if (assertNodeType(Foo, 'ElementNode')) {
-    let [ab, cd, efg] = guardArray({ blockParamNodes: Foo.blockParamNodes }, { min: 3 });
-    locEqual(ab, 1, 9, 1, 11);
-    locEqual(cd, 1, 12, 1, 14);
-    locEqual(efg, 1, 15, 1, 18);
-  }
-});
-
-test('mustache block params', () => {
-  let ast = parse(`{{#Foo as |ab cd efg|}}{{/Foo}}`);
-  `
-{{#Foo as |ab cd efg|}}{{/Foo}}`;
-
-  let [Foo] = ast.body;
-  if (assertNodeType(Foo, 'BlockStatement')) {
-    let [ab, cd, efg] = guardArray({ blockParamNodes: Foo.program.blockParamNodes }, { min: 3 });
-    locEqual(ab, 1, 11, 1, 13);
-    locEqual(cd, 1, 14, 1, 16);
-    locEqual(efg, 1, 17, 1, 20);
   }
 });
 
