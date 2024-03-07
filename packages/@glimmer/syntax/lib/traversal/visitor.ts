@@ -13,6 +13,11 @@ export type NodeTraversal<N extends ASTv1.Node> = FullNodeTraversal<N> | NodeHan
 
 export type NodeVisitor = { [P in keyof ASTv1.Nodes]?: NodeTraversal<ASTv1.Nodes[P]> } & {
   All?: NodeTraversal<ASTv1.Node>;
+
+  /**
+   * @deprecated use Template or Block instead
+   */
+  Program?: NodeTraversal<ASTv1.Template | ASTv1.Block>;
 };
 
 export interface FullKeyTraversal<N extends ASTv1.Node, K extends string> {
@@ -27,4 +32,9 @@ export type KeyTraversal<N extends ASTv1.Node, K extends VisitorKey<N>> =
 
 export type KeysVisitor<N extends ASTv1.Node> = { [P in VisitorKey<N>]?: KeyTraversal<N, P> } & {
   All?: KeyTraversal<N, VisitorKey<N>>;
+
+  /**
+   * @deprecated use Template or Block instead
+   */
+  Program?: KeyTraversal<ASTv1.Template | ASTv1.Block, 'body'>;
 };

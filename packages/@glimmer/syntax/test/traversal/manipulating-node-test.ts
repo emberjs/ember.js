@@ -23,7 +23,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
         traverse(ast, {
           MustacheStatement: {
             [eventName]: (node: AST.MustacheStatement) => {
-              if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
+              if (node.path.type === 'PathExpression' && node.path.original === 'z') {
                 return null;
               }
               return;
@@ -45,7 +45,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
         traverse(ast, {
           MustacheStatement: {
             [eventName](node: AST.MustacheStatement) {
-              if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
+              if (node.path.type === 'PathExpression' && node.path.original === 'z') {
                 return [];
               }
               return;
@@ -63,7 +63,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     traverse(ast, {
       MustacheStatement: {
         [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
+          if (node.path.type === 'PathExpression' && node.path.original === 'z') {
             return b.mustache('a');
           }
           return;
@@ -82,7 +82,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
       traverse(ast, {
         MustacheStatement: {
           [eventName](node: AST.MustacheStatement) {
-            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
+            if (node.path.type === 'PathExpression' && node.path.original === 'z') {
               return [b.mustache('a')];
             }
             return;
@@ -106,7 +106,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
           traverse(ast, {
             MustacheStatement: {
               [eventName](node: AST.MustacheStatement) {
-                if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
+                if (node.path.type === 'PathExpression' && node.path.original === 'z') {
                   return [b.mustache('a'), b.mustache('b'), b.mustache('c')];
                 }
                 return;
@@ -125,7 +125,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     traverse(ast, {
       MustacheStatement: {
         [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+          if (node.path.type === 'PathExpression' && node.path.original === 'y') {
             return null;
           }
           return;
@@ -142,7 +142,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     traverse(ast, {
       MustacheStatement: {
         [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+          if (node.path.type === 'PathExpression' && node.path.original === 'y') {
             return [];
           }
           return;
@@ -159,7 +159,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
     traverse(ast, {
       MustacheStatement: {
         [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+          if (node.path.type === 'PathExpression' && node.path.original === 'y') {
             return b.mustache('a');
           }
           return;
@@ -178,7 +178,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
       traverse(ast, {
         MustacheStatement: {
           [eventName](node: AST.MustacheStatement) {
-            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+            if (node.path.type === 'PathExpression' && node.path.original === 'y') {
               return [b.mustache('a')];
             }
             return;
@@ -198,7 +198,7 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
       traverse(ast, {
         MustacheStatement: {
           [eventName](node: AST.MustacheStatement) {
-            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+            if (node.path.type === 'PathExpression' && node.path.original === 'y') {
               return [b.mustache('a'), b.mustache('b'), b.mustache('c')];
             }
             return;
@@ -218,7 +218,7 @@ QUnit.test('Inside of a block', () => {
 
   traverse(ast, {
     MustacheStatement(node) {
-      if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+      if (node.path.type === 'PathExpression' && node.path.original === 'y') {
         return [b.mustache('a'), b.mustache('b'), b.mustache('c')];
       }
       return;

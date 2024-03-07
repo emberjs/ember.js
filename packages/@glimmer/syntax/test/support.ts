@@ -6,15 +6,17 @@ function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.No
   return normalizeValue(obj);
 }
 
+function isLoc(key: string | number | symbol): boolean {
+  return key === 'loc' || key === 'openTag' || key === 'closeTag';
+}
+
 function normalizeValue<T extends AST.Node | AST.Node[] | unknown>(obj: T): T {
   if (obj && typeof obj === 'object') {
     if (Array.isArray(obj)) {
       return obj.map(normalizeValue) as T;
     } else {
       return fromEntries(
-        entries(obj).flatMap(([key, value]) =>
-          key === 'loc' ? [] : [[key, normalizeValue(value)]]
-        )
+        entries(obj).flatMap(([key, value]) => (isLoc(key) ? [] : [[key, normalizeValue(value)]]))
       ) as T;
     }
   } else {

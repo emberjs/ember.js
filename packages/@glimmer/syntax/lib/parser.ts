@@ -11,16 +11,25 @@ import type * as ASTv1 from './v1/api';
 import type * as HBS from './v1/handlebars-ast';
 
 export type ParserNodeBuilder<N extends { loc: src.SourceSpan }> = Omit<N, 'loc'> & {
-  loc: src.SourceOffset;
+  start: src.SourceOffset;
 };
 
-export interface Tag<T extends 'StartTag' | 'EndTag'> {
-  readonly type: T;
+export interface StartTag {
+  readonly type: 'StartTag';
   name: string;
+  nameStart: Nullable<src.SourceOffset>;
+  nameEnd: Nullable<src.SourceOffset>;
   readonly attributes: ASTv1.AttrNode[];
   readonly modifiers: ASTv1.ElementModifierStatement[];
   readonly comments: ASTv1.MustacheCommentStatement[];
+  readonly params: ASTv1.VarHead[];
   selfClosing: boolean;
+  readonly loc: src.SourceSpan;
+}
+
+export interface EndTag {
+  readonly type: 'EndTag';
+  name: string;
   readonly loc: src.SourceSpan;
 }
 
@@ -42,9 +51,9 @@ export abstract class Parser {
   public currentNode: Nullable<
     Readonly<
       | ParserNodeBuilder<ASTv1.CommentStatement>
-      | ASTv1.TextNode
-      | ParserNodeBuilder<Tag<'StartTag'>>
-      | ParserNodeBuilder<Tag<'EndTag'>>
+      | ParserNodeBuilder<ASTv1.TextNode>
+      | ParserNodeBuilder<StartTag>
+      | ParserNodeBuilder<EndTag>
     >
   > = null;
   public tokenizer: EventedTokenizer;
@@ -70,11 +79,13 @@ export abstract class Parser {
 
   finish<T extends { loc: src.SourceSpan }>(node: ParserNodeBuilder<T>): T {
     return assign({}, node, {
-      loc: node.loc.until(this.offset()),
+      loc: node.start.until(this.offset()),
     } as const) as unknown as T;
 
     // node.loc = node.loc.withEnd(end);
   }
+
+  abstract parse(node: HBS.Program, locals: string[]): ASTv1.Template;
 
   abstract Program(node: HBS.Program): HBS.Output<'Program'>;
   abstract MustacheStatement(node: HBS.MustacheStatement): HBS.Output<'MustacheStatement'>;
@@ -119,19 +130,19 @@ export abstract class Parser {
     return expect(this.currentAttribute, 'expected attribute');
   }
 
-  get currentTag(): ParserNodeBuilder<Tag<'StartTag' | 'EndTag'>> {
+  get currentTag(): ParserNodeBuilder<StartTag> | ParserNodeBuilder<EndTag> {
     let node = this.currentNode;
     assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
     return node;
   }
 
-  get currentStartTag(): ParserNodeBuilder<Tag<'StartTag'>> {
+  get currentStartTag(): ParserNodeBuilder<StartTag> {
     let node = this.currentNode;
     assert(node && node.type === 'StartTag', 'expected start tag');
     return node;
   }
 
-  get currentEndTag(): ParserNodeBuilder<Tag<'EndTag'>> {
+  get currentEndTag(): ParserNodeBuilder<EndTag> {
     let node = this.currentNode;
     assert(node && node.type === 'EndTag', 'expected end tag');
     return node;
@@ -143,18 +154,12 @@ export abstract class Parser {
     return node;
   }
 
-  get currentData(): ASTv1.TextNode {
+  get currentData(): ParserNodeBuilder<ASTv1.TextNode> {
     let node = this.currentNode;
     assert(node && node.type === 'TextNode', 'expected a text node');
     return node;
   }
 
-  acceptTemplate(node: HBS.Program): ASTv1.Template {
-    return this[node.type as 'Program'](node) as ASTv1.Template;
-  }
-
-  acceptNode(node: HBS.Program): ASTv1.Block | ASTv1.Template;
-  acceptNode<U extends HBS.Node | ASTv1.Node>(node: HBS.Node): U;
   acceptNode<T extends HBS.NodeType>(node: HBS.Node<T>): HBS.Output<T> {
     return (this[node.type as T] as (node: HBS.Node<T>) => HBS.Output<T>)(node);
   }

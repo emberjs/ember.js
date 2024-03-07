@@ -40,8 +40,8 @@ export function normalize(
 
   let normalizeOptions = {
     strictMode: false,
-    locals: [],
     ...options,
+    locals: ast.blockParams,
   };
 
   let top = SymbolTable.top(
@@ -191,6 +191,11 @@ class ExpressionNormalizer {
       case 'PathExpression':
         return this.path(expr, resolution);
       case 'SubExpression': {
+        // expr.path used to incorrectly have the type ASTv1.Expression
+        if (isLiteral(expr.path)) {
+          assertIllegalLiteral(expr.path, expr.loc);
+        }
+
         let resolution = this.block.resolutionFor(expr, SexpSyntaxContext);
 
         if (resolution.result === 'error') {
@@ -323,8 +328,6 @@ class StatementNormalizer {
 
   normalize(node: ASTv1.Statement): ASTv2.ContentNode | ASTv2.NamedBlock {
     switch (node.type) {
-      case 'PartialStatement':
-        throw new Error(`Handlebars partial syntax ({{> ...}}) is not allowed in Glimmer`);
       case 'BlockStatement':
         return this.BlockStatement(node);
       case 'ElementNode':
@@ -372,27 +375,35 @@ class StatementNormalizer {
    * Normalizes an ASTv1.MustacheStatement to an ASTv2.AppendStatement
    */
   MustacheStatement(mustache: ASTv1.MustacheStatement): ASTv2.AppendContent {
-    let { escaped } = mustache;
+    let { path, params, hash, trusting } = mustache;
     let loc = this.block.loc(mustache.loc);
+    let context = AppendSyntaxContext(mustache);
+    let value: ASTv2.ExpressionNode;
 
-    // Normalize the call parts in AppendSyntaxContext
-    let callParts = this.expr.callParts(
-      {
-        path: mustache.path,
-        params: mustache.params,
-        hash: mustache.hash,
-      },
-      AppendSyntaxContext(mustache)
-    );
+    if (isLiteral(path)) {
+      if (params.length === 0 && hash.pairs.length === 0) {
+        value = this.expr.normalize(path, context);
+      } else {
+        assertIllegalLiteral(path, loc);
+      }
+    } else {
+      // Normalize the call parts in AppendSyntaxContext
+      let callParts = this.expr.callParts(
+        {
+          path,
+          params,
+          hash,
+        },
+        AppendSyntaxContext(mustache)
+      );
 
-    let value = callParts.args.isEmpty()
-      ? callParts.callee
-      : this.block.builder.sexp(callParts, loc);
+      value = callParts.args.isEmpty() ? callParts.callee : this.block.builder.sexp(callParts, loc);
+    }
 
     return this.block.builder.append(
       {
         table: this.block.table,
-        trusting: !escaped,
+        trusting,
         value,
       },
       loc
@@ -405,6 +416,11 @@ class StatementNormalizer {
   BlockStatement(block: ASTv1.BlockStatement): ASTv2.InvokeBlock {
     let { program, inverse } = block;
     let loc = this.block.loc(block.loc);
+
+    // block.path used to incorrectly have the type ASTv1.Expression
+    if (isLiteral(block.path)) {
+      assertIllegalLiteral(block.path, loc);
+    }
 
     let resolution = this.block.resolutionFor(block, BlockSyntaxContext);
 
@@ -515,6 +531,11 @@ class ElementNormalizer {
   }
 
   private modifier(m: ASTv1.ElementModifierStatement): ASTv2.ElementModifier {
+    // modifier.path used to incorrectly have the type ASTv1.Expression
+    if (isLiteral(m.path)) {
+      assertIllegalLiteral(m.path, m.loc);
+    }
+
     let resolution = this.ctx.resolutionFor(m, ModifierSyntaxContext);
 
     if (resolution.result === 'error') {
@@ -538,10 +559,21 @@ class ElementNormalizer {
    * ```
    */
   private mustacheAttr(mustache: ASTv1.MustacheStatement): ASTv2.ExpressionNode {
+    let { path, params, hash, loc } = mustache;
+    let context = AttrValueSyntaxContext(mustache);
+
+    if (isLiteral(path)) {
+      if (params.length === 0 && hash.pairs.length === 0) {
+        return this.expr.normalize(path, context);
+      } else {
+        assertIllegalLiteral(path, loc);
+      }
+    }
+
     // Normalize the call parts in AttrValueSyntaxContext
     let sexp = this.ctx.builder.sexp(
-      this.expr.callParts(mustache, AttrValueSyntaxContext(mustache)),
-      this.ctx.loc(mustache.loc)
+      this.expr.callParts(mustache as ASTv1.CallParts, AttrValueSyntaxContext(mustache)),
+      this.ctx.loc(loc)
     );
 
     // If there are no params or hash, just return the function part as its own expression
@@ -562,7 +594,7 @@ class ElementNormalizer {
   } {
     switch (part.type) {
       case 'MustacheStatement':
-        return { expr: this.mustacheAttr(part), trusting: !part.escaped };
+        return { expr: this.mustacheAttr(part), trusting: part.trusting };
       case 'TextNode':
         return {
           expr: this.ctx.builder.literal(part.chars, this.ctx.loc(part.loc)),
@@ -721,7 +753,7 @@ class ElementNormalizer {
 
     if (isComponent) {
       let path = b.path({
-        head: b.head(variable, variableLoc),
+        head: b.head({ original: variable, loc: variableLoc }),
         tail,
         loc: pathLoc,
       });
@@ -950,6 +982,24 @@ class ElementChildren extends Children {
   }
 }
 
+function isLiteral(node: ASTv1.Expression): node is ASTv1.Literal {
+  switch (node.type) {
+    case 'StringLiteral':
+    case 'BooleanLiteral':
+    case 'NumberLiteral':
+    case 'UndefinedLiteral':
+    case 'NullLiteral':
+      return true;
+    default:
+      return false;
+  }
+}
+
+function assertIllegalLiteral(node: ASTv1.Literal, loc: SourceSpan): never {
+  let value = node.type === 'StringLiteral' ? JSON.stringify(node.value) : String(node.value);
+  throw generateSyntaxError(`Unexpected literal \`${value}\``, loc);
+}
+
 function printPath(node: ASTv1.PathExpression | ASTv1.CallNode): string {
   if (node.type !== 'PathExpression' && node.path.type === 'PathExpression') {
     return printPath(node.path);
@@ -960,13 +1010,7 @@ function printPath(node: ASTv1.PathExpression | ASTv1.CallNode): string {
 
 function printHead(node: ASTv1.PathExpression | ASTv1.CallNode): string {
   if (node.type === 'PathExpression') {
-    switch (node.head.type) {
-      case 'AtHead':
-      case 'VarHead':
-        return node.head.name;
-      case 'ThisHead':
-        return 'this';
-    }
+    return node.head.original;
   } else if (node.path.type === 'PathExpression') {
     return printHead(node.path);
   } else {

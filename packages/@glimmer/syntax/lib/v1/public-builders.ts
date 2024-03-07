@@ -1,13 +1,14 @@
 import type { Dict, Nullable } from '@glimmer/interfaces';
-import { asPresentArray, assert, assign, deprecate, isPresentArray } from '@glimmer/util';
+import { asPresentArray, assert, deprecate, isPresentArray } from '@glimmer/util';
 
 import type { SourceLocation, SourcePosition } from '../source/location';
 import type * as ASTv1 from './api';
 
+import { isVoidTag } from '../generation/printer';
 import { SYNTHETIC_LOCATION } from '../source/location';
 import { Source } from '../source/source';
 import { SourceSpan } from '../source/span';
-import { PathExpressionImplV1 } from './legacy-interop';
+import b from './parser-builders';
 
 let _SOURCE: Source | undefined;
 
@@ -23,124 +24,110 @@ function SOURCE(): Source {
 
 // Statements
 
-export type BuilderHead = string | ASTv1.Expression;
-export type TagDescriptor = string | { name: string; selfClosing: boolean };
+export type BuilderHead = string | ASTv1.CallableExpression;
+export type TagDescriptor =
+  | string
+  | ASTv1.PathExpression
+  | { path: ASTv1.PathExpression; selfClosing?: boolean }
+  | { name: string; selfClosing?: boolean };
 
 function buildMustache(
   path: BuilderHead | ASTv1.Literal,
-  params?: ASTv1.Expression[],
-  hash?: ASTv1.Hash,
-  raw?: boolean,
+  params: ASTv1.Expression[] = [],
+  hash: ASTv1.Hash = buildHash([]),
+  trusting = false,
   loc?: SourceLocation,
   strip?: ASTv1.StripFlags
 ): ASTv1.MustacheStatement {
-  if (typeof path === 'string') {
-    path = buildPath(path);
-  }
-
-  return {
-    type: 'MustacheStatement',
-    path,
-    params: params || [],
-    hash: hash || buildHash([]),
-    escaped: !raw,
-    trusting: !!raw,
+  return b.mustache({
+    path: buildPath(path),
+    params,
+    hash,
+    trusting,
+    strip,
     loc: buildLoc(loc || null),
-    strip: strip || { open: false, close: false },
-  };
+  });
 }
+
+type PossiblyDeprecatedBlock = ASTv1.Block | ASTv1.Template;
 
 function buildBlock(
   path: BuilderHead,
   params: Nullable<ASTv1.Expression[]>,
   hash: Nullable<ASTv1.Hash>,
-  _defaultBlock: ASTv1.PossiblyDeprecatedBlock,
-  _elseBlock?: Nullable<ASTv1.PossiblyDeprecatedBlock>,
+  _defaultBlock: PossiblyDeprecatedBlock,
+  _elseBlock: Nullable<PossiblyDeprecatedBlock> = null,
   loc?: SourceLocation,
   openStrip?: ASTv1.StripFlags,
   inverseStrip?: ASTv1.StripFlags,
   closeStrip?: ASTv1.StripFlags
 ): ASTv1.BlockStatement {
   let defaultBlock: ASTv1.Block;
-  let elseBlock: Nullable<ASTv1.Block> | undefined;
+  let elseBlock: Nullable<ASTv1.Block> = null;
 
   if (_defaultBlock.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
-
-    defaultBlock = assign({}, _defaultBlock, { type: 'Block' }) as unknown as ASTv1.Block;
+    defaultBlock = b.blockItself({
+      params: buildBlockParams(_defaultBlock.blockParams),
+      body: _defaultBlock.body,
+      loc: _defaultBlock.loc,
+    });
   } else {
     defaultBlock = _defaultBlock;
   }
 
-  if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
+  if (_elseBlock?.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
+    assert(_elseBlock.blockParams.length === 0, '{{else}} block cannot have block params');
 
-    elseBlock = assign({}, _elseBlock, { type: 'Block' }) as unknown as ASTv1.Block;
+    elseBlock = b.blockItself({
+      params: [],
+      body: _elseBlock.body,
+      loc: _elseBlock.loc,
+    });
   } else {
     elseBlock = _elseBlock;
   }
 
-  return {
-    type: 'BlockStatement',
+  return b.block({
     path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
-    program: defaultBlock || null,
-    inverse: elseBlock || null,
+    defaultBlock,
+    elseBlock,
     loc: buildLoc(loc || null),
-    openStrip: openStrip || { open: false, close: false },
-    inverseStrip: inverseStrip || { open: false, close: false },
-    closeStrip: closeStrip || { open: false, close: false },
-  };
+    openStrip,
+    inverseStrip,
+    closeStrip,
+  });
 }
 
 function buildElementModifier(
-  path: BuilderHead | ASTv1.Expression,
+  path: BuilderHead,
   params?: ASTv1.Expression[],
   hash?: ASTv1.Hash,
   loc?: Nullable<SourceLocation>
 ): ASTv1.ElementModifierStatement {
-  return {
-    type: 'ElementModifierStatement',
+  return b.elementModifier({
     path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
     loc: buildLoc(loc || null),
-  };
-}
-
-function buildPartial(
-  name: ASTv1.PathExpression,
-  params?: ASTv1.Expression[],
-  hash?: ASTv1.Hash,
-  indent?: string,
-  loc?: SourceLocation
-): ASTv1.PartialStatement {
-  return {
-    type: 'PartialStatement',
-    name: name,
-    params: params || [],
-    hash: hash || buildHash([]),
-    indent: indent || '',
-    strip: { open: false, close: false },
-    loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildComment(value: string, loc?: SourceLocation): ASTv1.CommentStatement {
-  return {
-    type: 'CommentStatement',
+  return b.comment({
     value: value,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildMustacheComment(value: string, loc?: SourceLocation): ASTv1.MustacheCommentStatement {
-  return {
-    type: 'MustacheCommentStatement',
+  return b.mustacheComment({
     value: value,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildConcat(
@@ -151,11 +138,10 @@ function buildConcat(
     throw new Error(`b.concat requires at least one part`);
   }
 
-  return {
-    type: 'ConcatStatement',
-    parts: parts || [],
+  return b.concat({
+    parts,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 // Nodes
@@ -194,228 +180,181 @@ export interface BuildElementOptions {
   attrs?: ASTv1.AttrNode[];
   modifiers?: ASTv1.ElementModifierStatement[];
   children?: ASTv1.Statement[];
-  comments?: ElementComment[];
-  blockParams?: string[];
-  loc?: SourceSpan;
+  comments?: ASTv1.MustacheCommentStatement[];
+  blockParams?: ASTv1.VarHead[] | string[];
+  openTag?: SourceLocation;
+  closeTag?: Nullable<SourceLocation>;
+  loc?: SourceLocation;
 }
 
 function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): ASTv1.ElementNode {
-  let { attrs, blockParams, modifiers, comments, children, loc } = options;
-
-  let tagName: string;
+  let {
+    attrs,
+    blockParams,
+    modifiers,
+    comments,
+    children,
+    openTag,
+    closeTag: _closeTag,
+    loc,
+  } = options;
 
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
-  let selfClosing = false;
-  if (typeof tag === 'object') {
+  let path: ASTv1.PathExpression;
+  let selfClosing: boolean | undefined;
+
+  if (typeof tag === 'string') {
+    if (tag.endsWith('/')) {
+      path = buildPath(tag.slice(0, -1));
+      selfClosing = true;
+    } else {
+      path = buildPath(tag);
+    }
+  } else if ('type' in tag) {
+    assert(tag.type === 'PathExpression', `Invalid tag type ${tag.type}`);
+    path = tag;
+  } else if ('path' in tag) {
+    assert(tag.path.type === 'PathExpression', `Invalid tag type ${tag.path.type}`);
+    path = tag.path;
     selfClosing = tag.selfClosing;
-    tagName = tag.name;
-  } else if (tag.slice(-1) === '/') {
-    tagName = tag.slice(0, -1);
-    selfClosing = true;
   } else {
-    tagName = tag;
+    path = buildPath(tag.name);
+    selfClosing = tag.selfClosing;
   }
 
-  return {
-    type: 'ElementNode',
-    tag: tagName,
-    nameNode: {
-      type: 'ElementNameNode',
-      value: tag,
-    } as ASTv1.ElementNameNode,
-    startTag: {
-      type: 'ElementStartNode',
-      value: tag,
-    } as ASTv1.ElementStartNode,
-    endTag: {
-      type: 'ElementEndNode',
-      value: selfClosing ? '' : tag,
-    } as ASTv1.ElementEndNode,
-    parts: tagName
-      .split('.')
-      .map((t) => ({ type: 'ElementPartNode', value: t }) as ASTv1.ElementPartNode),
-    selfClosing: selfClosing,
+  if (selfClosing) {
+    assert(
+      _closeTag === null || _closeTag === undefined,
+      'Cannot build a self-closing tag with a closeTag source location'
+    );
+  }
+
+  let params = blockParams?.map((param) => {
+    if (typeof param === 'string') {
+      return buildVar(param);
+    } else {
+      return param;
+    }
+  });
+
+  let closeTag: Nullable<SourceSpan> = null;
+
+  if (_closeTag) {
+    closeTag = buildLoc(_closeTag || null);
+  } else if (_closeTag === undefined) {
+    closeTag = selfClosing || isVoidTag(path.original) ? null : buildLoc(null);
+  }
+
+  return b.element({
+    path,
+    selfClosing: selfClosing || false,
     attributes: attrs || [],
-    blockParams: blockParams || [],
-    blockParamNodes:
-      blockParams?.map((x) => ({ type: 'BlockParam', value: x }) as ASTv1.BlockParam) || [],
+    params: params || [],
     modifiers: modifiers || [],
-    comments: (comments as ASTv1.MustacheCommentStatement[]) || [],
+    comments: comments || [],
     children: children || [],
+    openTag: buildLoc(openTag || null),
+    closeTag,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
-function buildAttr(
-  name: string,
-  value: ASTv1.AttrNode['value'],
-  loc?: SourceLocation
-): ASTv1.AttrNode {
-  return {
-    type: 'AttrNode',
+function buildAttr(name: string, value: ASTv1.AttrValue, loc?: SourceLocation): ASTv1.AttrNode {
+  return b.attr({
     name: name,
     value: value,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
-function buildText(chars?: string, loc?: SourceLocation): ASTv1.TextNode {
-  return {
-    type: 'TextNode',
-    chars: chars || '',
+function buildText(chars = '', loc?: SourceLocation): ASTv1.TextNode {
+  return b.text({
+    chars,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 // Expressions
 
 function buildSexpr(
   path: BuilderHead,
-  params?: ASTv1.Expression[],
-  hash?: ASTv1.Hash,
+  params: ASTv1.Expression[] = [],
+  hash: ASTv1.Hash = buildHash([]),
   loc?: SourceLocation
 ): ASTv1.SubExpression {
-  return {
-    type: 'SubExpression',
+  return b.sexpr({
     path: buildPath(path),
-    params: params || [],
-    hash: hash || buildHash([]),
+    params,
+    hash,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
-function headToString(head: ASTv1.PathHead): { original: string; parts: string[] } {
-  switch (head.type) {
-    case 'AtHead':
-      return { original: head.name, parts: [head.name] };
-    case 'ThisHead':
-      return { original: `this`, parts: [] };
-    case 'VarHead':
-      return { original: head.name, parts: [head.name] };
-  }
-}
-
-function buildHead(
-  original: string,
-  loc: SourceLocation
-): { head: ASTv1.PathHead; tail: string[] } {
+function buildHead(original: string, loc?: SourceLocation): ASTv1.PathExpression {
   let [head, ...tail] = asPresentArray(original.split('.'));
-  let headNode: ASTv1.PathHead;
-
-  if (head === 'this') {
-    headNode = {
-      type: 'ThisHead',
-      loc: buildLoc(loc || null),
-    };
-  } else if (head[0] === '@') {
-    headNode = {
-      type: 'AtHead',
-      name: head,
-      loc: buildLoc(loc || null),
-    };
-  } else {
-    headNode = {
-      type: 'VarHead',
-      name: head,
-      loc: buildLoc(loc || null),
-    };
-  }
-
-  return {
-    head: headNode,
-    tail,
-  };
+  let headNode = b.head({ original: head, loc: buildLoc(loc || null) });
+  return b.path({ head: headNode, tail, loc: buildLoc(loc || null) });
 }
 
-function buildThis(loc: SourceLocation): ASTv1.PathHead {
-  return {
-    type: 'ThisHead',
-    loc: buildLoc(loc || null),
-  };
+function buildThis(loc?: SourceLocation): ASTv1.ThisHead {
+  return b.this({ loc: buildLoc(loc || null) });
 }
 
-function buildAtName(name: string, loc: SourceLocation): ASTv1.PathHead {
-  // the `@` should be included so we have a complete source range
-  assert(name[0] === '@', `call builders.at() with a string that starts with '@'`);
-
-  return {
-    type: 'AtHead',
-    name,
-    loc: buildLoc(loc || null),
-  };
+function buildAtName(name: string, loc?: SourceLocation): ASTv1.AtHead {
+  return b.atName({ name, loc: buildLoc(loc || null) });
 }
 
-function buildVar(name: string, loc: SourceLocation): ASTv1.PathHead {
-  assert(name !== 'this', `You called builders.var() with 'this'. Call builders.this instead`);
-  assert(
-    name[0] !== '@',
-    `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
-  );
-
-  return {
-    type: 'VarHead',
-    name,
-    loc: buildLoc(loc || null),
-  };
+function buildVar(name: string, loc?: SourceLocation): ASTv1.VarHead {
+  return b.var({ name, loc: buildLoc(loc || null) });
 }
 
-function buildHeadFromString(head: string, loc: SourceLocation): ASTv1.PathHead {
-  if (head[0] === '@') {
-    return buildAtName(head, loc);
-  } else if (head === 'this') {
-    return buildThis(loc);
-  } else {
-    return buildVar(head, loc);
-  }
+function buildHeadFromString(original: string, loc?: SourceLocation): ASTv1.PathHead {
+  return b.head({ original, loc: buildLoc(loc || null) });
 }
 
 function buildCleanPath(
   head: ASTv1.PathHead,
-  tail: string[],
-  loc: SourceLocation
+  tail: string[] = [],
+  loc?: SourceLocation
 ): ASTv1.PathExpression {
-  let { original: originalHead, parts: headParts } = headToString(head);
-  let parts = [...headParts, ...tail];
-  let original = [...originalHead, ...parts].join('.');
-
-  return new PathExpressionImplV1(original, head, tail, buildLoc(loc || null));
+  return b.path({ head, tail, loc: buildLoc(loc || null) });
 }
 
 function buildPath(
   path: ASTv1.PathExpression | string | { head: string; tail: string[] },
   loc?: SourceLocation
 ): ASTv1.PathExpression;
+function buildPath(path: BuilderHead, loc?: SourceLocation): ASTv1.CallableExpression;
+function buildPath(path: BuilderHead | ASTv1.Literal, loc?: SourceLocation): ASTv1.Expression;
 function buildPath(path: ASTv1.Expression, loc?: SourceLocation): ASTv1.Expression;
-function buildPath(path: BuilderHead | ASTv1.Expression, loc?: SourceLocation): ASTv1.Expression;
 function buildPath(
   path: BuilderHead | ASTv1.Expression | { head: string; tail: string[] },
   loc?: SourceLocation
 ): ASTv1.Expression {
+  let span = buildLoc(loc || null);
+
   if (typeof path !== 'string') {
     if ('type' in path) {
       return path;
     } else {
-      let { head, tail } = buildHead(path.head, SourceSpan.broken());
-
       assert(
-        tail.length === 0,
+        path.head.indexOf('.') === -1,
         `builder.path({ head, tail }) should not be called with a head with dots in it`
       );
 
-      let { original: originalHead } = headToString(head);
+      let { head, tail } = path;
 
-      return new PathExpressionImplV1(
-        [originalHead, ...tail].join('.'),
-        head,
+      return b.path({
+        head: b.head({ original: head, loc: span.sliceStartChars({ chars: head.length }) }),
         tail,
-        buildLoc(loc || null)
-      );
+        loc: buildLoc(loc || null),
+      });
     }
   }
 
-  let { head, tail } = buildHead(path, SourceSpan.broken());
+  let { head, tail } = buildHead(path, span);
 
-  return new PathExpressionImplV1(path, head, tail, buildLoc(loc || null));
+  return b.path({ head, tail, loc: span });
 }
 
 function buildLiteral<T extends ASTv1.Literal>(
@@ -423,81 +362,81 @@ function buildLiteral<T extends ASTv1.Literal>(
   value: T['value'],
   loc?: SourceLocation
 ): T {
-  return {
+  return b.literal({
     type,
     value,
-    original: value,
     loc: buildLoc(loc || null),
-  } as T;
+  });
 }
 
 // Miscellaneous
 
-function buildHash(pairs?: ASTv1.HashPair[], loc?: SourceLocation): ASTv1.Hash {
-  return {
-    type: 'Hash',
-    pairs: pairs || [],
+function buildHash(pairs: ASTv1.HashPair[] = [], loc?: SourceLocation): ASTv1.Hash {
+  return b.hash({
+    pairs,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildPair(key: string, value: ASTv1.Expression, loc?: SourceLocation): ASTv1.HashPair {
-  return {
-    type: 'HashPair',
-    key: key,
+  return b.pair({
+    key,
     value,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildProgram(
   body?: ASTv1.Statement[],
   blockParams?: string[],
   loc?: SourceLocation
-): ASTv1.Template {
-  return {
-    type: 'Template',
-    body: body || [],
-    blockParams: blockParams || [],
-    loc: buildLoc(loc || null),
-  };
+): ASTv1.Template | ASTv1.Block {
+  deprecate(`b.program is deprecated. Use b.template or b.blockItself instead.`);
+
+  if (blockParams && blockParams.length) {
+    return buildBlockItself(body, blockParams, false, loc);
+  } else {
+    return buildTemplate(body, [], loc);
+  }
+}
+
+function buildBlockParams(params: ReadonlyArray<ASTv1.VarHead | string>): ASTv1.VarHead[] {
+  return params.map((p) =>
+    typeof p === 'string' ? b.var({ name: p, loc: SourceSpan.synthetic(p) }) : p
+  );
 }
 
 function buildBlockItself(
-  body?: ASTv1.Statement[],
-  blockParams?: string[],
+  body: ASTv1.Statement[] = [],
+  params: Array<ASTv1.VarHead | string> = [],
   chained = false,
   loc?: SourceLocation
 ): ASTv1.Block {
-  return {
-    type: 'Block',
-    body: body || [],
-    blockParams: blockParams || [],
-    blockParamNodes:
-      blockParams?.map((b) => ({ type: 'BlockParam', value: b }) as ASTv1.BlockParam) || [],
+  return b.blockItself({
+    body,
+    params: buildBlockParams(params),
     chained,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildTemplate(
-  body?: ASTv1.Statement[],
-  blockParams?: string[],
+  body: ASTv1.Statement[] = [],
+  blockParams: string[] = [],
   loc?: SourceLocation
 ): ASTv1.Template {
-  return {
-    type: 'Template',
-    body: body || [],
-    blockParams: blockParams || [],
+  return b.template({
+    body,
+    blockParams,
     loc: buildLoc(loc || null),
-  };
+  });
 }
 
 function buildPosition(line: number, column: number): SourcePosition {
-  return {
+  return b.pos({
     line,
     column,
-  };
+  });
 }
 
 function buildLoc(loc: Nullable<SourceLocation>): SourceSpan;
@@ -508,8 +447,17 @@ function buildLoc(
   endColumn?: number,
   source?: string
 ): SourceSpan;
-
-function buildLoc(...args: any[]): SourceSpan {
+function buildLoc(
+  ...args:
+    | [Nullable<SourceLocation>]
+    | [
+        startLine: number,
+        startColumn: number,
+        endLine?: number | undefined,
+        endColumn?: number | undefined,
+        source?: string | undefined,
+      ]
+): SourceSpan {
   if (args.length === 1) {
     let loc = args[0];
 
@@ -528,8 +476,8 @@ function buildLoc(...args: any[]): SourceSpan {
         column: startColumn,
       },
       end: {
-        line: endLine,
-        column: endColumn,
+        line: endLine || startLine,
+        column: endColumn || startColumn,
       },
     });
   }
@@ -538,7 +486,6 @@ function buildLoc(...args: any[]): SourceSpan {
 export default {
   mustache: buildMustache,
   block: buildBlock,
-  partial: buildPartial,
   comment: buildComment,
   mustacheComment: buildMustacheComment,
   element: buildElement,
