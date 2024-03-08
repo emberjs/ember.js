@@ -66,6 +66,28 @@ class DynamicModifiersResolutionModeTest extends RenderTest {
   }
 
   @test
+  'Modifiers with dynamic arguments receive the correct number of arguments'(assert: Assert) {
+    let receivedArgs: unknown[] = [];
+    const foo = defineSimpleModifier((_element: unknown, args: unknown[]) => (receivedArgs = args));
+
+    this.render(
+      `
+      {{~#let (modifier this.foo this.outer) as |foo|~}}
+        <div {{ (if this.cond (modifier foo this.inner)) }}>General Kenobi!</div>
+      {{~/let~}}
+      `,
+      { foo, inner: 'x', outer: 'y', cond: true }
+    );
+
+    this.assertHTML('<div>General Kenobi!</div>');
+    this.assertStableRerender();
+    assert.deepEqual(receivedArgs, ['y', 'x']);
+    this.rerender({ cond: false });
+    this.rerender({ cond: true });
+    assert.deepEqual(receivedArgs, ['y', 'x']);
+  }
+
+  @test
   'Can pass curried modifier as argument and invoke dynamically (with args)'() {
     const foo = defineSimpleModifier(
       (element: Element, [first, second]: string[]) => (element.innerHTML = `${first} ${second}`)
