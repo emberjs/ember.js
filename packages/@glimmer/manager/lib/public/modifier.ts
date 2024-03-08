@@ -112,17 +112,21 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       modifier: instance,
     };
 
-    if (import.meta.env.DEV) {
-      state.debugName = typeof definition === 'function' ? definition.name : definition.toString();
-    }
-
     registerDestructor(state, () => delegate.destroyModifier(instance, args));
 
     return state;
   }
 
-  getDebugName({ debugName }: CustomModifierState<ModifierInstance>) {
-    return debugName!;
+  getDebugName(definition: object) {
+    if (typeof definition === 'function') {
+      return definition.name || definition.toString();
+    } else {
+      return '<unknown>';
+    }
+  }
+
+  getDebugInstance({ modifier }: CustomModifierState<ModifierInstance>) {
+    return modifier;
   }
 
   getTag({ tag }: CustomModifierState<ModifierInstance>) {

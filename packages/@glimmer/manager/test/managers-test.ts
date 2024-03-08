@@ -289,6 +289,10 @@ module('Managers', () => {
           return 'internal';
         }
 
+        getDebugInstance() {
+          return null;
+        }
+
         getDestroyable() {
           return null;
         }

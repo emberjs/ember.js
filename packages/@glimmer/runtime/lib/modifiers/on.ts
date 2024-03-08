@@ -312,6 +312,10 @@ class OnModifierManager implements InternalModifierManager<OnModifierState, obje
     return 'on';
   }
 
+  getDebugInstance(): unknown {
+    return null;
+  }
+
   get counters(): { adds: number; removes: number } {
     return { adds, removes };
   }
