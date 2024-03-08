@@ -67,21 +67,6 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
 
     this.registry.register('component', name, definition);
   }
-
-  registerCustomModifier(name: string) {
-    const r = setModifierManager(
-      () => ({
-        capabilities: modifierCapabilities('3.22'),
-        createModifier() {},
-        installModifier() {},
-        updateModifier() {},
-        destroyModifier() {},
-      }),
-      class DidInsertModifier {}
-    );
-    this.registry.register('modifier', name, r);
-    return r;
-  }
 }
 
 class DebugRenderTreeTest extends RenderTest {
@@ -342,34 +327,53 @@ class DebugRenderTreeTest extends RenderTest {
             ],
           },
         ],
-      }
+      },
     ]);
   }
 
   @test modifiers() {
     this.registerComponent('Glimmer', 'HelloWorld', 'Hello World');
     const didInsert = () => null;
-    this.registerModifier(
-      'did-insert',
-      class {
-        element?: SimpleElement;
-        didInsertElement() {}
-        didUpdate() {}
-        willDestroyElement() {}
-      }
+
+    class DidInsertModifier {
+      element?: SimpleElement;
+      didInsertElement() {}
+      didUpdate() {}
+      willDestroyElement() {}
+    }
+
+    this.registerModifier('did-insert', DidInsertModifier);
+
+    class MyCustomModifier {}
+
+    setModifierManager(
+      () => ({
+        capabilities: modifierCapabilities('3.22'),
+        createModifier() {
+          return new MyCustomModifier();
+        },
+        installModifier() {},
+        updateModifier() {},
+        destroyModifier() {},
+      }),
+      MyCustomModifier
     );
-    const modifier = this.defineModifier('did-update');
+
+    const foo = Symbol('foo');
+    const bar = Symbol('bar');
 
     this.render(
-      `<div {{on 'click' this.didInsert}} {{did-insert this.didInsert}} {{did-update this.didInsert}} {{this.modifier this.didInsert}}
+      `<div {{on 'click' this.didInsert}} {{did-insert this.foo bar=this.bar}} {{this.modifier this.bar foo=this.foo}}
       ><HelloWorld />
       {{~#if this.more~}}
-        <div {{on 'click' this.didInsert}}></div>
+        <div {{on 'click' this.didInsert passive=true}}></div>
       {{~/if~}}
       </div>`,
       {
         didInsert: didInsert,
-        modifier: modifier,
+        modifier: MyCustomModifier,
+        foo,
+        bar,
         more: false,
       }
     );
@@ -377,18 +381,9 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'modifier',
-        name: 'did-update',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.installModifier === 'function',
-        template: null,
-        bounds: this.nodeBounds(this.element.firstChild),
-        children: [],
-      },
-      {
-        type: 'modifier',
         name: 'on',
         args: { positional: ['click', didInsert], named: {} },
-        instance: (instance: any) => typeof instance === 'object',
+        instance: null,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -396,17 +391,17 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'DidInsertModifier',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.installModifier === 'function',
+        args: { positional: [foo], named: { bar } },
+        instance: (instance: unknown) => instance instanceof DidInsertModifier,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
       {
         type: 'modifier',
-        name: 'did-insert',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.install === 'function',
+        name: 'MyCustomModifier',
+        args: { positional: [bar], named: { foo } },
+        instance: (instance: unknown) => instance instanceof MyCustomModifier,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -431,16 +426,7 @@ class DebugRenderTreeTest extends RenderTest {
         type: 'modifier',
         name: 'on',
         args: { positional: ['click', didInsert], named: {} },
-        instance: (instance: any) => typeof instance === 'object',
-        template: null,
-        bounds: this.nodeBounds(this.element.firstChild),
-        children: [],
-      },
-      {
-        type: 'modifier',
-        name: 'did-update',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.installModifier === 'function',
+        instance: null,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -448,17 +434,17 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'DidInsertModifier',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.installModifier === 'function',
+        args: { positional: [foo], named: { bar } },
+        instance: (instance: unknown) => instance instanceof DidInsertModifier,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
       {
         type: 'modifier',
-        name: 'did-insert',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.install === 'function',
+        name: 'MyCustomModifier',
+        args: { positional: [bar], named: { foo } },
+        instance: (instance: unknown) => instance instanceof MyCustomModifier,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -475,8 +461,8 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'on',
-        args: { positional: ['click', didInsert], named: {} },
-        instance: (instance: any) => typeof instance === 'object',
+        args: { positional: ['click', didInsert], named: { passive: true } },
+        instance: null,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild!.lastChild),
         children: [],
@@ -490,18 +476,9 @@ class DebugRenderTreeTest extends RenderTest {
     this.assertRenderTree([
       {
         type: 'modifier',
-        name: 'did-update',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.installModifier === 'function',
-        template: null,
-        bounds: this.nodeBounds(this.element.firstChild),
-        children: [],
-      },
-      {
-        type: 'modifier',
         name: 'on',
         args: { positional: ['click', didInsert], named: {} },
-        instance: (instance: any) => typeof instance === 'object',
+        instance: null,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -509,17 +486,17 @@ class DebugRenderTreeTest extends RenderTest {
       {
         type: 'modifier',
         name: 'DidInsertModifier',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.installModifier === 'function',
+        args: { positional: [foo], named: { bar } },
+        instance: (instance: unknown) => instance instanceof DidInsertModifier,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
       },
       {
         type: 'modifier',
-        name: 'did-insert',
-        args: { positional: [didInsert], named: {} },
-        instance: (instance: any) => typeof instance.install === 'function',
+        name: 'MyCustomModifier',
+        args: { positional: [bar], named: { foo } },
+        instance: (instance: unknown) => instance instanceof MyCustomModifier,
         template: null,
         bounds: this.nodeBounds(this.element.firstChild),
         children: [],
@@ -722,10 +699,6 @@ class DebugRenderTreeTest extends RenderTest {
     }, /oops!/u);
 
     assert.deepEqual(this.delegate.getCapturedRenderTree(), [], 'there was no output');
-  }
-
-  defineModifier(name: string) {
-    return this.delegate.registerCustomModifier(name);
   }
 
   nodeBounds(_node: SimpleNode | null): CapturedBounds {
