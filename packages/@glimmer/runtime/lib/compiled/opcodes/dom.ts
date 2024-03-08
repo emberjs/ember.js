@@ -22,7 +22,7 @@ import {
 import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { assign, debugToString, expect, isObject } from '@glimmer/util';
+import { debugToString, expect, isObject } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0, CurriedTypes, Op } from '@glimmer/vm';
 
@@ -153,6 +153,8 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
   let { stack } = vm;
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
+  let { positional: outerPositional, named: outerNamed } = args;
+
   let { constructing } = vm.elements();
   let initialOwner = vm.getOwner();
 
@@ -178,11 +180,11 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
       owner = curriedOwner;
 
       if (positional !== undefined) {
-        args.positional = positional.concat(args.positional) as CapturedPositionalArguments;
+        args.positional = positional.concat(outerPositional) as CapturedPositionalArguments;
       }
 
       if (named !== undefined) {
-        args.named = assign({}, ...named, args.named);
+        args.named = Object.assign({}, ...named, outerNamed);
       }
     } else {
       hostDefinition = value;
