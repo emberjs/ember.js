@@ -37,8 +37,8 @@ export interface DOMStack {
     element: SimpleElement,
     guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Nullable<RemoteLiveBlock>;
-  popRemoteElement(): void;
+  ): RemoteLiveBlock;
+  popRemoteElement(): RemoteLiveBlock;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
   flushElement(modifiers: Nullable<ModifierInstance[]>): void;
