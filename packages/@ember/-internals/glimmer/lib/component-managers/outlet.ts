@@ -21,8 +21,8 @@ import type {
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { ReadonlyCell, unwrapReactive } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 
@@ -37,7 +37,7 @@ function instrumentationPayload(def: OutletDefinitionState) {
 }
 
 interface OutletInstanceState {
-  self: Reference;
+  self: Reactive;
   outletBucket?: {};
   engineBucket?: { mountPoint: string };
   engine?: EngineInstance;
@@ -45,7 +45,7 @@ interface OutletInstanceState {
 }
 
 export interface OutletDefinitionState {
-  ref: Reference<OutletState | undefined>;
+  ref: Reactive<OutletState | undefined>;
   name: string;
   template: Template;
   controller: unknown;
@@ -86,16 +86,16 @@ class OutletComponentManager
     dynamicScope.set('outletState', currentStateRef);
 
     let state: OutletInstanceState = {
-      self: createConstRef(definition.controller, 'this'),
+      self: ReadonlyCell(definition.controller, 'this'),
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
 
     if (env.debugRenderTree !== undefined) {
       state.outletBucket = {};
 
-      let parentState = valueForRef(parentStateRef);
+      let parentState = unwrapReactive(parentStateRef);
       let parentOwner = parentState && parentState.render && parentState.render.owner;
-      let currentOwner = valueForRef(currentStateRef)!.render!.owner;
+      let currentOwner = unwrapReactive(currentStateRef)!.render!.owner;
 
       if (parentOwner && parentOwner !== currentOwner) {
         assert(

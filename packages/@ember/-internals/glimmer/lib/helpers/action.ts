@@ -8,8 +8,8 @@ import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { DeeplyReadonlyCell, isMutRef, updateRef, unwrapReactive } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export const ACTIONS = new WeakSet();
@@ -277,7 +277,7 @@ export const ACTIONS = new WeakSet();
   @for Ember.Templates.helpers
   @public
 */
-export default internalHelper((args: CapturedArguments): Reference<Function> => {
+export default internalHelper((args: CapturedArguments): Reactive<Function> => {
   let { named, positional } = args;
   // The first two argument slots are reserved.
   // pos[0] is the context (or `this`)
@@ -286,18 +286,24 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
   let [context, action, ...restArgs] = positional;
   assert('hash position arguments', context && action);
 
-  let debugKey: string = action.debugLabel!;
+  // let debugKey: string = action.debugLabel!;
 
   let target = 'target' in named ? named['target'] : context;
   let processArgs = makeArgsProcessor(('value' in named && named['value']) || false, restArgs);
 
   let fn: Function;
 
-  if (isInvokableRef(action)) {
-    fn = makeClosureAction(action, action as MaybeActionHandler, invokeRef, processArgs, debugKey);
+  if (isMutRef(action)) {
+    fn = makeClosureAction(
+      action,
+      action as MaybeActionHandler,
+      invokeRef,
+      processArgs,
+      'TODO debugLabel'
+    );
   } else {
     fn = makeDynamicClosureAction(
-      valueForRef(context) as object,
+      unwrapReactive(context) as object,
       // SAFETY: glimmer-vm should expose narrowing utilities for references
       //         as is, `target` is still `Reference<unknown>`.
       //         however, we never even tried to narrow `target`, so this is potentially risky code.
@@ -306,25 +312,25 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
       //         as is, `action` is still `Reference<unknown>`
       action,
       processArgs,
-      debugKey
+      'TODO: debugLabel'
     );
   }
 
   ACTIONS.add(fn);
 
-  return createUnboundRef(fn, '(result of an `action` helper)');
+  return DeeplyReadonlyCell(fn, '(result of an `action` helper)');
 });
 
 function NOOP(args: unknown[]) {
   return args;
 }
 
-function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Reference[]) {
+function makeArgsProcessor(valuePathRef: Reactive | false, actionArgsRef: Reactive[]) {
   let mergeArgs: ((args: unknown[]) => unknown[]) | undefined;
 
   if (actionArgsRef.length > 0) {
     mergeArgs = (args: unknown[]) => {
-      return actionArgsRef.map(valueForRef).concat(args);
+      return actionArgsRef.map(unwrapReactive).concat(args);
     };
   }
 
@@ -332,7 +338,7 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 
   if (valuePathRef) {
     readValue = (args: unknown[]) => {
-      let valuePath = valueForRef(valuePathRef);
+      let valuePath = unwrapReactive(valuePathRef);
 
       if (valuePath && args.length > 0) {
         args[0] = get(args[0] as object, valuePath as string);
@@ -353,22 +359,22 @@ function makeArgsProcessor(valuePathRef: Reference | false, actionArgsRef: Refer
 
 function makeDynamicClosureAction(
   context: object,
-  targetRef: Reference<unknown>,
-  actionRef: Reference<unknown>,
+  targetRef: Reactive<unknown>,
+  actionRef: Reactive<unknown>,
   processArgs: (args: unknown[]) => unknown[],
   debugKey: string
 ) {
-  const action = valueForRef(actionRef);
+  const action = unwrapReactive(actionRef);
 
   // We don't allow undefined/null values, so this creates a throw-away action to trigger the assertions
   if (DEBUG) {
-    makeClosureAction(context, valueForRef(targetRef), action, processArgs, debugKey);
+    makeClosureAction(context, unwrapReactive(targetRef), action, processArgs, debugKey);
   }
 
   return (...args: any[]) => {
     return makeClosureAction(
       context,
-      valueForRef(targetRef),
+      unwrapReactive(targetRef),
       action,
       processArgs,
       debugKey
@@ -436,6 +442,6 @@ function makeClosureAction(
 // so this made a bit more sense. Now, it isn't, and so we need to create a
 // function that can have `this` bound to it when called. This allows us to use
 // the same codepath to call `updateRef` on the reference.
-function invokeRef(this: Reference, value: unknown) {
+function invokeRef(this: Reactive, value: unknown) {
   updateRef(this, value);
 }

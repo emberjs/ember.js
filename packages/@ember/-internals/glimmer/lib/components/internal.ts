@@ -14,8 +14,8 @@ import type {
   WithCreateInstance,
 } from '@glimmer/interfaces';
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { ReadonlyCell, isConstant, unwrapReactive } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
 function NOOP(): void {}
@@ -68,12 +68,12 @@ export default class InternalComponent {
 
   protected named(name: string): unknown {
     let ref = this.args.named[name];
-    return ref ? valueForRef(ref) : undefined;
+    return ref ? unwrapReactive(ref) : undefined;
   }
 
   protected positional(index: number): unknown {
     let ref = this.args.positional[index];
-    return ref ? valueForRef(ref) : undefined;
+    return ref ? unwrapReactive(ref) : undefined;
   }
 
   protected listenerFor(name: string): EventListener {
@@ -188,13 +188,13 @@ class InternalManager
     args: VMArguments,
     _env: Environment,
     _dynamicScope: DynamicScope,
-    caller: Reference
+    caller: Reactive
   ): InternalComponent {
-    assert('caller must be const', isConstRef(caller));
+    assert('caller must be const', isConstant(caller));
 
     let ComponentClass = deopaquify(definition);
 
-    let instance = new ComponentClass(owner, args.capture(), valueForRef(caller));
+    let instance = new ComponentClass(owner, args.capture(), unwrapReactive(caller));
 
     untrack(instance['validateArguments'].bind(instance));
 
@@ -211,8 +211,8 @@ class InternalManager
     return definition.toString();
   }
 
-  getSelf(instance: InternalComponent): Reference {
-    return createConstRef(instance, 'this');
+  getSelf(instance: InternalComponent): Reactive {
+    return ReadonlyCell(instance, 'this');
   }
 
   getDestroyable(instance: InternalComponent): Destroyable {
