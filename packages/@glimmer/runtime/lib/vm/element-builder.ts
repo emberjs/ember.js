@@ -100,7 +100,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Nullable<SimpleNode>) {
     this.pushElement(parentNode, nextSibling);
-
     this.env = env;
     this.dom = env.getAppendOperations();
     this.updateOperations = env.getDOM();
@@ -214,7 +213,7 @@ export class NewElementBuilder implements ElementBuilder {
     element: SimpleElement,
     guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Nullable<RemoteLiveBlock> {
+  ): RemoteLiveBlock {
     return this.__pushRemoteElement(element, guid, insertBefore);
   }
 
@@ -222,7 +221,7 @@ export class NewElementBuilder implements ElementBuilder {
     element: SimpleElement,
     _guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): Nullable<RemoteLiveBlock> {
+  ): RemoteLiveBlock {
     this.pushElement(element, insertBefore);
 
     if (insertBefore === undefined) {
@@ -236,12 +235,14 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushLiveBlock(block, true);
   }
 
-  popRemoteElement() {
-    this.popBlock();
+  popRemoteElement(): RemoteLiveBlock {
+    const block = this.popBlock();
+    assert(block instanceof RemoteLiveBlock, '[BUG] expecting a RemoteLiveBlock');
     this.popElement();
+    return block;
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null) {
+  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {
     this[CURSOR_STACK].push(new CursorImpl(element, nextSibling));
   }
 
@@ -268,7 +269,7 @@ export class NewElementBuilder implements ElementBuilder {
     return element;
   }
 
-  willCloseElement() {
+  willCloseElement(): void {
     this.block().closeElement();
   }
 
