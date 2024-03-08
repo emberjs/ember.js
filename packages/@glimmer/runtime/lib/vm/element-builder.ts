@@ -1,7 +1,6 @@
 import type {
   AttrNamespace,
   Bounds,
-  CapturedArguments,
   Cursor,
   CursorStackSymbol,
   ElementBuilder,
@@ -13,7 +12,6 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
-  Reference,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
@@ -22,7 +20,6 @@ import type {
   UpdatableBlock,
 } from '@glimmer/interfaces';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
-import { createConstRef } from '@glimmer/reference';
 import { assert, expect, Stack } from '@glimmer/util';
 
 import type { DynamicAttribute } from './attributes/dynamic';
@@ -217,26 +214,7 @@ export class NewElementBuilder implements ElementBuilder {
     guid: string,
     insertBefore: Maybe<SimpleNode>
   ): RemoteLiveBlock {
-    const block = this.__pushRemoteElement(element, guid, insertBefore);
-    if (this.env.debugRenderTree) {
-      const namedArgs: Record<string, Reference> = {};
-      if (insertBefore !== undefined) {
-        namedArgs['insertBefore'] = createConstRef(insertBefore, false);
-      }
-      this.env.debugRenderTree.create(block, {
-        type: 'keyword',
-        name: 'in-element',
-        args: {
-          named: namedArgs,
-          positional: [createConstRef(element, false)],
-        } as CapturedArguments,
-        instance: null,
-      });
-      registerDestructor(block, () => {
-        this.env.debugRenderTree?.willDestroy(block);
-      });
-    }
-    return block;
+    return this.__pushRemoteElement(element, guid, insertBefore);
   }
 
   __pushRemoteElement(
@@ -257,17 +235,11 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushLiveBlock(block, true);
   }
 
-  popRemoteElement(): void {
+  popRemoteElement(): RemoteLiveBlock {
     const block = this.popBlock();
+    assert(block instanceof RemoteLiveBlock, '[BUG] expecting a RemoteLiveBlock');
     this.popElement();
-    const parentElement = this.element;
-    if (this.env.debugRenderTree) {
-      this.env.debugRenderTree?.didRender(block, {
-        parentElement: () => parentElement,
-        firstNode: () => block.firstNode(),
-        lastNode: () => block.lastNode(),
-      });
-    }
+    return block;
   }
 
   protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null): void {

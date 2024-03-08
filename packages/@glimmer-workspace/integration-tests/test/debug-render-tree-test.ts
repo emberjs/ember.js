@@ -313,7 +313,7 @@ class DebugRenderTreeTest extends RenderTest {
             args: { positional: [this.element.firstChild], named: {} },
             instance: (instance: GlimmerishComponent) => instance === null,
             template: null,
-            bounds: this.nodeBounds(this.element.firstChild!.firstChild, this.element),
+            bounds: this.elementBounds(this.element.firstChild! as unknown as Element),
             children: [
               {
                 type: 'component',
@@ -519,12 +519,12 @@ class DebugRenderTreeTest extends RenderTest {
     assert.deepEqual(this.delegate.getCapturedRenderTree(), [], 'there was no output');
   }
 
-  nodeBounds(_node: SimpleNode | null, parent?: SimpleNode): CapturedBounds {
+  nodeBounds(_node: SimpleNode | null): CapturedBounds {
     let node = expect(_node, 'BUG: Expected node');
 
     return {
       parentElement: expect(
-        parent || node.parentNode,
+        node.parentNode,
         'BUG: detached node'
       ) as unknown as SimpleNode as SimpleElement,
       firstNode: node as unknown as SimpleNode,

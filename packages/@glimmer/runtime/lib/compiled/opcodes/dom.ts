@@ -19,7 +19,7 @@ import {
   CheckOption,
   CheckString,
 } from '@glimmer/debug';
-import { associateDestroyableChild, destroy } from '@glimmer/destroyable';
+import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { debugToString, expect, isObject } from '@glimmer/util';
@@ -32,6 +32,7 @@ import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
+import { createCapturedArgs } from '../../vm/arguments';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 
@@ -71,10 +72,36 @@ APPEND_OPCODES.add(Op.PushRemoteElement, (vm) => {
 
   let block = vm.elements().pushRemoteElement(element, guid, insertBefore);
   if (block) vm.associateDestroyable(block);
+
+  if (vm.env.debugRenderTree !== undefined) {
+    // Note that there is nothing to update – when the args for an
+    // {{#in-element}} changes it gets torn down and a new one is
+    // re-created/rendered in its place (see the `Assert`s above)
+    let args = createCapturedArgs(
+      insertBefore === undefined ? {} : { insertBefore: insertBeforeRef },
+      [elementRef]
+    );
+
+    vm.env.debugRenderTree.create(block, {
+      type: 'keyword',
+      name: 'in-element',
+      args,
+      instance: null,
+    });
+
+    registerDestructor(block, () => {
+      vm.env.debugRenderTree?.willDestroy(block);
+    });
+  }
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, (vm) => {
-  vm.elements().popRemoteElement();
+  let bounds = vm.elements().popRemoteElement();
+
+  if (vm.env.debugRenderTree !== undefined) {
+    // The RemoteLiveBlock is also its bounds
+    vm.env.debugRenderTree.didRender(bounds, bounds);
+  }
 });
 
 APPEND_OPCODES.add(Op.FlushElement, (vm) => {
