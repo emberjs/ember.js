@@ -129,7 +129,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
-  ): Nullable<RemoteLiveBlock> {
+  ): RemoteLiveBlock {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);

@@ -455,7 +455,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
-  ): Nullable<RemoteLiveBlock> {
+  ): RemoteLiveBlock {
     const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
     assert(
