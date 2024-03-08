@@ -3,99 +3,80 @@ import type {
   InternalModifierManager,
   Owner,
   SimpleElement,
+  UpdatableTag,
 } from '@glimmer/interfaces';
-import type { UpdatableTag } from '@glimmer/validator';
-import { check, CheckFunction, CheckString } from '@glimmer/debug';
+import {
+  check,
+  CheckBoolean,
+  CheckFunction,
+  CheckOr,
+  CheckString,
+  CheckUndefined,
+} from '@glimmer/debug';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
-import { buildUntouchableThis, expect } from '@glimmer/util';
+import { assert, buildUntouchableThis } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
 
 import { reifyNamed } from '../vm/arguments';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
 
+interface Listener {
+  eventName: string;
+  callback: EventListener;
+  userProvidedCallback: EventListener;
+  once: boolean | undefined;
+  passive: boolean | undefined;
+  capture: boolean | undefined;
+  options: AddEventListenerOptions | undefined;
+}
+
 export class OnModifierState {
   public tag = createUpdatableTag();
   public element: Element;
   public args: CapturedArguments;
-  public declare eventName: string;
-  public declare callback: EventListener;
-  private declare userProvidedCallback: EventListener;
-  public once?: boolean | undefined;
-  public passive?: boolean | undefined;
-  public capture?: boolean | undefined;
-  public options?: AddEventListenerOptions | undefined;
-  public shouldUpdate = true;
+  public listener: Listener | null = null;
 
   constructor(element: Element, args: CapturedArguments) {
     this.element = element;
     this.args = args;
+
+    registerDestructor(this, () => {
+      let { element, listener } = this;
+      if (listener) {
+        let { eventName, callback, options } = listener;
+        removeEventListener(element, eventName, callback, options);
+      }
+    });
   }
 
-  updateFromArgs(): void {
-    let { args } = this;
+  // Update this.listener if needed
+  updateListener(): void {
+    let { element, args, listener } = this;
 
-    let { once, passive, capture }: AddEventListenerOptions = reifyNamed(args.named);
-    if (once !== this.once) {
-      this.once = once;
-      this.shouldUpdate = true;
-    }
-
-    if (passive !== this.passive) {
-      this.passive = passive;
-      this.shouldUpdate = true;
-    }
-
-    if (capture !== this.capture) {
-      this.capture = capture;
-      this.shouldUpdate = true;
-    }
-
-    // we want to handle both `true` and `false` because both have a meaning:
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
-    if (once !== undefined || passive !== undefined || capture !== undefined) {
-      this.options = { once, passive, capture } as AddEventListenerOptions;
-    } else {
-      this.options = undefined;
-    }
-
-    let first = expect(
+    assert(
       args.positional[0],
       'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
 
     let eventName = check(
-      valueForRef(first),
+      valueForRef(args.positional[0]),
       CheckString,
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
 
-    if (eventName !== this.eventName) {
-      this.eventName = eventName;
-      this.shouldUpdate = true;
-    }
-
-    const userProvidedCallbackReference = expect(
+    assert(
       args.positional[1],
       'You must pass a function as the second argument to the `on` modifier'
     );
 
-    const userProvidedCallback = check(
-      valueForRef(userProvidedCallbackReference),
-      CheckFunction,
-      (actual) => {
-        return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
-          actual === null ? 'null' : typeof actual
-        }. While rendering:\n\n${userProvidedCallbackReference.debugLabel ?? `{unlabeled value}`}`;
-      }
-    ) as EventListener;
-
-    if (userProvidedCallback !== this.userProvidedCallback) {
-      this.userProvidedCallback = userProvidedCallback;
-      this.shouldUpdate = true;
-    }
+    let userProvidedCallback = check(valueForRef(args.positional[1]), CheckFunction, (actual) => {
+      return `You must pass a function as the second argument to the \`on\` modifier; you passed ${
+        actual === null ? 'null' : typeof actual
+      }. While rendering:\n\n${args.positional[1]?.debugLabel ?? `{unlabeled value}`}`;
+    }) as EventListener;
 
     if (import.meta.env.DEV && args.positional.length !== 2) {
       throw new Error(
@@ -103,12 +84,87 @@ export class OnModifierState {
       );
     }
 
-    let needsCustomCallback = import.meta.env.DEV && passive; /* needs passive enforcement */
+    let once: boolean | undefined = undefined;
+    let passive: boolean | undefined = undefined;
+    let capture: boolean | undefined = undefined;
 
-    if (this.shouldUpdate) {
-      if (needsCustomCallback) {
-        this.callback = function (this: Element, event) {
-          if (import.meta.env.DEV && passive) {
+    if (import.meta.env.DEV) {
+      let { once: _once, passive: _passive, capture: _capture, ...extra } = reifyNamed(args.named);
+
+      once = check(_once, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
+        return `You must pass a boolean or undefined as the \`once\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
+          args.named['once']!.debugLabel ?? `{unlabeled value}`
+        }`;
+      });
+
+      passive = check(_passive, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
+        return `You must pass a boolean or undefined as the \`passive\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
+          args.named['passive']!.debugLabel ?? `{unlabeled value}`
+        }`;
+      });
+
+      capture = check(_capture, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
+        return `You must pass a boolean or undefined as the \`capture\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
+          args.named['capture']!.debugLabel ?? `{unlabeled value}`
+        }`;
+      });
+
+      if (Object.keys(extra).length > 0) {
+        throw new Error(
+          `You can only \`once\`, \`passive\` or \`capture\` named arguments to the \`on\` modifier, but you provided ${Object.keys(
+            extra
+          ).join(', ')}.`
+        );
+      }
+    } else {
+      let { once: _once, passive: _passive, capture: _capture } = args.named;
+
+      if (_once) {
+        once = valueForRef(_once) as boolean | undefined;
+      }
+
+      if (_passive) {
+        passive = valueForRef(_passive) as boolean | undefined;
+      }
+
+      if (_capture) {
+        capture = valueForRef(_capture) as boolean | undefined;
+      }
+    }
+
+    let shouldUpdate = false;
+
+    if (listener === null) {
+      shouldUpdate = true;
+    } else {
+      shouldUpdate =
+        eventName !== listener.eventName ||
+        userProvidedCallback !== listener.userProvidedCallback ||
+        once !== listener.once ||
+        passive !== listener.passive ||
+        capture !== listener.capture;
+    }
+
+    let options: AddEventListenerOptions | undefined = undefined;
+
+    // we want to handle both `true` and `false` because both have a meaning:
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=770208
+    if (shouldUpdate) {
+      if (once !== undefined || passive !== undefined || capture !== undefined) {
+        options = { once, passive, capture } as AddEventListenerOptions;
+      }
+    }
+
+    if (shouldUpdate) {
+      let callback = userProvidedCallback;
+
+      if (import.meta.env.DEV) {
+        callback = userProvidedCallback.bind(untouchableContext);
+
+        if (passive) {
+          let _callback = callback;
+
+          callback = (event) => {
             event.preventDefault = () => {
               throw new Error(
                 `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
@@ -116,15 +172,27 @@ export class OnModifierState {
                 }`
               );
             };
-          }
-          return userProvidedCallback.call(untouchableContext, event);
-        };
-      } else if (import.meta.env.DEV) {
-        // prevent the callback from being bound to the element
-        this.callback = userProvidedCallback.bind(untouchableContext);
-      } else {
-        this.callback = userProvidedCallback;
+
+            return _callback(event);
+          };
+        }
       }
+
+      this.listener = {
+        eventName,
+        callback,
+        userProvidedCallback,
+        once,
+        passive,
+        capture,
+        options,
+      };
+
+      if (listener) {
+        removeEventListener(element, listener.eventName, listener.callback, listener.options);
+      }
+
+      addEventListener(element, eventName, callback, options);
     }
   }
 }
@@ -239,7 +307,7 @@ function addEventListener(
   @method on
   @public
 */
-class OnModifierManager implements InternalModifierManager<OnModifierState | null, object> {
+class OnModifierManager implements InternalModifierManager<OnModifierState, object> {
   getDebugName(): string {
     return 'on';
   }
@@ -253,58 +321,23 @@ class OnModifierManager implements InternalModifierManager<OnModifierState | nul
     element: SimpleElement | Element,
     _state: object,
     args: CapturedArguments
-  ): OnModifierState | null {
+  ): OnModifierState {
     return new OnModifierState(element as Element, args);
   }
 
-  getTag(state: OnModifierState | null): UpdatableTag | null {
-    if (state === null) {
-      return null;
-    }
-
-    return state.tag;
+  getTag({ tag }: OnModifierState): UpdatableTag {
+    return tag;
   }
 
-  install(state: OnModifierState | null): void {
-    if (state === null) {
-      return;
-    }
-
-    state.updateFromArgs();
-
-    let { element, eventName, callback, options } = state;
-
-    addEventListener(element, eventName, callback, options);
-
-    registerDestructor(state, () => removeEventListener(element, eventName, callback, options));
-
-    state.shouldUpdate = false;
+  install(state: OnModifierState): void {
+    state.updateListener();
   }
 
-  update(state: OnModifierState | null): void {
-    if (state === null) {
-      return;
-    }
-
-    // stash prior state for el.removeEventListener
-    let { element, eventName, callback, options } = state;
-
-    state.updateFromArgs();
-
-    if (!state.shouldUpdate) {
-      return;
-    }
-
-    // use prior state values for removal
-    removeEventListener(element, eventName, callback, options);
-
-    // read updated values from the state object
-    addEventListener(state.element, state.eventName, state.callback, state.options);
-
-    state.shouldUpdate = false;
+  update(state: OnModifierState): void {
+    state.updateListener();
   }
 
-  getDestroyable(state: OnModifierState | null): OnModifierState | null {
+  getDestroyable(state: OnModifierState): OnModifierState {
     return state;
   }
 }

@@ -82,6 +82,18 @@ class NullChecker implements Checker<null> {
   }
 }
 
+class UndefinedChecker implements Checker<undefined> {
+  declare type: undefined;
+
+  validate(value: unknown): value is undefined {
+    return value === undefined;
+  }
+
+  expected(): string {
+    return `undefined`;
+  }
+}
+
 class InstanceofChecker<T> implements Checker<T> {
   declare type: T;
 
@@ -348,6 +360,7 @@ export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolea
 export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckNull: Checker<null> = new NullChecker();
+export const CheckUndefined: Checker<undefined> = new UndefinedChecker();
 export const CheckUnknown: Checker<unknown> = new OpaqueChecker();
 export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
 export const CheckObject: Checker<object> = new ObjectChecker();
