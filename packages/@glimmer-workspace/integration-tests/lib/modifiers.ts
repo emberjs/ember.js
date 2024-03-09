@@ -44,8 +44,12 @@ export class TestModifierManager
     return tag;
   }
 
-  getDebugName() {
-    return '<unknown>';
+  getDebugName({ Klass }: TestModifierDefinitionState) {
+    return Klass?.name || '<unknown>';
+  }
+
+  getDebugInstance({ instance }: TestModifier) {
+    return instance;
   }
 
   install({ element, args, instance }: TestModifier) {

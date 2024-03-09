@@ -9,7 +9,7 @@ import type {
   SimpleNode,
 } from '@glimmer/interfaces';
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
-import { setComponentTemplate } from '@glimmer/manager';
+import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { assign, expect } from '@glimmer/util';
 
@@ -327,6 +327,188 @@ class DebugRenderTreeTest extends RenderTest {
             ],
           },
         ],
+      },
+    ]);
+  }
+
+  @test modifiers() {
+    this.registerComponent('Glimmer', 'HelloWorld', 'Hello World');
+    const didInsert = () => null;
+
+    class DidInsertModifier {
+      element?: SimpleElement;
+      didInsertElement() {}
+      didUpdate() {}
+      willDestroyElement() {}
+    }
+
+    this.registerModifier('did-insert', DidInsertModifier);
+
+    class MyCustomModifier {}
+
+    setModifierManager(
+      () => ({
+        capabilities: modifierCapabilities('3.22'),
+        createModifier() {
+          return new MyCustomModifier();
+        },
+        installModifier() {},
+        updateModifier() {},
+        destroyModifier() {},
+      }),
+      MyCustomModifier
+    );
+
+    const foo = Symbol('foo');
+    const bar = Symbol('bar');
+
+    this.render(
+      `<div {{on 'click' this.didInsert}} {{did-insert this.foo bar=this.bar}} {{this.modifier this.bar foo=this.foo}}
+      ><HelloWorld />
+      {{~#if this.more~}}
+        <div {{on 'click' this.didInsert passive=true}}></div>
+      {{~/if~}}
+      </div>`,
+      {
+        didInsert: didInsert,
+        modifier: MyCustomModifier,
+        foo,
+        bar,
+        more: false,
+      }
+    );
+
+    this.assertRenderTree([
+      {
+        type: 'modifier',
+        name: 'on',
+        args: { positional: ['click', didInsert], named: {} },
+        instance: null,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'DidInsertModifier',
+        args: { positional: [foo], named: { bar } },
+        instance: (instance: unknown) => instance instanceof DidInsertModifier,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'MyCustomModifier',
+        args: { positional: [bar], named: { foo } },
+        instance: (instance: unknown) => instance instanceof MyCustomModifier,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'component',
+        name: 'HelloWorld',
+        args: { positional: [], named: {} },
+        instance: (instance: any) => instance !== undefined,
+        template: '(unknown template module)',
+        bounds: this.nodeBounds(this.element.firstChild!.firstChild),
+        children: [],
+      },
+    ]);
+
+    this.rerender({
+      more: true,
+    });
+
+    this.assertRenderTree([
+      {
+        type: 'modifier',
+        name: 'on',
+        args: { positional: ['click', didInsert], named: {} },
+        instance: null,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'DidInsertModifier',
+        args: { positional: [foo], named: { bar } },
+        instance: (instance: unknown) => instance instanceof DidInsertModifier,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'MyCustomModifier',
+        args: { positional: [bar], named: { foo } },
+        instance: (instance: unknown) => instance instanceof MyCustomModifier,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'component',
+        name: 'HelloWorld',
+        args: { positional: [], named: {} },
+        instance: (instance: any) => instance !== undefined,
+        template: '(unknown template module)',
+        bounds: this.nodeBounds(this.element.firstChild!.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'on',
+        args: { positional: ['click', didInsert], named: { passive: true } },
+        instance: null,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild!.lastChild),
+        children: [],
+      },
+    ]);
+
+    this.rerender({
+      more: false,
+    });
+
+    this.assertRenderTree([
+      {
+        type: 'modifier',
+        name: 'on',
+        args: { positional: ['click', didInsert], named: {} },
+        instance: null,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'DidInsertModifier',
+        args: { positional: [foo], named: { bar } },
+        instance: (instance: unknown) => instance instanceof DidInsertModifier,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'modifier',
+        name: 'MyCustomModifier',
+        args: { positional: [bar], named: { foo } },
+        instance: (instance: unknown) => instance instanceof MyCustomModifier,
+        template: null,
+        bounds: this.nodeBounds(this.element.firstChild),
+        children: [],
+      },
+      {
+        type: 'component',
+        name: 'HelloWorld',
+        args: { positional: [], named: {} },
+        instance: (instance: any) => instance !== undefined,
+        template: '(unknown template module)',
+        bounds: this.nodeBounds(this.element.firstChild!.firstChild),
+        children: [],
       },
     ]);
   }

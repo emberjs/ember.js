@@ -29,7 +29,11 @@ class OnModifierManager implements InternalModifierManager<OnModifierState, obje
   }
 
   getDebugName() {
-    return 'on-modifier';
+    return 'on';
+  }
+
+  getDebugInstance() {
+    return null;
   }
 
   install(state: OnModifierState) {

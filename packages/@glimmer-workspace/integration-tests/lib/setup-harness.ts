@@ -63,6 +63,19 @@ export async function setupQunit() {
     qunit.moduleDone(pause);
   }
 
+  // @ts-expect-error missing in types, does exist: https://api.qunitjs.com/callbacks/QUnit.on/#the-testend-event
+  QUnit.on('testEnd', (testEnd) => {
+    if (testEnd.status === 'failed') {
+      testEnd.errors.forEach((assertion: any) => {
+        console.error(assertion.stack);
+        // message: speedometer
+        // actual: 75
+        // expected: 88
+        // stack: at dmc.test.js:12
+      });
+    }
+  });
+
   qunit.done(({ failed }) => {
     if (failed > 0) {
       console.log('[HARNESS] fail');
