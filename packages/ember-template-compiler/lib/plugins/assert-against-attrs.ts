@@ -36,7 +36,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
     name: 'assert-against-attrs',
 
     visitor: {
-      Template: {
+      Program: {
         enter(node: AST.Program) {
           updateBlockParamsStack(node.blockParams);
         },
