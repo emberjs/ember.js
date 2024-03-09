@@ -17,6 +17,34 @@
 
 
 
+
+## v0.89.0 (2024-03-09)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/runtime`
+  * [#1560](https://github.com/glimmerjs/glimmer-vm/pull/1560) add in element to debug render tree ([@patricklx](https://github.com/patricklx))
+* `@glimmer-workspace/integration-tests`, `@glimmer-workspace`, `@glimmer/syntax`
+  * [#1568](https://github.com/glimmerjs/glimmer-vm/pull/1568) Cleanup v1 AST ([@chancancode](https://github.com/chancancode))
+* `@glimmer/syntax`
+  * [#1561](https://github.com/glimmerjs/glimmer-vm/pull/1561) [CLEANUP] Remove unused ASTv1 nodes ([@chancancode](https://github.com/chancancode))
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/integration-tests`, `@glimmer/runtime`
+  * [#1565](https://github.com/glimmerjs/glimmer-vm/pull/1565) Don't infinitely duplicate positional arguments when modifiers update ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/syntax`
+  * [#1562](https://github.com/glimmerjs/glimmer-vm/pull/1562) [BUGFIX] properly surface deprecation message ([@chancancode](https://github.com/chancancode))
+
+#### :house: Internal
+* `@glimmer/debug`, `@glimmer/runtime`
+  * [#1573](https://github.com/glimmerjs/glimmer-vm/pull/1573) Refactor on modifier implementation ([@chancancode](https://github.com/chancancode))
+* `@glimmer-workspace/integration-tests`, `@glimmer/validator`
+  * [#1556](https://github.com/glimmerjs/glimmer-vm/pull/1556) Restore test harness on CI ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 3
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.88.1 (2024-01-31)
 
 #### :bug: Bug Fix
