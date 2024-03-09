@@ -74,7 +74,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
 }
 
 function isAttrs(node: AST.PathExpression, symbols: string[]) {
-  let name = node.parts[0];
+  let name = node.head.original;
 
   if (name && symbols.indexOf(name) !== -1) {
     return false;
