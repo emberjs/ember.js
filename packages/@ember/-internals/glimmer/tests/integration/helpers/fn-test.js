@@ -135,8 +135,7 @@ moduleFor(
     }
 
     '@test can use `this` if bound prior to passing to fn'(assert) {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-      this.render(`{{stash stashedFn=(fn (action this.myFunc) this.arg1)}}`, {
+      this.render(`{{stash stashedFn=(fn (fn this.myFunc) this.arg1)}}`, {
         myFunc(arg1) {
           return `arg1: ${arg1}, arg2: ${this.arg2}`;
         },

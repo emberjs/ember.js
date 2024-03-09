@@ -743,18 +743,15 @@ moduleFor(
     async ['@test queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  '](
       assert
     ) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'application',
-        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
+        '<button id="test-button" {{on "click" this.increment}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
       );
 
       this.setSingleQPController('application', 'foo', 1, {
-        actions: {
-          increment() {
-            this.incrementProperty('foo');
-            this.send('refreshRoute');
-          },
+        increment() {
+          this.incrementProperty('foo');
+          this.send('refreshRoute');
         },
       });
 

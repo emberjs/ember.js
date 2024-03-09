@@ -757,8 +757,6 @@ moduleFor(
     }
 
     ['@test renders with dot path and updates attributes'](assert) {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-
       this.registerComponent('my-nested-component', {
         ComponentClass: Component.extend({
           didReceiveAttrs() {
@@ -775,10 +773,8 @@ moduleFor(
 
       this.registerComponent('my-action-component', {
         ComponentClass: Component.extend({
-          actions: {
-            changeValue() {
-              this.incrementProperty('myProp');
-            },
+          changeValue() {
+            this.incrementProperty('myProp');
           },
         }),
         template: strip`
@@ -786,7 +782,7 @@ moduleFor(
           {{api.my-nested-component}}
         {{/my-component}}
         <br>
-        <button onclick={{action 'changeValue'}}>Change value</button>`,
+        <button onclick={{this.changeValue}}>Change value</button>`,
       });
 
       this.render('{{my-action-component myProp=this.model.myProp}}', {
@@ -841,15 +837,12 @@ moduleFor(
     ['@test parameters in a contextual component are mutable when value is a param'](assert) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       this.registerComponent('change-button', {
         ComponentClass: Component.extend().reopenClass({
           positionalParams: ['val'],
         }),
         template: strip`
-        <button {{action (action (mut this.val) 10)}} class="my-button">
+        <button {{on 'click (fn (mut this.val) 10)}} class="my-button">
           Change to 10
         </button>`,
       });
@@ -893,19 +886,16 @@ moduleFor(
     }
 
     ['@test GH#13494 tagless blockless component with property binding'](assert) {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
           message: 'hello',
-          actions: {
-            change() {
-              this.set('message', 'goodbye');
-            },
+          change() {
+            this.set('message', 'goodbye');
           },
         }),
         template: strip`
         message: {{this.message}}{{inner-component message=this.message}}
-        <button onclick={{action "change"}} />`,
+        <button onclick={{on 'click' this.change}} />`,
       });
 
       this.registerComponent('inner-component', {
@@ -1447,14 +1437,12 @@ class MutableParamTestGenerator {
   generate({ title, setup }) {
     return {
       [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
-        expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-        expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
         this.registerComponent('change-button', {
           ComponentClass: Component.extend().reopenClass({
             positionalParams: ['val'],
           }),
           template: strip`
-          <button {{action (action (mut this.val) 10)}} class="my-button">
+          <button {{on 'click' (fn (mut this.val) 10)}} class="my-button">
             Change to 10
           </button>`,
         });

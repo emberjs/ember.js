@@ -136,8 +136,6 @@ moduleFor(
     }
 
     '@test tracked properties that are uninitialized do not throw an error'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let CountComponent = Component.extend({
         count: tracked(),
 
@@ -151,7 +149,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -164,8 +162,6 @@ moduleFor(
     }
 
     '@test tracked properties rerender when updated'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let CountComponent = Component.extend({
         count: tracked({ value: 0 }),
 
@@ -176,7 +172,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -189,8 +185,6 @@ moduleFor(
     }
 
     '@test tracked properties rerender when updated outside of a runloop'(assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let done = assert.async();
 
       let CountComponent = Component.extend({
@@ -205,7 +199,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -222,8 +216,6 @@ moduleFor(
     }
 
     '@test nested tracked properties rerender when updated'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let Counter = EmberObject.extend({
         count: tracked({ value: 0 }),
       });
@@ -238,7 +230,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.counter.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.counter.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -251,8 +243,6 @@ moduleFor(
     }
 
     '@test array properties rerender when updated'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let NumListComponent = Component.extend({
         numbers: tracked({ initializer: () => A([1, 2, 3]) }),
 
@@ -264,7 +254,7 @@ moduleFor(
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on "click" this.addNumber}}>
               {{#each this.numbers as |num|}}{{num}}{{/each}}
             </button>
           `,
@@ -280,8 +270,6 @@ moduleFor(
     }
 
     '@test getters update when dependent properties are invalidated'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let CountComponent = Component.extend({
         count: tracked({ value: 0 }),
 
@@ -298,7 +286,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -311,8 +299,6 @@ moduleFor(
     }
 
     '@test getters update when dependent computeds are invalidated'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let CountComponent = Component.extend({
         _count: 0,
 
@@ -337,7 +323,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -354,8 +340,6 @@ moduleFor(
     }
 
     '@test nested getters update when dependent properties are invalidated'() {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let Counter = EmberObject.extend({
         count: tracked({ value: 0 }),
 
@@ -376,7 +360,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.counter.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.counter.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -389,8 +373,6 @@ moduleFor(
     }
 
     '@test tracked object passed down through components updates correctly'(assert) {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-
       let Person = EmberObject.extend({
         first: tracked({ value: 'Rob' }),
         last: tracked({ value: 'Jackson' }),
@@ -425,7 +407,7 @@ moduleFor(
         ComponentClass: ChildComponent,
         template: strip`
             <div id="child">{{this.person.full}}</div>
-            <button onclick={{action this.updatePerson}}></button>
+            <button onclick={{this.updatePerson}}></button>
           `,
       });
 
@@ -441,8 +423,6 @@ moduleFor(
     }
 
     '@test yielded getters update correctly'() {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-
       let PersonComponent = Component.extend({
         first: tracked({ value: 'Rob' }),
         last: tracked({ value: 'Jackson' }),
@@ -462,7 +442,7 @@ moduleFor(
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            {{yield this.full (action this.updatePerson)}}
+            {{yield this.full this.updatePerson}}
           `,
       });
 
@@ -482,8 +462,6 @@ moduleFor(
     }
 
     '@test yielded nested getters update correctly'() {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-
       let Person = EmberObject.extend({
         first: tracked({ value: 'Rob' }),
         last: tracked({ value: 'Jackson' }),
@@ -507,7 +485,7 @@ moduleFor(
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            {{yield this.person (action this.updatePerson)}}
+            {{yield this.person this.updatePerson}}
           `,
       });
 
@@ -609,8 +587,6 @@ moduleFor(
     '@test downstream property changes do not invalidate upstream component getters/arguments'(
       assert
     ) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let outerRenderCount = 0;
       let innerRenderCount = 0;
 
@@ -641,7 +617,7 @@ moduleFor(
 
       this.registerComponent('inner', {
         ComponentClass: InnerComponent,
-        template: '<button {{action this.updateInnerCount}}>{{this.combinedCounts}}</button>',
+        template: '<button {{on "click" this.updateInnerCount}}>{{this.combinedCounts}}</button>',
       });
 
       this.render('<Outer @count={{this.count}}/>', {

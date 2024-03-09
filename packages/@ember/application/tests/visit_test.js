@@ -625,7 +625,6 @@ moduleFor(
     }
 
     [`@test Ember Islands-style setup`](assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let xFooInitCalled = false;
       let xFooDidInsertElementCalled = false;
 
@@ -704,7 +703,7 @@ moduleFor(
         'components/x-bar',
         `
         <h1>X-Bar</h1>
-        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
+        <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>
         `
       );
 
@@ -713,10 +712,8 @@ moduleFor(
         Component.extend({
           counter: service('sharedCounter'),
 
-          actions: {
-            incrementCounter() {
-              this.get('counter').increment();
-            },
+          incrementCounter() {
+            this.get('counter').increment();
           },
 
           init() {
