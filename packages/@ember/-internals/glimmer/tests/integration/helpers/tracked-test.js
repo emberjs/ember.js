@@ -15,6 +15,7 @@ moduleFor(
   'Helper Tracked Properties',
   class extends RenderingTestCase {
     '@test tracked properties rerender when updated'(assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       let computeCount = 0;
 
       let PersonComponent = Component.extend({
@@ -92,6 +93,7 @@ moduleFor(
     }
 
     '@test getters update when dependent properties are invalidated'(assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       let computeCount = 0;
 
       let PersonComponent = Component.extend({
@@ -144,6 +146,7 @@ moduleFor(
     }
 
     '@test array properties rerender when updated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let NumListComponent = Component.extend({
         numbers: tracked({ initializer: () => A([1, 2, 3]) }),
 
@@ -175,6 +178,7 @@ moduleFor(
     }
 
     '@test custom ember array properties rerender when updated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let CustomArray = EmberObject.extend(MutableArray, {
         init() {
           this._super(...arguments);

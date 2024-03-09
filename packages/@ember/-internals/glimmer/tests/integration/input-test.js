@@ -202,6 +202,7 @@ moduleFor(
     }
 
     ['@test GH18211 input checked attribute, without a value, works with the action helper']() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.render(`<input type="checkbox" checked {{action "someAction"}}>`, {
         actions: { someAction() {} },
       });
@@ -209,6 +210,7 @@ moduleFor(
     }
 
     ['@test GH18211 input checked attribute, with a value, works with the action helper']() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.render(`<input type="checkbox" checked={{true}} {{action "someAction"}}>`, {
         actions: { someAction() {} },
       });
@@ -216,6 +218,7 @@ moduleFor(
     }
 
     ['@test GH18211 input checked attribute, without a value, works with attributes with values']() {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       this.render(`<input type="checkbox" checked click={{action "someAction"}}>`, {
         actions: { someAction() {} },
       });
@@ -223,6 +226,7 @@ moduleFor(
     }
 
     ['@test GH18211 input checked attribute, without a value, works with event attributes']() {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       this.render(`<input type="checkbox" checked onclick={{action "someAction"}}>`, {
         actions: { someAction() {} },
       });

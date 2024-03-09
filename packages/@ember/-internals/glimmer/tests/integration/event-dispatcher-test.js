@@ -134,6 +134,8 @@ moduleFor(
     }
 
     ['@test case insensitive events'](assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
       let receivedEvent;
 
       this.registerComponent('x-bar', {
@@ -153,6 +155,7 @@ moduleFor(
     }
 
     ['@test case sensitive events'](assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       let receivedEvent;
 
       this.registerComponent('x-bar', {

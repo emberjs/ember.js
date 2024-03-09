@@ -186,6 +186,7 @@ moduleFor(
     ['@test Components trigger actions in the parents context when called from within a block'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'application',
         `
@@ -219,6 +220,7 @@ moduleFor(
     ['@test Components trigger actions in the components context when called from within its template'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'application',
         `

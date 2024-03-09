@@ -82,6 +82,7 @@ moduleFor(
     }
 
     [`@test booting multiple applications can properly handle events`](assert) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let actions = [];
       this.addFactoriesToResolver(actions, this.resolver);
       this.addFactoriesToResolver(actions, this.secondResolver);

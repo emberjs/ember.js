@@ -625,6 +625,7 @@ moduleFor(
     }
 
     [`@test Ember Islands-style setup`](assert) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let xFooInitCalled = false;
       let xFooDidInsertElementCalled = false;
 

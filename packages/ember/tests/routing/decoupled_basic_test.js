@@ -305,6 +305,7 @@ moduleFor(
     async ['@test Events are triggered on the controller if a matching action name is implemented'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let done = assert.async();
 
       this.router.map(function () {
@@ -351,6 +352,7 @@ moduleFor(
     async ['@test Events are triggered on the current state when defined in `actions` object'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let done = assert.async();
 
       this.router.map(function () {
@@ -387,6 +389,7 @@ moduleFor(
     async ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let done = assert.async();
 
       this.router.map(function () {
@@ -428,7 +431,8 @@ moduleFor(
     }
 
     ['@test Events can be handled by inherited event handlers'](assert) {
-      assert.expect(4);
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+      assert.expect(5);
 
       let SuperRoute = Route.extend({
         actions: {
@@ -480,6 +484,7 @@ moduleFor(
     async ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let done = assert.async();
 
       this.router.map(function () {
@@ -524,6 +529,7 @@ moduleFor(
     }
 
     async ['@test actions can be triggered with multiple arguments'](assert) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let done = assert.async();
       this.router.map(function () {
         this.route('root', { path: '/' }, function () {
@@ -1222,7 +1228,8 @@ moduleFor(
     }
 
     ['@test Actions can be handled by inherited action handlers'](assert) {
-      assert.expect(4);
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+      assert.expect(5);
 
       let SuperRoute = Route.extend({
         actions: {

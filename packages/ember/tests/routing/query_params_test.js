@@ -743,6 +743,7 @@ moduleFor(
     async ['@test queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  '](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'application',
         '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'

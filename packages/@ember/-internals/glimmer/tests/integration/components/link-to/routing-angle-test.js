@@ -1027,6 +1027,7 @@ moduleFor(
     }
 
     async ['@test it defaults to bubbling'](assert) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'about',
         `

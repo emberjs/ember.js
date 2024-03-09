@@ -152,7 +152,8 @@ moduleFor(
     ['@test sends an action with `{{input enter=(action "foo")}}` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(3);
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
 
       this.render(`{{input enter=(action 'foo')}}`, {
         actions: {
@@ -169,7 +170,8 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(2);
+      assert.expect(3);
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
 
       this.render(`{{input insert-newline=(action 'foo')}}`, {
         actions: {
@@ -188,7 +190,8 @@ moduleFor(
     ['@test sends an action with `{{input escape-press=(action "foo")}}` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(2);
+      assert.expect(3);
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
 
       this.render(`{{input escape-press=(action 'foo')}}`, {
         actions: {

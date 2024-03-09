@@ -757,6 +757,8 @@ moduleFor(
     }
 
     ['@test renders with dot path and updates attributes'](assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
       this.registerComponent('my-nested-component', {
         ComponentClass: Component.extend({
           didReceiveAttrs() {
@@ -839,6 +841,8 @@ moduleFor(
     ['@test parameters in a contextual component are mutable when value is a param'](assert) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
 
       this.registerComponent('change-button', {
         ComponentClass: Component.extend().reopenClass({
@@ -889,6 +893,7 @@ moduleFor(
     }
 
     ['@test GH#13494 tagless blockless component with property binding'](assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
           message: 'hello',
@@ -1442,6 +1447,8 @@ class MutableParamTestGenerator {
   generate({ title, setup }) {
     return {
       [`@test parameters in a contextual component are mutable when value is a ${title}`](assert) {
+        expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+        expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
         this.registerComponent('change-button', {
           ComponentClass: Component.extend().reopenClass({
             positionalParams: ['val'],

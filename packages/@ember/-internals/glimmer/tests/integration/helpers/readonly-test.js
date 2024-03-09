@@ -37,7 +37,9 @@ moduleFor(
     }
 
     '@test passing an action to {{readonly}} avoids mutable cell wrapping'(assert) {
-      assert.expect(4);
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
+      assert.expect(5);
       let outer, inner;
 
       this.registerComponent('x-inner', {

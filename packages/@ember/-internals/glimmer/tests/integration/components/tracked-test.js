@@ -136,6 +136,8 @@ moduleFor(
     }
 
     '@test tracked properties that are uninitialized do not throw an error'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let CountComponent = Component.extend({
         count: tracked(),
 
@@ -162,6 +164,8 @@ moduleFor(
     }
 
     '@test tracked properties rerender when updated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let CountComponent = Component.extend({
         count: tracked({ value: 0 }),
 
@@ -185,6 +189,8 @@ moduleFor(
     }
 
     '@test tracked properties rerender when updated outside of a runloop'(assert) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let done = assert.async();
 
       let CountComponent = Component.extend({
@@ -216,6 +222,8 @@ moduleFor(
     }
 
     '@test nested tracked properties rerender when updated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let Counter = EmberObject.extend({
         count: tracked({ value: 0 }),
       });
@@ -243,6 +251,8 @@ moduleFor(
     }
 
     '@test array properties rerender when updated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let NumListComponent = Component.extend({
         numbers: tracked({ initializer: () => A([1, 2, 3]) }),
 
@@ -270,6 +280,8 @@ moduleFor(
     }
 
     '@test getters update when dependent properties are invalidated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let CountComponent = Component.extend({
         count: tracked({ value: 0 }),
 
@@ -299,6 +311,8 @@ moduleFor(
     }
 
     '@test getters update when dependent computeds are invalidated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let CountComponent = Component.extend({
         _count: 0,
 
@@ -340,6 +354,8 @@ moduleFor(
     }
 
     '@test nested getters update when dependent properties are invalidated'() {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let Counter = EmberObject.extend({
         count: tracked({ value: 0 }),
 
@@ -373,6 +389,8 @@ moduleFor(
     }
 
     '@test tracked object passed down through components updates correctly'(assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
       let Person = EmberObject.extend({
         first: tracked({ value: 'Rob' }),
         last: tracked({ value: 'Jackson' }),
@@ -423,6 +441,8 @@ moduleFor(
     }
 
     '@test yielded getters update correctly'() {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
       let PersonComponent = Component.extend({
         first: tracked({ value: 'Rob' }),
         last: tracked({ value: 'Jackson' }),
@@ -462,6 +482,8 @@ moduleFor(
     }
 
     '@test yielded nested getters update correctly'() {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
       let Person = EmberObject.extend({
         first: tracked({ value: 'Rob' }),
         last: tracked({ value: 'Jackson' }),
@@ -587,6 +609,8 @@ moduleFor(
     '@test downstream property changes do not invalidate upstream component getters/arguments'(
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       let outerRenderCount = 0;
       let innerRenderCount = 0;
 

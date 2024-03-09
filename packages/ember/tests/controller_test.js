@@ -14,6 +14,7 @@ moduleFor(
   'Template scoping examples',
   class extends ApplicationTestCase {
     ['@test Actions inside an outlet go to the associated controller'](assert) {
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
       this.add(
         'controller:index',
         Controller.extend({

@@ -449,6 +449,8 @@ moduleFor(
         }),
       });
 
+      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+
       let actionTriggered = 0;
       this.registerComponent('outer-component', {
         template:

@@ -49,6 +49,8 @@ moduleFor(
         },
       });
 
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       this.add('controller:application', ToggleController);
 
       this.addTemplate(

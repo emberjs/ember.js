@@ -14,6 +14,8 @@ moduleFor(
     constructor() {
       setDebugFunction('debug', noop);
       super(...arguments);
+
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
     }
 
     teardown() {
@@ -23,7 +25,7 @@ moduleFor(
     ['@test actions in top level template application template target application controller'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.add(
         'controller:application',
@@ -47,7 +49,7 @@ moduleFor(
     }
 
     ['@test actions in nested outlet template target their controller'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.add(
         'controller:application',

@@ -1428,6 +1428,8 @@ moduleFor(
     ) {
       let componentInstance = null;
 
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       this.registerComponent('non-block', {
         ComponentClass: Component.extend({
           counter: computed({
@@ -3149,6 +3151,8 @@ moduleFor(
     ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
       assert
     ) {
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
+
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
           actions: {
@@ -3174,7 +3178,9 @@ moduleFor(
     }
 
     ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
-      assert.expect(4);
+      assert.expect(5);
+
+      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
 
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
