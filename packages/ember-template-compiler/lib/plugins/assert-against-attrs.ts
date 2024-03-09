@@ -81,8 +81,8 @@ function isAttrs(node: AST.PathExpression, symbols: string[]) {
   }
 
   if (name === 'attrs') {
-    if (node.this === true) {
-      node.parts.shift();
+    if (node.head.type === 'ThisHead') {
+      node.tail.shift();
       node.original = node.original.slice(5);
     }
 
