@@ -268,7 +268,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
-    this.render(`{{#with (component 'Foo') as |Other|}}<Other />{{/with}}`);
+    this.render(`{{#let (component 'Foo') as |Other|}}<Other />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -280,7 +280,7 @@ export class GlimmerishComponents extends RenderTest {
   'invoking dynamic component (local path) via angle brackets'() {
     this.registerHelper('hash', (_positional, named) => named);
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
-    this.render(`{{#with (hash Foo=(component 'Foo')) as |Other|}}<Other.Foo />{{/with}}`);
+    this.render(`{{#let (hash Foo=(component 'Foo')) as |Other|}}<Other.Foo />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -291,7 +291,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets (ill-advised "htmlish element name" but supported)'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
-    this.render(`{{#with (component 'Foo') as |div|}}<div />{{/with}}`);
+    this.render(`{{#let (component 'Foo') as |div|}}<div />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -302,7 +302,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports attributes'() {
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
-    this.render(`{{#with (component 'Foo') as |Other|}}<Other data-test="foo" />{{/with}}`);
+    this.render(`{{#let (component 'Foo') as |Other|}}<Other data-test="foo" />{{/let}}`);
 
     this.assertHTML(`<div data-test="foo">hello world!</div>`);
     this.assertStableRerender();
@@ -313,7 +313,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports args'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
-    this.render(`{{#with (component 'Foo') as |Other|}}<Other @name="world" />{{/with}}`);
+    this.render(`{{#let (component 'Foo') as |Other|}}<Other @name="world" />{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -324,7 +324,7 @@ export class GlimmerishComponents extends RenderTest {
   })
   'invoking dynamic component (local) via angle brackets supports passing a block'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
-    this.render(`{{#with (component 'Foo') as |Other|}}<Other>world</Other>{{/with}}`);
+    this.render(`{{#let (component 'Foo') as |Other|}}<Other>world</Other>{{/let}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -351,7 +351,7 @@ export class GlimmerishComponents extends RenderTest {
       Foo
     );
     this.render(
-      `{{#with (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{this.outer}} data-test2="static" @dynamicNamedArg={{this.outer}}>template</Other>{{/with}}`,
+      `{{#let (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{this.outer}} data-test2="static" @dynamicNamedArg={{this.outer}}>template</Other>{{/let}}`,
       { outer: 'outer' }
     );
 

@@ -372,14 +372,14 @@ class CurlyScopeTest extends CurlyTest {
       stripTight`
         <div>
           [Outside: {{this.zomg}}]
-          {{#with this.zomg as |lol|}}
+          {{#let this.zomg as |lol|}}
             [Inside: {{this.zomg}}]
             [Inside: {{lol}}]
             <FooBar @foo={{this.zomg}}>
               [Block: {{this.zomg}}]
               [Block: {{lol}}]
             </FooBar>
-          {{/with}}
+          {{/let}}
         </div>`,
       { zomg: 'zomg' }
     );
@@ -419,14 +419,14 @@ class CurlyScopeTest extends CurlyTest {
       stripTight`
         <div>
           [Outside: {{this.zomg}}]
-          {{#with this.zomg as |lol|}}
+          {{#let this.zomg as |lol|}}
             [Inside: {{this.zomg}}]
             [Inside: {{lol}}]
             {{#foo-bar foo=this.zomg}}
               [Block: {{this.zomg}}]
               [Block: {{lol}}]
             {{/foo-bar}}
-          {{/with}}
+          {{/let}}
         </div>`,
       { zomg: 'zomg' }
     );
@@ -991,9 +991,9 @@ class CurlyClosureComponentsTest extends CurlyTest {
 
     this.render(
       stripTight`
-        {{#with (hash comp=(component 'foo-bar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{#component my.comp arg1="World!"}}Test1{{/component}} Test2
-        {{/with}}
+        {{/let}}
       `
     );
 
@@ -1007,9 +1007,9 @@ class CurlyClosureComponentsTest extends CurlyTest {
 
     this.render(
       stripTight`
-        {{#with (hash comp=(component 'foo-bar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{#component my.comp}}World!{{/component}} Test
-        {{/with}}
+        {{/let}}
       `
     );
 
@@ -1023,9 +1023,9 @@ class CurlyClosureComponentsTest extends CurlyTest {
 
     this.render(
       stripTight`
-        {{#with (hash comp=(component 'foo-bar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{component my.comp arg1="World!"}} Test
-        {{/with}}
+        {{/let}}
       `
     );
 
@@ -1039,9 +1039,9 @@ class CurlyClosureComponentsTest extends CurlyTest {
 
     this.render(
       stripTight`
-        {{#with (hash comp=(component 'foo-bar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{component my.comp}} World!
-        {{/with}}
+        {{/let}}
       `
     );
 
@@ -1131,9 +1131,9 @@ class CurlyClosureComponentsTest extends CurlyTest {
 
     this.render(
       stripTight`
-        {{#with (hash comp=(component 'foo-bar')) as |my|}}
+        {{#let (hash comp=(component 'foo-bar')) as |my|}}
           {{my.comp}} World!
-        {{/with}}
+        {{/let}}
       `
     );
 
@@ -1190,11 +1190,11 @@ class CurlyClosureComponentsTest extends CurlyTest {
 
     this.render(
       stripTight`
-        {{#with (component "foo-bar" "outer 1" "outer 2" a="outer a" b="outer b" c="outer c" e="outer e") as |outer|}}
-          {{#with (component outer "inner 1" a="inner a" d="inner d" e="inner e") as |inner|}}
+        {{#let (component "foo-bar" "outer 1" "outer 2" a="outer a" b="outer b" c="outer c" e="outer e") as |outer|}}
+          {{#let (component outer "inner 1" a="inner a" d="inner d" e="inner e") as |inner|}}
             {{#component inner "invocation 1" "invocation 2" a="invocation a" b="invocation b"}}---{{/component}}
-          {{/with}}
-        {{/with}}
+          {{/let}}
+        {{/let}}
       `
     );
 

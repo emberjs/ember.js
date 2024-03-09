@@ -76,8 +76,6 @@ export class ContentEncoder {
         return this.If(stmt);
       case 'Each':
         return this.Each(stmt);
-      case 'With':
-        return this.With(stmt);
       case 'Let':
         return this.Let(stmt);
       case 'WithDynamicVars':
@@ -207,15 +205,6 @@ export class ContentEncoder {
       SexpOpcodes.Each,
       EXPR.expr(value),
       key ? EXPR.expr(key) : null,
-      CONTENT.NamedBlock(block)[1],
-      inverse ? CONTENT.NamedBlock(inverse)[1] : null,
-    ];
-  }
-
-  With({ value, block, inverse }: mir.With): WireFormat.Statements.With {
-    return [
-      SexpOpcodes.With,
-      EXPR.expr(value),
       CONTENT.NamedBlock(block)[1],
       inverse ? CONTENT.NamedBlock(inverse)[1] : null,
     ];
