@@ -322,30 +322,6 @@ STATEMENTS.add(SexpOpcodes.Each, (op, [, value, key, block, inverse]) =>
   )
 );
 
-STATEMENTS.add(SexpOpcodes.With, (op, [, value, block, inverse]) => {
-  ReplayableIf(
-    op,
-
-    () => {
-      expr(op, value);
-      op(Op.Dup, $sp, 0);
-      op(Op.ToBoolean);
-
-      return 2;
-    },
-
-    () => {
-      InvokeStaticBlockWithStack(op, block, 1);
-    },
-
-    () => {
-      if (inverse) {
-        InvokeStaticBlock(op, inverse);
-      }
-    }
-  );
-});
-
 STATEMENTS.add(SexpOpcodes.Let, (op, [, positional, block]) => {
   let count = CompilePositional(op, positional);
   InvokeStaticBlockWithStack(op, block, count);
