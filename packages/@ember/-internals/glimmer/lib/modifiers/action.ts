@@ -200,6 +200,10 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     return new ActionState(element, owner, actionId, actionArgs, named, positional);
   }
 
+  getDebugInstance(state: ActionState): unknown {
+    return state;
+  }
+
   getDebugName(): string {
     return 'action';
   }
