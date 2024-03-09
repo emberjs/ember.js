@@ -78,8 +78,8 @@ test('Text curlies', '<div>{{title}}<span>{{title}}</span></div>', [
 
 test(
   `Smoke test (blocks don't produce 'this' fallback)`,
-  `{{#with person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}`,
-  ['!with', ['^person'], { as: 'name' }, [['!with', ['this.name'], { as: 'test' }, ['test']]]]
+  `{{#let person as |name|}}{{#let this.name as |test|}}{{test}}{{/let}}{{/let}}`,
+  ['!let', ['^person'], { as: 'name' }, [['!let', ['this.name'], { as: 'test' }, ['test']]]]
 );
 
 test(

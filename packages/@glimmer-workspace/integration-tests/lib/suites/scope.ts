@@ -9,11 +9,11 @@ export class ScopeSuite extends RenderTest {
   'correct scope - conflicting local names'() {
     this.render({
       layout: stripTight`
-        {{#with @a as |item|}}{{@a}}: {{item}},
-          {{#with @b as |item|}} {{@b}}: {{item}},
-            {{#with @c as |item|}} {{@c}}: {{item}}{{/with}}
-          {{/with}}
-        {{/with}}`,
+        {{#let @a as |item|}}{{@a}}: {{item}},
+          {{#let @b as |item|}} {{@b}}: {{item}},
+            {{#let @c as |item|}} {{@c}}: {{item}}{{/let}}
+          {{/let}}
+        {{/let}}`,
       args: { a: '"A"', b: '"B"', c: '"C"' },
     });
 
@@ -25,7 +25,7 @@ export class ScopeSuite extends RenderTest {
   'correct scope - conflicting block param and attr names'() {
     this.render({
       layout:
-        'Outer: {{@conflict}} {{#with @item as |conflict|}}Inner: {{@conflict}} Block: {{conflict}}{{/with}}',
+        'Outer: {{@conflict}} {{#let @item as |conflict|}}Inner: {{@conflict}} Block: {{conflict}}{{/let}}',
       args: { item: '"from block"', conflict: '"from attr"' },
     });
 

@@ -341,8 +341,8 @@ function buildKeyword(
     : null;
 
   switch (name) {
-    case 'with':
-      return [Op.With, expect(params, 'with requires params')[0], block, inverse];
+    case 'let':
+      return [Op.Let, expect(params, 'let requires params'), block];
     case 'if':
       return [Op.If, expect(params, 'if requires params')[0], block, inverse];
     case 'each': {

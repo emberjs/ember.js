@@ -232,14 +232,6 @@ export default class WireFormatDebugger {
             opcode[4] ? this.formatBlock(opcode[4]) : null,
           ];
 
-        case Op.With:
-          return [
-            'with',
-            this.formatOpcode(opcode[1]),
-            this.formatBlock(opcode[2]),
-            opcode[3] ? this.formatBlock(opcode[3]) : null,
-          ];
-
         case Op.Let:
           return ['let', this.formatParams(opcode[1]), this.formatBlock(opcode[2])];
 
