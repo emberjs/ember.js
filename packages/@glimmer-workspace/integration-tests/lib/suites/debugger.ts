@@ -75,7 +75,7 @@ export class DebuggerSuite extends RenderTest {
     });
 
     this.render(
-      '{{#with this.foo as |bar|}}{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/with}}',
+      '{{#let this.foo as |bar|}}{{#if this.a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/let}}',
       expectedContext
     );
     this.assert.strictEqual(callbackExecuted, 1);

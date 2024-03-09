@@ -43,12 +43,6 @@ export class Each extends node('Each').fields<{
   inverse: NamedBlock | null;
 }>() {}
 
-export class With extends node('With').fields<{
-  value: ExpressionNode;
-  block: NamedBlock;
-  inverse: NamedBlock | null;
-}>() {}
-
 export class Let extends node('Let').fields<{
   positional: Positional;
   block: NamedBlock;
@@ -242,7 +236,6 @@ export type Statement =
   | AppendComment
   | If
   | Each
-  | With
   | Let
   | WithDynamicVars
   | InvokeComponent;

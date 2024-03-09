@@ -281,68 +281,6 @@ export const BLOCK_KEYWORDS = keywords('Block')
       );
     },
   })
-  .kw('with', {
-    assert(node: ASTv2.InvokeBlock): Result<{
-      value: ASTv2.ExpressionNode;
-    }> {
-      let { args } = node;
-
-      if (!args.named.isEmpty()) {
-        return Err(
-          generateSyntaxError(
-            `{{#with}} cannot receive named parameters, received ${args.named.entries
-              .map((e) => e.name.chars)
-              .join(', ')}`,
-            args.named.loc
-          )
-        );
-      }
-
-      if (args.positional.size > 1) {
-        return Err(
-          generateSyntaxError(
-            `{{#with}} can only receive one positional parameter. Received ${args.positional.size} parameters`,
-            args.positional.loc
-          )
-        );
-      }
-
-      let value = args.nth(0);
-
-      if (value === null) {
-        return Err(
-          generateSyntaxError(
-            `{{#with}} requires a value as its first positional parameter, did not receive any parameters`,
-            args.loc
-          )
-        );
-      }
-
-      return Ok({ value });
-    },
-
-    translate(
-      { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },
-      { value }: { value: ASTv2.ExpressionNode }
-    ): Result<mir.With> {
-      let block = node.blocks.get('default');
-      let inverse = node.blocks.get('else');
-
-      let valueResult = VISIT_EXPRS.visit(value, state);
-      let blockResult = VISIT_STMTS.NamedBlock(block, state);
-      let inverseResult = inverse ? VISIT_STMTS.NamedBlock(inverse, state) : Ok(null);
-
-      return Result.all(valueResult, blockResult, inverseResult).mapOk(
-        ([value, block, inverse]) =>
-          new mir.With({
-            loc: node.loc,
-            value,
-            block,
-            inverse,
-          })
-      );
-    },
-  })
   .kw('let', {
     assert(node: ASTv2.InvokeBlock): Result<{
       positional: ASTv2.PositionalArguments;

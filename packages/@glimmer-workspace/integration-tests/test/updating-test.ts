@@ -561,17 +561,6 @@ class UpdatingTest extends RenderTest {
   }
 
   @test
-  'helpers passed as arguments to {{#with}} are not torn down when switching between blocks'() {
-    let options = {
-      template: '{{#with (stateful-foo) as |unused|}}Yes{{/with}}',
-      truthyValue: {},
-      falsyValue: null,
-    };
-
-    this.testStatefulHelper(assert, options);
-  }
-
-  @test
   'helpers passed as arguments to {{#each}} are not torn down when switching between blocks'() {
     let options = {
       template: '{{#each (stateful-foo) key="@index" as |unused|}}Yes{{/each}}',
@@ -900,7 +889,7 @@ class UpdatingTest extends RenderTest {
 
     const person = { name: new Name('Godfrey', 'Chan') };
 
-    this.render('<div>{{#with this.person.name.first as |f|}}{{f}}{{/with}}</div>', {
+    this.render('<div>{{#let this.person.name.first as |f|}}{{f}}{{/let}}</div>', {
       person,
     });
 
@@ -943,7 +932,7 @@ class UpdatingTest extends RenderTest {
 
         -----
 
-        {{#with this.value as |foo|}}
+        {{#let this.value as |foo|}}
           foo: "{{foo}}";
           bar: "{{bar}}";
           value: "{{this.value}}";
@@ -953,26 +942,26 @@ class UpdatingTest extends RenderTest {
 
           -----
 
-          {{#with foo as |bar|}}
+          {{#let foo as |bar|}}
             foo: "{{foo}}";
             bar: "{{bar}}";
             value: "{{this.value}}";
             echo foo: "{{echo foo}}";
             echo bar: "{{echo bar}}";
             echo value: "{{echo this.value}}";
-          {{/with}}
-        {{/with}}
+          {{/let}}
+        {{/let}}
 
         -----
 
-        {{#with this.value as |bar|}}
+        {{#let this.value as |bar|}}
           foo: "{{foo}}";
           bar: "{{bar}}";
           value: "{{this.value}}";
           echo foo: "{{echo this.foo}}";
           echo bar: "{{echo bar}}";
           echo value: "{{echo this.value}}";
-        {{/with}}
+        {{/let}}
       </div>
     `;
 
@@ -1108,7 +1097,7 @@ class UpdatingTest extends RenderTest {
   @test
   'block arguments (ensure balanced push/pop)'() {
     let person = { name: { first: 'Godfrey', last: 'Chan' } };
-    this.render('<div>{{#with this.person.name.first as |f|}}{{f}}{{/with}}{{this.f}}</div>', {
+    this.render('<div>{{#let this.person.name.first as |f|}}{{f}}{{/let}}{{this.f}}</div>', {
       person,
       f: 'Outer',
     });
@@ -1128,9 +1117,9 @@ class UpdatingTest extends RenderTest {
     this.render(
       stripTight`
         <div>
-          [{{#with this.person as |name|}}{{this.name}}{{/with}}]
-          [{{#with this.person as |name|}}{{#with this.name as |test|}}{{test}}{{/with}}{{/with}}]
-          [{{#with this.person as |name|}}{{#with (noop this.name) as |test|}}{{test}}{{/with}}{{/with}}]
+          [{{#let this.person as |name|}}{{this.name}}{{/let}}]
+          [{{#let this.person as |name|}}{{#let this.name as |test|}}{{test}}{{/let}}{{/let}}]
+          [{{#let this.person as |name|}}{{#let (noop this.name) as |test|}}{{test}}{{/let}}{{/let}}]
         </div>
       `,
       { person: 'Yehuda', name: 'Godfrey' }
@@ -1148,7 +1137,7 @@ class UpdatingTest extends RenderTest {
 
   @test
   'The with helper should consider an empty array truthy'() {
-    this.render('<div>{{#with this.condition as |c|}}{{c.length}}{{/with}}</div>', {
+    this.render('<div>{{#let this.condition as |c|}}{{c.length}}{{/let}}</div>', {
       condition: [],
     });
 

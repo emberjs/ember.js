@@ -49,7 +49,6 @@ import type {
   TrustingDynamicAttrOpcode,
   UndefinedOpcode,
   WithDynamicVarsOpcode,
-  WithOpcode,
   YieldOpcode,
 } from './opcodes.js';
 
@@ -314,13 +313,6 @@ export namespace Statements {
     inverse: Nullable<SerializedInlineBlock>,
   ];
 
-  export type With = [
-    op: WithOpcode,
-    value: Expression,
-    block: SerializedInlineBlock,
-    inverse: Nullable<SerializedInlineBlock>,
-  ];
-
   export type Let = [op: LetOpcode, positional: Core.Params, block: SerializedInlineBlock];
 
   export type WithDynamicVars = [
@@ -360,7 +352,6 @@ export namespace Statements {
     | InElement
     | If
     | Each
-    | With
     | Let
     | WithDynamicVars
     | InvokeComponent;

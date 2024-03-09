@@ -6,11 +6,11 @@ class ArrayTest extends RenderTest {
   @test
   'returns an array'() {
     this.render(strip`
-    {{#with (array "Sergio") as |people|}}
+    {{#let (array "Sergio") as |people|}}
       {{#each people as |personName|}}
         {{personName}}
       {{/each}}
-    {{/with}}`);
+    {{/let}}`);
 
     this.assertHTML('Sergio');
 
@@ -20,11 +20,11 @@ class ArrayTest extends RenderTest {
   @test
   'can have more than one value'() {
     this.render(strip`
-    {{#with (array "Sergio" "Robert") as |people|}}
+    {{#let (array "Sergio" "Robert") as |people|}}
       {{#each people as |personName|}}
         {{personName}},
       {{/each}}
-    {{/with}}`);
+    {{/let}}`);
 
     this.assertHTML('Sergio,Robert,');
 
@@ -34,11 +34,11 @@ class ArrayTest extends RenderTest {
   @test
   'binds values when variables are used'() {
     this.render(
-      strip`{{#with (array this.personOne) as |people|}}
+      strip`{{#let (array this.personOne) as |people|}}
             {{#each people as |personName|}}
               {{personName}}
             {{/each}}
-          {{/with}}`,
+          {{/let}}`,
       {
         personOne: 'Tom',
       }
@@ -58,11 +58,11 @@ class ArrayTest extends RenderTest {
   @test
   'binds multiple values when variables are used'() {
     this.render(
-      strip`{{#with (array this.personOne this.personTwo) as |people|}}
+      strip`{{#let (array this.personOne this.personTwo) as |people|}}
             {{#each people as |personName|}}
               {{personName}},
             {{/each}}
-          {{/with}}`,
+          {{/let}}`,
       {
         personOne: 'Tom',
         personTwo: 'Yehuda',
