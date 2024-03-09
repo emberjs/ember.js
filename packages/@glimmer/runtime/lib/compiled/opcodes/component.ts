@@ -56,6 +56,7 @@ import type { UpdatingVM } from '../../vm';
 import type { InternalVM } from '../../vm/append';
 import type { BlockArgumentsImpl } from '../../vm/arguments';
 
+import { ConcreteBounds } from '../../bounds';
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
 import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../curried-value';
@@ -489,8 +490,46 @@ export class ComponentElementOperations implements ElementOperations {
     this.attributes[name] = deferred;
   }
 
-  addModifier(modifier: ModifierInstance): void {
+  addModifier(vm: InternalVM, modifier: ModifierInstance, capturedArgs: CapturedArguments): void {
     this.modifiers.push(modifier);
+
+    if (vm.env.debugRenderTree !== undefined) {
+      const { manager, definition, state } = modifier;
+
+      // TODO: we need a stable object for the debugRenderTree as the key, add support for
+      // the case where the state is a primitive, or if in practice we always have/require
+      // an object, then change the internal types to reflect that
+      if (state === null || (typeof state !== 'object' && typeof state !== 'function')) {
+        return;
+      }
+
+      let { element, constructing } = vm.elements();
+      let name = manager.getDebugName(definition.state);
+      let instance = manager.getDebugInstance(state);
+
+      assert(constructing, `Expected a constructing element in addModifier`);
+
+      let bounds = new ConcreteBounds(element, constructing, constructing);
+
+      vm.env.debugRenderTree.create(state, {
+        type: 'modifier',
+        name,
+        args: capturedArgs,
+        instance,
+      });
+
+      vm.env.debugRenderTree.didRender(state, bounds);
+
+      // For tearing down the debugRenderTree
+      vm.associateDestroyable(state);
+
+      vm.updateWith(new DebugRenderTreeUpdateOpcode(state));
+      vm.updateWith(new DebugRenderTreeDidRenderOpcode(state, bounds));
+
+      registerDestructor(state, () => {
+        vm.env.debugRenderTree?.willDestroy(state);
+      });
+    }
   }
 
   flush(vm: InternalVM): ModifierInstance[] {
@@ -644,8 +683,6 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
         template: moduleName,
         instance: valueForRef(selfRef),
       });
-
-      vm.associateDestroyable(instance);
 
       registerDestructor(instance, () => {
         vm.env.debugRenderTree?.willDestroy(instance);
