@@ -449,19 +449,15 @@ moduleFor(
         }),
       });
 
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-
       let actionTriggered = 0;
       this.registerComponent('outer-component', {
         template:
-          '{{#component this.componentName somethingClicked=(action "mappedAction")}}arepas!{{/component}}',
+          '{{#component this.componentName somethingClicked=this.mappedAction}}arepas!{{/component}}',
         ComponentClass: Component.extend({
           classNames: 'outer-component',
           componentName: 'inner-component',
-          actions: {
-            mappedAction() {
-              actionTriggered++;
-            },
+          mappedAction() {
+            actionTriggered++;
           },
         }),
       });

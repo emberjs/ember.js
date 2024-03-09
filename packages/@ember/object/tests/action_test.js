@@ -6,8 +6,6 @@ moduleFor(
   '@action decorator',
   class extends RenderingTestCase {
     '@test action decorator works with ES6 class'(assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       class FooComponent extends Component {
         @action
         foo() {
@@ -17,7 +15,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{foo-bar}}');
@@ -51,14 +49,11 @@ moduleFor(
     }
 
     '@test actions are properly merged through traditional and ES6 prototype hierarchy'(assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-      assert.expect(5);
+      assert.expect(4);
 
       let FooComponent = Component.extend({
-        actions: {
-          foo() {
-            assert.ok(true, 'foo called!');
-          },
+        foo() {
+          assert.ok(true, 'foo called!');
         },
       });
 
@@ -70,10 +65,8 @@ moduleFor(
       }
 
       let BazComponent = BarComponent.extend({
-        actions: {
-          baz() {
-            assert.ok(true, 'baz called!');
-          },
+        baz() {
+          assert.ok(true, 'baz called!');
         },
       });
 
@@ -87,10 +80,10 @@ moduleFor(
       this.registerComponent('qux-component', {
         ComponentClass: QuxComponent,
         template: strip`
-          <button {{action 'foo'}}>Click Foo!</button>
-          <button {{action 'bar'}}>Click Bar!</button>
-          <button {{action 'baz'}}>Click Baz!</button>
-          <button {{action 'qux'}}>Click Qux!</button>
+          <button {{on 'click' this.foo}}>Click Foo!</button>
+          <button {{on 'click' this.bar}}>Click Bar!</button>
+          <button {{on 'click' this.baz}}>Click Baz!</button>
+          <button {{on 'click' this.qux}}>Click Qux!</button>
         `,
       });
 
@@ -100,8 +93,6 @@ moduleFor(
     }
 
     '@test action decorator super works with native class methods'(assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       class FooComponent extends Component {
         foo() {
           assert.ok(true, 'called!');
@@ -117,7 +108,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -126,8 +117,6 @@ moduleFor(
     }
 
     '@test action decorator super works with traditional class methods'(assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let FooComponent = Component.extend({
         foo() {
           assert.ok(true, 'called!');
@@ -143,7 +132,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -169,7 +158,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -246,8 +235,6 @@ moduleFor(
     }
 
     '@test action decorator can be used as a classic decorator with strings'(assert) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       let FooComponent = Component.extend({
         foo: action(function () {
           assert.ok(true, 'called!');
@@ -256,7 +243,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{foo-bar}}');

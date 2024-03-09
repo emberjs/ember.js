@@ -36,52 +36,6 @@ moduleFor(
       // No U-R
     }
 
-    '@test passing an action to {{readonly}} avoids mutable cell wrapping'(assert) {
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
-
-      assert.expect(5);
-      let outer, inner;
-
-      this.registerComponent('x-inner', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            inner = this;
-          },
-        }),
-      });
-
-      this.registerComponent('x-outer', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            outer = this;
-          },
-        }),
-        template: '{{x-inner onClick=(readonly this.onClick)}}',
-      });
-
-      this.render('{{x-outer onClick=(action this.doIt)}}', {
-        doIt() {
-          assert.ok(true, 'action was called');
-        },
-      });
-
-      assert.equal(
-        typeof outer.attrs.onClick,
-        'function',
-        'function itself is present in outer component attrs'
-      );
-      outer.attrs.onClick();
-
-      assert.equal(
-        typeof inner.attrs.onClick,
-        'function',
-        'function itself is present in inner component attrs'
-      );
-      inner.attrs.onClick();
-    }
-
     '@test updating a {{readonly}} property from above works'(assert) {
       let component;
 

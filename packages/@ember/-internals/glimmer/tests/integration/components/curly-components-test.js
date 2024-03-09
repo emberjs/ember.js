@@ -1428,8 +1428,6 @@ moduleFor(
     ) {
       let componentInstance = null;
 
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       this.registerComponent('non-block', {
         ComponentClass: Component.extend({
           counter: computed({
@@ -1461,7 +1459,7 @@ moduleFor(
           },
         }),
         template: `
-          <button {{action "click"}}>foobar</button>
+          <button {{on 'click' this.click}}>foobar</button>
         `,
       });
 
@@ -3151,54 +3149,20 @@ moduleFor(
     ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
       assert
     ) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
-          actions: {
-            show() {
-              assert.ok(true, 'display-toggle show action was called');
-              return true;
-            },
+          show() {
+            assert.ok(true, 'display-toggle show action was called');
+            return true;
           },
         }),
 
-        template: `<button {{action 'show'}}>Show</button>`,
+        template: `<button {{on 'click' this.show}}>Show</button>`,
       });
 
       this.render(`{{display-toggle}}`, {
         send() {
           assert.notOk(true, 'send should not be called when action is not "subscribed" to');
-        },
-      });
-
-      this.assertText('Show');
-
-      runTask(() => this.$('button').click());
-    }
-
-    ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
-      assert.expect(5);
-
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
-
-      this.registerComponent('display-toggle', {
-        ComponentClass: Component.extend({
-          actions: {
-            show() {
-              assert.ok(true, 'display-toggle show action was called');
-              return true;
-            },
-          },
-        }),
-
-        template: `<button {{action 'show'}}>Show</button>`,
-      });
-
-      this.render(`{{display-toggle target=this}}`, {
-        send(actionName) {
-          assert.ok(true, 'send should be called when action is "subscribed" to');
-          assert.equal(actionName, 'show');
         },
       });
 

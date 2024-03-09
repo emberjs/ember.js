@@ -186,13 +186,12 @@ moduleFor(
     ['@test Components trigger actions in the parents context when called from within a block'](
       assert
     ) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'application',
         `
       <div id='wrapper'>
         {{#my-component}}
-          <a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>
+          <a href='#' id='fizzbuzz' {{on 'click' this.fizzbuzz}}>Fizzbuzz</a>
         {{/my-component}}
       </div>
     `
@@ -201,10 +200,8 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          actions: {
-            fizzbuzz() {
-              assert.ok(true, 'action triggered on parent');
-            },
+          fizzbuzz() {
+            assert.ok(true, 'action triggered on parent');
           },
         })
       );
@@ -220,7 +217,6 @@ moduleFor(
     ['@test Components trigger actions in the components context when called from within its template'](
       assert
     ) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       this.addTemplate(
         'application',
         `
@@ -231,22 +227,18 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          actions: {
-            fizzbuzz() {
-              assert.ok(false, 'action on the wrong context');
-            },
+          fizzbuzz() {
+            assert.ok(false, 'action on the wrong context');
           },
         })
       );
       this.addComponent('my-component', {
         ComponentClass: Component.extend({
-          actions: {
-            fizzbuzz() {
-              assert.ok(true, 'action triggered on component');
-            },
+          fizzbuzz() {
+            assert.ok(true, 'action triggered on component');
           },
         }),
-        template: `<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>`,
+        template: `<a href='#' id='fizzbuzz' {{on 'click' this.fizzbuzz}}>Fizzbuzz</a>`,
       });
 
       return this.visit('/').then(() => {

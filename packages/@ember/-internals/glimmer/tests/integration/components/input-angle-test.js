@@ -283,15 +283,12 @@ moduleFor(
     ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(3);
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+      assert.expect(2);
 
-      this.render(`<Input @enter={{action 'foo'}} />`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`<Input @enter={{this.foo}} />`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
@@ -321,15 +318,12 @@ moduleFor(
     ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(3);
-      expectDeprecation(/Usage of the `\(action\)` helper is deprecated./);
+      assert.expect(2);
 
-      this.render(`<Input @escape-press={{action 'foo'}} />`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`<Input @escape-press={{this.foo}} />`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 

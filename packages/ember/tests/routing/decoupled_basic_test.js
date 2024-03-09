@@ -305,7 +305,6 @@ moduleFor(
     async ['@test Events are triggered on the controller if a matching action name is implemented'](
       assert
     ) {
-      expectDeprecation(/Usage of the `\{\{action\}\}` modifier is deprecated./);
       let done = assert.async();
 
       this.router.map(function () {
@@ -322,24 +321,20 @@ moduleFor(
             return model;
           },
 
-          actions: {
-            showStuff() {
-              stateIsNotCalled = false;
-            },
+          showStuff() {
+            stateIsNotCalled = false;
           },
         })
       );
 
-      this.addTemplate('home', '<a {{action "showStuff" @model}}>{{this.name}}</a>');
+      this.addTemplate('home', '<a {{on "click" (fn this.showStuff @model)}}>{{this.name}}</a>');
       this.add(
         'controller:home',
         Controller.extend({
-          actions: {
-            showStuff(context) {
-              assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
-              assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
-              done();
-            },
+          showStuff(context) {
+            assert.ok(stateIsNotCalled, 'an event on the state is not triggered');
+            assert.deepEqual(context, { name: 'Tom Dale' }, 'an event with context is passed');
+            done();
           },
         })
       );
