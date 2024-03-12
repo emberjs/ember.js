@@ -79,8 +79,8 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4(@babel/core@7.23.2)
       babel-plugin-ember-template-compilation:
-        specifier: ^2.1.1
-        version: 2.2.0
+        specifier: ^2.2.1
+        version: 2.2.1
       babel-plugin-filter-imports:
         specifier: ^4.0.0
         version: 4.0.0
@@ -5708,8 +5708,8 @@ packages:
       ember-rfc176-data: 0.3.18
     dev: false
 
-  /babel-plugin-ember-template-compilation@2.2.0:
-    resolution: {integrity: sha512-1I7f5gf06h5wKdKUvaYEIaoSFur5RLUvTMQG4ak0c5Y11DWUxcoX9hrun1xe9fqfY2dtGFK+ZUM6sn6z8sqK/w==}
+  /babel-plugin-ember-template-compilation@2.2.1:
+    resolution: {integrity: sha512-alinprIQcLficqkuIyeKKfD4HQOpMOiHK6pt6Skj/yjoPoQYBuwAJ2BoPAlRe9k/URPeVkpMefbN3m6jEp7RsA==}
     engines: {node: '>= 12.*'}
     dependencies:
       '@glimmer/syntax': 0.84.3
@@ -7626,7 +7626,7 @@ packages:
       '@embroider/shared-internals': 2.5.0
       babel-loader: 8.3.0(@babel/core@7.23.2)
       babel-plugin-ember-modules-api-polyfill: 3.5.0
-      babel-plugin-ember-template-compilation: 2.2.0
+      babel-plugin-ember-template-compilation: 2.2.1
       babel-plugin-htmlbars-inline-precompile: 5.3.1
       babel-plugin-syntax-dynamic-import: 6.18.0
       broccoli-debug: 0.6.5

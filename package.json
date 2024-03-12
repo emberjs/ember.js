@@ -78,7 +78,7 @@
     "@glimmer/vm-babel-plugins": "0.87.1",
     "@simple-dom/interface": "^1.4.0",
     "babel-plugin-debug-macros": "^0.3.4",
-    "babel-plugin-ember-template-compilation": "^2.1.1",
+    "babel-plugin-ember-template-compilation": "^2.2.1",
     "babel-plugin-filter-imports": "^4.0.0",
     "backburner.js": "^2.8.0",
     "broccoli-concat": "^4.2.5",
