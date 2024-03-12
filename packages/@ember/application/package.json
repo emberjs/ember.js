@@ -30,6 +30,6 @@
     "ember-template-compiler": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
-    "router_js": "^8.0.3"
+    "router_js": "^8.0.4"
   }
 }
