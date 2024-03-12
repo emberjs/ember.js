@@ -171,7 +171,7 @@
     "testem": "^3.10.1",
     "testem-failure-only-reporter": "^1.0.0",
     "typescript": "5.1",
-    "vite": "^4.4.7"
+    "vite": "^4.5.2"
   },
   "resolutions": {
     "socket.io": "^4.7.0"
