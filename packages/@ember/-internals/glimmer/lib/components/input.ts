@@ -5,7 +5,7 @@ import { hasDOM } from '@ember/-internals/browser-environment';
 import { type Opaque } from '@ember/-internals/utility-types';
 import { assert, warn } from '@ember/debug';
 import { action } from '@ember/object';
-import { valueForRef } from '@glimmer/reference';
+import { unwrapReactive } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 import InputTemplate from '../templates/input';
 import AbstractInput, { valueFrom } from './abstract-input';
@@ -209,7 +209,7 @@ class _Input extends AbstractInput {
           () =>
             this.args.named['checked'] !== undefined ||
             this.args.named['value'] === undefined ||
-            typeof valueForRef(this.args.named['value']) === 'string'
+            typeof unwrapReactive(this.args.named['value']) === 'string'
         ),
         { id: 'ember.built-in-components.input-checkbox-value' }
       );
@@ -229,7 +229,7 @@ class _Input extends AbstractInput {
         () =>
           this.args.named['checked'] !== undefined ||
           this.args.named['value'] === undefined ||
-          typeof valueForRef(this.args.named['value']) === 'string'
+          typeof unwrapReactive(this.args.named['value']) === 'string'
       ),
       { id: 'ember.built-in-components.input-checkbox-value' }
     );

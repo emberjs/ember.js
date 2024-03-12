@@ -7,8 +7,8 @@ import type { BootOptions } from '@ember/engine/instance';
 import { assert } from '@ember/debug';
 import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, updateRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { Accessor, updateRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
@@ -53,7 +53,7 @@ export default class OutletView {
     return new OutletView(_environment, owner, template, namespace);
   }
 
-  private ref: Reference;
+  private ref: Reactive;
   public state: OutletDefinitionState;
 
   constructor(
@@ -76,16 +76,16 @@ export default class OutletView {
       },
     };
 
-    let ref = (this.ref = createComputeRef(
-      () => {
+    let ref = (this.ref = Accessor({
+      get: () => {
         consumeTag(outletStateTag);
         return outletState;
       },
-      (state: OutletState) => {
+      set: (state: OutletState) => {
         dirtyTag(outletStateTag);
         outletState.outlets['main'] = state;
-      }
-    ));
+      },
+    }));
 
     this.state = {
       ref,

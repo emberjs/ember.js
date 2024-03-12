@@ -6,9 +6,9 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/vm';
-import type { Reference } from '@glimmer/reference';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { CurriedTypes } from '@glimmer/vm';
+import type { Reactive } from '@glimmer/reference';
+import { Formula, unwrapReactive } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { MountDefinition } from '../component-managers/mount';
@@ -55,9 +55,9 @@ import { internalHelper } from '../helpers/internal-helper';
   @public
 */
 export const mountHelper = internalHelper(
-  (args: CapturedArguments, owner?: InternalOwner): Reference<CurriedValue | null> => {
+  (args: CapturedArguments, owner?: InternalOwner): Reactive<CurriedValue | null> => {
     assert('{{mount}} must be used within a component that has an owner', owner);
-    let nameRef = args.positional[0] as Reference<Nullable<string>>;
+    let nameRef = args.positional[0] as Reactive<Nullable<string>>;
     let captured: CapturedArguments | null;
 
     assert(
@@ -81,8 +81,8 @@ export const mountHelper = internalHelper(
 
     let lastName: string | null, lastDef: CurriedValue | null;
 
-    return createComputeRef(() => {
-      let name = valueForRef(nameRef);
+    return Formula(() => {
+      let name = unwrapReactive(nameRef);
 
       if (typeof name === 'string') {
         if (lastName === name) {
@@ -95,7 +95,7 @@ export const mountHelper = internalHelper(
         );
 
         lastName = name;
-        lastDef = curry(CurriedType.Component, new MountDefinition(name), owner, captured, true);
+        lastDef = curry(CurriedTypes.Component, new MountDefinition(name), owner, captured, true);
 
         return lastDef;
       } else {

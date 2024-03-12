@@ -1,8 +1,8 @@
 import { tracked } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { action } from '@ember/object';
-import type { Reference } from '@glimmer/reference';
-import { isConstRef, isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { isConstant, isUpdatableRef, updateRef, unwrapReactive } from '@glimmer/reference';
 import type { EventListener } from './internal';
 import InternalComponent from './internal';
 
@@ -27,11 +27,11 @@ function devirtualize(callback: VirtualEventListener): EventListener {
   return (event: Event) => callback(valueForEvent(event), event);
 }
 
-export function valueFrom(reference?: Reference<unknown>): Value {
+export function valueFrom(reference?: Reactive<unknown>): Value {
   if (reference === undefined) {
     return new LocalValue(undefined);
-  } else if (isConstRef(reference)) {
-    return new LocalValue(valueForRef(reference));
+  } else if (isConstant(reference)) {
+    return new LocalValue(unwrapReactive(reference));
   } else if (isUpdatableRef(reference)) {
     return new UpstreamValue(reference);
   } else {
@@ -61,10 +61,10 @@ class LocalValue implements Value {
 }
 
 class UpstreamValue implements Value {
-  constructor(private reference: Reference<unknown>) {}
+  constructor(private reference: Reactive<unknown>) {}
 
   get(): unknown {
-    return valueForRef(this.reference);
+    return unwrapReactive(this.reference);
   }
 
   set(value: unknown): void {
@@ -78,7 +78,7 @@ class ForkedValue implements Value {
 
   private lastUpstreamValue = UNINITIALIZED;
 
-  constructor(reference: Reference<unknown>) {
+  constructor(reference: Reactive<unknown>) {
     this.upstream = new UpstreamValue(reference);
   }
 

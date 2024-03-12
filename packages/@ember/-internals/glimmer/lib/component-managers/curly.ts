@@ -25,8 +25,13 @@ import type {
   WithDynamicLayout,
   WithDynamicTagName,
 } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import {
+  Formula,
+  getReactiveProperty,
+  createPrimitiveCell,
+  unwrapReactive,
+} from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
 import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
 import {
@@ -59,7 +64,7 @@ export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
 export const BOUNDS = Symbol('BOUNDS');
 
-const EMBER_VIEW_REF = createPrimitiveRef('ember-view');
+const EMBER_VIEW_REF = createPrimitiveCell('ember-view');
 
 function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
@@ -77,7 +82,7 @@ function aliasIdToElementId(args: VMArguments, props: any) {
 function applyAttributeBindings(
   attributeBindings: Array<string>,
   component: Component,
-  rootRef: Reference<Component>,
+  rootRef: Reactive<Component>,
   operations: ElementOperations
 ) {
   let seen: string[] = [];
@@ -99,11 +104,11 @@ function applyAttributeBindings(
 
   if (seen.indexOf('id') === -1) {
     let id = component.elementId ? component.elementId : guidFor(component);
-    operations.setAttribute('id', createPrimitiveRef(id), false, null);
+    operations.setAttribute('id', createPrimitiveCell(id), false, null);
   }
 }
 
-const EMPTY_POSITIONAL_ARGS: Reference[] = [];
+const EMPTY_POSITIONAL_ARGS: Reactive[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
@@ -179,7 +184,7 @@ export default class CurlyComponentManager
       assert('[BUG] unexpectedly missing __ARGS__ after check', __ARGS__);
 
       // does this need to be untracked?
-      let __args__ = valueForRef(__ARGS__) as CapturedArguments;
+      let __args__ = unwrapReactive(__ARGS__) as CapturedArguments;
 
       let prepared = {
         positional: __args__.positional,
@@ -209,7 +214,7 @@ export default class CurlyComponentManager
       );
       let captured = args.positional.capture();
       named = {
-        [positionalParams]: createComputeRef(() => reifyPositional(captured)),
+        [positionalParams]: Formula(() => reifyPositional(captured)),
       };
       Object.assign(named, args.named.capture());
     } else if (Array.isArray(positionalParams) && positionalParams.length > 0) {
@@ -232,7 +237,7 @@ export default class CurlyComponentManager
       return null;
     }
 
-    return { positional: EMPTY_ARRAY as readonly Reference[], named };
+    return { positional: EMPTY_ARRAY as readonly Reactive[], named };
   }
 
   /*
@@ -247,7 +252,7 @@ export default class CurlyComponentManager
     args: VMArguments,
     { isInteractive }: Environment,
     dynamicScope: DynamicScope,
-    callerSelfRef: Reference,
+    callerSelfRef: Nullable<Reactive>,
     hasBlock: boolean
   ): ComponentStateBucket {
     // Get the nearest concrete component instance from the scope. "Virtual"
@@ -276,7 +281,8 @@ export default class CurlyComponentManager
 
     // Save the current `this` context of the template as the component's
     // `_target`, so bubbled actions are routed to the right place.
-    props._target = valueForRef(callerSelfRef);
+    assert('[BUG] caller unexpectedly null', callerSelfRef !== null);
+    props._target = unwrapReactive(callerSelfRef);
 
     setOwner(props, owner);
 
@@ -358,7 +364,7 @@ export default class CurlyComponentManager
     );
   }
 
-  getSelf({ rootRef }: ComponentStateBucket): Reference {
+  getSelf({ rootRef }: ComponentStateBucket): Reactive {
     return rootRef;
   }
 
@@ -376,7 +382,7 @@ export default class CurlyComponentManager
       applyAttributeBindings(attributeBindings, component, rootRef, operations);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
-      operations.setAttribute('id', createPrimitiveRef(id), false, null);
+      operations.setAttribute('id', createPrimitiveCell(id), false, null);
     }
 
     if (classRef) {
@@ -386,7 +392,7 @@ export default class CurlyComponentManager
 
     if (classNames && classNames.length) {
       classNames.forEach((name: string) => {
-        operations.setAttribute('class', createPrimitiveRef(name), false, null);
+        operations.setAttribute('class', createPrimitiveCell(name), false, null);
       });
     }
 
@@ -398,7 +404,7 @@ export default class CurlyComponentManager
     operations.setAttribute('class', EMBER_VIEW_REF, false, null);
 
     if ('ariaRole' in component) {
-      operations.setAttribute('role', childRefFor(rootRef, 'ariaRole'), false, null);
+      operations.setAttribute('role', getReactiveProperty(rootRef, 'ariaRole'), false, null);
     }
 
     component._transitionTo('hasElement');

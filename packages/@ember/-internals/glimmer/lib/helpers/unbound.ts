@@ -4,7 +4,7 @@
 
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createUnboundRef, valueForRef } from '@glimmer/reference';
+import { DeeplyReadonlyCell, unwrapReactive } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 /**
@@ -41,5 +41,5 @@ export default internalHelper(({ positional, named }: CapturedArguments) => {
     positional.length === 1 && Object.keys(named).length === 0
   );
 
-  return createUnboundRef(valueForRef(positional[0]!), '(result of an `unbound` helper)');
+  return DeeplyReadonlyCell(unwrapReactive(positional[0]!), '(result of an `unbound` helper)');
 });

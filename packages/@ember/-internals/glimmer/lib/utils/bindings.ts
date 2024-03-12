@@ -2,17 +2,17 @@ import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/-internals/string';
 import type { ElementOperations } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
 import {
-  childRefFor,
-  childRefFromParts,
-  createComputeRef,
-  createPrimitiveRef,
-  valueForRef,
+  Formula,
+  createPrimitiveCell,
+  getReactiveProperty,
+  getReactivePath,
+  unwrapReactive,
 } from '@glimmer/reference';
 import type Component from '../component';
 
-function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {
+function referenceForParts(rootRef: Reactive<Component>, parts: string[]): Reactive {
   let isAttrs = parts[0] === 'attrs';
 
   // TODO deprecate this
@@ -20,11 +20,11 @@ function referenceForParts(rootRef: Reference<Component>, parts: string[]): Refe
     parts.shift();
 
     if (parts.length === 1) {
-      return childRefFor(rootRef, parts[0]!);
+      return getReactiveProperty(rootRef, parts[0]!);
     }
   }
 
-  return childRefFromParts(rootRef, parts);
+  return getReactivePath(rootRef, parts);
 }
 
 export function parseAttributeBinding(microsyntax: string): [string, string, boolean] {
@@ -51,7 +51,7 @@ export function parseAttributeBinding(microsyntax: string): [string, string, boo
 
 export function installAttributeBinding(
   component: Component,
-  rootRef: Reference<Component>,
+  rootRef: Reactive<Component>,
   parsed: [string, string, boolean],
   operations: ElementOperations
 ) {
@@ -64,13 +64,19 @@ export function installAttributeBinding(
     if (elementId === undefined || elementId === null) {
       elementId = component.elementId;
     }
-    let elementIdRef = createPrimitiveRef(elementId);
+    assert(
+      `Invalid elementId: ${elementId}`,
+      elementId === undefined || elementId === null || typeof elementId === 'string'
+    );
+    let elementIdRef = createPrimitiveCell(elementId);
     operations.setAttribute('id', elementIdRef, true, null);
     return;
   }
 
   let isPath = prop.indexOf('.') > -1;
-  let reference = isPath ? referenceForParts(rootRef, prop.split('.')) : childRefFor(rootRef, prop);
+  let reference = isPath
+    ? referenceForParts(rootRef, prop.split('.'))
+    : getReactiveProperty(rootRef, prop);
 
   assert(
     `Illegal attributeBinding: '${prop}' is not a valid attribute name.`,
@@ -81,7 +87,7 @@ export function installAttributeBinding(
 }
 
 export function createClassNameBindingRef(
-  rootRef: Reference<Component>,
+  rootRef: Reactive<Component>,
   microsyntax: string,
   operations: ElementOperations
 ) {
@@ -93,11 +99,11 @@ export function createClassNameBindingRef(
   let isStatic = prop === '';
 
   if (isStatic) {
-    operations.setAttribute('class', createPrimitiveRef(truthy), true, null);
+    operations.setAttribute('class', createPrimitiveCell(truthy), true, null);
   } else {
     let isPath = prop.indexOf('.') > -1;
     let parts = isPath ? prop.split('.') : [];
-    let value = isPath ? referenceForParts(rootRef, parts) : childRefFor(rootRef, prop);
+    let value = isPath ? referenceForParts(rootRef, parts) : getReactiveProperty(rootRef, prop);
     let ref;
 
     if (truthy === undefined) {
@@ -110,11 +116,11 @@ export function createClassNameBindingRef(
   }
 }
 
-export function createSimpleClassNameBindingRef(inner: Reference, path?: string) {
+export function createSimpleClassNameBindingRef(inner: Reactive, path?: string) {
   let dasherizedPath: string;
 
-  return createComputeRef(() => {
-    let value = valueForRef(inner);
+  return Formula(() => {
+    let value = unwrapReactive(inner);
 
     if (value === true) {
       assert(
@@ -132,11 +138,11 @@ export function createSimpleClassNameBindingRef(inner: Reference, path?: string)
 }
 
 export function createColonClassNameBindingRef(
-  inner: Reference,
+  inner: Reactive,
   truthy: string,
   falsy: string | undefined
 ) {
-  return createComputeRef(() => {
-    return valueForRef(inner) ? truthy : falsy;
+  return Formula(() => {
+    return unwrapReactive(inner) ? truthy : falsy;
   });
 }

@@ -6,7 +6,7 @@ import { _contentFor } from '@ember/-internals/runtime';
 import { isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { Formula, unwrapReactive } from '@glimmer/reference';
 import { consumeTag } from '@glimmer/validator';
 import { internalHelper } from './internal-helper';
 
@@ -171,8 +171,8 @@ export default internalHelper(({ positional }: CapturedArguments) => {
   const inner = positional[0];
   assert('expected at least one positional arg', inner);
 
-  return createComputeRef(() => {
-    let iterable = valueForRef(inner);
+  return Formula(() => {
+    let iterable = unwrapReactive(inner);
 
     consumeTag(tagForObject(iterable));
 

@@ -2,14 +2,9 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/vm';
-import type { Reference } from '@glimmer/reference';
-import {
-  childRefFromParts,
-  createComputeRef,
-  createDebugAliasRef,
-  valueForRef,
-} from '@glimmer/reference';
+import { CurriedTypes } from '@glimmer/vm';
+import type { Reactive } from '@glimmer/reference';
+import { Formula, getReactivePath, createDebugAliasRef, unwrapReactive } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
@@ -51,29 +46,29 @@ export const outletHelper = internalHelper(
       scope
     );
 
-    let outletRef = createComputeRef(() => {
-      let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
+    let outletRef = Formula(() => {
+      let state = unwrapReactive(scope.get('outletState') as Reactive<OutletState | undefined>);
       return state?.outlets?.main;
     });
 
     let lastState: OutletDefinitionState | null = null;
     let definition: CurriedValue | null = null;
 
-    return createComputeRef(() => {
-      let outletState = valueForRef(outletRef);
+    return Formula(() => {
+      let outletState = unwrapReactive(outletRef);
       let state = stateFor(outletRef, outletState);
 
       if (!validate(state, lastState)) {
         lastState = state;
 
         if (state !== null) {
-          let named = dict<Reference>();
+          let named = dict<Reactive>();
 
           // Create a ref for the model
-          let modelRef = childRefFromParts(outletRef, ['render', 'model']);
+          let modelRef = getReactivePath(outletRef, ['render', 'model']);
 
           // Store the value of the model
-          let model = valueForRef(modelRef);
+          let model = unwrapReactive(modelRef);
 
           // Create a compute ref which we pass in as the `{{@model}}` reference
           // for the outlet. This ref will update and return the value of the
@@ -81,21 +76,21 @@ export const outletHelper = internalHelper(
           // dynamic scope also changes, and so the original model ref would not
           // provide the correct updated value. So we stop updating and return
           // the _last_ model value for that outlet.
-          named['model'] = createComputeRef(() => {
+          named['model'] = Formula(() => {
             if (lastState === state) {
-              model = valueForRef(modelRef);
+              model = unwrapReactive(modelRef);
             }
 
             return model;
           });
 
           if (DEBUG) {
-            named['model'] = createDebugAliasRef!('@model', named['model']);
+            named['model'] = createDebugAliasRef!(named['model'], () => '@model');
           }
 
           let args = createCapturedArgs(named, EMPTY_POSITIONAL);
           definition = curry(
-            CurriedType.Component,
+            CurriedTypes.Component,
             new OutletComponentDefinition(state),
             outletState?.render?.owner ?? owner,
             args,
@@ -112,7 +107,7 @@ export const outletHelper = internalHelper(
 );
 
 function stateFor(
-  ref: Reference<OutletState | undefined>,
+  ref: Reactive<OutletState | undefined>,
   outlet: OutletState | undefined
 ): OutletDefinitionState | null {
   if (outlet === undefined) return null;

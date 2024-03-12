@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments, Helper } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import { Formula, unwrapReactive } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 let helper: Helper;
@@ -11,8 +11,8 @@ if (DEBUG) {
     const inner = args.positional[0];
     assert('expected at least one positional arg', inner);
 
-    return createComputeRef(() => {
-      let value = valueForRef(inner);
+    return Formula(() => {
+      let value = unwrapReactive(inner);
 
       assert(
         'You cannot pass a null or undefined destination element to in-element',

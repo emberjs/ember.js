@@ -5,7 +5,7 @@ import type { FullName, InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { CapturedArguments } from '@glimmer/interfaces';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+import { ReadonlyCell, isConstant, unwrapReactive } from '@glimmer/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(
@@ -20,9 +20,9 @@ export default internalHelper(
 
     let fullNameRef = positional[0];
 
-    assert('[BUG] expecting a string literal as argument', fullNameRef && isConstRef(fullNameRef));
+    assert('[BUG] expecting a string literal as argument', fullNameRef && isConstant(fullNameRef));
 
-    let fullName = valueForRef(fullNameRef);
+    let fullName = unwrapReactive(fullNameRef);
 
     assert('[BUG] expecting a string literal as argument', typeof fullName === 'string');
     assert(
@@ -39,6 +39,6 @@ export default internalHelper(
       );
     }
 
-    return createConstRef(owner.factoryFor(fullName)?.class, `(-resolve "${fullName}")`);
+    return ReadonlyCell(owner.factoryFor(fullName)?.class, `(-resolve "${fullName}")`);
   }
 );

@@ -1,8 +1,8 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { CapturedNamedArguments } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef } from '@glimmer/reference';
+import type { Reactive } from '@glimmer/reference';
+import { ReadonlyCell } from '@glimmer/reference';
 import type { Revision, Tag } from '@glimmer/validator';
 import { beginUntrackFrame, endUntrackFrame, valueForTag } from '@glimmer/validator';
 import type Component from '../component';
@@ -21,8 +21,8 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: Reference | null = null;
-  public rootRef: Reference<Component>;
+  public classRef: Reactive | null = null;
+  public rootRef: Reactive<Component>;
   public argsRevision: Revision;
 
   constructor(
@@ -35,7 +35,7 @@ export default class ComponentStateBucket {
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : valueForTag(argsTag);
-    this.rootRef = createConstRef(component, 'this');
+    this.rootRef = ReadonlyCell(component, 'this');
 
     registerDestructor(this, () => this.willDestroy(), true);
     registerDestructor(this, () => this.component.destroy());

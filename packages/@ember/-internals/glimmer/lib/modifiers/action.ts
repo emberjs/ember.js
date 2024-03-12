@@ -13,7 +13,7 @@ import type {
   InternalModifierManager,
 } from '@glimmer/interfaces';
 import { setInternalModifierManager } from '@glimmer/manager';
-import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
+import { isMutRef, updateRef, unwrapReactive } from '@glimmer/reference';
 import type { UpdatableTag } from '@glimmer/validator';
 import { createUpdatableTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
@@ -97,14 +97,14 @@ export class ActionState {
   getEventName() {
     let { on } = this.namedArgs;
 
-    return on !== undefined ? valueForRef(on) : 'click';
+    return on !== undefined ? unwrapReactive(on) : 'click';
   }
 
   getActionArgs() {
     let result = new Array(this.actionArgs.length);
 
     for (let i = 0; i < this.actionArgs.length; i++) {
-      result[i] = valueForRef(this.actionArgs[i]);
+      result[i] = unwrapReactive(this.actionArgs[i]);
     }
 
     return result;
@@ -114,16 +114,17 @@ export class ActionState {
     let { implicitTarget, namedArgs } = this;
     let { target } = namedArgs;
 
-    return target !== undefined ? valueForRef(target) : valueForRef(implicitTarget);
+    return target !== undefined ? unwrapReactive(target) : unwrapReactive(implicitTarget);
   }
 
   handler(event: Event): boolean {
     let { actionName, namedArgs } = this;
     let { bubbles, preventDefault, allowedKeys } = namedArgs;
 
-    let bubblesVal = bubbles !== undefined ? valueForRef(bubbles) : undefined;
-    let preventDefaultVal = preventDefault !== undefined ? valueForRef(preventDefault) : undefined;
-    let allowedKeysVal = allowedKeys !== undefined ? valueForRef(allowedKeys) : undefined;
+    let bubblesVal = bubbles !== undefined ? unwrapReactive(bubbles) : undefined;
+    let preventDefaultVal =
+      preventDefault !== undefined ? unwrapReactive(preventDefault) : undefined;
+    let allowedKeysVal = allowedKeys !== undefined ? unwrapReactive(allowedKeys) : undefined;
 
     let target = this.getTarget();
 
@@ -148,12 +149,6 @@ export class ActionState {
         target,
         name: null,
       };
-      if (isInvokableRef(actionName)) {
-        flaggedInstrument('interaction.ember-action', payload, () => {
-          updateRef(actionName, args[0]);
-        });
-        return;
-      }
       if (typeof actionName === 'function') {
         flaggedInstrument('interaction.ember-action', payload, () => {
           actionName.apply(target, args);
@@ -214,13 +209,13 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
       implicitTarget = positional[0];
       actionNameRef = positional[1];
 
-      if (isInvokableRef(actionNameRef)) {
-        actionName = actionNameRef;
+      if (isMutRef(actionNameRef)) {
+        actionName = (value: unknown) => updateRef(actionNameRef, value);
       } else {
-        actionName = valueForRef(actionNameRef);
+        actionName = unwrapReactive(actionNameRef);
 
         if (DEBUG) {
-          let actionPath = actionNameRef.debugLabel;
+          let actionPath = 'TODO debugLabel'; // actionNameRef.debugLabel;
           let actionPathParts = actionPath.split('.');
           let actionLabel = actionPathParts[actionPathParts.length - 1];
 
@@ -254,8 +249,8 @@ class ActionModifierManager implements InternalModifierManager<ActionState, obje
     let actionNameRef = positional[1];
     assert('Expected at least one positional arg', actionNameRef);
 
-    if (!isInvokableRef(actionNameRef)) {
-      actionState.actionName = valueForRef(actionNameRef);
+    if (!isMutRef(actionNameRef)) {
+      actionState.actionName = unwrapReactive(actionNameRef);
     }
 
     let newEventName = actionState.getEventName();
