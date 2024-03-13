@@ -1,6 +1,6 @@
 import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {
@@ -64,6 +64,21 @@ function layoutFor(
   options?: RegisterOptions
 ): Nullable<Template> {
   let templateFullName = `template:components/${name}` as const;
+
+  deprecate(
+    `Components with separetly resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts.`,
+    false,
+    {
+      id: 'component-template-resolving',
+      url: 'https://deprecations.emberjs.com/id/component-template-resolving',
+      until: '6.0.0',
+      for: 'ember-source',
+      since: {
+        available: '5.10.0',
+        enabled: '5.10.0',
+      },
+    }
+  );
 
   return (owner.lookup(templateFullName, options) as Template) || null;
 }
