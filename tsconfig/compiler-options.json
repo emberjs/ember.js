@@ -22,6 +22,7 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": false,
     "isolatedModules": true,
+    "noImplicitOverride": true,
 
     "newLine": "LF",
 
