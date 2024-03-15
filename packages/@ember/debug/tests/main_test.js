@@ -210,6 +210,53 @@ moduleFor(
       assert.ok(true, 'deprecations were not thrown');
     }
 
+    ['@test deprecate throws when ember-source version is past `until`'](assert) {
+      assert.expect(1);
+
+      ENV.RAISE_ON_DEPRECATION = false;
+
+      assert.throws(
+        () =>
+          deprecate('Old long gone api is deprecated', false, {
+            id: 'test',
+            until: '3.0.0',
+            for: 'ember-source',
+            since: { available: '1.0.0', enabled: '1.0.0' },
+          }),
+        'Error: Assertion Failed: This API was removed in ember-source 3.0.0. Old long gone api is deprecated'
+      );
+    }
+
+    ['@test deprecate does not throw when `for` is not ember-source'](assert) {
+      assert.expect(1);
+
+      ENV.RAISE_ON_DEPRECATION = false;
+
+      deprecate('Deprecation is thrown', false, {
+        id: 'test',
+        until: '3.0.0',
+        for: 'ember-data',
+        since: { available: '1.0.0', enabled: '1.0.0' },
+      });
+
+      assert.ok(true, 'assertion on until was not thrown');
+    }
+
+    ['@test deprecate does not throw when `until` is not past for ember-source'](assert) {
+      assert.expect(1);
+
+      ENV.RAISE_ON_DEPRECATION = false;
+
+      deprecate('Deprecation is thrown', false, {
+        id: 'test',
+        until: '30.0.0',
+        for: 'ember-source',
+        since: { available: '1.0.0', enabled: '1.0.0' },
+      });
+
+      assert.ok(true, 'assertion on until was not thrown');
+    }
+
     ['@test assert throws if second argument is falsy'](assert) {
       assert.expect(3);
 

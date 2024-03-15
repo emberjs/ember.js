@@ -1,5 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { DEBUG } from '@glimmer/env';
+import { VERSION } from '@ember/version';
 
 import { assert } from '../index';
 import type { HandlerCallback } from './handlers';
@@ -79,6 +80,12 @@ let missingOptionsDeprecation: string;
 let missingOptionsIdDeprecation: string;
 let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
+
+let numEmberVersion = parseFloat(VERSION);
+function emberVersionGte(until: string) {
+  const significantUntil = until.replaceAll(/(\.0+)/g, '');
+  return numEmberVersion >= parseFloat(significantUntil);
+}
 
 if (DEBUG) {
   registerHandler = function registerHandler(handler: HandlerCallback<DeprecationOptions>): void {
@@ -255,6 +262,12 @@ if (DEBUG) {
     assert(missingOptionDeprecation(options!.id, 'until'), Boolean(options!.until));
     assert(missingOptionDeprecation(options!.id, 'for'), Boolean(options!.for));
     assert(missingOptionDeprecation(options!.id, 'since'), Boolean(options!.since));
+    assert(
+      `This API was removed in ${options!.for} ${
+        options!.until
+      }. The deprecation message was: ${formatMessage(message, options)}`,
+      !(options!.for === 'ember-source' && emberVersionGte(options!.until))
+    );
 
     invoke('deprecate', message, test, options);
   };

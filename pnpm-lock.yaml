@@ -709,6 +709,9 @@ importers:
       '@ember/utils':
         specifier: workspace:*
         version: link:../utils
+      '@ember/version':
+        specifier: workspace:*
+        version: link:../version
       '@glimmer/destroyable':
         specifier: 0.87.1
         version: 0.87.1
