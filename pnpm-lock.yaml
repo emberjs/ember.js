@@ -142,8 +142,8 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
       semver:
         specifier: ^7.5.2
         version: 7.5.4
@@ -488,8 +488,8 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
@@ -563,8 +563,8 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/@ember/array:
     dependencies:
@@ -808,8 +808,8 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/@ember/enumerable:
     dependencies:
@@ -1066,8 +1066,8 @@ importers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/@ember/runloop:
     dependencies:
@@ -1423,8 +1423,8 @@ importers:
         specifier: workspace:*
         version: link:../internal-test-helpers
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
@@ -1576,8 +1576,8 @@ importers:
         specifier: workspace:*
         version: link:../internal-test-helpers
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
 
   packages/external-helpers:
     dependencies:
@@ -1681,8 +1681,8 @@ importers:
         specifier: workspace:*
         version: link:../ember-template-compiler
       router_js:
-        specifier: ^8.0.4
-        version: 8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5)
+        specifier: ^8.0.5
+        version: 8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5)
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
@@ -12675,8 +12675,8 @@ packages:
     resolution: {integrity: sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==}
     dev: false
 
-  /router_js@8.0.4(route-recognizer@0.3.4)(rsvp@4.8.5):
-    resolution: {integrity: sha512-CCljU+OfsP9mVcSm4HrGCltcvxLEzkx/tI/d6yfz8q3jwKyehEJhgE5khntRRVVhC846XHTERPLlV+m9+Bgd1A==}
+  /router_js@8.0.5(route-recognizer@0.3.4)(rsvp@4.8.5):
+    resolution: {integrity: sha512-0TpJIJoOpPVlX3JIGAQd/vivCXWkoi6wTAM7CkYo2cuASCQsK4qtJ9pvzYki7iZw44hO6nRN3z6paVTMiAPLdw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       route-recognizer: ^0.3.4

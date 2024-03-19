@@ -27,6 +27,6 @@
     "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "internal-test-helpers": "workspace:*",
-    "router_js": "^8.0.4"
+    "router_js": "^8.0.5"
   }
 }

@@ -38,7 +38,7 @@
     "dag-map": "^2.0.2",
     "ember": "workspace:*",
     "ember-template-compiler": "workspace:*",
-    "router_js": "^8.0.4",
+    "router_js": "^8.0.5",
     "rsvp": "^4.8.5",
     "simple-html-tokenizer": "^0.5.11"
   }

@@ -99,7 +99,7 @@
     "ember-router-generator": "^2.0.0",
     "inflection": "^2.0.1",
     "route-recognizer": "^0.3.4",
-    "router_js": "^8.0.4",
+    "router_js": "^8.0.5",
     "semver": "^7.5.2",
     "silent-error": "^1.1.1",
     "simple-html-tokenizer": "^0.5.11"
