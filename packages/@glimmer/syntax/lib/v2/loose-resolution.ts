@@ -34,50 +34,45 @@ export function BlockSyntaxContext(node: ASTv1.BlockStatement): ASTv2.FreeVarRes
   if (isSimpleCallee(node)) {
     return ASTv2.LooseModeResolution.namespaced(ASTv2.COMPONENT_NAMESPACE);
   } else {
-    return ASTv2.LooseModeResolution.fallback();
+    return null;
   }
 }
 
 export function ComponentSyntaxContext(node: ASTv1.PathExpression): ASTv2.FreeVarResolution | null {
   if (isSimplePath(node)) {
-    return ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Component, true);
+    return ASTv2.LooseModeResolution.namespaced(ASTv2.COMPONENT_NAMESPACE, true);
   } else {
     return null;
   }
 }
 
 /**
- * This corresponds to append positions (text curlies or attribute
- * curlies). In strict mode, this also corresponds to arg curlies.
+ * This corresponds to attribute curlies (<Foo bar={{...}}>).
+ * In strict mode, this also corresponds to arg curlies.
  */
-export function AttrValueSyntaxContext(node: ASTv1.MustacheStatement): ASTv2.FreeVarResolution {
-  let isSimple = isSimpleCallee(node);
-  let isInvoke = isInvokeNode(node);
-
-  if (isSimple) {
-    return isInvoke
-      ? ASTv2.LooseModeResolution.namespaced(ASTv2.FreeVarNamespace.Helper)
-      : ASTv2.LooseModeResolution.attr();
+export function AttrValueSyntaxContext(
+  node: ASTv1.MustacheStatement
+): ASTv2.FreeVarResolution | null {
+  if (isSimpleCallee(node)) {
+    return ASTv2.LooseModeResolution.namespaced(ASTv2.HELPER_NAMESPACE);
   } else {
-    return isInvoke ? ASTv2.STRICT_RESOLUTION : ASTv2.LooseModeResolution.fallback();
+    return null;
   }
 }
 
 /**
- * This corresponds to append positions (text curlies or attribute
- * curlies). In strict mode, this also corresponds to arg curlies.
+ * This corresponds to append positions text curlies.
  */
-export function AppendSyntaxContext(node: ASTv1.MustacheStatement): ASTv2.FreeVarResolution {
+export function AppendSyntaxContext(node: ASTv1.MustacheStatement): ASTv2.FreeVarResolution | null {
   let isSimple = isSimpleCallee(node);
-  let isInvoke = isInvokeNode(node);
   let trusting = node.trusting;
 
   if (isSimple) {
     return trusting
-      ? ASTv2.LooseModeResolution.trustingAppend({ invoke: isInvoke })
-      : ASTv2.LooseModeResolution.append({ invoke: isInvoke });
+      ? ASTv2.LooseModeResolution.trustingAppend()
+      : ASTv2.LooseModeResolution.append();
   } else {
-    return ASTv2.LooseModeResolution.fallback();
+    return null;
   }
 }
 
@@ -113,9 +108,7 @@ export type Resolution<P extends AstCallParts | ASTv1.PathExpression> = (
  * ```
  */
 function isSimpleCallee(node: AstCallParts): boolean {
-  let path = node.path;
-
-  return isSimplePath(path);
+  return isSimplePath(node.path);
 }
 
 type SimplePath = ASTv1.PathExpression & { head: ASTv1.VarHead };
@@ -126,11 +119,4 @@ function isSimplePath(node: ASTv1.Expression): node is SimplePath {
   } else {
     return false;
   }
-}
-
-/**
- * The call expression has at least one argument.
- */
-function isInvokeNode(node: AstCallParts): boolean {
-  return node.params.length > 0 || node.hash.pairs.length > 0;
 }

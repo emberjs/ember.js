@@ -1,5 +1,4 @@
 import type { ExpressionSexpOpcode } from '@glimmer/interfaces';
-import { assert, deprecate } from '@glimmer/global-context';
 import { $v0, MachineOp, Op } from '@glimmer/vm';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
@@ -49,62 +48,18 @@ EXPRESSIONS.add(SexpOpcodes.GetLexicalSymbol, (op, [, sym, path]) => {
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetStrictKeyword, (op, [, sym, _path]) => {
-  op(HighLevelResolutionOpcodes.Free, sym, (_handle: unknown) => {
-    // TODO: Implement in strict mode
-  });
-});
-
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback, () => {
-  // TODO: The logic for this opcode currently exists in STATEMENTS.Append, since
-  // we want different wrapping logic depending on if we are invoking a component,
-  // helper, or {{this}} fallback. Eventually we fix the opcodes so that we can
-  // traverse the subexpression tree like normal in this location.
-  throw new Error('unimplemented opcode');
-});
-
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHeadOrThisFallback, (op, expr) => {
-  // <div id={{baz}}>
-
+EXPRESSIONS.add(SexpOpcodes.GetStrictKeyword, (op, expr) => {
   op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
-    op(HighLevelResolutionOpcodes.OptionalHelper, expr, {
-      ifHelper: (handle: number) => {
-        Call(op, handle, null, null);
-      },
+    op(HighLevelResolutionOpcodes.Helper, expr, (handle: number) => {
+      Call(op, handle, null, null);
     });
   });
 });
 
-EXPRESSIONS.add(SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback, (op, expr) => {
-  // <Foo @bar={{baz}}>
-
+EXPRESSIONS.add(SexpOpcodes.GetFreeAsHelperHead, (op, expr) => {
   op(HighLevelResolutionOpcodes.Local, expr[1], (_name: string) => {
-    op(HighLevelResolutionOpcodes.OptionalHelper, expr, {
-      ifHelper: (handle: number, name: string, moduleName: string) => {
-        assert(expr[2] && expr[2].length === 1, '[BUG] Missing argument name');
-
-        let arg = expr[2][0];
-
-        deprecate(
-          `The \`${name}\` helper was used in the \`${moduleName}\` template as \`${arg}={{${name}}}\`. ` +
-            `This is ambigious between wanting the \`${arg}\` argument to be the \`${name}\` helper itself, ` +
-            `or the result of invoking the \`${name}\` helper (current behavior). ` +
-            `This implicit invocation behavior has been deprecated.\n\n` +
-            `Instead, please explicitly invoke the helper with parenthesis, i.e. \`${arg}={{(${name})}}\`.\n\n` +
-            `Note: the parenthesis are only required in this exact scenario where an ambiguity is present – where ` +
-            `\`${name}\` referes to a global helper (as opposed to a local variable), AND ` +
-            `the \`${name}\` helper invocation does not take any arguments, AND ` +
-            `this occurs in a named argument position of a component invocation.\n\n` +
-            `We expect this combination to be quite rare, as most helpers require at least one argument. ` +
-            `There is no need to refactor helper invocations in cases where this deprecation was not triggered.`,
-          false,
-          {
-            id: 'argument-less-helper-paren-less-invocation',
-          }
-        );
-
-        Call(op, handle, null, null);
-      },
+    op(HighLevelResolutionOpcodes.Helper, expr, (handle: number) => {
+      Call(op, handle, null, null);
     });
   });
 });

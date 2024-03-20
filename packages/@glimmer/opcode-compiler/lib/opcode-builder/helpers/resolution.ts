@@ -10,7 +10,6 @@ import type {
   ResolveHelperOp,
   ResolveModifierOp,
   ResolveOptionalComponentOrHelperOp,
-  ResolveOptionalHelperOp,
   SexpOpcode,
 } from '@glimmer/interfaces';
 import { assert, debugToString, expect, unwrap } from '@glimmer/util';
@@ -44,22 +43,6 @@ export const isGetFreeHelper = makeResolutionTypeVerifier(SexpOpcodes.GetFreeAsH
 
 export const isGetFreeComponentOrHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsComponentOrHelperHead
-);
-
-export const isGetFreeOptionalHelper = makeResolutionTypeVerifier(
-  SexpOpcodes.GetFreeAsHelperHeadOrThisFallback
-);
-
-export function isGetFreeDeprecatedHelper(
-  opcode: Expressions.Expression
-): opcode is Expressions.GetPathFreeAsDeprecatedHelperHeadOrThisFallback {
-  return (
-    Array.isArray(opcode) && opcode[0] === SexpOpcodes.GetFreeAsDeprecatedHelperHeadOrThisFallback
-  );
-}
-
-export const isGetFreeOptionalComponentOrHelper = makeResolutionTypeVerifier(
-  SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback
 );
 
 interface ResolvedContainingMetadata extends ContainingMetadata {
@@ -101,6 +84,8 @@ export function resolveComponent(
   let type = expr[0];
 
   if (import.meta.env.DEV && expr[0] === SexpOpcodes.GetStrictKeyword) {
+    assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
     throw new Error(
       `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
         meta.upvars![expr[1]] ?? '{unknown variable}'
@@ -127,6 +112,8 @@ export function resolveComponent(
     let definition = resolver.lookupComponent(name, owner)!;
 
     if (import.meta.env.DEV && (typeof definition !== 'object' || definition === null)) {
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
       );
@@ -168,6 +155,8 @@ export function resolveHelper(
     let helper = resolver.lookupHelper(name, owner)!;
 
     if (import.meta.env.DEV && helper === null) {
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a helper, but nothing was found.`
       );
@@ -205,6 +194,8 @@ export function resolveModifier(
     let modifier = resolver.lookupBuiltInModifier(name);
 
     if (import.meta.env.DEV && modifier === null) {
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
       throw new Error(
         `Attempted to resolve a modifier in a strict mode template, but it was not in scope: ${name}`
       );
@@ -217,6 +208,8 @@ export function resolveModifier(
     let modifier = resolver.lookupModifier(name, owner)!;
 
     if (import.meta.env.DEV && modifier === null) {
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
       );
@@ -262,6 +255,8 @@ export function resolveComponentOrHelper(
     let helper = constants.helper(definition as object, null, true);
 
     if (import.meta.env.DEV && helper === null) {
+      assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
       throw new Error(
         `Attempted to use a value as either a component or helper, but it did not have a component manager or helper manager associated with it. The value was: ${debugToString!(
           definition
@@ -292,6 +287,8 @@ export function resolveComponentOrHelper(
       let helper = resolver.lookupHelper(name, owner);
 
       if (import.meta.env.DEV && helper === null) {
+        assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
         throw new Error(
           `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`
         );
@@ -299,29 +296,6 @@ export function resolveComponentOrHelper(
 
       ifHelper(constants.helper(helper!, name));
     }
-  }
-}
-
-/**
- * <Foo @arg={{helper}}>
- */
-export function resolveOptionalHelper(
-  resolver: CompileTimeResolver,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  meta: ContainingMetadata,
-  [, expr, { ifHelper }]: ResolveOptionalHelperOp
-): void {
-  assert(
-    isGetFreeOptionalHelper(expr) || isGetFreeDeprecatedHelper(expr),
-    'Attempted to resolve a helper with incorrect opcode'
-  );
-  let { upvars, owner } = assertResolverInvariants(meta);
-
-  let name = unwrap(upvars[expr[1]]);
-  let helper = resolver.lookupHelper(name, owner);
-
-  if (helper) {
-    ifHelper(constants.helper(helper, name), name, meta.moduleName);
   }
 }
 
@@ -335,7 +309,7 @@ export function resolveOptionalComponentOrHelper(
   [, expr, { ifComponent, ifHelper, ifValue }]: ResolveOptionalComponentOrHelperOp
 ): void {
   assert(
-    isGetFreeOptionalComponentOrHelper(expr),
+    isGetFreeComponentOrHelper(expr),
     'Attempted to resolve an optional component or helper with incorrect opcode'
   );
 
@@ -411,6 +385,8 @@ function lookupBuiltInHelper(
   let helper = resolver.lookupBuiltInHelper(name);
 
   if (import.meta.env.DEV && helper === null) {
+    assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+
     // Keyword helper did not exist, which means that we're attempting to use a
     // value of some kind that is not in scope
     throw new Error(

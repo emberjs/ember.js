@@ -69,7 +69,7 @@ In `ASTv2`, every variable name is represented as a `VariableReference`.
 
 **Important Note**: The remainder of this README is a description of the loose mode rules for free variable resolution. Strict mode free variable references always refer to an in-scope JavaScript binding, regardless of their syntactic position.
 
-RFC [#496][#496] (Handlebars Strict Mode) rationalized the rules for loose mode. This README describes the semantics of [#496][#496] in terms of namespaced free variable references and fallback semantics.
+RFC [#496][#496] (Handlebars Strict Mode) rationalized the rules for loose mode. This README describes the semantics of [#496][#496] in terms of namespaced free variable references.
 
 [#496]: https://emberjs.github.io/rfcs/0496-handlebars-strict-mode.html
 
@@ -77,10 +77,7 @@ RFC [#496][#496] (Handlebars Strict Mode) rationalized the rules for loose mode.
 
 There are two significant differences between strict and loose mode that affect the AST.
 
-In loose mode:
-
-1. Certain free variable references fall back to a property lookup on `this`.
-2. Free variable references in "call" positions are resolved using a contextual namespace. For example, the free variable reference `h` in `(h 123)` is resolved as `helper:h`. The free variable reference `h` in `<p {{h 123}}>` is resolved as `modifier:h`.
+In loose mode, free variable references in "call" positions are resolved using a contextual namespace. For example, the free variable reference `h` in `(h 123)` is resolved as `helper:h`. The free variable reference `h` in `<p {{h 123}}>` is resolved as `modifier:h`.
 
 In strict mode, all free variable references refer to bindings provided by a JavaScript scope that the template will be embedded within.
 
@@ -94,26 +91,6 @@ The `Strict` resolution applies to all free variables encountered while parsing 
 
 None. Strict mode templates must be embedded in a JavaScript context where all free variable references are in scope. A compile-time error should be produced if free there are variable references that do not correspond to any in-scope variables.
 
-### Fallback Semantics
-
-When a free variable resolution is said to have "fallback semantics", it means the following algorithm:
-
-1. Attempt to resolve the name in the namespaces for the resolution, if any.
-2. If the name could not be resolved, resolve it as a property on `this`.
-
-> Note: A free variable resolution has fallback semantics if it's an append or attribute curly without arguments, or if it's a path in argument position. See the summary table below for full details.
-
-### Eval Mode Semantics
-
-When a free variable resolution has fallback semantics, it is also said to have "eval mode semantics", which means:
-
-1. If the template is evaluated in eval mode (i.e. as a partial), dynamically resolve the free variable in the context of the template that invoked the partial (the "invoker"):
-1. If the variable name is in the local scope of the invoker, resolve it as a _local_ variable in the invoker's local scope
-1. Otherwise:
-1. if the invoker is also in eval mode, repeat the process with the invoker's invoker
-1. if the invoker is not in eval mode, resolve the free variable using fallback semantics in the invoker's scope
-1. Otherwise, resolve the free variable using fallback semantics in the current scope
-
 ### Namespaced Variable Resolution
 
 |                     |                                                   |
@@ -123,7 +100,6 @@ When a free variable resolution has fallback semantics, it is also said to have 
 | Arguments?          | Any                                               |
 |                     |                                                   |
 | Namespace           | see table below                                   |
-| Fallback semantics? | ⛔                                                |
 
 These resolutions occur in syntaxes that are definitely calls (e.g. subexpressions, blocks, modifiers, etc.).
 
@@ -140,16 +116,15 @@ These resolutions occur in syntaxes that are definitely calls (e.g. subexpressio
 
 If the variable reference cannot be resolved in its namespace.
 
-### Namespaced Resolution: Ambiguous Component or Helper
+### Namespaced Resolution: Append
 
 |                     |                         |
 | ------------------- | ----------------------- |
 | Syntax Positions    | append                  |
 | Path has dots?      | ❌                      |
-| Arguments?          | ➕                      |
+| Arguments?          | Any                     |
 |                     |                         |
 | Namespace           | `helper` or `component` |
-| Fallback semantics? | ⛔                      |
 
 This resolution occurs in append nodes with at least one argument, and when the path does not have dots (e.g. `{{hello world}}`).
 
@@ -158,6 +133,7 @@ This resolution occurs in append nodes with at least one argument, and when the 
 | situation           | variable | namespace           |
 | ------------------- | -------- | ------------------- |
 | `{{x y}}` as append | `x`      | `ComponentOrHelper` |
+| `{{x}}` as append   | `x`      | `ComponentOrHelper` |
 
 In this situation, the `x` may refer to:
 
@@ -168,37 +144,7 @@ In this situation, the `x` may refer to:
 
 If the variable reference cannot be resolved in the `helper` or `component` namespaces.
 
-### Ambiguous Resolution: Append Ambiguity
-
-|                     |                       |
-| ------------------- | --------------------- |
-| Syntax Positions    | append                |
-| Path has dots?      | ❌                    |
-| Arguments?          | ❌                    |
-|                     |                       |
-| Namespace           | `helper`, `component` |
-| Fallback semantics? | ✅                    |
-
-This resolution occurs in append nodes with zero arguments, and when the path does not have dots (e.g. `{{hello}}`).
-
-#### Applicable Situations
-
-| situation         | variable | ambiguity |
-| ----------------- | -------- | --------- |
-| `{{x}}` as append | `x`      | `Append`  |
-
-In this situation, the `x` may refer to:
-
-- a helper `x`
-- a component `x`
-- a local variable in partial scope
-- `this.x`.
-
-#### Runtime Error Cases
-
-None.
-
-### Ambiguous Resolution: Attribute Ambiguity
+### Namespaced Resolution: Attribute
 
 This resolution context occurs in attribute nodes with zero arguments, and when the path does not have dots.
 
@@ -206,26 +152,24 @@ This resolution context occurs in attribute nodes with zero arguments, and when 
 | ------------------- | ------------------------ |
 | Syntax Positions    | attribute, interpolation |
 | Path has dots?      | ❌                       |
-| Arguments?          | ❌                       |
+| Arguments?          | Any                      |
 |                     |                          |
 | Namespace           | `helper`                 |
-| Fallback semantics? | ✅                       |
 
 #### Applicable Situations
 
-| situation                                     | variable | ambiguity |
-| --------------------------------------------- | -------- | --------- |
-| `<p attr={{x}}>` <br> `<a href="{{x}}.html">` | `x`      | `Attr`    |
+| situation                                         | variable | namespace |
+| ------------------------------------------------- | -------- | --------- |
+| `<p attr={{x}}>` <br> `<a href="{{x}}.html">`     | `x`      | `Helper`  |
+| `<p attr={{x y}}>` <br> `<a href="{{x y}}.html">` | `x`      | `Helper`  |
 
 In this situation, the `x` may refer to:
 
 - a helper `x`
-- a local variable in partial scope
-- `this.x`.
 
 #### Runtime Error Cases
 
-None.
+If the variable reference cannot be resolved in the `helper` namespaces.
 
 ### Summary
 
@@ -253,7 +197,6 @@ Situations that meet all three of these criteria are syntax errors:
 | ------------------- | --- |
 | Path has dots?      | ❌  |
 | Arguments?          | Any |
-| Fallback semantics? | ⛔  |
 
 | Syntax Position | Example       |     | Namespace   |
 | --------------- | ------------- | --- | ----------- |
@@ -264,11 +207,11 @@ Situations that meet all three of these criteria are syntax errors:
 
 #### Append
 
-| Syntax Position | Example   | Dots? | Args? |     | Namespace             | Fallback? |
-| --------------- | --------- | ----- | ----- | --- | --------------------- | --------- |
-| `Append`        | `{{x}}`   | ❌    | ❌    |     | `helper`, `component` | ✅        |
-| `Append`        | `{{x.y}}` | ➕    | ❌    |     | None                  | ✅        |
-| `Append`        | `{{x y}}` | ❌    | ➕    |     | `helper`, `component` | ⛔        |
+| Syntax Position | Example   | Dots? | Args? |     | Namespace             |
+| --------------- | --------- | ----- | ----- | --- | --------------------- |
+| `Append`        | `{{x}}`   | ❌    | ❌    |     | `helper`, `component` |
+| `Append`        | `{{x.y}}` | ➕    | ❌    |     | None                  |
+| `Append`        | `{{x y}}` | ❌    | ➕    |     | `helper`, `component` |
 
 #### Attributes
 
@@ -278,8 +221,8 @@ The `Attribute` syntax position includes:
 - the value of an element argument (`@title={{...}}`)
 - a part of an interpolation (`href="{{...}}.html"`)
 
-| Syntax Position | Example        | Dots? | Arguments? |     | Namespace | Fallback? |
-| --------------- | -------------- | ----- | ---------- | --- | --------- | --------- |
-| `Attribute`     | `href={{x}}`   | ❌    | ❌         |     | `helper`  | ✅        |
-| `Attribute`     | `href={{x.y}}` | ➕    | ❌         |     | None      | ✅        |
-| `Attribute`     | `href={{x y}}` | ❌    | ➕         |     | `helper`  | ⛔        |
+| Syntax Position | Example        | Dots? | Arguments? |     | Namespace |
+| --------------- | -------------- | ----- | ---------- | --- | --------- |
+| `Attribute`     | `href={{x}}`   | ❌    | ❌         |     | `helper`  |
+| `Attribute`     | `href={{x.y}}` | ➕    | ❌         |     | None      |
+| `Attribute`     | `href={{x y}}` | ❌    | ➕         |     | `helper`  |

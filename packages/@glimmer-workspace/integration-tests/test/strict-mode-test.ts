@@ -73,15 +73,22 @@ class GeneralStrictModeTest extends RenderTest {
 
   @test
   'Implicit this lookup does not work'() {
-    const Foo = defineComponent({}, '{{bar}}', {
-      definition: class extends GlimmerishComponent {
-        bar = 'Hello, world!';
+    this.assert.throws(
+      () => {
+        defineComponent({}, '{{bar}}', {
+          definition: class extends GlimmerishComponent {
+            bar = 'Hello, world!';
+          },
+        });
       },
-    });
-
-    this.assert.throws(() => {
-      this.renderComponent(Foo);
-    }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: bar/u);
+      syntaxErrorFor(
+        'Attempted to resolve a value in a strict mode template, but that value was not in scope: bar',
+        '{{bar}}',
+        'an unknown module',
+        1,
+        0
+      )
+    );
   }
 
   @test
@@ -395,132 +402,136 @@ class StaticStrictModeTest extends RenderTest {
 
   @test
   'Throws an error if value in append position is not in scope'() {
-    const Bar = defineComponent({}, '{{foo}}');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: foo/u);
+    this.assert.throws(
+      () => {
+        defineComponent({}, '{{foo}}');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a value in a strict mode template, but that value was not in scope: foo',
+        '{{foo}}',
+        'an unknown module',
+        1,
+        0
+      )
+    );
   }
 
   @test
   'Throws an error if component or helper in append position is not in scope'() {
-    const Bar = defineComponent({}, '{{foo "bar"}}');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a component or helper in a strict mode template, but that value was not in scope: foo/u);
+    this.assert.throws(
+      () => {
+        defineComponent({}, '{{foo "bar"}}');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a component or helper in a strict mode template, but that value was not in scope: foo',
+        '{{foo "bar"}}',
+        'an unknown module',
+        1,
+        0
+      )
+    );
   }
 
   @test
   'Throws an error if a value in argument position is not in scope'() {
     const Foo = defineComponent({}, '{{@foo}}');
-    const Bar = defineComponent({ Foo }, '<Foo @foo={{bar}}/>');
 
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: bar/u);
+    this.assert.throws(
+      () => {
+        defineComponent({ Foo }, '<Foo @foo={{bar}}/>');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a value in a strict mode template, but that value was not in scope: bar',
+        '@foo={{bar}}',
+        'an unknown module',
+        1,
+        5
+      )
+    );
+  }
+
+  @test
+  'Throws an error if a value in attribute position is not in scope'() {
+    this.assert.throws(
+      () => {
+        defineComponent({}, '<div class={{foo}} />');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a value in a strict mode template, but that value was not in scope: foo',
+        'class={{foo}}',
+        'an unknown module',
+        1,
+        5
+      )
+    );
   }
 
   @test
   'Throws an error if helper in argument position (with args) is not in scope'() {
     const Foo = defineComponent({}, '{{@foo}}');
-    const Bar = defineComponent({ Foo }, '<Foo @foo={{bar "aoeu"}}/>');
 
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a helper in a strict mode template, but that value was not in scope: bar/u);
+    this.assert.throws(
+      () => {
+        defineComponent({ Foo }, '<Foo @foo={{bar "aoeu"}}/>');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a helper in a strict mode template, but that value was not in scope: bar',
+        '@foo={{bar "aoeu"}}',
+        'an unknown module',
+        1,
+        5
+      )
+    );
+  }
+
+  @test
+  'Throws an error if helper in attribute position (with args) is not in scope'() {
+    this.assert.throws(
+      () => {
+        defineComponent({}, '<div class={{foo "bar"}} />');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a helper in a strict mode template, but that value was not in scope: foo',
+        'class={{foo "bar"}}',
+        'an unknown module',
+        1,
+        5
+      )
+    );
   }
 
   @test
   'Throws an error if helper in subexpression position is not in scope'() {
     const foo = defineSimpleHelper((value: string) => value);
-    const Bar = defineComponent({ foo }, '{{foo (bar)}}');
 
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a helper in a strict mode template, but that value was not in scope: bar/u);
-  }
-
-  @test
-  'Throws an error if value in append position is not in scope, and component is registered'() {
-    this.registerComponent('TemplateOnly', 'foo', 'Hello, world!');
-    const Bar = defineComponent({}, '{{foo}}');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: foo/u);
-  }
-
-  @test
-  'Throws an error if value in append position is not in scope, and helper is registered'() {
-    this.registerHelper('foo', () => 'Hello, world!');
-    const Bar = defineComponent({}, '{{foo}}');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: foo/u);
-  }
-
-  @test
-  'Throws an error if component or helper in append position is not in scope, and helper is registered'() {
-    this.registerHelper('foo', () => 'Hello, world!');
-    const Bar = defineComponent({}, '{{foo "bar"}}');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a component or helper in a strict mode template, but that value was not in scope: foo/u);
-  }
-
-  @test
-  'Throws an error if a value in argument position is not in scope, and helper is registered'() {
-    this.registerHelper('bar', () => 'Hello, world!');
-    const Foo = defineComponent({}, '{{@foo}}');
-    const Bar = defineComponent({ Foo }, '<Foo @foo={{bar}}/>');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: bar/u);
-  }
-
-  @test
-  'Throws an error if helper in argument position (with args) is not in scope, and helper is registered'() {
-    this.registerHelper('bar', () => 'Hello, world!');
-    const Foo = defineComponent({}, '{{@foo}}');
-    const Bar = defineComponent({ Foo }, '<Foo @foo={{bar "aoeu"}}/>');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a helper in a strict mode template, but that value was not in scope: bar/u);
-  }
-
-  @test
-  'Throws an error if helper in subexpression position is not in scope, and helper is registered'() {
-    this.registerHelper('bar', () => 'Hello, world!');
-    const foo = defineSimpleHelper((value: string) => value);
-    const Bar = defineComponent({ foo }, '{{foo (bar)}}');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a helper in a strict mode template, but that value was not in scope: bar/u);
+    this.assert.throws(
+      () => {
+        defineComponent({ foo }, '{{foo (bar)}}');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a helper in a strict mode template, but that value was not in scope: bar',
+        '(bar)',
+        'an unknown module',
+        1,
+        6
+      )
+    );
   }
 
   @test
   'Throws an error if modifier is not in scope'() {
-    const Bar = defineComponent({}, '<div {{foo}}></div>');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a modifier in a strict mode template, but it was not in scope: foo/u);
-  }
-
-  @test
-  'Throws an error if modifier is not in scope, and modifier is registred'() {
-    this.registerModifier('name', class {});
-    const Bar = defineComponent({}, '<div {{foo}}></div>');
-
-    this.assert.throws(() => {
-      this.renderComponent(Bar);
-    }, /Attempted to resolve a modifier in a strict mode template, but it was not in scope: foo/u);
+    this.assert.throws(
+      () => {
+        defineComponent({}, '<div {{foo}}></div>');
+      },
+      syntaxErrorFor(
+        'Attempted to resolve a modifier in a strict mode template, but that value was not in scope: foo',
+        '{{foo}}',
+        'an unknown module',
+        1,
+        5
+      )
+    );
   }
 
   @test
