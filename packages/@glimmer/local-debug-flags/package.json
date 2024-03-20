@@ -1,6 +1,7 @@
 {
   "name": "@glimmer/local-debug-flags",
   "version": "0.89.0",
+  "license": "MIT",
   "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
   "repository": {
     "type": "git",
