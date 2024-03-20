@@ -35,7 +35,6 @@ import {
   resolveHelper,
   resolveModifier,
   resolveOptionalComponentOrHelper,
-  resolveOptionalHelper,
 } from './helpers/resolution';
 import { HighLevelBuilderOpcodes, HighLevelResolutionOpcodes } from './opcodes';
 import { HighLevelOperands } from './operands';
@@ -83,7 +82,6 @@ export function encodeOp(
         return encoder.startLabels();
       case HighLevelBuilderOpcodes.StopLabels:
         return encoder.stopLabels();
-
       case HighLevelResolutionOpcodes.Component:
         return resolveComponent(resolver, constants, meta, op);
       case HighLevelResolutionOpcodes.Modifier:
@@ -92,8 +90,6 @@ export function encodeOp(
         return resolveHelper(resolver, constants, meta, op);
       case HighLevelResolutionOpcodes.ComponentOrHelper:
         return resolveComponentOrHelper(resolver, constants, meta, op);
-      case HighLevelResolutionOpcodes.OptionalHelper:
-        return resolveOptionalHelper(resolver, constants, meta, op);
       case HighLevelResolutionOpcodes.OptionalComponentOrHelper:
         return resolveOptionalComponentOrHelper(resolver, constants, meta, op);
 
@@ -113,26 +109,13 @@ export function encodeOp(
         let [, valueIndex, then] = op;
         let value = expect(
           meta.scopeValues,
-          'BUG: Attempted to gect a template local, but template does not have any'
+          'BUG: Attempted to get a template local, but template does not have any'
         )[valueIndex];
 
         then(constants.value(value));
 
         break;
       }
-
-      case HighLevelResolutionOpcodes.Free:
-        if (import.meta.env.DEV) {
-          let [, upvarIndex] = op;
-          let freeName = expect(meta.upvars, 'BUG: attempted to resolve value but no upvars found')[
-            upvarIndex
-          ];
-
-          throw new Error(
-            `Attempted to resolve a value in a strict mode template, but that value was not in scope: ${freeName}`
-          );
-        }
-        break;
 
       default:
         throw new Error(`Unexpected high level opcode ${op[0]}`);

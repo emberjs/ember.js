@@ -1,29 +1,27 @@
-import { defineSimpleHelper, jitSuite, RenderTest, test } from '../..';
+import { defineSimpleHelper, jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from '../..';
 
 class ArgumentLessHelperParenLessInvokeTest extends RenderTest {
   static suiteName = 'argument-less helper paren-less invoke';
 
   @test
-  'invoking an argument-less helper without parens in named argument position is deprecated'(
+  'invoking an argument-less helper without parens in named argument position is a syntax error'(
     assert: Assert
   ) {
-    this.registerHelper('is-string', ([value]: readonly unknown[]) => typeof value === 'string');
-
-    this.registerHelper('foo', () => 'Hello, world!');
-    this.registerComponent('TemplateOnly', 'Bar', '[{{is-string @content}}][{{@content}}]');
-
-    this.render('<Bar @content={{foo}} />', { foo: 'Not it!' });
-    this.assertHTML('[true][Hello, world!]');
-    this.assertStableRerender();
-
-    assert.validateDeprecations(
-      new RegExp(
-        /The `foo` helper was used in the `\(unknown template module\)` template as /.source +
-          /`@content=\{\{foo\}\}`\. This is ambigious between wanting the `@content` argument /
-            .source +
-          /to be the `foo` helper itself, or the result of invoking the `foo` helper /.source +
-          /\(current behavior\)\. This implicit invocation behavior has been deprecated\./.source,
-        'u'
+    assert.throws(
+      () => {
+        preprocess('<Bar @content={{foo}} />', {
+          meta: { moduleName: 'test-module' },
+        });
+      },
+      syntaxErrorFor(
+        'You attempted to pass a path as argument (`@content={{foo}}`) but foo was not in scope. Try:\n' +
+          '* `@content={{this.foo}}` if this is meant to be a property lookup, or\n' +
+          '* `@content={{(foo)}}` if this is meant to invoke the resolved helper, or\n' +
+          '* `@content={{helper "foo"}}` if this is meant to pass the resolved helper by value',
+        `@content={{foo}}`,
+        'test-module',
+        1,
+        5
       )
     );
   }

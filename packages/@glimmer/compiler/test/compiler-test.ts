@@ -380,9 +380,9 @@ test('curlies right next to each other', `<div>{{a}}{{b}}{{c}}wat{{d}}</div>`, [
   ['^a', '^b', '^c', s`wat`, '^d'],
 ]);
 
-test('paths', `<div>{{model.foo.bar}}<span>{{model.foo.bar}}</span></div>`, [
+test('paths', `<div>{{this.model.foo.bar}}<span>{{this.model.foo.bar}}</span></div>`, [
   '<div>',
-  ['^model.foo.bar', ['<span>', ['^model.foo.bar']]],
+  ['this.model.foo.bar', ['<span>', ['this.model.foo.bar']]],
 ]);
 
 test('whitespace', `Hello {{ foo }} `, s`Hello `, '^foo', s` `);

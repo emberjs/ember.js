@@ -21,10 +21,7 @@ import type {
   GetDynamicVarOpcode,
   GetFreeAsComponentHeadOpcode,
   GetFreeAsComponentOrHelperHeadOpcode,
-  GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode,
-  GetFreeAsDeprecatedHelperHeadOrThisFallbackOpcode,
   GetFreeAsHelperHeadOpcode,
-  GetFreeAsHelperHeadOrThisFallbackOpcode,
   GetFreeAsModifierHeadOpcode,
   GetLexicalSymbolOpcode,
   GetStrictKeywordOpcode,
@@ -99,25 +96,13 @@ export namespace Expressions {
   export type GetSymbol = [GetSymbolOpcode, number];
   export type GetLexicalSymbol = [GetLexicalSymbolOpcode, number];
   export type GetStrictFree = [GetStrictKeywordOpcode, number];
-  export type GetFreeAsComponentOrHelperHeadOrThisFallback = [
-    GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode,
-    number,
-  ];
   export type GetFreeAsComponentOrHelperHead = [GetFreeAsComponentOrHelperHeadOpcode, number];
-  export type GetFreeAsHelperHeadOrThisFallback = [GetFreeAsHelperHeadOrThisFallbackOpcode, number];
-  export type GetFreeAsDeprecatedHelperHeadOrThisFallback = [
-    GetFreeAsDeprecatedHelperHeadOrThisFallbackOpcode,
-    number,
-  ];
   export type GetFreeAsHelperHead = [GetFreeAsHelperHeadOpcode, number];
   export type GetFreeAsModifierHead = [GetFreeAsModifierHeadOpcode, number];
   export type GetFreeAsComponentHead = [GetFreeAsComponentHeadOpcode, number];
 
   export type GetContextualFree =
-    | GetFreeAsComponentOrHelperHeadOrThisFallback
     | GetFreeAsComponentOrHelperHead
-    | GetFreeAsHelperHeadOrThisFallback
-    | GetFreeAsDeprecatedHelperHeadOrThisFallback
     | GetFreeAsHelperHead
     | GetFreeAsModifierHead
     | GetFreeAsComponentHead;
@@ -127,23 +112,8 @@ export namespace Expressions {
   export type GetPathSymbol = [GetSymbolOpcode, number, Path];
   export type GetPathTemplateSymbol = [GetLexicalSymbolOpcode, number, Path];
   export type GetPathStrictFree = [GetStrictKeywordOpcode, number, Path];
-  export type GetPathFreeAsComponentOrHelperHeadOrThisFallback = [
-    GetFreeAsComponentOrHelperHeadOrThisFallbackOpcode,
-    number,
-    Path,
-  ];
   export type GetPathFreeAsComponentOrHelperHead = [
     GetFreeAsComponentOrHelperHeadOpcode,
-    number,
-    Path,
-  ];
-  export type GetPathFreeAsHelperHeadOrThisFallback = [
-    GetFreeAsHelperHeadOrThisFallbackOpcode,
-    number,
-    Path,
-  ];
-  export type GetPathFreeAsDeprecatedHelperHeadOrThisFallback = [
-    GetFreeAsDeprecatedHelperHeadOrThisFallbackOpcode,
     number,
     Path,
   ];
@@ -152,10 +122,7 @@ export namespace Expressions {
   export type GetPathFreeAsComponentHead = [GetFreeAsComponentHeadOpcode, number, Path];
 
   export type GetPathContextualFree =
-    | GetPathFreeAsComponentOrHelperHeadOrThisFallback
     | GetPathFreeAsComponentOrHelperHead
-    | GetPathFreeAsHelperHeadOrThisFallback
-    | GetPathFreeAsDeprecatedHelperHeadOrThisFallback
     | GetPathFreeAsHelperHead
     | GetPathFreeAsModifierHead
     | GetPathFreeAsComponentHead;

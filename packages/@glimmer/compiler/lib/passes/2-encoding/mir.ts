@@ -76,7 +76,6 @@ export class NamedBlock extends node('NamedBlock').fields<{
   name: SourceSlice;
   body: Statement[];
 }>() {}
-export class EndBlock extends node('EndBlock').fields() {}
 export class AppendTrustedHTML extends node('AppendTrustedHTML').fields<{
   html: ExpressionNode;
 }>() {}
@@ -136,10 +135,6 @@ export class CallExpression extends node('CallExpression').fields<{
   callee: ExpressionNode;
   args: Args;
 }>() {}
-export class DeprecatedCallExpression extends node('DeprecatedCallExpression').fields<{
-  arg: SourceSlice;
-  callee: ASTv2.FreeVarReference;
-}>() {}
 
 export class Modifier extends node('Modifier').fields<{ callee: ExpressionNode; args: Args }>() {}
 export class InvokeBlock extends node('InvokeBlock').fields<{
@@ -151,19 +146,6 @@ export class SplatAttr extends node('SplatAttr').fields<{ symbol: number }>() {}
 export class PathExpression extends node('PathExpression').fields<{
   head: ExpressionNode;
   tail: Tail;
-}>() {}
-export class GetWithResolver extends node('GetWithResolver').fields<{
-  symbol: number;
-}>() {}
-
-export class GetSymbol extends node('GetSymbol').fields<{ symbol: number }>() {}
-export class GetFreeWithContext extends node('GetFreeWithContext').fields<{
-  symbol: number;
-  context: ASTv2.FreeVarResolution;
-}>() {}
-/** strict mode */
-export class GetFree extends node('GetFree').fields<{
-  symbol: number;
 }>() {}
 
 export class Missing extends node('Missing').fields() {}
@@ -203,7 +185,6 @@ export type ExpressionNode =
   | ASTv2.VariableReference
   | InterpolateExpression
   | CallExpression
-  | DeprecatedCallExpression
   | Not
   | IfInline
   | HasBlock

@@ -3,7 +3,6 @@
  *
  * 1. Strict resolution
  * 2. Namespaced resolution
- * 3. Fallback resolution
  */
 
 import type { GetContextualFreeOpcode } from '@glimmer/interfaces';
@@ -13,7 +12,7 @@ import { SexpOpcodes } from '@glimmer/wire-format';
  * Strict resolution is used:
  *
  * 1. in a strict mode template
- * 2. in an unambiguous invocation with dot paths
+ * 2. in an local variable invocation with dot paths
  */
 export const STRICT_RESOLUTION = {
   resolution: (): GetContextualFreeOpcode => SexpOpcodes.GetStrictKeyword,
@@ -35,13 +34,10 @@ export function isStrictResolution(value: unknown): value is StrictResolution {
 }
 
 /**
- * A `LooseModeResolution` includes:
- *
- * - 0 or more namespaces to resolve the variable in
- * - optional fallback behavior
+ * A `LooseModeResolution` includes one or more namespaces to resolve the variable in
  *
  * In practice, there are a limited number of possible combinations of these degrees of freedom,
- * and they are captured by the `Ambiguity` union below.
+ * and they are captured by the `Namespaces` union below.
  */
 export class LooseModeResolution {
   /**
@@ -51,155 +47,75 @@ export class LooseModeResolution {
    * 2. `{{#block}}` (namespace: `Component`)
    * 3. `<a {{modifier}}>` (namespace: `Modifier`)
    * 4. `<Component />` (namespace: `Component`)
-   *
-   * @see {NamespacedAmbiguity}
    */
   static namespaced(namespace: FreeVarNamespace, isAngleBracket = false): LooseModeResolution {
-    return new LooseModeResolution(
-      {
-        namespaces: [namespace],
-        fallback: false,
-      },
-      isAngleBracket
-    );
-  }
-
-  /**
-   * Fallback resolution is used when no namespaced resolutions are possible, but fallback
-   * resolution is still allowed.
-   *
-   * ```hbs
-   * {{x.y}}
-   * ```
-   *
-   * @see {FallbackAmbiguity}
-   */
-  static fallback(): LooseModeResolution {
-    return new LooseModeResolution({ namespaces: [], fallback: true });
+    return new LooseModeResolution([namespace], isAngleBracket);
   }
 
   /**
    * Append resolution is used when the variable should be resolved in both the `component` and
-   * `helper` namespaces. Fallback resolution is optional.
+   * `helper` namespaces.
    *
    * ```hbs
    * {{x}}
    * ```
    *
-   * ^ `x` should be resolved in the `component` and `helper` namespaces with fallback resolution.
-   *
    * ```hbs
    * {{x y}}
    * ```
    *
-   * ^ `x` should be resolved in the `component` and `helper` namespaces without fallback
-   * resolution.
-   *
-   * @see {ComponentOrHelperAmbiguity}
+   * ^ In either case, `x` should be resolved in the `component` and `helper` namespaces.
    */
-  static append({ invoke }: { invoke: boolean }): LooseModeResolution {
-    return new LooseModeResolution({
-      namespaces: [FreeVarNamespace.Component, FreeVarNamespace.Helper],
-      fallback: !invoke,
-    });
+  static append(): LooseModeResolution {
+    return new LooseModeResolution([FreeVarNamespace.Component, FreeVarNamespace.Helper]);
   }
 
   /**
-   * Trusting append resolution is used when the variable should be resolved in both the `component` and
-   * `helper` namespaces. Fallback resolution is optional.
+   * Trusting append resolution is used when the variable should be resolved only in the
+   * `helper` namespaces.
    *
    * ```hbs
    * {{{x}}}
    * ```
    *
-   * ^ `x` should be resolved in the `component` and `helper` namespaces with fallback resolution.
-   *
    * ```hbs
    * {{{x y}}}
    * ```
    *
-   * ^ `x` should be resolved in the `component` and `helper` namespaces without fallback
-   * resolution.
-   *
-   * @see {HelperAmbiguity}
+   * ^ In either case, `x` should be resolved in the `helper` namespace.
    */
-  static trustingAppend({ invoke }: { invoke: boolean }): LooseModeResolution {
-    return new LooseModeResolution({
-      namespaces: [FreeVarNamespace.Helper],
-      fallback: !invoke,
-    });
-  }
-
-  /**
-   * Attribute resolution is used when the variable should be resolved as a `helper` with fallback
-   * resolution.
-   *
-   * ```hbs
-   * <a href={{x}} />
-   * <a href="{{x}}.html" />
-   * ```
-   *
-   * ^ resolved in the `helper` namespace with fallback
-   *
-   * @see {HelperAmbiguity}
-   */
-  static attr(): LooseModeResolution {
-    return new LooseModeResolution({ namespaces: [FreeVarNamespace.Helper], fallback: true });
+  static trustingAppend(): LooseModeResolution {
+    return this.namespaced(FreeVarNamespace.Helper);
   }
 
   constructor(
-    readonly ambiguity: Ambiguity,
+    readonly namespaces: Namespaces,
     readonly isAngleBracket = false
   ) {}
 
   resolution(): GetContextualFreeOpcode {
-    if (this.ambiguity.namespaces.length === 0) {
-      return SexpOpcodes.GetStrictKeyword;
-    } else if (this.ambiguity.namespaces.length === 1) {
-      if (this.ambiguity.fallback) {
-        // simple namespaced resolution with fallback must be attr={{x}}
-        return SexpOpcodes.GetFreeAsHelperHeadOrThisFallback;
-      } else {
-        // simple namespaced resolution without fallback
-        switch (this.ambiguity.namespaces[0]) {
-          case FreeVarNamespace.Helper:
-            return SexpOpcodes.GetFreeAsHelperHead;
-          case FreeVarNamespace.Modifier:
-            return SexpOpcodes.GetFreeAsModifierHead;
-          case FreeVarNamespace.Component:
-            return SexpOpcodes.GetFreeAsComponentHead;
-        }
+    if (this.namespaces.length === 1) {
+      switch (this.namespaces[0]) {
+        case FreeVarNamespace.Helper:
+          return SexpOpcodes.GetFreeAsHelperHead;
+        case FreeVarNamespace.Modifier:
+          return SexpOpcodes.GetFreeAsModifierHead;
+        case FreeVarNamespace.Component:
+          return SexpOpcodes.GetFreeAsComponentHead;
       }
-    } else if (this.ambiguity.fallback) {
-      // component or helper + fallback ({{something}})
-      return SexpOpcodes.GetFreeAsComponentOrHelperHeadOrThisFallback;
     } else {
-      // component or helper without fallback ({{something something}})
       return SexpOpcodes.GetFreeAsComponentOrHelperHead;
     }
   }
 
   serialize(): SerializedResolution {
-    if (this.ambiguity.namespaces.length === 0) {
-      return 'Loose';
-    } else if (this.ambiguity.namespaces.length === 1) {
-      if (this.ambiguity.fallback) {
-        // simple namespaced resolution with fallback must be attr={{x}}
-        return ['ambiguous', SerializedAmbiguity.Attr];
-      } else {
-        return ['ns', this.ambiguity.namespaces[0]];
-      }
-    } else if (this.ambiguity.fallback) {
-      // component or helper + fallback ({{something}})
-      return ['ambiguous', SerializedAmbiguity.Append];
+    if (this.namespaces.length === 1) {
+      return this.namespaces[0];
     } else {
-      // component or helper without fallback ({{something something}})
-      return ['ambiguous', SerializedAmbiguity.Invoke];
+      return 'ComponentOrHelper';
     }
   }
 }
-
-export const ARGUMENT_RESOLUTION = LooseModeResolution.fallback();
 
 export enum FreeVarNamespace {
   Helper = 'Helper',
@@ -212,116 +128,48 @@ export const MODIFIER_NAMESPACE = FreeVarNamespace.Modifier;
 export const COMPONENT_NAMESPACE = FreeVarNamespace.Component;
 
 /**
- * A `ComponentOrHelperAmbiguity` might be a component or a helper, with an optional fallback
- *
- * ```hbs
- * {{x}}
- * ```
- *
- * ^ `x` is resolved in the `component` and `helper` namespaces, with fallback
- *
- * ```hbs
- * {{x y}}
- * ```
- *
- * ^ `x` is resolved in the `component` and `helper` namespaces, without fallback
- */
-type ComponentOrHelperAmbiguity = {
-  namespaces: [FreeVarNamespace.Component, FreeVarNamespace.Helper];
-  fallback: boolean;
-};
-
-/**
- * A `HelperAmbiguity` must be a helper, but it has fallback. If it didn't have fallback, it would
- * be a `NamespacedAmbiguity`.
- *
- * ```hbs
- * <a href={{x}} />
- * <a href="{{x}}.html" />
- * ```
- *
- * ^ `x` is resolved in the `helper` namespace with fallback
- */
-type HelperAmbiguity = { namespaces: [FreeVarNamespace.Helper]; fallback: boolean };
-
-/**
- * A `NamespacedAmbiguity` must be resolved in a particular namespace, without fallback.
+ * A `Namespaced` must be resolved in one or more namespaces.
  *
  * ```hbs
  * <X />
  * ```
  *
- * ^ `X` is resolved in the `component` namespace without fallback
+ * ^ `X` is resolved in the `component` namespace
  *
  * ```hbs
  * (x)
  * ```
  *
- * ^ `x` is resolved in the `helper` namespace without fallback
+ * ^ `x` is resolved in the `helper` namespace
  *
  * ```hbs
  * <a {{x}} />
  * ```
  *
- * ^ `x` is resolved in the `modifier` namespace without fallback
+ * ^ `x` is resolved in the `modifier` namespace
  */
-type NamespacedAmbiguity = {
-  namespaces: [FreeVarNamespace.Component | FreeVarNamespace.Helper | FreeVarNamespace.Modifier];
-  fallback: false;
-};
-
-type FallbackAmbiguity = {
-  namespaces: [];
-  fallback: true;
-};
-
-type Ambiguity =
-  | ComponentOrHelperAmbiguity
-  | HelperAmbiguity
-  | NamespacedAmbiguity
-  | FallbackAmbiguity;
+type Namespaces =
+  | [FreeVarNamespace.Helper]
+  | [FreeVarNamespace.Modifier]
+  | [FreeVarNamespace.Component]
+  | [FreeVarNamespace.Component, FreeVarNamespace.Helper];
 
 export type FreeVarResolution = StrictResolution | HtmlResolution | LooseModeResolution;
 
 // Serialization
-
-const enum SerializedAmbiguity {
-  // {{x}}
-  Append = 'Append',
-  // href={{x}}
-  Attr = 'Attr',
-  // {{x y}} (not attr)
-  Invoke = 'Invoke',
-}
-
 export type SerializedResolution =
   | 'Strict'
-  | 'Loose'
-  | ['ns', FreeVarNamespace]
-  | ['ambiguous', SerializedAmbiguity];
+  | 'Helper'
+  | 'Modifier'
+  | 'Component'
+  | 'ComponentOrHelper';
 
 export function loadResolution(resolution: SerializedResolution): FreeVarResolution {
-  if (typeof resolution === 'string') {
-    switch (resolution) {
-      case 'Loose':
-        return LooseModeResolution.fallback();
-      case 'Strict':
-        return STRICT_RESOLUTION;
-    }
-  }
-
-  switch (resolution[0]) {
-    case 'ambiguous':
-      switch (resolution[1]) {
-        case SerializedAmbiguity.Append:
-          return LooseModeResolution.append({ invoke: false });
-        case SerializedAmbiguity.Attr:
-          return LooseModeResolution.attr();
-        case SerializedAmbiguity.Invoke:
-          return LooseModeResolution.append({ invoke: true });
-      }
-
-    case 'ns':
-      return LooseModeResolution.namespaced(resolution[1]);
+  if (resolution === 'Strict') {
+    return STRICT_RESOLUTION;
+  } else if (resolution === 'ComponentOrHelper') {
+    return LooseModeResolution.append();
+  } else {
+    return LooseModeResolution.namespaced(resolution as FreeVarNamespace);
   }
 }

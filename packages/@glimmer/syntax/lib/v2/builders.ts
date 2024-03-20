@@ -221,18 +221,6 @@ export class Builder {
     });
   }
 
-  deprecatedCall(
-    arg: SourceSlice,
-    callee: ASTv2.FreeVarReference,
-    loc: SourceSpan
-  ): ASTv2.DeprecatedCallExpression {
-    return new ASTv2.DeprecatedCallExpression({
-      loc,
-      arg,
-      callee,
-    });
-  }
-
   interpolate(parts: ASTv2.ExpressionNode[], loc: SourceSpan): ASTv2.InterpolateExpression {
     assertPresentArray(parts);
 
