@@ -1,10 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  assert as emberAssert,
-  type DeprecationOptions,
-  registerDeprecationHandler,
-} from '@ember/debug';
+import { assert as emberAssert, type DeprecationOptions } from '@ember/debug';
 import { emberVersionGte } from '@ember/debug/lib/deprecate';
+import { HANDLERS } from '@ember/debug/lib/handlers';
 import type { DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
 import type { ExtendedWindow } from './assertion';
 import { checkTest } from './utils';
@@ -21,6 +18,7 @@ export default class MethodCallTracker {
   private _expectedOptionLists: OptionList[];
   private _actuals: Actual[];
   private _originalMethod: DebugFunction | undefined;
+  private _originalHandlers: (typeof HANDLERS)['deprecate'] | undefined;
 
   constructor(env: DebugEnv, methodName: string) {
     this._env = env;
@@ -30,6 +28,7 @@ export default class MethodCallTracker {
     this._expectedOptionLists = [];
     this._actuals = [];
     this._originalMethod = undefined;
+    this._originalHandlers = undefined;
   }
 
   stubMethod(): void {
@@ -42,6 +41,9 @@ export default class MethodCallTracker {
     let methodName = this._methodName;
 
     this._originalMethod = env.getDebugFunction(methodName);
+    if (methodName === 'deprecate') {
+      this._originalHandlers = HANDLERS['deprecate'];
+    }
 
     env.setDebugFunction(methodName, (message, test, options) => {
       let resultOfTest = checkTest(test);
@@ -49,7 +51,7 @@ export default class MethodCallTracker {
       this._actuals.push([message, resultOfTest, options]);
 
       if (methodName === 'deprecate') {
-        registerDeprecationHandler(() => {});
+        HANDLERS['deprecate'] = () => {};
         if (emberVersionGte((options as DeprecationOptions).until)) {
           let w = window as ExtendedWindow;
           w.expectAssertion?.(() => {
@@ -67,6 +69,9 @@ export default class MethodCallTracker {
   restoreMethod(): void {
     if (this._originalMethod) {
       this._env.setDebugFunction(this._methodName, this._originalMethod);
+    }
+    if (this._originalHandlers) {
+      HANDLERS['deprecate'] = this._originalHandlers;
     }
   }
 
