@@ -18,6 +18,26 @@
 
 
 
+
+## v0.90.0 (2024-03-22)
+
+#### :boom: Breaking Change
+* `@glimmer-workspace/integration-tests`, `@glimmer/runtime`
+  * [#1580](https://github.com/glimmerjs/glimmer-vm/pull/1580) Remove deprecation for setting hash properties (from years ago) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/runtime`
+  * [#1580](https://github.com/glimmerjs/glimmer-vm/pull/1580) Remove deprecation for setting hash properties (from years ago) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/syntax`, `@glimmer/vm`
+  * [#1579](https://github.com/glimmerjs/glimmer-vm/pull/1579) Add missing licenses ([@andreyfel](https://github.com/andreyfel))
+
+#### Committers: 3
+- Andrey Fel ([@andreyfel](https://github.com/andreyfel))
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.89.0 (2024-03-09)
 
 #### :rocket: Enhancement
