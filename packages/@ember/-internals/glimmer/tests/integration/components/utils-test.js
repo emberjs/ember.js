@@ -42,10 +42,8 @@ moduleFor(
       let ToggleController = Controller.extend({
         isExpanded: true,
 
-        actions: {
-          toggle: function () {
-            this.toggleProperty('isExpanded');
-          },
+        toggle: function () {
+          this.toggleProperty('isExpanded');
         },
       });
 
@@ -64,7 +62,7 @@ moduleFor(
         {{/x-toggle}}
       {{/x-toggle}}
 
-      <button id="toggle-application" {{action "toggle"}}>Toggle</button>
+      <button id="toggle-application" {{on "click" this.toggle}}>Toggle</button>
 
       {{#if this.isExpanded}}
         {{x-toggle id="root-3"}}
@@ -94,7 +92,7 @@ moduleFor(
         {{/x-toggle}}
       {{/x-toggle}}
 
-      <button id="toggle-index" {{action "toggle"}}>Toggle</button>
+      <button id="toggle-index" {{on "click" this.toggle}}>Toggle</button>
 
       {{#if this.isExpanded}}
         {{x-toggle id="root-6"}}

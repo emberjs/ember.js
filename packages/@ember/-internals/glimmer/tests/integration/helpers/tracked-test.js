@@ -28,7 +28,7 @@ moduleFor(
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            <button onclick={{action this.updateName}}>
+            <button onclick={{this.updateName}}>
               {{hello-world this.name}}
             </button>
           `,
@@ -113,7 +113,7 @@ moduleFor(
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            <button onclick={{action this.updatePerson}}>
+            <button onclick={{this.updatePerson}}>
               {{hello-world this.full}}
             </button>
           `,
@@ -155,7 +155,7 @@ moduleFor(
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on 'click' this.addNumber}}>
               {{join this.numbers}}
             </button>
           `,
@@ -210,7 +210,7 @@ moduleFor(
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on 'click' this.addNumber}}>
               {{join this.numbers}}
             </button>
           `,

@@ -745,15 +745,13 @@ moduleFor(
     ) {
       this.addTemplate(
         'application',
-        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
+        '<button id="test-button" {{on "click" this.increment}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
       );
 
       this.setSingleQPController('application', 'foo', 1, {
-        actions: {
-          increment() {
-            this.incrementProperty('foo');
-            this.send('refreshRoute');
-          },
+        increment() {
+          this.incrementProperty('foo');
+          this.send('refreshRoute');
         },
       });
 

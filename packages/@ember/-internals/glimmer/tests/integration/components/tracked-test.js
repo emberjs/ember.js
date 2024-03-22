@@ -149,7 +149,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -172,7 +172,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -199,7 +199,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -230,7 +230,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.counter.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.counter.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -254,7 +254,7 @@ moduleFor(
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on "click" this.addNumber}}>
               {{#each this.numbers as |num|}}{{num}}{{/each}}
             </button>
           `,
@@ -286,7 +286,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -323,7 +323,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -360,7 +360,7 @@ moduleFor(
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.counter.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.counter.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -407,7 +407,7 @@ moduleFor(
         ComponentClass: ChildComponent,
         template: strip`
             <div id="child">{{this.person.full}}</div>
-            <button onclick={{action this.updatePerson}}></button>
+            <button onclick={{this.updatePerson}}></button>
           `,
       });
 
@@ -442,7 +442,7 @@ moduleFor(
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            {{yield this.full (action this.updatePerson)}}
+            {{yield this.full this.updatePerson}}
           `,
       });
 
@@ -485,7 +485,7 @@ moduleFor(
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            {{yield this.person (action this.updatePerson)}}
+            {{yield this.person this.updatePerson}}
           `,
       });
 
@@ -617,7 +617,7 @@ moduleFor(
 
       this.registerComponent('inner', {
         ComponentClass: InnerComponent,
-        template: '<button {{action this.updateInnerCount}}>{{this.combinedCounts}}</button>',
+        template: '<button {{on "click" this.updateInnerCount}}>{{this.combinedCounts}}</button>',
       });
 
       this.render('<Outer @count={{this.count}}/>', {

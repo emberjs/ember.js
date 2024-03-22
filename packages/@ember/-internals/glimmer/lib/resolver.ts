@@ -37,14 +37,12 @@ import { default as inElementNullCheckHelper } from './helpers/-in-element-null-
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as resolve } from './helpers/-resolve';
 import { default as trackArray } from './helpers/-track-array';
-import { default as action } from './helpers/action';
 import { default as eachIn } from './helpers/each-in';
 import { default as mut } from './helpers/mut';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import { default as uniqueId } from './helpers/unique-id';
 
-import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 
@@ -109,7 +107,6 @@ function lookupComponentPair(
 }
 
 const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
-  action,
   mut,
   readonly,
   unbound,
@@ -147,12 +144,7 @@ if (DEBUG) {
   BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 }
 
-const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {
-  action: actionModifier,
-};
-
 const BUILTIN_MODIFIERS: Record<string, object> = {
-  ...BUILTIN_KEYWORD_MODIFIERS,
   on,
 };
 

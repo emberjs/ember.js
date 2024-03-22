@@ -4,7 +4,6 @@ import type { Reference } from '@glimmer/reference';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { assert } from '@ember/debug';
 import { ARGS } from '../component-managers/curly';
-import { ACTIONS } from '../helpers/action';
 
 // ComponentArgs takes EvaluatedNamedArgs and converts them into the
 // inputs needed by CurlyComponents (attrs and props, with mutable
@@ -20,9 +19,7 @@ export function processComponentArgs(namedArgs: CapturedNamedArguments) {
     assert('expected ref', ref);
     let value = valueForRef(ref);
 
-    let isAction = typeof value === 'function' && ACTIONS.has(value);
-
-    if (isUpdatableRef(ref) && !isAction) {
+    if (isUpdatableRef(ref)) {
       attrs[name] = new MutableCell(ref, value);
     } else {
       attrs[name] = value;

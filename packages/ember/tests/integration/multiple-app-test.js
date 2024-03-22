@@ -48,11 +48,9 @@ moduleFor(
       resolver.add(
         'component:special-button',
         Component.extend({
-          actions: {
-            doStuff() {
-              let rootElement = getOwner(this).application.rootElement;
-              actions.push(rootElement);
-            },
+          doStuff() {
+            let rootElement = getOwner(this).application.rootElement;
+            actions.push(rootElement);
           },
         })
       );
@@ -72,7 +70,7 @@ moduleFor(
         'template:components/special-button',
         this.compile(
           `
-        <button class='do-stuff' {{action 'doStuff'}}>Button</button>
+        <button class='do-stuff' {{on 'click' this.doStuff}}>Button</button>
       `,
           {
             moduleName: 'my-app/templates/components/special-button.hbs',

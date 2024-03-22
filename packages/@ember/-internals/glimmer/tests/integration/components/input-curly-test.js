@@ -154,12 +154,10 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      this.render(`{{input enter=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`{{input enter=this.foo}}`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
@@ -171,12 +169,10 @@ moduleFor(
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
       assert.expect(2);
 
-      this.render(`{{input insert-newline=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`{{input insert-newline=this.foo}}`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
@@ -185,17 +181,15 @@ moduleFor(
       });
     }
 
-    ['@test sends an action with `{{input escape-press=(action "foo")}}` when <escape> is pressed'](
+    ['@test sends an action with `{{input escape-press=this.foo}}` when <escape> is pressed'](
       assert
     ) {
       assert.expect(2);
 
-      this.render(`{{input escape-press=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`{{input escape-press=this.foo}}`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
