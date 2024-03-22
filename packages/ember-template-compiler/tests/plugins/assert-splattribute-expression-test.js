@@ -39,9 +39,10 @@ moduleFor(
 
     '@test {{...attributes}} is not valid attribute'() {
       expectAssertion(() => {
-        compile('<div class={{...attributes}}>Wat</div>', {
+        let output = compile('<div class={{...attributes}}>Wat</div>', {
           moduleName: 'foo-bar',
         });
+        console.log(output);
       }, this.expectedMessage(`'foo-bar' @ L1:C13`));
     }
   }
