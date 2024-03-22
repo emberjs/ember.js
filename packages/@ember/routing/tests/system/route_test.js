@@ -1,4 +1,5 @@
 import { setOwner } from '@ember/-internals/owner';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { ENV } from '@ember/-internals/environment';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
@@ -67,10 +68,14 @@ moduleFor(
       let owner = buildOwner(ownerOptions);
       setOwner(route, owner);
 
-      expectDeprecation(() => {
-        assert.equal(route.model({ post_id: 1 }), post);
-        assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-      }, /The implicit model loading behavior for routes is deprecated./);
+      expectDeprecation(
+        () => {
+          assert.equal(route.model({ post_id: 1 }), post);
+          assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+        },
+        /The implicit model loading behavior for routes is deprecated./,
+        DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.test
+      );
 
       runDestroy(owner);
     }
