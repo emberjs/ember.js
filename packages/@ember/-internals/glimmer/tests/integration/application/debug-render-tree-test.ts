@@ -29,6 +29,8 @@ interface CapturedBounds {
   lastNode: SimpleNode;
 }
 
+function anyFunc() {}
+
 function compileTemplate(templateSource: string, options: Partial<EmberPrecompileOptions>) {
   return compile(templateSource, options);
 }
@@ -1183,6 +1185,54 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let inputToString = /<Input:ember[0-9]+>/;
 
+        const firstModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1191,12 +1241,60 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: [...firstModifiers],
           },
         ]);
 
         runTask(() => target.set('showSecond', true));
 
+        const secondModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1205,7 +1303,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: [...firstModifiers],
           },
           {
             type: 'component',
@@ -1214,7 +1312,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.lastChild),
-            children: [],
+            children: [...secondModifiers],
           },
         ]);
 
@@ -1228,7 +1326,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: [...firstModifiers],
           },
         ]);
       }
@@ -1496,11 +1594,52 @@ if (ENV._DEBUG_RENDER_TREE) {
         }
       }
 
+      assertArgs<Named, Positional>(
+        actual: { named: Named; positional: Positional },
+        expected: { named: Named; positional: Positional },
+        path: string
+      ): void {
+        this.assertNamedArgs(actual.named, expected.named, `${path} (named)`);
+        this.assertPositionalArgs(actual.positional, expected.positional, `${path} (positional)`);
+      }
+
+      assertNamedArgs<T>(actual: T, expected: Expected<T>, path: string) {
+        this.assert.deepEqual(actual, expected, path);
+      }
+
+      assertPositionalArgs<T>(actual: T, expected: Expected<T>, path: string) {
+        assert(`actual must be an array`, Array.isArray(actual));
+        assert(`expected must be an array`, Array.isArray(expected));
+
+        this.assert.strictEqual(actual.length, expected.length, `${path} length`);
+
+        for (let i = 0; i < actual.length; i++) {
+          let actualItem = actual[i];
+          let expectedItem = expected[i];
+
+          if (typeof actualItem === 'function') {
+            this.assert.strictEqual(
+              typeof actualItem,
+              typeof expectedItem,
+              `${path} function @ ${i}`
+            );
+            continue;
+          }
+
+          this.assert.deepEqual(actualItem, expectedItem, `${path} @ ${i}`);
+        }
+      }
+
       assertProperty<T>(actual: T, expected: Expected<T>, deep: boolean, path: string): void {
         if (isExpectedFunc(expected)) {
           this.assert.ok(expected(actual), `Matching ${path}, got ${actual}`);
         } else if (deep) {
-          this.assert.deepEqual(actual, expected, `Matching ${path}`);
+          if (Object.keys(actual).length === 2 && 'named' in actual && 'positional' in actual) {
+            // We have can't compare functions
+            this.assertArgs(actual, expected, path);
+          } else {
+            this.assert.deepEqual(actual, expected, `Matching ${path}`);
+          }
         } else {
           this.assert.strictEqual(actual, expected, `Matching ${path}`);
         }
