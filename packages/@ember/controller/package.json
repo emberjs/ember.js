@@ -11,11 +11,11 @@
     "@ember/debug": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/service": "workspace:*",
-    "@glimmer/destroyable": "0.89.0",
+    "@glimmer/destroyable": "0.90.0",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/owner": "0.89.0",
-    "@glimmer/util": "0.89.0",
-    "@glimmer/validator": "0.89.0",
+    "@glimmer/owner": "0.90.0",
+    "@glimmer/util": "0.90.0",
+    "@glimmer/validator": "0.90.0",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
   }
