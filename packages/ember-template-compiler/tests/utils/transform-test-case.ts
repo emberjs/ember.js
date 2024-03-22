@@ -10,16 +10,16 @@ export default abstract class extends AbstractTestCase {
   }
 }
 
-function ast(template: string): AST.Program {
-  let program: Nullable<AST.Program> = null;
+function ast(template: string): AST.Template {
+  let program: Nullable<AST.Template> = null;
 
   function extractProgram(): ASTPlugin {
     return {
       name: 'extract-program',
 
       visitor: {
-        Program: {
-          exit(node: AST.Program): void {
+        Template: {
+          exit(node: AST.Template): void {
             program = clone(node);
           },
         },

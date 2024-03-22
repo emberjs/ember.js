@@ -33,11 +33,11 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze(
   [
     TransformQuotedBindingsIntoJustBindings,
     AssertReservedNamedArguments,
-    TransformActionSyntax,
-    TransformEachInIntoEach,
+    // TransformActionSyntax,
+    // TransformEachInIntoEach,
     TransformInElement,
     AssertSplattributeExpressions,
-    TransformEachTrackArray,
+    // TransformEachTrackArray,
     AssertAgainstNamedOutlets,
     TransformWrapMountAndOutlet,
   ].filter(notNull)
