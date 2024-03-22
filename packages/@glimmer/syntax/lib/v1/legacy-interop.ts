@@ -1,4 +1,4 @@
-import type { PresentArray } from '@glimmer/interfaces/index';
+import type { PresentArray } from '@glimmer/interfaces';
 import { asPresentArray, deprecate } from '@glimmer/util';
 
 import type * as ASTv1 from './nodes-v1';
