@@ -19,6 +19,16 @@
 
 
 
+
+## v0.90.1 (2024-03-22)
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/syntax`
+  * [#1581](https://github.com/glimmerjs/glimmer-vm/pull/1581) Remove index imports as they are not defined by package.json#exports ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.90.0 (2024-03-22)
 
 #### :boom: Breaking Change
