@@ -1269,7 +1269,7 @@ moduleFor(
 
     ['@test non-block with properties on this.attrs']() {
       this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}}',
+        template: 'In layout - someProp: {{this.attrs.someProp}}{{log this.attrs}}',
       });
 
       this.render('{{non-block someProp=this.prop}}', {
