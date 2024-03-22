@@ -5,7 +5,7 @@ import { callWithStub, checkTest } from './utils';
 type ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => void;
 type IgnoreAssertionFunc = (func: () => void) => void;
 
-type ExtendedWindow = Window &
+export type ExtendedWindow = Window &
   typeof globalThis & {
     expectAssertion: ExpectAssertionFunc | null;
     ignoreAssertion: IgnoreAssertionFunc | null;

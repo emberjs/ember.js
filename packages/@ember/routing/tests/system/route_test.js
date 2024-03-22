@@ -35,7 +35,7 @@ moduleFor(
     }
 
     ['@test default store utilizes the container to acquire the model factory'](assert) {
-      assert.expect(5);
+      assert.expect(7);
 
       let Post = EmberObject.extend();
       let post = {};
@@ -67,14 +67,10 @@ moduleFor(
       let owner = buildOwner(ownerOptions);
       setOwner(route, owner);
 
-      expectDeprecation(
-        () =>
-          ignoreAssertion(() => {
-            assert.equal(route.model({ post_id: 1 }), post);
-            assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-          }),
-        /The implicit model loading behavior for routes is deprecated./
-      );
+      expectDeprecation(() => {
+        assert.equal(route.model({ post_id: 1 }), post);
+        assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+      }, /The implicit model loading behavior for routes is deprecated./);
 
       runDestroy(owner);
     }

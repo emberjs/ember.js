@@ -39,6 +39,10 @@ function run(queryString) {
     queryString = `${queryString}&debugrendertree`;
   }
 
+  if (process.env.OVERRIDE_DEPRECATION_VERSION) {
+    queryString = `${queryString}&overridedeprecationversion=${process.env.OVERRIDE_DEPRECATION_VERSION}`;
+  }
+
   let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
   return runInBrowser(url, 3);
 }

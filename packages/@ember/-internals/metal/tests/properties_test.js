@@ -20,10 +20,15 @@ moduleFor(
     ['@test enables access to deprecated property and returns the value of the new property'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(5);
       let obj = { foo: 'bar' };
 
-      deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
+      deprecateProperty(obj, 'baz', 'foo', {
+        id: 'baz-deprecation',
+        until: 'some.version',
+        for: 'test',
+        since: '1.0.0',
+      });
 
       expectDeprecation();
       assert.equal(obj.baz, obj.foo, 'baz and foo are equal');
@@ -48,10 +53,15 @@ moduleFor(
     ['@test enables setter to deprecated property and updates the value of the new property'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(5);
       let obj = { foo: 'bar' };
 
-      deprecateProperty(obj, 'baz', 'foo', { id: 'baz-deprecation', until: 'some.version' });
+      deprecateProperty(obj, 'baz', 'foo', {
+        id: 'baz-deprecation',
+        until: 'some.version',
+        for: 'test',
+        since: '1.0.0',
+      });
 
       expectDeprecation();
       obj.baz = 'bloop';

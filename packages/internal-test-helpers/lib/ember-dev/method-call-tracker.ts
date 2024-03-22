@@ -1,6 +1,12 @@
 import { DEBUG } from '@glimmer/env';
-import { assert as emberAssert } from '@ember/debug';
+import {
+  assert as emberAssert,
+  type DeprecationOptions,
+  registerDeprecationHandler,
+} from '@ember/debug';
+import { emberVersionGte } from '@ember/debug/lib/deprecate';
 import type { DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
+import type { ExtendedWindow } from './assertion';
 import { checkTest } from './utils';
 
 type Actual = [string, boolean, DebugFunctionOptions];
@@ -41,6 +47,20 @@ export default class MethodCallTracker {
       let resultOfTest = checkTest(test);
 
       this._actuals.push([message, resultOfTest, options]);
+
+      if (methodName === 'deprecate') {
+        registerDeprecationHandler(() => {});
+        if (emberVersionGte((options as DeprecationOptions).until)) {
+          let w = window as ExtendedWindow;
+          w.expectAssertion?.(() => {
+            this._originalMethod?.(message, test, options);
+          }, /This API was removed/);
+        } else {
+          let { assert } = QUnit.config.current;
+          assert.ok(true, 'Balance assertion counts');
+          this._originalMethod?.(message, test, options);
+        }
+      }
     });
   }
 

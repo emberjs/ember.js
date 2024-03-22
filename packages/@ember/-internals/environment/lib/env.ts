@@ -159,6 +159,19 @@ export const ENV = {
   _NO_IMPLICIT_ROUTE_MODEL: false,
 
   /**
+   Override the version of ember-source used to determine when deprecations "break".
+   This is used internally by Ember to test with deprecated features "removed".
+   This is never intended to be set by projects.
+
+   @property _OVERRIDE_DEPRECATION_VERSION
+   @for EmberENV
+   @type string | null
+   @default null
+   @private
+   */
+  _OVERRIDE_DEPRECATION_VERSION: null,
+
+  /**
     Controls the maximum number of scheduled rerenders without "settling". In general,
     applications should not need to modify this environment variable, but please
     open an issue so that we can determine if a better default value is needed.
@@ -201,6 +214,8 @@ export const ENV = {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;
     } else if (defaultValue === false) {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
+    } else {
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag];
     }
   }
 

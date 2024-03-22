@@ -54,6 +54,10 @@
         if (QUnit.urlParams.debugrendertree) {
           EmberENV['_DEBUG_RENDER_TREE'] = true;
         }
+
+        if (QUnit.urlParams.overridedeprecationversion) {
+          EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.overridedeprecationversion;
+        }
       })();
     </script>
 

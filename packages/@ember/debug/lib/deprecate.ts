@@ -81,9 +81,9 @@ let missingOptionsIdDeprecation: string;
 let missingOptionDeprecation: MissingOptionDeprecateFunc = () => '';
 let deprecate: DeprecateFunc = () => {};
 
-let numEmberVersion = parseFloat(VERSION);
+let numEmberVersion = parseFloat(ENV._OVERRIDE_DEPRECATION_VERSION ?? VERSION);
 function emberVersionGte(until: string) {
-  const significantUntil = until.replaceAll(/(\.0+)/g, '');
+  let significantUntil = until.replaceAll(/(\.0+)/g, '');
   return numEmberVersion >= parseFloat(significantUntil);
 }
 
@@ -280,4 +280,5 @@ export {
   missingOptionsDeprecation,
   missingOptionsIdDeprecation,
   missingOptionDeprecation,
+  emberVersionGte,
 };
