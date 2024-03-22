@@ -1345,7 +1345,59 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        let textareaNode = (value: string, node: Node | null): ExpectedRenderNode => {
+        const firstModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ];
+
+        let textareaNode = (
+          value: string,
+          node: Node | null,
+          children: ExpectedRenderNode['children']
+        ): ExpectedRenderNode => {
           return {
             type: 'component',
             name: 'textarea',
@@ -1353,26 +1405,74 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['value'] === value,
             bounds: this.nodeBounds(node),
             template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
-            children: [],
+            children,
           };
         };
 
-        this.assertRenderTree([textareaNode('first', this.element!.firstChild)]);
+        this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
 
         runTask(() => {
           this.controllerFor('application')!.set('showSecond', true);
         });
 
+        const secondModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
-          textareaNode('first', this.element!.firstChild),
-          textareaNode('second', this.element!.lastChild),
+          textareaNode('first', this.element!.firstChild, firstModifiers),
+          textareaNode('second', this.element!.lastChild, secondModifiers),
         ]);
 
         runTask(() => {
           this.controllerFor('application')!.set('showSecond', false);
         });
 
-        this.assertRenderTree([textareaNode('first', this.element!.firstChild)]);
+        this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
       }
 
       async '@test <LinkTo> components'() {
@@ -1396,6 +1496,18 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let template = `packages/@ember/-internals/glimmer/lib/templates/link-to.hbs`;
 
+        const firstModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['click', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1404,7 +1516,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
             template,
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: firstModifiers,
           },
         ]);
 
@@ -1412,6 +1524,18 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.controllerFor('application')!.set('showSecond', true);
         });
 
+        const secondModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['click', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1420,7 +1544,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
             template,
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: firstModifiers,
           },
           {
             type: 'component',
@@ -1429,7 +1553,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'bar',
             template,
             bounds: this.nodeBounds(this.element!.lastChild),
-            children: [],
+            children: secondModifiers,
           },
         ]);
 
@@ -1445,7 +1569,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
             template,
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: firstModifiers,
           },
         ]);
       }
