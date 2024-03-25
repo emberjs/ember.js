@@ -1727,11 +1727,11 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.assertPositionalArgs(actual.positional, expected.positional, `${path} (positional)`);
       }
 
-      assertNamedArgs<T>(actual: T, expected: Expected<T>, path: string) {
+      assertNamedArgs<T>(actual: T, expected: T, path: string) {
         this.assert.deepEqual(actual, expected, path);
       }
 
-      assertPositionalArgs<T>(actual: T, expected: Expected<T>, path: string) {
+      assertPositionalArgs<T>(actual: T, expected: T, path: string) {
         assert(`actual must be an array`, Array.isArray(actual));
         assert(`expected must be an array`, Array.isArray(expected));
 
@@ -1758,9 +1758,22 @@ if (ENV._DEBUG_RENDER_TREE) {
         if (isExpectedFunc(expected)) {
           this.assert.ok(expected(actual), `Matching ${path}, got ${actual}`);
         } else if (deep) {
-          if (Object.keys(actual).length === 2 && 'named' in actual && 'positional' in actual) {
+          if (
+            typeof actual === 'object' &&
+            actual !== null &&
+            Object.keys(actual).length === 2 &&
+            'named' in actual &&
+            'positional' in actual
+          ) {
             // We have can't compare functions
-            this.assertArgs(actual, expected, path);
+            this.assertArgs(
+              actual,
+              // SAFETY: these types are getting in the way more than helping,
+              //         there doesn't seem to be a way to correlate the shape via narrowing of actual
+              //         to the shape of expected
+              expected as unknown as { named: unknown; positional: unknown },
+              path
+            );
           } else {
             this.assert.deepEqual(actual, expected, `Matching ${path}`);
           }

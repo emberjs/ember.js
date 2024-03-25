@@ -369,7 +369,7 @@ export function rewriteModule(code, moduleName) {
   });
 
   let newAST = b.file(
-    b.template([
+    b.program([
       b.declareModule(
         b.identifier(`'${moduleName.replace('.d.ts', '')}'`),
         b.blockStatement(ast.program.body)
