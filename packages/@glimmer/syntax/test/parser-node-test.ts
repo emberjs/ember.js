@@ -121,6 +121,36 @@ test('a piece of Handlebars with HTML', () => {
   );
 });
 
+test('attributes are not allowed as values', (assert) => {
+  let t = '{{...attributes}}';
+  assert.throws(
+    () => {
+      parse(t, { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Illegal use of ...attributes', '{{...attributes}}', 'test-module', 1, 0)
+  );
+});
+
+test('attributes are not allowed as modifiers', (assert) => {
+  let t = '<div {{...attributes}}></div>';
+  assert.throws(
+    () => {
+      parse(t, { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Illegal use of ...attributes', '{{...attributes}}', 'test-module', 1, 5)
+  );
+});
+
+test('attributes are not allowed as attribute values', (assert) => {
+  let t = '<div class={{...attributes}}></div>';
+  assert.throws(
+    () => {
+      parse(t, { meta: { moduleName: 'test-module' } });
+    },
+    syntaxErrorFor('Illegal use of ...attributes', '{{...attributes}}', 'test-module', 1, 11)
+  );
+});
+
 test('Handlebars embedded in an attribute (quoted)', () => {
   let t = 'some <div class="{{foo}}">content</div> done';
   astEqual(
