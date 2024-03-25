@@ -142,7 +142,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
             },
             value: null,
           }),
-          template: '<div id="inner-value">{{wrapper.content}}</div>',
+          template: '<div id="inner-value">{{this.wrapper.content}}</div>',
         });
 
         this.registerTemplateOnlyComponent('x-inner-template-only', '{{@value}}');

@@ -12,25 +12,41 @@ export function isStringLiteral(node: AST.Expression): node is AST.StringLiteral
   return node.type === 'StringLiteral';
 }
 
+function getLocalName(node: string | AST.Expression | AST.VarHead) {
+  if (typeof node === 'string') return node;
+
+  if (node.type === 'VarHead') {
+    return node.original;
+  }
+
+  // surely this is wrong? (does it ever occur tho?)
+  // the type of params is `| Expression`, which isn't possible for block params
+  return node;
+}
+
 export function trackLocals() {
   let locals = new Map();
 
   let node = {
-    enter(node: AST.Program | AST.Block | AST.ElementNode) {
-      for (let param of node.blockParams) {
+    enter(node: AST.Template | AST.Block | AST.ElementNode | AST.BlockStatement) {
+      let params = 'params' in node ? node.params : node.blockParams;
+      for (let param of params) {
+        let name = getLocalName(param);
         let value = locals.get(param) || 0;
-        locals.set(param, value + 1);
+        locals.set(name, value + 1);
       }
     },
 
-    exit(node: AST.Program | AST.Block | AST.ElementNode) {
-      for (let param of node.blockParams) {
-        let value = locals.get(param) - 1;
+    exit(node: AST.Template | AST.Block | AST.ElementNode | AST.BlockStatement) {
+      let params = 'params' in node ? node.params : node.blockParams;
+      for (let param of params) {
+        let name = getLocalName(param);
+        let value = locals.get(name) - 1;
 
         if (value === 0) {
-          locals.delete(param);
+          locals.delete(name);
         } else {
-          locals.set(param, value);
+          locals.set(name, value);
         }
       }
     },
