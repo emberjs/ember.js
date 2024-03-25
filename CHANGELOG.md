@@ -20,6 +20,16 @@
 
 
 
+
+## v0.91.0 (2024-03-25)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#1582](https://github.com/glimmerjs/glimmer-vm/pull/1582) Prevent use of ...attributes in invalid places ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## v0.90.1 (2024-03-22)
 
 #### :bug: Bug Fix
