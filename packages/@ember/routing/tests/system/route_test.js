@@ -74,7 +74,7 @@ moduleFor(
           assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
         },
         /The implicit model loading behavior for routes is deprecated./,
-        DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.test
+        DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isEnabled
       );
 
       runDestroy(owner);

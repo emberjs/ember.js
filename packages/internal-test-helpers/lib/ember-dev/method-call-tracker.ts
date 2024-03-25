@@ -41,9 +41,6 @@ export default class MethodCallTracker {
     let methodName = this._methodName;
 
     this._originalMethod = env.getDebugFunction(methodName);
-    if (methodName === 'deprecate') {
-      this._originalHandlers = HANDLERS['deprecate'];
-    }
 
     env.setDebugFunction(methodName, (message, test, options) => {
       let resultOfTest = checkTest(test);
@@ -51,7 +48,10 @@ export default class MethodCallTracker {
       this._actuals.push([message, resultOfTest, options]);
 
       if (methodName === 'deprecate') {
-        HANDLERS['deprecate'] = () => {};
+        if (!this._originalHandlers) {
+          this._originalHandlers = HANDLERS['deprecate'];
+          HANDLERS['deprecate'] = () => {};
+        }
         if (emberVersionGte((options as DeprecationOptions).until)) {
           let w = window as ExtendedWindow;
           w.expectAssertion?.(() => {

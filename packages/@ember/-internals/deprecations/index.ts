@@ -9,6 +9,7 @@ function deprecation(options: DeprecationOptions) {
   return {
     options,
     test: !isEnabled(options),
+    isEnabled: isEnabled(options),
   };
 }
 export const DEPRECATIONS = {
