@@ -45,7 +45,7 @@ moduleFor(
       // (and doesn't go through Ember's own assertion internals)
       assert.throws(() => {
         this.render('{{hello.world}}');
-      }, /Attempted to resolve a value in a strict mode template, but that value was not in scope: hello/);
+      }, /You attempted to render a path \(`\{\{hello\.world\}\}`\), but hello was not in scope/);
     }
 
     ['@test it can resolve custom class-based helpers with or without dashes']() {
