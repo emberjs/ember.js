@@ -177,6 +177,8 @@ class DeprecationAssert extends DebugAssert {
         tracker.expectCall(message, ['id', 'until']);
       });
     } else {
+      let { assert } = QUnit.config.current;
+      assert.ok(true, 'Balance assertion counts');
       this.expectNoDeprecation(func);
     }
   }
