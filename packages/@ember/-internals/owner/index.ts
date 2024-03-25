@@ -550,7 +550,7 @@ export function getOwner(object: object): InternalOwner | undefined {
   @for @ember/owner
   @param {Object} object An object instance.
   @param {Owner} object The new owner object of the object instance.
-  @since 2.3.0
+  @since 4.10.0
   @public
 */
 export function setOwner(object: object, owner: Owner): void {
