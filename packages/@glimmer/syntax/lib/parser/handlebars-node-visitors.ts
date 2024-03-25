@@ -220,6 +220,13 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let mustache: ASTv1.MustacheStatement;
     const { escaped, loc, strip } = rawMustache;
 
+    if ('original' in rawMustache.path && rawMustache.path.original === '...attributes') {
+      throw generateSyntaxError(
+        'Illegal use of ...attributes',
+        this.source.spanFor(rawMustache.loc)
+      );
+    }
+
     if (isHBSLiteral(rawMustache.path)) {
       mustache = b.mustache({
         path: this.acceptNode<(typeof rawMustache.path)['type']>(rawMustache.path),
