@@ -34,7 +34,6 @@ export const STRICT_MODE_TRANSFORMS = Object.freeze(
     TransformActionSyntax,
     TransformEachInIntoEach,
     TransformInElement,
-    TransformEachTrackArray,
     AssertAgainstNamedOutlets,
     TransformWrapMountAndOutlet,
   ].filter(notNull)
