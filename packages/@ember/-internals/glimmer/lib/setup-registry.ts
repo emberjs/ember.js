@@ -12,6 +12,7 @@ import { Renderer } from './renderer';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
+import { BUILTIN_MODIFIERS } from './resolver';
 
 export function setupApplicationRegistry(registry: Registry): void {
   // because we are using injections we can't use instantiate false
@@ -56,5 +57,9 @@ export function setupEngineRegistry(registry: Registry): void {
 
   if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
     registry.register(P`component:-default`, Component);
+  }
+
+  for (let [name, modifier] of Object.entries(BUILTIN_MODIFIERS)) {
+    registry.register(`modifier:${name}`, modifier, { instantiate: false });
   }
 }

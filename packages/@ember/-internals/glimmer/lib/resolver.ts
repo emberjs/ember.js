@@ -151,7 +151,7 @@ const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {
   action: actionModifier,
 };
 
-const BUILTIN_MODIFIERS: Record<string, object> = {
+export const BUILTIN_MODIFIERS: Record<string, object> = {
   ...BUILTIN_KEYWORD_MODIFIERS,
   on,
 };
