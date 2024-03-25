@@ -13,7 +13,7 @@
     "@ember/object": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/validator": "0.90.1",
+    "@glimmer/validator": "0.91.0",
     "backburner.js": "^2.7.0",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
