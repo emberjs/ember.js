@@ -19,6 +19,7 @@ import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
@@ -1258,14 +1259,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     deprecate(
       `The implicit model loading behavior for routes is deprecated. ` +
         `Please define an explicit model hook for ${this.fullRouteName}.`,
-      false,
-      {
-        id: 'deprecate-implicit-route-model',
-        for: 'ember-source',
-        since: { available: '5.3.0', enabled: '5.3.0' },
-        until: '6.0.0',
-        url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
-      }
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.test,
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.options
     );
 
     const store = 'store' in this ? this.store : get(this, '_store');

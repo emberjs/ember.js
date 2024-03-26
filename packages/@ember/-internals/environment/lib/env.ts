@@ -129,6 +129,19 @@ export const ENV = {
   _DEBUG_RENDER_TREE: DEBUG,
 
   /**
+   Whether to force all deprecations to be enabled. This is used internally by
+   Ember to enable deprecations in tests. It is not intended to be set in
+   projects.
+
+   @property _ALL_DEPRECATIONS_ENABLED
+   @for EmberENV
+   @type Boolean
+   @default false
+   @private
+   */
+  _ALL_DEPRECATIONS_ENABLED: false,
+
+  /**
     Whether the app defaults to using async observers.
 
     This is not intended to be set directly, as the implementation may change in

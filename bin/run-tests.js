@@ -39,6 +39,10 @@ function run(queryString) {
     queryString = `${queryString}&debugrendertree`;
   }
 
+  if (process.env.ALL_DEPRECATIONS_ENABLED) {
+    queryString = `${queryString}&alldeprecationsenabled=${process.env.ALL_DEPRECATIONS_ENABLED}`;
+  }
+
   let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
   return runInBrowser(url, 3);
 }
