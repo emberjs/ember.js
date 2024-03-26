@@ -1,7 +1,13 @@
 import { setOwner } from '@ember/-internals/owner';
 import { ENV } from '@ember/-internals/environment';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
-import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import {
+  runDestroy,
+  buildOwner,
+  moduleFor,
+  testUnless,
+  AbstractTestCase,
+} from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberObject from '@ember/object';
 import EmberRoute from '@ember/routing/route';
@@ -35,7 +41,9 @@ moduleFor(
       ENV._NO_IMPLICIT_ROUTE_MODEL = this._NO_IMPLICIT_ROUTE_MODEL;
     }
 
-    ['@test default store utilizes the container to acquire the model factory'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isRemoved
+    )} default store utilizes the container to acquire the model factory`](assert) {
       assert.expect(5);
 
       let Post = EmberObject.extend();
@@ -69,11 +77,10 @@ moduleFor(
       setOwner(route, owner);
 
       expectDeprecation(
-        () =>
-          ignoreAssertion(() => {
-            assert.equal(route.model({ post_id: 1 }), post);
-            assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-          }),
+        () => {
+          assert.equal(route.model({ post_id: 1 }), post);
+          assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+        },
         /The implicit model loading behavior for routes is deprecated./,
         DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isEnabled
       );
@@ -97,7 +104,9 @@ moduleFor(
       assert.true(calledFind, 'store.find was called');
     }
 
-    ["@test assert if 'store.find' method is not found"]() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isRemoved
+    )} assert if 'store.find' method is not found`]() {
       runDestroy(route);
 
       let owner = buildOwner();
@@ -134,7 +143,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ['@test asserts if model class is not found']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isRemoved
+    )} asserts if model class is not found`]() {
       runDestroy(route);
 
       let owner = buildOwner();
@@ -161,7 +172,9 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test 'store' does not need to be injected"](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isRemoved
+    )} 'store' does not need to be injected`](assert) {
       runDestroy(route);
 
       let owner = buildOwner();
