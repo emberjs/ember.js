@@ -1,5 +1,6 @@
 import { setOwner } from '@ember/-internals/owner';
 import { ENV } from '@ember/-internals/environment';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberObject from '@ember/object';
@@ -73,7 +74,8 @@ moduleFor(
             assert.equal(route.model({ post_id: 1 }), post);
             assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
           }),
-        /The implicit model loading behavior for routes is deprecated./
+        /The implicit model loading behavior for routes is deprecated./,
+        DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL.isEnabled
       );
 
       runDestroy(owner);

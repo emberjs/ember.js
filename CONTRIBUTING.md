@@ -5,10 +5,6 @@ to collect and track bugs and discussions of new features. If you are having
 difficulties using Ember.js or have a question about usage, please ask a
 question on Stack Overflow: http://stackoverflow.com/questions/ask?tags=ember.js, or by joining [the community chat](https://discord.gg/emberjs).
 
-The Ember.js community is very active on Stack Overflow and most questions
-receive attention the same day they're posted:
-http://stackoverflow.com/questions/tagged/ember.js
-
 # Issue Labeling
 
 Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels) for Github Issues.
@@ -24,12 +20,12 @@ fixed your bug.
 2. Search for similar issues. It's possible somebody has encountered
 this bug already.
 
-3. Provide [Ember Twiddle](http://ember-twiddle.com/) demo that specifically
-shows the problem. This demo should be fully operational with the exception
-of the bug you want to demonstrate. The more pared down, the better.
-If it is not possible to produce a fiddle, please make sure you provide very
-specific steps to reproduce the error. If we cannot reproduce it, we will
-close the ticket.
+3. Provide a demo that specifically shows the problem. This demo should be fully 
+operational with the exception of the bug you want to demonstrate.
+You may provide a repo or use a fork on [new.emberjs.com](http://new.emberjs.com).
+The more pared down, the better. If it is not possible to produce a demo, please 
+make sure you provide very specific steps to reproduce the error. If we cannot 
+reproduce it, we will close the ticket.
 
 4. Your issue will be verified. The provided example will be tested for
 correctness. The Ember team will work with you until your issue can
@@ -66,12 +62,8 @@ and the issue will be closed
 
 ## Requesting a Feature
 
-1. Ember has an RFC process for feature requests. To begin the discussion either
-[gather feedback](https://github.com/emberjs/rfcs/blob/master/README.md#gathering-feedback-before-submitting)
-on the emberjs/rfcs repository. Or, draft an [Ember RFC](https://github.com/emberjs/rfcs#ember-rfcs)
-   - Use RFC pull request for well formed ideas.
-   - Use RFC issues to propose a rough idea, basically a great place to test
-     the waters.
+1. Ember has an RFC process for feature requests. To begin the discussion
+[follow the guidance on  the RFC repo](https://github.com/emberjs/rfcs/blob/master/README.md#creating-an-rfc).
 
 2. Provide a clear and detailed explanation of the feature you want and why
 it's important to add. Keep in mind that we want features that will be useful
@@ -158,6 +150,7 @@ To run a specific browser, you can use the `--launch` flag
 * `ember test --launch SL_Firefox_Current,Chrome`
 
 To test multiple launchers, you can separate them with commas.
+
 # Pull Requests
 
 We love pull requests. Here's a quick guide:
@@ -198,11 +191,10 @@ explanation of why you made the changes you made. For new features make sure to
 explain a standard use case to us.
 
 We try to be quick about responding to tickets but sometimes we get a bit
-backlogged. If the response is slow, try to find someone on IRC (#emberjs) to
+backlogged. If the response is slow, try to find someone on [the community chat](https://discord.gg/emberjs) to
 give the ticket a review.
 
-Some things that will increase the chance that your pull request is accepted,
-taken straight from the Ruby on Rails guide:
+Some things that will increase the chance that your pull request is accepted:
 
 * Use Ember idioms and helpers
 * Include tests that fail without your code, and pass with it
@@ -211,9 +203,7 @@ taken straight from the Ruby on Rails guide:
 
 Syntax:
 
-* Two spaces, no tabs.
-* No trailing whitespace. Blank lines should not have any space.
-* a = b and not a=b.
+* Style is enforced by prettier. Run `pnpm lint` to check your changes.
 * Follow the conventions you see used in the source already.
 
 Inline Documentation Guidelines:
@@ -251,11 +241,23 @@ We use [GitHub Actions](https://github.com/emberjs/ember.js/actions?query=workfl
 
 When you submit your PR (or later change that code), a CI build will automatically be kicked off.  A note will be added to the PR, and will indicate the current status of the build.
 
-Within the CI build, you can see that we (currently) run six different test suites.
+Within the [CI workflow](https://github.com/emberjs/ember.js/blob/main/.github/workflows/ci.yml), you can see that we (currently) run several different test suites.
 
-* The `each-package` test suite is closest to what you normally run locally on your machine.
-* The `build-tests EMBER_ENV=production...` test suite runs tests against a production build.
-* The `browserstack` test suite runs tests against various supported browsers.
+* `Linting` runs `pnpm lint` to check for code style issues.
+* `Type Checking` runs `pnpm type-check` to check for TypeScript type errors. This also runs against several version of TypeScript that are supported.
+* `Basic Test` / `each-package` test suite is closest to what you normally run locally on your machine. This is also run with all deprecations enabled -- that is, a deprecation that has been added but is not yet up to it's enabled version will be forced "on" and the test suite is required to pass both ways.
+* `Production` test suite runs tests against a production build. This also runs with the "Debug Render Tree" feature enabled.
+* `BrowserStack` and `Browser Tests` test suites run tests against various supported browsers.
+* `Blueprint Tests` runs tests for the Ember CLI blueprints provided by Ember in this package.
+* `Smoke Test` builds and runs a simple app.
+* `Extend Prototypes` runs the `extend-prototypes` test suite.
+* `Node.js Tests` runs tests for the node-side code in this package.
+
+Each commit to canary and beta publishes to the relevant channel on S3. These 
+builds are used primarily by [ember-try](https://github.com/ember-cli/ember-try)
+for addons to test against beta and canary of ember-source.
+
+The CI workflow is also run nightly for beta and canary.
 
 ## Common CI Build Issues
 
@@ -265,7 +267,7 @@ If your build is failing on the 'production' suite, you may be relying on a debu
 
 There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
 
-If your tests can't aren't covered a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
+If your tests can't or aren't covered by a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
 
 ```javascript
 import { DEBUG } from '@glimmer/env';
@@ -286,6 +288,56 @@ Sometimes a single test suite will fail, without giving any indication of a real
 * Try to recreate the test environment locally (see above for production builds)
 * Restart all the test suites on CI by doing another push
 * Ask a repo collab to restart that single test suite
+
+# Adding a Deprecation
+
+Deprecations of public API must be the result of an [RFC](https://github.com/emberjs/rfcs#creating-an-rfc).
+
+Deprecations are defined in a central location, currently [packages/@ember/-internals/deprecation/index.ts](https://github.com/emberjs/ember.js/blob/main/packages/%40ember/-internals/deprecation/index.ts).
+
+To add a deprecation, you must add a new entry to the `deprecations` object in the `index.ts` file. The entry should be an object with the following properties:
+
+* `id` (required): A string that uniquely identifies the deprecation. This should be a short, descriptive name, typically dasherized.
+* `for` (required): The string `ember-source` -- every deprecation from this package is for `ember-source`.
+* `since` (required): An object with `available` and `enabled`. `available` is the 
+first version of Ember that the deprecation is available in. `enabled` is the version 
+of Ember that the deprecation was first enabled. This is used as a feature flag 
+deprecations. For public APIs, the `enabled` value is added only once the deprecation RFC is [Ready for Release](https://github.com/emberjs/rfcs#ready-for-release).
+* `until` (required): The version of Ember that the deprecation will be removed in.
+* `url` (required): A URL to the deprecation guide for the deprecation. This URL 
+can be constructed in advance of the deprecation being added to the 
+[deprecation app](https://github.com/ember-learn/deprecation-app) by following 
+this format: `https://deprecations.emberjs.com/deprecations/{{id}}`.
+
+`deprecate` should then be called using the entry from the `DEPRECATIONS` object.
+
+```ts
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+//...
+
+deprecate(message, DEPRECATIONS.MY_DEPRECATION.test, DEPRECATIONS.MY_DEPRECATION.options);
+
+```
+
+`expectDeprecation` should also use the DEPRECATIONS object, but it should be noted
+that it uses `isEnabled` instead of `test` because the expectations of `expectDeprecation`
+are the opposite of `test`.
+
+```ts
+  expectDeprecation(
+    () => {
+        assert.equal(foo, bar(), 'foo is equal to bar'); // something that triggers the deprecation
+    },
+    /matchesMessage/,
+    DEPRECATIONS.MY_DEPRECATION.isEnabled
+);
+```
+
+We sometimes deprecate "Intimate" API -- private APIs that we suspect or have
+concerns about being used by addons or apps. These deprecations are not required
+to be RFC'd. However, we require they be available for at least one LTS release
+before the APIs are removed. For example, a deprecation added in 5.5 would need 
+to have an `until` no earlier than 5.9.
 
 # Appendix
 
@@ -308,7 +360,7 @@ as `[CLEANUP beta]`.
 
 ### Features
 
-All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature.
+All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature. The commit message or PR description should link to the RFC that proposed the feature.
 
 ### Documentation
 
