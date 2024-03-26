@@ -1,5 +1,5 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { deprecateUntil, isRemoved } from '../index';
+import { deprecateUntil, isRemoved, emberVersionGte } from '../index';
 import { ENV } from '@ember/-internals/environment';
 
 let originalEnvValue;
@@ -91,6 +91,46 @@ moduleFor(
         isRemoved(options),
         false,
         'isRemoved is false until the until has passed'
+      );
+    }
+
+    ['@test emberVersionGte returns whether the ember version is greater than or equal to the provided version'](
+      assert
+    ) {
+      assert.strictEqual(
+        emberVersionGte('3.0.0', parseFloat('5.0.0')),
+        true,
+        '5.0.0 is after 3.0.0'
+      );
+      assert.strictEqual(
+        emberVersionGte('30.0.0', parseFloat('5.0.0')),
+        false,
+        '5.0.0 is before 30.0.0'
+      );
+      assert.strictEqual(
+        emberVersionGte('5.0.0-beta.1', parseFloat('5.0.0')),
+        true,
+        '5.0.0 is after 5.0.0-beta.1'
+      );
+      assert.strictEqual(
+        emberVersionGte('5.0.1', parseFloat('5.0.0-beta.1')),
+        false,
+        '5.0.0-beta.1 is before 5.0.1'
+      );
+      assert.strictEqual(
+        emberVersionGte('5.0.0-alpha.abcde', parseFloat('5.0.0')),
+        true,
+        '5.0.0 is after 5.0.0-alpha'
+      );
+      assert.strictEqual(
+        emberVersionGte('5.9.0', parseFloat('5.8.9')),
+        false,
+        '5.8.9 is before 5.9.0'
+      );
+      assert.strictEqual(
+        emberVersionGte('5.10.0', parseFloat('5.9.2')),
+        true,
+        '5.10.1 is after 5.9.2'
       );
     }
   }

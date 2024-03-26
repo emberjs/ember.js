@@ -8,9 +8,11 @@ function isEnabled(options: DeprecationOptions) {
 }
 
 let numEmberVersion = parseFloat(ENV._OVERRIDE_DEPRECATION_VERSION ?? VERSION);
-function emberVersionGte(until: string) {
-  let significantUntil = until.replaceAll(/(\.0+)/g, '');
-  return numEmberVersion >= parseFloat(significantUntil);
+
+/* until must only be a minor version or major version */
+export function emberVersionGte(until: string, emberVersion = numEmberVersion) {
+  let significantUntil = until.replace(/(\.0+)/g, '');
+  return emberVersion >= parseFloat(significantUntil);
 }
 
 export function isRemoved(options: DeprecationOptions) {
