@@ -43,6 +43,10 @@ function run(queryString) {
     queryString = `${queryString}&alldeprecationsenabled=${process.env.ALL_DEPRECATIONS_ENABLED}`;
   }
 
+  if (process.env.OVERRIDE_DEPRECATION_VERSION) {
+    queryString = `${queryString}&overridedeprecationversion=${process.env.OVERRIDE_DEPRECATION_VERSION}`;
+  }
+
   let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
   return runInBrowser(url, 3);
 }

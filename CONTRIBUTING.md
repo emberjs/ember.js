@@ -309,13 +309,13 @@ can be constructed in advance of the deprecation being added to the
 [deprecation app](https://github.com/ember-learn/deprecation-app) by following 
 this format: `https://deprecations.emberjs.com/deprecations/{{id}}`.
 
-`deprecate` should then be called using the entry from the `DEPRECATIONS` object.
+`deprecateUntil` (internal to Ember) should then be called using the entry from the `DEPRECATIONS` object.
 
 ```ts
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 //...
 
-deprecate(message, DEPRECATIONS.MY_DEPRECATION.test, DEPRECATIONS.MY_DEPRECATION.options);
+deprecateUntil(message, DEPRECATIONS.MY_DEPRECATION);
 
 ```
 

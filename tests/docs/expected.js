@@ -14,6 +14,7 @@ module.exports = {
     '_RERENDER_LOOP_LIMIT',
     '_TEMPLATE_ONLY_GLIMMER_COMPONENTS',
     '_ALL_DEPRECATIONS_ENABLED',
+    '_OVERRIDE_DEPRECATION_VERSION',
     'Input',
     'LinkTo',
     'Textarea',

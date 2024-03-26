@@ -58,6 +58,10 @@
         if (QUnit.urlParams.alldeprecationsenabled) {
           EmberENV['_ALL_DEPRECATIONS_ENABLED'] = QUnit.urlParams.alldeprecationsenabled;
         }
+
+        if (QUnit.urlParams.overridedeprecationversion) {
+          EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.overridedeprecationversion;
+        }
       })();
     </script>
 

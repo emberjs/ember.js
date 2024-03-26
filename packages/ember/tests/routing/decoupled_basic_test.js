@@ -201,28 +201,21 @@ moduleFor(
     }
 
     ["@test The Special page returning an error invokes SpecialRoute's error handler"](assert) {
+      assert.expect(2);
+
       this.router.map(function () {
         this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
+        this.route('special', { path: '/specials/:menu_item' });
       });
 
-      let menuItem, promise, resolve;
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          menuItem = MenuItem.create({ id: id });
-          promise = new RSVP.Promise((res) => (resolve = res));
-
-          return promise;
-        },
-      });
-
-      this.add('model:menu_item', MenuItem);
+      let resolve;
 
       this.add(
         'route:special',
         Route.extend({
+          model() {
+            return new RSVP.Promise((res) => (resolve = res));
+          },
           setup() {
             throw new Error('Setup error');
           },
@@ -239,11 +232,9 @@ moduleFor(
         })
       );
 
-      ignoreDeprecation(() => {
-        runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
-      });
+      runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
 
-      resolve(menuItem);
+      resolve();
     }
 
     ["@test ApplicationRoute's default error handler can be overridden"](assert) {

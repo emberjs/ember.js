@@ -142,6 +142,18 @@ export const ENV = {
   _ALL_DEPRECATIONS_ENABLED: false,
 
   /**
+   Override the version of ember-source used to determine when deprecations "break".
+   This is used internally by Ember to test with deprecated features "removed".
+   This is never intended to be set by projects.
+   @property _OVERRIDE_DEPRECATION_VERSION
+   @for EmberENV
+   @type string | null
+   @default null
+   @private
+   */
+  _OVERRIDE_DEPRECATION_VERSION: null,
+
+  /**
     Whether the app defaults to using async observers.
 
     This is not intended to be set directly, as the implementation may change in
@@ -214,6 +226,8 @@ export const ENV = {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;
     } else if (defaultValue === false) {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
+    } else {
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag];
     }
   }
 

@@ -1,8 +1,29 @@
 import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { ENV } from '@ember/-internals/environment';
+import { VERSION } from '@ember/version';
+import { deprecate, assert } from '@ember/debug';
 
 function isEnabled(options: DeprecationOptions) {
   return Object.hasOwnProperty.call(options.since, 'enabled') || ENV._ALL_DEPRECATIONS_ENABLED;
+}
+
+let numEmberVersion = parseFloat(ENV._OVERRIDE_DEPRECATION_VERSION ?? VERSION);
+
+/* until must only be a minor version or major version */
+export function emberVersionGte(until: string, emberVersion = numEmberVersion) {
+  let significantUntil = until.replace(/(\.0+)/g, '');
+  return emberVersion >= parseFloat(significantUntil);
+}
+
+export function isRemoved(options: DeprecationOptions) {
+  return emberVersionGte(options.until);
+}
+
+interface DeprecationObject {
+  options: DeprecationOptions;
+  test: boolean;
+  isEnabled: boolean;
+  isRemoved: boolean;
 }
 
 function deprecation(options: DeprecationOptions) {
@@ -10,6 +31,7 @@ function deprecation(options: DeprecationOptions) {
     options,
     test: !isEnabled(options),
     isEnabled: isEnabled(options),
+    isRemoved: isRemoved(options),
   };
 }
 
@@ -39,7 +61,7 @@ function deprecation(options: DeprecationOptions) {
   import { DEPRECATIONS } from '@ember/-internals/deprecations';
   //...
 
-  deprecate(message, DEPRECATIONS.MY_DEPRECATION.test, DEPRECATIONS.MY_DEPRECATION.options);
+  deprecateUntil(message, DEPRECATIONS.MY_DEPRECATION);
   ```
 
   `expectDeprecation` should also use the DEPRECATIONS object, but it should be noted
@@ -55,6 +77,17 @@ function deprecation(options: DeprecationOptions) {
     DEPRECATIONS.MY_DEPRECATION.isEnabled
   );
   ```
+
+  Tests can be conditionally run based on whether a deprecation is enabled or not:
+
+  ```ts
+    [`${testUnless(DEPRECATIONS.MY_DEPRECATION.isRemoved)} specific deprecated feature tested only in this test`]
+  ```
+
+  This test will be skipped when the MY_DEPRECATION is removed.
+  When adding a deprecation, we need to guard all the code that will eventually be removed, including tests.
+  For tests that are not specifically testing the deprecated feature, we need to figure out how to
+  test the behavior without encountering the deprecated feature, just as users would.
  */
 export const DEPRECATIONS = {
   DEPRECATE_IMPLICIT_ROUTE_MODEL: deprecation({
@@ -65,3 +98,17 @@ export const DEPRECATIONS = {
     url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
   }),
 };
+
+export function deprecateUntil(message: string, deprecation: DeprecationObject) {
+  const { options } = deprecation;
+  assert(
+    'deprecateUntil must only be called for ember-source',
+    Boolean(options.for === 'ember-source')
+  );
+  if (deprecation.isRemoved) {
+    throw new Error(
+      `The API deprecated by ${options.id} was removed in ember-source ${options.until}. The message was: ${message}. Please see ${options.url} for more details.`
+    );
+  }
+  deprecate(message, deprecation.test, options);
+}
