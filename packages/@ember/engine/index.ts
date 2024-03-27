@@ -330,7 +330,7 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
   */
   declare Resolver: ResolverClass;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
     this.buildRegistry();
   }

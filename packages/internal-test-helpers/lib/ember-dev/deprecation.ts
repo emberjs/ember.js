@@ -61,7 +61,7 @@ class DeprecationAssert extends DebugAssert {
     super('deprecate', env);
   }
 
-  inject(): void {
+  override inject(): void {
     let w = window as ExtendedWindow;
     w.expectNoDeprecation = expectNoDeprecation = this.expectNoDeprecation.bind(this);
     w.expectNoDeprecationAsync = expectNoDeprecationAsync =
@@ -72,7 +72,7 @@ class DeprecationAssert extends DebugAssert {
     super.inject();
   }
 
-  restore(): void {
+  override restore(): void {
     super.restore();
     let w = window as ExtendedWindow;
     w.expectNoDeprecation = undefined;

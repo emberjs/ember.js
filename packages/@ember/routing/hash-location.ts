@@ -41,7 +41,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   private _location?: Location;
   declare location: Location;
 
-  init(): void {
+  override init(): void {
     this.location = this._location ?? window.location;
     this._hashchangeHandler = undefined;
   }
@@ -163,7 +163,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @private
     @method willDestroy
   */
-  willDestroy(): void {
+  override willDestroy(): void {
     this._removeEventListener();
   }
 

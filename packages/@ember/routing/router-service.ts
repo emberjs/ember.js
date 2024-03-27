@@ -80,7 +80,7 @@ class RouterService extends Service.extend(Evented) {
     return (this[ROUTER] = _router);
   }
 
-  willDestroy() {
+  override willDestroy() {
     super.willDestroy();
 
     this[ROUTER] = undefined;

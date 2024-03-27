@@ -82,7 +82,7 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
 
   _booted = false;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
 
     // Ensure the guid gets setup for this instance

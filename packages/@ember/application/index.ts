@@ -218,7 +218,7 @@ class Application extends Engine {
     @return {Ember.Registry} the built registry
     @private
   */
-  static buildRegistry(namespace: Application) {
+  static override buildRegistry(namespace: Application) {
     let registry = super.buildRegistry(namespace);
 
     commonSetupRegistry(registry);
@@ -228,12 +228,15 @@ class Application extends Engine {
     return registry;
   }
 
-  static initializer = buildInitializerMethod<'initializers', Application>(
+  static override initializer = buildInitializerMethod<'initializers', Application>(
     'initializers',
     'initializer'
   );
 
-  static instanceInitializer = buildInitializerMethod<'instanceInitializers', ApplicationInstance>(
+  // There is a bug with prettier when the line length overflows here, prettier tries
+  // wrapping the type incorrectly.
+  // prettier-ignore
+  static override instanceInitializer = buildInitializerMethod<'instanceInitializers', ApplicationInstance>(
     'instanceInitializers',
     'instance initializer'
   );
@@ -404,7 +407,7 @@ class Application extends Engine {
 
   declare _booted: boolean;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
 
     this.rootElement ??= 'body';
@@ -447,7 +450,7 @@ class Application extends Engine {
     @method buildInstance
     @return {ApplicationInstance} the application instance
   */
-  buildInstance(options: EngineInstanceOptions = {}): ApplicationInstance {
+  override buildInstance(options: EngineInstanceOptions = {}): ApplicationInstance {
     assert(
       'You cannot build new instances of this application since it has already been destroyed',
       !this.isDestroyed
@@ -960,7 +963,7 @@ class Application extends Engine {
   }
 
   // This method must be moved to the application instance object
-  willDestroy() {
+  override willDestroy() {
     super.willDestroy();
 
     if (_loaded['application'] === this) {

@@ -101,7 +101,7 @@ export default class RouterNonApplicationTestCase extends AbstractTestCase {
     }
   }
 
-  afterEach() {
+  override afterEach() {
     try {
       if (this.component) {
         runDestroy(this.component);

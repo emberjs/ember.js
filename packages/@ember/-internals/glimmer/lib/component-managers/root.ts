@@ -29,7 +29,7 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  create(
+  override create(
     _owner: Owner,
     _state: unknown,
     _args: Nullable<VMArguments>,

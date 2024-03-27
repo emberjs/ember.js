@@ -226,7 +226,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return 'div';
       }
 
-      getCapabilities(): InternalComponentCapabilities {
+      override getCapabilities(): InternalComponentCapabilities {
         return WRAPPED_CAPABILITIES;
       }
 

@@ -16,7 +16,7 @@ export default class TestPromise<T> extends RSVP.Promise<T> {
     lastPromise = this;
   }
 
-  then<TResult1 = T, TResult2 = never>(
+  override then<TResult1 = T, TResult2 = never>(
     onFulfilled?: OnFulfilled<T, TResult1> | null,
     onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null,
     label?: string

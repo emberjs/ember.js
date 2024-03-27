@@ -444,7 +444,7 @@ export default class DataAdapter<T> extends EmberObject {
     @private
     @method willDestroy
   */
-  willDestroy() {
+  override willDestroy() {
     this._super(...arguments);
 
     this.typeWatchers.forEach((watcher) => watcher.release());

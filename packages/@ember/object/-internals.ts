@@ -32,7 +32,7 @@ if (DEBUG) {
   FrameworkObject = class DebugFrameworkObject extends EmberObject {
     [INIT_WAS_CALLED] = false;
 
-    init(properties: object | undefined) {
+    override init(properties: object | undefined) {
       super.init(properties);
       this[INIT_WAS_CALLED] = true;
     }

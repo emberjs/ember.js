@@ -23,7 +23,7 @@ export default abstract class AutobootApplicationTestCase extends TestResolverAp
     return application;
   }
 
-  visit(url: string) {
+  override visit(url: string) {
     return this.application.boot().then(() => {
       return this.applicationInstance!.visit(url);
     });

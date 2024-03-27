@@ -35,7 +35,7 @@ class WarningAssert extends DebugAssert {
     super('warn', env);
   }
 
-  inject() {
+  override inject() {
     // Expects no warning to happen within a function, or if no function is
     // passed, from the time of calling until the end of the test.
     //
@@ -101,7 +101,7 @@ class WarningAssert extends DebugAssert {
     w.ignoreWarning = ignoreWarning;
   }
 
-  restore() {
+  override restore() {
     super.restore();
     let w = window as ExtendedWindow;
     w.expectWarning = null;

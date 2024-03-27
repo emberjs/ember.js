@@ -5,7 +5,7 @@ import Route from '@ember/routing/route';
 let owner = {} as Owner;
 
 class MyRoute extends Route {
-  queryParams = {
+  override queryParams = {
     page: {
       refreshModel: false,
       replace: false,

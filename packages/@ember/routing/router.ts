@@ -829,7 +829,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     }
   }
 
-  willDestroy() {
+  override willDestroy() {
     if (this._toplevelView) {
       this._toplevelView.destroy();
       this._toplevelView = null;

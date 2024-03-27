@@ -67,7 +67,7 @@ export class AliasedProperty extends ComputedDescriptor {
     this.altKey = altKey;
   }
 
-  setup(obj: object, keyName: string, propertyDesc: PropertyDescriptor, meta: Meta): void {
+  override setup(obj: object, keyName: string, propertyDesc: PropertyDescriptor, meta: Meta): void {
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
     super.setup(obj, keyName, propertyDesc, meta);
     CHAIN_PASS_THROUGH.add(this);

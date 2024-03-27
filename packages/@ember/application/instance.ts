@@ -61,7 +61,7 @@ class ApplicationInstance extends EngineInstance {
 
   declare customEvents: Record<string, string | null> | null;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
 
     this.application._watchInstance(this);
@@ -90,7 +90,7 @@ class ApplicationInstance extends EngineInstance {
 
     @private
   */
-  _bootSync(options?: BootOptions) {
+  override _bootSync(options?: BootOptions) {
     if (this._booted) {
       return this;
     }
@@ -120,7 +120,7 @@ class ApplicationInstance extends EngineInstance {
     return this;
   }
 
-  setupRegistry(options: BootOptions) {
+  override setupRegistry(options: BootOptions) {
     (this.constructor as typeof ApplicationInstance).setupRegistry(this.__registry__, options);
   }
 
@@ -288,7 +288,7 @@ class ApplicationInstance extends EngineInstance {
       .then(handleTransitionResolve, handleTransitionReject);
   }
 
-  willDestroy() {
+  override willDestroy() {
     super.willDestroy();
     this.application._unwatchInstance(this);
   }
@@ -299,7 +299,7 @@ class ApplicationInstance extends EngineInstance {
    @param {Registry} registry
    @param {BootOptions} options
   */
-  static setupRegistry(registry: Registry, options: BootOptions | _BootOptions = {}) {
+  static override setupRegistry(registry: Registry, options: BootOptions | _BootOptions = {}) {
     let coptions = options instanceof _BootOptions ? options : new _BootOptions(options);
 
     registry.register('-environment:main', coptions.toEnvironment(), {

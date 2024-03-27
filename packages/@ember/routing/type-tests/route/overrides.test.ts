@@ -9,38 +9,38 @@ let owner = {} as Owner;
 class Foo {}
 
 class MyRoute extends Route<Foo> {
-  resetController(_controller: Controller, _isExiting: boolean, _transition: Transition): this {
+  override resetController(_controller: Controller, _isExiting: boolean, _transition: Transition): this {
     return this;
   }
 
   @action
-  willTransition(_transition: Transition) {}
+  override willTransition(_transition: Transition) {}
 
   @action
-  didTransition() {}
+  override didTransition() {}
 
   @action
-  loading(_transition: Transition, _route: Route<Foo>) {}
+  override loading(_transition: Transition, _route: Route<Foo>) {}
 
-  activate(_transition: Transition): void {}
+  override activate(_transition: Transition): void {}
 
-  deactivate(_transition?: Transition): void {}
+  override deactivate(_transition?: Transition): void {}
 
-  beforeModel(_transition: Transition): void {}
+  override beforeModel(_transition: Transition): void {}
 
-  afterModel(_transition: Transition): void {}
+  override afterModel(_transition: Transition): void {}
 
-  redirect(_transition: Transition): void {}
+  override redirect(_transition: Transition): void {}
 
-  model(_params: Record<string, unknown>, _transition: Transition): Foo | Promise<Foo> {
+  override model(_params: Record<string, unknown>, _transition: Transition): Foo | Promise<Foo> {
     return new Foo();
   }
 
-  setupController(_controller: Controller, _context: Foo, _transition?: Transition): void {}
+  override setupController(_controller: Controller, _context: Foo, _transition?: Transition): void {}
 
-  buildRouteInfoMetadata(): void {}
+  override buildRouteInfoMetadata(): void {}
 
-  serialize(_model: Foo | undefined, _params: string[]): { [key: string]: unknown } {
+  override serialize(_model: Foo | undefined, _params: string[]): { [key: string]: unknown } {
     return {};
   }
 }

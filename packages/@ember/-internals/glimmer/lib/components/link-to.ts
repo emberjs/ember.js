@@ -275,13 +275,13 @@ function isQueryParams(value: unknown): value is QueryParams {
 **/
 
 class _LinkTo extends InternalComponent {
-  static toString(): string {
+  static override toString(): string {
     return 'LinkTo';
   }
 
   @service('-routing') private declare routing: RoutingService<Route>;
 
-  validateArguments(): void {
+  override validateArguments(): void {
     assert(
       'You attempted to use the <LinkTo> component within a routeless engine, this is not supported. ' +
         'If you are using the ember-engines addon, use the <LinkToExternal> component instead. ' +
@@ -305,7 +305,7 @@ class _LinkTo extends InternalComponent {
     super.validateArguments();
   }
 
-  get class(): string {
+  override get class(): string {
     let classes = 'ember-view';
 
     if (this.isActive) {
@@ -566,7 +566,7 @@ class _LinkTo extends InternalComponent {
     event.preventDefault();
   }
 
-  protected isSupportedArgument(name: string): boolean {
+  protected override isSupportedArgument(name: string): boolean {
     let supportedArguments = [
       'route',
       'model',

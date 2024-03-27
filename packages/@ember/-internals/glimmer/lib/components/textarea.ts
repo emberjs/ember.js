@@ -141,25 +141,25 @@ import { type OpaqueInternalComponentConstructor, opaquify } from './internal';
   @public
 **/
 class _Textarea extends AbstractInput {
-  static toString(): string {
+  static override toString(): string {
     return 'Textarea';
   }
 
-  get class(): string {
+  override get class(): string {
     return 'ember-text-area ember-view';
   }
 
   // See abstract-input.ts for why these are needed
 
-  @action change(event: Event): void {
+  @action override change(event: Event): void {
     super.change(event);
   }
 
-  @action input(event: Event): void {
+  @action override input(event: Event): void {
     super.input(event);
   }
 
-  protected isSupportedArgument(name: string): boolean {
+  protected override isSupportedArgument(name: string): boolean {
     let supportedArguments = ['type', 'value', 'enter', 'insert-newline', 'escape-press'];
     return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
   }
