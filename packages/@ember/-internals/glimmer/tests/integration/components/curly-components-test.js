@@ -165,7 +165,7 @@ moduleFor(
     ['@test layout supports computed property']() {
       let FooBarComponent = Component.extend({
         elementId: 'blahzorz',
-        layout: computed(function() {
+        layout: computed(function () {
           return compile('so much layout wat {{this.lulz}}');
         }),
         init() {
@@ -314,7 +314,7 @@ moduleFor(
 
     ['@test tagName can not be a computed property']() {
       let FooBarComponent = Component.extend({
-        tagName: computed(function() {
+        tagName: computed(function () {
           return 'foo-bar';
         }),
       });
@@ -1444,13 +1444,10 @@ moduleFor(
       );
     }
 
-    ['@test this.attrs.foo === @foo === foo']() {
+    ['@test @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
-        Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
-        {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
+        Args: {{@value}} | {{this.value}}
         {{#each @items as |item|}}
           {{item}}
         {{/each}}
@@ -1474,11 +1471,11 @@ moduleFor(
         this.context.set('model.items', [1]);
       });
 
-      this.assertText(strip`Args: lul | lul | lul111`);
+      this.assertText(strip`Args: lul | lul11`);
 
       runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
-      this.assertText('Args: wat | wat | wat123123123');
+      this.assertText('Args: wat | wat123123');
     }
 
     ['@test non-block with properties on self']() {
@@ -2843,7 +2840,7 @@ moduleFor(
     ['@test throws if `this._super` is not called from `init`']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          init() { },
+          init() {},
         }),
       });
 
@@ -2960,7 +2957,7 @@ moduleFor(
             this.get('select').registerOption(this);
           },
 
-          selected: computed('select.value', function() {
+          selected: computed('select.value', function () {
             return this.get('value') === this.get('select.value');
           }),
 
@@ -3156,7 +3153,7 @@ moduleFor(
             );
           },
 
-          listenerForSomeMethod: on('someMethod', function(...data) {
+          listenerForSomeMethod: on('someMethod', function (...data) {
             assert.deepEqual(
               data,
               payload,
@@ -3164,7 +3161,7 @@ moduleFor(
             );
           }),
 
-          listenerForSomeTruthyProperty: on('someTruthyProperty', function(...data) {
+          listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
             assert.deepEqual(
               data,
               payload,
@@ -3361,7 +3358,7 @@ moduleFor(
           barInstance = this;
         },
 
-        bar: computed('target.foo', function() {
+        bar: computed('target.foo', function () {
           if (this.target) {
             return this.target.foo.toUpperCase();
           }
