@@ -1098,15 +1098,10 @@ moduleFor(
     }
 
     async ['@test it defaults to bubbling'](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
       this.addTemplate(
         'about',
         `
-        <div {{action this.hide}}>
+        <div {{on "click" this.hide}}>
           <div id="about-contact">{{#link-to route='about.contact'}}About{{/link-to}}</div>
         </div>
         {{outlet}}

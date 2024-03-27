@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask, testUnless } from 'internal-test-helpers';
 
 import { _getCurrentRunLoop } from '@ember/runloop';
 import { set, computed } from '@ember/object';
@@ -9,7 +9,7 @@ import { DEPRECATIONS } from '../../../../deprecations';
 moduleFor(
   'Helpers test: closure {{action}}',
   class extends RenderingTestCase {
-    ['@test action should be called']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved)} action should be called`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -52,7 +52,9 @@ moduleFor(
       this.assert.ok(outerActionCalled, 'the action was called');
     }
 
-    ['@test an error is triggered when bound action function is undefined']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} an error is triggered when bound action function is undefined`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -70,7 +72,9 @@ moduleFor(
       }, /Action passed is null or undefined in \(action[^)]*\) from .*\./);
     }
 
-    ['@test an error is triggered when bound action being passed in is a non-function']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} an error is triggered when bound action being passed in is a non-function`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -91,7 +95,9 @@ moduleFor(
       }, /An action could not be made for `.*` in .*\. Please confirm that you are using either a quoted action name \(i\.e\. `\(action '.*'\)`\) or a function available in .*\./);
     }
 
-    ['@test [#12718] a nice error is shown when a bound action function is undefined and it is passed as @foo']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} [#12718] a nice error is shown when a bound action function is undefined and it is passed as @foo`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -115,7 +121,7 @@ moduleFor(
       }, /Action passed is null or undefined in \(action[^)]*\) from .*\./);
     }
 
-    ['@test action value is returned']() {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved)} action value is returned`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -160,7 +166,9 @@ moduleFor(
       this.assert.equal(returnedValue, expectedValue, 'action can return to caller');
     }
 
-    ['@test action should be called on the correct scope']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action should be called on the correct scope`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -211,7 +219,9 @@ moduleFor(
       this.assert.ok(actualComponent.isOuterComponent, 'action has the correct context');
     }
 
-    ['@test arguments to action are passed, curry']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} arguments to action are passed, curry`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -265,7 +275,9 @@ moduleFor(
       );
     }
 
-    ['@test `this` can be passed as an argument']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} \`this\` can be passed as an argument`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -315,7 +327,9 @@ moduleFor(
       this.assert.strictEqual(value, component, 'the component is passed at `this`');
     }
 
-    ['@test arguments to action are bound']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} arguments to action are bound`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -377,7 +391,9 @@ moduleFor(
       this.assert.strictEqual(actualArg, value, 'action has the correct first arg');
     }
 
-    ['@test array arguments are passed correctly to action']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} array arguments are passed correctly to action`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -442,7 +458,9 @@ moduleFor(
       this.assert.equal(actualThird, third, 'action has the correct third arg');
     }
 
-    ['@test mut values can be wrapped in actions, are settable']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} mut values can be wrapped in actions, are settable`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -490,7 +508,9 @@ moduleFor(
       this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
     }
 
-    ['@test mut values can be wrapped in actions, are settable with a curry']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} mut values can be wrapped in actions, are settable with a curry`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -538,7 +558,9 @@ moduleFor(
       this.assert.equal(outerComponent.get('outerMut'), newValue, 'mut value is set');
     }
 
-    ['@test action can create closures over actions']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action can create closures over actions`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -595,7 +617,9 @@ moduleFor(
       this.assert.equal(actualSecond, second, 'second argument is correct');
     }
 
-    ['@test provides a helpful error if an action is not present']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} provides a helpful error if an action is not present`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -628,7 +652,9 @@ moduleFor(
       }, /An action named 'doesNotExist' was not found in /);
     }
 
-    ['@test provides a helpful error if actions hash is not present']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} provides a helpful error if actions hash is not present`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -653,7 +679,9 @@ moduleFor(
       }, /An action named 'doesNotExist' was not found in /);
     }
 
-    ['@test action can create closures over actions with target']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action can create closures over actions with target`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -703,7 +731,9 @@ moduleFor(
       this.assert.ok(actionCalled, 'action called on otherComponent');
     }
 
-    ['@test value can be used with action over actions']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} value can be used with action over actions`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -756,7 +786,9 @@ moduleFor(
       this.assert.equal(actualValue, newValue, 'value is read');
     }
 
-    ['@test action will read the value of a first property']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action will read the value of a first property`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -804,7 +836,9 @@ moduleFor(
       this.assert.equal(actualValue, newValue, 'property is read');
     }
 
-    ['@test action will read the value of a curried first argument property']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action will read the value of a curried first argument property`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -853,7 +887,9 @@ moduleFor(
       this.assert.equal(actualValue, newValue, 'property is read');
     }
 
-    ['@test action closure does not get auto-mut wrapped'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action closure does not get auto-mut wrapped`](assert) {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -927,7 +963,9 @@ moduleFor(
       this.assert.equal(actualReturnedValue, returnValue, 'return value is present');
     }
 
-    ['@test action should be called within a run loop']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action should be called within a run loop`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -973,7 +1011,9 @@ moduleFor(
       this.assert.ok(capturedRunLoop, 'action is called within a run loop');
     }
 
-    ['@test closure action with `(mut undefinedThing)` works properly [GH#13959]']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} closure action with \`(mut undefinedThing)\` works properly [GH#13959]`]() {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -1026,7 +1066,9 @@ moduleFor(
       this.assertText('Click me');
     }
 
-    ['@test closure actions does not cause component hooks to fire unnecessarily [GH#14305] [GH#14654]'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} closure actions does not cause component hooks to fire unnecessarily [GH#14305] [GH#14654]`](
       assert
     ) {
       expectDeprecation(

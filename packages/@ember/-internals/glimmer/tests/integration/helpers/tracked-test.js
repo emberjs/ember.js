@@ -16,24 +16,19 @@ moduleFor(
   'Helper Tracked Properties',
   class extends RenderingTestCase {
     '@test tracked properties rerender when updated'(assert) {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       let computeCount = 0;
 
-      let PersonComponent = Component.extend({
-        name: tracked({ value: 'bob' }),
-
-        updateName() {
+      class PersonComponent extends Component {
+        @tracked name = 'bob';
+        updateName = () => {
           this.name = 'sal';
-        },
-      });
+        };
+      }
 
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            <button onclick={{action this.updateName}}>
+            <button onclick={{this.updateName}}>
               {{hello-world this.name}}
             </button>
           `,
@@ -97,32 +92,25 @@ moduleFor(
     }
 
     '@test getters update when dependent properties are invalidated'(assert) {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       let computeCount = 0;
 
-      let PersonComponent = Component.extend({
-        first: tracked({ value: 'Rob' }),
-        last: tracked({ value: 'Jackson' }),
+      class PersonComponent extends Component {
+        @tracked first = 'Rob';
+        @tracked last = 'Jackson';
+        get full() {
+          return `${this.first} ${this.last}`;
+        }
 
-        full: descriptor({
-          get() {
-            return `${this.first} ${this.last}`;
-          },
-        }),
-
-        updatePerson() {
+        updatePerson = () => {
           this.first = 'Kris';
           this.last = 'Selden';
-        },
-      });
+        };
+      }
 
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            <button onclick={{action this.updatePerson}}>
+            <button onclick={{this.updatePerson}}>
               {{hello-world this.full}}
             </button>
           `,
@@ -153,22 +141,18 @@ moduleFor(
     }
 
     '@test array properties rerender when updated'() {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      let NumListComponent = Component.extend({
-        numbers: tracked({ initializer: () => A([1, 2, 3]) }),
+      class NumListComponent extends Component {
+        @tracked numbers = A([1, 2, 3]);
 
-        addNumber() {
+        addNumber = () => {
           this.numbers.pushObject(4);
-        },
-      });
+        };
+      }
 
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on "click" this.addNumber}}>
               {{join this.numbers}}
             </button>
           `,
@@ -188,10 +172,6 @@ moduleFor(
     }
 
     '@test custom ember array properties rerender when updated'() {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       let CustomArray = EmberObject.extend(MutableArray, {
         init() {
           this._super(...arguments);
@@ -216,18 +196,18 @@ moduleFor(
         },
       });
 
-      let NumListComponent = Component.extend({
-        numbers: tracked({ initializer: () => CustomArray.create() }),
+      class NumListComponent extends Component {
+        @tracked numbers = CustomArray.create();
 
-        addNumber() {
+        addNumber = () => {
           this.numbers.pushObject(4);
-        },
-      });
+        };
+      }
 
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on "click" this.addNumber}}>
               {{join this.numbers}}
             </button>
           `,
