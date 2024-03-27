@@ -3015,9 +3015,9 @@ moduleFor(
             this.didInit = true;
           },
 
-          didReceiveAttrs() {
+          didReceiveAttrs(...args) {
             assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-            this.set('barCopy', this.attrs.bar.value + 1);
+            this.set('barCopy', this.bar + 1);
           },
 
           barCopyDidChange: observer('barCopy', () => {

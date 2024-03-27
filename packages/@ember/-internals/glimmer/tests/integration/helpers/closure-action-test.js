@@ -18,7 +18,7 @@ moduleFor(
           component = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -101,7 +101,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          returnedValue = this.attrs.submit();
+          returnedValue = this.submit();
         },
       });
 
@@ -141,7 +141,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -191,7 +191,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit(fourth);
+          this.submit(fourth);
         },
       });
 
@@ -236,7 +236,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -283,7 +283,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -345,7 +345,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit(second, third);
+          this.submit(second, third);
         },
       });
 
@@ -399,7 +399,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit(newValue);
+          this.submit(newValue);
         },
       });
 
@@ -442,7 +442,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -490,7 +490,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          actualReturnedValue = this.attrs.submit(second);
+          actualReturnedValue = this.submit(second);
         },
       });
 
@@ -583,7 +583,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -630,7 +630,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit({
+          this.submit({
             readProp: newValue,
           });
         },
@@ -678,7 +678,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit({
+          this.submit({
             readProp: newValue,
           });
         },
@@ -721,7 +721,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
@@ -772,7 +772,7 @@ moduleFor(
           this.get('submit')(second);
           this.get('attrs-submit')(second);
           let attrsSubmitReturnValue = this.attrs['attrs-submit'](second);
-          let submitReturnValue = this.attrs.submit(second);
+          let submitReturnValue = this.submit(second);
 
           assert.equal(
             attrsSubmitReturnValue,
@@ -832,7 +832,7 @@ moduleFor(
           innerComponent = this;
         },
         fireAction() {
-          this.attrs.submit();
+          this.submit();
         },
       });
 
