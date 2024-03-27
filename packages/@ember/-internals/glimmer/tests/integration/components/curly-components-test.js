@@ -7,8 +7,10 @@ import {
   equalsElement,
   runTask,
   runLoopSettled,
+  testUnless,
 } from 'internal-test-helpers';
 
+import { action } from '@ember/object';
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
@@ -20,6 +22,7 @@ import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: curly components',
@@ -1441,25 +1444,23 @@ moduleFor(
             componentInstance = this;
           },
 
-          actions: {
-            click() {
-              let currentCounter = this.get('counter');
+          myClick: action(function () {
+            let currentCounter = this.get('counter');
 
-              assert.equal(currentCounter, 0, 'the current `counter` value is correct');
+            assert.equal(currentCounter, 0, 'the current `counter` value is correct');
 
-              let newCounter = currentCounter + 1;
-              this.set('counter', newCounter);
+            let newCounter = currentCounter + 1;
+            this.set('counter', newCounter);
 
-              assert.equal(
-                this.get('counter'),
-                newCounter,
-                "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
-              );
-            },
-          },
+            assert.equal(
+              this.get('counter'),
+              newCounter,
+              "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
+            );
+          }),
         }),
         template: `
-          <button {{action "click"}}>foobar</button>
+          <button {{on "click" this.myClick}}>foobar</button>
         `,
       });
 
@@ -3146,9 +3147,16 @@ moduleFor(
       runTask(() => set(this.context, 'foo', 5));
     }
 
-    ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} returning \`true\` from an action does not bubble if \`target\` is not specified (GH#14275)`](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
           actions: {
@@ -3173,8 +3181,15 @@ moduleFor(
       runTask(() => this.$('button').click());
     }
 
-    ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} returning \`true\` from an action bubbles to the \`target\` if specified`](assert) {
+      assert.expect(5);
+
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({

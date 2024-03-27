@@ -1,10 +1,11 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask, testUnless } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: dynamic components',
@@ -429,7 +430,9 @@ moduleFor(
       this.assertText('foo-bar Caracas Caracas arepas!');
     }
 
-    ['@test component helper with actions'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} component helper with actions`](assert) {
       this.registerComponent('inner-component', {
         template: 'inner-component {{yield}}',
         ComponentClass: Component.extend({
@@ -448,6 +451,11 @@ moduleFor(
           },
         }),
       });
+
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       let actionTriggered = 0;
       this.registerComponent('outer-component', {

@@ -2,6 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { isEmpty } from '@ember/utils';
+import { action } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
@@ -773,18 +774,16 @@ moduleFor(
 
       this.registerComponent('my-action-component', {
         ComponentClass: Component.extend({
-          actions: {
-            changeValue() {
-              this.incrementProperty('myProp');
-            },
-          },
+          changeValue: action(function () {
+            this.incrementProperty('myProp');
+          }),
         }),
         template: strip`
         {{#my-component my-attr=this.myProp as |api|}}
           {{api.my-nested-component}}
         {{/my-component}}
         <br>
-        <button onclick={{action 'changeValue'}}>Change value</button>`,
+        <button onclick={{this.changeValue}}>Change value</button>`,
       });
 
       this.render('{{my-action-component myProp=this.model.myProp}}', {
@@ -839,13 +838,12 @@ moduleFor(
     ['@test parameters in a contextual component are mutable when value is a param'](assert) {
       // This checks that a `(mut)` is added to parameters and attributes to
       // contextual components when it is a param.
-
       this.registerComponent('change-button', {
         ComponentClass: Component.extend().reopenClass({
           positionalParams: ['val'],
         }),
         template: strip`
-        <button {{action (action (mut this.val) 10)}} class="my-button">
+        <button {{on "click" (fn (mut this.val) 10)}} class="my-button">
           Change to 10
         </button>`,
       });
@@ -892,15 +890,13 @@ moduleFor(
       this.registerComponent('outer-component', {
         ComponentClass: Component.extend({
           message: 'hello',
-          actions: {
-            change() {
-              this.set('message', 'goodbye');
-            },
-          },
+          change: action(function () {
+            this.set('message', 'goodbye');
+          }),
         }),
         template: strip`
         message: {{this.message}}{{inner-component message=this.message}}
-        <button onclick={{action "change"}} />`,
+        <button onclick={{this.change}} />`,
       });
 
       this.registerComponent('inner-component', {
@@ -1447,7 +1443,7 @@ class MutableParamTestGenerator {
             positionalParams: ['val'],
           }),
           template: strip`
-          <button {{action (action (mut this.val) 10)}} class="my-button">
+          <button {{on "click" (fn (mut this.val) 10)}} class="my-button">
             Change to 10
           </button>`,
         });
