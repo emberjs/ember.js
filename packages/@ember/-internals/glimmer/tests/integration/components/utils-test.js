@@ -1,5 +1,6 @@
 import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
+import { tracked } from '@glimmer/tracking';
 import Controller from '@ember/controller';
 import {
   getRootViews,
@@ -40,20 +41,13 @@ moduleFor(
         template: '[{{this.id}}] {{#if this.isExpanded}}{{yield}}{{/if}}',
       });
 
-      let ToggleController = Controller.extend({
-        isExpanded: true,
+      class ToggleController extends Controller {
+        @tracked isExpanded = true;
 
-        actions: {
-          toggle: function () {
-            this.toggleProperty('isExpanded');
-          },
-        },
-      });
-
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
+        toggle = () => {
+          this.toggleProperty('isExpanded');
+        };
+      }
 
       this.add('controller:application', ToggleController);
 
@@ -70,7 +64,7 @@ moduleFor(
         {{/x-toggle}}
       {{/x-toggle}}
 
-      <button id="toggle-application" {{action "toggle"}}>Toggle</button>
+      <button id="toggle-application" {{on "click" this.toggle}}>Toggle</button>
 
       {{#if this.isExpanded}}
         {{x-toggle id="root-3"}}
@@ -82,9 +76,9 @@ moduleFor(
 
       this.add(
         'controller:index',
-        ToggleController.extend({
-          isExpanded: false,
-        })
+        class extends ToggleController {
+          @tracked isExpanded = false;
+        }
       );
 
       this.addTemplate(
@@ -100,7 +94,7 @@ moduleFor(
         {{/x-toggle}}
       {{/x-toggle}}
 
-      <button id="toggle-index" {{action "toggle"}}>Toggle</button>
+      <button id="toggle-index" {{on "click" this.toggle}}>Toggle</button>
 
       {{#if this.isExpanded}}
         {{x-toggle id="root-6"}}
