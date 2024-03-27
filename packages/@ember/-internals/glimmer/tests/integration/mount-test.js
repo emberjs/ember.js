@@ -142,7 +142,7 @@ moduleFor(
       });
 
       this.engineRegistrations['template:components/component-with-backtracking-set'] = compile(
-        '[component {{person.name}}]',
+        '[component {{this.person.name}}]',
         {
           moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
         }

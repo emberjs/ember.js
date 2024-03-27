@@ -14,9 +14,6 @@ moduleFor(
         '{{@modal open}}', // RFC#311
         '{{@modal isOpen=true}}', // RFC#311
         '{{#@modal}}Woot{{/@modal}}', // RFC#311
-        '{{c.modal open}}',
-        '{{c.modal isOpen=true}}',
-        '{{#c.modal}}Woot{{/c.modal}}',
         '{{#my-component as |c|}}{{c name="Chad"}}{{/my-component}}', // RFC#311
         '{{#my-component as |c|}}{{c "Chad"}}{{/my-component}}', // RFC#311
         '{{#my-component as |c|}}{{#c}}{{/c}}{{/my-component}}', // RFC#311

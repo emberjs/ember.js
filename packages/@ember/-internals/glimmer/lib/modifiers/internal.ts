@@ -78,6 +78,10 @@ export class InternalModifierManager
     return null;
   }
 
+  getDebugInstance(state: InternalModifierState): unknown {
+    return state;
+  }
+
   getDebugName(): string {
     return this.name;
   }

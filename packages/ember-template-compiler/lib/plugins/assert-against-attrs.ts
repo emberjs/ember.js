@@ -36,7 +36,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
     name: 'assert-against-attrs',
 
     visitor: {
-      Program: {
+      Block: {
         enter(node: AST.Program) {
           updateBlockParamsStack(node.blockParams);
         },
@@ -74,15 +74,27 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
 }
 
 function isAttrs(node: AST.PathExpression, symbols: string[]) {
-  let name = node.parts[0];
+  let name = node.head.original;
 
   if (name && symbols.indexOf(name) !== -1) {
     return false;
   }
 
+  if (name === 'this' && node.head.type === 'ThisHead' && node.tail.includes('attrs')) {
+    // node.tail will be attrs.foo
+    // this makes it just foo (this.foo for the passed in node)
+    node.tail.shift();
+
+    // Deliberately do not say this is an "attrs" node.
+    // See this Deprecation RFC: https://github.com/emberjs/rfcs/pull/1016
+    // and this discussion here:
+    //   https://github.com/emberjs/ember.js/pull/20671
+    return false;
+  }
+
   if (name === 'attrs') {
-    if (node.this === true) {
-      node.parts.shift();
+    if (node.head.type === 'ThisHead') {
+      node.tail.shift();
       node.original = node.original.slice(5);
     }
 

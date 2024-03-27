@@ -2491,7 +2491,7 @@ moduleFor(
           },
           value: null,
         }),
-        template: '<div id="inner-value">{{wrapper.content}}</div>',
+        template: '<div id="inner-value">{{this.wrapper.content}}</div>',
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
