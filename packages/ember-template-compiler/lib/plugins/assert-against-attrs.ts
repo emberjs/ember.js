@@ -32,6 +32,7 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
     stack.push(parent.concat(blockParams));
   }
 
+  // https://deprecations.emberjs.com/v3.x#toc_attrs-arg-access
   return {
     name: 'assert-against-attrs',
 

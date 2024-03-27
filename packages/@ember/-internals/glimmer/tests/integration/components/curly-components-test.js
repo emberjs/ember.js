@@ -1269,7 +1269,7 @@ moduleFor(
 
     ['@test non-block with properties on this.attrs']() {
       this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}}{{log this.attrs}}',
+        template: 'In layout - someProp: {{@someProp}}',
       });
 
       this.render('{{non-block someProp=this.prop}}', {
@@ -1476,13 +1476,10 @@ moduleFor(
       );
     }
 
-    ['@test this.attrs.foo === @foo === foo']() {
+    ['@test @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
-        Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
-        {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
+        Args: {{@value}} | {{this.value}}
         {{#each @items as |item|}}
           {{item}}
         {{/each}}
@@ -1506,11 +1503,11 @@ moduleFor(
         this.context.set('model.items', [1]);
       });
 
-      this.assertText(strip`Args: lul | lul | lul111`);
+      this.assertText(strip`Args: lul | lul11`);
 
       runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
-      this.assertText('Args: wat | wat | wat123123123');
+      this.assertText('Args: wat | wat123123');
     }
 
     ['@test non-block with properties on self']() {
@@ -1573,36 +1570,6 @@ moduleFor(
           template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
         });
       }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
-    }
-
-    ['@test block with properties on this.attrs']() {
-      this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
-      });
-
-      this.render(
-        strip`
-      {{#with-block someProp=this.prop}}
-        In template
-      {{/with-block}}`,
-        {
-          prop: 'something here',
-        }
-      );
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.context.set('prop', 'something else'));
-
-      this.assertText('In layout - someProp: something else - In template');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here - In template');
     }
 
     ['@test block with named argument']() {
