@@ -135,11 +135,6 @@ moduleFor(
     }
 
     ['@test case insensitive events'](assert) {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
       let receivedEvent;
 
       this.registerComponent('x-bar', {
@@ -148,7 +143,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onclick={{action this.clicked}}>my button</button>`,
+        template: `<button id="is-done" onclick={{this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);
@@ -159,10 +154,6 @@ moduleFor(
     }
 
     ['@test case sensitive events'](assert) {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       let receivedEvent;
 
       this.registerComponent('x-bar', {
@@ -171,7 +162,7 @@ moduleFor(
             receivedEvent = event;
           },
         }),
-        template: `<button id="is-done" onClick={{action this.clicked}}>my button</button>`,
+        template: `<button id="is-done" onClick={{this.clicked}}>my button</button>`,
       });
 
       this.render(`{{x-bar}}`);

@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { testUnless, RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { DEPRECATIONS } from '../../../deprecations';
 
 import { set } from '@ember/object';
@@ -202,7 +202,9 @@ moduleFor(
       this.assertValue('hola', 'Value is used');
     }
 
-    ['@test GH18211 input checked attribute, without a value, works with the action helper']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} GH18211 input checked attribute, without a value, works with the action helper`]() {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -213,7 +215,9 @@ moduleFor(
       this.assertPropertyHasValue('checked', true);
     }
 
-    ['@test GH18211 input checked attribute, with a value, works with the action helper']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} GH18211 input checked attribute, with a value, works with the action helper`]() {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -225,24 +229,12 @@ moduleFor(
     }
 
     ['@test GH18211 input checked attribute, without a value, works with attributes with values']() {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      this.render(`<input type="checkbox" checked click={{action "someAction"}}>`, {
-        actions: { someAction() {} },
-      });
+      this.render(`<input type="checkbox" checked>`, {});
       this.assertPropertyHasValue('checked', true);
     }
 
     ['@test GH18211 input checked attribute, without a value, works with event attributes']() {
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      this.render(`<input type="checkbox" checked onclick={{action "someAction"}}>`, {
-        actions: { someAction() {} },
-      });
+      this.render(`<input type="checkbox" checked>`, {});
       this.assertPropertyHasValue('checked', true);
     }
 

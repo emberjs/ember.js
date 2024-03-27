@@ -1,4 +1,10 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  testUnless,
+  moduleFor,
+  ApplicationTestCase,
+  RenderingTestCase,
+  runTask,
+} from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -26,9 +32,9 @@ moduleFor(
       setDebugFunction('debug', originalDebug);
     }
 
-    ['@test actions in top level template application template target application controller'](
-      assert
-    ) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions in top level template application template target application controller`](assert) {
       assert.expect(2);
 
       this.add(
@@ -52,7 +58,9 @@ moduleFor(
       });
     }
 
-    ['@test actions in nested outlet template target their controller'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions in nested outlet template target their controller`](assert) {
       assert.expect(2);
 
       this.add(
