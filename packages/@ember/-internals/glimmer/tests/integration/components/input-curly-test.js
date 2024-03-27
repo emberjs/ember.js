@@ -1,4 +1,10 @@
-import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  moduleFor,
+  runDestroy,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { DEPRECATIONS } from '../../../../deprecations';
@@ -150,9 +156,9 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    ['@test sends an action with `{{input enter=(action "foo")}}` when <enter> is pressed'](
-      assert
-    ) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} sends an action with \`{{input enter=(action "foo")}}\` when <enter> is pressed`](assert) {
       assert.expect(3);
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
@@ -174,18 +180,11 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(3);
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
-      this.render(`{{input insert-newline=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      assert.expect(2);
+      this.render(`{{input insert-newline=this.foo}}`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
@@ -197,18 +196,11 @@ moduleFor(
     ['@test sends an action with `{{input escape-press=(action "foo")}}` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(3);
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
-      this.render(`{{input escape-press=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      assert.expect(2);
+      this.render(`{{input escape-press=this.foo}}`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 

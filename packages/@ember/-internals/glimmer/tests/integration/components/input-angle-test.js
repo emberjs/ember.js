@@ -1,4 +1,10 @@
-import { moduleFor, RenderingTestCase, runDestroy, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  runDestroy,
+  runTask,
+  testUnless,
+} from 'internal-test-helpers';
 import { set } from '@ember/object';
 import { DEPRECATIONS } from '../../../../deprecations';
 
@@ -281,7 +287,9 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} sends an action with \`<Input @enter={{action "foo"}} />\` when <enter> is pressed`](
       assert
     ) {
       assert.expect(3);
@@ -305,18 +313,12 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(3);
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
+      assert.expect(2);
 
-      this.render(`<Input @insert-newline={{action 'foo'}} />`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`<Input @insert-newline={{this.foo}} />`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
@@ -325,7 +327,9 @@ moduleFor(
       });
     }
 
-    ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} sends an action with \`<Input @escape-press={{action "foo"}} />\` when <escape> is pressed`](
       assert
     ) {
       assert.expect(3);

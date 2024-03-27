@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
 
 import { set, get } from '@ember/object';
 
@@ -37,7 +37,9 @@ moduleFor(
       // No U-R
     }
 
-    '@test passing an action to {{readonly}} avoids mutable cell wrapping'(assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} passing an action to {{readonly}} avoids mutable cell wrapping`](assert) {
       expectDeprecation(
         /Usage of the `\(action\)` helper is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
