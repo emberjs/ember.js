@@ -80,6 +80,18 @@ function isAttrs(node: AST.PathExpression, symbols: string[]) {
     return false;
   }
 
+  if (name === 'this' && node.head.type === 'ThisHead' && node.tail.includes('attrs')) {
+    // node.tail will be attrs.foo
+    // this makes it just foo (this.foo for the passed in node)
+    node.tail.shift();
+
+    // Deliberately do not say this is an "attrs" node.
+    // See this Deprecation RFC: https://github.com/emberjs/rfcs/pull/1016
+    // and this discussion here:
+    //   https://github.com/emberjs/ember.js/pull/20671
+    return false;
+  }
+
   if (name === 'attrs') {
     if (node.head.type === 'ThisHead') {
       node.tail.shift();
