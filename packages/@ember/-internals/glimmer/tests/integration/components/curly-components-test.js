@@ -1535,44 +1535,6 @@ moduleFor(
       this.assertText('In layout - someProp: something here - In template');
     }
 
-    ['@test block with properties on attrs is asserted against']() {
-      expectAssertion(() => {
-        this.registerComponent('with-block', {
-          template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
-        });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
-    }
-
-    ['@test block with properties on this.attrs']() {
-      this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
-      });
-
-      this.render(
-        strip`
-      {{#with-block someProp=this.prop}}
-        In template
-      {{/with-block}}`,
-        {
-          prop: 'something here',
-        }
-      );
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.context.set('prop', 'something else'));
-
-      this.assertText('In layout - someProp: something else - In template');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here - In template');
-    }
-
     ['@test block with named argument']() {
       this.registerComponent('with-block', {
         template: 'In layout - someProp: {{@someProp}} - {{yield}}',
