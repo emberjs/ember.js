@@ -1,4 +1,3 @@
-import AssertAgainstAttrs from './assert-against-attrs';
 import AssertAgainstNamedOutlets from './assert-against-named-outlets';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
@@ -17,7 +16,6 @@ export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
     TransformQuotedBindingsIntoJustBindings,
     AssertReservedNamedArguments,
     TransformActionSyntax,
-    AssertAgainstAttrs,
     TransformEachInIntoEach,
     AssertInputHelperWithoutBlock,
     TransformInElement,

@@ -184,26 +184,6 @@ moduleFor(
 
       this.assertText('Hello world');
     }
-
-    ['@test `attrs` can be used as a block param [GH#14678]']() {
-      this.render('{{#let this.hash as |attrs|}}[{{this.hash.foo}}-{{attrs.foo}}]{{/let}}', {
-        hash: { foo: 'foo' },
-      });
-
-      this.assertText('[foo-foo]');
-
-      runTask(() => this.rerender());
-
-      this.assertText('[foo-foo]');
-
-      runTask(() => this.context.set('hash.foo', 'FOO'));
-
-      this.assertText('[FOO-FOO]');
-
-      runTask(() => this.context.set('hash.foo', 'foo'));
-
-      this.assertText('[foo-foo]');
-    }
   }
 );
 

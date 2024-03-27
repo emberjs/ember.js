@@ -1259,38 +1259,6 @@ moduleFor(
       this.assertText('somecomponent');
     }
 
-    ['@test non-block with properties access via attrs is asserted against']() {
-      expectAssertion(() => {
-        this.registerComponent('non-block', {
-          template: 'In layout - someProp: {{attrs.someProp}}',
-        });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) ");
-    }
-
-    ['@test non-block with properties on this.attrs']() {
-      this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}}',
-      });
-
-      this.render('{{non-block someProp=this.prop}}', {
-        prop: 'something here',
-      });
-
-      this.assertText('In layout - someProp: something here');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here');
-
-      runTask(() => this.context.set('prop', 'other thing there'));
-
-      this.assertText('In layout - someProp: other thing there');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here');
-    }
-
     ['@test non-block with named argument']() {
       this.registerComponent('non-block', {
         template: 'In layout - someProp: {{@someProp}}',
@@ -1476,13 +1444,10 @@ moduleFor(
       );
     }
 
-    ['@test this.attrs.foo === @foo === foo']() {
+    ['@test @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
-        Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
-        {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
+        Args: {{@value}} | {{this.value}}
         {{#each @items as |item|}}
           {{item}}
         {{/each}}
@@ -1506,11 +1471,11 @@ moduleFor(
         this.context.set('model.items', [1]);
       });
 
-      this.assertText(strip`Args: lul | lul | lul111`);
+      this.assertText(strip`Args: lul | lul11`);
 
       runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
-      this.assertText('Args: wat | wat | wat123123123');
+      this.assertText('Args: wat | wat123123');
     }
 
     ['@test non-block with properties on self']() {
@@ -1540,44 +1505,6 @@ moduleFor(
     ['@test block with properties on self']() {
       this.registerComponent('with-block', {
         template: 'In layout - someProp: {{this.someProp}} - {{yield}}',
-      });
-
-      this.render(
-        strip`
-      {{#with-block someProp=this.prop}}
-        In template
-      {{/with-block}}`,
-        {
-          prop: 'something here',
-        }
-      );
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.rerender());
-
-      this.assertText('In layout - someProp: something here - In template');
-
-      runTask(() => this.context.set('prop', 'something else'));
-
-      this.assertText('In layout - someProp: something else - In template');
-
-      runTask(() => this.context.set('prop', 'something here'));
-
-      this.assertText('In layout - someProp: something here - In template');
-    }
-
-    ['@test block with properties on attrs is asserted against']() {
-      expectAssertion(() => {
-        this.registerComponent('with-block', {
-          template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
-        });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
-    }
-
-    ['@test block with properties on this.attrs']() {
-      this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
       });
 
       this.render(
@@ -3088,9 +3015,9 @@ moduleFor(
             this.didInit = true;
           },
 
-          didReceiveAttrs() {
+          didReceiveAttrs(...args) {
             assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-            this.set('barCopy', this.attrs.bar.value + 1);
+            this.set('barCopy', this.bar + 1);
           },
 
           barCopyDidChange: observer('barCopy', () => {
@@ -3288,36 +3215,6 @@ moduleFor(
 
       this.render('{{foo-bar this.wat}}');
       this.assertText('hello');
-    }
-
-    ['@test using attrs for positional params is asserted against']() {
-      let MyComponent = Component.extend();
-
-      expectAssertion(() => {
-        this.registerComponent('foo-bar', {
-          ComponentClass: MyComponent.reopenClass({
-            positionalParams: ['myVar'],
-          }),
-          template:
-            'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
-        });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) ");
-    }
-
-    ['@test using this.attrs for positional params']() {
-      let MyComponent = Component.extend();
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar'],
-        }),
-        template:
-          'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
-      });
-
-      this.render('{{foo-bar 1 myVar2=2}}');
-
-      this.assertText('MyVar1: 1 1 MyVar2: 2 2');
     }
 
     ['@test using named arguments for positional params']() {
