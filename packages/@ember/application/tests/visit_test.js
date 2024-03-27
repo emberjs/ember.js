@@ -8,6 +8,7 @@ import { service } from '@ember/service';
 import EmberObject from '@ember/object';
 import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
+import { action } from '@ember/object';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
@@ -15,7 +16,6 @@ import Route from '@ember/routing/route';
 import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -626,10 +626,6 @@ moduleFor(
     }
 
     [`@test Ember Islands-style setup`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       let xFooInitCalled = false;
       let xFooDidInsertElementCalled = false;
 
@@ -708,7 +704,7 @@ moduleFor(
         'components/x-bar',
         `
         <h1>X-Bar</h1>
-        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
+        <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>
         `
       );
 
@@ -717,11 +713,9 @@ moduleFor(
         Component.extend({
           counter: service('sharedCounter'),
 
-          actions: {
-            incrementCounter() {
-              this.get('counter').increment();
-            },
-          },
+          incrementCounter: action(function () {
+            this.get('counter').increment();
+          }),
 
           init() {
             this._super();

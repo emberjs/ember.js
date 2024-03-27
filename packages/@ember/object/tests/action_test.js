@@ -1,17 +1,12 @@
 import { Component } from '@ember/-internals/glimmer';
 import EmberObject, { action } from '@ember/object';
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, testUnless } from 'internal-test-helpers';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   '@action decorator',
   class extends RenderingTestCase {
     '@test action decorator works with ES6 class'(assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
       class FooComponent extends Component {
         @action
         foo() {
@@ -21,7 +16,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{foo-bar}}');
@@ -54,7 +49,9 @@ moduleFor(
       assert.equal(typeof bar.actions.bar, 'function', 'bar has bar action');
     }
 
-    '@test actions are properly merged through traditional and ES6 prototype hierarchy'(assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions are properly merged through traditional and ES6 prototype hierarchy`](assert) {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -107,11 +104,6 @@ moduleFor(
     }
 
     '@test action decorator super works with native class methods'(assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
       class FooComponent extends Component {
         foo() {
           assert.ok(true, 'called!');
@@ -127,7 +119,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -136,11 +128,6 @@ moduleFor(
     }
 
     '@test action decorator super works with traditional class methods'(assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
       let FooComponent = Component.extend({
         foo() {
           assert.ok(true, 'called!');
@@ -156,7 +143,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -259,11 +246,6 @@ moduleFor(
     }
 
     '@test action decorator can be used as a classic decorator with strings'(assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
       let FooComponent = Component.extend({
         foo: action(function () {
           assert.ok(true, 'called!');
@@ -272,7 +254,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{foo-bar}}');

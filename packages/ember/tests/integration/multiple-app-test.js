@@ -3,7 +3,7 @@ import Application from '@ember/application';
 import { Component } from '@ember/-internals/glimmer';
 import { getOwner } from '@ember/-internals/owner';
 import { resolve } from 'rsvp';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { action } from '@ember/object';
 
 moduleFor(
   'View Integration',
@@ -49,12 +49,10 @@ moduleFor(
       resolver.add(
         'component:special-button',
         Component.extend({
-          actions: {
-            doStuff() {
-              let rootElement = getOwner(this).application.rootElement;
-              actions.push(rootElement);
-            },
-          },
+          doStuff: action(function () {
+            let rootElement = getOwner(this).application.rootElement;
+            actions.push(rootElement);
+          }),
         })
       );
 
@@ -73,7 +71,7 @@ moduleFor(
         'template:components/special-button',
         this.compile(
           `
-        <button class='do-stuff' {{action 'doStuff'}}>Button</button>
+        <button class='do-stuff' {{on "click" this.doStuff}}>Button</button>
       `,
           {
             moduleName: 'my-app/templates/components/special-button.hbs',
@@ -83,10 +81,6 @@ moduleFor(
     }
 
     [`@test booting multiple applications can properly handle events`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       let actions = [];
       this.addFactoriesToResolver(actions, this.resolver);
       this.addFactoriesToResolver(actions, this.secondResolver);

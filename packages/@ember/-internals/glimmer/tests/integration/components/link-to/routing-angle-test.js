@@ -13,7 +13,6 @@ import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
-import { DEPRECATIONS } from '../../../../../deprecations';
 
 // IE includes the host name
 function normalizeUrl(url) {

@@ -2,13 +2,12 @@ import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Component Tracked Properties',

@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
-import EmberObject, { get, computed } from '@ember/object';
+import EmberObject, { action, get, computed } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
@@ -8,7 +8,6 @@ import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
 import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import { service } from '@ember/service';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
@@ -744,22 +743,16 @@ moduleFor(
     async ['@test queryParams are updated when a controller property is set and the route is refreshed. Issue #13263  '](
       assert
     ) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
       this.addTemplate(
         'application',
-        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
+        '<button id="test-button" {{on "click" this.increment}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
       );
 
       this.setSingleQPController('application', 'foo', 1, {
-        actions: {
-          increment() {
-            this.incrementProperty('foo');
-            this.send('refreshRoute');
-          },
-        },
+        increment: action(function () {
+          this.incrementProperty('foo');
+          this.send('refreshRoute');
+        }),
       });
 
       this.add(

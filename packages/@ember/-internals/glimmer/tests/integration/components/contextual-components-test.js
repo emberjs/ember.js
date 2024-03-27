@@ -5,7 +5,6 @@ import { isEmpty } from '@ember/utils';
 import { action } from '@ember/object';
 import { A as emberA } from '@ember/array';
 
-import { DEPRECATIONS } from '../../../../deprecations';
 import { Component } from '../../utils/helpers';
 
 moduleFor(

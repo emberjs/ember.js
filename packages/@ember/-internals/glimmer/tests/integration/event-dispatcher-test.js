@@ -2,7 +2,6 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Component } from '../utils/helpers';
 import { _getCurrentRunLoop } from '@ember/runloop';
-import { DEPRECATIONS } from '../../../deprecations';
 
 let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
 

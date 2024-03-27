@@ -2,7 +2,6 @@ import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Helpers test: {{fn}}',

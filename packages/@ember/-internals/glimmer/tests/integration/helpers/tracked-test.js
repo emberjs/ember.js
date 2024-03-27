@@ -10,7 +10,6 @@ import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Helper Tracked Properties',

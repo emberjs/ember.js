@@ -15,6 +15,7 @@ import {
   ModuleBasedTestResolver,
   runDestroy,
   runTask,
+  testUnless,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
@@ -294,9 +295,9 @@ moduleFor(
       return promise;
     }
 
-    async ['@test Events are triggered on the controller if a matching action name is implemented'](
-      assert
-    ) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events are triggered on the controller if a matching action name is implemented`](assert) {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -344,9 +345,9 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@test Events are triggered on the current state when defined in `actions` object'](
-      assert
-    ) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events are triggered on the current state when defined in \`actions\` object`](assert) {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -384,7 +385,9 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events defined in \`actions\` object are triggered on the current state when routes are nested`](
       assert
     ) {
       expectDeprecation(
@@ -431,7 +434,9 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    ['@test Events can be handled by inherited event handlers'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events can be handled by inherited event handlers`](assert) {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -485,7 +490,9 @@ moduleFor(
       });
     }
 
-    async ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Actions are not triggered on the controller if a matching action name is implemented as a method`](
       assert
     ) {
       expectDeprecation(
@@ -535,7 +542,9 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@test actions can be triggered with multiple arguments'](assert) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions can be triggered with multiple arguments`](assert) {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
@@ -1237,7 +1246,9 @@ moduleFor(
       return this.visit('/nork').then(() => this.visit('/dork'));
     }
 
-    ['@test Actions can be handled by inherited action handlers'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Actions can be handled by inherited action handlers`](assert) {
       expectDeprecation(
         /Usage of the `\{\{action\}\}` modifier is deprecated./,
         DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
