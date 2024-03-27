@@ -30,7 +30,7 @@ function deprecation(options: DeprecationOptions) {
   return {
     options,
     test: !isEnabled(options),
-    isEnabled: isEnabled(options),
+    isEnabled: isEnabled(options) || isRemoved(options),
     isRemoved: isRemoved(options),
   };
 }
