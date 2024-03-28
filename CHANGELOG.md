@@ -21,6 +21,16 @@
 
 
 
+
+## v0.91.1 (2024-03-28)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1583](https://github.com/glimmerjs/glimmer-vm/pull/1583) [BUGFIX] Ensure legacy path.parts matches existing semantics ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 1
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+
 ## v0.91.0 (2024-03-25)
 
 #### :rocket: Enhancement
