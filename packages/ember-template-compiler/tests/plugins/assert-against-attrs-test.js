@@ -29,14 +29,26 @@ moduleFor(
       }, /Using {{attrs}} to reference named arguments is not supported. {{attrs.foo.bar}} should be updated to {{@foo.bar}}./);
     }
 
-    ['@test it does not assert against this.attrs']() {
-      this.assertTransformed(`{{this.attrs.foo}}`, `{{this.attrs.foo}}`);
-      this.assertTransformed(`{{if this.attrs.foo "foo"}}`, `{{if this.attrs.foo "foo"}}`);
-      this.assertTransformed(`{{#if this.attrs.foo}}{{/if}}`, `{{#if this.attrs.foo}}{{/if}}`);
-      this.assertTransformed(
-        `{{deeply (nested this.attrs.foo.bar)}}`,
-        `{{deeply (nested this.attrs.foo.bar)}}`
-      );
+    // When removing the deprecation, ensure `{{this.attrs.foo}}` isn't rewritten and does NOT trigger any assertions/deprecations
+    ['@test this.attrs is deprecated']() {
+      expectDeprecation(() => {
+        this.assertTransformed(`{{this.attrs.foo}}`, `{{@foo}}`);
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.foo}} should be updated to {{@foo}}./);
+
+      expectDeprecation(() => {
+        this.assertTransformed(`{{if this.attrs.foo "foo"}}`, `{{if @foo "foo"}}`);
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.foo}} should be updated to {{@foo}}./);
+
+      expectDeprecation(() => {
+        this.assertTransformed(`{{#if this.attrs.foo}}{{/if}}`, `{{#if @foo}}{{/if}}`);
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.foo}} should be updated to {{@foo}}./);
+
+      expectDeprecation(() => {
+        this.assertTransformed(
+          `{{deeply (nested this.attrs.foo.bar)}}`,
+          `{{deeply (nested @foo.bar)}}`
+        );
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.foo.bar}} should be updated to {{@foo.bar}}./);
     }
   }
 );

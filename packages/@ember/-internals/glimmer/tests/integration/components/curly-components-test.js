@@ -1267,10 +1267,13 @@ moduleFor(
       }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) ");
     }
 
+    // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
     ['@test non-block with properties on this.attrs']() {
-      this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}}',
-      });
+      expectDeprecation(() => {
+        this.registerComponent('non-block', {
+          template: 'In layout - someProp: {{this.attrs.someProp}}',
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.someProp}} should be updated to {{@someProp}}./);
 
       this.render('{{non-block someProp=this.prop}}', {
         prop: 'something here',
@@ -1476,21 +1479,24 @@ moduleFor(
       );
     }
 
+    // Perhaps change this test to `{{this.attrs.foo.value}}` when removing the deprecation?
     ['@test this.attrs.foo === @foo === foo']() {
-      this.registerComponent('foo-bar', {
-        template: strip`
-        Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
-        {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each @items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each this.items as |item|}}
-          {{item}}
-        {{/each}}
-      `,
-      });
+      expectDeprecation(() => {
+        this.registerComponent('foo-bar', {
+          template: strip`
+          Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
+          {{#each this.attrs.items as |item|}}
+            {{item}}
+          {{/each}}
+          {{#each @items as |item|}}
+            {{item}}
+          {{/each}}
+          {{#each this.items as |item|}}
+            {{item}}
+          {{/each}}
+        `,
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs..+}} should be updated to {{@.+}}./);
 
       this.render('{{foo-bar value=this.model.value items=this.model.items}}', {
         model: {
@@ -1575,10 +1581,13 @@ moduleFor(
       }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
     }
 
+    // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
     ['@test block with properties on this.attrs']() {
-      this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
-      });
+      expectDeprecation(() => {
+        this.registerComponent('with-block', {
+          template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.someProp}} should be updated to {{@someProp}}./);
 
       this.render(
         strip`
@@ -3304,16 +3313,19 @@ moduleFor(
       }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) ");
     }
 
+    // Perhaps change this test to `{{this.attrs.myVar.value}}` when removing the deprecation?
     ['@test using this.attrs for positional params']() {
       let MyComponent = Component.extend();
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar'],
-        }),
-        template:
-          'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
-      });
+      expectDeprecation(() => {
+        this.registerComponent('foo-bar', {
+          ComponentClass: MyComponent.reopenClass({
+            positionalParams: ['myVar'],
+          }),
+          template:
+            'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.myVar2?}} should be updated to {{@myVar2?}}./);
 
       this.render('{{foo-bar 1 myVar2=2}}');
 
