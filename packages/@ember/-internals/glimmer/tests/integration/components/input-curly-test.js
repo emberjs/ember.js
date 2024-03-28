@@ -1,13 +1,6 @@
-import {
-  RenderingTestCase,
-  moduleFor,
-  runDestroy,
-  runTask,
-  testUnless,
-} from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
-import { set } from '@ember/object';
-import { DEPRECATIONS } from '../../../../deprecations';
+import { action, set } from '@ember/object';
 
 class InputRenderingTest extends RenderingTestCase {
   $input() {
@@ -156,22 +149,14 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} sends an action with \`{{input enter=(action "foo")}}\` when <enter> is pressed`](assert) {
-      assert.expect(3);
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
+    ['@test sends an action with `{{input enter=this.foo}}` when <enter> is pressed'](assert) {
+      assert.expect(2);
 
-      this.render(`{{input enter=(action 'foo')}}`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
-        },
+      this.render(`{{input enter=this.foo}}`, {
+        foo: action(function (value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
+        }),
       });
 
       this.triggerEvent('keyup', {
