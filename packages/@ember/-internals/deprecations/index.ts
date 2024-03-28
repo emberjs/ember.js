@@ -97,6 +97,15 @@ export const DEPRECATIONS = {
     until: '6.0.0',
     url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
   }),
+  DEPRECATE_TEMPLATE_ACTION: deprecation({
+    id: 'template-action',
+    url: 'https://deprecations.emberjs.com/id/template-action',
+    until: '6.0.0',
+    for: 'ember-source',
+    since: {
+      available: '5.9.0',
+    },
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {

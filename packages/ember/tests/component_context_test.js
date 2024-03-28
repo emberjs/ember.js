@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
-import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
+import { testUnless, moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   'Application Lifecycle - Component Context',
@@ -183,9 +184,13 @@ moduleFor(
       });
     }
 
-    ['@test Components trigger actions in the parents context when called from within a block'](
-      assert
-    ) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Components trigger actions in the parents context when called from within a block`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       this.addTemplate(
         'application',
         `
@@ -216,9 +221,15 @@ moduleFor(
       });
     }
 
-    ['@test Components trigger actions in the components context when called from within its template'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Components trigger actions in the components context when called from within its template`](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       this.addTemplate(
         'application',
         `

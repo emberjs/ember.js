@@ -8,6 +8,7 @@ import { service } from '@ember/service';
 import EmberObject from '@ember/object';
 import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
+import { action } from '@ember/object';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
@@ -703,7 +704,7 @@ moduleFor(
         'components/x-bar',
         `
         <h1>X-Bar</h1>
-        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
+        <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>
         `
       );
 
@@ -712,11 +713,9 @@ moduleFor(
         Component.extend({
           counter: service('sharedCounter'),
 
-          actions: {
-            incrementCounter() {
-              this.get('counter').increment();
-            },
-          },
+          incrementCounter: action(function () {
+            this.get('counter').increment();
+          }),
 
           init() {
             this._super();

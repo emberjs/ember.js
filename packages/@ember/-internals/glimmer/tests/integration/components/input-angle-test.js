@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTestCase, runDestroy, runTask } from 'internal-test-helpers';
-import { set } from '@ember/object';
+import { action, set } from '@ember/object';
 
 class InputRenderingTest extends RenderingTestCase {
   $input() {
@@ -280,18 +280,16 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    ['@test sends an action with `<Input @enter={{action "foo"}} />` when <enter> is pressed'](
+    [`@test sends an action with \`<Input @enter={{this.foo}} />\` when <enter> is pressed`](
       assert
     ) {
       assert.expect(2);
 
-      this.render(`<Input @enter={{action 'foo'}} />`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
-        },
+      this.render(`<Input @enter={{this.foo}} />`, {
+        foo: action(function (value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
+        }),
       });
 
       this.triggerEvent('keyup', {
@@ -302,12 +300,10 @@ moduleFor(
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
       assert.expect(2);
 
-      this.render(`<Input @insert-newline={{action 'foo'}} />`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
+      this.render(`<Input @insert-newline={{this.foo}} />`, {
+        foo(value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
         },
       });
 
@@ -316,18 +312,16 @@ moduleFor(
       });
     }
 
-    ['@test sends an action with `<Input @escape-press={{action "foo"}} />` when <escape> is pressed'](
+    ['@test sends an action with `<Input @escape-press={{this.foo}} />` when <escape> is pressed'](
       assert
     ) {
       assert.expect(2);
 
-      this.render(`<Input @escape-press={{action 'foo'}} />`, {
-        actions: {
-          foo(value, event) {
-            assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof Event, 'Native event was passed');
-          },
-        },
+      this.render(`<Input @escape-press={{this.foo}} />`, {
+        foo: action(function (value, event) {
+          assert.ok(true, 'action was triggered');
+          assert.ok(event instanceof Event, 'Native event was passed');
+        }),
       });
 
       this.triggerEvent('keyup', { key: 'Escape' });

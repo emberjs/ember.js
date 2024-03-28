@@ -1,9 +1,16 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  testUnless,
+  moduleFor,
+  ApplicationTestCase,
+  RenderingTestCase,
+  runTask,
+} from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 import { Component } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function () {};
@@ -14,16 +21,21 @@ moduleFor(
     constructor() {
       setDebugFunction('debug', noop);
       super(...arguments);
+
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
     }
 
     teardown() {
       setDebugFunction('debug', originalDebug);
     }
 
-    ['@test actions in top level template application template target application controller'](
-      assert
-    ) {
-      assert.expect(1);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions in top level template application template target application controller`](assert) {
+      assert.expect(2);
 
       this.add(
         'controller:application',
@@ -46,8 +58,10 @@ moduleFor(
       });
     }
 
-    ['@test actions in nested outlet template target their controller'](assert) {
-      assert.expect(1);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions in nested outlet template target their controller`](assert) {
+      assert.expect(2);
 
       this.add(
         'controller:application',

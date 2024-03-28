@@ -1,10 +1,11 @@
-import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask, testUnless } from 'internal-test-helpers';
 
 import EmberObject, { set } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { ActionManager } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 function getActionAttributes(element) {
   let attributes = element.attributes;
@@ -30,7 +31,14 @@ function getActionIds(element) {
 moduleFor(
   'Helpers test: element action',
   class extends RenderingTestCase {
-    ['@test it can call an action on its enclosing component']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it can call an action on its enclosing component`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let fooCallCount = 0;
 
       let ExampleComponent = Component.extend({
@@ -67,7 +75,14 @@ moduleFor(
       this.assert.equal(fooCallCount, 2, 'foo has been called 2 times');
     }
 
-    ['@test it can call an action with parameters']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it can call an action with parameters`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let fooArgs = [];
       let component;
 
@@ -114,7 +129,14 @@ moduleFor(
       this.assert.deepEqual(fooArgs, ['a', 'b'], 'foo has been called with an updated value');
     }
 
-    ['@test it should output a marker attribute with a guid']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should output a marker attribute with a guid`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.render('<button {{action "show"}}>me the money</button>');
 
       let button = this.$('button');
@@ -131,7 +153,14 @@ moduleFor(
       );
     }
 
-    ['@test it should allow alternative events to be handled']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should allow alternative events to be handled`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let showCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -156,7 +185,14 @@ moduleFor(
       this.assert.ok(showCalled, 'show action was called on mouseUp');
     }
 
-    ['@test inside a yield, the target points at the original target']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} inside a yield, the target points at the original target`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let targetWatted = false;
       let innerWatted = false;
 
@@ -200,7 +236,14 @@ moduleFor(
       this.assert.notOk(innerWatted, 'the inner target was not watted');
     }
 
-    ['@test it should allow a target to be specified']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should allow a target to be specified`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let targetWatted = false;
 
       let TargetComponent = Component.extend({
@@ -236,7 +279,14 @@ moduleFor(
       this.assert.equal(targetWatted, true, 'the specified target was watted');
     }
 
-    ['@test it should lazily evaluate the target']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should lazily evaluate the target`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let firstEdit = 0;
       let secondEdit = 0;
       let component;
@@ -286,7 +336,14 @@ moduleFor(
       this.assert.equal(secondEdit, 1);
     }
 
-    ['@test it should register an event handler']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should register an event handler`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let shortcutHandlerWasCalled = false;
 
@@ -326,7 +383,14 @@ moduleFor(
       );
     }
 
-    ['@test it handles whitelisted bound modifier keys']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it handles whitelisted bound modifier keys`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let shortcutHandlerWasCalled = false;
 
@@ -368,7 +432,14 @@ moduleFor(
       );
     }
 
-    ['@test it handles whitelisted bound modifier keys with current value']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it handles whitelisted bound modifier keys with current value`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let component;
 
@@ -411,7 +482,14 @@ moduleFor(
       this.assert.equal(editHandlerWasCalled, false, 'the event handler was not called');
     }
 
-    ['@test should be able to use action more than once for the same event within a view']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} should be able to use action more than once for the same event within a view`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let deleteHandlerWasCalled = false;
       let originalHandlerWasCalled = false;
@@ -480,7 +558,14 @@ moduleFor(
       this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
-    ['@test the event should not bubble if `bubbles=false` is passed']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} the event should not bubble if \`bubbles=false\` is passed`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let deleteHandlerWasCalled = false;
       let originalHandlerWasCalled = false;
@@ -541,7 +626,14 @@ moduleFor(
       this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
-    ['@test the event should not bubble if `bubbles=false` is passed bound']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} the event should not bubble if \`bubbles=false\` is passed bound`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let deleteHandlerWasCalled = false;
       let originalHandlerWasCalled = false;
@@ -603,7 +695,14 @@ moduleFor(
       this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
-    ['@test the bubbling depends on the bound parameter']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} the bubbling depends on the bound parameter`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let originalHandlerWasCalled = false;
       let component;
@@ -652,7 +751,14 @@ moduleFor(
       this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
-    ['@test multiple actions with bubbles=false for same event are called but prevent bubbling']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} multiple actions with bubbles=false for same event are called but prevent bubbling`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let clickAction1WasCalled = false;
       let clickAction2WasCalled = false;
       let eventHandlerWasCalled = false;
@@ -691,7 +797,14 @@ moduleFor(
       this.assert.notOk(eventHandlerWasCalled, 'event did not bubble up');
     }
 
-    ['@test it should work properly in an #each block']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should work properly in an #each block`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -718,7 +831,14 @@ moduleFor(
       this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
     }
 
-    ['@test it should work properly in a {{#let foo as |bar|}} block']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should work properly in a {{#let foo as |bar|}} block`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -745,7 +865,14 @@ moduleFor(
       this.assert.equal(editHandlerWasCalled, true, 'the event handler was called');
     }
 
-    ['@test it should unregister event handlers when an element action is removed'](assert) {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should unregister event handlers when an element action is removed`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let ExampleComponent = Component.extend({
         actions: {
           edit() {},
@@ -790,7 +917,14 @@ moduleFor(
       assert.ok(ActionManager.registeredActions[actionId], 'A new action is registered');
     }
 
-    ['@test it should capture events from child elements and allow them to trigger the action']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should capture events from child elements and allow them to trigger the action`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -818,7 +952,14 @@ moduleFor(
       );
     }
 
-    ['@test it should allow bubbling of events from action helper to original parent event']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should allow bubbling of events from action helper to original parent event`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let originalHandlerWasCalled = false;
 
@@ -850,7 +991,14 @@ moduleFor(
       );
     }
 
-    ['@test it should not bubble an event from action helper to original parent event if `bubbles=false` is passed']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should not bubble an event from action helper to original parent event if \`bubbles=false\` is passed`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
       let originalHandlerWasCalled = false;
 
@@ -880,7 +1028,14 @@ moduleFor(
       this.assert.notOk(originalHandlerWasCalled, 'the parent handler was not called');
     }
 
-    ['@test it should allow "send" as the action name (#594)']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should allow "send" as the action name (#594)`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let sendHandlerWasCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -905,7 +1060,14 @@ moduleFor(
       this.assert.ok(sendHandlerWasCalled, 'the event handler was called');
     }
 
-    ['@test it should send the view, event, and current context to the action']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should send the view, event, and current context to the action`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let passedTarget;
       let passedContext;
       let targetThis;
@@ -956,7 +1118,14 @@ moduleFor(
       this.assert.strictEqual(passedContext, aContext, 'the parameter is passed along');
     }
 
-    ['@test it should only trigger actions for the event they were registered on']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should only trigger actions for the event they were registered on`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let editHandlerWasCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -989,7 +1158,14 @@ moduleFor(
       this.assert.notOk(editHandlerWasCalled, 'the event handler was not called on mouseover');
     }
 
-    ['@test it should allow multiple contexts to be specified']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should allow multiple contexts to be specified`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let passedContexts;
       let models = [EmberObject.create(), EmberObject.create()];
 
@@ -1021,7 +1197,14 @@ moduleFor(
       );
     }
 
-    ['@test it should allow multiple contexts to be specified mixed with string args']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should allow multiple contexts to be specified mixed with string args`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let passedContexts;
       let model = EmberObject.create();
 
@@ -1052,7 +1235,14 @@ moduleFor(
       );
     }
 
-    ['@test it should not trigger action with special clicks']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should not trigger action with special clicks`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let showCalled = false;
       let component;
 
@@ -1103,7 +1293,14 @@ moduleFor(
       checkClick('button', 4, false);
     }
 
-    ['@test it can trigger actions for keyboard events']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it can trigger actions for keyboard events`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let showCalled = false;
 
       let ExampleComponent = Component.extend({
@@ -1128,7 +1325,14 @@ moduleFor(
       this.assert.ok(showCalled, 'the action was called with keyup');
     }
 
-    ['@test a quoteless parameter should allow dynamic lookup of the actionName']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} a quoteless parameter should allow dynamic lookup of the actionName`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let lastAction;
       let actionOrder = [];
       let component;
@@ -1187,7 +1391,14 @@ moduleFor(
       );
     }
 
-    ['@test a quoteless string parameter should resolve actionName, including path']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} a quoteless string parameter should resolve actionName, including path`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let lastAction;
       let actionOrder = [];
       let component;
@@ -1247,7 +1458,14 @@ moduleFor(
       );
     }
 
-    ['@test a quoteless function parameter should be called, including arguments']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} a quoteless function parameter should be called, including arguments`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let submitCalled = false;
       let incomingArg;
 
@@ -1275,7 +1493,14 @@ moduleFor(
       this.assert.equal(incomingArg, arg, 'argument passed');
     }
 
-    ['@test a quoteless parameter that does not resolve to a value asserts']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} a quoteless parameter that does not resolve to a value asserts`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let ExampleComponent = Component.extend({
         actions: {
           ohNoeNotValid() {},
@@ -1292,7 +1517,14 @@ moduleFor(
       }, 'You specified a quoteless path, `this.ohNoeNotValid`, to the {{action}} helper ' + 'which did not resolve to an action name (a string). ' + 'Perhaps you meant to use a quoted actionName? (e.g. {{action "ohNoeNotValid"}}).');
     }
 
-    ['@test allows multiple actions on a single element']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} allows multiple actions on a single element`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let clickActionWasCalled = false;
       let doubleClickActionWasCalled = false;
 
@@ -1331,7 +1563,14 @@ moduleFor(
       this.assert.ok(doubleClickActionWasCalled, 'the doubleClicked action was called');
     }
 
-    ['@test allows multiple actions for same event on a single element']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} allows multiple actions for same event on a single element`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let clickAction1WasCalled = false;
       let clickAction2WasCalled = false;
 
@@ -1365,7 +1604,14 @@ moduleFor(
       this.assert.ok(clickAction2WasCalled, 'the second clicked action was called');
     }
 
-    ['@test it should respect preventDefault option if provided']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should respect preventDefault option if provided`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let ExampleComponent = Component.extend({
         actions: {
           show() {},
@@ -1388,7 +1634,14 @@ moduleFor(
       this.assert.equal(event.defaultPrevented, false, 'should not preventDefault');
     }
 
-    ['@test it should respect preventDefault option if provided bound']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should respect preventDefault option if provided bound`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let component;
 
       let ExampleComponent = Component.extend({
@@ -1425,7 +1678,14 @@ moduleFor(
       this.assert.equal(event.defaultPrevented, true, 'should preventDefault');
     }
 
-    ['@test it should target the proper component when `action` is in yielded block [GH #12409]']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it should target the proper component when \`action\` is in yielded block [GH #12409]`]() {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let outerActionCalled = false;
       let innerClickCalled = false;
 
@@ -1478,7 +1738,14 @@ moduleFor(
       this.assert.ok(innerClickCalled, 'the click was triggered');
     }
 
-    ['@test element action with (mut undefinedThing) works properly']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} element action with (mut undefinedThing) works properly`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let component;
 
       let ExampleComponent = Component.extend({
@@ -1526,7 +1793,14 @@ moduleFor(
       this.assertText('Click me');
     }
 
-    ['@test it supports non-registered actions [GH#14888]']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} it supports non-registered actions [GH#14888]`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.render(
         `
       {{#if this.show}}
@@ -1546,7 +1820,14 @@ moduleFor(
       });
     }
 
-    ["@test action handler that shifts element attributes doesn't trigger multiple invocations"]() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} action handler that shifts element attributes doesn't trigger multiple invocations`]() {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let actionCount = 0;
       let ExampleComponent = Component.extend({
         selected: false,
