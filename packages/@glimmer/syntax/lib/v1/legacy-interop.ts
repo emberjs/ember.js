@@ -61,12 +61,35 @@ export function buildLegacyPath({ head, tail, loc }: PathExpressionParams): ASTv
   Object.defineProperty(node, 'parts', {
     enumerable: false,
     get(this: { original: string }): readonly string[] {
-      deprecate(`The parts property on path nodes is deprecated, use trusting instead`);
-      return Object.freeze(this.original.split('.'));
+      deprecate(`The parts property on path nodes is deprecated, use head and tail instead`);
+      let parts = asPresentArray(this.original.split('.'));
+
+      if (parts[0] === 'this') {
+        // parts does not include `this`
+        parts.shift();
+      } else if (parts[0].startsWith('@')) {
+        // parts does not include leading `@`
+        parts[0] = parts[0].slice(1);
+      }
+
+      return Object.freeze(parts);
     },
-    set(this: { original: string }, value: PresentArray<string>) {
-      deprecate(`The parts property on mustache nodes is deprecated, use trusting instead`);
-      this.original = value.join('.');
+    set(this: { head: ASTv1.PathHead; original: string }, values: PresentArray<string>) {
+      deprecate(`The parts property on mustache nodes is deprecated, use head and tail instead`);
+
+      let parts = [...values];
+
+      // you are not supposed to already have `this` or `@` in the parts, but since this is
+      // deprecated anyway, we will infer what you meant and allow it
+      if (parts[0] !== 'this' && !parts[0]?.startsWith('@')) {
+        if (this.head.type === 'ThisHead') {
+          parts.unshift('this');
+        } else if (this.head.type === 'AtHead') {
+          parts[0] = `@${parts[0]}`;
+        }
+      }
+
+      this.original = parts.join('.');
     },
   });
 
