@@ -12,16 +12,12 @@ export function isStringLiteral(node: AST.Expression): node is AST.StringLiteral
   return node.type === 'StringLiteral';
 }
 
-function getLocalName(node: string | AST.VarHead) {
-  if (typeof node === 'string') return node;
-
-  if (node.type === 'VarHead') {
+function getLocalName(node: string | AST.VarHead): string {
+  if (typeof node === 'string') {
+    return node;
+  } else {
     return node.original;
   }
-
-  // surely this is wrong? (does it ever occur tho?)
-  // the type of params is `| Expression`, which isn't possible for block params
-  return node;
 }
 
 export function trackLocals() {
