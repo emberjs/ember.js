@@ -109,7 +109,8 @@ async function main() {
 
   // The majority of those items should be excluded entirely, but in some cases
   // we still need to post-process them.
-  let excludes = remappedLocationExcludes.concat(sideEffectExcludes);
+  let excludes = remappedLocationExcludes
+    .concat(sideEffectExcludes);
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
