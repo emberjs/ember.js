@@ -258,6 +258,48 @@ moduleFor(
       this.render('<Foo/>');
       this.click('button');
     }
+
+    // Ember currently uses AST plugins to implement certain features that
+    // glimmer-vm does not natively provide, such as {{#each-in}}, {{outlet}}
+    // {{mount}} and some features in {{#in-element}}. These rewrites the AST
+    // and insert private keywords e.g. `{{#each (-each-in)}}`. These tests
+    // ensures we have _some_ basic coverage for those features in strict mode.
+    //
+    // Ultimately, our test coverage for strict mode is quite inadequate. This
+    // is particularly important as we expect more apps to start adopting the
+    // feature. Ideally we would run our entire/most of our test suite against
+    // both strict and resolution modes, and these things would be implicitly
+    // covered elsewhere, but until then, these coverage are essential.
+
+    '@test Can use each-in'() {
+      let obj = {
+        foo: 'FOO',
+        bar: 'BAR',
+      };
+
+      let Foo = defineComponent({ obj }, '{{#each-in obj as |k v|}}[{{k}}:{{v}}]{{/each-in}}');
+
+      this.registerComponent('foo', { ComponentClass: Foo });
+
+      this.render('<Foo/>');
+      this.assertHTML('[foo:FOO][bar:BAR]');
+      this.assertStableRerender();
+    }
+
+    '@test Can use in-element'() {
+      let getElement = (id) => document.getElementById(id);
+
+      let Foo = defineComponent(
+        { getElement },
+        '{{#in-element (getElement "in-element-test")}}before{{/in-element}}after'
+      );
+
+      this.registerComponent('foo', { ComponentClass: Foo });
+
+      this.render('[<div id="in-element-test" />][<Foo/>]');
+      this.assertText('[before][after]');
+      this.assertStableRerender();
+    }
   }
 );
 
