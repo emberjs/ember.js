@@ -52,7 +52,7 @@ class InternalModifierState implements Destroyable {
   constructor(readonly instance: InternalModifier) {}
 }
 
-export class InternalModifierManager
+export abstract class InternalModifierManager
   implements ModifierManager<InternalModifierState, typeof InternalModifier>
 {
   constructor(private ModifierClass: typeof InternalModifier, private name: string) {}
@@ -78,9 +78,7 @@ export class InternalModifierManager
     return null;
   }
 
-  getDebugInstance(): unknown {
-    return null;
-  }
+  abstract getDebugInstance(state: InternalModifierState): unknown;
 
   getDebugName(): string {
     return this.name;
