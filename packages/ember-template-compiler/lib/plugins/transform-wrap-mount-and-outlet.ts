@@ -45,7 +45,6 @@ export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironme
     visitor: {
       Template: node,
       ElementNode: node,
-      BlockStatement: node,
       Block: node,
 
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {

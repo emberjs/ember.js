@@ -12,7 +12,7 @@ export function isStringLiteral(node: AST.Expression): node is AST.StringLiteral
   return node.type === 'StringLiteral';
 }
 
-function getLocalName(node: string | AST.Expression | AST.VarHead) {
+function getLocalName(node: string | AST.VarHead) {
   if (typeof node === 'string') return node;
 
   if (node.type === 'VarHead') {
@@ -28,7 +28,7 @@ export function trackLocals() {
   let locals = new Map();
 
   let node = {
-    enter(node: AST.Template | AST.Block | AST.ElementNode | AST.BlockStatement) {
+    enter(node: AST.Template | AST.Block | AST.ElementNode) {
       let params = 'params' in node ? node.params : node.blockParams;
       for (let param of params) {
         let name = getLocalName(param);
@@ -37,7 +37,7 @@ export function trackLocals() {
       }
     },
 
-    exit(node: AST.Template | AST.Block | AST.ElementNode | AST.BlockStatement) {
+    exit(node: AST.Template | AST.Block | AST.ElementNode) {
       let params = 'params' in node ? node.params : node.blockParams;
       for (let param of params) {
         let name = getLocalName(param);
