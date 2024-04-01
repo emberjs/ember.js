@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.8.0-beta.2 (April 1, 2024)
+
+- [#20672](https://github.com/emberjs/ember.js/pull/20672) [BUGFIX] Restore `{{this.attrs.foo}}` deprecation from the 3.x era. The API was accidentally not removed in 4.0 but the deprecation was removed.
+
 ## v5.8.0-beta.1 (March 4, 2024)
 
 - No user-facing changes that were not backported.
