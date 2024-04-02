@@ -2,7 +2,7 @@ import type { SerializedSourceSpan } from '../../source/span';
 import type { Args } from './args';
 import type { ElementModifier } from './attr-block';
 import type { AppendContent, ContentNode, InvokeBlock, InvokeComponent } from './content';
-import type { CallExpression, ExpressionNode } from './expr';
+import type { CallExpression, PathExpression } from './expr';
 import type { BaseNodeFields } from './node';
 
 export interface SerializedBaseNode {
@@ -14,9 +14,11 @@ export interface GlimmerParentNodeOptions extends BaseNodeFields {
 }
 
 export interface CallFields extends BaseNodeFields {
-  callee: ExpressionNode;
+  callee: CalleeNode;
   args: Args;
 }
+
+export type CalleeNode = PathExpression | CallExpression;
 
 export type CallNode =
   | CallExpression

@@ -78,12 +78,6 @@ class KeywordImpl<
   }
 }
 
-export type PossibleNode =
-  | ASTv2.PathExpression
-  | ASTv2.AppendContent
-  | ASTv2.CallExpression
-  | ASTv2.InvokeBlock;
-
 export const KEYWORD_NODES = {
   Call: ['Call'],
   Block: ['InvokeBlock'],

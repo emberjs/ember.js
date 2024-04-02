@@ -9,7 +9,7 @@ import { SpanList } from '../source/span-list';
 import * as ASTv2 from './api';
 
 export interface CallParts {
-  callee: ASTv2.ExpressionNode;
+  callee: ASTv2.CalleeNode;
   args: ASTv2.Args;
 }
 

@@ -243,7 +243,7 @@ class ExpressionNormalizer {
    * it to an ASTv2 CallParts.
    */
   callParts(parts: ASTv1.CallParts, context: ASTv2.FreeVarResolution): CallParts {
-    let { path, params, hash } = parts;
+    let { path, params, hash, loc } = parts;
 
     let callee = this.normalize(path, context);
     let paramList = params.map((p) => this.normalize(p, ASTv2.STRICT_RESOLUTION));
@@ -260,6 +260,18 @@ class ExpressionNormalizer {
       hash.pairs.map((p) => this.namedArgument(p)),
       this.block.loc(hash.loc)
     );
+
+    switch (callee.type) {
+      case 'Literal':
+        throw generateSyntaxError(
+          `Invalid invocation of a literal value (\`${callee.value}\`)`,
+          loc
+        );
+
+      // This really shouldn't be possible, something has gone pretty wrong
+      case 'Interpolate':
+        throw generateSyntaxError(`Invalid invocation of a interpolated string`, loc);
+    }
 
     return {
       callee,
@@ -402,6 +414,7 @@ class StatementNormalizer {
           path,
           params,
           hash,
+          loc,
         },
         resolution.result
       );
