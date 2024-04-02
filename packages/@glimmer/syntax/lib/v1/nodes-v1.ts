@@ -43,6 +43,7 @@ export interface CallParts {
   path: CallableExpression;
   params: Expression[];
   hash: Hash;
+  loc: src.SourceSpan;
 }
 
 export type CallNode =
