@@ -2,7 +2,7 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
 import { EventDispatcher } from '@ember/-internals/views';
 import type { Renderer } from '@ember/-internals/glimmer';
-import Component from '@ember/component';
+import Component, { setComponentTemplate } from '@ember/component';
 import { helper, Helper, _resetRenderers } from '@ember/-internals/glimmer';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
@@ -13,6 +13,7 @@ import { runAppend, runDestroy, runTask } from '../run';
 import type { InternalFactory } from '@ember/-internals/owner';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
+import templateOnly from '@ember/component/template-only';
 
 const TextNode = window.Text;
 
@@ -101,15 +102,25 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  addComponent(name: string, { ComponentClass = null, template = null }) {
+  addComponent(
+    name: string,
+    { ComponentClass = null, template = null, resolveableTemplate = null }
+  ) {
     if (ComponentClass) {
       this.resolver.add(`component:${name}`, ComponentClass);
     }
 
     if (typeof template === 'string') {
+      setComponentTemplate(
+        this.compile(template, { moduleName: name }),
+        ComponentClass || templateOnly()
+      );
+    }
+
+    if (typeof resolveableTemplate === 'string') {
       this.resolver.add(
         `template:components/${name}`,
-        this.compile(template, {
+        this.compile(resolveableTemplate, {
           moduleName: `components/${name}`,
         })
       );
@@ -176,7 +187,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     this.owner.register(`helper:${name}`, definition);
   }
 
-  registerComponent(name: string, { ComponentClass = Component, template = null }) {
+  registerComponent(
+    name: string,
+    { ComponentClass = Component, template = null, resolveableTemplate = null }
+  ) {
     let { owner } = this;
 
     if (ComponentClass) {
@@ -184,9 +198,22 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
 
     if (typeof template === 'string') {
+      let compiled = this.compile(template, { moduleName: name });
+      // class types are hard
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let stateContainer: any = ComponentClass;
+
+      if (stateContainer === Component) {
+        stateContainer = class extends Component {};
+      }
+
+      setComponentTemplate(compiled, stateContainer);
+    }
+
+    if (typeof resolveableTemplate === 'string') {
       owner.register(
         `template:components/${name}`,
-        this.compile(template, {
+        this.compile(resolveableTemplate, {
           moduleName: `my-app/templates/components/${name}.hbs`,
         })
       );

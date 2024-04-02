@@ -45,6 +45,7 @@ import { default as uniqueId } from './helpers/unique-id';
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -65,19 +66,9 @@ function layoutFor(
 ): Nullable<Template> {
   let templateFullName = `template:components/${name}` as const;
 
-  deprecate(
-    `Components with separetly resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts.`,
-    false,
-    {
-      id: 'component-template-resolving',
-      url: 'https://deprecations.emberjs.com/id/component-template-resolving',
-      until: '6.0.0',
-      for: 'ember-source',
-      since: {
-        available: '5.10.0',
-        enabled: '5.10.0',
-      },
-    }
+  deprecateUntil(
+    `Components with separately resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts.`,
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING
   );
 
   return (owner.lookup(templateFullName, options) as Template) || null;
