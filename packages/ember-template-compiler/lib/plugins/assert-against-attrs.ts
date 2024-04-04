@@ -45,6 +45,15 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
         },
       },
 
+      Block: {
+        enter(node: AST.Block) {
+          updateBlockParamsStack(node.blockParams);
+        },
+        exit() {
+          stack.pop();
+        },
+      },
+
       ElementNode: {
         enter(node: AST.ElementNode) {
           updateBlockParamsStack(node.blockParams);
