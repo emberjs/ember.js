@@ -1,5 +1,9 @@
 import { assert } from '@ember/debug';
-import { RESOLUTION_MODE_TRANSFORMS, STRICT_MODE_TRANSFORMS } from '../plugins/index';
+import {
+  RESOLUTION_MODE_TRANSFORMS,
+  STRICT_MODE_KEYWORDS,
+  STRICT_MODE_TRANSFORMS,
+} from '../plugins/index';
 import type { EmberPrecompileOptions, PluginFunc } from '../types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
@@ -43,6 +47,10 @@ export function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrec
     let meta = options.meta;
     assert('has meta', meta); // We just set it
     meta.moduleName = options.moduleName;
+  }
+
+  if (options.strictMode) {
+    options.keywords = STRICT_MODE_KEYWORDS;
   }
 
   return options;

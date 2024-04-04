@@ -11,35 +11,44 @@ import TransformResolutions from './transform-resolutions';
 import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 
 // order of plugins is important
-export const RESOLUTION_MODE_TRANSFORMS = Object.freeze(
-  [
-    TransformQuotedBindingsIntoJustBindings,
-    AssertReservedNamedArguments,
-    TransformActionSyntax,
-    AssertAgainstAttrs,
-    TransformEachInIntoEach,
-    AssertInputHelperWithoutBlock,
-    TransformInElement,
-    TransformEachTrackArray,
-    AssertAgainstNamedOutlets,
-    TransformWrapMountAndOutlet,
-    TransformResolutions,
-  ].filter(notNull)
-);
+export const RESOLUTION_MODE_TRANSFORMS = Object.freeze([
+  TransformQuotedBindingsIntoJustBindings,
+  AssertReservedNamedArguments,
+  TransformActionSyntax,
+  AssertAgainstAttrs,
+  TransformEachInIntoEach,
+  AssertInputHelperWithoutBlock,
+  TransformInElement,
+  TransformEachTrackArray,
+  AssertAgainstNamedOutlets,
+  TransformWrapMountAndOutlet,
+  TransformResolutions,
+]);
 
-export const STRICT_MODE_TRANSFORMS = Object.freeze(
-  [
-    TransformQuotedBindingsIntoJustBindings,
-    AssertReservedNamedArguments,
-    TransformActionSyntax,
-    TransformEachInIntoEach,
-    TransformInElement,
-    TransformEachTrackArray,
-    AssertAgainstNamedOutlets,
-    TransformWrapMountAndOutlet,
-  ].filter(notNull)
-);
+export const STRICT_MODE_TRANSFORMS = Object.freeze([
+  TransformQuotedBindingsIntoJustBindings,
+  AssertReservedNamedArguments,
+  TransformActionSyntax,
+  TransformEachInIntoEach,
+  TransformInElement,
+  TransformEachTrackArray,
+  AssertAgainstNamedOutlets,
+  TransformWrapMountAndOutlet,
+]);
 
-function notNull<TValue>(value: TValue | null): value is TValue {
-  return value !== null;
-}
+export const STRICT_MODE_KEYWORDS = Object.freeze([
+  'action',
+  'mut',
+  'readonly',
+  'unbound',
+
+  // TransformEachInIntoEach
+  '-each-in',
+  // TransformInElement
+  '-in-el-null',
+  // TransformEachTrackArray
+  '-track-array',
+  // TransformWrapMountAndOutlet
+  '-mount',
+  '-outlet',
+]);
