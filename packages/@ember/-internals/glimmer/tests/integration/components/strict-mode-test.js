@@ -8,6 +8,7 @@ import {
 } from 'internal-test-helpers';
 
 import { Input, Textarea } from '@ember/component';
+import { action } from '@ember/object';
 import { LinkTo } from '@ember/routing';
 import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -257,6 +258,57 @@ moduleFor(
 
       this.render('<Foo/>');
       this.click('button');
+    }
+
+    // Test some of the additional keywords not built-in to glimmer-vm (those
+    // we specifically enable them when calling `precompile`)
+
+    '@test Can use action helper'(assert) {
+      let called = 0;
+
+      let Foo = defineComponent(
+        { on },
+        '<button {{on "click" (action "foo")}}>Click</button>',
+        class extends GlimmerishComponent {
+          @action
+          foo() {
+            called++;
+          }
+        }
+      );
+
+      this.registerComponent('foo', { ComponentClass: Foo });
+
+      this.render('<Foo/>');
+      assert.strictEqual(called, 0);
+      this.assertStableRerender();
+      assert.strictEqual(called, 0);
+      this.click('button');
+      assert.strictEqual(called, 1);
+    }
+
+    '@test Can use action modifier'(assert) {
+      let called = 0;
+
+      let Foo = defineComponent(
+        {},
+        '<button {{action "foo"}}>Click</button>',
+        class extends GlimmerishComponent {
+          @action
+          foo() {
+            called++;
+          }
+        }
+      );
+
+      this.registerComponent('foo', { ComponentClass: Foo });
+
+      this.render('<Foo/>');
+      assert.strictEqual(called, 0);
+      this.assertStableRerender();
+      assert.strictEqual(called, 0);
+      this.click('button');
+      assert.strictEqual(called, 1);
     }
 
     // Ember currently uses AST plugins to implement certain features that
