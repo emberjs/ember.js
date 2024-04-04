@@ -148,6 +148,14 @@ export class Builder {
     });
   }
 
+  keyword(name: string, symbol: number, loc: SourceSpan): ASTv2.KeywordExpression {
+    return new ASTv2.KeywordExpression({
+      loc,
+      name,
+      symbol,
+    });
+  }
+
   self(loc: SourceSpan): ASTv2.VariableReference {
     return new ASTv2.ThisReference({
       loc,

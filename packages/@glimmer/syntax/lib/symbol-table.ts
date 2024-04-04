@@ -15,15 +15,21 @@ interface SymbolTableOptions {
 }
 
 export abstract class SymbolTable {
-  static top(locals: string[], options: SymbolTableOptions): ProgramSymbolTable {
-    return new ProgramSymbolTable(locals, options);
+  static top(
+    locals: readonly string[],
+    keywords: readonly string[],
+    options: SymbolTableOptions
+  ): ProgramSymbolTable {
+    return new ProgramSymbolTable(locals, keywords, options);
   }
 
   abstract has(name: string): boolean;
   abstract get(name: string): [symbol: number, isRoot: boolean];
 
+  abstract hasKeyword(name: string): boolean;
+  abstract getKeyword(name: string): number;
+
   abstract hasLexical(name: string): boolean;
-  abstract getLexical(name: string): number;
 
   abstract getLocalsMap(): Dict<number>;
   abstract getDebugInfo(): Core.DebugInfo;
@@ -42,7 +48,8 @@ export abstract class SymbolTable {
 
 export class ProgramSymbolTable extends SymbolTable {
   constructor(
-    private templateLocals: string[],
+    private templateLocals: readonly string[],
+    private keywords: readonly string[],
     private options: SymbolTableOptions
   ) {
     super();
@@ -62,8 +69,12 @@ export class ProgramSymbolTable extends SymbolTable {
     return this.options.lexicalScope(name);
   }
 
-  getLexical(name: string): number {
-    return this.allocateFree(name, ASTv2.HTML_RESOLUTION);
+  hasKeyword(name: string): boolean {
+    return this.keywords.includes(name);
+  }
+
+  getKeyword(name: string): number {
+    return this.allocateFree(name, ASTv2.STRICT_RESOLUTION);
   }
 
   getUsedTemplateLocals(): string[] {
@@ -166,12 +177,16 @@ export class BlockSymbolTable extends SymbolTable {
     return this.symbols;
   }
 
-  getLexical(name: string): number {
-    return this.parent.getLexical(name);
-  }
-
   hasLexical(name: string): boolean {
     return this.parent.hasLexical(name);
+  }
+
+  getKeyword(name: string): number {
+    return this.parent.getKeyword(name);
+  }
+
+  hasKeyword(name: string): boolean {
+    return this.parent.hasKeyword(name);
   }
 
   has(name: string): boolean {

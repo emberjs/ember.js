@@ -661,6 +661,22 @@ export interface TemplateIdFn {
 
 export interface PrecompileOptions extends PreprocessOptions {
   id?: TemplateIdFn;
+
+  /**
+   * Additional non-native keywords.
+   *
+   * Local variables (block params or lexical scope) always takes precedence,
+   * but otherwise, suitable free variable candidates (e.g. those are not part
+   * of a path) are matched against this list and turned into keywords.
+   *
+   * In strict mode compilation, keywords suppresses the undefined reference
+   * error and will be resolved by the runtime environment.
+   *
+   * In loose mode, keywords are currently ignored and since all free variables
+   * are already resolved by the runtime environment.
+   */
+  keywords?: readonly string[];
+
   customizeComponentName?: ((input: string) => string) | undefined;
 }
 

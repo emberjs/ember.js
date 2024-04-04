@@ -23,8 +23,8 @@ export default class JitCompileTimeLookup implements CompileTimeResolver {
     return this.resolver.lookupComponent(name, owner);
   }
 
-  lookupBuiltInHelper(_name: string): Nullable<HelperDefinitionState> {
-    return null;
+  lookupBuiltInHelper(name: string): Nullable<HelperDefinitionState> {
+    return this.resolver.lookupHelper(`$keyword.${name}`);
   }
 
   lookupBuiltInModifier(_name: string): Nullable<ModifierDefinitionState> {
