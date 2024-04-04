@@ -7,7 +7,6 @@ import { Ok, Result, ResultArray } from '../../../../shared/result';
 import { getAttrNamespace } from '../../../../utils';
 import * as mir from '../../../2-encoding/mir';
 import { MODIFIER_KEYWORDS } from '../../keywords';
-import { assertIsValidModifier, isHelperInvocation } from '../../utils/is-node';
 import { convertPathToCallIfKeyword, VISIT_EXPRS } from '../expressions';
 
 export type ValidAttr = mir.StaticAttr | mir.DynamicAttr | mir.SplatAttr;
@@ -75,10 +74,6 @@ export class ClassifiedElement {
   }
 
   private modifier(modifier: ASTv2.ElementModifier): Result<mir.Modifier> {
-    if (isHelperInvocation(modifier)) {
-      assertIsValidModifier(modifier);
-    }
-
     let translated = MODIFIER_KEYWORDS.translate(modifier, this.state);
 
     if (translated !== null) {

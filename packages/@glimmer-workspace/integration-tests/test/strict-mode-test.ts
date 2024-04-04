@@ -72,12 +72,16 @@ class GeneralStrictModeTest extends RenderTest {
   }
 
   @test
-  'Implicit this lookup does not work'() {
+  'Undefined references is an error'() {
+    this.registerHelper('bar', () => 'should not resolve this helper');
+
     this.assert.throws(
       () => {
         defineComponent({}, '{{bar}}', {
           definition: class extends GlimmerishComponent {
-            bar = 'Hello, world!';
+            get bar() {
+              throw new Error('should not fallback to this.bar');
+            }
           },
         });
       },
@@ -89,6 +93,28 @@ class GeneralStrictModeTest extends RenderTest {
         0
       )
     );
+  }
+
+  @test
+  'Non-native keyword'() {
+    this.registerHelper('bar', () => {
+      throw new Error('should not resolve this helper');
+    });
+
+    this.registerHelper('$keyword.bar', () => 'bar keyword');
+
+    const Foo = defineComponent({}, '{{bar}}', {
+      keywords: ['bar'],
+      definition: class extends GlimmerishComponent {
+        get bar() {
+          throw new Error('should not fallback to this.bar');
+        }
+      },
+    });
+
+    this.renderComponent(Foo);
+    this.assertHTML('bar keyword');
+    this.assertStableRerender();
   }
 
   @test

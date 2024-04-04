@@ -2,7 +2,7 @@ import type { SerializedSourceSpan } from '../../source/span';
 import type { Args } from './args';
 import type { ElementModifier } from './attr-block';
 import type { AppendContent, ContentNode, InvokeBlock, InvokeComponent } from './content';
-import type { CallExpression, PathExpression } from './expr';
+import type { CallExpression, KeywordExpression, PathExpression } from './expr';
 import type { BaseNodeFields } from './node';
 
 export interface SerializedBaseNode {
@@ -18,7 +18,7 @@ export interface CallFields extends BaseNodeFields {
   args: Args;
 }
 
-export type CalleeNode = PathExpression | CallExpression;
+export type CalleeNode = KeywordExpression | PathExpression | CallExpression;
 
 export type CallNode =
   | CallExpression

@@ -120,6 +120,7 @@ export default class StrictModeValidationPass {
   ): Result<null> {
     switch (expression.type) {
       case 'Literal':
+      case 'Keyword':
       case 'Missing':
       case 'This':
       case 'Arg':

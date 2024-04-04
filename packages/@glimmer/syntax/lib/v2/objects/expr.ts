@@ -72,6 +72,17 @@ export class PathExpression extends node('Path').fields<{
 }>() {}
 
 /**
+ * Corresponds to a known strict-mode keyword. It behaves similarly to a
+ * PathExpression with a FreeVarReference, but implies StrictResolution and
+ * is guaranteed to not have a tail, since `{{outlet.foo}}` would have been
+ * illegal.
+ */
+export class KeywordExpression extends node('Keyword').fields<{
+  name: string;
+  symbol: number;
+}>() {}
+
+/**
  * Corresponds to a parenthesized call expression.
  *
  * ```hbs
@@ -97,5 +108,6 @@ export class InterpolateExpression extends node('Interpolate').fields<{
 export type ExpressionNode =
   | LiteralExpression
   | PathExpression
+  | KeywordExpression
   | CallExpression
   | InterpolateExpression;
