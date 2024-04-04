@@ -316,6 +316,25 @@ test('block with block params', () => {
   );
 });
 
+test('block with block params edge case: extra spaces', () => {
+  let t = `{{#foo as | bar bat baz |}}{{bar}} {{bat}} {{baz}}{{/foo}}`;
+
+  astEqual(
+    t,
+    b.template([
+      b.block(
+        b.path('foo'),
+        null,
+        null,
+        b.blockItself(
+          [b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')],
+          ['bar', 'bat', 'baz']
+        )
+      ),
+    ])
+  );
+});
+
 test('block with block params edge case: multiline', () => {
   let t = `{{#foo as
 |bar bat
@@ -376,6 +395,21 @@ test('block with block params edge case: block-params like content', () => {
 
 test('element with block params', () => {
   let t = `<Foo as |bar bat baz|>{{bar}} {{bat}} {{baz}}</Foo>`;
+
+  astEqual(
+    t,
+    b.template([
+      element(
+        'Foo',
+        ['as', b.var('bar'), b.var('bat'), b.var('baz')],
+        ['body', b.mustache('bar'), b.text(' '), b.mustache('bat'), b.text(' '), b.mustache('baz')]
+      ),
+    ])
+  );
+});
+
+test('element with block params edge case: extra spaces', () => {
+  let t = `<Foo as | bar bat baz |>{{bar}} {{bat}} {{baz}}</Foo>`;
 
   astEqual(
     t,

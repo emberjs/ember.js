@@ -421,6 +421,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
             );
           } else {
             state = { state: 'AfterEndPipe' };
+            this.tokenizer.consume();
           }
         } else if (next === '>' || next === '/') {
           throw generateSyntaxError(
