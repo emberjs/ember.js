@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/vm",
-  "version": "0.91.1",
+  "version": "0.91.2",
   "license": "MIT",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/vm",
   "type": "module",
