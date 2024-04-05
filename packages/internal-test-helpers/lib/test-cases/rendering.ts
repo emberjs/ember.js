@@ -200,12 +200,16 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     let { owner } = this;
 
     if (ComponentClass) {
-      let stateContainer = class extends ComponentClass {};
+      // We cannot set templates multiple times on a class
+      if (ComponentClass === Component) {
+        // @ts-expect-error - class/instance types in TS are hard
+        ComponentClass = class extends Component {};
+      }
 
-      owner.register(`component:${name}`, stateContainer);
+      owner.register(`component:${name}`, ComponentClass);
 
       if (typeof template === 'string') {
-        setComponentTemplate(this.compile(template), stateContainer);
+        setComponentTemplate(this.compile(template), ComponentClass);
       }
     }
 

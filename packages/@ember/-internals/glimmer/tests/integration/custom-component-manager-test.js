@@ -117,7 +117,8 @@ moduleFor(
     }
 
     ['@test it can have no template context']() {
-      let ComponentClass = setComponentManager(() => {
+      class ComponentWithNoTemplate {}
+      setComponentManager(() => {
         return EmberObject.create({
           capabilities: componentCapabilities('3.13'),
 
@@ -131,11 +132,11 @@ moduleFor(
             return null;
           },
         });
-      }, {});
+      }, ComponentWithNoTemplate);
 
       this.registerComponent('foo-bar', {
         template: `<p>{{@greeting}} world</p>`,
-        ComponentClass,
+        ComponentClass: ComponentWithNoTemplate,
       });
 
       this.render('{{foo-bar greeting="hello"}}');

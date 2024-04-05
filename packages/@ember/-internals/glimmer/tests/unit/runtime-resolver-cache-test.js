@@ -5,11 +5,14 @@ import {
   runDestroy,
   runAppend,
   runTask,
+  testUnless,
+  expectDeprecation,
 } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 import { templateCacheCounters } from '@ember/-internals/glimmer';
 import { Component } from '../utils/helpers';
+import { DEPRECATIONS } from '../../../deprecations';
 
 moduleFor(
   'ember-glimmer runtime resolver cache',
@@ -122,9 +125,12 @@ moduleFor(
       this.expectCacheChanges({}, 'toggle back to component-two no change');
     }
 
-    ['@test each template is only compiled once']() {
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+    )} each template is only compiled once`]() {
+      expectDeprecation(/msg here/, DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled);
       // static layout
-      this.registerComponent('component-one', { template: 'One' });
+      this.registerComponent('component-one', { resolveableTemplate: 'One' });
 
       // test directly import template factory onto late bound layout
       let Two = Component.extend({
