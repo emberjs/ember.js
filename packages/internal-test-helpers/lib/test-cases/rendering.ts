@@ -107,14 +107,20 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     { ComponentClass = null, template = null, resolveableTemplate = null }
   ) {
     if (ComponentClass) {
-      this.resolver.add(`component:${name}`, ComponentClass);
+      let localClass = ComponentClass as typeof Component;
+
+      this.resolver.add(`component:${name}`, localClass);
+
+      if (typeof template === 'string') {
+        setComponentTemplate(this.compile(template), ComponentClass ? localClass : templateOnly());
+      }
+
+      return;
     }
 
     if (typeof template === 'string') {
-      setComponentTemplate(
-        this.compile(template, { moduleName: name }),
-        ComponentClass || templateOnly()
-      );
+      let toComponent = setComponentTemplate(this.compile(template), templateOnly());
+      this.resolver.add(`component:${name}`, toComponent);
     }
 
     if (typeof resolveableTemplate === 'string') {
@@ -194,20 +200,15 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     let { owner } = this;
 
     if (ComponentClass) {
-      owner.register(`component:${name}`, ComponentClass);
-    }
+      let stateContainer = class extends ComponentClass {};
 
-    if (typeof template === 'string') {
-      let compiled = this.compile(template, { moduleName: name });
-      // class types are hard
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let stateContainer: any = ComponentClass;
+      owner.register(`component:${name}`, stateContainer);
 
-      if (stateContainer === Component) {
-        stateContainer = class extends Component {};
+      if (typeof template === 'string') {
+        let compiled = this.compile(template);
+
+        setComponentTemplate(compiled, stateContainer);
       }
-
-      setComponentTemplate(compiled, stateContainer);
     }
 
     if (typeof resolveableTemplate === 'string') {
