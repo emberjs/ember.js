@@ -22,6 +22,16 @@
 
 
 
+
+## v0.91.2 (2024-04-05)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1577](https://github.com/glimmerjs/glimmer-vm/pull/1577) fix extra spaces in block params ([@patricklx](https://github.com/patricklx))
+
+#### Committers: 1
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+
 ## v0.91.1 (2024-03-28)
 
 #### :bug: Bug Fix
