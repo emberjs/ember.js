@@ -191,7 +191,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass,
-        template: 'this should not be rendered',
+        resolveableTemplate: 'this should not be rendered',
       });
 
       this.render('{{foo-bar}}');

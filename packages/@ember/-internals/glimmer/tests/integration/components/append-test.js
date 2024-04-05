@@ -110,7 +110,7 @@ class AbstractAppendTest extends RenderingTestCase {
             this._super(...arguments);
           },
         }),
-        template: _options.template,
+        resolveableTemplate: _options.resolveableTemplate,
       };
 
       oldRegisterComponent.call(this, name, options);
@@ -121,7 +121,7 @@ class AbstractAppendTest extends RenderingTestCase {
         layoutName: 'components/x-parent',
       }),
 
-      template:
+      resolveableTemplate:
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
@@ -130,7 +130,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{this.bar}}]{{yield}}',
+      resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -294,7 +294,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template:
+      resolveableTemplate:
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
@@ -303,7 +303,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{this.bar}}]{{yield}}',
+      resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -401,7 +401,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-first {{this.foo}}!',
+      resolveableTemplate: 'x-first {{this.foo}}!',
     });
 
     this.registerComponent('x-second', {
@@ -413,7 +413,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-second {{this.bar}}!',
+      resolveableTemplate: 'x-second {{this.bar}}!',
     });
 
     let First, Second;
@@ -704,7 +704,7 @@ moduleFor(
         ComponentClass: Component.extend({
           layoutName: 'components/foo-bar',
         }),
-        template: 'FOO BAR!',
+        resolveableTemplate: 'FOO BAR!',
       });
 
       let FooBar = this.owner.factoryFor('component:foo-bar');

@@ -51,6 +51,7 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { getComponentTemplate } from '@ember/component';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
@@ -133,6 +134,12 @@ export default class CurlyComponentManager
     let factory: TemplateFactory;
 
     if (layout === undefined) {
+      let theSetTemplate = getComponentTemplate(component);
+
+      if (theSetTemplate) {
+        return unwrapTemplate(theSetTemplate(owner)).asWrappedLayout();
+      }
+
       if (layoutName !== undefined) {
         let _factory = owner.lookup(`template:${layoutName}`) as TemplateFactory;
         assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
