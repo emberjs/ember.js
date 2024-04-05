@@ -79,7 +79,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
     return this.application.resolveRegistration('router:main') as typeof Router;
   }
 
-  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}): object {
+  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
     return compile(templateString, options);
   }
 }
