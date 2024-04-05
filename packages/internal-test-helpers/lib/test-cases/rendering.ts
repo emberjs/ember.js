@@ -205,10 +205,13 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       owner.register(`component:${name}`, stateContainer);
 
       if (typeof template === 'string') {
-        let compiled = this.compile(template);
-
-        setComponentTemplate(compiled, stateContainer);
+        setComponentTemplate(this.compile(template), stateContainer);
       }
+    }
+
+    if (typeof template === 'string') {
+      let toComponent = setComponentTemplate(this.compile(template), templateOnly());
+      this.resolver.add(`component:${name}`, toComponent);
     }
 
     if (typeof resolveableTemplate === 'string') {
