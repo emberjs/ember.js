@@ -25,6 +25,7 @@ import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import templateOnly from '@ember/component/template-only';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
@@ -207,10 +208,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'template:components/inspect-model',
-                compileTemplate('{{@model}}', {
-                  moduleName: 'foo/components/inspect-model.hbs',
-                })
+                'component:components/inspect-model',
+                setComponentTemplate(
+                  compileTemplate('{{@model}}', {
+                    moduleName: 'foo/components/inspect-model.hbs',
+                  }),
+                  templateOnly()
+                )
               );
             }
 
@@ -245,10 +249,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'template:components/inspect-model',
-                compileTemplate('{{@model}}', {
-                  moduleName: 'bar/components/inspect-model.hbs',
-                })
+                'component:components/inspect-model',
+                setComponentTemplate(
+                  compileTemplate('{{@model}}', {
+                    moduleName: 'bar/components/inspect-model.hbs',
+                  }),
+                  templateOnly()
+                )
               );
             }
 
