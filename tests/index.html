@@ -103,6 +103,13 @@
 
         QUnit.config.urlConfig.push('forceskip');
 
+        QUnit.config.urlConfig.push({
+          id: 'overridedeprecationversion',
+          value: '20.0.0',
+          label: 'Enable all deprecations',
+        });
+
+
         if (QUnit.config.seed) {
           QUnit.config.reorder = false;
         }
