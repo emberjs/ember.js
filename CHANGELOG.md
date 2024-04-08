@@ -23,6 +23,16 @@
 
 
 
+
+## v0.92.0 (2024-04-08)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/interfaces`, `@glimmer/syntax`
+  * [#1585](https://github.com/glimmerjs/glimmer-vm/pull/1585) Introduce `keywords` option for `precompile` ([@chancancode](https://github.com/chancancode))
+
+#### Committers: 1
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+
 ## v0.91.2 (2024-04-05)
 
 #### :bug: Bug Fix
