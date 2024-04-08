@@ -180,9 +180,10 @@ export class Tail extends node('Tail').fields<{ members: PresentArray<SourceSlic
 
 export type ExpressionNode =
   | ASTv2.LiteralExpression
+  | ASTv2.KeywordExpression
+  | ASTv2.VariableReference
   | Missing
   | PathExpression
-  | ASTv2.VariableReference
   | InterpolateExpression
   | CallExpression
   | Not

@@ -35,6 +35,15 @@ import type {
 import { SourceSlice } from '../../source/slice';
 
 export class RefSerializer {
+  keyword(keyword: ASTv2.KeywordExpression): SerializedFreeVarReference {
+    return {
+      type: 'Free',
+      loc: keyword.loc.serialize(),
+      resolution: 'Strict',
+      name: keyword.name,
+    };
+  }
+
   arg(ref: ASTv2.ArgReference): SerializedArgReference {
     return {
       type: 'Arg',
@@ -76,6 +85,15 @@ export class ExprSerializer {
       type: 'Literal',
       loc: literal.loc.serialize(),
       value: literal.value,
+    };
+  }
+
+  keyword(keyword: ASTv2.KeywordExpression): SerializedPathExpression {
+    return {
+      type: 'Path',
+      loc: keyword.loc.serialize(),
+      ref: REF.keyword(keyword),
+      tail: [],
     };
   }
 
@@ -268,6 +286,8 @@ const visit = {
     switch (expr.type) {
       case 'Literal':
         return EXPR.literal(expr);
+      case 'Keyword':
+        return EXPR.keyword(expr);
       case 'Path':
         return EXPR.path(expr);
       case 'Call':
