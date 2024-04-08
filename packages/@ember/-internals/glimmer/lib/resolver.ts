@@ -263,9 +263,11 @@ export default class ResolverImpl
     let key: object;
 
     if (pair.component === null) {
-      if (!isRemoved(DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.options)) {
-        key = template = pair.layout(owner);
+      if (isRemoved(DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.options)) {
+        return null;
       }
+
+      key = template = pair.layout(owner);
     } else {
       key = pair.component;
     }

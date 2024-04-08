@@ -2,6 +2,7 @@ import AbstractApplicationTestCase from './abstract-application';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 import Component, { setComponentTemplate } from '@ember/component';
+import { Component as InternalGlimmerComponent } from '@ember/-internals/glimmer';
 import type { InternalFactory } from '@ember/-internals/owner';
 import templateOnly from '@ember/component/template-only';
 
@@ -41,8 +42,24 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
   ) {
     if (ComponentClass) {
       // We cannot set templates multiple times on a class
+      //
+      // Some of this is almost exclusively for the hot-reload test.
+      // But there are a lot of places where it was expected to have multiple templates associated
+      // with the same component class (due to the older resolveable templates)
       if (ComponentClass === Component) {
         ComponentClass = class extends Component {};
+      }
+
+      if (ComponentClass === InternalGlimmerComponent) {
+        ComponentClass = class extends InternalGlimmerComponent {};
+      }
+
+      if ('extend' in ComponentClass) {
+        ComponentClass = (ComponentClass as any).extend({});
+      }
+
+      if ((ComponentClass as any).moduleName === '@glimmer/component/template-only') {
+        ComponentClass = templateOnly();
       }
 
       this.resolver!.add(`component:${name}`, ComponentClass);
