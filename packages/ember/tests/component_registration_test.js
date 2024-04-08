@@ -2,8 +2,9 @@ import Application from '@ember/application';
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, testUnless, ApplicationTestCase, defineComponent } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -23,7 +24,6 @@ moduleFor(
     }
 
     ['@test If a component is registered, it is used'](assert) {
-      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', `Hello world {{#expand-it}}world{{/expand-it}}`);
 
       this.application.instanceInitializer({
@@ -31,9 +31,13 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:expand-it',
-            Component.extend({
-              classNames: 'testing123',
-            })
+            defineComponent(
+              {},
+              `<p>hello {{yield}}</p>`,
+              Component.extend({
+                classNames: 'testing123',
+              })
+            )
           );
         },
       });
@@ -70,7 +74,9 @@ moduleFor(
       });
     }
 
-    ['@test Late-registered components can be rendered with template registered on the container'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+    )} Late-registered components can be rendered with template registered on the container`](
       assert
     ) {
       this.addTemplate(
@@ -104,7 +110,9 @@ moduleFor(
       });
     }
 
-    ['@test Late-registered components can be rendered with ONLY the template registered on the container'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+    )} Late-registered components can be rendered with ONLY the template registered on the container`](
       assert
     ) {
       this.addTemplate(

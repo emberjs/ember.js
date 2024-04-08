@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask, defineComponent } from 'internal-test-helpers';
 import Application from '@ember/application';
 import { Component } from '@ember/-internals/glimmer';
 import { getOwner } from '@ember/-internals/owner';
@@ -48,12 +48,16 @@ moduleFor(
     addFactoriesToResolver(actions, resolver) {
       resolver.add(
         'component:special-button',
-        Component.extend({
-          doStuff: action(function () {
-            let rootElement = getOwner(this).application.rootElement;
-            actions.push(rootElement);
-          }),
-        })
+        defineComponent(
+          null,
+          `<button class='do-stuff' {{on "click" this.doStuff}}>Button</button>`,
+          Component.extend({
+            doStuff: action(function () {
+              let rootElement = getOwner(this).application.rootElement;
+              actions.push(rootElement);
+            }),
+          })
+        )
       );
 
       resolver.add(
@@ -64,17 +68,6 @@ moduleFor(
       `,
           {
             moduleName: 'my-app/templates/index.hbs',
-          }
-        )
-      );
-      resolver.add(
-        'template:components/special-button',
-        this.compile(
-          `
-        <button class='do-stuff' {{on "click" this.doStuff}}>Button</button>
-      `,
-          {
-            moduleName: 'my-app/templates/components/special-button.hbs',
           }
         )
       );
