@@ -4,7 +4,6 @@ import {
   ModuleBasedTestResolver,
   strip,
   runTaskNext,
-  expectDeprecation,
 } from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
@@ -17,7 +16,6 @@ import { next } from '@ember/runloop';
 import { compile } from '../../utils/helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Application test: engine rendering',
