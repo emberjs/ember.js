@@ -367,7 +367,7 @@ moduleFor(
     '@test Can use LinkTo'() {
       let Foo = defineComponent({ LinkTo }, '<LinkTo @route="index">Index</LinkTo>');
 
-      this.addComponent('foo', { ComponentClass: Foo });
+      this.add('component:foo', Foo);
       this.addTemplate('index', `<Foo/>`);
 
       return this.visit('/').then(() => {
