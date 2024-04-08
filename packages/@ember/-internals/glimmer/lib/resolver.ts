@@ -104,6 +104,8 @@ function lookupComponentPair(
   }
 
   if (isRemoved(DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.options)) {
+    if (!component) return null;
+
     return { component, layout: null } as LookupResult;
   }
 
