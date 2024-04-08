@@ -111,7 +111,6 @@ export namespace Expressions {
 
   export type GetPathSymbol = [GetSymbolOpcode, number, Path];
   export type GetPathTemplateSymbol = [GetLexicalSymbolOpcode, number, Path];
-  export type GetPathStrictFree = [GetStrictKeywordOpcode, number, Path];
   export type GetPathFreeAsComponentOrHelperHead = [
     GetFreeAsComponentOrHelperHeadOpcode,
     number,
@@ -126,8 +125,7 @@ export namespace Expressions {
     | GetPathFreeAsHelperHead
     | GetPathFreeAsModifierHead
     | GetPathFreeAsComponentHead;
-  export type GetPathFree = GetPathStrictFree | GetPathContextualFree;
-  export type GetPath = GetPathSymbol | GetPathTemplateSymbol | GetPathFree;
+  export type GetPath = GetPathSymbol | GetPathTemplateSymbol | GetPathContextualFree;
 
   export type Get = GetVar | GetPath;
 

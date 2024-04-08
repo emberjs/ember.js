@@ -632,7 +632,7 @@ export function buildVar(
   symbols: Symbols,
   path?: PresentArray<string>
 ): Expressions.GetPath | Expressions.GetVar {
-  let op: Expressions.GetVar[0] = Op.GetSymbol;
+  let op: Expressions.GetPath[0] | Expressions.GetVar[0] = Op.GetSymbol;
   let sym: number;
   switch (head.kind) {
     case VariableKind.Free:
@@ -665,6 +665,7 @@ export function buildVar(
   if (path === undefined || path.length === 0) {
     return [op, sym];
   } else {
+    assert(op !== Op.GetStrictKeyword, '[BUG] keyword with a path');
     return [op, sym, path];
   }
 }

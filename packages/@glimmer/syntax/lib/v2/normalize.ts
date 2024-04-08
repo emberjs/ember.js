@@ -42,16 +42,13 @@ export function normalize(
     strictMode: false,
     ...options,
     locals: ast.blockParams,
+    keywords: options.keywords ?? [],
   };
 
-  let top = SymbolTable.top(
-    normalizeOptions.locals,
-
-    {
-      customizeComponentName: options.customizeComponentName ?? ((name) => name),
-      lexicalScope: options.lexicalScope,
-    }
-  );
+  let top = SymbolTable.top(normalizeOptions.locals, normalizeOptions.keywords, {
+    customizeComponentName: options.customizeComponentName ?? ((name) => name),
+    lexicalScope: options.lexicalScope,
+  });
   let block = new BlockContext(source, normalizeOptions, top);
   let normalizer = new StatementNormalizer(block);
 
@@ -123,6 +120,10 @@ export class BlockContext<Table extends SymbolTable = SymbolTable> {
 
   isLexicalVar(variable: string): boolean {
     return this.table.hasLexical(variable);
+  }
+
+  isKeyword(name: string): boolean {
+    return this.strict && !this.table.hasLexical(name) && this.table.hasKeyword(name);
   }
 
   private isFreeVar(callee: ASTv1.CallNode | ASTv1.PathExpression): boolean {
@@ -217,7 +218,21 @@ class ExpressionNormalizer {
   private path(
     expr: ASTv1.MinimalPathExpression,
     resolution: ASTv2.FreeVarResolution
-  ): ASTv2.PathExpression {
+  ): ASTv2.KeywordExpression | ASTv2.PathExpression {
+    let loc = this.block.loc(expr.loc);
+
+    if (
+      expr.head.type === 'VarHead' &&
+      expr.tail.length === 0 &&
+      this.block.isKeyword(expr.head.name)
+    ) {
+      return this.block.builder.keyword(
+        expr.head.name,
+        this.block.table.getKeyword(expr.head.name),
+        loc
+      );
+    }
+
     let headOffsets = this.block.loc(expr.head.loc);
 
     let tail = [];
@@ -235,7 +250,7 @@ class ExpressionNormalizer {
       );
     }
 
-    return this.block.builder.path(this.ref(expr.head, resolution), tail, this.block.loc(expr.loc));
+    return this.block.builder.path(this.ref(expr.head, resolution), tail, loc);
   }
 
   /**
@@ -243,7 +258,7 @@ class ExpressionNormalizer {
    * it to an ASTv2 CallParts.
    */
   callParts(parts: ASTv1.CallParts, context: ASTv2.FreeVarResolution): CallParts {
-    let { path, params, hash } = parts;
+    let { path, params, hash, loc } = parts;
 
     let callee = this.normalize(path, context);
     let paramList = params.map((p) => this.normalize(p, ASTv2.STRICT_RESOLUTION));
@@ -260,6 +275,18 @@ class ExpressionNormalizer {
       hash.pairs.map((p) => this.namedArgument(p)),
       this.block.loc(hash.loc)
     );
+
+    switch (callee.type) {
+      case 'Literal':
+        throw generateSyntaxError(
+          `Invalid invocation of a literal value (\`${callee.value}\`)`,
+          loc
+        );
+
+      // This really shouldn't be possible, something has gone pretty wrong
+      case 'Interpolate':
+        throw generateSyntaxError(`Invalid invocation of a interpolated string`, loc);
+    }
 
     return {
       callee,
@@ -402,6 +429,7 @@ class StatementNormalizer {
           path,
           params,
           hash,
+          loc,
         },
         resolution.result
       );

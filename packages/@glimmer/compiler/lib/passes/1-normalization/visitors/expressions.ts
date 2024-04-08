@@ -8,13 +8,14 @@ import type { NormalizationState } from '../context';
 import { Ok, Result, ResultArray } from '../../../shared/result';
 import * as mir from '../../2-encoding/mir';
 import { CALL_KEYWORDS } from '../keywords';
-import { hasPath } from '../utils/is-node';
 
 export class NormalizeExpressions {
   visit(node: ASTv2.ExpressionNode, state: NormalizationState): Result<mir.ExpressionNode> {
     switch (node.type) {
       case 'Literal':
         return Ok(this.Literal(node));
+      case 'Keyword':
+        return Ok(this.Keyword(node));
       case 'Interpolate':
         return this.Interpolate(node, state);
       case 'Path':
@@ -78,6 +79,10 @@ export class NormalizeExpressions {
     return literal;
   }
 
+  Keyword(keyword: ASTv2.KeywordExpression): ASTv2.KeywordExpression {
+    return keyword;
+  }
+
   Interpolate(
     expr: ASTv2.InterpolateExpression,
     state: NormalizationState
@@ -93,8 +98,8 @@ export class NormalizeExpressions {
     expr: ASTv2.CallExpression,
     state: NormalizationState
   ): Result<mir.ExpressionNode> {
-    if (!hasPath(expr)) {
-      throw new Error(`unimplemented subexpression at the head of a subexpression`);
+    if (expr.callee.type === 'Call') {
+      throw new Error(`unimplemented: subexpression at the head of a subexpression`);
     } else {
       return Result.all(
         VISIT_EXPRS.visit(expr.callee, state),

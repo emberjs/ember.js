@@ -96,6 +96,9 @@ export interface DefineComponentOptions {
 
   // defaults to true when some scopeValues are passed and false otherwise
   strictMode?: boolean;
+
+  // additional strict-mode keywords
+  keywords?: string[];
 }
 
 export function defineComponent(
@@ -110,8 +113,10 @@ export function defineComponent(
     strictMode = scopeValues !== null;
   }
 
+  let keywords = options.keywords ?? [];
+
   let definition = options.definition ?? templateOnlyComponent();
-  let templateFactory = createTemplate(templateSource, { strictMode }, scopeValues ?? {});
+  let templateFactory = createTemplate(templateSource, { strictMode, keywords }, scopeValues ?? {});
   setComponentTemplate(templateFactory, definition);
   return definition;
 }
