@@ -46,6 +46,9 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
       // Some of this is almost exclusively for the hot-reload test.
       // But there are a lot of places where it was expected to have multiple templates associated
       // with the same component class (due to the older resolveable templates)
+      //
+      // We'll want to clean thsi up over time, and probably phase out `addComponent` entirely,
+      // and expclusively use `add` w/ `defineComponent`
       if (ComponentClass === Component) {
         ComponentClass = class extends Component {};
       }
@@ -62,12 +65,12 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
         ComponentClass = templateOnly();
       }
 
-      this.resolver!.add(`component:${name}`, ComponentClass);
+      this.resolver!.add(`component:${name}`, ComponentClass as Component);
 
       if (typeof template === 'string') {
         // moduleName not passed to this.compile, because *it's just wrong*.
         // moduleName represents a path-on-disk, and we can't guarantee we have that mapping.
-        setComponentTemplate(this.compile(template, {}), ComponentClass);
+        setComponentTemplate(this.compile(template, {}), ComponentClass as Component);
       }
 
       return;
