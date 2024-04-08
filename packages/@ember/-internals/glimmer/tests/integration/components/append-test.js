@@ -1,8 +1,9 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask, testUnless } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
 import { Component, compile } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 class AbstractAppendTest extends RenderingTestCase {
   constructor() {
@@ -37,7 +38,9 @@ class AbstractAppendTest extends RenderingTestCase {
     this.ids.push(component.elementId);
   }
 
-  ['@test lifecycle hooks during component append'](assert) {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+  )} lifecycle hooks during component append`](assert) {
     let hooks = [];
 
     let oldRegisterComponent = this.registerComponent;
@@ -283,7 +286,9 @@ class AbstractAppendTest extends RenderingTestCase {
     );
   }
 
-  ['@test appending, updating and destroying a single component'](assert) {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+  )} appending, updating and destroying a single component`](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-parent', {
@@ -389,7 +394,9 @@ class AbstractAppendTest extends RenderingTestCase {
     assert.equal(renderer._roots.length, 0, 'released the root component');
   }
 
-  ['@test appending, updating and destroying multiple components'](assert) {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+  )} appending, updating and destroying multiple components`](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-first', {
