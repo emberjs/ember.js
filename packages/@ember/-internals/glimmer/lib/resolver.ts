@@ -45,7 +45,7 @@ import { default as uniqueId } from './helpers/unique-id';
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+import { DEPRECATIONS, deprecateUntil, isRemoved } from '@ember/-internals/deprecations';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -101,6 +101,10 @@ function lookupComponentPair(
     if (layout !== undefined) {
       return { component, layout };
     }
+  }
+
+  if (isRemoved(DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.options)) {
+    return { component, layout: null } as LookupResult;
   }
 
   let layout = layoutFor(name, owner, options);
@@ -259,7 +263,9 @@ export default class ResolverImpl
     let key: object;
 
     if (pair.component === null) {
-      key = template = pair.layout(owner);
+      if (!isRemoved(DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.options)) {
+        key = template = pair.layout(owner);
+      }
     } else {
       key = pair.component;
     }

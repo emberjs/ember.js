@@ -48,6 +48,8 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
       this.resolver!.add(`component:${name}`, ComponentClass);
 
       if (typeof template === 'string') {
+        // moduleName not passed to this.compile, because *it's just wrong*.
+        // moduleName represents a path-on-disk, and we can't guarantee we have that mapping.
         setComponentTemplate(this.compile(template, {}), ComponentClass);
       }
 
@@ -55,6 +57,8 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
     }
 
     if (typeof template === 'string') {
+      // moduleName not passed to this.compile, because *it's just wrong*.
+      // moduleName represents a path-on-disk, and we can't guarantee we have that mapping.
       let toComponent = setComponentTemplate(this.compile(template, {}), templateOnly());
 
       this.resolver!.add(`component:${name}`, toComponent);

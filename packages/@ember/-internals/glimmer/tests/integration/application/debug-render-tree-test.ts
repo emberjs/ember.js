@@ -208,7 +208,7 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'component:components/inspect-model',
+                'component:inspect-model',
                 setComponentTemplate(
                   compileTemplate('{{@model}}', {
                     moduleName: 'foo/components/inspect-model.hbs',
@@ -249,7 +249,7 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'component:components/inspect-model',
+                'component:inspect-model',
                 setComponentTemplate(
                   compileTemplate('{{@model}}', {
                     moduleName: 'bar/components/inspect-model.hbs',
@@ -618,10 +618,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 })
               );
               this.register(
-                'template:components/hello',
-                compileTemplate('<span>Hello {{@message}}</span>', {
-                  moduleName: 'foo/components/hello.hbs',
-                })
+                'component:hello',
+                setComponentTemplate(
+                  compileTemplate('<span>Hello {{@message}}</span>', {
+                    moduleName: 'foo/components/hello.hbs',
+                  }),
+                  templateOnlyComponent()
+                )
               );
             }
 
@@ -952,7 +955,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.addComponent('hello-world', {
           ComponentClass: setComponentTemplate(
             compileTemplate('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
-            templateOnlyComponent()
+            templateOnlyComponent('my-app/components/hello-world', 'HelloWorld')
           ),
         });
 
@@ -1037,7 +1040,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1053,7 +1056,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1062,7 +1065,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1078,7 +1081,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1122,7 +1125,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1138,7 +1141,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1147,7 +1150,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1163,7 +1166,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },

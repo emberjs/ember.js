@@ -4,6 +4,7 @@ import {
   ModuleBasedTestResolver,
   strip,
   runTaskNext,
+  expectDeprecation,
 } from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
@@ -14,6 +15,9 @@ import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
 
 import { compile } from '../../utils/helpers';
+import { setComponentTemplate } from '@glimmer/manager';
+import { templateOnlyComponent } from '@glimmer/runtime';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Application test: engine rendering',
@@ -217,10 +221,8 @@ moduleFor(
             );
             this.register('template:application', sharedTemplate);
             this.register(
-              'template:components/ambiguous-curlies',
-              compile(strip`
-        <p>Component!</p>
-      `)
+              'component:ambiguous-curlies',
+              setComponentTemplate(compile(`<p>Component!</p>`), templateOnlyComponent())
             );
           },
         })
@@ -275,10 +277,8 @@ moduleFor(
             );
             this.register('component:my-component', sharedComponent);
             this.register(
-              'template:components/ambiguous-curlies',
-              compile(strip`
-                <p>Component!</p>
-              `)
+              'component:ambiguous-curlies',
+              setComponentTemplate(compile(`<p>Component!</p>`), templateOnlyComponent())
             );
           },
         })
