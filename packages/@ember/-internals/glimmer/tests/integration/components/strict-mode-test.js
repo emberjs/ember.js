@@ -5,6 +5,7 @@ import {
   defineComponent,
   defineSimpleHelper,
   defineSimpleModifier,
+  testUnless,
 } from 'internal-test-helpers';
 
 import { Input, Textarea } from '@ember/component';
@@ -12,6 +13,7 @@ import { action } from '@ember/object';
 import { LinkTo } from '@ember/routing';
 import { hash, array, concat, get, on, fn } from '@glimmer/runtime';
 import GlimmerishComponent from '../../utils/glimmerish-component';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Strict Mode',
@@ -263,7 +265,9 @@ moduleFor(
     // Test some of the additional keywords not built-in to glimmer-vm (those
     // we specifically enable them when calling `precompile`)
 
-    '@test Can use action helper'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved)} Can use action helper`](
+      assert
+    ) {
       let called = 0;
 
       let Foo = defineComponent(
@@ -287,7 +291,9 @@ moduleFor(
       assert.strictEqual(called, 1);
     }
 
-    '@test Can use action modifier'(assert) {
+    [`${testUnless(DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved)} Can use action modifier`](
+      assert
+    ) {
       let called = 0;
 
       let Foo = defineComponent(
