@@ -4,6 +4,7 @@ import {
   getOwner,
   setOwner,
 } from '@ember/-internals/owner';
+import { getComponentTemplate } from '@glimmer/manager';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import type { Nullable } from '@ember/-internals/utility-types';
@@ -51,7 +52,6 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
-import { getComponentTemplate } from '@ember/component';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
