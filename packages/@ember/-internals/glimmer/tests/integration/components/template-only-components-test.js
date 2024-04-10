@@ -132,7 +132,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
             wrapper: EmberObject.create({ content: null }),
           }),
           template:
-            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}',
+            '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=this.wrapper}}</div>{{x-inner value=this.value wrapper=this.wrapper}}',
         });
 
         this.registerComponent('x-inner', {
@@ -142,7 +142,7 @@ if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
             },
             value: null,
           }),
-          template: '<div id="inner-value">{{wrapper.content}}</div>',
+          template: '<div id="inner-value">{{this.wrapper.content}}</div>',
         });
 
         this.registerTemplateOnlyComponent('x-inner-template-only', '{{@value}}');

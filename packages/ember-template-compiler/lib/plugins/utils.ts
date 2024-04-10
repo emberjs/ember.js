@@ -12,25 +12,37 @@ export function isStringLiteral(node: AST.Expression): node is AST.StringLiteral
   return node.type === 'StringLiteral';
 }
 
+function getLocalName(node: string | AST.VarHead): string {
+  if (typeof node === 'string') {
+    return node;
+  } else {
+    return node.original;
+  }
+}
+
 export function trackLocals() {
   let locals = new Map();
 
   let node = {
-    enter(node: AST.Program | AST.Block | AST.ElementNode) {
-      for (let param of node.blockParams) {
+    enter(node: AST.Template | AST.Block | AST.ElementNode) {
+      let params = 'params' in node ? node.params : node.blockParams;
+      for (let param of params) {
+        let name = getLocalName(param);
         let value = locals.get(param) || 0;
-        locals.set(param, value + 1);
+        locals.set(name, value + 1);
       }
     },
 
-    exit(node: AST.Program | AST.Block | AST.ElementNode) {
-      for (let param of node.blockParams) {
-        let value = locals.get(param) - 1;
+    exit(node: AST.Template | AST.Block | AST.ElementNode) {
+      let params = 'params' in node ? node.params : node.blockParams;
+      for (let param of params) {
+        let name = getLocalName(param);
+        let value = locals.get(name) - 1;
 
         if (value === 0) {
-          locals.delete(param);
+          locals.delete(name);
         } else {
-          locals.set(param, value);
+          locals.set(name, value);
         }
       }
     },

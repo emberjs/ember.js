@@ -14,7 +14,7 @@
     "@ember/runloop": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/validator": "0.87.1",
+    "@glimmer/validator": "0.92.0",
     "internal-test-helpers": "workspace:*"
   }
 }
