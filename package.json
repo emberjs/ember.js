@@ -77,7 +77,7 @@
     "@glimmer/vm": "0.92.0",
     "@glimmer/vm-babel-plugins": "0.92.0",
     "@simple-dom/interface": "^1.4.0",
-    "babel-plugin-debug-macros": "^0.3.4",
+    "babel-plugin-debug-macros": "^1.0.0-alpha.1",
     "babel-plugin-ember-template-compilation": "^2.1.1",
     "babel-plugin-filter-imports": "^4.0.0",
     "backburner.js": "^2.8.0",
