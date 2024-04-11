@@ -107,11 +107,13 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
 }
 
 function isAttrs(node: AST.PathExpression, symbols: string[]) {
-  let name = node.parts[0];
-  return node.head.type === 'VarHead' && name === 'attrs' && symbols.indexOf(name) === -1;
+  return (
+    node.head.type === 'VarHead' &&
+    node.head.name === 'attrs' &&
+    symbols.indexOf(node.head.name) === -1
+  );
 }
 
 function isThisDotAttrs(node: AST.PathExpression) {
-  let name = node.parts[0];
-  return node.head.type === 'ThisHead' && name === 'attrs';
+  return node.head.type === 'ThisHead' && node.tail[0] === 'attrs';
 }
