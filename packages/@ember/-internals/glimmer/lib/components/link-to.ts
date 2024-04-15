@@ -361,7 +361,7 @@ class _LinkTo extends InternalComponent {
   }
 
   @action click(event: Event): void {
-    if (!isSimpleClick(event)) {
+    if (event.defaultPrevented || !isSimpleClick(event)) {
       return;
     }
 
