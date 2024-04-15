@@ -1,5 +1,14 @@
 # Ember Changelog
 
+## v5.9.0-beta.1 (April 15, 2024)
+
+- [#20656](https://github.com/emberjs/ember.js/pull/20656) [BUGFIX] Update router.js
+- [#20664](https://github.com/emberjs/ember.js/pull/20664) [BUGFIX] Upgrade router_js to support `exactOptionalPropertyTypes`
+- [#20658](https://github.com/emberjs/ember.js/pull/20658) Upgrade glimmer-vm to v0.92
+- [#20669](https://github.com/emberjs/ember.js/pull/20669) [FEATURE] Make deprecations throw when the `until` for `ember-source` has passed
+- [#20678](https://github.com/emberjs/ember.js/pull/20678) Address a missed deprecation introduced in #20658
+- [702da648](https://github.com/emberjs/ember.js/commit/702da6484d1cab95a5ae1bef530e0dbdbb9e81b2) Add v5.8.0 to CHANGELOG
+
 ## v5.8.0 (April 15, 2024)
 
 - [#20672](https://github.com/emberjs/ember.js/pull/20672) [BUGFIX] Restore `{{this.attrs.foo}}` deprecation from the 3.x era. The API was accidentally not removed in 4.0 but the deprecation was removed.
