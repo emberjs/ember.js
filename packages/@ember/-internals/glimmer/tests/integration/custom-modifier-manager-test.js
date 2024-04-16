@@ -476,6 +476,28 @@ moduleFor(
       this.assertStableRerender();
     }
 
+    '@test can resolve built-in modifiers'(assert) {
+      let wasCalled = false;
+      let id = 'wow-what-an-original-id';
+      this.render(
+        `<div id='${id}' {{(if this.isModifying (modifier "on" "click" this.callAction))}} />`,
+        {
+          callAction: () => {
+            wasCalled = true;
+          },
+        }
+      );
+
+      let element = document.querySelector(`#${id}`);
+      element.click();
+
+      assert.false(wasCalled, 'modifier should not be set up');
+
+      runTask(() => set(this.context, 'isModifying', true));
+      element.click();
+      assert.true(wasCalled, 'on modifier can be used');
+    }
+
     '@test Cannot dynamically resolve a modifier'(assert) {
       this.registerModifier(
         'replace',
