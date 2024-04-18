@@ -134,12 +134,6 @@ export default class CurlyComponentManager
     let factory: TemplateFactory;
 
     if (layout === undefined) {
-      let theSetTemplate = getComponentTemplate(component);
-
-      if (theSetTemplate) {
-        return unwrapTemplate(theSetTemplate(owner)).asWrappedLayout();
-      }
-
       if (layoutName !== undefined) {
         let _factory = owner.lookup(`template:${layoutName}`) as TemplateFactory;
         assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
