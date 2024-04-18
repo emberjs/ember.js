@@ -4,7 +4,6 @@ import {
   getOwner,
   setOwner,
 } from '@ember/-internals/owner';
-import { getComponentTemplate } from '@glimmer/manager';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import type { Nullable } from '@ember/-internals/utility-types';
