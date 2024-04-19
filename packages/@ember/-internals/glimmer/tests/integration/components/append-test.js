@@ -4,6 +4,7 @@ import { set } from '@ember/object';
 
 import { Component, compile } from '../../utils/helpers';
 import { DEPRECATIONS } from '../../../../deprecations';
+import { setComponentTemplate } from '@glimmer/manager';
 
 class AbstractAppendTest extends RenderingTestCase {
   constructor() {
@@ -36,6 +37,246 @@ class AbstractAppendTest extends RenderingTestCase {
   didAppend(component) {
     this.components.push(component);
     this.ids.push(component.elementId);
+  }
+
+  [`@test (new) lifecycle hooks during component append`](assert) {
+    let hooks = [];
+
+    let componentsByName = {};
+
+    let createLogger = (name, template, extras = {}) => {
+      function pushHook(hookName) {
+        hooks.push([name, hookName]);
+      }
+
+      let LoggerComponent = Component.extend({
+        init() {
+          this._super(...arguments);
+          if (name in componentsByName) {
+            throw new TypeError('Component named: ` ' + name + ' ` already registered');
+          }
+          componentsByName[name] = this;
+          pushHook('init');
+          this.on('init', () => pushHook('on(init)'));
+        },
+
+        didReceiveAttrs() {
+          pushHook('didReceiveAttrs');
+        },
+
+        willInsertElement() {
+          pushHook('willInsertElement');
+        },
+
+        willRender() {
+          pushHook('willRender');
+        },
+
+        didInsertElement() {
+          pushHook('didInsertElement');
+        },
+
+        didRender() {
+          pushHook('didRender');
+        },
+
+        didUpdateAttrs() {
+          pushHook('didUpdateAttrs');
+        },
+
+        willUpdate() {
+          pushHook('willUpdate');
+        },
+
+        didUpdate() {
+          pushHook('didUpdate');
+        },
+
+        willDestroyElement() {
+          pushHook('willDestroyElement');
+        },
+
+        willClearRender() {
+          pushHook('willClearRender');
+        },
+
+        didDestroyElement() {
+          pushHook('didDestroyElement');
+        },
+
+        willDestroy() {
+          pushHook('willDestroy');
+          this._super(...arguments);
+        },
+      });
+
+      let local = LoggerComponent.extend(extras);
+
+      setComponentTemplate(compile(template), local);
+
+      this.owner.register(`component:${name}`, local);
+
+      return local;
+    };
+
+    createLogger(
+      'x-parent',
+      `[parent: {{this.foo}}]
+       [parent: {{this.parentValue}}
+
+        <XChild @bar={{this.foo}} @childValue={{this.childValue}}>
+         [yielded: {{this.foo}}]
+        </XChild>
+      `
+    );
+    createLogger(
+      'x-child',
+      `
+      [child: {{this.bar}}]
+      [child: {{this.childValue}}]
+      {{yield}}`
+    );
+
+    this.render(
+      `
+      {{#if this.show}}
+        <XParent @foo={{this.foo}} @parentValue={{this.parentValue}} @childValue={{this.childValue}} />
+      {{/if}}`,
+      { parentValue: 1, childValue: 1, foo: 'zomg', show: true }
+    );
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'init'],
+        ['x-parent', 'on(init)'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willRender'],
+        ['x-parent', 'willInsertElement'],
+        ['x-child', 'init'],
+        ['x-child', 'on(init)'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willRender'],
+        ['x-child', 'willInsertElement'],
+        ['x-child', 'didInsertElement'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didInsertElement'],
+        ['x-parent', 'didRender'],
+      ],
+      'creation of x-parent'
+    );
+
+    hooks.length = 0;
+    runTask(() => this.rerender());
+
+    assert.deepEqual(hooks, [], 'no-op re-render of parent');
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'parentValue', 2));
+    runTask(() => this.rerender());
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'rerender x-parent'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'childValue', 2));
+
+    assert.deepEqual(
+      hooks,
+
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'rerender x-child'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'foo', 'wow'));
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'set foo = wow'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'foo', 'zomg'));
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'set foo = zomg'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'show', false));
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willDestroyElement'],
+        ['x-parent', 'willClearRender'],
+        ['x-child', 'willDestroyElement'],
+        ['x-child', 'willClearRender'],
+        ['x-parent', 'didDestroyElement'],
+        ['x-child', 'didDestroyElement'],
+        ['x-parent', 'willDestroy'],
+        ['x-child', 'willDestroy'],
+      ],
+      'destroy'
+    );
   }
 
   [`${testUnless(
