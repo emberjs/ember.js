@@ -66,12 +66,16 @@ function layoutFor(
 ): Nullable<Template> {
   let templateFullName = `template:components/${name}` as const;
 
-  deprecateUntil(
-    `Components with separately resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts. Tried to lookup '${templateFullName}'.`,
-    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING
-  );
+  let result = (owner.lookup(templateFullName, options) as Template) || null;
 
-  return (owner.lookup(templateFullName, options) as Template) || null;
+  if (result) {
+    deprecateUntil(
+      `Components with separately resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts. Tried to lookup '${templateFullName}'.`,
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING
+    );
+  }
+
+  return result;
 }
 
 type LookupResult =
