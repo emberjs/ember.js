@@ -56,6 +56,7 @@
     "unlink:all": "node bin/unlink-all.mjs"
   },
   "dependencies": {
+    "@babel/core": "^7.24.4",
     "@babel/helper-module-imports": "^7.16.7",
     "@ember/edition-utils": "^1.2.0",
     "@glimmer/compiler": "0.92.0",
@@ -88,7 +89,7 @@
     "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
     "ember-auto-import": "^2.6.3",
-    "ember-cli-babel": "^7.26.11",
+    "ember-cli-babel": "^8.2.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
     "ember-cli-normalize-entity-name": "^1.0.0",
@@ -106,7 +107,6 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.321.1",
-    "@babel/core": "^7.22.9",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/plugin-proposal-decorators": "^7.23.6",
     "@babel/plugin-transform-typescript": "^7.22.9",
