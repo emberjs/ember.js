@@ -101,7 +101,7 @@ class ForkedValue implements Value {
 }
 
 export default abstract class AbstractInput extends InternalComponent {
-  validateArguments(): void {
+  override validateArguments(): void {
     assert(
       `The ${this.constructor} component does not take any positional arguments`,
       this.args.positional.length === 0
@@ -159,7 +159,7 @@ export default abstract class AbstractInput extends InternalComponent {
     }
   }
 
-  protected listenerFor(name: string): EventListener {
+  protected override listenerFor(name: string): EventListener {
     let listener = super.listenerFor(name);
 
     if (this.isVirtualEventListener(name, listener)) {

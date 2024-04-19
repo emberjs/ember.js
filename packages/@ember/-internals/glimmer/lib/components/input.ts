@@ -160,14 +160,14 @@ if (hasDOM) {
   @public
 */
 class _Input extends AbstractInput {
-  static toString(): string {
+  static override toString(): string {
     return 'Input';
   }
 
   /**
    * The HTML class attribute.
    */
-  get class(): string {
+  override get class(): string {
     if (this.isCheckbox) {
       return 'ember-checkbox ember-view';
     } else {
@@ -237,7 +237,7 @@ class _Input extends AbstractInput {
     this._checked.set(checked);
   }
 
-  @action change(event: Event): void {
+  @action override change(event: Event): void {
     if (this.isCheckbox) {
       this.checkedDidChange(event);
     } else {
@@ -245,7 +245,7 @@ class _Input extends AbstractInput {
     }
   }
 
-  @action input(event: Event): void {
+  @action override input(event: Event): void {
     if (!this.isCheckbox) {
       super.input(event);
     }
@@ -257,7 +257,7 @@ class _Input extends AbstractInput {
     this.checked = element.checked;
   }
 
-  protected isSupportedArgument(name: string): boolean {
+  protected override isSupportedArgument(name: string): boolean {
     let supportedArguments = [
       'type',
       'value',

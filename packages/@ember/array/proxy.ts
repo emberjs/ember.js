@@ -200,7 +200,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
   /** @internal */
   _arrTag: Tag | null = null;
 
-  init(props: object | undefined) {
+  override init(props: object | undefined) {
     super.init(props);
 
     setCustomTagFor(this, customTagForArrayProxy);
@@ -210,7 +210,7 @@ class ArrayProxy<T> extends EmberObject implements PropertyDidChange {
     this._revalidate();
   }
 
-  willDestroy() {
+  override willDestroy() {
     this._removeArrangedContentArrayObserver();
   }
 

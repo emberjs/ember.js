@@ -46,7 +46,7 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
   */
   declare parentView: View | null;
 
-  init(properties: object | undefined) {
+  override init(properties: object | undefined) {
     super.init(properties);
 
     // Handle methods from Evented

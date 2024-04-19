@@ -88,7 +88,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     return getHash(this.location);
   }
 
-  init(): void {
+  override init(): void {
     this._super(...arguments);
 
     let base = document.querySelector('base');
@@ -275,7 +275,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @private
     @method willDestroy
   */
-  willDestroy(): void {
+  override willDestroy(): void {
     this._removeEventListener();
   }
 

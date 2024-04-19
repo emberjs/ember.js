@@ -6,7 +6,7 @@ class MyRoute extends Route {
   @action
   topLevel(_foo: number, _opt?: boolean) {}
 
-  actions = {
+  override actions = {
     nested(_foo: string, _opt?: number) {},
   };
 }

@@ -13,21 +13,21 @@ let helper = new Helper(owner);
 expectTypeOf(helper).toMatchTypeOf<FrameworkObject>();
 
 class MyHelper extends Helper {
-  compute([cents]: [number], { currency }: { currency: string }) {
+  override compute([cents]: [number], { currency }: { currency: string }) {
     return `${currency}${cents * 0.01}`;
   }
 }
 new MyHelper(owner);
 
 class NoHash extends Helper {
-  compute([cents]: [number]): string {
+  override compute([cents]: [number]): string {
     return `${cents * 0.01}`;
   }
 }
 new NoHash(owner);
 
 class NoParams extends Helper {
-  compute(): string {
+  override compute(): string {
     return 'hello';
   }
 }

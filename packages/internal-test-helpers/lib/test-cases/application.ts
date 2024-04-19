@@ -31,7 +31,7 @@ export default abstract class ApplicationTestCase extends TestResolverApplicatio
     return MyApplication.create(myOptions);
   }
 
-  get applicationOptions() {
+  override get applicationOptions() {
     return Object.assign(super.applicationOptions, {
       autoboot: false,
     });
