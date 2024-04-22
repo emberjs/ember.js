@@ -1,6 +1,4 @@
-import { ENV } from '@ember/-internals/environment';
 import type { InternalOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -17,7 +15,6 @@ import type {
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-  WithDynamicTagName,
 } from '@glimmer/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
@@ -26,7 +23,6 @@ import { createConstRef, valueForRef } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { unwrapTemplate } from '@glimmer/util';
 
-import type { SimpleElement } from '@simple-dom/interface';
 import type { DynamicScope } from '../renderer';
 import type { OutletState } from '../utils/outlet';
 import type OutletView from '../views/outlet';
@@ -211,36 +207,5 @@ export class OutletComponentDefinition
 }
 
 export function createRootOutlet(outletView: OutletView): OutletComponentDefinition {
-  if (ENV._APPLICATION_TEMPLATE_WRAPPER) {
-    const WRAPPED_CAPABILITIES = Object.assign({}, CAPABILITIES, {
-      dynamicTag: true,
-      elementHook: true,
-      wrapped: true,
-    });
-
-    const WrappedOutletComponentManager = class
-      extends OutletComponentManager
-      implements WithDynamicTagName<OutletInstanceState>
-    {
-      getTagName() {
-        return 'div';
-      }
-
-      getCapabilities(): InternalComponentCapabilities {
-        return WRAPPED_CAPABILITIES;
-      }
-
-      didCreateElement(component: OutletInstanceState, element: SimpleElement): void {
-        // to add GUID id and class
-        element.setAttribute('class', 'ember-view');
-        element.setAttribute('id', guidFor(component));
-      }
-    };
-
-    const WRAPPED_OUTLET_MANAGER = new WrappedOutletComponentManager();
-
-    return new OutletComponentDefinition(outletView.state, WRAPPED_OUTLET_MANAGER);
-  } else {
-    return new OutletComponentDefinition(outletView.state);
-  }
+  return new OutletComponentDefinition(outletView.state);
 }

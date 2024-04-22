@@ -1637,9 +1637,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             args: { positional: [], named: {} },
             instance: undefined,
             template: outlet,
-            bounds: ENV._APPLICATION_TEMPLATE_WRAPPER
-              ? this.nodeBounds(this.element)
-              : this.elementBounds(this.element!),
+            bounds: this.elementBounds(this.element!),
             children: [
               this.outlet({
                 type: 'route-template',
