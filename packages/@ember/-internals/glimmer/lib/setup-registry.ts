@@ -1,9 +1,7 @@
 import type { Registry } from '@ember/-internals/container';
 import { privatize as P } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import Component from './component';
 import Input from './components/input';
 import LinkTo from './components/link-to';
 import Textarea from './components/textarea';
@@ -53,8 +51,4 @@ export function setupEngineRegistry(registry: Registry): void {
 
   registry.register('component:link-to', LinkTo);
   registry.register('component:textarea', Textarea);
-
-  if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-    registry.register(P`component:-default`, Component);
-  }
 }

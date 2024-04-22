@@ -3,7 +3,6 @@ import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { ENV } from '@ember/-internals/environment';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(
@@ -14,38 +13,12 @@ moduleFor(
       return super.createApplication(options, Application.extend());
     }
 
-    ['@test The helper becomes the body of the component'](assert) {
-      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        assert.expect(0);
-        return;
-      }
-
-      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
-      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
-
-      return this.visit('/').then(() => {
-        this.assertText('Hello world hello world');
-        this.assertComponentElement(this.element.firstElementChild, {
-          tagName: 'div',
-          content: '<p>hello world</p>',
-        });
-      });
-    }
-
-    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)'](
-      assert
-    ) {
-      if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        assert.expect(0);
-        return;
-      }
-
+    ['@test The helper becomes the body of the component']() {
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello world <p>hello world</p>');
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = false;
       });
     }
 

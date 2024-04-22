@@ -1,5 +1,3 @@
-import { privatize as P } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
 import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
@@ -274,22 +272,11 @@ export default class ResolverImpl
     let definition: Nullable<ResolvedComponentDefinition> = null;
 
     if (pair.component === null) {
-      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        definition = {
-          state: templateOnlyComponent(undefined, name),
-          manager: TEMPLATE_ONLY_COMPONENT_MANAGER,
-          template,
-        };
-      } else {
-        let factory = owner.factoryFor(P`component:-default`)!;
-        let manager = getInternalComponentManager(factory.class as object);
-
-        definition = {
-          state: factory,
-          manager,
-          template,
-        };
-      }
+      definition = {
+        state: templateOnlyComponent(undefined, name),
+        manager: TEMPLATE_ONLY_COMPONENT_MANAGER,
+        template,
+      };
     } else {
       let factory = pair.component;
       assert(`missing component class ${name}`, factory.class !== undefined);
