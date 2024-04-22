@@ -15,7 +15,6 @@ import Engine from '@ember/engine';
 import Route from '@ember/routing/route';
 import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { ENV } from '@ember/-internals/environment';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -26,7 +25,6 @@ moduleFor(
   class extends ApplicationTestCase {
     teardown() {
       RSVP.on('error', onerrorDefault);
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       super.teardown();
     }
 
@@ -52,7 +50,6 @@ moduleFor(
         rootElement,
       };
 
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       return this.visit('/', bootOptions).then(() => {
         assert.equal(
           rootElement.innerHTML,
@@ -74,8 +71,6 @@ moduleFor(
         rootElement,
         _renderMode: 'serialize',
       };
-
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
 
       return this.visit('/', bootOptions)
         .then((instance) => {

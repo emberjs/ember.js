@@ -67,21 +67,6 @@ export const ENV = {
   STRUCTURED_PROFILE: false,
 
   /**
-    Whether to insert a `<div class="ember-view" />` wrapper around the
-    application template. See RFC #280.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _APPLICATION_TEMPLATE_WRAPPER
-    @for EmberENV
-    @type Boolean
-    @default true
-    @private
-  */
-  _APPLICATION_TEMPLATE_WRAPPER: true,
-
-  /**
     Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
     components semantics) for template-only components. See RFC #278.
 
