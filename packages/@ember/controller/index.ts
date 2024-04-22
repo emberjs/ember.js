@@ -311,8 +311,8 @@ const ControllerMixin = Mixin.create(ActionHandler, {
   @uses Ember.ControllerMixin
   @public
 */
-interface Controller<T = unknown> extends FrameworkObject, ControllerMixin<T> {}
-class Controller<T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
+interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
+class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.

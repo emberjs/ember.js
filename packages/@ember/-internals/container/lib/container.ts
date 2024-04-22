@@ -48,7 +48,7 @@ if (DEBUG) {
         };
       })();
     }
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 }
