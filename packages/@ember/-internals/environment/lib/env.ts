@@ -67,21 +67,6 @@ export const ENV = {
   STRUCTURED_PROFILE: false,
 
   /**
-    Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
-    components semantics) for template-only components. See RFC #278.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _TEMPLATE_ONLY_GLIMMER_COMPONENTS
-    @for EmberENV
-    @type Boolean
-    @default false
-    @private
-  */
-  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: false,
-
-  /**
     Whether to perform extra bookkeeping needed to make the `captureRenderTree`
     API work.
 

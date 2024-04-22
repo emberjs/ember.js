@@ -55,19 +55,6 @@ if (ENV._DEBUG_RENDER_TREE) {
   moduleFor(
     'Application test: debug render tree',
     class extends ApplicationTestCase {
-      _TEMPLATE_ONLY_GLIMMER_COMPONENTS: boolean;
-
-      constructor(assert: QUnit['assert']) {
-        super(assert);
-        this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
-      }
-
-      teardown() {
-        super.teardown();
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-      }
-
       async '@test routes'() {
         this.addTemplate('index', 'Index');
         this.addTemplate('foo', 'Foo {{outlet}}');

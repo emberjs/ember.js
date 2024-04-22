@@ -36,7 +36,7 @@ QUnit.module('App Boot', function (hooks) {
     return this.renderToHTML('/').then(function (html) {
       assert.htmlMatches(
         html,
-        '<body><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><div id="EMBER_ID" class="ember-view"><p>The files are *inside* the computer?!</p></div></div></div></body>'
+        '<body><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><p>The files are *inside* the computer?!</p></div></div></body>'
       );
     });
   });

@@ -1,6 +1,5 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
-import { ENV } from '@ember/-internals/environment';
 import EmberObject from '@ember/object';
 
 import { set, setProperties } from '@ember/object';
@@ -1166,17 +1165,6 @@ moduleFor(
 moduleFor(
   'AngleBracket Invocation (splattributes)',
   class extends RenderingTestCase {
-    constructor() {
-      super(...arguments);
-      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
-    }
-
-    teardown() {
-      super.teardown();
-      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-    }
-
     registerComponent(name, template) {
       super.registerComponent(name, { template, ComponentClass: null });
     }
