@@ -36,27 +36,27 @@
 
 
         // Handle extending prototypes
-        EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+        EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.EXTEND_PROTOTYPES;
 
         // Handle testing feature flags
-        if (QUnit.urlParams.enableoptionalfeatures) {
+        if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
           EmberENV.ENABLE_OPTIONAL_FEATURES = true;
         }
 
         EmberENV['RAISE_ON_DEPRECATION'] = true;
 
-        if (QUnit.urlParams.alldeprecationsenabled) {
-          EmberENV['_ALL_DEPRECATIONS_ENABLED'] = QUnit.urlParams.alldeprecationsenabled;
+        if (QUnit.urlParams.ALL_DEPRECATIONS_ENABLED) {
+          EmberENV['_ALL_DEPRECATIONS_ENABLED'] = QUnit.urlParams.ALL_DEPRECATIONS_ENABLED;
         }
 
-        if (QUnit.urlParams.overridedeprecationversion) {
-          EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.overridedeprecationversion;
+        if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
+          EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
         }
       })();
     </script>
 
     <script>
-      if (QUnit.urlParams.prebuilt) {
+      if (QUnit.urlParams.PREBUILT) {
         loadScript('../ember.debug.js');
       } else {
         loadScript('./ember.js');
@@ -97,9 +97,9 @@
         // Hide skipped tests
         QUnit.config.urlConfig.push({ id: 'hideskipped', label: "Hide skipped tests"});
         // Handle testing feature flags
-        QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
+        QUnit.config.urlConfig.push({ id: 'ENABLE_OPTIONAL_FEATURES', label: "Enable Opt Features"});
         // Handle extending prototypes
-        QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
+        QUnit.config.urlConfig.push({ id: 'EXTEND_PROTOTYPES', label: 'Extend Prototypes'});
 
         QUnit.config.urlConfig.push('forceskip');
 
