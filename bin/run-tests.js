@@ -35,10 +35,6 @@ function getBrowserRunner() {
 }
 
 function run(queryString) {
-  if (process.env.DEBUG_RENDER_TREE) {
-    queryString = `${queryString}&debugrendertree`;
-  }
-
   if (process.env.ALL_DEPRECATIONS_ENABLED) {
     queryString = `${queryString}&alldeprecationsenabled=${process.env.ALL_DEPRECATIONS_ENABLED}`;
   }
@@ -66,7 +62,6 @@ function generateTestsFor(packageName) {
   }
 
   testFunctions.push(() => run('package=' + packageName));
-  testFunctions.push(() => run('package=' + packageName + '&edition=classic'));
   testFunctions.push(() => run('package=' + packageName + '&prebuilt=true'));
   testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
 }
@@ -87,7 +82,6 @@ function generateEachPackageTests() {
 
 function generateStandardTests() {
   testFunctions.push(() => run(''));
-  testFunctions.push(() => run('edition=classic'));
   testFunctions.push(() => run('enableoptionalfeatures=true'));
 }
 

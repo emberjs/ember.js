@@ -23,12 +23,8 @@
       (function() {
         window.EmberENV = window.EmberENV || {};
 
-        // Determine edition, and apply correct EmberENV settings
-        var edition = QUnit.urlParams.edition || 'octane';
-
-        if (edition === 'octane') {
-          EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
-        }
+        // Test under octane defaults
+        EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
 
         // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
         EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
@@ -48,10 +44,6 @@
         }
 
         EmberENV['RAISE_ON_DEPRECATION'] = true;
-
-        if (QUnit.urlParams.debugrendertree) {
-          EmberENV['_DEBUG_RENDER_TREE'] = true;
-        }
 
         if (QUnit.urlParams.alldeprecationsenabled) {
           EmberENV['_ALL_DEPRECATIONS_ENABLED'] = QUnit.urlParams.alldeprecationsenabled;
