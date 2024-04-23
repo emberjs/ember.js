@@ -5,6 +5,7 @@ import { compile } from 'ember-template-compiler';
 import { moduleFor, testUnless, ApplicationTestCase, defineComponent } from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import templateOnly from '@ember/component/template-only';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -15,7 +16,10 @@ moduleFor(
     }
 
     ['@test The helper becomes the body of the component']() {
-      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
+      this.addComponent('expand-it', {
+        ComponentClass: templateOnly(),
+        template: '<p>hello {{yield}}</p>',
+      });
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
       return this.visit('/').then(() => {
