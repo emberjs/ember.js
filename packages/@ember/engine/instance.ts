@@ -62,7 +62,6 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
   // This is effectively an "abstract" method: it defines the contract a
   // subclass (e.g. `ApplicationInstance`) must follow to implement this
   // behavior, but an `EngineInstance` has no behavior of its own here.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static setupRegistry(_registry: Registry, _options?: BootOptions) {}
 
   /**
