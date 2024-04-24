@@ -124,32 +124,9 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 
 3. To run all tests, visit <http://localhost:4200/>.
 
-4. To test a specific package, visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
-`PACKAGE_NAME` with the name of the package you want to test. For
-example:
-
-  * [Ember.js Internals](http://localhost:4200/tests/index.html?package=@ember/-internals)
+4. To test a specific package, use the interactive QUnit filters on the page.
 
 To test multiple packages, you can separate them with commas.
-
-## From the CLI
-
-Run `pnpm test` to run a basic test suite or run `TEST_SUITE=all pnpm test` to
-run a more comprehensive suite.
-
-## From ember-cli
-
-1. `ember test --server`
-
-2. Connect the browsers you want.
-
-To run a specific browser, you can use the `--launch` flag
-
-* `ember test --server --launch SL_Firefox_Current`
-* `ember test --launch SL_Firefox_Current`
-* `ember test --launch SL_Firefox_Current,Chrome`
-
-To test multiple launchers, you can separate them with commas.
 
 # Pull Requests
 
@@ -245,12 +222,11 @@ Within the [CI workflow](https://github.com/emberjs/ember.js/blob/main/.github/w
 
 * `Linting` runs `pnpm lint` to check for code style issues.
 * `Type Checking` runs `pnpm type-check` to check for TypeScript type errors. This also runs against several version of TypeScript that are supported.
-* `Basic Test` / `each-package` test suite is closest to what you normally run locally on your machine. This is also run with all deprecations enabled -- that is, a deprecation that has been added but is not yet up to it's enabled version will be forced "on" and the test suite is required to pass both ways.
-* `Production` test suite runs tests against a production build. This also runs with the "Debug Render Tree" feature enabled.
+* `Basic Test` test suite is closest to what you normally run locally on your machine. 
+* `Variant Tests` run the test suite under different combinations of settings. See documentation in run-tests.js for the meaning of each setting.
 * `BrowserStack` and `Browser Tests` test suites run tests against various supported browsers.
 * `Blueprint Tests` runs tests for the Ember CLI blueprints provided by Ember in this package.
 * `Smoke Test` builds and runs a simple app.
-* `Extend Prototypes` runs the `extend-prototypes` test suite.
 * `Node.js Tests` runs tests for the node-side code in this package.
 
 Each commit to canary and beta publishes to the relevant channel on S3. These 

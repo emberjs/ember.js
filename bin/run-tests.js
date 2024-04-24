@@ -1,13 +1,43 @@
 /* eslint-disable no-console */
 'use strict';
 
+/* 
+  Test Variants
+
+  These are all accepted as environment variables when running `ember test` or
+  as query params when directly invoking the test suite in the browser. 
+*/
+const variants = [
+  // When true, even deprecations that are not yet at the "enabled" version will
+  // be enabled, so we can ensure that they and their tests will continue to
+  // function correctly when we hit the enabled version.
+  'ALL_DEPRECATIONS_ENABLED',
+
+  // This overrides the current version of ember for purposes of seeing how
+  // deprecations behave. We use it in CI to prove that after a deprecation has
+  // hit its "until" version, the tests for it will behave correctly.
+  'OVERRIDE_DEPRECATION_VERSION',
+
+  // This enables the legacy Ember feature that causes Ember to extend built-in
+  // platform features like Array.
+  'EXTEND_PROTOTYPES',
+
+  // This enables all canary feature flags for unreleased feature within Ember
+  // itself.
+  'ENABLE_OPTIONAL_FEATURES',
+
+  // This forces the test suite to run against the prepackaged copy of
+  // ember.debug.js that publishes in the ember-source NPM package. That copy is
+  // essentially an optimization if you happen to be doing development under the
+  // default babel targets.
+  'PREBUILT',
+];
+
 const chalk = require('chalk');
-const path = require('path');
 
 const finalhandler = require('finalhandler');
 const http = require('http');
 const serveStatic = require('serve-static');
-const fs = require('fs');
 
 // Serve up public/ftp folder.
 const serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
@@ -34,13 +64,13 @@ function getBrowserRunner() {
   return browserRunner;
 }
 
-function run(queryString) {
-  if (process.env.ALL_DEPRECATIONS_ENABLED) {
-    queryString = `${queryString}&alldeprecationsenabled=${process.env.ALL_DEPRECATIONS_ENABLED}`;
-  }
-
-  if (process.env.OVERRIDE_DEPRECATION_VERSION) {
-    queryString = `${queryString}&overridedeprecationversion=${process.env.OVERRIDE_DEPRECATION_VERSION}`;
+function run() {
+  let queryString = '';
+  for (let variant of variants) {
+    if (process.env[variant]) {
+      console.log(`Applying variant ${variant}=${process.env[variant]}`);
+      queryString = `${queryString}&${variant}=${process.env[variant]}`;
+    }
   }
 
   let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
@@ -52,94 +82,13 @@ function runInBrowser(url, attempts) {
   return getBrowserRunner().run(url, attempts);
 }
 
-let testFunctions = [];
-
-function generateTestsFor(packageName) {
-  let relativePath = path.join('packages', packageName);
-
-  if (!fs.existsSync(path.join(relativePath, 'tests'))) {
-    return;
-  }
-
-  testFunctions.push(() => run('package=' + packageName));
-  testFunctions.push(() => run('package=' + packageName + '&prebuilt=true'));
-  testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
-}
-
-function generateEachPackageTests() {
-  fs.readdirSync('packages/@ember')
-    .filter((e) => e !== '-internals')
-    .forEach((e) => generateTestsFor(`@ember/${e}`));
-
-  fs.readdirSync('packages/@ember/-internals').forEach((e) =>
-    generateTestsFor(`@ember/-internals/${e}`)
-  );
-
-  fs.readdirSync('packages')
-    .filter((e) => e !== '@ember')
-    .forEach(generateTestsFor);
-}
-
-function generateStandardTests() {
-  testFunctions.push(() => run(''));
-  testFunctions.push(() => run('enableoptionalfeatures=true'));
-}
-
-function generateExtendPrototypeTests() {
-  testFunctions.push(() => run('extendprototypes=true'));
-  testFunctions.push(() => run('extendprototypes=true&enableoptionalfeatures=true'));
-}
-
-function runInSequence(tasks) {
-  let length = tasks.length;
-  let current = Promise.resolve();
-  let results = new Array(length);
-
-  for (let i = 0; i < length; ++i) {
-    current = results[i] = current.then(tasks[i]);
-  }
-
-  return Promise.all(results);
-}
-
-function runAndExit() {
-  runInSequence(testFunctions)
-    .then(function () {
-      console.log(chalk.green('Passed!'));
-      process.exit(0); // eslint-disable-line n/no-process-exit
-    })
-    .catch(function (err) {
-      console.error(chalk.red(err.toString()));
-      console.error(chalk.red('Failed!'));
-      process.exit(1); // eslint-disable-line n/no-process-exit
-    });
-}
-
-let p = process.env.PACKAGE || 'ember';
-switch (process.env.TEST_SUITE) {
-  case 'package':
-    console.log(`suite: package ${p}`);
-    generateTestsFor(p);
-    runAndExit();
-    break;
-  case 'each-package':
-    console.log('suite: each-package');
-    generateEachPackageTests();
-    runAndExit();
-    break;
-  case 'extend-prototypes':
-    console.log('suite: extend-prototypes');
-    generateExtendPrototypeTests();
-    runAndExit();
-    break;
-  case 'all':
-    console.log('suite: all');
-    generateExtendPrototypeTests();
-    generateEachPackageTests();
-    runAndExit();
-    break;
-  default:
-    console.log('suite: default (generate each package)');
-    generateStandardTests();
-    runAndExit();
-}
+run()
+  .then(function () {
+    console.log(chalk.green('Passed!'));
+    process.exit(0); // eslint-disable-line n/no-process-exit
+  })
+  .catch(function (err) {
+    console.error(chalk.red(err.toString()));
+    console.error(chalk.red('Failed!'));
+    process.exit(1); // eslint-disable-line n/no-process-exit
+  });

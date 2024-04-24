@@ -59,7 +59,7 @@ jobs:
         run: pnpm type-check
 
   basic-test:
-    name: Debug and Prebuilt (All Tests by Package + Canary Features)
+    name: Basic Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -72,48 +72,51 @@ jobs:
           name: dist
           path: dist
       - name: test
-        env:
-          TEST_SUITE: each-package
         run: pnpm test
 
-  deprecations-enabled-test:
-    name: Debug and Prebuilt (All Tests by Package + Canary Features) with all Deprecations enabled
+  variant-tests:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     needs: [basic-test, lint, types]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - name: build
-        run: pnpm ember build
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
-      - name: test
-        env:
-          TEST_SUITE: each-package
-          ALL_DEPRECATIONS_ENABLED: true
-        run: pnpm test
+    strategy:
+      matrix:
+        include:
+          - name: "All deprecations enabled"
+            ALL_DEPRECATIONS_ENABLED: "true"
+          - name: "All deprecations enabled, with optional features"
+            ALL_DEPRECATIONS_ENABLED: "true"
+            ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Deprecations as errors"
+            OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+          - name: "Deprecations as errors, with optional features"
+            OVERRIDE_DEPRECATION_VERSION: "15.0.0"
+            ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Production build"
+            BUILD: "-prod"
+          - name: "Production build, with optional features"
+            BUILD: "-prod"
+            ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Extend prototypes"
+            EXTEND_PROTOTYPES: "true"
+          - name: "Extend prototypes, with optional features"
+            EXTEND_PROTOTYPES: "true"
+            ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Prebuilt"
+            PREBUILT: "true"
 
-  deprecations-broken-test:
-    name: Debug and Prebuilt (All Tests by Package + Canary Features) with Deprecations as Errors
-    runs-on: ubuntu-latest
-    needs: [ basic-test, lint, types ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - name: build
-        run: pnpm ember build
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
+        run: pnpm ember build ${{ matrix.BUILD }}
       - name: test
         env:
-          TEST_SUITE: each-package
-          OVERRIDE_DEPRECATION_VERSION: '15.0.0' # Throws on all deprecations with an until before or equal to this version
+          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
+          EXTEND_PROTOTYPES: ${{ matrix.EXTEND_PROTOTYPES }}
+          ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
+          PREBUIlT: ${{ matrix.PREBUILT }}
+
         run: pnpm test
 
   browserstack-test:
@@ -158,35 +161,6 @@ jobs:
           pnpm install
           pnpm link ../..
           pnpm test
-
-  production-test:
-    name: Production (All Tests + Canary Features)
-    runs-on: ubuntu-latest
-    needs: [basic-test, lint, types]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - name: build
-        run: pnpm ember build -prod
-      - name: test
-        run: pnpm test
-
-
-  extend-prototypes-test:
-    name: Extend Prototypes
-    runs-on: ubuntu-latest
-    needs: [basic-test, lint, types]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist
-      - name: test
-        env:
-          TEST_SUITE: extend-prototypes
-        run: pnpm test
 
   node-test:
     name: Node.js Tests
@@ -238,9 +212,8 @@ jobs:
       [
         basic-test,
         lint,
+        variant-tests,
         browserstack-test,
-        production-test,
-        extend-prototypes-test,
         node-test,
         blueprint-test,
         browser-test,
@@ -263,9 +236,8 @@ jobs:
       [
         basic-test,
         lint,
+        variant-tests,
         browserstack-test,
-        production-test,
-        extend-prototypes-test,
         node-test,
         blueprint-test,
         browser-test,
@@ -291,9 +263,8 @@ jobs:
       [
         basic-test,
         lint,
+        variant-tests,
         browserstack-test,
-        production-test,
-        extend-prototypes-test,
         node-test,
         blueprint-test,
         browser-test,
@@ -321,9 +292,8 @@ jobs:
       [
         basic-test,
         lint,
+        variant-tests,
         browserstack-test,
-        production-test,
-        extend-prototypes-test,
         node-test,
         blueprint-test,
         browser-test,
