@@ -64,6 +64,10 @@ function layoutFor(
   owner: InternalOwner,
   options?: RegisterOptions
 ): Nullable<Template> {
+  if (DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved) {
+    return null;
+  }
+
   let templateFullName = `template:components/${name}` as const;
 
   let result = (owner.lookup(templateFullName, options) as Template) || null;
@@ -105,12 +109,6 @@ function lookupComponentPair(
     if (layout !== undefined) {
       return { component, layout };
     }
-  }
-
-  if (DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved) {
-    if (!component) return null;
-
-    return { component, layout: null } as LookupResult;
   }
 
   let layout = layoutFor(name, owner, options);
