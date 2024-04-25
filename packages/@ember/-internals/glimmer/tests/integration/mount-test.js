@@ -1,6 +1,7 @@
 import {
   moduleFor,
   ApplicationTestCase,
+  defineComponent,
   ModuleBasedTestResolver,
   RenderingTestCase,
   runTask,
@@ -279,19 +280,17 @@ moduleFor(
             );
             this.register(
               'component:tagless-component',
-              Component.extend({
-                tagName: '',
-                init() {
-                  this._super(...arguments);
-                  component = this;
-                },
-              })
-            );
-            this.register(
-              'template:components/tagless-component',
-              compile('Tagless Component', {
-                moduleName: 'my-app/templates/components/tagless-component.hbs',
-              })
+              defineComponent(
+                {},
+                'Tagless Component',
+                Component.extend({
+                  tagName: '',
+                  init() {
+                    this._super(...arguments);
+                    component = this;
+                  },
+                })
+              )
             );
           },
         })

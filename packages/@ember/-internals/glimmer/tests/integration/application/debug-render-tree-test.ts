@@ -1,8 +1,10 @@
 import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
+  expectDeprecation,
   moduleFor,
   strip,
+  testUnless,
 } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
@@ -22,6 +24,8 @@ import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import templateOnly from '@ember/component/template-only';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
@@ -204,10 +208,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'template:components/inspect-model',
-                compileTemplate('{{@model}}', {
-                  moduleName: 'foo/components/inspect-model.hbs',
-                })
+                'component:inspect-model',
+                setComponentTemplate(
+                  compileTemplate('{{@model}}', {
+                    moduleName: 'foo/components/inspect-model.hbs',
+                  }),
+                  templateOnly()
+                )
               );
             }
 
@@ -242,10 +249,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'template:components/inspect-model',
-                compileTemplate('{{@model}}', {
-                  moduleName: 'bar/components/inspect-model.hbs',
-                })
+                'component:inspect-model',
+                setComponentTemplate(
+                  compileTemplate('{{@model}}', {
+                    moduleName: 'bar/components/inspect-model.hbs',
+                  }),
+                  templateOnly()
+                )
               );
             }
 
@@ -608,10 +618,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 })
               );
               this.register(
-                'template:components/hello',
-                compileTemplate('<span>Hello {{@message}}</span>', {
-                  moduleName: 'foo/components/hello.hbs',
-                })
+                'component:hello',
+                setComponentTemplate(
+                  compileTemplate('<span>Hello {{@message}}</span>', {
+                    moduleName: 'foo/components/hello.hbs',
+                  }),
+                  templateOnlyComponent()
+                )
               );
             }
 
@@ -775,7 +788,13 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async '@test template-only components'() {
+      async [`${testUnless(
+        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+      )} template-only components`]() {
+        expectDeprecation(
+          /resolved templates/,
+          DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+        );
         this.addTemplate(
           'application',
           strip`
@@ -800,7 +819,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -816,7 +835,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -825,7 +844,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -841,7 +860,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -873,7 +892,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -889,7 +908,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -898,7 +917,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -914,7 +933,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -936,7 +955,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.addComponent('hello-world', {
           ComponentClass: setComponentTemplate(
             compileTemplate('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
-            templateOnlyComponent()
+            templateOnlyComponent('my-app/components/hello-world', 'HelloWorld')
           ),
         });
 
@@ -1021,7 +1040,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1037,7 +1056,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1046,7 +1065,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1062,7 +1081,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1106,7 +1125,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1122,7 +1141,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1131,7 +1150,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1147,7 +1166,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },

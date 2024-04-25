@@ -1,8 +1,10 @@
-import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask, testUnless } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
 import { Component, compile } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
+import { setComponentTemplate } from '@glimmer/manager';
 
 class AbstractAppendTest extends RenderingTestCase {
   constructor() {
@@ -37,7 +39,249 @@ class AbstractAppendTest extends RenderingTestCase {
     this.ids.push(component.elementId);
   }
 
-  ['@test lifecycle hooks during component append'](assert) {
+  [`@test (new) lifecycle hooks during component append`](assert) {
+    let hooks = [];
+
+    let componentsByName = {};
+
+    let createLogger = (name, template, extras = {}) => {
+      function pushHook(hookName) {
+        hooks.push([name, hookName]);
+      }
+
+      let LoggerComponent = Component.extend({
+        init() {
+          this._super(...arguments);
+          if (name in componentsByName) {
+            throw new TypeError('Component named: ` ' + name + ' ` already registered');
+          }
+          componentsByName[name] = this;
+          pushHook('init');
+          this.on('init', () => pushHook('on(init)'));
+        },
+
+        didReceiveAttrs() {
+          pushHook('didReceiveAttrs');
+        },
+
+        willInsertElement() {
+          pushHook('willInsertElement');
+        },
+
+        willRender() {
+          pushHook('willRender');
+        },
+
+        didInsertElement() {
+          pushHook('didInsertElement');
+        },
+
+        didRender() {
+          pushHook('didRender');
+        },
+
+        didUpdateAttrs() {
+          pushHook('didUpdateAttrs');
+        },
+
+        willUpdate() {
+          pushHook('willUpdate');
+        },
+
+        didUpdate() {
+          pushHook('didUpdate');
+        },
+
+        willDestroyElement() {
+          pushHook('willDestroyElement');
+        },
+
+        willClearRender() {
+          pushHook('willClearRender');
+        },
+
+        didDestroyElement() {
+          pushHook('didDestroyElement');
+        },
+
+        willDestroy() {
+          pushHook('willDestroy');
+          this._super(...arguments);
+        },
+      });
+
+      let local = LoggerComponent.extend(extras);
+
+      setComponentTemplate(compile(template), local);
+
+      this.owner.register(`component:${name}`, local);
+
+      return local;
+    };
+
+    createLogger(
+      'x-parent',
+      `[parent: {{this.foo}}]
+       [parent: {{this.parentValue}}
+
+        <XChild @bar={{this.foo}} @childValue={{this.childValue}}>
+         [yielded: {{this.foo}}]
+        </XChild>
+      `
+    );
+    createLogger(
+      'x-child',
+      `
+      [child: {{this.bar}}]
+      [child: {{this.childValue}}]
+      {{yield}}`
+    );
+
+    this.render(
+      `
+      {{#if this.show}}
+        <XParent @foo={{this.foo}} @parentValue={{this.parentValue}} @childValue={{this.childValue}} />
+      {{/if}}`,
+      { parentValue: 1, childValue: 1, foo: 'zomg', show: true }
+    );
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'init'],
+        ['x-parent', 'on(init)'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willRender'],
+        ['x-parent', 'willInsertElement'],
+        ['x-child', 'init'],
+        ['x-child', 'on(init)'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willRender'],
+        ['x-child', 'willInsertElement'],
+        ['x-child', 'didInsertElement'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didInsertElement'],
+        ['x-parent', 'didRender'],
+      ],
+      'creation of x-parent'
+    );
+
+    hooks.length = 0;
+    runTask(() => this.rerender());
+
+    assert.deepEqual(hooks, [], 'no-op re-render of parent');
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'parentValue', 2));
+    runTask(() => this.rerender());
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'rerender x-parent'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'childValue', 2));
+
+    assert.deepEqual(
+      hooks,
+
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'rerender x-child'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'foo', 'wow'));
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'set foo = wow'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'foo', 'zomg'));
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'didUpdateAttrs'],
+        ['x-parent', 'didReceiveAttrs'],
+        ['x-parent', 'willUpdate'],
+        ['x-parent', 'willRender'],
+        ['x-child', 'didUpdateAttrs'],
+        ['x-child', 'didReceiveAttrs'],
+        ['x-child', 'willUpdate'],
+        ['x-child', 'willRender'],
+        ['x-child', 'didUpdate'],
+        ['x-child', 'didRender'],
+        ['x-parent', 'didUpdate'],
+        ['x-parent', 'didRender'],
+      ],
+      'set foo = zomg'
+    );
+
+    hooks.length = 0;
+
+    runTask(() => set(this.context, 'show', false));
+
+    assert.deepEqual(
+      hooks,
+      [
+        ['x-parent', 'willDestroyElement'],
+        ['x-parent', 'willClearRender'],
+        ['x-child', 'willDestroyElement'],
+        ['x-child', 'willClearRender'],
+        ['x-parent', 'didDestroyElement'],
+        ['x-child', 'didDestroyElement'],
+        ['x-parent', 'willDestroy'],
+        ['x-child', 'willDestroy'],
+      ],
+      'destroy'
+    );
+  }
+
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+  )} lifecycle hooks during component append`](assert) {
     let hooks = [];
 
     let oldRegisterComponent = this.registerComponent;
@@ -110,7 +354,7 @@ class AbstractAppendTest extends RenderingTestCase {
             this._super(...arguments);
           },
         }),
-        template: _options.template,
+        resolveableTemplate: _options.resolveableTemplate,
       };
 
       oldRegisterComponent.call(this, name, options);
@@ -121,7 +365,7 @@ class AbstractAppendTest extends RenderingTestCase {
         layoutName: 'components/x-parent',
       }),
 
-      template:
+      resolveableTemplate:
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
@@ -130,7 +374,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{this.bar}}]{{yield}}',
+      resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -283,7 +527,9 @@ class AbstractAppendTest extends RenderingTestCase {
     );
   }
 
-  ['@test appending, updating and destroying a single component'](assert) {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+  )} appending, updating and destroying a single component`](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-parent', {
@@ -294,7 +540,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template:
+      resolveableTemplate:
         '[parent: {{this.foo}}]{{#x-child bar=this.foo}}[yielded: {{this.foo}}]{{/x-child}}',
     });
 
@@ -303,7 +549,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      template: '[child: {{this.bar}}]{{yield}}',
+      resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
@@ -389,7 +635,9 @@ class AbstractAppendTest extends RenderingTestCase {
     assert.equal(renderer._roots.length, 0, 'released the root component');
   }
 
-  ['@test appending, updating and destroying multiple components'](assert) {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+  )} appending, updating and destroying multiple components`](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-first', {
@@ -401,7 +649,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-first {{this.foo}}!',
+      resolveableTemplate: 'x-first {{this.foo}}!',
     });
 
     this.registerComponent('x-second', {
@@ -413,7 +661,7 @@ class AbstractAppendTest extends RenderingTestCase {
         },
       }),
 
-      template: 'x-second {{this.bar}}!',
+      resolveableTemplate: 'x-second {{this.bar}}!',
     });
 
     let First, Second;
@@ -704,7 +952,7 @@ moduleFor(
         ComponentClass: Component.extend({
           layoutName: 'components/foo-bar',
         }),
-        template: 'FOO BAR!',
+        resolveableTemplate: 'FOO BAR!',
       });
 
       let FooBar = this.owner.factoryFor('component:foo-bar');

@@ -3,6 +3,7 @@ import {
   ModuleBasedTestResolver,
   ApplicationTestCase,
   runTask,
+  defineComponent,
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
 import EmberObject from '@ember/object';
@@ -516,12 +517,9 @@ moduleFor(
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
           this.register(
-            'template:components/cache-money',
-            compile(`
-          <p>Dis cache money</p>
-        `)
+            'component:cache-money',
+            defineComponent({}, `<p>Dis cache money</p>`, Component.extend({}))
           );
-          this.register('component:cache-money', Component.extend({}));
         },
       });
       this.add('engine:blog', BlogEngine);
@@ -560,12 +558,9 @@ moduleFor(
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
           this.register(
-            'template:components/cache-money',
-            compile(`
-          <p>Dis cache money</p>
-        `)
+            'component:cache-money',
+            defineComponent({}, `<p>Dis cache money</p>`, Component.extend({}))
           );
-          this.register('component:cache-money', Component.extend({}));
         },
       });
       this.add('engine:blog', BlogEngine);
@@ -663,64 +658,59 @@ moduleFor(
 
       this.addTemplate('show', '{{component @model.componentName model=@model.componentData}}');
 
-      this.addTemplate(
-        'components/x-foo',
-        `
-        <h1>X-Foo</h1>
-        <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>
-        `
-      );
-
       this.add(
         'component:x-foo',
-        Component.extend({
-          tagName: 'x-foo',
+        defineComponent(
+          {},
+          `<h1>X-Foo</h1>
+           <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`,
 
-          isolatedCounter: service(),
-          sharedCounter: service(),
+          Component.extend({
+            tagName: 'x-foo',
 
-          init() {
-            this._super();
-            xFooInitCalled = true;
-          },
+            isolatedCounter: service(),
+            sharedCounter: service(),
 
-          didInsertElement() {
-            xFooDidInsertElementCalled = true;
-          },
+            init() {
+              this._super();
+              xFooInitCalled = true;
+            },
 
-          click() {
-            this.get('isolatedCounter').increment();
-            this.get('sharedCounter').increment();
-          },
-        })
-      );
+            didInsertElement() {
+              xFooDidInsertElementCalled = true;
+            },
 
-      this.addTemplate(
-        'components/x-bar',
-        `
-        <h1>X-Bar</h1>
-        <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>
-        `
+            click() {
+              this.get('isolatedCounter').increment();
+              this.get('sharedCounter').increment();
+            },
+          })
+        )
       );
 
       this.add(
         'component:x-bar',
-        Component.extend({
-          counter: service('sharedCounter'),
+        defineComponent(
+          null,
+          `<h1>X-Bar</h1>
+          <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`,
+          Component.extend({
+            counter: service('sharedCounter'),
 
-          incrementCounter: action(function () {
-            this.get('counter').increment();
-          }),
+            incrementCounter: action(function () {
+              this.get('counter').increment();
+            }),
 
-          init() {
-            this._super();
-            xBarInitCalled = true;
-          },
+            init() {
+              this._super();
+              xBarInitCalled = true;
+            },
 
-          didInsertElement() {
-            xBarDidInsertElementCalled = true;
-          },
-        })
+            didInsertElement() {
+              xBarDidInsertElementCalled = true;
+            },
+          })
+        )
       );
 
       let fixtureElement = document.querySelector('#qunit-fixture');

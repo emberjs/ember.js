@@ -1267,7 +1267,7 @@ moduleFor(
         this.registerComponent('non-block', {
           template: 'In layout - someProp: {{attrs.someProp}}',
         });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) ");
+      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. (L1:C24) ');
     }
 
     // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
@@ -1579,7 +1579,7 @@ moduleFor(
         this.registerComponent('with-block', {
           template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
         });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
+      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. (L1:C24) ');
     }
 
     // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
@@ -3325,7 +3325,7 @@ moduleFor(
           template:
             'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
         });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) ");
+      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. (L1:C10) ');
     }
 
     // Perhaps change this test to `{{this.attrs.myVar.value}}` when removing the deprecation?

@@ -45,6 +45,7 @@ import { default as uniqueId } from './helpers/unique-id';
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -63,9 +64,22 @@ function layoutFor(
   owner: InternalOwner,
   options?: RegisterOptions
 ): Nullable<Template> {
+  if (DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved) {
+    return null;
+  }
+
   let templateFullName = `template:components/${name}` as const;
 
-  return (owner.lookup(templateFullName, options) as Template) || null;
+  let result = (owner.lookup(templateFullName, options) as Template) || null;
+
+  if (result) {
+    deprecateUntil(
+      `Components with separately resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts. Tried to lookup '${templateFullName}'.`,
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING
+    );
+  }
+
+  return result;
 }
 
 type LookupResult =
