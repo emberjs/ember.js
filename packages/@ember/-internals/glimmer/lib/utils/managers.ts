@@ -1,10 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import type { ComponentManager } from '@glimmer/interfaces';
-import {
-  componentCapabilities as glimmerComponentCapabilities,
-  modifierCapabilities as glimmerModifierCapabilities,
-  setComponentManager as glimmerSetComponentManager,
-} from '@glimmer/manager';
+import { setComponentManager as glimmerSetComponentManager } from '@glimmer/manager';
+export { modifierCapabilities, componentCapabilities } from '@glimmer/manager';
 
 /**
    Associate a class with a component manager (an object that is responsible for
@@ -23,6 +20,3 @@ export function setComponentManager<T extends object>(
 ): T {
   return glimmerSetComponentManager(manager, obj);
 }
-
-export let componentCapabilities = glimmerComponentCapabilities;
-export let modifierCapabilities = glimmerModifierCapabilities;

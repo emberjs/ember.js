@@ -56,7 +56,7 @@ export default class Registry {
   readonly _resolveCache: Record<string, InternalFactory<object> | object>;
   readonly _typeOptions: Record<string, RegisterOptions>;
 
-  set?: typeof set;
+  declare set?: typeof set;
 
   constructor(options: RegistryOptions = {}) {
     this.fallback = options.fallback || null;
