@@ -226,7 +226,7 @@ Within the [CI workflow](https://github.com/emberjs/ember.js/blob/main/.github/w
 * `Variant Tests` run the test suite under different combinations of settings. See documentation in run-tests.js for the meaning of each setting.
 * `BrowserStack` and `Browser Tests` test suites run tests against various supported browsers.
 * `Blueprint Tests` runs tests for the Ember CLI blueprints provided by Ember in this package.
-* `Smoke Test` builds and runs a simple app.
+* `Smoke Tests` builds and runs entire end-to-end apps.
 * `Node.js Tests` runs tests for the node-side code in this package.
 
 Each commit to canary and beta publishes to the relevant channel on S3. These 
@@ -234,6 +234,38 @@ builds are used primarily by [ember-try](https://github.com/ember-cli/ember-try)
 for addons to test against beta and canary of ember-source.
 
 The CI workflow is also run nightly for beta and canary.
+
+## Working with the Smoke Test apps
+
+The tests under `/smoke-tests` build complete apps by starting from an app-template and modifying it for various scenarios.
+
+You can **list all scenarios**:
+
+```sh
+cd smoke-tests/scenarios
+pnpm test:list
+```
+
+You can run one of them non-interactively:
+
+```sh
+cd smoke-tests/scenarios
+pnpm run test --filter $SCENARIO_NAME
+```
+
+Or you can write the whole application out as a normal on-disk app in order to run and debug it interactively:
+
+```sh
+cd smoke-tests/scenarios
+pnpm test:output --scenario $SCENARIO_NAME --outdir /tmp/my-scenario
+cd /tmp/my-scenario
+pnpm start
+```
+
+
+
+
+
 
 ## Common CI Build Issues
 

@@ -1,6 +1,7 @@
 'use strict';
 
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const { maybeEmbroider } = require('@embroider/test-setup');
 
 module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
@@ -20,5 +21,8 @@ module.exports = function (defaults) {
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
 
-  return app.toTree();
+  // when we're testing under embroider, test under the most optimized settings.
+  process.env.EMBROIDER_TEST_SETUP_OPTIONS = 'optimized';
+
+  return maybeEmbroider(app);
 };
