@@ -24,11 +24,18 @@ jobs:
   lint:
     name: Linting
     runs-on: ubuntu-latest
+    outputs:
+       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - name: linting
         run: pnpm lint
+      - id: set-matrix
+        working-directory: smoke-tests/scenarios
+        run: |
+          matrix_json=$(pnpm scenario-tester list --require @swc-node/register --files "*-test.ts" --matrix "pnpm run test --filter %s"   )
+          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT        
 
   types:
     name: Type Checking (current version)
@@ -149,18 +156,18 @@ jobs:
     name: Smoke tests (Full Ember Apps)
     runs-on: ubuntu-latest
     needs: [basic-test, lint, types]
+    strategy:
+       fail-fast: false
+       matrix: ${{fromJson(needs.lint.outputs.matrix)}}
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm ember build -prod
       - name: test
-        # todo: potentially more apps? use matrix?
+        working-directory: smoke-tests/scenarios
         run: |
-          cd smoke-tests/ember-test-app/
-          pnpm install
-          pnpm link ../..
-          pnpm test
+          ${{ matrix.command }}
 
   node-test:
     name: Node.js Tests
