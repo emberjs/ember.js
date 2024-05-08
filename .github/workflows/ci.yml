@@ -72,7 +72,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - name: build
-        run: pnpm ember build
+        run: pnpm vite build --mode=development
       - name: Upload build
         uses: actions/upload-artifact@v3
         with:
@@ -99,30 +99,27 @@ jobs:
             OVERRIDE_DEPRECATION_VERSION: "15.0.0"
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Production build"
-            BUILD: "-prod"
+            BUILD: "production"
           - name: "Production build, with optional features"
-            BUILD: "-prod"
+            BUILD: "production"
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Extend prototypes"
             EXTEND_PROTOTYPES: "true"
           - name: "Extend prototypes, with optional features"
             EXTEND_PROTOTYPES: "true"
             ENABLE_OPTIONAL_FEATURES: "true"
-          - name: "Prebuilt"
-            PREBUILT: "true"
 
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - name: build
-        run: pnpm ember build ${{ matrix.BUILD }}
+        run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           EXTEND_PROTOTYPES: ${{ matrix.EXTEND_PROTOTYPES }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
-          PREBUIlT: ${{ matrix.PREBUILT }}
 
         run: pnpm test
 
@@ -135,8 +132,8 @@ jobs:
       - uses: ./.github/actions/setup
       - name: build
         env:
-          SHOULD_TRANSPILE: true
-        run: pnpm ember build
+          ALL_SUPPORTED_BROWSERS: true
+        run: pnpm vite build --mode=development
 
       - name: Set BrowserStack Local Identifier
         if: startsWith(github.ref, 'refs/tags/v')
@@ -163,7 +160,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup
       - name: build
-        run: pnpm ember build -prod
+        run: pnpm build
       - name: test
         working-directory: smoke-tests/scenarios
         run: |
@@ -179,7 +176,7 @@ jobs:
       - name: build
         env:
           SHOULD_TRANSPILE_FOR_NODE: true
-        run: pnpm ember build -prod
+        run: pnpm build
       - name: test
         run: pnpm test:node
 
@@ -210,7 +207,7 @@ jobs:
           firefox-version: 102.0.1
       - run: firefox --version
       - name: test
-        run: pnpm ember test -c testem.ci-browsers.js
+        run: pnpm ember test --path dist -c testem.ci-browsers.js
 
   deploy-tag:
     name: Deploy tags to npm

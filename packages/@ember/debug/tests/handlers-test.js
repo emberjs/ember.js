@@ -1,7 +1,7 @@
 import { HANDLERS, registerHandler, invoke } from '../lib/handlers';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import { moduleForDevelopment, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
-moduleFor(
+moduleForDevelopment(
   'ember-debug: registerHandler',
   class extends TestCase {
     teardown() {

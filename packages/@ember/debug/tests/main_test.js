@@ -16,7 +16,7 @@ import {
 
 import { deprecate, warn, assert as emberAssert } from '../index';
 
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import { moduleForDevelopment, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 let originalEnvValue;
 let originalDeprecateHandler;
@@ -25,7 +25,7 @@ let originalWarnHandler;
 const originalConsoleWarn = console.warn; // eslint-disable-line no-console
 const noop = function () {};
 
-moduleFor(
+moduleForDevelopment(
   'ember-debug',
   class extends TestCase {
     constructor() {

@@ -1,7 +1,7 @@
 import { inspect } from '..';
-import { AbstractTestCase as TestCase, moduleFor } from 'internal-test-helpers';
+import { AbstractTestCase as TestCase, moduleForDevelopment } from 'internal-test-helpers';
 
-moduleFor(
+moduleForDevelopment(
   'Ember.inspect',
   class extends TestCase {
     ['@test strings'](assert) {
