@@ -1,11 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  expectDeprecation,
-  moduleFor,
-  RenderingTestCase,
-  runTask,
-  testUnless,
-} from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, testUnless } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { Component, compile } from '../../utils/helpers';
@@ -31,8 +25,6 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
     )} it takes precedence over resolver`]() {
-      expectDeprecation('', DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled);
-
       this.registerComponent('foo-bar', {
         ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
         resolveableTemplate: 'noooooo!',

@@ -128,7 +128,10 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
     )} each template is only compiled once`]() {
-      expectDeprecation(/msg here/, DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled);
+      expectDeprecation(
+        /resolved templates/,
+        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+      );
       // static layout
       this.registerComponent('component-one', { resolveableTemplate: 'One' });
 

@@ -2,7 +2,13 @@ import Application from '@ember/application';
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { moduleFor, testUnless, ApplicationTestCase, defineComponent } from 'internal-test-helpers';
+import {
+  moduleFor,
+  testUnless,
+  ApplicationTestCase,
+  defineComponent,
+  expectDeprecation,
+} from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
 import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import templateOnly from '@ember/component/template-only';
@@ -83,6 +89,10 @@ moduleFor(
     )} Late-registered components can be rendered with template registered on the container`](
       assert
     ) {
+      expectDeprecation(
+        /resolved templates/,
+        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+      );
       this.addTemplate(
         'application',
         `<div id='wrapper'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>`
@@ -119,6 +129,11 @@ moduleFor(
     )} Late-registered components can be rendered with ONLY the template registered on the container`](
       assert
     ) {
+      expectDeprecation(
+        /resolved templates/,
+        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+      );
+
       this.addTemplate(
         'application',
         `<div id='wrapper'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>`
