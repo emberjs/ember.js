@@ -1,11 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  expectDeprecation,
-  moduleFor,
-  RenderingTestCase,
-  runTask,
-  testUnless,
-} from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask, testUnless } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { Component, compile } from '../../utils/helpers';
