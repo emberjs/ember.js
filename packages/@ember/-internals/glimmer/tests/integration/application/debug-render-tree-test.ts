@@ -1,10 +1,8 @@
 import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
-  expectDeprecation,
   moduleFor,
   strip,
-  testUnless,
 } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
@@ -24,7 +22,6 @@ import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import templateOnly from '@ember/component/template-only';
 
 interface CapturedBounds {
@@ -788,13 +785,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async [`${testUnless(
-        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-      )} template-only components`]() {
-        expectDeprecation(
-          /resolved templates/,
-          DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-        );
+      async [`@test template-only components`]() {
         this.addTemplate(
           'application',
           strip`

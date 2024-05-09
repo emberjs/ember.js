@@ -46,7 +46,7 @@
         EmberENV['RAISE_ON_DEPRECATION'] = true;
 
         if (QUnit.urlParams.ALL_DEPRECATIONS_ENABLED) {
-          EmberENV['_ALL_DEPRECATIONS_ENABLED'] = QUnit.urlParams.ALL_DEPRECATIONS_ENABLED;
+          EmberENV['_ALL_DEPRECATIONS_ENABLED'] = true;
         }
 
         if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
@@ -107,6 +107,11 @@
           id: 'OVERRIDE_DEPRECATION_VERSION',
           value: ['20.0.0', '6.0.0', '5.12.0'],
           label: 'Deprecation Version',
+        });
+
+        QUnit.config.urlConfig.push({
+          id: 'ALL_DEPRECATIONS_ENABLED',
+          label: 'Enable All Deprecations',
         });
 
 

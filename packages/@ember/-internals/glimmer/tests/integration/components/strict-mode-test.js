@@ -6,6 +6,7 @@ import {
   defineSimpleHelper,
   defineSimpleModifier,
   testUnless,
+  expectDeprecation,
 } from 'internal-test-helpers';
 
 import { Input, Textarea } from '@ember/component';
@@ -268,6 +269,11 @@ moduleFor(
     [`${testUnless(DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved)} Can use action helper`](
       assert
     ) {
+      expectDeprecation(
+        /Migrate to native functions/,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let called = 0;
 
       let Foo = defineComponent(
@@ -294,6 +300,11 @@ moduleFor(
     [`${testUnless(DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved)} Can use action modifier`](
       assert
     ) {
+      expectDeprecation(
+        /Migrate to native functions/,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       let called = 0;
 
       let Foo = defineComponent(
