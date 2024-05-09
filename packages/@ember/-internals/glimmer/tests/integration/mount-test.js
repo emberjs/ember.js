@@ -15,6 +15,7 @@ import Engine, { getEngineParent } from '@ember/engine';
 
 import { backtrackingMessageFor } from '../utils/debug-stack';
 import { compile, Component } from '../utils/helpers';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   '{{mount}} single param assertion',
@@ -142,18 +143,22 @@ moduleFor(
         },
       });
 
-      this.engineRegistrations['template:components/component-with-backtracking-set'] = compile(
-        '[component {{this.person.name}}]',
-        {
-          moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
-        }
-      );
-      this.engineRegistrations['component:component-with-backtracking-set'] = Component.extend({
+      let ComponentWithBacktrackingSet = Component.extend({
         init() {
           this._super(...arguments);
           this.set('person.name', 'Ben');
         },
       });
+
+      setComponentTemplate(
+        compile('[component {{this.person.name}}]', {
+          moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
+        }),
+        ComponentWithBacktrackingSet
+      );
+
+      this.engineRegistrations['component:component-with-backtracking-set'] =
+        ComponentWithBacktrackingSet;
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
         renderTree: ['application', 'route-with-mount', 'chat', 'this.person.name'],

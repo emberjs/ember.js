@@ -788,13 +788,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async [`${testUnless(
-        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-      )} template-only components`]() {
-        expectDeprecation(
-          /resolved templates/,
-          DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-        );
+      async [`@test template-only components`]() {
         this.addTemplate(
           'application',
           strip`

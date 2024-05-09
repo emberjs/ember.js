@@ -31,8 +31,6 @@ moduleFor(
     [`${testUnless(
       DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
     )} it takes precedence over resolver`]() {
-      expectDeprecation('', DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled);
-
       this.registerComponent('foo-bar', {
         ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
         resolveableTemplate: 'noooooo!',
