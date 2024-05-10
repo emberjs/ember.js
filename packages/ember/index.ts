@@ -748,4 +748,11 @@ defineEmberTestingLazyLoad('setupForTesting');
 // @ts-expect-error Per types, runLoadHooks requires a second parameter. Should we loosen types?
 applicationRunLoadHooks('Ember');
 
+// the special "export import" syntax above doesn't actually transpile correctly
+// under all build configurations. It seems to work if you're simultaneously
+// transpiling ESM to AMD but breaks when keeping ESM output.
+//
+// This is a workaround to ensure that the runtime is actually included.
+Ember.RSVP = _RSVP;
+
 export default Ember;
