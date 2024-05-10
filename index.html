@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ember.js</title>
+  </head>
+  <body>
+    <script type="module">
+      import 'qunit/qunit/qunit.js';
+      import 'qunit/qunit/qunit.css';
+
+      window.EmberENV = {};
+
+      // Test under octane defaults
+      EmberENV._DEFAULT_ASYNC_OBSERVERS = true;
+
+      // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+      EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
+      EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ =
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+      EmberENV.__test_hook_count__ = 0;
+      EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function (object) {
+        EmberENV.__test_hook_count__ += object;
+      });
+
+      // Handle extending prototypes
+      EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.EXTEND_PROTOTYPES;
+
+      // Handle testing feature flags
+      if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
+        EmberENV.ENABLE_OPTIONAL_FEATURES = true;
+      }
+
+      EmberENV['RAISE_ON_DEPRECATION'] = true;
+
+      if (QUnit.urlParams.ALL_DEPRECATIONS_ENABLED) {
+          EmberENV['_ALL_DEPRECATIONS_ENABLED'] = true;
+        }
+
+        if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
+          EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
+        }
+    </script>
+
+    <script type="module">
+      import setupQUnit from './packages/internal-test-helpers/lib/ember-dev/setup-qunit.ts';
+      import { setTesting } from './packages/@ember/debug/index.ts';
+      setupQUnit();
+      setTesting(true);
+
+      let s = document.createElement('script');
+      s.src = "/testem.js";
+      document.body.append(s);
+    </script>
+
+    <script type="module">
+      // tests in internal packages
+      import.meta.glob('./packages/@ember/-internals/*/tests/**/*.{js,ts}', {
+        eager: true,
+      });
+
+      // tests in scoped packages
+      import.meta.glob('./packages/*/*/tests/**/*.{js,ts}', {
+        eager: true,
+      });
+
+      // tests in non-scoped packages
+      import.meta.glob('./packages/*/tests/**/*.{js,ts}', {
+        eager: true,
+      });
+    </script>
+
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+  </body>
+</html>

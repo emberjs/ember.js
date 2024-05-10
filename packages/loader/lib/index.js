@@ -72,7 +72,10 @@ var define, require;
       }
     }
 
-    callback.apply(this, reified);
+    var result = callback.apply(this, reified);
+    if (!deps.includes('exports') || result !== undefined) {
+      exports = result;
+    }
 
     return exports;
   }

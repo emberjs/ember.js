@@ -25,12 +25,6 @@ const variants = [
   // This enables all canary feature flags for unreleased feature within Ember
   // itself.
   'ENABLE_OPTIONAL_FEATURES',
-
-  // This forces the test suite to run against the prepackaged copy of
-  // ember.debug.js that publishes in the ember-source NPM package. That copy is
-  // essentially an optimization if you happen to be doing development under the
-  // default babel targets.
-  'PREBUILT',
 ];
 
 const chalk = require('chalk');
@@ -73,7 +67,7 @@ function run() {
     }
   }
 
-  let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
+  let url = 'http://localhost:' + PORT + '/?' + queryString;
   return runInBrowser(url, 3);
 }
 
