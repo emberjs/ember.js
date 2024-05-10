@@ -1,39 +1,59 @@
 import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
-import { AbstractTestCase, confirmExport, moduleFor } from 'internal-test-helpers';
+import {
+  AbstractTestCase,
+  confirmExport,
+  expectDeprecation,
+  moduleFor,
+  testUnless,
+} from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
 
-moduleFor(
-  'ember reexports',
-  class extends AbstractTestCase {
-    [`@test Ember exports correctly`](assert) {
-      allExports.forEach((reexport) => {
-        let [path, moduleId, exportName, mod] = reexport;
+class ReExportTests extends AbstractTestCase {
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_IMPORT_EMBER('---any---').isRemoved
+  )} Ember exports correctly`](assert) {
+    allExports.forEach((reexport) => {
+      let [path, moduleId, exportName, mod] = reexport;
 
-        // default path === exportName if none present
-        if (!exportName) {
-          exportName = path;
-        }
+      // default path === exportName if none present
+      if (!exportName) {
+        exportName = path;
+      }
 
-        confirmExport(Ember, assert, path, moduleId, exportName, mod);
-      });
+      expectDeprecation(
+        /'ember' barrel file is deprecated/,
+        DEPRECATIONS.DEPRECATE_IMPORT_EMBER(path || exportName).isEnabled
+      );
+
+      confirmExport(Ember, assert, path, moduleId, exportName, mod);
+    });
+  }
+
+  [`${testUnless(
+    DEPRECATIONS.DEPRECATE_IMPORT_EMBER('FEATURES').isRemoved
+  )} Ember.FEATURES is exported`](assert) {
+    if (Object.keys(FEATURES).length === 0) {
+      assert.expect(0);
     }
 
-    '@test Ember.FEATURES is exported'(assert) {
-      if (Object.keys(FEATURES).length === 0) {
-        assert.expect(0);
-      }
-
-      for (let feature in FEATURES) {
-        assert.equal(
-          Ember.FEATURES[feature],
-          FEATURES[feature],
-          'Ember.FEATURES contains ${feature} with correct value'
-        );
-      }
+    for (let feature in FEATURES) {
+      expectDeprecation(
+        () => {
+          assert.equal(
+            Ember.FEATURES[feature],
+            FEATURES[feature],
+            'Ember.FEATURES contains ${feature} with correct value'
+          );
+        },
+        /importing FEATURES from the 'ember' barrel file is deprecated/,
+        DEPRECATIONS.DEPRECATE_IMPORT_EMBER('FEATURES').isEnabled
+      );
     }
   }
-);
+}
+
+moduleFor('ember reexports', ReExportTests);
 
 import * as test0 from '@ember/application';
 import * as test1 from '@ember/application/instance';
@@ -96,6 +116,7 @@ import * as test57 from '@ember/-internals/runtime';
 import * as test58 from '@ember/-internals/routing';
 import * as test59 from 'backburner.js';
 import * as test60 from 'rsvp';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 let allExports = [
   ['Application', '@ember/application', 'default', test0],

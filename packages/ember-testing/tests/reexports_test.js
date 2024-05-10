@@ -1,7 +1,8 @@
 import Ember from 'ember';
-import { confirmExport } from 'internal-test-helpers';
+import { confirmExport, testUnless } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import * as emberTesting from 'ember-testing';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 class ReexportsTestCase extends AbstractTestCase {}
 
@@ -19,7 +20,15 @@ class ReexportsTestCase extends AbstractTestCase {}
     exportName = path;
   }
 
-  ReexportsTestCase.prototype[`@test Ember.${path} exports correctly`] = function (assert) {
+  ReexportsTestCase.prototype[
+    `${testUnless(
+      DEPRECATIONS.DEPRECATE_IMPORT_EMBER(path).isRemoved
+    )} Ember.${path} exports correctly`
+  ] = function (assert) {
+    expectDeprecation(
+      /'ember' barrel file is deprecated/,
+      DEPRECATIONS.DEPRECATE_IMPORT_EMBER(path || exportName).isEnabled
+    );
     confirmExport(Ember, assert, path, moduleId, exportName, emberTesting);
   };
 });

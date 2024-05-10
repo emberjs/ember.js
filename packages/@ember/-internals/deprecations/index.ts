@@ -2,6 +2,7 @@ import type { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { ENV } from '@ember/-internals/environment';
 import { VERSION } from '@ember/version';
 import { deprecate, assert } from '@ember/debug';
+import { dasherize } from '../string/index';
 
 function isEnabled(options: DeprecationOptions) {
   return Object.hasOwnProperty.call(options.since, 'enabled') || ENV._ALL_DEPRECATIONS_ENABLED;
@@ -90,6 +91,17 @@ function deprecation(options: DeprecationOptions) {
   test the behavior without encountering the deprecated feature, just as users would.
  */
 export const DEPRECATIONS = {
+  DEPRECATE_IMPORT_EMBER(importName: string) {
+    return deprecation({
+      id: `deprecate-import-${dasherize(importName).toLowerCase()}-from-ember`,
+      for: 'ember-source',
+      since: { available: '5.9.0' },
+      until: '6.0.0',
+      url: `https://deprecations.emberjs.com/id/import-${dasherize(
+        importName
+      ).toLowerCase()}-from-ember`,
+    });
+  },
   DEPRECATE_IMPLICIT_ROUTE_MODEL: deprecation({
     id: 'deprecate-implicit-route-model',
     for: 'ember-source',
