@@ -104,6 +104,7 @@ export const DEPRECATIONS = {
     for: 'ember-source',
     since: {
       available: '5.9.0',
+      enabled: '5.9.0',
     },
   }),
   DEPRECATE_COMPONENT_TEMPLATE_RESOLVING: deprecation({
@@ -113,6 +114,7 @@ export const DEPRECATIONS = {
     for: 'ember-source',
     since: {
       available: '5.9.0',
+      enabled: '5.9.0',
     },
   }),
 };

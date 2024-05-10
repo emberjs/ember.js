@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, strip, runTask, testUnless } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  runTask,
+  testUnless,
+  expectDeprecation,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
@@ -284,6 +291,11 @@ class AbstractAppendTest extends RenderingTestCase {
   )} lifecycle hooks during component append`](assert) {
     let hooks = [];
 
+    expectDeprecation(
+      /resolved templates/,
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+    );
+
     let oldRegisterComponent = this.registerComponent;
     let componentsByName = {};
 
@@ -531,6 +543,11 @@ class AbstractAppendTest extends RenderingTestCase {
     DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
   )} appending, updating and destroying a single component`](assert) {
     let willDestroyCalled = 0;
+
+    expectDeprecation(
+      /separately resolved templates/,
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+    );
 
     this.registerComponent('x-parent', {
       ComponentClass: Component.extend({
