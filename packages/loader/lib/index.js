@@ -74,7 +74,7 @@ var define, require;
 
     var result = callback.apply(this, reified);
     if (!deps.includes('exports') || result !== undefined) {
-      exports = result;
+      exports = seen[name] = result;
     }
 
     return exports;
