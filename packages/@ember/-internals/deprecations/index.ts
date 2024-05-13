@@ -95,7 +95,7 @@ export const DEPRECATIONS = {
     return deprecation({
       id: `deprecate-import-${dasherize(importName).toLowerCase()}-from-ember`,
       for: 'ember-source',
-      since: { available: '5.9.0' },
+      since: { available: '5.10.0' },
       until: '6.0.0',
       url: `https://deprecations.emberjs.com/id/import-${dasherize(
         importName
@@ -125,8 +125,8 @@ export const DEPRECATIONS = {
     until: '6.0.0',
     for: 'ember-source',
     since: {
-      available: '5.9.0',
-      enabled: '5.9.0',
+      available: '5.10.0',
+      enabled: '5.10.0',
     },
   }),
 };
