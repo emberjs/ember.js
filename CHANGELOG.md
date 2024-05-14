@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.9.0-beta.2 (May 14, 2024)
+
+- [#20653](https://github.com/emberjs/ember.js/pull/20653) [DEPRECATION] Deprecate `(action)` and `{{action}}` in templates per [RFC #1006](https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper).
+
 ## v5.9.0-beta.1 (April 15, 2024)
 
 - [#20656](https://github.com/emberjs/ember.js/pull/20656) [BUGFIX] Update router.js
