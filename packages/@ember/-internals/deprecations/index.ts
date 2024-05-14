@@ -104,6 +104,7 @@ export const DEPRECATIONS = {
     for: 'ember-source',
     since: {
       available: '5.9.0',
+      enabled: '5.9.0',
     },
   }),
 };
