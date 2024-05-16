@@ -164,8 +164,8 @@ export function equalsElement(
 
     if (content !== null) {
       assert.pushResult({
-        result: element.innerHTML === content,
-        actual: element.innerHTML,
+        result: element.innerText === content,
+        actual: element.innerText,
         expected: content,
         message: `The element had '${content}' as its content`,
       });
