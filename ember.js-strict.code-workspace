@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../ember-cli"
+		},
+		{
+			"path": "../ember-optional-features"
+		}
+	],
+	"settings": {}
+}
