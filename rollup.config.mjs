@@ -135,7 +135,10 @@ function packages() {
   });
 
   // add only the entrypoints of the rolledUpPackages
-  entryFiles = [...entryFiles, ...glob.sync(`{${rolledUpPackages().join(',')}}/index.{js,ts}`)];
+  entryFiles = [
+    ...entryFiles,
+    ...glob.sync(`{${rolledUpPackages().join(',')}}/index.{js,ts}`, { cwd: 'packages' }),
+  ];
 
   return Object.fromEntries(
     entryFiles.map((filename) => [filename.replace(/\.[jt]s$/, ''), filename])
