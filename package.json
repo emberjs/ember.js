@@ -60,6 +60,7 @@
   "dependencies": {
     "@babel/core": "^7.24.4",
     "@ember/edition-utils": "^1.2.0",
+    "@embroider/macros": "^1.16.1",
     "@glimmer/compiler": "0.92.0",
     "@glimmer/destroyable": "0.92.0",
     "@glimmer/env": "^0.1.7",

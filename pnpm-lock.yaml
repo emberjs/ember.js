@@ -18,6 +18,9 @@ importers:
       '@ember/edition-utils':
         specifier: ^1.2.0
         version: 1.2.0
+      '@embroider/macros':
+        specifier: ^1.16.1
+        version: 1.16.1
       '@glimmer/compiler':
         specifier: 0.92.0
         version: 0.92.0
@@ -1739,9 +1742,6 @@ importers:
       eslint-plugin-qunit:
         specifier: ^8.1.1
         version: 8.1.1(eslint@8.57.0)
-      loader.js:
-        specifier: ^4.7.0
-        version: 4.7.0
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -4206,7 +4206,6 @@ packages:
       semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@embroider/shared-internals@2.6.0(supports-color@8.1.1):
     resolution: {integrity: sha512-A2BYQkhotdKOXuTaxvo9dqOIMbk+2LqFyqvfaaePkZcFJvtCkvTaD31/sSzqvRF6rdeBHjdMwU9Z2baPZ55fEQ==}
@@ -13692,10 +13691,6 @@ packages:
       big.js: 5.2.2
       emojis-list: 3.0.0
       json5: 2.2.3
-
-  /loader.js@4.7.0:
-    resolution: {integrity: sha512-9M2KvGT6duzGMgkOcTkWb+PR/Q2Oe54df/tLgHGVmFpAmtqJ553xJh6N63iFYI2yjo2PeJXbS5skHi/QpJq4vA==}
-    dev: true
 
   /locate-path@2.0.0:
     resolution: {integrity: sha512-NCI2kiDkyR7VeEKm27Kda/iQHyKJe1Bu0FlTbYp3CqJu+9IFe9bLyAjMxf5ZDDbEg+iMPzB5zYyUTSm8wVTKmA==}
