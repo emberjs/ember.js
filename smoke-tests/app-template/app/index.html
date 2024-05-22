@@ -19,11 +19,12 @@
     <script src="{{rootURL}}assets/vendor.js"></script>
     <script src="{{rootURL}}assets/ember-test-app.js"></script>
 
-    {{content-for "body-footer"}}
     <script type="module">
-      const App = await System.import('ember-test-app/app');
-      const ENV = await System.import('ember-test-app/config/environment');
+      const { default: App } = await System.import('ember-test-app/app');
+      const { default: ENV } = await System.import('ember-test-app/config/environment');
       App.create(ENV.APP)
-     </script>
+    </script>
+
+    {{content-for "body-footer"}}
   </body>
 </html>

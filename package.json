@@ -165,7 +165,8 @@
   },
   "pnpm": {
     "overrides": {
-      "rollup": "^4.2.0"
+      "rollup": "^4.2.0",
+      "ember-auto-import": "link:../ember-auto-import/packages/ember-auto-import"
     }
   },
   "peerDependencies": {

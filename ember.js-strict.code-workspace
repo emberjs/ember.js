@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../ember-optional-features"
+		},
+		{
+			"path": "../ember-auto-import"
 		}
 	],
 	"settings": {}
