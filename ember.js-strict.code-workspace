@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../ember-auto-import"
+		},
+		{
+			"path": "../ember-resolver"
 		}
 	],
 	"settings": {}

@@ -1722,6 +1722,9 @@ importers:
       ember-qunit:
         specifier: ^8.0.2
         version: 8.0.2(@ember/test-helpers@3.3.0)(ember-source@)(qunit@2.20.1)
+      ember-resolver:
+        specifier: link:../../../ember-resolver/addon
+        version: link:../../../ember-resolver/addon
       ember-source:
         specifier: workspace:*
         version: link:../..
