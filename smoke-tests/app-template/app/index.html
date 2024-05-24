@@ -19,12 +19,6 @@
     <script src="{{rootURL}}assets/vendor.js"></script>
     <script src="{{rootURL}}assets/ember-test-app.js"></script>
 
-    <script type="module">
-      // TODO: re-add autoboot
-      const { default: App } = await _s2bab.import('ember-test-app/app');
-      const { default: ENV } = await _s2bab.import('ember-test-app/config/environment');
-      App.create(ENV.APP)
-    </script>
     {{content-for "body-footer"}}
   </body>
 </html>
