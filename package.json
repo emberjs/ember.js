@@ -103,8 +103,6 @@
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.321.1",
-    "babel-plugin-debug-macros": "1.0.0",
-    "babel-plugin-ember-template-compilation": "^2.1.1",
     "@babel/plugin-transform-typescript": "^7.22.9",
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
@@ -121,6 +119,8 @@
     "@typescript-eslint/parser": "^5.62.0",
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
+    "babel-plugin-debug-macros": "1.0.0",
+    "babel-plugin-ember-template-compilation": "^2.1.1",
     "dag-map": "^2.0.2",
     "decorator-transforms": "2.0.0",
     "ember-cli": "^4.10.0",
@@ -166,7 +166,11 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.2.0",
-      "ember-auto-import": "link:../ember-auto-import/packages/ember-auto-import"
+      "ember-auto-import": "link:../ember-auto-import/packages/ember-auto-import",
+      "@embroider/macros": "1.16.2-unstable.216c23b"
+    },
+    "patchedDependencies": {
+      "@ember-data/private-build-infra@5.3.3": "patches/@ember-data__private-build-infra@5.3.3.patch"
     }
   },
   "peerDependencies": {

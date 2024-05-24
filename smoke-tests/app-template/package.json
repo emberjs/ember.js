@@ -43,7 +43,6 @@
     "ember-data": "~5.3.3",
     "ember-page-title": "^8.2.3",
     "ember-qunit": "^8.0.2",
-    "ember-resolver": "^11.0.1",
     "ember-source": "workspace:*",
     "ember-template-lint": "^6.0.0",
     "ember-welcome-page": "^7.0.2",

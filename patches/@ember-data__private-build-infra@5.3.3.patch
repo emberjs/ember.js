@@ -1,0 +1,12 @@
+diff --git a/src/addon-build-config-for-data-package.js b/src/addon-build-config-for-data-package.js
+index dee5fa755d25ace0eff50e187f397d5889620d62..e94ceb701bde36258933431f7d834e26ce122b50 100644
+--- a/src/addon-build-config-for-data-package.js
++++ b/src/addon-build-config-for-data-package.js
+@@ -22,6 +22,7 @@ function addonBuildConfigForDataPackage(pkg) {
+           setOwnConfig: {},
+         },
+         'ember-cli-babel': {
++          ...this.options['ember-cli-babel'],
+           enableTypeScriptTransform: true,
+         },
+         autoImport: {
