@@ -1,6 +1,4 @@
- - do a non-circular special form
  - restore auto app boot  
- - make the babel caching warnings go away
  - land the EAI work properly (with tests, and with all the dynamic imports still working)
  - make ember-resolver work in both modes
    - if we publish as a v2 addon, we can just have two modules and the unused one won't be in the build

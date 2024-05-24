@@ -1,11 +1,13 @@
 import Application from '@ember/application';
 import Resolver from 'ember-resolver';
 import config from 'ember-test-app/config/environment';
-import modules from '@ember/compat-modules';
+import loadCompatModules from '@ember/compat-modules';
+
+const compatModules = await loadCompatModules(import.meta.url)
 
 export default class App extends Application {
   modulePrefix = config.modulePrefix;
   podModulePrefix = config.podModulePrefix;
-  Resolver = Resolver.withModules(modules);
+  Resolver = Resolver.withModules(compatModules);
 }
 
