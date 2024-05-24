@@ -959,12 +959,6 @@ importers:
         specifier: workspace:*
         version: link:../-internals
 
-  packages/@ember/resolver:
-    dependencies:
-      '@ember/owner':
-        specifier: workspace:*
-        version: link:../owner
-
   packages/@ember/routing:
     dependencies:
       '@ember/-internals':
