@@ -2,6 +2,9 @@
  - restore auto app boot  
  - make the babel caching warnings go away
  - land the EAI work properly (with tests, and with all the dynamic imports still working)
- - need a release of embroider/macros that detects strict-es-modules and does eager import sync
-  - or perhaps we can set the mode from ember-cli
+ - make ember-resolver work in both modes
+   - if we publish as a v2 addon, we can just have two modules and the unused one won't be in the build
+   - prune deprecated behaviors and EmberObject out of new resolver
+ - currently forcing unstable relase of embroider/macros because it always uses eager importSync
+   - can we force this setting from ember-cli, so that all versions in the dep tree do the right thing?
  - had to patch ember-data 
