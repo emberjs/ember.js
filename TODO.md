@@ -1,0 +1,7 @@
+ - do a non-circular special form
+ - restore auto app boot  
+ - make the babel caching warnings go away
+ - land the EAI work properly (with tests, and with all the dynamic imports still working)
+ - need a release of embroider/macros that detects strict-es-modules and does eager import sync
+  - or perhaps we can set the mode from ember-cli
+ - had to patch ember-data 
