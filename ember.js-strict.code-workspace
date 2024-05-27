@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../ember-resolver"
+		},
+		{
+			"path": "../ember-test-helpers"
 		}
 	],
 	"settings": {}

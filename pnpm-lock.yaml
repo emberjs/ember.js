@@ -1666,8 +1666,8 @@ importers:
         specifier: ^3.0.1
         version: 3.1.1
       '@ember/test-helpers':
-        specifier: ^3.3.0
-        version: 3.3.0(ember-source@)
+        specifier: link:../../../ember-test-helpers/addon
+        version: link:../../../ember-test-helpers/addon
       '@embroider/test-setup':
         specifier: ^4.0.0
         version: 4.0.0
@@ -1715,7 +1715,7 @@ importers:
         version: 8.2.3(ember-source@)
       ember-qunit:
         specifier: ^8.0.2
-        version: 8.0.2(@ember/test-helpers@3.3.0)(ember-source@)(qunit@2.20.1)
+        version: 8.0.2(@ember/test-helpers@ember-test-helpers+addon)(ember-source@)(qunit@2.20.1)
       ember-resolver:
         specifier: link:../../../ember-resolver/addon
         version: link:../../../ember-resolver/addon
@@ -3995,27 +3995,6 @@ packages:
     dependencies:
       ember-cli-babel: 7.26.11
     transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /@ember/test-helpers@3.3.0(ember-source@):
-    resolution: {integrity: sha512-HEI28wtjnQuEj9+DstHUEEKPtqPAEVN9AAVr4EifVCd3DyEDy0m6hFT4qbap1WxAIktLja2QXGJg50lVWzZc5g==}
-    engines: {node: 16.* || >= 18}
-    peerDependencies:
-      ember-source: ^4.0.0 || ^5.0.0
-    dependencies:
-      '@ember/test-waiters': 3.1.0
-      '@embroider/macros': 1.16.2-unstable.216c23b
-      '@simple-dom/interface': 1.4.0
-      broccoli-debug: 0.6.5
-      broccoli-funnel: 3.0.8
-      dom-element-descriptors: 0.5.0
-      ember-auto-import: link:../ember-auto-import/packages/ember-auto-import
-      ember-cli-babel: 7.26.11
-      ember-cli-htmlbars: 6.3.0
-      ember-source: 'link:'
-    transitivePeerDependencies:
-      - '@glint/template'
       - supports-color
     dev: true
 
@@ -9936,10 +9915,6 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /dom-element-descriptors@0.5.0:
-    resolution: {integrity: sha512-CVzntLid1oFVHTKdTp/Qu7Kz+wSm8uO30TSQyAJ6n4Dz09yTzVQn3S1oRhVhUubxdMuKs1DjDqt88pubHagbPw==}
-    dev: true
-
   /domexception@2.0.1:
     resolution: {integrity: sha512-yxJ2mFy/sibVQlu5qHjOkf9J3K6zgmCxgJ94u2EdvDOV09H+32LtRswEcUsmUWN72pVLOEnTSRaIVVzVQgS0dg==}
     engines: {node: '>=8'}
@@ -10609,14 +10584,14 @@ packages:
       - supports-color
     dev: true
 
-  /ember-qunit@8.0.2(@ember/test-helpers@3.3.0)(ember-source@)(qunit@2.20.1):
+  /ember-qunit@8.0.2(@ember/test-helpers@ember-test-helpers+addon)(ember-source@)(qunit@2.20.1):
     resolution: {integrity: sha512-Rf60jeUTWNsF3Imf/FLujW/B/DFmKVXKmXO1lirTXjpertKfwRhp/3MnN8a/U/WyodTIsERkInGT1IqTtphCdQ==}
     peerDependencies:
       '@ember/test-helpers': '>=3.0.3'
       ember-source: '>=4.0.0'
       qunit: ^2.13.0
     dependencies:
-      '@ember/test-helpers': 3.3.0(ember-source@)
+      '@ember/test-helpers': link:../ember-test-helpers/addon
       '@embroider/addon-shim': 1.8.7
       '@embroider/macros': 1.16.2-unstable.216c23b
       ember-cli-test-loader: 3.1.0
