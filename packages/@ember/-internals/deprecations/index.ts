@@ -154,3 +154,14 @@ export function deprecateUntil(message: string, deprecation: DeprecationObject) 
   }
   deprecate(message, deprecation.test, options);
 }
+
+const { EXTEND_PROTOTYPES } = ENV as {
+  EXTEND_PROTOTYPES: { Array?: boolean };
+};
+
+if (EXTEND_PROTOTYPES.Array !== false) {
+  deprecateUntil(
+    'Array prototype extensions are deprecated. Follow the deprecation guide for migration instructions, and set EmberENV.EXTEND_PROTOTYPES to false in your config/environment.js',
+    DEPRECATIONS.DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS
+  );
+}
