@@ -1,3 +1,4 @@
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { DEBUG } from '@glimmer/env';
 import global from './global';
 
@@ -202,6 +203,14 @@ export const ENV = {
   }
 
   let { EXTEND_PROTOTYPES } = EmberENV;
+
+  if (EXTEND_PROTOTYPES !== false) {
+    deprecateUntil(
+      'Array prototype extensions are deprecated. Follow the deprecation guide for migration instructions, and set EmberENV.EXTEND_PROTOTYPES to false in your config/environment.js',
+      DEPRECATIONS.DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS
+    );
+  }
+
   if (EXTEND_PROTOTYPES !== undefined) {
     if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
       ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
