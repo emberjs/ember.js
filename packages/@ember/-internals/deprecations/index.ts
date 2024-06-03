@@ -111,7 +111,7 @@ export const DEPRECATIONS = {
   }),
   DEPRECATE_TEMPLATE_ACTION: deprecation({
     id: 'template-action',
-    url: 'https://deprecations.emberjs.com/id/deprecate-template-action',
+    url: 'https://deprecations.emberjs.com/id/template-action',
     until: '6.0.0',
     for: 'ember-source',
     since: {
@@ -121,7 +121,7 @@ export const DEPRECATIONS = {
   }),
   DEPRECATE_COMPONENT_TEMPLATE_RESOLVING: deprecation({
     id: 'component-template-resolving',
-    url: 'https://deprecations.emberjs.com/id/deprecate-component-template-resolving',
+    url: 'https://deprecations.emberjs.com/id/component-template-resolving',
     until: '6.0.0',
     for: 'ember-source',
     since: {
