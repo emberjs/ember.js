@@ -129,6 +129,16 @@ export const DEPRECATIONS = {
       enabled: '5.10.0',
     },
   }),
+  DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS: deprecation({
+    id: 'deprecate-array-prototype-extensions',
+    url: 'https://deprecations.emberjs.com/id/deprecate-deprecate-array-prototype-extensions',
+    until: '6.0.0',
+    for: 'ember-source',
+    since: {
+      available: '5.10.0',
+      enabled: '5.10.0',
+    },
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
