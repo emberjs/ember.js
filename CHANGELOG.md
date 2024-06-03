@@ -1,17 +1,12 @@
 # Ember Changelog
 
-## v5.9.0-beta.2 (May 14, 2024)
+## v5.9.0 (June 3, 2024)
 
 - [#20653](https://github.com/emberjs/ember.js/pull/20653) [DEPRECATION] Deprecate `(action)` and `{{action}}` in templates per [RFC #1006](https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper).
-
-## v5.9.0-beta.1 (April 15, 2024)
-
-- [#20656](https://github.com/emberjs/ember.js/pull/20656) [BUGFIX] Update router.js
-- [#20664](https://github.com/emberjs/ember.js/pull/20664) [BUGFIX] Upgrade router_js to support `exactOptionalPropertyTypes`
+- [#20669](https://github.com/emberjs/ember.js/pull/20669) [FEATURE] Make deprecations throw when the `until` for `ember-source` has passed per [RFC #0830](https://rfcs.emberjs.com/id/0830-evolving-embers-major-version-process).
+- [#20656](https://github.com/emberjs/ember.js/pull/20656) / [#20664](https://github.com/emberjs/ember.js/pull/20664) [BUGFIX] Upgrade router_js to support `exactOptionalPropertyTypes`
 - [#20658](https://github.com/emberjs/ember.js/pull/20658) Upgrade glimmer-vm to v0.92
-- [#20669](https://github.com/emberjs/ember.js/pull/20669) [FEATURE] Make deprecations throw when the `until` for `ember-source` has passed
 - [#20678](https://github.com/emberjs/ember.js/pull/20678) Address a missed deprecation introduced in #20658
-- [702da648](https://github.com/emberjs/ember.js/commit/702da6484d1cab95a5ae1bef530e0dbdbb9e81b2) Add v5.8.0 to CHANGELOG
 
 ## v5.8.0 (April 15, 2024)
 
