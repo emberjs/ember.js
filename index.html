@@ -32,15 +32,17 @@
         EmberENV.ENABLE_OPTIONAL_FEATURES = true;
       }
 
-      EmberENV['RAISE_ON_DEPRECATION'] = true;
+      EmberENV['RAISE_ON_DEPRECATION'] = QUnit.urlParams.RAISE_ON_DEPRECATION
+        ? QUnit.urlParams.RAISE_ON_DEPRECATION === 'true'
+        : true;
 
       if (QUnit.urlParams.ALL_DEPRECATIONS_ENABLED) {
-          EmberENV['_ALL_DEPRECATIONS_ENABLED'] = true;
-        }
+        EmberENV['_ALL_DEPRECATIONS_ENABLED'] = true;
+      }
 
-        if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
-          EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
-        }
+      if (QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION) {
+        EmberENV['_OVERRIDE_DEPRECATION_VERSION'] = QUnit.urlParams.OVERRIDE_DEPRECATION_VERSION;
+      }
     </script>
 
     <script type="module">
