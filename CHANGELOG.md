@@ -1,5 +1,14 @@
 # Ember Changelog
 
+## v5.10.0.beta.1 (June 4, 2024)
+
+- [#20660](https://github.com/emberjs/ember.js/pull/20660) [DEPRECATION] Deprecate non-colocated component template resolution per [RFC #995](https://rfcs.emberjs.com/id/0995-deprecate-non-colocated-components).
+- [#20675](https://github.com/emberjs/ember.js/pull/20675) [INTERNAL] Build reform
+- [#20683](https://github.com/emberjs/ember.js/pull/20683) [CLEANUP] Remove application-template-wrapper optional feature support
+- [#20685](https://github.com/emberjs/ember.js/pull/20685) [CLEANUP] Remove support for non-glimmer template-only components
+- [#20681](https://github.com/emberjs/ember.js/pull/20681) Update ember-cli-babel
+
+
 ## v5.9.0 (June 3, 2024)
 
 - [#20653](https://github.com/emberjs/ember.js/pull/20653) [DEPRECATION] Deprecate `(action)` and `{{action}}` in templates per [RFC #1006](https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper).
