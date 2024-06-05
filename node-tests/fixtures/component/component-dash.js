@@ -1,3 +1,3 @@
 import Component from '@glimmer/component';
 
-export default class XFooComponent extends Component {}
+export default class XFoo extends Component {}
