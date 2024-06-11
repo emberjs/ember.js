@@ -113,7 +113,10 @@ export const cached: MethodDecorator = (...args: any[]) => {
     throwCachedGetterOnlyError(key);
   }
 
-  CacheMap.set(target, [...(CacheMap.get(target) || []), key]);
+  if (!CacheMap.has(target)) {
+    CacheMap.set(target, new WeakSet());
+  }
+  CacheMap.get(target).add(key);
 
   const caches = new WeakMap();
   const getter = descriptor.get;
@@ -150,5 +153,5 @@ function throwCachedInvalidArgsError(args: unknown[] = []): never {
 }
 
 export function isCachedProperty(object: object, prop: string) {
-  return (CacheMap.get(object) || []).includes(prop);
+  return CacheMap.get(object)?.has(prop);
 }
