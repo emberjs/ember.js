@@ -114,7 +114,7 @@ export const cached: MethodDecorator = (...args: any[]) => {
   }
 
   if (!CacheMap.has(target)) {
-    CacheMap.set(target, new WeakSet());
+    CacheMap.set(target, new Set());
   }
   CacheMap.get(target).add(key);
 
