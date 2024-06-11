@@ -18,7 +18,7 @@ const enableOctane = setupTestEnvironment.enableOctane;
 
 const glimmerComponentContents = `import Component from '@glimmer/component';
 
-export default class FooComponent extends Component {}
+export default class Foo extends Component {}
 `;
 
 const emberComponentContents = `import Component from '@ember/component';
@@ -145,7 +145,7 @@ describe('Blueprint: component-class', function () {
     it('component-class x-foo', function () {
       return emberGenerateDestroy(['component-class', 'x-foo'], (_file) => {
         expect(_file('app/components/x-foo.js')).to.equal(
-          glimmerComponentContents.replace('FooComponent', 'XFooComponent')
+          glimmerComponentContents.replace('Foo', 'XFoo')
         );
       });
     });
@@ -154,7 +154,7 @@ describe('Blueprint: component-class', function () {
       return emberGenerateDestroy(['component-class', 'x-foo.js'], (_file) => {
         expect(_file('app/components/x-foo.js.js')).to.not.exist;
         expect(_file('app/components/x-foo.js')).to.equal(
-          glimmerComponentContents.replace('FooComponent', 'XFooComponent')
+          glimmerComponentContents.replace('Foo', 'XFoo')
         );
       });
     });
@@ -162,7 +162,7 @@ describe('Blueprint: component-class', function () {
     it('component-class foo/x-foo', function () {
       return emberGenerateDestroy(['component-class', 'foo/x-foo'], (_file) => {
         expect(_file('app/components/foo/x-foo.js')).to.equal(
-          glimmerComponentContents.replace('FooComponent', 'FooXFooComponent')
+          glimmerComponentContents.replace('Foo', 'FooXFoo')
         );
       });
     });
@@ -172,7 +172,7 @@ describe('Blueprint: component-class', function () {
         ['component-class', 'foo/x-foo', '--component-class', '@glimmer/component'],
         (_file) => {
           expect(_file('app/components/foo/x-foo.js')).to.equal(
-            glimmerComponentContents.replace('FooComponent', 'FooXFooComponent')
+            glimmerComponentContents.replace('Foo', 'FooXFoo')
           );
         }
       );
@@ -298,7 +298,7 @@ describe('Blueprint: component-class', function () {
     it('component-class x-foo', function () {
       return emberGenerateDestroy(['component-class', 'x-foo'], (_file) => {
         expect(_file('addon/components/x-foo.js')).to.equal(
-          glimmerComponentContents.replace('FooComponent', 'XFooComponent')
+          glimmerComponentContents.replace('Foo', 'XFoo')
         );
         expect(_file('app/components/x-foo.js')).to.contain(
           "export { default } from 'my-addon/components/x-foo';"
@@ -309,7 +309,7 @@ describe('Blueprint: component-class', function () {
     it('component-class foo/x-foo', function () {
       return emberGenerateDestroy(['component-class', 'foo/x-foo'], (_file) => {
         expect(_file('addon/components/foo/x-foo.js')).to.equal(
-          glimmerComponentContents.replace('FooComponent', 'FooXFooComponent')
+          glimmerComponentContents.replace('Foo', 'FooXFoo')
         );
         expect(_file('app/components/foo/x-foo.js')).to.contain(
           "export { default } from 'my-addon/components/foo/x-foo';"
@@ -320,7 +320,7 @@ describe('Blueprint: component-class', function () {
     it('component-class x-foo --dummy', function () {
       return emberGenerateDestroy(['component-class', 'x-foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/components/x-foo.js')).equal(
-          glimmerComponentContents.replace('FooComponent', 'XFooComponent')
+          glimmerComponentContents.replace('Foo', 'XFoo')
         );
         expect(_file('app/components/x-foo.js')).to.not.exist;
       });
@@ -329,7 +329,7 @@ describe('Blueprint: component-class', function () {
     it('component-class foo/x-foo --dummy', function () {
       return emberGenerateDestroy(['component-class', 'foo/x-foo', '--dummy'], (_file) => {
         expect(_file('tests/dummy/app/components/foo/x-foo.js')).to.equal(
-          glimmerComponentContents.replace('FooComponent', 'FooXFooComponent')
+          glimmerComponentContents.replace('Foo', 'FooXFoo')
         );
         expect(_file('app/components/foo/x-foo.hbs')).to.not.exist;
       });
@@ -367,7 +367,7 @@ describe('Blueprint: component-class', function () {
         ['component-class', 'x-foo', '--in-repo-addon=my-addon'],
         (_file) => {
           expect(_file('lib/my-addon/addon/components/x-foo.js')).to.equal(
-            glimmerComponentContents.replace('FooComponent', 'XFooComponent')
+            glimmerComponentContents.replace('Foo', 'XFoo')
           );
           expect(_file('lib/my-addon/app/components/x-foo.js')).to.contain(
             "export { default } from 'my-addon/components/x-foo';"

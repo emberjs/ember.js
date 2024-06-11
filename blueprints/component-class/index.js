@@ -173,9 +173,9 @@ module.exports = {
         importComponent = `import Component from '@glimmer/component';`;
         if (this._isUsingTS) {
           componentSignature = generateComponentSignature(classifiedModuleName);
-          defaultExport = `class ${classifiedModuleName}Component extends Component<${classifiedModuleName}Signature> {}`;
+          defaultExport = `class ${classifiedModuleName} extends Component<${classifiedModuleName}Signature> {}`;
         } else {
-          defaultExport = `class ${classifiedModuleName}Component extends Component {}`;
+          defaultExport = `class ${classifiedModuleName} extends Component {}`;
         }
         break;
       case '@ember/component/template-only':

@@ -18,7 +18,7 @@ const enableOctane = setupTestEnvironment.enableOctane;
 
 const glimmerComponentContents = `import Component from '@glimmer/component';
 
-export default class FooComponent extends Component {}
+export default class Foo extends Component {}
 `;
 
 const emberComponentContents = `import Component from '@ember/component';
@@ -308,7 +308,7 @@ describe('Blueprint: component', function () {
         ['component', 'foo/x-foo', '--component-class', '@glimmer/component'],
         (_file) => {
           expect(_file('app/components/foo/x-foo.js')).to.equal(
-            glimmerComponentContents.replace('FooComponent', 'FooXFooComponent')
+            glimmerComponentContents.replace('Foo', 'FooXFoo')
           );
           expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
