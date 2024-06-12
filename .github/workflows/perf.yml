@@ -49,6 +49,5 @@ jobs:
         uses: mshick/add-pr-comment@v2
         with:
           message-path: "tracerbench-results/msg.txt"
-          update-only: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
