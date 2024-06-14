@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 'use strict';
 
-/* 
+/*
   Test Variants
 
   These are all accepted as environment variables when running `ember test` or
-  as query params when directly invoking the test suite in the browser. 
+  as query params when directly invoking the test suite in the browser.
 */
 const variants = [
   // When true, even deprecations that are not yet at the "enabled" version will
@@ -25,6 +25,9 @@ const variants = [
   // This enables all canary feature flags for unreleased feature within Ember
   // itself.
   'ENABLE_OPTIONAL_FEATURES',
+
+  // Throw on unexpected deprecations. Defaults to true if not set explicitly.
+  'RAISE_ON_DEPRECATION',
 ];
 
 const chalk = require('chalk');

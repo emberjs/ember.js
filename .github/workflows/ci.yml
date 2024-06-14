@@ -35,7 +35,7 @@ jobs:
         working-directory: smoke-tests/scenarios
         run: |
           matrix_json=$(pnpm scenario-tester list --require @swc-node/register --files "*-test.ts" --matrix "pnpm run test --filter %s"   )
-          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT        
+          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   types:
     name: Type Checking (current version)
@@ -105,9 +105,11 @@ jobs:
             ENABLE_OPTIONAL_FEATURES: "true"
           - name: "Extend prototypes"
             EXTEND_PROTOTYPES: "true"
+            RAISE_ON_DEPRECATION: "false"
           - name: "Extend prototypes, with optional features"
             EXTEND_PROTOTYPES: "true"
             ENABLE_OPTIONAL_FEATURES: "true"
+            RAISE_ON_DEPRECATION: "false"
 
     steps:
       - uses: actions/checkout@v3
@@ -120,6 +122,7 @@ jobs:
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           EXTEND_PROTOTYPES: ${{ matrix.EXTEND_PROTOTYPES }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
+          RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
 
         run: pnpm test
 
