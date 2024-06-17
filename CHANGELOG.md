@@ -1,6 +1,10 @@
 # Ember Changelog
 
-## v5.10.0.beta.1 (June 4, 2024)
+## v5.10.0-beta.2 (June 17, 2024)
+
+- [#20702](https://github.com/emberjs/ember.js/pull/20702) [DEPRECATION] Deprecate array prototype extensions per [RFC #848](https://rfcs.emberjs.com/id/0848-deprecate-array-prototype-extensions/).
+
+## v5.10.0-beta.1 (June 4, 2024)
 
 - [#20660](https://github.com/emberjs/ember.js/pull/20660) [DEPRECATION] Deprecate non-colocated component template resolution per [RFC #995](https://rfcs.emberjs.com/id/0995-deprecate-non-colocated-components).
 - [#20675](https://github.com/emberjs/ember.js/pull/20675) [INTERNAL] Build reform
