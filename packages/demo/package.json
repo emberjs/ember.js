@@ -39,7 +39,7 @@
     "@glimmer/tracking": "workspace:*",
     "@glimmer/util": "0.92.0",
     "@glimmer/validator": "0.92.0",
-    "@lifeart/gxt": "^0.0.49",
+    "@lifeart/gxt": "0.0.50",
     "backburner.js": "^2.7.0",
     "dag-map": "^2.0.2",
     "ember-template-compiler": "workspace:*",

@@ -5,7 +5,15 @@ import { fileURLToPath, URL } from 'node:url';
 const projectRoot = import.meta.url;
 
 export default defineConfig(({ mode }) => ({
-  plugins: [compiler(mode)],
+  plugins: [
+    compiler(mode, {
+      flags: {
+        WITH_EMBER_INTEGRATION: true,
+        WITH_HELPER_MANAGER: false,
+        WITH_MODIFIER_MANAGER: true,
+      },
+    }),
+  ],
   base: '',
   rollupOptions: {
     input: {

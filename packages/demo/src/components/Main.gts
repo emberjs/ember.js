@@ -11,8 +11,9 @@ export default class MainTemplate extends Component {
       {{item}}
     {{/each}}
     <div>place for outlet
-      <div class="outlet">{{yield}}</div>
+      <div class="outlet">{{outlet}}</div>
     </div>
     </div>
+    <LinkTo @route="profile">Profile</LinkTo>
   </template>
 }

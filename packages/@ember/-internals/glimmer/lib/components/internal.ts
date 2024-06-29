@@ -15,9 +15,17 @@ import type {
 } from '@glimmer/interfaces';
 import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+import { reference } from '@lifeart/gxt/glimmer-compatibility';
+// import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { untrack } from '@glimmer/validator';
 
+const { createConstRef } = reference;
+function isConstRef() {
+  return true;
+}
+function valueForRef(ref) {
+  return ref;
+}
 function NOOP(): void {}
 
 export type EventListener = (event: Event) => void;

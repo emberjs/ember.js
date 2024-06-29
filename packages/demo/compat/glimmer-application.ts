@@ -1,6 +1,4 @@
+export { setComponentManager } from '@glimmer/manager';
 export function capabilities() {
   return {};
-}
-export function setComponentManager() {
-  console.log('setComponentManager', ...arguments);
 }

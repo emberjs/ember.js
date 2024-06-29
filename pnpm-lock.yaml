@@ -419,8 +419,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: ^0.0.49
-        version: 0.0.49
+        specifier: 0.0.50
+        version: 0.0.50
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -1360,8 +1360,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: ^0.0.49
-        version: 0.0.49
+        specifier: 0.0.50
+        version: 0.0.50
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -5365,8 +5365,8 @@ packages:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  /@lifeart/gxt@0.0.49:
-    resolution: {integrity: sha512-0aE3Qp1tYBeRmESOsVbTd0J07QakUk9rsmHpOifPjSPGOAHy3/MJGzE8TBGPwJkXRj/jpzLqlCo0KaxWzHXo2w==}
+  /@lifeart/gxt@0.0.50:
+    resolution: {integrity: sha512-JiijMIANS6J/q1pAqI1h+83p4Eh+yV6FL0I2/jx/vE07Jzd9n5P4HZvWobuo+eMQprq9r59nw5fCPX6LCyTlgg==}
     dependencies:
       '@babel/core': 7.24.4(supports-color@8.1.1)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.24.4)

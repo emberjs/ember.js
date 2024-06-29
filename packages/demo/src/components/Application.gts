@@ -8,7 +8,7 @@ export default class ApplicationTemplate extends Component {
       {{item}}
     {{/each}}
     <div>place for outlet
-      <div class="outlet">{{yield}}</div>
+      <div class="outlet">{{outlet}}</div>
     </div>
     </div>
   </template>

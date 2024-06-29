@@ -9,7 +9,7 @@ import env from '@/config/env';
 import Router from './router';
 
 import '@/config/inspector';
-
+globalThis.EmberFunctionalHelpers = new WeakMap();
 setupApplicationGlobals(Ember);
 
 const app = init(App, Router);
