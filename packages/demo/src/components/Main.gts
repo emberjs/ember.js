@@ -1,4 +1,7 @@
 import { Component } from '@lifeart/gxt';
+import { LinkTo } from '@ember/routing';
+
+console.log('link-to', LinkTo);
 
 export default class MainTemplate extends Component {
   <template>
