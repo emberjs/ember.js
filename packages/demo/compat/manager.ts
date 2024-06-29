@@ -1,4 +1,4 @@
-import { $_MANAGERS, $PROPS_SYMBOL } from "@lifeart/gxt";
+import { $_MANAGERS, $PROPS_SYMBOL } from '@lifeart/gxt';
 
 const COMPONENT_TEMPLATES: WeakMap<any, any> = new WeakMap();
 const COMPONENT_MANAGERS: WeakMap<any, any> = new WeakMap();
@@ -7,7 +7,7 @@ const INTERNAL_HELPER_MANAGERS: WeakMap<any, any> = new WeakMap();
 const INTERNAL_MODIFIER_MANAGERS: WeakMap<any, any> = new WeakMap();
 const HELPER_MANAGERS: WeakMap<any, any> = new WeakMap();
 
-$_MANAGERS.component.canHandle = function(komp) {
+$_MANAGERS.component.canHandle = function (komp) {
   if (INTERNAL_MANAGERS.has(komp)) {
     return true;
   } else if (COMPONENT_MANAGERS.has(komp)) {
@@ -18,25 +18,34 @@ $_MANAGERS.component.canHandle = function(komp) {
   // debugger;
 };
 
-$_MANAGERS.component.handle = function(komp, args, fw, ctx) {
+$_MANAGERS.component.handle = function (komp, args, fw, ctx) {
   const manager = INTERNAL_MANAGERS.get(komp) || COMPONENT_MANAGERS.get(komp);
   // debugger;
-  const instance = manager.create(globalThis.owner, komp, {
-    capture() {
-      return {
-        positional: [],
-        named: {}, // args
-      }
-    }
-  }, {}, ctx);
-  const tpl = getComponentTemplate(instance) || getComponentTemplate(instance.prototype) || getComponentTemplate(komp);
+  const instance = manager.create(
+    globalThis.owner,
+    komp,
+    {
+      capture() {
+        return {
+          positional: [],
+          named: {}, // args
+        };
+      },
+    },
+    {},
+    ctx
+  );
+  const tpl =
+    getComponentTemplate(instance) ||
+    getComponentTemplate(instance.prototype) ||
+    getComponentTemplate(komp);
   // debugger;
 
   return () => {
-    args[$PROPS_SYMBOL] = [[],[],[]];
+    args[$PROPS_SYMBOL] = [[], [], []];
     return tpl.bind(instance)(args);
-  }
-}
+  };
+};
 // console.log('$_MANAGERS', $_MANAGERS);
 
 export function capabilityFlagsFrom(capabilities) {
@@ -96,10 +105,10 @@ export function setModifierManager() {
   console.log('setModifierManager', ...arguments);
 }
 export function getCustomTagFor(obj: any) {
-  return function(obj, key) {
+  return function (obj, key) {
     console.log('getCustomTagFor usage', obj, key);
     return obj[key];
-  }
+  };
   // console.log('getCustomTagFor', ...arguments);
 }
 export function setCustomTagFor() {
@@ -128,7 +137,7 @@ export function managerHasCapability() {
 }
 
 export function hasInternalComponentManager() {
-  console.log('hasInternalComponentManager',  ...arguments);
+  console.log('hasInternalComponentManager', ...arguments);
 }
 
 export function hasValue() {
