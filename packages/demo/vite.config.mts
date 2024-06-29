@@ -31,6 +31,10 @@ export default defineConfig(({ mode }) => ({
         find: '@glimmer/utils',
         replacement: fileURLToPath(new URL(`./compat/glimmer-util`, projectRoot)),
       },
+      {
+        find: '@glimmer/manager',
+        replacement: fileURLToPath(new URL(`./compat/manager`, projectRoot)),
+      },
     ],
   },
 }));

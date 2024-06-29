@@ -1,6 +1,7 @@
 {
   // "extends": "./../tsconfig.json",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "paths": {
       "@/config/*": ["./src/config/*"],
       "@/addons/*": ["./src/addons/*"],
