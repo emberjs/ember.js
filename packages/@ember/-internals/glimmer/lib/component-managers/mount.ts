@@ -21,7 +21,7 @@ import type { Nullable } from '@ember/-internals/utility-types';
 import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/utils';
 import type RuntimeResolver from '../resolver';
 
 interface EngineState {

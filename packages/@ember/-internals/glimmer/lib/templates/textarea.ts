@@ -1,8 +1,7 @@
-import { precompileTemplate } from '@ember/template-compilation';
-import { on } from '@ember/modifier';
+import { hbs } from '@lifeart/gxt';
 
-export default precompileTemplate(
-  `<textarea
+export default function TextareaTemplate() {
+  return hbs`<textarea
   {{!-- for compatibility --}}
   id={{this.id}}
   class={{this.class}}
@@ -16,12 +15,5 @@ export default precompileTemplate(
   {{on "keyup" this.keyUp}}
   {{on "paste" this.valueDidChange}}
   {{on "cut" this.valueDidChange}}
-/>`,
-  {
-    moduleName: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
-    strictMode: true,
-    scope() {
-      return { on };
-    },
-  }
-);
+/>`;
+}
