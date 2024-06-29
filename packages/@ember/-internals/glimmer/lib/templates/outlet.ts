@@ -1,10 +1,15 @@
 import { precompileTemplate } from '@ember/template-compilation';
+import { hbs } from '@lifeart/gxt';
 import { outletHelper } from '../syntax/outlet';
+import Outlet from './outlet-helper-component';
 
-export default precompileTemplate(`{{component (outletHelper)}}`, {
-  moduleName: 'packages/@ember/-internals/glimmer/lib/templates/outlet.hbs',
-  strictMode: true,
-  scope() {
-    return { outletHelper };
-  },
-});
+export default (owner) => {
+  console.log('outlet factory', owner);
+
+  return function(args) {
+    console.log('outlet', this, owner, ...arguments);
+    return hbs`{{#let (component Outlet state=(args.state)) as |Outlet|}}
+      <div>[main outlet template]<Outlet /></div>
+    {{/let}}`;
+  }
+}

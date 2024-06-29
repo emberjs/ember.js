@@ -1,0 +1,20 @@
+{
+  // "extends": "./../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/config/*": ["./src/config/*"],
+      "@/addons/*": ["./src/addons/*"],
+      "@/addons": ["./src/addons"],
+      "@/components/*": ["./src/components/*"],
+      "@/controllers/*": ["./src/controllers/*"],
+      "@/templates/*": ["./src/templates/*"],
+      "@/helpers/*": ["./src/helpers/*"],
+      "@/modifiers/*": ["./src/modifiers/*"],
+      "@/models/*": ["./src/models/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/tests/*": ["./tests/*"],
+      "@/initializers/*": ["./src/initializers/*"],
+      "@/instance-initializers/*": ["./src/instance-initializers/*"],
+    }
+  }
+}

@@ -4,6 +4,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
+import { renderComponent, runDestructors } from '@lifeart/gxt';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
@@ -31,14 +32,14 @@ import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/refer
 import type { CurriedValue } from '@glimmer/runtime';
 import {
   clientBuilder,
-  curry,
+  // curry,
   DOMChanges,
   DOMTreeConstruction,
   inTransaction,
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/utils';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -62,6 +63,23 @@ export interface View {
   isDestroying: boolean;
   isDestroyed: boolean;
   [BOUNDS]: Bounds | null;
+}
+
+function curry(
+  type: T,
+  spec: object | string | any,
+  owner: any,
+  args: any | null,
+  resolved = false
+) {
+  console.log('curry');
+  return {
+    type,
+    spec,
+    owner,
+    args,
+    resolved,
+  };
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
@@ -129,13 +147,13 @@ class RootState {
   constructor(
     public root: Component | OutletView,
     public runtime: RuntimeContext,
-    context: CompileTimeCompilationContext,
+    _context: CompileTimeCompilationContext,
     owner: InternalOwner,
     template: Template,
     self: Reference<unknown>,
     parentElement: SimpleElement,
-    dynamicScope: DynamicScope,
-    builder: IBuilder
+    _dynamicScope: DynamicScope,
+    _builder: IBuilder
   ) {
     assert(
       `You cannot render \`${valueForRef(self)}\` without a template.`,
@@ -146,23 +164,16 @@ class RootState {
     this.result = undefined;
     this.destroyed = false;
 
+    // console.log(layout);
+
     this.render = errorLoopTransaction(() => {
-      let layout = unwrapTemplate(template).asLayout();
-
-      let iterator = renderMain(
-        runtime,
-        context,
-        owner,
-        self,
-        builder(runtime.env, { element: parentElement, nextSibling: null }),
-        layout,
-        dynamicScope
-      );
-
-      let result = (this.result = iterator.sync());
-
-      // override .render function after initial render
-      this.render = errorLoopTransaction(() => result.rerender({ alwaysRevalidate: false }));
+      let layout = unwrapTemplate(template).asLayout().compile();
+      const layoutInstance = new layout(this);
+      // @ts-expect-error fine
+      this.result = renderComponent(layoutInstance, parentElement, owner);
+      this.render = errorLoopTransaction(() => {
+        // fine
+      });
     });
   }
 
@@ -195,7 +206,11 @@ class RootState {
 
        */
 
-      inTransaction(env, () => destroy(result!));
+      inTransaction(env, () => {
+        // @ts-expect-error foo-bar
+        runDestructors(result.ctx);
+        destroy(result!);
+      });
     }
   }
 }
@@ -370,6 +385,7 @@ export class Renderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
+    console.log('appendOutletView', view, target);
     let definition = createRootOutlet(view);
     this._appendDefinition(
       view,

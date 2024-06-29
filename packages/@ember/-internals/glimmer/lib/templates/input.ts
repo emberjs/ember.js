@@ -1,7 +1,6 @@
-import { precompileTemplate } from '@ember/template-compilation';
-import { on } from '@ember/modifier';
-export default precompileTemplate(
-  `<input
+import { hbs } from '@lifeart/gxt';
+export default function InputTemplate() {
+  hbs`<input
   {{!-- for compatibility --}}
   id={{this.id}}
   class={{this.class}}
@@ -17,12 +16,5 @@ export default precompileTemplate(
   {{on "keyup" this.keyUp}}
   {{on "paste" this.valueDidChange}}
   {{on "cut" this.valueDidChange}}
-/>`,
-  {
-    moduleName: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
-    strictMode: true,
-    scope() {
-      return { on };
-    },
-  }
-);
+/>`;
+}

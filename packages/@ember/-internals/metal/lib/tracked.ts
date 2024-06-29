@@ -2,13 +2,44 @@ import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+// import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import { validator } from '@lifeart/gxt/glimmer-compatibility';
+import { cellFor } from '@lifeart/gxt';
+
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
 
+const {
+  consumeTag, dirtyTagFor, tagFor
+} = validator;
+
+
+function trackedData(key, initializer) {
+  let values = /* @__PURE__ */ new WeakMap();
+  let hasInitializer = typeof initializer === "function";
+  function getter(self) {
+    // consumeTag(cellFor(self, key));
+    let value;
+    if (hasInitializer && !values.has(self)) {
+      value = initializer.call(self);
+      values.set(self, value);
+    } else {
+      value = values.get(self);
+    }
+    return value;
+  }
+  function setter(self, value) {
+    dirtyTagFor(self, key);
+    values.set(self, value);
+  }
+  return {
+    getter,
+    setter
+  };
+}
 /**
   @decorator
   @private

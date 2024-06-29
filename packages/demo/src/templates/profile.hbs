@@ -1,0 +1,15 @@
+{{page-title 'Profile page'}}
+<h2 class='text-lg font-medium text-gray-900'>Profile</h2>
+
+
+
+<div class="card w-96 mx-auto bg-white  shadow-xl hover:shadow rounded-lg">
+     <img class="w-32 mx-auto rounded-full border-8 border-white" src="/ember.svg" alt="">
+     <div data-test-name class="text-center mt-2 text-3xl font-medium">{{@model.name}}</div>
+     <div class="text-center mt-2 font-light text-sm">#emberjs</div>
+     <div class="px-6 text-center mt-2 font-light text-sm">
+       <p class="pb-2">
+         It seems your id is {{@model.id}}
+       </p>
+     </div>
+  </div>
