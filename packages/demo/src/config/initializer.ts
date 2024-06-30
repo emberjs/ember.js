@@ -2,18 +2,16 @@ import ENV from './env';
 import registry from './registry';
 import type ApplicationClass from '@ember/application';
 import type RouteClass from './router';
-import { default as initializer } from '@/initializers/logger';
-import { default as logger } from '@/instance-initializers/logger';
 
 export function init(
   Application: typeof ApplicationClass,
   Router: typeof RouteClass
 ) {
   // Init initializers
-  Application.initializer(initializer);
+  // Application.initializer(initializer);
 
   // Init instance initializers
-  Application.instanceInitializer(logger);
+  // Application.instanceInitializer(logger);
   // Application.instanceInitializer(modalDialog);
 
   const app = Application.create({

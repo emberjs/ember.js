@@ -60,11 +60,7 @@ export function capabilityFlagsFrom(capabilities) {
 }
 
 export function setInternalComponentManager(manager: any, handle: any) {
-  if (globalThis.INTERNAL_MANAGERS.has(handle)) {
-    debugger;
-  }
   globalThis.INTERNAL_MANAGERS.set(handle, manager);
-  console.log('setInternalComponentManager', {manager, handle});
   return handle;
 }
 

@@ -29,8 +29,9 @@ export function createUpdatableTag() {
 export function updateTag() {
   console.log('updateTag');
 }
-export function track() {
-  console.log('track');
+export function track(cb) {
+  cb();
+  // console.log('track');
 }
 export function untrack(cb) {
   return cb();
