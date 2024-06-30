@@ -1,4 +1,4 @@
-import Controller, { ControllerQueryParam } from '@ember/controller';
+import Controller, { type ControllerQueryParam } from '@ember/controller';
 import { tracked } from '@glimmer/tracking';
 import type RouterService from '@ember/routing/router-service';
 import { service } from '@ember/service';
@@ -11,6 +11,9 @@ export class ProfileController extends Controller {
   @tracked now = new Date().toISOString();
   @service router!: RouterService;
 
+  onInputChange = ( e) => {
+    console.log('onInputChange', e);
+  }
   toMain = () => {
     this.router.transitionTo('main');
   };

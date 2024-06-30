@@ -1,4 +1,4 @@
-import { $_MANAGERS, $PROPS_SYMBOL } from '@lifeart/gxt';
+import { $_MANAGERS, $PROPS_SYMBOL, formula } from '@lifeart/gxt';
 
 globalThis.COMPONENT_TEMPLATES = globalThis.COMPONENT_TEMPLATES || new WeakMap();
 globalThis.COMPONENT_MANAGERS = globalThis.COMPONENT_MANAGERS || new WeakMap();
@@ -6,7 +6,6 @@ globalThis.INTERNAL_MANAGERS = globalThis.INTERNAL_MANAGERS || new WeakMap();
 globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
 globalThis.HELPER_MANAGERS = globalThis.HELPER_MANAGERS || new WeakMap();
-
 
 $_MANAGERS.component.canHandle = function (komp) {
   if (globalThis.INTERNAL_MANAGERS.has(komp)) {
@@ -22,24 +21,33 @@ $_MANAGERS.component.canHandle = function (komp) {
   // debugger;
 };
 
+function argsForInternalManager(args, fw) {
+  const named = {};
+  Object.keys(args).forEach((arg) => {
+    named[arg] = formula(() => args[arg], 'argsForInternalManager');
+  });
+
+  return {
+    capture() {
+      return {
+        positional: [],
+        named, // args
+      };
+    },
+  };
+}
+
 $_MANAGERS.component.handle = function (komp, args, fw, ctx) {
   const manager = globalThis.INTERNAL_MANAGERS.get(komp) || globalThis.COMPONENT_MANAGERS.get(komp);
   // debugger;
 
-
   const instance = manager.create(
     globalThis.owner,
     komp,
-    {
-      capture() {
-        return {
-          positional: [],
-          named: args, // args
-        };
-      },
-    },
+    argsForInternalManager(args, fw),
     {},
-    ctx
+    {},
+    formula(() => ctx, 'internalManager:caller')
   );
   const tpl =
     getComponentTemplate(instance) ||
@@ -48,7 +56,7 @@ $_MANAGERS.component.handle = function (komp, args, fw, ctx) {
   // debugger;
 
   return () => {
-    args[$PROPS_SYMBOL] = [[], [], []];
+    args[$PROPS_SYMBOL] = fw || [[], [], []];
     return tpl.bind(instance)(args);
   };
 };
@@ -110,7 +118,7 @@ export function setModifierManager() {
   console.log('setModifierManager', ...arguments);
 }
 export function getCustomTagFor(obj: any) {
-    console.log('getCustomTagFor', ...arguments);
+  console.log('getCustomTagFor', ...arguments);
   return undefined;
   // return function (obj, key) {
   //   console.log('getCustomTagFor usage', obj, key);

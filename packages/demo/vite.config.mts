@@ -51,6 +51,10 @@ export default defineConfig(({ mode }) => ({
         find: '@glimmer/destroyable',
         replacement: fileURLToPath(new URL(`./compat/destroyable`, projectRoot)),
       },
+      {
+        find: '@glimmer/reference',
+        replacement: fileURLToPath(new URL(`./compat/reference`, projectRoot)),
+      },
     ],
   },
 }));

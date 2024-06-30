@@ -18,6 +18,9 @@ export function combine(tags) {
 }
 const validated = new WeakSet();
 export function validateTag(tag) {
+  if (!tag) {
+    debugger;
+  }
   if ('fn' in tag) {
     return true;
   }

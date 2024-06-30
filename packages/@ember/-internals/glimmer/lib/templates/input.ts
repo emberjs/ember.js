@@ -1,6 +1,6 @@
 import { hbs } from '@lifeart/gxt';
 export default function InputTemplate() {
-  hbs`<input
+  return hbs`<input
   {{!-- for compatibility --}}
   id={{this.id}}
   class={{this.class}}

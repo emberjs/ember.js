@@ -24,7 +24,10 @@ function isConstRef() {
   return true;
 }
 function valueForRef(ref) {
-  return ref;
+  if (!ref) {
+    debugger;
+  }
+  return ref.value;
 }
 function NOOP(): void {}
 
