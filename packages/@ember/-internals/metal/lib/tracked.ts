@@ -13,33 +13,10 @@ import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './de
 import { SELF_TAG } from './tags';
 
 const {
-  consumeTag, dirtyTagFor, tagFor
+  consumeTag, dirtyTagFor, tagFor, trackedData
 } = validator;
 
 
-function trackedData(key, initializer) {
-  let values = /* @__PURE__ */ new WeakMap();
-  let hasInitializer = typeof initializer === "function";
-  function getter(self) {
-    // consumeTag(cellFor(self, key));
-    let value;
-    if (hasInitializer && !values.has(self)) {
-      value = initializer.call(self);
-      values.set(self, value);
-    } else {
-      value = values.get(self);
-    }
-    return value;
-  }
-  function setter(self, value) {
-    dirtyTagFor(self, key);
-    values.set(self, value);
-  }
-  return {
-    getter,
-    setter
-  };
-}
 /**
   @decorator
   @private
