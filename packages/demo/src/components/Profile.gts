@@ -8,7 +8,7 @@ export default class ProfileTemplate extends Component {
       {{item}}
     {{/each}}
     {{yield}}
-    <Input @value="12" {{on "change" this.onInputChange}} />
+    <Input @value={{this.q}} {{on "change" this.onInputChange}} />
     <button type="button" {{on "click" this.toMain}}>to main</button>
     <button type="button" {{on "click" this.incrementQp}}>+ qp</button>
     <button type="button" {{on "click" this.decrementQp}}>- qp</button>

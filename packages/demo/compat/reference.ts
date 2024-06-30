@@ -12,9 +12,9 @@ export const {
 
 export function isConstRef(ref) {
   console.log('isConstRef', ...arguments);
-  if ('fn' in ref) {
-    return true;
-  }
+  // if ('fn' in ref) {
+  //   return true;
+  // }
   return false;
 }
 
