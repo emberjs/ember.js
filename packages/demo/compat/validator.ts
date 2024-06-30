@@ -8,11 +8,23 @@ export const CURRENT_TAG = formula(() => {
 });
 export const CONSTANT_TAG = 11;
 export const ALLOW_CYCLES = true;
-export function combine() {
-  // console.log('combine', ...arguments);
-  return formula(() => void 0, 'combine');
+export function combine(tags) {
+  if (tags.some((t => typeof t !== 'object'))) {
+    debugger;
+  }
+  return formula(() => {
+    return tags.map((t) => t.value);
+  }, 'combine');
 }
-export const validateTag = () => {
+const validated = new WeakSet();
+export function validateTag(tag) {
+  if ('fn' in tag) {
+    return true;
+  }
+  if (!validated.has(tag)) {
+    validated.add(tag);
+    return false;
+  }
   return true;
 }
 export function resetTracking() {

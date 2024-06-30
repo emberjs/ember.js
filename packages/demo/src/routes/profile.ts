@@ -13,6 +13,6 @@ export default class ProfileRoute extends Route {
   }
 
   model() {
-    return [1, 2, 3];
+    return [1, 2, 3, Date.now()];
   }
 }
