@@ -47,6 +47,10 @@ export default defineConfig(({ mode }) => ({
         find: '@glimmer/validator',
         replacement: fileURLToPath(new URL(`./compat/validator`, projectRoot)),
       },
+      {
+        find: '@glimmer/destroyable',
+        replacement: fileURLToPath(new URL(`./compat/destroyable`, projectRoot)),
+      },
     ],
   },
 }));

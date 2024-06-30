@@ -41,6 +41,7 @@ export function addObserver(
   method?: string | Function,
   sync = SYNC_DEFAULT
 ): void {
+  console.log('addObserver', obj, path);
   let eventName = changeEvent(path);
 
   addListener(obj, eventName, target, method, false, sync);

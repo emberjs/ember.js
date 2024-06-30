@@ -6,12 +6,21 @@ import { service } from '@ember/service';
 
 export class ProfileController extends Controller {
   queryParams: readonly ControllerQueryParam[] = ['q'];
+  @tracked
   q = 12;
   @tracked now = new Date().toISOString();
   @service router!: RouterService;
 
   toMain = () => {
     this.router.transitionTo('main');
+  };
+
+  incrementQp = () => {
+    this.q++;
+  };
+
+  decrementQp = () => {
+    this.q--;
   };
 
   constructor(...args: ConstructorParameters<typeof Controller>) {

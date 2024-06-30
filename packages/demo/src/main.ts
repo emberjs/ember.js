@@ -15,4 +15,4 @@ setupApplicationGlobals(Ember);
 const app = init(App, Router);
 
 window[env.APP.globalName] = app; // for debugging and experiments
-app.visit(window.location.pathname);
+app.visit(window.location.href.replace(window.location.origin, ''));
