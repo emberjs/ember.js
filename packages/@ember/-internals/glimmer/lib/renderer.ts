@@ -4,7 +4,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
-import { renderComponent, runDestructors } from '@lifeart/gxt';
+import { destroyElementSync, renderComponent } from '@lifeart/gxt';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
@@ -208,7 +208,8 @@ class RootState {
 
       inTransaction(env, () => {
         // @ts-expect-error foo-bar
-        runDestructors(result.ctx);
+        destroyElementSync(result);
+        // runDestructors(result.ctx);
         destroy(result!);
       });
     }

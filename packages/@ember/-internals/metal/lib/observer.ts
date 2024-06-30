@@ -170,7 +170,7 @@ export function revalidateObservers(target: object) {
         tagMetaFor(target),
         peekMeta(target)
       );
-      observer.lastRevision = valueForTag(observer.tag);
+      // observer.lastRevision = valueForTag(observer.tag);
     });
   }
 
@@ -182,7 +182,7 @@ export function revalidateObservers(target: object) {
         tagMetaFor(target),
         peekMeta(target)
       );
-      observer.lastRevision = valueForTag(observer.tag);
+      // observer.lastRevision = valueForTag(observer.tag);
     });
   }
 }
