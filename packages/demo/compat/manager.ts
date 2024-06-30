@@ -1,17 +1,21 @@
 import { $_MANAGERS, $PROPS_SYMBOL } from '@lifeart/gxt';
 
-const COMPONENT_TEMPLATES: WeakMap<any, any> = new WeakMap();
-const COMPONENT_MANAGERS: WeakMap<any, any> = new WeakMap();
-const INTERNAL_MANAGERS: WeakMap<any, any> = new WeakMap();
-const INTERNAL_HELPER_MANAGERS: WeakMap<any, any> = new WeakMap();
-const INTERNAL_MODIFIER_MANAGERS: WeakMap<any, any> = new WeakMap();
-const HELPER_MANAGERS: WeakMap<any, any> = new WeakMap();
+globalThis.COMPONENT_TEMPLATES = globalThis.COMPONENT_TEMPLATES || new WeakMap();
+globalThis.COMPONENT_MANAGERS = globalThis.COMPONENT_MANAGERS || new WeakMap();
+globalThis.INTERNAL_MANAGERS = globalThis.INTERNAL_MANAGERS || new WeakMap();
+globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new WeakMap();
+globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
+globalThis.HELPER_MANAGERS = globalThis.HELPER_MANAGERS || new WeakMap();
+
 
 $_MANAGERS.component.canHandle = function (komp) {
-  if (INTERNAL_MANAGERS.has(komp)) {
+  if (globalThis.INTERNAL_MANAGERS.has(komp)) {
     return true;
-  } else if (COMPONENT_MANAGERS.has(komp)) {
+  } else if (globalThis.COMPONENT_MANAGERS.has(komp)) {
     return true;
+  }
+  if (komp.create) {
+    debugger;
   }
   return false;
   // console.log('canHandle', komp);
@@ -19,8 +23,10 @@ $_MANAGERS.component.canHandle = function (komp) {
 };
 
 $_MANAGERS.component.handle = function (komp, args, fw, ctx) {
-  const manager = INTERNAL_MANAGERS.get(komp) || COMPONENT_MANAGERS.get(komp);
+  const manager = globalThis.INTERNAL_MANAGERS.get(komp) || globalThis.COMPONENT_MANAGERS.get(komp);
   // debugger;
+
+
   const instance = manager.create(
     globalThis.owner,
     komp,
@@ -28,7 +34,7 @@ $_MANAGERS.component.handle = function (komp, args, fw, ctx) {
       capture() {
         return {
           positional: [],
-          named: {}, // args
+          named: args, // args
         };
       },
     },
@@ -54,13 +60,16 @@ export function capabilityFlagsFrom(capabilities) {
 }
 
 export function setInternalComponentManager(manager: any, handle: any) {
-  INTERNAL_MANAGERS.set(handle, manager);
+  if (globalThis.INTERNAL_MANAGERS.has(handle)) {
+    debugger;
+  }
+  globalThis.INTERNAL_MANAGERS.set(handle, manager);
+  console.log('setInternalComponentManager', {manager, handle});
   return handle;
-  // console.log('setInternalComponentManager', ...arguments);
 }
 
 export function getInternalHelperManager(helper: any) {
-  return INTERNAL_HELPER_MANAGERS.get(helper);
+  return globalThis.INTERNAL_HELPER_MANAGERS.get(helper);
 }
 export function helperCapabilities(v: string, value: any) {
   return value;
@@ -72,43 +81,45 @@ export function componentCapabilities() {
   console.log('componentCapabilities', ...arguments);
 }
 export function setHelperManager(manager: any, helper: any) {
-  HELPER_MANAGERS.set(helper, manager);
+  globalThis.HELPER_MANAGERS.set(helper, manager);
   return helper;
 }
 export function getHelperManager(helper: any) {
-  return HELPER_MANAGERS.get(helper);
+  return globalThis.HELPER_MANAGERS.get(helper);
 }
 export function getInternalComponentManager(handle: any) {
-  return INTERNAL_MANAGERS.get(handle);
+  return globalThis.INTERNAL_MANAGERS.get(handle);
 }
 export function getComponentTemplate(comp: any) {
-  return COMPONENT_TEMPLATES.get(comp);
+  return globalThis.COMPONENT_TEMPLATES.get(comp);
 }
 export function setComponentTemplate(tpl: any, comp: any) {
-  COMPONENT_TEMPLATES.set(comp, tpl);
+  globalThis.COMPONENT_TEMPLATES.set(comp, tpl);
   return comp;
 }
 export function setInternalModifierManager(manager: any, modifier: any) {
-  INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
+  globalThis.INTERNAL_MODIFIER_MANAGERS.set(modifier, manager);
   return modifier;
 }
 
 export function setComponentManager(manager: any, component: any) {
-  return COMPONENT_MANAGERS.set(component, manager);
+  return globalThis.COMPONENT_MANAGERS.set(component, manager);
 }
 
 export function getComponentManager(component: any) {
-  return COMPONENT_MANAGERS.get(component);
+  return globalThis.COMPONENT_MANAGERS.get(component);
 }
 
 export function setModifierManager() {
   console.log('setModifierManager', ...arguments);
 }
 export function getCustomTagFor(obj: any) {
-  return function (obj, key) {
-    console.log('getCustomTagFor usage', obj, key);
-    return obj[key];
-  };
+    console.log('getCustomTagFor', ...arguments);
+  return undefined;
+  // return function (obj, key) {
+  //   console.log('getCustomTagFor usage', obj, key);
+  //   return obj[key];
+  // };
   // console.log('getCustomTagFor', ...arguments);
 }
 export function setCustomTagFor() {
@@ -116,12 +127,12 @@ export function setCustomTagFor() {
 }
 
 export function setInternalHelperManager(manager: any, helper: any) {
-  INTERNAL_HELPER_MANAGERS.set(helper, manager);
+  globalThis.INTERNAL_HELPER_MANAGERS.set(helper, manager);
   return helper;
 }
 
 export function hasInternalHelperManager(helper: any) {
-  return INTERNAL_HELPER_MANAGERS.has(helper);
+  return globalThis.INTERNAL_HELPER_MANAGERS.has(helper);
 }
 
 export function hasCapability() {
@@ -129,7 +140,7 @@ export function hasCapability() {
 }
 
 export function getInternalModifierManager(modifier: any) {
-  return INTERNAL_MODIFIER_MANAGERS.get(modifier);
+  return globalThis.INTERNAL_MODIFIER_MANAGERS.get(modifier);
 }
 
 export function managerHasCapability() {

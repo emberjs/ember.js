@@ -4,7 +4,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 // import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
 import { validator } from '@lifeart/gxt/glimmer-compatibility';
-import { cellFor } from '@lifeart/gxt';
 
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
