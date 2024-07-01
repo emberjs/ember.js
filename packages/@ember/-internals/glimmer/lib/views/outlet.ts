@@ -9,8 +9,6 @@ import { schedule } from '@ember/runloop';
 import type { Template, TemplateFactory } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { cellFor } from '@lifeart/gxt';
-// import { reference } from '@lifeart/gxt/glimmer-compatibility';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import type { Renderer } from '../renderer';
@@ -65,7 +63,6 @@ export default class OutletView {
     public template: Template,
     public namespace: any
   ) {
-    let outletStateTag = createTag();
     let outletState: OutletState = {
       outlets: { main: undefined },
       render: {
@@ -78,13 +75,10 @@ export default class OutletView {
         template,
       },
     };
-    console.log('outletStateTag', outletStateTag);
 
     cellFor(outletState.outlets, 'main');
 
     let ref = (this.ref = outletState);
-
-    console.log('ref', ref);
 
     // ref.compute();
 
