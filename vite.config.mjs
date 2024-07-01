@@ -3,8 +3,10 @@
 import { defineConfig } from 'vite';
 import { babel } from '@rollup/plugin-babel';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, URL } from 'node:url';
 import { createRequire } from 'node:module';
+import { compiler } from '@lifeart/gxt/compiler';
+
 import {
   version,
   resolvePackages,
@@ -15,7 +17,7 @@ import {
 const require = createRequire(import.meta.url);
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 const { packageName: getPackageName, PackageCache } = require('@embroider/shared-internals');
-
+const owerrideRoot = import.meta.url;
 export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
   return {
@@ -28,11 +30,56 @@ export default defineConfig(({ mode }) => {
       resolvePackages(exposedDependencies(), hiddenDependencies()),
       viteResolverBug(),
       version(),
+      compiler(mode, {
+        flags: {
+          WITH_EMBER_INTEGRATION: true,
+          WITH_HELPER_MANAGER: false,
+          WITH_MODIFIER_MANAGER: true,
+        },
+      }),
     ],
     optimizeDeps: { disabled: true },
     publicDir: 'tests/public',
     build: {
       minify: mode === 'production',
+    },
+    resolve: {
+      alias: [
+        {
+          find: '@ember/template-compilation',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/compile`, owerrideRoot)),
+        },
+        {
+          find: '@ember/-internals/deprecations',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/deprecate`, owerrideRoot)),
+        },
+        {
+          find: '@glimmer/application',
+          replacement: fileURLToPath(
+            new URL(`./packages/demo/compat/glimmer-application`, owerrideRoot)
+          ),
+        },
+        {
+          find: '@glimmer/utils',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/glimmer-util`, owerrideRoot)),
+        },
+        {
+          find: '@glimmer/manager',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/manager`, owerrideRoot)),
+        },
+        {
+          find: '@glimmer/validator',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/validator`, owerrideRoot)),
+        },
+        {
+          find: '@glimmer/destroyable',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/destroyable`, owerrideRoot)),
+        },
+        {
+          find: '@glimmer/reference',
+          replacement: fileURLToPath(new URL(`./packages/demo/compat/reference`, owerrideRoot)),
+        },
+      ],
     },
   };
 });
