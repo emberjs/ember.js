@@ -70,8 +70,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0(@babel/core@7.24.4)
       '@lifeart/gxt':
-        specifier: 0.0.51
-        version: 0.0.51
+        specifier: 0.0.52
+        version: 0.0.52
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -422,8 +422,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: 0.0.51
-        version: 0.0.51
+        specifier: 0.0.52
+        version: 0.0.52
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -909,6 +909,9 @@ importers:
       '@glimmer/validator':
         specifier: 0.92.0
         version: 0.92.0
+      '@lifeart/gxt':
+        specifier: 0.0.52
+        version: 0.0.52
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1011,6 +1014,9 @@ importers:
       '@glimmer/validator':
         specifier: 0.92.0
         version: 0.92.0
+      '@lifeart/gxt':
+        specifier: 0.0.52
+        version: 0.0.52
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1363,8 +1369,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: 0.0.51
-        version: 0.0.51
+        specifier: 0.0.52
+        version: 0.0.52
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.39)
@@ -5394,8 +5400,8 @@ packages:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  /@lifeart/gxt@0.0.51:
-    resolution: {integrity: sha512-5RUSRXP3On+BfWRiMD4DHg+x1HulHtuGcKiKTgfdJwgvIgD6YEnV7QuCMB2fDjosEWi+8ytvDIiVC5yGOLqF/Q==}
+  /@lifeart/gxt@0.0.52:
+    resolution: {integrity: sha512-t6OmkVrF3enr48oxSgGrLz+Ne2jyk/51Cfr+QpZ3SGfe0wLT7kYNWbHjPGsXfvuxaDThaEP/pY69/Omnytft9A==}
     dependencies:
       '@babel/core': 7.24.4(supports-color@8.1.1)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.24.4)

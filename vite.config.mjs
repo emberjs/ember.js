@@ -22,6 +22,14 @@ export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
   return {
     plugins: [
+      compiler(mode, {
+        flags: {
+          WITH_EMBER_INTEGRATION: true,
+          WITH_HELPER_MANAGER: false,
+          WITH_MODIFIER_MANAGER: true,
+          TRY_CATCH_ERROR_HANDLING: false,
+        },
+      }),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
@@ -30,16 +38,14 @@ export default defineConfig(({ mode }) => {
       resolvePackages(exposedDependencies(), hiddenDependencies()),
       viteResolverBug(),
       version(),
-      compiler(mode, {
-        flags: {
-          WITH_EMBER_INTEGRATION: true,
-          WITH_HELPER_MANAGER: false,
-          WITH_MODIFIER_MANAGER: true,
-        },
-      }),
     ],
     optimizeDeps: { disabled: true },
     publicDir: 'tests/public',
+    server: {
+      hmr: {
+        overlay: false,
+      },
+    },
     build: {
       minify: mode === 'production',
     },
@@ -78,6 +84,22 @@ export default defineConfig(({ mode }) => {
         {
           find: '@glimmer/reference',
           replacement: fileURLToPath(new URL(`./packages/demo/compat/reference`, owerrideRoot)),
+        },
+
+        {
+          find: '@lifeart/gxt/glimmer-compatibility',
+          replacement: fileURLToPath(
+            new URL(
+              `./packages/demo/node_modules/@lifeart/gxt/dist/gxt.glimmer-compat.es.js`,
+              owerrideRoot
+            )
+          ),
+        },
+        {
+          find: '@lifeart/gxt',
+          replacement: fileURLToPath(
+            new URL(`./packages/demo/node_modules/@lifeart/gxt/dist/gxt.index.es.js`, owerrideRoot)
+          ),
         },
       ],
     },

@@ -40,7 +40,7 @@
     "@glimmer/tracking": "workspace:*",
     "@glimmer/util": "0.92.0",
     "@glimmer/validator": "0.92.0",
-    "@lifeart/gxt": "0.0.51",
+    "@lifeart/gxt": "0.0.52",
     "autoprefixer": "^10.4.19",
     "backburner.js": "^2.7.0",
     "dag-map": "^2.0.2",
