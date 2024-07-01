@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "clean": "rm -rf ./node_modules/.vite",
+    "start": "pnpm run clean && pnpm dev"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
@@ -13,7 +15,6 @@
     "@ember/component": "workspace:*",
     "@ember/controller": "workspace:*",
     "@ember/debug": "workspace:*",
-    "ember": "workspace:*",
     "@ember/destroyable": "workspace:*",
     "@ember/engine": "workspace:*",
     "@ember/enumerable": "workspace:*",
@@ -40,14 +41,18 @@
     "@glimmer/util": "0.92.0",
     "@glimmer/validator": "0.92.0",
     "@lifeart/gxt": "0.0.50",
+    "autoprefixer": "^10.4.19",
     "backburner.js": "^2.7.0",
     "dag-map": "^2.0.2",
+    "ember": "workspace:*",
     "ember-template-compiler": "workspace:*",
     "ember-testing": "workspace:*",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*",
+    "postcss": "^8.4.39",
     "router_js": "^8.0.5",
     "rsvp": "^4.8.5",
+    "tailwindcss": "^3.4.4",
     "vite": "^5.0.10"
   }
 }

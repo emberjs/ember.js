@@ -11,9 +11,10 @@ export class ProfileController extends Controller {
   @tracked now = new Date().toISOString();
   @service router!: RouterService;
 
-  onInputChange = ( e) => {
-    console.log('onInputChange', e);
-  }
+  onInputChange = (e) => {
+    this.q = parseInt(e.target.value) || 0;
+  };
+
   toMain = () => {
     this.router.transitionTo('main');
   };
@@ -28,7 +29,6 @@ export class ProfileController extends Controller {
 
   constructor(...args: ConstructorParameters<typeof Controller>) {
     super(...args);
-    // cellFor(this, 'now').update(new Date().toISOString());
     setInterval(() => {
       this.now = new Date().toISOString();
     }, 1000);
