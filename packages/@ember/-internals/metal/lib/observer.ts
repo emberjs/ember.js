@@ -211,9 +211,6 @@ export function flushAsyncObservers(shouldSchedule = true) {
           } else {
             sendEvent(target, eventName, [target, observer.path], undefined, meta);
           }
-          // Promise.resolve().then(() => {
-          //   sendEvent(target, eventName, [target, observer.path], undefined, meta);
-          // });
         });
       }
     });

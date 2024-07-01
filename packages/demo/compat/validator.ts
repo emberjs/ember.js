@@ -1,7 +1,8 @@
 import { formula } from '@lifeart/gxt';
-import { validator } from '@lifeart/gxt/glimmer-compatibility';
+import { validator, caching } from '@lifeart/gxt/glimmer-compatibility';
 
-export const { consumeTag, dirtyTagFor, tagFor, isTracking, tagMetaFor, trackedData } = validator;
+export const { consumeTag, dirtyTagFor, tagFor, isTracking, tagMetaFor, track, trackedData } = validator;
+export const { getValue, createCache } = caching; // createCache,
 
 export const CURRENT_TAG = formula(() => {
   return Date.now() + Math.random();
@@ -44,20 +45,11 @@ export function createUpdatableTag() {
 export function updateTag() {
   console.log('updateTag');
 }
-export function track(cb) {
-  cb();
-  // console.log('track');
-}
+// TODO: untrack is breaking reactivity here
 export function untrack(cb) {
+    // console.log('untrack', cb);
   return cb();
   // console.log('untrack', cb);
-}
-export function createCache(fn) {
-  return formula(fn);
-}
-export function getValue(tag) {
-  // console.log('getValue', tag._debugName, tag.value);
-  return tag.value;
 }
 export function isConst() {
   console.log('isConst');

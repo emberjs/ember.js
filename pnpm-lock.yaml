@@ -70,8 +70,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0(@babel/core@7.24.4)
       '@lifeart/gxt':
-        specifier: 0.0.50
-        version: 0.0.50
+        specifier: 0.0.51
+        version: 0.0.51
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -422,8 +422,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: 0.0.50
-        version: 0.0.50
+        specifier: 0.0.51
+        version: 0.0.51
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -1363,8 +1363,8 @@ importers:
         specifier: 0.92.0
         version: 0.92.0
       '@lifeart/gxt':
-        specifier: 0.0.50
-        version: 0.0.50
+        specifier: 0.0.51
+        version: 0.0.51
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.39)
@@ -5394,8 +5394,8 @@ packages:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  /@lifeart/gxt@0.0.50:
-    resolution: {integrity: sha512-JiijMIANS6J/q1pAqI1h+83p4Eh+yV6FL0I2/jx/vE07Jzd9n5P4HZvWobuo+eMQprq9r59nw5fCPX6LCyTlgg==}
+  /@lifeart/gxt@0.0.51:
+    resolution: {integrity: sha512-5RUSRXP3On+BfWRiMD4DHg+x1HulHtuGcKiKTgfdJwgvIgD6YEnV7QuCMB2fDjosEWi+8ytvDIiVC5yGOLqF/Q==}
     dependencies:
       '@babel/core': 7.24.4(supports-color@8.1.1)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.24.4)
