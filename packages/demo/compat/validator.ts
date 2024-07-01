@@ -1,7 +1,7 @@
 import { formula } from '@lifeart/gxt';
 import { validator } from '@lifeart/gxt/glimmer-compatibility';
 
-export const { consumeTag, dirtyTagFor, tagFor, tagMetaFor, trackedData } = validator;
+export const { consumeTag, dirtyTagFor, tagFor, isTracking, tagMetaFor, trackedData } = validator;
 
 export const CURRENT_TAG = formula(() => {
   return Date.now() + Math.random();
@@ -51,10 +51,6 @@ export function track(cb) {
 export function untrack(cb) {
   return cb();
   // console.log('untrack', cb);
-}
-export function isTracking() {
-  // console.log('isTracking', ...arguments);
-  return false;
 }
 export function createCache(fn) {
   return formula(fn);
