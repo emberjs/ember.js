@@ -2,17 +2,22 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Controller from '@ember/controller';
 import Service, { service } from '@ember/service';
 import { Helper, helper } from '@ember/-internals/glimmer';
+import { hbs } from '@lifeart/gxt';
 
 moduleFor(
   'Application Lifecycle - Helper Registration',
   class extends ApplicationTestCase {
     ['@test Unbound dashed helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`);
+      this.addTemplate(
+        'application',
+        () => hbs`<div id='wrapper'>{{x-borf}} {{x-borf 'YES'}}</div>`
+      );
 
       let myHelper = helper((params) => params[0] || 'BORF');
       this.application.register('helper:x-borf', myHelper);
 
       return this.visit('/').then(() => {
+        debugger;
         assert.equal(
           this.$('#wrapper').text(),
           'BORF YES',

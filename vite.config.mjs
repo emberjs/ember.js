@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
       compiler(mode, {
         flags: {
           WITH_EMBER_INTEGRATION: true,
-          WITH_HELPER_MANAGER: false,
+          WITH_HELPER_MANAGER: true,
           WITH_MODIFIER_MANAGER: true,
           TRY_CATCH_ERROR_HANDLING: false,
         },
