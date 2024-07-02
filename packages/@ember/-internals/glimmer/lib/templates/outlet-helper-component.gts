@@ -13,7 +13,11 @@ interface State {
 
 export default class OutletHelper extends Component {
   get state() {
-    return this.args.state().outlets.main || this.args.state();
+    let state = this.args.state();
+    if (typeof state === 'function') {
+      state = state();
+    }
+    return state.outlets.main || state;
   }
   get nextState() {
     return () => {

@@ -11,10 +11,11 @@ export default function(owner) {
     // }
     // debugger;
     const state = rootState.root.ref;
+    const owner = rootState.render.owner;
     console.log('rootState', state);
     return hbs`
       {{log 'root-template-create' this rootState}}
-      {{#let (component rootState.root.template state=state root=true) as |Layout|}}
+      {{#let (component rootState.root.template state=state owner=owner root=true) as |Layout|}}
         <Layout />
       {{/let}}
     `;

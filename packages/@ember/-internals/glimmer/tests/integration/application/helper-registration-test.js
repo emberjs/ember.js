@@ -17,7 +17,6 @@ moduleFor(
       this.application.register('helper:x-borf', myHelper);
 
       return this.visit('/').then(() => {
-        debugger;
         assert.equal(
           this.$('#wrapper').text(),
           'BORF YES',
@@ -27,10 +26,9 @@ moduleFor(
     }
 
     ['@test Bound helpers registered on the container can be late-invoked'](assert) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`
-      );
+      this.addTemplate('application', function () {
+        return hbs`<div id='wrapper'>{{x-reverse}} {{x-reverse this.foo}}</div>`;
+      });
 
       this.add(
         'controller:application',
@@ -56,10 +54,9 @@ moduleFor(
     }
 
     ['@test Undashed helpers registered on the container can be invoked'](assert) {
-      this.addTemplate(
-        'application',
-        `<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`
-      );
+      this.addTemplate('application', function () {
+        return hbs`<div id='wrapper'>{{omg}}|{{yorp 'boo'}}|{{yorp 'ya'}}</div>`;
+      });
 
       this.application.register(
         'helper:omg',
@@ -81,7 +78,9 @@ moduleFor(
     }
 
     ['@test Helpers can receive injections'](assert) {
-      this.addTemplate('application', `<div id='wrapper'>{{full-name}}</div>`);
+      this.addTemplate('application', function () {
+        return hbs`<div id='wrapper'>{{full-name}}</div>`;
+      });
 
       let serviceCalled = false;
 

@@ -1,11 +1,13 @@
 import { $_MANAGERS, $PROPS_SYMBOL, formula } from '@lifeart/gxt';
 
+import { CustomHelperManager } from './helper-manager';
+
+globalThis.EmberFunctionalHelpers = new Set();
 globalThis.COMPONENT_TEMPLATES = globalThis.COMPONENT_TEMPLATES || new WeakMap();
 globalThis.COMPONENT_MANAGERS = globalThis.COMPONENT_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MANAGERS = globalThis.INTERNAL_MANAGERS || new WeakMap();
 globalThis.INTERNAL_HELPER_MANAGERS = globalThis.INTERNAL_HELPER_MANAGERS || new WeakMap();
 globalThis.INTERNAL_MODIFIER_MANAGERS = globalThis.INTERNAL_MODIFIER_MANAGERS || new WeakMap();
-globalThis.HELPER_MANAGERS = globalThis.HELPER_MANAGERS || new WeakMap();
 
 $_MANAGERS.component.canHandle = function (komp) {
   if (globalThis.INTERNAL_MANAGERS.has(komp)) {
@@ -19,6 +21,27 @@ $_MANAGERS.component.canHandle = function (komp) {
   return false;
   // console.log('canHandle', komp);
   // debugger;
+};
+$_MANAGERS.helper.canHandle = function (helper: unknown) {
+  if (typeof helper === 'string') {
+    return true;
+  }
+  return false;
+};
+$_MANAGERS.helper.handle = function (helper: any, params: any, hash: any) {
+  if (typeof helper === 'string') {
+    const argScope = hash['$_scope']?.() || null;
+    if (!argScope) {
+      const owner = globalThis.owner;
+      const maybeHelper = owner.lookup(`helper:${helper}`);
+      const manager = getInternalHelperManager(maybeHelper);
+      if (manager) {
+        return manager.getHelper(maybeHelper)(params, owner);
+      } else {
+        debugger;
+      }
+    }
+  }
 };
 
 function argsForInternalManager(args, fw) {
@@ -73,7 +96,10 @@ export function setInternalComponentManager(manager: any, handle: any) {
 }
 
 export function getInternalHelperManager(helper: any) {
-  return globalThis.INTERNAL_HELPER_MANAGERS.get(helper);
+  return (
+    globalThis.INTERNAL_HELPER_MANAGERS.get(helper) ||
+    globalThis.INTERNAL_HELPER_MANAGERS.get(Object.getPrototypeOf(helper))
+  );
 }
 export function helperCapabilities(v: string, value: any) {
   return value;
@@ -84,12 +110,15 @@ export function modifierCapabilities() {
 export function componentCapabilities() {
   console.log('componentCapabilities', ...arguments);
 }
-export function setHelperManager(manager: any, helper: any) {
-  globalThis.HELPER_MANAGERS.set(helper, manager);
-  return helper;
+export function setHelperManager(factory: any, helper: any) {
+  return setInternalHelperManager(new CustomHelperManager(factory), helper);
+  // console.log('setHelperManager', ...arguments);
+  // debugger;
+  // globalThis.HELPER_MANAGERS.set(helper, manager);
+  // return helper;
 }
 export function getHelperManager(helper: any) {
-  return globalThis.HELPER_MANAGERS.get(helper);
+  return getInternalHelperManager(helper);
 }
 export function getInternalComponentManager(handle: any) {
   return globalThis.INTERNAL_MANAGERS.get(handle);

@@ -1,8 +1,16 @@
 import { formula } from '@lifeart/gxt';
 import { validator, caching } from '@lifeart/gxt/glimmer-compatibility';
 
-export const { consumeTag, dirtyTagFor, tagFor, isTracking, tagMetaFor, track, trackedData } = validator;
+export const { dirtyTagFor, tagFor, isTracking, tagMetaFor, track, trackedData } = validator;
 export const { getValue, createCache } = caching; // createCache,
+
+export function consumeTag(tag) {
+  if (!tag) {
+    console.log('consumeEmptyTag');
+    return;
+  }
+  return validator.consumeTag(tag);
+}
 
 export const CURRENT_TAG = formula(() => {
   return Date.now() + Math.random();
