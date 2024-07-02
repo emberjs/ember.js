@@ -2,12 +2,19 @@ import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+// import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
+import { validator } from '@lifeart/gxt/glimmer-compatibility';
+
 import type { ElementDescriptor } from '..';
 import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
+
+const {
+  consumeTag, dirtyTagFor, tagFor, trackedData
+} = validator;
+
 
 /**
   @decorator
