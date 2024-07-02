@@ -58,7 +58,7 @@
     "unlink:all": "node bin/unlink-all.mjs"
   },
   "dependencies": {
-    "@lifeart/gxt": "0.0.52",
+    "@lifeart/gxt": "0.0.53",
     "@babel/core": "^7.24.4",
     "@ember/edition-utils": "^1.2.0",
     "@glimmer/compiler": "0.92.0",
