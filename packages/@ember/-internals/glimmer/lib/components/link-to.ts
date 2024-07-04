@@ -312,10 +312,10 @@ class _LinkTo extends InternalComponent {
       classes += this.classFor('active');
 
       if (this.willBeActive === false) {
-        classes += ' ember-transitioning-out';
+        classes += this.classFor('transitioningOut');
       }
     } else if (this.willBeActive) {
-      classes += ' ember-transitioning-in';
+      classes += this.classFor('transitioningIn');
     }
 
     if (this.isLoading) {
@@ -503,7 +503,7 @@ class _LinkTo extends InternalComponent {
     return owner instanceof EngineInstance ? owner.mountPoint : undefined;
   }
 
-  private classFor(state: 'active' | 'loading' | 'disabled'): string {
+  private classFor(state: 'active' | 'loading' | 'disabled' | 'transitioningIn' | 'transitioningOut'): string {
     let className = this.named(`${state}Class`);
 
     assert(
@@ -515,6 +515,10 @@ class _LinkTo extends InternalComponent {
       return ` ${state}`;
     } else if (className) {
       return ` ${className}`;
+    } else if (className === 'transitioningIn') {
+      return ' ember-transitioning-in';
+    } else if (className === 'transitioningOut') {
+      return ' ember-transitioning-out';
     } else {
       return '';
     }
@@ -578,6 +582,8 @@ class _LinkTo extends InternalComponent {
       'activeClass',
       'loadingClass',
       'disabledClass',
+      'transitioningInClass',
+      'transitioningOutClass',
     ];
 
     return supportedArguments.indexOf(name) !== -1 || super.isSupportedArgument(name);
