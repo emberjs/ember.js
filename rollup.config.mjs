@@ -58,6 +58,7 @@ function esmConfig() {
       resolveTS(),
       version(),
       resolvePackages(exposedDependencies(), hiddenDependencies()),
+      pruneEmptyBundles(),
     ],
   };
 }
@@ -443,7 +444,7 @@ function templateCompilerConfig() {
   });
   config.output.globals = (id) => {
     return `(() => {
-      try { 
+      try {
         return require('${id}');
       } catch (err) {
         return ${externals[id]}
@@ -451,4 +452,17 @@ function templateCompilerConfig() {
     })()`;
   };
   return config;
+}
+
+function pruneEmptyBundles() {
+  return {
+    name: 'prune-empty-bundles',
+    generateBundle(options, bundles) {
+      for (let [key, bundle] of Object.entries(bundles)) {
+        if (bundle.code.trim() === '') {
+          delete bundles[key];
+        }
+      }
+    },
+  };
 }
