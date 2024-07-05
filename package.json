@@ -171,7 +171,7 @@
     "@glimmer/component": "^1.1.2"
   },
   "engines": {
-    "node": ">= 16.*"
+    "node": ">= 18.*"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
