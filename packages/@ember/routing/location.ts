@@ -73,7 +73,7 @@ export default interface Location {
 
   /**
    * The current URL.
-   * @property
+   * @property currentURL
    * @type String
    * @public
    */
@@ -83,6 +83,7 @@ export default interface Location {
    * Sets the current URL. Calling `setURL` will not trigger `onUpdateURL`
    * callbacks.
    *
+   * @property setURL
    * @public
    * @method
    * @param {String} url the new URL to update to.
@@ -93,6 +94,7 @@ export default interface Location {
    * Replace the current URL (optional). Calling `replaceURL` will not trigger
    * `onUpdateURL` callbacks.
    *
+   * @property replaceURL
    * @public
    * @method
    * @param {String} url the new URL to replace the current URL with.
@@ -109,6 +111,7 @@ export default interface Location {
   /**
    * Formats url to be placed into href attribute.
    *
+   * @property formatURL
    * @public
    * @method
    * @param {String} url the url to format
