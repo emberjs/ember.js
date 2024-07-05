@@ -511,14 +511,18 @@ class _LinkTo extends InternalComponent {
       isMissing(className) || typeof className === 'string' || typeof className === 'boolean'
     );
 
+    let defaultClassNames = {
+      active: 'active',
+      loading: 'loading',
+      disabled: 'disabled',
+      transitioningIn: 'ember-transitioning-in',
+      transitioningOut: 'ember-transitioning-out',
+    } as const
+
     if (className === true || isMissing(className)) {
-      return ` ${state}`;
+      return ` ${defaultClassNames[state]}`;
     } else if (className) {
       return ` ${className}`;
-    } else if (className === 'transitioningIn') {
-      return ' ember-transitioning-in';
-    } else if (className === 'transitioningOut') {
-      return ' ember-transitioning-out';
     } else {
       return '';
     }
