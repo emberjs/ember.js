@@ -73,11 +73,6 @@ jobs:
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=development
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
       - name: test
         run: pnpm test
 
@@ -200,10 +195,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist
+      - name: build
+        run: pnpm vite build --mode=development
       - name: Setup firefox
         uses: browser-actions/setup-firefox@latest
         with:
