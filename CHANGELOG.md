@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v5.11.0-beta.1 (July 8, 2024)
+
+- [#20716](https://github.com/emberjs/ember.js/pull/20716) [BREAKING] Drop Node 16 support
+- [#20704](https://github.com/emberjs/ember.js/pull/20704) Remove `Component` suffix from blueprints to facilitate <template>
+
 ## v5.10.0 (July 8, 2024)
 
 - [#20702](https://github.com/emberjs/ember.js/pull/20702) [DEPRECATION] Deprecate array prototype extensions per [RFC #848](https://rfcs.emberjs.com/id/0848-deprecate-array-prototype-extensions/).
@@ -8,7 +13,6 @@
 - [#20683](https://github.com/emberjs/ember.js/pull/20683) [CLEANUP] Remove application-template-wrapper optional feature support
 - [#20685](https://github.com/emberjs/ember.js/pull/20685) [CLEANUP] Remove support for non-glimmer template-only components
 - [#20681](https://github.com/emberjs/ember.js/pull/20681) Update ember-cli-babel
-
 
 ## v5.9.0 (June 3, 2024)
 
