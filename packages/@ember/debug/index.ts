@@ -2,7 +2,7 @@ import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import { DEBUG } from '@glimmer/env';
 import type { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
-import _deprecate from './lib/deprecate';
+import defaultDeprecate from './lib/deprecate';
 import { isTesting } from './lib/testing';
 import type { WarnFunc } from './lib/warn';
 import _warn from './lib/warn';
@@ -75,7 +75,7 @@ let assert: AssertFunc = noop as unknown as AssertFunc;
 let info: InfoFunc = noop;
 let warn: WarnFunc = noop;
 let debug: DebugFunc = noop;
-let deprecate: DeprecateFunc = noop;
+let currentDeprecate: DeprecateFunc | undefined;
 let debugSeal: DebugSealFunc = noop;
 let debugFreeze: DebugFreezeFunc = noop;
 let runInDebug: RunInDebugFunc = noop;
@@ -85,6 +85,10 @@ let getDebugFunction: GetDebugFunction = noop as unknown as GetDebugFunction;
 let deprecateFunc: DeprecateFuncFunc = function () {
   return arguments[arguments.length - 1];
 };
+
+export function deprecate(...args: Parameters<DeprecateFunc>): ReturnType<DeprecateFunc> {
+  return (currentDeprecate ?? defaultDeprecate)(...args);
+}
 
 if (DEBUG) {
   setDebugFunction = function (type: DebugFunctionType, callback: Function) {
@@ -98,7 +102,7 @@ if (DEBUG) {
       case 'debug':
         return (debug = callback as DebugFunc);
       case 'deprecate':
-        return (deprecate = callback as DeprecateFunc);
+        return (currentDeprecate = callback as DeprecateFunc);
       case 'debugSeal':
         return (debugSeal = callback as DebugSealFunc);
       case 'debugFreeze':
@@ -314,8 +318,6 @@ if (DEBUG) {
     }
   });
 
-  setDebugFunction('deprecate', _deprecate);
-
   setDebugFunction('warn', _warn);
 }
 
@@ -353,7 +355,6 @@ export {
   info,
   warn,
   debug,
-  deprecate,
   debugSeal,
   debugFreeze,
   runInDebug,
