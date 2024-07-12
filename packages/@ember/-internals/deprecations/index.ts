@@ -131,7 +131,7 @@ export const DEPRECATIONS = {
   }),
   DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS: deprecation({
     id: 'deprecate-array-prototype-extensions',
-    url: 'https://deprecations.emberjs.com/id/deprecate-deprecate-array-prototype-extensions',
+    url: 'https://deprecations.emberjs.com/id/deprecate-array-prototype-extensions',
     until: '6.0.0',
     for: 'ember-source',
     since: {
