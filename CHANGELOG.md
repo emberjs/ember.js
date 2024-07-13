@@ -5,6 +5,10 @@
 - [#20716](https://github.com/emberjs/ember.js/pull/20716) [BREAKING] Drop Node 16 support
 - [#20704](https://github.com/emberjs/ember.js/pull/20704) Remove `Component` suffix from blueprints to facilitate <template>
 
+## v5.10.1 (July 12, 2024)
+ 
+- [#20720](https://github.com/emberjs/ember.js/pull/20720) [BUGFIX] Fix deprecation guide url for array prototype extensions deprecation
+
 ## v5.10.0 (July 8, 2024)
 
 - [#20702](https://github.com/emberjs/ember.js/pull/20702) [DEPRECATION] Deprecate array prototype extensions per [RFC #848](https://rfcs.emberjs.com/id/0848-deprecate-array-prototype-extensions/).
