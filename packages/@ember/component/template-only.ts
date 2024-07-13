@@ -9,10 +9,11 @@
   without adding a wrapping `<div>` (or any of the other element customization behaviors of [@ember/component](/ember/release/classes/Component)).
   Specifically, this means that the template will be rendered as "outer HTML".
 
-  In general, this method will be used by build time tooling and would not be directly written in an application. However,
-  at times it may be useful to use directly to leverage the "outer HTML" semantics mentioned above. For example, if an addon would like
-  to use these semantics for its templates but cannot be certain it will only be consumed by applications that have enabled the
-  `template-only-glimmer-components` optional feature.
+  In apps, this method will usually be inserted by build-time tooling the handles converting `.hbs` files into component Javascript modules and
+  would not be directly written by the application author.
+
+  Addons may want to use this method directly to ensure that a template-only component is treated consistently in all Ember versions (Ember versions
+  before 4.0 have a "template-only-glimmer-components" optional feature that causes a standalone `.hbs` file to be interpreted differently).
 
   @example
 
