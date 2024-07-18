@@ -86,6 +86,17 @@ module.exports = {
       },
     },
     {
+      files: ['packages/**/*.[jt]s'],
+      rules: {
+        'import/no-cycle': [
+          'error',
+          {
+            ignoreExternal: true,
+          },
+        ],
+      },
+    },
+    {
       // TODO: files: ['packages/**/*.[jt]s'],
       files: ['packages/**/*.js'],
 
