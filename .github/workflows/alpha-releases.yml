@@ -3,6 +3,7 @@ name: Alpha Releases
 on:
   schedule:
     - cron: '0 20 * * 3' # weekly (Wednesday)
+  workflow_dispatch:
 
 permissions:
   contents: read
