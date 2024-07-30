@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
         extensions: ['.js', '.ts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
-      resolvePackages(exposedDependencies(), hiddenDependencies()),
+      resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
       viteResolverBug(),
       version(),
     ],
