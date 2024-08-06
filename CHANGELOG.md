@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v5.10.2 (August 6, 2024)
+
+- [#20726](https://github.com/emberjs/ember.js/pull/20726) [BUGFIX] Fix test waiters by removing unintentional duplication from ember-testing bundle
+- [#20715](https://github.com/emberjs/ember.js/pull/20715) [BUGFIX] Don't publish empty modules
+
 ## v5.10.1 (July 12, 2024)
  
 - [#20720](https://github.com/emberjs/ember.js/pull/20720) [BUGFIX] Fix deprecation guide url for array prototype extensions deprecation
