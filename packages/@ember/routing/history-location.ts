@@ -246,7 +246,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   }
 
   /**
-    Used when using `{{action}}` helper.  The url is always appended to the rootURL.
+    Formats url to be placed into href attribute.
 
     @private
     @method formatURL

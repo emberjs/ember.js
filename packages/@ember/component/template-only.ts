@@ -34,32 +34,9 @@ import { type Opaque } from '@ember/-internals/utility-types';
 import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime';
 
 /**
- * Template-only components have no backing class instance, so this in their
+ * Template-only components have no backing class instance, so `this` in their
  * templates is null. This means that you can only reference passed in arguments
- * via named argument syntax (e.g. `{{@arg}}`):
- *
- * ```hbs
- * {{!--
- *   This does not work, since `this` does not exist
- * --}}
- * <label for="title">Title</label>
- * <Input @value={{this.value}} id="title" />
- * ```
- *
- * Additionally, the mut helper generally can't be used for the same reason:
- *
- * ```hbs
- * {{!-- This does not work --}}
- * <input
- *   value={{this.value}}
- *   onkeyup={{action (mut this.value) target="value"}}
- * />
- * ```
- *
- * Since Octane, a template-only component shares a subset of features that are
- * available in `@glimmer/component`. Such component can be seamlessly
- * "upgraded" to a Glimmer component, when you add a JavaScript file alongside
- * the template.
+ * (e.g. `{{@arg}}`).
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TemplateOnlyComponent<S = unknown> extends Opaque<S> {}

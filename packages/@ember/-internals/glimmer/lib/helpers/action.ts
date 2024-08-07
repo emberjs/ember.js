@@ -275,6 +275,7 @@ export const ACTIONS = new WeakSet();
   ```
 
   @method action
+  @deprecated
   @for Ember.Templates.helpers
   @public
 */

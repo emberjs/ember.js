@@ -205,8 +205,8 @@ declare const SIGNATURE: unique symbol;
      default for older editions of Ember (pre 3.15).
 
   Below is the documentation for Classic components. If you are looking for the
-  API documentation for Template-only or Glimmer components, it is
-  [available here](/ember/release/modules/@glimmer%2Fcomponent).
+  API documentation for Template-only or Glimmer components, it is [available
+  here](/ember/release/modules/@glimmer%2Fcomponent).
 
   ## Defining a Classic Component
 
@@ -404,9 +404,9 @@ declare const SIGNATURE: unique symbol;
   <div id="ember1" class="ember-view empty"></div>
   ```
 
-  If you want to add a class name for a property which evaluates to true and
-  and a different class name if it evaluates to false, you can pass a binding
-  like this:
+  If you want to add a class name for a property which evaluates to true and and
+  a different class name if it evaluates to false, you can pass a binding like
+  this:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -467,9 +467,9 @@ declare const SIGNATURE: unique symbol;
   ### Other HTML Attributes
 
   The HTML attribute section of a component's tag can be set by providing an
-  `attributeBindings` property set to an array of property names on the component.
-  The return value of these properties will be used as the value of the component's
-  HTML associated attribute:
+  `attributeBindings` property set to an array of property names on the
+  component. The return value of these properties will be used as the value of
+  the component's HTML associated attribute:
 
   ```app/components/my-anchor.js
   import Component from '@ember/component';
@@ -488,8 +488,8 @@ declare const SIGNATURE: unique symbol;
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
 
-  One property can be mapped on to another by placing a ":" between
-  the source property and the destination property:
+  One property can be mapped on to another by placing a ":" between the source
+  property and the destination property:
 
   ```app/components/my-anchor.js
   import Component from '@ember/component';
@@ -522,9 +522,9 @@ declare const SIGNATURE: unique symbol;
   <a id="ember1" class="ember-view" href="http://bing.com"></a>
   ```
 
-  Note that the `href` attribute is ultimately set to `http://bing.com`,
-  despite it having attribute binidng to the `url` property, which was
-  set to `http://google.com`.
+  Note that the `href` attribute is ultimately set to `http://bing.com`, despite
+  it having attribute binidng to the `url` property, which was set to
+  `http://google.com`.
 
   Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
   mapped, since `:` is not a valid character for properties in Javascript:
@@ -662,27 +662,33 @@ declare const SIGNATURE: unique symbol;
 
   ## Handling Browser Events
 
-  Components can respond to user-initiated events in one of three ways: passing
-  actions with angle bracket invocation, adding event handler methods to the
-  component's class, or adding actions to the component's template.
+  There are two ways to handle user-initiated events:
 
-  ### Passing Actions With Angle Bracket Invocation
+  ### Using the `on` modifier to capture browser events
 
-  For one-off events specific to particular instance of a component, it is possible
-  to pass actions to the component's element using angle bracket invocation syntax.
+  In a component's template, you can attach an event handler to any element with the `on` modifier:
 
   ```handlebars
-  <MyWidget {{action 'firstWidgetClicked'}} />
-
-  <MyWidget {{action 'secondWidgetClicked'}} />
+  <button {{on 'click' this.doSomething}} />
   ```
 
-  In this case, when the first component is clicked on, Ember will invoke the
-  `firstWidgetClicked` action. When the second component is clicked on, Ember
-  will invoke the `secondWidgetClicked` action instead.
+  This will call the function on your component:
 
-  Besides `{{action}}`, it is also possible to pass any arbitrary element modifiers
-  using the angle bracket invocation syntax.
+  ```js
+  import Component from '@ember/component';
+
+  export default class ExampleComponent extends Component {
+    doSomething = (event) => {
+      // `event` is the native click Event
+      console.log('clicked on the button');
+    };
+  });
+  ```
+
+  See the [Guide on Component event
+  handlers](https://guides.emberjs.com/release/components/component-state-and-actions/#toc_html-modifiers-and-actions)
+  and the [API docs for `on`](../Ember.Templates.helpers/methods/on?anchor=on)
+  for more details.
 
   ### Event Handler Methods
 
@@ -751,43 +757,6 @@ declare const SIGNATURE: unique symbol;
   * `dragOver`
   * `dragEnd`
   * `drop`
-
-  ### `{{action}}` Helper
-
-  Instead of handling all events of a particular type anywhere inside the
-  component's element, you may instead want to limit it to a particular
-  element in the component's template. In this case, it would be more
-  convenient to implement an action instead.
-
-  For example, you could implement the action `hello` for the `person-profile`
-  component:
-
-  ```app/components/person-profile.js
-  import Component from '@ember/component';
-
-  export default Component.extend({
-    actions: {
-      hello(name) {
-        console.log("Hello", name);
-      }
-    }
-  });
-  ```
-
-  And then use it in the component's template:
-
-  ```app/templates/components/person-profile.hbs
-  <h1>{{@person.name}}</h1>
-
-  <button {{action 'hello' @person.name}}>
-    Say Hello to {{@person.name}}
-  </button>
-  ```
-
-  When the user clicks the button, Ember will invoke the `hello` action,
-  passing in the current value of `@person.name` as an argument.
-
-  See [Ember.Templates.helpers.action](/ember/release/classes/Ember.Templates.helpers/methods/action?anchor=action).
 
   @class Component
   @extends Ember.CoreView
