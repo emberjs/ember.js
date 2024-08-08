@@ -7,6 +7,7 @@ import { CURRENT_TAG, tagMetaFor, validateTag, valueForTag } from '@glimmer/vali
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
+import { effect } from '@lifeart/gxt';
 
 interface ActiveObserver {
   tag: Tag;
@@ -41,10 +42,10 @@ export function addObserver(
   method?: string | Function,
   sync = SYNC_DEFAULT
 ): void {
+  console.log('addObserver', obj, path);
   let eventName = changeEvent(path);
 
   addListener(obj, eventName, target, method, false, sync);
-
   let meta = peekMeta(obj);
 
   if (meta === null || !(meta.isPrototypeMeta(obj) || meta.isInitializing())) {
@@ -93,7 +94,7 @@ function getOrCreateActiveObserversFor(target: object, sync: boolean) {
 
 export function activateObserver(target: object, eventName: string, sync = false) {
   let activeObservers = getOrCreateActiveObserversFor(target, sync);
-
+  console.log('activateObserver', target, eventName);
   if (activeObservers.has(eventName)) {
     activeObservers.get(eventName)!.count++;
   } else {
@@ -160,6 +161,7 @@ export function resumeObserverDeactivation() {
  * @param target
  */
 export function revalidateObservers(target: object) {
+  console.log('revalidateObservers', target);
   if (ASYNC_OBSERVERS.has(target)) {
     ASYNC_OBSERVERS.get(target)!.forEach((observer) => {
       observer.tag = getChainTagsForKey(
@@ -168,7 +170,7 @@ export function revalidateObservers(target: object) {
         tagMetaFor(target),
         peekMeta(target)
       );
-      observer.lastRevision = valueForTag(observer.tag);
+      // observer.lastRevision = valueForTag(observer.tag);
     });
   }
 
@@ -180,44 +182,36 @@ export function revalidateObservers(target: object) {
         tagMetaFor(target),
         peekMeta(target)
       );
-      observer.lastRevision = valueForTag(observer.tag);
+      // observer.lastRevision = valueForTag(observer.tag);
     });
   }
 }
 
-let lastKnownRevision = 0;
+// let lastKnownRevision = 0;
 
 export function flushAsyncObservers(shouldSchedule = true) {
-  let currentRevision = valueForTag(CURRENT_TAG);
-  if (lastKnownRevision === currentRevision) {
-    return;
-  }
-  lastKnownRevision = currentRevision;
+  console.log('flushAsyncObservers');
+  // let currentRevision = valueForTag(CURRENT_TAG);
+  // if (lastKnownRevision === currentRevision) {
+  //   return;
+  // }
+  // lastKnownRevision = currentRevision;
 
   ASYNC_OBSERVERS.forEach((activeObservers, target) => {
     let meta = peekMeta(target);
 
     activeObservers.forEach((observer, eventName) => {
-      if (!validateTag(observer.tag, observer.lastRevision)) {
-        let sendObserver = () => {
-          try {
+      if (!observer.effect) {
+        observer.effect = effect(() => {
+          observer.tag.value;
+          if (shouldSchedule) {
+            schedule('actions', () => {
+              sendEvent(target, eventName, [target, observer.path], undefined, meta);
+            });
+          } else {
             sendEvent(target, eventName, [target, observer.path], undefined, meta);
-          } finally {
-            observer.tag = getChainTagsForKey(
-              target,
-              observer.path,
-              tagMetaFor(target),
-              peekMeta(target)
-            );
-            observer.lastRevision = valueForTag(observer.tag);
           }
-        };
-
-        if (shouldSchedule) {
-          schedule('actions', sendObserver);
-        } else {
-          sendObserver();
-        }
+        });
       }
     });
   });

@@ -21,7 +21,7 @@ import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/utils';
 
 import type { DynamicScope } from '../renderer';
 import type { OutletState } from '../utils/outlet';

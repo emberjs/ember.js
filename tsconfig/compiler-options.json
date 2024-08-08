@@ -23,6 +23,8 @@
     "allowSyntheticDefaultImports": false,
     "isolatedModules": true,
 
+    "allowImportingTsExtensions": true,
+
     "newLine": "LF",
 
     "allowJs": true,
