@@ -137,7 +137,7 @@ function buildMouseEvent(type: string, options: MouseEventInit = {}) {
   let event;
   try {
     event = new MouseEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
-  } catch (e) {
+  } catch (_e) {
     event = buildBasicEvent(type, options);
   }
   return event;
@@ -147,7 +147,7 @@ function buildKeyboardEvent(type: string, options: KeyboardEventInit = {}) {
   let event;
   try {
     event = new KeyboardEvent(type, { ...DEFAULT_EVENT_OPTIONS, ...options });
-  } catch (e) {
+  } catch (_e) {
     event = buildBasicEvent(type, options);
   }
   return event;

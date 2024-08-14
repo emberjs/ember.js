@@ -1,6 +1,5 @@
 import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 
-import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
 import { service } from '@ember/service';
@@ -13,29 +12,7 @@ import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 moduleFor(
   'Application test: rendering',
   class extends ApplicationTestCase {
-    constructor() {
-      super(...arguments);
-      this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;
-    }
-
-    teardown() {
-      super.teardown();
-      ENV._APPLICATION_TEMPLATE_WRAPPER = this._APPLICATION_TEMPLATE_WRAPPER;
-    }
-
-    ['@test it can render the application template with a wrapper']() {
-      ENV._APPLICATION_TEMPLATE_WRAPPER = true;
-
-      this.addTemplate('application', 'Hello world!');
-
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.element, { content: 'Hello world!' });
-      });
-    }
-
     ['@test it can render the application template without a wrapper']() {
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
-
       this.addTemplate('application', 'Hello world!');
 
       return this.visit('/').then(() => {

@@ -364,18 +364,21 @@ moduleFor(
     }
 
     ['@test gives helpful assertion when a tracked property is mutated after access in with an autotracking transaction']() {
-      class EmberObject {
+      class MyObject {
         @tracked value;
+        toString() {
+          return 'MyObject';
+        }
       }
 
-      let obj = new EmberObject();
+      let obj = new MyObject();
 
       expectAssertion(() => {
         track(() => {
           obj.value;
           obj.value = 123;
         });
-      }, /You attempted to update `value` on `EmberObject`, but it had already been used previously in the same computation/);
+      }, /You attempted to update `value` on `MyObject`, but it had already been used previously in the same computation/);
     }
 
     ['@test get() does not entangle in the autotracking stack until after retrieving the value'](

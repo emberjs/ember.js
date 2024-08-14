@@ -58,14 +58,15 @@ const BrowserStackLaunchers = {
 };
 
 module.exports = {
-  test_page: 'dist/tests/index.html?hidepassed&hideskipped&timeout=60000',
+  test_page: 'index.html',
+  cwd: 'dist',
   timeout: 1200,
+  parallel: 4,
+  disable_watching: true,
+  launch_in_dev: [],
   reporter: FailureOnlyPerBrowserReporter,
   browser_start_timeout: 2000,
   browser_disconnect_timeout: 120,
-  parallel: 4,
-  disable_watching: true,
   launchers: BrowserStackLaunchers,
-  launch_in_dev: [],
   launch_in_ci: Object.keys(BrowserStackLaunchers),
 };

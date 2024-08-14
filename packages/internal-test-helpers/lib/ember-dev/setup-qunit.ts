@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -13,8 +13,6 @@ import type { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
 
 declare global {
-  let Ember: any;
-
   interface Assert {
     rejects(promise: Promise<any>, expected?: string | RegExp, message?: string): Promise<any>;
 
@@ -55,11 +53,11 @@ export default function setupQUnit() {
     message?: string
   ) {
     let error: unknown;
-    let prevOnError = Ember.onerror;
+    let prevOnError = getOnerror();
 
-    Ember.onerror = (e: Error) => {
+    setOnerror((e: Error) => {
       error = e;
-    };
+    });
 
     try {
       await promise;
@@ -77,7 +75,7 @@ export default function setupQUnit() {
       message
     );
 
-    Ember.onerror = prevOnError;
+    setOnerror(prevOnError);
   };
 
   QUnit.assert.throwsAssertion = function (

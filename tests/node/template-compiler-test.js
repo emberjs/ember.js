@@ -34,6 +34,14 @@ QUnit.module('ember-template-compiler.js', function () {
       assert.notEqual(typeof templateCompiler._Ember.ENV, null, '_Ember.ENV is not null');
     });
 
+    QUnit.test('_Ember.ENV (private API used by ember-cli-htmlbars) is stable', function (assert) {
+      assert.strictEqual(
+        templateCompiler._Ember.ENV,
+        templateCompiler._Ember.ENV,
+        '_Ember.ENV is stable'
+      );
+    });
+
     QUnit.test(
       'can access _Ember.FEATURES (private API used by ember-cli-htmlbars)',
       function (assert) {

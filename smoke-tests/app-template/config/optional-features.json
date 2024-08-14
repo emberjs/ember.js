@@ -1,0 +1,4 @@
+{
+  "default-async-observers": true,
+  "jquery-integration": false
+}

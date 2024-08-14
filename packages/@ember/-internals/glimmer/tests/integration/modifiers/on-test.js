@@ -1,5 +1,4 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
-import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
 
@@ -30,18 +29,6 @@ moduleFor(
         },
         `counters have incremented by ${JSON.stringify(expected)}`
       );
-    }
-
-    '@test SUPPORTS_EVENT_OPTIONS is correct (private API usage)'(assert) {
-      let manager = this.getOnManagerInstance();
-
-      let { SUPPORTS_EVENT_OPTIONS } = manager;
-
-      if (isChrome || isFirefox) {
-        assert.strictEqual(SUPPORTS_EVENT_OPTIONS, true, 'is true in chrome and firefox');
-      } else {
-        assert.expect(0);
-      }
     }
 
     ['@test it adds an event listener'](assert) {

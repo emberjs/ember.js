@@ -2,9 +2,12 @@
 const { allSupportedBrowsers, modernBrowsers } = require('./browserlists');
 
 const isProduction = process.env.EMBER_ENV === 'production';
-const shouldTranspile = Boolean(process.env.SHOULD_TRANSPILE);
+const browsers =
+  isProduction || Boolean(process.env.ALL_SUPPORTED_BROWSERS)
+    ? allSupportedBrowsers
+    : modernBrowsers;
 
 module.exports = {
-  browsers: isProduction || shouldTranspile ? allSupportedBrowsers : modernBrowsers,
+  browsers,
   ...(process.env.SHOULD_TRANSPILE_FOR_NODE ? { node: 'current' } : undefined),
 };

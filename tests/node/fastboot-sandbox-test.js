@@ -55,8 +55,6 @@ function buildSandboxContext(precompile) {
   let environmentSetupScript = new vm.Script(
     `
 var EmberENV = {
-  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: true,
-  _APPLICATION_TEMPLATE_WRAPPER: false,
   _DEFAULT_ASYNC_OBSERVERS: true,
   _JQUERY_INTEGRATION: false,
 };`,

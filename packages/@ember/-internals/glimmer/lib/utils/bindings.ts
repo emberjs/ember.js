@@ -58,7 +58,9 @@ export function installAttributeBinding(
   let [prop, attribute, isSimple] = parsed;
 
   if (attribute === 'id') {
-    let elementId = get(component, prop);
+    // SAFETY: `get` could not infer the type of `prop` and just gave us `unknown`.
+    //         we may want to throw an error in the future if the value isn't string or null/undefined.
+    let elementId = get(component, prop) as string | null;
     if (elementId === undefined || elementId === null) {
       elementId = component.elementId;
     }

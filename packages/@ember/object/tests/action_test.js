@@ -1,6 +1,7 @@
 import { Component } from '@ember/-internals/glimmer';
 import EmberObject, { action } from '@ember/object';
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, testUnless } from 'internal-test-helpers';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 
 moduleFor(
   '@action decorator',
@@ -15,7 +16,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{foo-bar}}');
@@ -48,8 +49,14 @@ moduleFor(
       assert.equal(typeof bar.actions.bar, 'function', 'bar has bar action');
     }
 
-    '@test actions are properly merged through traditional and ES6 prototype hierarchy'(assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions are properly merged through traditional and ES6 prototype hierarchy`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+      assert.expect(5);
 
       let FooComponent = Component.extend({
         actions: {
@@ -112,7 +119,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -136,7 +143,7 @@ moduleFor(
 
       this.registerComponent('bar-bar', {
         ComponentClass: BarComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{bar-bar}}');
@@ -247,7 +254,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
-        template: "<button {{action 'foo'}}>Click Me!</button>",
+        template: "<button {{on 'click' this.foo}}>Click Me!</button>",
       });
 
       this.render('{{foo-bar}}');

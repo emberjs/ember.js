@@ -5,10 +5,6 @@ to collect and track bugs and discussions of new features. If you are having
 difficulties using Ember.js or have a question about usage, please ask a
 question on Stack Overflow: http://stackoverflow.com/questions/ask?tags=ember.js, or by joining [the community chat](https://discord.gg/emberjs).
 
-The Ember.js community is very active on Stack Overflow and most questions
-receive attention the same day they're posted:
-http://stackoverflow.com/questions/tagged/ember.js
-
 # Issue Labeling
 
 Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels) for Github Issues.
@@ -18,18 +14,18 @@ Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels)
 Think you've found a bug or have a new feature to suggest? Let us know!
 
 ## Reporting a Bug
-1. Update to the most recent master release if possible. We may have already
+1. Update to the most recent main release if possible. We may have already
 fixed your bug.
 
 2. Search for similar issues. It's possible somebody has encountered
 this bug already.
 
-3. Provide [Ember Twiddle](http://ember-twiddle.com/) demo that specifically
-shows the problem. This demo should be fully operational with the exception
-of the bug you want to demonstrate. The more pared down, the better.
-If it is not possible to produce a fiddle, please make sure you provide very
-specific steps to reproduce the error. If we cannot reproduce it, we will
-close the ticket.
+3. Provide a demo that specifically shows the problem. This demo should be fully 
+operational with the exception of the bug you want to demonstrate.
+You may provide a repo or use a fork on [new.emberjs.com](http://new.emberjs.com).
+The more pared down, the better. If it is not possible to produce a demo, please 
+make sure you provide very specific steps to reproduce the error. If we cannot 
+reproduce it, we will close the ticket.
 
 4. Your issue will be verified. The provided example will be tested for
 correctness. The Ember team will work with you until your issue can
@@ -53,7 +49,7 @@ might close the issue if we do not hear from you after two weeks since the
 original notice.
 
 * If you submit a feature request as an issue, you will be invited to follow the
-[instructions in this document](https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md#requesting-a-feature)
+[instructions in this document](https://github.com/emberjs/ember.js/blob/main/CONTRIBUTING.md#requesting-a-feature)
 and the issue will be closed
 * Issues that become inactive will be labeled accordingly
   to inform the original poster and Ember contributors that the issue
@@ -66,12 +62,8 @@ and the issue will be closed
 
 ## Requesting a Feature
 
-1. Ember has an RFC process for feature requests. To begin the discussion either
-[gather feedback](https://github.com/emberjs/rfcs/blob/master/README.md#gathering-feedback-before-submitting)
-on the emberjs/rfcs repository. Or, draft an [Ember RFC](https://github.com/emberjs/rfcs#ember-rfcs)
-   - Use RFC pull request for well formed ideas.
-   - Use RFC issues to propose a rough idea, basically a great place to test
-     the waters.
+1. Ember has an RFC process for feature requests. To begin the discussion
+[follow the guidance on  the RFC repo](https://github.com/emberjs/rfcs/blob/master/README.md#creating-an-rfc).
 
 2. Provide a clear and detailed explanation of the feature you want and why
 it's important to add. Keep in mind that we want features that will be useful
@@ -132,32 +124,10 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 
 3. To run all tests, visit <http://localhost:4200/>.
 
-4. To test a specific package, visit `http://localhost:4200/tests/index.html?package=PACKAGE_NAME`. Replace
-`PACKAGE_NAME` with the name of the package you want to test. For
-example:
-
-  * [Ember.js Internals](http://localhost:4200/tests/index.html?package=@ember/-internals)
+4. To test a specific package, use the interactive QUnit filters on the page.
 
 To test multiple packages, you can separate them with commas.
 
-## From the CLI
-
-Run `pnpm test` to run a basic test suite or run `TEST_SUITE=all pnpm test` to
-run a more comprehensive suite.
-
-## From ember-cli
-
-1. `ember test --server`
-
-2. Connect the browsers you want.
-
-To run a specific browser, you can use the `--launch` flag
-
-* `ember test --server --launch SL_Firefox_Current`
-* `ember test --launch SL_Firefox_Current`
-* `ember test --launch SL_Firefox_Current,Chrome`
-
-To test multiple launchers, you can separate them with commas.
 # Pull Requests
 
 We love pull requests. Here's a quick guide:
@@ -174,7 +144,7 @@ a test! If your change is a new feature, please
 [wrap it in a feature flag](https://guides.emberjs.com/release/contributing/adding-new-features/).
 
 4. Make sure to check out the
-   [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
+   [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/main/STYLEGUIDE.md) and
    ensure that your code complies with the rules. If you missed a rule or two, don't worry, our
    tests will warn you.
 
@@ -198,11 +168,10 @@ explanation of why you made the changes you made. For new features make sure to
 explain a standard use case to us.
 
 We try to be quick about responding to tickets but sometimes we get a bit
-backlogged. If the response is slow, try to find someone on IRC (#emberjs) to
+backlogged. If the response is slow, try to find someone on [the community chat](https://discord.gg/emberjs) to
 give the ticket a review.
 
-Some things that will increase the chance that your pull request is accepted,
-taken straight from the Ruby on Rails guide:
+Some things that will increase the chance that your pull request is accepted:
 
 * Use Ember idioms and helpers
 * Include tests that fail without your code, and pass with it
@@ -211,9 +180,7 @@ taken straight from the Ruby on Rails guide:
 
 Syntax:
 
-* Two spaces, no tabs.
-* No trailing whitespace. Blank lines should not have any space.
-* a = b and not a=b.
+* Style is enforced by prettier. Run `pnpm lint` to check your changes.
 * Follow the conventions you see used in the source already.
 
 Inline Documentation Guidelines:
@@ -251,11 +218,54 @@ We use [GitHub Actions](https://github.com/emberjs/ember.js/actions?query=workfl
 
 When you submit your PR (or later change that code), a CI build will automatically be kicked off.  A note will be added to the PR, and will indicate the current status of the build.
 
-Within the CI build, you can see that we (currently) run six different test suites.
+Within the [CI workflow](https://github.com/emberjs/ember.js/blob/main/.github/workflows/ci.yml), you can see that we (currently) run several different test suites.
 
-* The `each-package` test suite is closest to what you normally run locally on your machine.
-* The `build-tests EMBER_ENV=production...` test suite runs tests against a production build.
-* The `browserstack` test suite runs tests against various supported browsers.
+* `Linting` runs `pnpm lint` to check for code style issues.
+* `Type Checking` runs `pnpm type-check` to check for TypeScript type errors. This also runs against several version of TypeScript that are supported.
+* `Basic Test` test suite is closest to what you normally run locally on your machine. 
+* `Variant Tests` run the test suite under different combinations of settings. See documentation in run-tests.js for the meaning of each setting.
+* `BrowserStack` and `Browser Tests` test suites run tests against various supported browsers.
+* `Blueprint Tests` runs tests for the Ember CLI blueprints provided by Ember in this package.
+* `Smoke Tests` builds and runs entire end-to-end apps.
+* `Node.js Tests` runs tests for the node-side code in this package.
+
+Each commit to canary and beta publishes to the relevant channel on S3. These 
+builds are used primarily by [ember-try](https://github.com/ember-cli/ember-try)
+for addons to test against beta and canary of ember-source.
+
+The CI workflow is also run nightly for beta and canary.
+
+## Working with the Smoke Test apps
+
+The tests under `/smoke-tests` build complete apps by starting from an app-template and modifying it for various scenarios.
+
+You can **list all scenarios**:
+
+```sh
+cd smoke-tests/scenarios
+pnpm test:list
+```
+
+You can run one of them non-interactively:
+
+```sh
+cd smoke-tests/scenarios
+pnpm run test --filter $SCENARIO_NAME
+```
+
+Or you can write the whole application out as a normal on-disk app in order to run and debug it interactively:
+
+```sh
+cd smoke-tests/scenarios
+pnpm test:output --scenario $SCENARIO_NAME --outdir /tmp/my-scenario
+cd /tmp/my-scenario
+pnpm start
+```
+
+
+
+
+
 
 ## Common CI Build Issues
 
@@ -265,7 +275,7 @@ If your build is failing on the 'production' suite, you may be relying on a debu
 
 There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
 
-If your tests can't aren't covered a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
+If your tests can't or aren't covered by a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
 
 ```javascript
 import { DEBUG } from '@glimmer/env';
@@ -287,6 +297,56 @@ Sometimes a single test suite will fail, without giving any indication of a real
 * Restart all the test suites on CI by doing another push
 * Ask a repo collab to restart that single test suite
 
+# Adding a Deprecation
+
+Deprecations of public API must be the result of an [RFC](https://github.com/emberjs/rfcs#creating-an-rfc).
+
+Deprecations are defined in a central location, currently [packages/@ember/-internals/deprecation/index.ts](https://github.com/emberjs/ember.js/blob/main/packages/%40ember/-internals/deprecation/index.ts).
+
+To add a deprecation, you must add a new entry to the `deprecations` object in the `index.ts` file. The entry should be an object with the following properties:
+
+* `id` (required): A string that uniquely identifies the deprecation. This should be a short, descriptive name, typically dasherized.
+* `for` (required): The string `ember-source` -- every deprecation from this package is for `ember-source`.
+* `since` (required): An object with `available` and `enabled`. `available` is the 
+first version of Ember that the deprecation is available in. `enabled` is the version 
+of Ember that the deprecation was first enabled. This is used as a feature flag 
+deprecations. For public APIs, the `enabled` value is added only once the deprecation RFC is [Ready for Release](https://github.com/emberjs/rfcs#ready-for-release).
+* `until` (required): The version of Ember that the deprecation will be removed in.
+* `url` (required): A URL to the deprecation guide for the deprecation. This URL 
+can be constructed in advance of the deprecation being added to the 
+[deprecation app](https://github.com/ember-learn/deprecation-app) by following 
+this format: `https://deprecations.emberjs.com/deprecations/{{id}}`.
+
+`deprecateUntil` (internal to Ember) should then be called using the entry from the `DEPRECATIONS` object.
+
+```ts
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
+//...
+
+deprecateUntil(message, DEPRECATIONS.MY_DEPRECATION);
+
+```
+
+`expectDeprecation` should also use the DEPRECATIONS object, but it should be noted
+that it uses `isEnabled` instead of `test` because the expectations of `expectDeprecation`
+are the opposite of `test`.
+
+```ts
+  expectDeprecation(
+    () => {
+        assert.equal(foo, bar(), 'foo is equal to bar'); // something that triggers the deprecation
+    },
+    /matchesMessage/,
+    DEPRECATIONS.MY_DEPRECATION.isEnabled
+);
+```
+
+We sometimes deprecate "Intimate" API -- private APIs that we suspect or have
+concerns about being used by addons or apps. These deprecations are not required
+to be RFC'd. However, we require they be available for at least one LTS release
+before the APIs are removed. For example, a deprecation added in 5.5 would need 
+to have an `until` no earlier than 5.9.
+
 # Appendix
 
 ## Commit Tagging
@@ -299,7 +359,7 @@ In general bug fixes are pulled into the beta branch. As such, the prefix is: `[
 
 For bugs related to canary features, follow the prefixing rules for features.
 
-The vast majority of bug fixes apply to the current stable or beta releases, so submit your PR against `emberjs:master` with one of the above mentioned BUGFIX tags.  (In the unusual case of a bug fix specifically for a past release, tag for that release `[BUGFIX release-1-13]` and submit the PR against the stable branch for that release: `emberjs:stable-1-13`.)
+The vast majority of bug fixes apply to the current stable or beta releases, so submit your PR against `emberjs:main` with one of the above mentioned BUGFIX tags.  (In the unusual case of a bug fix specifically for a past release, tag for that release `[BUGFIX release-1-13]` and submit the PR against the stable branch for that release: `emberjs:stable-1-13`.)
 
 ### Cleanup
 
@@ -308,7 +368,7 @@ as `[CLEANUP beta]`.
 
 ### Features
 
-All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature.
+All additions and fixes for features in canary should be tagged as `[FEATURE name]` where name is the same as the flag for that feature. The commit message or PR description should link to the RFC that proposed the feature.
 
 ### Documentation
 

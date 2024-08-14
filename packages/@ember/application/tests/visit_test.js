@@ -3,18 +3,19 @@ import {
   ModuleBasedTestResolver,
   ApplicationTestCase,
   runTask,
+  defineComponent,
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
 import EmberObject from '@ember/object';
 import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
+import { action } from '@ember/object';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import Route from '@ember/routing/route';
 import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { ENV } from '@ember/-internals/environment';
 
 function expectAsyncError() {
   RSVP.off('error');
@@ -25,7 +26,6 @@ moduleFor(
   class extends ApplicationTestCase {
     teardown() {
       RSVP.on('error', onerrorDefault);
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       super.teardown();
     }
 
@@ -51,7 +51,6 @@ moduleFor(
         rootElement,
       };
 
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
       return this.visit('/', bootOptions).then(() => {
         assert.equal(
           rootElement.innerHTML,
@@ -73,8 +72,6 @@ moduleFor(
         rootElement,
         _renderMode: 'serialize',
       };
-
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
 
       return this.visit('/', bootOptions)
         .then((instance) => {
@@ -520,12 +517,9 @@ moduleFor(
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
           this.register(
-            'template:components/cache-money',
-            compile(`
-          <p>Dis cache money</p>
-        `)
+            'component:cache-money',
+            defineComponent({}, `<p>Dis cache money</p>`, Component.extend({}))
           );
-          this.register('component:cache-money', Component.extend({}));
         },
       });
       this.add('engine:blog', BlogEngine);
@@ -564,12 +558,9 @@ moduleFor(
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
           this.register(
-            'template:components/cache-money',
-            compile(`
-          <p>Dis cache money</p>
-        `)
+            'component:cache-money',
+            defineComponent({}, `<p>Dis cache money</p>`, Component.extend({}))
           );
-          this.register('component:cache-money', Component.extend({}));
         },
       });
       this.add('engine:blog', BlogEngine);
@@ -667,66 +658,59 @@ moduleFor(
 
       this.addTemplate('show', '{{component @model.componentName model=@model.componentData}}');
 
-      this.addTemplate(
-        'components/x-foo',
-        `
-        <h1>X-Foo</h1>
-        <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>
-        `
-      );
-
       this.add(
         'component:x-foo',
-        Component.extend({
-          tagName: 'x-foo',
+        defineComponent(
+          {},
+          `<h1>X-Foo</h1>
+           <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>`,
 
-          isolatedCounter: service(),
-          sharedCounter: service(),
+          Component.extend({
+            tagName: 'x-foo',
 
-          init() {
-            this._super();
-            xFooInitCalled = true;
-          },
+            isolatedCounter: service(),
+            sharedCounter: service(),
 
-          didInsertElement() {
-            xFooDidInsertElementCalled = true;
-          },
+            init() {
+              this._super();
+              xFooInitCalled = true;
+            },
 
-          click() {
-            this.get('isolatedCounter').increment();
-            this.get('sharedCounter').increment();
-          },
-        })
-      );
+            didInsertElement() {
+              xFooDidInsertElementCalled = true;
+            },
 
-      this.addTemplate(
-        'components/x-bar',
-        `
-        <h1>X-Bar</h1>
-        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
-        `
+            click() {
+              this.get('isolatedCounter').increment();
+              this.get('sharedCounter').increment();
+            },
+          })
+        )
       );
 
       this.add(
         'component:x-bar',
-        Component.extend({
-          counter: service('sharedCounter'),
+        defineComponent(
+          null,
+          `<h1>X-Bar</h1>
+          <button {{on "click" this.incrementCounter}}>Join {{this.counter.value}} others in clicking me!</button>`,
+          Component.extend({
+            counter: service('sharedCounter'),
 
-          actions: {
-            incrementCounter() {
+            incrementCounter: action(function () {
               this.get('counter').increment();
+            }),
+
+            init() {
+              this._super();
+              xBarInitCalled = true;
             },
-          },
 
-          init() {
-            this._super();
-            xBarInitCalled = true;
-          },
-
-          didInsertElement() {
-            xBarDidInsertElementCalled = true;
-          },
-        })
+            didInsertElement() {
+              xBarDidInsertElementCalled = true;
+            },
+          })
+        )
       );
 
       let fixtureElement = document.querySelector('#qunit-fixture');

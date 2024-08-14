@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
-import EmberObject, { get, computed } from '@ember/object';
+import EmberObject, { action, get, computed } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
@@ -745,16 +745,14 @@ moduleFor(
     ) {
       this.addTemplate(
         'application',
-        '<button id="test-button" {{action \'increment\'}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
+        '<button id="test-button" {{on "click" this.increment}}>Increment</button><span id="test-value">{{this.foo}}</span>{{outlet}}'
       );
 
       this.setSingleQPController('application', 'foo', 1, {
-        actions: {
-          increment() {
-            this.incrementProperty('foo');
-            this.send('refreshRoute');
-          },
-        },
+        increment: action(function () {
+          this.incrementProperty('foo');
+          this.send('refreshRoute');
+        }),
       });
 
       this.add(

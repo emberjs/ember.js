@@ -67,36 +67,6 @@ export const ENV = {
   STRUCTURED_PROFILE: false,
 
   /**
-    Whether to insert a `<div class="ember-view" />` wrapper around the
-    application template. See RFC #280.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _APPLICATION_TEMPLATE_WRAPPER
-    @for EmberENV
-    @type Boolean
-    @default true
-    @private
-  */
-  _APPLICATION_TEMPLATE_WRAPPER: true,
-
-  /**
-    Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
-    components semantics) for template-only components. See RFC #278.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _TEMPLATE_ONLY_GLIMMER_COMPONENTS
-    @for EmberENV
-    @type Boolean
-    @default false
-    @private
-  */
-  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: false,
-
-  /**
     Whether to perform extra bookkeeping needed to make the `captureRenderTree`
     API work.
 
@@ -129,6 +99,31 @@ export const ENV = {
   _DEBUG_RENDER_TREE: DEBUG,
 
   /**
+   Whether to force all deprecations to be enabled. This is used internally by
+   Ember to enable deprecations in tests. It is not intended to be set in
+   projects.
+
+   @property _ALL_DEPRECATIONS_ENABLED
+   @for EmberENV
+   @type Boolean
+   @default false
+   @private
+   */
+  _ALL_DEPRECATIONS_ENABLED: false,
+
+  /**
+   Override the version of ember-source used to determine when deprecations "break".
+   This is used internally by Ember to test with deprecated features "removed".
+   This is never intended to be set by projects.
+   @property _OVERRIDE_DEPRECATION_VERSION
+   @for EmberENV
+   @type string | null
+   @default null
+   @private
+   */
+  _OVERRIDE_DEPRECATION_VERSION: null,
+
+  /**
     Whether the app defaults to using async observers.
 
     This is not intended to be set directly, as the implementation may change in
@@ -141,6 +136,22 @@ export const ENV = {
     @private
   */
   _DEFAULT_ASYNC_OBSERVERS: false,
+
+  /**
+   Whether the app still has default record-loading behavior in the model
+   hook from RFC https://rfcs.emberjs.com/id/0774-implicit-record-route-loading
+   This will also remove the default store property from the route.
+
+   This is not intended to be set directly, as the implementation may change in
+   the future. Use `@ember/optional-features` instead.
+
+   @property _NO_IMPLICIT_ROUTE_MODEL
+   @for EmberENV
+   @type Boolean
+   @default false
+   @private
+   */
+  _NO_IMPLICIT_ROUTE_MODEL: false,
 
   /**
     Controls the maximum number of scheduled rerenders without "settling". In general,
@@ -185,6 +196,8 @@ export const ENV = {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;
     } else if (defaultValue === false) {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
+    } else {
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag];
     }
   }
 

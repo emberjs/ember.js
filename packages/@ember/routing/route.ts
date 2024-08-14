@@ -7,6 +7,7 @@ import {
 } from '@ember/-internals/metal';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
+import { ENV } from '@ember/-internals/environment';
 import { BucketCache } from '@ember/routing/-internals';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
@@ -17,7 +18,8 @@ import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
-import { assert, deprecate, info, isTesting } from '@ember/debug';
+import { assert, info, isTesting } from '@ember/debug';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
@@ -1251,17 +1253,13 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @private
   */
   findModel(type: string, value: unknown) {
-    deprecate(
+    if (ENV._NO_IMPLICIT_ROUTE_MODEL) {
+      return;
+    }
+    deprecateUntil(
       `The implicit model loading behavior for routes is deprecated. ` +
         `Please define an explicit model hook for ${this.fullRouteName}.`,
-      false,
-      {
-        id: 'deprecate-implicit-route-model',
-        for: 'ember-source',
-        since: { available: '5.3.0', enabled: '5.3.0' },
-        until: '6.0.0',
-        url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
-      }
+      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL
     );
 
     const store = 'store' in this ? this.store : get(this, '_store');

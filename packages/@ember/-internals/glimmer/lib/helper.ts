@@ -371,7 +371,6 @@ export function helper<S>(
 export function helper(
   helperFn: (positional: unknown[], named: object) => unknown
   // At the implementation site, we don't care about the actual underlying type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): FunctionBasedHelper<any> {
   // SAFETY: this is completely lies, in two ways:
   //

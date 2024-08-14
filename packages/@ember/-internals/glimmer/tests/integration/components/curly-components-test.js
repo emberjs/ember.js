@@ -7,8 +7,10 @@ import {
   equalsElement,
   runTask,
   runLoopSettled,
+  testUnless,
 } from 'internal-test-helpers';
 
+import { action } from '@ember/object';
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
@@ -20,6 +22,7 @@ import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: curly components',
@@ -1264,13 +1267,16 @@ moduleFor(
         this.registerComponent('non-block', {
           template: 'In layout - someProp: {{attrs.someProp}}',
         });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/non-block.hbs' @ L1:C24) ");
+      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. (L1:C24) ');
     }
 
+    // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
     ['@test non-block with properties on this.attrs']() {
-      this.registerComponent('non-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}}',
-      });
+      expectDeprecation(() => {
+        this.registerComponent('non-block', {
+          template: 'In layout - someProp: {{this.attrs.someProp}}',
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.someProp}} should be updated to {{@someProp}}./);
 
       this.render('{{non-block someProp=this.prop}}', {
         prop: 'something here',
@@ -1441,25 +1447,23 @@ moduleFor(
             componentInstance = this;
           },
 
-          actions: {
-            click() {
-              let currentCounter = this.get('counter');
+          myClick: action(function () {
+            let currentCounter = this.get('counter');
 
-              assert.equal(currentCounter, 0, 'the current `counter` value is correct');
+            assert.equal(currentCounter, 0, 'the current `counter` value is correct');
 
-              let newCounter = currentCounter + 1;
-              this.set('counter', newCounter);
+            let newCounter = currentCounter + 1;
+            this.set('counter', newCounter);
 
-              assert.equal(
-                this.get('counter'),
-                newCounter,
-                "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
-              );
-            },
-          },
+            assert.equal(
+              this.get('counter'),
+              newCounter,
+              "getting the newly set `counter` property works; it's equal to the value we just set and not `undefined`"
+            );
+          }),
         }),
         template: `
-          <button {{action "click"}}>foobar</button>
+          <button {{on "click" this.myClick}}>foobar</button>
         `,
       });
 
@@ -1476,21 +1480,24 @@ moduleFor(
       );
     }
 
+    // Perhaps change this test to `{{this.attrs.foo.value}}` when removing the deprecation?
     ['@test this.attrs.foo === @foo === foo']() {
-      this.registerComponent('foo-bar', {
-        template: strip`
-        Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
-        {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each @items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each this.items as |item|}}
-          {{item}}
-        {{/each}}
-      `,
-      });
+      expectDeprecation(() => {
+        this.registerComponent('foo-bar', {
+          template: strip`
+          Args: {{this.attrs.value}} | {{@value}} | {{this.value}}
+          {{#each this.attrs.items as |item|}}
+            {{item}}
+          {{/each}}
+          {{#each @items as |item|}}
+            {{item}}
+          {{/each}}
+          {{#each this.items as |item|}}
+            {{item}}
+          {{/each}}
+        `,
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs..+}} should be updated to {{@.+}}./);
 
       this.render('{{foo-bar value=this.model.value items=this.model.items}}', {
         model: {
@@ -1572,13 +1579,16 @@ moduleFor(
         this.registerComponent('with-block', {
           template: 'In layout - someProp: {{attrs.someProp}} - {{yield}}',
         });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. ('my-app/templates/components/with-block.hbs' @ L1:C24) ");
+      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.someProp}} should be updated to {{@someProp}}. (L1:C24) ');
     }
 
+    // Perhaps change this test to `{{this.attrs.someProp.value}}` when removing the deprecation?
     ['@test block with properties on this.attrs']() {
-      this.registerComponent('with-block', {
-        template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
-      });
+      expectDeprecation(() => {
+        this.registerComponent('with-block', {
+          template: 'In layout - someProp: {{this.attrs.someProp}} - {{yield}}',
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.someProp}} should be updated to {{@someProp}}./);
 
       this.render(
         strip`
@@ -2491,7 +2501,7 @@ moduleFor(
           },
           value: null,
         }),
-        template: '<div id="inner-value">{{wrapper.content}}</div>',
+        template: '<div id="inner-value">{{this.wrapper.content}}</div>',
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
@@ -2527,7 +2537,7 @@ moduleFor(
         template: '<div id="inner-value">{{this.wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = backtrackingMessageFor('content', 'Wrapper', {
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', Wrapper.name, {
         renderTree: ['x-outer', 'this.wrapper.content'],
       });
 
@@ -3146,9 +3156,16 @@ moduleFor(
       runTask(() => set(this.context, 'foo', 5));
     }
 
-    ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} returning \`true\` from an action does not bubble if \`target\` is not specified (GH#14275)`](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
           actions: {
@@ -3173,8 +3190,15 @@ moduleFor(
       runTask(() => this.$('button').click());
     }
 
-    ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} returning \`true\` from an action bubbles to the \`target\` if specified`](assert) {
+      assert.expect(5);
+
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
 
       this.registerComponent('display-toggle', {
         ComponentClass: Component.extend({
@@ -3301,19 +3325,22 @@ moduleFor(
           template:
             'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
         });
-      }, "Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. ('my-app/templates/components/foo-bar.hbs' @ L1:C10) ");
+      }, 'Using {{attrs}} to reference named arguments is not supported. {{attrs.myVar}} should be updated to {{@myVar}}. (L1:C10) ');
     }
 
+    // Perhaps change this test to `{{this.attrs.myVar.value}}` when removing the deprecation?
     ['@test using this.attrs for positional params']() {
       let MyComponent = Component.extend();
 
-      this.registerComponent('foo-bar', {
-        ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar'],
-        }),
-        template:
-          'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
-      });
+      expectDeprecation(() => {
+        this.registerComponent('foo-bar', {
+          ComponentClass: MyComponent.reopenClass({
+            positionalParams: ['myVar'],
+          }),
+          template:
+            'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
+        });
+      }, /Using {{this.attrs}} to reference named arguments has been deprecated. {{this.attrs.myVar2?}} should be updated to {{@myVar2?}}./);
 
       this.render('{{foo-bar 1 myVar2=2}}');
 

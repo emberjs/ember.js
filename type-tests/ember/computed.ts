@@ -23,7 +23,7 @@ class Person extends Ember.Object {
     return `${this.get('firstName')} ${this.get('lastName')}`;
   }
 
-  @Ember.computed('fullName').readOnly()
+  @(Ember.computed('fullName').readOnly())
   get fullNameReadonly() {
     return this.get('fullName');
   }
@@ -39,7 +39,7 @@ class Person extends Ember.Object {
     this.set('lastName', last);
   }
 
-  @Ember.computed().meta({ foo: 'bar' }).readOnly()
+  @(Ember.computed().meta({ foo: 'bar' }).readOnly())
   get combinators() {
     return this.get('firstName');
   }

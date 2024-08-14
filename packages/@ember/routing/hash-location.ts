@@ -146,9 +146,6 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     Given a URL, formats it to be placed into the page as part
     of an element's `href` attribute.
 
-    This is used, for example, when using the {{action}} helper
-    to generate a URL based on an event.
-
     @private
     @method formatURL
     @param url {String}

@@ -5,8 +5,6 @@ export {
   Helper,
   helper,
   Component,
-  InteractiveRenderer,
-  InertRenderer,
   htmlSafe,
   SafeString,
   DOMChanges,

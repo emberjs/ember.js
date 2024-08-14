@@ -28,7 +28,7 @@ if (hasDOM) {
       try {
         INPUT_ELEMENT.type = type;
         isValid = INPUT_ELEMENT.type === type;
-      } catch (e) {
+      } catch (_e) {
         isValid = false;
       } finally {
         INPUT_ELEMENT.type = 'text';

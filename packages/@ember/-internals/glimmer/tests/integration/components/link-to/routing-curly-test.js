@@ -1100,7 +1100,7 @@ moduleFor(
       this.addTemplate(
         'about',
         `
-        <div {{action this.hide}}>
+        <div {{on "click" this.hide}}>
           <div id="about-contact">{{#link-to route='about.contact'}}About{{/link-to}}</div>
         </div>
         {{outlet}}

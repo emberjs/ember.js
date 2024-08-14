@@ -1,6 +1,5 @@
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
-import { ENV } from '@ember/-internals/environment';
 import AbstractTestCase from './abstract';
 import { runDestroy, runTask, runLoopSettled } from '../run';
 import type { BootOptions } from '@ember/engine/instance';
@@ -48,9 +47,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
       return this._element;
     }
 
-    let element = document.querySelector(
-      ENV._APPLICATION_TEMPLATE_WRAPPER ? '#qunit-fixture > div.ember-view' : '#qunit-fixture'
-    );
+    let element = document.querySelector('#qunit-fixture');
 
     return (this._element = element);
   }
@@ -82,7 +79,7 @@ export default abstract class AbstractApplicationTestCase extends AbstractTestCa
     return this.application.resolveRegistration('router:main') as typeof Router;
   }
 
-  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}): object {
+  compile(templateString: string, options: Partial<EmberPrecompileOptions> = {}) {
     return compile(templateString, options);
   }
 }
