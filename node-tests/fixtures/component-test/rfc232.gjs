@@ -7,8 +7,7 @@ module('Integration | Component | x-foo', function (hooks) {
   setupRenderingTest(hooks);
 
   test('it renders', async function (assert) {
-    // Set any properties with const myProperty = 'value';
-    // Autotracking is achieved using the same syntax as app code. For example:
+    // Updating values is achieved using autotracking, just like in app code. For example:
     // class State { @tracked myProperty = 0; }; const state = new State();
     // and update using state.myProperty = 1; await rerender();
     // Handle any actions with function myAction(val) { ... };
