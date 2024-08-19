@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.12.0-beta.1 (August 19, 2024)
+
+- [#20714](https://github.com/emberjs/ember.js/pull/20714) [BUGFIX] Break eager cycle for "deprecate" function
+
 ## v5.11.0 (August 19, 2024)
 
 - [#20716](https://github.com/emberjs/ember.js/pull/20716) [BREAKING] Drop Node 16 support
