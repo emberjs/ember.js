@@ -20,19 +20,14 @@ export const ENV = {
     native object prototypes, a few extra methods in order to provide a more
     friendly API.
 
-    We generally recommend leaving this option set to true however, if you need
-    to turn it off, you can add the configuration property
-    `EXTEND_PROTOTYPES` to `EmberENV` and set it to `false`.
-
-    Note, when disabled (the default configuration for Ember Addons), you will
-    instead have to access all methods and functions from the Ember
-    namespace.
+    The behavior from setting this option to `true` was deprecated in Ember 5.10.
 
     @property EXTEND_PROTOTYPES
     @type Boolean
     @default true
     @for EmberENV
     @public
+    @deprecated in v5.10
   */
   EXTEND_PROTOTYPES: {
     Array: true,
@@ -201,6 +196,9 @@ export const ENV = {
     }
   }
 
+  // TODO: Remove in Ember 6.5. This setting code for EXTEND_PROTOTYPES
+  // should stay for at least an LTS cycle so that users get the explicit
+  // deprecation exception when it breaks in >= 6.0.0.
   let { EXTEND_PROTOTYPES } = EmberENV;
   if (EXTEND_PROTOTYPES !== undefined) {
     if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {

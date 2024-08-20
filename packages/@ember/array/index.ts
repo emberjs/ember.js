@@ -1858,11 +1858,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 
 /**
   Creates an `Ember.NativeArray` from an Array-like object.
-  Does not modify the original object's contents. `A()` is not needed if
-  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
-  it is recommended that you use `A()` when creating addons for
-  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
-  will be `true`.
+  Does not modify the original object's contents.
 
   Example
 
@@ -2061,10 +2057,7 @@ interface MutableArrayWithoutNative<T>
 
 /**
   The NativeArray mixin contains the properties needed to make the native
-  Array support MutableArray and all of its dependent APIs. Unless you
-  have `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Array` set to
-  false, this will be applied automatically. Otherwise you can apply the mixin
-  at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
+  Array support MutableArray and all of its dependent APIs.
 
   @class Ember.NativeArray
   @uses MutableArray
