@@ -26,11 +26,11 @@ export const ENV = {
     @type Boolean
     @default true
     @for EmberENV
-    @public
+    @private
     @deprecated in v5.10
   */
   EXTEND_PROTOTYPES: {
-    Array: true,
+    Array: false,
   },
 
   /**

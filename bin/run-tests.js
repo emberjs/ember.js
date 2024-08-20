@@ -18,10 +18,6 @@ const variants = [
   // hit its "until" version, the tests for it will behave correctly.
   'OVERRIDE_DEPRECATION_VERSION',
 
-  // This enables the legacy Ember feature that causes Ember to extend built-in
-  // platform features like Array.
-  'EXTEND_PROTOTYPES',
-
   // This enables all canary feature flags for unreleased feature within Ember
   // itself.
   'ENABLE_OPTIONAL_FEATURES',
