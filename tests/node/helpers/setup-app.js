@@ -61,6 +61,8 @@ module.exports = function (hooks) {
 
     this.Ember = Ember;
     this.compile = compile;
+    this.setComponentTemplate = Ember._setComponentTemplate;
+    this.templateOnlyComponent = Ember._templateOnlyComponent;
 
     Ember.testing = true;
 
@@ -166,8 +168,11 @@ function registerTemplate(name, template) {
   this.register('template:' + name, this.compile(template));
 }
 
-function registerComponent(name, componentProps) {
-  let component = this.Ember.Component.extend(componentProps);
+function registerComponent(name, componentProps, templateContents) {
+  let component = this.setComponentTemplate(
+    this.compile(templateContents),
+    componentProps ? this.Ember.Component.extend(componentProps) : this.templateOnlyComponent()
+  );
   this.register('component:' + name, component);
 }
 

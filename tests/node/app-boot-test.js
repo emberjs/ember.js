@@ -13,21 +13,21 @@ QUnit.module('App Boot', function (hooks) {
   QUnit.test('nested {{component}}', function (assert) {
     this.template('index', '{{root-component}}');
 
-    this.template(
-      'components/root-component',
+    this.component(
+      'root-component',
+      {
+        location: 'World',
+        hasExistence: true,
+      },
       "\
-      <h1>Hello {{#if this.hasExistence}}{{this.location}}{{/if}}</h1>\
-      <div>{{component 'foo-bar'}}</div>\
-    "
+    <h1>Hello {{#if this.hasExistence}}{{this.location}}{{/if}}</h1>\
+    <div>{{component 'foo-bar'}}</div>\
+  "
     );
 
-    this.component('root-component', {
-      location: 'World',
-      hasExistence: true,
-    });
-
-    this.template(
-      'components/foo-bar',
+    this.component(
+      'foo-bar',
+      undefined,
       '\
       <p>The files are *inside* the computer?!</p>\
     '
