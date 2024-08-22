@@ -98,13 +98,6 @@ jobs:
           - name: "Production build, with optional features"
             BUILD: "production"
             ENABLE_OPTIONAL_FEATURES: "true"
-          - name: "Extend prototypes"
-            EXTEND_PROTOTYPES: "true"
-            RAISE_ON_DEPRECATION: "false"
-          - name: "Extend prototypes, with optional features"
-            EXTEND_PROTOTYPES: "true"
-            ENABLE_OPTIONAL_FEATURES: "true"
-            RAISE_ON_DEPRECATION: "false"
 
     steps:
       - uses: actions/checkout@v4
@@ -115,7 +108,6 @@ jobs:
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
-          EXTEND_PROTOTYPES: ${{ matrix.EXTEND_PROTOTYPES }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
 

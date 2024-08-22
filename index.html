@@ -24,9 +24,6 @@
         EmberENV.__test_hook_count__ += object;
       });
 
-      // Handle extending prototypes
-      EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.EXTEND_PROTOTYPES;
-
       // Handle testing feature flags
       if (QUnit.urlParams.ENABLE_OPTIONAL_FEATURES) {
         EmberENV.ENABLE_OPTIONAL_FEATURES = true;
