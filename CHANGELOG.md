@@ -7,7 +7,7 @@
 ## v5.11.0 (August 19, 2024)
 
 - [#20716](https://github.com/emberjs/ember.js/pull/20716) [BREAKING] Drop Node 16 support
-- [#20704](https://github.com/emberjs/ember.js/pull/20704) Remove `Component` suffix from blueprints to facilitate <template>
+- [#20704](https://github.com/emberjs/ember.js/pull/20704) Remove `Component` suffix from blueprints to facilitate `<template>`
 
 ## v5.10.2 (August 6, 2024)
 
