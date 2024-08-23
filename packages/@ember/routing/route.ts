@@ -8,7 +8,7 @@ import {
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { ENV } from '@ember/-internals/environment';
-import { BucketCache } from '@ember/routing/-internals';
+import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
@@ -28,9 +28,8 @@ import type { RenderState } from '@ember/-internals/glimmer';
 import type { TemplateFactory } from '@glimmer/interfaces';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
-import type { QueryParam } from '@ember/routing/router';
-import EmberRouter from '@ember/routing/router';
-import { generateController } from '@ember/routing/-internals';
+import type { QueryParam, default as EmberRouter } from '@ember/routing/router';
+import { default as generateController } from './lib/generate_controller';
 import type { ExpandedControllerQueryParam, NamedRouteArgs } from './lib/utils';
 import {
   calculateCacheKey,
@@ -293,14 +292,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     if (owner) {
       let router = owner.lookup('router:main');
       let bucketCache = owner.lookup(P`-bucket-cache:main`);
-
-      assert(
-        'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
-        router instanceof EmberRouter && bucketCache instanceof BucketCache
-      );
-
-      this._router = router;
-      this._bucketCache = bucketCache;
+      this._router = router as EmberRouter;
+      this._bucketCache = bucketCache as BucketCache;
       this._topLevelViewTemplate = owner.lookup('template:-outlet');
       this._environment = owner.lookup('-environment:main');
     }

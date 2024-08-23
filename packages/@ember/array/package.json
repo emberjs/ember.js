@@ -6,6 +6,7 @@
     ".": "./index.ts",
     "./-internals": "./-internals.ts",
     "./proxy": "./proxy.ts",
+    "./make": "./make.ts",
     "./mutable": "./mutable.ts"
   },
   "dependencies": {

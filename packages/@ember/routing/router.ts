@@ -3,8 +3,10 @@ import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals
 import { computed, get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
-import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
-import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
+import { default as BucketCache } from './lib/cache';
+import { default as DSL, type DSLCallback } from './lib/dsl';
+import RouterState from './lib/router_state';
+import type { EngineRouteInfo } from './lib/engines';
 import {
   calculateCacheKey,
   extractRouteArgs,
@@ -24,9 +26,9 @@ import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { QueryParamMeta } from '@ember/routing/route';
-import type Route from '@ember/routing/route';
 import {
+  type QueryParamMeta,
+  type default as Route,
   defaultSerialize,
   getFullQueryParams,
   getRenderState,

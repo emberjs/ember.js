@@ -16,7 +16,7 @@ const canaryFeatures = require('./broccoli/canary-features');
 
 const testDependencies = ['qunit', 'vite'];
 
-export default [
+let configs = [
   esmConfig(),
   legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
     isDeveloping: true,
@@ -33,6 +33,12 @@ export default [
   templateCompilerConfig(),
 ];
 
+if (process.env.DEBUG_SINGLE_CONFIG) {
+  configs = configs.slice(parseInt(process.env.DEBUG_SINGLE_CONFIG), 1);
+}
+
+export default configs;
+
 function esmConfig() {
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
@@ -42,6 +48,18 @@ function esmConfig() {
   ];
 
   return {
+    onLog(level, log, handler) {
+      switch (log.code) {
+        case 'CIRCULAR_DEPENDENCY':
+          process.stderr.write(log.message + '\n');
+          break;
+        case 'CYCLIC_CROSS_CHUNK_REEXPORT':
+        case 'EMPTY_BUNDLE':
+          break;
+        default:
+          handler(level, log);
+      }
+    },
     input: {
       ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
       ...renameEntrypoints(packages(), (name) => join('packages', name)),
