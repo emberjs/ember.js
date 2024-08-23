@@ -28,7 +28,7 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/utils';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -54,6 +54,7 @@ import { processComponentArgs } from '../utils/process-args';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');
+const EMPTY_ARRAY  = [];
 
 export const DIRTY_TAG = Symbol('DIRTY_TAG');
 export const IS_DISPATCHING_ATTRS = Symbol('IS_DISPATCHING_ATTRS');
