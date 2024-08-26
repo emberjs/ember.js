@@ -55,7 +55,9 @@ function esmConfig() {
             // rsvp has some internal cycles but they don't bother us
             return;
           }
-          process.stderr.write(log.message + '\n');
+          process.stderr.write(
+            `Circular dependency:\n${log.ids.map((id) => '    ' + id).join('\n')}\n`
+          );
           break;
         case 'CYCLIC_CROSS_CHUNK_REEXPORT':
         case 'EMPTY_BUNDLE':
