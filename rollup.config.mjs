@@ -51,6 +51,10 @@ function esmConfig() {
     onLog(level, log, handler) {
       switch (log.code) {
         case 'CIRCULAR_DEPENDENCY':
+          if (log.ids.some((id) => id.includes('node_modules/rsvp/lib/rsvp'))) {
+            // rsvp has some internal cycles but they don't bother us
+            return;
+          }
           process.stderr.write(log.message + '\n');
           break;
         case 'CYCLIC_CROSS_CHUNK_REEXPORT':
