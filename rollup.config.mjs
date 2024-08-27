@@ -58,10 +58,7 @@ function esmConfig() {
           process.stderr.write(
             `Circular dependency:\n${log.ids.map((id) => '    ' + id).join('\n')}\n`
           );
-          break;
-        case 'CYCLIC_CROSS_CHUNK_REEXPORT':
-        case 'EMPTY_BUNDLE':
-          break;
+          throw new Error(`Circular dependencies are forbidden`);
         default:
           handler(level, log);
       }
