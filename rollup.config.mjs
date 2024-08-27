@@ -59,6 +59,12 @@ function esmConfig() {
             `Circular dependency:\n${log.ids.map((id) => '    ' + id).join('\n')}\n`
           );
           throw new Error(`Circular dependencies are forbidden`);
+        case 'EMPTY_BUNDLE':
+          // Some of our entrypoints are type-only and result in empty bundles.
+          // We prune the actual empty files elsewhere in this config (see
+          // pruneEmptyBundles). This silences the warning from rollup about
+          // them.
+          return;
         default:
           handler(level, log);
       }
