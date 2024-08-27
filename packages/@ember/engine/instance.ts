@@ -7,7 +7,7 @@ import { RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
-import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
+import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
 import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
