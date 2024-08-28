@@ -1,4 +1,4 @@
-export { getEngineParent, setEngineParent } from './lib/engine-parent';
+export { getEngineParent, setEngineParent } from './parent';
 
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';

@@ -1,5 +1,5 @@
 import { precompileTemplate } from '@ember/template-compilation';
-import { on } from '@ember/modifier';
+import { on } from '@ember/modifier/on';
 
 export default precompileTemplate(
   `<a

@@ -2,7 +2,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import EmberObject from '@ember/object';
-import { getElementView } from '@ember/-internals/views';
+import { getElementView } from './utils';
 import ActionManager from './action_manager';
 import type { BootEnvironment } from '@ember/-internals/glimmer/lib/views/outlet';
 import type Component from '@ember/component';

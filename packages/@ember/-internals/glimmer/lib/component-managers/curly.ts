@@ -260,6 +260,7 @@ export default class CurlyComponentManager
 
     beginTrackFrame();
     let props = processComponentArgs(capturedArgs);
+    props[ARGS] = capturedArgs;
     let argsTag = endTrackFrame();
 
     // Alias `id` argument to `elementId` property on the component instance.
