@@ -16,7 +16,7 @@ const canaryFeatures = require('./broccoli/canary-features');
 
 const testDependencies = ['qunit', 'vite'];
 
-export default [
+let configs = [
   esmConfig(),
   legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
     isDeveloping: true,
@@ -33,6 +33,12 @@ export default [
   templateCompilerConfig(),
 ];
 
+if (process.env.DEBUG_SINGLE_CONFIG) {
+  configs = configs.slice(parseInt(process.env.DEBUG_SINGLE_CONFIG), 1);
+}
+
+export default configs;
+
 function esmConfig() {
   let babelConfig = { ...sharedBabelConfig };
   babelConfig.plugins = [
@@ -42,6 +48,7 @@ function esmConfig() {
   ];
 
   return {
+    onLog: handleRollupWarnings,
     input: {
       ...renameEntrypoints(exposedDependencies(), (name) => join('packages', name, 'index')),
       ...renameEntrypoints(packages(), (name) => join('packages', name)),
@@ -99,6 +106,7 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
 
       interop: 'esModule',
     },
+    onLog: handleRollupWarnings,
     plugins: [
       amdDefineSupport(),
       ...(isDeveloping ? [concatenateAMDEntrypoints()] : []),
@@ -488,4 +496,26 @@ function pruneEmptyBundles() {
       }
     },
   };
+}
+
+function handleRollupWarnings(level, log, handler) {
+  switch (log.code) {
+    case 'CIRCULAR_DEPENDENCY':
+      if (log.ids.some((id) => id.includes('node_modules/rsvp/lib/rsvp'))) {
+        // rsvp has some internal cycles but they don't bother us
+        return;
+      }
+      process.stderr.write(
+        `Circular dependency:\n${log.ids.map((id) => '    ' + id).join('\n')}\n`
+      );
+      throw new Error(`Circular dependencies are forbidden`);
+    case 'EMPTY_BUNDLE':
+      // Some of our entrypoints are type-only and result in empty bundles.
+      // We prune the actual empty files elsewhere in this config (see
+      // pruneEmptyBundles). This silences the warning from rollup about
+      // them.
+      return;
+    default:
+      handler(level, log);
+  }
 }

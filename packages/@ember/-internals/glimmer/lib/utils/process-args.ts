@@ -3,7 +3,6 @@ import type { CapturedNamedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
 import { assert } from '@ember/debug';
-import { ARGS } from '../component-managers/curly';
 import { ACTIONS } from '../helpers/action';
 
 // ComponentArgs takes EvaluatedNamedArgs and converts them into the
@@ -12,8 +11,6 @@ import { ACTIONS } from '../helpers/action';
 export function processComponentArgs(namedArgs: CapturedNamedArguments) {
   let attrs = Object.create(null);
   let props = Object.create(null);
-
-  props[ARGS] = namedArgs;
 
   for (let name in namedArgs) {
     let ref = namedArgs[name];
