@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./instance": "./instance.ts"
+    "./instance": "./instance.ts",
+    "./parent": "./parent.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

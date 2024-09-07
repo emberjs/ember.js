@@ -1,4 +1,4 @@
-import { isHTMLSafe } from '@ember/-internals/glimmer';
+import { isHTMLSafe } from './string';
 import { get, tagForProperty } from '@ember/-internals/metal';
 import { isArray } from '@ember/array';
 import { isProxy } from '@ember/-internals/utils';

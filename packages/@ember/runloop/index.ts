@@ -45,12 +45,12 @@ function onBegin(current: DeferredActionQueues) {
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers();
+  flushAsyncObservers(schedule);
 }
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers();
+    flushAsyncObservers(schedule);
   }
 
   next();

@@ -10,8 +10,12 @@ import {
   endPropertyChanges,
   addObserver,
   removeObserver,
+  get,
+  set,
+  getProperties,
+  setProperties,
 } from '@ember/-internals/metal';
-import { get, set, getProperties, setProperties } from '@ember/object';
+
 import Mixin from '@ember/object/mixin';
 import { assert } from '@ember/debug';
 
