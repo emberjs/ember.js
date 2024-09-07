@@ -10,7 +10,7 @@ import {
   updateTag,
   validateTag,
 } from '@glimmer/validator';
-import { objectAt } from './array';
+import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
 
 export const CHAIN_PASS_THROUGH = new WeakSet();

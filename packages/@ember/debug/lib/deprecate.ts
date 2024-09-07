@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { DEBUG } from '@glimmer/env';
 
-import { assert } from '../index';
+import { assert } from './assert';
 import type { HandlerCallback } from './handlers';
 import { invoke, registerHandler as genericRegisterHandler } from './handlers';
 
