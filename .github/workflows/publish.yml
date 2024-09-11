@@ -51,7 +51,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 8.5.0
       - run: pnpm install --frozen-lockfile
       - name: npm publish
         run: pnpm release-plan publish
