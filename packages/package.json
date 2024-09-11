@@ -1,4 +1,5 @@
 {
+  "name": "packages-folder",
   "private": true,
   "dependencies": {
     "@types/qunit": "^2.19.9",
