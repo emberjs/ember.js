@@ -2,9 +2,11 @@ name: PerformanceCheck
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  # Don't run on every merge to main, because many merges
+  # may not even be vm related, but infra, or GH Actions
+  # push:
+  #   branches:
+  #     - main
   pull_request:
     branches: [main]
 
@@ -28,24 +30,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - uses: marceloprado/has-changed-path@v1.0.1
+        id: did-change
+        with:
+          paths: packages/
+
       - uses: wyvox/action-setup-pnpm@v3
+        if: steps.did-change.outputs.changed == 'true'
         with:
           node-version: '20.1.0'
 
       - name: RUN
+        if: steps.did-change.outputs.changed == 'true'
         run: pnpm run benchmark:setup
 
       - name: Remove unused artifacts
+        if: steps.did-change.outputs.changed == 'true'
         run: rm -rf ./tracerbench-results/traces && rm -rf ./tracerbench-results/traces.zip
 
       - name: Upload Tracerbench Artifacts
-        if: failure() || success()
+        if: steps.did-change.outputs.changed == 'true' && (failure() || success())
         uses: actions/upload-artifact@v3
         with:
           name: Trace Artifacts
           path: tracerbench-results
 
       - name: Write message
+        if: steps.did-change.outputs.changed == 'true'
         uses: mshick/add-pr-comment@v2
         with:
           message-path: "tracerbench-results/msg.txt"
