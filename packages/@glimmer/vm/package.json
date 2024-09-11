@@ -24,8 +24,7 @@
     "module": "dist/dev/index.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
