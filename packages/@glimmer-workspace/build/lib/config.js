@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // @ts-check
-
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,8 +11,9 @@ import * as insert from 'rollup-plugin-insert';
 import rollupTS from 'rollup-plugin-ts';
 import ts from 'typescript';
 
-import importMeta from './import-meta.js';
 import inline from './inline.js';
+
+const require = createRequire(import.meta.url);
 
 // eslint-disable-next-line import/no-named-as-default-member
 const { ModuleKind, ModuleResolutionKind, ScriptTarget, ImportsNotUsedAsValues } = ts;
@@ -96,7 +97,10 @@ export function typescript(pkg, config) {
   return rollupTS({
     transpiler: 'babel',
     transpileOnly: true,
-    babelConfig: { presets },
+    babelConfig: {
+      presets,
+      plugins: [require.resolve('@glimmer/local-debug-babel-plugin')],
+    },
     /**
      * This shouldn't be required, but it is.
      * If we use @rollup/plugin-babel, we can remove this.
@@ -108,7 +112,7 @@ export function typescript(pkg, config) {
 
 /** @type {['is' | 'startsWith', string[], 'inline' | 'external'][]} */
 const EXTERNAL_OPTIONS = [
-  ['is', ['tslib', '@glimmer/local-debug-flags'], 'inline'],
+  ['is', ['tslib', '@glimmer/local-debug-flags', '@glimmer/debug'], 'inline'],
   ['is', ['@handlebars/parser', 'simple-html-tokenizer', 'babel-plugin-debug-macros'], 'external'],
   ['startsWith', ['.', '/', '#', '@babel/runtime/', process.cwd().replace(/\\/gu, '/')], 'inline'],
   ['startsWith', ['@glimmer/', '@simple-dom/', '@babel/', 'node:'], 'external'],
@@ -315,7 +319,31 @@ export class Package {
         commonjs(),
         nodeResolve(),
         ...this.replacements(env),
-        ...(env === 'prod' ? [terser()] : []),
+        ...(env === 'prod'
+          ? [
+              terser({
+                module: true,
+                // to debug the output, uncomment this so you can read the
+                // identifiers, unchanged
+                // mangle: false,
+                compress: {
+                  passes: 3,
+                },
+              }),
+            ]
+          : [
+              terser({
+                module: true,
+                mangle: false,
+                compress: {
+                  passes: 3,
+                },
+                format: {
+                  comments: 'all',
+                  beautify: true,
+                },
+              }),
+            ]),
         postcss(),
         typescript(this.#package, {
           target: ScriptTarget.ES2022,
@@ -356,7 +384,20 @@ export class Package {
    */
   replacements(env) {
     return env === 'prod'
-      ? [importMeta]
+      ? [
+          replace({
+            preventAssignment: true,
+            values: {
+              // Intended to be left in the build during publish
+              // currently compiled away to `@glimmer/debug`
+              'import.meta.env.MODE': '"production"',
+              'import.meta.env.DEV': 'false',
+              'import.meta.env.PROD': 'true',
+              // Not exposed at publish, compiled away
+              'import.meta.env.VM_LOCAL_DEV': 'false',
+            },
+          }),
+        ]
       : [
           replace({
             preventAssignment: true,
@@ -417,10 +458,15 @@ export class Package {
 
       return {
         input: resolve(root, ts),
+        treeshake: {
+          // moduleSideEffects: false,
+          moduleSideEffects: (id, external) => !external,
+        },
         output: {
           file: resolve(root, 'dist', env, file),
           format,
           sourcemap: true,
+          hoistTransitiveImports: false,
           exports: format === 'cjs' ? 'named' : 'auto',
         },
         onwarn: (warning, warn) => {

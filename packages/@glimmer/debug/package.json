@@ -2,6 +2,7 @@
   "name": "@glimmer/debug",
   "version": "0.92.0",
   "license": "MIT",
+  "sideEffects": false,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/debug",
   "type": "module",
   "main": "index.ts",

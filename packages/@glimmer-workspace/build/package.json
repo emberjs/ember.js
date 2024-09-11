@@ -13,6 +13,7 @@
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
+    "@glimmer/local-debug-babel-plugin": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
