@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/manager",
-  "version": "0.92.0",
+  "version": "0.92.1",
   "license": "MIT",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/program",
   "type": "module",
@@ -33,19 +33,19 @@
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/debug": "workspace:^",
-    "@glimmer/destroyable": "workspace:^",
+    "@glimmer/debug": "workspace:*",
+    "@glimmer/destroyable": "workspace:*",
     "@glimmer/env": "0.1.7",
-    "@glimmer/global-context": "workspace:^",
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/reference": "workspace:^",
-    "@glimmer/util": "workspace:^",
-    "@glimmer/validator": "workspace:^",
-    "@glimmer/vm": "workspace:^"
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/validator": "workspace:*",
+    "@glimmer/vm": "workspace:*"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
-    "@glimmer/local-debug-flags": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
     "rollup": "^4.5.1",

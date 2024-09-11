@@ -24,7 +24,7 @@
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:*",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
     "rollup": "^4.5.1",

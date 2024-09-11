@@ -2,9 +2,9 @@
   "private": true,
   "name": "@glimmer-test/reference",
   "dependencies": {
-    "@glimmer/reference": "workspace:^",
-    "@glimmer/validator": "workspace:^",
-    "@glimmer/util": "workspace:^",
-    "@glimmer/global-context": "workspace:^"
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/validator": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/global-context": "workspace:*"
   }
 }
