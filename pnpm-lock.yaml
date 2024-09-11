@@ -34,13 +34,13 @@ importers:
         specifier: ^7.21.5
         version: 7.21.5
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/@glimmer-workspace/build
       '@glimmer-workspace/eslint-plugin':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/@glimmer-workspace/eslint-plugin
       '@glimmer-workspace/integration-tests':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/@glimmer-workspace/integration-tests
       '@glimmer/env':
         specifier: 0.1.7
@@ -223,13 +223,13 @@ importers:
   benchmark/benchmarks/krausest:
     dependencies:
       '@glimmer-workspace/benchmark-env':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/@glimmer-workspace/benchmark-env
       '@glimmer/compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/@glimmer/compiler
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../packages/@glimmer/interfaces
       '@simple-dom/document':
         specifier: ^1.4.0
@@ -263,7 +263,7 @@ importers:
         specifier: ^20.9.4
         version: 20.9.4
       '@types/puppeteer-chromium-resolver':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../packages/@types/puppeteer-chromium-resolver
       '@types/tar':
         specifier: ^6.1.10
@@ -300,31 +300,31 @@ importers:
   packages/@glimmer-workspace/benchmark-env:
     dependencies:
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/interfaces
       '@glimmer/manager':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/manager
       '@glimmer/opcode-compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/opcode-compiler
       '@glimmer/program':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/program
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/reference
       '@glimmer/runtime':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/runtime
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/util
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/validator
     devDependencies:
       eslint:
@@ -459,55 +459,55 @@ importers:
   packages/@glimmer-workspace/integration-tests:
     dependencies:
       '@glimmer-workspace/test-utils':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../test-utils
       '@glimmer/compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/compiler
       '@glimmer/destroyable':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/destroyable
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/interfaces
       '@glimmer/manager':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/manager
       '@glimmer/node':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/node
       '@glimmer/opcode-compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/opcode-compiler
       '@glimmer/owner':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/owner
       '@glimmer/program':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/program
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/reference
       '@glimmer/runtime':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/runtime
       '@glimmer/syntax':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/syntax
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/util
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/validator
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/vm
       '@glimmer/wire-format':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/wire-format
       '@simple-dom/document':
         specifier: ^1.4.0
@@ -529,10 +529,10 @@ importers:
         version: 0.5.11
     devDependencies:
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/local-debug-flags
       '@types/js-reporters':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@types/js-reporters
       '@types/qunit':
         specifier: ^2.19.9
@@ -544,10 +544,10 @@ importers:
   packages/@glimmer-workspace/test-utils:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/util
     devDependencies:
       eslint:
@@ -557,26 +557,26 @@ importers:
   packages/@glimmer/compiler:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/syntax':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../syntax
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
       '@glimmer/wire-format':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../wire-format
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       '@types/node':
         specifier: ^20.9.4
@@ -597,35 +597,35 @@ importers:
   packages/@glimmer/compiler/test:
     dependencies:
       '@glimmer/compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../interfaces
       '@glimmer/syntax':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../syntax
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../util
 
   packages/@glimmer/debug:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -649,20 +649,20 @@ importers:
         specifier: 0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -680,26 +680,26 @@ importers:
   packages/@glimmer/destroyable/test:
     dependencies:
       '@glimmer/destroyable':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../global-context
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../util
 
   packages/@glimmer/encoder:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       eslint:
         specifier: ^8.52.0
@@ -717,7 +717,7 @@ importers:
   packages/@glimmer/global-context:
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       eslint:
         specifier: ^8.52.0
@@ -739,7 +739,7 @@ importers:
         version: 1.4.0
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       eslint:
         specifier: ^8.52.0
@@ -765,38 +765,38 @@ importers:
   packages/@glimmer/manager:
     dependencies:
       '@glimmer/debug':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../debug
       '@glimmer/destroyable':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../destroyable
       '@glimmer/env':
         specifier: 0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../reference
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../validator
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -814,41 +814,41 @@ importers:
   packages/@glimmer/manager/test:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../interfaces
       '@glimmer/manager':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../reference
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../validator
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../vm
 
   packages/@glimmer/node:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/runtime':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../runtime
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@simple-dom/document':
         specifier: ^1.4.0
         version: 1.4.0
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../compiler
       '@types/qunit':
         specifier: ^2.19.9
@@ -869,41 +869,41 @@ importers:
   packages/@glimmer/opcode-compiler:
     dependencies:
       '@glimmer/debug':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../debug
       '@glimmer/encoder':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../encoder
       '@glimmer/env':
         specifier: 0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/manager':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../manager
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../reference
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
       '@glimmer/wire-format':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../wire-format
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -921,14 +921,14 @@ importers:
   packages/@glimmer/owner:
     dependencies:
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -946,41 +946,41 @@ importers:
   packages/@glimmer/owner/test:
     dependencies:
       '@glimmer/owner':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
 
   packages/@glimmer/program:
     dependencies:
       '@glimmer/encoder':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../encoder
       '@glimmer/env':
         specifier: 0.1.7
         version: 0.1.7
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/manager':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../manager
       '@glimmer/opcode-compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../opcode-compiler
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
       '@glimmer/wire-format':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../wire-format
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -998,7 +998,7 @@ importers:
   packages/@glimmer/program/test:
     dependencies:
       '@glimmer/program':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
 
   packages/@glimmer/reference:
@@ -1007,23 +1007,23 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../validator
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -1041,68 +1041,68 @@ importers:
   packages/@glimmer/reference/test:
     dependencies:
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../global-context
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../util
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../validator
 
   packages/@glimmer/runtime:
     dependencies:
       '@glimmer/destroyable':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../destroyable
       '@glimmer/env':
         specifier: 0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/manager':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../manager
       '@glimmer/owner':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../owner
       '@glimmer/program':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../program
       '@glimmer/reference':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../reference
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../validator
       '@glimmer/vm':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../vm
       '@glimmer/wire-format':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../wire-format
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/debug':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../debug
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       '@glimmer/opcode-compiler':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../opcode-compiler
       '@types/qunit':
         specifier: ^2.19.9
@@ -1123,13 +1123,13 @@ importers:
   packages/@glimmer/syntax:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
       '@glimmer/wire-format':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../wire-format
       '@handlebars/parser':
         specifier: ~2.0.0
@@ -1139,10 +1139,10 @@ importers:
         version: 0.5.11
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       '@types/qunit':
         specifier: ^2.19.9
@@ -1163,19 +1163,19 @@ importers:
   packages/@glimmer/syntax/test:
     dependencies:
       '@glimmer-workspace/integration-tests':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../@glimmer-workspace/integration-tests
       '@glimmer-workspace/test-utils':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../../@glimmer-workspace/test-utils
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../interfaces
       '@glimmer/syntax':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../util
 
   packages/@glimmer/util:
@@ -1184,14 +1184,14 @@ importers:
         specifier: 0.1.7
         version: 0.1.7
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       '@types/qunit':
         specifier: ^2.19.9
@@ -1212,7 +1212,7 @@ importers:
   packages/@glimmer/util/test:
     dependencies:
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
 
   packages/@glimmer/validator:
@@ -1221,20 +1221,20 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       '@glimmer/local-debug-flags':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../local-debug-flags
       eslint:
         specifier: ^8.52.0
@@ -1252,26 +1252,26 @@ importers:
   packages/@glimmer/validator/test:
     dependencies:
       '@glimmer/global-context':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../global-context
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../interfaces
       '@glimmer/validator':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:..
 
   packages/@glimmer/vm:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       eslint:
         specifier: ^8.52.0
@@ -1293,7 +1293,7 @@ importers:
         version: 0.3.4(@babel/core@7.23.7)
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       babel-plugin-tester:
         specifier: ^11.0.4
@@ -1317,14 +1317,14 @@ importers:
   packages/@glimmer/wire-format:
     dependencies:
       '@glimmer/interfaces':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../interfaces
       '@glimmer/util':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../util
     devDependencies:
       '@glimmer-workspace/build-support':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer-workspace/build
       eslint:
         specifier: ^8.52.0

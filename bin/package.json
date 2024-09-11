@@ -9,7 +9,7 @@
     "@types/glob": "^8.1.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.9.4",
-    "@types/puppeteer-chromium-resolver": "workspace:^",
+    "@types/puppeteer-chromium-resolver": "workspace:*",
     "@types/tar": "^6.1.10",
     "chalk": "^5.2.0",
     "execa": "^7.1.1",

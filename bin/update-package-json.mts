@@ -104,7 +104,7 @@ function updatePublicDependencies(packageJSON: PackageJSON) {
     ...packageJSON,
     devDependencies: {
       ...packageJSON.devDependencies,
-      '@glimmer-workspace/build-support': 'workspace:^',
+      '@glimmer-workspace/build-support': 'workspace:*',
     },
   };
 }

@@ -9,15 +9,15 @@
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/global-context": "workspace:^",
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/manager": "workspace:^",
-    "@glimmer/opcode-compiler": "workspace:^",
-    "@glimmer/program": "workspace:^",
-    "@glimmer/reference": "workspace:^",
-    "@glimmer/runtime": "workspace:^",
-    "@glimmer/util": "workspace:^",
-    "@glimmer/validator": "workspace:^"
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/opcode-compiler": "workspace:*",
+    "@glimmer/program": "workspace:*",
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/validator": "workspace:*"
   },
   "devDependencies": {
     "eslint": "^8.52.0"
