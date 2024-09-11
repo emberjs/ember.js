@@ -2,6 +2,6 @@
   "private": true,
   "name": "@glimmer-test/owner",
   "dependencies": {
-    "@glimmer/owner": "workspace:^"
+    "@glimmer/owner": "workspace:*"
   }
 }

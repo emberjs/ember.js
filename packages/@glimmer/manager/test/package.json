@@ -2,10 +2,10 @@
   "private": true,
   "name": "@glimmer-test/manager",
   "dependencies": {
-    "@glimmer/manager": "workspace:^",
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/reference": "workspace:^",
-    "@glimmer/validator": "workspace:^",
-    "@glimmer/vm": "workspace:^"
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/validator": "workspace:*",
+    "@glimmer/vm": "workspace:*"
   }
 }

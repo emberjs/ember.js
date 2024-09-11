@@ -39,7 +39,7 @@
     "babel-plugin-debug-macros": "^0.3.4"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:*",
     "babel-plugin-tester": "^11.0.4",
     "eslint": "^8.54.0",
     "mocha": "^10.2.0",

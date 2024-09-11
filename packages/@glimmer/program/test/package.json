@@ -2,6 +2,6 @@
   "private": true,
   "name": "@glimmer-test/program",
   "dependencies": {
-    "@glimmer/program": "workspace:^"
+    "@glimmer/program": "workspace:*"
   }
 }
