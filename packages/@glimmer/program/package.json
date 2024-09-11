@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/program",
-  "version": "0.92.0",
+  "version": "0.92.1",
   "license": "MIT",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/program",
   "type": "module",
@@ -33,18 +33,18 @@
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/encoder": "workspace:^",
+    "@glimmer/encoder": "workspace:*",
     "@glimmer/env": "0.1.7",
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/manager": "workspace:^",
-    "@glimmer/opcode-compiler": "workspace:^",
-    "@glimmer/util": "workspace:^",
-    "@glimmer/vm": "workspace:^",
-    "@glimmer/wire-format": "workspace:^"
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/opcode-compiler": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/vm": "workspace:*",
+    "@glimmer/wire-format": "workspace:*"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:^",
-    "@glimmer/local-debug-flags": "workspace:^",
+    "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
     "rollup": "^4.5.1",

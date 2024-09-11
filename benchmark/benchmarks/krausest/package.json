@@ -8,9 +8,9 @@
     "test:types": "tsc --noEmit -p ../../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer-workspace/benchmark-env": "workspace:^",
-    "@glimmer/compiler": "workspace:^",
-    "@glimmer/interfaces": "workspace:^",
+    "@glimmer-workspace/benchmark-env": "workspace:*",
+    "@glimmer/compiler": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0"

@@ -7,8 +7,8 @@
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/interfaces": "workspace:^",
-    "@glimmer/util": "workspace:^"
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/util": "workspace:*"
   },
   "devDependencies": {
     "eslint": "^8.52.0"
