@@ -297,16 +297,6 @@ importers:
         specifier: ^0.16.3
         version: 0.16.3
 
-  packages:
-
-    dependencies:
-      '@types/qunit':
-        specifier: ^2.19.9
-        version: 2.19.9
-      vite:
-        specifier: ^5.0.12
-        version: 5.0.12(@types/node@20.9.4)
-
   packages/@glimmer-workspace/benchmark-env:
     dependencies:
       '@glimmer/global-context':
@@ -4352,6 +4342,7 @@ packages:
 
   /@types/qunit@2.19.9:
     resolution: {integrity: sha512-Ym6B8Ewt1R1b0EgSqISSrAKp2Pg5MNgKK3/d2Fbls3PN7kNnucVSGaRx9Prxeo78HfQofYJMWDWLPlfAuwx7IQ==}
+    dev: true
 
   /@types/range-parser@1.2.4:
     resolution: {integrity: sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==}
