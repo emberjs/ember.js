@@ -2,13 +2,16 @@
   "name": "glimmer-engine",
   "version": "0.92.0",
   "private": true,
+  "license": "MIT",
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "repository": {
     "type": "git",
     "url": "https://github.com/glimmerjs/glimmer-vm.git"
   },
-  "license": "MIT",
   "author": "Tilde, Inc.",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
   "scripts": {
     "benchmark:setup": "zx ./bin/setup-bench.mjs",
     "browserstack:connect": "ember browserstack:connect",
@@ -105,37 +108,6 @@
     "xo": "^0.54.2",
     "zx": "^7.2.3"
   },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "volta": {
-    "node": "20.9.0",
-    "pnpm": "8.5.0"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org"
-  },
-  "pnpm": {
-    "peerDependencyRules": {
-      "allowAny": [
-        "vite-plugin-babel",
-        "vite"
-      ],
-      "allowedVersions": {
-        "@rollup/pluginutils": "5",
-        "rollup": "3",
-        "typescript": "5"
-      }
-    },
-    "overrides": {
-      "@rollup/pluginutils": "^5.0.2",
-      "@types/node": "$@types/node",
-      "typescript": "$typescript"
-    },
-    "patchedDependencies": {
-      "@release-it-plugins/workspaces@4.0.0": "patches/@release-it-plugins__workspaces@4.0.0.patch"
-    }
-  },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
     "labels": {
@@ -146,31 +118,29 @@
       "internal": ":house: Internal"
     }
   },
-  "release-it": {
-    "plugins": {
-      "@release-it-plugins/workspaces": {
-        "publish": false,
-        "workspaces": [
-          "packages/@glimmer/*"
-        ],
-        "additionalManifests": {
-          "dependencyUpdates": []
-        }
-      },
-      "@release-it-plugins/lerna-changelog": {
-        "infile": "CHANGELOG.md",
-        "launchEditor": true
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "volta": {
+    "node": "20.9.0",
+    "pnpm": "8.5.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@rollup/pluginutils": "^5.0.2",
+      "@types/node": "$@types/node",
+      "typescript": "$typescript"
+    },
+    "peerDependencyRules": {
+      "allowAny": [
+        "vite-plugin-babel",
+        "vite"
+      ],
+      "allowedVersions": {
+        "@rollup/pluginutils": "5",
+        "rollup": "3",
+        "typescript": "5"
       }
-    },
-    "git": {
-      "commitMessage": "v${version}",
-      "tagName": "v${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "v${version}",
-      "tokenRef": "GITHUB_AUTH"
-    },
-    "npm": false
+    }
   }
 }

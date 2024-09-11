@@ -1,14 +1,9 @@
 lockfileVersion: '6.0'
 
 overrides:
-  typescript: ^5.0.4
   '@rollup/pluginutils': ^5.0.2
   '@types/node': ^20.9.4
-
-patchedDependencies:
-  '@release-it-plugins/workspaces@4.0.0':
-    hash: lhefrznz336tkf55irfqm4hld4
-    path: patches/@release-it-plugins__workspaces@4.0.0.patch
+  typescript: ^5.0.4
 
 importers:
 
@@ -55,7 +50,7 @@ importers:
         version: 6.0.0(release-it@16.2.1)
       '@release-it-plugins/workspaces':
         specifier: ^4.0.0
-        version: 4.0.0(patch_hash=lhefrznz336tkf55irfqm4hld4)(release-it@16.2.1)
+        version: 4.0.0(release-it@16.2.1)
       '@rollup/plugin-terser':
         specifier: ^0.4.4
         version: 0.4.4(rollup@4.5.1)
@@ -3707,7 +3702,7 @@ packages:
       - supports-color
     dev: true
 
-  /@release-it-plugins/workspaces@4.0.0(patch_hash=lhefrznz336tkf55irfqm4hld4)(release-it@16.2.1):
+  /@release-it-plugins/workspaces@4.0.0(release-it@16.2.1):
     resolution: {integrity: sha512-79qsR770mvuQeTSMnOjrEJuJHQ4x1KyUkZjqCOQ/UxjK+igNYYDsLK26LpKTweeTjpbpmLYaOg6bl+28M5CO0A==}
     engines: {node: '>= 16'}
     peerDependencies:
@@ -3722,7 +3717,6 @@ packages:
       walk-sync: 2.2.0
       yaml: 2.3.2
     dev: true
-    patched: true
 
   /@rollup/plugin-commonjs@25.0.7(rollup@4.5.1):
     resolution: {integrity: sha512-nEvcR+LRjEjsaSsc4x3XZfCCvZIaSMenZu/OiwOKGN2UhQpAYI7ru7czFvyWbErlpoGjnSX3D5Ch5FcMA3kRWQ==}
@@ -16955,7 +16949,7 @@ packages:
       is-yarn-global: 0.4.1
       latest-version: 7.0.0
       pupa: 3.1.0
-      semver: 7.5.2
+      semver: 7.5.4
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
     dev: true
