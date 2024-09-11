@@ -36,27 +36,6 @@
     "test:types": "node bin/run-types-tests.mjs",
     "unlink:all": "esyes ./bin/unlink-all.mts"
   },
-  "pnpm": {
-    "overrides": {
-      "@rollup/pluginutils": "^5.0.2",
-      "@types/node": "$@types/node",
-      "typescript": "$typescript"
-    },
-    "patchedDependencies": {
-      "@release-it-plugins/workspaces@4.0.0": "patches/@release-it-plugins__workspaces@4.0.0.patch"
-    },
-    "peerDependencyRules": {
-      "allowAny": [
-        "vite-plugin-babel",
-        "vite"
-      ],
-      "allowedVersions": {
-        "@rollup/pluginutils": "5",
-        "rollup": "3",
-        "typescript": "5"
-      }
-    }
-  },
   "devDependencies": {
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-modules-commonjs": "^7.23.3",
@@ -115,6 +94,7 @@
     "puppeteer-chromium-resolver": "^20.0.0",
     "qunit": "^2.19.4",
     "release-it": "^16.2.1",
+    "release-plan": "^0.9.0",
     "rimraf": "^5.0.0",
     "rollup": "^4.5.1",
     "semver": "^7.5.2",
@@ -127,33 +107,6 @@
     "vite": "^5.0.12",
     "xo": "^0.54.2",
     "zx": "^7.2.3"
-  },
-  "release-it": {
-    "plugins": {
-      "@release-it-plugins/workspaces": {
-        "publish": false,
-        "workspaces": [
-          "packages/@glimmer/*"
-        ],
-        "additionalManifests": {
-          "dependencyUpdates": []
-        }
-      },
-      "@release-it-plugins/lerna-changelog": {
-        "infile": "CHANGELOG.md",
-        "launchEditor": true
-      }
-    },
-    "git": {
-      "commitMessage": "v${version}",
-      "tagName": "v${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "v${version}",
-      "tokenRef": "GITHUB_AUTH"
-    },
-    "npm": false
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
@@ -171,5 +124,23 @@
   "volta": {
     "node": "20.9.0",
     "pnpm": "8.5.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@rollup/pluginutils": "^5.0.2",
+      "@types/node": "$@types/node",
+      "typescript": "$typescript"
+    },
+    "peerDependencyRules": {
+      "allowAny": [
+        "vite-plugin-babel",
+        "vite"
+      ],
+      "allowedVersions": {
+        "@rollup/pluginutils": "5",
+        "rollup": "3",
+        "typescript": "5"
+      }
+    }
   }
 }
