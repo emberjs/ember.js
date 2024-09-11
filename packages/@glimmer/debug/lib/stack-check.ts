@@ -8,6 +8,7 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 export interface Checker<T> {
   type: T;
@@ -16,7 +17,21 @@ export interface Checker<T> {
   expected(): string;
 }
 
+class NoopChecker<T> implements Checker<T> {
+  declare type: T;
+  validate(value: unknown): value is T {
+    return true;
+  }
+  expected(): string {
+    return '<noop>';
+  }
+}
+
 export function wrap<T>(checker: () => Checker<T>): Checker<T> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker<T>();
+  }
+
   class Wrapped {
     declare type: T;
 
@@ -285,14 +300,26 @@ class SafeStringChecker implements Checker<SafeString> {
 }
 
 export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker();
+  }
+
   return new InstanceofChecker<T>(Class);
 }
 
 export function CheckOption<T>(checker: Checker<T>): Checker<Nullable<T>> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker();
+  }
+
   return new OptionChecker(checker, null);
 }
 
 export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker();
+  }
+
   return new MaybeChecker(checker);
 }
 
@@ -300,14 +327,24 @@ export function CheckInterface<
   I extends { [P in keyof O]: O[P]['type'] },
   O extends Dict<Checker<unknown>>,
 >(obj: O): Checker<I> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker();
+  }
+
   return new PropertyChecker(obj);
 }
 
 export function CheckArray<T>(obj: Checker<T>): Checker<T[]> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker();
+  }
   return new ArrayChecker(obj);
 }
 
 export function CheckDict<T>(obj: Checker<T>): Checker<Dict<T>> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker();
+  }
   return new DictChecker(obj);
 }
 
@@ -326,6 +363,10 @@ export function check<T>(
   checker: Checker<T> | ((value: unknown) => void),
   message: (value: unknown, expected: string) => string = defaultMessage
 ): T {
+  if (!LOCAL_DEBUG) {
+    return value as T;
+  }
+
   if (typeof checker === 'function') {
     checker(value);
     return value as T;
@@ -344,6 +385,10 @@ export function recordStackSize(sp: number) {
 }
 
 export function expectStackChange(stack: { sp: number }, expected: number, name: string) {
+  if (LOCAL_DEBUG) {
+    return;
+  }
+
   let actual = stack.sp - size;
 
   if (actual === expected) return;
@@ -353,47 +398,79 @@ export function expectStackChange(stack: { sp: number }, expected: number, name:
   );
 }
 
-export const CheckPrimitive: Checker<Primitive> = new PrimitiveChecker();
-export const CheckFunction: Checker<Function> = new TypeofChecker<Function>('function');
-export const CheckNumber: Checker<number> = new TypeofChecker<number>('number');
-export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolean');
-export const CheckHandle: Checker<number> = CheckNumber;
-export const CheckString: Checker<string> = new TypeofChecker<string>('string');
-export const CheckNull: Checker<null> = new NullChecker();
-export const CheckUndefined: Checker<undefined> = new UndefinedChecker();
-export const CheckUnknown: Checker<unknown> = new OpaqueChecker();
-export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
-export const CheckObject: Checker<object> = new ObjectChecker();
+export const CheckPrimitive: Checker<Primitive> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new PrimitiveChecker();
+export const CheckFunction: Checker<Function> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new TypeofChecker<Function>('function');
+export const CheckNumber: Checker<number> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new TypeofChecker<number>('number');
+export const CheckBoolean: Checker<boolean> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new TypeofChecker<boolean>('boolean');
+export const CheckHandle: Checker<number> = LOCAL_DEBUG ? CheckNumber : new NoopChecker();
+export const CheckString: Checker<string> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new TypeofChecker<string>('string');
+export const CheckNull: Checker<null> = !LOCAL_DEBUG ? new NoopChecker() : new NullChecker();
+export const CheckUndefined: Checker<undefined> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new UndefinedChecker();
+export const CheckUnknown: Checker<unknown> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new OpaqueChecker();
+export const CheckSafeString: Checker<SafeString> = !LOCAL_DEBUG
+  ? new NoopChecker()
+  : new SafeStringChecker();
+export const CheckObject: Checker<object> = !LOCAL_DEBUG ? new NoopChecker() : new ObjectChecker();
 
 export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker<T | U>();
+  }
   return new OrChecker(left, right);
 }
 
 export function CheckValue<T>(value: T, desc = String(value)): Checker<T> {
+  if (!LOCAL_DEBUG) {
+    return new NoopChecker<T>();
+  }
   return new ExactValueChecker(value, desc);
 }
 
-export const CheckBlockSymbolTable: Checker<BlockSymbolTable> = CheckInterface({
-  parameters: CheckArray(CheckNumber),
-});
+export const CheckBlockSymbolTable: Checker<BlockSymbolTable> = LOCAL_DEBUG
+  ? CheckInterface({
+      parameters: CheckArray(CheckNumber),
+    })
+  : new NoopChecker();
 
-export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> = CheckInterface({
-  hasEval: CheckBoolean,
-  symbols: CheckArray(CheckString),
-});
+export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> = LOCAL_DEBUG
+  ? CheckInterface({
+      hasEval: CheckBoolean,
+      symbols: CheckArray(CheckString),
+    })
+  : new NoopChecker();
 
-export const CheckElement: Checker<SimpleElement> = CheckInterface({
-  nodeType: CheckValue(1),
-  tagName: CheckString,
-  nextSibling: CheckUnknown,
-});
+export const CheckElement: Checker<SimpleElement> = LOCAL_DEBUG
+  ? CheckInterface({
+      nodeType: CheckValue(1),
+      tagName: CheckString,
+      nextSibling: CheckUnknown,
+    })
+  : new NoopChecker();
 
-export const CheckDocumentFragment: Checker<SimpleDocumentFragment> = CheckInterface({
-  nodeType: CheckValue(11),
-  nextSibling: CheckUnknown,
-});
+export const CheckDocumentFragment: Checker<SimpleDocumentFragment> = LOCAL_DEBUG
+  ? CheckInterface({
+      nodeType: CheckValue(11),
+      nextSibling: CheckUnknown,
+    })
+  : new NoopChecker();
 
-export const CheckNode: Checker<SimpleNode> = CheckInterface({
-  nodeType: CheckNumber,
-  nextSibling: CheckUnknown,
-});
+export const CheckNode: Checker<SimpleNode> = LOCAL_DEBUG
+  ? CheckInterface({
+      nodeType: CheckNumber,
+      nextSibling: CheckUnknown,
+    })
+  : new NoopChecker();
