@@ -44,15 +44,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: 'Setup local TurboRepo server'
+        uses: felixmosh/turborepo-gh-artifacts@v2
         with:
-          node-version: 18
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: wyvox/action-setup-pnpm@v3
+        with:
+          node-version: 20.1.0
           # This creates an .npmrc that reads the NODE_AUTH_TOKEN environment variable
-          registry-url: 'https://registry.npmjs.org'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 8.5.0
-      - run: pnpm install --frozen-lockfile
+          node-registry-url: 'https://registry.npmjs.org'
+
+
       - name: npm publish
         run: pnpm release-plan publish
         env:

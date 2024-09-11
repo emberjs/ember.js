@@ -52,13 +52,10 @@ jobs:
         with:
           fetch-depth: 0
           ref: 'main'
-      - uses: actions/setup-node@v4
+      - uses: wyvox/action-setup-pnpm@v3
         with:
-          node-version: 18
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 8.5
-      - run: pnpm install --frozen-lockfile
+          node-version: 20.1.0
+
       - name: "Generate Explanation and Prep Changelogs"
         id: explanation
         run: |
