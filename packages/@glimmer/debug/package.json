@@ -1,5 +1,6 @@
 {
   "name": "@glimmer/debug",
+  "description": "utilities for helping make working in the vm easier. these should be inlined and stripped for ember usage.",
   "version": "0.92.2",
   "license": "MIT",
   "sideEffects": false,
