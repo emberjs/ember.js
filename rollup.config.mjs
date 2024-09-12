@@ -516,7 +516,7 @@ function packageMeta() {
       );
       let pkg = JSON.parse(readFileSync('package.json'));
       if (!pkg['ember-addon']) {
-        pkg['ember-adodn'] = {};
+        pkg['ember-addon'] = {};
       }
       pkg['ember-addon']['renamed-modules'] = renamedModules;
       writeFileSync('package.json', JSON.stringify(pkg, null, 2));
