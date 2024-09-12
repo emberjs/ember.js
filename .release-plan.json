@@ -1,8 +1,10 @@
 {
   "solution": {
     "@glimmer/compiler": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.3",
+      "pkgJSONPath": "./packages/@glimmer/compiler/package.json"
     },
     "@glimmer/debug": {
       "impact": "patch",
@@ -17,20 +19,28 @@
       "pkgJSONPath": "./packages/@glimmer/debug/package.json"
     },
     "@glimmer/destroyable": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/destroyable/package.json"
     },
     "@glimmer/encoder": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/encode/package.json"
     },
     "@glimmer/global-context": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/global-context/package.json"
     },
     "@glimmer/interfaces": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/interfaces/package.json"
     },
     "@glimmer/manager": {
       "impact": "patch",
@@ -73,7 +83,10 @@
       "pkgJSONPath": "./packages/@glimmer/opcode-compiler/package.json"
     },
     "@glimmer/owner": {
-      "oldVersion": "0.92.1"
+      "impact": "patch",
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/owner/package.json"
     },
     "@glimmer/program": {
       "impact": "patch",
@@ -92,8 +105,10 @@
       "pkgJSONPath": "./packages/@glimmer/program/package.json"
     },
     "@glimmer/reference": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/reference/package.json"
     },
     "@glimmer/runtime": {
       "impact": "patch",
@@ -112,28 +127,40 @@
       "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
     },
     "@glimmer/syntax": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/syntax/package.json"
     },
     "@glimmer/util": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/util/package.json"
     },
     "@glimmer/validator": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/validator/package.json"
     },
     "@glimmer/vm": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/vm/package.json"
     },
     "@glimmer/vm-babel-plugins": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/vm-babel-plugins/package.json"
     },
     "@glimmer/wire-format": {
+      "impact": "patch",
       "oldVersion": "0.92.1",
-      "newVersion": "0.92.2"
+      "newVersion": "0.92.2",
+      "pkgJSONPath": "./packages/@glimmer/wire-format/package.json"
     }
   },
   "description": "## Release (2024-09-12)\n\n@glimmer/debug 0.92.3 (patch)\n@glimmer/manager 0.92.3 (patch)\n@glimmer/node 0.92.3 (patch)\n@glimmer/opcode-compiler 0.92.3 (patch)\n@glimmer/program 0.92.3 (patch)\n@glimmer/runtime 0.92.3 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer/debug`\n  * [#1620](https://github.com/glimmerjs/glimmer-vm/pull/1620) cause patch release of glimmer debug ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* [#1619](https://github.com/glimmerjs/glimmer-vm/pull/1619) Add turbo build before publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n* [#1617](https://github.com/glimmerjs/glimmer-vm/pull/1617) Use ignore-scripts during publish, as we don't need to install browsers during publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
