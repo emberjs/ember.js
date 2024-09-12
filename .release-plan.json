@@ -1,7 +1,8 @@
 {
   "solution": {
     "@glimmer/compiler": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/debug": {
       "impact": "patch",
@@ -16,16 +17,20 @@
       "pkgJSONPath": "./packages/@glimmer/debug/package.json"
     },
     "@glimmer/destroyable": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/encoder": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/global-context": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/interfaces": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/manager": {
       "impact": "patch",
@@ -87,7 +92,8 @@
       "pkgJSONPath": "./packages/@glimmer/program/package.json"
     },
     "@glimmer/reference": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/runtime": {
       "impact": "patch",
@@ -106,22 +112,28 @@
       "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
     },
     "@glimmer/syntax": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/util": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/validator": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/vm": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/vm-babel-plugins": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     },
     "@glimmer/wire-format": {
-      "oldVersion": "0.92.1"
+      "oldVersion": "0.92.1",
+      "newVersion": "0.92.2"
     }
   },
   "description": "## Release (2024-09-12)\n\n@glimmer/debug 0.92.3 (patch)\n@glimmer/manager 0.92.3 (patch)\n@glimmer/node 0.92.3 (patch)\n@glimmer/opcode-compiler 0.92.3 (patch)\n@glimmer/program 0.92.3 (patch)\n@glimmer/runtime 0.92.3 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer/debug`\n  * [#1620](https://github.com/glimmerjs/glimmer-vm/pull/1620) cause patch release of glimmer debug ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* [#1619](https://github.com/glimmerjs/glimmer-vm/pull/1619) Add turbo build before publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n* [#1617](https://github.com/glimmerjs/glimmer-vm/pull/1617) Use ignore-scripts during publish, as we don't need to install browsers during publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
