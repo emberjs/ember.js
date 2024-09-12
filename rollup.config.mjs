@@ -502,7 +502,11 @@ function pruneEmptyBundles() {
 function packageMeta() {
   let renamedModules = Object.fromEntries(
     glob
-      .sync('**/*.js', { cwd: 'dist/packages', ignore: ['shared-chunks/**'], nodir: true })
+      .sync('**/*.js', {
+        cwd: new URL('dist/packages', import.meta.url).pathname,
+        ignore: ['shared-chunks/**'],
+        nodir: true,
+      })
       .map((name) => {
         return [name, 'ember-source/' + name];
       })
