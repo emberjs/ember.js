@@ -500,23 +500,20 @@ function pruneEmptyBundles() {
 }
 
 function packageMeta() {
-  let renamedModules = Object.fromEntries(
-    glob
-      .sync('**/*.js', {
-        cwd: new URL('dist/packages', import.meta.url).pathname,
-        ignore: ['shared-chunks/**'],
-        nodir: true,
-      })
-      .map((name) => {
-        return [name, 'ember-source/' + name];
-      })
-  );
   return {
     name: 'package-meta',
-    buildEnd(error) {
-      if (error) {
-        return;
-      }
+    generateBundle(options, bundles) {
+      let renamedModules = Object.fromEntries(
+        Object.keys(bundles)
+          .filter((name) => !name.startsWith('packages/shared-chunks/'))
+          .sort()
+          .map((name) => {
+            return [
+              name.replace(/^packages\//, ''),
+              'ember-source/' + name.replace(/^packages\//, ''),
+            ];
+          })
+      );
       let pkg = JSON.parse(readFileSync('package.json'));
       if (!pkg['ember-addon']) {
         pkg['ember-adodn'] = {};
