@@ -1,5 +1,5 @@
 import { dirname, parse, resolve, join } from 'node:path';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
@@ -71,6 +71,7 @@ function esmConfig() {
       version(),
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
       pruneEmptyBundles(),
+      packageMeta(),
     ],
   };
 }
@@ -494,6 +495,30 @@ function pruneEmptyBundles() {
           delete bundles[key];
         }
       }
+    },
+  };
+}
+
+function packageMeta() {
+  let renamedModules = Object.fromEntries(
+    glob
+      .sync('**/*.js', { cwd: 'dist/packages', ignore: ['shared-chunks/**'], nodir: true })
+      .map((name) => {
+        return [name, 'ember-source/' + name];
+      })
+  );
+  return {
+    name: 'package-meta',
+    buildEnd(error) {
+      if (error) {
+        return;
+      }
+      let pkg = JSON.parse(readFileSync('package.json'));
+      if (!pkg['ember-addon']) {
+        pkg['ember-adodn'] = {};
+      }
+      pkg['ember-addon']['renamed-modules'] = renamedModules;
+      writeFileSync('package.json', JSON.stringify(pkg, null, 2));
     },
   };
 }

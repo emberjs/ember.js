@@ -5,6 +5,11 @@
   "keywords": [
     "ember-addon"
   ],
+  "exports": {
+    "./*": "./dist/packages/*",
+    "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
+    "./package.json": "./package.json"
+  },
   "homepage": "https://emberjs.com/",
   "bugs": {
     "url": "https://github.com/emberjs/ember.js/issues"
@@ -174,7 +179,8 @@
     "node": ">= 18.*"
   },
   "ember-addon": {
-    "after": "ember-cli-legacy-blueprints"
+    "after": "ember-cli-legacy-blueprints",
+    "type": "addon"
   },
   "typesVersions": {
     "*": {
