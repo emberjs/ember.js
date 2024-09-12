@@ -1,8 +1,8 @@
 {
   "name": "@glimmer/debug",
-  "description": "utilities for helping make working in the vm easier. these should be inlined and stripped for ember usage.",
   "version": "0.92.2",
   "license": "MIT",
+  "description": "Utilities for helping make working in the vm easier. these should be inlined and stripped for ember usage.",
   "sideEffects": false,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/debug",
   "type": "module",
