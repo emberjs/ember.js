@@ -1,5 +1,25 @@
 # Changelog
 
+## Release (2024-09-12)
+
+@glimmer/debug 0.92.3 (patch)
+@glimmer/manager 0.92.3 (patch)
+@glimmer/node 0.92.3 (patch)
+@glimmer/opcode-compiler 0.92.3 (patch)
+@glimmer/program 0.92.3 (patch)
+@glimmer/runtime 0.92.3 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/debug`
+  * [#1620](https://github.com/glimmerjs/glimmer-vm/pull/1620) cause patch release of glimmer debug ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* [#1619](https://github.com/glimmerjs/glimmer-vm/pull/1619) Add turbo build before publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* [#1617](https://github.com/glimmerjs/glimmer-vm/pull/1617) Use ignore-scripts during publish, as we don't need to install browsers during publish ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-09-11)
 
 @glimmer/compiler 0.92.1 (patch)
