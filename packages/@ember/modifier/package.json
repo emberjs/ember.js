@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",
-    "@glimmer/manager": "0.92.2",
-    "@glimmer/runtime": "0.92.2"
+    "@glimmer/manager": "0.92.3",
+    "@glimmer/runtime": "0.92.3"
   }
 }
