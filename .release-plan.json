@@ -115,5 +115,5 @@
       "pkgJSONPath": "packages/@glimmer/wire-format/package.json"
     }
   },
-  "description": "## Release (2024-09-13)\n\n\n\n#### :bug: Bug Fix\n* `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`\n  * [#1622](https://github.com/glimmerjs/glimmer-vm/pull/1622) Add CI step for verifying that unwanted code does not get published ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+  "description": ""
 }
