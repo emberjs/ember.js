@@ -6,6 +6,6 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@glimmer/opcode-compiler": "0.92.2"
+    "@glimmer/opcode-compiler": "0.92.3"
   }
 }
