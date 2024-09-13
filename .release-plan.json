@@ -1,61 +1,118 @@
 {
   "solution": {
     "@glimmer/compiler": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/compiler/package.json"
     },
     "@glimmer/debug": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/debug/package.json"
     },
     "@glimmer/destroyable": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/destroyable/package.json"
     },
     "@glimmer/encoder": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/encoder/package.json"
     },
     "@glimmer/global-context": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/global-context/package.json"
     },
     "@glimmer/interfaces": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/interfaces/package.json"
     },
     "@glimmer/manager": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/manager/package.json"
     },
     "@glimmer/node": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/node/package.json"
     },
     "@glimmer/opcode-compiler": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/opcode-compiler/package.json"
     },
     "@glimmer/owner": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/owner/package.json"
     },
     "@glimmer/program": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/program/package.json"
     },
     "@glimmer/reference": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/reference/package.json"
     },
     "@glimmer/runtime": {
-      "oldVersion": "0.92.3"
+      "oldVersion": "0.92.3",
+      "newVersion": "0.92.4",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/runtime/package.json"
     },
     "@glimmer/syntax": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/syntax/package.json"
     },
     "@glimmer/util": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/util/package.json"
     },
     "@glimmer/validator": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/validator/package.json"
     },
     "@glimmer/vm": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/vm/package.json"
     },
     "@glimmer/vm-babel-plugins": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/vm-babel-plugins/package.json"
     },
     "@glimmer/wire-format": {
-      "oldVersion": "0.92.2"
+      "oldVersion": "0.92.2",
+      "newVersion": "0.92.3",
+      "impact": "patch",
+      "pkgJSONPath": "packages/@glimmer/wire-format/package.json"
     }
   },
   "description": "## Release (2024-09-13)\n\n\n\n#### :bug: Bug Fix\n* `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`\n  * [#1622](https://github.com/glimmerjs/glimmer-vm/pull/1622) Add CI step for verifying that unwanted code does not get published ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
