@@ -402,6 +402,7 @@ export class Package {
           replace({
             preventAssignment: true,
             values: {
+              'import.meta.env.MODE': '"development"',
               'import.meta.env.DEV': 'DEBUG',
               'import.meta.env.PROD': '!DEBUG',
               'import.meta.env.VM_LOCAL_DEV': 'false',
