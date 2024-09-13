@@ -14,6 +14,7 @@
     "chalk": "^5.2.0",
     "execa": "^7.1.1",
     "glob": "^10.2.3",
+    "globby": "^14.0.2",
     "js-yaml": "^4.1.0",
     "mkdirp": "^3.0.1",
     "puppeteer-chromium-resolver": "^20.0.0",
