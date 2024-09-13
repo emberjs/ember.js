@@ -22,6 +22,7 @@
     "tar": "^6.2.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "eslint": "^8.54.0",
     "esno": "^0.16.3"
   },

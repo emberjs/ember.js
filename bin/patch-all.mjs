@@ -30,6 +30,9 @@ await writeFile('.release-plan.json', JSON.stringify(file, null, 2));
 // This is temporary just fix the VM release, since it's a bit pressing.
 // Loneger term fix for this is happening
 // https://github.com/embroider-build/release-plan/pull/79
+/**
+ * @param {any} solution
+ */
 function updateVersions(solution) {
   for (const entry of Object.values(solution)) {
     if (entry.impact) {

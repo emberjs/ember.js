@@ -296,6 +296,9 @@ importers:
         specifier: ^6.2.0
         version: 6.2.0
     devDependencies:
+      '@types/fs-extra':
+        specifier: ^11.0.4
+        version: 11.0.4
       eslint:
         specifier: ^8.54.0
         version: 8.54.0
