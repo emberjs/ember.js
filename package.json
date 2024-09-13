@@ -113,7 +113,7 @@
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
     "@embroider/shared-internals": "^2.5.0",
-    "@glimmer/component": "^1.1.2",
+    "@glimmer/component": "workspace:^",
     "@rollup/plugin-babel": "^6.0.4",
     "@simple-dom/document": "^1.4.0",
     "@swc-node/register": "^1.6.8",
@@ -173,7 +173,7 @@
     }
   },
   "peerDependencies": {
-    "@glimmer/component": "^1.1.2"
+    "@glimmer/component": "workspace:^"
   },
   "engines": {
     "node": ">= 18.*"
