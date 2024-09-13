@@ -1,5 +1,16 @@
 # Changelog
 
+## Release (2024-09-13)
+
+
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`
+  * [#1622](https://github.com/glimmerjs/glimmer-vm/pull/1622) Add CI step for verifying that unwanted code does not get published ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-09-12)
 
 @glimmer/compiler 0.92.2 (patch)
