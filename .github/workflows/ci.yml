@@ -28,6 +28,7 @@ jobs:
           node-version: 20.1.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm turbo build
+      - run: node ./bin/build-verify.mjs
 
   lint:
     name: Linting
