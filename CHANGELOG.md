@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.12.0-beta.2 (September 16, 2024)
+
+- [#20734](https://github.com/emberjs/ember.js/pull/20734) Circularity fixes
+
 ## v5.12.0-beta.1 (August 19, 2024)
 
 - [#20714](https://github.com/emberjs/ember.js/pull/20714) [BUGFIX] Break eager cycle for "deprecate" function
