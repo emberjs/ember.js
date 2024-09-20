@@ -48,6 +48,14 @@ QUnit.module('parseTagVersion', () => {
       tag: 'v3.1.1-beta.2',
       expected: '3.1.1-beta.2',
     },
+    {
+      tag: 'v3.4.4-ember-source',
+      expected: '3.4.4',
+    },
+    {
+      tag: 'v3.1.1-beta.2-ember-source',
+      expected: '3.1.1-beta.2',
+    },
   ].forEach(({ tag, expected }) => {
     QUnit.test(JSON.stringify(tag), function (assert) {
       assert.equal(parseTagVersion(tag), expected);

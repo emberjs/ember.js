@@ -125,7 +125,9 @@ function readPackageVersion(root) {
  * @param {string} tag
  */
 function parseTagVersion(tag) {
-  return tag && semver.parse(tag).version;
+  if (tag) {
+    return semver.parse(tag.replace(/-ember-source$/, '')).version;
+  }
 }
 
 /**
