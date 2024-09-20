@@ -33,7 +33,7 @@
     1. otherwise, start over
 1. Update `package.json` and `VERSION` file to use new version number
 1. git add/commit -m "Release v2.5.0-beta.2."
-1. `git tag v2.5.0-beta.2`
+1. `git tag v2.5.0-beta.2-ember-source`
 1. `git push origin v2.5.0-beta.2`, and `let ciTag = kick off a CI build` (to produce the assets)
 1. `git push origin beta`
 1. `git checkout beta`
@@ -90,7 +90,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
     1. Seems easy to automate fixing this. Replace reading `VERSION` with reading `package.json` so you only have to change it in one place
 1. Commit `package.json`/`version` tags
 1. Add commit message: "Release v2.4.0"
-1. `git tag v2.4.0`
+1. `git tag v2.4.0-ember-source`
 
 ### Release
 
@@ -143,6 +143,6 @@ end
 #### Tag & Release
 
 1. Update `package.json` and `VERSION` file to use new version number
-1. `git tag v2.5.0-beta.1`
+1. `git tag v2.5.0-beta.1-ember-source`
 1. `git push origin v2.5.0-beta.1`
 1. `git push -f origin beta:beta`
