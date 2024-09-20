@@ -12,7 +12,7 @@
     "qunit": "^2.20.1",
     "scenario-tester": "^4.0.0",
     "typescript": "5.1",
-    "webpack": "^5.91.0"
+    "webpack": "^5.94.0"
   },
   "scripts": {
     "test": "qunit --require @swc-node/register *-test.ts",
