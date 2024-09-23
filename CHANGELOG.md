@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.12.0-beta.3 (September 23, 2024)
+
+- [#20746](https://github.com/emberjs/ember.js/pull/20746) [BUGFIX] Upgrade glimmer-vm for some perf improvements
+
 ## v5.12.0-beta.2 (September 16, 2024)
 
 - [#20734](https://github.com/emberjs/ember.js/pull/20734) Circularity fixes
