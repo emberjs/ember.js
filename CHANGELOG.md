@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v5.11.1 (September 23, 2024)
+
+- [#20734](https://github.com/emberjs/ember.js/pull/20734) Circularity fixes
+
 ## v5.11.0 (August 19, 2024)
 
 - [#20716](https://github.com/emberjs/ember.js/pull/20716) [BREAKING] Drop Node 16 support
