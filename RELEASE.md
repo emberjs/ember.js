@@ -8,7 +8,7 @@ This document is intended for maintainers of Ember.js. It describes the process 
 
 ## ember-source
 
-`ember-source` follows the Ember.js [release train/cycle](https://blog.emberjs.com/new-ember-release-process/). There is a stable release roughly every 6 weeks (every 4 versions excluding `x.0`) and a major release after every `x.12` release. New deprecations targeting the next major are not permitted to land after the `x.10` release. All public API changes should have an RFC and all features should behind feature flags. Features should not be enabled by default until the RFC has had a successful the [Ready for Release](https://github.com/emberjs/rfcs#ready-for-release) Stage.
+`ember-source` follows the Ember.js [release train/cycle](https://blog.emberjs.com/new-ember-release-process/). There is a stable release roughly every 6 weeks (every 4 versions excluding `x.0` is an LTS candidate) and a major release after every `x.12` release. New deprecations targeting the next major are not permitted to land after the `x.10` release. All public API changes should have an RFC and all features should behind feature flags. Features should not be enabled by default until the RFC has had a successful the [Ready for Release](https://github.com/emberjs/rfcs#ready-for-release) Stage.
 
 Features, bugfixes, deprecations and other PRs are merged primarily to the `main` branch.
 These changes should be tagged according to what they are and whether they should be cherry-picked back to a beta, stable, or LTS release, see [Commit Tagging](https://github.com/emberjs/ember.js/blob/main/CONTRIBUTING.md#commit-tagging) in the CONTRIBUTING.md. These tags can also be in PR titles (as they are easier to edit after-the-fact than commit messages).
