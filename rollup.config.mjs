@@ -227,6 +227,7 @@ export function exposedDependencies() {
       '@glimmer/owner',
       '@glimmer/opcode-compiler',
       '@glimmer/runtime',
+      '@glimmer/validator',
     ]),
   };
 }

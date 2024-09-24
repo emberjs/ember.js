@@ -52,7 +52,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: push tag
         # Push in a way that will NOT trigger other workflows
-        run: git push origin v${{env.NEXT_ALPHA}}
+        run: git push origin v${{env.NEXT_ALPHA}}-ember-source
 
   notify:
     name: Notify Discord
