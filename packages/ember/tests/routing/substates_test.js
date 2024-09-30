@@ -268,6 +268,50 @@ moduleFor(
       });
     }
 
+    ['@test Bad timing issue ☠️'](assert) {
+      let appDeferred = RSVP.defer();
+
+      this.router.map(function () {
+        this.route('dummy');
+      });
+
+      this.addTemplate(
+        'application_loading',
+        `
+        <div id="toplevel-loading">TOPLEVEL LOADING</div>
+      `
+      );
+      this.add(
+        'route:application',
+        Route.extend({
+          model() {
+            return appDeferred.promise;
+          },
+        })
+      );
+
+      this.add(
+        'route:dummy',
+        Route.extend({
+          redirect() {
+            return RSVP.resolve().then(() => {
+              expectDeprecation(() => {
+                this.replaceWith('index');
+              }, 'Calling replaceWith on a route is deprecated. Use the RouterService instead.');
+            });
+          },
+        })
+      );
+
+      let promise = this.visit('/dummy').then(() => {
+        assert.ok(true);
+      });
+
+      appDeferred.resolve();
+
+      return promise;
+    }
+
     ['@test Enter child-loading route with correct query parameters'](assert) {
       assert.expect(8);
       let deferred = RSVP.defer();
