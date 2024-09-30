@@ -1,5 +1,13 @@
 # Ember Changelog
 
+## v6.0.0-beta.1 (September 30, 2024)
+
+- [#20730](https://github.com/emberjs/ember.js/pull/20730) [CLEANUP] Remove support for EXTEND_PROTOTYPES
+- [#20731](https://github.com/emberjs/ember.js/pull/20731) [BUGFIX] Bump `import Ember from 'ember'` barrel file deprecations until 7.0.0
+- [#20732](https://github.com/emberjs/ember.js/pull/20732) [TYPES] Directly assign a boolean value in deprecated-features
+- [#20744](https://github.com/emberjs/ember.js/pull/20744) Add v2 addon metadata
+- [#20753](https://github.com/emberjs/ember.js/pull/20753) [INTERNAL] Update tagging strategy: ember-source tags will now be v1.2.3-ember-source instead of v1.2.3
+
 ## v5.12.0 (September 30, 2024)
 
 - [#20746](https://github.com/emberjs/ember.js/pull/20746) [BUGFIX] Upgrade glimmer-vm for some perf improvements
