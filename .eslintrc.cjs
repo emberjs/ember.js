@@ -28,6 +28,7 @@ module.exports = {
     'import/parsers': {
       '@typescript-eslint/parser': ['.js', '.cjs', '.mjs', '.mts', '.ts', '.d.ts'],
     },
+    'import/core-modules': ['@glimmer/debug'],
     'import/resolver': {
       typescript: {},
     },

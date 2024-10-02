@@ -9,8 +9,10 @@ import { fileURLToPath } from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const root = resolve(__dirname, '..');
 
+const PACKAGES_WITH_NO_PUBLISHED_TYPES = new Set(['@glimmer/vm-babel-plugins', '@glimmer/debug']);
+
 async function main() {
-  const packages = getPackages().filter((pkg) => pkg.name !== '@glimmer/vm-babel-plugins');
+  const packages = getPackages().filter((pkg) => !PACKAGES_WITH_NO_PUBLISHED_TYPES.has(pkg.name));
 
   /**
    * Runs a smoke test of the generated type definitions by importing every module

@@ -773,9 +773,6 @@ importers:
 
   packages/@glimmer/manager:
     dependencies:
-      '@glimmer/debug':
-        specifier: workspace:*
-        version: link:../debug
       '@glimmer/destroyable':
         specifier: workspace:*
         version: link:../destroyable
@@ -804,6 +801,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -877,9 +877,6 @@ importers:
 
   packages/@glimmer/opcode-compiler:
     dependencies:
-      '@glimmer/debug':
-        specifier: workspace:*
-        version: link:../debug
       '@glimmer/encoder':
         specifier: workspace:*
         version: link:../encoder
@@ -911,6 +908,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -3191,7 +3191,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
       espree: 9.6.1
       globals: 13.23.0
       ignore: 5.3.0
@@ -3222,7 +3222,7 @@ packages:
     engines: {node: '>=10.10.0'}
     dependencies:
       '@humanwhocodes/object-schema': 2.0.1
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -4703,7 +4703,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.12.0(typescript@5.0.4)
       '@typescript-eslint/utils': 6.12.0(eslint@8.54.0)(typescript@5.0.4)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
       eslint: 8.54.0
       ts-api-utils: 1.0.3(typescript@5.0.4)
       typescript: 5.0.4
@@ -4723,7 +4723,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.12.0(typescript@5.2.2)
       '@typescript-eslint/utils': 6.12.0(eslint@8.54.0)(typescript@5.2.2)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
       eslint: 8.54.0
       ts-api-utils: 1.0.3(typescript@5.2.2)
       typescript: 5.2.2
@@ -4771,10 +4771,10 @@ packages:
     dependencies:
       '@typescript-eslint/types': 6.12.0
       '@typescript-eslint/visitor-keys': 6.12.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.4
+      semver: 7.6.3
       ts-api-utils: 1.0.3(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -4792,10 +4792,10 @@ packages:
     dependencies:
       '@typescript-eslint/types': 6.12.0
       '@typescript-eslint/visitor-keys': 6.12.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.4
+      semver: 7.6.3
       ts-api-utils: 1.0.3(typescript@5.2.2)
       typescript: 5.2.2
     transitivePeerDependencies:
@@ -4834,7 +4834,7 @@ packages:
       '@typescript-eslint/types': 6.12.0
       '@typescript-eslint/typescript-estree': 6.12.0(typescript@5.0.4)
       eslint: 8.54.0
-      semver: 7.5.4
+      semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -4853,7 +4853,7 @@ packages:
       '@typescript-eslint/types': 6.12.0
       '@typescript-eslint/typescript-estree': 6.12.0(typescript@5.2.2)
       eslint: 8.54.0
-      semver: 7.5.4
+      semver: 7.6.3
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -6314,7 +6314,7 @@ packages:
   /builtins@5.0.1:
     resolution: {integrity: sha512-qwVpFEHNfhYJIzNRBvd2C1kyo6jz3ZSMPyyuR47OPdiKWlbYnZNyDWuyR175qDnAJLiCo5fBBqPb3RiXgWlkOQ==}
     dependencies:
-      semver: 7.5.2
+      semver: 7.6.3
 
   /bundle-name@3.0.0:
     resolution: {integrity: sha512-PKA4BeSvBpQKQ8iPOGCSiell+N8P+Tf1DlwqmYhpe2gAhKPHn8EYOxVT+ShuGmhg8lN8XiSlS80yiExKXrURlw==}
@@ -8712,7 +8712,7 @@ packages:
       find-root: 1.1.0
       has: 1.0.4
       interpret: 1.4.0
-      is-core-module: 2.13.1
+      is-core-module: 2.15.1
       is-regex: 1.1.4
       lodash: 4.17.21
       resolve: 1.22.8
@@ -8970,7 +8970,7 @@ packages:
       eslint-plugin-es: 4.1.0(eslint@8.54.0)
       eslint-utils: 3.0.0(eslint@8.54.0)
       ignore: 5.3.0
-      is-core-module: 2.13.1
+      is-core-module: 2.15.1
       minimatch: 3.1.2
       resolve: 1.22.8
       semver: 7.6.3
@@ -15379,7 +15379,7 @@ packages:
     resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
     hasBin: true
     dependencies:
-      is-core-module: 2.13.1
+      is-core-module: 2.15.1
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
@@ -15791,6 +15791,7 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+    dev: true
 
   /semver@7.5.4:
     resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
@@ -17772,7 +17773,7 @@ packages:
     resolution: {integrity: sha512-nd2HUpKc6RWblPZQ2GDuI65sxJ2n/UqZwSBVtj64xlWjMx0m7ZB2m9b2JS3v1f+n9VWH/dd1CMhkHfP6pIdckA==}
     dependencies:
       resolve-package-path: 3.1.0
-      semver: 7.5.4
+      semver: 7.6.3
     dev: true
 
   /validate-peer-dependencies@2.2.0:
@@ -17780,7 +17781,7 @@ packages:
     engines: {node: '>= 12'}
     dependencies:
       resolve-package-path: 4.0.3
-      semver: 7.5.4
+      semver: 7.6.3
     dev: true
 
   /vary@1.1.2:
