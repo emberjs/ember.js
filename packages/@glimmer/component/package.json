@@ -1,0 +1,41 @@
+{
+  "name": "@glimmer/component",
+  "version": "2.0.0",
+  "description": "Glimmer component library",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "keywords": [
+    "ember-addon"
+  ],
+  "license": "MIT",
+  "contributors": [
+    "Dan Gebhardt <dan@cerebris.com>",
+    "Robert Jackson <me@rwjblue.com>",
+    "Tom Dale <tom@tomdale.net>"
+  ],
+  "repository": "https://github.com/emberjs/ember.js",
+  "scripts": {},
+  "dependencies": {
+    "@embroider/addon-shim": "^1.8.9",
+    "@glimmer/env": "^0.1.7"
+  },
+  "devDependencies": {
+    "typescript": "5.1"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  },
+  "ember-addon": {
+    "type": "addon",
+    "version": 2,
+    "main": "addon-main.cjs"
+  }
+}

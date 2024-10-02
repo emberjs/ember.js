@@ -116,8 +116,7 @@ async function main() {
 
   // The majority of those items should be excluded entirely, but in some cases
   // we still need to post-process them.
-  let excludes = remappedLocationExcludes
-    .concat(sideEffectExcludes);
+  let excludes = remappedLocationExcludes.concat(sideEffectExcludes);
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
@@ -146,6 +145,17 @@ async function main() {
 
   // Make the generated types easier to read!
   spawnSync('prettier', ['--write', 'types/stable/**/*.ts']);
+
+  // @glimmer/component publishes as a separate package. We need to build its
+  // types after building the ember-source types.
+  doOrDie(() => {
+    let result = spawnSync('pnpm', ['tsc'], { cwd: 'packages/@glimmer/component' });
+    if (result.status !== 0) {
+      console.log(`@glimmer/component types build failed:`);
+      console.error(result.output.toString());
+      process.exit(1);
+    }
+  });
 
   process.exit(status === 'success' ? 0 : 1);
 }
