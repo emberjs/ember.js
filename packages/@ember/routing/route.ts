@@ -37,6 +37,7 @@ import {
   prefixRouteNameArg,
   stashParamNames,
 } from './lib/utils';
+import { hasInternalComponentManager } from '@glimmer/manager';
 
 export interface ExtendedInternalRouteInfo<R extends Route> extends InternalRouteInfo<R> {
   _names?: unknown[];
@@ -1825,6 +1826,15 @@ export function getRenderState(route: Route): RenderState | undefined {
   return route[RENDER_STATE];
 }
 
+import { precompileTemplate } from '@ember/template-compilation';
+
+function RouteTemplate(Component: object): TemplateFactory {
+  return precompileTemplate(`<Component @model={{@model}} @controller={{this}} />`, {
+    strictMode: true,
+    scope: () => ({ Component }),
+  });
+}
+
 function buildRenderState(route: Route): RenderState {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
@@ -1836,9 +1846,19 @@ function buildRenderState(route: Route): RenderState {
 
   let model = route.currentModel;
 
-  let template = owner.lookup(`template:${route.templateName || name}`) as
+  let templateOrComponent = owner.lookup(`template:${route.templateName || name}`) as
     | TemplateFactory
+    | object
     | undefined;
+
+  let template: TemplateFactory | undefined;
+  if (templateOrComponent) {
+    if (hasInternalComponentManager(templateOrComponent)) {
+      template = RouteTemplate(templateOrComponent);
+    } else {
+      template = templateOrComponent as TemplateFactory;
+    }
+  }
 
   let render: RenderState = {
     owner,
