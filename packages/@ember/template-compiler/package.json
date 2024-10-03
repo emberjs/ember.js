@@ -1,0 +1,17 @@
+{
+  "name": "@ember/template-compiler",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/canary-features": "workspace:*",
+    "@glint/template": ">= 1.4.0",
+    "@glimmer/compiler": "0.92.4",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/syntax": "0.92.3",
+    "ember-template-compiler": "workspace:*"
+  }
+}
