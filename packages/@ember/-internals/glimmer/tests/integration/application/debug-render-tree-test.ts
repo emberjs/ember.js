@@ -89,7 +89,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'index',
-            args: { positional: [], named: { model: undefined } },
+            args: { positional: [], named: { model: undefined, component: undefined } },
             instance: this.controllerFor('index'),
             template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
@@ -103,7 +103,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'foo',
-            args: { positional: [], named: { model: undefined } },
+            args: { positional: [], named: { model: undefined, component: undefined } },
             instance: this.controllerFor('foo'),
             template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
@@ -111,7 +111,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'foo.index',
-                args: { positional: [], named: { model: undefined } },
+                args: { positional: [], named: { model: undefined, component: undefined } },
                 instance: this.controllerFor('foo.index'),
                 template: 'my-app/templates/foo/index.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
@@ -127,7 +127,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'foo',
-            args: { positional: [], named: { model: undefined } },
+            args: { positional: [], named: { model: undefined, component: undefined } },
             instance: this.controllerFor('foo'),
             template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
@@ -135,7 +135,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'foo.inner',
-                args: { positional: [], named: { model: 'wow' } },
+                args: { positional: [], named: { model: 'wow', component: undefined } },
                 instance: this.controllerFor('foo.inner'),
                 template: 'my-app/templates/foo/inner.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
@@ -151,7 +151,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'foo',
-            args: { positional: [], named: { model: undefined } },
+            args: { positional: [], named: { model: undefined, component: undefined } },
             instance: this.controllerFor('foo'),
             template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
@@ -159,7 +159,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'foo.inner',
-                args: { positional: [], named: { model: 'zomg' } },
+                args: { positional: [], named: { model: 'zomg', component: undefined } },
                 instance: this.controllerFor('foo.inner'),
                 template: 'my-app/templates/foo/inner.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
@@ -643,7 +643,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'index',
-            args: { positional: [], named: { model: undefined } },
+            args: { positional: [], named: { model: undefined, component: undefined } },
             instance: this.controllerFor('index'),
             template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
@@ -665,7 +665,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               {
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: { positional: [], named: { model: undefined, component: undefined } },
                 instance: instance!.lookup('controller:application'),
                 template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
@@ -673,7 +673,7 @@ if (ENV._DEBUG_RENDER_TREE) {
                   this.outlet({
                     type: 'route-template',
                     name: 'index',
-                    args: { positional: [], named: { model: undefined } },
+                    args: { positional: [], named: { model: undefined, component: undefined } },
                     instance: instance!.lookup('controller:index'),
                     template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
@@ -703,7 +703,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               {
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: { positional: [], named: { model: undefined, component: undefined } },
                 instance: instance!.lookup('controller:application'),
                 template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
@@ -711,7 +711,7 @@ if (ENV._DEBUG_RENDER_TREE) {
                   this.outlet({
                     type: 'route-template',
                     name: 'index',
-                    args: { positional: [], named: { model: undefined } },
+                    args: { positional: [], named: { model: undefined, component: undefined } },
                     instance: instance!.lookup('controller:index'),
                     template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
@@ -750,7 +750,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               {
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: { positional: [], named: { model: undefined, component: undefined } },
                 instance: instance!.lookup('controller:application'),
                 template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
@@ -758,7 +758,7 @@ if (ENV._DEBUG_RENDER_TREE) {
                   this.outlet({
                     type: 'route-template',
                     name: 'index',
-                    args: { positional: [], named: { model: undefined } },
+                    args: { positional: [], named: { model: undefined, component: undefined } },
                     instance: instance!.lookup('controller:index'),
                     template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
@@ -776,7 +776,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'index',
-            args: { positional: [], named: { model: undefined } },
+            args: { positional: [], named: { model: undefined, component: undefined } },
             instance: this.controllerFor('index'),
             template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
@@ -1639,7 +1639,7 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: { positional: [], named: { model: undefined, component: undefined } },
                 instance: this.controllerFor('application'),
                 template: this.owner.hasRegistration('template:application')
                   ? 'my-app/templates/application.hbs'

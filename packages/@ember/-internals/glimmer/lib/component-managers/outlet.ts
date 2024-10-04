@@ -46,6 +46,7 @@ export interface OutletDefinitionState {
   template: Template;
   controller: unknown;
   model: unknown;
+  component: object | undefined;
 }
 
 const CAPABILITIES: InternalComponentCapabilities = {
