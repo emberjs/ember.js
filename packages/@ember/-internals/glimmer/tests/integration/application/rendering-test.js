@@ -9,6 +9,9 @@ import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
+// @ts-ignore build-time feature
+import { template } from '@ember/template-compiler';
+
 moduleFor(
   'Application test: rendering',
   class extends ApplicationTestCase {
@@ -552,6 +555,60 @@ moduleFor(
         .then(() => {
           this.assertText('first');
         });
+    }
+
+    async ['@test it can use a component as the route template'](assert) {
+      this.router.map(function () {
+        this.route('example');
+      });
+
+      this.add(
+        'route:example',
+        Route.extend({
+          model() {
+            return {
+              message: 'I am the model',
+            };
+          },
+        })
+      );
+
+      this.add(
+        'controller:example',
+        class extends Controller {
+          message = 'I am the controller';
+        }
+      );
+
+      this.add(
+        'template:example',
+        class extends Component {
+          message = 'I am the component';
+
+          static {
+            template(
+              `<div data-test="model">{{@model.message}}</div>
+               <div data-test="controller">{{@controller.message}}</div>
+               <div data-test="component">{{this.message}}</div>`,
+              {
+                component: this,
+              }
+            );
+          }
+        }
+      );
+
+      await this.visit('/example');
+
+      assert.strictEqual(this.$('[data-test="model"]').nodes[0]?.innerText, 'I am the model');
+      assert.strictEqual(
+        this.$('[data-test="controller"]').nodes[0]?.innerText,
+        'I am the controller'
+      );
+      assert.strictEqual(
+        this.$('[data-test="component"]').nodes[0]?.innerText,
+        'I am the component'
+      );
     }
   }
 );
