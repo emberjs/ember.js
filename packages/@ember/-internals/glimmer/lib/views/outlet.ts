@@ -72,6 +72,7 @@ export default class OutletView {
         name: TOP_LEVEL_NAME,
         controller: undefined,
         model: undefined,
+        component: undefined,
         template,
       },
     };
@@ -92,6 +93,7 @@ export default class OutletView {
       name: TOP_LEVEL_NAME,
       template,
       controller: undefined,
+      component: undefined,
       model: undefined,
     };
   }

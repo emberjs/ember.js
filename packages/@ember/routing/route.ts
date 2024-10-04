@@ -1828,12 +1828,12 @@ export function getRenderState(route: Route): RenderState | undefined {
 
 import { precompileTemplate } from '@ember/template-compilation';
 
-function RouteTemplate(Component: object): TemplateFactory {
-  return precompileTemplate(`<Component @model={{@model}} @controller={{this}} />`, {
+const RoutableComponent = precompileTemplate(
+  `<@component @model={{@model}} @controller={{this}} />`,
+  {
     strictMode: true,
-    scope: () => ({ Component }),
-  });
-}
+  }
+);
 
 function buildRenderState(route: Route): RenderState {
   let owner = getOwner(route);
@@ -1852,9 +1852,12 @@ function buildRenderState(route: Route): RenderState {
     | undefined;
 
   let template: TemplateFactory | undefined;
+  let component: object | undefined;
+
   if (templateOrComponent) {
     if (hasInternalComponentManager(templateOrComponent)) {
-      template = RouteTemplate(templateOrComponent);
+      template = RoutableComponent;
+      component = templateOrComponent;
     } else {
       template = templateOrComponent as TemplateFactory;
     }
@@ -1867,6 +1870,7 @@ function buildRenderState(route: Route): RenderState {
     name,
     controller,
     model,
+    component,
     template: template?.(owner) ?? route._topLevelViewTemplate(owner),
   };
 

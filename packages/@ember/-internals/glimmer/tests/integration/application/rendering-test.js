@@ -8,8 +8,6 @@ import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
-
-// @ts-ignore build-time feature
 import { template } from '@ember/template-compiler';
 
 moduleFor(
