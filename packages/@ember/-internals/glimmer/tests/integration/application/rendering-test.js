@@ -608,5 +608,34 @@ moduleFor(
         'I am the component'
       );
     }
+
+    async ['@test can switch between component-defined routes']() {
+      this.router.map(function () {
+        this.route('first');
+        this.route('second');
+      });
+      this.add('template:first', template('First'));
+      this.add('template:second', template('Second'));
+      await this.visit('/first');
+      this.assertText('First');
+      await this.visit('/second');
+      this.assertText('Second');
+    }
+
+    async ['@test can switch from component-defined route to template-defined route']() {
+      this.router.map(function () {
+        this.route('first');
+        this.route('second');
+      });
+      this.add('template:first', template('First'));
+      this.addTemplate(
+        'second',
+        'Second sees {{#if @component}}A Component{{else}}No Component{{/if}}'
+      );
+      await this.visit('/first');
+      this.assertText('First');
+      await this.visit('/second');
+      this.assertText('Second sees No Component');
+    }
   }
 );
