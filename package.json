@@ -170,6 +170,9 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.2.0"
+    },
+    "patchedDependencies": {
+      "ember-cli-blueprint-test-helpers@0.19.2": "patches/ember-cli-blueprint-test-helpers@0.19.2.patch"
     }
   },
   "peerDependencies": {
