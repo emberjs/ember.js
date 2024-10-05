@@ -2,6 +2,7 @@ blueprints/*/*files/**/*.js
 blueprints-js/*/*files/**/*.js
 blueprints/*/*files/**/*.ts
 node-tests/fixtures/**/*.js
+node-tests/fixtures/**/*.ts
 /docs/
 dist/
 tmp/
