@@ -174,11 +174,14 @@ jobs:
     name: Blueprint Tests
     runs-on: ubuntu-latest
     needs: [lint]
+    strategy:
+      matrix:
+        script-name: ['js', 'js-from-ts', 'ts']
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - name: test
-        run: pnpm test:blueprints
+        run: pnpm test:blueprints:${{matrix.script-name}}
 
   browser-test:
     name: Browser Tests (Firefox)
