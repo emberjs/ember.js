@@ -1,11 +1,9 @@
 'use strict';
 
-const path = require('path');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 const { generateComponentSignature } = require('../-utils');
 
@@ -92,16 +90,7 @@ module.exports = {
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (commandOptions.pod) {
-      return {
-        __path__() {
-          return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
-        },
-        __name__() {
-          return 'component';
-        },
-      };
-    } else if (commandOptions.componentStructure === 'flat') {
+    if (commandOptions.componentStructure === 'flat') {
       return {
         __path__() {
           return 'components';
@@ -129,30 +118,17 @@ module.exports = {
     let sanitizedModuleName = options.entity.name.replace(/\//g, '-');
     let classifiedModuleName = stringUtil.classify(sanitizedModuleName);
 
-    let templatePath = '';
     let importComponent = '';
     let importTemplate = '';
     let defaultExport = '';
     let componentSignature = '';
-
-    // if we're in an addon, build import statement
-    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
-      if (options.pod) {
-        templatePath = './template';
-      }
-    }
 
     let componentClass = options.componentClass;
 
     switch (componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        if (templatePath) {
-          importTemplate = `import layout from '${templatePath}';${EOL}`;
-          defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
-        } else {
-          defaultExport = `Component.extend({});`;
-        }
+        defaultExport = `Component.extend({});`;
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;

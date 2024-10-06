@@ -4,14 +4,12 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const setupPodConfig = blueprintHelpers.setupPodConfig;
 const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
-const fixture = require('../helpers/fixture');
 
 const setupTestEnvironment = require('../helpers/setup-test-environment');
 const enableOctane = setupTestEnvironment.enableOctane;
@@ -150,99 +148,6 @@ describe('Blueprint: component-class', function () {
           );
         }
       );
-    });
-
-    describe('with podModulePrefix', function () {
-      beforeEach(function () {
-        setupPodConfig({ podModulePrefix: true });
-      });
-
-      it('component-class foo --pod', function () {
-        return emberGenerateDestroy(['component-class', 'foo', '--pod'], (_file) => {
-          expect(_file('app/pods/components/foo/component.js')).to.equal(
-            fixture('component/component.js')
-          );
-        });
-      });
-
-      it('component-class x-foo --pod', function () {
-        return emberGenerateDestroy(['component-class', 'x-foo', '--pod'], (_file) => {
-          expect(_file('app/pods/components/x-foo/component.js')).to.equal(
-            fixture('component/component-dash.js')
-          );
-        });
-      });
-
-      it('component-class foo/x-foo --pod', function () {
-        return emberGenerateDestroy(['component-class', 'foo/x-foo', '--pod'], (_file) => {
-          expect(_file('app/pods/components/foo/x-foo/component.js')).to.equal(
-            fixture('component/component-nested.js')
-          );
-        });
-      });
-
-      it('component-class x-foo --pod --path foo', function () {
-        return emberGenerateDestroy(
-          ['component-class', 'x-foo', '--pod', '--path', 'foo'],
-          (_file) => {
-            expect(_file('app/pods/foo/x-foo/component.js')).to.equal(
-              fixture('component/component-dash.js')
-            );
-          }
-        );
-      });
-
-      it('component-class foo/x-foo --pod --path bar', function () {
-        return emberGenerateDestroy(
-          ['component-class', 'foo/x-foo', '--pod', '--path', 'bar'],
-          (_file) => {
-            expect(_file('app/pods/bar/foo/x-foo/component.js')).to.equal(
-              fixture('component/component-nested.js')
-            );
-          }
-        );
-      });
-
-      it('component-class x-foo --pod --path bar/foo', function () {
-        return emberGenerateDestroy(
-          ['component-class', 'x-foo', '--pod', '--path', 'bar/foo'],
-          (_file) => {
-            expect(_file('app/pods/bar/foo/x-foo/component.js')).to.equal(
-              fixture('component/component-dash.js')
-            );
-          }
-        );
-      });
-
-      it('component-class foo/x-foo --pod --path bar/baz', function () {
-        return emberGenerateDestroy(
-          ['component-class', 'foo/x-foo', '--pod', '--path', 'bar/baz'],
-          (_file) => {
-            expect(_file('app/pods/bar/baz/foo/x-foo/component.js')).to.equal(
-              fixture('component/component-nested.js')
-            );
-          }
-        );
-      });
-
-      it('component-class x-foo --pod -no-path', function () {
-        return emberGenerateDestroy(['component-class', 'x-foo', '--pod', '-no-path'], (_file) => {
-          expect(_file('app/pods/x-foo/component.js')).to.equal(
-            fixture('component/component-dash.js')
-          );
-        });
-      });
-
-      it('component-class foo/x-foo --pod -no-path', function () {
-        return emberGenerateDestroy(
-          ['component-class', 'foo/x-foo', '--pod', '-no-path'],
-          (_file) => {
-            expect(_file('app/pods/foo/x-foo/component.js')).to.equal(
-              fixture('component/component-nested.js')
-            );
-          }
-        );
-      });
     });
   });
 
