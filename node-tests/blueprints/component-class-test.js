@@ -54,23 +54,6 @@ describe('Blueprint: component-class', function () {
       });
     });
 
-    // classic default
-    it('component-class foo --component-structure=classic --component-class=@ember/component', function () {
-      return emberGenerateDestroy(
-        [
-          'component-class',
-          'foo',
-          '--component-structure',
-          'classic',
-          '--component-class',
-          '@ember/component',
-        ],
-        (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(emberComponentContents);
-        }
-      );
-    });
-
     // Octane default
     it('component-class foo --component-structure=flat --component-class=@glimmer/component', function () {
       return emberGenerateDestroy(
@@ -102,15 +85,6 @@ describe('Blueprint: component-class', function () {
         ['component-class', '--component-structure', 'nested', 'foo'],
         (_file) => {
           expect(_file('app/components/foo/index.js')).to.equal(glimmerComponentContents);
-        }
-      );
-    });
-
-    it('component-class foo --component-structure=classic', function () {
-      return emberGenerateDestroy(
-        ['component-class', '--component-structure', 'classic', 'foo'],
-        (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(glimmerComponentContents);
         }
       );
     });

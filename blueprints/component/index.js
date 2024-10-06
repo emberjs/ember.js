@@ -48,9 +48,9 @@ module.exports = {
     },
     {
       name: 'component-structure',
-      type: OCTANE ? ['flat', 'nested', 'classic'] : ['classic'],
-      default: OCTANE ? 'flat' : 'classic',
-      aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
+      type: ['flat', 'nested'],
+      default: 'flat',
+      aliases: [{ fs: 'flat' }, { ns: 'nested' }],
     },
   ],
 
@@ -75,15 +75,9 @@ module.exports = {
           option.default = '@ember/component';
         }
       } else if (option.name === 'component-structure') {
-        if (isOctane) {
-          option.type = ['flat', 'nested', 'classic'];
-          option.default = 'flat';
-          option.aliases = [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }];
-        } else {
-          option.type = ['classic'];
-          option.default = 'classic';
-          option.aliases = [{ cs: 'classic' }];
-        }
+        option.type = ['flat', 'nested'];
+        option.default = 'flat';
+        option.aliases = [{ fs: 'flat' }, { ns: 'nested' }];
       }
     });
 
@@ -105,12 +99,6 @@ module.exports = {
       if (options.componentClass !== '@ember/component') {
         throw new SilentError(
           'Usage of --component-class argument to `ember generate component` is only available on canary'
-        );
-      }
-
-      if (options.componentStructure !== 'classic') {
-        throw new SilentError(
-          'Usage of --component-structure argument to `ember generate component` is only available on canary'
         );
       }
     }
@@ -159,21 +147,6 @@ module.exports = {
         },
         __templatename__() {
           return 'template';
-        },
-      };
-    } else if (
-      !this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE ||
-      commandOptions.componentStructure === 'classic'
-    ) {
-      return {
-        __path__() {
-          return 'components';
-        },
-        __templatepath__() {
-          return 'templates/components';
-        },
-        __templatename__() {
-          return options.dasherizedModuleName;
         },
       };
     } else if (

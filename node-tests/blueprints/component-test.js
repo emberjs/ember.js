@@ -64,34 +64,6 @@ describe('Blueprint: component', function () {
       });
     });
 
-    // classic default
-    it('component foo --component-structure=classic --component-class=@ember/component', function () {
-      return emberGenerateDestroy(
-        [
-          'component',
-          'foo',
-          '--component-structure',
-          'classic',
-          '--component-class',
-          '@ember/component',
-        ],
-        (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(emberComponentContents);
-
-          expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo',
-                componentInvocation: 'Foo',
-              },
-            })
-          );
-        }
-      );
-    });
-
     // Octane default
     it('component foo --component-structure=flat --component-class=@glimmer/component', function () {
       return emberGenerateDestroy(
@@ -143,24 +115,6 @@ describe('Blueprint: component', function () {
         ['component', '--component-structure', 'nested', 'foo'],
         (_file) => {
           expect(_file('app/components/foo/index.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo',
-                componentInvocation: 'Foo',
-              },
-            })
-          );
-        }
-      );
-    });
-
-    it('component foo --component-structure=classic', function () {
-      return emberGenerateDestroy(
-        ['component', '--component-structure', 'classic', 'foo'],
-        (_file) => {
-          expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
             fixture('component-test/default-template.js', {
