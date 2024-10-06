@@ -3,7 +3,6 @@
 const path = require('path');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
-const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { EOL } = require('os');
@@ -44,9 +43,9 @@ module.exports = {
     },
     {
       name: 'component-structure',
-      type: OCTANE ? ['flat', 'nested', 'classic'] : ['classic'],
-      default: OCTANE ? 'flat' : 'classic',
-      aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
+      type: ['flat', 'nested'],
+      default: 'flat',
+      aliases: [{ fs: 'flat' }, { ns: 'nested' }],
     },
   ],
 
@@ -71,15 +70,9 @@ module.exports = {
           option.default = '@ember/component';
         }
       } else if (option.name === 'component-structure') {
-        if (isOctane) {
-          option.type = ['flat', 'nested', 'classic'];
-          option.default = 'flat';
-          option.aliases = [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }];
-        } else {
-          option.type = ['classic'];
-          option.default = 'classic';
-          option.aliases = [{ cs: 'classic' }];
-        }
+        option.type = ['flat', 'nested'];
+        option.default = 'flat';
+        option.aliases = [{ fs: 'flat' }, { ns: 'nested' }];
       }
     });
 
@@ -108,10 +101,7 @@ module.exports = {
           return 'component';
         },
       };
-    } else if (
-      commandOptions.componentStructure === 'classic' ||
-      commandOptions.componentStructure === 'flat'
-    ) {
+    } else if (commandOptions.componentStructure === 'flat') {
       return {
         __path__() {
           return 'components';
@@ -149,11 +139,6 @@ module.exports = {
     if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
       if (options.pod) {
         templatePath = './template';
-      } else {
-        templatePath =
-          pathUtil.getRelativeParentPath(options.entity.name) +
-          'templates/components/' +
-          stringUtil.dasherize(options.entity.name);
       }
     }
 
