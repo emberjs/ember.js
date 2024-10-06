@@ -1,13 +1,10 @@
 'use strict';
 
 const chalk = require('chalk');
-const path = require('path');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
-const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 const { generateComponentSignature } = require('../-utils');
 
@@ -48,9 +45,9 @@ module.exports = {
     },
     {
       name: 'component-structure',
-      type: OCTANE ? ['flat', 'nested', 'classic'] : ['classic'],
-      default: OCTANE ? 'flat' : 'classic',
-      aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
+      type: ['flat', 'nested'],
+      default: 'flat',
+      aliases: [{ fs: 'flat' }, { ns: 'nested' }],
     },
   ],
 
@@ -75,15 +72,9 @@ module.exports = {
           option.default = '@ember/component';
         }
       } else if (option.name === 'component-structure') {
-        if (isOctane) {
-          option.type = ['flat', 'nested', 'classic'];
-          option.default = 'flat';
-          option.aliases = [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }];
-        } else {
-          option.type = ['classic'];
-          option.default = 'classic';
-          option.aliases = [{ cs: 'classic' }];
-        }
+        option.type = ['flat', 'nested'];
+        option.default = 'flat';
+        option.aliases = [{ fs: 'flat' }, { ns: 'nested' }];
       }
     });
 
@@ -105,12 +96,6 @@ module.exports = {
       if (options.componentClass !== '@ember/component') {
         throw new SilentError(
           'Usage of --component-class argument to `ember generate component` is only available on canary'
-        );
-      }
-
-      if (options.componentStructure !== 'classic') {
-        throw new SilentError(
-          'Usage of --component-structure argument to `ember generate component` is only available on canary'
         );
       }
     }
@@ -149,37 +134,7 @@ module.exports = {
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (commandOptions.pod) {
-      return {
-        __path__() {
-          return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
-        },
-        __templatepath__() {
-          return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
-        },
-        __templatename__() {
-          return 'template';
-        },
-      };
-    } else if (
-      !this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE ||
-      commandOptions.componentStructure === 'classic'
-    ) {
-      return {
-        __path__() {
-          return 'components';
-        },
-        __templatepath__() {
-          return 'templates/components';
-        },
-        __templatename__() {
-          return options.dasherizedModuleName;
-        },
-      };
-    } else if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      commandOptions.componentStructure === 'flat'
-    ) {
+    if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && commandOptions.componentStructure === 'flat') {
       return {
         __path__() {
           return 'components';
@@ -236,19 +191,6 @@ module.exports = {
   },
 
   locals(options) {
-    // if we're in an addon, build import statement
-    let templatePath = '';
-    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
-      if (options.pod) {
-        templatePath = './template';
-      } else {
-        templatePath =
-          pathUtil.getRelativeParentPath(options.entity.name) +
-          'templates/components/' +
-          stringUtil.dasherize(options.entity.name);
-      }
-    }
-
     let componentClass = this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
       ? options.componentClass
       : '@ember/component';
@@ -264,12 +206,7 @@ module.exports = {
     switch (componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        if (templatePath) {
-          importTemplate = `import layout from '${templatePath}';${EOL}`;
-          defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
-        } else {
-          defaultExport = `Component.extend({});`;
-        }
+        defaultExport = `Component.extend({});`;
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
