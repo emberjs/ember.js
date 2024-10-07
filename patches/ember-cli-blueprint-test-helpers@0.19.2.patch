@@ -1,0 +1,39 @@
+diff --git a/lib/ember-new.js b/lib/ember-new.js
+index a4ca3d1c8a22b685b5e65410b0959a8210e3770e..92f51bfe465621621bc9bd82fe4e8b881b0eb93b 100644
+--- a/lib/ember-new.js
++++ b/lib/ember-new.js
+@@ -18,7 +18,7 @@ const {
+  * @param {String} [options.target='app'] the type of project to create (`app`, `addon` or `in-repo-addon`)
+  * @returns {Promise}
+  */
+-module.exports = function(options) {
++module.exports = function (options) {
+   options = options || {};
+ 
+   let target = options.target || 'app';
+@@ -27,13 +27,15 @@ module.exports = function(options) {
+   let projectName = isAddon ? 'my-addon' : 'my-app';
+   let command = isAddon ? 'addon' : 'new';
+ 
++  let cliArgs = Array.isArray(options.cliArgs) ? options.cliArgs : [];
++
+   let cliOptions = {
+     disableDependencyChecker: true
+   };
+ 
+   let originalENV = enableModuleUnification(options.isModuleUnification);
+ 
+-  return ember([command, projectName, '--skip-npm', '--skip-bower'], cliOptions)
++  return ember([command, projectName, '--skip-npm', '--skip-bower', ...cliArgs], cliOptions)
+     .then(generateInRepoAddon(target))
+     .then(linkAddon)
+     .catch(rethrowFromErrorLog)
+@@ -41,7 +43,7 @@ module.exports = function(options) {
+ };
+ 
+ function generateInRepoAddon(target) {
+-  return function() {
++  return function () {
+     if (target === 'in-repo-addon') {
+       return ember(['generate', 'in-repo-addon', 'my-addon'])
+     }
