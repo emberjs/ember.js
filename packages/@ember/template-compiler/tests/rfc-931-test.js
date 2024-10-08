@@ -33,6 +33,8 @@ module('@ember/template-compiler', function () {
 
       assert.notOk(file);
     });
+
+    test('class-based can now use private properties', function (assert) {});
   });
 
   module('Run-time', function () {
