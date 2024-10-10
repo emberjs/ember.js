@@ -1,6 +1,6 @@
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 
-export default class extends BaseObject {
+export default class DebugPort extends BaseObject {
   declare port: any;
   declare portNamespace: string;
   declare messages: Record<string, Function>;

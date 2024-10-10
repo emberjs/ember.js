@@ -1,16 +1,26 @@
 import DebugPort from './debug-port';
 import SourceMap from '@ember/debug/ember-inspector-support/libs/source-map';
 
-import { registerDeprecationHandler } from '@ember/debug/ember-inspector-support/utils/ember/debug';
+import { registerDeprecationHandler } from '@ember/debug';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
 import { cancel, debounce } from '@ember/runloop';
+import SourceMapSupport from '@ember/debug/ember-inspector-support/libs/source-map';
 
-export default class extends DebugPort {
+export default class DeprecationDebug extends DebugPort {
+  options: any;
+  private _warned!: boolean;
+  debounce: any;
+  private _watching: any;
+  deprecationsToSend: { stackStr: string, message: string, url: string, count: number, id: string, sources: any[] }[];
+  private sourceMap!: SourceMapSupport;
+  groupedDeprecations: any;
+  deprecations: any;
+  private __emberCliConfig: any;
   static {
     this.prototype.portNamespace = 'deprecation';
     this.prototype.sourceMap = new SourceMap();
     this.prototype.messages = {
-      watch() {
+      watch(this: DeprecationDebug) {
         this._watching = true;
         let grouped = this.groupedDeprecations;
         let deprecations = [];
@@ -26,32 +36,32 @@ export default class extends DebugPort {
         this.sendPending();
       },
 
-      sendStackTraces(message) {
+      sendStackTraces(this: DeprecationDebug, message: { deprecation: { message: string; sources: { stackStr: string }[] } }) {
         let deprecation = message.deprecation;
         deprecation.sources.forEach((source) => {
           let stack = source.stackStr;
-          stack = stack.split('\n');
-          stack.unshift(`Ember Inspector (Deprecation Trace): ${deprecation.message || ''}`);
-          this.adapter.log(stack.join('\n'));
+          let stackArray = stack.split('\n');
+          stackArray.unshift(`Ember Inspector (Deprecation Trace): ${deprecation.message || ''}`);
+          this.adapter.log(stackArray.join('\n'));
         });
       },
 
-      getCount() {
+      getCount(this: DeprecationDebug) {
         this.sendCount();
       },
 
-      clear() {
+      clear(this: DeprecationDebug) {
         cancel(this.debounce);
         this.deprecations.length = 0;
         this.groupedDeprecations = {};
         this.sendCount();
       },
 
-      release() {
+      release(this: DeprecationDebug) {
         this._watching = false;
       },
 
-      setOptions({ options }) {
+      setOptions(this: DeprecationDebug, { options }: any) {
         this.options.toggleDeprecationWorkflow = options.toggleDeprecationWorkflow;
       },
     };
@@ -69,7 +79,7 @@ export default class extends DebugPort {
     this.__emberCliConfig = value;
   }
 
-  constructor(data) {
+  constructor(data: any) {
     super(data);
 
     this.deprecations = [];
@@ -85,13 +95,13 @@ export default class extends DebugPort {
   /**
    * Checks if ember-cli and looks for source maps.
    */
-  fetchSourceMap(stackStr) {
+  fetchSourceMap(stackStr: string) {
     if (this.emberCliConfig && this.emberCliConfig.environment === 'development') {
       return this.sourceMap.map(stackStr).then(
-        (mapped) => {
+        (mapped: any[]) => {
           if (mapped && mapped.length > 0) {
             let source = mapped.find(
-              (item) =>
+              (item: any) =>
                 item.source &&
                 Boolean(item.source.match(new RegExp(this.emberCliConfig.modulePrefix)))
             );
@@ -105,8 +115,7 @@ export default class extends DebugPort {
             return source;
           }
         },
-        null,
-        'ember-inspector'
+        null
       );
     } else {
       return Promise.resolve(null);
@@ -118,11 +127,11 @@ export default class extends DebugPort {
       return;
     }
 
-    let deprecations = [];
+    let deprecations: { stackStr: string }[] = [];
 
     let promises = Promise.all(
       this.deprecationsToSend.map((deprecation) => {
-        let obj;
+        let obj: any;
         let promise = Promise.resolve(undefined);
         let grouped = this.groupedDeprecations;
         this.deprecations.push(deprecation);
@@ -138,7 +147,7 @@ export default class extends DebugPort {
           obj.sources = [];
           grouped[id] = obj;
         }
-        let found = obj.sources.find((s) => s.stackStr === deprecation.stackStr);
+        let found = obj.sources.find((s: any) => s.stackStr === deprecation.stackStr);
         if (!found) {
           let stackStr = deprecation.stackStr;
           promise = this.fetchSourceMap(stackStr).then(
@@ -147,9 +156,9 @@ export default class extends DebugPort {
               if (map) {
                 obj.hasSourceMap = true;
               }
+              return undefined;
             },
-            null,
-            'ember-inspector'
+            null
           );
         }
         return promise.then(() => {
@@ -192,10 +201,11 @@ export default class extends DebugPort {
 
       /* global __fail__*/
 
-      let error;
+      let error: any;
 
       // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
       try {
+        // @ts-ignore
         __fail__.fail();
       } catch (e) {
         error = e;
@@ -229,7 +239,7 @@ export default class extends DebugPort {
         url = options.url;
       }
 
-      const deprecation = { message, stackStr, url };
+      const deprecation = { message, stackStr, url } as any;
 
       // For ember-debug testing we usually don't want
       // to catch deprecations
@@ -237,9 +247,9 @@ export default class extends DebugPort {
         this.deprecationsToSend.push(deprecation);
         cancel(this.debounce);
         if (this._watching) {
-          this.debounce = debounce(this, 'sendPending', 100);
+          this.debounce = debounce(this, this.sendPending, 100);
         } else {
-          this.debounce = debounce(this, 'sendCount', 100);
+          this.debounce = debounce(this, this.sendCount, 100);
         }
         if (!this._warned) {
           this.adapter.warn(

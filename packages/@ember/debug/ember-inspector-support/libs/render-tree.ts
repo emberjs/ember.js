@@ -222,7 +222,7 @@ export default class RenderTree {
    * @param {string} id A render node id.
    * @return {Option<SerializedRenderNode>} A render node with the given id, if any.
    */
-  find(id: string) {
+  find(id: string): CapturedRenderNode | null {
     let node = this.nodes[id];
 
     if (node) {

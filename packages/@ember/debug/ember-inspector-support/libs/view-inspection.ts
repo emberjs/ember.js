@@ -3,6 +3,7 @@ import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 import getObjectName from '../utils/get-object-name';
 import type RenderTree from './render-tree';
 import type ObjectInspector from '../object-inspector';
+import type { CapturedRenderNode } from '@glimmer/interfaces';
 
 function makeHighlight(id: string) {
   return `<div id="ember-inspector-highlight-${id}" role="presentation"></div>`;
@@ -26,7 +27,7 @@ function makeTooltip(id: string) {
   `;
 }
 
-function makeStylesheet(id) {
+function makeStylesheet(id: string) {
   let prefix = 'ember-inspector';
 
   return `
@@ -230,21 +231,21 @@ function makeStylesheet(id) {
 export default class ViewInspection {
   renderTree: RenderTree;
   objectInspector: ObjectInspector;
-  private didShow: boolean;
-  private didHide: boolean;
-  private didStartInspecting: boolean;
-  private didStopInspecting: boolean;
+  private didShow: (id: string, pin: boolean) => void;
+  private didHide: (id: string, pinned: boolean) => void;
+  private didStartInspecting: () => void;
+  private didStopInspecting: () => void;
   private id: string;
-  private currentId: string;
-  private lastMatchId: string;
+  private currentId: string | null;
+  private lastMatchId: string | null;
   private isInspecting: boolean;
-  private lastTarget: boolean;
+  private lastTarget: EventTarget | null;
   private isShowing: boolean;
   private isPinned: boolean;
 
-  private highlight: HTMLElement;
-  private tooltip: HTMLElement;
-  private stylesheet: HTMLElement;
+  private highlight!: HTMLElement;
+  private tooltip!: HTMLElement;
+  private stylesheet!: HTMLElement;
   constructor({
     renderTree,
     objectInspector,
@@ -255,10 +256,10 @@ export default class ViewInspection {
   }: {
     renderTree: RenderTree;
     objectInspector: ObjectInspector;
-    didShow: boolean;
-    didHide: boolean;
-    didStartInspecting: boolean;
-    didStopInspecting: boolean;
+    didShow: () => void;
+    didHide: () => void;
+    didStartInspecting: () => void;
+    didStopInspecting: () => void;
   }) {
     this.renderTree = renderTree;
     this.objectInspector = objectInspector;
@@ -338,13 +339,13 @@ export default class ViewInspection {
     this.didStopInspecting();
   }
 
-  onMouseMove(event) {
+  onMouseMove(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.inspectNearest(event.target, false);
   }
 
-  onKeyDown(event) {
+  onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Escape' || event.key === 'Esc') {
       if (this.isPinned) {
         event.preventDefault();
@@ -358,8 +359,8 @@ export default class ViewInspection {
     }
   }
 
-  onClick(event) {
-    if (this.isPinned && !this.tooltip.contains(event.target)) {
+  onClick(event: MouseEvent) {
+    if (this.isPinned && !this.tooltip.contains(event.target as Node)) {
       event.preventDefault();
       event.stopPropagation();
       this.hide();
@@ -371,17 +372,17 @@ export default class ViewInspection {
     }
   }
 
-  inspectNearest(target, pin = true) {
+  inspectNearest(target: EventTarget | null, pin = true) {
     let { isInspecting, lastTarget, lastMatchId } = this;
 
     let match;
 
     if (isInspecting && target === lastTarget) {
-      match = this.renderTree.find(lastMatchId);
+      match = this.renderTree.find(lastMatchId!);
     }
 
     if (!match) {
-      match = this.renderTree.findNearest(target, lastMatchId);
+      match = this.renderTree.findNearest(target as any, lastMatchId!);
     }
 
     if (match) {
@@ -398,7 +399,7 @@ export default class ViewInspection {
     return match;
   }
 
-  show(id, pin = true) {
+  show(id: string, pin = true) {
     if (this.currentId === id) {
       if (this.isPinned !== pin) {
         this.isPinned = pin;
@@ -414,7 +415,7 @@ export default class ViewInspection {
     if (node && rect) {
       this._showTooltip(node, rect);
       rect = this.renderTree.getBoundingClientRect(id);
-      this._showHighlight(node, rect);
+      this._showHighlight(node, rect!);
 
       this.isShowing = true;
       this.isPinned = pin;
@@ -438,12 +439,12 @@ export default class ViewInspection {
       this.currentId = null;
 
       if (notify) {
-        this.didHide(currentId, isPinned);
+        this.didHide(currentId!, isPinned);
       }
     }
   }
 
-  _showHighlight(_node, rect) {
+  _showHighlight(_node: CapturedRenderNode, rect: DOMRect) {
     let { style } = this.highlight;
     let { top, left, width, height } = rect;
     let { scrollX, scrollY } = window;
@@ -459,7 +460,7 @@ export default class ViewInspection {
     this.highlight.style.display = 'none';
   }
 
-  _showTooltip(node, highlightRect) {
+  _showTooltip(node: CapturedRenderNode, highlightRect: DOMRect) {
     this._renderTooltipTitle(node);
     this._renderTooltipCategory(node);
     this._renderTooltipDetails(node);
@@ -470,8 +471,8 @@ export default class ViewInspection {
     this.tooltip.style.display = 'none';
   }
 
-  _renderTooltipTitle(node) {
-    let title = this.tooltip.querySelector('.ember-inspector-tooltip-title');
+  _renderTooltipTitle(node: CapturedRenderNode) {
+    let title = this.tooltip.querySelector('.ember-inspector-tooltip-title')! as HTMLElement;
 
     title.innerHTML = '';
 
@@ -502,8 +503,8 @@ export default class ViewInspection {
     }
   }
 
-  _renderTooltipCategory(node) {
-    let category = this.tooltip.querySelector('.ember-inspector-tooltip-category');
+  _renderTooltipCategory(node: CapturedRenderNode) {
+    let category = this.tooltip.querySelector('.ember-inspector-tooltip-category') as HTMLElement;
 
     switch (node.type) {
       case 'component':
@@ -518,8 +519,8 @@ export default class ViewInspection {
     }
   }
 
-  _renderTooltipDetails(node) {
-    let tbody = this.tooltip.querySelector('.ember-inspector-tooltip-details tbody');
+  _renderTooltipDetails(node: CapturedRenderNode) {
+    let tbody = this.tooltip.querySelector('.ember-inspector-tooltip-details tbody') as HTMLElement;
 
     tbody.innerHTML = '';
 
@@ -533,7 +534,7 @@ export default class ViewInspection {
       } else {
         this._renderTooltipDetail(tbody, 'Instance', this._tokenizeItem(node.instance));
       }
-      const detail =
+      const detail: HTMLElement | null =
         tbody.querySelector(
           '.ember-inspector-tooltip-detail-instance > .ember-inspector-tooltip-token-tag'
         ) ||
@@ -542,13 +543,13 @@ export default class ViewInspection {
         );
       if (detail) {
         detail.onclick = () => {
-          this.objectInspector.sendToConsole(node.instance.id);
+          this.objectInspector.sendToConsole((node.instance as any).id);
         };
       }
     }
   }
 
-  _renderTooltipDetail(tbody, key, value) {
+  _renderTooltipDetail(tbody: HTMLElement, key: string, value: string | [string, string][]) {
     let tr = document.createElement('tr');
     let th = document.createElement('th');
     let td = document.createElement('td');
@@ -569,7 +570,7 @@ export default class ViewInspection {
     tbody.appendChild(tr);
   }
 
-  _renderTokens(parent, tokens) {
+  _renderTokens(parent: HTMLElement, tokens: [string, string][]) {
     for (let [type, value] of tokens) {
       let span = document.createElement('span');
       span.innerText = value;
@@ -578,7 +579,7 @@ export default class ViewInspection {
     }
   }
 
-  _tokenizeComponentNode(node) {
+  _tokenizeComponentNode(node: CapturedRenderNode): [string, string][] {
     let useAngleBracket = node.args.positional.length === 0;
     let parts = node.name.split('/');
 
@@ -586,7 +587,7 @@ export default class ViewInspection {
       parts = parts.map(classify);
     }
 
-    let name = parts.pop();
+    let name = parts.pop()!;
     let namespace = parts;
 
     let tokens = [];
@@ -598,7 +599,7 @@ export default class ViewInspection {
     }
 
     while (namespace.length > 0) {
-      tokens.push(['namespace', namespace.shift()]);
+      tokens.push(['namespace', namespace.shift()!]);
       tokens.push(['tag', '::']);
     }
 
@@ -610,10 +611,10 @@ export default class ViewInspection {
       tokens.push(['tag', '}}']);
     }
 
-    return tokens;
+    return tokens as [string, string][];
   }
 
-  _tokenizeItem(item) {
+  _tokenizeItem(item: any): [string, string][] {
     switch (typeof item) {
       case 'string':
       case 'number':
@@ -630,7 +631,7 @@ export default class ViewInspection {
     return this._tokenizeObject(item);
   }
 
-  _tokenizeObject(item) {
+  _tokenizeObject(item: any): [string, string][] {
     let object = this.objectInspector.sentObjects[item.id];
     let stringified;
 
@@ -651,13 +652,13 @@ export default class ViewInspection {
       if (match) {
         return [
           ['tag', '<'],
-          ['namespace', match[1]],
+          ['namespace', match[1]!],
           ['tag', '@'],
-          ['namespace', match[2]],
+          ['namespace', match[2]!],
           ['tag', ':'],
-          ['name', match[3]],
+          ['name', match[3]!],
           ['tag', '::'],
-          ['id', match[4]],
+          ['id', match[4]!],
           ['tag', '>'],
         ];
       }

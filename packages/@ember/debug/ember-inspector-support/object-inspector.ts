@@ -1,9 +1,6 @@
 import DebugPort from './debug-port';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
-import {
-  typeOf,
-  inspect,
-} from '@ember/debug/ember-inspector-support/utils/type-check';
+import { typeOf, inspect } from '@ember/debug/ember-inspector-support/utils/type-check';
 import { cacheFor } from '@ember/object/internals';
 import { _backburner, join } from '@ember/runloop';
 import EmberObject from '@ember/object';
@@ -12,12 +9,20 @@ import CoreObject from '@ember/object/core';
 import { meta as emberMeta } from '@ember/-internals/meta';
 import emberNames from './utils/ember-object-names';
 import getObjectName from './utils/get-object-name';
-import { valueForTag as tagValue, validateTag as tagValidate, track, Tag, tagFor } from "@glimmer/validator";
-import { isComputed } from '@ember/-internals/metal';
+import type { Tag } from '@glimmer/validator';
+import {
+  valueForTag as tagValue,
+  validateTag as tagValidate,
+  track,
+  tagFor,
+} from '@glimmer/validator';
+import { isComputed, tagForProperty } from '@ember/-internals/metal';
 import { guidFor } from './utils/ember/object/internals';
-import Mixin from '@ember/object/mixin';
+import type Mixin from '@ember/object/mixin';
 import ObjectProxy from '@ember/object/proxy';
 import ArrayProxy from '@ember/array/proxy';
+import Component from '@ember/component';
+import GlimmerComponent from '@glimmer/component';
 
 const keys = Object.keys;
 
@@ -28,7 +33,11 @@ const keys = Object.keys;
  * @param {*} computedValue A value that has already been computed with calculateCP
  * @return {{inspect: (string|*), type: string}|{computed: boolean, inspect: string, type: string}|{inspect: string, type: string}}
  */
-function inspectValue(object: any, key: string, computedValue?: any): {type: string, inspect: string, isCalculated?: boolean} {
+function inspectValue(
+  object: any,
+  key: string,
+  computedValue?: any
+): { type: string; inspect: string; isCalculated?: boolean } {
   let string;
   const value = computedValue;
 
@@ -77,7 +86,7 @@ function getTagTrackedTags(tag: Tag, ownTag: Tag, level = 0) {
   if (!tag || level > 1) {
     return props;
   }
-  const subtags = (Array.isArray(tag.subtag) ? tag.subtag : []);
+  const subtags = Array.isArray(tag.subtag) ? tag.subtag : [];
   if (tag.subtag && !Array.isArray(tag.subtag)) {
     // if (tag.subtag._propertyKey) props.push(tag.subtag);
     // TODO fetch tag metadata object and property key
@@ -95,7 +104,11 @@ function getTagTrackedTags(tag: Tag, ownTag: Tag, level = 0) {
 }
 
 // TODO needs https://github.com/glimmerjs/glimmer-vm/pull/1489
-function getTrackedDependencies(object: any, property: string, tagInfo: { tag: Tag, revision: number }) {
+function getTrackedDependencies(
+  object: any,
+  property: string,
+  tagInfo: { tag: Tag; revision: number }
+) {
   const tag = tagInfo.tag;
   const proto = Object.getPrototypeOf(object);
   if (!proto) return [];
@@ -159,28 +172,55 @@ function getTrackedDependencies(object: any, property: string, tagInfo: { tag: T
   return [...dependentKeys];
 }
 
-type MixinDetails = { id: string; name: string, properties: unknown[], expand?: boolean, isEmberMixin?: boolean };
+type DebugPropertyInfo = {
+  skipMixins: string[];
+  skipProperties: string[];
+  groups: {
+    name: string;
+    expand: boolean;
+    properties: string[];
+  }[];
+};
+
+type PropertyInfo = {
+  code: any;
+  isService: any;
+  dependentKeys: any;
+  isGetter: any;
+  isTracked: any;
+  isProperty: any;
+  isComputed: any;
+  auto: any;
+  readOnly: any;
+  isMandatorySetter: any;
+  canTrack: boolean;
+  name: any;
+  value: any;
+  isExpensive: boolean;
+  overridden: boolean;
+};
+
+type MixinDetails = {
+  id: string;
+  name: string;
+  properties: PropertyInfo[];
+  expand?: boolean;
+  isEmberMixin?: boolean;
+};
+
+type TagInfo = {
+  revision: number;
+  tag: Tag;
+};
 
 export default class ObjectInspector extends DebugPort {
   get adapter() {
     return this.namespace?.adapter;
   }
 
-  get port(): any {
-    return this.namespace?.port;
-  }
-
   currentObject: {
     object: any;
-    mixinDetails: {
-      properties: {
-        canTrack: boolean;
-        name: any;
-        value: any;
-        isExpensive: boolean;
-        overridden: boolean;
-      }[];
-    }[];
+    mixinDetails: MixinDetails[];
     objectId: string;
   } | null = null;
 
@@ -252,7 +292,7 @@ export default class ObjectInspector extends DebugPort {
                 dependentKeys,
               });
             }
-          } catch (e) {
+          } catch {
             // dont do anything
           }
           return false;
@@ -288,13 +328,21 @@ export default class ObjectInspector extends DebugPort {
   static {
     this.prototype.portNamespace = 'objectInspector';
     this.prototype.messages = {
-      digDeeper(this: ObjectInspector, message: { objectId: any; property: any; }) {
+      digDeeper(this: ObjectInspector, message: { objectId: any; property: any }) {
         this.digIntoObject(message.objectId, message.property);
       },
-      releaseObject(this: ObjectInspector, message: { objectId: any; }) {
+      releaseObject(this: ObjectInspector, message: { objectId: any }) {
         this.releaseObject(message.objectId);
       },
-      calculate(this: ObjectInspector, message: { objectId: string | number; property: string; mixinIndex: number; isCalculated: boolean; }) {
+      calculate(
+        this: ObjectInspector,
+        message: {
+          objectId: string;
+          property: string;
+          mixinIndex: number;
+          isCalculated: boolean;
+        }
+      ) {
         let value;
         value = this.valueForObjectProperty(message.objectId, message.property, message.mixinIndex);
         if (value) {
@@ -303,27 +351,30 @@ export default class ObjectInspector extends DebugPort {
         }
         this.sendMessage('updateErrors', {
           objectId: message.objectId,
-          errors: errorsToSend(this._errorsFor[message.objectId]),
+          errors: errorsToSend(this._errorsFor[message.objectId]!),
         });
       },
-      saveProperty(this: ObjectInspector, message: { value: any; dataType: string; objectId: string; property: string; }) {
+      saveProperty(
+        this: ObjectInspector,
+        message: { value: any; dataType: string; objectId: string; property: string }
+      ) {
         let value = message.value;
         if (message.dataType && message.dataType === 'date') {
           value = new Date(value);
         }
         this.saveProperty(message.objectId, message.property, value);
       },
-      sendToConsole(this: ObjectInspector, message: { objectId: any; property: string; }) {
+      sendToConsole(this: ObjectInspector, message: { objectId: any; property: string }) {
         this.sendToConsole(message.objectId, message.property);
       },
-      gotoSource(this: ObjectInspector, message: { objectId: any; property: string; }) {
+      gotoSource(this: ObjectInspector, message: { objectId: any; property: string }) {
         this.gotoSource(message.objectId, message.property);
       },
-      sendControllerToConsole(this: ObjectInspector, message: { name: string; }) {
+      sendControllerToConsole(this: ObjectInspector, message: { name: string }) {
         const container = this.namespace?.owner;
         this.sendValueToConsole(container.lookup(`controller:${message.name}`));
       },
-      sendRouteHandlerToConsole(this: ObjectInspector, message: { name: string; }) {
+      sendRouteHandlerToConsole(this: ObjectInspector, message: { name: string }) {
         const container = this.namespace?.owner;
         this.sendValueToConsole(container.lookup(`route:${message.name}`));
       },
@@ -336,32 +387,32 @@ export default class ObjectInspector extends DebugPort {
        * @param message The message sent
        * @param {string} messsage.name The name of the route to lookup
        */
-      inspectRoute(this: ObjectInspector, message: { name: string; }) {
+      inspectRoute(this: ObjectInspector, message: { name: string }) {
         const container = this.namespace?.owner;
         const router = container.lookup('router:main');
         const routerLib = router._routerMicrolib || router.router;
         // 3.9.0 removed intimate APIs from router
         // https://github.com/emberjs/ember.js/pull/17843
         // https://deprecations.emberjs.com/v3.x/#toc_remove-handler-infos
-         // Ember >= 3.9.0
+        // Ember >= 3.9.0
         this.sendObject(routerLib.getRoute(message.name));
       },
-      inspectController(this: ObjectInspector, message: { name: string; }) {
+      inspectController(this: ObjectInspector, message: { name: string }) {
         const container = this.namespace?.owner;
         this.sendObject(container.lookup(`controller:${message.name}`));
       },
-      inspectById(this: ObjectInspector, message: { objectId: string; }) {
+      inspectById(this: ObjectInspector, message: { objectId: string }) {
         const obj = this.sentObjects[message.objectId]!;
         if (obj) {
           this.sendObject(obj);
         }
       },
-      inspectByContainerLookup(this: ObjectInspector, message: { name: string; }) {
+      inspectByContainerLookup(this: ObjectInspector, message: { name: string }) {
         const container = this.namespace?.owner;
         this.sendObject(container.lookup(message.name));
       },
-      traceErrors(this: ObjectInspector, message: { objectId: string; }) {
-        let errors = this._errorsFor[message.objectId];
+      traceErrors(this: ObjectInspector, message: { objectId: string }) {
+        let errors = this._errorsFor[message.objectId]!;
         toArray(errors).forEach((error) => {
           let stack = error.error;
           if (stack && stack.stack) {
@@ -403,7 +454,7 @@ export default class ObjectInspector extends DebugPort {
     if (prop === null || prop === undefined) {
       value = this.sentObjects[objectId];
     } else {
-      value = calculateCP(object, { name: prop }, {});
+      value = calculateCP(object, { name: prop } as PropertyInfo, {});
     }
     // for functions and classes we want to show the source
     if (typeof value === 'function') {
@@ -416,14 +467,14 @@ export default class ObjectInspector extends DebugPort {
     }
   }
 
-  sendToConsole(objectId: string, prop: string) {
+  sendToConsole(objectId: string, prop?: string) {
     let object = this.sentObjects[objectId];
     let value;
 
     if (prop === null || prop === undefined) {
       value = this.sentObjects[objectId];
     } else {
-      value = calculateCP(object, { name: prop }, {});
+      value = calculateCP(object, { name: prop } as PropertyInfo, {});
     }
 
     this.sendValueToConsole(value);
@@ -443,7 +494,7 @@ export default class ObjectInspector extends DebugPort {
 
   digIntoObject(objectId: string, property: string) {
     let parentObject = this.sentObjects[objectId];
-    let object = calculateCP(parentObject, { name: property }, {});
+    let object = calculateCP(parentObject, { name: property } as PropertyInfo, {});
 
     if (this.canSend(object)) {
       const currentObject = this.currentObject;
@@ -566,7 +617,7 @@ export default class ObjectInspector extends DebugPort {
       id: guidFor(object),
       name: getObjectName(object),
       properties: ownProperties(object, own),
-    };
+    } as MixinDetails;
 
     mixins.push(objectMixin);
 
@@ -581,7 +632,7 @@ export default class ObjectInspector extends DebugPort {
           if (name === '(unknown)') {
             name = '(unknown mixin)';
           }
-        } catch (e) {
+        } catch {
           name = '(Unable to convert Object to string)';
         }
       }
@@ -626,16 +677,16 @@ export default class ObjectInspector extends DebugPort {
     fixMandatorySetters(mixinDetails);
     applyMixinOverrides(mixinDetails);
 
-    let propertyInfo = null;
+    let debugPropertyInfo = null;
     let debugInfo = getDebugInfo(object);
     if (debugInfo) {
-      propertyInfo = getDebugInfo(object).propertyInfo;
-      mixinDetails = customizeProperties(mixinDetails, propertyInfo);
+      debugPropertyInfo = getDebugInfo(object).propertyInfo;
+      mixinDetails = customizeProperties(mixinDetails, debugPropertyInfo);
     }
 
     let expensiveProperties = null;
-    if (propertyInfo) {
-      expensiveProperties = propertyInfo.expensiveProperties;
+    if (debugPropertyInfo) {
+      expensiveProperties = debugPropertyInfo.expensiveProperties;
     }
 
     let objectId = this.retainObject(object);
@@ -657,7 +708,7 @@ export default class ObjectInspector extends DebugPort {
     if (object.isDestroying) {
       value = '<DESTROYED>';
     } else {
-      value = calculateCP(object, { name: property }, this._errorsFor[objectId]);
+      value = calculateCP(object, { name: property } as PropertyInfo, this._errorsFor[objectId]!);
     }
 
     if (!value || !(value instanceof CalculateCPError)) {
@@ -666,6 +717,8 @@ export default class ObjectInspector extends DebugPort {
 
       return { objectId, property, value, mixinIndex };
     }
+
+    return null;
   }
 
   inspect = inspect;
@@ -728,7 +781,9 @@ function ownProperties(object: any, ownMixins: Set<Mixin>) {
     if (m.mixins) {
       m.mixins.forEach((mix) => {
         Object.keys(mix.properties || {}).forEach((k) => {
-          const pDesc = Object.getOwnPropertyDescriptor(mix.properties, k) as PropertyDescriptor & { _getter: () => any };
+          const pDesc = Object.getOwnPropertyDescriptor(mix.properties, k) as PropertyDescriptor & {
+            _getter: () => any;
+          };
           if (pDesc && props[k] && pDesc.get && pDesc.get === props[k].get) {
             delete props[k];
           }
@@ -755,7 +810,7 @@ function ownProperties(object: any, ownMixins: Set<Mixin>) {
 }
 
 function propertiesForMixin(mixin: Mixin) {
-  let properties: unknown[] = [];
+  let properties: PropertyInfo[] = [];
 
   if (mixin.mixins) {
     mixin.mixins.forEach((mixin) => {
@@ -770,7 +825,7 @@ function propertiesForMixin(mixin: Mixin) {
 
 function addProperties(properties: unknown[], hash: any) {
   for (let prop in hash) {
-    if (!hash.hasOwnProperty(prop)) {
+    if (!Object.prototype.hasOwnProperty.call(hash, prop)) {
       continue;
     }
 
@@ -850,7 +905,7 @@ function addProperties(properties: unknown[], hash: any) {
         options.readOnly = true;
       }
     }
-    if (desc.hasOwnProperty('value') || options.isMandatorySetter) {
+    if (Object.prototype.hasOwnProperty.call(desc, 'value') || options.isMandatorySetter) {
       delete options.isGetter;
       delete options.isTracked;
       options.isProperty = true;
@@ -904,9 +959,7 @@ function replaceProperty(properties: any, name: string, value: any, options: any
     properties.splice(i, 1);
   }
 
-  let prop = { name, value,
-    isMandatorySetter: undefined
-  };
+  let prop = { name, value } as PropertyInfo;
   prop.isMandatorySetter = options.isMandatorySetter;
   prop.readOnly = options.readOnly;
   prop.auto = options.auto;
@@ -925,9 +978,9 @@ function replaceProperty(properties: any, name: string, value: any, options: any
   properties.push(prop);
 }
 
-function fixMandatorySetters(mixinDetails) {
-  let seen = {};
-  let propertiesToRemove = [];
+function fixMandatorySetters(mixinDetails: MixinDetails[]) {
+  let seen: any = {};
+  let propertiesToRemove: any = [];
 
   mixinDetails.forEach((detail, detailIdx) => {
     detail.properties.forEach((property) => {
@@ -938,15 +991,15 @@ function fixMandatorySetters(mixinDetails) {
           detailIdx,
           property,
         };
-      } else if (seen.hasOwnProperty(property.name) && seen[property.name]) {
+      } else if (Object.prototype.hasOwnProperty.call(seen, property.name) && seen[property.name]) {
         propertiesToRemove.push(seen[property.name]);
         delete seen[property.name];
       }
     });
   });
 
-  propertiesToRemove.forEach((prop) => {
-    let detail = mixinDetails[prop.detailIdx];
+  propertiesToRemove.forEach((prop: any) => {
+    let detail = mixinDetails[prop.detailIdx]!;
     let index = detail.properties.indexOf(prop.property);
     if (index !== -1) {
       detail.properties.splice(index, 1);
@@ -954,11 +1007,11 @@ function fixMandatorySetters(mixinDetails) {
   });
 }
 
-function applyMixinOverrides(mixinDetails) {
-  let seen = {};
+function applyMixinOverrides(mixinDetails: MixinDetails[]) {
+  let seen: any = {};
   mixinDetails.forEach((detail) => {
     detail.properties.forEach((property) => {
-      if (Object.prototype.hasOwnProperty(property.name)) {
+      if (Object.prototype.hasOwnProperty.call(Object.prototype, property.name)) {
         return;
       }
 
@@ -972,7 +1025,13 @@ function applyMixinOverrides(mixinDetails) {
   });
 }
 
-function calculateCPs(object, mixinDetails, errorsForObject, expensiveProperties, tracked) {
+function calculateCPs(
+  object: any,
+  mixinDetails: MixinDetails[],
+  errorsForObject: Record<string, { property: string; error: any }>,
+  expensiveProperties: string[],
+  tracked: Record<string, TagInfo>
+) {
   expensiveProperties = expensiveProperties || [];
   mixinDetails.forEach((mixin) => {
     mixin.properties.forEach((item) => {
@@ -984,9 +1043,9 @@ function calculateCPs(object, mixinDetails, errorsForObject, expensiveProperties
         item.isExpensive = expensiveProperties.indexOf(item.name) >= 0;
         if (cache !== undefined || !item.isExpensive) {
           let value;
-          if (item.canTrack && HAS_GLIMMER_TRACKING) {
-            tracked[item.name] = tracked[item.name] || {};
-            const tagInfo = tracked[item.name];
+          if (item.canTrack) {
+            tracked[item.name] = tracked[item.name] || ({} as TagInfo);
+            const tagInfo = tracked[item.name]!;
             tagInfo.tag = track(() => {
               value = calculateCP(object, item, errorsForObject);
             });
@@ -1010,6 +1069,7 @@ function calculateCPs(object, mixinDetails, errorsForObject, expensiveProperties
           }
         }
       }
+      return;
     });
   });
 }
@@ -1069,15 +1129,15 @@ function calculateCPs(object, mixinDetails, errorsForObject, expensiveProperties
  }
  ```
  */
-function customizeProperties(mixinDetails, propertyInfo) {
-  let newMixinDetails = [];
-  let neededProperties = {};
+function customizeProperties(mixinDetails: MixinDetails[], propertyInfo: DebugPropertyInfo) {
+  let newMixinDetails: MixinDetails[] = [];
+  let neededProperties: Record<string, boolean | PropertyInfo> = {};
   let groups = propertyInfo.groups || [];
   let skipProperties = propertyInfo.skipProperties || [];
   let skipMixins = propertyInfo.skipMixins || [];
 
   if (groups.length) {
-    mixinDetails[0].expand = false;
+    mixinDetails[0]!.expand = false;
   }
 
   groups.forEach((group) => {
@@ -1087,7 +1147,7 @@ function customizeProperties(mixinDetails, propertyInfo) {
   });
 
   mixinDetails.forEach((mixin) => {
-    let newProperties = [];
+    let newProperties: PropertyInfo[] = [];
     mixin.properties.forEach((item) => {
       if (skipProperties.indexOf(item.name) !== -1) {
         return true;
@@ -1095,13 +1155,14 @@ function customizeProperties(mixinDetails, propertyInfo) {
 
       if (
         !item.overridden &&
-        neededProperties.hasOwnProperty(item.name) &&
+        Object.prototype.hasOwnProperty.call(neededProperties, item.name) &&
         neededProperties[item.name]
       ) {
         neededProperties[item.name] = item;
       } else {
         newProperties.push(item);
       }
+      return;
     });
     mixin.properties = newProperties;
     if (mixin.properties.length === 0 && mixin.name.toLowerCase().includes('unknown')) {
@@ -1117,11 +1178,15 @@ function customizeProperties(mixinDetails, propertyInfo) {
     .slice()
     .reverse()
     .forEach((group) => {
-      let newMixin = { name: group.name, expand: group.expand, properties: [] };
+      let newMixin = {
+        name: group.name,
+        expand: group.expand,
+        properties: [] as PropertyInfo[],
+      } as MixinDetails;
       group.properties.forEach(function (prop) {
         // make sure it's not `true` which means property wasn't found
         if (neededProperties[prop] !== true) {
-          newMixin.properties.push(neededProperties[prop]);
+          newMixin.properties.push(neededProperties[prop] as PropertyInfo);
         }
       });
       newMixinDetails.unshift(newMixin);
@@ -1130,7 +1195,7 @@ function customizeProperties(mixinDetails, propertyInfo) {
   return newMixinDetails;
 }
 
-function getDebugInfo(object) {
+function getDebugInfo(object: any) {
   let debugInfo = null;
   let objectDebugInfo = object._debugInfo;
   if (objectDebugInfo && typeof objectDebugInfo === 'function') {
@@ -1174,11 +1239,11 @@ function getDebugInfo(object) {
   return debugInfo;
 }
 
-function toArray(errors) {
+function toArray(errors: Record<string, any>) {
   return keys(errors).map((key) => errors[key]);
 }
 
-function calculateCP(object, item, errorsForObject) {
+function calculateCP(object: any, item: PropertyInfo, errorsForObject: Record<string, any>) {
   const property = item.name;
   delete errorsForObject[property];
   try {
@@ -1194,8 +1259,8 @@ function calculateCP(object, item, errorsForObject) {
   }
 }
 
-function CalculateCPError() {}
+class CalculateCPError {}
 
-function errorsToSend(errors:) {
+function errorsToSend(errors: Record<string, { property: string; error: any }>) {
   return toArray(errors).map((error) => ({ property: error.property }));
 }

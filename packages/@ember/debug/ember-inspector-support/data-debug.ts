@@ -1,7 +1,7 @@
 import DebugPort from './debug-port';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
 
-export default class extends DebugPort {
+export default class DataDebug extends DebugPort {
   portNamespace!: string;
   sentTypes!: Record<string, any>;
   sentRecords!: Record<string, any>;
@@ -11,8 +11,8 @@ export default class extends DebugPort {
     this.sentRecords = {};
   }
 
-  releaseTypesMethod = null;
-  releaseRecordsMethod = null;
+  releaseTypesMethod: Function | null = null;
+  releaseRecordsMethod: Function | null = null;
 
   get adapter() {
     const owner = this.namespace?.owner;
@@ -34,14 +34,12 @@ export default class extends DebugPort {
     return owner.resolveRegistration(name);
   }
 
-  get port() {
-    return this.namespace?.port;
-  }
+
   get objectInspector() {
     return this.namespace?.objectInspector;
   }
 
-  modelTypesAdded(types) {
+  modelTypesAdded(types: any[]) {
     let typesToSend;
     typesToSend = types.map((type) => this.wrapType(type));
     this.sendMessage('modelTypesAdded', {
@@ -49,14 +47,14 @@ export default class extends DebugPort {
     });
   }
 
-  modelTypesUpdated(types) {
+  modelTypesUpdated(types: any[]) {
     let typesToSend = types.map((type) => this.wrapType(type));
     this.sendMessage('modelTypesUpdated', {
       modelTypes: typesToSend,
     });
   }
 
-  wrapType(type) {
+  wrapType(type: any) {
     const objectId = guidFor(type.object);
     this.sentTypes[objectId] = type;
 
@@ -68,24 +66,24 @@ export default class extends DebugPort {
     };
   }
 
-  recordsAdded(recordsReceived) {
+  recordsAdded(recordsReceived: any[]) {
     let records = recordsReceived.map((record) => this.wrapRecord(record));
     this.sendMessage('recordsAdded', { records });
   }
 
-  recordsUpdated(recordsReceived) {
+  recordsUpdated(recordsReceived: any[]) {
     let records = recordsReceived.map((record) => this.wrapRecord(record));
     this.sendMessage('recordsUpdated', { records });
   }
 
-  recordsRemoved(index, count) {
+  recordsRemoved(index: number, count: number) {
     this.sendMessage('recordsRemoved', { index, count });
   }
 
-  wrapRecord(record) {
+  wrapRecord(record: any) {
     const objectId = guidFor(record.object);
-    let columnValues = {};
-    let searchKeywords = [];
+    let columnValues: Record<string, any> = {};
+    let searchKeywords: any[] = [];
     this.sentRecords[objectId] = record;
     // make objects clonable
     for (let i in record.columnValues) {
@@ -93,7 +91,7 @@ export default class extends DebugPort {
     }
     // make sure keywords can be searched and clonable
     searchKeywords = record.searchKeywords.filter(
-      (keyword) => typeof keyword === 'string' || typeof keyword === 'number'
+      (keyword: any) => typeof keyword === 'string' || typeof keyword === 'number'
     );
     return {
       columnValues,
@@ -129,28 +127,28 @@ export default class extends DebugPort {
   static {
     this.prototype.portNamespace = 'data';
     this.prototype.messages = {
-      checkAdapter() {
+      checkAdapter(this: DataDebug) {
         this.sendMessage('hasAdapter', { hasAdapter: Boolean(this.adapter) });
       },
 
-      getModelTypes() {
+      getModelTypes(this: DataDebug) {
         this.modelTypesAdded([]);
         this.releaseTypes();
         this.releaseTypesMethod = this.adapter.watchModelTypes(
-          (types) => {
+          (types: any) => {
             this.modelTypesAdded(types);
           },
-          (types) => {
+          (types: any) => {
             this.modelTypesUpdated(types);
           }
         );
       },
 
-      releaseModelTypes() {
+      releaseModelTypes(this: DataDebug) {
         this.releaseTypes();
       },
 
-      getRecords(message) {
+      getRecords(this: DataDebug, message: any) {
         const type = this.sentTypes[message.objectId];
         this.releaseRecords();
 
@@ -163,28 +161,28 @@ export default class extends DebugPort {
         this.recordsAdded([]);
         let releaseMethod = this.adapter.watchRecords(
           typeOrName,
-          (recordsReceived) => {
+          (recordsReceived: any) => {
             this.recordsAdded(recordsReceived);
           },
-          (recordsUpdated) => {
+          (recordsUpdated: any) => {
             this.recordsUpdated(recordsUpdated);
           },
-          (...args) => {
-            this.recordsRemoved(...args);
+          (index: number, count: number) => {
+            this.recordsRemoved(index, count);
           }
         );
         this.releaseRecordsMethod = releaseMethod;
       },
 
-      releaseRecords() {
+      releaseRecords(this: DataDebug) {
         this.releaseRecords();
       },
 
-      inspectModel(message) {
+      inspectModel(this: DataDebug, message: any) {
         this.objectInspector.sendObject(this.sentRecords[message.objectId].object);
       },
 
-      getFilters() {
+      getFilters(this: DataDebug) {
         this.sendMessage('filters', {
           filters: this.adapter.getFilters(),
         });

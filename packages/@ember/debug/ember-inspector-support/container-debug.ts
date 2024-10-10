@@ -1,6 +1,7 @@
 import DebugPort from './debug-port';
 
-export default class extends DebugPort {
+export default class ContainerDebug extends DebugPort {
+  objectToConsole: any;
   get objectInspector() {
     return this.namespace?.objectInspector;
   }
@@ -19,12 +20,12 @@ export default class extends DebugPort {
   static {
     this.prototype.portNamespace = 'container';
     this.prototype.messages = {
-      getTypes() {
+      getTypes(this: ContainerDebug) {
         this.sendMessage('types', {
           types: this.getTypes(),
         });
       },
-      getInstances(message) {
+      getInstances(this: ContainerDebug, message: any) {
         let instances = this.getInstances(message.containerType);
         if (instances) {
           this.sendMessage('instances', {
@@ -37,28 +38,28 @@ export default class extends DebugPort {
           });
         }
       },
-      sendInstanceToConsole(message) {
+      sendInstanceToConsole(this: ContainerDebug, message: any) {
         const instance = this.container.lookup(message.name);
         this.objectToConsole.sendValueToConsole(instance);
       },
     };
   }
 
-  typeFromKey(key) {
-    return key.split(':').shift();
+  typeFromKey(key: string) {
+    return key.split(':').shift()!;
   }
 
-  nameFromKey(key) {
+  nameFromKey(key: string) {
     return key.split(':').pop();
   }
 
-  shouldHide(type) {
+  shouldHide(type: string) {
     return type[0] === '-' || this.TYPES_TO_SKIP.indexOf(type) !== -1;
   }
 
   instancesByType() {
     let key;
-    let instancesByType = {};
+    let instancesByType: Record<string, any> = {};
     let cache = this.container.cache;
     // Detect if InheritingDict (from Ember < 1.8)
     if (typeof cache.dict !== 'undefined' && typeof cache.eachLocal !== 'undefined') {
@@ -90,12 +91,12 @@ export default class extends DebugPort {
     return types;
   }
 
-  getInstances(type) {
+  getInstances(type: any) {
     const instances = this.instancesByType()[type];
     if (!instances) {
       return null;
     }
-    return instances.map((item) => ({
+    return instances.map((item: any) => ({
       name: this.nameFromKey(item.fullName),
       fullName: item.fullName,
       inspectable: this.objectInspector.canSend(item.instance),
