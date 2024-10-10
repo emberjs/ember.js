@@ -2,6 +2,8 @@ import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 
 export default class extends BaseObject {
   declare port: any;
+  declare portNamespace: string;
+  declare messages: Record<string, Function>;
   constructor(data: any) {
     super(data);
     if (!data) {
@@ -16,7 +18,7 @@ export default class extends BaseObject {
     this.setupOrRemovePortListeners('off');
   }
 
-  sendMessage(name: string, message: any) {
+  sendMessage(name: string, message?: any) {
     if (this.isDestroyed) return;
     this.port.send(this.messageName(name), message);
   }
@@ -33,12 +35,12 @@ export default class extends BaseObject {
    * Setup or tear down port listeners. Call on `init` and `willDestroy`
    * @param {String} onOrOff 'on' or 'off' the functions to call i.e. port.on or port.off for adding or removing listeners
    */
-  setupOrRemovePortListeners(onOrOff) {
+  setupOrRemovePortListeners(onOrOff: 'on' | 'off') {
     let port = this.port;
     let messages = this.messages;
 
     for (let name in messages) {
-      if (messages.hasOwnProperty(name)) {
+      if (Object.prototype.hasOwnProperty.call(messages, name)) {
         port[onOrOff](this.messageName(name), this, messages[name]);
       }
     }

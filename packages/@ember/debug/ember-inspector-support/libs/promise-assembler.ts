@@ -10,6 +10,15 @@ import RSVP from 'rsvp';
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 import Evented from '../utils/evented';
 
+export type PromiseUpdatedEvent = {
+  promise: PromiseModel;
+};
+
+export type PromiseChainedEvent = {
+  promise: PromiseModel;
+  child: PromiseModel;
+};
+
 class PromiseAssembler extends Evented.extend(BaseObject) {
   // RSVP lib to debug
   isStarted = false;
@@ -135,7 +144,7 @@ function fulfill(this: PromiseAssembler, event: any) {
     state: 'fulfilled',
     value: event.detail,
   });
-  this.trigger('fulfilled', { promise });
+  this.trigger('fulfilled', { promise } as PromiseUpdatedEvent);
 }
 
 function reject(this: PromiseAssembler, event: any) {
@@ -146,7 +155,7 @@ function reject(this: PromiseAssembler, event: any) {
     state: 'rejected',
     reason: event.detail,
   });
-  this.trigger('rejected', { promise });
+  this.trigger('rejected', { promise } as PromiseUpdatedEvent);
 }
 
 function chain(this: PromiseAssembler, event: any) {
@@ -161,7 +170,7 @@ function chain(this: PromiseAssembler, event: any) {
   child.parent = promise;
   children.push(child);
 
-  this.trigger('chained', { promise, child });
+  this.trigger('chained', { promise, child } as PromiseChainedEvent);
 }
 
 function create(this: PromiseAssembler, event: any) {
@@ -177,5 +186,5 @@ function create(this: PromiseAssembler, event: any) {
   if (!promise.state) {
     promise.state = 'created';
   }
-  this.trigger('created', { promise });
+  this.trigger('created', { promise } as PromiseUpdatedEvent);
 }

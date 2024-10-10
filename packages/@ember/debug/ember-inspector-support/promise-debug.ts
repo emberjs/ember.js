@@ -1,8 +1,12 @@
 import DebugPort from './debug-port';
+import type {
+  PromiseChainedEvent,
+  PromiseUpdatedEvent,
+} from '@ember/debug/ember-inspector-support/libs/promise-assembler';
 import PromiseAssembler from '@ember/debug/ember-inspector-support/libs/promise-assembler';
 import { debounce } from '@ember/runloop';
 import RSVP from 'rsvp';
-import PromiseModel from './models/promise';
+import type PromiseModel from './models/promise';
 
 export default class PromiseDebug extends DebugPort {
   private __session: any;
@@ -138,7 +142,7 @@ export default class PromiseDebug extends DebugPort {
     this.promisesUpdated(this.promiseAssembler.find());
   }
 
-  promisesUpdated(uniquePromises: PromiseModel[]) {
+  promisesUpdated(uniquePromises?: PromiseModel[]) {
     if (!uniquePromises) {
       uniquePromises = [...new Set(this.updatedPromises)];
     }
@@ -151,23 +155,23 @@ export default class PromiseDebug extends DebugPort {
     this.updatedPromises.length = 0;
   }
 
-  promiseUpdated(event) {
+  promiseUpdated(event: PromiseUpdatedEvent) {
     this.updatedPromises.push(event.promise);
-    debounce(this, 'promisesUpdated', this.delay);
+    debounce(this, this.promisesUpdated as any, this.delay);
   }
 
-  promiseChained(event) {
+  promiseChained(event: PromiseChainedEvent) {
     this.updatedPromises.push(event.promise);
     this.updatedPromises.push(event.child);
-    debounce(this, 'promisesUpdated', this.delay);
+    debounce(this, this.promisesUpdated as any, this.delay);
   }
 
-  serializeArray(promises) {
+  serializeArray(promises: PromiseModel[]) {
     return promises.map((item) => this.serialize(item));
   }
 
-  serialize(promise) {
-    let serialized = {};
+  serialize(promise: PromiseModel) {
+    let serialized: any = {};
     serialized.guid = promise.guid;
     serialized.state = promise.state;
     serialized.label = promise.label;
@@ -187,7 +191,7 @@ export default class PromiseDebug extends DebugPort {
     return serialized;
   }
 
-  promiseIds(promises) {
+  promiseIds(promises: PromiseModel[]) {
     return promises.map((promise) => promise.guid);
   }
 
@@ -197,11 +201,12 @@ export default class PromiseDebug extends DebugPort {
    * @param {string} key The key for the property on the promise
    * @return {*|{inspect: (string|*), type: string}|{computed: boolean, inspect: string, type: string}|{inspect: string, type: string}}
    */
-  inspectValue(promise, key) {
+  inspectValue(promise: PromiseModel, key: keyof PromiseModel) {
     let objectInspector = this.objectInspector;
     let inspected = objectInspector.inspectValue(promise, key);
 
     if (inspected.type === 'type-ember-object' || inspected.type === 'type-array') {
+      // eslint-disable-next-line no-console
       console.count('inspectValue');
 
       inspected.objectId = objectInspector.retainObject(promise[key]);

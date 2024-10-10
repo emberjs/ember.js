@@ -2,7 +2,7 @@ export default class BaseObject {
   namespace: any;
   isDestroyed = false;
   isDestroying = false;
-  constructor(data: any) {
+  constructor(data?: any) {
     Object.assign(this, data || {});
     this.init();
   }

@@ -5,51 +5,67 @@
 **/
 import { guidFor } from '@ember/object/internals';
 
-function get(obj, key) {
+function get(obj: any, key: string) {
   return obj.get ? obj.get(key) : obj[key];
 }
 
-const ProfileNode = function (start, payload, parent, now) {
-  let name;
-  this.start = start;
-  this.timestamp = now || Date.now();
+export type Payload = {
+  view?: any;
+  template: any;
+  object?: any;
+  exception?: any;
+};
 
-  if (payload) {
-    if (payload.template) {
-      name = payload.template;
-    } else if (payload.view) {
-      const view = payload.view;
-      name = get(view, 'instrumentDisplay') || get(view, '_debugContainerKey');
-      if (name) {
-        name = name.replace(/^view:/, '');
+class ProfileNode {
+  isHighlightEnabled = true;
+  time!: number;
+  start: number;
+  timestamp: any;
+  viewGuid: string | undefined;
+  name: string;
+  parent: ProfileNode | undefined;
+  children: ProfileNode[];
+  duration: number | undefined;
+  constructor(start: number, payload: Payload, parent?: ProfileNode, now?: number) {
+    let name;
+    this.start = start;
+    this.timestamp = now || Date.now();
+
+    if (payload) {
+      if (payload.template) {
+        name = payload.template;
+      } else if (payload.view) {
+        const view = payload.view;
+        name = get(view, 'instrumentDisplay') || get(view, '_debugContainerKey');
+        if (name) {
+          name = name.replace(/^view:/, '');
+        }
+        this.viewGuid = guidFor(view);
       }
-      this.viewGuid = guidFor(view);
-    }
 
-    if (!name && payload.object) {
-      name = payload.object
-        .toString()
-        .replace(/:?:ember\d+>$/, '')
-        .replace(/^</, '');
-      if (!this.viewGuid) {
-        const match = name.match(/:(ember\d+)>$/);
-        if (match && match.length > 1) {
-          this.viewGuid = match[1];
+      if (!name && payload.object) {
+        name = payload.object
+          .toString()
+          .replace(/:?:ember\d+>$/, '')
+          .replace(/^</, '');
+        if (!this.viewGuid) {
+          const match = name.match(/:(ember\d+)>$/);
+          if (match && match.length > 1) {
+            this.viewGuid = match[1];
+          }
         }
       }
     }
+
+    this.name = name || 'Unknown view';
+
+    if (parent) {
+      this.parent = parent;
+    }
+    this.children = [];
   }
 
-  this.name = name || 'Unknown view';
-
-  if (parent) {
-    this.parent = parent;
-  }
-  this.children = [];
-};
-
-ProfileNode.prototype = {
-  finish(timestamp) {
+  finish(timestamp: number) {
     this.time = timestamp - this.start;
     this.calcDuration();
 
@@ -57,13 +73,13 @@ ProfileNode.prototype = {
     // to avoid a graph cycle when serializing:
     if (this.parent) {
       this.parent.children.push(this);
-      this.parent = null;
+      this.parent = undefined;
     }
-  },
+  }
 
   calcDuration() {
-    this.duration = Math.round(this.time * 100) / 100;
-  },
-};
+    this.duration = Math.round(this.time! * 100) / 100;
+  }
+}
 
 export default ProfileNode;
