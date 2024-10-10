@@ -31,9 +31,7 @@ export default class extends DebugPort {
         deprecation.sources.forEach((source) => {
           let stack = source.stackStr;
           stack = stack.split('\n');
-          stack.unshift(
-            `Ember Inspector (Deprecation Trace): ${deprecation.message || ''}`
-          );
+          stack.unshift(`Ember Inspector (Deprecation Trace): ${deprecation.message || ''}`);
           this.adapter.log(stack.join('\n'));
         });
       },
@@ -54,8 +52,7 @@ export default class extends DebugPort {
       },
 
       setOptions({ options }) {
-        this.options.toggleDeprecationWorkflow =
-          options.toggleDeprecationWorkflow;
+        this.options.toggleDeprecationWorkflow = options.toggleDeprecationWorkflow;
       },
     };
   }
@@ -89,19 +86,14 @@ export default class extends DebugPort {
    * Checks if ember-cli and looks for source maps.
    */
   fetchSourceMap(stackStr) {
-    if (
-      this.emberCliConfig &&
-      this.emberCliConfig.environment === 'development'
-    ) {
+    if (this.emberCliConfig && this.emberCliConfig.environment === 'development') {
       return this.sourceMap.map(stackStr).then(
         (mapped) => {
           if (mapped && mapped.length > 0) {
             let source = mapped.find(
               (item) =>
                 item.source &&
-                !!item.source.match(
-                  new RegExp(this.emberCliConfig.modulePrefix)
-                )
+                Boolean(item.source.match(new RegExp(this.emberCliConfig.modulePrefix)))
             );
 
             if (source) {
@@ -146,9 +138,7 @@ export default class extends DebugPort {
           obj.sources = [];
           grouped[id] = obj;
         }
-        let found = obj.sources.find(
-          (s) => s.stackStr === deprecation.stackStr
-        );
+        let found = obj.sources.find((s) => s.stackStr === deprecation.stackStr);
         if (!found) {
           let stackStr = deprecation.stackStr;
           promise = this.fetchSourceMap(stackStr).then(

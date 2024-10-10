@@ -47,7 +47,7 @@ class EmberDebug extends BaseObject {
   }
 
   // Using object shorthand syntax here is somehow having strange side effects.
-  // eslint-disable-next-line object-shorthand
+
   Port = Port;
   Adapter = BasicAdapter;
 

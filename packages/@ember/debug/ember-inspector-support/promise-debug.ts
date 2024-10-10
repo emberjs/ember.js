@@ -67,9 +67,7 @@ export default class extends DebugPort {
         let stack = promise.stack;
         if (stack) {
           stack = stack.split('\n');
-          stack.splice(0, 2, [
-            `Ember Inspector (Promise Trace): ${promise.label || ''}`,
-          ]);
+          stack.splice(0, 2, [`Ember Inspector (Promise Trace): ${promise.label || ''}`]);
           this.adapter.log(stack.join('\n'));
         }
       },
@@ -87,7 +85,7 @@ export default class extends DebugPort {
   }
 
   get instrumentWithStack() {
-    return !!this.session.getItem('promise:stack');
+    return Boolean(this.session.getItem('promise:stack'));
   }
 
   set instrumentWithStack(value) {
@@ -133,9 +131,7 @@ export default class extends DebugPort {
       uniquePromises = [...new Set(this.updatedPromises)];
     }
     // Remove inspector-created promises
-    uniquePromises = uniquePromises.filter(
-      (promise) => promise.label !== 'ember-inspector'
-    );
+    uniquePromises = uniquePromises.filter((promise) => promise.label !== 'ember-inspector');
     const serialized = this.serializeArray(uniquePromises);
     this.sendMessage('promisesUpdated', {
       promises: serialized,
@@ -175,7 +171,7 @@ export default class extends DebugPort {
     if (promise.settledAt) {
       serialized.settledAt = promise.settledAt?.getTime();
     }
-    serialized.hasStack = !!promise.stack;
+    serialized.hasStack = Boolean(promise.stack);
     return serialized;
   }
 
@@ -193,10 +189,7 @@ export default class extends DebugPort {
     let objectInspector = this.objectInspector;
     let inspected = objectInspector.inspectValue(promise, key);
 
-    if (
-      inspected.type === 'type-ember-object' ||
-      inspected.type === 'type-array'
-    ) {
+    if (inspected.type === 'type-ember-object' || inspected.type === 'type-array') {
       console.count('inspectValue');
 
       inspected.objectId = objectInspector.retainObject(promise[key]);

@@ -51,15 +51,11 @@ if (!Ember) {
   Component = emberSafeRequire('@ember/component')?.default;
   Observable = emberSafeRequire('@ember/object/observable')?.default;
   Evented = emberSafeRequire('@ember/object/evented')?.default;
-  PromiseProxyMixin = emberSafeRequire(
-    '@ember/object/promise-proxy-mixin'
-  )?.default;
+  PromiseProxyMixin = emberSafeRequire('@ember/object/promise-proxy-mixin')?.default;
   Service = emberSafeRequire('@ember/service')?.default;
   EmberObject = emberSafeRequire('@ember/object')?.default;
   VERSION = emberSafeRequire('ember/version')?.default;
-  ComputedProperty = emberSafeRequire(
-    '@ember/-internals/metal'
-  )?.ComputedProperty;
+  ComputedProperty = emberSafeRequire('@ember/-internals/metal')?.ComputedProperty;
   meta = emberSafeRequire('@ember/-internals/meta')?.meta;
   set = emberSafeRequire('@ember/object')?.set;
   get = emberSafeRequire('@ember/object')?.get;

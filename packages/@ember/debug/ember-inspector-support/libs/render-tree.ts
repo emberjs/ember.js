@@ -1,6 +1,9 @@
 import captureRenderTree from './capture-render-tree';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
-import { EmberLoader, emberSafeRequire } from '@ember/debug/ember-inspector-support/utils/ember/loader';
+import {
+  EmberLoader,
+  emberSafeRequire,
+} from '@ember/debug/ember-inspector-support/utils/ember/loader';
 import { inspect } from '@ember/debug/ember-inspector-support/utils/type-check';
 import { isInVersionSpecifier } from '@ember/debug/ember-inspector-support/utils/version';
 import { VERSION } from '@ember/debug/ember-inspector-support/utils/ember';
@@ -18,9 +21,7 @@ class InElementSupportProvider {
     }
 
     try {
-      requireModule(
-        '@glimmer/manager'
-      ).CustomModifierManager.prototype.getDebugInstance = (args) =>
+      requireModule('@glimmer/manager').CustomModifierManager.prototype.getDebugInstance = (args) =>
         args.modifier || args.delegate;
     } catch (e) {
       // nope
@@ -52,12 +53,8 @@ class InElementSupportProvider {
     const componentStack = [];
 
     const enableModifierSupport =
-      isInVersionSpecifier('>3.28.0', VERSION) &&
-      !isInVersionSpecifier('>5.9.0', VERSION);
-    const hasModifierAndInElementSupport = isInVersionSpecifier(
-      '>5.9.0',
-      VERSION
-    );
+      isInVersionSpecifier('>3.28.0', VERSION) && !isInVersionSpecifier('>5.9.0', VERSION);
+    const hasModifierAndInElementSupport = isInVersionSpecifier('>5.9.0', VERSION);
 
     function createRef(value) {
       if (self.reference.createUnboundRef) {
@@ -141,13 +138,10 @@ class InElementSupportProvider {
           }
           for (const modifier of modifiers) {
             const state = {};
-            const modifierState =
-              modifier.state?.instance || modifier.state || modifier[1];
+            const modifierState = modifier.state?.instance || modifier.state || modifier[1];
             const instance = modifierState?.instance || modifierState?.delegate;
             let name =
-              modifier.definition?.resolvedName ||
-              modifierState?.debugName ||
-              instance?.name;
+              modifier.definition?.resolvedName || modifierState?.debugName || instance?.name;
             if (!name) {
               try {
                 name = modifier.manager?.getDebugName?.();
@@ -161,9 +155,7 @@ class InElementSupportProvider {
               named: {},
             };
             const positional =
-              modifierState?.args?.positional?.references ||
-              modifierState?.args?.positional ||
-              [];
+              modifierState?.args?.positional?.references || modifierState?.args?.positional || [];
             for (const value of positional) {
               if (value && value[self.reference.REFERENCE]) {
                 args.positional.push(value);
@@ -210,11 +202,7 @@ class InElementSupportProvider {
     const pushRemoteElement = NewElementBuilder.prototype.pushRemoteElement;
     const popRemoteElement = NewElementBuilder.prototype.popRemoteElement;
     if (!hasModifierAndInElementSupport) {
-      NewElementBuilder.prototype.pushRemoteElement = function (
-        element,
-        guid,
-        insertBefore
-      ) {
+      NewElementBuilder.prototype.pushRemoteElement = function (element, guid, insertBefore) {
         const ref = createRef(element);
         const capturedArgs = {
           positional: [ref],
@@ -283,17 +271,12 @@ class InElementSupportProvider {
       return;
     }
     Object.assign(this.debugRenderTree, this.debugRenderTreeFunctions);
-    Object.assign(
-      this.NewElementBuilder.prototype,
-      this.NewElementBuilderFunctions
-    );
+    Object.assign(this.NewElementBuilder.prototype, this.NewElementBuilderFunctions);
     this.NewElementBuilderFunctions = null;
   }
 
   require(req) {
-    return requireModule.has(req)
-      ? requireModule(req)
-      : EmberLoader.require(req);
+    return requireModule.has(req) ? requireModule(req) : EmberLoader.require(req);
   }
 }
 
@@ -405,15 +388,12 @@ export default class RenderTree {
       hints.push(n);
     }
 
-    hints = hints.filter((h) => !!h);
+    hints = hints.filter((h) => Boolean(h));
     let renderNode;
 
     const remoteRoots = this.inElementSupport?.remoteRoots || [];
 
-    renderNode = this._matchRenderNodes(
-      [...hints, ...remoteRoots, ...this.tree],
-      node
-    );
+    renderNode = this._matchRenderNodes([...hints, ...remoteRoots, ...this.tree], node);
 
     if (renderNode) {
       return this._serializeRenderNode(renderNode);
@@ -524,10 +504,7 @@ export default class RenderTree {
     }
 
     // We cannot inspect text nodes
-    let target = this._findNode(node.bounds, [
-      Node.ELEMENT_NODE,
-      Node.COMMENT_NODE,
-    ]);
+    let target = this._findNode(node.bounds, [Node.ELEMENT_NODE, Node.COMMENT_NODE]);
 
     this.inspectNode(target);
   }
@@ -646,8 +623,7 @@ export default class RenderTree {
           if (
             child.bounds.parentElement === node.instance ||
             child.meta?.parentElement === node.instance ||
-            (child.type === 'modifier' &&
-              child.bounds.firstNode === node.instance)
+            (child.type === 'modifier' && child.bounds.firstNode === node.instance)
           ) {
             node.children.push(child);
           }
@@ -661,19 +637,10 @@ export default class RenderTree {
       }
 
       if (node.type === 'component' && !node.instance) {
-        if (
-          node.name === '(unknown template-only component)' &&
-          node.template?.endsWith('.hbs')
-        ) {
-          node.name = node.template
-            .split(/\\|\//)
-            .slice(-1)[0]
-            .slice(0, -'.hbs'.length);
+        if (node.name === '(unknown template-only component)' && node.template?.endsWith('.hbs')) {
+          node.name = node.template.split(/\\|\//).slice(-1)[0].slice(0, -'.hbs'.length);
         }
-        node.instance = this._createSimpleInstance(
-          'TemplateOnlyComponent',
-          node.args.named
-        );
+        node.instance = this._createSimpleInstance('TemplateOnlyComponent', node.args.named);
       }
 
       if (node.type === 'modifier') {
@@ -681,8 +648,7 @@ export default class RenderTree {
           ?.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())
           .replace(/^-/, '')
           .replace('-modifier', '');
-        node.instance =
-          node.instance || this._createSimpleInstance(node.name, node.args);
+        node.instance = node.instance || this._createSimpleInstance(node.name, node.args);
         node.instance.toString = () => node.name;
         if (parentNode.instance !== node.bounds.firstNode) {
           return this._insertHtmlElementNode(node, parentNode);
@@ -803,8 +769,7 @@ export default class RenderTree {
     while (candidates.length > 0) {
       let candidate = candidates.shift();
       let range = this.getRange(candidate.id);
-      const isAllowed =
-        candidate.type !== 'modifier' && candidate.type !== 'html-element';
+      const isAllowed = candidate.type !== 'modifier' && candidate.type !== 'html-element';
 
       if (!isAllowed) {
         candidates.push(...candidate.children);
@@ -813,9 +778,7 @@ export default class RenderTree {
 
       if (isAllowed && range && range.isPointInRange(dom, 0)) {
         // We may be able to find a more exact match in one of the children.
-        return (
-          this._matchRenderNodes(candidate.children, dom, false) || candidate
-        );
+        return this._matchRenderNodes(candidate.children, dom, false) || candidate;
       } else if (!range || deep) {
         // There are some edge cases of non-containing parent nodes (e.g. "worm
         // hole") so we can't rule out the entire subtree just because the parent
@@ -850,8 +813,7 @@ export default class RenderTree {
     // Find the first parent render node with a different enclosing DOM element.
     // Usually, this is just the first parent render node, but there are cases where
     // multiple render nodes share the same bounds (e.g. outlet -> route template).
-    let parentElement =
-      node?.meta?.parentElement || node?.bounds?.parentElement;
+    let parentElement = node?.meta?.parentElement || node?.bounds?.parentElement;
 
     while (node && parentElement) {
       let parentNode = this._getParent(node.id);
@@ -859,10 +821,7 @@ export default class RenderTree {
       if (parentNode) {
         node = parentNode;
 
-        if (
-          parentElement ===
-          (node?.meta?.parentElement || node?.bounds?.parentElement)
-        ) {
+        if (parentElement === (node?.meta?.parentElement || node?.bounds?.parentElement)) {
           continue;
         }
       }

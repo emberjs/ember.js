@@ -17,10 +17,7 @@ export default class extends BaseObject {
   }
 
   get applicationName() {
-    return (
-      this.namespace?._application?.name ||
-      this.namespace?._application?.modulePrefix
-    );
+    return this.namespace?._application?.name || this.namespace?._application?.modulePrefix;
   }
 
   /**

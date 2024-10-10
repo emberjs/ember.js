@@ -61,10 +61,7 @@ export default class extends DebugPort {
     let instancesByType = {};
     let cache = this.container.cache;
     // Detect if InheritingDict (from Ember < 1.8)
-    if (
-      typeof cache.dict !== 'undefined' &&
-      typeof cache.eachLocal !== 'undefined'
-    ) {
+    if (typeof cache.dict !== 'undefined' && typeof cache.eachLocal !== 'undefined') {
       cache = cache.dict;
     }
     for (key in cache) {

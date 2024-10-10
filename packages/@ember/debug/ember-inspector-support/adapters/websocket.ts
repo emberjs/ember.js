@@ -1,6 +1,6 @@
 import BasicAdapter from './basic';
 import { onReady } from '@ember/debug/ember-inspector-support/utils/on-ready';
-import { run } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { run } from '@ember/runloop';
 
 export default class extends BasicAdapter {
   sendMessage(options = {}) {
