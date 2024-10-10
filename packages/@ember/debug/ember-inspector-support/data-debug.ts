@@ -2,6 +2,9 @@ import DebugPort from './debug-port';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
 
 export default class extends DebugPort {
+  portNamespace!: string;
+  sentTypes!: Record<string, any>;
+  sentRecords!: Record<string, any>;
   init() {
     super.init();
     this.sentTypes = {};
@@ -11,7 +14,6 @@ export default class extends DebugPort {
   releaseTypesMethod = null;
   releaseRecordsMethod = null;
 
-  /* eslint-disable ember/no-side-effects */
   get adapter() {
     const owner = this.namespace?.owner;
 
@@ -25,9 +27,8 @@ export default class extends DebugPort {
 
     return null;
   }
-  /* eslint-enable ember/no-side-effects */
 
-  _resolve(name) {
+  _resolve(name: string) {
     const owner = this.namespace?.owner;
 
     return owner.resolveRegistration(name);

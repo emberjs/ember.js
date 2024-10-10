@@ -5,20 +5,27 @@
  and Yapp Labs (@yapplabs).
  */
 
-import Promise from '@ember/debug/ember-inspector-support/models/promise';
-import RSVP from '@ember/debug/ember-inspector-support/utils/rsvp';
+import PromiseModel from '@ember/debug/ember-inspector-support/models/promise';
+import RSVP from 'rsvp';
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
-import Evented from '@ember/debug/ember-inspector-support/utils/evented';
+import Evented from '../utils/evented';
 
-class PromiseAssembler extends BaseObject {
+class PromiseAssembler extends Evented.extend(BaseObject) {
   // RSVP lib to debug
   isStarted = false;
+  RSVP: any;
+  all!: any[];
+  promiseIndex!: Record<string, number>;
+  promiseChained: ((e: any) => void) | null = null;
+  promiseRejected: ((e: any) => void) | null = null;
+  promiseFulfilled: ((e: any) => void) | null = null;
+  promiseCreated: ((e: any) => void) | null = null;
 
   static {
     this.prototype.RSVP = RSVP;
   }
 
-  constructor(data) {
+  constructor(data?: any) {
     super(data);
     Evented.applyTo(this);
   }
@@ -32,16 +39,16 @@ class PromiseAssembler extends BaseObject {
   start() {
     this.RSVP.configure('instrument', true);
 
-    this.promiseChained = (e) => {
+    this.promiseChained = (e: any) => {
       chain.call(this, e);
     };
-    this.promiseRejected = (e) => {
+    this.promiseRejected = (e: any) => {
       reject.call(this, e);
     };
-    this.promiseFulfilled = (e) => {
+    this.promiseFulfilled = (e: any) => {
       fulfill.call(this, e);
     };
-    this.promiseCreated = (e) => {
+    this.promiseCreated = (e: any) => {
       create.bind(this)(e);
     };
 
@@ -80,8 +87,8 @@ class PromiseAssembler extends BaseObject {
     super.willDestroy();
   }
 
-  createPromise(props) {
-    let promise = new Promise(props);
+  createPromise(props: any) {
+    let promise = new PromiseModel(props);
     let index = this.all.length;
 
     this.all.push(promise);
@@ -89,7 +96,7 @@ class PromiseAssembler extends BaseObject {
     return promise;
   }
 
-  find(guid) {
+  find(guid?: string) {
     if (guid) {
       const index = this.promiseIndex[guid];
       if (index !== undefined) {
@@ -100,11 +107,11 @@ class PromiseAssembler extends BaseObject {
     }
   }
 
-  findOrCreate(guid) {
+  findOrCreate(guid: string) {
     return this.find(guid) || this.createPromise({ guid });
   }
 
-  updateOrCreate(guid, properties) {
+  updateOrCreate(guid: string, properties: any) {
     let entry = this.find(guid);
     if (entry) {
       Object.assign(entry, properties);
@@ -120,7 +127,7 @@ class PromiseAssembler extends BaseObject {
 
 export default PromiseAssembler;
 
-function fulfill(event) {
+function fulfill(this: PromiseAssembler, event: any) {
   const guid = event.guid;
   const promise = this.updateOrCreate(guid, {
     label: event.label,
@@ -131,7 +138,7 @@ function fulfill(event) {
   this.trigger('fulfilled', { promise });
 }
 
-function reject(event) {
+function reject(this: PromiseAssembler, event: any) {
   const guid = event.guid;
   const promise = this.updateOrCreate(guid, {
     label: event.label,
@@ -142,7 +149,7 @@ function reject(event) {
   this.trigger('rejected', { promise });
 }
 
-function chain(event) {
+function chain(this: PromiseAssembler, event: any) {
   let guid = event.guid;
   let promise = this.updateOrCreate(guid, {
     label: event.label,
@@ -157,7 +164,7 @@ function chain(event) {
   this.trigger('chained', { promise, child });
 }
 
-function create(event) {
+function create(this: PromiseAssembler, event: any) {
   const guid = event.guid;
 
   const promise = this.updateOrCreate(guid, {

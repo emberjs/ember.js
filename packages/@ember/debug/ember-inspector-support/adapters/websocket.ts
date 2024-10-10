@@ -8,11 +8,11 @@ export default class extends BasicAdapter {
   }
 
   get socket() {
-    return window.EMBER_INSPECTOR_CONFIG.remoteDebugSocket;
+    return (window as any).EMBER_INSPECTOR_CONFIG.remoteDebugSocket;
   }
 
   _listen() {
-    this.socket.on('emberInspectorMessage', (message) => {
+    this.socket.on('emberInspectorMessage', (message: any) => {
       // We should generally not be run-wrapping here. Starting a runloop in
       // ember-debug will cause the inspected app to revalidate/rerender. We
       // are generally not intending to cause changes to the rendered output
@@ -44,12 +44,12 @@ export default class extends BasicAdapter {
         if (this.isDestroyed) {
           reject();
         }
-        const EMBER_INSPECTOR_CONFIG = window.EMBER_INSPECTOR_CONFIG;
+        const EMBER_INSPECTOR_CONFIG = (window as any).EMBER_INSPECTOR_CONFIG;
         if (
           typeof EMBER_INSPECTOR_CONFIG === 'object' &&
           EMBER_INSPECTOR_CONFIG.remoteDebugSocket
         ) {
-          resolve();
+          resolve(true);
         }
       });
     }).then(() => {

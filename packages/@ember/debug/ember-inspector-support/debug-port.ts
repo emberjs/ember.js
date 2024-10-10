@@ -1,9 +1,8 @@
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 
 export default class extends BaseObject {
-  port = null;
-
-  constructor(data) {
+  declare port: any;
+  constructor(data: any) {
     super(data);
     if (!data) {
       throw new Error('need to pass data');
@@ -17,12 +16,12 @@ export default class extends BaseObject {
     this.setupOrRemovePortListeners('off');
   }
 
-  sendMessage(name, message) {
+  sendMessage(name: string, message: any) {
     if (this.isDestroyed) return;
     this.port.send(this.messageName(name), message);
   }
 
-  messageName(name) {
+  messageName(name: string) {
     let messageName = name;
     if (this.portNamespace) {
       messageName = `${this.portNamespace}:${messageName}`;

@@ -1,39 +1,44 @@
 const ListenersSymbol = Symbol('listeners');
 const EventedSymbol = Symbol('evented');
 
-export default class Evented {
-  [ListenersSymbol] = {};
+type ClassConstructor<T> = new (...args: any[]) => T;
 
-  on(name, target, method) {
+export default class Evented {
+  [ListenersSymbol]: Record<
+    string,
+    { target: any; method: string | Function; once?: boolean | undefined }[]
+  > = {};
+
+  on(name: string, target: any, method: string | Function) {
     this[ListenersSymbol][name] = this[ListenersSymbol][name] || [];
-    this[ListenersSymbol][name].push({
+    this[ListenersSymbol][name]!.push({
       target: (method && target) || null,
       method: (target && method) || target,
     });
     return this;
   }
 
-  one(name, target, method) {
+  one(name: string, target: any, method: string | Function) {
     this.on(name, target, method);
-    this[ListenersSymbol][name].slice(-1)[0].once = true;
+    this[ListenersSymbol][name]!.slice(-1)[0]!.once = true;
     return this;
   }
 
-  trigger(name, ...args) {
+  trigger(name: string, ...args: any) {
     (this[ListenersSymbol][name] || []).forEach((l) => {
       let m = l.method;
       if (typeof l.method !== 'function') {
         m = l.target[l.method];
       }
-      m.call(l.target, ...args);
+      (m as Function).call(l.target, ...args);
       if (l.once) {
-        const idx = this[ListenersSymbol][name].indexOf(l);
-        this[ListenersSymbol][name].splice(idx, 1);
+        const idx = this[ListenersSymbol][name]!.indexOf(l);
+        this[ListenersSymbol][name]!.splice(idx, 1);
       }
     });
   }
 
-  off(name, target, method) {
+  off(name: string, target: any, method: string | Function) {
     if (!method) {
       method = target;
       target = null;
@@ -46,12 +51,23 @@ export default class Evented {
     return this;
   }
 
-  has(name) {
+  has(name: string) {
     const listeners = this[ListenersSymbol][name] || [];
     return listeners.length > 0;
   }
 
-  static applyTo(instance) {
+  static extend<Statics, Instance, M>(
+    this: Statics & ClassConstructor<Instance>,
+    klass: M
+  ): Readonly<Statics> & ClassConstructor<Instance> & M extends infer T ? T & Evented : unknown;
+
+  static extend(klass: any) {
+    const k = class extends klass {};
+    Evented.applyTo(k);
+    return k;
+  }
+
+  static applyTo(instance: any) {
     const e = new Evented();
     instance[EventedSymbol] = e;
     instance.one = e.one.bind(e);

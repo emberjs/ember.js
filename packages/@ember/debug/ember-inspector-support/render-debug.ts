@@ -1,8 +1,8 @@
 import DebugPort from './debug-port';
 import ProfileManager from './models/profile-manager';
 
-import { subscribe } from '@ember/debug/ember-inspector-support/utils/ember/instrumentation';
-import { _backburner } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { subscribe } from '@ember/runloopinstrumentation';
+import { _backburner } from '@ember/runloop';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 
 // Initial setup, that has to occur before the EmberObject init for some reason

@@ -7,21 +7,10 @@ import {
   inspect,
 } from '@ember/debug/ember-inspector-support/utils/type-check';
 import { compareVersion } from '@ember/debug/ember-inspector-support/utils/version';
-import {
-  EmberObject,
-  meta as emberMeta,
-  VERSION,
-  CoreObject,
-  ObjectProxy,
-  ArrayProxy,
-  Service,
-  Component,
-} from '@ember/debug/ember-inspector-support/utils/ember';
 import { cacheFor, guidFor } from '@ember/object/internals';
 import { _backburner, join } from '@ember/runloop';
 import emberNames from './utils/ember-object-names';
 import getObjectName from './utils/get-object-name';
-import { EmberLoader } from '@ember/loader';
 
 const GlimmerComponent = (() => {
   try {
