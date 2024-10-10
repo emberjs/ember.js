@@ -3,9 +3,7 @@ import emberNames from './ember-object-names';
 export default function getObjectName(object) {
   let name = '';
   let className =
-    (object.constructor &&
-      (emberNames.get(object.constructor) || object.constructor.name)) ||
-    '';
+    (object.constructor && (emberNames.get(object.constructor) || object.constructor.name)) || '';
 
   if (object instanceof Function) {
     return 'Function ' + object.name;

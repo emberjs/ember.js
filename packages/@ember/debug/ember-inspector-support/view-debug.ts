@@ -57,14 +57,8 @@ export default class extends DebugPort {
 
     let renderTree = (this.renderTree = new RenderTree({
       owner: this.getOwner(),
-      retainObject: bound(
-        this.objectInspector,
-        this.objectInspector.retainObject
-      ),
-      releaseObject: bound(
-        this.objectInspector,
-        this.objectInspector.releaseObject
-      ),
+      retainObject: bound(this.objectInspector, this.objectInspector.retainObject),
+      releaseObject: bound(this.objectInspector, this.objectInspector.releaseObject),
       inspectNode: bound(this, this.inspectNode),
     }));
 

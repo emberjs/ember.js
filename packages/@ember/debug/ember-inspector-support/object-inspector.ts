@@ -1,4 +1,3 @@
-/* eslint-disable ember/no-private-routing-service */
 import DebugPort from './debug-port';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 import {
@@ -18,11 +17,11 @@ import {
   Service,
   Component,
 } from '@ember/debug/ember-inspector-support/utils/ember';
-import { cacheFor, guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
-import { _backburner, join } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { cacheFor, guidFor } from '@ember/object/internals';
+import { _backburner, join } from '@ember/runloop';
 import emberNames from './utils/ember-object-names';
 import getObjectName from './utils/get-object-name';
-import { EmberLoader } from '@ember/debug/ember-inspector-support/utils/ember/loader';
+import { EmberLoader } from '@ember/loader';
 
 const GlimmerComponent = (() => {
   try {
@@ -47,11 +46,7 @@ try {
   GlimmerValidator.tagFor = function (...args) {
     const tag = tagFor.call(this, ...args);
     const [obj, key] = args;
-    if (
-      (!tag._propertyKey || !tag._object) &&
-      typeof obj === 'object' &&
-      typeof key === 'string'
-    ) {
+    if ((!tag._propertyKey || !tag._object) && typeof obj === 'object' && typeof key === 'string') {
       tag._propertyKey = key;
       tag._object = obj;
     }
@@ -139,9 +134,7 @@ function inspectValue(object, key, computedValue) {
 function isMandatorySetter(descriptor) {
   if (
     descriptor.set &&
-    Function.prototype.toString
-      .call(descriptor.set)
-      .includes('You attempted to update')
+    Function.prototype.toString.call(descriptor.set).includes('You attempted to update')
   ) {
     return true;
   }
@@ -177,9 +170,7 @@ function getTrackedDependencies(object, property, tagInfo) {
   const cpDesc = emberMeta(object).peekDescriptors(property);
   const dependentKeys = [];
   if (cpDesc) {
-    dependentKeys.push(
-      ...(cpDesc._dependentKeys || []).map((k) => ({ name: k }))
-    );
+    dependentKeys.push(...(cpDesc._dependentKeys || []).map((k) => ({ name: k })));
   }
   if (HAS_GLIMMER_TRACKING) {
     const ownTag = tagForProperty(object, property);
@@ -187,8 +178,7 @@ function getTrackedDependencies(object, property, tagInfo) {
     const mapping = {};
     let maxRevision = tagValue(tag);
     tags.forEach((t) => {
-      const p =
-        (t._object ? getObjectName(t._object) + '.' : '') + t._propertyKey;
+      const p = (t._object ? getObjectName(t._object) + '.' : '') + t._propertyKey;
       const [objName, prop] = p.split('.');
       mapping[objName] = mapping[objName] || new Set();
       const value = tagValue(t);
@@ -197,8 +187,7 @@ function getTrackedDependencies(object, property, tagInfo) {
       }
     });
 
-    const hasChange =
-      (tagInfo.revision && maxRevision !== tagInfo.revision) || false;
+    const hasChange = (tagInfo.revision && maxRevision !== tagInfo.revision) || false;
 
     const names = new Set();
 
@@ -273,8 +262,7 @@ export default class extends DebugPort {
             let changed = false;
             const values = (this.objectPropertyValues[objectId] =
               this.objectPropertyValues[objectId] || {});
-            const tracked = (this.trackedTags[objectId] =
-              this.trackedTags[objectId] || {});
+            const tracked = (this.trackedTags[objectId] = this.trackedTags[objectId] || {});
 
             const desc = Object.getOwnPropertyDescriptor(object, item.name);
             const isSetter = desc && isMandatorySetter(desc);
@@ -306,11 +294,7 @@ export default class extends DebugPort {
               value.isCalculated = true;
               let dependentKeys = null;
               if (tracked[item.name]) {
-                dependentKeys = getTrackedDependencies(
-                  object,
-                  item.name,
-                  tracked[item.name]
-                );
+                dependentKeys = getTrackedDependencies(object, item.name, tracked[item.name]);
                 tracked[item.name].revision = tagValue(tracked[item.name].tag);
               }
               this.sendMessage('updateProperty', {
@@ -367,11 +351,7 @@ export default class extends DebugPort {
       },
       calculate(message) {
         let value;
-        value = this.valueForObjectProperty(
-          message.objectId,
-          message.property,
-          message.mixinIndex
-        );
+        value = this.valueForObjectProperty(message.objectId, message.property, message.mixinIndex);
         if (value) {
           this.sendMessage('updateProperty', value);
           message.isCalculated = true;
@@ -449,10 +429,7 @@ export default class extends DebugPort {
           } else {
             stack = error;
           }
-          this.adapter.log(
-            `Object Inspector error for ${error.property}`,
-            stack
-          );
+          this.adapter.log(`Object Inspector error for ${error.property}`, stack);
         });
       },
     };
@@ -545,9 +522,7 @@ export default class extends DebugPort {
 
   sendObject(object) {
     if (!this.canSend(object)) {
-      throw new Error(
-        `Can't inspect ${object}. Only Ember objects and arrays are supported.`
-      );
+      throw new Error(`Can't inspect ${object}. Only Ember objects and arrays are supported.`);
     }
     let details = this.mixinsForObject(object);
     this.sendMessage('updateObject', {
@@ -657,11 +632,7 @@ export default class extends DebugPort {
 
     // insert ember mixins
     for (let mixin of own) {
-      let name = (
-        mixin.ownerConstructor ||
-        emberNames.get(mixin) ||
-        ''
-      ).toString();
+      let name = (mixin.ownerConstructor || emberNames.get(mixin) || '').toString();
 
       if (!name && typeof mixin.toString === 'function') {
         try {
@@ -695,19 +666,11 @@ export default class extends DebugPort {
   }
 
   mixinsForObject(object) {
-    if (
-      object instanceof ObjectProxy &&
-      object.content &&
-      !object._showProxyDetails
-    ) {
+    if (object instanceof ObjectProxy && object.content && !object._showProxyDetails) {
       object = object.content;
     }
 
-    if (
-      object instanceof ArrayProxy &&
-      object.content &&
-      !object._showProxyDetails
-    ) {
+    if (object instanceof ArrayProxy && object.content && !object._showProxyDetails) {
       object = object.slice(0, 101);
     }
 
@@ -738,15 +701,8 @@ export default class extends DebugPort {
     let objectId = this.retainObject(object);
 
     let errorsForObject = (this._errorsFor[objectId] = {});
-    const tracked = (this.trackedTags[objectId] =
-      this.trackedTags[objectId] || {});
-    calculateCPs(
-      object,
-      mixinDetails,
-      errorsForObject,
-      expensiveProperties,
-      tracked
-    );
+    const tracked = (this.trackedTags[objectId] = this.trackedTags[objectId] || {});
+    calculateCPs(object, mixinDetails, errorsForObject, expensiveProperties, tracked);
 
     this.currentObject = { object, mixinDetails, objectId };
 
@@ -761,11 +717,7 @@ export default class extends DebugPort {
     if (object.isDestroying) {
       value = '<DESTROYED>';
     } else {
-      value = calculateCP(
-        object,
-        { name: property },
-        this._errorsFor[objectId]
-      );
+      value = calculateCP(object, { name: property }, this._errorsFor[objectId]);
     }
 
     if (!value || !(value instanceof CalculateCPError)) {
@@ -840,12 +792,7 @@ function ownProperties(object, ownMixins) {
           if (pDesc && props[k] && pDesc.get && pDesc.get === props[k].get) {
             delete props[k];
           }
-          if (
-            pDesc &&
-            props[k] &&
-            'value' in pDesc &&
-            pDesc.value === props[k].value
-          ) {
+          if (pDesc && props[k] && 'value' in pDesc && pDesc.value === props[k].value) {
             delete props[k];
           }
           if (pDesc && props[k] && pDesc._getter === props[k]._getter) {
@@ -897,24 +844,16 @@ function addProperties(properties, hash) {
     }
 
     // when mandatory setter is removed, an `undefined` value may be set
-    const desc =
-      getDescriptorFor(hash, prop) ||
-      Object.getOwnPropertyDescriptor(hash, prop);
+    const desc = getDescriptorFor(hash, prop) || Object.getOwnPropertyDescriptor(hash, prop);
     if (!desc) continue;
-    if (
-      hash[prop] === undefined &&
-      desc.value === undefined &&
-      !desc.get &&
-      !desc._getter
-    ) {
+    if (hash[prop] === undefined && desc.value === undefined && !desc.get && !desc._getter) {
       continue;
     }
 
     let options = { isMandatorySetter: isMandatorySetter(desc) };
 
     if (typeof hash[prop] === 'object' && hash[prop] !== null) {
-      options.isService =
-        !('type' in hash[prop]) && hash[prop].type === 'service';
+      options.isService = !('type' in hash[prop]) && hash[prop].type === 'service';
 
       if (!options.isService) {
         if (hash[prop].constructor) {
@@ -933,9 +872,7 @@ function addProperties(properties, hash) {
 
     if (isComputed(hash, prop)) {
       options.isComputed = true;
-      options.dependentKeys = (desc._dependentKeys || []).map((key) =>
-        key.toString()
-      );
+      options.dependentKeys = (desc._dependentKeys || []).map((key) => key.toString());
 
       if (typeof desc.get === 'function') {
         options.code = Function.prototype.toString.call(desc.get);
@@ -1080,13 +1017,7 @@ function applyMixinOverrides(mixinDetails) {
   });
 }
 
-function calculateCPs(
-  object,
-  mixinDetails,
-  errorsForObject,
-  expensiveProperties,
-  tracked
-) {
+function calculateCPs(object, mixinDetails, errorsForObject, expensiveProperties, tracked) {
   expensiveProperties = expensiveProperties || [];
   mixinDetails.forEach((mixin) => {
     mixin.properties.forEach((item) => {
@@ -1110,11 +1041,7 @@ function calculateCPs(
                 item.isTracked = true;
               }
             }
-            item.dependentKeys = getTrackedDependencies(
-              object,
-              item.name,
-              tagInfo
-            );
+            item.dependentKeys = getTrackedDependencies(object, item.name, tagInfo);
             tagInfo.revision = tagValue(tagInfo.tag);
           } else {
             value = calculateCP(object, item, errorsForObject);
@@ -1222,10 +1149,7 @@ function customizeProperties(mixinDetails, propertyInfo) {
       }
     });
     mixin.properties = newProperties;
-    if (
-      mixin.properties.length === 0 &&
-      mixin.name.toLowerCase().includes('unknown')
-    ) {
+    if (mixin.properties.length === 0 && mixin.name.toLowerCase().includes('unknown')) {
       // nothing useful for this mixin
       return;
     }

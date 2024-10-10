@@ -16,8 +16,7 @@ export default class extends DebugPort {
     const owner = this.namespace?.owner;
 
     // dataAdapter:main is deprecated
-    let adapter =
-      this._resolve('data-adapter:main') && owner.lookup('data-adapter:main');
+    let adapter = this._resolve('data-adapter:main') && owner.lookup('data-adapter:main');
     // column limit is now supported at the inspector level
     if (adapter) {
       adapter.attributeLimit = 100;
@@ -130,7 +129,7 @@ export default class extends DebugPort {
     this.prototype.portNamespace = 'data';
     this.prototype.messages = {
       checkAdapter() {
-        this.sendMessage('hasAdapter', { hasAdapter: !!this.adapter });
+        this.sendMessage('hasAdapter', { hasAdapter: Boolean(this.adapter) });
       },
 
       getModelTypes() {
@@ -181,9 +180,7 @@ export default class extends DebugPort {
       },
 
       inspectModel(message) {
-        this.objectInspector.sendObject(
-          this.sentRecords[message.objectId].object
-        );
+        this.objectInspector.sendObject(this.sentRecords[message.objectId].object);
       },
 
       getFilters() {

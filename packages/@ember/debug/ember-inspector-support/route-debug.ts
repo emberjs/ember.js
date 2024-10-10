@@ -35,10 +35,7 @@ export default class RouteDebug extends DebugPort {
   }
 
   get router() {
-    if (
-      this.namespace?.owner.isDestroyed ||
-      this.namespace?.owner.isDestroying
-    ) {
+    if (this.namespace?.owner.isDestroyed || this.namespace?.owner.isDestroying) {
       return null;
     }
     return this.namespace?.owner.lookup('router:main');
@@ -76,10 +73,7 @@ export default class RouteDebug extends DebugPort {
   }
 
   get routeTree() {
-    if (
-      this.namespace?.owner.isDestroyed ||
-      this.namespace?.owner.isDestroying
-    ) {
+    if (this.namespace?.owner.isDestroyed || this.namespace?.owner.isDestroying) {
       return null;
     }
     if (!this._cachedRouteTree && this.router) {
@@ -131,10 +125,7 @@ export default class RouteDebug extends DebugPort {
         className = className.replace(new RegExp(`^${type}:`), '');
       } else if (className) {
         // Module exists and found
-        className = className.replace(
-          new RegExp(`^/?(${prefix}|${podPrefix})/${type}s/`),
-          ''
-        );
+        className = className.replace(new RegExp(`^/?(${prefix}|${podPrefix})/${type}s/`), '');
       } else {
         // Module does not exist
         if (usePodsByDefault) {
@@ -222,8 +213,7 @@ function buildSubTree(routeTree, route) {
           function (prop) {
             return this[prop];
           };
-        controllerName =
-          get.call(routeHandler, 'controllerName') || routeHandler.routeName;
+        controllerName = get.call(routeHandler, 'controllerName') || routeHandler.routeName;
         controllerFactory = owner.factoryFor
           ? owner.factoryFor(`controller:${controllerName}`)
           : owner._lookupFactory(`controller:${controllerName}`);
@@ -241,7 +231,7 @@ function buildSubTree(routeTree, route) {
           controller: {
             className: controllerClassName,
             name: controllerName,
-            exists: !!controllerFactory,
+            exists: Boolean(controllerFactory),
           },
           template: {
             name: templateName,
@@ -331,8 +321,5 @@ function getURL(container, segments) {
  * @return {Void}
  */
 function routeHasBeenDefined(owner, name) {
-  return (
-    owner.hasRegistration(`template:${name}`) ||
-    owner.hasRegistration(`route:${name}`)
-  );
+  return owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`);
 }

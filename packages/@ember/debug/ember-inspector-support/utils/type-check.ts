@@ -1,4 +1,6 @@
-import Debug, { inspect as emberInspect } from '@ember/debug/ember-inspector-support/utils/ember/debug';
+import Debug, {
+  inspect as emberInspect,
+} from '@ember/debug/ember-inspector-support/utils/ember/debug';
 import {
   ComputedProperty,
   EmberObject,
@@ -19,7 +21,7 @@ export function isComputed(object, key) {
   }
 
   if (emberMeta(object) && emberMeta(object).peekDescriptors(key)) {
-    return !!emberMeta(object).peekDescriptors(key)._getter;
+    return Boolean(emberMeta(object).peekDescriptors(key)._getter);
   }
 
   if (getDescriptorFor(object, key) instanceof ComputedProperty) {
@@ -42,10 +44,7 @@ export function getDescriptorFor(object, key) {
   if (Debug.isComputed) {
     const { descriptorForDecorator, descriptorForProperty } =
       emberSafeRequire('@ember/-internals/metal') || {};
-    return (
-      descriptorForDecorator?.(object[key]) ||
-      descriptorForProperty?.(object, key)
-    );
+    return descriptorForDecorator?.(object[key]) || descriptorForProperty?.(object, key);
   }
 
   return object[key];

@@ -15,7 +15,7 @@ export function compareVersion(version1, version2) {
   version1 = cleanupVersion(version1).split('.');
   version2 = cleanupVersion(version2).split('.');
   for (i = 0; i < 3; i++) {
-    compared = compare(+version1[i], +version2[i]);
+    compared = compare(Number(version1[i]), Number(version2[i]));
     if (compared !== 0) {
       return compared;
     }
@@ -32,7 +32,7 @@ export function compareVersion(version1, version2) {
 export function isInVersionSpecifier(specifier, version) {
   let compared, i, version2;
   let operator = specifier[0];
-  if (Number.isNaN(+operator)) {
+  if (Number.isNaN(Number(operator))) {
     specifier = specifier.slice(1);
   }
   specifier = cleanupVersion(specifier).split('.');
@@ -49,7 +49,7 @@ export function isInVersionSpecifier(specifier, version) {
   }
 
   for (i = 0; i < 3; i++) {
-    compared = compare(+specifier[i], +version2[i]);
+    compared = compare(Number(specifier[i]), Number(version2[i]));
     if (compared < 0) {
       return true;
     }

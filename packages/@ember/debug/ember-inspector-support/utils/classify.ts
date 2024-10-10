@@ -3,8 +3,7 @@ const STRING_CLASSIFY_REGEXP_2 = /(.)(\-|\_|\.|\s)+(.)?/g;
 const STRING_CLASSIFY_REGEXP_3 = /(^|\/|\.)([a-z])/g;
 
 export default function classify(str) {
-  let replace1 = (_match, _separator, chr) =>
-    chr ? `_${chr.toUpperCase()}` : '';
+  let replace1 = (_match, _separator, chr) => (chr ? `_${chr.toUpperCase()}` : '');
   let replace2 = (_match, initialChar, _separator, chr) =>
     initialChar + (chr ? chr.toUpperCase() : '');
   let parts = str.split('/');
@@ -17,7 +16,5 @@ export default function classify(str) {
 
   return parts
     .join('/')
-    .replace(STRING_CLASSIFY_REGEXP_3, (match /*, separator, chr */) =>
-      match.toUpperCase()
-    );
+    .replace(STRING_CLASSIFY_REGEXP_3, (match /*, separator, chr */) => match.toUpperCase());
 }

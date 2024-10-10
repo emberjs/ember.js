@@ -3,7 +3,7 @@
 
   @class ProfileNode
 **/
-import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
+import { guidFor } from '@ember/object/internals';
 
 function get(obj, key) {
   return obj.get ? obj.get(key) : obj[key];

@@ -33,9 +33,7 @@ const emberNames = new Map([
 ]);
 
 if (compareVersion(VERSION, '3.27.0') === -1) {
-  const TargetActionSupport = emberSafeRequire(
-    '@ember/-internals/runtime'
-  )?.TargetActionSupport;
+  const TargetActionSupport = emberSafeRequire('@ember/-internals/runtime')?.TargetActionSupport;
   emberNames.set(TargetActionSupport, 'TargetActionSupport Mixin');
 }
 
