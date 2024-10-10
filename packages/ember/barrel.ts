@@ -56,7 +56,6 @@ import {
   componentCapabilities,
   modifierCapabilities,
   setComponentManager,
-  escapeExpression,
   getTemplates,
   setTemplates,
   template,
@@ -597,9 +596,7 @@ namespace Ember {
 
 interface EmberHandlebars {
   template: typeof template;
-  Utils: {
-    escapeExpression: typeof escapeExpression;
-  };
+  Utils: {};
   compile?: typeof compile;
   precompile?: typeof precompile;
 }
@@ -665,9 +662,7 @@ applicationRunLoadHooks('Ember.Application', EmberApplication);
 
 let EmberHandlebars: EmberHandlebars = {
   template,
-  Utils: {
-    escapeExpression,
-  },
+  Utils: {},
 };
 
 let EmberHTMLBars: EmberHTMLBars = {
