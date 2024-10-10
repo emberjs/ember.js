@@ -6,7 +6,7 @@ import {
   later,
   scheduleOnce,
   cancel,
-} from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+} from '@ember/runloop';
 
 function getEdges(first, last, closest) {
   let start = null;

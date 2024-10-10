@@ -4,7 +4,7 @@ import { compareVersion } from '@ember/debug/ember-inspector-support/utils/versi
 import { VERSION } from '@ember/debug/ember-inspector-support/utils/ember';
 import classify from '@ember/debug/ember-inspector-support/utils/classify';
 import dasherize from '@ember/debug/ember-inspector-support/utils/dasherize';
-import { _backburner, later } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { _backburner, later } from '@ember/runloop';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 
 const { hasOwnProperty } = Object.prototype;

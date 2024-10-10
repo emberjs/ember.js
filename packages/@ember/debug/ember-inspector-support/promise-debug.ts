@@ -1,9 +1,23 @@
 import DebugPort from './debug-port';
 import PromiseAssembler from '@ember/debug/ember-inspector-support/libs/promise-assembler';
-import { debounce } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
-import RSVP from '@ember/debug/ember-inspector-support/utils/rsvp';
+import { debounce } from '@ember/runloop';
+import RSVP from 'rsvp';
+import PromiseModel from './models/promise';
 
-export default class extends DebugPort {
+export default class PromiseDebug extends DebugPort {
+  private __session: any;
+  promiseAssembler!: PromiseAssembler;
+  updatedPromises: PromiseModel[];
+  releaseMethods: (() => void)[];
+  portNamespace!: string;
+  messages!: {
+    getAndObservePromises(): void;
+    releasePromises(): void;
+    sendValueToConsole(message: any): void;
+    tracePromise(message: any): void;
+    setInstrumentWithStack(message: any): void;
+    getInstrumentWithStack(): void;
+  };
   get objectInspector() {
     return this.namespace?.objectInspector;
   }
@@ -18,7 +32,7 @@ export default class extends DebugPort {
     this.__session = value;
   }
 
-  constructor(data) {
+  constructor(data?: any) {
     super(data);
     this.promiseAssembler = new PromiseAssembler();
     this.updatedPromises = [];
@@ -35,7 +49,6 @@ export default class extends DebugPort {
     if (this.promiseAssembler) {
       this.promiseAssembler.destroy();
     }
-    this.promiseAssembler = null;
     super.willDestroy();
   }
 
@@ -46,13 +59,13 @@ export default class extends DebugPort {
         this.getAndObservePromises();
       },
 
-      releasePromises() {
+      releasePromises(this: PromiseDebug) {
         this.releaseAll();
       },
 
-      sendValueToConsole(message) {
+      sendValueToConsole(this: PromiseDebug, message) {
         let promiseId = message.promiseId;
-        let promise = this.promiseAssembler.find(promiseId);
+        let promise = this.promiseAssembler!.find(promiseId);
         let value = promise.value;
         if (value === undefined) {
           value = promise.reason;
@@ -60,7 +73,7 @@ export default class extends DebugPort {
         this.objectInspector.sendValueToConsole(value);
       },
 
-      tracePromise(message) {
+      tracePromise(this: PromiseDebug, message) {
         let id = message.promiseId;
         let promise = this.promiseAssembler.find(id);
         // Remove first two lines and add label
@@ -72,13 +85,12 @@ export default class extends DebugPort {
         }
       },
 
-      setInstrumentWithStack(message) {
-        let bool = message.instrumentWithStack;
-        this.instrumentWithStack = bool;
+      setInstrumentWithStack(this: PromiseDebug, message) {
+        this.instrumentWithStack = message.instrumentWithStack;
         this.setInstrumentWithStack();
       },
 
-      getInstrumentWithStack() {
+      getInstrumentWithStack(this: PromiseDebug) {
         this.sendInstrumentWithStack();
       },
     };
@@ -104,7 +116,7 @@ export default class extends DebugPort {
   }
 
   releaseAll() {
-    this.releaseMethods.forEach((fn) => {
+    this.releaseMethods.forEach((fn: () => any) => {
       fn();
     });
     this.releaseMethods.length = 0;
@@ -126,7 +138,7 @@ export default class extends DebugPort {
     this.promisesUpdated(this.promiseAssembler.find());
   }
 
-  promisesUpdated(uniquePromises) {
+  promisesUpdated(uniquePromises: PromiseModel[]) {
     if (!uniquePromises) {
       uniquePromises = [...new Set(this.updatedPromises)];
     }

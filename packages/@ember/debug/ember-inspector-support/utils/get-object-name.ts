@@ -1,6 +1,6 @@
 import emberNames from './ember-object-names';
 
-export default function getObjectName(object) {
+export default function getObjectName(object: any) {
   let name = '';
   let className =
     (object.constructor && (emberNames.get(object.constructor) || object.constructor.name)) || '';
@@ -28,7 +28,7 @@ export default function getObjectName(object) {
     ) {
       try {
         name = constructor.toString();
-      } catch (e) {
+      } catch {
         name = constructor.name;
       }
     } else {
@@ -41,7 +41,7 @@ export default function getObjectName(object) {
   ) {
     try {
       name = object.toString();
-    } catch (e) {
+    } catch {
       //
     }
   }

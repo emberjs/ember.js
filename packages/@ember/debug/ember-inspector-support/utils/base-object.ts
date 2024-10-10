@@ -1,6 +1,8 @@
 export default class BaseObject {
+  namespace: any;
   isDestroyed = false;
-  constructor(data) {
+  isDestroying = false;
+  constructor(data: any) {
     Object.assign(this, data || {});
     this.init();
   }
@@ -15,7 +17,7 @@ export default class BaseObject {
     this.isDestroyed = true;
   }
 
-  reopen(data) {
+  reopen(data: any) {
     Object.assign(this, data);
   }
 }

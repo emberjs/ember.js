@@ -6,14 +6,16 @@ export default class extends BasicAdapter {
     this._listen();
   }
 
-  sendMessage(options) {
+  sendMessage(options: any) {
     options = options || {};
-    window.emberInspector.w.postMessage(options, window.emberInspector.url);
+    const w = window as any;
+    w.emberInspector.w.postMessage(options, w.emberInspector.url);
   }
 
   _listen() {
+    const w = window as any;
     window.addEventListener('message', (e) => {
-      if (e.origin !== window.emberInspector.url) {
+      if (e.origin !== w.emberInspector.url) {
         return;
       }
       const message = e.data;

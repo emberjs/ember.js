@@ -1,13 +1,10 @@
 import BasicAdapter from './basic';
-import { typeOf } from '@ember/debug/ember-inspector-support/utils/type-check';
-
-import Ember from '@ember/debug/ember-inspector-support/utils/ember';
-import { run } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
-
-const { isArray } = Array;
-const { keys } = Object;
+import { run } from '@ember/runloop';
 
 export default class extends BasicAdapter {
+  private _channel!: MessageChannel;
+  private _chromePort!: MessagePort;
+  private namespace: any;
   init() {
     this._channel = new MessageChannel();
     this._chromePort = this._channel?.port1;
@@ -27,10 +24,10 @@ export default class extends BasicAdapter {
     // would not be considered native arrays, so it's not possible to
     // "clone" them through postMessage unless they are converted to a
     // native array.
-    options = deepClone(options);
     try {
       this._chromePort.postMessage(options);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log('failed to send message', e);
     }
   }
@@ -40,7 +37,7 @@ export default class extends BasicAdapter {
    *
    * @param  {Node|Function} value The DOM node to select
    */
-  inspectValue(value) {
+  inspectValue(value: any) {
     // NOTE:
     //
     // Basically, we are just trying to call `inspect(node)` here.
@@ -62,8 +59,7 @@ export default class extends BasicAdapter {
 
     let name = `__EMBER_INSPECTOR_${(Math.random() * 100000000).toFixed(0)}`;
 
-    window[name] = value;
-
+    (window as any)[name] = value;
     this.namespace.port.send('view:inspectJSValue', { name });
   }
 
@@ -95,52 +91,4 @@ export default class extends BasicAdapter {
 
     chromePort.start();
   }
-}
-
-// On some older Ember version `Ember.ENV.EXTEND_PROTOTYPES` is not
-// guarenteed to be an object. While this code only support 3.4+ (all
-// of which normalizes `EXTEND_PROTOTYPES` for us), startup-wrapper.js
-// eagerly require/load ember-debug modules, which ultimately causes
-// this top-level code to run, even we are going to pick a different
-// adapter later. See GH #1114.
-const HAS_ARRAY_PROTOTYPE_EXTENSIONS = (() => {
-  try {
-    return Ember.ENV.EXTEND_PROTOTYPES.Array === true;
-  } catch (e) {
-    return false;
-  }
-})();
-
-let deepClone;
-
-if (HAS_ARRAY_PROTOTYPE_EXTENSIONS) {
-  deepClone = function deepClone(item) {
-    return item;
-  };
-} else {
-  /**
-   * Recursively clones all arrays. Needed because Chrome
-   * refuses to clone Ember Arrays when extend prototypes is disabled.
-   *
-   * If the item passed is an array, a clone of the array is returned.
-   * If the item is an object or an array, or array properties/items are cloned.
-   *
-   * @param {Mixed} item The item to clone
-   * @return {Mixed}
-   */
-  deepClone = function deepClone(item) {
-    let clone = item;
-    if (isArray(item)) {
-      clone = new Array(item.length);
-      item.forEach((child, key) => {
-        clone[key] = deepClone(child);
-      });
-    } else if (item && typeOf(item) === 'object') {
-      clone = {};
-      keys(item).forEach((key) => {
-        clone[key] = deepClone(item[key]);
-      });
-    }
-    return clone;
-  };
 }

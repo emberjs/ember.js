@@ -5,7 +5,7 @@
  * @param  {Any} model
  * @return {String}       The model name.
  */
-export function modelName(model) {
+export function modelName(model: any) {
   let name = '<Unknown model>';
   if (model.toString) {
     name = model.toString();
@@ -24,7 +24,7 @@ export function modelName(model) {
  * @param  {DS.Model} model
  * @return {String}       The concise model name.
  */
-export function shortModelName(model) {
+export function shortModelName(model: any) {
   let name = modelName(model);
   // jj-abrams-resolver adds `app@model:`
   return name.replace(/<[^>]+@model:/g, '<');
@@ -37,7 +37,7 @@ export function shortModelName(model) {
  * @param  {Controller} controller
  * @return {String}            The controller name
  */
-export function controllerName(controller) {
+export function controllerName(controller: any) {
   return controller.toString();
 }
 
@@ -48,9 +48,9 @@ export function controllerName(controller) {
  * @param  {Controller} controller
  * @return {String}            The short controller name
  */
-export function shortControllerName(controller) {
+export function shortControllerName(controller: any) {
   let name = cleanupInstanceName(controllerName(controller));
-  let match = name.match(/^\(generated (.+) controller\)/);
+  let match = name!.match(/^\(generated (.+) controller\)/);
   if (match) {
     return match[1];
   }
@@ -65,7 +65,7 @@ export function shortControllerName(controller) {
  * @param  {String} name
  * @return {String} The short/cleaner name
  */
-function cleanupInstanceName(name) {
+function cleanupInstanceName(name: string) {
   let match = name.match(/^.+:(.+)::/);
   if (!match) {
     // Support for Namespace names (instead of module) (for the tests).
@@ -85,7 +85,7 @@ function cleanupInstanceName(name) {
  * @param  {Component} view The component.
  * @return {String}      The short view name.
  */
-export function shortViewName(view) {
+export function shortViewName(view: any) {
   return cleanupInstanceName(viewName(view));
 }
 
@@ -96,6 +96,6 @@ export function shortViewName(view) {
  * @param  {Component} view The component.
  * @return {String}      The view name.
  */
-export function viewName(view) {
+export function viewName(view: any) {
   return view.toString();
 }

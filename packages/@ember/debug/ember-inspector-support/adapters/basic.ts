@@ -1,8 +1,12 @@
 /* eslint no-console: 0 */
-import { onReady } from '@ember/debug/ember-inspector-support/utils/on-ready';
 import BaseObject from '../utils/base-object';
+import { DEBUG } from '@glimmer/env';
+import { onReady } from '../utils/on-ready';
 
 export default class BasicAdapter extends BaseObject {
+  private _messageCallbacks: any[] = [];
+  private __environment = '';
+  interval: number | undefined;
   init() {
     Promise.resolve(this.connect()).then(() => {
       this.onConnectionReady();
@@ -20,18 +24,17 @@ export default class BasicAdapter extends BaseObject {
    */
   get environment() {
     if (!this.__environment) {
-      this.__environment =
-        requireModule('@ember/debug/ember-inspector-support/config')['default'].environment;
+      this.__environment = DEBUG ? 'development' : 'production';
     }
     return this.__environment;
   }
 
-  debug() {
-    return console.debug(...arguments);
+  debug(...args: any[]) {
+    return console.debug(...args);
   }
 
-  log() {
-    return console.log(...arguments);
+  log(...args: any[]) {
+    return console.log(...args);
   }
 
   /**
@@ -39,8 +42,8 @@ export default class BasicAdapter extends BaseObject {
    *
    * @method warn
    */
-  warn() {
-    return console.warn(...arguments);
+  warn(...args: any[]) {
+    return console.warn(...args);
   }
 
   /**
@@ -48,7 +51,7 @@ export default class BasicAdapter extends BaseObject {
 
     @param {Object} type the message to the send
   */
-  sendMessage(/* options */) {}
+  sendMessage(_options: any) {}
 
   /**
     Register functions to be called
@@ -56,7 +59,7 @@ export default class BasicAdapter extends BaseObject {
 
     @param {Function} callback
   */
-  onMessageReceived(callback) {
+  onMessageReceived(callback: () => void) {
     this._messageCallbacks.push(callback);
   }
 
@@ -71,9 +74,9 @@ export default class BasicAdapter extends BaseObject {
     For functions, it will open the sources tab and goto the definition
     @param {Node|Function} node
   */
-  inspectValue(/* value */) {}
+  inspectValue(_value: any) {}
 
-  _messageReceived(message) {
+  _messageReceived(message: any) {
     this._messageCallbacks.forEach((callback) => {
       callback(message);
     });
@@ -92,7 +95,7 @@ export default class BasicAdapter extends BaseObject {
    * @method handleError
    * @param {Error} error
    */
-  handleError(error) {
+  handleError(error: any) {
     if (this.environment === 'production') {
       if (error && error instanceof Error) {
         error = `Error message: ${error.message}\nStack trace: ${error.stack}`;
@@ -122,9 +125,9 @@ export default class BasicAdapter extends BaseObject {
           reject();
         }
         this.interval = setInterval(() => {
-          if (document.documentElement.dataset.emberExtension) {
+          if (document.documentElement.dataset['emberExtension']) {
             clearInterval(this.interval);
-            resolve();
+            resolve(true);
           }
         }, 10);
       });
@@ -137,11 +140,11 @@ export default class BasicAdapter extends BaseObject {
   }
 
   _isReady = false;
-  _pendingMessages = [];
+  _pendingMessages: any[] = [];
 
-  send(options) {
+  send(options: any) {
     if (this._isReady) {
-      this.sendMessage(...arguments);
+      this.sendMessage(options);
     } else {
       this._pendingMessages.push(options);
     }

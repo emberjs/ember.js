@@ -3,7 +3,7 @@ import SourceMap from '@ember/debug/ember-inspector-support/libs/source-map';
 
 import { registerDeprecationHandler } from '@ember/debug/ember-inspector-support/utils/ember/debug';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
-import { cancel, debounce } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { cancel, debounce } from '@ember/runloop';
 
 export default class extends DebugPort {
   static {

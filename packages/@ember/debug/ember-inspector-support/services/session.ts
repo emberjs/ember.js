@@ -12,7 +12,7 @@ try {
   if (typeof sessionStorage !== 'undefined') {
     SESSION_STORAGE_SUPPORTED = true;
   }
-} catch (e) {
+} catch {
   // This can be reached with the following succession of events:
   //
   //   1. On Google Chrome
@@ -32,17 +32,17 @@ if (SESSION_STORAGE_SUPPORTED) {
   Object.assign(Session.prototype, {
     sessionStorage,
     prefix: '__ember__inspector__',
-    makeKey(key) {
+    makeKey(key: string) {
       return this.prefix + key;
     },
-    setItem(key, val) {
+    setItem(key: string, val: any) {
       return this.sessionStorage.setItem(this.makeKey(key), val);
     },
-    removeItem(key) {
+    removeItem(key: string) {
       return this.sessionStorage.removeItem(this.makeKey(key));
     },
-    getItem(key) {
-      return JSON.parse(this.sessionStorage.getItem(this.makeKey(key)));
+    getItem(key: string) {
+      return JSON.parse(this.sessionStorage.getItem(this.makeKey(key)) as string);
     },
   });
 }

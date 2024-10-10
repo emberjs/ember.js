@@ -1,12 +1,12 @@
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
-import { run } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { run } from '@ember/runloop';
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 import Evented from '@ember/debug/ember-inspector-support/utils/evented';
 
-export default class extends BaseObject {
-  constructor(data) {
+export default class Port extends Evented.extend(BaseObject) {
+  now!: number;
+  constructor(data: any) {
     super(data);
-    Evented.applyTo(this);
   }
 
   get adapter() {
@@ -41,14 +41,14 @@ export default class extends BaseObject {
      */
     this.now = Date.now();
 
-    this.adapter.onMessageReceived((message) => {
+    this.adapter.onMessageReceived((message: any) => {
       if (this.uniqueId === message.applicationId || !message.applicationId) {
         this.messageReceived(message.type, message);
       }
     });
   }
 
-  messageReceived(name, message) {
+  messageReceived(name: string, message: any) {
     // We should generally not be run-wrapping here. Starting a runloop in
     // ember-debug will cause the inspected app to revalidate/rerender. We
     // are generally not intending to cause changes to the rendered output
@@ -73,7 +73,7 @@ export default class extends BaseObject {
     }
   }
 
-  send(messageType, options = {}) {
+  send(messageType: string, options: any = {}) {
     options.type = messageType;
     options.from = 'inspectedWindow';
     options.applicationId = this.uniqueId;
@@ -97,7 +97,7 @@ export default class extends BaseObject {
    * @param {Function} fn
    * @return {Mixed} The return value of the passed function
    */
-  wrap(fn) {
+  wrap(fn: () => any) {
     return run(this, function () {
       try {
         return fn();

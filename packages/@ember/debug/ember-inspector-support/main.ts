@@ -16,7 +16,7 @@ import {
   guidFor,
   setGuidPrefix,
 } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
-import { run } from '@ember/debug/ember-inspector-support/utils/ember/runloop';
+import { run } from '@ember/runloop';
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 
 class EmberDebug extends BaseObject {
