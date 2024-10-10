@@ -11,13 +11,14 @@ import ContainerDebug from '@ember/debug/ember-inspector-support/container-debug
 import DeprecationDebug from '@ember/debug/ember-inspector-support/deprecation-debug';
 import Session from '@ember/debug/ember-inspector-support/services/session';
 
-import { Application, Namespace } from '@ember/debug/ember-inspector-support/utils/ember';
+import Application from '@ember/application';
 import {
   guidFor,
   setGuidPrefix,
 } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
 import { run } from '@ember/runloop';
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
+import Namespace from '@ember/application/namespace';
 
 class EmberDebug extends BaseObject {
   /**
@@ -27,6 +28,13 @@ class EmberDebug extends BaseObject {
    * @default false
    */
   isTesting = false;
+  private _application: any;
+  private owner: any;
+  private started!: boolean;
+  adapter!: BasicAdapter;
+  port!: Port;
+  generalDebug!: GeneralDebug;
+  objectInspector!: ObjectInspector;
 
   get applicationName() {
     return this._application.name || this._application.modulePrefix;
@@ -51,7 +59,7 @@ class EmberDebug extends BaseObject {
   Port = Port;
   Adapter = BasicAdapter;
 
-  start($keepAdapter) {
+  start($keepAdapter: boolean) {
     if (this.started) {
       this.reset($keepAdapter);
       return;
@@ -85,16 +93,16 @@ class EmberDebug extends BaseObject {
       'objectInspector',
       'session',
     ].forEach((prop) => {
-      let handler = this[prop];
+      let handler = (this as any)[prop];
       if (handler) {
         run(handler, 'destroy');
-        this[prop] = null;
+        (this as any)[prop] = null;
       }
     });
   }
 
-  startModule(prop, Module) {
-    this[prop] = new Module({ namespace: this });
+  startModule(prop: string, Module: any) {
+    (this as any)[prop] = new Module({ namespace: this });
   }
 
   willDestroy() {
@@ -102,7 +110,7 @@ class EmberDebug extends BaseObject {
     super.willDestroy();
   }
 
-  reset($keepAdapter) {
+  reset($keepAdapter?: boolean) {
     setGuidPrefix(Math.random().toString());
     if (!this.isTesting && !this.owner) {
       this.owner = getOwner(this._application);
@@ -134,7 +142,7 @@ class EmberDebug extends BaseObject {
     });
   }
 
-  inspect(obj) {
+  inspect(obj: any) {
     this.objectInspector.sendObject(obj);
     this.adapter.log('Sent to the Object Inspector');
     return obj;
@@ -157,16 +165,18 @@ function getApplication() {
       application = namespace;
       return false;
     }
+    return;
   });
   return application;
 }
 
-function getOwner(application) {
+function getOwner(application: Application) {
   if (application.autoboot) {
     return application.__deprecatedInstance__;
   } else if (application._applicationInstances /* Ember 3.1+ */) {
     return [...application._applicationInstances][0];
   }
+  return null;
 }
 
 export default new EmberDebug();

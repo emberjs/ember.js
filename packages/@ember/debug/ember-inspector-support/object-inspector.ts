@@ -218,7 +218,7 @@ function getTrackedDependencies(object, property, tagInfo) {
   return [...dependentKeys];
 }
 
-export default class extends DebugPort {
+export default class ObjectInspector extends DebugPort {
   get adapter() {
     return this.namespace?.adapter;
   }

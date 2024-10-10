@@ -1,16 +1,17 @@
 import DebugPort from './debug-port';
 import ProfileManager from './models/profile-manager';
 
-import { subscribe } from '@ember/runloopinstrumentation';
 import { _backburner } from '@ember/runloop';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
+import { subscribe } from '@ember/instrumentation';
 
 // Initial setup, that has to occur before the EmberObject init for some reason
 let profileManager = new ProfileManager();
 _subscribeToRenderEvents();
 
-export default class extends DebugPort {
-  constructor(data) {
+export default class RenderDebug extends DebugPort {
+  profileManager: ProfileManager;
+  constructor(data?: any) {
     super(data);
     this.profileManager = profileManager;
     this.profileManager.wrapForErrors = (context, callback) =>
@@ -31,7 +32,7 @@ export default class extends DebugPort {
     _backburner.off('end', bound(this, this._updateComponentTree));
   }
 
-  sendAdded(profiles) {
+  sendAdded(profiles: any) {
     this.sendMessage('profilesAdded', {
       profiles,
       isHighlightSupported: this.profileManager.isHighlightEnabled,
@@ -79,7 +80,7 @@ export default class extends DebugPort {
  */
 function _subscribeToRenderEvents() {
   subscribe('render', {
-    before(name, timestamp, payload) {
+    before(name: string, timestamp, payload) {
       const info = {
         type: 'began',
         timestamp,

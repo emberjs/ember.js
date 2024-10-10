@@ -1,24 +1,25 @@
+import type { Payload } from './profile-node';
 import ProfileNode from './profile-node';
-import Ember from '@ember/debug/ember-inspector-support/utils/ember';
-import { compareVersion } from '@ember/debug/ember-inspector-support/utils/version';
 
-import {
-  later,
-  scheduleOnce,
-  cancel,
-} from '@ember/runloop';
+import { later, scheduleOnce, cancel } from '@ember/runloop';
 
-function getEdges(first, last, closest) {
+type Bounds = {
+  first: HTMLElement;
+  last: HTMLElement;
+  parent: HTMLElement;
+};
+
+function getEdges(first: any, last: any, closest: any[]) {
   let start = null;
   let end = null;
   for (let i = 0; i < closest.length; i++) {
     if (closest.item(i) === first.node) start = i;
     else if (closest.item(i) === last.node) end = i;
   }
-  return [start, end];
+  return [start!, end!];
 }
 
-function getUnfilteredRoots(first, last, closest) {
+function getUnfilteredRoots(first: any, last: any, closest: any) {
   if (first.node === last.node) return [first.node];
 
   const roots = [];
@@ -27,12 +28,12 @@ function getUnfilteredRoots(first, last, closest) {
 
   if (start === null || end === null) return [];
 
-  for (let i = start; i <= end; i++) roots.push(closest.item(i));
+  for (let i = start!; i <= end!; i++) roots.push(closest.item(i));
 
   return roots;
 }
 
-function findRoots({ first, last, parent }) {
+function findRoots({ first, last, parent }: Bounds) {
   const closest = parent.childNodes;
 
   const roots = getUnfilteredRoots(first, last, closest);
@@ -46,7 +47,7 @@ function makeHighlight() {
   node.setAttribute('class', 'ember-inspector-render-highlight');
   return node;
 }
-function insertHTML(node) {
+function insertHTML(node: HTMLElement) {
   document.body.appendChild(node);
 }
 
@@ -65,13 +66,34 @@ function insertStylesheet() {
   return style;
 }
 
+type Info = {
+  type: string;
+  endedIndex: any;
+  now: number;
+  timestamp: number;
+  payload: Payload;
+  profileNode: ProfileNode;
+};
+
+type Highlight = {
+  el: HTMLElement;
+  timeout?: any;
+};
+
 /**
  * A class for keeping track of active rendering profiles as a list.
  */
 export default class ProfileManager {
+  profiles: ProfileNode[] = [];
+  current: ProfileNode | undefined;
+  queue: Info[];
+  highlights: Highlight[];
+  currentSet: ProfileNode[];
+  private _profilesAddedCallbacks: { context: any; callback: Function }[];
+  shouldHighlightRender: boolean;
+  isHighlightEnabled: boolean;
+  stylesheet: HTMLStyleElement;
   constructor() {
-    this.profiles = [];
-    this.current = null;
     this.currentSet = [];
     this._profilesAddedCallbacks = [];
     this.queue = [];
@@ -79,11 +101,11 @@ export default class ProfileManager {
     this.stylesheet = insertStylesheet();
     // keep track of all the active highlights
     this.highlights = [];
-    this.isHighlightEnabled = compareVersion(Ember?.VERSION, '3.20.0') !== -1;
+    this.isHighlightEnabled = true;
   }
 
-  began(timestamp, payload, now) {
-    return this.wrapForErrors(this, function () {
+  began(timestamp: number, payload: Payload, now: number) {
+    return this.wrapForErrors(this, () => {
       this.current = new ProfileNode(timestamp, payload, this.current, now);
       if (this.shouldHighlightRender && payload.view) {
         this._highLightView(payload.view);
@@ -93,11 +115,11 @@ export default class ProfileManager {
     });
   }
 
-  ended(timestamp, payload, profileNode) {
+  ended(timestamp: number, payload: Payload, profileNode: ProfileNode) {
     if (payload.exception) {
       throw payload.exception;
     }
-    return this.wrapForErrors(this, function () {
+    return this.wrapForErrors(this, () => {
       this.current = profileNode.parent;
       profileNode.finish(timestamp);
 
@@ -110,13 +132,13 @@ export default class ProfileManager {
     });
   }
 
-  wrapForErrors(context, callback) {
+  wrapForErrors(context: any, callback: Function) {
     return callback.call(context);
   }
 
-  _highLightView(view) {
+  _highLightView(view: any) {
     const symbols = Object.getOwnPropertySymbols(view);
-    const bounds = view[symbols.find((sym) => sym.description === 'BOUNDS')];
+    const bounds = view[symbols.find((sym) => sym.description === 'BOUNDS')!];
     if (!bounds) return;
 
     const elements = findRoots(bounds);
@@ -131,7 +153,7 @@ export default class ProfileManager {
    * @param info
    * @return {number}
    */
-  addToQueue(info) {
+  addToQueue(info: Info) {
     const index = this.queue.push(info);
     if (index === 1) {
       later(this._flush.bind(this), 50);
@@ -143,15 +165,15 @@ export default class ProfileManager {
     this.profiles.length = 0;
   }
 
-  onProfilesAdded(context, callback) {
+  onProfilesAdded(context: any, callback: Function) {
     this._profilesAddedCallbacks.push({ context, callback });
   }
 
-  offProfilesAdded(context, callback) {
+  offProfilesAdded(context: any, callback: Function) {
     let index = -1,
       item;
     for (let i = 0, l = this._profilesAddedCallbacks.length; i < l; i++) {
-      item = this._profilesAddedCallbacks[i];
+      item = this._profilesAddedCallbacks[i]!;
       if (item.context === context && item.callback === callback) {
         index = i;
       }
@@ -174,13 +196,13 @@ export default class ProfileManager {
     });
   }
 
-  _removeHighlight(highlight) {
+  _removeHighlight(highlight: Highlight) {
     this.highlights = this.highlights.filter((item) => item !== highlight);
     cancel(highlight.timeout);
     highlight.el.remove();
   }
 
-  _addHighlight(highlight) {
+  _addHighlight(highlight: Highlight) {
     insertHTML(highlight.el);
     this.highlights.push(highlight);
 
@@ -189,7 +211,7 @@ export default class ProfileManager {
     }, 500);
   }
 
-  _constructHighlight(renderedNode) {
+  _constructHighlight(renderedNode: Range) {
     const rect = renderedNode.getBoundingClientRect();
     const highlight = makeHighlight();
 
@@ -206,7 +228,7 @@ export default class ProfileManager {
     return highlight;
   }
 
-  _renderHighlight(renderedNode) {
+  _renderHighlight(renderedNode: Range) {
     if (!renderedNode?.getBoundingClientRect) {
       return;
     }
@@ -219,11 +241,11 @@ export default class ProfileManager {
   _flush() {
     let entry, i;
     for (i = 0; i < this.queue.length; i++) {
-      entry = this.queue[i];
+      entry = this.queue[i]!;
       if (entry.type === 'began') {
         // If there was an error during rendering `entry.endedIndex` never gets set.
         if (entry.endedIndex) {
-          this.queue[entry.endedIndex].profileNode = this.began(
+          this.queue[entry.endedIndex]!.profileNode = this.began(
             entry.timestamp,
             entry.payload,
             entry.now
@@ -237,8 +259,8 @@ export default class ProfileManager {
   }
 
   _profilesFinished() {
-    return this.wrapForErrors(this, function () {
-      const firstNode = this.currentSet[0];
+    return this.wrapForErrors(this, () => {
+      const firstNode = this.currentSet[0]!;
       let parentNode = new ProfileNode(firstNode.start, {
         template: 'View Rendering',
       });
@@ -257,7 +279,7 @@ export default class ProfileManager {
     });
   }
 
-  _triggerProfilesAdded(profiles) {
+  _triggerProfilesAdded(profiles: ProfileNode[]) {
     this._profilesAddedCallbacks.forEach(function (item) {
       item.callback.call(item.context, profiles);
     });
