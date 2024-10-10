@@ -73,6 +73,8 @@ await delay(1000);
 
 args.kind = 'cruel';
 
+await delay(1000);
+
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
