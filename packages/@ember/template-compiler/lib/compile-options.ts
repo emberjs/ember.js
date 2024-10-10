@@ -1,0 +1,115 @@
+import { assert } from '@ember/debug';
+import {
+  RESOLUTION_MODE_TRANSFORMS,
+  STRICT_MODE_KEYWORDS,
+  STRICT_MODE_TRANSFORMS,
+} from './plugins/index';
+import type { EmberPrecompileOptions, PluginFunc } from './types';
+import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
+
+let USER_PLUGINS: PluginFunc[] = [];
+
+function malformedComponentLookup(string: string) {
+  return string.indexOf('::') === -1 && string.indexOf(':') > -1;
+}
+
+function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileOptions {
+  let moduleName = _options.moduleName;
+
+  let options: EmberPrecompileOptions & Partial<EmberPrecompileOptions> = {
+    meta: {},
+    isProduction: false,
+    plugins: { ast: [] },
+    ..._options,
+    moduleName,
+    customizeComponentName(tagname: string): string {
+      assert(
+        `You tried to invoke a component named <${tagname} /> in "${
+          moduleName ?? '[NO MODULE]'
+        }", but that is not a valid name for a component. Did you mean to use the "::" syntax for nested components?`,
+        !malformedComponentLookup(tagname)
+      );
+
+      return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
+    },
+  };
+
+  if ('eval' in options) {
+    const localScopeEvaluator = options.eval as (value: string) => unknown;
+    const globalScopeEvaluator = (value: string) => new Function(`return ${value};`)();
+
+    options.lexicalScope = (variable: string) => {
+      if (inScope(variable, localScopeEvaluator)) {
+        return !inScope(variable, globalScopeEvaluator);
+      }
+
+      return false;
+    };
+
+    delete options.eval;
+  }
+
+  if ('locals' in options && !options.locals) {
+    // Glimmer's precompile options declare `locals` like:
+    //    locals?: string[]
+    // but many in-use versions of babel-plugin-htmlbars-inline-precompile will
+    // set locals to `null`. This used to work but only because glimmer was
+    // ignoring locals for non-strict templates, and now it supports that case.
+    delete options.locals;
+  }
+
+  // move `moduleName` into `meta` property
+  if (options.moduleName) {
+    let meta = options.meta;
+    assert('has meta', meta); // We just set it
+    meta.moduleName = options.moduleName;
+  }
+
+  if (options.strictMode) {
+    options.keywords = STRICT_MODE_KEYWORDS;
+  }
+
+  return options;
+}
+
+function transformsFor(options: EmberPrecompileOptions): readonly PluginFunc[] {
+  return options.strictMode ? STRICT_MODE_TRANSFORMS : RESOLUTION_MODE_TRANSFORMS;
+}
+
+export default function compileOptions(
+  _options: Partial<EmberPrecompileOptions> = {}
+): EmberPrecompileOptions {
+  let options = buildCompileOptions(_options);
+  let builtInPlugins = transformsFor(options);
+
+  if (!_options.plugins) {
+    options.plugins = { ast: [...USER_PLUGINS, ...builtInPlugins] };
+  } else {
+    let potententialPugins = [...USER_PLUGINS, ...builtInPlugins];
+    assert('expected plugins', options.plugins);
+    let pluginsToAdd = potententialPugins.filter((plugin) => {
+      assert('expected plugins', options.plugins);
+      return options.plugins.ast.indexOf(plugin) === -1;
+    });
+    options.plugins.ast = [...options.plugins.ast, ...pluginsToAdd];
+  }
+
+  return options;
+}
+
+type Evaluator = (value: string) => unknown;
+
+function inScope(variable: string, evaluator: Evaluator): boolean {
+  try {
+    return evaluator(`typeof ${variable} !== "undefined"`) === true;
+  } catch (e) {
+    // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
+    // If the variable is a reserved word, it's definitely not in scope, so return false.
+    if (e && e instanceof SyntaxError) {
+      return false;
+    }
+
+    // If it's another kind of error, don't swallow it.
+    throw e;
+  }
+}
