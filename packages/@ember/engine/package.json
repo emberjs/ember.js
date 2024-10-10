@@ -19,7 +19,7 @@
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
     "@ember/utils": "workspace:*",
-    "@glimmer/destroyable": "0.92.3",
+    "@glimmer/destroyable": "catalog:",
     "@glimmer/env": "^0.1.7",
     "@glimmer/owner": "0.92.3",
     "@glimmer/util": "0.92.3",

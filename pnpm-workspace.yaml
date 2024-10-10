@@ -1,5 +1,9 @@
 packages:
- - 'packages/*'
- - 'packages/@ember/*'
- - 'packages/@glimmer/*'
- - 'smoke-tests/*'
+  - 'packages/*'
+  - 'packages/@ember/*'
+  - 'packages/@glimmer/*'
+  - 'smoke-tests/*'
+  - 'demo'
+catalog:
+  '@glimmer/runtime': '0.92.4'
+  '@glimmer/destroyable': '0.92.3'

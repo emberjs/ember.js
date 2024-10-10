@@ -1,0 +1,16 @@
+{
+  "name": "@ember/template-compiler",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/debug": "workspace:*",
+    "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@glimmer/destroyable": "catalog:",
+    "@glimmer/runtime": "catalog:",
+    "@glint/template": "^1.4.0",
+    "expect-type": "^0.15.0"
+  }
+}

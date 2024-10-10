@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ember/template-compiler": "./node_modules/@ember/template-compiler/index.ts",
+          "@glimmer/tracking": "./node_modules/@glimmer/tracking/index.ts",
+          "tracked-built-ins": "./node_modules/tracked-built-ins/dist/index.js",
+          "@ember/template-compilation": "./src/precompile.ts",
+          "@/": "./src/"
+        }
+      }
+    </script>
+    <script>
+      process = { env: {} };
+    </script>
+    <script type="module" src="./src/main.ts"></script>
+  </head>
+  <body>
+    <div id="overlay"></div>
+  </body>
+</html>

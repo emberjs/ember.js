@@ -131,7 +131,7 @@ const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
   public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
 
-  constructor(public owner: InternalOwner, public isInteractive: boolean) {}
+  constructor(public owner: object, public isInteractive: boolean) {}
 
   onTransactionCommit(): void {}
 }
