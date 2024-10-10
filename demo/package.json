@@ -1,0 +1,23 @@
+{
+  "name": "@ember/embedded-demo",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
+    "@ember/template-compiler": "workspace:*",
+    "@ember/template-factory": "workspace:*",
+    "@glimmer/tracking": "workspace:*",
+    "@swc/wasm-web": "^1.7.28",
+    "@swc/plugin-transform-imports": "^3.0.3",
+    "tracked-built-ins": "^3.3.0"
+  },
+  "devDependencies": {
+    "@glimmer/compiler": "^0.92.4",
+    "@glimmer/syntax": "^0.92.3",
+    "content-tag": "^2.0.2",
+    "vite": "^5.4.8",
+    "vite-plugin-node-polyfills": "^0.22.0"
+  }
+}

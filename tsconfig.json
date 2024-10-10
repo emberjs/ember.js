@@ -4,6 +4,13 @@
     "outDir": "dist",
     "noEmit": true
   },
-  "include": ["packages/**/*.ts"],
-  "exclude": ["dist", "node_modules", "tmp", "types"]
+  "include": [
+    "packages/**/*.ts",
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types"
+  ]
 }

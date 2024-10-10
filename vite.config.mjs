@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { disabled: true },
+    optimizeDeps: { noDiscovery: true },
     publicDir: 'tests/public',
     build: {
       minify: mode === 'production',

@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig/compiler-options.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler"
+  },
+  "include": [
+    "src/**/*.ts",
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "tmp",
+    "types"
+  ]
+}

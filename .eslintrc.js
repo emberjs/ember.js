@@ -30,7 +30,14 @@ module.exports = {
 
   settings: {
     'import/core-modules': ['require', 'backburner', 'router', '@glimmer/interfaces'],
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts'],
+    },
     'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: ['./tsconfig.json', './demo/tsconfig.json'],
+      },
       node: {
         extensions: ['.js', '.ts', '.d.ts'],
         paths: [path.resolve('./packages/')],
@@ -46,7 +53,7 @@ module.exports = {
 
       parserOptions: {
         sourceType: 'module',
-        project: './tsconfig.json',
+        project: ['./tsconfig.json', './demo/tsconfig.json'],
         tsconfigRootDir: __dirname,
       },
 
@@ -121,6 +128,7 @@ module.exports = {
         'packages/@ember/*/tests/**/*.[jt]s',
         'packages/@ember/-internals/*/tests/**/*.[jt]s',
         'packages/internal-test-helpers/**/*.[jt]s',
+        'demo/**/*.[jt]s',
       ],
       env: {
         qunit: true,

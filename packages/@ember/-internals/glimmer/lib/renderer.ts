@@ -51,6 +51,7 @@ import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
+import { deregister, register } from './renderer/base-renderer';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
@@ -204,17 +205,6 @@ const renderers: Renderer[] = [];
 
 export function _resetRenderers() {
   renderers.length = 0;
-}
-
-function register(renderer: Renderer): void {
-  assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
-  renderers.push(renderer);
-}
-
-function deregister(renderer: Renderer): void {
-  let index = renderers.indexOf(renderer);
-  assert('Cannot deregister unknown unregistered renderer', index !== -1);
-  renderers.splice(index, 1);
 }
 
 function loopBegin(): void {
