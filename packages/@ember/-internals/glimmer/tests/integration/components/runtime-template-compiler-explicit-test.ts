@@ -1,23 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 
 moduleFor(
-  'Strict Mode - Runtime Template Compiler (implicit)',
+  'Strict Mode - Runtime Template Compiler (explicit)',
   class extends RenderingTestCase {
     async '@test Can use a component in scope'() {
       await this.renderComponentModule(() => {
-        let Foo = template('Hello, world!', {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        let Foo = template('Hello, world!');
 
         return template('<Foo />', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ Foo }),
         });
       });
 
@@ -30,9 +23,7 @@ moduleFor(
         let foo = () => 'Hello, world!';
 
         return template('{{foo}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ foo }),
         });
       });
 
@@ -44,9 +35,7 @@ moduleFor(
       await this.renderComponentModule(() => {
         let foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
         return template('<div {{foo}}></div>', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ foo }),
         });
       });
 
@@ -56,16 +45,10 @@ moduleFor(
 
     async '@test Can shadow keywords'() {
       await this.renderComponentModule(() => {
-        let each = template(`{{yield}}`, {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        let each = template(`{{yield}}`);
 
         return template(`{{#each}}Hello, world!{{/each}}`, {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ each }),
         });
       });
 
@@ -78,9 +61,7 @@ moduleFor(
         let value = 'Hello, world!';
 
         return template(`{{value}}`, {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ value }),
         });
       });
 
@@ -90,11 +71,7 @@ moduleFor(
 
     async '@test Can use inline if and unless in strict mode templates'() {
       await this.renderComponentModule(() => {
-        return template('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        return template('{{if true "foo" "bar"}}{{unless true "foo" "bar"}}');
       });
 
       this.assertHTML('foobar');
@@ -103,19 +80,12 @@ moduleFor(
 
     async '@test Can use a dynamic component definition'() {
       await this.renderComponentModule(() => {
-        let Foo = template('Hello, world!', {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        let Foo = template('Hello, world!');
 
         return class extends GlimmerishComponent {
           static {
             template('<this.Foo />', {
               component: this,
-              eval() {
-                return eval(arguments[0]);
-              },
             });
           }
 
@@ -129,19 +99,12 @@ moduleFor(
 
     async '@test Can use a dynamic component definition (curly)'() {
       await this.renderComponentModule(() => {
-        let Foo = template('Hello, world!', {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        let Foo = template('Hello, world!');
 
         return class extends GlimmerishComponent {
           static {
             template('{{this.Foo}}', {
               component: this,
-              eval() {
-                return eval(arguments[0]);
-              },
             });
           }
 
@@ -161,9 +124,6 @@ moduleFor(
           static {
             template('{{this.foo}}', {
               component: this,
-              eval() {
-                return eval(arguments[0]);
-              },
             });
           }
 
@@ -179,16 +139,10 @@ moduleFor(
       await this.renderComponentModule(() => {
         let foo = (v: string) => v;
 
-        let Foo = template('{{@value}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        let Foo = template('{{@value}}');
 
         return template('<Foo @value={{helper foo "Hello, world!"}}/>', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ foo, Foo }),
         });
       });
       this.assertHTML('Hello, world!');
@@ -201,16 +155,10 @@ moduleFor(
           (element: Element, [text]: [string]) => (element.innerHTML = text)
         );
 
-        let Foo = template('<div {{@value}}></div>', {
-          eval() {
-            return eval(arguments[0]);
-          },
-        });
+        let Foo = template('<div {{@value}}></div>');
 
         return template('<Foo @value={{modifier foo "Hello, world!"}}/>', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ foo, Foo }),
         });
       });
       this.assertHTML('<div>Hello, world!</div>');
@@ -220,16 +168,16 @@ moduleFor(
 );
 
 moduleFor(
-  'Strict Mode - Runtime Template Compiler (implicit) - built ins',
+  'Strict Mode - Runtime Template Compiler (explicit) - built ins',
   class extends RenderingTestCase {
     async '@test Can use Input'() {
       const { Input } = await import('@ember/component');
 
       await this.renderComponentModule(() => {
         return template('<Input/>', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({
+            Input,
+          }),
         });
       });
 
@@ -248,9 +196,9 @@ moduleFor(
 
       await this.renderComponentModule(() => {
         return template('<Textarea/>', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({
+            Textarea,
+          }),
         });
       });
 
@@ -268,9 +216,7 @@ moduleFor(
 
       await this.renderComponentModule(() => {
         return template('{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ hash }),
         });
       });
 
@@ -283,9 +229,7 @@ moduleFor(
 
       await this.renderComponentModule(() => {
         return template('{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ array }),
         });
       });
       this.assertHTML('Hello, world!');
@@ -297,9 +241,7 @@ moduleFor(
 
       await this.renderComponentModule(() => {
         return template('{{(concat "Hello" ", " "world!")}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ concat }),
         });
       });
 
@@ -314,9 +256,7 @@ moduleFor(
         return template(
           '{{#let (hash value="Hello, world!") as |hash|}}{{(get hash "value")}}{{/let}}',
           {
-            eval() {
-              return eval(arguments[0]);
-            },
+            scope: () => ({ hash, get }),
           }
         );
       });
@@ -334,9 +274,7 @@ moduleFor(
         };
 
         return template('<button {{on "click" (fn handleClick 123)}}>Click</button>', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ handleClick }),
         });
       });
 
@@ -366,9 +304,7 @@ moduleFor(
 
       await this.renderComponentModule(() => {
         return template('{{#each-in obj as |k v|}}[{{k}}:{{v}}]{{/each-in}}', {
-          eval() {
-            return eval(arguments[0]);
-          },
+          scope: () => ({ obj }),
         });
       });
 
@@ -388,9 +324,7 @@ moduleFor(
         return template(
           '{{#in-element (getElement "in-element-test")}}before{{/in-element}}after',
           {
-            eval() {
-              return eval(arguments[0]);
-            },
+            scope: () => ({ getElement }),
           }
         );
       });

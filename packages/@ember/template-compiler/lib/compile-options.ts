@@ -49,6 +49,14 @@ function buildCompileOptions(_options: EmberPrecompileOptions): EmberPrecompileO
     delete options.eval;
   }
 
+  if ('scope' in options) {
+    const scope = (options.scope as () => Record<string, unknown>)();
+
+    options.lexicalScope = (variable: string) => variable in scope;
+
+    delete options.scope;
+  }
+
   if ('locals' in options && !options.locals) {
     // Glimmer's precompile options declare `locals` like:
     //    locals?: string[]

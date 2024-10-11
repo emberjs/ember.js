@@ -54,6 +54,7 @@ export interface EmberPrecompileOptions extends PrecompileOptions {
    */
   component?: object;
   eval?: (value: string) => unknown;
+  scope?: () => Record<string, unknown>;
 }
 
 export type EmberASTPluginEnvironment = ASTPluginEnvironment & EmberPrecompileOptions;
