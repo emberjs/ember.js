@@ -50,23 +50,26 @@ export default class RenderDebug extends DebugPort {
   static {
     this.prototype.portNamespace = 'render';
     this.prototype.messages = {
-      clear() {
+      clear(this: RenderDebug) {
         this.profileManager.clearProfiles();
         this.sendMessage('profilesUpdated', { profiles: [] });
       },
 
-      releaseProfiles() {
+      releaseProfiles(this: RenderDebug) {
         this.profileManager.offProfilesAdded(this, this.sendAdded);
       },
 
-      watchProfiles() {
+      watchProfiles(this: RenderDebug) {
         this.sendMessage('profilesAdded', {
           profiles: this.profileManager.profiles,
         });
         this.profileManager.onProfilesAdded(this, this.sendAdded);
       },
 
-      updateShouldHighlightRender({ shouldHighlightRender }) {
+      updateShouldHighlightRender(
+        this: RenderDebug,
+        { shouldHighlightRender }: { shouldHighlightRender: boolean }
+      ) {
         this.profileManager.shouldHighlightRender = shouldHighlightRender;
       },
     };
@@ -80,7 +83,7 @@ export default class RenderDebug extends DebugPort {
  */
 function _subscribeToRenderEvents() {
   subscribe('render', {
-    before(name: string, timestamp, payload) {
+    before(_name: string, timestamp: number, payload: any) {
       const info = {
         type: 'began',
         timestamp,
@@ -90,7 +93,7 @@ function _subscribeToRenderEvents() {
       return profileManager.addToQueue(info);
     },
 
-    after(name, timestamp, payload, beganIndex) {
+    after(_name: string, timestamp, payload: any, beganIndex) {
       const endedInfo = {
         type: 'ended',
         timestamp,
@@ -98,7 +101,7 @@ function _subscribeToRenderEvents() {
       };
 
       const index = profileManager.addToQueue(endedInfo);
-      profileManager.queue[beganIndex].endedIndex = index;
+      profileManager.queue[beganIndex]!.endedIndex = index;
     },
   });
 }

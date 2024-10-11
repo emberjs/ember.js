@@ -1,6 +1,6 @@
 const ENTRIES = new WeakMap();
 
-function entriesFor(obj) {
+function entriesFor(obj: any) {
   let entries = ENTRIES.get(obj);
 
   if (entries === undefined) {
@@ -19,7 +19,7 @@ function entriesFor(obj) {
  * @param {String|Symbol|Function} method
  * @return {Function}
  */
-export default function bound(obj, method) {
+export default function bound(obj: any, method: string | Function) {
   let func;
 
   if (typeof method === 'function') {

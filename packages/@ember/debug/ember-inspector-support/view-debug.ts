@@ -4,7 +4,11 @@ import RenderTree from '@ember/debug/ember-inspector-support/libs/render-tree';
 import ViewInspection from '@ember/debug/ember-inspector-support/libs/view-inspection';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 
-export default class extends DebugPort {
+export default class ViewDebug extends DebugPort {
+  viewInspection!: ViewInspection;
+  renderTree!: RenderTree;
+  private scheduledSendTree: number | null = null;
+  lastRightClicked: any;
   get adapter() {
     return this.namespace?.adapter;
   }
@@ -16,19 +20,19 @@ export default class extends DebugPort {
     this.prototype.portNamespace = 'view';
 
     this.prototype.messages = {
-      getTree({ immediate }) {
+      getTree(this: ViewDebug, { immediate }: { immediate: boolean }) {
         this.sendTree(immediate);
       },
 
-      showInspection({ id, pin }) {
+      showInspection(this: ViewDebug, { id, pin }: { id: string; pin: boolean }) {
         this.viewInspection.show(id, pin);
       },
 
-      hideInspection() {
+      hideInspection(this: ViewDebug) {
         this.viewInspection.hide();
       },
 
-      inspectViews({ inspect }) {
+      inspectViews(this: ViewDebug, { inspect }: { inspect: boolean }) {
         if (inspect) {
           this.startInspecting();
         } else {
@@ -36,15 +40,15 @@ export default class extends DebugPort {
         }
       },
 
-      scrollIntoView({ id }) {
+      scrollIntoView(this: ViewDebug, { id }: { id: string }) {
         this.renderTree.scrollIntoView(id);
       },
 
-      inspectElement({ id }) {
+      inspectElement(this: ViewDebug, { id }: { id: string }) {
         this.renderTree.inspectElement(id);
       },
 
-      contextMenu() {
+      contextMenu(this: ViewDebug) {
         let { lastRightClicked } = this;
         this.lastRightClicked = null;
         this.inspectNearest(lastRightClicked);
@@ -93,7 +97,7 @@ export default class extends DebugPort {
     }
   }
 
-  onRightClick(event) {
+  onRightClick(event: MouseEvent) {
     if (event.button === 2) {
       this.lastRightClicked = event.target;
     }
@@ -103,7 +107,7 @@ export default class extends DebugPort {
     // TODO hide or redraw highlight/tooltip
   }
 
-  inspectNearest(node) {
+  inspectNearest(node: Node) {
     let renderNode = this.viewInspection.inspectNearest(node);
 
     if (!renderNode) {
@@ -125,13 +129,13 @@ export default class extends DebugPort {
    * @method inspectNode
    * @param  {Node} node The DOM node to inspect
    */
-  inspectNode(node) {
+  inspectNode(node: Node) {
     this.adapter.inspectValue(node);
   }
 
   sendTree(immediate = false) {
     if (immediate) {
-      this.send(true);
+      this.send();
       return;
     }
 
@@ -163,7 +167,7 @@ export default class extends DebugPort {
     this.viewInspection.stop();
   }
 
-  didShowInspection(id, pin) {
+  didShowInspection(id: string, pin: boolean) {
     if (pin) {
       this.sendMessage('inspectComponent', { id });
     } else {
@@ -171,7 +175,7 @@ export default class extends DebugPort {
     }
   }
 
-  didHideInspection(id, pin) {
+  didHideInspection(id: string, pin: boolean) {
     this.sendMessage('cancelSelection', { id, pin });
   }
 

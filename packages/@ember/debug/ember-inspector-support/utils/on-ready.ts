@@ -1,4 +1,4 @@
-export function onReady(callback) {
+export function onReady(callback: () => void) {
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(completed);
   } else {

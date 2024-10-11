@@ -1,12 +1,14 @@
 import classify from '@ember/debug/ember-inspector-support/utils/classify';
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 import getObjectName from '../utils/get-object-name';
+import type RenderTree from './render-tree';
+import type ObjectInspector from '../object-inspector';
 
-function makeHighlight(id) {
+function makeHighlight(id: string) {
   return `<div id="ember-inspector-highlight-${id}" role="presentation"></div>`;
 }
 
-function makeTooltip(id) {
+function makeTooltip(id: string) {
   let prefix = 'ember-inspector-tooltip';
 
   return `
@@ -226,6 +228,23 @@ function makeStylesheet(id) {
 }
 
 export default class ViewInspection {
+  renderTree: RenderTree;
+  objectInspector: ObjectInspector;
+  private didShow: boolean;
+  private didHide: boolean;
+  private didStartInspecting: boolean;
+  private didStopInspecting: boolean;
+  private id: string;
+  private currentId: string;
+  private lastMatchId: string;
+  private isInspecting: boolean;
+  private lastTarget: boolean;
+  private isShowing: boolean;
+  private isPinned: boolean;
+
+  private highlight: HTMLElement;
+  private tooltip: HTMLElement;
+  private stylesheet: HTMLElement;
   constructor({
     renderTree,
     objectInspector,
@@ -233,6 +252,13 @@ export default class ViewInspection {
     didHide,
     didStartInspecting,
     didStopInspecting,
+  }: {
+    renderTree: RenderTree;
+    objectInspector: ObjectInspector;
+    didShow: boolean;
+    didHide: boolean;
+    didStartInspecting: boolean;
+    didStopInspecting: boolean;
   }) {
     this.renderTree = renderTree;
     this.objectInspector = objectInspector;
@@ -641,7 +667,7 @@ export default class ViewInspection {
     return [['tag', stringified]];
   }
 
-  _positionTooltip(highlightRect) {
+  _positionTooltip(highlightRect: DOMRect) {
     // Positioning the tooltip: the goal is to match the Chrome's Element
     // inspection tooltip's positioning behavior as closely as possible.
 
@@ -710,20 +736,20 @@ export default class ViewInspection {
     tooltipStyle.top = `${scrollY + attachmentTop}px`;
     tooltipStyle.left = `${scrollX + attachmentLeft - leftOffset}px`;
 
-    let arrow = this.tooltip.querySelector('.ember-inspector-tooltip-arrow');
+    let arrow = this.tooltip.querySelector('.ember-inspector-tooltip-arrow')! as HTMLElement;
 
     arrow.style.left = `${Math.max(leftOffset, 0) + arrowLeft}px`;
   }
 
-  _insertHTML(html) {
+  _insertHTML(html: string) {
     document.body.insertAdjacentHTML('beforeend', html.trim());
-    return document.body.lastChild;
+    return document.body.lastChild as HTMLElement;
   }
 
-  _insertStylesheet(content) {
+  _insertStylesheet(content: string) {
     let style = document.createElement('style');
     style.appendChild(document.createTextNode(content));
     document.head.appendChild(style);
-    return style;
+    return style as HTMLElement;
   }
 }

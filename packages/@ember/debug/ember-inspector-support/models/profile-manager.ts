@@ -9,7 +9,7 @@ type Bounds = {
   parent: HTMLElement;
 };
 
-function getEdges(first: any, last: any, closest: any[]) {
+function getEdges(first: any, last: any, closest: any) {
   let start = null;
   let end = null;
   for (let i = 0; i < closest.length; i++) {
@@ -68,11 +68,11 @@ function insertStylesheet() {
 
 type Info = {
   type: string;
-  endedIndex: any;
-  now: number;
+  endedIndex?: any;
+  now?: number;
   timestamp: number;
   payload: Payload;
-  profileNode: ProfileNode;
+  profileNode?: ProfileNode;
 };
 
 type Highlight = {
@@ -248,11 +248,11 @@ export default class ProfileManager {
           this.queue[entry.endedIndex]!.profileNode = this.began(
             entry.timestamp,
             entry.payload,
-            entry.now
+            entry.now!
           );
         }
       } else {
-        this.ended(entry.timestamp, entry.payload, entry.profileNode);
+        this.ended(entry.timestamp, entry.payload, entry.profileNode!);
       }
     }
     this.queue.length = 0;

@@ -1,7 +1,4 @@
-/* eslint-disable ember/no-private-routing-service */
 import DebugPort from './debug-port';
-import { compareVersion } from '@ember/debug/ember-inspector-support/utils/version';
-import { VERSION } from '@ember/debug/ember-inspector-support/utils/ember';
 import classify from '@ember/debug/ember-inspector-support/utils/classify';
 import dasherize from '@ember/debug/ember-inspector-support/utils/dasherize';
 import { _backburner, later } from '@ember/runloop';
@@ -11,6 +8,8 @@ const { hasOwnProperty } = Object.prototype;
 
 export default class RouteDebug extends DebugPort {
   _cachedRouteTree = null;
+  private __currentURL: any;
+  private __currentRouter: any;
   init() {
     super.init();
     this.__currentURL = this.currentURL;
@@ -55,16 +54,15 @@ export default class RouteDebug extends DebugPort {
   static {
     this.prototype.portNamespace = 'route';
     this.prototype.messages = {
-      getTree() {
+      getTree(this: RouteDebug) {
         this.sendTree();
       },
-      getCurrentRoute() {
+      getCurrentRoute(this: RouteDebug) {
         this.sendCurrentRoute();
       },
     };
   }
 
-  // eslint-disable-next-line ember/no-observers
   sendCurrentRoute() {
     const { currentPath: name, currentURL: url } = this;
     later(() => {
@@ -80,13 +78,13 @@ export default class RouteDebug extends DebugPort {
       const router = this.router;
       const routerLib = router._routerMicrolib || router.router;
       let routeNames = routerLib.recognizer.names;
-      let routeTree = {};
+      let routeTree: Record<any, any> = {};
       for (let routeName in routeNames) {
         if (!hasOwnProperty.call(routeNames, routeName)) {
           continue;
         }
         let route = routeNames[routeName];
-        buildSubTree.call(this, routeTree, route);
+        this.buildSubTree(routeTree, route);
       }
       this._cachedRouteTree = arrayizeChildren({ children: routeTree });
     }
@@ -98,13 +96,13 @@ export default class RouteDebug extends DebugPort {
     let error;
     try {
       routeTree = this.routeTree;
-    } catch (e) {
+    } catch (e: any) {
       error = e.message;
     }
     this.sendMessage('routeTree', { tree: routeTree, error });
   }
 
-  getClassName(name, type) {
+  getClassName(name: string, type: string) {
     let container = this.namespace.owner;
     let resolver = container.application.__registry__.resolver;
     let prefix = this.emberCliConfig?.modulePrefix;
@@ -152,109 +150,96 @@ export default class RouteDebug extends DebugPort {
     }
     return className;
   }
-}
 
-/**
- *
- * @param {*} routeTree
- * @param {*} route
- * @this {RouteDebug}
- * @return {Void}
- */
-function buildSubTree(routeTree, route) {
-  let handlers = route.handlers;
-  let owner = this.namespace.owner;
-  let subTree = routeTree;
-  let item;
-  let routeClassName;
-  let routeHandler;
-  let controllerName;
-  let controllerClassName;
-  let templateName;
-  let controllerFactory;
+  buildSubTree(routeTree: Record<any, any>, route: { handlers: any; segments: string[] }) {
+    let handlers = route.handlers;
+    let owner = this.namespace.owner;
+    let subTree = routeTree;
+    let item;
+    let routeClassName;
+    let routeHandler;
+    let controllerName;
+    let controllerClassName;
+    let templateName;
+    let controllerFactory;
 
-  for (let i = 0; i < handlers.length; i++) {
-    item = handlers[i];
-    let handler = item.handler;
-    if (handler.match(/(loading|error)$/)) {
-      // make sure it has been defined before calling `getHandler` because
-      // we don't want to generate sub routes as this has side-effects.
-      if (!routeHasBeenDefined(owner, handler)) {
-        continue;
+    for (let i = 0; i < handlers.length; i++) {
+      item = handlers[i];
+      let handler = item.handler;
+      if (handler.match(/(loading|error)$/)) {
+        // make sure it has been defined before calling `getHandler` because
+        // we don't want to generate sub routes as this has side-effects.
+        if (!routeHasBeenDefined(owner, handler)) {
+          continue;
+        }
       }
-    }
 
-    if (subTree[handler] === undefined) {
-      routeClassName = this.getClassName(handler, 'route');
+      if (subTree[handler] === undefined) {
+        routeClassName = this.getClassName(handler, 'route');
 
-      const router = this.router;
-      const routerLib = router._routerMicrolib || router.router;
-      // 3.9.0 removed intimate APIs from router
-      // https://github.com/emberjs/ember.js/pull/17843
-      // https://deprecations.emberjs.com/v3.x/#toc_remove-handler-infos
-      if (compareVersion(VERSION, '3.9.0') !== -1) {
-        // Ember >= 3.9.0
+        const router = this.router;
+        const routerLib = router._routerMicrolib || router.router;
+        // 3.9.0 removed intimate APIs from router
+        // https://github.com/emberjs/ember.js/pull/17843
+        // https://deprecations.emberjs.com/v3.x/#toc_remove-handler-infos
         routeHandler = routerLib.getRoute(handler);
-      } else {
-        // Ember < 3.9.0
-        routeHandler = routerLib.getHandler(handler);
-      }
 
-      // Skip when route is an unresolved promise
-      if (typeof routeHandler?.then === 'function') {
-        // ensure we rebuild the route tree when this route is resolved
-        routeHandler.then(() => (this._cachedRouteTree = null));
-        controllerName = '(unresolved)';
-        controllerClassName = '(unresolved)';
-        templateName = '(unresolved)';
-      } else {
-        const get =
-          routeHandler.get ||
-          function (prop) {
-            return this[prop];
-          };
-        controllerName = get.call(routeHandler, 'controllerName') || routeHandler.routeName;
-        controllerFactory = owner.factoryFor
-          ? owner.factoryFor(`controller:${controllerName}`)
-          : owner._lookupFactory(`controller:${controllerName}`);
-        controllerClassName = this.getClassName(controllerName, 'controller');
-        templateName = this.getClassName(handler, 'template');
-      }
+        // Skip when route is an unresolved promise
+        if (typeof routeHandler?.then === 'function') {
+          // ensure we rebuild the route tree when this route is resolved
+          routeHandler.then(() => (this._cachedRouteTree = null));
+          controllerName = '(unresolved)';
+          controllerClassName = '(unresolved)';
+          templateName = '(unresolved)';
+        } else {
+          const get =
+            routeHandler.get ||
+            function (this: any, prop: any) {
+              return this[prop];
+            };
+          controllerName = get.call(routeHandler, 'controllerName') || routeHandler.routeName;
+          controllerFactory = owner.factoryFor
+            ? owner.factoryFor(`controller:${controllerName}`)
+            : owner._lookupFactory(`controller:${controllerName}`);
+          controllerClassName = this.getClassName(controllerName, 'controller');
+          templateName = this.getClassName(handler, 'template');
+        }
 
-      subTree[handler] = {
-        value: {
-          name: handler,
-          routeHandler: {
-            className: routeClassName,
+        subTree[handler] = {
+          value: {
             name: handler,
+            routeHandler: {
+              className: routeClassName,
+              name: handler,
+            },
+            controller: {
+              className: controllerClassName,
+              name: controllerName,
+              exists: Boolean(controllerFactory),
+            },
+            template: {
+              name: templateName,
+            },
           },
-          controller: {
-            className: controllerClassName,
-            name: controllerName,
-            exists: Boolean(controllerFactory),
-          },
-          template: {
-            name: templateName,
-          },
-        },
-      };
+        };
 
-      if (i === handlers.length - 1) {
-        // it is a route, get url
-        subTree[handler].value.url = getURL(owner, route.segments);
-        subTree[handler].value.type = 'route';
-      } else {
-        // it is a resource, set children object
-        subTree[handler].children = {};
-        subTree[handler].value.type = 'resource';
+        if (i === handlers.length - 1) {
+          // it is a route, get url
+          subTree[handler].value.url = getURL(owner, route.segments);
+          subTree[handler].value.type = 'route';
+        } else {
+          // it is a resource, set children object
+          subTree[handler].children = {};
+          subTree[handler].value.type = 'resource';
+        }
       }
+      subTree = subTree[handler].children;
     }
-    subTree = subTree[handler].children;
   }
 }
 
-function arrayizeChildren(routeTree) {
-  let obj = {};
+function arrayizeChildren(routeTree: { value?: any; children: Record<any, any> }) {
+  let obj: any = {};
   // Top node doesn't have a value
   if (routeTree.value) {
     obj.value = routeTree.value;
@@ -278,9 +263,9 @@ function arrayizeChildren(routeTree) {
  * @param {*} segments
  * @return {String}
  */
-function getURL(container, segments) {
+function getURL(container: any, segments: any) {
   const locationImplementation = container.lookup('router:main').location;
-  let url = [];
+  let url: string[] = [];
   for (let i = 0; i < segments.length; i++) {
     let name = null;
 
@@ -302,16 +287,16 @@ function getURL(container, segments) {
     }
   }
 
-  url = url.join('/');
+  let fullUrl = url.join('/');
 
-  if (url.match(/_unused_dummy_/)) {
-    url = '';
+  if (fullUrl.match(/_unused_dummy_/)) {
+    fullUrl = '';
   } else {
-    url = `/${url}`;
-    url = locationImplementation.formatURL(url);
+    fullUrl = `/${fullUrl}`;
+    fullUrl = locationImplementation.formatURL(fullUrl);
   }
 
-  return url;
+  return fullUrl;
 }
 
 /**
@@ -320,6 +305,6 @@ function getURL(container, segments) {
  * @param {String} name
  * @return {Void}
  */
-function routeHasBeenDefined(owner, name) {
+function routeHasBeenDefined(owner: any, name: string) {
   return owner.hasRegistration(`template:${name}`) || owner.hasRegistration(`route:${name}`);
 }
