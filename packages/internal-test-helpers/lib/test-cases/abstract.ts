@@ -7,6 +7,7 @@ import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
 import { runLoopSettled } from '../run';
 import { assert } from '@ember/debug';
+import { isElement } from '@glimmer/util';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -157,7 +158,7 @@ export default abstract class AbstractTestCase {
   }
 
   assertElement(
-    node: HTMLElement,
+    node: Element,
     {
       ElementType = HTMLElement,
       tagName,
@@ -178,7 +179,7 @@ export default abstract class AbstractTestCase {
   }
 
   assertComponentElement(
-    node: HTMLElement,
+    node: ChildNode | null,
     {
       ElementType = HTMLElement,
       tagName = 'div',
@@ -191,6 +192,11 @@ export default abstract class AbstractTestCase {
       content?: unknown;
     }
   ) {
+    if (node === null || !isElement(node)) {
+      this.assert.ok(false, `Expected a ${ElementType.name}, but got ${String(node)}`);
+      return;
+    }
+
     attrs = Object.assign(
       {},
       { id: regex(/^ember\d*$/), class: classes('ember-view') },

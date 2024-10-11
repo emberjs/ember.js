@@ -7,7 +7,10 @@ import { templateFactory } from '@glimmer/opcode-compiler';
 import compileOptions from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 
-export function template(templateString: string, options: Partial<EmberPrecompileOptions>): object {
+export function template(
+  templateString: string,
+  options?: Partial<EmberPrecompileOptions>
+): object {
   const evaluate = buildEvaluator(options);
 
   const normalizedOptions = compileOptions(options);
