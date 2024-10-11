@@ -37,15 +37,13 @@ import { isPath, trackLocals } from './utils';
 export default function transformWrapMountAndOutlet(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
-  let { hasLocal, node } = trackLocals();
+  let { hasLocal, visitor } = trackLocals(env);
 
   return {
     name: 'transform-wrap-mount-and-outlet',
 
     visitor: {
-      Template: node,
-      ElementNode: node,
-      Block: node,
+      ...visitor,
 
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
         if (

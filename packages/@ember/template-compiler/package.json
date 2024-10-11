@@ -2,7 +2,8 @@
   "name": "@ember/template-compiler",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./runtime": "./runtime.ts"
   },
   "dependencies": {
     "@ember/debug": "workspace:*",

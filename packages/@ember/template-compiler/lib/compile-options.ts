@@ -99,12 +99,22 @@ export default function compileOptions(
 
 type Evaluator = (value: string) => unknown;
 
+// https://tc39.es/ecma262/2020/#prod-IdentifierName
+const IDENT = /^[\p{ID_Start}$_][\p{ID_Continue}$_\u200C\u200D]*$/u;
+
 function inScope(variable: string, evaluator: Evaluator): boolean {
+  // If the identifier is not a valid JS identifier, it's definitely not in scope
+  if (!IDENT.exec(variable)) {
+    return false;
+  }
+
   try {
     return evaluator(`typeof ${variable} !== "undefined"`) === true;
   } catch (e) {
     // This occurs when attempting to evaluate a reserved word using eval (`eval('typeof let')`).
-    // If the variable is a reserved word, it's definitely not in scope, so return false.
+    // If the variable is a reserved word, it's definitely not in scope, so return false. Since
+    // reserved words are somewhat contextual, we don't try to identify them purely by their
+    // name. See https://tc39.es/ecma262/#sec-keywords-and-reserved-words
     if (e && e instanceof SyntaxError) {
       return false;
     }

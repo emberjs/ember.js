@@ -1,7 +1,7 @@
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import { assert } from '@ember/debug';
 import type { EmberASTPluginEnvironment } from '../types';
-import { isPath } from './utils';
+import { isPath, trackLocals } from './utils';
 
 /**
  @module ember
@@ -25,13 +25,15 @@ import { isPath } from './utils';
 */
 export default function transformEachTrackArray(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
+  let { hasLocal, visitor } = trackLocals(env);
 
   return {
     name: 'transform-each-track-array',
 
     visitor: {
+      ...visitor,
       BlockStatement(node: AST.BlockStatement): AST.Node | void {
-        if (isPath(node.path) && node.path.original === 'each') {
+        if (isPath(node.path) && node.path.original === 'each' && !hasLocal('each')) {
           let firstParam = node.params[0];
           assert('has firstParam', firstParam);
 
