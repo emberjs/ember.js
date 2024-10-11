@@ -1471,6 +1471,9 @@ importers:
       '@ember/template-compilation':
         specifier: workspace:*
         version: link:../@ember/template-compilation
+      '@ember/template-compiler':
+        specifier: workspace:*
+        version: link:../@ember/template-compiler
       '@ember/utils':
         specifier: workspace:*
         version: link:../@ember/utils

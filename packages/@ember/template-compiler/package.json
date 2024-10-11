@@ -3,7 +3,9 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./runtime": "./runtime.ts"
+    "./runtime": "./runtime.ts",
+    "./primitives": "./primitives.ts",
+    "./types": "./lib/types.ts"
   },
   "dependencies": {
     "@ember/debug": "workspace:*",
