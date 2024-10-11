@@ -17,7 +17,9 @@
     "noImplicitReturns": true,
     "allowUnreachableCode": false,
     "noPropertyAccessFromIndexSignature": true,
-    "noUnusedLocals": true,
+    // This should be handled by the linter so it can be disabled
+    // where appropriate
+    "noUnusedLocals": false,
     "noUncheckedIndexedAccess": true,
     "noUnusedParameters": true,
     "esModuleInterop": false,
