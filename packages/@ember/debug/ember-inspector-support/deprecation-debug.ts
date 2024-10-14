@@ -32,7 +32,7 @@ export default class DeprecationDebug extends DebugPort {
         let grouped = this.groupedDeprecations;
         let deprecations = [];
         for (let i in grouped) {
-          if (!grouped.hasOwnProperty(i)) {
+          if (!Object.prototype.hasOwnProperty.call(grouped, i)) {
             continue;
           }
           deprecations.push(grouped[i]);
@@ -207,9 +207,8 @@ export default class DeprecationDebug extends DebugPort {
 
       let error: any;
 
-      // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
       try {
-        // @ts-ignore
+        // @ts-expect-error When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
         __fail__.fail();
       } catch (e) {
         error = e;
@@ -223,8 +222,8 @@ export default class DeprecationDebug extends DebugPort {
           // Chrome
           stack = error.stack
             .replace(/^\s+at\s+/gm, '')
-            .replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2')
-            .replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)')
+            .replace(/^([^(]+?)([\n$])/gm, '{anonymous}($1)$2')
+            .replace(/^Object.<anonymous>\s*\(([^)]+)\)/gm, '{anonymous}($1)')
             .split('\n');
           stack.shift();
         } else {

@@ -95,7 +95,7 @@ class InElementSupportProvider {
 
     const pushElement = NewElementBuilder.prototype['pushElement'];
     NewElementBuilder.prototype['pushElement'] = function (...args: any) {
-      // @ts-ignore
+      // @ts-expect-error monkey patching... could be removed, just some perf gain
       pushElement.call(this, ...args);
       args[0].__emberInspectorParentNode = componentStack.slice(-1)[0];
     };
@@ -104,7 +104,7 @@ class InElementSupportProvider {
     const pushRemoteElement = NewElementBuilder.prototype.pushRemoteElement;
     NewElementBuilder.prototype.pushRemoteElement = function (...args: any) {
       currentElement = this.element;
-      // @ts-ignore
+      // @ts-expect-error monkey patching...
       return pushRemoteElement.call(this, ...args);
     };
 
