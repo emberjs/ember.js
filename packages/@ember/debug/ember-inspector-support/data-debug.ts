@@ -2,9 +2,9 @@ import DebugPort from './debug-port';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
 
 export default class DataDebug extends DebugPort {
-  portNamespace!: string;
-  sentTypes!: Record<string, any>;
-  sentRecords!: Record<string, any>;
+  declare portNamespace: string;
+  declare sentTypes: Record<string, any>;
+  declare sentRecords: Record<string, any>;
   init() {
     super.init();
     this.sentTypes = {};

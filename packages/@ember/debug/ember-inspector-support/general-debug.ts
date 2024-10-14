@@ -12,8 +12,8 @@ import DebugPort from './debug-port';
  * @module ember-debug/general-debug
  */
 export default class GeneralDebug extends DebugPort {
-  portNamespace!: string;
-  messages!: {
+  declare portNamespace: string;
+  declare messages: {
     /**
      * Called from the inspector to check if the inspected app has been booted.
      */

@@ -1,7 +1,7 @@
 import DebugPort from './debug-port';
 
 export default class ContainerDebug extends DebugPort {
-  objectToConsole: any;
+  declare objectToConsole: any;
   get objectInspector() {
     return this.namespace?.objectInspector;
   }

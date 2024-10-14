@@ -10,7 +10,7 @@ let profileManager = new ProfileManager();
 _subscribeToRenderEvents();
 
 export default class RenderDebug extends DebugPort {
-  profileManager: ProfileManager;
+  declare profileManager: ProfileManager;
   constructor(data?: any) {
     super(data);
     this.profileManager = profileManager;

@@ -5,10 +5,10 @@ import ViewInspection from '@ember/debug/ember-inspector-support/libs/view-inspe
 import bound from '@ember/debug/ember-inspector-support/utils/bound-method';
 
 export default class ViewDebug extends DebugPort {
-  viewInspection!: ViewInspection;
-  renderTree!: RenderTree;
+  declare viewInspection: ViewInspection;
+  declare renderTree: RenderTree;
   private scheduledSendTree: number | null = null;
-  lastRightClicked: any;
+  declare lastRightClicked: any;
   get adapter() {
     return this.namespace?.adapter;
   }

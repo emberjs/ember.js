@@ -2,8 +2,8 @@ import BasicAdapter from './basic';
 import { run } from '@ember/runloop';
 
 export default class WebExtension extends BasicAdapter {
-  private _channel!: MessageChannel;
-  private _chromePort!: MessagePort;
+  declare private _channel: MessageChannel;
+  declare private _chromePort: MessagePort;
   init() {
     this._channel = new MessageChannel();
     this._chromePort = this._channel?.port1;

@@ -4,7 +4,7 @@ import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
 import Evented from '@ember/debug/ember-inspector-support/utils/evented';
 
 export default class Port extends Evented.extend(BaseObject) {
-  now!: number;
+  declare now: number;
   constructor(data: any) {
     super(data);
   }

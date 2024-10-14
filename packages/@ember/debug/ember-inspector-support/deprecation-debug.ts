@@ -7,11 +7,11 @@ import { cancel, debounce } from '@ember/runloop';
 import type SourceMapSupport from '@ember/debug/ember-inspector-support/libs/source-map';
 
 export default class DeprecationDebug extends DebugPort {
-  options: any;
-  private _warned!: boolean;
-  debounce: any;
-  private _watching: any;
-  deprecationsToSend: {
+  declare options: any;
+  declare private _warned: boolean;
+  declare debounce: any;
+  declare private _watching: any;
+  declare deprecationsToSend: {
     stackStr: string;
     message: string;
     url: string;
@@ -19,10 +19,10 @@ export default class DeprecationDebug extends DebugPort {
     id: string;
     sources: any[];
   }[];
-  private sourceMap!: SourceMapSupport;
-  groupedDeprecations: any;
-  deprecations: any;
-  private __emberCliConfig: any;
+  declare private sourceMap: SourceMapSupport;
+  declare groupedDeprecations: any;
+  declare deprecations: any;
+  declare private __emberCliConfig: any;
   static {
     this.prototype.portNamespace = 'deprecation';
     this.prototype.sourceMap = new SourceMap();
