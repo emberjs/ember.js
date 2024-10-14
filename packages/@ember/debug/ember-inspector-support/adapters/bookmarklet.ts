@@ -1,6 +1,6 @@
 import BasicAdapter from './basic';
 
-export default class extends BasicAdapter {
+export default class BookmarkletAdapter extends BasicAdapter {
   init() {
     super.init();
     this._listen();

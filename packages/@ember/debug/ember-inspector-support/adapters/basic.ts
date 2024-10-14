@@ -59,7 +59,7 @@ export default class BasicAdapter extends BaseObject {
 
     @param {Function} callback
   */
-  onMessageReceived(callback: () => void) {
+  onMessageReceived(callback: (msg: any) => void) {
     this._messageCallbacks.push(callback);
   }
 
