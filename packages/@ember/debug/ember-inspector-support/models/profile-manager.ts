@@ -98,10 +98,13 @@ export default class ProfileManager {
     this._profilesAddedCallbacks = [];
     this.queue = [];
     this.shouldHighlightRender = false;
-    this.stylesheet = insertStylesheet();
     // keep track of all the active highlights
     this.highlights = [];
     this.isHighlightEnabled = true;
+  }
+
+  setup() {
+    this.stylesheet = insertStylesheet();
   }
 
   began(timestamp: number, payload: Payload, now: number) {

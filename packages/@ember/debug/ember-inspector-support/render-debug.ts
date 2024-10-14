@@ -14,6 +14,7 @@ export default class RenderDebug extends DebugPort {
   constructor(data?: any) {
     super(data);
     this.profileManager = profileManager;
+    this.profileManager.setup();
     this.profileManager.wrapForErrors = (context, callback) =>
       this.port.wrap(() => callback.call(context));
     _backburner.on('end', bound(this, this._updateComponentTree));
