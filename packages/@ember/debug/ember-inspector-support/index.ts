@@ -8,6 +8,7 @@ import Application from '@ember/application';
 import type ApplicationInstance from '@ember/application/instance';
 
 export function setupEmberInspectorSupport() {
+  (window as any).EMBER_INSPECTOR_SUPPORT_BUNDLED = true;
   window.addEventListener('ember-inspector-loaded' as any, (event: CustomEvent) => {
     const adapter = event.detail.adapter;
     const EMBER_VERSIONS_SUPPORTED = event.detail.EMBER_VERSIONS_SUPPORTED;
