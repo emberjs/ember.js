@@ -115,6 +115,7 @@
     "@embroider/shared-internals": "^2.5.0",
     "@glimmer/component": "workspace:^",
     "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.0",
     "@simple-dom/document": "^1.4.0",
     "@swc-node/register": "^1.6.8",
     "@swc/core": "^1.3.100",
@@ -422,8 +423,7 @@
       "ember/version.js": "ember-source/ember/version.js",
       "route-recognizer/index.js": "ember-source/route-recognizer/index.js",
       "router_js/index.js": "ember-source/router_js/index.js",
-      "rsvp/index.js": "ember-source/rsvp/index.js",
-      "source-map-js/index.js": "ember-source/source-map-js/index.js"
+      "rsvp/index.js": "ember-source/rsvp/index.js"
     }
   },
   "typesVersions": {

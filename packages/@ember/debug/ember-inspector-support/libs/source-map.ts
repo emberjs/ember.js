@@ -1,5 +1,5 @@
 import BaseObject from '@ember/debug/ember-inspector-support/utils/base-object';
-import * as SourceMap from 'source-map-js';
+import { SourceMapConsumer } from 'source-map-js';
 const notFoundError = new Error('Source map url not found');
 
 export default class SourceMapSupport extends BaseObject {
@@ -56,7 +56,7 @@ export default class SourceMapSupport extends BaseObject {
       (response) => {
         if (response) {
           const map = JSON.parse(response.map);
-          const sm = new SourceMap.SourceMapConsumer(map);
+          const sm = new SourceMapConsumer(map);
           sourceMaps[url] = sm;
           return sm;
         }

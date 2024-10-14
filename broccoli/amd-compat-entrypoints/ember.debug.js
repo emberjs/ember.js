@@ -197,6 +197,9 @@ d('@ember/controller/index', emberControllerIndex);
 import * as emberDebugIndex from '@ember/debug/index';
 d('@ember/debug/index', emberDebugIndex);
 
+import * as emberDebugInspectorSupportIndex from '@ember/debug/ember-inspector-support/index';
+d('@ember/debug/ember-inspector-support/index', emberDebugInspectorSupportIndex);
+
 import * as emberDebugLibCaptureRenderTree from '@ember/debug/lib/capture-render-tree';
 d('@ember/debug/lib/capture-render-tree', emberDebugLibCaptureRenderTree);
 
