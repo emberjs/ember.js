@@ -3,9 +3,9 @@ import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object
 import { inspect } from '@ember/debug/ember-inspector-support/utils/type-check';
 import { CustomModifierManager } from '@glimmer/manager';
 import * as GlimmerRuntime from '@glimmer/runtime';
-import type { CapturedRenderNode } from '@glimmer/interfaces';
+import type { CapturedRenderNode } from '@glimmer/interfaces/lib/runtime/debug-render-tree';
 
-declare module '@glimmer/interfaces' {
+declare module '@glimmer/interfaces/lib/runtime/debug-render-tree' {
   interface CapturedRenderNode {
     meta: {
       parentElement: HTMLBaseElement;
@@ -482,8 +482,8 @@ export default class RenderTree {
         // move modifiers and components into the element children
         parentNode!.children.forEach((child) => {
           if (
-            (child as any).bounds.parentElement === instance ||
-            (child as any).meta?.parentElement === instance ||
+            (child.bounds!.parentElement as unknown as HTMLElement) === instance ||
+            child.meta?.parentElement === instance ||
             (child.type === 'modifier' && (child as any).bounds.firstNode === instance)
           ) {
             node.children.push(child);
