@@ -22,7 +22,6 @@ import type Mixin from '@ember/object/mixin';
 import ObjectProxy from '@ember/object/proxy';
 import ArrayProxy from '@ember/array/proxy';
 import Component from '@ember/component';
-import GlimmerComponent from '@glimmer/component';
 
 const keys = Object.keys;
 
@@ -1228,7 +1227,7 @@ function getDebugInfo(object: any) {
       'element',
       'targetObject'
     );
-  } else if (GlimmerComponent && object instanceof GlimmerComponent) {
+  } else if (object.constructor.name === 'GlimmerDebugComponent') {
     // These properties don't really exist on Glimmer Components, but
     // reading their values trigger a development mode assertion. The
     // more correct long term fix is to make getters lazy (shows "..."

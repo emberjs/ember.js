@@ -4,14 +4,21 @@ import SourceMap from '@ember/debug/ember-inspector-support/libs/source-map';
 import { registerDeprecationHandler } from '@ember/debug';
 import { guidFor } from '@ember/debug/ember-inspector-support/utils/ember/object/internals';
 import { cancel, debounce } from '@ember/runloop';
-import SourceMapSupport from '@ember/debug/ember-inspector-support/libs/source-map';
+import type SourceMapSupport from '@ember/debug/ember-inspector-support/libs/source-map';
 
 export default class DeprecationDebug extends DebugPort {
   options: any;
   private _warned!: boolean;
   debounce: any;
   private _watching: any;
-  deprecationsToSend: { stackStr: string, message: string, url: string, count: number, id: string, sources: any[] }[];
+  deprecationsToSend: {
+    stackStr: string;
+    message: string;
+    url: string;
+    count: number;
+    id: string;
+    sources: any[];
+  }[];
   private sourceMap!: SourceMapSupport;
   groupedDeprecations: any;
   deprecations: any;
@@ -36,7 +43,10 @@ export default class DeprecationDebug extends DebugPort {
         this.sendPending();
       },
 
-      sendStackTraces(this: DeprecationDebug, message: { deprecation: { message: string; sources: { stackStr: string }[] } }) {
+      sendStackTraces(
+        this: DeprecationDebug,
+        message: { deprecation: { message: string; sources: { stackStr: string }[] } }
+      ) {
         let deprecation = message.deprecation;
         deprecation.sources.forEach((source) => {
           let stack = source.stackStr;
@@ -97,26 +107,23 @@ export default class DeprecationDebug extends DebugPort {
    */
   fetchSourceMap(stackStr: string) {
     if (this.emberCliConfig && this.emberCliConfig.environment === 'development') {
-      return this.sourceMap.map(stackStr).then(
-        (mapped: any[]) => {
-          if (mapped && mapped.length > 0) {
-            let source = mapped.find(
-              (item: any) =>
-                item.source &&
-                Boolean(item.source.match(new RegExp(this.emberCliConfig.modulePrefix)))
-            );
+      return this.sourceMap.map(stackStr).then((mapped: any[]) => {
+        if (mapped && mapped.length > 0) {
+          let source = mapped.find(
+            (item: any) =>
+              item.source &&
+              Boolean(item.source.match(new RegExp(this.emberCliConfig.modulePrefix)))
+          );
 
-            if (source) {
-              source.found = true;
-            } else {
-              source = mapped[0];
-              source.found = false;
-            }
-            return source;
+          if (source) {
+            source.found = true;
+          } else {
+            source = mapped[0];
+            source.found = false;
           }
-        },
-        null
-      );
+          return source;
+        }
+      }, null);
     } else {
       return Promise.resolve(null);
     }
@@ -150,16 +157,13 @@ export default class DeprecationDebug extends DebugPort {
         let found = obj.sources.find((s: any) => s.stackStr === deprecation.stackStr);
         if (!found) {
           let stackStr = deprecation.stackStr;
-          promise = this.fetchSourceMap(stackStr).then(
-            (map) => {
-              obj.sources.push({ map, stackStr });
-              if (map) {
-                obj.hasSourceMap = true;
-              }
-              return undefined;
-            },
-            null
-          );
+          promise = this.fetchSourceMap(stackStr).then((map) => {
+            obj.sources.push({ map, stackStr });
+            if (map) {
+              obj.hasSourceMap = true;
+            }
+            return undefined;
+          }, null);
         }
         return promise.then(() => {
           delete obj.stackStr;

@@ -34,7 +34,6 @@ export default class DataDebug extends DebugPort {
     return owner.resolveRegistration(name);
   }
 
-
   get objectInspector() {
     return this.namespace?.objectInspector;
   }
