@@ -22,9 +22,9 @@ export type PromiseChainedEvent = {
 class PromiseAssembler extends Evented.extend(BaseObject) {
   // RSVP lib to debug
   isStarted = false;
-  RSVP: any;
-  all!: any[];
-  promiseIndex!: Record<string, number>;
+  declare RSVP: any;
+  declare all: any[];
+  declare promiseIndex: Record<string, number>;
   promiseChained: ((e: any) => void) | null = null;
   promiseRejected: ((e: any) => void) | null = null;
   promiseFulfilled: ((e: any) => void) | null = null;

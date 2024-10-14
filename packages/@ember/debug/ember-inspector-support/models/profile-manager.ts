@@ -85,14 +85,14 @@ type Highlight = {
  */
 export default class ProfileManager {
   profiles: ProfileNode[] = [];
-  current: ProfileNode | undefined;
-  queue: Info[];
-  highlights: Highlight[];
-  currentSet: ProfileNode[];
-  private _profilesAddedCallbacks: { context: any; callback: Function }[];
-  shouldHighlightRender: boolean;
-  isHighlightEnabled: boolean;
-  stylesheet: HTMLStyleElement;
+  declare current: ProfileNode | undefined;
+  declare queue: Info[];
+  declare highlights: Highlight[];
+  declare currentSet: ProfileNode[];
+  private declare _profilesAddedCallbacks: { context: any; callback: Function }[];
+  declare shouldHighlightRender: boolean;
+  declare isHighlightEnabled: boolean;
+  declare stylesheet: HTMLStyleElement;
   constructor() {
     this.currentSet = [];
     this._profilesAddedCallbacks = [];
@@ -150,8 +150,6 @@ export default class ProfileManager {
 
   /**
    * Push a new profile into the queue
-   * @param info
-   * @return {number}
    */
   addToQueue(info: Info) {
     const index = this.queue.push(info);

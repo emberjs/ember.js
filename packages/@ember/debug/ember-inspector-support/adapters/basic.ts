@@ -6,7 +6,7 @@ import { onReady } from '../utils/on-ready';
 export default class BasicAdapter extends BaseObject {
   private _messageCallbacks: any[] = [];
   private __environment = '';
-  interval: number | undefined;
+  declare interval: number | undefined;
   init() {
     Promise.resolve(this.connect()).then(() => {
       this.onConnectionReady();
@@ -18,9 +18,6 @@ export default class BasicAdapter extends BaseObject {
   /**
    * Uses the current build's config module to determine
    * the environment.
-   *
-   * @property environment
-   * @type {String}
    */
   get environment() {
     if (!this.__environment) {
@@ -40,7 +37,6 @@ export default class BasicAdapter extends BaseObject {
   /**
    * A wrapper for `console.warn`.
    *
-   * @method warn
    */
   warn(...args: any[]) {
     return console.warn(...args);
@@ -91,8 +87,6 @@ export default class BasicAdapter extends BaseObject {
    * The idea is to control errors triggered by the inspector
    * and make sure that users don't get mislead by inspector-caused
    * bugs.
-   *
-   * @method handleError
    * @param {Error} error
    */
   handleError(error: any) {
@@ -115,8 +109,6 @@ export default class BasicAdapter extends BaseObject {
 
     A promise that resolves when the connection
     with the inspector is set up and ready.
-
-    @return {Promise}
   */
   connect() {
     return new Promise((resolve, reject) => {

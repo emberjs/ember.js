@@ -1,5 +1,5 @@
 export default class BaseObject {
-  namespace: any;
+  declare namespace: any;
   isDestroyed = false;
   isDestroying = false;
   constructor(data?: any) {

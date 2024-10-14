@@ -9,7 +9,7 @@ import RSVP from 'rsvp';
 import type PromiseModel from './models/promise';
 
 export default class PromiseDebug extends DebugPort {
-  declare private __session: any;
+  private declare __session: any;
   declare promiseAssembler: PromiseAssembler;
   declare updatedPromises: PromiseModel[];
   declare releaseMethods: (() => void)[];

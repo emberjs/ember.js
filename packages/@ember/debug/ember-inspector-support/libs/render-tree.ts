@@ -130,23 +130,22 @@ class InElementSupportProvider {
 }
 
 export default class RenderTree {
-  tree!: CapturedRenderNode[];
-  owner: any;
-  retainObject: any;
-  releaseObject: any;
-  inspectNode: (node: Node) => void;
-  renderNodeIdPrefix: string;
-  nodes!: Record<string, CapturedRenderNode>;
-  serialized!: Record<string, any>;
-  ranges!: Record<string, Range | null | undefined>;
-  parentNodes: any;
-  previouslyRetainedObjects: any;
-  retainedObjects: any;
-  inElementSupport: InElementSupportProvider | undefined;
+  declare tree: CapturedRenderNode[];
+  declare owner: any;
+  declare retainObject: any;
+  declare releaseObject: any;
+  declare inspectNode: (node: Node) => void;
+  declare renderNodeIdPrefix: string;
+  declare nodes: Record<string, CapturedRenderNode>;
+  declare serialized: Record<string, any>;
+  declare ranges: Record<string, Range | null | undefined>;
+  declare parentNodes: any;
+  declare previouslyRetainedObjects: any;
+  declare retainedObjects: any;
+  declare inElementSupport: InElementSupportProvider | undefined;
   /**
    * Sets up the initial options.
    *
-   * @method constructor
    * @param {Object} options
    *  - {owner}      owner           The Ember app's owner.
    *  - {Function}   retainObject    Called to retain an object for future inspection.
@@ -201,9 +200,6 @@ export default class RenderTree {
    *   bounds: Option<'single' | 'range'>;
    *   children: SerializedRenderNode[];
    * }
-   *
-   * @method build
-   * @return {Array<SerializedRenderNode>} The render nodes tree.
    */
   build() {
     this._reset();
@@ -218,9 +214,6 @@ export default class RenderTree {
 
   /**
    * Find a render node by id.
-   *
-   * @param {string} id A render node id.
-   * @return {Option<SerializedRenderNode>} A render node with the given id, if any.
    */
   find(id: string): CapturedRenderNode | null {
     let node = this.nodes[id];
@@ -235,7 +228,6 @@ export default class RenderTree {
   /**
    * Find the deepest enclosing render node for a given DOM node.
    *
-   * @method findNearest
    * @param {Node} node A DOM node.
    * @param {string} hint The id of the last-matched render node (see comment below).
    * @return {Option<SerializedRenderNode>} The deepest enclosing render node, if any.
@@ -280,7 +272,6 @@ export default class RenderTree {
   /**
    * Get the bounding rect for a given render node id.
    *
-   * @method getBoundingClientRect
    * @param {*} id A render node id.
    * @return {Option<DOMRect>} The bounding rect, if the render node is found and has valid `bounds`.
    */
@@ -315,7 +306,6 @@ export default class RenderTree {
   /**
    * Get the DOM range for a give render node id.
    *
-   * @method getRange
    * @param {string} id A render node id.
    * @return {Option<Range>} The DOM range, if the render node is found and has valid `bounds`.
    */
@@ -343,7 +333,6 @@ export default class RenderTree {
   /**
    * Scroll the given render node id into view (if the render node is found and has valid `bounds`).
    *
-   * @method scrollIntoView
    * @param {string} id A render node id.
    */
   scrollIntoView(id: string) {
@@ -368,7 +357,6 @@ export default class RenderTree {
    * Inspect the bounds for the given render node id in the "Elements" panel (if the render node
    * is found and has valid `bounds`).
    *
-   * @method inspectElement
    * @param {string} id A render node id.
    */
   inspectElement(id: string) {

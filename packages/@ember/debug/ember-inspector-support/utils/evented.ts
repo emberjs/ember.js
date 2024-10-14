@@ -63,7 +63,7 @@ export default class Evented {
 
   static extend(klass: any) {
     const k = class extends klass {};
-    Evented.applyTo(k);
+    Evented.applyTo(k.prototype);
     return k;
   }
 

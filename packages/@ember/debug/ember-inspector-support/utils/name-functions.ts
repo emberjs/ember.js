@@ -1,7 +1,6 @@
 /**
  * Returns a medium sized model name. Makes sure it's maximum 50 characters long.
  *
- * @method modelName
  * @param  {Any} model
  * @return {String}       The model name.
  */
@@ -20,7 +19,6 @@ export function modelName(model: any) {
 /**
  * Takes an Ember Data model and strips out the extra noise from the name.
  *
- * @method shortModelName
  * @param  {DS.Model} model
  * @return {String}       The concise model name.
  */
@@ -33,7 +31,6 @@ export function shortModelName(model: any) {
 /**
  * Returns the controller name. Strips out extra noise such as `subclass of`.
  *
- * @method controllerName
  * @param  {Controller} controller
  * @return {String}            The controller name
  */
@@ -44,7 +41,6 @@ export function controllerName(controller: any) {
 /**
  * Cleans up the controller name before returning it.
  *
- * @method shortControllerName
  * @param  {Controller} controller
  * @return {String}            The short controller name
  */
@@ -60,10 +56,6 @@ export function shortControllerName(controller: any) {
 /**
  * Cleans up an instance name to create shorter/less noisy names.
  * Example: `<app@component:textarea::ember545>` becomes `textarea`.
- *
- * @method cleanupInstanceName
- * @param  {String} name
- * @return {String} The short/cleaner name
  */
 function cleanupInstanceName(name: string) {
   let match = name.match(/^.+:(.+)::/);
@@ -81,7 +73,6 @@ function cleanupInstanceName(name: string) {
 /**
  * Cleans up the view name before returning it.
  *
- * @method shortViewName
  * @param  {Component} view The component.
  * @return {String}      The short view name.
  */
@@ -92,7 +83,6 @@ export function shortViewName(view: any) {
 /**
  * Returns the view name. Removes the `subclass` noise.
  *
- * @method viewName
  * @param  {Component} view The component.
  * @return {String}      The view name.
  */

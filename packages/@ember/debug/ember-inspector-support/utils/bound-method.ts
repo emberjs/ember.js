@@ -14,10 +14,6 @@ function entriesFor(obj: any) {
 /**
  * Return `method.bind(obj)` or `obj[method].bind(obj)`. When called multiple
  * times, the same bound function will be returned.
- *
- * @param {Object} obj
- * @param {String|Symbol|Function} method
- * @return {Function}
  */
 export default function bound(obj: any, method: string | Function) {
   let func;

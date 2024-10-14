@@ -8,8 +8,8 @@ const { hasOwnProperty } = Object.prototype;
 
 export default class RouteDebug extends DebugPort {
   _cachedRouteTree = null;
-  declare private __currentURL: any;
-  declare private __currentRouter: any;
+  private declare __currentURL: any;
+  private declare __currentRouter: any;
   init() {
     super.init();
     this.__currentURL = this.currentURL;

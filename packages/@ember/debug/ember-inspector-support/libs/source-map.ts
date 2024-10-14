@@ -3,7 +3,7 @@ import { SourceMapConsumer } from 'source-map-js';
 const notFoundError = new Error('Source map url not found');
 
 export default class SourceMapSupport extends BaseObject {
-  private _lastPromise!: Promise<any>;
+  private declare _lastPromise: Promise<any>;
   init() {
     super.init();
     this._lastPromise = Promise.resolve(undefined);
@@ -12,9 +12,6 @@ export default class SourceMapSupport extends BaseObject {
   /**
    * Returns a promise that resolves to an array
    * of mapped sourcew.
-   *
-   * @param  {String} stack The stack trace
-   * @return {RSVP.Promise}
    */
   map(stack: string): Promise<any> {
     let parsed = fromStackProperty(stack);

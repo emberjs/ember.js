@@ -24,9 +24,6 @@ export default class Port extends Evented.extend(BaseObject) {
    * Unique id per application (not application instance). It's very important
    * that this id doesn't change when the app is reset otherwise the inspector
    * will no longer recognize the app.
-   *
-   * @property uniqueId
-   * @type {String}
    */
   get uniqueId() {
     return guidFor(this.namespace?._application, 'ember');
@@ -35,9 +32,6 @@ export default class Port extends Evented.extend(BaseObject) {
   init() {
     /**
      * Stores the timestamp when it was first accessed.
-     *
-     * @property now
-     * @type {Number}
      */
     this.now = Date.now();
 
@@ -93,7 +87,6 @@ export default class Port extends Evented.extend(BaseObject) {
    * - Catches all errors during production
    * and displays them in a user friendly manner.
    *
-   * @method wrap
    * @param {Function} fn
    * @return {Mixed} The return value of the passed function
    */

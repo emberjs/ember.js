@@ -8,9 +8,9 @@ import type SourceMapSupport from '@ember/debug/ember-inspector-support/libs/sou
 
 export default class DeprecationDebug extends DebugPort {
   declare options: any;
-  declare private _warned: boolean;
+  private declare _warned: boolean;
   declare debounce: any;
-  declare private _watching: any;
+  private declare _watching: any;
   declare deprecationsToSend: {
     stackStr: string;
     message: string;
@@ -19,10 +19,10 @@ export default class DeprecationDebug extends DebugPort {
     id: string;
     sources: any[];
   }[];
-  declare private sourceMap: SourceMapSupport;
+  private declare sourceMap: SourceMapSupport;
   declare groupedDeprecations: any;
   declare deprecations: any;
-  declare private __emberCliConfig: any;
+  private declare __emberCliConfig: any;
   static {
     this.prototype.portNamespace = 'deprecation';
     this.prototype.sourceMap = new SourceMap();

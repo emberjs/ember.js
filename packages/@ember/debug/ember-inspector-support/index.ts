@@ -170,7 +170,6 @@ function loadEmberDebug(
   /**
    * Get all the Ember.Application instances from Ember.Namespace.NAMESPACES
    * and add our own applicationId and applicationName to them
-   * @return {*}
    */
   function getApplications() {
     let namespaces = A(Namespace.NAMESPACES);
@@ -250,10 +249,6 @@ function loadEmberDebug(
   /**
    * Checks if a version is between two different versions.
    * version should be >= left side, < right side
-   *
-   * @param {String} version1
-   * @param {String} version2
-   * @return {Boolean}
    */
   function versionTest(version: string, between: [string, string]) {
     let fromVersion = between[0];
@@ -272,10 +267,6 @@ function loadEmberDebug(
    * `-1` if version1 < version
    * 0 if version1 == version2
    * 1 if version1 > version2
-   *
-   * @param {String} version1
-   * @param {String} version2
-   * @return {Boolean} result of the comparison
    */
   function compareVersion(version1: string, version2: string) {
     let compared, i;
@@ -292,19 +283,12 @@ function loadEmberDebug(
 
   /**
    * Remove -alpha, -beta, etc from versions
-   *
-   * @param {String} version
-   * @return {String} The cleaned up version
    */
   function cleanupVersion(version: string) {
     return version.replace(/-.*/g, '');
   }
 
   /**
-   * @method compare
-   * @param {Number} val
-   * @param {Number} number
-   * @return {Number}
    *  0: same
    * -1: <
    *  1: >

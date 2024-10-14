@@ -26,8 +26,8 @@ export default class PromiseModel extends BaseObject {
   @dateComputed() settledAt: Date | null = null;
   @dateComputed() chainedAt: Date | null = null;
 
-  value: any;
-  reason: any;
+  declare value: any;
+  declare reason: any;
   guid = '';
   label = '';
   parent: PromiseModel | null = null;

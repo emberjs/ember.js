@@ -126,7 +126,6 @@ export default class ViewDebug extends DebugPort {
    * Opens the "Elements" tab and selects the given DOM node. Doesn't work in all
    * browsers/addons (only in the Chrome and FF devtools addons at the time of writing).
    *
-   * @method inspectNode
    * @param  {Node} node The DOM node to inspect
    */
   inspectNode(node: Node) {

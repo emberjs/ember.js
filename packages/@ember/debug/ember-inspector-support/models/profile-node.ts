@@ -18,14 +18,14 @@ export type Payload = {
 
 class ProfileNode {
   isHighlightEnabled = true;
-  time!: number;
-  start: number;
-  timestamp: any;
-  viewGuid: string | undefined;
-  name: string;
-  parent: ProfileNode | undefined;
-  children: ProfileNode[];
-  duration: number | undefined;
+  declare time: number;
+  declare start: number;
+  declare timestamp: any;
+  declare viewGuid: string | undefined;
+  declare name: string;
+  declare parent: ProfileNode | undefined;
+  declare children: ProfileNode[];
+  declare duration: number | undefined;
   constructor(start: number, payload: Payload, parent?: ProfileNode, now?: number) {
     let name;
     this.start = start;

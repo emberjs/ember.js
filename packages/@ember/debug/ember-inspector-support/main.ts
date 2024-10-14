@@ -43,9 +43,6 @@ class EmberDebug extends BaseObject {
   /**
    * We use the application's id instead of the owner's id so that we use the same inspector
    * instance for the same application even if it was reset (owner changes on reset).
-   *
-   * @property applicationId
-   * @type {String}
    */
   get applicationId() {
     if (!this.isTesting) {

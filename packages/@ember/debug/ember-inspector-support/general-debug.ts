@@ -55,12 +55,6 @@ export default class GeneralDebug extends DebugPort {
    * Contains ember-cli configuration info.
    *
    * Info used to determine the file paths of an ember-cli app.
-   *
-   * @return {Object}
-   *  {String} environment ex: 'development'
-   *  {String} modulePrefix ex: 'my-app'
-   *  {String} podModulePrefix ex: 'my-app/pods'
-   *  {Boolean} usePodsByDefault
    */
   emberCliConfig = this.getAppConfig();
 
@@ -130,10 +124,6 @@ export default class GeneralDebug extends DebugPort {
 
 /**
  * Finds a meta tag by searching through a certain meta attribute.
- *
- * @param  {String} attribute
- * @param  {RegExp} regExp
- * @return {Element}
  */
 function findMetaTag(attribute: string, regExp = /.*/) {
   let metas = document.querySelectorAll(`meta[${attribute}]`);

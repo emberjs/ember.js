@@ -229,23 +229,23 @@ function makeStylesheet(id: string) {
 }
 
 export default class ViewInspection {
-  renderTree: RenderTree;
-  objectInspector: ObjectInspector;
-  private didShow: (id: string, pin: boolean) => void;
-  private didHide: (id: string, pinned: boolean) => void;
-  private didStartInspecting: () => void;
-  private didStopInspecting: () => void;
-  private id: string;
-  private currentId: string | null;
-  private lastMatchId: string | null;
-  private isInspecting: boolean;
-  private lastTarget: EventTarget | null;
-  private isShowing: boolean;
-  private isPinned: boolean;
+  declare renderTree: RenderTree;
+  declare objectInspector: ObjectInspector;
+  private declare didShow: (id: string, pin: boolean) => void;
+  private declare didHide: (id: string, pinned: boolean) => void;
+  private declare didStartInspecting: () => void;
+  private declare didStopInspecting: () => void;
+  private declare id: string;
+  private declare currentId: string | null;
+  private declare lastMatchId: string | null;
+  private declare isInspecting: boolean;
+  private declare lastTarget: EventTarget | null;
+  private declare isShowing: boolean;
+  private declare isPinned: boolean;
 
-  private highlight!: HTMLElement;
-  private tooltip!: HTMLElement;
-  private stylesheet!: HTMLElement;
+  private declare highlight: HTMLElement;
+  private declare tooltip: HTMLElement;
+  private declare stylesheet: HTMLElement;
   constructor({
     renderTree,
     objectInspector,
