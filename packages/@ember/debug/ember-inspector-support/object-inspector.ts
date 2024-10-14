@@ -1227,7 +1227,7 @@ function getDebugInfo(object: any) {
       'element',
       'targetObject'
     );
-  } else if (object.constructor.name === 'GlimmerDebugComponent') {
+  } else if (object?.constructor?.name === 'GlimmerDebugComponent') {
     // These properties don't really exist on Glimmer Components, but
     // reading their values trigger a development mode assertion. The
     // more correct long term fix is to make getters lazy (shows "..."
