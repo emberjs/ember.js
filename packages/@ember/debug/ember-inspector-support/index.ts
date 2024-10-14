@@ -37,7 +37,7 @@ function loadEmberDebug(
 
   // prevent from injecting twice
   if (!w.EmberInspector) {
-    w.EmberInspector = MainModule;
+    w.EmberInspector = new MainModule();
     w.EmberInspector.Adapter = Adapters[adapter];
 
     onApplicationStart(function appStarted(instance: ApplicationInstance) {

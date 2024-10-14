@@ -176,4 +176,4 @@ function getOwner(application: Application) {
   return null;
 }
 
-export default new EmberDebug();
+export default EmberDebug;
