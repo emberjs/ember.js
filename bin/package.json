@@ -18,7 +18,7 @@
     "globby": "^14.0.2",
     "js-yaml": "^4.1.0",
     "mkdirp": "^3.0.1",
-    "puppeteer-chromium-resolver": "^20.0.0",
+    "puppeteer-chromium-resolver": "^23.0.0",
     "tar": "^6.2.0"
   },
   "devDependencies": {

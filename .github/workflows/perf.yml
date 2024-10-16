@@ -39,7 +39,7 @@ jobs:
       - uses: wyvox/action-setup-pnpm@v3
         if: steps.did-change.outputs.changed == 'true'
         with:
-          node-version: '20.1.0'
+          node-version: '22'
 
       - name: RUN
         if: steps.did-change.outputs.changed == 'true'

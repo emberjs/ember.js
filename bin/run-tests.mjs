@@ -1,4 +1,4 @@
-/* eslint-disable no-inline-comments */
+ 
 // @ts-check
 
 import child from 'child_process';
@@ -6,7 +6,7 @@ import { resolve } from 'path';
 import PCR from 'puppeteer-chromium-resolver';
 import { fileURLToPath } from 'url';
 
-// eslint-disable-next-line new-cap
+ 
 const { puppeteer, executablePath } = await PCR({});
 
 const __root = fileURLToPath(new URL('..', import.meta.url));
@@ -44,7 +44,7 @@ await /** @type {Promise<void>} */ (
 console.log('[ci] spawned');
 
 const browser = await puppeteer.launch({
-  headless: 'new',
+  headless: true,
   executablePath,
   args: ['--no-sandbox', '--disable-setuid-sandbox'],
 });

@@ -3,6 +3,6 @@
   "name": "@types/puppeteer-chromium-resolver",
   "types": "index.d.ts",
   "dependencies": {
-    "puppeteer": "^20.1.2"
+    "puppeteer": "23.5.3"
   }
 }
