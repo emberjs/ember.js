@@ -248,8 +248,7 @@ export function template(
 }
 
 const evaluator = (source: string) => {
-  return new Function(`return
-  ${source}`)();
+  return new Function(`return  ${source}`)();
 };
 
 function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
