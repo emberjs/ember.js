@@ -5,6 +5,7 @@ import type {
   ModifierManager,
   Owner,
 } from '@glimmer/interfaces';
+import type { PrecompileOptionsWithLexicalScope } from '@glimmer/syntax';
 import { registerDestructor } from '@glimmer/destroyable';
 import {
   helperCapabilities,
@@ -99,6 +100,8 @@ export interface DefineComponentOptions {
 
   // additional strict-mode keywords
   keywords?: string[];
+
+  emit?: PrecompileOptionsWithLexicalScope['emit'];
 }
 
 export function defineComponent(
@@ -116,7 +119,7 @@ export function defineComponent(
   let keywords = options.keywords ?? [];
 
   let definition = options.definition ?? templateOnlyComponent();
-  let templateFactory = createTemplate(templateSource, { strictMode, keywords }, scopeValues ?? {});
+  let templateFactory = createTemplate(templateSource, { strictMode, keywords, emit: options.emit }, scopeValues ?? {});
   setComponentTemplate(templateFactory, definition);
   return definition;
 }

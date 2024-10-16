@@ -60,6 +60,7 @@ import { ConcreteBounds } from '../../bounds';
 import { hasCustomDebugRenderTreeLifecycle } from '../../component/interfaces';
 import { resolveComponent } from '../../component/resolve';
 import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../curried-value';
+import { getDebugName } from '../../debug-render-tree';
 import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
 import { ARGS, CONSTANTS } from '../../symbols';
@@ -417,7 +418,7 @@ APPEND_OPCODES.add(Op.BeginComponentTransaction, (vm, { op1: _state }) => {
   if (import.meta.env.DEV) {
     let { definition, manager } = check(vm.fetchValue(_state), CheckComponentInstance);
 
-    name = definition.resolvedName ?? manager.getDebugName(definition.state);
+    name = getDebugName(definition, manager);
   }
 
   vm.beginCacheGroup(name);
@@ -674,7 +675,7 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
         vm.updateWith(new DebugRenderTreeUpdateOpcode(bucket));
       });
     } else {
-      let name = definition.resolvedName ?? manager.getDebugName(definition.state);
+      let name = getDebugName(definition, manager);
 
       vm.env.debugRenderTree.create(instance, {
         type: 'component',
