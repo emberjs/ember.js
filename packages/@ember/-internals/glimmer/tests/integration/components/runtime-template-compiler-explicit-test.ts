@@ -1,6 +1,8 @@
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
+import { on } from '@ember/modifier/on';
+import { fn } from '@ember/helper';
 
 moduleFor(
   'Strict Mode - Runtime Template Compiler (explicit)',
@@ -274,7 +276,7 @@ moduleFor(
         };
 
         return template('<button {{on "click" (fn handleClick 123)}}>Click</button>', {
-          scope: () => ({ handleClick }),
+          scope: () => ({ handleClick, on, fn }),
         });
       });
 

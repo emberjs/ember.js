@@ -14,6 +14,11 @@ type ComponentClass = abstract new (...args: any[]) => object;
  */
 export interface BaseTemplateOptions {
   moduleName?: string;
+  /**
+   * Whether the template should be treated as a strict-mode template. Defaults
+   * to `true`.
+   */
+  strictMode?: boolean;
 }
 
 /**
@@ -230,8 +235,9 @@ export function template<C extends ComponentClass>(
 ): C;
 export function template(
   templateString: string,
-  options?: BaseTemplateOptions | BaseClassTemplateOptions<any>
+  providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
+  const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
   const evaluate = buildEvaluator(options);
 
   const normalizedOptions = compileOptions(options);
@@ -261,11 +267,9 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
   } else {
     const scope = options.scope?.();
 
-    if (!scope && options.component) {
+    if (!scope) {
       return evaluator;
     }
-
-    assert(`The 'template' function must be called with an evaluator, scope or component`, scope);
 
     return (source: string) => {
       const argNames = Object.keys(scope);
