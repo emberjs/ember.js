@@ -48,7 +48,6 @@ test('deprecated program visitor', (assert) => {
     return {
       name: 'plugin',
       visitor: {
-        // eslint-disable-next-line deprecation/deprecation
         Program(node: AST.Program) {
           assert.step(node.type);
         },
