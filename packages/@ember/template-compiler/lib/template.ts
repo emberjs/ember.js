@@ -193,7 +193,7 @@ export interface ImplicitEvalOption {
  *
  * For more details on the requirements of the `eval` option, see {@linkcode ImplicitEvalOption}.
  */
-export interface ImplicitTemplateOnlyOptions extends BaseTemplateOptions, ImplicitEvalOption { }
+export type ImplicitTemplateOnlyOptions = BaseTemplateOptions & ImplicitEvalOption;
 
 /**
  * When using `template` inside of a class, you can pass an `eval` option that
@@ -220,14 +220,14 @@ export interface ImplicitTemplateOnlyOptions extends BaseTemplateOptions, Implic
  * syntax and it's implemented in the Glimmer compiler, the implicit form should
  * be able to support them.
  */
-export interface ImplicitClassOptions<C extends ComponentClass>
-  extends BaseClassTemplateOptions<C>,
-  ImplicitEvalOption { }
+export type ImplicitClassOptions<C extends ComponentClass> = BaseClassTemplateOptions<C> &
+  ImplicitEvalOption;
 
 export function template(
   templateString: string,
   options?: ExplicitTemplateOnlyOptions | ImplicitTemplateOnlyOptions
 ): TemplateOnlyComponent;
+
 export function template<C extends ComponentClass>(
   templateString: string,
   options: ExplicitClassOptions<C> | ImplicitClassOptions<C> | BaseClassTemplateOptions<C>
