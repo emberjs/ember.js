@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -21,6 +20,8 @@ moduleFor(
           },
         });
 
+        hide(Foo);
+
         return template('<Foo />', {
           eval() {
             return eval(arguments[0]);
@@ -36,6 +37,8 @@ moduleFor(
       await this.renderComponentModule(() => {
         let foo = () => 'Hello, world!';
 
+        hide(foo);
+
         return template('{{foo}}', {
           eval() {
             return eval(arguments[0]);
@@ -50,6 +53,9 @@ moduleFor(
     async '@test Can use a custom modifier in scope'() {
       await this.renderComponentModule(() => {
         let foo = defineSimpleModifier((element: Element) => (element.innerHTML = 'Hello, world!'));
+
+        hide(foo);
+
         return template('<div {{foo}}></div>', {
           eval() {
             return eval(arguments[0]);
@@ -69,6 +75,8 @@ moduleFor(
           },
         });
 
+        hide(each);
+
         return template(`{{#each}}Hello, world!{{/each}}`, {
           eval() {
             return eval(arguments[0]);
@@ -83,6 +91,8 @@ moduleFor(
     async '@test Can use constant values in ambiguous helper/component position'() {
       await this.renderComponentModule(() => {
         let value = 'Hello, world!';
+
+        hide(value);
 
         return template(`{{value}}`, {
           eval() {
@@ -186,11 +196,15 @@ moduleFor(
       await this.renderComponentModule(() => {
         let foo = (v: string) => v;
 
+        hide(foo);
+
         let Foo = template('{{@value}}', {
           eval() {
             return eval(arguments[0]);
           },
         });
+
+        hide(Foo);
 
         return template('<Foo @value={{helper foo "Hello, world!"}}/>', {
           eval() {
@@ -208,11 +222,15 @@ moduleFor(
           (element: Element, [text]: [string]) => (element.innerHTML = text)
         );
 
+        hide(foo);
+
         let Foo = template('<div {{@value}}></div>', {
           eval() {
             return eval(arguments[0]);
           },
         });
+
+        hide(Foo);
 
         return template('<Foo @value={{modifier foo "Hello, world!"}}/>', {
           eval() {
@@ -231,6 +249,8 @@ moduleFor(
   class extends RenderingTestCase {
     async '@test Can use Input'() {
       const { Input } = await import('@ember/component');
+
+      hide(Input);
 
       await this.renderComponentModule(() => {
         return template('<Input/>', {
@@ -253,6 +273,8 @@ moduleFor(
     async '@test Can use Textarea'() {
       const { Textarea } = await import('@ember/component');
 
+      hide(Textarea);
+
       await this.renderComponentModule(() => {
         return template('<Textarea/>', {
           eval() {
@@ -273,6 +295,8 @@ moduleFor(
     async '@test Can use hash'() {
       const { hash } = await import('@glimmer/runtime');
 
+      hide(hash);
+
       await this.renderComponentModule(() => {
         return template('{{#let (hash value="Hello, world!") as |hash|}}{{hash.value}}{{/let}}', {
           eval() {
@@ -288,6 +312,8 @@ moduleFor(
     async '@test Can use array'() {
       const { array } = await import('@glimmer/runtime');
 
+      hide(array);
+
       await this.renderComponentModule(() => {
         return template('{{#each (array "Hello, world!") as |value|}}{{value}}{{/each}}', {
           eval() {
@@ -301,6 +327,8 @@ moduleFor(
 
     async '@test Can use concat'() {
       const { concat } = await import('@glimmer/runtime');
+
+      hide(concat);
 
       await this.renderComponentModule(() => {
         return template('{{(concat "Hello" ", " "world!")}}', {
@@ -316,6 +344,9 @@ moduleFor(
 
     async '@test Can use get'() {
       const { hash, get } = await import('@glimmer/runtime');
+
+      hide(hash);
+      hide(get);
 
       await this.renderComponentModule(() => {
         return template(
@@ -339,6 +370,8 @@ moduleFor(
         let handleClick = (value: unknown) => {
           assert.equal(value, 123);
         };
+
+        hide(handleClick);
 
         return template('<button {{on "click" (fn handleClick 123)}}>Click</button>', {
           eval() {
@@ -371,6 +404,8 @@ moduleFor(
         bar: 'BAR',
       };
 
+      hide(obj);
+
       await this.renderComponentModule(() => {
         return template('{{#each-in obj as |k v|}}[{{k}}:{{v}}]{{/each-in}}', {
           eval() {
@@ -391,6 +426,8 @@ moduleFor(
 
       const getElement = (id: string) => document.querySelector(`#${id}`)!;
 
+      hide(getElement);
+
       await this.renderComponentModule(() => {
         return template(
           '{{#in-element (getElement "in-element-test")}}before{{/in-element}}after',
@@ -407,3 +444,17 @@ moduleFor(
     }
   }
 );
+
+/**
+ * This function is used to hide a variable from the transpiler, so that it
+ * doesn't get removed as "unused". It does not actually do anything with the
+ * variable, it just makes it be part of an expression that the transpiler
+ * won't remove.
+ *
+ * It's a bit of a hack, but it's necessary for testing.
+ *
+ * @param variable The variable to hide.
+ */
+const hide = (variable: unknown) => {
+  new Function(`return (${JSON.stringify(variable)});`);
+};
