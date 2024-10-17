@@ -1,6 +1,5 @@
 import { VERSION } from '@ember/version';
-import Adapters from './adapters';
-import MainModule from './main';
+import type Adapters from './adapters';
 import { guidFor } from '@ember/object/internals';
 import { A } from '@ember/array';
 import Namespace from '@ember/application/namespace';
@@ -15,14 +14,15 @@ export function setupEmberInspectorSupport() {
   window.addEventListener('ember-inspector-loaded' as any, (event: CustomEvent) => {
     const adapter = event.detail.adapter;
     const EMBER_VERSIONS_SUPPORTED = event.detail.EMBER_VERSIONS_SUPPORTED;
-    loadEmberDebug(adapter, EMBER_VERSIONS_SUPPORTED);
+    void loadEmberDebug(adapter, EMBER_VERSIONS_SUPPORTED);
   });
 
   const e = new Event('ember-inspector-support-setup');
   window.dispatchEvent(e);
 }
 
-function loadEmberDebug(
+// eslint-disable-next-line disable-features/disable-async-await
+async function loadEmberDebug(
   adapter: keyof typeof Adapters,
   EMBER_VERSIONS_SUPPORTED: [string, string]
 ) {
@@ -31,6 +31,11 @@ function loadEmberDebug(
   if (w.NO_EMBER_DEBUG) {
     return;
   }
+
+  // @ts-ignore
+  const Adapters = await import('./adapters');
+  // @ts-ignore
+  const MainModule = await import('./main');
 
   if (!versionTest(VERSION, EMBER_VERSIONS_SUPPORTED)) {
     // Wrong inspector version. Redirect to the correct version.

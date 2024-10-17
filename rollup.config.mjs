@@ -125,6 +125,7 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
       file: `dist/${output}`,
       generatedCode: 'es2015',
       sourcemap: true,
+      inlineDynamicImports: true,
 
       // We are relying on unfrozen modules because we need to add the
       // __esModule marker to them in our amd-compat-entrypoints. Rollup has an
@@ -305,6 +306,7 @@ function entrypoint(pkg, which) {
     return;
   }
   let resolved = resolve(pkg.root, module);
+  console.log('entrypoint', module, pkg.name, pkg.root, resolved);
   let { dir, base } = parse(resolved);
   return {
     dir,
