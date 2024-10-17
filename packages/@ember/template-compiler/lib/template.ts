@@ -1,5 +1,4 @@
 import templateOnly, { type TemplateOnlyComponent } from '@ember/component/template-only';
-import { assert } from '@ember/debug';
 import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { setComponentTemplate } from '@glimmer/manager';
@@ -194,7 +193,7 @@ export interface ImplicitEvalOption {
  *
  * For more details on the requirements of the `eval` option, see {@linkcode ImplicitEvalOption}.
  */
-export interface ImplicitTemplateOnlyOptions extends BaseTemplateOptions, ImplicitEvalOption {}
+export interface ImplicitTemplateOnlyOptions extends BaseTemplateOptions, ImplicitEvalOption { }
 
 /**
  * When using `template` inside of a class, you can pass an `eval` option that
@@ -223,7 +222,7 @@ export interface ImplicitTemplateOnlyOptions extends BaseTemplateOptions, Implic
  */
 export interface ImplicitClassOptions<C extends ComponentClass>
   extends BaseClassTemplateOptions<C>,
-    ImplicitEvalOption {}
+  ImplicitEvalOption { }
 
 export function template(
   templateString: string,
