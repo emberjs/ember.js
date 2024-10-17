@@ -196,8 +196,8 @@ namespace Ember {
   // This syntax is namespace-specific: `import` in a namespace is aliasing one
   // namespace to another, while `export` marks the item public on the namespace
   // (as with the rest of the exported items).
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export import RSVP = _RSVP;
+  export const RSVP = _RSVP;
+  export type RSVP = typeof _RSVP;
 
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;

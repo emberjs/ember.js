@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./minimal": "./minimal.ts"
+    "./minimal": "./minimal.ts",
+    "./-internal": "./lib/system/-internal.ts"
   },
   "dependencies": {
     "@ember/-internals": "workspace:*",

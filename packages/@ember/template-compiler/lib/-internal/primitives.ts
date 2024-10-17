@@ -2,4 +2,5 @@ export {
   RESOLUTION_MODE_TRANSFORMS,
   STRICT_MODE_TRANSFORMS,
   STRICT_MODE_KEYWORDS,
-} from './plugins';
+  INTERNAL_PLUGINS,
+} from '../plugins';

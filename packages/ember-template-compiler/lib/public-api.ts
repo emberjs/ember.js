@@ -13,7 +13,7 @@ export {
 export {
   RESOLUTION_MODE_TRANSFORMS,
   STRICT_MODE_TRANSFORMS,
-} from '@ember/template-compiler/primitives';
+} from '@ember/template-compiler/-internal-primitives';
 export type { EmberPrecompileOptions } from './types';
 
 export { preprocess as _preprocess, print as _print } from '@glimmer/syntax';

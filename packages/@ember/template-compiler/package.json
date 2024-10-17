@@ -4,7 +4,7 @@
   "exports": {
     ".": "./index.ts",
     "./runtime": "./runtime.ts",
-    "./primitives": "./primitives.ts",
+    "./-internal-primitives": "./-internal-primitives.ts",
     "./types": "./lib/types.ts"
   },
   "dependencies": {
