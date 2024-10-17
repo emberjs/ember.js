@@ -4,11 +4,6 @@ import GlimmerishComponent from '../../utils/glimmerish-component';
 import { on } from '@ember/modifier/on';
 import { fn } from '@ember/helper';
 
-// Assign these to constants so that they don't get removed by an
-// eager transpiler pass. These days, people should be using
-// verbatim-mode compilers, but this codebase isn't doing that yet.
-const _ = [on, fn];
-
 moduleFor(
   'Strict Mode - Runtime Template Compiler (implicit)',
   class extends RenderingTestCase {
@@ -365,6 +360,9 @@ moduleFor(
 
     async '@test Can use on and fn'(assert: QUnit['assert']) {
       assert.expect(1);
+
+      hide(on);
+      hide(fn);
 
       await this.renderComponentModule(() => {
         let handleClick = (value: unknown) => {
