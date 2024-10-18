@@ -14,6 +14,7 @@ import type { InternalFactory } from '@ember/-internals/owner';
 import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import type EngineInstance from '@ember/engine/instance';
 import templateOnly from '@ember/component/template-only';
+import { define } from '../module-for';
 
 const TextNode = window.Text;
 
@@ -173,6 +174,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
   }
 
   rerender() {
+    this.#assertNotAwaiting('rerender');
     this.component!.rerender();
   }
 
@@ -191,6 +193,42 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   registerCustomHelper(name: string, definition: InternalFactory<object>) {
     this.owner.register(`helper:${name}`, definition);
+  }
+
+  #awaiting = false;
+
+  #assertNotAwaiting(from: string) {
+    if (this.#awaiting) {
+      throw new Error(
+        `Cannot call '${from}' while awaiting a component module. Make sure to await 'this.renderComponentModule()'`
+      );
+    }
+  }
+
+  override assertHTML(html: string): void {
+    this.#assertNotAwaiting('assertHTML');
+    super.assertHTML(html);
+  }
+
+  async renderComponentModule<T extends object>(callback: () => T): Promise<void> {
+    let { owner } = this;
+
+    this.#awaiting = true;
+    let component = await define(callback);
+    this.#awaiting = false;
+
+    owner.register(`component:test-component`, component);
+
+    this.render(`<TestComponent />`, component);
+  }
+
+  async registerComponentModule<T extends object>(name: string, callback: () => T): Promise<T> {
+    let { owner } = this;
+    let component = await define(callback);
+
+    owner.register(`component:${name}`, component);
+
+    return component;
   }
 
   registerComponent(

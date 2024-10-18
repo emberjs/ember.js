@@ -1,0 +1,23 @@
+{
+  "name": "@ember/template-compiler",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./runtime": "./runtime.ts",
+    "./-internal-primitives": "./-internal-primitives.ts",
+    "./-internal-utils": "./-internal-utils.ts",
+    "./types": "./lib/types.ts"
+  },
+  "dependencies": {
+    "@ember/debug": "workspace:*",
+    "@glimmer/compiler": "0.92.4",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.92.4",
+    "@glimmer/opcode-compiler": "0.92.4",
+    "@glimmer/syntax": "0.92.3",
+    "@glimmer/interfaces": "0.92.3",
+    "@ember/-internals": "workspace:*",
+    "@ember/component": "workspace:*",
+    "expect-type": "^0.15.0"
+  }
+}
