@@ -7,11 +7,11 @@ const BrowserStackLaunchers = {
       '--os',
       'OS X',
       '--osv',
-      'Catalina',
+      'Monterey',
       '--b',
       'safari',
       '--bv',
-      'latest', // Will always be 15.x on Catalina
+      'latest', // Will always be 15.x on Monterey
       '-t',
       '1200',
       '--u',
