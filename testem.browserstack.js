@@ -1,17 +1,17 @@
 const FailureOnlyPerBrowserReporter = require('testem-failure-only-reporter/grouped-by-browser');
 
 const BrowserStackLaunchers = {
-  BS_Safari_12: {
+  BS_Safari_15: {
     exe: 'node_modules/.bin/browserstack-launch',
     args: [
       '--os',
       'OS X',
       '--osv',
-      'Mojave',
+      'Catalina',
       '--b',
       'safari',
       '--bv',
-      'latest', // Will always be 12.x on Mojave
+      'latest', // Will always be 15.x on Catalina
       '-t',
       '1200',
       '--u',
