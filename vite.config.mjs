@@ -18,6 +18,20 @@ const { packageName: getPackageName, PackageCache } = require('@embroider/shared
 
 export default defineConfig(({ mode }) => {
   process.env.EMBER_ENV = mode;
+
+  const build =
+    mode === 'development'
+      ? {
+          rollupOptions: {
+            preserveEntrySignatures: 'strict',
+            output: {
+              preserveModules: true,
+            },
+          },
+          minify: false,
+        }
+      : { minify: true };
+
   return {
     plugins: [
       babel({
@@ -29,11 +43,9 @@ export default defineConfig(({ mode }) => {
       viteResolverBug(),
       version(),
     ],
-    optimizeDeps: { disabled: true },
+    optimizeDeps: { noDiscovery: true },
     publicDir: 'tests/public',
-    build: {
-      minify: mode === 'production',
-    },
+    build,
   };
 });
 

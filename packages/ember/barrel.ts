@@ -193,12 +193,6 @@ namespace Ember {
   export const Comparable = InternalComparable;
   export type Comparable = InternalComparable;
 
-  // This syntax is namespace-specific: `import` in a namespace is aliasing one
-  // namespace to another, while `export` marks the item public on the namespace
-  // (as with the rest of the exported items).
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export import RSVP = _RSVP;
-
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;
   export const EventDispatcher = views.EventDispatcher;
@@ -595,6 +589,20 @@ namespace Ember {
     | undefined;
 }
 
+// This syntax is not reliably implemented by TypeScript transpilers, but
+// we need to re-export the`RSVP` *namespace* for type compatibility.
+// To achieve this, we use a type-only `declare namespace` block to get the
+// types to behave correctly, and separately set the `RSVP` property on the
+// `Ember` object dynamically. (The types behave correctly because of
+// namespace merging semantics.)
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace Ember {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export import RSVP = _RSVP;
+}
+
+Reflect.set(Ember, 'RSVP', _RSVP);
+
 interface EmberHandlebars {
   template: typeof template;
   Utils: {
@@ -747,12 +755,5 @@ defineEmberTestingLazyLoad('setupForTesting');
 
 // @ts-expect-error Per types, runLoadHooks requires a second parameter. Should we loosen types?
 applicationRunLoadHooks('Ember');
-
-// the special "export import" syntax above doesn't actually transpile correctly
-// under all build configurations. It seems to work if you're simultaneously
-// transpiling ESM to AMD but breaks when keeping ESM output.
-//
-// This is a workaround to ensure that the runtime is actually included.
-Ember.RSVP = _RSVP;
 
 export default Ember;
