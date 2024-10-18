@@ -1,4 +1,10 @@
-import { lookupDescriptor, setWithMandatorySetter, toString } from '@ember/-internals/utils';
+import { getOwner } from '@ember/-internals/owner';
+import {
+  guidFor,
+  lookupDescriptor,
+  setWithMandatorySetter,
+  toString,
+} from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { COMPUTED_SETTERS } from './decorator';
@@ -55,10 +61,23 @@ export function set<T>(obj: object, keyName: string, value: T, tolerant?: boolea
   );
 
   if ((obj as ExtendedObject).isDestroyed) {
-    assert(
-      `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
-      tolerant
-    );
+    if (macroCondition(isTesting())) {
+      let guid = guidFor(getOwner(obj));
+
+      // SAFETY: cast is for accessing private data stored globally
+      let testInfo = (globalThis as any)['__OWNER_MAP__']?.get(guid);
+      assert(
+        `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)} ` +
+          `owner is ${guid} (test ${testInfo?.testId} ${testInfo?.name})`,
+        tolerant
+      );
+    } else {
+      assert(
+        `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
+        tolerant
+      );
+    }
+
     return value;
   }
 
