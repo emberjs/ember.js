@@ -293,6 +293,7 @@
       "@ember/service/index.js": "ember-source/@ember/service/index.js",
       "@ember/template-compilation/index.js": "ember-source/@ember/template-compilation/index.js",
       "@ember/template-compiler/-internal-primitives.js": "ember-source/@ember/template-compiler/-internal-primitives.js",
+      "@ember/template-compiler/-internal-utils.js": "ember-source/@ember/template-compiler/-internal-utils.js",
       "@ember/template-compiler/index.js": "ember-source/@ember/template-compiler/index.js",
       "@ember/template-compiler/lib/-internal/primitives.js": "ember-source/@ember/template-compiler/lib/-internal/primitives.js",
       "@ember/template-compiler/lib/compile-options.js": "ember-source/@ember/template-compiler/lib/compile-options.js",
