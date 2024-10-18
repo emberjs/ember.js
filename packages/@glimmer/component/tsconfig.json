@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "paths": {
+      "@ember/owner": ["../../../types/stable/@ember/owner/index.d.ts"],
+      "@ember/destroyable": ["../../../types/stable/@ember/destroyable/index.d.ts"],
+      "@ember/component": ["../../../types/stable/@ember/component/index.d.ts"],
+      "@ember/runloop": ["../../../types/stable/@ember/runloop/index.d.ts"]
+    },
+    "lib": ["es2020", "dom"],
+    "declarationDir": "./dist",
+    "skipLibCheck": true
+  },
+  "include": ["./src/**/*.ts"]
+}

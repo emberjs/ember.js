@@ -43,6 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: build types
+        run: pnpm build:types
       - name: Check published and internal types
         run: pnpm type-check
 

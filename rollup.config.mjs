@@ -31,10 +31,14 @@ let configs = [
     },
   }),
   templateCompilerConfig(),
+  glimmerComponent(),
 ];
 
 if (process.env.DEBUG_SINGLE_CONFIG) {
-  configs = configs.slice(parseInt(process.env.DEBUG_SINGLE_CONFIG), 1);
+  configs = configs.slice(
+    parseInt(process.env.DEBUG_SINGLE_CONFIG),
+    parseInt(process.env.DEBUG_SINGLE_CONFIG) + 1
+  );
 }
 
 export default configs;
@@ -72,6 +76,31 @@ function esmConfig() {
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
       pruneEmptyBundles(),
       packageMeta(),
+    ],
+  };
+}
+
+function glimmerComponent() {
+  return {
+    onLog: handleRollupWarnings,
+    input: {
+      index: './packages/@glimmer/component/src/index.ts',
+    },
+    output: {
+      format: 'es',
+      dir: 'packages/@glimmer/component/dist',
+      hoistTransitiveImports: false,
+      generatedCode: 'es2015',
+    },
+    plugins: [
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.js', '.ts'],
+        configFile: false,
+        ...sharedBabelConfig,
+      }),
+      resolveTS(),
+      externalizePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     ],
   };
 }
@@ -140,6 +169,9 @@ function packages() {
       'external-helpers/**',
       'ember-template-compiler/**',
       'internal-test-helpers/**',
+
+      // this is a real package that publishes by itself
+      '@glimmer/component/**',
 
       // exclude these so we can add only their entrypoints below
       ...rolledUpPackages().map((name) => `${name}/**`),
@@ -335,6 +367,39 @@ export function resolvePackages(deps, isExternal) {
         // Anything not explicitliy handled above is an error, because we don't
         // want to accidentally incorporate anything else into the build.
         throw new Error(`missing ${source}`);
+      }
+    },
+  };
+}
+
+export function externalizePackages(deps) {
+  return {
+    enforce: 'pre',
+    name: 'resolve-packages',
+    async resolveId(source) {
+      if (source.startsWith('\0')) {
+        return;
+      }
+
+      let pkgName = packageName(source);
+      if (pkgName) {
+        // having a pkgName means this is not a relative import
+
+        if (deps[source]) {
+          return { external: true, id: source };
+        }
+
+        let candidateStem = resolve(projectRoot, 'packages', source);
+        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+          let candidate = candidateStem + suffix;
+          if (existsSync(candidate) && statSync(candidate).isFile()) {
+            return { external: true, id: source };
+          }
+        }
+
+        // Anything not explicitliy handled above is an error, because we don't
+        // want to accidentally incorporate anything else into the build.
+        throw new Error(`don't understand ${source}`);
       }
     },
   };
