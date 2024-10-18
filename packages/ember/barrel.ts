@@ -192,8 +192,6 @@ namespace Ember {
   export type ActionHandler = InternalActionHandler;
   export const Comparable = InternalComparable;
   export type Comparable = InternalComparable;
-  export const RSVP = _RSVP;
-  export type RSVP = typeof _RSVP;
 
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;
@@ -590,6 +588,20 @@ namespace Ember {
     | NonNullable<typeof EmberTestingImpl>['setupForTesting']
     | undefined;
 }
+
+// This syntax is not reliably implemented by TypeScript transpilers, but
+// we need to re-export the`RSVP` *namespace* for type compatibility.
+// To achieve this, we use a type-only `declare namespace` block to get the
+// types to behave correctly, and separately set the `RSVP` property on the
+// `Ember` object dynamically. (The types behave correctly because of
+// namespace merging semantics.)
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare namespace Ember {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export import RSVP = _RSVP;
+}
+
+Reflect.set(Ember, 'RSVP', _RSVP);
 
 interface EmberHandlebars {
   template: typeof template;

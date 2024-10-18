@@ -5,6 +5,7 @@
     ".": "./index.ts",
     "./runtime": "./runtime.ts",
     "./-internal-primitives": "./-internal-primitives.ts",
+    "./-internal-utils": "./-internal-utils.ts",
     "./types": "./lib/types.ts"
   },
   "dependencies": {
