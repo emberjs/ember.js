@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
 import { babel } from '@rollup/plugin-babel';
+import commonjs from '@rollup/plugin-commonjs';
 import sharedBabelConfig from './babel.config.mjs';
 
 const require = createRequire(import.meta.url);
@@ -61,6 +62,9 @@ function esmConfig() {
       chunkFileNames: 'packages/shared-chunks/[name]-[hash].js',
     },
     plugins: [
+      commonjs({
+        include: [resolve(require.resolve('source-map-js'), '..', '**')],
+      }),
       babel({
         babelHelpers: 'bundled',
         extensions: ['.js', '.ts'],
@@ -92,6 +96,7 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
       file: `dist/${output}`,
       generatedCode: 'es2015',
       sourcemap: true,
+      inlineDynamicImports: true,
 
       // We are relying on unfrozen modules because we need to add the
       // __esModule marker to them in our amd-compat-entrypoints. Rollup has an
@@ -109,6 +114,9 @@ function legacyBundleConfig(input, output, { isDeveloping, isExternal }) {
     },
     onLog: handleRollupWarnings,
     plugins: [
+      commonjs({
+        include: [resolve(require.resolve('source-map-js'), '..', '**')],
+      }),
       amdDefineSupport(),
       ...(isDeveloping ? [concatenateAMDEntrypoints()] : []),
       babel({
@@ -217,6 +225,7 @@ export function hiddenDependencies() {
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
+    'source-map-js': require.resolve('source-map-js'),
   };
 }
 
@@ -265,6 +274,7 @@ function entrypoint(pkg, which) {
     return;
   }
   let resolved = resolve(pkg.root, module);
+  console.log('entrypoint', module, pkg.name, pkg.root, resolved);
   let { dir, base } = parse(resolved);
   return {
     dir,
@@ -276,8 +286,8 @@ function entrypoint(pkg, which) {
 function resolveTS() {
   return {
     name: 'resolve-ts',
-    async resolveId(source, importer) {
-      let result = await this.resolve(source, importer);
+    async resolveId(source, importer, options) {
+      let result = await this.resolve(source, importer, options);
       if (result === null) {
         // the rest of rollup couldn't find it
         let stem = resolve(dirname(importer), source);
@@ -327,6 +337,7 @@ export function resolvePackages(deps, isExternal) {
         }
 
         if (testDependencies.includes(pkgName)) {
+          // these are allowed to fall through and get resolved noramlly by vite
           // these are allowed to fall through and get resolved noramlly by vite
           // within our test suite.
           return;
