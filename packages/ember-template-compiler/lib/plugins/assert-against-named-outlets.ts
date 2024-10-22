@@ -2,6 +2,7 @@ import { assert } from '@ember/debug';
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import type { EmberASTPluginEnvironment } from '../types';
+import { trackLocals } from './utils';
 
 /**
  @module ember
@@ -15,16 +16,19 @@ import type { EmberASTPluginEnvironment } from '../types';
 */
 export default function assertAgainstNamedOutlets(env: EmberASTPluginEnvironment): ASTPlugin {
   let moduleName = env.meta?.moduleName;
+  let { hasLocal, visitor } = trackLocals(env);
 
   return {
     name: 'assert-against-named-outlets',
 
     visitor: {
+      ...visitor,
       MustacheStatement(node: AST.MustacheStatement) {
         if (
           node.path.type === 'PathExpression' &&
           node.path.original === 'outlet' &&
-          node.params[0]
+          node.params[0] &&
+          !hasLocal('outlet')
         ) {
           let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
           assert(
