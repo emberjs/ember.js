@@ -120,7 +120,7 @@ function lookupComponentPair(
   }
 }
 
-const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
+export const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   action,
   mut,
   readonly,
@@ -135,7 +135,7 @@ const BUILTIN_KEYWORD_HELPERS: Record<string, object> = {
   '-in-el-null': inElementNullCheckHelper,
 };
 
-const BUILTIN_HELPERS: Record<string, object> = {
+export const BUILTIN_HELPERS: Record<string, object> = {
   ...BUILTIN_KEYWORD_HELPERS,
   array,
   concat,

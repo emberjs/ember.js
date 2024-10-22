@@ -2,6 +2,7 @@ import { assert, deprecate } from '@ember/debug';
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import type { EmberASTPluginEnvironment } from '../types';
+import { trackLocals } from './utils';
 
 /**
  @module ember
@@ -23,48 +24,16 @@ import type { EmberASTPluginEnvironment } from '../types';
 export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
   let moduleName = env.meta?.moduleName;
-
-  let stack: string[][] = [[]];
-
-  function updateBlockParamsStack(blockParams: string[]) {
-    let parent = stack[stack.length - 1];
-    assert('has parent', parent);
-    stack.push(parent.concat(blockParams));
-  }
+  let { hasLocal, visitor } = trackLocals(env);
 
   return {
     name: 'assert-against-attrs',
 
     visitor: {
-      Template: {
-        enter(node: AST.Template) {
-          updateBlockParamsStack(node.blockParams);
-        },
-        exit() {
-          stack.pop();
-        },
-      },
-
-      Block: {
-        enter(node: AST.Block) {
-          updateBlockParamsStack(node.blockParams);
-        },
-        exit() {
-          stack.pop();
-        },
-      },
-
-      ElementNode: {
-        enter(node: AST.ElementNode) {
-          updateBlockParamsStack(node.blockParams);
-        },
-        exit() {
-          stack.pop();
-        },
-      },
+      ...visitor,
 
       PathExpression(node: AST.PathExpression): AST.Node | void {
-        if (isAttrs(node, stack[stack.length - 1]!)) {
+        if (isAttrs(node, hasLocal)) {
           assert(
             `Using {{attrs}} to reference named arguments is not supported. {{${
               node.original
@@ -106,12 +75,8 @@ export default function assertAgainstAttrs(env: EmberASTPluginEnvironment): ASTP
   };
 }
 
-function isAttrs(node: AST.PathExpression, symbols: string[]) {
-  return (
-    node.head.type === 'VarHead' &&
-    node.head.name === 'attrs' &&
-    symbols.indexOf(node.head.name) === -1
-  );
+function isAttrs(node: AST.PathExpression, hasLocal: (k: string) => boolean) {
+  return node.head.type === 'VarHead' && node.head.name === 'attrs' && !hasLocal(node.head.name);
 }
 
 function isThisDotAttrs(node: AST.PathExpression) {

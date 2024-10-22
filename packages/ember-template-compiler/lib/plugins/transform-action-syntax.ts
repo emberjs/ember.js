@@ -1,6 +1,6 @@
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import type { Builders, EmberASTPluginEnvironment } from '../types';
-import { isPath } from './utils';
+import { isPath, trackLocals } from './utils';
 
 /**
  @module ember
@@ -27,27 +27,29 @@ import { isPath } from './utils';
   @class TransformActionSyntax
 */
 
-export default function transformActionSyntax({ syntax }: EmberASTPluginEnvironment): ASTPlugin {
-  let { builders: b } = syntax;
+export default function transformActionSyntax(env: EmberASTPluginEnvironment): ASTPlugin {
+  let { builders: b } = env.syntax;
+  let { hasLocal, visitor } = trackLocals(env);
 
   return {
     name: 'transform-action-syntax',
 
     visitor: {
+      ...visitor,
       ElementModifierStatement(node: AST.ElementModifierStatement) {
-        if (isAction(node)) {
+        if (isAction(node, hasLocal)) {
           insertThisAsFirstParam(node, b);
         }
       },
 
       MustacheStatement(node: AST.MustacheStatement) {
-        if (isAction(node)) {
+        if (isAction(node, hasLocal)) {
           insertThisAsFirstParam(node, b);
         }
       },
 
       SubExpression(node: AST.SubExpression) {
-        if (isAction(node)) {
+        if (isAction(node, hasLocal)) {
           insertThisAsFirstParam(node, b);
         }
       },
@@ -55,8 +57,11 @@ export default function transformActionSyntax({ syntax }: EmberASTPluginEnvironm
   };
 }
 
-function isAction(node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression) {
-  return isPath(node.path) && node.path.original === 'action';
+function isAction(
+  node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression,
+  hasLocal: (k: string) => boolean
+) {
+  return isPath(node.path) && node.path.original === 'action' && !hasLocal('action');
 }
 
 function insertThisAsFirstParam(

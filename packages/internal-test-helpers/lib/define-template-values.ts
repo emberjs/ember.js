@@ -87,6 +87,26 @@ class FunctionalModifierManager implements ModifierManager<SimpleModifierState> 
 const FUNCTIONAL_MODIFIER_MANAGER = new FunctionalModifierManager();
 const FUNCTIONAL_MODIFIER_MANAGER_FACTORY = () => FUNCTIONAL_MODIFIER_MANAGER;
 
+/**
+ * The signature of this test helper is closer to the signature of the
+ * `template()` function in `@ember/template-compiler`. It can express the same
+ * functionality as {@linkcode defineComponent}, but most tests still use
+ * `defineComponent`. Migrating tests from {@linkcode defineComponent} is
+ * straightforward, and there's no *semantic* reason not to do so.
+ */
+export function defComponent(
+  templateSource: string,
+  options?: {
+    component?: object | undefined;
+    scope?: Record<string, unknown> | undefined;
+  }
+) {
+  let definition = options?.component ?? templateOnlyComponent();
+  let scopeValues = options?.scope ?? null;
+
+  return defineComponent(scopeValues, templateSource, definition);
+}
+
 export function defineComponent(
   scopeValues: Record<string, unknown> | null,
   templateSource: string,
@@ -103,10 +123,12 @@ export function defineComponent(
   return definition;
 }
 
-export function defineSimpleHelper<T extends Function>(helperFn: T): T {
+export function defineSimpleHelper<T extends (...args: unknown[]) => unknown>(helperFn: T): T {
   return setHelperManager(FUNCTIONAL_HELPER_MANAGER_FACTORY, helperFn);
 }
 
-export function defineSimpleModifier<T extends Function>(modifierFn: T): T {
+export function defineSimpleModifier<T extends (element: Element, ...args: any[]) => any>(
+  modifierFn: T
+): T {
   return setModifierManager(FUNCTIONAL_MODIFIER_MANAGER_FACTORY, modifierFn);
 }

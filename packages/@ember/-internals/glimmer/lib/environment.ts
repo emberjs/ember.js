@@ -1,11 +1,10 @@
 import { ENV } from '@ember/-internals/environment';
-import { get, set, _getProp, _setProp } from '@ember/-internals/metal';
-import type { InternalOwner } from '@ember/-internals/owner';
+import { _getProp, _setProp, get, set } from '@ember/-internals/metal';
 import { getDebugName } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
-import { assert, deprecate, warn } from '@ember/debug';
 import type { DeprecationOptions } from '@ember/debug';
-import { schedule, _backburner } from '@ember/runloop';
+import { assert, deprecate, warn } from '@ember/debug';
+import { _backburner, schedule } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import setGlobalContext from '@glimmer/global-context';
 import type { EnvironmentDelegate } from '@glimmer/runtime';
@@ -131,7 +130,7 @@ const VM_ASSERTION_OVERRIDES: { id: string; message: string }[] = [];
 export class EmberEnvironmentDelegate implements EnvironmentDelegate {
   public enableDebugTooling: boolean = ENV._DEBUG_RENDER_TREE;
 
-  constructor(public owner: InternalOwner, public isInteractive: boolean) {}
+  constructor(public owner: object, public isInteractive: boolean) {}
 
   onTransactionCommit(): void {}
 }

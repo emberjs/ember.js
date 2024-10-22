@@ -1,4 +1,5 @@
 import type { AST } from '@glimmer/syntax';
+import type { EmberASTPluginEnvironment } from '../types';
 
 export function isPath(node: AST.Node): node is AST.PathExpression {
   return node.type === 'PathExpression';
@@ -20,7 +21,11 @@ function getLocalName(node: string | AST.VarHead): string {
   }
 }
 
-export function trackLocals() {
+export function inScope(env: EmberASTPluginEnvironment, name: string): boolean {
+  return Boolean(env.lexicalScope?.(name));
+}
+
+export function trackLocals(env: EmberASTPluginEnvironment) {
   let locals = new Map();
 
   let node = {
@@ -49,7 +54,12 @@ export function trackLocals() {
   };
 
   return {
-    hasLocal: (key: string) => locals.has(key),
+    hasLocal: (key: string) => locals.has(key) || inScope(env, key),
     node,
+    visitor: {
+      Template: node,
+      ElementNode: node,
+      Block: node,
+    },
   };
 }
