@@ -26,6 +26,8 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
   return false;
 }
 
+export type TestCase = AbstractStrictTestCase | AbstractTestCase;
+
 export abstract class AbstractStrictTestCase {
   snapshot: ChildNode[] | null = null;
   component: unknown;

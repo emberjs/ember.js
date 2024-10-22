@@ -25,7 +25,11 @@ export { equalsElement, classes, styles, regex } from './lib/matchers';
 export { runAppend, runDestroy, runTask, runTaskNext, runLoopSettled } from './lib/run';
 export { getContext, setContext, unsetContext } from './lib/test-context';
 
-export { default as AbstractTestCase, AbstractStrictTestCase } from './lib/test-cases/abstract';
+export {
+  default as AbstractTestCase,
+  type TestCase,
+  AbstractStrictTestCase,
+} from './lib/test-cases/abstract';
 export { default as AbstractApplicationTestCase } from './lib/test-cases/abstract-application';
 export { default as ApplicationTestCase } from './lib/test-cases/application';
 export { default as QueryParamTestCase } from './lib/test-cases/query-param';
