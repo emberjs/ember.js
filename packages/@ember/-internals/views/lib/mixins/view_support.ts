@@ -7,6 +7,7 @@ import { matches } from '../system/utils';
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
 import type { SimpleElement } from '@simple-dom/interface';
 import type CoreView from '../views/core_view';
+import type Component from '@ember/component';
 
 function K(this: unknown) {
   return this;
@@ -195,7 +196,7 @@ const ViewMixin = Mixin.create({
    @return {Ember.View} receiver
    @private
    */
-  appendTo(selector: string | Element | SimpleElement) {
+  appendTo(this: Component, selector: string | Element | SimpleElement) {
     let target;
 
     if (hasDOM) {

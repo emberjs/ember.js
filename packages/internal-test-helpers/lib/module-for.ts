@@ -1,19 +1,19 @@
 /* globals URLSearchParams */
-import { DEBUG } from '@glimmer/env';
 import { isEnabled } from '@ember/canary-features';
-import type { Mixin, Generator } from './apply-mixins';
+import { assertDestroyablesDestroyed, enableDestroyableTracking } from '@glimmer/destroyable';
+import { DEBUG } from '@glimmer/env';
+import { all } from 'rsvp';
+import type { Generator, Mixin } from './apply-mixins';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
+import type { AbstractStrictTestCase } from './test-cases/abstract';
 import { setContext, unsetContext } from './test-context';
-import { all } from 'rsvp';
-import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/destroyable';
-import type AbstractTestCase from './test-cases/abstract';
 
-interface TestClass<T extends AbstractTestCase> {
+interface TestClass<T extends AbstractStrictTestCase> {
   new (assert: QUnit['assert']): T;
 }
 
-interface TestContext<T extends AbstractTestCase> {
+interface TestContext<T extends AbstractStrictTestCase> {
   instance: T | null | undefined;
 }
 
@@ -28,7 +28,7 @@ const ASSERT_DESTROYABLES = (() => {
   return assertDestroyables !== null;
 })();
 
-export function moduleForDevelopment<T extends AbstractTestCase, M extends Generator>(
+export function moduleForDevelopment<T extends AbstractStrictTestCase, M extends Generator>(
   description: string,
   TestClass: TestClass<T>,
   ...mixins: Mixin<M>[]
@@ -39,7 +39,7 @@ export function moduleForDevelopment<T extends AbstractTestCase, M extends Gener
   }
 }
 
-export default function moduleFor<T extends AbstractTestCase, M extends Generator>(
+export default function moduleFor<T extends AbstractStrictTestCase, M extends Generator>(
   description: string,
   TestClass: TestClass<T>,
   ...mixins: Mixin<M>[]
@@ -57,7 +57,7 @@ function afterEachFinally() {
   }
 }
 
-export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
+export function setupTestClass<T extends AbstractStrictTestCase, G extends Generator>(
   hooks: NestedHooks,
   TestClass: TestClass<T>,
   ...mixins: Mixin<G>[]
@@ -123,7 +123,7 @@ export function setupTestClass<T extends AbstractTestCase, G extends Generator>(
     });
   }
 
-  function generateTest<T extends AbstractTestCase>(name: keyof T & string) {
+  function generateTest<T extends AbstractStrictTestCase>(name: keyof T & string) {
     if (name.indexOf('@test ') === 0) {
       QUnit.test(name.slice(5), function (this: TestContext<T>, assert) {
         return (this.instance![name] as any)(assert);

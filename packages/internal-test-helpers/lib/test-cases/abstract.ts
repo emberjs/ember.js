@@ -3,10 +3,12 @@
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
-import { getElement } from '../element-helpers';
+import { assertInvariants, getElement, takeSnapshot } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
-import { runLoopSettled } from '../run';
+import { runDestroy, runLoopSettled, runTask } from '../run';
 import { assert } from '@ember/debug';
+import { rerenderComponent } from '../component-helper';
+import { _resetRenderers } from '@ember/-internals/glimmer';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -22,6 +24,51 @@ function isMarker(node: unknown): node is Comment | typeof TextNode {
   }
 
   return false;
+}
+
+export abstract class AbstractStrictTestCase {
+  snapshot: ChildNode[] | null = null;
+  component: unknown;
+  readonly assert: QUnit['assert'];
+
+  rerender(): void {
+    rerenderComponent();
+  }
+
+  beforeEach?(_assert: QUnit['assert']) {}
+  teardown?(): unknown;
+
+  constructor(assert: QUnit['assert']) {
+    this.assert = assert;
+  }
+
+  afterEach() {
+    try {
+      runDestroy(this);
+    } finally {
+      _resetRenderers();
+    }
+  }
+
+  takeSnapshot() {
+    this.snapshot = takeSnapshot();
+  }
+
+  assertStableRerender() {
+    this.takeSnapshot();
+    runTask(() => rerenderComponent());
+    this.assertInvariants();
+  }
+
+  assertInvariants(): void;
+  assertInvariants(oldSnapshot: ChildNode[], newSnapshot: ChildNode[]): void;
+  assertInvariants(oldSnapshot?: ChildNode[], newSnapshot?: ChildNode[]): void {
+    if (!oldSnapshot) {
+      assert('expected an existing snapshot', this.snapshot);
+      oldSnapshot = this.snapshot;
+    }
+    assertInvariants(oldSnapshot, newSnapshot);
+  }
 }
 
 export default abstract class AbstractTestCase {
