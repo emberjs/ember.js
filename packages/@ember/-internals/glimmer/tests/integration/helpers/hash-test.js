@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
 
@@ -15,6 +15,21 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText('Sergio');
+    }
+
+    ['@test can be shadowed']() {
+      let hash = (obj) =>
+        Object.entries(obj)
+          .map(([key, value]) => `hash:${key}=${value}`)
+          .join(',');
+      let Root = defineComponent(
+        { hash, shadowHash: hash },
+        `({{hash apple='red' banana='yellow'}}) ({{#let shadowHash as |hash|}}{{hash apple='green'}}{{/let}})`
+      );
+
+      this.renderComponent(Root, {
+        expect: '(hash:apple=red,hash:banana=yellow) (hash:apple=green)',
+      });
     }
 
     ['@test can have more than one key-value']() {

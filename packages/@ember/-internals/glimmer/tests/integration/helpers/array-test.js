@@ -1,4 +1,10 @@
-import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  defineComponent,
+  moduleFor,
+  runTask,
+  strip,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
@@ -18,6 +24,21 @@ moduleFor(
       this.assertText('Sergio');
 
       this.assertStableRerender();
+    }
+
+    ['@test the array helper can be shadowed']() {
+      function array(...list) {
+        return list.map((n) => n * 2);
+      }
+
+      let First = defineComponent({ array }, `{{#each (array 1 2 3) as |n|}}[{{n}}]{{/each}}`);
+
+      let Root = defineComponent(
+        { shadowArray: array, First },
+        `{{#let shadowArray as |array|}}{{#each (array 5 10 15) as |n|}}[{{n}}]{{/each}}{{/let}}<First />`
+      );
+
+      this.renderComponent(Root, { expect: '[10][20][30][2][4][6]' });
     }
 
     ['@test can have more than one value']() {

@@ -1,19 +1,19 @@
+import type { Renderer } from '@ember/-internals/glimmer';
+import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
+import { EventDispatcher } from '@ember/-internals/views';
+import Component, { setComponentTemplate } from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
-import { EventDispatcher } from '@ember/-internals/views';
-import type { Renderer } from '@ember/-internals/glimmer';
-import Component, { setComponentTemplate } from '@ember/component';
-import { helper, Helper, _resetRenderers } from '@ember/-internals/glimmer';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
-import AbstractTestCase from './abstract';
+import type { InternalFactory } from '@ember/-internals/owner';
+import templateOnly from '@ember/component/template-only';
+import type EngineInstance from '@ember/engine/instance';
+import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
 import buildOwner from '../build-owner';
 import { runAppend, runDestroy, runTask } from '../run';
-import type { InternalFactory } from '@ember/-internals/owner';
-import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
-import type EngineInstance from '@ember/engine/instance';
-import templateOnly from '@ember/component/template-only';
+import AbstractTestCase from './abstract';
 
 const TextNode = window.Text;
 
@@ -172,6 +172,13 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     runAppend(this.component);
   }
 
+  renderComponent(component: object, options: { expect: string }) {
+    this.registerComponent('root', { ComponentClass: component });
+    this.render('<Root />');
+    this.assertHTML(options.expect);
+    this.assertStableRerender();
+  }
+
   rerender() {
     this.component!.rerender();
   }
@@ -195,14 +202,21 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
 
   registerComponent(
     name: string,
-    { ComponentClass = Component, template = null, resolveableTemplate = null }
+    {
+      ComponentClass = Component,
+      template = null,
+      resolveableTemplate = null,
+    }: {
+      ComponentClass?: object | null;
+      template?: string | null;
+      resolveableTemplate?: string | null;
+    }
   ) {
     let { owner } = this;
 
     if (ComponentClass) {
       // We cannot set templates multiple times on a class
       if (ComponentClass === Component) {
-        // @ts-expect-error - class/instance types in TS are hard
         ComponentClass = class extends Component {};
       }
 
