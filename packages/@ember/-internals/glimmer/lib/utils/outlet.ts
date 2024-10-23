@@ -53,6 +53,12 @@ export interface RenderState {
   model: unknown;
 
   /**
+   * When routing directly to a component (as opposed to a bare template), this
+   * stores the component.
+   */
+  component: object | undefined;
+
+  /**
    * template (the layout of the outlet component)
    */
   template: Template | undefined;

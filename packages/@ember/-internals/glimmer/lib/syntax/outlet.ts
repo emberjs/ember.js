@@ -89,6 +89,9 @@ export const outletHelper = internalHelper(
             return model;
           });
 
+          let componentRef = childRefFromParts(outletRef, ['render', 'component']);
+          named['component'] = componentRef;
+
           if (DEBUG) {
             named['model'] = createDebugAliasRef!('@model', named['model']);
           }
@@ -160,6 +163,7 @@ function stateFor(
     name: render.name,
     template,
     controller: render.controller,
+    component: render.component,
     model: render.model,
   };
 }
