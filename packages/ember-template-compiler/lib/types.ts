@@ -23,6 +23,7 @@ export interface EmberPrecompileOptions extends PrecompileOptions {
   isProduction?: boolean;
   moduleName?: string;
   plugins?: Plugins;
+  lexicalScope?: (name: string) => boolean;
 }
 
 export type EmberASTPluginEnvironment = ASTPluginEnvironment & EmberPrecompileOptions;

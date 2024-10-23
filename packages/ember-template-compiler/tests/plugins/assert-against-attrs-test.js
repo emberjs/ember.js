@@ -1,5 +1,5 @@
 import TransformTestCase from '../utils/transform-test-case';
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { defineComponent, moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'ember-template-compiler: assert against attrs',
@@ -62,6 +62,14 @@ moduleFor(
       });
       this.render('<Foo />');
       this.assertComponentElement(this.firstChild, { content: 'foo' });
+    }
+
+    ["@test it doesn't assert lexical scope values"]() {
+      let component = defineComponent({ attrs: 'just a string' }, `It's {{attrs}}`);
+      this.registerComponent('root', { ComponentClass: component });
+      this.render('<Root />');
+      this.assertHTML("It's just a string");
+      this.assertStableRerender();
     }
 
     ["@test it doesn't assert component block params"]() {

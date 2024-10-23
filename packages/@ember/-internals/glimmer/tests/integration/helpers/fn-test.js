@@ -1,6 +1,6 @@
 import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -20,6 +20,14 @@ moduleFor(
           },
         }),
       });
+    }
+
+    '@test fn can be shadowed'() {
+      let First = defineComponent(
+        { fn: boundFn, boundFn, id, invoke },
+        `[{{invoke (fn id 1)}}]{{#let boundFn as |fn|}}[{{invoke (fn id 2)}}{{/let}}]`
+      );
+      this.renderComponent(First, { expect: `[bound:1][bound:2]` });
     }
 
     '@test updates when arguments change'() {
@@ -209,3 +217,13 @@ moduleFor(
     }
   }
 );
+
+function invoke(fn) {
+  return fn();
+}
+
+function boundFn(fn, ...args) {
+  return () => fn(...args.map((arg) => `bound:${arg}`));
+}
+
+let id = (arg) => arg;

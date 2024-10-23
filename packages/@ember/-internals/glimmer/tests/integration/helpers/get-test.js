@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set, get } from '@ember/object';
 
@@ -30,6 +30,17 @@ moduleFor(
       );
 
       this.assertText('[red] [red]');
+    }
+
+    ['@test can be shadowed']() {
+      let get = (obj, key) => `obj.${key}=${obj[key]}`;
+      let obj = { apple: 'red', banana: 'yellow' };
+      let Root = defineComponent(
+        { get, outerGet: get, obj },
+        `[{{get obj 'apple'}}][{{#let outerGet as |get|}}{{get obj 'banana'}}{{/let}}]`
+      );
+
+      this.renderComponent(Root, { expect: '[obj.apple=red][obj.banana=yellow]' });
     }
 
     ['@test should be able to get an object value with nested static key']() {
