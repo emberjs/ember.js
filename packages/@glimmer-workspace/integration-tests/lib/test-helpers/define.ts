@@ -104,6 +104,31 @@ export interface DefineComponentOptions {
   emit?: PrecompileOptionsWithLexicalScope['emit'];
 }
 
+export function defComponent(
+  templateSource: string,
+  options?: {
+    component?: object | undefined;
+    scope?: Record<string, unknown> | undefined;
+    emit?: {
+      moduleName?: string;
+      debugSymbols?: boolean;
+    };
+  }
+) {
+  let definition = options?.component ?? templateOnlyComponent();
+  let templateFactory = createTemplate(
+    templateSource,
+    {
+      strictMode: true,
+      meta: { moduleName: options?.emit?.moduleName },
+      emit: { debugSymbols: options?.emit?.debugSymbols ?? true },
+    },
+    options?.scope ?? {}
+  );
+  setComponentTemplate(templateFactory, definition);
+  return definition;
+}
+
 export function defineComponent(
   scopeValues: Record<string, unknown> | null,
   templateSource: string,
@@ -119,7 +144,11 @@ export function defineComponent(
   let keywords = options.keywords ?? [];
 
   let definition = options.definition ?? templateOnlyComponent();
-  let templateFactory = createTemplate(templateSource, { strictMode, keywords, emit: options.emit }, scopeValues ?? {});
+  let templateFactory = createTemplate(
+    templateSource,
+    { strictMode, keywords, emit: options.emit },
+    scopeValues ?? {}
+  );
   setComponentTemplate(templateFactory, definition);
   return definition;
 }

@@ -253,16 +253,16 @@ export class ConstantsImpl
       };
 
       definition.handle = this.value(definition);
+
+      if (debugName) {
+        definition.debugName = debugName;
+      }
+
       this.componentDefinitionCache.set(definitionState, definition);
       this.componentDefinitionCount++;
     }
 
-    if (definition && debugName !== undefined) {
-      return { ...definition, debugName };
-    } else {
-
     return definition;
-    }
   }
 
   resolvedComponent(

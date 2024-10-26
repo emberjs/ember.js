@@ -198,6 +198,9 @@ export default class DebugRenderTreeImpl<TBucket extends object>
   }
 }
 
-export function getDebugName(definition: ComponentDefinition, manager = definition.manager): string {
+export function getDebugName(
+  definition: ComponentDefinition,
+  manager = definition.manager
+): string {
   return definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
 }
