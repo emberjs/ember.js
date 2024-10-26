@@ -689,19 +689,23 @@ export interface PrecompileOptionsWithLexicalScope extends PrecompileOptions {
    */
   emit?: {
     debugSymbols?: boolean;
-  },
+  };
 }
 
 export interface PreprocessOptions {
-  strictMode?: boolean;
-  locals?: string[];
-  meta?: {
-    moduleName?: string;
-  };
-  plugins?: {
-    ast?: ASTPluginBuilder[];
-  };
-  parseOptions?: HandlebarsParseOptions;
+  strictMode?: boolean | undefined;
+  locals?: string[] | undefined;
+  meta?:
+    | {
+        moduleName?: string | undefined;
+      }
+    | undefined;
+  plugins?:
+    | {
+        ast?: ASTPluginBuilder[] | undefined;
+      }
+    | undefined;
+  parseOptions?: HandlebarsParseOptions | undefined;
   customizeComponentName?: ((input: string) => string) | undefined;
 
   /**
@@ -711,7 +715,7 @@ export interface PreprocessOptions {
     (to preserve as much as possible) and we also avoid any
     escaping/unescaping of HTML entity codes.
    */
-  mode?: 'codemod' | 'precompile';
+  mode?: 'codemod' | 'precompile' | undefined;
 }
 
 export interface Syntax {

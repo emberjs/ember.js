@@ -106,12 +106,13 @@ export function CompilePositional(
 }
 
 export function meta(layout: LayoutWithContext): ContainingMetadata {
-  let [, symbols, , upvars] = layout.block;
+  let [, symbols, , upvars, debugSymbols] = layout.block;
 
   return {
     evalSymbols: evalSymbols(layout),
     upvars: upvars,
     scopeValues: layout.scope?.() ?? null,
+    debugSymbols,
     isStrictMode: layout.isStrictMode,
     moduleName: layout.moduleName,
     owner: layout.owner,

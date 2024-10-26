@@ -183,12 +183,12 @@ export function resolveModifier(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let { scopeValues } = meta;
+    let { scopeValues, debugSymbols } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    then(constants.modifier(definition as object));
+    then(constants.modifier(definition as object, debugSymbols?.at(expr[1]) ?? undefined));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let { upvars } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
