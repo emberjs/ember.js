@@ -216,7 +216,7 @@ export function resolveModifier(
       );
     }
 
-    then(constants.modifier(modifier, name));
+    then(constants.modifier(modifier));
   }
 }
 
