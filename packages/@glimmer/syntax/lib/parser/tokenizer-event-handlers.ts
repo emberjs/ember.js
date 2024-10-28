@@ -646,7 +646,7 @@ export interface ASTPlugin {
 }
 
 export interface ASTPluginEnvironment {
-  meta?: object;
+  meta?: object | undefined;
   syntax: Syntax;
 }
 
