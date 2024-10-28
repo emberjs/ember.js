@@ -118,12 +118,14 @@ export interface ResolutionTimeConstants {
   component(
     definitionState: ComponentDefinitionState,
     owner: object,
-    isOptional?: false
+    isOptional?: false,
+    debugName?: string
   ): ComponentDefinition;
   component(
     definitionState: ComponentDefinitionState,
     owner: object,
-    isOptional?: boolean
+    isOptional?: boolean,
+    debugName?: string
   ): ComponentDefinition | null;
 
   resolvedComponent(

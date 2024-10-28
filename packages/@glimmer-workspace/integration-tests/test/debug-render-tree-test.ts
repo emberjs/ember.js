@@ -18,12 +18,15 @@ import type { EmberishCurlyComponent } from '..';
 import {
   BaseEnv,
   createTemplate,
+  defComponent,
+  defineSimpleModifier,
   GlimmerishComponent,
   JitRenderDelegate,
   RenderTest,
   suite,
   test,
   tracked,
+  trackedObj,
 } from '..';
 
 interface CapturedBounds {
@@ -73,6 +76,88 @@ class DebugRenderTreeTest extends RenderTest {
   static suiteName = 'Application test: debug render tree';
 
   declare delegate: DebugRenderTreeDelegate;
+
+  @test 'strict-mode components'() {
+    const state = trackedObj({ showSecond: false });
+
+    const HelloWorld = defComponent('{{@arg}}');
+    const Root = defComponent(
+      `<HelloWorld @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
+      { scope: { HelloWorld, state }, emit: { moduleName: 'root.hbs' } }
+    );
+
+    this.renderComponent(Root);
+
+    this.assertRenderTree([
+      {
+        type: 'component',
+        name: '{ROOT}',
+        args: { positional: [], named: {} },
+        instance: null,
+        template: 'root.hbs',
+        bounds: this.elementBounds(this.delegate.getInitialElement()),
+        children: [
+          {
+            type: 'component',
+            name: 'HelloWorld',
+            args: { positional: [], named: { arg: 'first' } },
+            instance: null,
+            template: '(unknown template module)',
+            bounds: this.nodeBounds(this.delegate.getInitialElement().firstChild),
+            children: [],
+          },
+        ],
+      },
+    ]);
+  }
+
+  @test 'strict-mode modifiers'() {
+    const state = trackedObj({ showSecond: false });
+
+    const HelloWorld = defComponent('<p ...attributes>{{@arg}}</p>');
+    const noopFn = () => {};
+    const noop = defineSimpleModifier(noopFn);
+    const Root = defComponent(
+      `<HelloWorld {{noop}} @arg="first"/>{{#if state.showSecond}}<HelloWorld @arg="second"/>{{/if}}`,
+      { scope: { HelloWorld, state, noop }, emit: { moduleName: 'root.hbs' } }
+    );
+
+    this.renderComponent(Root);
+
+    const element = this.delegate.getInitialElement();
+
+    this.assertRenderTree([
+      {
+        type: 'component',
+        name: '{ROOT}',
+        args: { positional: [], named: {} },
+        instance: null,
+        template: 'root.hbs',
+        bounds: this.elementBounds(element),
+        children: [
+          {
+            type: 'component',
+            name: 'HelloWorld',
+            args: { positional: [], named: { arg: 'first' } },
+            instance: null,
+            template: '(unknown template module)',
+            bounds: this.nodeBounds(element.firstChild),
+            children: [
+              {
+                type: 'modifier',
+                name: 'noop',
+                args: { positional: [], named: {} },
+                instance: (modifier: unknown) => modifier && Reflect.get(modifier, 'fn') === noopFn,
+                template: null,
+                bounds: this.nodeBounds(element.firstChild),
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+  }
 
   @test 'template-only components'() {
     this.registerComponent('TemplateOnly', 'HelloWorld', '{{@arg}}');
@@ -313,7 +398,7 @@ class DebugRenderTreeTest extends RenderTest {
             args: { positional: [this.element.firstChild], named: {} },
             instance: (instance: GlimmerishComponent) => instance === null,
             template: null,
-            bounds: this.elementBounds(this.element.firstChild! as unknown as Element),
+            bounds: this.elementBounds(this.element.firstChild! as unknown as SimpleElement),
             children: [
               {
                 type: 'component',
@@ -714,7 +799,7 @@ class DebugRenderTreeTest extends RenderTest {
     };
   }
 
-  elementBounds(element: Element): CapturedBounds {
+  elementBounds(element: SimpleElement): CapturedBounds {
     return {
       parentElement: element as unknown as SimpleElement,
       firstNode: element.firstChild! as unknown as SimpleNode,

@@ -1,6 +1,7 @@
 import type {
   Bounds,
   CapturedRenderNode,
+  ComponentDefinition,
   DebugRenderTree,
   Nullable,
   RenderNode,
@@ -37,7 +38,7 @@ export class Ref<T extends object> {
     this.value = null;
   }
 
-  toString(): String {
+  toString(): string {
     let label = `Ref ${this.id}`;
 
     if (this.value === null) {
@@ -195,4 +196,11 @@ export default class DebugRenderTreeImpl<TBucket extends object>
     let lastNode = bounds.lastNode();
     return { parentElement, firstNode, lastNode };
   }
+}
+
+export function getDebugName(
+  definition: ComponentDefinition,
+  manager = definition.manager
+): string {
+  return definition.resolvedName ?? definition.debugName ?? manager.getDebugName(definition.state);
 }

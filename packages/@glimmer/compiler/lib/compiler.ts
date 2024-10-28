@@ -119,6 +119,10 @@ export function precompile(
 ): TemplateJavascript {
   const [block, usedLocals] = precompileJSON(source, options);
 
+  if ('emit' in options && options.emit?.debugSymbols && usedLocals.length > 0) {
+    block.push(usedLocals);
+  }
+
   const moduleName = options.meta?.moduleName;
   const idFn = options.id || defaultId;
   const blockJSON = JSON.stringify(block);

@@ -201,7 +201,8 @@ export class ConstantsImpl
   component(
     definitionState: ComponentDefinitionState,
     owner: object,
-    isOptional?: true
+    isOptional?: true,
+    debugName?: string
   ): ComponentDefinition | null {
     let definition = this.componentDefinitionCache.get(definitionState);
 
@@ -252,6 +253,11 @@ export class ConstantsImpl
       };
 
       definition.handle = this.value(definition);
+
+      if (debugName) {
+        definition.debugName = debugName;
+      }
+
       this.componentDefinitionCache.set(definitionState, definition);
       this.componentDefinitionCount++;
     }
