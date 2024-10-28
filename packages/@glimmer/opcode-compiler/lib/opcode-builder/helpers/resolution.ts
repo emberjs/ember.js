@@ -87,14 +87,13 @@ export function resolveComponent(
     assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     throw new Error(
-      `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
-        meta.upvars![expr[1]] ?? '{unknown variable}'
+      `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${meta.upvars![expr[1]] ?? '{unknown variable}'
       }`
     );
   }
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues, owner, debugSymbols } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
@@ -102,7 +101,9 @@ export function resolveComponent(
     then(
       constants.component(
         definition as object,
-        expect(owner, 'BUG: expected owner when resolving component definition')
+        expect(owner, 'BUG: expected owner when resolving component definition'),
+        false,
+        debugSymbols?.at(expr[1])
       )
     );
   } else {
@@ -182,12 +183,12 @@ export function resolveModifier(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let { scopeValues } = meta;
+    let { scopeValues, debugSymbols } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
 
-    then(constants.modifier(definition as object));
+    then(constants.modifier(definition as object, debugSymbols?.at(expr[1]) ?? undefined));
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let { upvars } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
@@ -215,7 +216,7 @@ export function resolveModifier(
       );
     }
 
-    then(constants.modifier(modifier, name));
+    then(constants.modifier(modifier));
   }
 }
 
@@ -236,7 +237,7 @@ export function resolveComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues, owner, debugSymbols } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
@@ -244,7 +245,8 @@ export function resolveComponentOrHelper(
     let component = constants.component(
       definition as object,
       expect(owner, 'BUG: expected owner when resolving component definition'),
-      true
+      true,
+      debugSymbols?.at(expr[1])
     );
 
     if (component !== null) {
@@ -316,7 +318,7 @@ export function resolveOptionalComponentOrHelper(
   let type = expr[0];
 
   if (type === SexpOpcodes.GetLexicalSymbol) {
-    let { scopeValues, owner } = meta;
+    let { scopeValues, owner, debugSymbols } = meta;
     let definition = expect(scopeValues, 'BUG: scopeValues must exist if template symbol is used')[
       expr[1]
     ];
@@ -333,7 +335,8 @@ export function resolveOptionalComponentOrHelper(
     let component = constants.component(
       definition,
       expect(owner, 'BUG: expected owner when resolving component definition'),
-      true
+      true,
+      debugSymbols?.at(expr[1])
     );
 
     if (component !== null) {
@@ -390,8 +393,7 @@ function lookupBuiltInHelper(
     // Keyword helper did not exist, which means that we're attempting to use a
     // value of some kind that is not in scope
     throw new Error(
-      `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${
-        meta.upvars![expr[1]] ?? '{unknown variable}'
+      `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${meta.upvars![expr[1]] ?? '{unknown variable}'
       }`
     );
   }

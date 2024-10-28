@@ -24,6 +24,7 @@ export interface ComponentDefinition<
   manager: M;
   capabilities: CapabilityMask;
   compilable: CompilableProgram | null;
+  debugName?: string | undefined;
 }
 
 export interface ComponentInstance<

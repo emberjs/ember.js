@@ -96,6 +96,7 @@ export interface NamedBlocks {
 export interface ContainingMetadata {
   evalSymbols: Nullable<string[]>;
   upvars: Nullable<string[]>;
+  debugSymbols?: string[] | undefined;
   scopeValues: unknown[] | null;
   isStrictMode: boolean;
   moduleName: string;
