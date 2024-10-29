@@ -4,11 +4,8 @@ on:
   workflow_dispatch:
   # Don't run on every merge to main, because many merges
   # may not even be vm related, but infra, or GH Actions
-  # push:
-  #   branches:
-  #     - main
   pull_request:
-    branches: [main]
+    types: [ labeled ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -23,6 +20,7 @@ env:
 
 jobs:
   master-krausest-comparison:
+    if: ${{ github.event.label.name == 'perf' }}
     name: Glimmer Krausest Benchmark
     runs-on: ubuntu-latest
     timeout-minutes: 70
