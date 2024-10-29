@@ -28,7 +28,7 @@
     "@ember/string": "^3.0.1",
     "@ember/test-helpers": "^3.3.0",
     "@embroider/test-setup": "^4.0.0",
-    "@glimmer/component": "^1.1.2",
+    "@glimmer/component": "workspace:^",
     "@glimmer/tracking": "^1.1.2",
     "broccoli-asset-rev": "^3.0.0",
     "ember-auto-import": "^2.4.3",
