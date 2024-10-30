@@ -8,7 +8,9 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
+import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
 
 export interface Checker<T> {
   type: T;
@@ -307,6 +309,66 @@ export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
 
   return new InstanceofChecker<T>(Class);
 }
+
+export const CheckRegister: Checker<Register> = new (class {
+  declare type: Register;
+  validate(value: unknown): value is Register {
+    switch (value) {
+      case $s0:
+      case $s1:
+      case $sp:
+      case $fp:
+      case $ra:
+      case $pc:
+      case $t0:
+      case $t1:
+      case $v0:
+        return true;
+      default:
+        return false;
+    }
+  }
+  expected(): string {
+    return `Register`;
+  }
+})();
+
+export const CheckSyscallRegister: Checker<SyscallRegister> = new (class {
+  declare type: SyscallRegister;
+  validate(value: unknown): value is SyscallRegister {
+    switch (value) {
+      case $s0:
+      case $s1:
+      case $t0:
+      case $t1:
+      case $v0:
+        return true;
+      default:
+        return false;
+    }
+  }
+  expected(): string {
+    return `syscall register ($s0, $s1, $t0, $t1, $v0)`;
+  }
+})();
+
+export const CheckMachineRegister: Checker<MachineRegister> = new (class {
+  declare type: MachineRegister;
+  validate(value: unknown): value is MachineRegister {
+    switch (value) {
+      case $sp:
+      case $fp:
+      case $ra:
+      case $pc:
+        return true;
+      default:
+        return false;
+    }
+  }
+  expected(): string {
+    return `machine register ($sp, $fp, $ra, $pc)`;
+  }
+})();
 
 export function CheckOption<T>(checker: Checker<T>): Checker<Nullable<T>> {
   if (!LOCAL_DEBUG) {

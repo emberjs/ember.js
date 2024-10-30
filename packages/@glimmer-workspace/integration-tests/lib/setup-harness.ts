@@ -23,6 +23,18 @@ export async function setupQunit() {
     tooltip: 'CI mode makes tests run faster by sacrificing UI responsiveness',
   });
 
+  QUnit.config.urlConfig.push({
+    id: 'enable_local_should_log',
+    label: 'Trace Logging',
+    tooltip: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
+  });
+
+  QUnit.config.urlConfig.push({
+    id: 'disable_local_debug',
+    label: 'Disable Debug Assertions',
+    tooltip: 'Disable LOCAL_DEBUG (debug assertions)',
+  });
+
   await Promise.resolve();
 
   const qunitDiv = document.createElement('div');

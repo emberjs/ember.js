@@ -23,12 +23,10 @@ import { unwrap } from '@glimmer/debug-util';
 import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util';
 import { CONSTANT_TAG } from '@glimmer/validator';
-import { $sp } from '@glimmer/vm';
 
 import type { EvaluationStack } from './stack';
 
 import { CheckCompilableBlock, CheckReference, CheckScope } from '../compiled/opcodes/-debug-strip';
-import { REGISTERS } from '../symbols';
 
 /*
   The calling convention is:
@@ -45,7 +43,7 @@ export class VMArgumentsImpl implements VMArguments {
   public blocks = new BlockArgumentsImpl();
 
   empty(stack: EvaluationStack): this {
-    let base = stack[REGISTERS][$sp] + 1;
+    let base = stack.$sp + 1;
 
     this.named.empty(stack, base);
     this.positional.empty(stack, base);
@@ -73,7 +71,7 @@ export class VMArgumentsImpl implements VMArguments {
 
     let named = this.named;
     let namedCount = names.length;
-    let namedBase = stack[REGISTERS][$sp] - namedCount + 1;
+    let namedBase = stack.$sp - namedCount + 1;
 
     named.setup(stack, namedBase, namedCount, names, atNames);
 
@@ -114,7 +112,7 @@ export class VMArgumentsImpl implements VMArguments {
 
       positional.base += offset;
       named.base += offset;
-      stack[REGISTERS][$sp] += offset;
+      stack.$sp += offset;
     }
   }
 

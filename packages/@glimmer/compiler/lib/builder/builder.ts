@@ -27,6 +27,7 @@ import type {
   NormalizedPath,
   NormalizedStatement,
   Variable,
+  VariableKinds,
 } from './builder-interface';
 
 import {
@@ -661,7 +662,7 @@ export function buildVar(
 }
 
 function getSymbolForVar(
-  kind: Exclude<VariableKind, VariableKind.Free>,
+  kind: Exclude<VariableKind, VariableKinds['Free']>,
   symbols: Symbols,
   name: string
 ) {
