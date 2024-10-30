@@ -14,20 +14,6 @@ export {
   TYPE_SIZE,
 } from './lib/flags';
 export { isMachineOp, isOp, MachineOp, Op } from './lib/opcodes';
-export {
-  $fp,
-  $pc,
-  $ra,
-  $s0,
-  $s1,
-  $sp,
-  $t0,
-  $t1,
-  $v0,
-  isLowLevelRegister,
-  MachineRegister,
-  type Register,
-  SavedRegister,
-  type SyscallRegister,
-  TemporaryRegister,
-} from './lib/registers';
+export type { MachineRegister, Register, SyscallRegister } from './lib/registers';
+export type { SavedRegister, TemporaryRegister } from './lib/registers';
+export { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0, isLowLevelRegister } from './lib/registers';

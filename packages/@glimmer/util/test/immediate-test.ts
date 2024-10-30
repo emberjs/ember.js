@@ -1,18 +1,23 @@
-import { decodeImmediate, encodeImmediate, ImmediateConstants } from '@glimmer/util';
+import {
+  decodeImmediate,
+  encodeImmediate,
+  MAX_INT,
+  MAX_SMI,
+  MIN_INT,
+  MIN_SMI,
+} from '@glimmer/util';
 
 const { module, test } = QUnit;
 
 module('immediate encoding tests', () => {
   test('it works', (assert) => {
-    let cases = [ImmediateConstants.MIN_INT, -1, 0, ImmediateConstants.MAX_INT];
+    let cases = [MIN_INT, -1, 0, MAX_INT];
 
     for (const val of cases) {
       let encoded = encodeImmediate(val);
 
       assert.strictEqual(val, decodeImmediate(encoded), 'correctly encoded and decoded');
-      const isSMI =
-        (encoded as ImmediateConstants) >= ImmediateConstants.MIN_SMI &&
-        (encoded as ImmediateConstants) <= ImmediateConstants.MAX_SMI;
+      const isSMI = encoded >= MIN_SMI && encoded <= MAX_SMI;
       assert.true(isSMI, 'encoded as an SMI');
       assert.step(`testing ${val}`);
     }

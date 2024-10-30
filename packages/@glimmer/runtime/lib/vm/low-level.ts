@@ -9,14 +9,18 @@ import type { VM } from './append';
 import { APPEND_OPCODES } from '../opcodes';
 
 export interface LowLevelRegisters {
-  [MachineRegister.pc]: number;
-  [MachineRegister.ra]: number;
-  [MachineRegister.sp]: number;
-  [MachineRegister.fp]: number;
+  [$pc]: number;
+  [$ra]: number;
+  [$sp]: number;
+  [$fp]: number;
 }
 
 export function initializeRegisters(): LowLevelRegisters {
   return [0, -1, 0, 0];
+}
+
+export function restoreRegisters(pc: number, sp: number): LowLevelRegisters {
+  return [pc, -1, sp, 0];
 }
 
 export function initializeRegistersWithSP(sp: number): LowLevelRegisters {

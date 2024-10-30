@@ -7,7 +7,6 @@ import type {
   RuntimeOp,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import type { Register } from '@glimmer/vm';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
 import { decodeHandle, decodeImmediate, enumerate, LOCAL_LOGGER } from '@glimmer/util';
 import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
@@ -161,7 +160,7 @@ function opcodeOperand(opcode: RuntimeOp, index: number): number {
   }
 }
 
-function decodeRegister(register: Register): string {
+function decodeRegister(register: number): string {
   switch (register) {
     case $pc:
       return 'pc';
@@ -181,6 +180,8 @@ function decodeRegister(register: Register): string {
       return 't1';
     case $v0:
       return 'v0';
+    default:
+      throw new Error(`Unexpected register ${register}`);
   }
 }
 
