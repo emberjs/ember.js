@@ -7,7 +7,8 @@ import type {
   SerializedTemplateWithLazyBlock,
 } from '@glimmer/interfaces';
 import {
-  Builder,
+  BUILDER_APPEND,
+  BUILDER_CONCAT,
   buildStatements,
   c,
   NEWLINE,
@@ -50,8 +51,8 @@ function test(desc: string, template: string, ...expectedStatements: BuilderStat
   });
 }
 
-const Append = Builder.Append;
-const Concat = Builder.Concat;
+const Append = BUILDER_APPEND;
+const Concat = BUILDER_CONCAT;
 
 QUnit.test(
   '@arguments are on regular non-component/regular HTML nodes throws syntax error',

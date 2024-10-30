@@ -1,9 +1,10 @@
 import type { SourcePosition } from '../location';
 import type { Source } from '../source';
+import type { BrokenKind, InternalSyntheticKind, NonExistentKind, OffsetKind } from './kinds';
 import type { SourceSpan } from './span';
 
 import { UNKNOWN_POSITION } from '../location';
-import { OffsetKind } from './kinds';
+import { BROKEN_KIND, CHAR_OFFSET_KIND, HBS_POSITION_KIND } from './kinds';
 import { match, MatchAny } from './match';
 import { span } from './span';
 
@@ -53,7 +54,7 @@ export class SourceOffset {
    * any part of the source.
    */
   static broken(pos: SourcePosition = UNKNOWN_POSITION): SourceOffset {
-    return new InvisiblePosition(OffsetKind.Broken, pos).wrap();
+    return new InvisiblePosition(BROKEN_KIND, pos).wrap();
   }
 
   constructor(readonly data: PositionData & AnyPosition) {}
@@ -130,7 +131,7 @@ export class SourceOffset {
 }
 
 export class CharPosition implements PositionData {
-  readonly kind = OffsetKind.CharPosition;
+  readonly kind = CHAR_OFFSET_KIND;
 
   /** Computed from char offset */
   _locPos: HbsPosition | BROKEN | null = null;
@@ -193,7 +194,7 @@ export class CharPosition implements PositionData {
 }
 
 export class HbsPosition implements PositionData {
-  readonly kind = OffsetKind.HbsPosition;
+  readonly kind = HBS_POSITION_KIND;
 
   _charPos: CharPosition | BROKEN | null;
 
@@ -251,7 +252,7 @@ export class HbsPosition implements PositionData {
 
 export class InvisiblePosition implements PositionData {
   constructor(
-    readonly kind: OffsetKind.Broken | OffsetKind.InternalsSynthetic | OffsetKind.NonExistent,
+    readonly kind: BrokenKind | InternalSyntheticKind | NonExistentKind,
     // whatever was provided, possibly broken
     readonly pos: SourcePosition
   ) {}
@@ -291,24 +292,24 @@ export class InvisiblePosition implements PositionData {
 const eql = match<boolean>((m) =>
   m
     .when(
-      OffsetKind.HbsPosition,
-      OffsetKind.HbsPosition,
+      HBS_POSITION_KIND,
+      HBS_POSITION_KIND,
       ({ hbsPos: left }, { hbsPos: right }) =>
         left.column === right.column && left.line === right.line
     )
     .when(
-      OffsetKind.CharPosition,
-      OffsetKind.CharPosition,
+      CHAR_OFFSET_KIND,
+      CHAR_OFFSET_KIND,
       ({ charPos: left }, { charPos: right }) => left === right
     )
     .when(
-      OffsetKind.CharPosition,
-      OffsetKind.HbsPosition,
+      CHAR_OFFSET_KIND,
+      HBS_POSITION_KIND,
       ({ offset: left }, right) => left === right.toCharPos()?.offset
     )
     .when(
-      OffsetKind.HbsPosition,
-      OffsetKind.CharPosition,
+      HBS_POSITION_KIND,
+      CHAR_OFFSET_KIND,
       (left, { offset: right }) => left.toCharPos()?.offset === right
     )
     .when(MatchAny, MatchAny, () => false)

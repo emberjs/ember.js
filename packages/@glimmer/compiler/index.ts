@@ -7,7 +7,8 @@ export {
   s,
   unicode,
 } from './lib/builder/builder';
-export { Builder, type BuilderStatement } from './lib/builder/builder-interface';
+export { type BuilderStatement } from './lib/builder/builder-interface';
+export * from './lib/builder/constants';
 export { defaultId, precompile, precompileJSON, type PrecompileOptions } from './lib/compiler';
 
 // exported only for tests!

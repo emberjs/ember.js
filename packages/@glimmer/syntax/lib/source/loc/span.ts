@@ -3,12 +3,20 @@ import { assertNever } from '@glimmer/util';
 
 import type { SourceLocation, SourcePosition } from '../location';
 import type { Source } from '../source';
+import type { BrokenKind, InvisibleKind, NonExistentKind, OffsetKind } from './kinds';
 import type { MatchFn } from './match';
 import type { AnyPosition, SourceOffset } from './offset';
 
 import { BROKEN_LOCATION, NON_EXISTENT_LOCATION } from '../location';
 import { SourceSlice } from '../slice';
-import { OffsetKind } from './kinds';
+import {
+  BROKEN_KIND,
+  CHAR_OFFSET_KIND,
+  HBS_POSITION_KIND,
+  INTERNAL_SYNTHETIC_KIND,
+  isInvisible,
+  NON_EXISTENT_KIND,
+} from './kinds';
 import { IsInvisible, match, MatchAny } from './match';
 import { BROKEN, CharPosition, HbsPosition, InvisiblePosition } from './offset';
 
@@ -95,7 +103,7 @@ interface SpanData {
  */
 export class SourceSpan implements SourceLocation {
   static get NON_EXISTENT(): SourceSpan {
-    return new InvisibleSpan(OffsetKind.NonExistent, NON_EXISTENT_LOCATION).wrap();
+    return new InvisibleSpan(NON_EXISTENT_KIND, NON_EXISTENT_LOCATION).wrap();
   }
 
   static load(source: Source, serialized: SerializedSourceSpan): SourceSpan {
@@ -105,9 +113,9 @@ export class SourceSpan implements SourceLocation {
       return SourceSpan.synthetic(serialized);
     } else if (Array.isArray(serialized)) {
       return SourceSpan.forCharPositions(source, serialized[0], serialized[1]);
-    } else if (serialized === OffsetKind.NonExistent) {
+    } else if (serialized === NON_EXISTENT_KIND) {
       return SourceSpan.NON_EXISTENT;
-    } else if (serialized === OffsetKind.Broken) {
+    } else if (serialized === BROKEN_KIND) {
       return SourceSpan.broken(BROKEN_LOCATION);
     }
 
@@ -128,18 +136,17 @@ export class SourceSpan implements SourceLocation {
   }
 
   static synthetic(chars: string): SourceSpan {
-    return new InvisibleSpan(OffsetKind.InternalsSynthetic, NON_EXISTENT_LOCATION, chars).wrap();
+    return new InvisibleSpan(INTERNAL_SYNTHETIC_KIND, NON_EXISTENT_LOCATION, chars).wrap();
   }
 
   static broken(pos: SourceLocation = BROKEN_LOCATION): SourceSpan {
-    return new InvisibleSpan(OffsetKind.Broken, pos).wrap();
+    return new InvisibleSpan(BROKEN_KIND, pos).wrap();
   }
 
   readonly isInvisible: boolean;
 
   constructor(private data: SpanData & AnySpan) {
-    this.isInvisible =
-      data.kind !== OffsetKind.CharPosition && data.kind !== OffsetKind.HbsPosition;
+    this.isInvisible = isInvisible(data.kind);
   }
 
   getStart(): SourceOffset {
@@ -301,9 +308,9 @@ export class SourceSpan implements SourceLocation {
 type AnySpan = HbsSpan | CharPositionSpan | InvisibleSpan;
 
 class CharPositionSpan implements SpanData {
-  readonly kind = OffsetKind.CharPosition;
+  readonly kind = CHAR_OFFSET_KIND;
 
-  _locPosSpan: HbsSpan | BROKEN | null = null;
+  #locPosSpan: HbsSpan | BROKEN | null = null;
 
   constructor(
     readonly source: Source,
@@ -340,16 +347,16 @@ class CharPositionSpan implements SpanData {
   }
 
   toHbsSpan(): HbsSpan | null {
-    let locPosSpan = this._locPosSpan;
+    let locPosSpan = this.#locPosSpan;
 
     if (locPosSpan === null) {
       const start = this.charPositions.start.toHbsPos();
       const end = this.charPositions.end.toHbsPos();
 
       if (start === null || end === null) {
-        locPosSpan = this._locPosSpan = BROKEN;
+        locPosSpan = this.#locPosSpan = BROKEN;
       } else {
-        locPosSpan = this._locPosSpan = new HbsSpan(this.source, {
+        locPosSpan = this.#locPosSpan = new HbsSpan(this.source, {
           start,
           end,
         });
@@ -378,24 +385,24 @@ class CharPositionSpan implements SpanData {
 }
 
 export class HbsSpan implements SpanData {
-  readonly kind = OffsetKind.HbsPosition;
+  readonly kind = HBS_POSITION_KIND;
 
-  _charPosSpan: CharPositionSpan | BROKEN | null = null;
+  #charPosSpan: CharPositionSpan | BROKEN | null = null;
 
   // the source location from Handlebars + AST Plugins -- could be wrong
-  _providedHbsLoc: SourceLocation | null;
+  #providedHbsLoc: SourceLocation | null;
 
   constructor(
     readonly source: Source,
     readonly hbsPositions: { start: HbsPosition; end: HbsPosition },
     providedHbsLoc: SourceLocation | null = null
   ) {
-    this._providedHbsLoc = providedHbsLoc;
+    this.#providedHbsLoc = providedHbsLoc;
   }
 
   serialize(): SerializedConcreteSourceSpan {
     const charPos = this.toCharPosSpan();
-    return charPos === null ? OffsetKind.Broken : charPos.wrap().serialize();
+    return charPos === null ? BROKEN_KIND : charPos.wrap().serialize();
   }
 
   wrap(): SourceSpan {
@@ -403,13 +410,13 @@ export class HbsSpan implements SpanData {
   }
 
   private updateProvided(pos: SourcePosition, edge: 'start' | 'end') {
-    if (this._providedHbsLoc) {
-      this._providedHbsLoc[edge] = pos;
+    if (this.#providedHbsLoc) {
+      this.#providedHbsLoc[edge] = pos;
     }
 
     // invalidate computed character offsets
-    this._charPosSpan = null;
-    this._providedHbsLoc = {
+    this.#charPosSpan = null;
+    this.#providedHbsLoc = {
       start: pos,
       end: pos,
     };
@@ -456,19 +463,19 @@ export class HbsSpan implements SpanData {
   }
 
   toCharPosSpan(): CharPositionSpan | null {
-    let charPosSpan = this._charPosSpan;
+    let charPosSpan = this.#charPosSpan;
 
     if (charPosSpan === null) {
       const start = this.hbsPositions.start.toCharPos();
       const end = this.hbsPositions.end.toCharPos();
 
       if (start && end) {
-        charPosSpan = this._charPosSpan = new CharPositionSpan(this.source, {
+        charPosSpan = this.#charPosSpan = new CharPositionSpan(this.source, {
           start,
           end,
         });
       } else {
-        charPosSpan = this._charPosSpan = BROKEN;
+        charPosSpan = this.#charPosSpan = BROKEN;
         return null;
       }
     }
@@ -479,7 +486,7 @@ export class HbsSpan implements SpanData {
 
 class InvisibleSpan implements SpanData {
   constructor(
-    readonly kind: OffsetKind.Broken | OffsetKind.InternalsSynthetic | OffsetKind.NonExistent,
+    readonly kind: InvisibleKind,
     // whatever was provided, possibly broken
     readonly loc: SourceLocation,
     // if the span represents a synthetic string
@@ -488,10 +495,10 @@ class InvisibleSpan implements SpanData {
 
   serialize(): SerializedConcreteSourceSpan {
     switch (this.kind) {
-      case OffsetKind.Broken:
-      case OffsetKind.NonExistent:
+      case BROKEN_KIND:
+      case NON_EXISTENT_KIND:
         return this.kind;
-      case OffsetKind.InternalsSynthetic:
+      case INTERNAL_SYNTHETIC_KIND:
         return this.string || '';
     }
   }
@@ -542,32 +549,32 @@ class InvisibleSpan implements SpanData {
 
 export const span: MatchFn<SourceSpan> = match((m) =>
   m
-    .when(OffsetKind.HbsPosition, OffsetKind.HbsPosition, (left, right) =>
+    .when(HBS_POSITION_KIND, HBS_POSITION_KIND, (left, right) =>
       new HbsSpan(left.source, {
         start: left,
         end: right,
       }).wrap()
     )
-    .when(OffsetKind.CharPosition, OffsetKind.CharPosition, (left, right) =>
+    .when(CHAR_OFFSET_KIND, CHAR_OFFSET_KIND, (left, right) =>
       new CharPositionSpan(left.source, {
         start: left,
         end: right,
       }).wrap()
     )
-    .when(OffsetKind.CharPosition, OffsetKind.HbsPosition, (left, right) => {
+    .when(CHAR_OFFSET_KIND, HBS_POSITION_KIND, (left, right) => {
       const rightCharPos = right.toCharPos();
 
       if (rightCharPos === null) {
-        return new InvisibleSpan(OffsetKind.Broken, BROKEN_LOCATION).wrap();
+        return new InvisibleSpan(BROKEN_KIND, BROKEN_LOCATION).wrap();
       } else {
         return span(left, rightCharPos);
       }
     })
-    .when(OffsetKind.HbsPosition, OffsetKind.CharPosition, (left, right) => {
+    .when(HBS_POSITION_KIND, CHAR_OFFSET_KIND, (left, right) => {
       const leftCharPos = left.toCharPos();
 
       if (leftCharPos === null) {
-        return new InvisibleSpan(OffsetKind.Broken, BROKEN_LOCATION).wrap();
+        return new InvisibleSpan(BROKEN_KIND, BROKEN_LOCATION).wrap();
       } else {
         return span(leftCharPos, right);
       }
@@ -583,7 +590,4 @@ export type SerializedConcreteSourceSpan =
   | /** normal */ [start: number, size: number]
   | /** synthetic */ string;
 
-export type SerializedSourceSpan =
-  | SerializedConcreteSourceSpan
-  | OffsetKind.NonExistent
-  | OffsetKind.Broken;
+export type SerializedSourceSpan = SerializedConcreteSourceSpan | NonExistentKind | BrokenKind;

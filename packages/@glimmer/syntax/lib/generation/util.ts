@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type * as ASTv1 from '../v1/api';
 
-const enum Char {
-  NBSP = 0xa0,
-  QUOT = 0x22,
-  LT = 0x3c,
-  GT = 0x3e,
-  AMP = 0x26,
-}
+const Char = {
+  NBSP: 0xa0,
+  QUOT: 0x22,
+  LT: 0x3c,
+  GT: 0x3e,
+  AMP: 0x26,
+};
 
 const ATTR_VALUE_REGEX_TEST = /["&\xA0]/u;
 const ATTR_VALUE_REGEX_REPLACE = new RegExp(ATTR_VALUE_REGEX_TEST.source, 'gu');

@@ -2,11 +2,10 @@ import type { Destroyable, Destructor } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/debug-util';
 import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
 
-const enum DestroyingState {
-  Live = 0,
-  Destroying = 1,
-  Destroyed = 2,
-}
+const LIVE_STATE = 0;
+const DESTROYING_STATE = 1;
+const DESTROYED_STATE = 2;
+type DestroyableState = 0 | 1 | 2;
 
 type OneOrMany<T> = null | T | T[];
 
@@ -16,7 +15,7 @@ interface DestroyableMeta<T extends Destroyable> {
   children: OneOrMany<Destroyable>;
   eagerDestructors: OneOrMany<Destructor<T>>;
   destructors: OneOrMany<Destructor<T>>;
-  state: DestroyingState;
+  state: DestroyableState;
 }
 
 interface UndestroyedDestroyablesError extends Error {
@@ -74,7 +73,7 @@ function getDestroyableMeta<T extends Destroyable>(destroyable: T): DestroyableM
       children: null,
       eagerDestructors: null,
       destructors: null,
-      state: DestroyingState.Live,
+      state: LIVE_STATE,
     };
 
     if (import.meta.env.DEV) {
@@ -153,11 +152,11 @@ export function unregisterDestructor<T extends Destroyable>(
 export function destroy(destroyable: Destroyable) {
   let meta = getDestroyableMeta(destroyable);
 
-  if (meta.state >= DestroyingState.Destroying) return;
+  if (meta.state >= DESTROYING_STATE) return;
 
   let { parents, children, eagerDestructors, destructors } = meta;
 
-  meta.state = DestroyingState.Destroying;
+  meta.state = DESTROYING_STATE;
 
   iterate(children, destroy);
   iterate(eagerDestructors, (destructor) => destructor(destroyable));
@@ -166,14 +165,14 @@ export function destroy(destroyable: Destroyable) {
   scheduleDestroyed(() => {
     iterate(parents, (parent) => removeChildFromParent(destroyable, parent));
 
-    meta.state = DestroyingState.Destroyed;
+    meta.state = DESTROYED_STATE;
   });
 }
 
 function removeChildFromParent(child: Destroyable, parent: Destroyable) {
   let parentMeta = getDestroyableMeta(parent);
 
-  if (parentMeta.state === DestroyingState.Live) {
+  if (parentMeta.state === LIVE_STATE) {
     parentMeta.children = remove(
       parentMeta.children,
       child,
@@ -198,13 +197,13 @@ export function _hasDestroyableChildren(destroyable: Destroyable) {
 export function isDestroying(destroyable: Destroyable) {
   let meta = DESTROYABLE_META.get(destroyable);
 
-  return meta === undefined ? false : meta.state >= DestroyingState.Destroying;
+  return meta === undefined ? false : meta.state >= DESTROYING_STATE;
 }
 
 export function isDestroyed(destroyable: Destroyable) {
   let meta = DESTROYABLE_META.get(destroyable);
 
-  return meta === undefined ? false : meta.state >= DestroyingState.Destroyed;
+  return meta === undefined ? false : meta.state >= DESTROYED_STATE;
 }
 
 ////////////
@@ -243,7 +242,7 @@ if (import.meta.env.DEV) {
     let undestroyed: object[] = [];
 
     map.forEach((meta) => {
-      if (meta.state !== DestroyingState.Destroyed) {
+      if (meta.state !== DESTROYED_STATE) {
         undestroyed.push(meta.source!);
       }
     });
