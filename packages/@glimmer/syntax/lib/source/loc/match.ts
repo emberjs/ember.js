@@ -1,8 +1,9 @@
 import { assert, isPresentArray } from '@glimmer/debug-util';
 
+import type { CharOffsetKind, HbsPositionKind, OffsetKind } from './kinds';
 import type { CharPosition, HbsPosition, InvisiblePosition, PositionData } from './offset';
 
-import { OffsetKind } from './kinds';
+import { BROKEN_KIND, INTERNAL_SYNTHETIC_KIND, NON_EXISTENT_KIND } from './kinds';
 
 /**
  * This file implements the DSL used by span and offset in places where they need to exhaustively
@@ -141,23 +142,23 @@ class Matcher<Out, M extends Matches = Matches> {
   // checking so that matchers can ensure they've actually covered all the cases (and TypeScript
   // will treat it as an exhaustive match).
   when(
-    left: OffsetKind.CharPosition,
-    right: OffsetKind.HbsPosition,
+    left: CharOffsetKind,
+    right: HbsPositionKind,
     callback: (left: CharPosition, right: HbsPosition) => Out
   ): ExhaustiveCheck<Out, M, 'Char,Hbs'>;
   when(
-    left: OffsetKind.HbsPosition,
-    right: OffsetKind.CharPosition,
+    left: HbsPositionKind,
+    right: CharOffsetKind,
     callback: (left: HbsPosition, right: CharPosition) => Out
   ): ExhaustiveCheck<Out, M, 'Hbs,Char'>;
   when(
-    left: OffsetKind.HbsPosition,
-    right: OffsetKind.HbsPosition,
+    left: HbsPositionKind,
+    right: HbsPositionKind,
     callback: (left: HbsPosition, right: HbsPosition) => Out
   ): ExhaustiveCheck<Out, M, 'Hbs,Hbs'>;
   when(
-    left: OffsetKind.CharPosition,
-    right: OffsetKind.CharPosition,
+    left: CharOffsetKind,
+    right: CharOffsetKind,
     callback: (left: CharPosition, right: CharPosition) => Out
   ): ExhaustiveCheck<Out, M, 'Char,Char'>;
   when(
@@ -190,9 +191,9 @@ class Matcher<Out, M extends Matches = Matches> {
 
 function patternFor(kind: OffsetKind): Pattern {
   switch (kind) {
-    case OffsetKind.Broken:
-    case OffsetKind.InternalsSynthetic:
-    case OffsetKind.NonExistent:
+    case BROKEN_KIND:
+    case INTERNAL_SYNTHETIC_KIND:
+    case NON_EXISTENT_KIND:
       return IsInvisible;
     default:
       return kind;

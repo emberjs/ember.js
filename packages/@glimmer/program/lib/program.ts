@@ -12,12 +12,12 @@ import { MACHINE_MASK } from '@glimmer/vm';
 
 import { RuntimeOpImpl } from './opcode';
 
-const enum TableSlotState {
-  Allocated,
-  Freed,
-  Purged,
-  Pointer,
-}
+const ALLOCATED = 0;
+const FREED = 1;
+const PURGED = 2;
+const POINTER = 3;
+
+type TableSlotState = typeof ALLOCATED | typeof FREED | typeof PURGED | typeof POINTER;
 
 export type Placeholder = [number, () => number];
 export type StdlibPlaceholder = [number, StdLibOperand];
@@ -130,7 +130,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
     // wrapped to prevent us from allocating extra space in prod. In the future,
     // if we start using the compact API, we should change this.
     if (LOCAL_DEBUG) {
-      this.handleState[handle] = TableSlotState.Allocated;
+      this.handleState[handle] = ALLOCATED;
     }
   }
 
@@ -150,7 +150,7 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   }
 
   free(handle: number): void {
-    this.handleState[handle] = TableSlotState.Freed;
+    this.handleState[handle] = FREED;
   }
 
   /**
@@ -169,21 +169,21 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
       let size = unwrap(handleTable[i + 1]) - unwrap(offset);
       let state = handleState[i];
 
-      if (state === TableSlotState.Purged) {
+      if (state === PURGED) {
         continue;
-      } else if (state === TableSlotState.Freed) {
+      } else if (state === FREED) {
         // transition to "already freed" aka "purged"
         // a good improvement would be to reuse
         // these slots
-        handleState[i] = TableSlotState.Purged;
+        handleState[i] = PURGED;
         compactedSize += size;
-      } else if (state === TableSlotState.Allocated) {
+      } else if (state === ALLOCATED) {
         for (let j = offset; j <= i + size; j++) {
           heap[j - compactedSize] = unwrap(heap[j]);
         }
 
         handleTable[i] = offset - compactedSize;
-      } else if (state === TableSlotState.Pointer) {
+      } else if (state === POINTER) {
         handleTable[i] = offset - compactedSize;
       }
     }
