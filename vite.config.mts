@@ -6,9 +6,6 @@ export default defineConfig({
   },
   mode: 'testing',
   plugins: [
-    /**
-     * A similar plugin exists for our rollup builds
-     */
     {
       name: 'define custom import.meta.env',
       async transform(code) {
