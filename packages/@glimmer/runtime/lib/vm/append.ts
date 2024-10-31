@@ -36,7 +36,7 @@ import type {
 import { expect, unwrapHandle } from '@glimmer/debug-util';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
-import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { LOCAL_LOGGER, reverse, Stack } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
@@ -501,7 +501,7 @@ export class VM implements PublicVM {
   }
 
   private _execute(initialize?: (vm: this) => void): RenderResult {
-    if (LOCAL_SHOULD_LOG) {
+    if (LOCAL_TRACE_LOGGING) {
       LOCAL_LOGGER.log(`EXECUTING FROM ${this.lowlevel.fetchRegister($pc)}`);
     }
 

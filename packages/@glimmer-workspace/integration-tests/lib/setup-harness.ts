@@ -1,38 +1,60 @@
 /* eslint-disable no-console */
+import type { Expand } from '@glimmer/interfaces';
 import { debug } from '@glimmer/validator';
 import { autoRegister } from 'js-reporters';
+import { default as QUnit } from 'qunit';
 
 export async function setupQunit() {
-  const qunit = await import('qunit');
+  const qunitLib: QUnit = await import('qunit');
   await import('qunit/qunit/qunit.css');
 
+  const testing = Testing.withConfig(
+    {
+      id: 'smoke_tests',
+      label: 'Smoke Tests',
+      tooltip: 'Enable Smoke Tests',
+    },
+    {
+      id: 'ci',
+      label: 'CI Mode',
+      tooltip:
+        'CI mode emits tap output and makes tests run faster by sacrificing UI responsiveness',
+    },
+    {
+      id: 'enable_internals_logging',
+      label: 'Log Deep Internals',
+      tooltip: 'Logs internals that are used in the development of the trace logs',
+    },
+
+    {
+      id: 'enable_trace_logging',
+      label: 'Trace Logs',
+      tooltip: 'Trace logs emit information about the internal VM state',
+    },
+
+    {
+      id: 'enable_subtle_logging',
+      label: '+ Subtle',
+      tooltip:
+        'Subtle logs include unchanged information and other details not necessary for normal debugging',
+    },
+
+    {
+      id: 'enable_trace_explanations',
+      label: '+ Explanations',
+      tooltip: 'Also explain the trace logs',
+    }
+  );
+
   const runner = autoRegister();
-  // @ts-expect-error qunit types don't expose "reporters"
-  const tap = qunit.reporters.tap;
-  tap.init(runner, { log: console.info });
 
-  QUnit.config.urlConfig.push({
-    id: 'smoke_tests',
-    label: 'Enable Smoke Tests',
-    tooltip: 'Enable Smoke Tests',
-  });
-
-  QUnit.config.urlConfig.push({
-    id: 'ci',
-    label: 'Enable CI Mode',
-    tooltip: 'CI mode makes tests run faster by sacrificing UI responsiveness',
-  });
-
-  QUnit.config.urlConfig.push({
-    id: 'enable_local_should_log',
-    label: 'Trace Logging',
-    tooltip: 'Enable LOCAL_SHOULD_LOG (extra debug logging info)',
-  });
-
-  QUnit.config.urlConfig.push({
-    id: 'disable_local_debug',
-    label: 'Disable Debug Assertions',
-    tooltip: 'Disable LOCAL_DEBUG (debug assertions)',
+  testing.begin(() => {
+    if (testing.config.ci) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const tap = qunitLib.reporters.tap;
+      tap.init(runner, { log: console.info });
+    }
   });
 
   await Promise.resolve();
@@ -46,7 +68,7 @@ export async function setupQunit() {
 
   console.log(`[HARNESS] ci=${hasFlag('ci')}`);
 
-  QUnit.testStart(() => {
+  testing.testStart(() => {
     debug.resetTrackingTransaction?.();
   });
 
@@ -64,7 +86,7 @@ export async function setupQunit() {
       });
 
     let start = performance.now();
-    qunit.testDone(async () => {
+    qunitLib.testDone(async () => {
       let gap = performance.now() - start;
       if (gap > 200) {
         await pause();
@@ -72,28 +94,11 @@ export async function setupQunit() {
       }
     });
 
-    qunit.moduleDone(pause);
+    qunitLib.moduleDone(pause);
   }
 
-  // @ts-expect-error missing in types, does exist: https://api.qunitjs.com/callbacks/QUnit.on/#the-testend-event
-  QUnit.on('testEnd', (testEnd) => {
-    if (testEnd.status === 'failed') {
-      testEnd.errors.forEach((assertion: any) => {
-        console.error(assertion.stack);
-        // message: speedometer
-        // actual: 75
-        // expected: 88
-        // stack: at dmc.test.js:12
-      });
-    }
-  });
-
-  qunit.done(({ failed }) => {
-    if (failed > 0) {
-      console.log('[HARNESS] fail');
-    } else {
-      console.log('[HARNESS] done');
-    }
+  qunitLib.done(() => {
+    console.log('[HARNESS] done');
   });
 
   return {
@@ -101,7 +106,74 @@ export async function setupQunit() {
   };
 }
 
+class Testing<Q extends typeof QUnit> {
+  static withConfig<const C extends readonly UrlConfig[]>(...configs: C): Testing<WithConfig<C>> {
+    return new Testing(withConfig(...configs));
+  }
+
+  readonly #qunit: Q;
+
+  constructor(qunit: Q) {
+    this.#qunit = qunit;
+  }
+
+  get config(): Q['config'] {
+    return this.#qunit.config;
+  }
+
+  readonly begin = (begin: (details: QUnit.BeginDetails) => void | Promise<void>): void => {
+    this.#qunit.begin(begin);
+  };
+
+  readonly testStart = (
+    callback: (details: QUnit.TestStartDetails) => void | Promise<void>
+  ): void => {
+    this.#qunit.testStart(callback);
+  };
+}
+
 function hasFlag(flag: string): boolean {
+  return hasSpecificFlag(flag);
+}
+
+function hasSpecificFlag(flag: string): boolean {
   let location = typeof window !== 'undefined' && window.location;
   return location && new RegExp(`[?&]${flag}`).test(location.search);
+}
+
+// eslint-disable-next-line unused-imports/no-unused-vars
+function getSpecificFlag(flag: string): string | undefined {
+  let location = typeof window !== 'undefined' && window.location;
+  if (!location) {
+    return undefined;
+  }
+
+  const matches = new RegExp(`[?&]${flag}=([^&]*)`).exec(location.search);
+  return matches ? matches[1] : undefined;
+}
+
+interface UrlConfig {
+  id: string;
+  label?: string | undefined;
+  tooltip?: string | undefined;
+  value?: string | string[] | { [key: string]: string } | undefined;
+}
+
+type WithConfig<C extends readonly UrlConfig[]> = typeof QUnit & {
+  config: QUnit['config'] & {
+    [P in C[number]['id']]: string | undefined;
+  };
+};
+
+function withConfig<const C extends readonly UrlConfig[]>(...configs: C): Expand<WithConfig<C>> {
+  for (let config of configs) {
+    QUnit.config.urlConfig.push(config);
+  }
+
+  const index = QUnit.config.urlConfig.findIndex((c) => c.id === 'noglobals');
+  if (index !== -1) {
+    QUnit.config.urlConfig.splice(index, 1);
+  }
+
+  return QUnit as any;
 }

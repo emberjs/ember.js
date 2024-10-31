@@ -28,7 +28,7 @@ export {
   CheckNode,
   CheckNumber,
   CheckObject,
-  CheckOption,
+  CheckNullable,
   CheckOr,
   CheckPrimitive,
   CheckProgramSymbolTable,

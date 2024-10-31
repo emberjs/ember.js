@@ -370,7 +370,7 @@ export const CheckMachineRegister: Checker<MachineRegister> = new (class {
   }
 })();
 
-export function CheckOption<T>(checker: Checker<T>): Checker<Nullable<T>> {
+export function CheckNullable<T>(checker: Checker<T>): Checker<Nullable<T>> {
   if (!LOCAL_DEBUG) {
     return new NoopChecker();
   }

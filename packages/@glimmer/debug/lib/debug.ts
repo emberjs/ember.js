@@ -7,7 +7,7 @@ import type {
   RuntimeOp,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { decodeHandle, decodeImmediate, enumerate, LOCAL_LOGGER } from '@glimmer/util';
 import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
 
@@ -21,7 +21,7 @@ export interface DebugConstants {
 }
 
 export function debugSlice(context: TemplateCompilationContext, start: number, end: number) {
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     LOCAL_LOGGER.group(`%c${start}:${end}`, 'color: #999');
 
     let heap = context.program.heap;
@@ -38,7 +38,7 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
         opcode,
         opcode.isMachine
       )!;
-      LOCAL_LOGGER.log(`${i}. ${logOpcode(name, params)}`);
+      LOCAL_LOGGER.debug(`${i}. ${logOpcode(name, params)}`);
       _size = opcode.size;
     }
     opcode.offset = -_size;
@@ -47,7 +47,7 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
 }
 
 export function logOpcode(type: string, params: Maybe<Dict>): string | void {
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     let out = type;
 
     if (params) {
@@ -61,7 +61,7 @@ export function logOpcode(type: string, params: Maybe<Dict>): string | void {
 }
 
 function json(param: unknown) {
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     if (typeof param === 'function') {
       return '<function>';
     }
@@ -91,7 +91,7 @@ export function debug(
   op: RuntimeOp,
   isMachine: 0 | 1
 ): [string, Dict] | undefined {
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     let metadata = opcodeMetadata(op.type, isMachine);
 
     if (!metadata) {

@@ -1,5 +1,5 @@
 import type { ASTv2, src } from '@glimmer/syntax';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
 import type { Result } from '../../shared/result';
@@ -55,20 +55,20 @@ export default function normalize(
   // create a new context for the normalization pass
   let state = new NormalizationState(root.table, isStrict);
 
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     LOCAL_LOGGER.groupCollapsed(`pass0: visiting`);
-    LOCAL_LOGGER.log('symbols', root.table);
-    LOCAL_LOGGER.log('source', source);
+    LOCAL_LOGGER.debug('symbols', root.table);
+    LOCAL_LOGGER.debug('source', source);
     LOCAL_LOGGER.groupEnd();
   }
 
   let body = VISIT_STMTS.visitList(root.body, state);
 
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     if (body.isOk) {
-      LOCAL_LOGGER.log('-> pass0: out', body.value);
+      LOCAL_LOGGER.debug('-> pass0: out', body.value);
     } else {
-      LOCAL_LOGGER.log('-> pass0: error', body.reason);
+      LOCAL_LOGGER.debug('-> pass0: error', body.reason);
     }
   }
 
