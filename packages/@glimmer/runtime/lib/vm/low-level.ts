@@ -49,7 +49,7 @@ export class LowLevelVM {
     public stack: VmStack,
     public heap: RuntimeHeap,
     public program: RuntimeProgram,
-    public externs: Externs,
+    public externs: Externs | undefined,
     readonly registers: LowLevelRegisters
   ) {}
 
@@ -139,7 +139,7 @@ export class LowLevelVM {
   }
 
   evaluateOuter(opcode: RuntimeOp, vm: VM) {
-    if (LOCAL_DEBUG) {
+    if (LOCAL_DEBUG && this.externs) {
       let {
         externs: { debugBefore, debugAfter },
       } = this;

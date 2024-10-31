@@ -207,15 +207,17 @@ export class VM implements PublicVM {
       evalStack,
       this.#heap,
       runtime.program,
-      {
-        debugBefore: (opcode: RuntimeOpImpl): DebugState => {
-          return APPEND_OPCODES.debugBefore(this, opcode);
-        },
+      import.meta.env.VM_LOCAL_DEV
+        ? {
+            debugBefore: (opcode: RuntimeOpImpl): DebugState => {
+              return APPEND_OPCODES.debugBefore!(this, opcode);
+            },
 
-        debugAfter: (state: DebugState): void => {
-          APPEND_OPCODES.debugAfter(this, state);
-        },
-      },
+            debugAfter: (state: DebugState): void => {
+              APPEND_OPCODES.debugAfter!(this, state);
+            },
+          }
+        : undefined,
       evalStack.registers
     );
 
