@@ -18,7 +18,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { Tag } from '@glimmer/validator';
-import { check, CheckBlockSymbolTable, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
+import { check, CheckBlockSymbolTable, CheckHandle, CheckNullable, CheckOr } from '@glimmer/debug';
 import { unwrap } from '@glimmer/debug-util';
 import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util';
@@ -422,14 +422,14 @@ export class BlockArgumentsImpl implements BlockArguments {
 
     let { base, stack } = this;
 
-    let table = check(stack.get(idx * 3, base), CheckOption(CheckBlockSymbolTable));
-    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope));
+    let table = check(stack.get(idx * 3, base), CheckNullable(CheckBlockSymbolTable));
+    let scope = check(stack.get(idx * 3 + 1, base), CheckNullable(CheckScope));
     let handle = check(
       stack.get(idx * 3 + 2, base),
-      CheckOption(CheckOr(CheckHandle, CheckCompilableBlock))
+      CheckNullable(CheckOr(CheckHandle, CheckCompilableBlock))
     );
 
-    return handle === null ? null : ([handle, scope!, table!] as ScopeBlock);
+    return handle === null ? null : ([handle, scope, table] as ScopeBlock);
   }
 
   capture(): CapturedBlockArguments {

@@ -16,7 +16,7 @@ import {
   CheckElement,
   CheckMaybe,
   CheckNode,
-  CheckOption,
+  CheckNullable,
   CheckString,
 } from '@glimmer/debug';
 import { debugToString, expect } from '@glimmer/debug-util';
@@ -59,7 +59,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, (vm) => {
   let guidRef = check(vm.stack.pop(), CheckReference);
 
   let element = check(valueForRef(elementRef), CheckElement);
-  let insertBefore = check(valueForRef(insertBeforeRef), CheckMaybe(CheckOption(CheckNode)));
+  let insertBefore = check(valueForRef(insertBeforeRef), CheckMaybe(CheckNullable(CheckNode)));
   let guid = valueForRef(guidRef) as string;
 
   if (!isConstRef(elementRef)) {

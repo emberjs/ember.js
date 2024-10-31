@@ -9,7 +9,7 @@ import type {
 } from '@glimmer/interfaces';
 import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debug';
 import { assert, unwrap } from '@glimmer/debug-util';
-import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { valueForRef } from '@glimmer/reference';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0, Op } from '@glimmer/vm';
@@ -70,21 +70,21 @@ export class AppendOpcodes {
     let params: Maybe<Dict> = undefined;
     let opName: string | undefined = undefined;
 
-    if (LOCAL_SHOULD_LOG) {
+    if (LOCAL_TRACE_LOGGING) {
       const lowlevel = unwrap(vm.debug).lowlevel;
       let pos = lowlevel.fetchRegister($pc) - opcode.size;
 
       [opName, params] = debug(vm.constants, opcode, opcode.isMachine)!;
 
       // console.log(`${typePos(vm['pc'])}.`);
-      LOCAL_LOGGER.log(`${pos}. ${logOpcode(opName, params)}`);
+      LOCAL_LOGGER.debug(`${pos}. ${logOpcode(opName, params)}`);
 
       let debugParams = [];
       for (let prop in params) {
         debugParams.push(prop, '=', params[prop]);
       }
 
-      LOCAL_LOGGER.log(...debugParams);
+      LOCAL_LOGGER.debug(...debugParams);
     }
 
     let sp: number;
@@ -128,9 +128,9 @@ export class AppendOpcodes {
         );
       }
 
-      if (LOCAL_SHOULD_LOG) {
+      if (LOCAL_TRACE_LOGGING) {
         const { lowlevel, registers } = unwrap(vm.debug);
-        LOCAL_LOGGER.log(
+        LOCAL_LOGGER.debug(
           '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
           'color: orange',
           lowlevel.registers[$pc],
@@ -143,30 +143,30 @@ export class AppendOpcodes {
           registers[$t1],
           registers[$v0]
         );
-        LOCAL_LOGGER.log('%c -> eval stack', 'color: red', vm.stack.toArray());
-        LOCAL_LOGGER.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
-        LOCAL_LOGGER.log(
+        LOCAL_LOGGER.debug('%c -> eval stack', 'color: red', vm.stack.toArray());
+        LOCAL_LOGGER.debug('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
+        LOCAL_LOGGER.debug(
           '%c -> destructor stack',
           'color: violet',
           debug.destroyableStack.toArray()
         );
         if (debug.stacks.scope.current === null) {
-          LOCAL_LOGGER.log('%c -> scope', 'color: green', 'null');
+          LOCAL_LOGGER.debug('%c -> scope', 'color: green', 'null');
         } else {
-          LOCAL_LOGGER.log(
+          LOCAL_LOGGER.debug(
             '%c -> scope',
             'color: green',
             vm.scope().slots.map((s) => (isScopeReference(s) ? valueForRef(s) : s))
           );
         }
 
-        LOCAL_LOGGER.log(
+        LOCAL_LOGGER.debug(
           '%c -> elements',
           'color: blue',
           vm.elements()[CURSOR_STACK].current!.element
         );
 
-        LOCAL_LOGGER.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
+        LOCAL_LOGGER.debug('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
       }
     }
   }

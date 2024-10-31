@@ -9,7 +9,7 @@ import type {
   PrecompileOptionsWithLexicalScope,
   TemplateIdFn,
 } from '@glimmer/syntax';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { normalize, src } from '@glimmer/syntax';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
@@ -84,8 +84,8 @@ export function precompileJSON(
     return pass2(pass2In);
   });
 
-  if (LOCAL_SHOULD_LOG) {
-    LOCAL_LOGGER.log(`Template ->`, block);
+  if (LOCAL_TRACE_LOGGING) {
+    LOCAL_LOGGER.debug(`Template ->`, block);
   }
 
   if (block.isOk) {

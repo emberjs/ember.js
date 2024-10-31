@@ -6,8 +6,8 @@ import {
   CheckBlockSymbolTable,
   CheckHandle,
   CheckInstanceof,
+  CheckNullable,
   CheckNumber,
-  CheckOption,
   CheckPrimitive,
   CheckRegister,
   CheckSyscallRegister,
@@ -148,13 +148,13 @@ APPEND_OPCODES.add(Op.CompileBlock, (vm: VM) => {
 APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   let { stack } = vm;
 
-  let handle = check(stack.pop(), CheckOption(CheckHandle));
-  let scope = check(stack.pop(), CheckOption(CheckScope));
-  let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
+  let handle = check(stack.pop(), CheckNullable(CheckHandle));
+  let scope = check(stack.pop(), CheckNullable(CheckScope));
+  let table = check(stack.pop(), CheckNullable(CheckBlockSymbolTable));
 
   assert(
     table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
-    stackAssert('Option<BlockSymbolTable>', table)
+    stackAssert('Nullable<BlockSymbolTable>', table)
   );
 
   let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
@@ -185,7 +185,7 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
 
   vm.pushFrame();
   vm.pushScope(invokingScope);
-  vm.call(handle!);
+  vm.call(handle);
 });
 
 APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {

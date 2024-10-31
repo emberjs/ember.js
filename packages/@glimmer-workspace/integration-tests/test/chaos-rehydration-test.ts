@@ -102,7 +102,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     }
 
     if (shouldLog) {
-      LOCAL_LOGGER.log(
+      LOCAL_LOGGER.debug(
         `${removedNodeDisplay} was removed;\noriginal: ${original}\nupdated:  ${element.innerHTML}`
       );
     }
