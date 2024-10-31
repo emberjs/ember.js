@@ -267,6 +267,7 @@ function InvokeStaticComponent(
   }
 
   if (hasCapability(capabilities, InternalComponentCapabilities.createInstance)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     op(Op.CreateComponent, (blocks.has('default') as any) | 0, $s0);
   }
 
@@ -399,6 +400,7 @@ export function invokePreparedComponent(
   op(Op.BeginComponentTransaction, $s0);
   op(Op.PushDynamicScope);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   op(Op.CreateComponent, (hasBlock as any) | 0, $s0);
 
   // this has to run after createComponent to allow

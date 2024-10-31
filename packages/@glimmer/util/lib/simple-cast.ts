@@ -74,7 +74,7 @@ export function castToBrowser<S extends SugaryNodeCheck>(
     return null;
   }
 
-  if (typeof document === undefined) {
+  if (typeof document === 'undefined') {
     throw new Error('Attempted to cast to a browser node in a non-browser context');
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type * as ASTv1 from '../v1/api';
 
 const enum Char {

@@ -1,3 +1,4 @@
+/* eslint-disable deprecation/deprecation */
 import { builders as b } from '@glimmer/syntax';
 
 QUnit.module('[glimmer-syntax] AST nodes legacy interop');

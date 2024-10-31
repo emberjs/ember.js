@@ -112,6 +112,7 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
       return valueForRef(positional[parsed]!);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (target as any)[prop];
   }
 

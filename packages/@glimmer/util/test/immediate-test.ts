@@ -10,7 +10,9 @@ module('immediate encoding tests', () => {
       let encoded = encodeImmediate(val);
 
       assert.strictEqual(val, decodeImmediate(encoded), 'correctly encoded and decoded');
-      const isSMI = encoded >= ImmediateConstants.MIN_SMI && encoded <= ImmediateConstants.MAX_SMI;
+      const isSMI =
+        (encoded as ImmediateConstants) >= ImmediateConstants.MIN_SMI &&
+        (encoded as ImmediateConstants) <= ImmediateConstants.MAX_SMI;
       assert.true(isSMI, 'encoded as an SMI');
       assert.step(`testing ${val}`);
     }

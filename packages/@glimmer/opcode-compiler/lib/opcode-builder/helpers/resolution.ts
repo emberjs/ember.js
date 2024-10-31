@@ -87,7 +87,8 @@ export function resolveComponent(
     assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
 
     throw new Error(
-      `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${meta.upvars![expr[1]] ?? '{unknown variable}'
+      `Attempted to resolve a component in a strict mode template, but that value was not in scope: ${
+        meta.upvars![expr[1]] ?? '{unknown variable}'
       }`
     );
   }
@@ -393,7 +394,8 @@ function lookupBuiltInHelper(
     // Keyword helper did not exist, which means that we're attempting to use a
     // value of some kind that is not in scope
     throw new Error(
-      `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${meta.upvars![expr[1]] ?? '{unknown variable}'
+      `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${
+        meta.upvars![expr[1]] ?? '{unknown variable}'
       }`
     );
   }

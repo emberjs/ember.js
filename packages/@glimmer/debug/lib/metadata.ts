@@ -19,6 +19,7 @@ export const OPERAND_TYPES = [
 ];
 
 function isOperandType(s: string): s is OperandType {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return OPERAND_TYPES.indexOf(s as any) !== -1;
 }
 

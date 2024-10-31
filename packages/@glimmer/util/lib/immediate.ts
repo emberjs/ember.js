@@ -61,7 +61,7 @@ export function isHandle(value: number) {
 }
 
 export function isNonPrimitiveHandle(value: number) {
-  return value > ImmediateConstants.ENCODED_UNDEFINED_HANDLE;
+  return (value as ImmediateConstants) > ImmediateConstants.ENCODED_UNDEFINED_HANDLE;
 }
 
 export function constants(...values: unknown[]): unknown[] {
@@ -70,14 +70,16 @@ export function constants(...values: unknown[]): unknown[] {
 
 export function isSmallInt(value: number) {
   return (
-    value % 1 === 0 && value <= ImmediateConstants.MAX_INT && value >= ImmediateConstants.MIN_INT
+    value % 1 === 0 &&
+    (value as ImmediateConstants) <= ImmediateConstants.MAX_INT &&
+    (value as ImmediateConstants) >= ImmediateConstants.MIN_INT
   );
 }
 
 export function encodeNegative(num: number) {
   if (LOCAL_DEBUG) {
     assert(
-      num % 1 === 0 && num >= ImmediateConstants.MIN_INT && num < 0,
+      num % 1 === 0 && (num as ImmediateConstants) >= ImmediateConstants.MIN_INT && num < 0,
       `Could not encode negative: ${num}`
     );
   }
@@ -88,7 +90,9 @@ export function encodeNegative(num: number) {
 export function decodeNegative(num: number) {
   if (LOCAL_DEBUG) {
     assert(
-      num % 1 === 0 && num < ~ImmediateConstants.MAX_INT && num >= ImmediateConstants.MIN_SMI,
+      num % 1 === 0 &&
+        num < ~ImmediateConstants.MAX_INT &&
+        (num as ImmediateConstants) >= ImmediateConstants.MIN_SMI,
       `Could not decode negative: ${num}`
     );
   }
@@ -99,7 +103,7 @@ export function decodeNegative(num: number) {
 export function encodePositive(num: number) {
   if (LOCAL_DEBUG) {
     assert(
-      num % 1 === 0 && num >= 0 && num <= ImmediateConstants.MAX_INT,
+      num % 1 === 0 && num >= 0 && (num as ImmediateConstants) <= ImmediateConstants.MAX_INT,
       `Could not encode positive: ${num}`
     );
   }
@@ -121,7 +125,7 @@ export function decodePositive(num: number) {
 export function encodeHandle(num: number) {
   if (LOCAL_DEBUG) {
     assert(
-      num % 1 === 0 && num >= 0 && num <= ImmediateConstants.MAX_SMI,
+      num % 1 === 0 && num >= 0 && (num as ImmediateConstants) <= ImmediateConstants.MAX_SMI,
       `Could not encode handle: ${num}`
     );
   }
@@ -132,7 +136,7 @@ export function encodeHandle(num: number) {
 export function decodeHandle(num: number) {
   if (LOCAL_DEBUG) {
     assert(
-      num % 1 === 0 && num <= ImmediateConstants.MAX_SMI && num >= 0,
+      num % 1 === 0 && (num as ImmediateConstants) <= ImmediateConstants.MAX_SMI && num >= 0,
       `Could not decode handle: ${num}`
     );
   }
@@ -147,7 +151,9 @@ export function encodeImmediate(num: number) {
 
 export function decodeImmediate(num: number) {
   num |= 0;
-  return num > ImmediateConstants.SIGN_BIT ? decodePositive(num) : decodeNegative(num);
+  return (num as ImmediateConstants) > ImmediateConstants.SIGN_BIT
+    ? decodePositive(num)
+    : decodeNegative(num);
 }
 
 // Warm

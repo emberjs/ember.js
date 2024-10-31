@@ -4,6 +4,7 @@ export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never
   ? I
   : never;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyKey = keyof any;
 export type Indexable = Record<AnyKey, unknown>;
 

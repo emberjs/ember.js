@@ -398,6 +398,7 @@ module('@glimmer/validator: tracking', () => {
     if (import.meta.env.DEV) {
       test('createCache throws an error in import.meta.env.DEV mode if users to use with a non-function', (assert) => {
         assert.throws(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           () => createCache(123 as any),
           /Error: createCache\(\) must be passed a function as its first parameter. Called with: 123/u
         );
@@ -405,6 +406,7 @@ module('@glimmer/validator: tracking', () => {
 
       test('getValue throws an error in import.meta.env.DEV mode if users to use with a non-cache', (assert) => {
         assert.throws(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           () => getValue(123 as any),
           /Error: getValue\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/u
         );
@@ -423,6 +425,7 @@ module('@glimmer/validator: tracking', () => {
 
       test('isConst throws an error in import.meta.env.DEV mode if users attempt to use with a non-cache', (assert) => {
         assert.throws(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           () => isConst(123 as any),
           /Error: isConst\(\) can only be used on an instance of a cache created with createCache\(\). Called with: 123/u
         );

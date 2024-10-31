@@ -48,6 +48,7 @@ test('deprecated program visitor', (assert) => {
     return {
       name: 'plugin',
       visitor: {
+        // eslint-disable-next-line deprecation/deprecation
         Program(node: AST.Program) {
           assert.step(node.type);
         },
@@ -69,6 +70,7 @@ test('deprecated program visitor', (assert) => {
 });
 
 test('can support the legacy AST transform API via ASTPlugin', (assert) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function ensurePlugin(FunctionOrPlugin: any): ASTPluginBuilder {
     if (FunctionOrPlugin.prototype && FunctionOrPlugin.prototype.transform) {
       return (env: ASTPluginEnvironment) => {
