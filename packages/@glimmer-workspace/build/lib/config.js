@@ -256,9 +256,8 @@ export class Package {
   }
 
   /**
-   * @typedef {object} Formats
-   * @property {boolean} [ esm ] enabled by default
-   * @property {boolean} [ cjs ] enabled by default until eslint-plugin-ember and ember-source no longer need it
+   * @typedef {{esm?: boolean, cjs?: boolean}} Formats
+   * @param {Formats} [formats] enabled by default
    *
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
@@ -371,7 +370,7 @@ export class Package {
         typescript(this.#package, {
           target: ScriptTarget.ES2021,
           module: ModuleKind.CommonJS,
-          moduleResolution: ModuleResolutionKind.NodeJs,
+          moduleResolution: ModuleResolutionKind.Node16,
         }),
       ],
     }));

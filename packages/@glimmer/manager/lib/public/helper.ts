@@ -82,6 +82,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
         throw new Error(
           `Custom helper managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.23')\` (imported via \`import { capabilities } from '@ember/helper';\`). Received: \`${JSON.stringify(
             delegate.capabilities
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
           )}\` for: \`${delegate}\``
         );
       }

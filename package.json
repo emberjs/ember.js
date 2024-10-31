@@ -106,7 +106,7 @@
     "typescript": "^5.0.4",
     "vite": "^5.0.12",
     "xo": "^0.54.2",
-    "zx": "^7.2.3"
+    "zx": "^8.1.9"
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",

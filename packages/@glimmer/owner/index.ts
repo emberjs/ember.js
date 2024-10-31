@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OWNER: unique symbol = Symbol('OWNER') as any;
 
 interface OwnedObject<O extends object> {

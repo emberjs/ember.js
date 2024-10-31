@@ -67,6 +67,7 @@ export interface ArgumentsDebug {
 }
 
 export interface ArgumentError {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
 }
 

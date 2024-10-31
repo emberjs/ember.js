@@ -26,6 +26,7 @@ if (import.meta.env.DEV) {
       obj.toString !== Object.prototype.toString &&
       obj.toString !== Function.prototype.toString
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       name = obj.toString();
     }
 
@@ -47,6 +48,7 @@ if (import.meta.env.DEV) {
     return name || className;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let getPrimitiveName = (value: any) => {
     return String(value);
   };

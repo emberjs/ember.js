@@ -290,6 +290,7 @@ class SafeStringChecker implements Checker<SafeString> {
 
   validate(value: unknown): value is SafeString {
     return (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function'
     );
   }

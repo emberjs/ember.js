@@ -1,6 +1,10 @@
 import 'zx/globals';
 import os from 'node:os';
 import { join } from 'node:path';
+import chalk from 'chalk';
+
+const ROOT = new URL('..', import.meta.url).pathname;
+$.verbose = true;
 
 /*
 
@@ -80,21 +84,6 @@ const isMacOs = os.platform() === 'darwin';
 
 const BENCHMARK_FOLDER = join(pwd, benchmarkFolder);
 
-const rawUpstreamUrl = await $`git ls-remote --get-url upstream`;
-const rawOriginUrl = await $`git ls-remote --get-url origin`;
-let originUrlStr = rawOriginUrl.toString().trim();
-let upstreamUrlStr = rawUpstreamUrl.toString().trim();
-
-if (upstreamUrlStr === 'upstream') {
-  // if we not inside fork, falling back to origin
-  upstreamUrlStr = originUrlStr;
-}
-
-if (FORK_NAME && FORK_NAME !== 'glimmerjs/glimmer-vm') {
-  // if PR from fork, we need to resolve fork's commit
-  originUrlStr = originUrlStr.replace('glimmerjs/glimmer-vm', FORK_NAME);
-}
-
 const CONTROL_PORT = 4020;
 const EXPERIMENT_PORT = 4021;
 const CONTROL_URL = `http://localhost:${CONTROL_PORT}`;
@@ -105,15 +94,15 @@ const EXPERIMENT_URL = `http://localhost:${EXPERIMENT_PORT}`;
 // setup experiment
 await within(async () => {
   await cd(EXPERIMENT_DIR);
-  await $`git clone ${originUrlStr} .`;
+  await $`git clone ${join(ROOT, '.git')} .`;
   await $`git checkout ${experimentBranchName}`;
   await $`rm -rf ./benchmark`;
   await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
 
-  console.info('installing experiment source');
-  await $`pnpm install --no-frozen-lockfile`.quiet();
-  console.info('building experiment source, may take a while');
-  await $`pnpm build`.quiet();
+  console.info(`$ pnpm install --frozen-lockfile ${chalk.gray('[experiment]')}`);
+  await $`pnpm install --frozen-lockfile`.quiet();
+  console.info(`$ pnpm build ${chalk.gray('[experiment]')}`);
+  await spinner(() => $`pnpm build`.quiet());
 
   if (isMacOs) {
     await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
@@ -132,15 +121,16 @@ await within(async () => {
 // setup control
 await within(async () => {
   await cd(CONTROL_DIR);
-  await $`git clone ${upstreamUrlStr} .`;
-  await $`git checkout ${controlBranchName}`;
+  await $`git clone ${join(ROOT, '.git')} .`;
+  await $`git fetch origin`;
+  await $`git reset --hard origin/${controlBranchName}`;
   await $`rm -rf ./benchmark`;
   await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
 
-  console.info('installing control source');
-  await $`pnpm install --no-frozen-lockfile`.quiet();
-  console.info('building control source, may take a while');
-  await $`pnpm build`.quiet();
+  console.info(`$ pnpm install --frozen-lockfile ${chalk.gray('[control]')}`);
+  await $`pnpm install --frozen-lockfile`.quiet();
+  console.info(`$ pnpm build ${chalk.gray('[control]')}`);
+  await spinner(() => $`pnpm build`.quiet());
 
   if (isMacOs) {
     await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
@@ -157,8 +147,8 @@ await within(async () => {
 });
 
 console.info({
-  upstreamUrlStr,
-  originUrlStr,
+  control: controlBranchName,
+  experiment: experimentBranchName,
   EXPERIMENT_DIR,
   CONTROL_DIR,
 });

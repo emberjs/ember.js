@@ -15,7 +15,10 @@ const packagePath = (name: string) => {
 };
 
 export default defineConfig({
-  plugins: [benchmark()],
+  plugins: [importMeta(), benchmark()],
+  preview: {
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@glimmer-workspace/benchmark-env': '@glimmer-workspace/benchmark-env/index.ts',
@@ -27,6 +30,19 @@ export default defineConfig({
   },
 });
 
+function importMeta(): Plugin {
+  return {
+    name: 'define custom import.meta.env',
+    async transform(code) {
+      if (code.includes('import.meta.env.VM_LOCAL_DEV')) {
+        return code.replace(/import.meta.env.VM_LOCAL_DEV/g, 'false');
+      }
+      return undefined;
+    },
+    enforce: 'pre',
+  };
+}
+
 function benchmark(): Plugin {
   return {
     enforce: 'pre',
@@ -34,15 +50,11 @@ function benchmark(): Plugin {
     resolveId(id) {
       if (id === '@glimmer/env') {
         return '\0@glimmer/env';
-      } else if (id === '@glimmer/local-debug-flags') {
-        return '\0@glimmer/local-debug-flags';
       }
     },
     load(id) {
       if (id === '\0@glimmer/env') {
         return `export const DEBUG = false;`;
-      } else if (id === '\0@glimmer/local-debug-flags') {
-        return `export const LOCAL_SHOULD_LOG = false;`;
       }
       /** @type {string | undefined} */
       let result: string | undefined;

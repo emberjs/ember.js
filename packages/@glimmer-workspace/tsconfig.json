@@ -2,16 +2,14 @@
   "compilerOptions": {
     "composite": true,
     "baseUrl": "..",
-
+    "allowJs": true,
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "verbatimModuleSyntax": true,
-
     "outDir": "../../ts-dist/@glimmer-workspace",
-
     "strict": true,
     "suppressImplicitAnyIndexErrors": false,
     "useDefineForClassFields": false,

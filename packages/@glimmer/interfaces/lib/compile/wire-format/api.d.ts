@@ -66,7 +66,7 @@ export type ExpressionSexpOpcodeMap = {
   [TSexpOpcode in TupleExpression[0]]: Extract<TupleExpression, { 0: TSexpOpcode }>;
 };
 
-export interface SexpOpcodeMap extends ExpressionSexpOpcodeMap, StatementSexpOpcodeMap { }
+export interface SexpOpcodeMap extends ExpressionSexpOpcodeMap, StatementSexpOpcodeMap {}
 export type SexpOpcode = keyof SexpOpcodeMap;
 
 export namespace Core {
@@ -372,7 +372,7 @@ export type SerializedTemplateBlock = [
   hasDebug: boolean,
   // upvars
   upvars: string[],
-  lexicalSymbols?: string[]
+  lexicalSymbols?: string[],
 ];
 
 /**

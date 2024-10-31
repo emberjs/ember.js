@@ -96,7 +96,7 @@ export function debug(
     let metadata = opcodeMetadata(op.type, isMachine);
 
     if (!metadata) {
-      throw new Error(`Missing Opcode Metadata for ${op}`);
+      throw new Error(`Missing Opcode Metadata for ${op.type}`);
     }
 
     let out = Object.create(null);

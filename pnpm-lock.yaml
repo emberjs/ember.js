@@ -217,8 +217,8 @@ importers:
         specifier: ^0.54.2
         version: 0.54.2(eslint-import-resolver-typescript@3.6.1)(webpack@5.94.0)
       zx:
-        specifier: ^7.2.3
-        version: 7.2.3
+        specifier: ^8.1.9
+        version: 8.1.9
 
   benchmark/benchmarks/krausest:
     dependencies:
@@ -4420,10 +4420,6 @@ packages:
     resolution: {integrity: sha512-WGi6THl5HXdXq5RishLkAUPxk4XjYWbmLhEC14hpE92ER3AtZUUUu8SSIy1ntCtYamW8KaEpBlhJ6H6jubjDug==}
     dev: true
 
-  /@types/ps-tree@1.1.6:
-    resolution: {integrity: sha512-PtrlVaOaI44/3pl3cvnlK+GxOM3re2526TJvPvh7W+keHIXdV4TE0ylpPBAcvFQCbGitaTXwL9u+RF7qtVeazQ==}
-    dev: true
-
   /@types/qs@6.9.7:
     resolution: {integrity: sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==}
     dev: true
@@ -4487,10 +4483,6 @@ packages:
 
   /@types/unist@2.0.8:
     resolution: {integrity: sha512-d0XxK3YTObnWVp6rZuev3c49+j4Lo8g4L1ZRm9z5L0xpoZycUPshHgczK5gsUMaZOstjVYYi09p5gYvUtfChYw==}
-    dev: true
-
-  /@types/which@3.0.3:
-    resolution: {integrity: sha512-2C1+XoY0huExTbs8MQv1DuS5FS86+SEjdM9F/+GS61gg5Hqbtj8ZiDSx8MfWcyei907fIPbfPGCOrNUTnVHY1g==}
     dev: true
 
   /@types/yauzl@2.10.3:
@@ -10073,11 +10065,6 @@ packages:
   /functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  /fx@31.0.0:
-    resolution: {integrity: sha512-OoeYSPKqNKmfnH4s+rGYI0c8OZmqqOOXsUtqy0YyHqQQoQSDiDs3m3M9uXKx5OQR+jDx7/FhYqpO3kl/As/xgg==}
-    hasBin: true
-    dev: true
-
   /gauge@4.0.4:
     resolution: {integrity: sha512-f9m+BEN5jkg6a0fZjleidjN51VE1X+mPFQ2DJ0uv1V39oCLCbsGe6yjbBnp7eK7z/+GAon99a3nHuqbuuthyPg==}
     engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
@@ -13269,15 +13256,6 @@ packages:
         optional: true
     dependencies:
       whatwg-url: 5.0.0
-    dev: true
-
-  /node-fetch@3.3.1:
-    resolution: {integrity: sha512-cRVc/kyto/7E5shrWca1Wsea4y6tL9iYJE5FBCius3JQfb/4P4I295PfhgbJQBLTx6lATE4z+wK0rPM4VS2uow==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      data-uri-to-buffer: 4.0.1
-      fetch-blob: 3.2.0
-      formdata-polyfill: 4.0.10
     dev: true
 
   /node-fetch@3.3.2:
@@ -17242,7 +17220,7 @@ packages:
     hasBin: true
     dependencies:
       esbuild: 0.18.20
-      get-tsconfig: 4.7.2
+      get-tsconfig: 4.8.1
       source-map-support: 0.5.21
     optionalDependencies:
       fsevents: 2.3.3
@@ -18018,11 +17996,6 @@ packages:
       - uglify-js
     dev: true
 
-  /webpod@0.0.2:
-    resolution: {integrity: sha512-cSwwQIeg8v4i3p4ajHhwgR7N6VyxAf+KYSSsY6Pd3aETE+xEU4vbitz7qQkB0I321xnhDdgtxuiSfk5r/FVtjg==}
-    hasBin: true
-    dev: true
-
   /websocket-driver@0.7.4:
     resolution: {integrity: sha512-b17KeDIQVjvb0ssuSDF2cYXSg2iztliJ4B9WdsuB6J952qCPKmnVq4DyW5motImXHDC1cBT/1UezrJVsKw5zjg==}
     engines: {node: '>=0.8.0'}
@@ -18087,14 +18060,6 @@ packages:
     hasBin: true
     dependencies:
       isexe: 2.0.0
-
-  /which@3.0.1:
-    resolution: {integrity: sha512-XA1b62dzQzLfaEOSQFTCOd5KFf/1VSzZo7/7TUjnya6u0vGGKzU96UQBZTAThCb2j4/xjBAyii1OhRLJEivHvg==}
-    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
-    hasBin: true
-    dependencies:
-      isexe: 2.0.0
-    dev: true
 
   /which@4.0.0:
     resolution: {integrity: sha512-GlaYyEb07DPxYCKhKzplCWBJtvxZcZMrL+4UkrTSJHHPyZU4mYYTv3qaOe77H7EODLSSopAUFAc6W8U4yqvscg==}
@@ -18422,26 +18387,13 @@ packages:
   /zod@3.23.8:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
-  /zx@7.2.3:
-    resolution: {integrity: sha512-QODu38nLlYXg/B/Gw7ZKiZrvPkEsjPN3LQ5JFXM7h0JvwhEdPNNl+4Ao1y4+o3CLNiDUNcwzQYZ4/Ko7kKzCMA==}
-    engines: {node: '>= 16.0.0'}
+  /zx@8.1.9:
+    resolution: {integrity: sha512-UHuLHphHmsBYKkAchkSrEN4nzDyagafqC9HUxtc1J7eopaScW6H9dsLJ1lmkAntnLtDTGoM8fa+jrJrXiIfKFA==}
+    engines: {node: '>= 12.17.0'}
     hasBin: true
-    dependencies:
+    optionalDependencies:
       '@types/fs-extra': 11.0.4
-      '@types/minimist': 1.2.2
       '@types/node': 20.9.4
-      '@types/ps-tree': 1.1.6
-      '@types/which': 3.0.3
-      chalk: 5.3.0
-      fs-extra: 11.2.0
-      fx: 31.0.0
-      globby: 13.2.2
-      minimist: 1.2.8
-      node-fetch: 3.3.1
-      ps-tree: 1.2.0
-      webpod: 0.0.2
-      which: 3.0.1
-      yaml: 2.3.2
     dev: true
 
 settings:

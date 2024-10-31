@@ -67,6 +67,7 @@ function getNodeHandler<N extends ASTv1.Node>(
   visitor: NodeVisitor,
   nodeType: N['type']
 ): NodeTraversal<ASTv1.Node> | undefined {
+  // eslint-disable-next-line deprecation/deprecation
   if (visitor.Program) {
     if (
       (nodeType === 'Template' && !visitor.Template) ||
@@ -76,6 +77,7 @@ function getNodeHandler<N extends ASTv1.Node>(
         `The 'Program' visitor node is deprecated. Use 'Template' or 'Block' instead (node was '${nodeType}') `
       );
 
+      // eslint-disable-next-line deprecation/deprecation
       return visitor.Program as NodeTraversal<ASTv1.Node>;
     }
   }
@@ -186,6 +188,7 @@ function visitKey<N extends ASTv1.Node>(
       // TODO: dynamically check the results by having a table of
       // expected node types in value space, not just type space
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assignKey(node, key, value, result as any);
     }
   }

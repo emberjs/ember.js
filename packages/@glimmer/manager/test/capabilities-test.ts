@@ -1,3 +1,4 @@
+import type { InternalComponentManager } from '@glimmer/interfaces';
 import { capabilityFlagsFrom, managerHasCapability } from '@glimmer/manager';
 import { InternalComponentCapabilities } from '@glimmer/vm';
 
@@ -83,39 +84,87 @@ QUnit.test('allows querying bitmap for a capability', (assert) => {
   });
 
   assert.true(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.dynamicLayout)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.dynamicLayout
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.dynamicTag)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.dynamicTag
+    )
   );
   assert.true(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.prepareArgs)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.prepareArgs
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.createArgs)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.createArgs
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.attributeHook)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.attributeHook
+    )
   );
   assert.true(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.elementHook)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.elementHook
+    )
   );
   assert.true(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.dynamicScope)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.dynamicScope
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.createCaller)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.createCaller
+    )
   );
   assert.true(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.updateHook)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.updateHook
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.createInstance)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.createInstance
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.willDestroy)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.willDestroy
+    )
   );
   assert.false(
-    managerHasCapability({} as any, capabilities, InternalComponentCapabilities.hasSubOwner)
+    managerHasCapability(
+      {} as InternalComponentManager,
+      capabilities,
+      InternalComponentCapabilities.hasSubOwner
+    )
   );
 });

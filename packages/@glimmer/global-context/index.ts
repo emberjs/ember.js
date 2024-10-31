@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * This package contains global context functions for Glimmer. These functions
  * are set by the embedding environment and must be set before initial render.

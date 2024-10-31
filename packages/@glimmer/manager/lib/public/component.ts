@@ -126,6 +126,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
         throw new Error(
           `Custom component managers must have a \`capabilities\` property that is the result of calling the \`capabilities('3.13')\` (imported via \`import { capabilities } from '@ember/component';\`). Received: \`${JSON.stringify(
             delegate.capabilities
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
           )}\` for: \`${delegate}\``
         );
       }
@@ -150,6 +151,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
   }
 
   getDebugName(definition: ComponentDefinitionState): string {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return typeof definition === 'function' ? definition.name : definition.toString();
   }
 

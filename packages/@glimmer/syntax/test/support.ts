@@ -30,6 +30,7 @@ type FromEntries<T extends [PropertyKey, unknown][]> = {
 };
 
 function fromEntries<T extends [PropertyKey, unknown][]>(entries: T): FromEntries<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const out: any = {};
 
   for (const [key, value] of entries) {
@@ -40,7 +41,9 @@ function fromEntries<T extends [PropertyKey, unknown][]>(entries: T): FromEntrie
 }
 
 export function astEqual(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   actual: any | null | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expected: any | null | undefined,
   message?: string,
   parseOptions?: PreprocessOptions
