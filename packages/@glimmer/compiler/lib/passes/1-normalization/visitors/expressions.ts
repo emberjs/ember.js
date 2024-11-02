@@ -1,6 +1,6 @@
 import type { PresentArray } from '@glimmer/interfaces';
+import { getLast, isPresentArray } from '@glimmer/debug-util';
 import { ASTv2, KEYWORDS_TYPES } from '@glimmer/syntax';
-import { getLast, isPresentArray } from '@glimmer/util';
 
 import type { AnyOptionalList, PresentList } from '../../../shared/list';
 import type { NormalizationState } from '../context';

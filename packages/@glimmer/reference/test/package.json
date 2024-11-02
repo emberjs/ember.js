@@ -6,5 +6,8 @@
     "@glimmer/validator": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/global-context": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*"
   }
 }

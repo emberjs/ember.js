@@ -1,6 +1,7 @@
 import type { SimpleElement } from '@glimmer/interfaces';
+import { castToBrowser, expect } from '@glimmer/debug-util';
 import { normalizeProperty } from '@glimmer/runtime';
-import { castToBrowser, expect, NS_SVG } from '@glimmer/util';
+import { NS_SVG } from '@glimmer/util';
 
 import { assertingElement, hasAttribute, jitSuite, RenderTest, test, tracked } from '..';
 

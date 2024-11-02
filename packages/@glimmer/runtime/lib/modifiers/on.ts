@@ -13,10 +13,10 @@ import {
   CheckString,
   CheckUndefined,
 } from '@glimmer/debug';
+import { assert, buildUntouchableThis } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
-import { assert, buildUntouchableThis } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
 
 import { reifyNamed } from '../vm/arguments';

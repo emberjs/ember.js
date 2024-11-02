@@ -40,6 +40,7 @@ function tokensFromType(
       return;
     }
 
+    // eslint-disable-next-line deprecation/deprecation
     if (tag.substr(0, 5) === 'this.') {
       return;
     }

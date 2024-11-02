@@ -1,4 +1,5 @@
 import type { Nullable, Present, PresentArray } from '@glimmer/interfaces';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 export function isPresent<T>(value: T): value is Present<T> {
   return value !== null && value !== undefined;
@@ -7,7 +8,7 @@ export function isPresent<T>(value: T): value is Present<T> {
 export function assertPresent<T extends string>(value: T): asserts value is Present<T>;
 export function assertPresent<T>(value: T, message: string): asserts value is Present<T>;
 export function assertPresent<T>(value: T, message?: string): asserts value is Present<T> {
-  if (!isPresent(value)) {
+  if (LOCAL_DEBUG && !isPresent(value)) {
     throw new Error(`Expected present, got ${typeof value === 'string' ? value : message!}`);
   }
 }
@@ -40,7 +41,7 @@ export function assertPresentArray<T>(
   list: T[],
   message = `unexpected empty list`
 ): asserts list is PresentArray<T> {
-  if (!isPresentArray(list)) {
+  if (LOCAL_DEBUG && !isPresentArray(list)) {
     throw new Error(message);
   }
 }

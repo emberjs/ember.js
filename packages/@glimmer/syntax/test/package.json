@@ -7,5 +7,8 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer-workspace/test-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*"
   }
 }

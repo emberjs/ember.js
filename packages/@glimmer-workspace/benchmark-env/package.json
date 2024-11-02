@@ -20,6 +20,7 @@
     "@glimmer/validator": "workspace:*"
   },
   "devDependencies": {
+    "@glimmer/debug-util": "workspace:*",
     "eslint": "^8.52.0"
   },
   "engines": {

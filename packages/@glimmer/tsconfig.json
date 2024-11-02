@@ -10,15 +10,12 @@
     "declarationMap": true,
     "outDir": "../../ts-dist/packages",
     "baseUrl": "..",
-
     "verbatimModuleSyntax": true,
-
     // Environment Configuration
     "experimentalDecorators": true,
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-
     // Enhance Strictness
     "strict": true,
     "suppressImplicitAnyIndexErrors": false,
@@ -27,9 +24,8 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-
     "types": ["qunit", "node", "vite/client"]
   },
-  "include": ["./**/*", "./**/*.d.ts"],
-  "exclude": ["*/dist", "*/node_modules", "**/fixtures", "*/test"]
+  "include": ["*/lib/**/*", "*/index.ts"],
+  "exclude": ["**/fixtures"]
 }

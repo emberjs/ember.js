@@ -19,8 +19,9 @@ import type {
   SimpleText,
   UpdatableBlock,
 } from '@glimmer/interfaces';
+import { assert, expect } from '@glimmer/debug-util';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
-import { assert, expect, Stack } from '@glimmer/util';
+import { Stack } from '@glimmer/util';
 
 import type { DynamicAttribute } from './attributes/dynamic';
 

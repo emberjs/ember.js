@@ -1,8 +1,8 @@
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
+import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/reference';
-import { expect } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 import type { JitRenderDelegate } from '..';

@@ -15,13 +15,14 @@ import type {
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
 import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
+import { expect, unwrap } from '@glimmer/debug-util';
 import { associateDestroyableChild, destroy, destroyChildren } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { updateRef, valueForRef } from '@glimmer/reference';
-import { expect, logStep, Stack, unwrap } from '@glimmer/util';
+import { logStep, Stack } from '@glimmer/util';
 import { debug, resetTracking } from '@glimmer/validator';
 
-import type { InternalVM, VmInitCallback } from './append';
+import type { VM, VmInitCallback } from './append';
 import type { LiveBlockList } from './element-builder';
 
 import { clear, move as moveBounds } from '../bounds';
@@ -106,7 +107,7 @@ export interface VMState {
 }
 
 export interface ResumableVMState {
-  resume(runtime: RuntimeContext, builder: ElementBuilder): InternalVM;
+  resume(runtime: RuntimeContext, builder: ElementBuilder): VM;
 }
 
 export class ResumableVMStateImpl implements ResumableVMState {
@@ -115,7 +116,7 @@ export class ResumableVMStateImpl implements ResumableVMState {
     private resumeCallback: VmInitCallback
   ) {}
 
-  resume(runtime: RuntimeContext, builder: ElementBuilder): InternalVM {
+  resume(runtime: RuntimeContext, builder: ElementBuilder): VM {
     return this.resumeCallback(runtime, this.state, builder);
   }
 }

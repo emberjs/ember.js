@@ -4,7 +4,7 @@ import type {
   InternalModifierManager,
   Owner,
 } from '@glimmer/interfaces';
-import { debugToString } from '@glimmer/util';
+import { debugToString } from '@glimmer/debug-util';
 
 import { CustomHelperManager } from '../public/helper';
 import { FunctionHelperManager } from './defaults';

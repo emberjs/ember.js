@@ -1,6 +1,6 @@
 import type { Destroyable, Destructor } from '@glimmer/interfaces';
+import { debugToString } from '@glimmer/debug-util';
 import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';
-import { debugToString } from '@glimmer/util';
 
 const enum DestroyingState {
   Live = 0,

@@ -8,8 +8,9 @@ import type {
   RuntimeResolver,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import { expect } from '@glimmer/debug-util';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { expect, isObject } from '@glimmer/util';
+import { isObject } from '@glimmer/util';
 import { CurriedTypes } from '@glimmer/vm';
 
 import { curry, isCurriedType } from '../curried-value';

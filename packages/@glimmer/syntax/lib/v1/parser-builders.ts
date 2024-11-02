@@ -1,5 +1,5 @@
 import type { Nullable, Optional, PresentArray } from '@glimmer/interfaces';
-import { assert } from '@glimmer/util';
+import { assert } from '@glimmer/debug-util';
 
 import type * as ASTv1 from './api';
 

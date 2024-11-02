@@ -1,6 +1,6 @@
+import { castToBrowser } from '@glimmer/debug-util';
 import { createPrimitiveRef } from '@glimmer/reference';
 import { DynamicScopeImpl } from '@glimmer/runtime';
-import { castToBrowser } from '@glimmer/util';
 
 import type { ComponentKind } from '../components/types';
 

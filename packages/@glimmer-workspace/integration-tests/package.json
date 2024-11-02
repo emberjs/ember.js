@@ -34,6 +34,7 @@
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
+    "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "@types/js-reporters": "workspace:*",
     "@types/qunit": "^2.19.9",

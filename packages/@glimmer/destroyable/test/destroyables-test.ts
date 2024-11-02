@@ -1,4 +1,5 @@
 import type { GlobalContext } from '@glimmer/global-context';
+import { unwrap } from '@glimmer/debug-util';
 import {
   assertDestroyablesDestroyed,
   associateDestroyableChild,
@@ -11,7 +12,6 @@ import {
   unregisterDestructor,
 } from '@glimmer/destroyable';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
-import { unwrap } from '@glimmer/util';
 
 const { module, test } = QUnit;
 

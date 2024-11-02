@@ -1,6 +1,7 @@
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { EndTag, Token } from 'simple-html-tokenizer';
-import { castToSimple, COMMENT_NODE, TEXT_NODE, unwrap } from '@glimmer/util';
+import { castToSimple, unwrap } from '@glimmer/debug-util';
+import { COMMENT_NODE, TEXT_NODE } from '@glimmer/util';
 import { tokenize } from 'simple-html-tokenizer';
 
 import { replaceHTML, toInnerHTML } from './dom/simple-utils';
@@ -97,6 +98,7 @@ function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; h
   let tokens = tokenize(toInnerHTML(div), {});
 
   tokens = tokens.reduce((tokens, token) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (token.type === 'StartTag') {
       if (token.attributes) {
         token.attributes.sort((a, b) => {

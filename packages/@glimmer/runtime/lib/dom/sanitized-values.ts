@@ -43,6 +43,7 @@ function findProtocolForURL() {
     URL !== null &&
     // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
     // thinks it is `never` without this `as unknown as any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof (URL as unknown as any).parse === 'function'
   ) {
     // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`

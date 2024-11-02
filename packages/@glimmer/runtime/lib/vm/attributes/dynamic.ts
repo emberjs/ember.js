@@ -8,8 +8,9 @@ import type {
   Nullable,
   SimpleElement,
 } from '@glimmer/interfaces';
+import { castToBrowser } from '@glimmer/debug-util';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
-import { castToBrowser, NS_SVG } from '@glimmer/util';
+import { NS_SVG } from '@glimmer/util';
 
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
@@ -122,6 +123,7 @@ export class DefaultDynamicProperty extends DynamicAttribute {
     const { element } = this.attribute;
 
     if (this.value !== value) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (element as any)[this.normalizedName] = this.value = value;
 
       if (value === null || value === undefined) {

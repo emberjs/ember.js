@@ -74,6 +74,7 @@ test('blocks', () => {
       }}
     `);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let [, block] = ast.body as [any, AST.BlockStatement];
   let [nestedBlock] = block.program.body as [AST.BlockStatement];
   let [nestedBlockText] = nestedBlock.program.body;

@@ -8,7 +8,8 @@ import type {
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
-import { expect, INSERT_BEFORE_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/util';
+import { expect } from '@glimmer/debug-util';
+import { INSERT_BEFORE_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/util';
 
 import { ConcreteBounds } from '../bounds';
 

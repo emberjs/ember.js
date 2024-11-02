@@ -1,5 +1,5 @@
 import type { Nullable, PresentArray } from '@glimmer/interfaces';
-import { isPresentArray, mapPresentArray } from '@glimmer/util';
+import { isPresentArray, mapPresentArray } from '@glimmer/debug-util';
 
 export interface OptionalList<T> {
   map<U>(callback: (input: T) => U): MapList<T, U, AnyOptionalList<T>>;

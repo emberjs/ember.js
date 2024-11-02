@@ -9,8 +9,9 @@ import type {
   WellKnownAttrName,
   WireFormat,
 } from '@glimmer/interfaces';
+import { exhausted } from '@glimmer/debug-util';
 import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
-import { exhausted, LOCAL_LOGGER } from '@glimmer/util';
+import { LOCAL_LOGGER } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 import type { OptionalList } from '../../shared/list';

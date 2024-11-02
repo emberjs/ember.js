@@ -19,10 +19,11 @@ import {
   CheckOption,
   CheckString,
 } from '@glimmer/debug';
+import { debugToString, expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { debugToString, expect, isObject } from '@glimmer/util';
+import { isObject } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0, CurriedTypes, Op } from '@glimmer/vm';
 
@@ -31,21 +32,20 @@ import type { DynamicAttribute } from '../../vm/attributes/dynamic';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
-import { CONSTANTS } from '../../symbols';
 import { createCapturedArgs } from '../../vm/arguments';
 import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip';
 import { Assert } from './vm';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
-  vm.elements().appendText(vm[CONSTANTS].getValue(text));
+  vm.elements().appendText(vm.constants.getValue(text));
 });
 
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
-  vm.elements().appendComment(vm[CONSTANTS].getValue(text));
+  vm.elements().appendComment(vm.constants.getValue(text));
 });
 
 APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
-  vm.elements().openElement(vm[CONSTANTS].getValue(tag));
+  vm.elements().openElement(vm.constants.getValue(tag));
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, (vm) => {
@@ -138,7 +138,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
 
   let owner = vm.getOwner();
   let args = check(vm.stack.pop(), CheckArguments);
-  let definition = vm[CONSTANTS].getValue<ModifierDefinition>(handle);
+  let definition = vm.constants.getValue<ModifierDefinition>(handle);
 
   let { manager } = definition;
 
@@ -228,7 +228,7 @@ APPEND_OPCODES.add(Op.DynamicModifier, (vm) => {
             ref.debugLabel
           }}}\`, and the incorrect definition is the value at the path \`${
             ref.debugLabel
-          }\`, which was: ${debugToString!(hostDefinition)}`
+          }\`, which was: ${debugToString?.(hostDefinition)}`
         );
       } else {
         throw new Error('BUG: modifier manager expected');
@@ -356,19 +356,19 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
 }
 
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
-  let name = vm[CONSTANTS].getValue<string>(_name);
-  let value = vm[CONSTANTS].getValue<string>(_value);
-  let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
+  let name = vm.constants.getValue<string>(_name);
+  let value = vm.constants.getValue<string>(_value);
+  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
   vm.elements().setStaticAttribute(name, value, namespace);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
-  let name = vm[CONSTANTS].getValue<string>(_name);
-  let trusting = vm[CONSTANTS].getValue<boolean>(_trusting);
+  let name = vm.constants.getValue<string>(_name);
+  let trusting = vm.constants.getValue<boolean>(_trusting);
   let reference = check(vm.stack.pop(), CheckReference);
   let value = valueForRef(reference);
-  let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
+  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
   let attribute = vm.elements().setDynamicAttribute(name, value, trusting, namespace);
 

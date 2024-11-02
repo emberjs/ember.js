@@ -1,5 +1,5 @@
 import type { TemplateFactory } from '@glimmer/interfaces';
-import { debugToString } from '@glimmer/util';
+import { debugToString } from '@glimmer/debug-util';
 
 const TEMPLATES: WeakMap<object, TemplateFactory> = new WeakMap();
 

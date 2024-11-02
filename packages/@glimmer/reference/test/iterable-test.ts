@@ -1,8 +1,8 @@
 import type { GlobalContext } from '@glimmer/global-context';
 import type { OpaqueIterationItem, Reference } from '@glimmer/reference';
+import { unwrap } from '@glimmer/debug-util';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
 import { createComputeRef, createIteratorRef, valueForRef } from '@glimmer/reference';
-import { unwrap } from '@glimmer/util';
 import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
 
 import objectValues from './utils/platform';
@@ -64,6 +64,7 @@ module('@glimmer/reference: IterableReference', (hooks) => {
     });
 
     test('it correctly synchronizes delegates when changed', (assert) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let obj = { a: 'Yehuda', b: 'Godfrey' } as any;
       let target = new IterableWrapper(obj);
 
@@ -132,6 +133,7 @@ module('@glimmer/reference: IterableReference', (hooks) => {
     });
 
     test('@identity works with null', (assert) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 
@@ -145,6 +147,7 @@ module('@glimmer/reference: IterableReference', (hooks) => {
     });
 
     test('@identity works with multiple null values', (assert) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let arr: any[] = [null];
       let target = new IterableWrapper(arr);
 

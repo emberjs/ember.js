@@ -5,8 +5,8 @@ import type {
   SimpleElement,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import { castToBrowser } from '@glimmer/debug-util';
 import { valueForRef } from '@glimmer/reference';
-import { castToBrowser } from '@glimmer/util';
 import { createUpdatableTag } from '@glimmer/validator';
 
 interface OnModifierState {

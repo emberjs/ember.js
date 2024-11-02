@@ -1,4 +1,5 @@
 import type { GlobalContext } from '@glimmer/global-context';
+import { unwrap } from '@glimmer/debug-util';
 import { testOverrideGlobalContext } from '@glimmer/global-context';
 import {
   childRefFor,
@@ -13,7 +14,7 @@ import {
   updateRef,
   valueForRef,
 } from '@glimmer/reference';
-import { dict, unwrap } from '@glimmer/util';
+import { dict } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 import { tracked } from './support';

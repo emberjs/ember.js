@@ -19,6 +19,7 @@ import type {
   WithDynamicTagName,
 } from '@glimmer/interfaces';
 import type { DirtyableTag } from '@glimmer/validator';
+import { unwrapTemplate } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalComponentManager } from '@glimmer/manager';
 import {
@@ -29,7 +30,7 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
-import { assign, EMPTY_ARRAY, keys, unwrapTemplate } from '@glimmer/util';
+import { assign, EMPTY_ARRAY, keys } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag, dirtyTagFor } from '@glimmer/validator';
 
 import type { TestJitRuntimeResolver } from '../modes/jit/resolver';

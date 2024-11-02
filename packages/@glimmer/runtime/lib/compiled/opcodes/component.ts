@@ -35,25 +35,16 @@ import {
   CheckProgramSymbolTable,
   CheckString,
 } from '@glimmer/debug';
+import { assert, debugToString, expect, unwrap, unwrapTemplate } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
-import {
-  assert,
-  assign,
-  debugToString,
-  dict,
-  EMPTY_STRING_ARRAY,
-  enumerate,
-  expect,
-  unwrap,
-  unwrapTemplate,
-} from '@glimmer/util';
+import { assign, dict, EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util';
 import { $t0, $t1, CurriedTypes, InternalComponentCapabilities, Op } from '@glimmer/vm';
 
 import type { CurriedValue } from '../../curried-value';
 import type { UpdatingVM } from '../../vm';
-import type { InternalVM } from '../../vm/append';
+import type { VM } from '../../vm/append';
 import type { BlockArgumentsImpl } from '../../vm/arguments';
 
 import { ConcreteBounds } from '../../bounds';
@@ -63,7 +54,6 @@ import { isCurriedType, isCurriedValue, resolveCurriedValue } from '../../currie
 import { getDebugName } from '../../debug-render-tree';
 import { APPEND_OPCODES } from '../../opcodes';
 import createClassListRef from '../../references/class-list';
-import { ARGS, CONSTANTS } from '../../symbols';
 import { EMPTY_ARGS, VMArgumentsImpl } from '../../vm/arguments';
 import {
   CheckArguments,
@@ -112,7 +102,7 @@ export interface PartialComponentDefinition {
 }
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
-  let definition = vm[CONSTANTS].getValue<ComponentDefinition>(handle);
+  let definition = vm.constants.getValue<ComponentDefinition>(handle);
   assert(!!definition, `Missing component for ${handle}`);
 
   let { manager, capabilities } = definition;
@@ -136,7 +126,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _isStrict }) => {
     valueForRef(check(stack.pop(), CheckReference)),
     CheckOr(CheckString, CheckCurriedComponentDefinition)
   );
-  let constants = vm[CONSTANTS];
+  let constants = vm.constants;
   let owner = vm.getOwner();
   let isStrict = constants.getValue<boolean>(_isStrict);
 
@@ -167,7 +157,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
   let stack = vm.stack;
   let ref = check(stack.pop(), CheckReference);
   let value = valueForRef(ref);
-  let constants = vm[CONSTANTS];
+  let constants = vm.constants;
 
   let definition: CurriedValue | ComponentDefinition | null;
 
@@ -193,7 +183,7 @@ APPEND_OPCODES.add(Op.ResolveCurriedComponent, (vm) => {
           ref.debugLabel
         }}}\`, and the incorrect definition is the value at the path \`${
           ref.debugLabel
-        }\`, which was: ${debugToString!(value)}`
+        }\`, which was: ${debugToString?.(value) ?? value}`
       );
     }
   }
@@ -219,21 +209,20 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: _blockNames, op3: flags }) => {
   let stack = vm.stack;
-  let names = vm[CONSTANTS].getArray<string>(_names);
+  let names = vm.constants.getArray<string>(_names);
 
   let positionalCount = flags >> 4;
   let atNames = flags & 0b1000;
-  let blockNames =
-    flags & 0b0111 ? vm[CONSTANTS].getArray<string>(_blockNames) : EMPTY_STRING_ARRAY;
+  let blockNames = flags & 0b0111 ? vm.constants.getArray<string>(_blockNames) : EMPTY_STRING_ARRAY;
 
-  vm[ARGS].setup(stack, names, blockNames, positionalCount, !!atNames);
-  stack.push(vm[ARGS]);
+  vm.args.setup(stack, names, blockNames, positionalCount, !!atNames);
+  stack.push(vm.args);
 });
 
 APPEND_OPCODES.add(Op.PushEmptyArgs, (vm) => {
   let { stack } = vm;
 
-  stack.push(vm[ARGS].empty(stack));
+  stack.push(vm.args.empty(stack));
 });
 
 APPEND_OPCODES.add(Op.CaptureArgs, (vm) => {
@@ -257,7 +246,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
       "If the component definition was curried, we don't yet have a manager"
     );
 
-    let constants = vm[CONSTANTS];
+    let constants = vm.constants;
 
     let {
       definition: resolvedDefinition,
@@ -430,10 +419,10 @@ APPEND_OPCODES.add(Op.PutComponentOperations, (vm) => {
 });
 
 APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
-  let name = vm[CONSTANTS].getValue<string>(_name);
-  let trusting = vm[CONSTANTS].getValue<boolean>(_trusting);
+  let name = vm.constants.getValue<string>(_name);
+  let trusting = vm.constants.getValue<boolean>(_trusting);
   let reference = check(vm.stack.pop(), CheckReference);
-  let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
+  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
   check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
     name,
@@ -444,9 +433,9 @@ APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: _trusting, op3: _na
 });
 
 APPEND_OPCODES.add(Op.StaticComponentAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
-  let name = vm[CONSTANTS].getValue<string>(_name);
-  let value = vm[CONSTANTS].getValue<string>(_value);
-  let namespace = _namespace ? vm[CONSTANTS].getValue<string>(_namespace) : null;
+  let name = vm.constants.getValue<string>(_name);
+  let value = vm.constants.getValue<string>(_value);
+  let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
   check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setStaticAttribute(
     name,
@@ -491,7 +480,7 @@ export class ComponentElementOperations implements ElementOperations {
     this.attributes[name] = deferred;
   }
 
-  addModifier(vm: InternalVM, modifier: ModifierInstance, capturedArgs: CapturedArguments): void {
+  addModifier(vm: VM, modifier: ModifierInstance, capturedArgs: CapturedArguments): void {
     this.modifiers.push(modifier);
 
     if (vm.env.debugRenderTree !== undefined) {
@@ -533,7 +522,7 @@ export class ComponentElementOperations implements ElementOperations {
     }
   }
 
-  flush(vm: InternalVM): ModifierInstance[] {
+  flush(vm: VM): ModifierInstance[] {
     let type: DeferredAttribute | undefined;
     let attributes = this.attributes;
 
@@ -578,7 +567,7 @@ function allStringClasses(classes: (string | Reference<unknown>)[]): classes is 
 }
 
 function setDeferredAttr(
-  vm: InternalVM,
+  vm: VM,
   name: string,
   value: string | Reference<unknown>,
   namespace: Nullable<string>,
@@ -621,12 +610,12 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
 
     let args: CapturedArguments;
 
-    if (vm.stack.peek() === vm[ARGS]) {
-      args = vm[ARGS].capture();
+    if (vm.stack.peek() === vm.args) {
+      args = vm.args.capture();
     } else {
-      let names = vm[CONSTANTS].getArray<string>(_names);
-      vm[ARGS].setup(vm.stack, names, [], 0, true);
-      args = vm[ARGS].capture();
+      let names = vm.constants.getArray<string>(_names);
+      vm.args.setup(vm.stack, names, [], 0, true);
+      args = vm.args.capture();
     }
 
     let moduleName: string;
@@ -729,9 +718,9 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
 
     if (compilable === null) {
       if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.wrapped)) {
-        compilable = unwrapTemplate(vm[CONSTANTS].defaultTemplate).asWrappedLayout();
+        compilable = unwrapTemplate(vm.constants.defaultTemplate).asWrappedLayout();
       } else {
-        compilable = unwrapTemplate(vm[CONSTANTS].defaultTemplate).asLayout();
+        compilable = unwrapTemplate(vm.constants.defaultTemplate).asLayout();
       }
     }
   }
@@ -835,7 +824,7 @@ function bindBlock(
   blockName: string,
   state: ComponentInstance,
   blocks: BlockArgumentsImpl,
-  vm: InternalVM
+  vm: VM
 ) {
   let symbol = state.table.symbols.indexOf(symbolName);
   let block = blocks.get(blockName);

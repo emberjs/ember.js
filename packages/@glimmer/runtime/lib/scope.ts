@@ -9,8 +9,9 @@ import type {
   ScopeSlot,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import { unwrap } from '@glimmer/debug-util';
 import { UNDEFINED_REFERENCE } from '@glimmer/reference';
-import { assign, unwrap } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 
 export class DynamicScopeImpl implements DynamicScope {
   private bucket: Dict<Reference>;

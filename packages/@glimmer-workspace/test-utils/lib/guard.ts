@@ -1,5 +1,5 @@
 import type { Expand, Maybe, Present } from '@glimmer/interfaces';
-import { isPresent } from '@glimmer/util';
+import { isPresent } from '@glimmer/debug-util';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type NTuple<N extends number, Type, T extends any[] = []> = T['length'] extends N

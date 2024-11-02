@@ -15,9 +15,10 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
+import { castToSimple } from '@glimmer/debug-util';
 import { serializeBuilder } from '@glimmer/node';
 import { createConstRef } from '@glimmer/reference';
-import { assign, castToSimple } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
 
 import type { ComponentKind } from '../../components';

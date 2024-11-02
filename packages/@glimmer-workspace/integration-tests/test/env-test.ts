@@ -1,5 +1,5 @@
+import { castToSimple } from '@glimmer/debug-util';
 import { EnvironmentImpl } from '@glimmer/runtime';
-import { castToSimple } from '@glimmer/util';
 
 QUnit.module('[integration] env');
 

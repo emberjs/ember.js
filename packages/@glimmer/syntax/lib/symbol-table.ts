@@ -1,5 +1,6 @@
 import type { Core, Dict } from '@glimmer/interfaces';
-import { dict, unwrap } from '@glimmer/util';
+import { unwrap } from '@glimmer/debug-util';
+import { dict } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 import * as ASTv2 from './v2/api';

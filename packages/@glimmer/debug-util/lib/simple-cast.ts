@@ -1,6 +1,6 @@
 import type { Maybe, SimpleDocument, SimpleElement, SimpleNode } from '@glimmer/interfaces';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
-import { DOCUMENT_NODE, ELEMENT_NODE } from './dom-utils';
 import { unreachable } from './platform-utils';
 
 interface GenericElementTags {
@@ -70,6 +70,10 @@ export function castToBrowser<S extends SugaryNodeCheck>(
   node: SimpleNode | BrowserNode | null | undefined,
   sugaryCheck?: S
 ): Document | NodeForSugaryCheck<S> | null {
+  if (!LOCAL_DEBUG) {
+    return node as Document | NodeForSugaryCheck<S> | null;
+  }
+
   if (node === null || node === undefined) {
     return null;
   }
@@ -94,6 +98,9 @@ export function castToBrowser<S extends SugaryNodeCheck>(
 function checkError(from: string, check: SugaryNodeCheck): Error {
   return new Error(`cannot cast a ${from} into ${String(check)}`);
 }
+
+export const ELEMENT_NODE = 1;
+export const DOCUMENT_NODE = 9;
 
 function isDocument(node: Node | SimpleNode | SimpleDocument): node is Document | SimpleDocument {
   return node.nodeType === DOCUMENT_NODE;

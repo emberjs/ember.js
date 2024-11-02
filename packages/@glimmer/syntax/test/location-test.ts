@@ -1,6 +1,6 @@
 import type { Dict } from '@glimmer/interfaces';
+import { unwrap } from '@glimmer/debug-util';
 import { src } from '@glimmer/syntax';
-import { unwrap } from '@glimmer/util';
 
 const test = QUnit.test;
 

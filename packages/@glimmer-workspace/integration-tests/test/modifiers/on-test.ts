@@ -1,6 +1,6 @@
+import { castToBrowser, expect } from '@glimmer/debug-util';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
-import { castToBrowser, expect } from '@glimmer/util';
 
 import { jitSuite, RenderTest, test } from '../..';
 

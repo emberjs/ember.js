@@ -1,9 +1,4 @@
-import type {
-  ResolutionTimeConstants,
-  RuntimeConstants,
-  RuntimeHeap,
-  RuntimeOp,
-} from '../program.js';
+import type { JitConstants, RuntimeHeap, RuntimeOp } from '../program.js';
 import type { RuntimeResolver } from '../serialize.js';
 import type { Environment } from './environment.js';
 
@@ -21,13 +16,13 @@ export interface RuntimeContext {
 }
 
 export interface RuntimeProgram {
-  readonly constants: RuntimeConstants & ResolutionTimeConstants;
+  readonly constants: JitConstants;
   readonly heap: RuntimeHeap;
 
   opcode(offset: number): RuntimeOp;
 }
 
 export interface RuntimeArtifacts {
-  readonly constants: RuntimeConstants & ResolutionTimeConstants;
+  readonly constants: JitConstants;
   readonly heap: RuntimeHeap;
 }

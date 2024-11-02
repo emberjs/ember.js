@@ -11,9 +11,10 @@ import type {
 } from '@glimmer/interfaces';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 import type { NTuple } from '@glimmer-workspace/test-utils';
+import { assert, expect, isPresent, unwrap } from '@glimmer/debug-util';
 import { destroy } from '@glimmer/destroyable';
 import { inTransaction } from '@glimmer/runtime';
-import { assert, clearElement, dict, expect, isPresent, unwrap } from '@glimmer/util';
+import { clearElement, dict } from '@glimmer/util';
 import { dirtyTagFor } from '@glimmer/validator';
 
 import type { ComponentBlueprint, ComponentKind, ComponentTypes } from './components';
@@ -362,6 +363,7 @@ export class RenderTest implements IRenderTest {
 
   render(template: string | ComponentBlueprint, properties: Dict<unknown> = {}): void {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       QUnit.assert.ok(true, `Rendering ${template} with ${JSON.stringify(properties)}`);
     } catch {
       // couldn't stringify, possibly has a circular dependency

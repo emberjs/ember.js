@@ -7,18 +7,8 @@ import type {
   PresentArray,
   WireFormat,
 } from '@glimmer/interfaces';
-import {
-  assert,
-  assertNever,
-  dict,
-  exhausted,
-  expect,
-  isPresentArray,
-  NS_XLINK,
-  NS_XML,
-  NS_XMLNS,
-  values,
-} from '@glimmer/util';
+import { assert, exhausted, expect, isPresentArray } from '@glimmer/debug-util';
+import { assertNever, dict, NS_XLINK, NS_XML, NS_XMLNS, values } from '@glimmer/util';
 import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
 
 import type {

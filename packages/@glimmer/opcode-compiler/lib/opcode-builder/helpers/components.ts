@@ -8,8 +8,9 @@ import type {
   WireFormat,
 } from '@glimmer/interfaces';
 import type { SavedRegister } from '@glimmer/vm';
+import { unwrap } from '@glimmer/debug-util';
 import { hasCapability } from '@glimmer/manager';
-import { EMPTY_STRING_ARRAY, reverse, unwrap } from '@glimmer/util';
+import { EMPTY_STRING_ARRAY, reverse } from '@glimmer/util';
 import { $s0, $s1, $sp, InternalComponentCapabilities, MachineOp, Op } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';

@@ -1,5 +1,5 @@
+import { castToBrowser } from '@glimmer/debug-util';
 import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
-import { castToBrowser } from '@glimmer/util';
 
 import {
   defineComponent,

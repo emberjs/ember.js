@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "@types/node": "^20.9.4",
     "eslint": "^8.52.0",

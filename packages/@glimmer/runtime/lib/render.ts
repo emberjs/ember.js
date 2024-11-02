@@ -12,19 +12,16 @@ import type {
   TemplateIterator,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import { expect, unwrapHandle } from '@glimmer/debug-util';
 import { childRefFor, createConstRef } from '@glimmer/reference';
-import { expect, unwrapHandle } from '@glimmer/util';
 import { debug } from '@glimmer/validator';
-
-import type { InternalVM } from './vm/append';
 
 import { inTransaction } from './environment';
 import { DynamicScopeImpl } from './scope';
-import { ARGS, CONSTANTS } from './symbols';
 import { VM } from './vm/append';
 
 class TemplateIteratorImpl implements TemplateIterator {
-  constructor(private vm: InternalVM) {}
+  constructor(private vm: VM) {}
   next(): RichIteratorResult<null, RenderResult> {
     return this.vm.next();
   }
@@ -69,7 +66,7 @@ export function renderMain(
 }
 
 function renderInvocation(
-  vm: InternalVM,
+  vm: VM,
   context: CompileTimeCompilationContext,
   owner: Owner,
   definition: ComponentDefinitionState,
@@ -83,7 +80,7 @@ function renderInvocation(
   // Prefix argument names with `@` symbol
   const argNames = argList.map(([name]) => `@${name}`);
 
-  let reified = vm[CONSTANTS].component(definition, owner, undefined, '{ROOT}');
+  let reified = vm.constants.component(definition, owner, undefined, '{ROOT}');
 
   vm.pushFrame();
 
@@ -100,7 +97,7 @@ function renderInvocation(
   });
 
   // Configure VM based on blocks and args just pushed on to the stack.
-  vm[ARGS].setup(vm.stack, argNames, blockNames, 0, true);
+  vm.args.setup(vm.stack, argNames, blockNames, 0, true);
 
   const compilable = expect(
     reified.compilable,
@@ -111,7 +108,7 @@ function renderInvocation(
 
   // Needed for the Op.Main opcode: arguments, component invocation object, and
   // component definition.
-  vm.stack.push(vm[ARGS]);
+  vm.stack.push(vm.args);
   vm.stack.push(invocation);
   vm.stack.push(reified);
 

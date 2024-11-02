@@ -4,11 +4,11 @@ import {
   asPresentArray,
   assert,
   assertPresentArray,
-  assign,
   getFirst,
   getLast,
   isPresentArray,
-} from '@glimmer/util';
+} from '@glimmer/debug-util';
+import { assign } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
 import { EntityParser } from 'simple-html-tokenizer';
 
