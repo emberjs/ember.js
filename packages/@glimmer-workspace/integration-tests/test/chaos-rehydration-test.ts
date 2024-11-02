@@ -1,13 +1,6 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
-import {
-  castToBrowser,
-  castToSimple,
-  COMMENT_NODE,
-  ELEMENT_NODE,
-  expect,
-  isObject,
-  LOCAL_LOGGER,
-} from '@glimmer/util';
+import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { COMMENT_NODE, ELEMENT_NODE, isObject, LOCAL_LOGGER } from '@glimmer/util';
 
 import type { ComponentBlueprint, Content } from '..';
 
@@ -96,9 +89,11 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
     let removedNodeDisplay: Nullable<string>;
     switch (nodeToRemove.nodeType) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       case COMMENT_NODE:
         removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
         break;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       case ELEMENT_NODE:
         removedNodeDisplay = castToBrowser(nodeToRemove, ['HTML', 'SVG']).outerHTML;
         break;

@@ -5,7 +5,7 @@ import type {
   ResolutionTimeConstants,
   RuntimeResolver,
 } from '@glimmer/interfaces';
-import { expect } from '@glimmer/util';
+import { expect } from '@glimmer/debug-util';
 
 export function resolveComponent(
   resolver: RuntimeResolver,

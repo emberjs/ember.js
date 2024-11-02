@@ -1,5 +1,6 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { asPresentArray, assert, assign, isPresentArray } from '@glimmer/util';
+import { asPresentArray, assert, isPresentArray } from '@glimmer/debug-util';
+import { assign } from '@glimmer/util';
 
 import type {
   PrecompileOptions,

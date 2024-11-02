@@ -139,6 +139,8 @@ export interface RuntimeConstants {
   getArray<T>(handle: number): T[];
 }
 
+export type JitConstants = CompileTimeConstants & ResolutionTimeConstants & RuntimeConstants;
+
 export interface CompileTimeArtifacts {
   heap: CompileTimeHeap;
   constants: CompileTimeConstants & ResolutionTimeConstants;

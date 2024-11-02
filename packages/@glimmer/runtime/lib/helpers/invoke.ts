@@ -1,9 +1,9 @@
 import type { Arguments, InternalHelperManager } from '@glimmer/interfaces';
 import type { Cache } from '@glimmer/validator';
+import { debugToString } from '@glimmer/debug-util';
 import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 import { getOwner } from '@glimmer/owner';
-import { debugToString } from '@glimmer/util';
 import { createCache, getValue } from '@glimmer/validator';
 
 import { EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL } from '../vm/arguments';

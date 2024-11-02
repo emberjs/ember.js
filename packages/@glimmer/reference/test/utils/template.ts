@@ -63,14 +63,17 @@ class ObjectIterator extends BoundedIterator {
 
 export const TestContext = {
   getProp(obj: unknown, path: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (obj as any)[path];
   },
 
   getPath(obj: unknown, path: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (obj as any)[path];
   },
 
   setProp(obj: unknown, path: string, value: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return ((obj as any)[path] = value);
   },
 

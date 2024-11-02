@@ -1,5 +1,5 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { asPresentArray, deprecate } from '@glimmer/util';
+import { asPresentArray, deprecate } from '@glimmer/debug-util';
 
 import type * as ASTv1 from './nodes-v1';
 

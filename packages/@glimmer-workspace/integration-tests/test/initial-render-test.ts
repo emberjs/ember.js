@@ -1,6 +1,6 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
-import { castToBrowser, expect } from '@glimmer/util';
+import { castToBrowser, expect } from '@glimmer/debug-util';
 
 import type { ComponentBlueprint, Content } from '..';
 

@@ -1,5 +1,5 @@
 import type { CompileTimeCompilationContext, CompileTimeComponent } from '@glimmer/interfaces';
-import { unwrapHandle } from '@glimmer/util';
+import { unwrapHandle } from '@glimmer/debug-util';
 
 export function compileEntry(entry: CompileTimeComponent, context: CompileTimeCompilationContext) {
   return unwrapHandle(entry.compilable!.compile(context));

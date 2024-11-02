@@ -12,7 +12,8 @@ import type {
   SimpleText,
 } from '@glimmer/interfaces';
 import type { Stack } from '@glimmer/util';
-import { assert, castToBrowser, castToSimple, COMMENT_NODE, expect, NS_SVG } from '@glimmer/util';
+import { assert, castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/util';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
@@ -495,11 +496,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 }
 
 function isTextNode(node: SimpleNode): node is SimpleText {
-  return node.nodeType === 3;
+  return node.nodeType === TEXT_NODE;
 }
 
 function isComment(node: SimpleNode): node is SimpleComment {
-  return node.nodeType === 8;
+  return node.nodeType === COMMENT_NODE;
 }
 
 function isOpenBlock(node: SimpleNode): node is SimpleComment {
@@ -519,19 +520,19 @@ function getBlockDepthWithOffset(node: SimpleComment, offset: number): number {
 }
 
 function isElement(node: SimpleNode): node is SimpleElement {
-  return node.nodeType === 1;
+  return node.nodeType === ELEMENT_NODE;
 }
 
 function isMarker(node: SimpleNode): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%glmr%';
+  return node.nodeType === COMMENT_NODE && node.nodeValue === '%glmr%';
 }
 
 function isSeparator(node: SimpleNode): boolean {
-  return node.nodeType === 8 && node.nodeValue === '%|%';
+  return node.nodeType === COMMENT_NODE && node.nodeValue === '%|%';
 }
 
 function isEmpty(node: SimpleNode): boolean {
-  return node.nodeType === 8 && node.nodeValue === '% %';
+  return node.nodeType === COMMENT_NODE && node.nodeValue === '% %';
 }
 
 function isSameNodeType(candidate: SimpleElement, tag: string) {

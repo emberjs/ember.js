@@ -1,6 +1,6 @@
 import type { Tag } from '@glimmer/interfaces';
+import { asPresentArray, getLast } from '@glimmer/debug-util';
 import { assert } from '@glimmer/global-context';
-import { asPresentArray, getLast } from '@glimmer/util';
 
 interface DebugTransaction {
   beginTrackingTransaction?:

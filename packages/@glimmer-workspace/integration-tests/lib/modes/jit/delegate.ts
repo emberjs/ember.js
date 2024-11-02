@@ -20,6 +20,7 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import type { CurriedValue, EnvironmentDelegate } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
+import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/debug-util';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import { createConstRef } from '@glimmer/reference';
@@ -35,7 +36,7 @@ import {
   renderSync,
   runtimeContext,
 } from '@glimmer/runtime';
-import { assign, castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';

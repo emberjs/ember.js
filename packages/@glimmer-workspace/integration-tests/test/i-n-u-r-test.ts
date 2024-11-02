@@ -1,4 +1,4 @@
-import { castToSimple } from '@glimmer/util';
+import { castToSimple } from '@glimmer/debug-util';
 
 import { JitRenderDelegate, RenderTest } from '..';
 import { module } from './support';

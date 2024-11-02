@@ -9,8 +9,9 @@ import type {
   UnboundReference,
 } from '@glimmer/interfaces';
 import type { Revision, Tag } from '@glimmer/validator';
+import { expect } from '@glimmer/debug-util';
 import { getProp, setProp } from '@glimmer/global-context';
-import { expect, isDict } from '@glimmer/util';
+import { isDict } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   consumeTag,

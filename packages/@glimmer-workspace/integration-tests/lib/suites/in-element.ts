@@ -1,6 +1,7 @@
 import type { AST } from '@glimmer/syntax';
+import { unwrap } from '@glimmer/debug-util';
 import { destroy } from '@glimmer/destroyable';
-import { assign, unwrap } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 
 import { GlimmerishComponent } from '../components/emberish-glimmer';
 import { equalsElement } from '../dom/assertions';

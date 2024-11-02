@@ -4,8 +4,8 @@ import type {
   TemplateWithIdAndReferrer,
 } from '@glimmer/opcode-compiler';
 import { precompile } from '@glimmer/compiler';
+import { unwrapTemplate } from '@glimmer/debug-util';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { unwrapTemplate } from '@glimmer/util';
 
 let serializedTemplate: SerializedTemplateWithLazyBlock;
 let serializedTemplateNoId: SerializedTemplateWithLazyBlock;

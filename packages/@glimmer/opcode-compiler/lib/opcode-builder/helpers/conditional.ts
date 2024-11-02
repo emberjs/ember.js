@@ -1,4 +1,4 @@
-import { unwrap } from '@glimmer/util';
+import { unwrap } from '@glimmer/debug-util';
 import { MachineOp, Op } from '@glimmer/vm';
 
 import type { PushStatementOp } from '../../syntax/compilers';

@@ -32,7 +32,7 @@
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-ts": "^3.4.5",
     "unplugin-fonts": "^1.0.3",
-    "vite": "^5.0.12"
+    "vite": "^5.4.10"
   },
   "devDependencies": {
     "@types/node": "^20.9.4",

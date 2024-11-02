@@ -44,14 +44,17 @@ export function isEmpty(value: unknown): boolean {
 }
 
 export function isSafeString(value: unknown): value is SafeString {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
 }
 
 export function isNode(value: unknown): value is SimpleNode {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return typeof value === 'object' && value !== null && typeof (value as any).nodeType === 'number';
 }
 
 export function isFragment(value: unknown): value is SimpleDocumentFragment {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   return isNode(value) && value.nodeType === 11;
 }
 

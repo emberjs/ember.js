@@ -1,5 +1,6 @@
 import type { Dict, DictValue, Nullable, PresentArray } from '@glimmer/interfaces';
-import { assertNever, dict, expect, isPresentArray } from '@glimmer/util';
+import { expect, isPresentArray } from '@glimmer/debug-util';
+import { assertNever, dict } from '@glimmer/util';
 
 export type BuilderParams = BuilderExpression[];
 export type BuilderHash = Nullable<Dict<BuilderExpression>>;

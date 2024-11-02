@@ -112,7 +112,11 @@ export function typescript(pkg, config) {
 
 /** @type {['is' | 'startsWith', string[], 'inline' | 'external'][]} */
 const EXTERNAL_OPTIONS = [
-  ['is', ['tslib', '@glimmer/local-debug-flags', '@glimmer/debug'], 'inline'],
+  [
+    'is',
+    ['tslib', '@glimmer/local-debug-flags', '@glimmer/debug', '@glimmer/debug-util'],
+    'inline',
+  ],
   ['is', ['@handlebars/parser', 'simple-html-tokenizer', 'babel-plugin-debug-macros'], 'external'],
   ['startsWith', ['.', '/', '#', '@babel/runtime/', process.cwd().replace(/\\/gu, '/')], 'inline'],
   ['startsWith', ['@glimmer/', '@simple-dom/', '@babel/', 'node:'], 'external'],

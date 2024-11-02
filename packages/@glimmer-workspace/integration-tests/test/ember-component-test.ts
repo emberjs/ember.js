@@ -5,7 +5,8 @@ import type {
   EmberishCurlyComponentFactory,
   JitRenderDelegate,
 } from '@glimmer-workspace/integration-tests';
-import { assign, castToSimple, unwrap } from '@glimmer/util';
+import { castToSimple, unwrap } from '@glimmer/debug-util';
+import { assign } from '@glimmer/util';
 import {
   classes,
   createTemplate,
@@ -109,6 +110,7 @@ function assertFired(component: HookedComponent, name: string, count = 1) {
   let hooks = component.hooks;
 
   if (!hooks) {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     throw new TypeError(`Not hooked: ${component}`);
   }
 

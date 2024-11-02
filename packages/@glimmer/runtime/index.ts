@@ -41,7 +41,7 @@ export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
 export { DynamicScopeImpl, PartialScopeImpl } from './lib/scope';
 export type { SafeString } from './lib/upsert';
-export { type InternalVM, VM as LowLevelVM, UpdatingVM } from './lib/vm';
+export { UpdatingVM, type VM } from './lib/vm';
 export {
   createCapturedArgs,
   EMPTY_ARGS,
@@ -62,6 +62,7 @@ export {
   RemoteLiveBlock,
   UpdatableBlockImpl,
 } from './lib/vm/element-builder';
+export { LowLevelVM } from './lib/vm/low-level';
 export {
   isSerializationFirstNode,
   RehydrateBuilder,

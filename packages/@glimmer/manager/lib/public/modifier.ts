@@ -9,9 +9,10 @@ import type {
   SimpleElement,
   UpdatableTag,
 } from '@glimmer/interfaces';
+import { castToBrowser } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { valueForRef } from '@glimmer/reference';
-import { castToBrowser, dict } from '@glimmer/util';
+import { dict } from '@glimmer/util';
 import { createUpdatableTag, untrack } from '@glimmer/validator';
 
 import type { ManagerFactory } from '.';

@@ -8,7 +8,7 @@ export interface Cell<T> {
   set(value: T): void;
 }
 
-export type ComponentArgs = Readonly<Dict<any>>;
+export type ComponentArgs = Readonly<Dict>;
 
 export interface Benchmark {
   /**

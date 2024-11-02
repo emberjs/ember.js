@@ -12,8 +12,8 @@ import type {
   Transaction,
   TransactionSymbol,
 } from '@glimmer/interfaces';
+import { assert, expect } from '@glimmer/debug-util';
 import { RuntimeProgramImpl } from '@glimmer/program';
-import { assert, expect } from '@glimmer/util';
 import { track, updateTag } from '@glimmer/validator';
 
 import DebugRenderTree from './debug-render-tree';
@@ -102,6 +102,7 @@ export class EnvironmentImpl implements Environment {
   // Delegate methods and values
   public isInteractive: boolean;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError: ((error: any) => boolean) | undefined;
   debugRenderTree: DebugRenderTree<object> | undefined;
 

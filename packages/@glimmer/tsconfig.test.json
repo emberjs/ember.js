@@ -9,14 +9,11 @@
     "declarationMap": true,
     "outDir": "../../ts-dist/packages",
     "baseUrl": "..",
-
     "verbatimModuleSyntax": true,
-
     "experimentalDecorators": true,
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-
     "strict": true,
     "suppressImplicitAnyIndexErrors": false,
     "useDefineForClassFields": false,
@@ -24,12 +21,14 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-
     "types": ["qunit", "node", "vite/client"]
   },
-  "include": ["*/test/**/*"],
-  "exclude": ["*/test/node_modules", "**/fixtures"],
+  "include": ["./*/test/**/*"],
+  "exclude": ["./*/test/node_modules", "**/fixtures"],
   "references": [
+    {
+      "path": "./tsconfig.json"
+    },
     {
       "path": "../@glimmer-workspace/tsconfig.json"
     }

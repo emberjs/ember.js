@@ -28,6 +28,7 @@
       "mode": "auto"
     }
   ],
+  "eslint.validate": ["javascript", "typescript", "json", "jsonc"],
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true
@@ -40,17 +41,16 @@
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
-
   "javascript.preferences.importModuleSpecifier": "project-relative",
   "typescript.preferences.importModuleSpecifier": "project-relative",
-
-  "typescript.preferences.importModuleSpecifierEnding": "index",
+  "typescript.preferences.importModuleSpecifierEnding": "auto",
   "typescript.preferences.useAliasesForRenames": false,
-
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
   "typescript.workspaceSymbols.scope": "currentProject",
+  "typescript.experimental.updateImportsOnPaste": true,
   "eslint.problems.shortenToSingleLine": true,
+  "typescript.experimental.expandableHover": true,
   "inline-bookmarks.expert.custom.words.mapping": {
     "warn": ["@premerge(\\s|$)"],
     "active": ["@active(\\s|$)"],

@@ -1,5 +1,6 @@
+import { getFirst, getLast, isPresentArray } from '@glimmer/debug-util';
+
 import { enumerate } from './array-utils';
-import { getFirst, getLast, isPresentArray } from './present';
 
 export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   let out = '';

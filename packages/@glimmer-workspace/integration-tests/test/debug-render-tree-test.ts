@@ -9,9 +9,10 @@ import type {
   SimpleNode,
 } from '@glimmer/interfaces';
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
+import { expect } from '@glimmer/debug-util';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
-import { assign, expect } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 
 import type { EmberishCurlyComponent } from '..';
 

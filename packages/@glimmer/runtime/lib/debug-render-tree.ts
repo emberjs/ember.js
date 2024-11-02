@@ -6,7 +6,8 @@ import type {
   Nullable,
   RenderNode,
 } from '@glimmer/interfaces';
-import { assign, expect, Stack } from '@glimmer/util';
+import { expect } from '@glimmer/debug-util';
+import { assign, Stack } from '@glimmer/util';
 
 import { reifyArgsDebug } from './vm/arguments';
 
@@ -45,6 +46,7 @@ export class Ref<T extends object> {
       return `${label} (released)`;
     } else {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         return `${label}: ${this.value}`;
       } catch {
         return label;
@@ -82,6 +84,7 @@ export default class DebugRenderTreeImpl<TBucket extends object>
 
   didRender(state: TBucket, bounds: Bounds): void {
     if (import.meta.env.DEV && this.stack.current !== state) {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new Error(`BUG: expecting ${this.stack.current}, got ${state}`);
     }
 

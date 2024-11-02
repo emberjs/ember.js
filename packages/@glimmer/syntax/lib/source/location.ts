@@ -1,5 +1,5 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { isPresentArray } from '@glimmer/util';
+import { isPresentArray } from '@glimmer/debug-util';
 
 import type { SourceSpan } from './span';
 

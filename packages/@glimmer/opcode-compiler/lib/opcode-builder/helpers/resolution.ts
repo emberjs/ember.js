@@ -12,7 +12,7 @@ import type {
   ResolveOptionalComponentOrHelperOp,
   SexpOpcode,
 } from '@glimmer/interfaces';
-import { assert, debugToString, expect, unwrap } from '@glimmer/util';
+import { assert, debugToString, expect, unwrap } from '@glimmer/debug-util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 function isGetLikeTuple(opcode: Expressions.Expression): opcode is Expressions.TupleExpression {

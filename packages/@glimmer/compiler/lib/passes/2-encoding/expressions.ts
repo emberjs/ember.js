@@ -1,6 +1,6 @@
 import type { PresentArray, WireFormat } from '@glimmer/interfaces';
 import type { ASTv2 } from '@glimmer/syntax';
-import { assert, assertPresentArray, isPresentArray, mapPresentArray } from '@glimmer/util';
+import { assert, assertPresentArray, isPresentArray, mapPresentArray } from '@glimmer/debug-util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 import type * as mir from './mir';

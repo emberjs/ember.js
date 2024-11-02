@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Nullable, Recast } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
-import { assert, getLast, isPresentArray, unwrap } from '@glimmer/util';
+import { assert, getLast, isPresentArray, unwrap } from '@glimmer/debug-util';
 
 import type { ParserNodeBuilder, StartTag } from '../parser';
 import type { SourceOffset, SourceSpan } from '../source/span';

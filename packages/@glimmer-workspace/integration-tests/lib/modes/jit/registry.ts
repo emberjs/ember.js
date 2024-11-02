@@ -8,8 +8,9 @@ import type {
   ResolvedComponentDefinition,
   Template,
 } from '@glimmer/interfaces';
+import { assert } from '@glimmer/debug-util';
 import { getComponentTemplate } from '@glimmer/manager';
-import { assert, dict } from '@glimmer/util';
+import { dict } from '@glimmer/util';
 
 // This is used to replicate a requirement of Ember's template referrers, which
 // assign the `owner` to the template meta. The requirement is that the template

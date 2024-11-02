@@ -1,5 +1,5 @@
 import type { SimpleElement } from '@glimmer/interfaces';
-import { unwrap } from '@glimmer/util';
+import { unwrap } from '@glimmer/debug-util';
 
 import type { Count } from '../render-test';
 

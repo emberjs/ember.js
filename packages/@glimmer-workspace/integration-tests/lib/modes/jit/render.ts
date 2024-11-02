@@ -1,8 +1,8 @@
 import type { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { PrecompileOptions } from '@glimmer/syntax';
+import { unwrapTemplate } from '@glimmer/debug-util';
 import { renderMain, renderSync } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
 
 import type { JitTestDelegateContext } from './delegate';
 

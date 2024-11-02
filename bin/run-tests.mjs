@@ -1,4 +1,3 @@
- 
 // @ts-check
 
 import child from 'child_process';
@@ -6,7 +5,6 @@ import { resolve } from 'path';
 import PCR from 'puppeteer-chromium-resolver';
 import { fileURLToPath } from 'url';
 
- 
 const { puppeteer, executablePath } = await PCR({});
 
 const __root = fileURLToPath(new URL('..', import.meta.url));

@@ -106,6 +106,7 @@ class WeakMapWithPrimitives<T> {
 
 const IDENTITIES = new WeakMapWithPrimitives<object[]>();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function identityForNthOccurence(value: any, count: number) {
   let identities = IDENTITIES.get(value);
 
@@ -158,6 +159,7 @@ function uniqueKeyFor(keyFor: KeyFor) {
 
 export function createIteratorRef(listRef: Reference, key: string) {
   return createComputeRef(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let iterable = valueForRef(listRef) as { [Symbol.iterator]: any } | null | false;
 
     let keyFor = makeKeyFor(key);

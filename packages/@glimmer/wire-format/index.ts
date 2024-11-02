@@ -6,7 +6,9 @@ export { opcodes as SexpOpcodes } from './lib/opcodes';
 export { resolution as VariableResolutionContext } from './lib/resolution';
 export { WellKnownAttrNames, WellKnownTagNames } from './lib/well-known';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function is<T>(variant: number): (value: any) => value is T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function (value: any): value is T {
     return Array.isArray(value) && value[0] === variant;
   };

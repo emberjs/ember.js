@@ -1,5 +1,6 @@
 {
   "name": "@glimmer/debug",
+  "private": true,
   "version": "0.92.4",
   "license": "MIT",
   "description": "Utilities for helping make working in the vm easier. these should be inlined and stripped for ember usage.",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
