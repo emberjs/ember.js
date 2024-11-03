@@ -2,6 +2,7 @@ import 'zx/globals';
 import os from 'node:os';
 import { join } from 'node:path';
 import chalk from 'chalk';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 $.verbose = true;
@@ -111,23 +112,35 @@ if (!REUSE_CONTROL) {
     console.info(`$ pnpm install --no-frozen-lockfile ${chalk.gray('[control]')}`);
 
     await $`pwd`;
-    const result = await $`pnpm install --no-frozen-lockfile`;
-    console.log(result);
+    await $`pnpm install --no-frozen-lockfile`;
     await $`pnpm build`;
 
-    if (isMacOs) {
-      await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-      await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "./dist/index.js",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-      await $`find ./packages -name 'package.json' -exec sed -i '' 's|"import": "./dist/index.js"|"import": "./dist/prod/index.js"|g' {} \\;`;
-    } else {
-      await $`find ./packages -name 'package.json' -exec sed -i 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-      await $`find ./packages -name 'package.json' -exec sed -i 's|"main": "./dist/index.js",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-      await $`find ./packages -name 'package.json' -exec sed -i 's|"import": "./dist/index.js"|"import": "./dist/prod/index.js"|g' {} \\;`;
-    }
+    await rewritePackageJson();
 
     await cd(CONTROL_BENCH_DIR);
     await $`pnpm vite build`;
   });
+}
+
+async function rewritePackageJson() {
+  const packages = await $`find ./packages/@glimmer -name 'package.json'`;
+
+  for (const pkg of packages.stdout.trim().split('\n')) {
+    const packageJson = JSON.parse(await readFile(pkg, { encoding: 'utf8' }));
+    const publishConfig = packageJson['publishConfig'];
+
+    if (publishConfig) {
+      const updatedPkg = { ...packageJson, ...publishConfig };
+
+      for (const [key, value] of Object.entries(publishConfig)) {
+        if (value === null) {
+          delete updatedPkg[key];
+        }
+      }
+
+      await writeFile(pkg, JSON.stringify(updatedPkg, null, 2), { encoding: 'utf8' });
+    }
+  }
 }
 
 // setup experiment
@@ -139,19 +152,10 @@ await within(async () => {
   await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
 
   await $`pwd`;
-  const result = await $`pnpm install --no-frozen-lockfile`;
-  console.log(result);
+  await $`pnpm install --no-frozen-lockfile`;
   await $`pnpm build`;
 
-  if (isMacOs) {
-    await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-    await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "./dist/index.js",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-    await $`find ./packages -name 'package.json' -exec sed -i '' 's|"import": "./dist/index.js"|"import": "./dist/prod/index.js"|g' {} \\;`;
-  } else {
-    await $`find ./packages -name 'package.json' -exec sed -i 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-    await $`find ./packages -name 'package.json' -exec sed -i 's|"main": "./dist/index.js",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;
-    await $`find ./packages -name 'package.json' -exec sed -i 's|"import": "./dist/index.js"|"import": "./dist/prod/index.js"|g' {} \\;`;
-  }
+  await rewritePackageJson();
 
   await cd(EXPERIMENT_BENCH_DIR);
   await $`pnpm vite build`;
