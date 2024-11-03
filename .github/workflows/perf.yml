@@ -12,8 +12,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  EXPERIMENT_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  CONTROL_BRANCH_NAME: 'main'
   FIDELITY: 100
   THROTTLE: 4
   FORK_NAME: ${{ github.event.pull_request.head.repo.full_name }}

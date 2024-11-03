@@ -7,8 +7,7 @@
   "sideEffects": false,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/debug",
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
+  "exports": "./index.ts",
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json"

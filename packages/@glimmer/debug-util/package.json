@@ -6,12 +6,9 @@
   "description": "Common utilities used in Glimmer with debug-specific behavior",
   "repository": "https://github.com/tildeio/glimmer/tree/main/packages/@glimmer/debug-util",
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
-  "module": "index.ts",
+  "exports": "./index.ts",
   "scripts": {
     "test:lint": "eslint .",
-    "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
