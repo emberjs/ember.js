@@ -104,9 +104,7 @@ export type VmBeginComponentTransaction = 97;
 export type VmCommitComponentTransaction = 98;
 export type VmDidCreateElement = 99;
 export type VmDidRenderLayout = 100;
-export type VmResolveMaybeLocal = 102;
 export type VmDebugger = 103;
-export type VmSize = 104;
 export type VmStaticComponentAttr = 105;
 export type VmDynamicContentType = 106;
 export type VmDynamicHelper = 107;
@@ -115,6 +113,7 @@ export type VmIfInline = 109;
 export type VmNot = 110;
 export type VmGetDynamicVar = 111;
 export type VmLog = 112;
+export type VmSize = 113;
 
 export type VmOp =
   | VmHelper
@@ -202,7 +201,6 @@ export type VmOp =
   | VmCommitComponentTransaction
   | VmDidCreateElement
   | VmDidRenderLayout
-  | VmResolveMaybeLocal
   | VmDebugger
   | VmSize
   | VmStaticComponentAttr

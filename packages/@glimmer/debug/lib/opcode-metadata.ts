@@ -2,16 +2,106 @@
 
 import type { Nullable, VmMachineOp, VmOp } from '@glimmer/interfaces';
 import {
+  VM_APPEND_DOCUMENT_FRAGMENT_OP,
+  VM_APPEND_HTML_OP,
+  VM_APPEND_NODE_OP,
+  VM_APPEND_SAFE_HTML_OP,
+  VM_APPEND_TEXT_OP,
+  VM_ASSERT_SAME_OP,
+  VM_BEGIN_COMPONENT_TRANSACTION_OP,
+  VM_BIND_DYNAMIC_SCOPE_OP,
+  VM_BIND_EVAL_SCOPE_OP,
+  VM_CAPTURE_ARGS_OP,
+  VM_CHILD_SCOPE_OP,
+  VM_CLOSE_ELEMENT_OP,
+  VM_COMMENT_OP,
+  VM_COMMIT_COMPONENT_TRANSACTION_OP,
+  VM_COMPILE_BLOCK_OP,
+  VM_COMPONENT_ATTR_OP,
+  VM_CONCAT_OP,
+  VM_CONSTANT_OP,
+  VM_CONSTANT_REFERENCE_OP,
+  VM_CONTENT_TYPE_OP,
+  VM_CREATE_COMPONENT_OP,
+  VM_CURRY_OP,
+  VM_DEBUGGER_OP,
+  VM_DID_CREATE_ELEMENT_OP,
+  VM_DID_RENDER_LAYOUT_OP,
+  VM_DUP_OP,
+  VM_DYNAMIC_ATTR_OP,
+  VM_DYNAMIC_CONTENT_TYPE_OP,
+  VM_DYNAMIC_HELPER_OP,
+  VM_ENTER_LIST_OP,
+  VM_ENTER_OP,
+  VM_EXIT_LIST_OP,
+  VM_EXIT_OP,
+  VM_FETCH_OP,
+  VM_FLUSH_ELEMENT_OP,
+  VM_GET_BLOCK_OP,
+  VM_GET_COMPONENT_LAYOUT_OP,
+  VM_GET_COMPONENT_SELF_OP,
+  VM_GET_COMPONENT_TAG_NAME_OP,
+  VM_GET_PROPERTY_OP,
+  VM_GET_VARIABLE_OP,
+  VM_HAS_BLOCK_OP,
+  VM_HAS_BLOCK_PARAMS_OP,
+  VM_HELPER_OP,
+  VM_IF_INLINE_OP,
+  VM_INVOKE_COMPONENT_LAYOUT_OP,
   VM_INVOKE_STATIC_OP,
   VM_INVOKE_VIRTUAL_OP,
+  VM_INVOKE_YIELD_OP,
+  VM_ITERATE_OP,
+  VM_JUMP_EQ_OP,
+  VM_JUMP_IF_OP,
   VM_JUMP_OP,
+  VM_JUMP_UNLESS_OP,
+  VM_LOAD_OP,
+  VM_MACHINE_SIZE,
+  VM_MAIN_OP,
+  VM_MODIFIER_OP,
+  VM_NOT_OP,
+  VM_OPEN_DYNAMIC_ELEMENT_OP,
+  VM_OPEN_ELEMENT_OP,
+  VM_POP_ARGS_OP,
+  VM_POP_DYNAMIC_SCOPE_OP,
   VM_POP_FRAME_OP,
+  VM_POP_OP,
+  VM_POP_REMOTE_ELEMENT_OP,
+  VM_POP_SCOPE_OP,
+  VM_POPULATE_LAYOUT_OP,
+  VM_PREPARE_ARGS_OP,
+  VM_PRIMITIVE_OP,
+  VM_PRIMITIVE_REFERENCE_OP,
+  VM_PUSH_ARGS_OP,
+  VM_PUSH_BLOCK_SCOPE_OP,
+  VM_PUSH_COMPONENT_DEFINITION_OP,
+  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
+  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_EMPTY_ARGS_OP,
   VM_PUSH_FRAME_OP,
+  VM_PUSH_REMOTE_ELEMENT_OP,
+  VM_PUSH_SYMBOL_TABLE_OP,
+  VM_PUT_COMPONENT_OPERATIONS_OP,
+  VM_REGISTER_COMPONENT_DESTRUCTOR_OP,
+  VM_REIFY_U32_OP,
+  VM_RESOLVE_DYNAMIC_COMPONENT_OP,
   VM_RETURN_OP,
   VM_RETURN_TO_OP,
+  VM_ROOT_SCOPE_OP,
+  VM_SET_BLOCK_OP,
+  VM_SET_BLOCKS_OP,
+  VM_SET_NAMED_VARIABLES_OP,
+  VM_SET_VARIABLE_OP,
+  VM_SETUP_FOR_EVAL_OP,
+  VM_SPREAD_BLOCK_OP,
+  VM_STATIC_ATTR_OP,
+  VM_SYSCALL_SIZE,
+  VM_TEXT_OP,
+  VM_TO_BOOLEAN_OP,
+  VM_VIRTUAL_ROOT_SCOPE_OP,
 } from '@glimmer/constants';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { Op } from '@glimmer/vm';
 
 import type { NormalizedMetadata } from './metadata';
 
@@ -28,8 +118,8 @@ export function opcodeMetadata(
   return value || null;
 }
 
-const METADATA: Nullable<NormalizedMetadata>[] = new Array(Op.Size).fill(null);
-const MACHINE_METADATA: Nullable<NormalizedMetadata>[] = new Array(Op.Size).fill(null);
+const METADATA: Nullable<NormalizedMetadata>[] = new Array(VM_SYSCALL_SIZE).fill(null);
+const MACHINE_METADATA: Nullable<NormalizedMetadata>[] = new Array(VM_MACHINE_SIZE).fill(null);
 
 if (LOCAL_DEBUG) {
   MACHINE_METADATA[VM_PUSH_FRAME_OP] = {
@@ -116,7 +206,7 @@ if (LOCAL_DEBUG) {
     operands: 1,
     check: true,
   };
-  METADATA[Op.Helper] = {
+  METADATA[VM_HELPER_OP] = {
     name: 'Helper',
     mnemonic: 'ncall',
     before: null,
@@ -131,7 +221,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.DynamicHelper] = {
+  METADATA[VM_DYNAMIC_HELPER_OP] = {
     name: 'DynamicHelper',
     mnemonic: 'dynamiccall',
     before: null,
@@ -141,7 +231,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.SetNamedVariables] = {
+  METADATA[VM_SET_NAMED_VARIABLES_OP] = {
     name: 'SetNamedVariables',
     mnemonic: 'vsargs',
     before: null,
@@ -156,7 +246,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.SetBlocks] = {
+  METADATA[VM_SET_BLOCKS_OP] = {
     name: 'SetBlocks',
     mnemonic: 'vbblocks',
     before: null,
@@ -171,7 +261,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.SetVariable] = {
+  METADATA[VM_SET_VARIABLE_OP] = {
     name: 'SetVariable',
     mnemonic: 'sbvar',
     before: null,
@@ -186,7 +276,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.SetBlock] = {
+  METADATA[VM_SET_BLOCK_OP] = {
     name: 'SetBlock',
     mnemonic: 'sblock',
     before: null,
@@ -201,7 +291,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.GetVariable] = {
+  METADATA[VM_GET_VARIABLE_OP] = {
     name: 'GetVariable',
     mnemonic: 'symload',
     before: null,
@@ -216,7 +306,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.GetProperty] = {
+  METADATA[VM_GET_PROPERTY_OP] = {
     name: 'GetProperty',
     mnemonic: 'getprop',
     before: null,
@@ -231,7 +321,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.GetBlock] = {
+  METADATA[VM_GET_BLOCK_OP] = {
     name: 'GetBlock',
     mnemonic: 'blockload',
     before: null,
@@ -246,7 +336,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.SpreadBlock] = {
+  METADATA[VM_SPREAD_BLOCK_OP] = {
     name: 'SpreadBlock',
     mnemonic: 'blockspread',
     before: null,
@@ -256,7 +346,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.HasBlock] = {
+  METADATA[VM_HAS_BLOCK_OP] = {
     name: 'HasBlock',
     mnemonic: 'hasblockload',
     before: null,
@@ -266,7 +356,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.HasBlockParams] = {
+  METADATA[VM_HAS_BLOCK_PARAMS_OP] = {
     name: 'HasBlockParams',
     mnemonic: 'hasparamsload',
     before: null,
@@ -276,7 +366,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Concat] = {
+  METADATA[VM_CONCAT_OP] = {
     name: 'Concat',
     mnemonic: 'concat',
     before: null,
@@ -291,7 +381,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.IfInline] = {
+  METADATA[VM_IF_INLINE_OP] = {
     name: 'IfInline',
     mnemonic: 'ifinline',
     before: null,
@@ -306,7 +396,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Not] = {
+  METADATA[VM_NOT_OP] = {
     name: 'Not',
     mnemonic: 'not',
     before: null,
@@ -321,7 +411,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Constant] = {
+  METADATA[VM_CONSTANT_OP] = {
     name: 'Constant',
     mnemonic: 'rconstload',
     before: null,
@@ -336,7 +426,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ConstantReference] = {
+  METADATA[VM_CONSTANT_REFERENCE_OP] = {
     name: 'ConstantReference',
     mnemonic: 'rconstrefload',
     before: null,
@@ -351,7 +441,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Primitive] = {
+  METADATA[VM_PRIMITIVE_OP] = {
     name: 'Primitive',
     mnemonic: 'pconstload',
     before: null,
@@ -366,7 +456,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PrimitiveReference] = {
+  METADATA[VM_PRIMITIVE_REFERENCE_OP] = {
     name: 'PrimitiveReference',
     mnemonic: 'ptoref',
     before: null,
@@ -376,7 +466,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ReifyU32] = {
+  METADATA[VM_REIFY_U32_OP] = {
     name: 'ReifyU32',
     mnemonic: 'reifyload',
     before: null,
@@ -386,7 +476,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Dup] = {
+  METADATA[VM_DUP_OP] = {
     name: 'Dup',
     mnemonic: 'dup',
     before: null,
@@ -405,7 +495,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Pop] = {
+  METADATA[VM_POP_OP] = {
     name: 'Pop',
     mnemonic: 'pop',
     before: null,
@@ -420,7 +510,7 @@ if (LOCAL_DEBUG) {
     check: false,
   };
 
-  METADATA[Op.Load] = {
+  METADATA[VM_LOAD_OP] = {
     name: 'Load',
     mnemonic: 'put',
     before: null,
@@ -435,7 +525,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Fetch] = {
+  METADATA[VM_FETCH_OP] = {
     name: 'Fetch',
     mnemonic: 'regload',
     before: null,
@@ -450,7 +540,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.RootScope] = {
+  METADATA[VM_ROOT_SCOPE_OP] = {
     name: 'RootScope',
     mnemonic: 'rscopepush',
     before: null,
@@ -465,7 +555,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.VirtualRootScope] = {
+  METADATA[VM_VIRTUAL_ROOT_SCOPE_OP] = {
     name: 'VirtualRootScope',
     mnemonic: 'vrscopepush',
     before: null,
@@ -480,7 +570,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ChildScope] = {
+  METADATA[VM_CHILD_SCOPE_OP] = {
     name: 'ChildScope',
     mnemonic: 'cscopepush',
     before: null,
@@ -490,7 +580,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PopScope] = {
+  METADATA[VM_POP_SCOPE_OP] = {
     name: 'PopScope',
     mnemonic: 'scopepop',
     before: null,
@@ -500,7 +590,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Text] = {
+  METADATA[VM_TEXT_OP] = {
     name: 'Text',
     mnemonic: 'apnd_text',
     before: null,
@@ -515,7 +605,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Comment] = {
+  METADATA[VM_COMMENT_OP] = {
     name: 'Comment',
     mnemonic: 'apnd_comment',
     before: null,
@@ -530,7 +620,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.AppendHTML] = {
+  METADATA[VM_APPEND_HTML_OP] = {
     name: 'AppendHTML',
     mnemonic: 'apnd_dynhtml',
     before: null,
@@ -540,7 +630,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.AppendSafeHTML] = {
+  METADATA[VM_APPEND_SAFE_HTML_OP] = {
     name: 'AppendSafeHTML',
     mnemonic: 'apnd_dynshtml',
     before: null,
@@ -550,7 +640,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.AppendDocumentFragment] = {
+  METADATA[VM_APPEND_DOCUMENT_FRAGMENT_OP] = {
     name: 'AppendDocumentFragment',
     mnemonic: 'apnd_dynfrag',
     before: null,
@@ -560,7 +650,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.AppendNode] = {
+  METADATA[VM_APPEND_NODE_OP] = {
     name: 'AppendNode',
     mnemonic: 'apnd_dynnode',
     before: null,
@@ -570,7 +660,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.AppendText] = {
+  METADATA[VM_APPEND_TEXT_OP] = {
     name: 'AppendText',
     mnemonic: 'apnd_dyntext',
     before: null,
@@ -580,7 +670,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.OpenElement] = {
+  METADATA[VM_OPEN_ELEMENT_OP] = {
     name: 'OpenElement',
     mnemonic: 'apnd_tag',
     before: null,
@@ -595,7 +685,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.OpenDynamicElement] = {
+  METADATA[VM_OPEN_DYNAMIC_ELEMENT_OP] = {
     name: 'OpenDynamicElement',
     mnemonic: 'apnd_dyntag',
     before: null,
@@ -605,7 +695,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushRemoteElement] = {
+  METADATA[VM_PUSH_REMOTE_ELEMENT_OP] = {
     name: 'PushRemoteElement',
     mnemonic: 'apnd_remotetag',
     before: null,
@@ -615,7 +705,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.StaticAttr] = {
+  METADATA[VM_STATIC_ATTR_OP] = {
     name: 'StaticAttr',
     mnemonic: 'apnd_attr',
     before: null,
@@ -638,7 +728,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.DynamicAttr] = {
+  METADATA[VM_DYNAMIC_ATTR_OP] = {
     name: 'DynamicAttr',
     mnemonic: 'apnd_dynattr',
     before: null,
@@ -661,7 +751,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ComponentAttr] = {
+  METADATA[VM_COMPONENT_ATTR_OP] = {
     name: 'ComponentAttr',
     mnemonic: 'apnd_cattr',
     before: null,
@@ -684,7 +774,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.FlushElement] = {
+  METADATA[VM_FLUSH_ELEMENT_OP] = {
     name: 'FlushElement',
     mnemonic: 'apnd_flushtag',
     before: null,
@@ -694,7 +784,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.CloseElement] = {
+  METADATA[VM_CLOSE_ELEMENT_OP] = {
     name: 'CloseElement',
     mnemonic: 'apnd_closetag',
     before: null,
@@ -704,7 +794,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PopRemoteElement] = {
+  METADATA[VM_POP_REMOTE_ELEMENT_OP] = {
     name: 'PopRemoteElement',
     mnemonic: 'apnd_closeremotetag',
     before: null,
@@ -714,7 +804,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Modifier] = {
+  METADATA[VM_MODIFIER_OP] = {
     name: 'Modifier',
     mnemonic: 'apnd_modifier',
     before: null,
@@ -729,7 +819,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.BindDynamicScope] = {
+  METADATA[VM_BIND_DYNAMIC_SCOPE_OP] = {
     name: 'BindDynamicScope',
     mnemonic: 'setdynscope',
     before: null,
@@ -744,7 +834,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushDynamicScope] = {
+  METADATA[VM_PUSH_DYNAMIC_SCOPE_OP] = {
     name: 'PushDynamicScope',
     mnemonic: 'dynscopepush',
     before: null,
@@ -754,7 +844,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PopDynamicScope] = {
+  METADATA[VM_POP_DYNAMIC_SCOPE_OP] = {
     name: 'PopDynamicScope',
     mnemonic: 'dynscopepop',
     before: null,
@@ -764,7 +854,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.CompileBlock] = {
+  METADATA[VM_COMPILE_BLOCK_OP] = {
     name: 'CompileBlock',
     mnemonic: 'cmpblock',
     before: null,
@@ -774,7 +864,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushBlockScope] = {
+  METADATA[VM_PUSH_BLOCK_SCOPE_OP] = {
     name: 'PushBlockScope',
     mnemonic: 'scopeload',
     before: null,
@@ -789,7 +879,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushSymbolTable] = {
+  METADATA[VM_PUSH_SYMBOL_TABLE_OP] = {
     name: 'PushSymbolTable',
     mnemonic: 'dsymload',
     before: null,
@@ -804,7 +894,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.InvokeYield] = {
+  METADATA[VM_INVOKE_YIELD_OP] = {
     name: 'InvokeYield',
     mnemonic: 'invokeyield',
     before: null,
@@ -814,7 +904,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.JumpIf] = {
+  METADATA[VM_JUMP_IF_OP] = {
     name: 'JumpIf',
     mnemonic: 'iftrue',
     before: null,
@@ -829,7 +919,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.JumpUnless] = {
+  METADATA[VM_JUMP_UNLESS_OP] = {
     name: 'JumpUnless',
     mnemonic: 'iffalse',
     before: null,
@@ -844,7 +934,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.JumpEq] = {
+  METADATA[VM_JUMP_EQ_OP] = {
     name: 'JumpEq',
     mnemonic: 'ifeq',
     before: null,
@@ -863,7 +953,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.AssertSame] = {
+  METADATA[VM_ASSERT_SAME_OP] = {
     name: 'AssertSame',
     mnemonic: 'assert_eq',
     before: null,
@@ -873,7 +963,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Enter] = {
+  METADATA[VM_ENTER_OP] = {
     name: 'Enter',
     mnemonic: 'blk_start',
     before: null,
@@ -888,7 +978,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Exit] = {
+  METADATA[VM_EXIT_OP] = {
     name: 'Exit',
     mnemonic: 'blk_end',
     before: null,
@@ -898,7 +988,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ToBoolean] = {
+  METADATA[VM_TO_BOOLEAN_OP] = {
     name: 'ToBoolean',
     mnemonic: 'anytobool',
     before: null,
@@ -908,7 +998,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.EnterList] = {
+  METADATA[VM_ENTER_LIST_OP] = {
     name: 'EnterList',
     mnemonic: 'list_start',
     before: null,
@@ -927,7 +1017,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ExitList] = {
+  METADATA[VM_EXIT_LIST_OP] = {
     name: 'ExitList',
     mnemonic: 'list_end',
     before: null,
@@ -937,7 +1027,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Iterate] = {
+  METADATA[VM_ITERATE_OP] = {
     name: 'Iterate',
     mnemonic: 'iter',
     before: null,
@@ -952,7 +1042,7 @@ if (LOCAL_DEBUG) {
     check: false,
   };
 
-  METADATA[Op.Main] = {
+  METADATA[VM_MAIN_OP] = {
     name: 'Main',
     mnemonic: 'main',
     before: null,
@@ -967,7 +1057,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ContentType] = {
+  METADATA[VM_CONTENT_TYPE_OP] = {
     name: 'ContentType',
     mnemonic: 'ctload',
     before: null,
@@ -977,7 +1067,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.DynamicContentType] = {
+  METADATA[VM_DYNAMIC_CONTENT_TYPE_OP] = {
     name: 'DynamicContentType',
     mnemonic: 'dctload',
     before: null,
@@ -987,7 +1077,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.Curry] = {
+  METADATA[VM_CURRY_OP] = {
     name: 'Curry',
     mnemonic: 'curry',
     before: null,
@@ -1006,7 +1096,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushComponentDefinition] = {
+  METADATA[VM_PUSH_COMPONENT_DEFINITION_OP] = {
     name: 'PushComponentDefinition',
     mnemonic: 'cmload',
     before: null,
@@ -1021,7 +1111,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushDynamicComponentInstance] = {
+  METADATA[VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP] = {
     name: 'PushDynamicComponentInstance',
     mnemonic: 'dciload',
     before: null,
@@ -1031,7 +1121,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ResolveDynamicComponent] = {
+  METADATA[VM_RESOLVE_DYNAMIC_COMPONENT_OP] = {
     name: 'ResolveDynamicComponent',
     mnemonic: 'cdload',
     before: null,
@@ -1046,7 +1136,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushArgs] = {
+  METADATA[VM_PUSH_ARGS_OP] = {
     name: 'PushArgs',
     mnemonic: 'argsload',
     before: null,
@@ -1069,7 +1159,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PushEmptyArgs] = {
+  METADATA[VM_PUSH_EMPTY_ARGS_OP] = {
     name: 'PushEmptyArgs',
     mnemonic: 'emptyargsload',
     before: null,
@@ -1079,7 +1169,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PopArgs] = {
+  METADATA[VM_POP_ARGS_OP] = {
     name: 'PopArgs',
     mnemonic: 'argspop',
     before: null,
@@ -1089,7 +1179,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PrepareArgs] = {
+  METADATA[VM_PREPARE_ARGS_OP] = {
     name: 'PrepareArgs',
     mnemonic: 'argsprep',
     before: null,
@@ -1104,7 +1194,7 @@ if (LOCAL_DEBUG) {
     check: false,
   };
 
-  METADATA[Op.CaptureArgs] = {
+  METADATA[VM_CAPTURE_ARGS_OP] = {
     name: 'CaptureArgs',
     mnemonic: 'argscapture',
     before: null,
@@ -1114,7 +1204,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.CreateComponent] = {
+  METADATA[VM_CREATE_COMPONENT_OP] = {
     name: 'CreateComponent',
     mnemonic: 'comp_create',
     before: null,
@@ -1133,7 +1223,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.RegisterComponentDestructor] = {
+  METADATA[VM_REGISTER_COMPONENT_DESTRUCTOR_OP] = {
     name: 'RegisterComponentDestructor',
     mnemonic: 'comp_dest',
     before: null,
@@ -1148,7 +1238,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PutComponentOperations] = {
+  METADATA[VM_PUT_COMPONENT_OPERATIONS_OP] = {
     name: 'PutComponentOperations',
     mnemonic: 'comp_elops',
     before: null,
@@ -1158,7 +1248,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.GetComponentSelf] = {
+  METADATA[VM_GET_COMPONENT_SELF_OP] = {
     name: 'GetComponentSelf',
     mnemonic: 'comp_selfload',
     before: null,
@@ -1173,7 +1263,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.GetComponentTagName] = {
+  METADATA[VM_GET_COMPONENT_TAG_NAME_OP] = {
     name: 'GetComponentTagName',
     mnemonic: 'comp_tagload',
     before: null,
@@ -1188,7 +1278,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.GetComponentLayout] = {
+  METADATA[VM_GET_COMPONENT_LAYOUT_OP] = {
     name: 'GetComponentLayout',
     mnemonic: 'comp_layoutload',
     before: null,
@@ -1203,7 +1293,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.BindEvalScope] = {
+  METADATA[VM_BIND_EVAL_SCOPE_OP] = {
     name: 'BindEvalScope',
     mnemonic: 'eval_scope',
     before: null,
@@ -1218,7 +1308,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.SetupForEval] = {
+  METADATA[VM_SETUP_FOR_EVAL_OP] = {
     name: 'SetupForEval',
     mnemonic: 'eval_setup',
     before: null,
@@ -1233,7 +1323,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.PopulateLayout] = {
+  METADATA[VM_POPULATE_LAYOUT_OP] = {
     name: 'PopulateLayout',
     mnemonic: 'comp_layoutput',
     before: null,
@@ -1248,7 +1338,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.InvokeComponentLayout] = {
+  METADATA[VM_INVOKE_COMPONENT_LAYOUT_OP] = {
     name: 'InvokeComponentLayout',
     mnemonic: 'comp_invokelayout',
     before: null,
@@ -1263,7 +1353,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.BeginComponentTransaction] = {
+  METADATA[VM_BEGIN_COMPONENT_TRANSACTION_OP] = {
     name: 'BeginComponentTransaction',
     mnemonic: 'comp_begin',
     before: null,
@@ -1273,7 +1363,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.CommitComponentTransaction] = {
+  METADATA[VM_COMMIT_COMPONENT_TRANSACTION_OP] = {
     name: 'CommitComponentTransaction',
     mnemonic: 'comp_commit',
     before: null,
@@ -1283,7 +1373,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.DidCreateElement] = {
+  METADATA[VM_DID_CREATE_ELEMENT_OP] = {
     name: 'DidCreateElement',
     mnemonic: 'comp_created',
     before: null,
@@ -1298,7 +1388,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.DidRenderLayout] = {
+  METADATA[VM_DID_RENDER_LAYOUT_OP] = {
     name: 'DidRenderLayout',
     mnemonic: 'comp_rendered',
     before: null,
@@ -1313,22 +1403,7 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[Op.ResolveMaybeLocal] = {
-    name: 'ResolveMaybeLocal',
-    mnemonic: 'eval_varload',
-    before: null,
-    stackChange: 1,
-    ops: [
-      {
-        name: 'local',
-        type: 'str',
-      },
-    ],
-    operands: 1,
-    check: true,
-  };
-
-  METADATA[Op.Debugger] = {
+  METADATA[VM_DEBUGGER_OP] = {
     name: 'Debugger',
     mnemonic: 'debugger',
     before: null,

@@ -5,8 +5,8 @@ import type {
   Nullable,
   WireFormat,
 } from '@glimmer/interfaces';
+import { VM_PUSH_ARGS_OP, VM_PUSH_EMPTY_ARGS_OP } from '@glimmer/constants';
 import { EMPTY_ARRAY, EMPTY_STRING_ARRAY } from '@glimmer/util';
-import { Op } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -53,7 +53,7 @@ export function CompileArgs(
     }
   }
 
-  op(Op.PushArgs, names as string[], blockNames, flags);
+  op(VM_PUSH_ARGS_OP, names as string[], blockNames, flags);
 }
 
 export function SimpleArgs(
@@ -63,7 +63,7 @@ export function SimpleArgs(
   atNames: boolean
 ): void {
   if (positional === null && named === null) {
-    op(Op.PushEmptyArgs);
+    op(VM_PUSH_EMPTY_ARGS_OP);
     return;
   }
 
@@ -83,7 +83,7 @@ export function SimpleArgs(
     }
   }
 
-  op(Op.PushArgs, names, EMPTY_STRING_ARRAY, flags);
+  op(VM_PUSH_ARGS_OP, names, EMPTY_STRING_ARRAY, flags);
 }
 
 /**
