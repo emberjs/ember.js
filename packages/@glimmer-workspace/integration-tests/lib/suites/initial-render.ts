@@ -1,6 +1,7 @@
 import type { SimpleElement } from '@glimmer/interfaces';
+import { NS_SVG } from '@glimmer/constants';
 import { castToBrowser, checkNode, unwrap } from '@glimmer/debug-util';
-import { NS_SVG, strip } from '@glimmer/util';
+import { strip } from '@glimmer/util';
 
 import { assertNodeTagName } from '../dom/assertions';
 import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';

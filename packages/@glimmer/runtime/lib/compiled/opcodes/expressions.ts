@@ -8,6 +8,7 @@ import type {
   VM as PublicVM,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import { decodeHandle } from '@glimmer/constants';
 import {
   check,
   CheckBlockSymbolTable,
@@ -28,7 +29,7 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { assign, decodeHandle, isObject } from '@glimmer/util';
+import { assign, isObject } from '@glimmer/util';
 import { $v0, CurriedTypes, Op } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';

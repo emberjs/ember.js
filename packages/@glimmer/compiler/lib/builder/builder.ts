@@ -1,3 +1,4 @@
+import type { VariableKind } from '@glimmer/constants';
 import type {
   AttrNamespace,
   Dict,
@@ -7,30 +8,6 @@ import type {
   PresentArray,
   WireFormat,
 } from '@glimmer/interfaces';
-import { assert, exhausted, expect, isPresentArray } from '@glimmer/debug-util';
-import { assertNever, dict, NS_XLINK, NS_XML, NS_XMLNS, values } from '@glimmer/util';
-import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
-
-import type {
-  BuilderComment,
-  BuilderStatement,
-  NormalizedAngleInvocation,
-  NormalizedAttrs,
-  NormalizedBlock,
-  NormalizedBlocks,
-  NormalizedElement,
-  NormalizedExpression,
-  NormalizedHash,
-  NormalizedHead,
-  NormalizedKeywordStatement,
-  NormalizedParams,
-  NormalizedPath,
-  NormalizedStatement,
-  Variable,
-} from './builder-interface';
-import type { VariableKind } from './constants';
-
-import { normalizeStatement } from './builder-interface';
 import {
   APPEND_EXPR_HEAD,
   APPEND_PATH_HEAD,
@@ -55,9 +32,35 @@ import {
   LITERAL_HEAD,
   LOCAL_VAR,
   MODIFIER_HEAD,
+  NS_XLINK,
+  NS_XML,
+  NS_XMLNS,
   SPLAT_HEAD,
   THIS_VAR,
-} from './constants';
+} from '@glimmer/constants';
+import { assert, exhausted, expect, isPresentArray } from '@glimmer/debug-util';
+import { assertNever, dict, values } from '@glimmer/util';
+import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
+
+import type {
+  BuilderComment,
+  BuilderStatement,
+  NormalizedAngleInvocation,
+  NormalizedAttrs,
+  NormalizedBlock,
+  NormalizedBlocks,
+  NormalizedElement,
+  NormalizedExpression,
+  NormalizedHash,
+  NormalizedHead,
+  NormalizedKeywordStatement,
+  NormalizedParams,
+  NormalizedPath,
+  NormalizedStatement,
+  Variable,
+} from './builder-interface';
+
+import { normalizeStatement } from './builder-interface';
 
 interface Symbols {
   top: ProgramSymbols;

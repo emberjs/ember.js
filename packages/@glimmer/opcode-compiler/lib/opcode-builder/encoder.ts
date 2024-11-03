@@ -16,9 +16,10 @@ import type {
   SingleBuilderOperand,
   STDLib,
 } from '@glimmer/interfaces';
+import { encodeHandle } from '@glimmer/constants';
 import { assert, expect, isPresentArray } from '@glimmer/debug-util';
 import { InstructionEncoderImpl } from '@glimmer/encoder';
-import { dict, EMPTY_STRING_ARRAY, encodeHandle, Stack } from '@glimmer/util';
+import { dict, EMPTY_STRING_ARRAY, Stack } from '@glimmer/util';
 import { ARG_SHIFT, isMachineOp, MACHINE_MASK, MachineOp, Op, TYPE_SIZE } from '@glimmer/vm';
 
 import { compilableBlock } from '../compilable-template';

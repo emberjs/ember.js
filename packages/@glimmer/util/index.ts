@@ -2,8 +2,6 @@ export * from './lib/array-utils';
 export { dict, isDict, isObject, StackImpl as Stack } from './lib/collections';
 export { beginTestSteps, endTestSteps, logStep, verifySteps } from './lib/debug-steps';
 export * from './lib/dom';
-export * from './lib/dom-utils';
-export * from './lib/immediate';
 export { default as intern } from './lib/intern';
 export {
   isSerializationFirstNode,

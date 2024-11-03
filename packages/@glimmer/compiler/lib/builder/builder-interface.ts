@@ -1,9 +1,5 @@
+import type { VariableKind } from '@glimmer/constants';
 import type { Dict, DictValue, Nullable, PresentArray } from '@glimmer/interfaces';
-import { expect, isPresentArray } from '@glimmer/debug-util';
-import { assertNever, dict } from '@glimmer/util';
-
-import type { VariableKind } from './constants';
-
 import {
   APPEND_EXPR_HEAD,
   APPEND_PATH_HEAD,
@@ -37,7 +33,9 @@ import {
   MODIFIER_HEAD,
   SPLAT_HEAD,
   THIS_VAR,
-} from './constants';
+} from '@glimmer/constants';
+import { expect, isPresentArray } from '@glimmer/debug-util';
+import { assertNever, dict } from '@glimmer/util';
 
 export type BuilderParams = BuilderExpression[];
 export type BuilderHash = Nullable<Dict<BuilderExpression>>;
