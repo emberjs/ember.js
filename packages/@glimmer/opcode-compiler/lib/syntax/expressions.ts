@@ -1,5 +1,6 @@
 import type { ExpressionSexpOpcode } from '@glimmer/interfaces';
-import { $v0, MachineOp, Op } from '@glimmer/vm';
+import { VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants';
+import { $v0, Op } from '@glimmer/vm';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
 import type { PushExpressionOp } from './compilers';
@@ -104,9 +105,9 @@ EXPRESSIONS.add(SexpOpcodes.GetDynamicVar, (op, [, expression]) => {
 });
 
 EXPRESSIONS.add(SexpOpcodes.Log, (op, [, positional]) => {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, null, false);
   op(Op.Log);
-  op(MachineOp.PopFrame);
+  op(VM_POP_FRAME_OP);
   op(Op.Fetch, $v0);
 });

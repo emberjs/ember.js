@@ -1,6 +1,6 @@
 import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
-import { encodeImmediate, isSmallInt } from '@glimmer/constants';
-import { $fp, $v0, MachineOp, Op } from '@glimmer/vm';
+import { encodeImmediate, isSmallInt, VM_POP_FRAME_OP, VM_PUSH_FRAME_OP } from '@glimmer/constants';
+import { $fp, $v0, Op } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -54,10 +54,10 @@ export function Call(
   positional: WireFormat.Core.Params,
   named: WireFormat.Core.Hash
 ): void {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
   op(Op.Helper, handle);
-  op(MachineOp.PopFrame);
+  op(VM_POP_FRAME_OP);
   op(Op.Fetch, $v0);
 }
 
@@ -74,17 +74,17 @@ export function CallDynamic(
   named: WireFormat.Core.Hash,
   append?: () => void
 ): void {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
   op(Op.Dup, $fp, 1);
   op(Op.DynamicHelper);
   if (append) {
     op(Op.Fetch, $v0);
     append();
-    op(MachineOp.PopFrame);
+    op(VM_POP_FRAME_OP);
     op(Op.Pop, 1);
   } else {
-    op(MachineOp.PopFrame);
+    op(VM_POP_FRAME_OP);
     op(Op.Pop, 1);
     op(Op.Fetch, $v0);
   }
@@ -112,11 +112,11 @@ export function Curry(
   positional: WireFormat.Core.Params,
   named: WireFormat.Core.Hash
 ): void {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
   op(Op.CaptureArgs);
   expr(op, definition);
   op(Op.Curry, type, isStrictMode());
-  op(MachineOp.PopFrame);
+  op(VM_POP_FRAME_OP);
   op(Op.Fetch, $v0);
 }
