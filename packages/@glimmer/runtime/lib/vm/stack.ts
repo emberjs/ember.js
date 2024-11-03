@@ -7,7 +7,7 @@ import type { LowLevelRegisters } from './low-level';
 import { initializeRegistersWithSP } from './low-level';
 
 export interface EvaluationStack {
-  $sp: number;
+  readonly registers: LowLevelRegisters;
 
   push(value: unknown): void;
   dup(position?: number): void;
@@ -35,38 +35,26 @@ export default class EvaluationStackImpl implements EvaluationStack {
     return stack;
   }
 
-  readonly #registers: LowLevelRegisters;
+  readonly registers: LowLevelRegisters;
 
   // fp -> sp
   constructor(
     private stack: unknown[] = [],
     registers: LowLevelRegisters
   ) {
-    this.#registers = registers;
+    this.registers = registers;
 
     if (LOCAL_DEBUG) {
       Object.seal(this);
     }
   }
 
-  get registers(): LowLevelRegisters {
-    return this.#registers;
-  }
-
-  get $sp(): number {
-    return this.#registers[$sp];
-  }
-
-  set $sp(sp: number) {
-    this.#registers[$sp] = sp;
-  }
-
   push(value: unknown): void {
-    this.stack[++this.$sp] = value;
+    this.stack[++this.registers[$sp]] = value;
   }
 
-  dup(position = this.$sp): void {
-    this.stack[++this.$sp] = this.stack[position];
+  dup(position = this.registers[$sp]): void {
+    this.stack[++this.registers[$sp]] = this.stack[position];
   }
 
   copy(from: number, to: number): void {
@@ -74,20 +62,20 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   pop<T>(n = 1): T {
-    let top = this.stack[this.$sp] as T;
-    this.$sp -= n;
+    let top = this.stack[this.registers[$sp]] as T;
+    this.registers[$sp] -= n;
     return top;
   }
 
   peek<T>(offset = 0): T {
-    return this.stack[this.$sp - offset] as T;
+    return this.stack[this.registers[$sp] - offset] as T;
   }
 
-  get<T>(offset: number, base = this.#registers[$fp]): T {
+  get<T>(offset: number, base = this.registers[$fp]): T {
     return this.stack[base + offset] as T;
   }
 
-  set(value: unknown, offset: number, base = this.#registers[$fp]) {
+  set(value: unknown, offset: number, base = this.registers[$fp]) {
     this.stack[base + offset] = value;
   }
 
@@ -96,7 +84,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   capture(items: number): unknown[] {
-    let end = this.$sp + 1;
+    let end = this.registers[$sp] + 1;
     let start = end - items;
     return this.stack.slice(start, end);
   }
@@ -106,6 +94,6 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   toArray() {
-    return this.stack.slice(this.#registers[$fp], this.#registers[$sp] + 1);
+    return this.stack.slice(this.registers[$fp], this.registers[$sp] + 1);
   }
 }
