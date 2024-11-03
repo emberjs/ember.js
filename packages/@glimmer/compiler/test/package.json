@@ -6,5 +6,8 @@
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/syntax": "workspace:*",
     "@glimmer/util": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/constants": "workspace:*"
   }
 }
