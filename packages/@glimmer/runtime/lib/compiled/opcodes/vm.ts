@@ -1,6 +1,7 @@
 import type { CompilableTemplate, Nullable, UpdatingOpcode } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { Revision, Tag } from '@glimmer/validator';
+import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants';
 import {
   check,
   CheckBlockSymbolTable,
@@ -25,7 +26,6 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/util';
 import {
   beginTrackFrame,
   CONSTANT_TAG,
@@ -159,7 +159,11 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
 
   let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
-  if (table === null) {
+  if (table === null || handle === null) {
+    assert(
+      handle === null && table === null,
+      `Expected both handle and table to be null if either is null`
+    );
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
     vm.pushScope(scope ?? vm.scope());
@@ -185,6 +189,7 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
 
   vm.pushFrame();
   vm.pushScope(invokingScope);
+
   vm.call(handle);
 });
 

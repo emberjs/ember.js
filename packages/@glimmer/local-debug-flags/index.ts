@@ -8,10 +8,13 @@ declare global {
 
 // All of these flags are expected to become constant `false` in production builds.
 export const LOCAL_DEBUG = import.meta.env.VM_LOCAL_DEV && !hasFlag('disable_local_debug');
-export const LOCAL_TRACE_LOGGING = hasFlag('enable_trace_logging');
-export const LOCAL_EXPLAIN_LOGGING = hasFlag('enable_trace_explanations');
-export const LOCAL_INTERNALS_LOGGING = hasFlag('enable_internals_logging');
-export const LOCAL_SUBTLE_LOGGING = hasFlag('enable_subtle_logging');
+export const LOCAL_TRACE_LOGGING = import.meta.env.VM_LOCAL_DEV && hasFlag('enable_trace_logging');
+export const LOCAL_EXPLAIN_LOGGING =
+  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_trace_explanations');
+export const LOCAL_INTERNALS_LOGGING =
+  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_internals_logging');
+export const LOCAL_SUBTLE_LOGGING =
+  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_subtle_logging');
 
 if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
   console.group('%cLogger Flags:', 'font-weight: normal; color: teal');

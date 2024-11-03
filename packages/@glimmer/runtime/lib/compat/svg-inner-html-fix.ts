@@ -5,8 +5,9 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
+import { INSERT_AFTER_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/constants';
 import { assert, castToBrowser, unwrap } from '@glimmer/debug-util';
-import { clearElement, INSERT_AFTER_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/util';
+import { clearElement } from '@glimmer/util';
 
 import type { DOMOperations } from '../dom/operations';
 

@@ -7,8 +7,9 @@ import type {
   RuntimeOp,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
+import { decodeHandle, decodeImmediate } from '@glimmer/constants';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-import { decodeHandle, decodeImmediate, enumerate, LOCAL_LOGGER } from '@glimmer/util';
+import { enumerate, LOCAL_LOGGER } from '@glimmer/util';
 import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
 
 import type { Primitive } from './stack-check';

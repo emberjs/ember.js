@@ -5,7 +5,7 @@ import {
   MAX_SMI,
   MIN_INT,
   MIN_SMI,
-} from '@glimmer/util';
+} from '@glimmer/constants';
 
 const { module, test } = QUnit;
 

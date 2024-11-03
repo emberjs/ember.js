@@ -36,7 +36,6 @@ export type MachineRegister = $pc | $ra | $fp | $sp;
 export function isLowLevelRegister(
   register: Register | MachineRegister
 ): register is Register & MachineRegister {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   return (register as number) <= $sp;
 }
 

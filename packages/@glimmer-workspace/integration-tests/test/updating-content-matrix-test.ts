@@ -1,6 +1,6 @@
 import type { SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
-import { NS_SVG } from '@glimmer/util';
+import { NS_SVG } from '@glimmer/constants';
 
 import type { RenderTestConstructor } from '..';
 import type RenderDelegate from '../lib/render-delegate';

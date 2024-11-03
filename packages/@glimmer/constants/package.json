@@ -1,16 +1,13 @@
 {
-  "name": "@glimmer/compiler",
-  "version": "0.92.4",
+  "name": "@glimmer/constants",
+  "private": true,
+  "version": "0.92.3",
   "license": "MIT",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/compiler",
+  "description": "Constant values and functions that should be inlined and stripped from published builds. This package should not be published.",
+  "repository": "https://github.com/tildeio/glimmer/tree/main/packages/@glimmer/debug-util",
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
-  "exports": {
-    "types": "./index.ts",
-    "development": "./index.ts",
-    "import": "./dist/index.js"
-  },
   "publishConfig": {
     "access": "public",
     "types": "dist/dev/index.d.ts",
@@ -22,7 +19,7 @@
           "import": "./dist/dev/index.js"
         },
         "require": "./dist/dev/index.cjs",
-        "import": "./dist/dev/index.js"
+        "import": "./dist/prod/index.js"
       }
     },
     "main": null,
@@ -38,24 +35,17 @@
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/interfaces": "workspace:*",
-    "@glimmer/syntax": "workspace:*",
-    "@glimmer/util": "workspace:*",
-    "@glimmer/vm": "workspace:*",
-    "@glimmer/wire-format": "workspace:*"
+    "@glimmer/env": "0.1.7",
+    "@glimmer/interfaces": "workspace:*"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
-    "@glimmer/constants": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
-    "@types/node": "^20.9.4",
+    "@types/qunit": "^2.19.9",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
-    "rollup": "^4.24.3",
+    "rollup": "^4.5.1",
     "typescript": "*"
-  },
-  "engines": {
-    "node": ">= 16.0.0"
   }
 }
