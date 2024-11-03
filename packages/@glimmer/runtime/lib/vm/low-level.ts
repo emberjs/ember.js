@@ -1,8 +1,17 @@
 import type { Nullable, RuntimeHeap, RuntimeOp, RuntimeProgram } from '@glimmer/interfaces';
 import type { MachineRegister } from '@glimmer/vm';
+import {
+  VM_INVOKE_STATIC_OP,
+  VM_INVOKE_VIRTUAL_OP,
+  VM_JUMP_OP,
+  VM_POP_FRAME_OP,
+  VM_PUSH_FRAME_OP,
+  VM_RETURN_OP,
+  VM_RETURN_TO_OP,
+} from '@glimmer/constants';
 import { assert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $pc, $ra, $sp, MachineOp } from '@glimmer/vm';
+import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
 
 import type { VM } from './append';
 
@@ -161,19 +170,19 @@ export class LowLevelVM {
 
   evaluateMachine(opcode: RuntimeOp) {
     switch (opcode.type) {
-      case MachineOp.PushFrame:
+      case VM_PUSH_FRAME_OP:
         return this.pushFrame();
-      case MachineOp.PopFrame:
+      case VM_POP_FRAME_OP:
         return this.popFrame();
-      case MachineOp.InvokeStatic:
+      case VM_INVOKE_STATIC_OP:
         return this.call(opcode.op1);
-      case MachineOp.InvokeVirtual:
+      case VM_INVOKE_VIRTUAL_OP:
         return this.call(this.stack.pop());
-      case MachineOp.Jump:
+      case VM_JUMP_OP:
         return this.goto(opcode.op1);
-      case MachineOp.Return:
+      case VM_RETURN_OP:
         return this.return();
-      case MachineOp.ReturnTo:
+      case VM_RETURN_TO_OP:
         return this.returnTo(opcode.op1);
     }
   }

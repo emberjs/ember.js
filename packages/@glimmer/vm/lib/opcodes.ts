@@ -54,15 +54,6 @@ import type {
   VmJumpUnless,
   VmLoad,
   VmLog,
-  VmMachineInvokeStatic,
-  VmMachineInvokeVirtual,
-  VmMachineJump,
-  VmMachineOp,
-  VmMachinePopFrame,
-  VmMachinePushFrame,
-  VmMachineReturn,
-  VmMachineReturnTo,
-  VmMachineSize,
   VmMain,
   VmModifier,
   VmNot,
@@ -106,17 +97,6 @@ import type {
   VmToBoolean,
   VmVirtualRootScope,
 } from '@glimmer/interfaces';
-
-export const MachineOp = {
-  PushFrame: 0 satisfies VmMachinePushFrame,
-  PopFrame: 1 satisfies VmMachinePopFrame,
-  InvokeVirtual: 2 satisfies VmMachineInvokeVirtual,
-  InvokeStatic: 3 satisfies VmMachineInvokeStatic,
-  Jump: 4 satisfies VmMachineJump,
-  Return: 5 satisfies VmMachineReturn,
-  ReturnTo: 6 satisfies VmMachineReturnTo,
-  Size: 7 satisfies VmMachineSize,
-} as const;
 
 export const Op = {
   Helper: 16 satisfies VmHelper,
@@ -216,10 +196,6 @@ export const Op = {
   GetDynamicVar: 111 satisfies VmGetDynamicVar,
   Log: 112 satisfies VmLog,
 } as const;
-
-export function isMachineOp(value: number): value is VmMachineOp {
-  return value >= 0 && value <= 15;
-}
 
 export function isOp(value: number): value is VmOp {
   return value >= 16;

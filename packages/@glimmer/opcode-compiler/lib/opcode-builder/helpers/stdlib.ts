@@ -4,7 +4,8 @@ import type {
   ContainingMetadata,
   HighLevelOp,
 } from '@glimmer/interfaces';
-import { $s0, ContentType, MachineOp, Op } from '@glimmer/vm';
+import { VM_INVOKE_STATIC_OP } from '@glimmer/constants';
+import { $s0, ContentType, Op } from '@glimmer/vm';
 
 import type { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -54,7 +55,7 @@ export function StdAppend(
 
         when(ContentType.Helper, () => {
           CallDynamic(op, null, null, () => {
-            op(MachineOp.InvokeStatic, nonDynamicAppend);
+            op(VM_INVOKE_STATIC_OP, nonDynamicAppend);
           });
         });
       } else {
