@@ -9,16 +9,12 @@
     "directory": "packages/@glimmer/validator"
   },
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
   "exports": {
     "types": "./index.ts",
-    "development": "./index.ts",
-    "import": "./dist/prod/index.js"
+    "development": "./index.ts"
   },
   "publishConfig": {
     "access": "public",
-    "types": "dist/dev/index.d.ts",
     "exports": {
       ".": {
         "types": "./dist/dev/index.d.ts",
@@ -29,9 +25,7 @@
         "require": "./dist/dev/index.cjs",
         "import": "./dist/prod/index.js"
       }
-    },
-    "main": null,
-    "module": "dist/prod/index.js"
+    }
   },
   "files": [
     "dist"

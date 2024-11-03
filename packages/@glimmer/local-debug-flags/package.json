@@ -10,8 +10,7 @@
   },
   "type": "module",
   "private": true,
-  "main": "index.ts",
-  "types": "index.ts",
+  "exports": "./index.ts",
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
