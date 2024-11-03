@@ -29,7 +29,6 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
     "test:lint": "eslint .",
     "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
