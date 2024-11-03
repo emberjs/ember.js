@@ -7,29 +7,7 @@
   "sideEffects": false,
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/debug",
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
-  "exports": {
-    "types": "./index.ts",
-    "development": "./index.ts"
-  },
-  "publishConfig": {
-    "access": "public",
-    "types": "dist/dev/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/dev/index.d.ts",
-        "development": {
-          "import": "./dist/dev/index.js"
-        }
-      }
-    },
-    "main": null,
-    "module": "dist/dev/index.js"
-  },
-  "files": [
-    "dist"
-  ],
+  "exports": "./index.ts",
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json"

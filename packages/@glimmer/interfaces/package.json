@@ -4,13 +4,7 @@
   "license": "MIT",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/interfaces",
   "type": "module",
-  "types": "index.d.ts",
-  "exports": {
-    "types": "./index.d.ts"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "exports": "./index.d.ts",
   "files": [
     "lib",
     "index.d.ts"

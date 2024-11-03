@@ -6,32 +6,9 @@
   "description": "Common utilities used in Glimmer with debug-specific behavior",
   "repository": "https://github.com/tildeio/glimmer/tree/main/packages/@glimmer/debug-util",
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
-  "publishConfig": {
-    "access": "public",
-    "types": "dist/dev/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/dev/index.d.ts",
-        "development": {
-          "require": "./dist/dev/index.cjs",
-          "import": "./dist/dev/index.js"
-        },
-        "require": "./dist/dev/index.cjs",
-        "import": "./dist/prod/index.js"
-      }
-    },
-    "main": null,
-    "module": "dist/dev/index.js"
-  },
-  "files": [
-    "dist"
-  ],
+  "exports": "./index.ts",
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
     "test:lint": "eslint .",
-    "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {

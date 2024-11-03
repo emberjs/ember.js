@@ -4,29 +4,29 @@
   "license": "MIT",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/compiler",
   "type": "module",
-  "main": "index.ts",
-  "types": "index.ts",
-  "exports": {
-    "types": "./index.ts",
-    "development": "./index.ts",
-    "import": "./dist/index.js"
-  },
+  "exports": "./index.ts",
   "publishConfig": {
     "access": "public",
-    "types": "dist/dev/index.d.ts",
     "exports": {
       ".": {
-        "types": "./dist/dev/index.d.ts",
-        "development": {
-          "require": "./dist/dev/index.cjs",
-          "import": "./dist/dev/index.js"
+        "require": {
+          "development": {
+            "types": "./dist/dev/index.d.cts",
+            "default": "./dist/dev/index.cjs"
+          }
         },
-        "require": "./dist/dev/index.cjs",
-        "import": "./dist/dev/index.js"
+        "default": {
+          "development": {
+            "types": "./dist/dev/index.d.ts",
+            "default": "./dist/dev/index.js"
+          },
+          "default": {
+            "types": "./dist/prod/index.d.ts",
+            "default": "./dist/prod/index.js"
+          }
+        }
       }
-    },
-    "main": null,
-    "module": "dist/dev/index.js"
+    }
   },
   "files": [
     "dist"

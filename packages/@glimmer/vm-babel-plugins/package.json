@@ -5,25 +5,31 @@
   "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
   "repository": "https://github.com/glimmerjs/glimmer.js",
   "author": "Tom Dale <tom@tomdale.net>",
-  "type": "module",
   "private": false,
-  "main": "index.ts",
-  "types": "index.ts",
+  "type": "module",
+  "exports": "./index.ts",
   "publishConfig": {
     "access": "public",
     "exports": {
       ".": {
-        "types": "./dist/dev/index.d.ts",
-        "development": {
-          "require": "./dist/dev/index.cjs",
-          "import": "./dist/dev/index.js"
+        "require": {
+          "development": {
+            "types": "./dist/dev/index.d.cts",
+            "default": "./dist/dev/index.cjs"
+          }
         },
-        "require": "./dist/dev/index.cjs",
-        "import": "./dist/prod/index.js"
+        "default": {
+          "development": {
+            "types": "./dist/dev/index.d.ts",
+            "default": "./dist/dev/index.js"
+          },
+          "default": {
+            "types": "./dist/prod/index.d.ts",
+            "default": "./dist/prod/index.js"
+          }
+        }
       }
-    },
-    "main": null,
-    "module": "dist/dev/index.js"
+    }
   },
   "files": [
     "dist"

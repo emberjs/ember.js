@@ -89,11 +89,10 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
     let removedNodeDisplay: Nullable<string>;
     switch (nodeToRemove.nodeType) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       case COMMENT_NODE:
         removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
         break;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+
       case ELEMENT_NODE:
         removedNodeDisplay = castToBrowser(nodeToRemove, ['HTML', 'SVG']).outerHTML;
         break;
