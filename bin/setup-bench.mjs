@@ -5,6 +5,8 @@ import chalk from 'chalk';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 $.verbose = true;
+$.nothrow = true;
+
 const REUSE_CONTROL = !!process.env['REUSE_CONTROL'];
 
 /*
@@ -109,11 +111,8 @@ if (!REUSE_CONTROL) {
     console.info(`$ pnpm install --no-frozen-lockfile ${chalk.gray('[control]')}`);
 
     await $`pwd`;
-    const result = await $`pnpm install`;
+    const result = await $`pnpm install --no-frozen-lockfile`;
     console.log(result);
-
-    console.info(`$ pnpm build ${chalk.gray('[control]')}`);
-
     await $`pnpm build`;
 
     if (isMacOs) {
@@ -139,12 +138,10 @@ await within(async () => {
   await $`rm -rf ./benchmark`;
   await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
 
-  console.info(`$ pnpm install --no-frozen-lockfile ${chalk.gray('[experiment]')}`);
-  const install = () => $`pnpm install --no-frozen-lockfile`.pipe(process.stderr);
-  await spinner(install);
-  console.info(`$ pnpm build ${chalk.gray('[experiment]')}`);
-  const build = () => $`pnpm build`.pipe(process.stderr);
-  await spinner(build);
+  await $`pwd`;
+  const result = await $`pnpm install --no-frozen-lockfile`;
+  console.log(result);
+  await $`pnpm build`;
 
   if (isMacOs) {
     await $`find ./packages -name 'package.json' -exec sed -i '' 's|"main": "index.ts",|"main": "./dist/prod/index.js","module": "./dist/prod/index.js",|g' {} \\;`;

@@ -1104,9 +1104,6 @@ importers:
 
   packages/@glimmer/program:
     dependencies:
-      '@glimmer/debug-util':
-        specifier: workspace:*
-        version: link:../debug-util
       '@glimmer/encoder':
         specifier: workspace:*
         version: link:../encoder
@@ -1138,6 +1135,9 @@ importers:
       '@glimmer/constants':
         specifier: workspace:*
         version: link:../constants
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
