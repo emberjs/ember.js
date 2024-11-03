@@ -7,8 +7,6 @@ import type {
   SerializedTemplateWithLazyBlock,
 } from '@glimmer/interfaces';
 import {
-  BUILDER_APPEND,
-  BUILDER_CONCAT,
   buildStatements,
   c,
   NEWLINE,
@@ -18,6 +16,7 @@ import {
   unicode,
   WireFormatDebugger,
 } from '@glimmer/compiler';
+import { BUILDER_APPEND, BUILDER_CONCAT } from '@glimmer/constants';
 import { assign, strip } from '@glimmer/util';
 
 QUnit.module('@glimmer/compiler - compiling source to wire format');
