@@ -7,6 +7,11 @@
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
+  "exports": {
+    "types": "./index.ts",
+    "development": "./index.ts",
+    "import": "./dist/prod/index.js"
+  },
   "publishConfig": {
     "access": "public",
     "types": "dist/dev/index.d.ts",
@@ -22,7 +27,7 @@
       }
     },
     "main": null,
-    "module": "dist/dev/index.js"
+    "module": "dist/prod/index.js"
   },
   "files": [
     "dist"

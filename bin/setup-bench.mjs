@@ -98,6 +98,52 @@ const EXPERIMENT_URL = `http://localhost:${EXPERIMENT_PORT}`;
 
 // we can't do it in parallel on CI,
 
+async function rewritePackageJson() {
+  const packages = await $`find ./packages/@glimmer -name 'package.json'`;
+
+  for (const pkg of packages.stdout.trim().split('\n')) {
+    const packageJson = JSON.parse(await readFile(pkg, { encoding: 'utf8' }));
+    const publishConfig = packageJson['publishConfig'];
+
+    if (publishConfig) {
+      const updatedPkg = { ...packageJson, ...publishConfig };
+
+      for (const [key, value] of Object.entries(publishConfig)) {
+        if (value === null) {
+          delete updatedPkg[key];
+        }
+      }
+
+      await writeFile(pkg, JSON.stringify(updatedPkg, null, 2), { encoding: 'utf8' });
+    }
+  }
+}
+
+console.info({
+  control: controlBranchName,
+  experiment: experimentRef,
+  EXPERIMENT_DIR,
+  CONTROL_DIR,
+});
+
+// setup experiment
+await within(async () => {
+  await cd(EXPERIMENT_DIR);
+  await $`git clone ${join(ROOT, '.git')} .`;
+  await $`git checkout --force ${experimentRef}`;
+  await $`rm -rf ./benchmark`;
+  await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
+
+  await $`pwd`;
+  await $`pnpm install --no-frozen-lockfile`;
+  await $`pnpm build`;
+
+  await rewritePackageJson();
+
+  await cd(EXPERIMENT_BENCH_DIR);
+  await $`pnpm vite build`;
+});
+
 if (!REUSE_CONTROL) {
   // setup control
   await within(async () => {
@@ -121,52 +167,6 @@ if (!REUSE_CONTROL) {
     await $`pnpm vite build`;
   });
 }
-
-async function rewritePackageJson() {
-  const packages = await $`find ./packages/@glimmer -name 'package.json'`;
-
-  for (const pkg of packages.stdout.trim().split('\n')) {
-    const packageJson = JSON.parse(await readFile(pkg, { encoding: 'utf8' }));
-    const publishConfig = packageJson['publishConfig'];
-
-    if (publishConfig) {
-      const updatedPkg = { ...packageJson, ...publishConfig };
-
-      for (const [key, value] of Object.entries(publishConfig)) {
-        if (value === null) {
-          delete updatedPkg[key];
-        }
-      }
-
-      await writeFile(pkg, JSON.stringify(updatedPkg, null, 2), { encoding: 'utf8' });
-    }
-  }
-}
-
-// setup experiment
-await within(async () => {
-  await cd(EXPERIMENT_DIR);
-  await $`git clone ${join(ROOT, '.git')} .`;
-  await $`git checkout --force ${experimentRef}`;
-  await $`rm -rf ./benchmark`;
-  await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
-
-  await $`pwd`;
-  await $`pnpm install --no-frozen-lockfile`;
-  await $`pnpm build`;
-
-  await rewritePackageJson();
-
-  await cd(EXPERIMENT_BENCH_DIR);
-  await $`pnpm vite build`;
-});
-
-console.info({
-  control: controlBranchName,
-  experiment: experimentRef,
-  EXPERIMENT_DIR,
-  CONTROL_DIR,
-});
 
 // start build assets
 $`cd ${CONTROL_BENCH_DIR} && pnpm vite preview --port ${CONTROL_PORT}`;

@@ -22,11 +22,11 @@
           "import": "./dist/dev/index.js"
         },
         "require": "./dist/dev/index.cjs",
-        "import": "./dist/dev/index.js"
+        "import": "./dist/prod/index.js"
       }
     },
     "main": null,
-    "module": "dist/dev/index.js"
+    "module": "dist/prod/index.js"
   },
   "files": [
     "dist"
