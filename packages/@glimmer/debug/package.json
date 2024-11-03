@@ -9,9 +9,6 @@
   "type": "module",
   "main": "index.ts",
   "types": "index.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "test:lint": "eslint .",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
