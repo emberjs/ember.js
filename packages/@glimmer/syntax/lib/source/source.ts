@@ -19,7 +19,7 @@ export class Source {
   /**
    * Validate that the character offset represents a position in the source string.
    */
-  check(offset: number): boolean {
+  validate(offset: number): boolean {
     return offset >= 0 && offset <= this.source.length;
   }
 

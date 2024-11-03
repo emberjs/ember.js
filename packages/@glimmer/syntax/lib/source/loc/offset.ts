@@ -104,7 +104,7 @@ export class SourceOffset {
     } else {
       const result = charPos.offset + by;
 
-      if (charPos.source.check(result)) {
+      if (charPos.source.validate(result)) {
         return new CharPosition(charPos.source, result).wrap();
       } else {
         return SourceOffset.broken();

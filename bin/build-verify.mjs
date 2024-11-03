@@ -16,14 +16,14 @@ const FORBIDDEN = [
   /**
    * These are for local VM debugging and development, and are not meant to make it to real code
    */
-  'check(',
+  /[^.]check\(/,
   'CheckInterface',
   'CheckOr',
   'CheckFunction',
   'CheckObject',
 ];
 
-const IGNORED_DIRS = [`@glimmer/syntax`, `@glimmer/debug`];
+const IGNORED_DIRS = [`@glimmer/debug`];
 
 let files = await globby(resolve(currentDir, '../../packages/**/dist/**/index.js'), {
   ignore: ['node_modules', '**/node_modules'],
@@ -41,7 +41,7 @@ for (let filePath of files) {
   let content = file.toString();
 
   for (let searchFor of FORBIDDEN) {
-    if (content.includes(searchFor)) {
+    if (content.match(searchFor)) {
       errors.push({ filePath, found: searchFor });
     }
   }

@@ -99,11 +99,11 @@ type ExhaustiveCheck<Out, In extends Matches, Removed extends Matches> = Exclude
 export type MatchFn<Out> = (left: PositionData, right: PositionData) => Out;
 
 interface ExhaustiveMatcher<Out> {
-  check(): MatchFn<Out>;
+  validate(): MatchFn<Out>;
 }
 
 export function match<Out>(callback: (m: Matcher<Out>) => ExhaustiveMatcher<Out>): MatchFn<Out> {
-  return callback(new Matcher()).check();
+  return callback(new Matcher()).validate();
 }
 
 class Matcher<Out, M extends Matches = Matches> {
@@ -112,7 +112,7 @@ class Matcher<Out, M extends Matches = Matches> {
   /**
    * You didn't exhaustively match all possibilities.
    */
-  protected check(): MatchFn<Out> {
+  protected validate(): MatchFn<Out> {
     return (left, right) => this.matchFor(left.kind, right.kind)(left, right);
   }
 
