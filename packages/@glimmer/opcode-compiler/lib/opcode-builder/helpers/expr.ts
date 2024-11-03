@@ -1,5 +1,5 @@
 import type { WireFormat } from '@glimmer/interfaces';
-import { Op } from '@glimmer/vm';
+import { VM_PRIMITIVE_REFERENCE_OP } from '@glimmer/constants';
 
 import type { PushExpressionOp } from '../../syntax/compilers';
 
@@ -11,6 +11,6 @@ export function expr(op: PushExpressionOp, expression: WireFormat.Expression): v
     EXPRESSIONS.compile(op, expression);
   } else {
     PushPrimitive(op, expression);
-    op(Op.PrimitiveReference);
+    op(VM_PRIMITIVE_REFERENCE_OP);
   }
 }

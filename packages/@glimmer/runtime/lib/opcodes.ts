@@ -7,12 +7,13 @@ import type {
   VmMachineOp,
   VmOp,
 } from '@glimmer/interfaces';
+import { VM_SYSCALL_SIZE } from '@glimmer/constants';
 import { debug, logOpcode, opcodeMetadata, recordStackSize } from '@glimmer/debug';
 import { assert, unwrap } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { valueForRef } from '@glimmer/reference';
 import { LOCAL_LOGGER } from '@glimmer/util';
-import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0, Op } from '@glimmer/vm';
+import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
 
 import type { LowLevelVM, VM } from './vm';
 
@@ -51,7 +52,7 @@ export type DebugState = {
 };
 
 export class AppendOpcodes {
-  private evaluateOpcode: Evaluate[] = new Array(Op.Size).fill(null);
+  private evaluateOpcode: Evaluate[] = new Array(VM_SYSCALL_SIZE).fill(null);
 
   declare debugBefore?: (vm: VM, opcode: RuntimeOp) => DebugState;
   declare debugAfter?: (vm: VM, pre: DebugState) => void;

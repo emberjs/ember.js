@@ -1,7 +1,35 @@
 import type { CompilableTemplate, Nullable, UpdatingOpcode } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { Revision, Tag } from '@glimmer/validator';
-import { decodeHandle, decodeImmediate, isHandle } from '@glimmer/constants';
+import {
+  decodeHandle,
+  decodeImmediate,
+  isHandle,
+  VM_ASSERT_SAME_OP,
+  VM_BIND_DYNAMIC_SCOPE_OP,
+  VM_CHILD_SCOPE_OP,
+  VM_COMPILE_BLOCK_OP,
+  VM_CONSTANT_OP,
+  VM_CONSTANT_REFERENCE_OP,
+  VM_DUP_OP,
+  VM_ENTER_OP,
+  VM_EXIT_OP,
+  VM_FETCH_OP,
+  VM_INVOKE_YIELD_OP,
+  VM_JUMP_EQ_OP,
+  VM_JUMP_IF_OP,
+  VM_JUMP_UNLESS_OP,
+  VM_LOAD_OP,
+  VM_POP_DYNAMIC_SCOPE_OP,
+  VM_POP_OP,
+  VM_POP_SCOPE_OP,
+  VM_PRIMITIVE_OP,
+  VM_PRIMITIVE_REFERENCE_OP,
+  VM_PUSH_BLOCK_SCOPE_OP,
+  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_SYMBOL_TABLE_OP,
+  VM_TO_BOOLEAN_OP,
+} from '@glimmer/constants';
 import {
   check,
   CheckBlockSymbolTable,
@@ -35,7 +63,6 @@ import {
   validateTag,
   valueForTag,
 } from '@glimmer/validator';
-import { Op } from '@glimmer/vm';
 
 import type { UpdatingVM } from '../../vm';
 import type { VM } from '../../vm/append';
@@ -45,23 +72,23 @@ import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
 import { stackAssert } from './assert';
 
-APPEND_OPCODES.add(Op.ChildScope, (vm) => vm.pushChildScope());
+APPEND_OPCODES.add(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
 
-APPEND_OPCODES.add(Op.PopScope, (vm) => vm.popScope());
+APPEND_OPCODES.add(VM_POP_SCOPE_OP, (vm) => vm.popScope());
 
-APPEND_OPCODES.add(Op.PushDynamicScope, (vm) => vm.pushDynamicScope());
+APPEND_OPCODES.add(VM_PUSH_DYNAMIC_SCOPE_OP, (vm) => vm.pushDynamicScope());
 
-APPEND_OPCODES.add(Op.PopDynamicScope, (vm) => vm.popDynamicScope());
+APPEND_OPCODES.add(VM_POP_DYNAMIC_SCOPE_OP, (vm) => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
+APPEND_OPCODES.add(VM_CONSTANT_OP, (vm, { op1: other }) => {
   vm.stack.push(vm.constants.getValue(decodeHandle(other)));
 });
 
-APPEND_OPCODES.add(Op.ConstantReference, (vm, { op1: other }) => {
+APPEND_OPCODES.add(VM_CONSTANT_REFERENCE_OP, (vm, { op1: other }) => {
   vm.stack.push(createConstRef(vm.constants.getValue(decodeHandle(other)), false));
 });
 
-APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
+APPEND_OPCODES.add(VM_PRIMITIVE_OP, (vm, { op1: primitive }) => {
   let stack = vm.stack;
 
   if (isHandle(primitive)) {
@@ -74,7 +101,7 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.PrimitiveReference, (vm) => {
+APPEND_OPCODES.add(VM_PRIMITIVE_REFERENCE_OP, (vm) => {
   let stack = vm.stack;
   let value = check(stack.pop(), CheckPrimitive);
   let ref;
@@ -94,47 +121,47 @@ APPEND_OPCODES.add(Op.PrimitiveReference, (vm) => {
   stack.push(ref);
 });
 
-APPEND_OPCODES.add(Op.Dup, (vm, { op1: register, op2: offset }) => {
+APPEND_OPCODES.add(VM_DUP_OP, (vm, { op1: register, op2: offset }) => {
   let position = check(vm.fetchValue(check(register, CheckRegister)), CheckNumber) - offset;
   vm.stack.dup(position);
 });
 
-APPEND_OPCODES.add(Op.Pop, (vm, { op1: count }) => {
+APPEND_OPCODES.add(VM_POP_OP, (vm, { op1: count }) => {
   vm.stack.pop(count);
 });
 
-APPEND_OPCODES.add(Op.Load, (vm, { op1: register }) => {
+APPEND_OPCODES.add(VM_LOAD_OP, (vm, { op1: register }) => {
   vm.load(check(register, CheckSyscallRegister));
 });
 
-APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
+APPEND_OPCODES.add(VM_FETCH_OP, (vm, { op1: register }) => {
   vm.fetch(check(register, CheckSyscallRegister));
 });
 
-APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
+APPEND_OPCODES.add(VM_BIND_DYNAMIC_SCOPE_OP, (vm, { op1: _names }) => {
   let names = vm.constants.getArray<string>(_names);
   vm.bindDynamicScope(names);
 });
 
-APPEND_OPCODES.add(Op.Enter, (vm, { op1: args }) => {
+APPEND_OPCODES.add(VM_ENTER_OP, (vm, { op1: args }) => {
   vm.enter(args);
 });
 
-APPEND_OPCODES.add(Op.Exit, (vm) => {
+APPEND_OPCODES.add(VM_EXIT_OP, (vm) => {
   vm.exit();
 });
 
-APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
+APPEND_OPCODES.add(VM_PUSH_SYMBOL_TABLE_OP, (vm, { op1: _table }) => {
   let stack = vm.stack;
   stack.push(vm.constants.getValue(_table));
 });
 
-APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
+APPEND_OPCODES.add(VM_PUSH_BLOCK_SCOPE_OP, (vm) => {
   let stack = vm.stack;
   stack.push(vm.scope());
 });
 
-APPEND_OPCODES.add(Op.CompileBlock, (vm: VM) => {
+APPEND_OPCODES.add(VM_COMPILE_BLOCK_OP, (vm: VM) => {
   let stack = vm.stack;
   let block = stack.pop<Nullable<CompilableTemplate> | 0>();
 
@@ -145,7 +172,7 @@ APPEND_OPCODES.add(Op.CompileBlock, (vm: VM) => {
   }
 });
 
-APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
+APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckNullable(CheckHandle));
@@ -193,7 +220,7 @@ APPEND_OPCODES.add(Op.InvokeYield, (vm) => {
   vm.call(handle);
 });
 
-APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
+APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
   let reference = check(vm.stack.pop(), CheckReference);
   let value = Boolean(valueForRef(reference));
 
@@ -210,7 +237,7 @@ APPEND_OPCODES.add(Op.JumpIf, (vm, { op1: target }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
+APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
   let reference = check(vm.stack.pop(), CheckReference);
   let value = Boolean(valueForRef(reference));
 
@@ -227,7 +254,7 @@ APPEND_OPCODES.add(Op.JumpUnless, (vm, { op1: target }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
+APPEND_OPCODES.add(VM_JUMP_EQ_OP, (vm, { op1: target, op2: comparison }) => {
   let other = check(vm.stack.peek(), CheckNumber);
 
   if (other === comparison) {
@@ -235,7 +262,7 @@ APPEND_OPCODES.add(Op.JumpEq, (vm, { op1: target, op2: comparison }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.AssertSame, (vm) => {
+APPEND_OPCODES.add(VM_ASSERT_SAME_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   if (isConstRef(reference) === false) {
@@ -243,7 +270,7 @@ APPEND_OPCODES.add(Op.AssertSame, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(Op.ToBoolean, (vm) => {
+APPEND_OPCODES.add(VM_TO_BOOLEAN_OP, (vm) => {
   let { stack } = vm;
   let valueRef = check(stack.pop(), CheckReference);
 
