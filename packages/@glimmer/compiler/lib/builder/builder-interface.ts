@@ -1,4 +1,39 @@
+import type { VariableKind } from '@glimmer/constants';
 import type { Dict, DictValue, Nullable, PresentArray } from '@glimmer/interfaces';
+import {
+  APPEND_EXPR_HEAD,
+  APPEND_PATH_HEAD,
+  ARG_VAR,
+  BLOCK_HEAD,
+  BLOCK_VAR,
+  BUILDER_APPEND,
+  BUILDER_COMMENT,
+  BUILDER_CONCAT,
+  BUILDER_DYNAMIC_COMPONENT,
+  BUILDER_GET,
+  BUILDER_HAS_BLOCK,
+  BUILDER_HAS_BLOCK_PARAMS,
+  BUILDER_LITERAL,
+  BUILDER_MODIFIER,
+  CALL_EXPR,
+  CALL_HEAD,
+  COMMENT_HEAD,
+  CONCAT_EXPR,
+  DYNAMIC_COMPONENT_HEAD,
+  ELEMENT_HEAD,
+  FREE_VAR,
+  GET_PATH_EXPR,
+  GET_VAR_EXPR,
+  HAS_BLOCK_EXPR,
+  HAS_BLOCK_PARAMS_EXPR,
+  KEYWORD_HEAD,
+  LITERAL_EXPR,
+  LITERAL_HEAD,
+  LOCAL_VAR,
+  MODIFIER_HEAD,
+  SPLAT_HEAD,
+  THIS_VAR,
+} from '@glimmer/constants';
 import { expect, isPresentArray } from '@glimmer/debug-util';
 import { assertNever, dict } from '@glimmer/util';
 
@@ -13,7 +48,7 @@ export type NormalizedHash = Dict<NormalizedExpression>;
 export type NormalizedBlock = NormalizedStatement[];
 export type NormalizedBlocks = Dict<NormalizedBlock>;
 export type NormalizedAttrs = Dict<NormalizedAttr>;
-export type NormalizedAttr = HeadKind.Splat | NormalizedExpression;
+export type NormalizedAttr = SPLAT_HEAD | NormalizedExpression;
 
 export interface NormalizedElement {
   name: string;
@@ -25,28 +60,6 @@ export interface NormalizedAngleInvocation {
   head: NormalizedExpression;
   attrs: Nullable<NormalizedAttrs>;
   block: Nullable<NormalizedBlock>;
-}
-
-export enum HeadKind {
-  Block = 'Block',
-  Call = 'Call',
-  Element = 'Element',
-  AppendPath = 'AppendPath',
-  AppendExpr = 'AppendExpr',
-  Literal = 'Literal',
-  Modifier = 'Modifier',
-  DynamicComponent = 'DynamicComponent',
-  Comment = 'Comment',
-  Splat = 'Splat',
-  Keyword = 'Keyword',
-}
-
-export enum VariableKind {
-  Local = 'Local',
-  Free = 'Free',
-  Arg = 'Arg',
-  Block = 'Block',
-  This = 'This',
 }
 
 export interface Variable {
@@ -68,19 +81,19 @@ export interface Path {
 }
 
 export interface AppendExpr {
-  kind: HeadKind.AppendExpr;
+  kind: APPEND_EXPR_HEAD;
   expr: NormalizedExpression;
   trusted: boolean;
 }
 
 export interface AppendPath {
-  kind: HeadKind.AppendPath;
+  kind: APPEND_PATH_HEAD;
   path: NormalizedPath;
   trusted: boolean;
 }
 
 export interface NormalizedKeywordStatement {
-  kind: HeadKind.Keyword;
+  kind: KEYWORD_HEAD;
   name: string;
   params: Nullable<NormalizedParams>;
   hash: Nullable<NormalizedHash>;
@@ -90,14 +103,14 @@ export interface NormalizedKeywordStatement {
 
 export type NormalizedStatement =
   | {
-      kind: HeadKind.Call;
+      kind: CALL_HEAD;
       head: NormalizedHead;
       params: Nullable<NormalizedParams>;
       hash: Nullable<NormalizedHash>;
       trusted: boolean;
     }
   | {
-      kind: HeadKind.Block;
+      kind: BLOCK_HEAD;
       head: NormalizedHead;
       params: Nullable<NormalizedParams>;
       hash: Nullable<NormalizedHash>;
@@ -106,18 +119,18 @@ export type NormalizedStatement =
     }
   | NormalizedKeywordStatement
   | {
-      kind: HeadKind.Element;
+      kind: ELEMENT_HEAD;
       name: string;
       attrs: NormalizedAttrs;
       block: NormalizedBlock;
     }
-  | { kind: HeadKind.Comment; value: string }
-  | { kind: HeadKind.Literal; value: string }
+  | { kind: COMMENT_HEAD; value: string }
+  | { kind: LITERAL_HEAD; value: string }
   | AppendPath
   | AppendExpr
-  | { kind: HeadKind.Modifier; params: NormalizedParams; hash: Nullable<NormalizedHash> }
+  | { kind: MODIFIER_HEAD; params: NormalizedParams; hash: Nullable<NormalizedHash> }
   | {
-      kind: HeadKind.DynamicComponent;
+      kind: DYNAMIC_COMPONENT_HEAD;
       expr: NormalizedExpression;
       hash: Nullable<NormalizedHash>;
       block: NormalizedBlock;
@@ -143,15 +156,15 @@ export function normalizeAppendHead(
   head: NormalizedHead,
   trusted: boolean
 ): AppendExpr | AppendPath {
-  if (head.type === ExpressionKind.GetPath) {
+  if (head.type === GET_PATH_EXPR) {
     return {
-      kind: HeadKind.AppendPath,
+      kind: APPEND_PATH_HEAD,
       path: head,
       trusted,
     };
   } else {
     return {
-      kind: HeadKind.AppendExpr,
+      kind: APPEND_EXPR_HEAD,
       expr: head,
       trusted,
     };
@@ -198,7 +211,7 @@ export function normalizeSugaryArrayStatement(
       }
 
       return {
-        kind: HeadKind.Call,
+        kind: CALL_HEAD,
         head: normalizeCallHead(name),
         params,
         hash,
@@ -216,7 +229,7 @@ export function normalizeSugaryArrayStatement(
       } = normalizeBuilderBlockStatement(statement as BuilderBlockStatement);
 
       return {
-        kind: HeadKind.Block,
+        kind: BLOCK_HEAD,
         head: path,
         params,
         hash,
@@ -232,7 +245,7 @@ export function normalizeSugaryArrayStatement(
       );
 
       return {
-        kind: HeadKind.Keyword,
+        kind: KEYWORD_HEAD,
         name,
         params,
         hash,
@@ -257,7 +270,7 @@ export function normalizeSugaryArrayStatement(
       }
 
       return {
-        kind: HeadKind.Element,
+        kind: ELEMENT_HEAD,
         name: expect(extractElement(name), `BUG: expected ${name} to look like a tag name`),
         attrs,
         block,
@@ -271,37 +284,37 @@ export function normalizeSugaryArrayStatement(
 
 function normalizeVerboseStatement(statement: VerboseStatement): NormalizedStatement {
   switch (statement[0]) {
-    case Builder.Literal: {
+    case BUILDER_LITERAL: {
       return {
-        kind: HeadKind.Literal,
+        kind: LITERAL_HEAD,
         value: statement[1],
       };
     }
 
-    case Builder.Append: {
+    case BUILDER_APPEND: {
       return normalizeAppendExpression(statement[1], statement[2]);
     }
 
-    case Builder.Modifier: {
+    case BUILDER_MODIFIER: {
       return {
-        kind: HeadKind.Modifier,
+        kind: MODIFIER_HEAD,
         params: normalizeParams(statement[1]),
         hash: normalizeHash(statement[2]),
       };
     }
 
-    case Builder.DynamicComponent: {
+    case BUILDER_DYNAMIC_COMPONENT: {
       return {
-        kind: HeadKind.DynamicComponent,
+        kind: DYNAMIC_COMPONENT_HEAD,
         expr: normalizeExpression(statement[1]),
         hash: normalizeHash(statement[2]),
         block: normalizeBlock(statement[3]),
       };
     }
 
-    case Builder.Comment: {
+    case BUILDER_COMMENT: {
       return {
-        kind: HeadKind.Comment,
+        kind: COMMENT_HEAD,
         value: statement[1],
       };
     }
@@ -333,7 +346,7 @@ function normalizePath(head: string, tail: string[] = []): NormalizedHead {
 
   if (isPresentArray(tail)) {
     return {
-      type: ExpressionKind.GetPath,
+      type: GET_PATH_EXPR,
       path: {
         head: pathHead,
         tail,
@@ -341,7 +354,7 @@ function normalizePath(head: string, tail: string[] = []): NormalizedHead {
     };
   } else {
     return {
-      type: ExpressionKind.GetVar,
+      type: GET_VAR_EXPR,
       variable: pathHead,
     };
   }
@@ -355,9 +368,9 @@ function normalizeDottedPath(whole: string): NormalizedHead {
   const variable: Variable = { kind, name, mode: 'loose' };
 
   if (isPresentArray(tail)) {
-    return { type: ExpressionKind.GetPath, path: { head: variable, tail } };
+    return { type: GET_PATH_EXPR, path: { head: variable, tail } };
   } else {
-    return { type: ExpressionKind.GetVar, variable };
+    return { type: GET_VAR_EXPR, variable };
   }
 }
 
@@ -367,7 +380,7 @@ export function normalizePathHead(whole: string): Variable {
 
   if (/^this(?:\.|$)/u.test(whole)) {
     return {
-      kind: VariableKind.This,
+      kind: THIS_VAR,
       name: whole,
       mode: 'loose',
     };
@@ -375,22 +388,22 @@ export function normalizePathHead(whole: string): Variable {
 
   switch (whole[0]) {
     case '^':
-      kind = VariableKind.Free;
+      kind = FREE_VAR;
       name = whole.slice(1);
       break;
 
     case '@':
-      kind = VariableKind.Arg;
+      kind = ARG_VAR;
       name = whole.slice(1);
       break;
 
     case '&':
-      kind = VariableKind.Block;
+      kind = BLOCK_VAR;
       name = whole.slice(1);
       break;
 
     default:
-      kind = VariableKind.Local;
+      kind = LOCAL_VAR;
       name = whole;
   }
 
@@ -495,7 +508,7 @@ function normalizeAttrs(attrs: BuilderAttrs): NormalizedAttrs {
 
 function normalizeAttr(attr: BuilderAttr): { expr: NormalizedAttr; trusted: boolean } {
   if (attr === 'splat') {
-    return { expr: HeadKind.Splat, trusted: false };
+    return { expr: SPLAT_HEAD, trusted: false };
   } else {
     const expr = normalizeExpression(attr);
     return { expr, trusted: false };
@@ -521,7 +534,7 @@ export type BuilderElement =
   | [string, BuilderBlock]
   | [string, BuilderAttrs];
 
-export type BuilderComment = [Builder.Comment, string];
+export type BuilderComment = [BUILDER_COMMENT, string];
 
 export type InvocationElement =
   | [string]
@@ -555,25 +568,13 @@ export function isBlock(input: [string, ...unknown[]]): input is BuilderBlockSta
   return !!match && !!match[1];
 }
 
-export enum Builder {
-  Literal,
-  Comment,
-  Append,
-  Modifier,
-  DynamicComponent,
-  Get,
-  Concat,
-  HasBlock,
-  HasBlockParams,
-}
-
 export type VerboseStatement =
-  | [Builder.Literal, string]
-  | [Builder.Comment, string]
-  | [Builder.Append, BuilderExpression, true]
-  | [Builder.Append, BuilderExpression]
-  | [Builder.Modifier, Params, Hash]
-  | [Builder.DynamicComponent, BuilderExpression, Hash, BuilderBlock];
+  | [BUILDER_LITERAL, string]
+  | [BUILDER_COMMENT, string]
+  | [BUILDER_APPEND, BuilderExpression, true]
+  | [BUILDER_APPEND, BuilderExpression]
+  | [BUILDER_MODIFIER, Params, Hash]
+  | [BUILDER_DYNAMIC_COMPONENT, BuilderExpression, Hash, BuilderBlock];
 
 export type BuilderStatement =
   | VerboseStatement
@@ -584,54 +585,44 @@ export type BuilderStatement =
 export type BuilderAttr = 'splat' | BuilderExpression;
 
 export type TupleBuilderExpression =
-  | [Builder.Literal, string | boolean | null | undefined]
-  | [Builder.Get, string]
-  | [Builder.Get, string, string[]]
-  | [Builder.Concat, ...BuilderExpression[]]
-  | [Builder.HasBlock, string]
-  | [Builder.HasBlockParams, string]
+  | [BUILDER_LITERAL, string | boolean | null | undefined]
+  | [BUILDER_GET, string]
+  | [BUILDER_GET, string, string[]]
+  | [BUILDER_CONCAT, ...BuilderExpression[]]
+  | [BUILDER_HAS_BLOCK, string]
+  | [BUILDER_HAS_BLOCK_PARAMS, string]
   | BuilderCallExpression;
 
 type Params = BuilderParams;
 type Hash = Dict<BuilderExpression>;
 
-export enum ExpressionKind {
-  Literal = 'Literal',
-  Call = 'Call',
-  GetPath = 'GetPath',
-  GetVar = 'GetVar',
-  Concat = 'Concat',
-  HasBlock = 'HasBlock',
-  HasBlockParams = 'HasBlockParams',
-}
-
 export interface NormalizedCallExpression {
-  type: ExpressionKind.Call;
+  type: CALL_EXPR;
   head: NormalizedHead;
   params: Nullable<NormalizedParams>;
   hash: Nullable<NormalizedHash>;
 }
 
 export interface NormalizedPath {
-  type: ExpressionKind.GetPath;
+  type: GET_PATH_EXPR;
   path: Path;
 }
 
 export interface NormalizedVar {
-  type: ExpressionKind.GetVar;
+  type: GET_VAR_EXPR;
   variable: Variable;
 }
 
 export type NormalizedHead = NormalizedPath | NormalizedVar;
 
 export interface NormalizedConcat {
-  type: ExpressionKind.Concat;
+  type: CONCAT_EXPR;
   params: [NormalizedExpression, ...NormalizedExpression[]];
 }
 
 export type NormalizedExpression =
   | {
-      type: ExpressionKind.Literal;
+      type: LITERAL_EXPR;
       value: null | undefined | boolean | string | number;
     }
   | NormalizedCallExpression
@@ -639,11 +630,11 @@ export type NormalizedExpression =
   | NormalizedVar
   | NormalizedConcat
   | {
-      type: ExpressionKind.HasBlock;
+      type: HAS_BLOCK_EXPR;
       name: string;
     }
   | {
-      type: ExpressionKind.HasBlockParams;
+      type: HAS_BLOCK_PARAMS_EXPR;
       name: string;
     };
 
@@ -654,27 +645,27 @@ export function normalizeAppendExpression(
   if (expression === null || expression === undefined) {
     return {
       expr: {
-        type: ExpressionKind.Literal,
+        type: LITERAL_EXPR,
         value: expression,
       },
-      kind: HeadKind.AppendExpr,
+      kind: APPEND_EXPR_HEAD,
       trusted: false,
     };
   } else if (Array.isArray(expression)) {
     switch (expression[0]) {
-      case Builder.Literal:
+      case BUILDER_LITERAL:
         return {
-          expr: { type: ExpressionKind.Literal, value: expression[1] },
-          kind: HeadKind.AppendExpr,
+          expr: { type: LITERAL_EXPR, value: expression[1] },
+          kind: APPEND_EXPR_HEAD,
           trusted: false,
         };
 
-      case Builder.Get: {
+      case BUILDER_GET: {
         return normalizeAppendHead(normalizePath(expression[1], expression[2]), forceTrusted);
       }
-      case Builder.Concat: {
+      case BUILDER_CONCAT: {
         const expr: NormalizedConcat = {
-          type: ExpressionKind.Concat,
+          type: CONCAT_EXPR,
           params: normalizeParams(expression.slice(1)) as [
             NormalizedExpression,
             ...NormalizedExpression[],
@@ -683,28 +674,28 @@ export function normalizeAppendExpression(
 
         return {
           expr,
-          kind: HeadKind.AppendExpr,
+          kind: APPEND_EXPR_HEAD,
           trusted: forceTrusted,
         };
       }
 
-      case Builder.HasBlock:
+      case BUILDER_HAS_BLOCK:
         return {
           expr: {
-            type: ExpressionKind.HasBlock,
+            type: HAS_BLOCK_EXPR,
             name: expression[1],
           },
-          kind: HeadKind.AppendExpr,
+          kind: APPEND_EXPR_HEAD,
           trusted: forceTrusted,
         };
 
-      case Builder.HasBlockParams:
+      case BUILDER_HAS_BLOCK_PARAMS:
         return {
           expr: {
-            type: ExpressionKind.HasBlockParams,
+            type: HAS_BLOCK_PARAMS_EXPR,
             name: expression[1],
           },
-          kind: HeadKind.AppendExpr,
+          kind: APPEND_EXPR_HEAD,
           trusted: forceTrusted,
         };
 
@@ -712,7 +703,7 @@ export function normalizeAppendExpression(
         if (isBuilderCallExpression(expression)) {
           return {
             expr: normalizeCallExpression(expression),
-            kind: HeadKind.AppendExpr,
+            kind: APPEND_EXPR_HEAD,
             trusted: forceTrusted,
           };
         } else {
@@ -733,8 +724,8 @@ export function normalizeAppendExpression(
       case 'boolean':
       case 'number':
         return {
-          expr: { type: ExpressionKind.Literal, value: expression },
-          kind: HeadKind.AppendExpr,
+          expr: { type: LITERAL_EXPR, value: expression },
+          kind: APPEND_EXPR_HEAD,
           trusted: true,
         };
 
@@ -749,20 +740,20 @@ export function normalizeAppendExpression(
 export function normalizeExpression(expression: BuilderExpression): NormalizedExpression {
   if (expression === null || expression === undefined) {
     return {
-      type: ExpressionKind.Literal,
+      type: LITERAL_EXPR,
       value: expression,
     };
   } else if (Array.isArray(expression)) {
     switch (expression[0]) {
-      case Builder.Literal:
-        return { type: ExpressionKind.Literal, value: expression[1] };
+      case BUILDER_LITERAL:
+        return { type: LITERAL_EXPR, value: expression[1] };
 
-      case Builder.Get: {
+      case BUILDER_GET: {
         return normalizePath(expression[1], expression[2]);
       }
-      case Builder.Concat: {
+      case BUILDER_CONCAT: {
         const expr: NormalizedConcat = {
-          type: ExpressionKind.Concat,
+          type: CONCAT_EXPR,
           params: normalizeParams(expression.slice(1)) as [
             NormalizedExpression,
             ...NormalizedExpression[],
@@ -772,15 +763,15 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
         return expr;
       }
 
-      case Builder.HasBlock:
+      case BUILDER_HAS_BLOCK:
         return {
-          type: ExpressionKind.HasBlock,
+          type: HAS_BLOCK_EXPR,
           name: expression[1],
         };
 
-      case Builder.HasBlockParams:
+      case BUILDER_HAS_BLOCK_PARAMS:
         return {
-          type: ExpressionKind.HasBlockParams,
+          type: HAS_BLOCK_PARAMS_EXPR,
           name: expression[1],
         };
 
@@ -804,7 +795,7 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
       }
       case 'boolean':
       case 'number':
-        return { type: ExpressionKind.Literal, value: expression };
+        return { type: LITERAL_EXPR, value: expression };
 
       default:
         throw assertNever(expression);
@@ -814,11 +805,11 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
   }
 }
 
-// | [Builder.Get, string]
-// | [Builder.Get, string, string[]]
-// | [Builder.Concat, Params]
-// | [Builder.HasBlock, string]
-// | [Builder.HasBlockParams, string]
+// | [GET, string]
+// | [GET, string, string[]]
+// | [CONCAT, Params]
+// | [HAS_BLOCK, string]
+// | [HAS_BLOCK_PARAMS, string]
 
 export type BuilderExpression =
   | TupleBuilderExpression
@@ -837,7 +828,7 @@ export function isBuilderExpression(
 
 export function isLiteral(
   expr: BuilderExpression | BuilderCallExpression
-): expr is [Builder.Literal, string | boolean | undefined] {
+): expr is [BUILDER_LITERAL, string | boolean | undefined] {
   return Array.isArray(expr) && expr[0] === 'literal';
 }
 
@@ -852,11 +843,11 @@ export function statementIsExpression(
 
   if (typeof name === 'number') {
     switch (name) {
-      case Builder.Literal:
-      case Builder.Get:
-      case Builder.Concat:
-      case Builder.HasBlock:
-      case Builder.HasBlockParams:
+      case BUILDER_LITERAL:
+      case BUILDER_GET:
+      case BUILDER_CONCAT:
+      case BUILDER_HAS_BLOCK:
+      case BUILDER_HAS_BLOCK_PARAMS:
         return true;
       default:
         return false;
@@ -895,7 +886,7 @@ export function normalizeCallExpression(expr: BuilderCallExpression): Normalized
   switch (expr.length) {
     case 1:
       return {
-        type: ExpressionKind.Call,
+        type: CALL_EXPR,
         head: normalizeCallHead(expr[0]),
         params: null,
         hash: null,
@@ -903,14 +894,14 @@ export function normalizeCallExpression(expr: BuilderCallExpression): Normalized
     case 2: {
       if (Array.isArray(expr[1])) {
         return {
-          type: ExpressionKind.Call,
+          type: CALL_EXPR,
           head: normalizeCallHead(expr[0]),
           params: normalizeParams(expr[1]),
           hash: null,
         };
       } else {
         return {
-          type: ExpressionKind.Call,
+          type: CALL_EXPR,
           head: normalizeCallHead(expr[0]),
           params: null,
           hash: normalizeHash(expr[1]),
@@ -920,7 +911,7 @@ export function normalizeCallExpression(expr: BuilderCallExpression): Normalized
 
     case 3:
       return {
-        type: ExpressionKind.Call,
+        type: CALL_EXPR,
         head: normalizeCallHead(expr[0]),
         params: normalizeParams(expr[1]),
         hash: normalizeHash(expr[2]),

@@ -1,17 +1,16 @@
-import type { MachineRegister } from '@glimmer/vm';
+import { assert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
-import { $fp, $sp } from '@glimmer/vm';
+import { $fp, $pc, $sp } from '@glimmer/vm';
 
 import type { LowLevelRegisters } from './low-level';
 
-import { REGISTERS } from '../symbols';
 import { initializeRegistersWithSP } from './low-level';
 
 export interface EvaluationStack {
-  [REGISTERS]: LowLevelRegisters;
+  readonly registers: LowLevelRegisters;
 
   push(value: unknown): void;
-  dup(position?: MachineRegister): void;
+  dup(position?: number): void;
   copy(from: number, to: number): void;
   pop<T>(n?: number): T;
   peek<T>(offset?: number): T;
@@ -24,18 +23,26 @@ export interface EvaluationStack {
 }
 
 export default class EvaluationStackImpl implements EvaluationStack {
-  static restore(snapshot: unknown[]): EvaluationStackImpl {
-    return new this(snapshot.slice(), initializeRegistersWithSP(snapshot.length - 1));
+  static restore(snapshot: unknown[], pc: number): EvaluationStackImpl {
+    const stack = new this(snapshot.slice(), initializeRegistersWithSP(snapshot.length - 1));
+
+    assert(typeof pc === 'number', 'pc is a number');
+
+    stack.registers[$pc] = pc;
+    stack.registers[$sp] = snapshot.length - 1;
+    stack.registers[$fp] = -1;
+
+    return stack;
   }
 
-  readonly [REGISTERS]: LowLevelRegisters;
+  readonly registers: LowLevelRegisters;
 
   // fp -> sp
   constructor(
     private stack: unknown[] = [],
     registers: LowLevelRegisters
   ) {
-    this[REGISTERS] = registers;
+    this.registers = registers;
 
     if (LOCAL_DEBUG) {
       Object.seal(this);
@@ -43,11 +50,11 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   push(value: unknown): void {
-    this.stack[++this[REGISTERS][$sp]] = value;
+    this.stack[++this.registers[$sp]] = value;
   }
 
-  dup(position = this[REGISTERS][$sp]): void {
-    this.stack[++this[REGISTERS][$sp]] = this.stack[position];
+  dup(position = this.registers[$sp]): void {
+    this.stack[++this.registers[$sp]] = this.stack[position];
   }
 
   copy(from: number, to: number): void {
@@ -55,20 +62,20 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   pop<T>(n = 1): T {
-    let top = this.stack[this[REGISTERS][$sp]] as T;
-    this[REGISTERS][$sp] -= n;
+    let top = this.stack[this.registers[$sp]] as T;
+    this.registers[$sp] -= n;
     return top;
   }
 
   peek<T>(offset = 0): T {
-    return this.stack[this[REGISTERS][$sp] - offset] as T;
+    return this.stack[this.registers[$sp] - offset] as T;
   }
 
-  get<T>(offset: number, base = this[REGISTERS][$fp]): T {
+  get<T>(offset: number, base = this.registers[$fp]): T {
     return this.stack[base + offset] as T;
   }
 
-  set(value: unknown, offset: number, base = this[REGISTERS][$fp]) {
+  set(value: unknown, offset: number, base = this.registers[$fp]) {
     this.stack[base + offset] = value;
   }
 
@@ -77,7 +84,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   capture(items: number): unknown[] {
-    let end = this[REGISTERS][$sp] + 1;
+    let end = this.registers[$sp] + 1;
     let start = end - items;
     return this.stack.slice(start, end);
   }
@@ -87,6 +94,6 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   toArray() {
-    return this.stack.slice(this[REGISTERS][$fp], this[REGISTERS][$sp] + 1);
+    return this.stack.slice(this.registers[$fp], this.registers[$sp] + 1);
   }
 }

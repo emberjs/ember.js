@@ -10,7 +10,7 @@ import type {
   WireFormat,
 } from '@glimmer/interfaces';
 import { exhausted } from '@glimmer/debug-util';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
@@ -46,8 +46,8 @@ export class ContentEncoder {
   }
 
   content(stmt: mir.Statement): WireFormat.Statement | WireStatements {
-    if (LOCAL_SHOULD_LOG) {
-      LOCAL_LOGGER.log(`encoding`, stmt);
+    if (LOCAL_TRACE_LOGGING) {
+      LOCAL_LOGGER.debug(`encoding`, stmt);
     }
 
     return this.visitContent(stmt);

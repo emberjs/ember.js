@@ -1,12 +1,12 @@
+import { VM_ENTER_LIST_OP, VM_EXIT_LIST_OP, VM_ITERATE_OP } from '@glimmer/constants';
 import { check } from '@glimmer/debug';
 import { createIteratorRef, valueForRef } from '@glimmer/reference';
-import { Op } from '@glimmer/vm';
 
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckIterator, CheckReference } from './-debug-strip';
 import { AssertFilter } from './vm';
 
-APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) => {
+APPEND_OPCODES.add(VM_ENTER_LIST_OP, (vm, { op1: relativeStart, op2: elseTarget }) => {
   let stack = vm.stack;
   let listRef = check(stack.pop(), CheckReference);
   let keyRef = check(stack.pop(), CheckReference);
@@ -28,11 +28,11 @@ APPEND_OPCODES.add(Op.EnterList, (vm, { op1: relativeStart, op2: elseTarget }) =
   }
 });
 
-APPEND_OPCODES.add(Op.ExitList, (vm) => {
+APPEND_OPCODES.add(VM_EXIT_LIST_OP, (vm) => {
   vm.exitList();
 });
 
-APPEND_OPCODES.add(Op.Iterate, (vm, { op1: breaks }) => {
+APPEND_OPCODES.add(VM_ITERATE_OP, (vm, { op1: breaks }) => {
   let stack = vm.stack;
   let iterator = check(stack.peek(), CheckIterator);
   let item = iterator.next();

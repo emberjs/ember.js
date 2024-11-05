@@ -1,0 +1,30 @@
+{
+  "name": "@glimmer/constants",
+  "private": true,
+  "version": "0.92.3",
+  "license": "MIT",
+  "description": "Constant values and functions that should be inlined and stripped from published builds. This package should not be published.",
+  "repository": "https://github.com/tildeio/glimmer/tree/main/packages/@glimmer/debug-util",
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "test:lint": "eslint .",
+    "test:publint": "publint",
+    "test:types": "tsc --noEmit -p ../tsconfig.json"
+  },
+  "dependencies": {
+    "@glimmer/env": "0.1.7",
+    "@glimmer/interfaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
+    "@types/qunit": "^2.19.9",
+    "eslint": "^8.52.0",
+    "publint": "^0.2.5",
+    "rollup": "^4.5.1",
+    "typescript": "*"
+  }
+}

@@ -21,9 +21,11 @@ import type {
 import type { RuntimeOpImpl } from '@glimmer/program';
 import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
 import type {
+  $fp,
   $ra,
   $s0,
   $s1,
+  $sp,
   $t0,
   $t1,
   $v0,
@@ -31,14 +33,14 @@ import type {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
-import { assert, expect, unwrapHandle } from '@glimmer/debug-util';
+import { expect, unwrapHandle } from '@glimmer/debug-util';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
-import { LOCAL_DEBUG, LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { createIteratorItemRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 import { LOCAL_LOGGER, reverse, Stack } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
-import { $fp, $pc, $sp, isLowLevelRegister } from '@glimmer/vm';
+import { $pc, isLowLevelRegister } from '@glimmer/vm';
 
 import type { DebugState } from '../opcodes';
 import type { LiveBlockList } from './element-builder';
@@ -52,7 +54,6 @@ import {
 } from '../compiled/opcodes/vm';
 import { APPEND_OPCODES } from '../opcodes';
 import { PartialScopeImpl } from '../scope';
-import { REGISTERS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
@@ -194,13 +195,7 @@ export class VM implements PublicVM {
     }
 
     this.resume = initVM(context);
-    let evalStack = EvaluationStackImpl.restore(stack);
-
-    assert(typeof pc === 'number', 'pc is a number');
-
-    evalStack[REGISTERS][$pc] = pc;
-    evalStack[REGISTERS][$sp] = stack.length - 1;
-    evalStack[REGISTERS][$fp] = -1;
+    let evalStack = EvaluationStackImpl.restore(stack, pc);
 
     this.#heap = this.program.heap;
     this.constants = this.program.constants;
@@ -212,16 +207,18 @@ export class VM implements PublicVM {
       evalStack,
       this.#heap,
       runtime.program,
-      {
-        debugBefore: (opcode: RuntimeOpImpl): DebugState => {
-          return APPEND_OPCODES.debugBefore(this, opcode);
-        },
+      import.meta.env.VM_LOCAL_DEV
+        ? {
+            debugBefore: (opcode: RuntimeOpImpl): DebugState => {
+              return APPEND_OPCODES.debugBefore!(this, opcode);
+            },
 
-        debugAfter: (state: DebugState): void => {
-          APPEND_OPCODES.debugAfter(this, state);
-        },
-      },
-      evalStack[REGISTERS]
+            debugAfter: (state: DebugState): void => {
+              APPEND_OPCODES.debugAfter!(this, state);
+            },
+          }
+        : undefined,
+      evalStack.registers
     );
 
     this.#destructor = {};
@@ -506,7 +503,7 @@ export class VM implements PublicVM {
   }
 
   private _execute(initialize?: (vm: this) => void): RenderResult {
-    if (LOCAL_SHOULD_LOG) {
+    if (LOCAL_TRACE_LOGGING) {
       LOCAL_LOGGER.log(`EXECUTING FROM ${this.lowlevel.fetchRegister($pc)}`);
     }
 

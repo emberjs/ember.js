@@ -540,6 +540,9 @@ importers:
         specifier: ^0.5.11
         version: 0.5.11
     devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../../@glimmer/constants
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../../@glimmer/debug-util
@@ -593,6 +596,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
@@ -609,7 +615,7 @@ importers:
         specifier: ^0.2.5
         version: 0.2.5
       rollup:
-        specifier: ^4.5.1
+        specifier: ^4.24.3
         version: 4.24.3
       typescript:
         specifier: ^5.0.4
@@ -629,6 +635,63 @@ importers:
       '@glimmer/util':
         specifier: workspace:*
         version: link:../../util
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../../constants
+
+  packages/@glimmer/constants:
+    dependencies:
+      '@glimmer/env':
+        specifier: 0.1.7
+        version: 0.1.7
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      '@glimmer-workspace/build-support':
+        specifier: workspace:*
+        version: link:../../@glimmer-workspace/build
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      '@types/qunit':
+        specifier: ^2.19.9
+        version: 2.19.9
+      eslint:
+        specifier: ^8.52.0
+        version: 8.54.0
+      publint:
+        specifier: ^0.2.5
+        version: 0.2.5
+      rollup:
+        specifier: ^4.5.1
+        version: 4.24.3
+      typescript:
+        specifier: ^5.0.4
+        version: 5.0.4
+
+  packages/@glimmer/constants/test:
+    dependencies:
+      '@glimmer/env':
+        specifier: 0.1.7
+        version: 0.1.7
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../debug-util
+      vite:
+        specifier: ^5.4.10
+        version: 5.4.10(@types/node@20.9.4)
 
   packages/@glimmer/debug:
     dependencies:
@@ -645,6 +708,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
@@ -980,6 +1046,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@glimmer/debug':
         specifier: workspace:*
         version: link:../debug
@@ -1035,9 +1104,6 @@ importers:
 
   packages/@glimmer/program:
     dependencies:
-      '@glimmer/debug-util':
-        specifier: workspace:*
-        version: link:../debug-util
       '@glimmer/encoder':
         specifier: workspace:*
         version: link:../encoder
@@ -1066,6 +1132,12 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
       '@glimmer/local-debug-flags':
         specifier: workspace:*
         version: link:../local-debug-flags
@@ -1189,6 +1261,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@glimmer/debug':
         specifier: workspace:*
         version: link:../debug
@@ -1294,6 +1369,9 @@ importers:
       '@glimmer-workspace/build-support':
         specifier: workspace:*
         version: link:../../@glimmer-workspace/build
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
@@ -5303,7 +5381,7 @@ packages:
     resolution: {integrity: sha512-bEL/yUb/fNNiNTuUz979Z0Yg5L+LzLxGJz8x79lYmR54fmTIb6ob/hNQgkQnIUDWIFjZVQwl9Xs356I6BAMHfw==}
     engines: {node: '>= 6'}
     dependencies:
-      glob: 7.2.0
+      glob: 7.2.3
       graceful-fs: 4.2.11
       lazystream: 1.0.1
       lodash.defaults: 4.2.0
@@ -5615,7 +5693,7 @@ packages:
     engines: {node: '>= 8.0.0'}
     dependencies:
       find-babel-config: 1.2.2
-      glob: 7.2.0
+      glob: 7.2.3
       pkg-up: 3.1.0
       reselect: 4.1.8
       resolve: 1.22.8
@@ -5853,7 +5931,7 @@ packages:
     dependencies:
       ansi-align: 3.0.1
       camelcase: 7.0.1
-      chalk: 5.2.0
+      chalk: 5.3.0
       cli-boxes: 3.0.0
       string-width: 5.1.2
       type-fest: 2.19.0
@@ -6374,7 +6452,7 @@ packages:
       '@npmcli/move-file': 1.1.2
       chownr: 2.0.0
       fs-minipass: 2.1.0
-      glob: 7.2.0
+      glob: 7.2.3
       infer-owner: 1.0.4
       lru-cache: 6.0.0
       minipass: 3.3.6
@@ -10162,6 +10240,7 @@ packages:
       minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
+    dev: true
 
   /glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
@@ -10173,7 +10252,6 @@ packages:
       minimatch: 3.1.2
       once: 1.4.0
       path-is-absolute: 1.0.1
-    dev: true
 
   /glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
@@ -10241,7 +10319,7 @@ packages:
       array-union: 2.1.0
       dir-glob: 3.0.1
       fast-glob: 3.2.12
-      glob: 7.2.0
+      glob: 7.2.3
       ignore: 5.2.4
       merge2: 1.4.1
       slash: 3.0.0
@@ -12085,7 +12163,7 @@ packages:
     resolution: {integrity: sha512-l0x2DvrW294C9uDCoQe1VSU4gf529FkSZ6leBl4TiqZH/e+0R7hSfHQBNut2mNygDgHwvYHfFLn6Oxb3VWj2rA==}
     engines: {node: '>=12'}
     dependencies:
-      chalk: 5.2.0
+      chalk: 5.3.0
       is-unicode-supported: 1.3.0
     dev: true
 
@@ -15158,7 +15236,7 @@ packages:
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
     dependencies:
-      glob: 7.2.0
+      glob: 7.2.3
     dev: true
 
   /rimraf@2.6.3:
@@ -15166,7 +15244,7 @@ packages:
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
     dependencies:
-      glob: 7.2.0
+      glob: 7.2.3
     dev: true
 
   /rimraf@3.0.2:
@@ -15174,7 +15252,7 @@ packages:
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
     dependencies:
-      glob: 7.2.0
+      glob: 7.2.3
 
   /rimraf@5.0.0:
     resolution: {integrity: sha512-Jf9llaP+RvaEVS5nPShYFhtXIrb3LRKP281ib3So0KkeZKo2wIKyq0Re7TOSwanasA423PSr6CCIL4bP6T040g==}
@@ -15623,7 +15701,7 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
     dependencies:
-      glob: 7.2.0
+      glob: 7.2.3
       interpret: 1.4.0
       rechoir: 0.6.2
     dev: true
@@ -16428,7 +16506,7 @@ packages:
       execa: 1.0.0
       express: 4.21.1
       fireworm: 0.7.2
-      glob: 7.2.0
+      glob: 7.2.3
       http-proxy: 1.18.1
       js-yaml: 3.14.1
       lodash: 4.17.21
@@ -17213,7 +17291,7 @@ packages:
     engines: {node: '>=14.16'}
     dependencies:
       boxen: 7.1.1
-      chalk: 5.2.0
+      chalk: 5.3.0
       configstore: 6.0.0
       has-yarn: 3.0.0
       import-lazy: 4.0.0

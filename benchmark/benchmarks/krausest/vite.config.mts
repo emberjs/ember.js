@@ -22,7 +22,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@glimmer-workspace/benchmark-env': '@glimmer-workspace/benchmark-env/index.ts',
-      '@glimmer/debug': packagePath('@glimmer/debug'),
       '@glimmer/runtime': packagePath('@glimmer/runtime'),
       '@/components': path.join(currentPath, 'lib', 'components'),
       '@/utils': path.join(currentPath, 'lib', 'utils'),

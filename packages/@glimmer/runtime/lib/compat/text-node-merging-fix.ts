@@ -6,7 +6,7 @@ import type {
   SimpleElement,
   SimpleNode,
 } from '@glimmer/interfaces';
-import { INSERT_BEFORE_END } from '@glimmer/util';
+import { INSERT_BEFORE_END } from '@glimmer/constants';
 
 import type { DOMOperations } from '../dom/operations';
 

@@ -16,10 +16,11 @@ import type {
   SingleBuilderOperand,
   STDLib,
 } from '@glimmer/interfaces';
+import { encodeHandle, isMachineOp, VM_PRIMITIVE_OP, VM_RETURN_OP } from '@glimmer/constants';
 import { assert, expect, isPresentArray } from '@glimmer/debug-util';
 import { InstructionEncoderImpl } from '@glimmer/encoder';
-import { dict, EMPTY_STRING_ARRAY, encodeHandle, Stack } from '@glimmer/util';
-import { ARG_SHIFT, isMachineOp, MACHINE_MASK, MachineOp, Op, TYPE_SIZE } from '@glimmer/vm';
+import { dict, EMPTY_STRING_ARRAY, Stack } from '@glimmer/util';
+import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm';
 
 import { compilableBlock } from '../compilable-template';
 import {
@@ -131,14 +132,14 @@ export class EncoderImpl implements Encoder {
   }
 
   error(error: EncoderError): void {
-    this.encoder.encode(Op.Primitive, 0);
+    this.encoder.encode(VM_PRIMITIVE_OP, 0);
     this.errors.push(error);
   }
 
   commit(size: number): HandleResult {
     let handle = this.handle;
 
-    this.heap.pushMachine(MachineOp.Return);
+    this.heap.pushMachine(VM_RETURN_OP);
     this.heap.finishMalloc(handle, size);
 
     if (isPresentArray(this.errors)) {

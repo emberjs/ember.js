@@ -1,4 +1,13 @@
 import {
+  VM_APPEND_DOCUMENT_FRAGMENT_OP,
+  VM_APPEND_HTML_OP,
+  VM_APPEND_NODE_OP,
+  VM_APPEND_SAFE_HTML_OP,
+  VM_APPEND_TEXT_OP,
+  VM_CONTENT_TYPE_OP,
+  VM_DYNAMIC_CONTENT_TYPE_OP,
+} from '@glimmer/constants';
+import {
   check,
   CheckDocumentFragment,
   CheckNode,
@@ -8,7 +17,7 @@ import {
 import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
 import { isObject } from '@glimmer/util';
-import { ContentType, CurriedType, Op } from '@glimmer/vm';
+import { ContentType, CurriedType } from '@glimmer/vm';
 
 import { isCurriedType } from '../../curried-value';
 import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';
@@ -64,7 +73,7 @@ function toDynamicContentType(value: unknown) {
   }
 }
 
-APPEND_OPCODES.add(Op.ContentType, (vm) => {
+APPEND_OPCODES.add(VM_CONTENT_TYPE_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   vm.stack.push(toContentType(valueForRef(reference)));
@@ -74,7 +83,7 @@ APPEND_OPCODES.add(Op.ContentType, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(Op.DynamicContentType, (vm) => {
+APPEND_OPCODES.add(VM_DYNAMIC_CONTENT_TYPE_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
   vm.stack.push(toDynamicContentType(valueForRef(reference)));
@@ -84,7 +93,7 @@ APPEND_OPCODES.add(Op.DynamicContentType, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(Op.AppendHTML, (vm) => {
+APPEND_OPCODES.add(VM_APPEND_HTML_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = valueForRef(reference);
@@ -93,7 +102,7 @@ APPEND_OPCODES.add(Op.AppendHTML, (vm) => {
   vm.elements().appendDynamicHTML(value);
 });
 
-APPEND_OPCODES.add(Op.AppendSafeHTML, (vm) => {
+APPEND_OPCODES.add(VM_APPEND_SAFE_HTML_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = check(valueForRef(reference), CheckSafeString).toHTML();
@@ -102,7 +111,7 @@ APPEND_OPCODES.add(Op.AppendSafeHTML, (vm) => {
   vm.elements().appendDynamicHTML(value);
 });
 
-APPEND_OPCODES.add(Op.AppendText, (vm) => {
+APPEND_OPCODES.add(VM_APPEND_TEXT_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let rawValue = valueForRef(reference);
@@ -115,7 +124,7 @@ APPEND_OPCODES.add(Op.AppendText, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(Op.AppendDocumentFragment, (vm) => {
+APPEND_OPCODES.add(VM_APPEND_DOCUMENT_FRAGMENT_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let value = check(valueForRef(reference), CheckDocumentFragment);
@@ -123,7 +132,7 @@ APPEND_OPCODES.add(Op.AppendDocumentFragment, (vm) => {
   vm.elements().appendDynamicFragment(value);
 });
 
-APPEND_OPCODES.add(Op.AppendNode, (vm) => {
+APPEND_OPCODES.add(VM_APPEND_NODE_OP, (vm) => {
   let reference = check(vm.stack.pop(), CheckReference);
 
   let value = check(valueForRef(reference), CheckNode);

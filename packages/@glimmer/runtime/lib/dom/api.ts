@@ -6,8 +6,8 @@ import type {
   SimpleDocument,
   SimpleElement,
 } from '@glimmer/interfaces';
+import { NS_SVG } from '@glimmer/constants';
 import { castToSimple } from '@glimmer/debug-util';
-import { NS_SVG } from '@glimmer/util';
 
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';

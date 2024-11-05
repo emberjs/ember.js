@@ -1,30 +1,21 @@
 [machine.pushf]
 
 format = "PushFrame"
+operand-stack = [[], ["$ra", "$fp"]]
 operation = "Push a stack frame"
-operand-stack = [
-  [],
-  ["$ra", "$fp"]
-]
 
 [machine.popf]
 
 format = "PopFrame"
+operand-stack = [["$ra", "$fp"], []]
 operation = "Pop a stack frame"
 skip = true
-operand-stack = [
-  ["$ra", "$fp"],
-  []
-]
 
 [machine.vcall]
 
 format = "InvokeVirtual"
+operand-stack = [["Handle"], []]
 operation = "Evaluate the handle at the top of the stack."
-operand-stack = [
-  ["Handle"],
-  []
-]
 
 [machine.scall]
 
@@ -38,7 +29,7 @@ operation = "Jump to the specified offset."
 
 [machine.ret]
 
-format ="Return"
+format = "Return"
 operation = "Return to the previous frame."
 skip = true
 
@@ -50,20 +41,14 @@ operation = "Return to a place in the program given an offset"
 [syscall.ncall]
 
 format = ["Helper", "helper:handle"]
+operand-stack = [["Reference...", "Arguments"], ["Reference"]]
 operation = "Evaluate a Helper."
-operand-stack = [
-  ["Reference...", "Arguments"],
-  ["Reference"]
-]
 
 [syscall.dynamiccall]
 
 format = ["DynamicHelper"]
+operand-stack = [["Reference...", "Reference", "Arguments"], ["Reference"]]
 operation = "Evaluate a dynamic helper."
-operand-stack = [
-  ["Reference...", "Reference", "Arguments"],
-  ["Reference"]
-]
 
 [syscall.vsargs]
 
@@ -84,163 +69,116 @@ symbol table in the component state at register.
 [syscall.sbvar]
 
 format = ["SetVariable", "symbol:u32"]
+operand-stack = [["Reference"], []]
 operation = """
 Bind the variable represented by a symbol from
 the value at the top of the stack.
 """
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.sblock]
 
 format = ["SetBlock", "symbol:u32"]
+operand-stack = [["symbol-table", "scope", "block"], []]
 operation = "Bind the block at the top of the stack."
-operand-stack = [
-  ["symbol-table", "scope", "block"],
-  []
-]
 
 [syscall.symload]
 
 format = ["GetVariable", "symbol:u32"]
+operand-stack = [[], ["Reference"]]
 operation = """
 Push the contents of the variable represented by
 a symbol (a positional or named argument) onto
 the stack.
 """
-operand-stack = [
-  [],
-  ["Reference"]
-]
 
 [syscall.getprop]
 
 format = ["GetProperty", "property:str"]
+operand-stack = [["Reference"], ["Reference"]]
 operation = """
 Pop a Reference from the top of the stack, and push a
 Reference constructed by `.get(property)`.
 """
-operand-stack = [
-  ["Reference"],
-  ["Reference"]
-]
 
 [syscall.blockload]
 
 format = ["GetBlock", "block:u32"]
-operation = "Push the specified bound block onto the stack."
-operand-stack = [
-  [],
-  ["scope-block"]
-]
 notes = "TODO: The three elements on the stack can be null"
+operand-stack = [[], ["scope-block"]]
+operation = "Push the specified bound block onto the stack."
 
 [syscall.blockspread]
 
 format = ["SpreadBlock"]
+operand-stack = [["scope-block"], ["symbol-table", "scope", "handle"]]
 operation = "Spread a scope block into three stack elements"
-operand-stack = [
-  ["scope-block"],
-  ["symbol-table", "scope", "handle"]
-]
 
 [syscall.hasblockload]
 
 format = ["HasBlock"]
+operand-stack = [["block?"], ["bool"]]
 operation = """
 Push TRUE onto the stack if the specified block
 is bound and FALSE if it is not.
 """
-operand-stack = [
-  ["block?"],
-  ["bool"]
-]
 
 [syscall.hasparamsload]
 
 format = ["HasBlockParams"]
+operand-stack = [["block?", "scope?", "symbol-table?"], ["bool"]]
 operation = """
 Push TRUE onto the stack if the specified block
 is bound *and* has at least one specified formal
 parameter, and FALSE otherwise.
 """
-operand-stack = [
-  ["block?", "scope?", "symbol-table?"],
-  ["bool"]
-]
 
 [syscall.concat]
 
 format = ["Concat", "count:u32"]
+operand-stack = [["Reference", "Reference..."], ["Reference"]]
 operation = """
 Pop count `Reference`s off the stack and
 construct a new ConcatReference from them (in reverse
 order).
 """
-operand-stack = [
-  ["Reference", "Reference..."],
-  ["Reference"]
-]
 
 [syscall.ifinline]
 
 format = ["IfInline", "count:u32"]
+operand-stack = [["Reference", "Reference", "Reference"], ["Reference"]]
 operation = """
 Inline if expression
 """
-operand-stack = [
-  ["Reference", "Reference", "Reference"],
-  ["Reference"]
-]
 
 [syscall.not]
 
 format = ["Not", "count:u32"]
+operand-stack = [["Reference"], ["Reference"]]
 operation = """
 Inline not expression
 """
-operand-stack = [
-  ["Reference"],
-  ["Reference"]
-]
 
 [syscall.rconstload]
 
 format = ["Constant", "constant:unknown"]
+operand-stack = [[], ["unknown"]]
 operation = """
   Push an Object constant onto the stack that is not
   a JavaScript primitive.
 """
-operand-stack = [
-  [],
-  ["unknown"]
-]
 
 [syscall.rconstrefload]
 
 format = ["ConstantReference", "constant:unknown"]
+operand-stack = [[], ["Reference"]]
 operation = """
   Push a reference constant onto the stack that is not
   a JavaScript primitive.
 """
-operand-stack = [
-  [],
-  ["Reference"]
-]
 
 [syscall.pconstload]
 
 format = ["Primitive", "constant:primitive"]
-operation = """
-Wrap a JavaScript primitive in a reference and push it
-onto the stack.
-"""
-operand-stack = [
-  [],
-  ["Primitive"]
-]
 notes = """
 The two high bits of the constant reference describe
 the kind of primitive:
@@ -249,34 +187,30 @@ the kind of primitive:
 01: string
 10: true | false | null | undefined
 """
+operand-stack = [[], ["Primitive"]]
+operation = """
+Wrap a JavaScript primitive in a reference and push it
+onto the stack.
+"""
 
 [syscall.ptoref]
 
-format ="PrimitiveReference"
+format = "PrimitiveReference"
+operand-stack = [["Primitive"], ["Reference"]]
 operation = "Convert the top of the stack into a primitive reference."
-operand-stack = [
-  ["Primitive"],
-  ["Reference"]
-]
 
 [syscall.reifyload]
 
 format = "ReifyU32"
-operation = "Convert the top of the stack into a number."
-operand-stack = [
-  ["Reference"],
-  ["Reference", "u32"]
-]
 notes = "The Reference represents a u32"
+operand-stack = [["Reference"], ["Reference", "u32"]]
+operation = "Convert the top of the stack into a number."
 
 [syscall.dup]
 
 format = ["Dup", "register:u32", "offset:u32"]
+operand-stack = [["unknown"], ["unknown", "unknown"]]
 operation = "Duplicate and push item from an offset in the stack."
-operand-stack = [
-  ["unknown"],
-  ["unknown", "unknown"]
-]
 
 [syscall.pop]
 
@@ -287,47 +221,41 @@ skip = true
 [syscall.put]
 
 format = ["Load", "register:u32"]
+operand-stack = [["unknown"], []]
 operation = "Load a value into a register"
-operand-stack = [
-  ["unknown"],
-  []
-]
 
 [syscall.regload]
 
 format = ["Fetch", "register:u32"]
+operand-stack = [[], ["unknown"]]
 operation = "Fetch a value from a register"
-operand-stack = [
-  [],
-  ["unknown"]
-]
 
 [syscall.rscopepush]
 
 format = ["RootScope", "symbols:u32"]
-operation = "Push a new root scope onto the scope stack."
 notes = """
 A root scope has no parent scope, and therefore inherits no lexical
 variables.
 """
+operation = "Push a new root scope onto the scope stack."
 
 [syscall.vrscopepush]
 
 format = ["VirtualRootScope", "register:u32"]
-operation = "Push a new root scope onto the scope stack."
 notes = """
 The symbol count is determined by the component state in
 the specified register.
 """
+operation = "Push a new root scope onto the scope stack."
 
 [syscall.cscopepush]
 
 format = "ChildScope"
-operation = "Push a new child scope onto the scope stack."
 notes = """
 A child scope inherits from the current parent scope, and therefore
 shares its lexical variables.
 """
+operation = "Push a new child scope onto the scope stack."
 
 [syscall.scopepop]
 
@@ -347,47 +275,32 @@ operation = "Append a Comment node with value `contents`"
 [syscall.apnd_dynhtml]
 
 format = "AppendHTML"
+operand-stack = [["Reference"], []]
 operation = "Append content as HTML."
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.apnd_dynshtml]
 
 format = "AppendSafeHTML"
+operand-stack = [["Reference"], []]
 operation = "Append SafeHTML as HTML."
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.apnd_dynfrag]
 
 format = "AppendDocumentFragment"
+operand-stack = [["Reference"], []]
 operation = "Append DocumentFragment."
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.apnd_dynnode]
 
 format = "AppendNode"
+operand-stack = [["Reference"], []]
 operation = "Append Node."
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.apnd_dyntext]
 
 format = "AppendText"
+operand-stack = [["Reference"], []]
 operation = "Append content as text."
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.apnd_tag]
 
@@ -397,23 +310,17 @@ operation = "Open a new Element named `tag`."
 [syscall.apnd_dyntag]
 
 format = "OpenDynamicElement"
+operand-stack = [["string"], []]
 operation = """
 Open a new Element with a name on the stack.
 """
-operand-stack = [
-  ["string"],
-  []
-]
 
 [syscall.apnd_remotetag]
 
 format = "PushRemoteElement"
-operation = "Open a new remote element"
-operand-stack = [
-  ["Reference", "Reference", "Reference"],
-  []
-]
 notes = "the references represent string, node, and element, in order"
+operand-stack = [["Reference", "Reference", "Reference"], []]
+operation = "Open a new remote element"
 
 [syscall.apnd_attr]
 
@@ -423,30 +330,24 @@ operation = "Add an attribute to the current Element."
 [syscall.apnd_dynattr]
 
 format = ["DynamicAttr", "name:str", "trusting:bool", "namespace:option-str"]
-operation = """
-Add an attribute to the current element using the value
-at the top of the stack.
-"""
-operand-stack = [
-  ["Reference"],
-  []
-]
 notes = """
 If `trusting` is false, the host may sanitize the attribute
 based upon known risks.
 """
-
-[syscall.apnd_cattr]
-
-format =["ComponentAttr", "name:str", "trusting:bool", "namespace:option-str"]
+operand-stack = [["Reference"], []]
 operation = """
 Add an attribute to the current element using the value
 at the top of the stack.
 """
-operand-stack = [
-  ["Reference"],
-  []
-]
+
+[syscall.apnd_cattr]
+
+format = ["ComponentAttr", "name:str", "trusting:bool", "namespace:option-str"]
+operand-stack = [["Reference"], []]
+operation = """
+Add an attribute to the current element using the value
+at the top of the stack.
+"""
 
 [syscall.apnd_flushtag]
 
@@ -466,24 +367,18 @@ operation = "Close the current remote element"
 [syscall.apnd_modifier]
 
 format = ["Modifier", "helper:handle"]
+operand-stack = [["Arguments"], []]
 operation = "Execute the modifier represented by the handle"
-operand-stack = [
-  ["Arguments"],
-  []
-]
 
 [syscall.setdynscope]
 
 format = ["BindDynamicScope", "names:str-array"]
-operation = "Bind stack values as dynamic variables."
-operand-stack = [
-  ["Reference", "Reference..."],
-  []
-]
 notes = """
 This is used to expose `-with-dynamic-vars`, and is a
 niche feature.
 """
+operand-stack = [["Reference", "Reference..."], []]
+operation = "Bind stack values as dynamic variables."
 
 [syscall.dynscopepush]
 
@@ -498,96 +393,68 @@ operation = "Pop a dynamic scope frame"
 [syscall.cmpblock]
 
 format = "CompileBlock"
+operand-stack = [["CompilableBlock"], ["Handle"]]
 operation = "Compile the InlineBlock at the top of the stack."
-operand-stack = [
-  ["CompilableBlock"],
-  ["Handle"]
-]
 
 [syscall.scopeload]
 
 format = ["PushBlockScope", "scope:scope"]
+operand-stack = [[], ["scope"]]
 operation = "Push a scope onto the stack."
-operand-stack = [
-  [],
-  ["scope"]
-]
 
 [syscall.dsymload]
 
 format = ["PushSymbolTable", "table:symbol-table"]
+operand-stack = [[], ["symbol-table"]]
 operation = "Push a symbol table onto the stack."
-operand-stack = [
-  [],
-  ["symbol-table"]
-]
 
 [syscall.invokeyield]
 
 format = "InvokeYield"
+operand-stack = [["Reference...", "Arguments", "symbol-table", "handle"], []]
 operation = "Yield to a block."
-operand-stack = [
-  ["Reference...", "Arguments", "symbol-table", "handle"],
-  []
-]
 
 [syscall.iftrue]
 
 format = ["JumpIf", "to:u32"]
+operand-stack = [["Reference"], []]
 operation = """
 Jump to the specified offset if the value at
 the top of the stack is true.
 """
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.iffalse]
 
 format = ["JumpUnless", "to:u32"]
+operand-stack = [["Reference"], []]
 operation = """
 Jump to the specified offset if the value at
 the top of the stack is false.
 """
-operand-stack = [
-  ["Reference"],
-  []
-]
 
 [syscall.ifeq]
 
 format = ["JumpEq", "to:i32", "comparison:i32"]
+operand-stack = [["u32"], ["u32"]]
 operation = """
 Jump to the specified offset if the value at
 the top of the stack is the same as the
 comparison.
 """
-operand-stack = [
-  ["u32"],
-  ["u32"]
-]
 
 [syscall.assert_eq]
 
 format = "AssertSame"
+notes = "The reference is a u32"
+operand-stack = [["Reference"], ["Reference"]]
 operation = """
 Validate that the value at the top of the stack
 hasn't changed.
 """
-operand-stack = [
-  ["Reference"],
-  ["Reference"]
-]
-notes = "The reference is a u32"
 
 [syscall.blk_start]
 
 format = ["Enter", "args:u32"]
-operation = """
-Start tracking a new output block that could change
-if one of its inputs changes.
-"""
 notes = """
 Soon after this opcode, one of Jump, JumpIf,
 JumpUnless, or JumpEq will produce an updating
@@ -597,34 +464,32 @@ to `to` will be executed.
 
 TODO: Save and restore.
 """
+operation = """
+Start tracking a new output block that could change
+if one of its inputs changes.
+"""
 
 [syscall.blk_end]
 
 format = "Exit"
-operation = "Finish tracking the current block."
 notes = """
 This finalizes the validators that the updating
 block must check to determine whether it's safe to
 skip running the contents.
 """
+operation = "Finish tracking the current block."
 
 [syscall.anytobool]
 
 format = "ToBoolean"
+operand-stack = [["Reference"], ["Reference"]]
 operation = "Convert the top of the stack into a boolean reference."
-operand-stack = [
-  ["Reference"],
-  ["Reference"]
-]
 
 [syscall.list_start]
 
 format = ["EnterList", "address:u32", "address:u32"]
+operand-stack = [["Reference", "Reference"], ["Reference..."]]
 operation = "Enter a list."
-operand-stack = [
-  ["Reference", "Reference"],
-  ["Reference..."]
-]
 
 [syscall.list_end]
 
@@ -634,12 +499,6 @@ operation = "Exit the current list."
 [syscall.iter]
 
 format = ["Iterate", "end:u32"]
-skip = true
-operation = """
-Set up the stack for iterating for a given key,
-or jump to `end` if there is nothing left to
-iterate.
-"""
 notes = """
 In Form 1, the stack will have (in reverse order):
 
@@ -647,89 +506,78 @@ In Form 1, the stack will have (in reverse order):
 - the current iterated value
 - the memoized iterated value
 """
+operation = """
+Set up the stack for iterating for a given key,
+or jump to `end` if there is nothing left to
+iterate.
+"""
+skip = true
 
 [syscall.main]
 
 format = ["Main", "state:register"]
+operand-stack = [["Invocation", "ComponentDefinition"], []]
 operation = "Test whether a reference contains a component definition."
-operand-stack = [
-  ["Invocation", "ComponentDefinition"],
-  []
-]
 
 [syscall.ctload]
 
 format = "ContentType"
-operation = "Push the content type onto the stack."
-operand-stack = [
-  ["Reference"],
-  ["Reference", "Reference"]
-]
 notes = "The new reference represents a ContentType"
+operand-stack = [["Reference"], ["Reference", "Reference"]]
+operation = "Push the content type onto the stack."
 
 [syscall.dctload]
 
 format = "DynamicContentType"
-operation = "Push the content type onto the stack."
-operand-stack = [
-  ["Reference"],
-  ["Reference", "Reference"]
-]
 notes = "The new reference represents a DynamicContentType"
+operand-stack = [["Reference"], ["Reference", "Reference"]]
+operation = "Push the content type onto the stack."
 
 [syscall.curry]
 
 format = ["Curry", "type:u32", "is-strict:bool"]
-operation = "Curry a value of type for a later invocation."
-operand-stack = [
-  ["Reference", "Reference...", "Arguments"],
-  ["CurriedComponent"]
-]
 notes = """
 TODO: CurriedValue is { Reference, Type, CapturedArguments }
 """
+operand-stack = [
+  [
+    "Reference",
+    "Reference...",
+    "Arguments",
+  ],
+  [
+    "CurriedComponent",
+  ],
+]
+operation = "Curry a value of type for a later invocation."
 
 [syscall.cmload]
 
 format = ["PushComponentDefinition", "spec:handle"]
-operation = "Push an appropriate ComponentDefinition onto the stack."
-operand-stack = [
-  [],
-  ["ComponentDefinition"]
-]
 notes = """
 The handle is a handle for a runtime ComponentDefinition.
 """
+operand-stack = [[], ["ComponentDefinition"]]
+operation = "Push an appropriate ComponentDefinition onto the stack."
 
 [syscall.dciload]
 
 format = "PushDynamicComponentInstance"
+operand-stack = [["ComponentDefinition"], ["InitialComponentState"]]
 operation = """
 Pushes the ComponentInstance onto the stack that is
 used during the invoke.
 """
-operand-stack = [
-  ["ComponentDefinition"],
-  ["InitialComponentState"]
-]
 
 [syscall.cdload]
 
 format = ["ResolveDynamicComponent", "owner:owner"]
+operand-stack = [["Reference"], ["ComponentDefinition"]]
 operation = "Push a resolved component definition onto the stack"
-operand-stack = [
-  ["Reference"],
-  ["ComponentDefinition"]
-]
 
 [syscall.argsload]
 
 format = ["PushArgs", "names:str-array", "block-names:str-array", "flags:u32"]
-operation = "Push a user representation of args onto the stack."
-operand-stack = [
-  ["Reference..."],
-  ["Reference...", "Arguments"]
-]
 notes = """
 This arguments object is only necessary when calling into
 user-specified hooks. It is meant to be implemented as a
@@ -737,30 +585,26 @@ transient proxy that reads into the stack as needed.
 Holding onto the Arguments after the call has completed is
 illegal.
 """
+operand-stack = [["Reference..."], ["Reference...", "Arguments"]]
+operation = "Push a user representation of args onto the stack."
 
 [syscall.emptyargsload]
 
 format = "PushEmptyArgs"
+operand-stack = [[], ["Arguments"]]
 operation = "Push empty args onto the stack"
-operand-stack = [
-  [],
-  ["Arguments"]
-]
 
 [syscall.argspop]
 
 format = "PopArgs"
-operation = "Pops Arguments from the stack and clears the next N args."
-operand-stack = [
-  ["Reference...", "Arguments"],
-  []
-]
 notes = """
 The arguments object contains the information of how many user
 supplied args the component was invoked with. To clear them from
 the stack we must pop it from the stack and call `clear` on it
 to remove the argument values from the stack.
 """
+operand-stack = [["Reference...", "Arguments"], []]
+operation = "Pops Arguments from the stack and clears the next N args."
 
 [syscall.argsprep]
 
@@ -771,11 +615,6 @@ skip = true
 [syscall.argscapture]
 
 format = "CaptureArgs"
-operation = "Replaces Arguments on the stack with CapturedArguments"
-operand-stack = [
-  ["Arguments"],
-  ["CapturedArguments"]
-]
 notes = """
 The Arguments object is mutated in place because it is usually
 consumed immediately after being pushed on to the stack. In
@@ -785,17 +624,19 @@ once. In those cases, the CaptureArgs instruction pops an
 Arguments object off the stack and replaces it with the
 immutable CapturedArgs snapshot.
 """
+operand-stack = [["Arguments"], ["CapturedArguments"]]
+operation = "Replaces Arguments on the stack with CapturedArguments"
 
 [syscall.comp_create]
 
 format = ["CreateComponent", "flags:u32", "state:register"]
-operation = "Create the component and push it onto the stack."
 notes = """
 Flags:
 
 * 0b001: Has a default block
 * 0b010: Has an else block
 """
+operation = "Create the component and push it onto the stack."
 
 [syscall.comp_dest]
 
@@ -810,29 +651,20 @@ operation = "Push a new ElementOperations for the current component."
 [syscall.comp_selfload]
 
 format = ["GetComponentSelf", "state:register"]
+operand-stack = [[], ["Reference"]]
 operation = "Push the component's `self` onto the stack."
-operand-stack = [
-  [],
-  ["Reference"]
-]
 
 [syscall.comp_tagload]
 
 format = ["GetComponentTagName", "state:register"]
+operand-stack = [[], ["option-str"]]
 operation = "Push the component's `tagName` onto the stack."
-operand-stack = [
-  [],
-  ["option-str"]
-]
 
 [syscall.comp_layoutload]
 
 format = ["GetComponentLayout", "state:register"]
+operand-stack = [[], ["ProgramSymbolTable", "handle"]]
 operation = "Get the component layout from the manager."
-operand-stack = [
-  [],
-  ["ProgramSymbolTable", "handle"]
-]
 
 [syscall.eval_scope]
 
@@ -847,14 +679,11 @@ operation = "Setup for eval"
 [syscall.comp_layoutput]
 
 format = ["PopulateLayout", "state:register"]
+operand-stack = [["ProgramSymbolTable", "handle"], []]
 operation = """
 Populate the state register with the layout currently
 on the stack.
 """
-operand-stack = [
-  ["ProgramSymbolTable", "handle"],
-  []
-]
 
 [syscall.comp_invokelayout]
 
@@ -864,11 +693,8 @@ operation = "Invoke the layout returned by the manager."
 [syscall.comp_begin]
 
 format = "BeginComponentTransaction"
+operand-stack = [["ComponentManager", "T"], ["ComponentManager", "T"]]
 operation = "Begin a new cache group"
-operand-stack = [
-  ["ComponentManager", "T"],
-  ["ComponentManager", "T"]
-]
 
 [syscall.comp_commit]
 
@@ -884,18 +710,6 @@ operation = "Invoke didCreateElement on the current component manager"
 
 format = ["DidRenderLayout", "state:register"]
 operation = "Invoke didRenderLayout on the current component manager"
-
-[syscall.eval_varload]
-
-format = ["ResolveMaybeLocal", "local:str"]
-operation = """
-Resolve {{foo}} inside a partial, which could be either a self-lookup
-or a local variable that is in-scope for the caller.
-"""
-operand-stack = [
-  [],
-  ["Reference"]
-]
 
 [syscall.debugger]
 

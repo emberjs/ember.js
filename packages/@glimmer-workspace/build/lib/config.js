@@ -114,7 +114,13 @@ export function typescript(pkg, config) {
 const EXTERNAL_OPTIONS = [
   [
     'is',
-    ['tslib', '@glimmer/local-debug-flags', '@glimmer/debug', '@glimmer/debug-util'],
+    [
+      'tslib',
+      '@glimmer/local-debug-flags',
+      '@glimmer/constants',
+      '@glimmer/debug',
+      '@glimmer/debug-util',
+    ],
     'inline',
   ],
   ['is', ['@handlebars/parser', 'simple-html-tokenizer', 'babel-plugin-debug-macros'], 'external'],

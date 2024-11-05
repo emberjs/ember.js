@@ -21,9 +21,13 @@ const FORBIDDEN = [
   'CheckOr',
   'CheckFunction',
   'CheckObject',
+
+  '@glimmer/debug',
+  '@glimmer/constants',
+  '@glimmer/debug-util',
 ];
 
-const IGNORED_DIRS = [`@glimmer/debug`];
+const IGNORED_DIRS = [`@glimmer/debug`, `@glimmer/constants`, `@glimmer/debug-util`];
 
 let files = await globby(resolve(currentDir, '../../packages/**/dist/**/index.js'), {
   ignore: ['node_modules', '**/node_modules'],

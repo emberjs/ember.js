@@ -8,6 +8,10 @@
 import type { GetContextualFreeOpcode } from '@glimmer/interfaces';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
+import type { FreeVarNamespace } from './constants';
+
+import { COMPONENT_VAR_NS, HELPER_VAR_NS, MODIFIER_VAR_NS } from './constants';
+
 /**
  * Strict resolution is used:
  *
@@ -67,7 +71,7 @@ export class LooseModeResolution {
    * ^ In either case, `x` should be resolved in the `component` and `helper` namespaces.
    */
   static append(): LooseModeResolution {
-    return new LooseModeResolution([FreeVarNamespace.Component, FreeVarNamespace.Helper]);
+    return new LooseModeResolution([COMPONENT_VAR_NS, HELPER_VAR_NS]);
   }
 
   /**
@@ -85,7 +89,7 @@ export class LooseModeResolution {
    * ^ In either case, `x` should be resolved in the `helper` namespace.
    */
   static trustingAppend(): LooseModeResolution {
-    return this.namespaced(FreeVarNamespace.Helper);
+    return this.namespaced(HELPER_VAR_NS);
   }
 
   constructor(
@@ -96,11 +100,11 @@ export class LooseModeResolution {
   resolution(): GetContextualFreeOpcode {
     if (this.namespaces.length === 1) {
       switch (this.namespaces[0]) {
-        case FreeVarNamespace.Helper:
+        case HELPER_VAR_NS:
           return SexpOpcodes.GetFreeAsHelperHead;
-        case FreeVarNamespace.Modifier:
+        case MODIFIER_VAR_NS:
           return SexpOpcodes.GetFreeAsModifierHead;
-        case FreeVarNamespace.Component:
+        case COMPONENT_VAR_NS:
           return SexpOpcodes.GetFreeAsComponentHead;
       }
     } else {
@@ -117,15 +121,9 @@ export class LooseModeResolution {
   }
 }
 
-export enum FreeVarNamespace {
-  Helper = 'Helper',
-  Modifier = 'Modifier',
-  Component = 'Component',
-}
-
-export const HELPER_NAMESPACE = FreeVarNamespace.Helper;
-export const MODIFIER_NAMESPACE = FreeVarNamespace.Modifier;
-export const COMPONENT_NAMESPACE = FreeVarNamespace.Component;
+export const HELPER_NAMESPACE = HELPER_VAR_NS;
+export const MODIFIER_NAMESPACE = MODIFIER_VAR_NS;
+export const COMPONENT_NAMESPACE = COMPONENT_VAR_NS;
 
 /**
  * A `Namespaced` must be resolved in one or more namespaces.
@@ -149,10 +147,10 @@ export const COMPONENT_NAMESPACE = FreeVarNamespace.Component;
  * ^ `x` is resolved in the `modifier` namespace
  */
 type Namespaces =
-  | [FreeVarNamespace.Helper]
-  | [FreeVarNamespace.Modifier]
-  | [FreeVarNamespace.Component]
-  | [FreeVarNamespace.Component, FreeVarNamespace.Helper];
+  | [HELPER_VAR_NS]
+  | [MODIFIER_VAR_NS]
+  | [COMPONENT_VAR_NS]
+  | [COMPONENT_VAR_NS, HELPER_VAR_NS];
 
 export type FreeVarResolution = StrictResolution | HtmlResolution | LooseModeResolution;
 

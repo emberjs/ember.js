@@ -75,13 +75,6 @@ export interface ResolvedComponentDefinition<
   template: Template | null;
 }
 
-export enum ResolverContext {
-  Component,
-  Modifier,
-  Helper,
-  HelperOrComponent,
-}
-
 export interface CompileTimeResolver<O extends Owner = Owner> {
   lookupHelper(name: string, owner: O): Nullable<HelperDefinitionState>;
   lookupModifier(name: string, owner: O): Nullable<ModifierDefinitionState>;

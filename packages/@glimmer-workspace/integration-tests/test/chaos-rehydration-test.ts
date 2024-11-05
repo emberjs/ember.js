@@ -1,6 +1,7 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
+import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
-import { COMMENT_NODE, ELEMENT_NODE, isObject, LOCAL_LOGGER } from '@glimmer/util';
+import { isObject, LOCAL_LOGGER } from '@glimmer/util';
 
 import type { ComponentBlueprint, Content } from '..';
 
@@ -101,7 +102,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     }
 
     if (shouldLog) {
-      LOCAL_LOGGER.log(
+      LOCAL_LOGGER.debug(
         `${removedNodeDisplay} was removed;\noriginal: ${original}\nupdated:  ${element.innerHTML}`
       );
     }
