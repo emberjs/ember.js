@@ -18,7 +18,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { Tag } from '@glimmer/validator';
-import { check, CheckBlockSymbolTable, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
+import { check, CheckBlockSymbolTable, CheckHandle, CheckNullable, CheckOr } from '@glimmer/debug';
 import { unwrap } from '@glimmer/debug-util';
 import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util';
@@ -28,7 +28,6 @@ import { $sp } from '@glimmer/vm';
 import type { EvaluationStack } from './stack';
 
 import { CheckCompilableBlock, CheckReference, CheckScope } from '../compiled/opcodes/-debug-strip';
-import { REGISTERS } from '../symbols';
 
 /*
   The calling convention is:
@@ -45,7 +44,7 @@ export class VMArgumentsImpl implements VMArguments {
   public blocks = new BlockArgumentsImpl();
 
   empty(stack: EvaluationStack): this {
-    let base = stack[REGISTERS][$sp] + 1;
+    let base = stack.registers[$sp] + 1;
 
     this.named.empty(stack, base);
     this.positional.empty(stack, base);
@@ -73,7 +72,7 @@ export class VMArgumentsImpl implements VMArguments {
 
     let named = this.named;
     let namedCount = names.length;
-    let namedBase = stack[REGISTERS][$sp] - namedCount + 1;
+    let namedBase = stack.registers[$sp] - namedCount + 1;
 
     named.setup(stack, namedBase, namedCount, names, atNames);
 
@@ -114,7 +113,7 @@ export class VMArgumentsImpl implements VMArguments {
 
       positional.base += offset;
       named.base += offset;
-      stack[REGISTERS][$sp] += offset;
+      stack.registers[$sp] += offset;
     }
   }
 
@@ -424,14 +423,14 @@ export class BlockArgumentsImpl implements BlockArguments {
 
     let { base, stack } = this;
 
-    let table = check(stack.get(idx * 3, base), CheckOption(CheckBlockSymbolTable));
-    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope));
+    let table = check(stack.get(idx * 3, base), CheckNullable(CheckBlockSymbolTable));
+    let scope = check(stack.get(idx * 3 + 1, base), CheckNullable(CheckScope));
     let handle = check(
       stack.get(idx * 3 + 2, base),
-      CheckOption(CheckOr(CheckHandle, CheckCompilableBlock))
+      CheckNullable(CheckOr(CheckHandle, CheckCompilableBlock))
     );
 
-    return handle === null ? null : ([handle, scope!, table!] as ScopeBlock);
+    return handle === null ? null : ([handle, scope, table] as ScopeBlock);
   }
 
   capture(): CapturedBlockArguments {

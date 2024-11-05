@@ -4,16 +4,16 @@ import { CurriedTypes } from '@glimmer/vm';
 
 import type { Result } from '../../../shared/result';
 import type * as mir from '../../2-encoding/mir';
+import type { ResolutionType } from './constants';
 
 import { Err, Ok } from '../../../shared/result';
-
-enum ResolutionType {
-  Value = 'value',
-  Component = 'component',
-  Helper = 'helper',
-  Modifier = 'modifier',
-  ComponentOrHelper = 'component or helper',
-}
+import {
+  COMPONENT_OR_HELPER_RESOLUTION,
+  COMPONENT_RESOLUTION,
+  HELPER_RESOLUTION,
+  MODIFIER_RESOLUTION,
+  VALUE_RESOLUTION,
+} from './constants';
 
 export default class StrictModeValidationPass {
   // This is done at the end of all the keyword normalizations
@@ -140,7 +140,7 @@ export default class StrictModeValidationPass {
         return this.InterpolateExpression(expression, span, resolution);
 
       case 'CallExpression':
-        return this.CallExpression(expression, span, resolution ?? ResolutionType.Helper);
+        return this.CallExpression(expression, span, resolution ?? HELPER_RESOLUTION);
 
       case 'Not':
         return this.Expression(expression.value, span, resolution);
@@ -188,7 +188,7 @@ export default class StrictModeValidationPass {
 
   NamedArgument(arg: mir.NamedArgument): Result<null> {
     if (arg.value.type === 'CallExpression') {
-      return this.Expression(arg.value, arg, ResolutionType.Helper);
+      return this.Expression(arg.value, arg, HELPER_RESOLUTION);
     } else {
       return this.Expression(arg.value, arg);
     }
@@ -219,14 +219,14 @@ export default class StrictModeValidationPass {
 
   DynamicAttr(attr: mir.DynamicAttr): Result<null> {
     if (attr.value.type === 'CallExpression') {
-      return this.Expression(attr.value, attr, ResolutionType.Helper);
+      return this.Expression(attr.value, attr, HELPER_RESOLUTION);
     } else {
       return this.Expression(attr.value, attr);
     }
   }
 
   Modifier(modifier: mir.Modifier): Result<null> {
-    return this.Expression(modifier.callee, modifier, ResolutionType.Modifier).andThen(() =>
+    return this.Expression(modifier.callee, modifier, MODIFIER_RESOLUTION).andThen(() =>
       this.Args(modifier.args)
     );
   }
@@ -250,14 +250,14 @@ export default class StrictModeValidationPass {
 
   AppendTextNode(statement: mir.AppendTextNode): Result<null> {
     if (statement.text.type === 'CallExpression') {
-      return this.Expression(statement.text, statement, ResolutionType.ComponentOrHelper);
+      return this.Expression(statement.text, statement, COMPONENT_OR_HELPER_RESOLUTION);
     } else {
       return this.Expression(statement.text, statement);
     }
   }
 
   Component(statement: mir.Component): Result<null> {
-    return this.Expression(statement.tag, statement, ResolutionType.Component)
+    return this.Expression(statement.tag, statement, COMPONENT_RESOLUTION)
       .andThen(() => this.ElementParameters(statement.params))
       .andThen(() => this.NamedArguments(statement.args))
       .andThen(() => this.NamedBlocks(statement.blocks));
@@ -268,7 +268,7 @@ export default class StrictModeValidationPass {
   }
 
   InvokeBlock(statement: mir.InvokeBlock): Result<null> {
-    return this.Expression(statement.head, statement.head, ResolutionType.Component)
+    return this.Expression(statement.head, statement.head, COMPONENT_RESOLUTION)
       .andThen(() => this.Args(statement.args))
       .andThen(() => this.NamedBlocks(statement.blocks));
   }
@@ -313,7 +313,7 @@ export default class StrictModeValidationPass {
   }
 
   InvokeComponent(statement: mir.InvokeComponent): Result<null> {
-    return this.Expression(statement.definition, statement, ResolutionType.Component)
+    return this.Expression(statement.definition, statement, COMPONENT_RESOLUTION)
       .andThen(() => this.Args(statement.args))
       .andThen(() => {
         if (statement.blocks) {
@@ -364,11 +364,11 @@ export default class StrictModeValidationPass {
     let resolution: ResolutionType;
 
     if (expression.curriedType === CurriedTypes.Component) {
-      resolution = ResolutionType.Component;
+      resolution = COMPONENT_RESOLUTION;
     } else if (expression.curriedType === CurriedTypes.Helper) {
-      resolution = ResolutionType.Helper;
+      resolution = HELPER_RESOLUTION;
     } else {
-      resolution = ResolutionType.Modifier;
+      resolution = MODIFIER_RESOLUTION;
     }
 
     return this.Expression(expression.definition, expression, resolution).andThen(() =>
@@ -380,7 +380,11 @@ export default class StrictModeValidationPass {
     return this.Positional(expression.positional, expression);
   }
 
-  errorFor(name: string, span: HasSourceSpan, type = ResolutionType.Value): Result<never> {
+  errorFor(
+    name: string,
+    span: HasSourceSpan,
+    type: ResolutionType = VALUE_RESOLUTION
+  ): Result<never> {
     return Err(
       generateSyntaxError(
         `Attempted to resolve a ${type} in a strict mode template, but that value was not in scope: ${name}`,

@@ -46,12 +46,13 @@
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer/constants": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "@types/node": "^20.9.4",
     "eslint": "^8.52.0",
     "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "rollup": "^4.24.3",
     "typescript": "*"
   },
   "engines": {

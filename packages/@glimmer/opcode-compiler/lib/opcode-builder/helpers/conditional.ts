@@ -1,5 +1,16 @@
+import {
+  VM_ENTER_OP,
+  VM_EXIT_OP,
+  VM_JUMP_EQ_OP,
+  VM_JUMP_OP,
+  VM_JUMP_UNLESS_OP,
+  VM_POP_FRAME_OP,
+  VM_POP_OP,
+  VM_PUSH_FRAME_OP,
+  VM_RETURN_OP,
+  VM_RETURN_TO_OP,
+} from '@glimmer/constants';
 import { unwrap } from '@glimmer/debug-util';
-import { MachineOp, Op } from '@glimmer/vm';
 
 import type { PushStatementOp } from '../../syntax/compilers';
 
@@ -26,14 +37,14 @@ export function SwitchCases(
   matcher(when);
 
   // Emit the opcodes for the switch
-  op(Op.Enter, 1);
+  op(VM_ENTER_OP, 1);
   bootstrap();
   op(HighLevelBuilderOpcodes.StartLabels);
 
   // First, emit the jump opcodes. We don't need a jump for the last
   // opcode, since it bleeds directly into its clause.
   for (let clause of clauses.slice(0, -1)) {
-    op(Op.JumpEq, labelOperand(clause.label), clause.match);
+    op(VM_JUMP_EQ_OP, labelOperand(clause.label), clause.match);
   }
 
   // Enumerate the clauses in reverse order. Earlier matches will
@@ -42,19 +53,19 @@ export function SwitchCases(
     let clause = unwrap(clauses[i]);
 
     op(HighLevelBuilderOpcodes.Label, clause.label);
-    op(Op.Pop, 1);
+    op(VM_POP_OP, 1);
     clause.callback();
 
     // The first match is special: it is placed directly before the END
     // label, so no additional jump is needed at the end of it.
     if (i !== 0) {
-      op(MachineOp.Jump, labelOperand('END'));
+      op(VM_JUMP_OP, labelOperand('END'));
     }
   }
 
   op(HighLevelBuilderOpcodes.Label, 'END');
   op(HighLevelBuilderOpcodes.StopLabels);
-  op(Op.Exit);
+  op(VM_EXIT_OP);
 }
 
 /**
@@ -123,11 +134,11 @@ export function Replayable(op: PushStatementOp, args: () => number, body: () => 
   // a unique meaning.
 
   op(HighLevelBuilderOpcodes.StartLabels);
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
 
   // If the body invokes a block, its return will return to
   // END. Otherwise, the return in RETURN will return to END.
-  op(MachineOp.ReturnTo, labelOperand('ENDINITIAL'));
+  op(VM_RETURN_TO_OP, labelOperand('ENDINITIAL'));
 
   // Push the arguments onto the stack. The args() function
   // tells us how many stack elements to retain for re-execution
@@ -144,7 +155,7 @@ export function Replayable(op: PushStatementOp, args: () => number, body: () => 
   // in an #if), the DOM is cleared and the program is re-executed,
   // restoring `count` elements to the stack and executing the
   // instructions between the enter and exit.
-  op(Op.Enter, count);
+  op(VM_ENTER_OP, count);
 
   // Evaluate the body of the block. The body of the block may
   // return, which will jump execution to END during initial
@@ -157,17 +168,17 @@ export function Replayable(op: PushStatementOp, args: () => number, body: () => 
   op(HighLevelBuilderOpcodes.Label, 'FINALLY');
 
   // Finalize the DOM.
-  op(Op.Exit);
+  op(VM_EXIT_OP);
 
   // In initial execution, this is a noop: it returns to the
   // immediately following opcode. In updating execution, this
   // exits the updating routine.
-  op(MachineOp.Return);
+  op(VM_RETURN_OP);
 
   // Cleanup code for the block. Runs on initial execution
   // but not on updating.
   op(HighLevelBuilderOpcodes.Label, 'ENDINITIAL');
-  op(MachineOp.PopFrame);
+  op(VM_POP_FRAME_OP);
   op(HighLevelBuilderOpcodes.StopLabels);
 }
 
@@ -194,13 +205,13 @@ export function ReplayableIf(
 ): void {
   return Replayable(op, args, () => {
     // If the conditional is false, jump to the ELSE label.
-    op(Op.JumpUnless, labelOperand('ELSE'));
+    op(VM_JUMP_UNLESS_OP, labelOperand('ELSE'));
     // Otherwise, execute the code associated with the true branch.
     ifTrue();
     // We're done, so return. In the initial execution, this runs
     // the cleanup code. In the updating VM, it exits the updating
     // routine.
-    op(MachineOp.Jump, labelOperand('FINALLY'));
+    op(VM_JUMP_OP, labelOperand('FINALLY'));
     op(HighLevelBuilderOpcodes.Label, 'ELSE');
 
     // If the conditional is false, and code associatied ith the

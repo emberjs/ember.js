@@ -7,7 +7,6 @@ import type {
   SerializedTemplateWithLazyBlock,
 } from '@glimmer/interfaces';
 import {
-  Builder,
   buildStatements,
   c,
   NEWLINE,
@@ -17,6 +16,7 @@ import {
   unicode,
   WireFormatDebugger,
 } from '@glimmer/compiler';
+import { BUILDER_APPEND, BUILDER_CONCAT } from '@glimmer/constants';
 import { assign, strip } from '@glimmer/util';
 
 QUnit.module('@glimmer/compiler - compiling source to wire format');
@@ -50,9 +50,6 @@ function test(desc: string, template: string, ...expectedStatements: BuilderStat
   });
 }
 
-const Append = Builder.Append;
-const Concat = Builder.Concat;
-
 QUnit.test(
   '@arguments are on regular non-component/regular HTML nodes throws syntax error',
   (assert) => {
@@ -71,8 +68,8 @@ test('HTML text content', 'content', s`content`);
 test('Text curlies', '<div>{{title}}<span>{{title}}</span></div>', [
   '<div>',
   [
-    [Append, '^title'],
-    ['<span>', [[Append, '^title']]],
+    [BUILDER_APPEND, '^title'],
+    ['<span>', [[BUILDER_APPEND, '^title']]],
   ],
 ]);
 
@@ -190,7 +187,12 @@ test(
   "<fake-thing><other-fake-thing data-src='extra-{{someDynamicBits}}-here' /></fake-thing>",
   [
     '<fake-thing>',
-    [['<other-fake-thing>', { 'data-src': [Concat, s`extra-`, '^someDynamicBits', s`-here`] }]],
+    [
+      [
+        '<other-fake-thing>',
+        { 'data-src': [BUILDER_CONCAT, s`extra-`, '^someDynamicBits', s`-here`] },
+      ],
+    ],
   ]
 );
 
@@ -223,7 +225,7 @@ test('empty attributes', `<div class=''>content</div>`, ['<div>', { class: s`` }
 
 test('helpers in string attributes', `<a href="http://{{testing 123}}/index.html">linky</a>`, [
   '<a>',
-  { href: [Concat, s`http://`, ['(^testing)', [123]], s`/index.html`] },
+  { href: [BUILDER_CONCAT, s`http://`, ['(^testing)', [123]], s`/index.html`] },
   [s`linky`],
 ]);
 
@@ -231,14 +233,14 @@ test(`boolean attribute 'disabled'`, '<input disabled>', ['<input>', { disabled:
 
 test(`string quoted attributes`, `<input disabled="{{isDisabled}}">`, [
   '<input>',
-  { disabled: [Concat, '^isDisabled'] },
+  { disabled: [BUILDER_CONCAT, '^isDisabled'] },
 ]);
 
 test(`unquoted attributes`, `<img src={{src}}>`, ['<img>', { src: '^src' }]);
 
 test(`dynamic attr followed by static attr`, `<div foo='{{funstuff}}' name='Alice'></div>`, [
   '<div>',
-  { foo: [Concat, '^funstuff'], name: s`Alice` },
+  { foo: [BUILDER_CONCAT, '^funstuff'], name: s`Alice` },
 ]);
 
 test(
@@ -329,7 +331,7 @@ test(
   [
     '<svg>',
     { 'xmlns:xlink': s`http://www.w3.org/1999/xlink` },
-    [['<use>', { 'xlink:href': [Concat, '^iconLink'] }]],
+    [['<use>', { 'xlink:href': [BUILDER_CONCAT, '^iconLink'] }]],
   ]
 );
 
@@ -389,19 +391,22 @@ test('whitespace', `Hello {{ foo }} `, s`Hello `, '^foo', s` `);
 
 test('double curlies', `<div>{{title}}</div>`, ['<div>', ['^title']]);
 
-test('triple curlies', `<div>{{{title}}}</div>`, ['<div>', [[Append, '^title', true]]]);
+test('triple curlies', `<div>{{{title}}}</div>`, ['<div>', [[BUILDER_APPEND, '^title', true]]]);
 
 test(
   'triple curly helpers',
   `{{{unescaped "<strong>Yolo</strong>"}}} {{escaped "<strong>Yolo</strong>"}}`,
-  [Append, ['(^unescaped)', [s`<strong>Yolo</strong>`]], true],
+  [BUILDER_APPEND, ['(^unescaped)', [s`<strong>Yolo</strong>`]], true],
   s` `,
-  [Append, ['(^escaped)', [s`<strong>Yolo</strong>`]]]
+  [BUILDER_APPEND, ['(^escaped)', [s`<strong>Yolo</strong>`]]]
 );
 
-test('top level triple curlies', `{{{title}}}`, [Append, '^title', true]);
+test('top level triple curlies', `{{{title}}}`, [BUILDER_APPEND, '^title', true]);
 
-test('top level table', `<table>{{{title}}}</table>`, ['<table>', [[Append, '^title', true]]]);
+test('top level table', `<table>{{{title}}}</table>`, [
+  '<table>',
+  [[BUILDER_APPEND, '^title', true]],
+]);
 
 test(
   'X-TREME nesting',
@@ -440,7 +445,7 @@ test(
 
 test('simple helpers', `<div>{{testing title}}</div>`, [
   '<div>',
-  [[Append, ['(^testing)', ['^title']]]],
+  [[BUILDER_APPEND, ['(^testing)', ['^title']]]],
 ]);
 
 test('constant negative numbers', `<div>{{testing -123321}}</div>`, [
@@ -509,7 +514,7 @@ test(
 
 test('Null curly in attributes', `<div class="foo {{null}}">hello</div>`, [
   '<div>',
-  { class: [Concat, s`foo `, null] },
+  { class: [BUILDER_CONCAT, s`foo `, null] },
   [s`hello`],
 ]);
 
@@ -548,13 +553,13 @@ test('hash arguments', `<div>{{testing first="one" second="two"}}</div>`, [
 
 test('params in concat attribute position', `<a href="{{testing url}}">linky</a>`, [
   '<a>',
-  { href: [Concat, ['(^testing)', ['^url']]] },
+  { href: [BUILDER_CONCAT, ['(^testing)', ['^url']]] },
   [s`linky`],
 ]);
 
 test('named args in concat attribute position', `<a href="{{testing path=url}}">linky</a>`, [
   '<a>',
-  { href: [Concat, ['(^testing)', { path: '^url' }]] },
+  { href: [BUILDER_CONCAT, ['(^testing)', { path: '^url' }]] },
   [s`linky`],
 ]);
 
@@ -565,7 +570,7 @@ test(
     '<a>',
     {
       href: [
-        Concat,
+        BUILDER_CONCAT,
         s`http://`,
         '^foo',
         s`/`,

@@ -9,11 +9,31 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
+  decodeHandle,
+  VM_CONCAT_OP,
+  VM_CURRY_OP,
+  VM_DYNAMIC_HELPER_OP,
+  VM_GET_BLOCK_OP,
+  VM_GET_DYNAMIC_VAR_OP,
+  VM_GET_PROPERTY_OP,
+  VM_GET_VARIABLE_OP,
+  VM_HAS_BLOCK_OP,
+  VM_HAS_BLOCK_PARAMS_OP,
+  VM_HELPER_OP,
+  VM_IF_INLINE_OP,
+  VM_LOG_OP,
+  VM_NOT_OP,
+  VM_ROOT_SCOPE_OP,
+  VM_SET_BLOCK_OP,
+  VM_SET_VARIABLE_OP,
+  VM_SPREAD_BLOCK_OP,
+} from '@glimmer/constants';
+import {
   check,
   CheckBlockSymbolTable,
   CheckHandle,
   CheckMaybe,
-  CheckOption,
+  CheckNullable,
   CheckOr,
 } from '@glimmer/debug';
 import { assert, debugToString } from '@glimmer/debug-util';
@@ -28,8 +48,8 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { assign, decodeHandle, isObject } from '@glimmer/util';
-import { $v0, CurriedTypes, Op } from '@glimmer/vm';
+import { assign, isObject } from '@glimmer/util';
+import { $v0, CurriedTypes } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
@@ -49,7 +69,7 @@ import {
 
 export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
-APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
+APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
 
   let definition = check(stack.pop(), CheckReference);
@@ -71,7 +91,7 @@ APPEND_OPCODES.add(Op.Curry, (vm, { op1: type, op2: _isStrict }) => {
   );
 });
 
-APPEND_OPCODES.add(Op.DynamicHelper, (vm) => {
+APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   let stack = vm.stack;
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
@@ -149,7 +169,7 @@ function resolveHelper(definition: HelperDefinitionState, ref: Reference): Helpe
   return helper!;
 }
 
-APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
+APPEND_OPCODES.add(VM_HELPER_OP, (vm, { op1: handle }) => {
   let stack = vm.stack;
   let helper = check(vm.constants.getValue(handle), CheckHelper);
   let args = check(stack.pop(), CheckArguments);
@@ -162,18 +182,18 @@ APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   vm.loadValue($v0, value);
 });
 
-APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
+APPEND_OPCODES.add(VM_GET_VARIABLE_OP, (vm, { op1: symbol }) => {
   let expr = vm.referenceForSymbol(symbol);
 
   vm.stack.push(expr);
 });
 
-APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
+APPEND_OPCODES.add(VM_SET_VARIABLE_OP, (vm, { op1: symbol }) => {
   let expr = check(vm.stack.pop(), CheckReference);
   vm.scope().bindSymbol(symbol, expr);
 });
 
-APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
+APPEND_OPCODES.add(VM_SET_BLOCK_OP, (vm, { op1: symbol }) => {
   let handle = check(vm.stack.pop(), CheckCompilableBlock);
   let scope = check(vm.stack.pop(), CheckScope);
   let table = check(vm.stack.pop(), CheckBlockSymbolTable);
@@ -181,38 +201,26 @@ APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
   vm.scope().bindBlock(symbol, [handle, scope, table]);
 });
 
-APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
-  let name = vm.constants.getValue<string>(_name);
-  let locals = vm.scope().getPartialMap()!;
-
-  let ref = locals[name];
-  if (ref === undefined) {
-    ref = childRefFor(vm.getSelf(), name);
-  }
-
-  vm.stack.push(ref);
-});
-
-APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols }) => {
+APPEND_OPCODES.add(VM_ROOT_SCOPE_OP, (vm, { op1: symbols }) => {
   vm.pushRootScope(symbols, vm.getOwner());
 });
 
-APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
+APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {
   let key = vm.constants.getValue<string>(_key);
   let expr = check(vm.stack.pop(), CheckReference);
   vm.stack.push(childRefFor(expr, key));
 });
 
-APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
+APPEND_OPCODES.add(VM_GET_BLOCK_OP, (vm, { op1: _block }) => {
   let { stack } = vm;
   let block = vm.scope().getBlock(_block);
 
   stack.push(block);
 });
 
-APPEND_OPCODES.add(Op.SpreadBlock, (vm) => {
+APPEND_OPCODES.add(VM_SPREAD_BLOCK_OP, (vm) => {
   let { stack } = vm;
-  let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
+  let block = check(stack.pop(), CheckNullable(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
   if (block && !isUndefinedReference(block)) {
     let [handleOrCompilable, scope, table] = block;
@@ -235,9 +243,9 @@ function isUndefinedReference(input: ScopeBlock | Reference): input is Reference
   return input === UNDEFINED_REFERENCE;
 }
 
-APPEND_OPCODES.add(Op.HasBlock, (vm) => {
+APPEND_OPCODES.add(VM_HAS_BLOCK_OP, (vm) => {
   let { stack } = vm;
-  let block = check(stack.pop(), CheckOption(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
+  let block = check(stack.pop(), CheckNullable(CheckOr(CheckScopeBlock, CheckUndefinedReference)));
 
   if (block && !isUndefinedReference(block)) {
     stack.push(TRUE_REFERENCE);
@@ -246,7 +254,7 @@ APPEND_OPCODES.add(Op.HasBlock, (vm) => {
   }
 });
 
-APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
+APPEND_OPCODES.add(VM_HAS_BLOCK_PARAMS_OP, (vm) => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
   let scope = vm.stack.pop();
@@ -259,7 +267,7 @@ APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
-APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
+APPEND_OPCODES.add(VM_CONCAT_OP, (vm, { op1: count }) => {
   let out: Array<Reference<unknown>> = new Array(count);
 
   for (let i = count; i > 0; i--) {
@@ -270,7 +278,7 @@ APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
   vm.stack.push(createConcatRef(out));
 });
 
-APPEND_OPCODES.add(Op.IfInline, (vm) => {
+APPEND_OPCODES.add(VM_IF_INLINE_OP, (vm) => {
   let condition = check(vm.stack.pop(), CheckReference);
   let truthy = check(vm.stack.pop(), CheckReference);
   let falsy = check(vm.stack.pop(), CheckReference);
@@ -286,7 +294,7 @@ APPEND_OPCODES.add(Op.IfInline, (vm) => {
   );
 });
 
-APPEND_OPCODES.add(Op.Not, (vm) => {
+APPEND_OPCODES.add(VM_NOT_OP, (vm) => {
   let ref = check(vm.stack.pop(), CheckReference);
 
   vm.stack.push(
@@ -296,7 +304,7 @@ APPEND_OPCODES.add(Op.Not, (vm) => {
   );
 });
 
-APPEND_OPCODES.add(Op.GetDynamicVar, (vm) => {
+APPEND_OPCODES.add(VM_GET_DYNAMIC_VAR_OP, (vm) => {
   let scope = vm.dynamicScope();
   let stack = vm.stack;
   let nameRef = check(stack.pop(), CheckReference);
@@ -309,7 +317,7 @@ APPEND_OPCODES.add(Op.GetDynamicVar, (vm) => {
   );
 });
 
-APPEND_OPCODES.add(Op.Log, (vm) => {
+APPEND_OPCODES.add(VM_LOG_OP, (vm) => {
   let { positional } = check(vm.stack.pop(), CheckArguments).capture();
 
   vm.loadValue(

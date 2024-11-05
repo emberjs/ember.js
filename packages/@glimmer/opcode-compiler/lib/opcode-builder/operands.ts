@@ -20,8 +20,8 @@ import type {
   SymbolTableOperand,
   SymbolTableOperandType,
 } from '@glimmer/interfaces';
+import { isSmallInt } from '@glimmer/constants';
 import { assert } from '@glimmer/debug-util';
-import { isSmallInt } from '@glimmer/util';
 
 export const HighLevelOperands = {
   Label: 1 satisfies LabelOperandType,

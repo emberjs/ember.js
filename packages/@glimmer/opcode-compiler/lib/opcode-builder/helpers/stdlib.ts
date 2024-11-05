@@ -4,7 +4,20 @@ import type {
   ContainingMetadata,
   HighLevelOp,
 } from '@glimmer/interfaces';
-import { $s0, ContentType, MachineOp, Op } from '@glimmer/vm';
+import {
+  VM_APPEND_DOCUMENT_FRAGMENT_OP,
+  VM_APPEND_HTML_OP,
+  VM_APPEND_NODE_OP,
+  VM_APPEND_SAFE_HTML_OP,
+  VM_APPEND_TEXT_OP,
+  VM_ASSERT_SAME_OP,
+  VM_CONTENT_TYPE_OP,
+  VM_INVOKE_STATIC_OP,
+  VM_MAIN_OP,
+  VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP,
+  VM_RESOLVE_CURRIED_COMPONENT_OP,
+} from '@glimmer/constants';
+import { $s0, ContentType } from '@glimmer/vm';
 
 import type { HighLevelStatementOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -15,7 +28,7 @@ import { SwitchCases } from './conditional';
 import { CallDynamic } from './vm';
 
 export function main(op: PushStatementOp): void {
-  op(Op.Main, $s0);
+  op(VM_MAIN_OP, $s0);
   invokePreparedComponent(op, false, false, true);
 }
 
@@ -34,54 +47,54 @@ export function StdAppend(
 ): void {
   SwitchCases(
     op,
-    () => op(Op.ContentType),
+    () => op(VM_CONTENT_TYPE_OP),
     (when) => {
       when(ContentType.String, () => {
         if (trusting) {
-          op(Op.AssertSame);
-          op(Op.AppendHTML);
+          op(VM_ASSERT_SAME_OP);
+          op(VM_APPEND_HTML_OP);
         } else {
-          op(Op.AppendText);
+          op(VM_APPEND_TEXT_OP);
         }
       });
 
       if (typeof nonDynamicAppend === 'number') {
         when(ContentType.Component, () => {
-          op(Op.ResolveCurriedComponent);
-          op(Op.PushDynamicComponentInstance);
+          op(VM_RESOLVE_CURRIED_COMPONENT_OP);
+          op(VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP);
           InvokeBareComponent(op);
         });
 
         when(ContentType.Helper, () => {
           CallDynamic(op, null, null, () => {
-            op(MachineOp.InvokeStatic, nonDynamicAppend);
+            op(VM_INVOKE_STATIC_OP, nonDynamicAppend);
           });
         });
       } else {
         // when non-dynamic, we can no longer call the value (potentially because we've already called it)
         // this prevents infinite loops. We instead coerce the value, whatever it is, into the DOM.
         when(ContentType.Component, () => {
-          op(Op.AppendText);
+          op(VM_APPEND_TEXT_OP);
         });
 
         when(ContentType.Helper, () => {
-          op(Op.AppendText);
+          op(VM_APPEND_TEXT_OP);
         });
       }
 
       when(ContentType.SafeString, () => {
-        op(Op.AssertSame);
-        op(Op.AppendSafeHTML);
+        op(VM_ASSERT_SAME_OP);
+        op(VM_APPEND_SAFE_HTML_OP);
       });
 
       when(ContentType.Fragment, () => {
-        op(Op.AssertSame);
-        op(Op.AppendDocumentFragment);
+        op(VM_ASSERT_SAME_OP);
+        op(VM_APPEND_DOCUMENT_FRAGMENT_OP);
       });
 
       when(ContentType.Node, () => {
-        op(Op.AssertSame);
-        op(Op.AppendNode);
+        op(VM_ASSERT_SAME_OP);
+        op(VM_APPEND_NODE_OP);
       });
     }
   );

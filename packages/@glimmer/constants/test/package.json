@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "@glimmer-test/constants",
+  "dependencies": {
+    "@glimmer/util": "workspace:*",
+    "@glimmer/env": "0.1.7"
+  },
+  "devDependencies": {
+    "@glimmer/constants": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
+    "vite": "^5.4.10"
+  }
+}

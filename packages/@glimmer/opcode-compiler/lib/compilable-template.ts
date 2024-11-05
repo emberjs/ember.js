@@ -16,7 +16,7 @@ import type {
   SymbolTable,
   WireFormat,
 } from '@glimmer/interfaces';
-import { LOCAL_SHOULD_LOG } from '@glimmer/local-debug-flags';
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { EMPTY_ARRAY } from '@glimmer/util';
 
 import type { HighLevelStatementOp } from './syntax/compilers';
@@ -99,7 +99,7 @@ export function compileStatements(
 
   let handle = context.encoder.commit(meta.size);
 
-  if (LOCAL_SHOULD_LOG) {
+  if (LOCAL_TRACE_LOGGING) {
     debugCompiler(context, handle);
   }
 

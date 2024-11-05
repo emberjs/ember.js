@@ -353,6 +353,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   __setProperty(name: string, value: unknown): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.constructing! as any)[name] = value;
   }
 

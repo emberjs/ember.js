@@ -10,6 +10,7 @@ import type {
   RuntimeConstants,
   Template,
 } from '@glimmer/interfaces';
+import { constants } from '@glimmer/constants';
 import { assert, expect, unwrapTemplate } from '@glimmer/debug-util';
 import {
   capabilityFlagsFrom,
@@ -20,7 +21,7 @@ import {
   managerHasCapability,
 } from '@glimmer/manager';
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { constants, enumerate } from '@glimmer/util';
+import { enumerate } from '@glimmer/util';
 import { InternalComponentCapabilities } from '@glimmer/vm';
 
 import { DEFAULT_TEMPLATE } from './util/default-template';

@@ -24,9 +24,9 @@ import {
   CheckHandle,
   CheckInstanceof,
   CheckInterface,
+  CheckNullable,
   CheckNumber,
   CheckObject,
-  CheckOption,
   CheckOr,
   CheckProgramSymbolTable,
   CheckString,
@@ -45,7 +45,7 @@ export const CheckTag: Checker<Tag> = CheckInterface({
 });
 
 export const CheckOperations: Checker<Nullable<ComponentElementOperations>> = wrap(() =>
-  CheckOption(CheckInstanceof(ComponentElementOperations))
+  CheckNullable(CheckInstanceof(ComponentElementOperations))
 );
 
 class ReferenceChecker {
@@ -142,7 +142,7 @@ export const CheckScopeBlock: Checker<ScopeBlock> = CheckInterface({
 });
 
 export const CheckComponentDefinition: Checker<ComponentDefinition> = CheckInterface({
-  resolvedName: CheckOption(CheckString),
+  resolvedName: CheckNullable(CheckString),
   handle: CheckNumber,
   state: CheckOr(CheckObject, CheckFunction),
   manager: CheckComponentManager,

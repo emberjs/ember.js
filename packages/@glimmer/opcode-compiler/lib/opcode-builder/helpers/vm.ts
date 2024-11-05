@@ -1,6 +1,23 @@
 import type { CurriedType, NonSmallIntOperand, Nullable, WireFormat } from '@glimmer/interfaces';
-import { encodeImmediate, isSmallInt } from '@glimmer/util';
-import { $fp, $v0, MachineOp, Op } from '@glimmer/vm';
+import {
+  encodeImmediate,
+  isSmallInt,
+  VM_BIND_DYNAMIC_SCOPE_OP,
+  VM_CAPTURE_ARGS_OP,
+  VM_CURRY_OP,
+  VM_DUP_OP,
+  VM_DYNAMIC_HELPER_OP,
+  VM_FETCH_OP,
+  VM_HELPER_OP,
+  VM_POP_DYNAMIC_SCOPE_OP,
+  VM_POP_FRAME_OP,
+  VM_POP_OP,
+  VM_PRIMITIVE_OP,
+  VM_PRIMITIVE_REFERENCE_OP,
+  VM_PUSH_DYNAMIC_SCOPE_OP,
+  VM_PUSH_FRAME_OP,
+} from '@glimmer/constants';
+import { $fp, $v0 } from '@glimmer/vm';
 
 import type { PushExpressionOp, PushStatementOp } from '../../syntax/compilers';
 
@@ -22,7 +39,7 @@ export interface CompileHelper {
  */
 export function PushPrimitiveReference(op: PushExpressionOp, value: Primitive): void {
   PushPrimitive(op, value);
-  op(Op.PrimitiveReference);
+  op(VM_PRIMITIVE_REFERENCE_OP);
 }
 
 /**
@@ -37,7 +54,7 @@ export function PushPrimitive(op: PushExpressionOp, primitive: Primitive): void 
     p = isSmallInt(p) ? encodeImmediate(p) : nonSmallIntOperand(p);
   }
 
-  op(Op.Primitive, p);
+  op(VM_PRIMITIVE_OP, p);
 }
 
 /**
@@ -54,11 +71,11 @@ export function Call(
   positional: WireFormat.Core.Params,
   named: WireFormat.Core.Hash
 ): void {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
-  op(Op.Helper, handle);
-  op(MachineOp.PopFrame);
-  op(Op.Fetch, $v0);
+  op(VM_HELPER_OP, handle);
+  op(VM_POP_FRAME_OP);
+  op(VM_FETCH_OP, $v0);
 }
 
 /**
@@ -74,19 +91,19 @@ export function CallDynamic(
   named: WireFormat.Core.Hash,
   append?: () => void
 ): void {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
-  op(Op.Dup, $fp, 1);
-  op(Op.DynamicHelper);
+  op(VM_DUP_OP, $fp, 1);
+  op(VM_DYNAMIC_HELPER_OP);
   if (append) {
-    op(Op.Fetch, $v0);
+    op(VM_FETCH_OP, $v0);
     append();
-    op(MachineOp.PopFrame);
-    op(Op.Pop, 1);
+    op(VM_POP_FRAME_OP);
+    op(VM_POP_OP, 1);
   } else {
-    op(MachineOp.PopFrame);
-    op(Op.Pop, 1);
-    op(Op.Fetch, $v0);
+    op(VM_POP_FRAME_OP);
+    op(VM_POP_OP, 1);
+    op(VM_FETCH_OP, $v0);
   }
 }
 
@@ -99,10 +116,10 @@ export function CallDynamic(
  * @param block a function that returns a list of statements to evaluate
  */
 export function DynamicScope(op: PushStatementOp, names: string[], block: () => void): void {
-  op(Op.PushDynamicScope);
-  op(Op.BindDynamicScope, names);
+  op(VM_PUSH_DYNAMIC_SCOPE_OP);
+  op(VM_BIND_DYNAMIC_SCOPE_OP, names);
   block();
-  op(Op.PopDynamicScope);
+  op(VM_POP_DYNAMIC_SCOPE_OP);
 }
 
 export function Curry(
@@ -112,11 +129,11 @@ export function Curry(
   positional: WireFormat.Core.Params,
   named: WireFormat.Core.Hash
 ): void {
-  op(MachineOp.PushFrame);
+  op(VM_PUSH_FRAME_OP);
   SimpleArgs(op, positional, named, false);
-  op(Op.CaptureArgs);
+  op(VM_CAPTURE_ARGS_OP);
   expr(op, definition);
-  op(Op.Curry, type, isStrictMode());
-  op(MachineOp.PopFrame);
-  op(Op.Fetch, $v0);
+  op(VM_CURRY_OP, type, isStrictMode());
+  op(VM_POP_FRAME_OP);
+  op(VM_FETCH_OP, $v0);
 }
