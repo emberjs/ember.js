@@ -26,6 +26,7 @@
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
     "@ember/template": "workspace:*",
+    "@ember/template-compiler": "workspace:*",
     "@ember/template-compilation": "workspace:*",
     "@ember/template-factory": "workspace:*",
     "@ember/test": "workspace:*",
