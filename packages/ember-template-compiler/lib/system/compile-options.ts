@@ -3,7 +3,7 @@ import {
   RESOLUTION_MODE_TRANSFORMS,
   STRICT_MODE_KEYWORDS,
   STRICT_MODE_TRANSFORMS,
-} from '../plugins/index';
+} from '@ember/template-compiler/-internal-primitives';
 import type { EmberPrecompileOptions, PluginFunc } from '../types';
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 

@@ -66,5 +66,8 @@
     "internal-test-helpers": "workspace:*",
     "router_js": "^8.0.5",
     "rsvp": "^4.8.5"
+  },
+  "devDependencies": {
+    "@ember/template-compiler": "workspace:*"
   }
 }

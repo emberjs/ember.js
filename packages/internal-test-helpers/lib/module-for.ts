@@ -39,6 +39,12 @@ export function moduleForDevelopment<T extends AbstractTestCase, M extends Gener
   }
 }
 
+export async function define<T>(callback: () => T): Promise<T> {
+  const result = callback();
+  await Promise.resolve();
+  return result;
+}
+
 export default function moduleFor<T extends AbstractTestCase, M extends Generator>(
   description: string,
   TestClass: TestClass<T>,
