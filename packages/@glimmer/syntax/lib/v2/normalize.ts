@@ -762,6 +762,13 @@ class ElementNormalizer {
     let inScope = variable[0] === '@' || variable === 'this' || this.ctx.hasBinding(variable);
 
     if (this.ctx.strict && !inScope) {
+      if (uppercase) {
+        throw generateSyntaxError(
+          `Attempted to invoke a component that was not in scope in a strict mode template, \`<${variable}>\`. If you wanted to create an element with that name, convert it to lowercase - \`<${variable.toLowerCase()}>\``,
+          loc
+        );
+      }
+
       // In strict mode, values are always elements unless they are in scope
       return 'ElementHead';
     }
