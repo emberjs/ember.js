@@ -65,6 +65,7 @@
   "dependencies": {
     "@babel/core": "^7.24.4",
     "@ember/edition-utils": "^1.2.0",
+    "@embroider/addon-shim": "^1.9.0",
     "@glimmer/compiler": "0.92.4",
     "@glimmer/destroyable": "0.92.3",
     "@glimmer/env": "^0.1.7",
@@ -88,7 +89,7 @@
     "broccoli-funnel": "^3.0.8",
     "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-auto-import": "^2.6.3",
+    "ember-auto-import": "^2.10.0",
     "ember-cli-babel": "^8.2.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
@@ -181,6 +182,7 @@
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints",
     "type": "addon",
+    "version": 2,
     "renamed-modules": {
       "@ember/-internals/browser-environment/index.js": "ember-source/@ember/-internals/browser-environment/index.js",
       "@ember/-internals/container/index.js": "ember-source/@ember/-internals/container/index.js",
