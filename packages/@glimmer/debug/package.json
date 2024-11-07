@@ -15,7 +15,8 @@
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/vm": "workspace:*"
+    "@glimmer/vm": "workspace:*",
+    "@glimmer/reference": "workspace:*"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",

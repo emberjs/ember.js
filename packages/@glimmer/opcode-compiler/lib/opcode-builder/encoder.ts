@@ -18,7 +18,7 @@ import type {
 import { encodeHandle, isMachineOp, VM_PRIMITIVE_OP, VM_RETURN_OP } from '@glimmer/constants';
 import { assert, expect, isPresentArray } from '@glimmer/debug-util';
 import { InstructionEncoderImpl } from '@glimmer/encoder';
-import { dict, EMPTY_STRING_ARRAY, Stack } from '@glimmer/util';
+import { dict, Stack } from '@glimmer/util';
 import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm';
 
 import { compilableBlock } from '../compilable-template';
@@ -92,9 +92,10 @@ export function encodeOp(
 
       case HighLevelResolutionOpcodes.Local: {
         let freeVar = op[1];
-        let name = expect(meta.upvars, 'BUG: attempted to resolve value but no upvars found')[
-          freeVar
-        ]!;
+        let name = expect(
+          meta.symbols.upvars,
+          'BUG: attempted to resolve value but no upvars found'
+        )[freeVar]!;
 
         let andThen = op[2];
         andThen(name, meta.moduleName);
@@ -192,7 +193,7 @@ export class EncoderImpl implements Encoder {
             return encodeHandle(constants.value(this.meta.isStrictMode));
 
           case HighLevelOperands.DebugSymbols:
-            return encodeHandle(constants.array(this.meta.evalSymbols || EMPTY_STRING_ARRAY));
+            return encodeHandle(constants.value(this.meta.symbols));
 
           case HighLevelOperands.Block:
             return encodeHandle(constants.value(compilableBlock(operand.value, this.meta)));

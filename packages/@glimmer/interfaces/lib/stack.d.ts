@@ -9,4 +9,9 @@ export interface Stack<T> {
   nth(from: number): Nullable<T>;
   isEmpty(): boolean;
   toArray(): T[];
+
+  /**
+   * For debugging
+   */
+  snapshot(): T[];
 }

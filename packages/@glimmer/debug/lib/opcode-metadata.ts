@@ -2,6 +2,7 @@
 
 import type { Nullable, VmMachineOp, VmOp } from '@glimmer/interfaces';
 import {
+  isMachineOp,
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
   VM_APPEND_HTML_OP,
   VM_APPEND_NODE_OP,
@@ -105,15 +106,12 @@ import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 import type { NormalizedMetadata } from './metadata';
 
-export function opcodeMetadata(
-  op: VmMachineOp | VmOp,
-  isMachine: 0 | 1
-): Nullable<NormalizedMetadata> {
+export function opcodeMetadata(op: VmOp | VmMachineOp): Nullable<NormalizedMetadata> {
   if (!LOCAL_DEBUG) {
     return null;
   }
 
-  let value = isMachine ? MACHINE_METADATA[op] : METADATA[op];
+  let value = isMachineOp(op) ? MACHINE_METADATA[op] : METADATA[op];
 
   return value || null;
 }
@@ -125,1300 +123,634 @@ if (LOCAL_DEBUG) {
   MACHINE_METADATA[VM_PUSH_FRAME_OP] = {
     name: 'PushFrame',
     mnemonic: 'pushf',
-    before: null,
     stackChange: 2,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   MACHINE_METADATA[VM_POP_FRAME_OP] = {
     name: 'PopFrame',
     mnemonic: 'popf',
-    before: null,
     stackChange: -2,
-    ops: [],
-    operands: 0,
     check: false,
   };
 
   MACHINE_METADATA[VM_INVOKE_VIRTUAL_OP] = {
     name: 'InvokeVirtual',
     mnemonic: 'vcall',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   MACHINE_METADATA[VM_INVOKE_STATIC_OP] = {
     name: 'InvokeStatic',
     mnemonic: 'scall',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'offset',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['offset:handle/block'],
   };
 
   MACHINE_METADATA[VM_JUMP_OP] = {
     name: 'Jump',
     mnemonic: 'goto',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'to',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['to:instruction/relative'],
   };
 
   MACHINE_METADATA[VM_RETURN_OP] = {
     name: 'Return',
     mnemonic: 'ret',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
     check: false,
   };
 
   MACHINE_METADATA[VM_RETURN_TO_OP] = {
     name: 'ReturnTo',
     mnemonic: 'setra',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'offset',
-        type: 'i32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['offset:instruction/relative'],
   };
+
   METADATA[VM_HELPER_OP] = {
     name: 'Helper',
     mnemonic: 'ncall',
-    before: null,
     stackChange: null,
-    ops: [
-      {
-        name: 'helper',
-        type: 'handle',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['helper:handle'],
   };
 
   METADATA[VM_DYNAMIC_HELPER_OP] = {
     name: 'DynamicHelper',
     mnemonic: 'dynamiccall',
-    before: null,
     stackChange: null,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_SET_NAMED_VARIABLES_OP] = {
     name: 'SetNamedVariables',
     mnemonic: 'vsargs',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'register',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['register:register'],
   };
 
   METADATA[VM_SET_BLOCKS_OP] = {
     name: 'SetBlocks',
     mnemonic: 'vbblocks',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'register',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['register:register'],
   };
 
   METADATA[VM_SET_VARIABLE_OP] = {
     name: 'SetVariable',
     mnemonic: 'sbvar',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'symbol',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['symbol:variable'],
   };
 
   METADATA[VM_SET_BLOCK_OP] = {
     name: 'SetBlock',
     mnemonic: 'sblock',
-    before: null,
     stackChange: -3,
-    ops: [
-      {
-        name: 'symbol',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['symbol:variable'],
   };
 
   METADATA[VM_GET_VARIABLE_OP] = {
     name: 'GetVariable',
     mnemonic: 'symload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'symbol',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['symbol:variable'],
   };
 
   METADATA[VM_GET_PROPERTY_OP] = {
     name: 'GetProperty',
     mnemonic: 'getprop',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'property',
-        type: 'str',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['property:const/str'],
   };
 
   METADATA[VM_GET_BLOCK_OP] = {
     name: 'GetBlock',
     mnemonic: 'blockload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'block',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['block:variable'],
   };
 
   METADATA[VM_SPREAD_BLOCK_OP] = {
     name: 'SpreadBlock',
     mnemonic: 'blockspread',
-    before: null,
     stackChange: 2,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_HAS_BLOCK_OP] = {
     name: 'HasBlock',
     mnemonic: 'hasblockload',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_HAS_BLOCK_PARAMS_OP] = {
     name: 'HasBlockParams',
     mnemonic: 'hasparamsload',
-    before: null,
     stackChange: -2,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_CONCAT_OP] = {
     name: 'Concat',
     mnemonic: 'concat',
-    before: null,
     stackChange: null,
-    ops: [
-      {
-        name: 'count',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['count:imm/u32'],
   };
 
   METADATA[VM_IF_INLINE_OP] = {
     name: 'IfInline',
     mnemonic: 'ifinline',
-    before: null,
     stackChange: -2,
-    ops: [
-      {
-        name: 'count',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
   };
 
   METADATA[VM_NOT_OP] = {
     name: 'Not',
     mnemonic: 'not',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'count',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
   };
 
   METADATA[VM_CONSTANT_OP] = {
     name: 'Constant',
     mnemonic: 'rconstload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'constant',
-        type: 'unknown',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['constant:const/any'],
   };
 
   METADATA[VM_CONSTANT_REFERENCE_OP] = {
     name: 'ConstantReference',
     mnemonic: 'rconstrefload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'constant',
-        type: 'unknown',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['constant:const/any'],
   };
 
   METADATA[VM_PRIMITIVE_OP] = {
     name: 'Primitive',
     mnemonic: 'pconstload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'constant',
-        type: 'primitive',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['constant:const/primitive'],
   };
 
   METADATA[VM_PRIMITIVE_REFERENCE_OP] = {
     name: 'PrimitiveReference',
     mnemonic: 'ptoref',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_REIFY_U32_OP] = {
     name: 'ReifyU32',
     mnemonic: 'reifyload',
-    before: null,
     stackChange: 1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_DUP_OP] = {
     name: 'Dup',
     mnemonic: 'dup',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'register',
-        type: 'u32',
-      },
-      {
-        name: 'offset',
-        type: 'u32',
-      },
-    ],
-    operands: 2,
-    check: true,
+    ops: ['register:register', 'offset:imm/u32'],
   };
 
   METADATA[VM_POP_OP] = {
     name: 'Pop',
     mnemonic: 'pop',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'count',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
+    ops: ['count:imm/u32'],
     check: false,
   };
 
   METADATA[VM_LOAD_OP] = {
     name: 'Load',
     mnemonic: 'put',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'register',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['register:register'],
   };
 
   METADATA[VM_FETCH_OP] = {
     name: 'Fetch',
     mnemonic: 'regload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'register',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['register:register'],
   };
 
   METADATA[VM_ROOT_SCOPE_OP] = {
     name: 'RootScope',
     mnemonic: 'rscopepush',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'symbols',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['symbols:imm/u32'],
   };
 
   METADATA[VM_VIRTUAL_ROOT_SCOPE_OP] = {
     name: 'VirtualRootScope',
     mnemonic: 'vrscopepush',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'register',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['register:register'],
   };
 
   METADATA[VM_CHILD_SCOPE_OP] = {
     name: 'ChildScope',
     mnemonic: 'cscopepush',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_POP_SCOPE_OP] = {
     name: 'PopScope',
     mnemonic: 'scopepop',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_TEXT_OP] = {
     name: 'Text',
     mnemonic: 'apnd_text',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'contents',
-        type: 'str',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['contents:const/str'],
   };
 
   METADATA[VM_COMMENT_OP] = {
     name: 'Comment',
     mnemonic: 'apnd_comment',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'contents',
-        type: 'str',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['contents:const/str'],
   };
 
   METADATA[VM_APPEND_HTML_OP] = {
     name: 'AppendHTML',
     mnemonic: 'apnd_dynhtml',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_APPEND_SAFE_HTML_OP] = {
     name: 'AppendSafeHTML',
     mnemonic: 'apnd_dynshtml',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_APPEND_DOCUMENT_FRAGMENT_OP] = {
     name: 'AppendDocumentFragment',
     mnemonic: 'apnd_dynfrag',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_APPEND_NODE_OP] = {
     name: 'AppendNode',
     mnemonic: 'apnd_dynnode',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_APPEND_TEXT_OP] = {
     name: 'AppendText',
     mnemonic: 'apnd_dyntext',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_OPEN_ELEMENT_OP] = {
     name: 'OpenElement',
     mnemonic: 'apnd_tag',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'tag',
-        type: 'str',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['tag:const/str'],
   };
 
   METADATA[VM_OPEN_DYNAMIC_ELEMENT_OP] = {
     name: 'OpenDynamicElement',
     mnemonic: 'apnd_dyntag',
-    before: null,
     stackChange: -1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_PUSH_REMOTE_ELEMENT_OP] = {
     name: 'PushRemoteElement',
     mnemonic: 'apnd_remotetag',
-    before: null,
     stackChange: -3,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_STATIC_ATTR_OP] = {
     name: 'StaticAttr',
     mnemonic: 'apnd_attr',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'name',
-        type: 'str',
-      },
-      {
-        name: 'value',
-        type: 'str',
-      },
-      {
-        name: 'namespace',
-        type: 'option-str',
-      },
-    ],
-    operands: 3,
-    check: true,
+    ops: ['name:const/str', 'value:const/str', 'namespace:const/str?'],
   };
 
   METADATA[VM_DYNAMIC_ATTR_OP] = {
     name: 'DynamicAttr',
     mnemonic: 'apnd_dynattr',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'name',
-        type: 'str',
-      },
-      {
-        name: 'trusting',
-        type: 'bool',
-      },
-      {
-        name: 'namespace',
-        type: 'option-str',
-      },
-    ],
-    operands: 3,
-    check: true,
+    ops: ['name:const/str', 'value:const/str'],
   };
 
   METADATA[VM_COMPONENT_ATTR_OP] = {
     name: 'ComponentAttr',
     mnemonic: 'apnd_cattr',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'name',
-        type: 'str',
-      },
-      {
-        name: 'trusting',
-        type: 'bool',
-      },
-      {
-        name: 'namespace',
-        type: 'option-str',
-      },
-    ],
-    operands: 3,
-    check: true,
+    ops: ['name:const/str', 'value:const/str', 'namespace:const/str?'],
   };
 
   METADATA[VM_FLUSH_ELEMENT_OP] = {
     name: 'FlushElement',
     mnemonic: 'apnd_flushtag',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_CLOSE_ELEMENT_OP] = {
     name: 'CloseElement',
     mnemonic: 'apnd_closetag',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_POP_REMOTE_ELEMENT_OP] = {
     name: 'PopRemoteElement',
     mnemonic: 'apnd_closeremotetag',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_MODIFIER_OP] = {
     name: 'Modifier',
     mnemonic: 'apnd_modifier',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'helper',
-        type: 'handle',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['helper:handle'],
   };
 
   METADATA[VM_BIND_DYNAMIC_SCOPE_OP] = {
     name: 'BindDynamicScope',
     mnemonic: 'setdynscope',
-    before: null,
     stackChange: null,
-    ops: [
-      {
-        name: 'names',
-        type: 'str-array',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['names:const/str[]'],
   };
 
   METADATA[VM_PUSH_DYNAMIC_SCOPE_OP] = {
     name: 'PushDynamicScope',
     mnemonic: 'dynscopepush',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_POP_DYNAMIC_SCOPE_OP] = {
     name: 'PopDynamicScope',
     mnemonic: 'dynscopepop',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_COMPILE_BLOCK_OP] = {
     name: 'CompileBlock',
     mnemonic: 'cmpblock',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_PUSH_BLOCK_SCOPE_OP] = {
     name: 'PushBlockScope',
     mnemonic: 'scopeload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'scope',
-        type: 'scope',
-      },
-    ],
-    operands: 1,
-    check: true,
   };
 
   METADATA[VM_PUSH_SYMBOL_TABLE_OP] = {
     name: 'PushSymbolTable',
     mnemonic: 'dsymload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'table',
-        type: 'symbol-table',
-      },
-    ],
-    operands: 1,
-    check: true,
   };
 
   METADATA[VM_INVOKE_YIELD_OP] = {
     name: 'InvokeYield',
     mnemonic: 'invokeyield',
-    before: null,
     stackChange: null,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_JUMP_IF_OP] = {
     name: 'JumpIf',
     mnemonic: 'iftrue',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'to',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['to:instruction/relative'],
   };
 
   METADATA[VM_JUMP_UNLESS_OP] = {
     name: 'JumpUnless',
     mnemonic: 'iffalse',
-    before: null,
     stackChange: -1,
-    ops: [
-      {
-        name: 'to',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['to:instruction/relative'],
   };
 
   METADATA[VM_JUMP_EQ_OP] = {
     name: 'JumpEq',
     mnemonic: 'ifeq',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'to',
-        type: 'i32',
-      },
-      {
-        name: 'comparison',
-        type: 'i32',
-      },
-    ],
-    operands: 2,
-    check: true,
+    ops: ['to:instruction/relative', 'comparison:imm/i32'],
   };
 
   METADATA[VM_ASSERT_SAME_OP] = {
     name: 'AssertSame',
     mnemonic: 'assert_eq',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_ENTER_OP] = {
     name: 'Enter',
     mnemonic: 'blk_start',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'args',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['args:imm/u32'],
   };
 
   METADATA[VM_EXIT_OP] = {
     name: 'Exit',
     mnemonic: 'blk_end',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_TO_BOOLEAN_OP] = {
     name: 'ToBoolean',
     mnemonic: 'anytobool',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_ENTER_LIST_OP] = {
     name: 'EnterList',
     mnemonic: 'list_start',
-    before: null,
     stackChange: null,
-    ops: [
-      {
-        name: 'address',
-        type: 'u32',
-      },
-      {
-        name: 'address',
-        type: 'u32',
-      },
-    ],
-    operands: 2,
-    check: true,
+    ops: ['start:instruction/relative', 'else:instruction/relative'],
   };
 
   METADATA[VM_EXIT_LIST_OP] = {
     name: 'ExitList',
     mnemonic: 'list_end',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_ITERATE_OP] = {
     name: 'Iterate',
     mnemonic: 'iter',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'end',
-        type: 'u32',
-      },
-    ],
-    operands: 1,
+    ops: ['end:instruction/relative'],
     check: false,
   };
 
   METADATA[VM_MAIN_OP] = {
     name: 'Main',
     mnemonic: 'main',
-    before: null,
     stackChange: -2,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_CONTENT_TYPE_OP] = {
     name: 'ContentType',
     mnemonic: 'ctload',
-    before: null,
     stackChange: 1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_DYNAMIC_CONTENT_TYPE_OP] = {
     name: 'DynamicContentType',
     mnemonic: 'dctload',
-    before: null,
     stackChange: 1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_CURRY_OP] = {
     name: 'Curry',
     mnemonic: 'curry',
-    before: null,
     stackChange: null,
-    ops: [
-      {
-        name: 'type',
-        type: 'u32',
-      },
-      {
-        name: 'is-strict',
-        type: 'bool',
-      },
-    ],
-    operands: 2,
-    check: true,
+    ops: ['type:imm/enum<curry>', 'strict?:const/bool'],
   };
 
   METADATA[VM_PUSH_COMPONENT_DEFINITION_OP] = {
     name: 'PushComponentDefinition',
     mnemonic: 'cmload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'spec',
-        type: 'handle',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['spec:handle'],
   };
 
   METADATA[VM_PUSH_DYNAMIC_COMPONENT_INSTANCE_OP] = {
     name: 'PushDynamicComponentInstance',
     mnemonic: 'dciload',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_RESOLVE_DYNAMIC_COMPONENT_OP] = {
     name: 'ResolveDynamicComponent',
     mnemonic: 'cdload',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'owner',
-        type: 'owner',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['strict?:imm/bool'],
   };
 
   METADATA[VM_PUSH_ARGS_OP] = {
     name: 'PushArgs',
     mnemonic: 'argsload',
-    before: null,
     stackChange: null,
-    ops: [
-      {
-        name: 'names',
-        type: 'str-array',
-      },
-      {
-        name: 'block-names',
-        type: 'str-array',
-      },
-      {
-        name: 'flags',
-        type: 'u32',
-      },
-    ],
-    operands: 3,
-    check: true,
+    ops: ['names:const/str[]', 'block-names:const/str[]', 'flags:imm/u32'],
   };
 
   METADATA[VM_PUSH_EMPTY_ARGS_OP] = {
     name: 'PushEmptyArgs',
     mnemonic: 'emptyargsload',
-    before: null,
     stackChange: 1,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_POP_ARGS_OP] = {
     name: 'PopArgs',
     mnemonic: 'argspop',
-    before: null,
     stackChange: null,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_PREPARE_ARGS_OP] = {
     name: 'PrepareArgs',
     mnemonic: 'argsprep',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
+    ops: ['state:register'],
     check: false,
   };
 
   METADATA[VM_CAPTURE_ARGS_OP] = {
     name: 'CaptureArgs',
     mnemonic: 'argscapture',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_CREATE_COMPONENT_OP] = {
     name: 'CreateComponent',
     mnemonic: 'comp_create',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'flags',
-        type: 'u32',
-      },
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 2,
-    check: true,
+    ops: ['flags:imm/i32'],
   };
 
   METADATA[VM_REGISTER_COMPONENT_DESTRUCTOR_OP] = {
     name: 'RegisterComponentDestructor',
     mnemonic: 'comp_dest',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_PUT_COMPONENT_OPERATIONS_OP] = {
     name: 'PutComponentOperations',
     mnemonic: 'comp_elops',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_GET_COMPONENT_SELF_OP] = {
     name: 'GetComponentSelf',
     mnemonic: 'comp_selfload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_GET_COMPONENT_TAG_NAME_OP] = {
     name: 'GetComponentTagName',
     mnemonic: 'comp_tagload',
-    before: null,
     stackChange: 1,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_GET_COMPONENT_LAYOUT_OP] = {
     name: 'GetComponentLayout',
     mnemonic: 'comp_layoutload',
-    before: null,
     stackChange: 2,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_BIND_DEBUGGER_SCOPE_OP] = {
     name: 'BindDebuggerScope',
     mnemonic: 'debugger_scope',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_SETUP_FOR_DEBUGGER_OP] = {
     name: 'SetupForDebugger',
     mnemonic: 'debugger_setup',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_POPULATE_LAYOUT_OP] = {
     name: 'PopulateLayout',
     mnemonic: 'comp_layoutput',
-    before: null,
     stackChange: -2,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_INVOKE_COMPONENT_LAYOUT_OP] = {
     name: 'InvokeComponentLayout',
     mnemonic: 'comp_invokelayout',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_BEGIN_COMPONENT_TRANSACTION_OP] = {
     name: 'BeginComponentTransaction',
     mnemonic: 'comp_begin',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_COMMIT_COMPONENT_TRANSACTION_OP] = {
     name: 'CommitComponentTransaction',
     mnemonic: 'comp_commit',
-    before: null,
     stackChange: 0,
-    ops: [],
-    operands: 0,
-    check: true,
   };
 
   METADATA[VM_DID_CREATE_ELEMENT_OP] = {
     name: 'DidCreateElement',
     mnemonic: 'comp_created',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_DID_RENDER_LAYOUT_OP] = {
     name: 'DidRenderLayout',
     mnemonic: 'comp_rendered',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'state',
-        type: 'register',
-      },
-    ],
-    operands: 1,
-    check: true,
+    ops: ['state:register'],
   };
 
   METADATA[VM_DEBUGGER_OP] = {
     name: 'Debugger',
     mnemonic: 'debugger',
-    before: null,
     stackChange: 0,
-    ops: [
-      {
-        name: 'symbols',
-        type: 'str-array',
-      },
-      {
-        name: 'debugInfo',
-        type: 'array',
-      },
-    ],
-    operands: 2,
-    check: true,
+    ops: ['symbols:const/any', 'debugInfo:const/i32[]'],
   };
 }

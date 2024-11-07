@@ -27,3 +27,37 @@ export function* enumerate<T>(input: Iterable<T>): IterableIterator<[number, T]>
     yield [i++, item];
   }
 }
+
+type ZipEntry<T extends readonly unknown[]> = {
+  [P in keyof T]: P extends `${infer N extends number}` ? [N, T[P], T[P]] : never;
+}[keyof T & number];
+
+/**
+ * Zip two tuples with the same type and number of elements.
+ */
+export function* zipTuples<T extends readonly unknown[]>(
+  left: T,
+  right: T
+): IterableIterator<ZipEntry<T>> {
+  for (let i = 0; i < left.length; i++) {
+    yield [i, left[i], right[i]] as ZipEntry<T>;
+  }
+}
+
+export function* zipArrays<T>(
+  left: T[],
+  right: T[]
+): IterableIterator<
+  ['retain', number, T, T] | ['pop', number, T, undefined] | ['push', number, undefined, T]
+> {
+  for (let i = 0; i < left.length; i++) {
+    const perform = i < right.length ? 'retain' : 'pop';
+    yield [perform, i, left[i], right[i]] as
+      | ['retain', number, T, T]
+      | ['pop', number, T, undefined];
+  }
+
+  for (let i = left.length; i < right.length; i++) {
+    yield ['push', i, undefined, right[i]] as ['push', number, undefined, T];
+  }
+}

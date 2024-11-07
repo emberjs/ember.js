@@ -106,23 +106,26 @@ export function CompilePositional(
 }
 
 export function meta(layout: LayoutWithContext): BlockMetadata {
-  let [, symbols, , upvars, debugSymbols] = layout.block;
+  let [, locals, hasDebugger, upvars, lexicalSymbols] = layout.block;
 
   return {
-    evalSymbols: evalSymbols(layout),
-    upvars: upvars,
+    symbols: {
+      locals,
+      upvars,
+      lexical: lexicalSymbols,
+    },
+    hasDebugger,
     scopeValues: layout.scope?.() ?? null,
-    debugSymbols,
     isStrictMode: layout.isStrictMode,
     moduleName: layout.moduleName,
     owner: layout.owner,
-    size: symbols.length,
+    size: locals.length,
   };
 }
 
-export function evalSymbols(layout: LayoutWithContext): Nullable<string[]> {
+export function getDebuggerSymbols(layout: LayoutWithContext): Nullable<string[]> {
   let { block } = layout;
-  let [, symbols, hasEval] = block;
+  let [, symbols, hasDebugger] = block;
 
-  return hasEval ? symbols : null;
+  return hasDebugger ? symbols : null;
 }

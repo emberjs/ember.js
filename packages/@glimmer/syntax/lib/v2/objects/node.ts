@@ -1,3 +1,4 @@
+import { setLocalDebugType } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 
 import type { SourceSpan } from '../../source/span';
@@ -63,6 +64,8 @@ export function node<T extends string>(
           constructor(fields: BaseNodeFields & Fields) {
             this.type = type;
             assign(this, fields);
+
+            setLocalDebugType('syntax:mir:node', this);
           }
         } as TypedNodeConstructor<T, BaseNodeFields & Fields>;
       },
@@ -87,7 +90,9 @@ export interface NodeConstructor<Fields> {
   new (fields: Fields): Readonly<Fields>;
 }
 
-type TypedNode<T extends string, Fields> = { type: T } & Readonly<Fields>;
+type TypedNode<T extends string, Fields> = {
+  type: T;
+} & Readonly<Fields>;
 
 export interface TypedNodeConstructor<T extends string, Fields> {
   new (options: Fields): TypedNode<T, Fields>;

@@ -1,5 +1,5 @@
 import type { Nullable } from '@glimmer/interfaces';
-import { assert } from '@glimmer/debug-util';
+import { assert, setLocalDebugType } from '@glimmer/debug-util';
 
 import type { PrecompileOptions } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation, SourcePosition } from './location';
@@ -14,7 +14,9 @@ export class Source {
   constructor(
     readonly source: string,
     readonly module = 'an unknown module'
-  ) {}
+  ) {
+    setLocalDebugType('syntax:source', this);
+  }
 
   /**
    * Validate that the character offset represents a position in the source string.

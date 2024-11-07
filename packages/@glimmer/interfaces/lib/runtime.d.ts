@@ -9,5 +9,4 @@ export * from './runtime/owner.js';
 export * from './runtime/render.js';
 export * from './runtime/runtime.js';
 export * from './runtime/scope.js';
-export * from './runtime/vm.js';
 export * from './runtime/vm-state.js';

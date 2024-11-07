@@ -61,19 +61,37 @@ export class ScopeImpl implements Scope {
     return new ScopeImpl(owner, refs, null, null);
   }
 
+  readonly owner: Owner;
+
+  private slots: ScopeSlot[];
+  private callerScope: Scope | null;
+  private debuggerScope: Dict<ScopeSlot> | null;
+
   constructor(
-    readonly owner: Owner,
+    owner: Owner,
     // the 0th slot is `self`
-    readonly slots: Array<ScopeSlot>,
+    slots: Array<ScopeSlot>,
     // a single program can mix owners via curried components, and the state lives on root scopes
-    private callerScope: Scope | null,
+    callerScope: Scope | null,
     // named arguments and blocks passed to a layout that uses eval
-    private debuggerScope: Dict<ScopeSlot> | null
-  ) {}
+    debuggerScope: Dict<ScopeSlot> | null
+  ) {
+    this.owner = owner;
+    this.slots = slots;
+    this.callerScope = callerScope;
+    this.debuggerScope = debuggerScope;
+  }
 
   init({ self }: { self: Reference<unknown> }): this {
     this.slots[0] = self;
     return this;
+  }
+
+  /**
+   * @debug
+   */
+  snapshot(): ScopeSlot[] {
+    return this.slots.slice();
   }
 
   getSelf(): Reference<unknown> {

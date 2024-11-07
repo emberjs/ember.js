@@ -1,4 +1,4 @@
-import type { Scope } from '@glimmer/interfaces';
+import type { BlockSymbolNames, Scope } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { decodeHandle, VM_DEBUGGER_OP } from '@glimmer/constants';
 import { unwrap } from '@glimmer/debug-util';
@@ -38,11 +38,11 @@ class ScopeInspector {
 
   constructor(
     private scope: Scope,
-    symbols: string[],
+    symbols: BlockSymbolNames,
     debugInfo: number[]
   ) {
     for (const slot of debugInfo) {
-      let name = unwrap(symbols[slot - 1]);
+      let name = unwrap(symbols.locals?.[slot - 1]);
       let ref = scope.getSymbol(slot);
       this.locals[name] = ref;
     }
@@ -72,7 +72,7 @@ class ScopeInspector {
 }
 
 APPEND_OPCODES.add(VM_DEBUGGER_OP, (vm, { op1: _symbols, op2: _debugInfo }) => {
-  let symbols = vm.constants.getArray<string>(_symbols);
+  let symbols = vm.constants.getValue<BlockSymbolNames>(_symbols);
   let debugInfo = vm.constants.getArray<number>(decodeHandle(_debugInfo));
   let inspector = new ScopeInspector(vm.scope(), symbols, debugInfo);
   callback(valueForRef(vm.getSelf()), (path) => valueForRef(inspector.get(path)));

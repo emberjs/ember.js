@@ -26,11 +26,11 @@ export class WrappedBuilder implements CompilableProgram {
   readonly meta: BlockMetadata;
 
   constructor(
-    private layout: LayoutWithContext,
+    private readonly layout: LayoutWithContext,
     public moduleName: string
   ) {
     let { block } = layout;
-    let [, symbols, hasEval] = block;
+    let [, symbols, hasDebugger] = block;
 
     symbols = symbols.slice();
 
@@ -43,7 +43,7 @@ export class WrappedBuilder implements CompilableProgram {
     }
 
     this.symbolTable = {
-      hasEval,
+      hasDebugger,
       symbols,
     };
 

@@ -31,7 +31,10 @@
   "eslint.validate": ["javascript", "typescript", "json", "jsonc"],
   "files.exclude": {
     "**/.DS_Store": true,
-    "**/.git": true
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "tracerbench-results": true
   },
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
@@ -46,7 +49,7 @@
   "typescript.preferences.importModuleSpecifierEnding": "auto",
   "typescript.preferences.useAliasesForRenames": false,
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
   "typescript.workspaceSymbols.scope": "currentProject",
   "typescript.experimental.updateImportsOnPaste": true,
   "eslint.problems.shortenToSingleLine": true,
@@ -226,5 +229,6 @@
   "rewrap.onSave": false,
   "rewrap.autoWrap.enabled": true,
   "rewrap.reformat": true,
-  "rewrap.wholeComment": false
+  "rewrap.wholeComment": false,
+  "explorer.excludeGitIgnore": true
 }

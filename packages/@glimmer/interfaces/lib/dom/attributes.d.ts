@@ -12,7 +12,14 @@ import type {
   SimpleText,
 } from './simple.js';
 
+/**
+ * `AppendingBlock` is the interface used by the `ElementBuilder` to keep track of which nodes have
+ * been appended to a block. Ultimately, an `AppendingBlock` is finalized and used as a `FixedBlock`
+ * or `ResettableBlock` during the updating phase.
+ */
 export interface AppendingBlock extends Bounds {
+  debug?: { first: () => Nullable<SimpleNode>; last: () => Nullable<SimpleNode> };
+
   openElement(element: SimpleElement): void;
   closeElement(): void;
   didAppendNode(node: SimpleNode): void;
@@ -81,11 +88,13 @@ export interface TreeOperations {
   __setProperty(name: string, value: unknown): void;
 }
 
-declare const CURSOR_STACK: unique symbol;
-export type CursorStackSymbol = typeof CURSOR_STACK;
-
 export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
-  [CURSOR_STACK]: Stack<Cursor>;
+  readonly cursors: Stack<Cursor>;
+  readonly debug?: () => {
+    blocks: AppendingBlock[];
+    constructing: Nullable<SimpleElement>;
+    cursors: Cursor[];
+  };
 
   nextSibling: Nullable<SimpleNode>;
   dom: GlimmerTreeConstruction;

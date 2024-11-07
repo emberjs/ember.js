@@ -18,7 +18,7 @@ import {
 } from '@glimmer/debug';
 import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
-import { isObject } from '@glimmer/util';
+import { isIndexable } from '@glimmer/util';
 import { ContentType } from '@glimmer/vm';
 
 import { isCurriedType } from '../../curried-value';
@@ -50,7 +50,7 @@ function toContentType(value: unknown) {
 }
 
 function toDynamicContentType(value: unknown) {
-  if (!isObject(value)) {
+  if (!isIndexable(value)) {
     return ContentType.String;
   }
 
@@ -63,7 +63,6 @@ function toDynamicContentType(value: unknown) {
       !hasInternalHelperManager(value)
     ) {
       throw new Error(
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         `Attempted use a dynamic value as a component or helper, but that value did not have an associated component or helper manager. The value was: ${value}`
       );
     }

@@ -1,13 +1,12 @@
-
 node_modules/
 
 # output directories
 dist/
 ts-dist/
 
-
 # We don't need prettier here
 *.md
+!packages/**/*.md
 *.yaml
 *.yml
 guides/

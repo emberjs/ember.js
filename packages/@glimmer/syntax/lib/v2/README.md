@@ -93,13 +93,13 @@ None. Strict mode templates must be embedded in a JavaScript context where all f
 
 ### Namespaced Variable Resolution
 
-|                     |                                                   |
-| ------------------- | ------------------------------------------------- |
-| Syntax Positions    | `SubExpression`, `Block`, `Modifier`, `Component` |
-| Path has dots?      | ❌                                                |
-| Arguments?          | Any                                               |
-|                     |                                                   |
-| Namespace           | see table below                                   |
+|                  |                                                   |
+| ---------------- | ------------------------------------------------- |
+| Syntax Positions | `SubExpression`, `Block`, `Modifier`, `Component` |
+| Path has dots?   | ❌                                                |
+| Arguments?       | Any                                               |
+|                  |                                                   |
+| Namespace        | see table below                                   |
 
 These resolutions occur in syntaxes that are definitely calls (e.g. subexpressions, blocks, modifiers, etc.).
 
@@ -118,13 +118,13 @@ If the variable reference cannot be resolved in its namespace.
 
 ### Namespaced Resolution: Append
 
-|                     |                         |
-| ------------------- | ----------------------- |
-| Syntax Positions    | append                  |
-| Path has dots?      | ❌                      |
-| Arguments?          | Any                     |
-|                     |                         |
-| Namespace           | `helper` or `component` |
+|                  |                         |
+| ---------------- | ----------------------- |
+| Syntax Positions | append                  |
+| Path has dots?   | ❌                      |
+| Arguments?       | Any                     |
+|                  |                         |
+| Namespace        | `helper` or `component` |
 
 This resolution occurs in append nodes with at least one argument, and when the path does not have dots (e.g. `{{hello world}}`).
 
@@ -148,13 +148,13 @@ If the variable reference cannot be resolved in the `helper` or `component` name
 
 This resolution context occurs in attribute nodes with zero arguments, and when the path does not have dots.
 
-|                     |                          |
-| ------------------- | ------------------------ |
-| Syntax Positions    | attribute, interpolation |
-| Path has dots?      | ❌                       |
-| Arguments?          | Any                      |
-|                     |                          |
-| Namespace           | `helper`                 |
+|                  |                          |
+| ---------------- | ------------------------ |
+| Syntax Positions | attribute, interpolation |
+| Path has dots?   | ❌                       |
+| Arguments?       | Any                      |
+|                  |                          |
+| Namespace        | `helper`                 |
 
 #### Applicable Situations
 
@@ -193,10 +193,10 @@ Situations that meet all three of these criteria are syntax errors:
 
 #### Block, Component, Modifier, SubExpression
 
-|                     |     |
-| ------------------- | --- |
-| Path has dots?      | ❌  |
-| Arguments?          | Any |
+|                |     |
+| -------------- | --- |
+| Path has dots? | ❌  |
+| Arguments?     | Any |
 
 | Syntax Position | Example       |     | Namespace   |
 | --------------- | ------------- | --- | ----------- |

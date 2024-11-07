@@ -16,6 +16,7 @@ import type {
   SymbolTable,
   WireFormat,
 } from '@glimmer/interfaces';
+import { IS_COMPILABLE_TEMPLATE } from '@glimmer/constants';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { EMPTY_ARRAY } from '@glimmer/util';
 
@@ -30,6 +31,12 @@ import { STATEMENTS } from './syntax/statements';
 export const PLACEHOLDER_HANDLE = -1;
 
 class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplate<S> {
+  static {
+    if (LOCAL_TRACE_LOGGING) {
+      Reflect.set(this.prototype, IS_COMPILABLE_TEMPLATE, true);
+    }
+  }
+
   compiled: Nullable<HandleResult> = null;
 
   constructor(
@@ -48,13 +55,13 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
 }
 
 export function compilable(layout: LayoutWithContext, moduleName: string): CompilableProgram {
-  let [statements, symbols, hasEval] = layout.block;
+  let [statements, symbols, hasDebugger] = layout.block;
   return new CompilableTemplateImpl(
     statements,
     meta(layout),
     {
       symbols,
-      hasEval,
+      hasDebugger,
     },
     moduleName
   );
