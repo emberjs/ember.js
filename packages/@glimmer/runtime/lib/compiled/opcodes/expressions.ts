@@ -3,9 +3,7 @@ import type {
   CurriedType,
   Helper,
   HelperDefinitionState,
-  Owner,
   ScopeBlock,
-  VM as PublicVM,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
@@ -49,7 +47,7 @@ import {
   UNDEFINED_REFERENCE,
   valueForRef,
 } from '@glimmer/reference';
-import { assign, isObject } from '@glimmer/util';
+import { assign, isIndexable } from '@glimmer/util';
 import { $v0 } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
@@ -67,8 +65,6 @@ import {
   CheckScopeBlock,
   CheckUndefinedReference,
 } from './-debug-strip';
-
-export type FunctionExpression<T> = (vm: PublicVM) => Reference<T>;
 
 APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let stack = vm.stack;
@@ -98,7 +94,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   let args = check(stack.pop(), CheckArguments).capture();
 
   let helperRef: Reference;
-  let initialOwner: Owner = vm.getOwner();
+  let initialOwner = vm.getOwner();
 
   let helperInstanceRef = createComputeRef(() => {
     if (helperRef !== undefined) {
@@ -123,7 +119,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
       helperRef = helper(args, owner);
 
       associateDestroyableChild(helperInstanceRef, helperRef);
-    } else if (isObject(definition)) {
+    } else if (isIndexable(definition)) {
       let helper = resolveHelper(definition, ref);
       helperRef = helper(args, initialOwner);
 
@@ -202,8 +198,8 @@ APPEND_OPCODES.add(VM_SET_BLOCK_OP, (vm, { op1: symbol }) => {
   vm.scope().bindBlock(symbol, [handle, scope, table]);
 });
 
-APPEND_OPCODES.add(VM_ROOT_SCOPE_OP, (vm, { op1: symbols }) => {
-  vm.pushRootScope(symbols, vm.getOwner());
+APPEND_OPCODES.add(VM_ROOT_SCOPE_OP, (vm, { op1: size }) => {
+  vm.pushRootScope(size, vm.getOwner());
 });
 
 APPEND_OPCODES.add(VM_GET_PROPERTY_OP, (vm, { op1: _key }) => {

@@ -14,6 +14,8 @@ export interface Unique<T> {
 
 export type Recast<T, U> = (T & U) | U;
 
+export type AnyFn = Function;
+
 /**
  * This is needed because the normal IteratorResult in the TypeScript
  * standard library is generic over the value in each tick and not over

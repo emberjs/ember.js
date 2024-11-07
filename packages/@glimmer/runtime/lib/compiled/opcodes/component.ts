@@ -72,7 +72,7 @@ import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
 import { assign, dict, EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util';
-import { $t0, $t1, InternalComponentCapabilities } from '@glimmer/vm';
+import { $s0, $t0, $t1, InternalComponentCapabilities } from '@glimmer/vm';
 
 import type { CurriedValue } from '../../curried-value';
 import type { UpdatingVM } from '../../vm';
@@ -367,8 +367,8 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
   stack.push(args);
 });
 
-APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags, op2: register }) => {
-  let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
+APPEND_OPCODES.add(VM_CREATE_COMPONENT_OP, (vm, { op1: flags }) => {
+  let instance = check(vm.fetchValue($s0), CheckComponentInstance);
   let { definition, manager, capabilities } = instance;
 
   if (!managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
@@ -843,7 +843,7 @@ APPEND_OPCODES.add(VM_VIRTUAL_ROOT_SCOPE_OP, (vm, { op1: register }) => {
 APPEND_OPCODES.add(VM_SETUP_FOR_DEBUGGER_OP, (vm, { op1: register }) => {
   let state = check(vm.fetchValue(check(register, CheckRegister)), CheckFinishedComponentInstance);
 
-  if (state.table.hasEval) {
+  if (state.table.hasDebugger) {
     let lookup = (state.lookup = dict<ScopeSlot>());
     vm.scope().bindDebuggerScope(lookup);
   }

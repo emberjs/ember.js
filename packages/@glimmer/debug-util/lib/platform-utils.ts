@@ -1,4 +1,4 @@
-import type { Maybe, Present } from '@glimmer/interfaces';
+import type { Maybe, Optional } from '@glimmer/interfaces';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 
 export type Factory<T> = new (...args: unknown[]) => T;
@@ -10,28 +10,33 @@ export function unwrap<T>(val: Maybe<T>): T {
   return val as T;
 }
 
-export const expect = (LOCAL_DEBUG
-  ? <T>(value: T, _message: string) => value
-  : <T>(val: T, message: string): Present<T> => {
-      if (LOCAL_DEBUG) if (val === null || val === undefined) throw new Error(message);
-      return val as Present<T>;
-    }) as <T>(value: T, message: string) => NonNullable<T> as <T>(
-  value: T,
-  message: string
-) => Present<T>;
+/**
+ * This function takes an optional function and returns its result. It's
+ * expected to be used with optional debug methods, in the context of an
+ * existing `LOCAL_DEBUG` check.
+ */
+export function dev<T>(val: Optional<() => T>): T {
+  if (val === null || val === undefined) {
+    throw new Error(
+      `Expected debug method to be present. Make sure you're calling \`dev()\` in the context of a \`LOCAL_DEBUG\` check.`
+    );
+  }
 
-export const unreachable = LOCAL_DEBUG
-  ? () => {}
-  : (message = 'unreachable'): Error => new Error(message);
+  return val();
+}
 
-export const exhausted = (
-  LOCAL_DEBUG
-    ? () => {}
-    : (value: never): never => {
-        throw new Error(`Exhausted ${String(value)}`);
-      }
-) as (value: never) => never;
+export function expect<T>(val: Maybe<T>, message: string): T;
+export function expect(val: unknown, message: string): unknown {
+  if (LOCAL_DEBUG) if (val === null || val === undefined) throw new Error(message);
+  return val;
+}
 
-export type Lit = string | number | boolean | undefined | null | void | {};
+export function unreachable(message?: string): never;
+export function unreachable(message?: string): void {
+  if (LOCAL_DEBUG) throw new Error(message);
+}
 
-export const tuple = <T extends Lit[]>(...args: T) => args;
+export function exhausted(value: never): never;
+export function exhausted(value: never): void {
+  if (LOCAL_DEBUG) throw new Error(`Exhausted ${String(value)}`);
+}

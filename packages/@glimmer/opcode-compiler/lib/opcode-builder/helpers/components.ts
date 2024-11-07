@@ -196,7 +196,8 @@ function InvokeStaticComponent(
   let { symbolTable } = layout;
 
   let bailOut =
-    symbolTable.hasEval || hasCapability(capabilities, InternalComponentCapabilities.prepareArgs);
+    symbolTable.hasDebugger ||
+    hasCapability(capabilities, InternalComponentCapabilities.prepareArgs);
 
   if (bailOut) {
     InvokeNonStaticComponent(op, {
@@ -315,7 +316,7 @@ function InvokeStaticComponent(
 
   if (hasCapability(capabilities, InternalComponentCapabilities.createInstance)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    op(VM_CREATE_COMPONENT_OP, (blocks.has('default') as any) | 0, $s0);
+    op(VM_CREATE_COMPONENT_OP, (blocks.has('default') as any) | 0);
   }
 
   op(VM_REGISTER_COMPONENT_DESTRUCTOR_OP, $s0);
@@ -448,7 +449,7 @@ export function invokePreparedComponent(
   op(VM_PUSH_DYNAMIC_SCOPE_OP);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  op(VM_CREATE_COMPONENT_OP, (hasBlock as any) | 0, $s0);
+  op(VM_CREATE_COMPONENT_OP, (hasBlock as any) | 0);
 
   // this has to run after createComponent to allow
   // for late-bound layouts, but a caller is free

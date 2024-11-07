@@ -3,12 +3,12 @@ import type {
   ComponentInstanceWithCreate,
   Environment,
   EnvironmentOptions,
-  EvaluationContext,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   ModifierInstance,
   Nullable,
   RuntimeArtifacts,
+  RuntimeOptions,
   Transaction,
   TransactionSymbol,
 } from '@glimmer/interfaces';
@@ -147,7 +147,7 @@ export class EnvironmentImpl implements Environment {
   }
 
   private get transaction(): TransactionImpl {
-    return expect(this[TRANSACTION]!, 'must be in a transaction');
+    return expect(this[TRANSACTION], 'must be in a transaction');
   }
 
   didCreate(component: ComponentInstanceWithCreate) {
@@ -199,12 +199,12 @@ export interface EnvironmentDelegate {
   onTransactionCommit: () => void;
 }
 
-export function runtimeContext(
+export function runtimeOptions(
   options: EnvironmentOptions,
   delegate: EnvironmentDelegate,
   artifacts: RuntimeArtifacts,
-  resolver: ClassicResolver
-): Pick<EvaluationContext, 'env' | 'program' | 'resolver'> {
+  resolver: Nullable<ClassicResolver>
+): RuntimeOptions {
   return {
     env: new EnvironmentImpl(options, delegate),
     program: new ProgramImpl(artifacts.constants, artifacts.heap),

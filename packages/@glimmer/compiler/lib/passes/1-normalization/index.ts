@@ -1,4 +1,5 @@
 import type { ASTv2, src } from '@glimmer/syntax';
+import { DebugLogger, frag, fragment, valueFragment } from '@glimmer/debug';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 
@@ -56,16 +57,28 @@ export default function normalize(
   let state = new NormalizationState(root.table, isStrict);
 
   if (LOCAL_TRACE_LOGGING) {
-    LOCAL_LOGGER.groupCollapsed(`pass0: visiting`);
-    LOCAL_LOGGER.debug('symbols', root.table);
-    LOCAL_LOGGER.debug('source', source);
-    LOCAL_LOGGER.groupEnd();
+    const logger = DebugLogger.configured();
+    const done = logger.group(`pass0: visiting`).collapsed();
+    logger.log(valueFragment(root.table));
+    // LOCAL_LOGGER.debug('symbols', root.table);
+    logger.log(valueFragment(source));
+    done();
   }
 
   let body = VISIT_STMTS.visitList(root.body, state);
 
   if (LOCAL_TRACE_LOGGING) {
+    const logger = DebugLogger.configured();
+
     if (body.isOk) {
+      const done = logger.group(frag`pass0: out`).collapsed();
+      const ops = body.value.toPresentArray();
+
+      if (ops) {
+        const full = frag` ${valueFragment(ops)}`.subtle();
+        logger.log(frag`${fragment.array(ops.map((op) => valueFragment(op)))}${full}`);
+      }
+      done();
       LOCAL_LOGGER.debug('-> pass0: out', body.value);
     } else {
       LOCAL_LOGGER.debug('-> pass0: error', body.reason);

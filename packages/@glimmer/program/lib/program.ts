@@ -24,7 +24,7 @@ export type StdlibPlaceholder = [number, StdLibOperand];
 const PAGE_SIZE = 0x100000;
 
 /**
- * The Heap is responsible for dynamically allocating
+ * The Program Heap is responsible for dynamically allocating
  * memory in which we read/write the VM's instructions
  * from/to. When we malloc we pass out a VMHandle, which
  * is used as an indirect way of accessing the memory during
@@ -55,6 +55,9 @@ export class ProgramHeapImpl implements ProgramHeap {
     this.heap = new Int32Array(PAGE_SIZE);
     this.handleTable = [];
     this.handleState = [];
+  }
+  entries(): number {
+    return this.offset;
   }
 
   pushRaw(value: number): void {
@@ -100,6 +103,7 @@ export class ProgramHeapImpl implements ProgramHeap {
     // if we start using the compact API, we should change this.
     if (LOCAL_DEBUG) {
       this.handleState[handle] = ALLOCATED;
+      this.handleTable[handle + 1] = this.offset;
     }
   }
 

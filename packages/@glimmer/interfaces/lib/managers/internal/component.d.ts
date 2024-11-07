@@ -237,7 +237,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
 
 export interface WithDynamicLayout<
   I = ComponentInstanceState,
-  R extends ClassicResolver = ClassicResolver,
+  R extends Nullable<ClassicResolver> = Nullable<ClassicResolver>,
 > extends InternalComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might

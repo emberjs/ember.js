@@ -1,4 +1,5 @@
 import type {
+  ClassicResolver,
   Dict,
   Helper,
   HelperDefinitionState,
@@ -16,7 +17,7 @@ import {
 } from '@glimmer/manager';
 import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import { runtimeContext } from '@glimmer/runtime';
+import { runtimeOptions } from '@glimmer/runtime';
 
 import type { UpdateBenchmark } from '../interfaces';
 
@@ -84,21 +85,17 @@ export default function createRegistry(): Registry {
       const sharedArtifacts = artifacts();
       const document = element.ownerDocument as SimpleDocument;
       const envDelegate = createEnvDelegate(isInteractive ?? true);
-      const runtime = runtimeContext(
-        {
-          document,
-        },
-        envDelegate,
-        sharedArtifacts,
-        {
-          lookupHelper: (name) => helpers.get(name) ?? null,
-          lookupModifier: (name) => modifiers.get(name) ?? null,
-          lookupComponent: (name) => components.get(name) ?? null,
 
-          lookupBuiltInHelper: () => null,
-          lookupBuiltInModifier: () => null,
-        }
-      );
+      const resolver = {
+        lookupHelper: (name) => helpers.get(name) ?? null,
+        lookupModifier: (name) => modifiers.get(name) ?? null,
+        lookupComponent: (name) => components.get(name) ?? null,
+
+        lookupBuiltInHelper: () => null,
+        lookupBuiltInModifier: () => null,
+      } satisfies ClassicResolver;
+
+      const runtime = runtimeOptions({ document }, envDelegate, sharedArtifacts, resolver);
 
       const context = new EvaluationContextImpl(
         sharedArtifacts,
@@ -110,7 +107,7 @@ export default function createRegistry(): Registry {
         throw new Error(`missing ${entry} component`);
       }
 
-      return renderBenchmark(context, component, args, element as SimpleElement);
+      return renderBenchmark(sharedArtifacts, context, component, args, element as SimpleElement);
     },
   };
 }

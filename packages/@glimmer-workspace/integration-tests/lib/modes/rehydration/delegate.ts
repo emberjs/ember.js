@@ -27,7 +27,7 @@ import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
 import type { RenderDelegateOptions } from '../../render-delegate';
-import type { DebugRehydrationBuilder } from './builder';
+import type { DebugRehydrateTree } from './builder';
 
 import { BaseEnv } from '../../base-env';
 import { replaceHTML, toInnerHTML } from '../../dom/simple-utils';
@@ -41,7 +41,7 @@ import {
 import { TestJitRegistry } from '../jit/registry';
 import { renderTemplate } from '../jit/render';
 import { TestJitRuntimeResolver } from '../jit/resolver';
-import { debugRehydration } from './builder';
+import { debugRehydrateTree } from './builder';
 
 export interface RehydrationStats {
   clearedNodes: SimpleNode[];
@@ -105,7 +105,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     if (cursor.element instanceof Node) {
-      return debugRehydration(env, cursor);
+      return debugRehydrateTree(env, cursor);
     }
 
     return serializeBuilder(env, cursor);
@@ -152,7 +152,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
-    let builder = this.getElementBuilder(env, cursor) as DebugRehydrationBuilder;
+    let builder = this.getElementBuilder(env, cursor) as DebugRehydrateTree;
     let result = renderTemplate(
       template,
       this.clientContext,

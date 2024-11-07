@@ -10,7 +10,7 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import type { RemoteLiveBlock } from '@glimmer/runtime';
+import type { RemoteBlock } from '@glimmer/runtime';
 import { ConcreteBounds, NewTreeBuilder } from '@glimmer/runtime';
 
 const TEXT_NODE = 3;
@@ -131,7 +131,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode> = null
-  ): RemoteLiveBlock {
+  ): RemoteBlock {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);

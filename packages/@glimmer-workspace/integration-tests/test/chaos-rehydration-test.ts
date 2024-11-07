@@ -2,7 +2,7 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
-import { isObject, LOCAL_LOGGER } from '@glimmer/util';
+import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
 
 import type { ComponentBlueprint, Content } from '..';
 
@@ -164,7 +164,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 }
 
 function getErrorMessage(assert: Assert, error: unknown): string {
-  if (isObject(error) && 'message' in error && typeof error.message === 'string') {
+  if (isIndexable(error) && 'message' in error && typeof error.message === 'string') {
     return error.message;
   } else {
     assert.pushResult({

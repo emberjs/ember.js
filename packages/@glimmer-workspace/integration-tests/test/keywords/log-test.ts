@@ -1,3 +1,5 @@
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
+
 import { jitSuite, RenderTest, test } from '../..';
 
 class LogTest extends RenderTest {
@@ -80,4 +82,6 @@ class LogTest extends RenderTest {
   }
 }
 
-jitSuite(LogTest);
+if (!LOCAL_TRACE_LOGGING) {
+  jitSuite(LogTest);
+}

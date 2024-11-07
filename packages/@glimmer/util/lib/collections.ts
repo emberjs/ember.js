@@ -9,7 +9,7 @@ export function isDict<T>(u: T): u is Dict & T {
   return u !== null && u !== undefined;
 }
 
-export function isObject<T>(u: T): u is object & T {
+export function isIndexable<T>(u: T): u is object & T {
   return typeof u === 'function' || (typeof u === 'object' && u !== null);
 }
 
@@ -44,6 +44,10 @@ export class StackImpl<T> implements Stack<T> {
 
   isEmpty(): boolean {
     return this.stack.length === 0;
+  }
+
+  snapshot(): T[] {
+    return [...this.stack];
   }
 
   toArray(): T[] {

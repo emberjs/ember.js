@@ -19,7 +19,7 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import type { Tag } from '@glimmer/validator';
 import { check, CheckBlockSymbolTable, CheckHandle, CheckNullable, CheckOr } from '@glimmer/debug';
-import { unwrap } from '@glimmer/debug-util';
+import { setLocalDebugType, unwrap } from '@glimmer/debug-util';
 import { createDebugAliasRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
 import { dict, EMPTY_STRING_ARRAY, emptyArray, enumerate } from '@glimmer/util';
 import { CONSTANT_TAG } from '@glimmer/validator';
@@ -42,6 +42,10 @@ export class VMArgumentsImpl implements VMArguments {
   public positional = new PositionalArgumentsImpl();
   public named = new NamedArgumentsImpl();
   public blocks = new BlockArgumentsImpl();
+
+  constructor() {
+    setLocalDebugType('args', this);
+  }
 
   empty(stack: EvaluationStack): this {
     let base = stack.registers[$sp] + 1;
@@ -141,6 +145,10 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
   private _references: Nullable<readonly Reference[]> = null;
 
+  constructor() {
+    setLocalDebugType('args:positional', this);
+  }
+
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
     this.base = base;
@@ -214,6 +222,10 @@ export class NamedArgumentsImpl implements NamedArguments {
 
   private _names: Nullable<readonly string[]> = EMPTY_STRING_ARRAY;
   private _atNames: Nullable<readonly string[]> = EMPTY_STRING_ARRAY;
+
+  constructor() {
+    setLocalDebugType('args:named', this);
+  }
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
@@ -371,6 +383,10 @@ export class BlockArgumentsImpl implements BlockArguments {
 
   public length = 0;
   public base = 0;
+
+  constructor() {
+    setLocalDebugType('args:blocks', this);
+  }
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
