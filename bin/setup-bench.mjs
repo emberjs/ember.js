@@ -162,14 +162,11 @@ try {
   const output =
     await $`node --single-threaded-gc ./node_modules/tracerbench/bin/run compare --regressionThreshold 25 --sampleTimeout 60 --fidelity ${fidelity} --markers ${markers} --controlURL ${CONTROL_URL} --experimentURL ${EXPERIMENT_URL} --report --headless --cpuThrottleRate ${throttleRate}`;
 
-  try {
-    fs.writeFileSync(
-      'tracerbench-results/msg.txt',
-      output.stdout.split('Benchmark Results Summary').pop() ?? ''
-    );
-  } catch (e) {
-    // fine
-  }
+  fs.ensureDirSync('tracerbench-results');
+  fs.writeFileSync(
+    'tracerbench-results/msg.txt',
+    output.stdout.split('Benchmark Results Summary').pop() ?? ''
+  );
 } catch (p) {
   console.error(p);
   process.exit(1);
