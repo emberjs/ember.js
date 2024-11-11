@@ -1,12 +1,15 @@
 # Ember Changelog
 
-## v6.0.0-beta.1 (September 30, 2024)
-
-- [#20730](https://github.com/emberjs/ember.js/pull/20730) [CLEANUP] Remove support for EXTEND_PROTOTYPES
+## v6.0.0 (November 11, 2024)
+ 
+- [BREAKING] Features and APIs that were deprecated until v6.0 will now throw exceptions and the related code will be removed imminently. For a list of deprecations, see the [Deprecation Guide](https://deprecations.emberjs.com/v5.x).
 - [#20731](https://github.com/emberjs/ember.js/pull/20731) [BUGFIX] Bump `import Ember from 'ember'` barrel file deprecations until 7.0.0
+- [#20779](https://github.com/emberjs/ember.js/pull/20779) / [#20791](https://github.com/emberjs/ember.js/pull/20791) [CLEANUP] Update browser support per RFC #685. Support is now Chrome >= 109, Edge >= 128 Firefox >= 115, Safari >= 15.6, ChromeAndroid >= 130, FirefoxAndroid >= 130
+- [#20773](https://github.com/emberjs/ember.js/pull/20773) [CLEANUP] Remove deprecated features from component blueprint per [RFC #995](https://rfcs.emberjs.com/id/0995-deprecate-non-colocated-components).
+- [#20730](https://github.com/emberjs/ember.js/pull/20730) [CLEANUP] Remove support for EXTEND_PROTOTYPES
 - [#20732](https://github.com/emberjs/ember.js/pull/20732) [TYPES] Directly assign a boolean value in deprecated-features
-- [#20744](https://github.com/emberjs/ember.js/pull/20744) Add v2 addon metadata
 - [#20753](https://github.com/emberjs/ember.js/pull/20753) [INTERNAL] Update tagging strategy: ember-source tags will now be v1.2.3-ember-source instead of v1.2.3
+- [#20744](https://github.com/emberjs/ember.js/pull/20744) Add v2 addon metadata
 
 ## v5.12.0 (September 30, 2024)
 
