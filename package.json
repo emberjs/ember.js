@@ -7,6 +7,9 @@
   ],
   "exports": {
     "./*": "./dist/packages/*",
+    "./types": {
+      "types": "./types/stable/index.d.ts"
+    },
     "./dist/ember-template-compiler.js": "./dist/ember-template-compiler.js",
     "./package.json": "./package.json"
   },
