@@ -58,6 +58,13 @@ try {
         const location = msg.location();
         const text = msg.text();
 
+        if (text.includes('# fail')) {
+          if (!text.includes('# fail 0')) {
+            console.error(text);
+            process.exit(1);
+          }
+        }
+
         if (location.url?.includes(`/qunit.js`)) {
           console.log(text);
         } else if (text === `[HARNESS] done`) {
