@@ -9,8 +9,8 @@ import {
   VM_APPEND_TEXT_OP,
   VM_ASSERT_SAME_OP,
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
+  VM_BIND_DEBUGGER_SCOPE_OP,
   VM_BIND_DYNAMIC_SCOPE_OP,
-  VM_BIND_EVAL_SCOPE_OP,
   VM_CAPTURE_ARGS_OP,
   VM_CHILD_SCOPE_OP,
   VM_CLOSE_ELEMENT_OP,
@@ -93,7 +93,7 @@ import {
   VM_SET_BLOCKS_OP,
   VM_SET_NAMED_VARIABLES_OP,
   VM_SET_VARIABLE_OP,
-  VM_SETUP_FOR_EVAL_OP,
+  VM_SETUP_FOR_DEBUGGER_OP,
   VM_SPREAD_BLOCK_OP,
   VM_STATIC_ATTR_OP,
   VM_SYSCALL_SIZE,
@@ -1293,9 +1293,9 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[VM_BIND_EVAL_SCOPE_OP] = {
-    name: 'BindEvalScope',
-    mnemonic: 'eval_scope',
+  METADATA[VM_BIND_DEBUGGER_SCOPE_OP] = {
+    name: 'BindDebuggerScope',
+    mnemonic: 'debugger_scope',
     before: null,
     stackChange: 0,
     ops: [
@@ -1308,9 +1308,9 @@ if (LOCAL_DEBUG) {
     check: true,
   };
 
-  METADATA[VM_SETUP_FOR_EVAL_OP] = {
-    name: 'SetupForEval',
-    mnemonic: 'eval_setup',
+  METADATA[VM_SETUP_FOR_DEBUGGER_OP] = {
+    name: 'SetupForDebugger',
+    mnemonic: 'debugger_setup',
     before: null,
     stackChange: 0,
     ops: [

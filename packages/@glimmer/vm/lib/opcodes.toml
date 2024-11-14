@@ -666,15 +666,15 @@ format = ["GetComponentLayout", "state:register"]
 operand-stack = [[], ["ProgramSymbolTable", "handle"]]
 operation = "Get the component layout from the manager."
 
-[syscall.eval_scope]
+[syscall.debugger_scope]
 
-format = ["BindEvalScope", "state:register"]
-operation = "Populate the eval lookup if necessary."
+format = ["BindDebuggerScope", "state:register"]
+operation = "Populate the debugger lookup if necessary."
 
-[syscall.eval_setup]
+[syscall.debugger_setup]
 
-format = ["SetupForEval", "state:register"]
-operation = "Setup for eval"
+format = ["SetupForDebugger", "state:register"]
+operation = "Setup for debugger"
 
 [syscall.comp_layoutput]
 

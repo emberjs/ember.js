@@ -3,7 +3,6 @@ import type {
   DynamicScope,
   Nullable,
   Owner,
-  PartialScope,
   Scope,
   ScopeBlock,
   ScopeSlot,
@@ -42,17 +41,17 @@ export function isScopeReference(s: ScopeSlot): s is Reference {
   return true;
 }
 
-export class PartialScopeImpl implements PartialScope {
-  static root(self: Reference<unknown>, size = 0, owner: Owner): PartialScope {
+export class ScopeImpl implements Scope {
+  static root(self: Reference<unknown>, size = 0, owner: Owner): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
-    return new PartialScopeImpl(refs, owner, null, null, null).init({ self });
+    return new ScopeImpl(refs, owner, null, null).init({ self });
   }
 
   static sized(size = 0, owner: Owner): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
-    return new PartialScopeImpl(refs, owner, null, null, null);
+    return new ScopeImpl(refs, owner, null, null);
   }
 
   constructor(
@@ -60,10 +59,8 @@ export class PartialScopeImpl implements PartialScope {
     readonly slots: Array<ScopeSlot>,
     readonly owner: Owner,
     private callerScope: Scope | null,
-    // named arguments and blocks passed to a layout that uses eval
-    private evalScope: Dict<ScopeSlot> | null,
-    // locals in scope when the partial was invoked
-    private partialMap: Dict<Reference<unknown>> | null
+    // named arguments and blocks passed to a layout that uses debugger
+    private debuggerScope: Dict<ScopeSlot> | null
   ) {}
 
   init({ self }: { self: Reference<unknown> }): this {
@@ -84,12 +81,8 @@ export class PartialScopeImpl implements PartialScope {
     return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock);
   }
 
-  getEvalScope(): Nullable<Dict<ScopeSlot>> {
-    return this.evalScope;
-  }
-
-  getPartialMap(): Nullable<Dict<Reference<unknown>>> {
-    return this.partialMap;
+  getDebuggerScope(): Nullable<Dict<ScopeSlot>> {
+    return this.debuggerScope;
   }
 
   bind(symbol: number, value: ScopeSlot) {
@@ -108,12 +101,8 @@ export class PartialScopeImpl implements PartialScope {
     this.set<Nullable<ScopeBlock>>(symbol, value);
   }
 
-  bindEvalScope(map: Nullable<Dict<ScopeSlot>>) {
-    this.evalScope = map;
-  }
-
-  bindPartialMap(map: Dict<Reference<unknown>>) {
-    this.partialMap = map;
+  bindDebuggerScope(map: Nullable<Dict<ScopeSlot>>) {
+    this.debuggerScope = map;
   }
 
   bindCallerScope(scope: Nullable<Scope>): void {
@@ -125,13 +114,7 @@ export class PartialScopeImpl implements PartialScope {
   }
 
   child(): Scope {
-    return new PartialScopeImpl(
-      this.slots.slice(),
-      this.owner,
-      this.callerScope,
-      this.evalScope,
-      this.partialMap
-    );
+    return new ScopeImpl(this.slots.slice(), this.owner, this.callerScope, this.debuggerScope);
   }
 
   private get<T extends ScopeSlot>(index: number): T {
