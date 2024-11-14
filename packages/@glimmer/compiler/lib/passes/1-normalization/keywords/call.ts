@@ -1,4 +1,4 @@
-import { CurriedTypes } from '@glimmer/vm';
+import { CURRIED_COMPONENT, CURRIED_HELPER, CURRIED_MODIFIER } from '@glimmer/constants';
 
 import { keywords } from './impl';
 import { curryKeyword } from './utils/curry';
@@ -14,6 +14,6 @@ export const CALL_KEYWORDS = keywords('Call')
   .kw('log', logKeyword)
   .kw('if', ifUnlessInlineKeyword('if'))
   .kw('unless', ifUnlessInlineKeyword('unless'))
-  .kw('component', curryKeyword(CurriedTypes.Component))
-  .kw('helper', curryKeyword(CurriedTypes.Helper))
-  .kw('modifier', curryKeyword(CurriedTypes.Modifier));
+  .kw('component', curryKeyword(CURRIED_COMPONENT))
+  .kw('helper', curryKeyword(CURRIED_HELPER))
+  .kw('modifier', curryKeyword(CURRIED_MODIFIER));

@@ -4,9 +4,6 @@ import type {
   CreateArgsCapability,
   CreateCallerCapability,
   CreateInstanceCapability,
-  CurriedComponent,
-  CurriedHelper,
-  CurriedModifier,
   DynamicLayoutCapability,
   DynamicScopeCapability,
   DynamicTagCapability,
@@ -23,12 +20,6 @@ import type {
   WillDestroyCapability,
   WrappedCapability,
 } from '@glimmer/interfaces';
-
-export const CurriedTypes = {
-  Component: 0 satisfies CurriedComponent,
-  Helper: 1 satisfies CurriedHelper,
-  Modifier: 2 satisfies CurriedModifier,
-} as const;
 
 export const InternalComponentCapabilities = {
   Empty: 0 satisfies EmptyCapability,

@@ -1,9 +1,6 @@
 export { ContentType } from './lib/content';
 export {
   ARG_SHIFT,
-  /** @deprecated */
-  CurriedTypes as CurriedType,
-  CurriedTypes,
   InternalComponentCapabilities,
   /** @deprecated */
   InternalComponentCapabilities as InternalComponentCapability,

@@ -6,6 +6,7 @@ import type {
   TemplateFactory,
 } from '@glimmer/interfaces';
 import type { CurriedValue } from '@glimmer/runtime';
+import { CURRIED_COMPONENT } from '@glimmer/constants';
 import {
   getInternalComponentManager,
   setComponentTemplate,
@@ -13,7 +14,6 @@ import {
   setInternalModifierManager,
 } from '@glimmer/manager';
 import { curry, templateOnlyComponent } from '@glimmer/runtime';
-import { CurriedTypes } from '@glimmer/vm';
 
 import type { ComponentKind, ComponentTypes } from '../../components';
 import type { UserHelper } from '../../helpers';
@@ -168,11 +168,5 @@ export function componentHelper(
 
   if (definition === null) return null;
 
-  return curry(
-    CurriedTypes.Component,
-    constants.resolvedComponent(definition, name),
-    {},
-    null,
-    true
-  );
+  return curry(CURRIED_COMPONENT, constants.resolvedComponent(definition, name), {}, null, true);
 }

@@ -12,6 +12,7 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import type { Revision, Tag } from '@glimmer/validator';
 import {
+  CURRIED_MODIFIER,
   VM_CLOSE_ELEMENT_OP,
   VM_COMMENT_OP,
   VM_DYNAMIC_ATTR_OP,
@@ -39,7 +40,7 @@ import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
 import { isObject } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
-import { $t0, CurriedTypes } from '@glimmer/vm';
+import { $t0 } from '@glimmer/vm';
 
 import type { CurriedValue } from '../../curried-value';
 import type { DynamicAttribute } from '../../vm/attributes/dynamic';
@@ -210,7 +211,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
 
     let hostDefinition: CurriedValue | ModifierDefinitionState;
 
-    if (isCurriedType(value, CurriedTypes.Modifier)) {
+    if (isCurriedType(value, CURRIED_MODIFIER)) {
       let {
         definition: resolvedDefinition,
         owner: curriedOwner,

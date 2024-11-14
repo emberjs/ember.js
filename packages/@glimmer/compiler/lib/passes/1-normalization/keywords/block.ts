@@ -1,6 +1,6 @@
 import type { ASTv2 } from '@glimmer/syntax';
+import { CURRIED_COMPONENT } from '@glimmer/constants';
 import { generateSyntaxError } from '@glimmer/syntax';
-import { CurriedTypes } from '@glimmer/vm';
 
 import type { NormalizationState } from '../context';
 
@@ -362,7 +362,7 @@ export const BLOCK_KEYWORDS = keywords('Block')
     },
   })
   .kw('component', {
-    assert: assertCurryKeyword(CurriedTypes.Component),
+    assert: assertCurryKeyword(CURRIED_COMPONENT),
 
     translate(
       { node, state }: { node: ASTv2.InvokeBlock; state: NormalizationState },
