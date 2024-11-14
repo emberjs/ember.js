@@ -1,0 +1,3 @@
+[tools]
+pnpm = "8.15"
+node = "latest"
