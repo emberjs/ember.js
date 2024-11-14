@@ -26,6 +26,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
+  CURRIED_COMPONENT,
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
   VM_CAPTURE_ARGS_OP,
   VM_COMMIT_COMPONENT_TRANSACTION_OP,
@@ -70,7 +71,7 @@ import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
 import { assign, dict, EMPTY_STRING_ARRAY, enumerate } from '@glimmer/util';
-import { $t0, $t1, CurriedTypes, InternalComponentCapabilities } from '@glimmer/vm';
+import { $t0, $t1, InternalComponentCapabilities } from '@glimmer/vm';
 
 import type { CurriedValue } from '../../curried-value';
 import type { UpdatingVM } from '../../vm';
@@ -270,7 +271,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
 
   let { definition } = instance;
 
-  if (isCurriedType(definition, CurriedTypes.Component)) {
+  if (isCurriedType(definition, CURRIED_COMPONENT)) {
     assert(
       !definition.manager,
       "If the component definition was curried, we don't yet have a manager"

@@ -9,6 +9,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
+  CURRIED_HELPER,
   decodeHandle,
   VM_CONCAT_OP,
   VM_CURRY_OP,
@@ -49,7 +50,7 @@ import {
   valueForRef,
 } from '@glimmer/reference';
 import { assign, isObject } from '@glimmer/util';
-import { $v0, CurriedTypes } from '@glimmer/vm';
+import { $v0 } from '@glimmer/vm';
 
 import { isCurriedType, resolveCurriedValue } from '../../curried-value';
 import { APPEND_OPCODES } from '../../opcodes';
@@ -106,7 +107,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
 
     let definition = valueForRef(ref);
 
-    if (isCurriedType(definition, CurriedTypes.Helper)) {
+    if (isCurriedType(definition, CURRIED_HELPER)) {
       let { definition: resolvedDef, owner, positional, named } = resolveCurriedValue(definition);
 
       let helper = resolveHelper(resolvedDef, ref);

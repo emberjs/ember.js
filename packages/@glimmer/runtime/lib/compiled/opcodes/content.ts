@@ -1,4 +1,6 @@
 import {
+  CURRIED_COMPONENT,
+  CURRIED_HELPER,
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
   VM_APPEND_HTML_OP,
   VM_APPEND_NODE_OP,
@@ -17,7 +19,7 @@ import {
 import { hasInternalComponentManager, hasInternalHelperManager } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
 import { isObject } from '@glimmer/util';
-import { ContentType, CurriedType } from '@glimmer/vm';
+import { ContentType } from '@glimmer/vm';
 
 import { isCurriedType } from '../../curried-value';
 import { isEmpty, isFragment, isNode, isSafeString, shouldCoerce } from '../../dom/normalize';
@@ -30,14 +32,11 @@ function toContentType(value: unknown) {
   if (shouldCoerce(value)) {
     return ContentType.String;
   } else if (
-    isCurriedType(value, CurriedType.Component) ||
+    isCurriedType(value, CURRIED_COMPONENT) ||
     hasInternalComponentManager(value as object)
   ) {
     return ContentType.Component;
-  } else if (
-    isCurriedType(value, CurriedType.Helper) ||
-    hasInternalHelperManager(value as object)
-  ) {
+  } else if (isCurriedType(value, CURRIED_HELPER) || hasInternalHelperManager(value as object)) {
     return ContentType.Helper;
   } else if (isSafeString(value)) {
     return ContentType.SafeString;
@@ -55,12 +54,12 @@ function toDynamicContentType(value: unknown) {
     return ContentType.String;
   }
 
-  if (isCurriedType(value, CurriedType.Component) || hasInternalComponentManager(value)) {
+  if (isCurriedType(value, CURRIED_COMPONENT) || hasInternalComponentManager(value)) {
     return ContentType.Component;
   } else {
     if (
       import.meta.env.DEV &&
-      !isCurriedType(value, CurriedType.Helper) &&
+      !isCurriedType(value, CURRIED_HELPER) &&
       !hasInternalHelperManager(value)
     ) {
       throw new Error(

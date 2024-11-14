@@ -1,5 +1,5 @@
+import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants';
 import { ASTv2, generateSyntaxError, src } from '@glimmer/syntax';
-import { CurriedTypes } from '@glimmer/vm';
 
 import type { NormalizationState } from '../context';
 
@@ -103,7 +103,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('component', {
-    assert: assertCurryKeyword(CurriedTypes.Component),
+    assert: assertCurryKeyword(CURRIED_COMPONENT),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },
@@ -124,7 +124,7 @@ export const APPEND_KEYWORDS = keywords('Append')
     },
   })
   .kw('helper', {
-    assert: assertCurryKeyword(CurriedTypes.Helper),
+    assert: assertCurryKeyword(CURRIED_HELPER),
 
     translate(
       { node, state }: { node: ASTv2.AppendContent; state: NormalizationState },

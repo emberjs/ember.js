@@ -1,6 +1,6 @@
 import type { HasSourceSpan } from '@glimmer/syntax';
+import { CURRIED_COMPONENT, CURRIED_HELPER } from '@glimmer/constants';
 import { generateSyntaxError, loc } from '@glimmer/syntax';
-import { CurriedTypes } from '@glimmer/vm';
 
 import type { Result } from '../../../shared/result';
 import type * as mir from '../../2-encoding/mir';
@@ -363,9 +363,9 @@ export default class StrictModeValidationPass {
   Curry(expression: mir.Curry): Result<null> {
     let resolution: ResolutionType;
 
-    if (expression.curriedType === CurriedTypes.Component) {
+    if (expression.curriedType === CURRIED_COMPONENT) {
       resolution = COMPONENT_RESOLUTION;
-    } else if (expression.curriedType === CurriedTypes.Helper) {
+    } else if (expression.curriedType === CURRIED_HELPER) {
       resolution = HELPER_RESOLUTION;
     } else {
       resolution = MODIFIER_RESOLUTION;
