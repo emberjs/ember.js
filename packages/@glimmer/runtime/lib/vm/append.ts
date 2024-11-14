@@ -8,7 +8,6 @@ import type {
   JitConstants,
   Nullable,
   Owner,
-  PartialScope,
   RenderResult,
   RichIteratorResult,
   RuntimeContext,
@@ -53,7 +52,7 @@ import {
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
 import { APPEND_OPCODES } from '../opcodes';
-import { PartialScopeImpl } from '../scope';
+import { ScopeImpl } from '../scope';
 import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
@@ -240,7 +239,7 @@ export class VM implements PublicVM {
     context: CompileTimeCompilationContext,
     { handle, self, dynamicScope, treeBuilder, numSymbols, owner }: InitOptions
   ) {
-    let scope = PartialScopeImpl.root(self, numSymbols, owner);
+    let scope = ScopeImpl.root(self, numSymbols, owner);
     let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
     let vm = initVM(context)(runtime, state, treeBuilder);
     vm.pushUpdating();
@@ -256,7 +255,7 @@ export class VM implements PublicVM {
       runtime,
       vmState(
         runtime.program.heap.getaddr(handle),
-        PartialScopeImpl.root(UNDEFINED_REFERENCE, 0, owner),
+        ScopeImpl.root(UNDEFINED_REFERENCE, 0, owner),
         dynamicScope
       ),
       treeBuilder
@@ -437,8 +436,8 @@ export class VM implements PublicVM {
     return child;
   }
 
-  pushRootScope(size: number, owner: Owner): PartialScope {
-    let scope = PartialScopeImpl.sized(size, owner);
+  pushRootScope(size: number, owner: Owner): Scope {
+    let scope = ScopeImpl.sized(size, owner);
     this.#stacks.scope.push(scope);
     return scope;
   }
