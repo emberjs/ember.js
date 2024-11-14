@@ -1,4 +1,4 @@
-import type { Cursor, ElementBuilder, Environment, SimpleNode } from '@glimmer/interfaces';
+import type { Cursor, TreeBuilder, Environment, SimpleNode } from '@glimmer/interfaces';
 import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
 import { RehydrateBuilder } from '@glimmer/runtime';
 
@@ -23,6 +23,6 @@ export class DebugRehydrationBuilder extends RehydrateBuilder {
   }
 }
 
-export function debugRehydration(env: Environment, cursor: Cursor): ElementBuilder {
+export function debugRehydration(env: Environment, cursor: Cursor): TreeBuilder {
   return DebugRehydrationBuilder.forInitialRender(env, cursor);
 }

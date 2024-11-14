@@ -1,6 +1,6 @@
 import type {
   Environment,
-  LiveBlock,
+  AppendingBlock,
   RenderResult,
   SimpleElement,
   SimpleNode,
@@ -15,7 +15,7 @@ export default class RenderResultImpl implements RenderResult {
   constructor(
     public env: Environment,
     private updating: UpdatingOpcode[],
-    private bounds: LiveBlock,
+    private bounds: AppendingBlock,
     readonly drop: object
   ) {
     associateDestroyableChild(this, drop);

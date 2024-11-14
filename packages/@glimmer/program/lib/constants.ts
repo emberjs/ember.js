@@ -7,7 +7,7 @@ import type {
   ModifierDefinitionState,
   ResolutionTimeConstants,
   ResolvedComponentDefinition,
-  RuntimeConstants,
+  ProgramConstants,
   Template,
 } from '@glimmer/interfaces';
 import { constants } from '@glimmer/constants';
@@ -69,7 +69,7 @@ export class CompileTimeConstantImpl implements CompileTimeConstants {
   }
 }
 
-export class RuntimeConstantsImpl implements RuntimeConstants {
+export class RuntimeConstantsImpl implements ProgramConstants {
   protected values: unknown[];
 
   constructor(pool: ConstantPool) {
@@ -94,7 +94,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
 
 export class ConstantsImpl
   extends CompileTimeConstantImpl
-  implements RuntimeConstants, ResolutionTimeConstants
+  implements ProgramConstants, ResolutionTimeConstants
 {
   protected reifiedArrs: { [key: number]: unknown[] } = {
     [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],

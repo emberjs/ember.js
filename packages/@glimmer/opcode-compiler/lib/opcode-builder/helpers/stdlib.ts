@@ -1,9 +1,4 @@
-import type {
-  BuilderOp,
-  CompileTimeCompilationContext,
-  ContainingMetadata,
-  HighLevelOp,
-} from '@glimmer/interfaces';
+import type { BlockMetadata, BuilderOp, EvaluationContext, HighLevelOp } from '@glimmer/interfaces';
 import {
   VM_APPEND_DOCUMENT_FRAGMENT_OP,
   VM_APPEND_HTML_OP,
@@ -100,7 +95,7 @@ export function StdAppend(
   );
 }
 
-export function compileStd(context: CompileTimeCompilationContext): StdLib {
+export function compileStd(context: EvaluationContext): StdLib {
   let mainHandle = build(context, (op) => main(op));
   let trustingGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, true, null));
   let cautiousGuardedNonDynamicAppend = build(context, (op) => StdAppend(op, false, null));
@@ -121,7 +116,7 @@ export function compileStd(context: CompileTimeCompilationContext): StdLib {
   );
 }
 
-export const STDLIB_META: ContainingMetadata = {
+export const STDLIB_META: BlockMetadata = {
   evalSymbols: null,
   upvars: null,
   moduleName: 'stdlib',
@@ -133,15 +128,11 @@ export const STDLIB_META: ContainingMetadata = {
   size: 0,
 };
 
-function build(
-  program: CompileTimeCompilationContext,
-  builder: (op: PushStatementOp) => void
-): number {
-  let { constants, heap, resolver } = program;
-  let encoder = new EncoderImpl(heap, STDLIB_META);
+function build(evaluation: EvaluationContext, builder: (op: PushStatementOp) => void): number {
+  let encoder = new EncoderImpl(evaluation.program.heap, STDLIB_META);
 
   function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
-    encodeOp(encoder, constants, resolver, STDLIB_META, op as BuilderOp | HighLevelOp);
+    encodeOp(encoder, evaluation, STDLIB_META, op as BuilderOp | HighLevelOp);
   }
 
   builder(pushOp);

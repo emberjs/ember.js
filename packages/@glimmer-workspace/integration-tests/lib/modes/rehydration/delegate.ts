@@ -1,9 +1,9 @@
 import type {
   Cursor,
   Dict,
-  ElementBuilder,
   ElementNamespace,
   Environment,
+  EvaluationContext,
   Helper,
   Nullable,
   RenderResult,
@@ -12,6 +12,7 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
@@ -26,7 +27,6 @@ import type { UserHelper } from '../../helpers';
 import type { TestModifierConstructor } from '../../modifiers';
 import type RenderDelegate from '../../render-delegate';
 import type { RenderDelegateOptions } from '../../render-delegate';
-import type { JitTestDelegateContext } from '../jit/delegate';
 import type { DebugRehydrationBuilder } from './builder';
 
 import { BaseEnv } from '../../base-env';
@@ -53,8 +53,8 @@ export class RehydrationDelegate implements RenderDelegate {
 
   private plugins: ASTPluginBuilder[] = [];
 
-  public clientEnv: JitTestDelegateContext;
-  public serverEnv: JitTestDelegateContext;
+  public clientContext: EvaluationContext;
+  public serverContext: EvaluationContext;
 
   private clientResolver: TestJitRuntimeResolver;
   private serverResolver: TestJitRuntimeResolver;
@@ -75,12 +75,12 @@ export class RehydrationDelegate implements RenderDelegate {
     this.clientDoc = castToSimple(document);
     this.clientRegistry = new TestJitRegistry();
     this.clientResolver = new TestJitRuntimeResolver(this.clientRegistry);
-    this.clientEnv = JitDelegateContext(this.clientDoc, this.clientResolver, delegate);
+    this.clientContext = JitDelegateContext(this.clientDoc, this.clientResolver, delegate);
 
     this.serverDoc = createHTMLDocument();
     this.serverRegistry = new TestJitRegistry();
     this.serverResolver = new TestJitRuntimeResolver(this.serverRegistry);
-    this.serverEnv = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
+    this.serverContext = JitDelegateContext(this.serverDoc, this.serverResolver, delegate);
   }
 
   getInitialElement(): SimpleElement {
@@ -103,7 +103,7 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.clientDoc.createDocumentFragment();
   }
 
-  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+  getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     if (cursor.element instanceof Node) {
       return debugRehydration(env, cursor);
     }
@@ -119,12 +119,12 @@ export class RehydrationDelegate implements RenderDelegate {
   ): string {
     element = element || this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
-    let { env } = this.serverEnv.runtime;
+    let { env } = this.serverContext;
 
     // Emulate server-side render
     renderTemplate(
       template,
-      this.serverEnv,
+      this.serverContext,
       this.getSelf(env, context),
       this.getElementBuilder(env, cursor),
       this.precompileOptions
@@ -147,7 +147,7 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   renderClientSide(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
-    let env = this.clientEnv.runtime.env;
+    let { env } = this.clientContext;
     this.self = null;
 
     // Client-side rehydration
@@ -155,7 +155,7 @@ export class RehydrationDelegate implements RenderDelegate {
     let builder = this.getElementBuilder(env, cursor) as DebugRehydrationBuilder;
     let result = renderTemplate(
       template,
-      this.clientEnv,
+      this.clientContext,
       this.getSelf(env, context),
       builder,
       this.precompileOptions

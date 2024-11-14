@@ -1,18 +1,17 @@
 import type {
+  BlockMetadata,
   BuilderOp,
   BuilderOpcode,
   CompileTimeConstants,
-  CompileTimeHeap,
-  CompileTimeResolver,
-  ContainingMetadata,
   Dict,
   Encoder,
   EncoderError,
+  EvaluationContext,
   HandleResult,
   HighLevelOp,
   InstructionEncoder,
   Operand,
-  ResolutionTimeConstants,
+  ProgramHeap,
   SingleBuilderOperand,
   STDLib,
 } from '@glimmer/interfaces';
@@ -45,7 +44,7 @@ export class Labels {
     this.targets.push({ at, target });
   }
 
-  patch(heap: CompileTimeHeap): void {
+  patch(heap: ProgramHeap): void {
     let { targets, labels } = this;
 
     for (const { at, target } of targets) {
@@ -60,11 +59,15 @@ export class Labels {
 
 export function encodeOp(
   encoder: Encoder,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  resolver: CompileTimeResolver,
-  meta: ContainingMetadata,
+  context: EvaluationContext,
+  meta: BlockMetadata,
   op: BuilderOp | HighLevelOp
 ): void {
+  let {
+    program: { constants },
+    resolver,
+  } = context;
+
   if (isBuilderOpcode(op[0])) {
     let [type, ...operands] = op;
     encoder.push(constants, type, ...(operands as SingleBuilderOperand[]));
@@ -124,8 +127,8 @@ export class EncoderImpl implements Encoder {
   private handle: number;
 
   constructor(
-    private heap: CompileTimeHeap,
-    private meta: ContainingMetadata,
+    private heap: ProgramHeap,
+    private meta: BlockMetadata,
     private stdlib?: STDLib
   ) {
     this.handle = heap.malloc();

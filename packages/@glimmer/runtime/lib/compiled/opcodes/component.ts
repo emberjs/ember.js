@@ -65,6 +65,7 @@ import {
   CheckProgramSymbolTable,
   CheckRegister,
   CheckString,
+  CheckSyscallRegister,
 } from '@glimmer/debug';
 import { assert, debugToString, expect, unwrap, unwrapTemplate } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
@@ -448,7 +449,7 @@ APPEND_OPCODES.add(VM_BEGIN_COMPONENT_TRANSACTION_OP, (vm, { op1: register }) =>
   }
 
   vm.beginCacheGroup(name);
-  vm.elements().pushSimpleBlock();
+  vm.tree().pushAppendingBlock();
 });
 
 APPEND_OPCODES.add(VM_PUT_COMPONENT_OPERATIONS_OP, (vm) => {
@@ -533,7 +534,7 @@ export class ComponentElementOperations implements ElementOperations {
         return;
       }
 
-      let { element, constructing } = vm.elements();
+      let { element, constructing } = vm.tree();
       let name = definition.resolvedName ?? manager.getDebugName(definition.state);
       let instance = manager.getDebugInstance(state);
 
@@ -614,10 +615,10 @@ function setDeferredAttr(
   trusting = false
 ) {
   if (typeof value === 'string') {
-    vm.elements().setStaticAttribute(name, value, namespace);
+    vm.tree().setStaticAttribute(name, value, namespace);
   } else {
     let attribute = vm
-      .elements()
+      .tree()
       .setDynamicAttribute(name, valueForRef(value), trusting, namespace);
     if (!isConstRef(value)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
@@ -636,7 +637,7 @@ APPEND_OPCODES.add(VM_DID_CREATE_ELEMENT_OP, (vm, { op1: register }) => {
 
   (manager as WithElementHook<unknown>).didCreateElement(
     state,
-    expect(vm.elements().constructing, `Expected a constructing element in DidCreateOpcode`),
+    expect(vm.tree().constructing, `Expected a constructing element in DidCreateOpcode`),
     operations
   );
 });
@@ -793,7 +794,7 @@ APPEND_OPCODES.add(VM_MAIN_OP, (vm, { op1: register }) => {
     lookup: null,
   };
 
-  vm.loadValue(check(register, CheckRegister), state);
+  vm.loadValue(check(register, CheckSyscallRegister), state);
 });
 
 APPEND_OPCODES.add(VM_POPULATE_LAYOUT_OP, (vm, { op1: register }) => {
@@ -898,7 +899,7 @@ APPEND_OPCODES.add(VM_INVOKE_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
 APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
   let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
   let { manager, state, capabilities } = instance;
-  let bounds = vm.elements().popBlock();
+  let bounds = vm.tree().popBlock();
 
   if (vm.env.debugRenderTree !== undefined) {
     if (hasCustomDebugRenderTreeLifecycle(manager)) {

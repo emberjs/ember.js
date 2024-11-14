@@ -1,28 +1,13 @@
-import type { JitConstants, RuntimeHeap, RuntimeOp } from '../program.js';
-import type { RuntimeResolver } from '../serialize.js';
-import type { Environment } from './environment.js';
+import type { ProgramConstants, ProgramHeap, RuntimeOp } from '../program.js';
 
-/**
-  The Runtime is the set of static structures that contain the compiled
-  code and any host configuration.
-
-  The contents of the Runtime do not change as the VM executes, unlike
-  the VM state.
- */
-export interface RuntimeContext {
-  env: Environment;
-  program: RuntimeProgram;
-  resolver: RuntimeResolver;
-}
-
-export interface RuntimeProgram {
-  readonly constants: JitConstants;
-  readonly heap: RuntimeHeap;
+export interface Program {
+  readonly constants: ProgramConstants;
+  readonly heap: ProgramHeap;
 
   opcode(offset: number): RuntimeOp;
 }
 
 export interface RuntimeArtifacts {
-  readonly constants: JitConstants;
-  readonly heap: RuntimeHeap;
+  readonly constants: ProgramConstants;
+  readonly heap: ProgramHeap;
 }

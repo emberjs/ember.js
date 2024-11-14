@@ -3,7 +3,7 @@ import type { EncoderError } from './compile/encoder.js';
 import type { Operand, SerializedInlineBlock, SerializedTemplateBlock } from './compile/index.js';
 import type { Nullable } from './core.js';
 import type { InternalComponentCapabilities } from './managers/internal/component.js';
-import type { CompileTimeCompilationContext, ConstantPool, SerializedHeap } from './program.js';
+import type { ConstantPool, EvaluationContext, SerializedHeap } from './program.js';
 import type { Owner } from './runtime.js';
 import type { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table.js';
 
@@ -93,7 +93,18 @@ export interface NamedBlocks {
   names: string[];
 }
 
-export interface ContainingMetadata {
+export interface CompilerArtifacts {
+  heap: SerializedHeap;
+  constants: ConstantPool;
+}
+
+export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
+  symbolTable: S;
+  meta: BlockMetadata;
+  compile(context: EvaluationContext): HandleResult;
+}
+
+export interface BlockMetadata {
   evalSymbols: Nullable<string[]>;
   upvars: Nullable<string[]>;
   debugSymbols?: string[] | undefined;
@@ -102,14 +113,4 @@ export interface ContainingMetadata {
   moduleName: string;
   owner: Owner | null;
   size: number;
-}
-
-export interface CompilerArtifacts {
-  heap: SerializedHeap;
-  constants: ConstantPool;
-}
-
-export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
-  symbolTable: S;
-  compile(context: CompileTimeCompilationContext): HandleResult;
 }

@@ -1,37 +1,25 @@
 import type {
+  BlockMetadata,
   CompilableTemplate,
-  CompileTimeCompilationContext,
+  DebugTemplates,
   Destroyable,
   DynamicScope,
-  ElementBuilder,
   Environment,
-  JitConstants,
+  EvaluationContext,
   Nullable,
   Owner,
+  Program,
+  ProgramConstants,
   RenderResult,
   RichIteratorResult,
-  RuntimeContext,
-  RuntimeHeap,
-  RuntimeProgram,
   Scope,
+  SyscallRegisters,
+  TreeBuilder,
   UpdatingOpcode,
-  VM as PublicVM,
 } from '@glimmer/interfaces';
 import type { RuntimeOpImpl } from '@glimmer/program';
 import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
-import type {
-  $fp,
-  $ra,
-  $s0,
-  $s1,
-  $sp,
-  $t0,
-  $t1,
-  $v0,
-  MachineRegister,
-  Register,
-  SyscallRegister,
-} from '@glimmer/vm';
+import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
 import { expect, unwrapHandle } from '@glimmer/debug-util';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
@@ -42,9 +30,10 @@ import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validato
 import { $pc, isLowLevelRegister } from '@glimmer/vm';
 
 import type { DebugState } from '../opcodes';
+import type { ScopeOptions } from '../scope';
 import type { LiveBlockList } from './element-builder';
 import type { EvaluationStack } from './stack';
-import type { BlockOpcode, ResumableVMState, VMState } from './update';
+import type { BlockOpcode, VMState } from './update';
 
 import {
   BeginTrackFrameOpcode,
@@ -57,44 +46,72 @@ import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
 import RenderResultImpl from './render-result';
 import EvaluationStackImpl from './stack';
-import { ListBlockOpcode, ListItemOpcode, ResumableVMStateImpl, TryOpcode } from './update';
+import { ListBlockOpcode, ListItemOpcode, TryOpcode } from './update';
 
 class Stacks {
+  readonly drop: object = {};
+
   readonly scope = new Stack<Scope>();
   readonly dynamicScope = new Stack<DynamicScope>();
   readonly updating = new Stack<UpdatingOpcode[]>();
   readonly cache = new Stack<JumpIfNotModifiedOpcode>();
   readonly list = new Stack<ListBlockOpcode>();
+  readonly destroyable = new Stack<object>();
+
+  constructor(scope: Scope, dynamicScope: DynamicScope) {
+    this.scope.push(scope);
+    this.dynamicScope.push(dynamicScope);
+    this.destroyable.push(this.drop);
+  }
 }
 
-interface SyscallRegisters {
-  [$pc]: null;
-  [$ra]: null;
-  [$fp]: null;
-  [$sp]: null;
-  [$s0]: unknown;
-  [$s1]: unknown;
-  [$t0]: unknown;
-  [$t1]: unknown;
-  [$v0]: unknown;
+type Handle = number;
+
+let DebugTemplatesImpl: undefined | (new () => DebugTemplates);
+
+if (LOCAL_DEBUG) {
+  DebugTemplatesImpl = class DebugTemplatesImpl implements DebugTemplates {
+    readonly #templates: Map<Handle, BlockMetadata> = new Map();
+    #active: Handle[] = [];
+
+    willCall(handle: Handle): void {
+      this.#active.push(handle);
+    }
+
+    return(): void {
+      this.#active.pop();
+    }
+
+    get active(): BlockMetadata | null {
+      const current = this.#active.at(-1);
+      return current ? this.#templates.get(current) ?? null : null;
+    }
+
+    register(handle: Handle, metadata: BlockMetadata): void {
+      this.#templates.set(handle, metadata);
+    }
+  };
 }
 
 interface DebugVmState {
-  readonly stacks: Stacks;
-  readonly destroyableStack: Stack<object>;
-  readonly constants: JitConstants;
-  readonly lowlevel: LowLevelVM;
-  readonly registers: SyscallRegisters;
+  context: EvaluationContext;
+  trace: { templates: DebugTemplates };
+  lowlevel: LowLevelVM;
+  registers: SyscallRegisters;
+  destroyableStack: Stack<object>;
+  stacks: Stacks;
 }
 
-export class VM implements PublicVM {
-  readonly #stacks = new Stacks();
-  readonly #heap: RuntimeHeap;
+export class VM {
+  readonly #stacks: Stacks;
   readonly #destructor: object;
   readonly #destroyableStack = new Stack<object>();
-  readonly constants: JitConstants;
+  readonly context: EvaluationContext;
+  readonly #tree: TreeBuilder;
+
   readonly args: VMArgumentsImpl;
   readonly lowlevel: LowLevelVM;
+
   readonly debug?: DebugVmState;
 
   get stack(): EvaluationStack {
@@ -109,21 +126,63 @@ export class VM implements PublicVM {
 
   #registers: SyscallRegisters = [null, null, null, null, null, null, null, null, null];
 
-  // Fetch a value from a register onto the stack
+  /**
+   * Fetch a value from a syscall register onto the stack.
+   *
+   * ## Opcodes
+   *
+   * - Append: `Fetch`
+   *
+   * ## State changes
+   *
+   * [!] push Eval Stack <- $register
+   */
   fetch(register: SyscallRegister): void {
     let value = this.fetchValue(register);
 
     this.stack.push(value);
   }
 
-  // Load a value from the stack into a register
+  /**
+   * Load a value from the stack into a syscall register.
+   *
+   * ## Opcodes
+   *
+   * - Append: `Load`
+   *
+   * ## State changes
+   *
+   * [!] pop Eval Stack -> `value`
+   * [$] $register <- `value`
+   */
   load(register: SyscallRegister) {
     let value = this.stack.pop();
 
     this.loadValue(register, value);
   }
 
-  // Fetch a value from a register
+  /**
+   * Load a value into a syscall register.
+   *
+   * ## State changes
+   *
+   * [$] $register <- `value`
+   *
+   * @utility
+   */
+  loadValue<T>(register: SyscallRegister, value: T): void {
+    this.#registers[register] = value;
+  }
+
+  /**
+   * Fetch a value from a register (machine or syscall).
+   *
+   * ## State changes
+   *
+   * [ ] get $register
+   *
+   * @utility
+   */
   fetchValue(register: MachineRegister): number;
   fetchValue<T>(register: Register): T;
   fetchValue(register: Register | MachineRegister): unknown {
@@ -134,48 +193,23 @@ export class VM implements PublicVM {
     return this.#registers[register];
   }
 
-  // Load a value into a register
-
-  loadValue<T>(register: Register | MachineRegister, value: T): void {
-    if (isLowLevelRegister(register)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.lowlevel.loadRegister(register, value as any as number);
-    } else {
-      this.#registers[register] = value;
-    }
-  }
-
-  /**
-   * Migrated to Inner
-   */
-
-  // Start a new frame and save $ra and $fp on the stack
-  pushFrame() {
-    this.lowlevel.pushFrame();
-  }
-
-  // Restore $ra, $sp and $fp
-  popFrame() {
-    this.lowlevel.popFrame();
-  }
-
-  // Jump to an address in `program`
-  goto(offset: number) {
-    this.lowlevel.goto(offset);
-  }
-
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
-  call(handle: number) {
-    this.lowlevel.call(handle);
-  }
+  call(handle: number | null) {
+    if (handle !== null) {
+      if (LOCAL_DEBUG) {
+        this.debug?.trace.templates.willCall(handle);
+      }
 
-  // Put a specific `program` address in $ra
-  returnTo(offset: number) {
-    this.lowlevel.returnTo(offset);
+      this.lowlevel.call(handle);
+    }
   }
 
   // Return to the `program` address stored in $ra
   return() {
+    if (LOCAL_DEBUG) {
+      this.debug?.trace.templates.return();
+    }
+
     this.lowlevel.return();
   }
 
@@ -184,28 +218,25 @@ export class VM implements PublicVM {
    */
 
   constructor(
-    readonly runtime: RuntimeContext,
-    { pc, scope, dynamicScope, stack }: VMState,
-    private readonly elementStack: ElementBuilder,
-    readonly context: CompileTimeCompilationContext
+    { pc, scope, dynamicScope, stack }: ClosureState,
+    tree: TreeBuilder,
+    context: EvaluationContext
   ) {
     if (import.meta.env.DEV) {
       assertGlobalContextWasSet!();
     }
 
-    this.resume = initVM(context);
     let evalStack = EvaluationStackImpl.restore(stack, pc);
 
-    this.#heap = this.program.heap;
-    this.constants = this.program.constants;
-    this.elementStack = elementStack;
-    this.#stacks.scope.push(scope);
-    this.#stacks.dynamicScope.push(dynamicScope);
+    this.context = context;
+    this.#tree = tree;
+
+    this.#stacks = new Stacks(scope, dynamicScope);
+
     this.args = new VMArgumentsImpl();
     this.lowlevel = new LowLevelVM(
       evalStack,
-      this.#heap,
-      runtime.program,
+      context,
       import.meta.env.VM_LOCAL_DEV
         ? {
             debugBefore: (opcode: RuntimeOpImpl): DebugState => {
@@ -224,60 +255,86 @@ export class VM implements PublicVM {
     this.#destroyableStack.push(this.#destructor);
 
     if (LOCAL_DEBUG) {
+      const templates = new DebugTemplatesImpl!();
+
       this.debug = {
+        context: this.context,
+
+        trace: {
+          templates,
+        },
+
         stacks: this.#stacks,
         destroyableStack: this.#destroyableStack,
-        constants: this.constants,
         lowlevel: this.lowlevel,
         registers: this.#registers,
-      };
+      } satisfies DebugVmState;
     }
   }
 
-  static initial(
-    runtime: RuntimeContext,
-    context: CompileTimeCompilationContext,
-    { handle, self, dynamicScope, treeBuilder, numSymbols, owner }: InitOptions
-  ) {
-    let scope = ScopeImpl.root(self, numSymbols, owner);
-    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
-    let vm = initVM(context)(runtime, state, treeBuilder);
-    vm.pushUpdating();
-    return vm;
-  }
-
-  static empty(
-    runtime: RuntimeContext,
-    { handle, treeBuilder, dynamicScope, owner }: MinimalInitOptions,
-    context: CompileTimeCompilationContext
-  ) {
-    let vm = initVM(context)(
-      runtime,
-      vmState(
-        runtime.program.heap.getaddr(handle),
-        ScopeImpl.root(UNDEFINED_REFERENCE, 0, owner),
-        dynamicScope
-      ),
-      treeBuilder
+  static initial(context: EvaluationContext, options: InitialVmState) {
+    let scope = ScopeImpl.root(
+      options.owner,
+      options.scope ?? { self: UNDEFINED_REFERENCE, size: 0 }
     );
-    vm.pushUpdating();
+    return VM.create({
+      ...options,
+      scope,
+      context,
+    });
+  }
+
+  static create({
+    scope,
+    dynamicScope,
+    handle,
+    tree,
+    context,
+  }: {
+    scope: Scope;
+    dynamicScope: DynamicScope;
+    handle: number;
+    tree: TreeBuilder;
+    context: EvaluationContext;
+  }) {
+    let state = closureState(context.program.heap.getaddr(handle), scope, dynamicScope);
+    let vm = new VM(state, tree, context);
     return vm;
   }
 
-  private resume: VmInitCallback;
+  static empty(context: EvaluationContext, options: InitialVmState) {
+    let scope = ScopeImpl.root(
+      options.owner,
+      options.scope ?? { self: UNDEFINED_REFERENCE, size: 0 }
+    );
+
+    return VM.create({
+      ...options,
+      scope,
+      context,
+    });
+  }
 
   compile(block: CompilableTemplate): number {
     let handle = unwrapHandle(block.compile(this.context));
 
+    if (LOCAL_DEBUG) {
+      this.debug?.trace.templates.register(handle, block.meta);
+    }
+
     return handle;
   }
 
-  get program(): RuntimeProgram {
-    return this.runtime.program;
+  get constants(): ProgramConstants {
+    return this.context.program.constants;
+  }
+
+  get program(): Program {
+    return this.context.program;
   }
 
   get env(): Environment {
-    return this.runtime.env;
+    return this.context.env;
   }
 
   captureState(args: number, pc = this.lowlevel.fetchRegister($pc)): VMState {
@@ -289,8 +346,17 @@ export class VM implements PublicVM {
     };
   }
 
-  capture(args: number, pc = this.lowlevel.fetchRegister($pc)): ResumableVMState {
-    return new ResumableVMStateImpl(this.captureState(args, pc), this.resume);
+  private captureClosure(args: number, pc = this.lowlevel.fetchRegister($pc)): ClosureState {
+    return {
+      pc,
+      scope: this.scope(),
+      dynamicScope: this.dynamicScope(),
+      stack: this.stack.capture(args),
+    };
+  }
+
+  capture(args: number, pc = this.lowlevel.fetchRegister($pc)): Closure {
+    return new Closure(this.captureClosure(args, pc), this.context);
   }
 
   beginCacheGroup(name?: string) {
@@ -318,9 +384,9 @@ export class VM implements PublicVM {
     let updating: UpdatingOpcode[] = [];
 
     let state = this.capture(args);
-    let block = this.elements().pushUpdatableBlock();
+    let block = this.tree().pushResettableBlock();
 
-    let tryOpcode = new TryOpcode(state, this.runtime, block, updating);
+    let tryOpcode = new TryOpcode(state, this.context, block, updating);
 
     this.didEnter(tryOpcode);
   }
@@ -335,9 +401,9 @@ export class VM implements PublicVM {
     stack.push(memoRef);
 
     let state = this.capture(2);
-    let block = this.elements().pushUpdatableBlock();
+    let block = this.tree().pushResettableBlock();
 
-    let opcode = new ListItemOpcode(state, this.runtime, block, key, memoRef, valueRef);
+    let opcode = new ListItemOpcode(state, this.context, block, key, memoRef, valueRef);
     this.didEnter(opcode);
 
     return opcode;
@@ -352,9 +418,9 @@ export class VM implements PublicVM {
 
     let addr = this.lowlevel.target(offset);
     let state = this.capture(0, addr);
-    let list = this.elements().pushBlockList(updating) as LiveBlockList;
+    let list = this.tree().pushBlockList(updating) as LiveBlockList;
 
-    let opcode = new ListBlockOpcode(state, this.runtime, list, updating, iterableRef);
+    let opcode = new ListBlockOpcode(state, this.context, list, updating, iterableRef);
 
     this.#stacks.list.push(opcode);
 
@@ -370,7 +436,7 @@ export class VM implements PublicVM {
 
   exit() {
     this.#destroyableStack.pop();
-    this.elements().popBlock();
+    this.tree().popBlock();
     this.popUpdating();
   }
 
@@ -411,8 +477,8 @@ export class VM implements PublicVM {
     );
   }
 
-  elements(): ElementBuilder {
-    return this.elementStack;
+  tree(): TreeBuilder {
+    return this.#tree;
   }
 
   scope(): Scope {
@@ -437,7 +503,7 @@ export class VM implements PublicVM {
   }
 
   pushRootScope(size: number, owner: Owner): Scope {
-    let scope = ScopeImpl.sized(size, owner);
+    let scope = ScopeImpl.sized(owner, size);
     this.#stacks.scope.push(scope);
     return scope;
   }
@@ -486,7 +552,7 @@ export class VM implements PublicVM {
         if (hasErrored) {
           // If any existing blocks are open, due to an error or something like
           // that, we need to close them all and clean things up properly.
-          let elements = this.elements();
+          let elements = this.tree();
 
           while (elements.hasBlocks) {
             elements.popBlock();
@@ -517,7 +583,8 @@ export class VM implements PublicVM {
   }
 
   next(): RichIteratorResult<null, RenderResult> {
-    let { env, elementStack } = this;
+    let { env } = this;
+    let tree = this.#tree;
     let opcode = this.lowlevel.nextStatement();
     let result: RichIteratorResult<null, RenderResult>;
     if (opcode !== null) {
@@ -529,12 +596,7 @@ export class VM implements PublicVM {
 
       result = {
         done: true,
-        value: new RenderResultImpl(
-          env,
-          this.popUpdating(),
-          elementStack.popBlock(),
-          this.#destructor
-        ),
+        value: new RenderResultImpl(env, this.popUpdating(), tree.popBlock(), this.#stacks.drop),
       };
     }
     return result;
@@ -549,7 +611,15 @@ export class VM implements PublicVM {
   }
 }
 
-function vmState(pc: number, scope: Scope, dynamicScope: DynamicScope) {
+export interface InitialVmState {
+  handle: number;
+  tree: TreeBuilder;
+  dynamicScope: DynamicScope;
+  owner: Owner;
+  scope?: ScopeOptions;
+}
+
+function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): ClosureState {
   return {
     pc,
     scope,
@@ -560,7 +630,7 @@ function vmState(pc: number, scope: Scope, dynamicScope: DynamicScope) {
 
 export interface MinimalInitOptions {
   handle: number;
-  treeBuilder: ElementBuilder;
+  treeBuilder: TreeBuilder;
   dynamicScope: DynamicScope;
   owner: Owner;
 }
@@ -570,13 +640,54 @@ export interface InitOptions extends MinimalInitOptions {
   numSymbols: number;
 }
 
-export type VmInitCallback = (
-  this: void,
-  runtime: RuntimeContext,
-  state: VMState,
-  builder: ElementBuilder
-) => VM;
+export interface ClosureState {
+  /**
+   * The program counter that subsequent evaluations should start from.
+   */
+  readonly pc: number;
 
-function initVM(context: CompileTimeCompilationContext): VmInitCallback {
-  return (runtime, state, builder) => new VM(runtime, state, builder, context);
+  /**
+   * The current value of the VM's scope (which changes whenever a component is invoked or a block
+   * with block params is entered).
+   */
+  readonly scope: Scope;
+
+  /**
+   * The current value of the VM's dynamic scope
+   */
+  readonly dynamicScope: DynamicScope;
+
+  /**
+   * A number of stack elements captured during the initial evaluation, and which should be restored
+   * to the stack when the block is re-evaluated.
+   */
+  readonly stack: unknown[];
+}
+
+/**
+ * A closure captures the state of the VM for a particular block of code that is necessary to
+ * re-invoke the block in the future.
+ *
+ * In practice, this allows us to clear the previous render and "replay" the block's execution,
+ * rendering content in the same position as the first render.
+ */
+export class Closure {
+  private state: ClosureState;
+  private context: EvaluationContext;
+
+  constructor(state: ClosureState, context: EvaluationContext) {
+    this.state = state;
+    this.context = context;
+  }
+
+  evaluate(tree: TreeBuilder): VM {
+    return new VM(this.state, tree, this.context);
+  }
+}
+
+function sliceTuple<T extends unknown[], Prefix extends unknown[]>(
+  tuple: T,
+  prefix: Prefix
+): T extends [...Prefix, ...infer Rest] ? Rest : never {
+  return tuple.slice(prefix.length) as T extends [...Prefix, ...infer Rest] ? Rest : never;
 }

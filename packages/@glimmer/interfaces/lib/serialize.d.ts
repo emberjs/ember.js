@@ -56,7 +56,6 @@ import type {
 } from './components.js';
 import type { Nullable } from './core.js';
 import type { InternalComponentManager } from './managers.js';
-import type { HelperDefinitionState, ModifierDefinitionState, Owner } from './runtime.js';
 import type { CompilableProgram, Template } from './template.js';
 
 export interface CompileTimeComponent {
@@ -73,19 +72,4 @@ export interface ResolvedComponentDefinition<
   state: D;
   manager: M;
   template: Template | null;
-}
-
-export interface CompileTimeResolver<O extends Owner = Owner> {
-  lookupHelper(name: string, owner: O): Nullable<HelperDefinitionState>;
-  lookupModifier(name: string, owner: O): Nullable<ModifierDefinitionState>;
-  lookupComponent(name: string, owner: O): Nullable<ResolvedComponentDefinition>;
-
-  // TODO: These are used to lookup keywords that are implemented as helpers/modifiers.
-  // We should try to figure out a cleaner way to do this.
-  lookupBuiltInHelper(name: string): Nullable<HelperDefinitionState>;
-  lookupBuiltInModifier(name: string): Nullable<ModifierDefinitionState>;
-}
-
-export interface RuntimeResolver<O extends Owner = Owner> {
-  lookupComponent(name: string, owner: O): Nullable<ResolvedComponentDefinition>;
 }

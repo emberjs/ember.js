@@ -1,6 +1,6 @@
 import type {
-  CompileTimeHeap,
   JitConstants,
+  ProgramHeap,
   RuntimeHeap,
   RuntimeProgram,
   SerializedHeap,
@@ -74,7 +74,7 @@ export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
  * valid during the execution. This means you cannot close
  * over them as you will have a bad memory access exception.
  */
-export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
+export class HeapImpl implements ProgramHeap, RuntimeHeap {
   offset = 0;
 
   private heap: Int32Array;

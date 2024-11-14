@@ -1,7 +1,8 @@
 import type {
+  BlockMetadata,
   BuilderOp,
   CompilableProgram,
-  CompileTimeCompilationContext,
+  EvaluationContext,
   HandleResult,
   HighLevelOp,
   LayoutWithContext,
@@ -22,6 +23,7 @@ export class WrappedBuilder implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private compiled: Nullable<number> = null;
   private attrsBlockNumber: number;
+  readonly meta: BlockMetadata;
 
   constructor(
     private layout: LayoutWithContext,
@@ -44,21 +46,20 @@ export class WrappedBuilder implements CompilableProgram {
       hasEval,
       symbols,
     };
+
+    this.meta = meta(layout);
   }
 
-  compile(syntax: CompileTimeCompilationContext): HandleResult {
+  compile(syntax: EvaluationContext): HandleResult {
     if (this.compiled !== null) return this.compiled;
 
     let m = meta(this.layout);
     let context = templateCompilationContext(syntax, m);
 
-    let {
-      encoder,
-      program: { constants, resolver },
-    } = context;
+    let { encoder, evaluation } = context;
 
     function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
-      encodeOp(encoder, constants, resolver, m, op as BuilderOp | HighLevelOp);
+      encodeOp(encoder, evaluation, m, op as BuilderOp | HighLevelOp);
     }
 
     WrappedComponent(pushOp, this.layout, this.attrsBlockNumber);
