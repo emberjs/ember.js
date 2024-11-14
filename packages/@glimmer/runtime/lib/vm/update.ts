@@ -1,16 +1,15 @@
 import type {
+  AppendingBlock,
   Bounds,
   DynamicScope,
-  ElementBuilder,
   Environment,
+  EvaluationContext,
   ExceptionHandler,
   GlimmerTreeChanges,
-  LiveBlock,
   Nullable,
-  RuntimeContext,
+  ResettableBlock,
   Scope,
   SimpleComment,
-  UpdatableBlock,
   UpdatingOpcode,
   UpdatingVM as IUpdatingVM,
 } from '@glimmer/interfaces';
@@ -22,11 +21,11 @@ import { updateRef, valueForRef } from '@glimmer/reference';
 import { logStep, Stack } from '@glimmer/util';
 import { debug, resetTracking } from '@glimmer/validator';
 
-import type { VM, VmInitCallback } from './append';
+import type { Closure } from './append';
 import type { LiveBlockList } from './element-builder';
 
 import { clear, move as moveBounds } from '../bounds';
-import { NewElementBuilder } from './element-builder';
+import { NewTreeBuilder } from './element-builder';
 
 export class UpdatingVM implements IUpdatingVM {
   public env: Environment;
@@ -106,30 +105,15 @@ export interface VMState {
   readonly stack: unknown[];
 }
 
-export interface ResumableVMState {
-  resume(runtime: RuntimeContext, builder: ElementBuilder): VM;
-}
-
-export class ResumableVMStateImpl implements ResumableVMState {
-  constructor(
-    readonly state: VMState,
-    private resumeCallback: VmInitCallback
-  ) {}
-
-  resume(runtime: RuntimeContext, builder: ElementBuilder): VM {
-    return this.resumeCallback(runtime, this.state, builder);
-  }
-}
-
 export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
   public children: UpdatingOpcode[];
 
-  protected readonly bounds: LiveBlock;
+  protected readonly bounds: AppendingBlock;
 
   constructor(
-    protected state: ResumableVMState,
-    protected runtime: RuntimeContext,
-    bounds: LiveBlock,
+    protected state: Closure,
+    protected context: EvaluationContext,
+    bounds: AppendingBlock,
     children: UpdatingOpcode[]
   ) {
     this.children = children;
@@ -156,19 +140,23 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   public type = 'try';
 
-  protected declare bounds: UpdatableBlock; // Hides property on base class
+  protected declare bounds: ResettableBlock; // Shadows property on base class
 
   override evaluate(vm: UpdatingVM) {
     vm.try(this.children, this);
   }
 
   handleException() {
-    let { state, bounds, runtime } = this;
+    let {
+      state,
+      bounds,
+      context: { env },
+    } = this;
 
     destroyChildren(this);
 
-    let elementStack = NewElementBuilder.resume(runtime.env, bounds);
-    let vm = state.resume(runtime, elementStack);
+    let tree = NewTreeBuilder.resume(env, bounds);
+    let vm = state.evaluate(tree);
 
     let updating: UpdatingOpcode[] = [];
     let children = (this.children = []);
@@ -188,14 +176,14 @@ export class ListItemOpcode extends TryOpcode {
   public index = -1;
 
   constructor(
-    state: ResumableVMState,
-    runtime: RuntimeContext,
-    bounds: UpdatableBlock,
+    state: Closure,
+    context: EvaluationContext,
+    bounds: ResettableBlock,
     public key: unknown,
     public memo: Reference,
     public value: Reference
   ) {
-    super(state, runtime, bounds, []);
+    super(state, context, bounds, []);
   }
 
   updateReferences(item: OpaqueIterationItem) {
@@ -224,13 +212,13 @@ export class ListBlockOpcode extends BlockOpcode {
   protected declare readonly bounds: LiveBlockList;
 
   constructor(
-    state: ResumableVMState,
-    runtime: RuntimeContext,
+    state: Closure,
+    context: EvaluationContext,
     bounds: LiveBlockList,
     children: ListItemOpcode[],
     private iterableRef: Reference<OpaqueIterator>
   ) {
-    super(state, runtime, bounds, children);
+    super(state, context, bounds, children);
     this.lastIterator = valueForRef(iterableRef);
   }
 
@@ -359,16 +347,22 @@ export class ListBlockOpcode extends BlockOpcode {
       logStep!('list-updates', ['insert', item.key]);
     }
 
-    let { opcodeMap, bounds, state, runtime, children } = this;
+    let {
+      opcodeMap,
+      bounds,
+      state,
+      children,
+      context: { env },
+    } = this;
     let { key } = item;
     let nextSibling = before === undefined ? this.marker : before.firstNode();
 
-    let elementStack = NewElementBuilder.forInitialRender(runtime.env, {
+    let elementStack = NewTreeBuilder.forInitialRender(env, {
       element: bounds.parentElement(),
       nextSibling,
     });
 
-    let vm = state.resume(runtime, elementStack);
+    let vm = state.evaluate(elementStack);
 
     vm.execute((vm) => {
       vm.pushUpdating();

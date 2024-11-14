@@ -154,7 +154,7 @@ if (import.meta.env.VM_LOCAL_DEV) {
         }
 
         if (LOCAL_TRACE_LOGGING) {
-          const { lowlevel, registers } = unwrap(vm.debug);
+          const { lowlevel, registers } = debug;
           LOCAL_LOGGER.debug(
             '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
             'color: orange',
@@ -169,7 +169,7 @@ if (import.meta.env.VM_LOCAL_DEV) {
             registers[$v0]
           );
           LOCAL_LOGGER.debug('%c -> eval stack', 'color: red', vm.stack.toArray());
-          LOCAL_LOGGER.debug('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
+          LOCAL_LOGGER.debug('%c -> block stack', 'color: magenta', vm.tree().debugBlocks());
           LOCAL_LOGGER.debug(
             '%c -> destructor stack',
             'color: violet',
@@ -188,10 +188,10 @@ if (import.meta.env.VM_LOCAL_DEV) {
           LOCAL_LOGGER.debug(
             '%c -> elements',
             'color: blue',
-            vm.elements()[CURSOR_STACK].current!.element
+            vm.tree()[CURSOR_STACK].current!.element
           );
 
-          LOCAL_LOGGER.debug('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
+          LOCAL_LOGGER.debug('%c -> constructing', 'color: aqua', vm.tree()['constructing']);
         }
       }
     },

@@ -1,11 +1,11 @@
 import type {
+  BlockMetadata,
   BlockSymbolTable,
   BuilderOp,
   CompilableBlock,
   CompilableProgram,
   CompilableTemplate,
-  CompileTimeCompilationContext,
-  ContainingMetadata,
+  EvaluationContext,
   HandleResult,
   HighLevelOp,
   LayoutWithContext,
@@ -34,7 +34,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
 
   constructor(
     readonly statements: WireFormat.Statement[],
-    readonly meta: ContainingMetadata,
+    readonly meta: BlockMetadata,
     // Part of CompilableTemplate
     readonly symbolTable: S,
     // Used for debugging
@@ -42,7 +42,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   ) {}
 
   // Part of CompilableTemplate
-  compile(context: CompileTimeCompilationContext): HandleResult {
+  compile(context: EvaluationContext): HandleResult {
     return maybeCompile(this, context);
   }
 }
@@ -62,7 +62,7 @@ export function compilable(layout: LayoutWithContext, moduleName: string): Compi
 
 function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
-  context: CompileTimeCompilationContext
+  context: EvaluationContext
 ): HandleResult {
   if (compilable.compiled !== null) return compilable.compiled;
 
@@ -78,19 +78,16 @@ function maybeCompile(
 
 export function compileStatements(
   statements: Statement[],
-  meta: ContainingMetadata,
-  syntaxContext: CompileTimeCompilationContext
+  meta: BlockMetadata,
+  syntaxContext: EvaluationContext
 ): HandleResult {
   let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
 
-  let {
-    encoder,
-    program: { constants, resolver },
-  } = context;
+  let { encoder, evaluation } = context;
 
   function pushOp(...op: BuilderOp | HighLevelOp | HighLevelStatementOp) {
-    encodeOp(encoder, constants, resolver, meta, op as BuilderOp | HighLevelOp);
+    encodeOp(encoder, evaluation, meta, op as BuilderOp | HighLevelOp);
   }
 
   for (const statement of statements) {
@@ -108,7 +105,7 @@ export function compileStatements(
 
 export function compilableBlock(
   block: SerializedInlineBlock | SerializedBlock,
-  containing: ContainingMetadata
+  containing: BlockMetadata
 ): CompilableBlock {
   return new CompilableTemplateImpl<BlockSymbolTable>(block[0], containing, {
     parameters: block[1] || (EMPTY_ARRAY as number[]),

@@ -52,20 +52,20 @@ import { CheckArguments, CheckOperations, CheckReference } from './-debug-strip'
 import { Assert } from './vm';
 
 APPEND_OPCODES.add(VM_TEXT_OP, (vm, { op1: text }) => {
-  vm.elements().appendText(vm.constants.getValue(text));
+  vm.tree().appendText(vm.constants.getValue(text));
 });
 
 APPEND_OPCODES.add(VM_COMMENT_OP, (vm, { op1: text }) => {
-  vm.elements().appendComment(vm.constants.getValue(text));
+  vm.tree().appendComment(vm.constants.getValue(text));
 });
 
 APPEND_OPCODES.add(VM_OPEN_ELEMENT_OP, (vm, { op1: tag }) => {
-  vm.elements().openElement(vm.constants.getValue(tag));
+  vm.tree().openElement(vm.constants.getValue(tag));
 });
 
 APPEND_OPCODES.add(VM_OPEN_DYNAMIC_ELEMENT_OP, (vm) => {
   let tagName = check(valueForRef(check(vm.stack.pop(), CheckReference)), CheckString);
-  vm.elements().openElement(tagName);
+  vm.tree().openElement(tagName);
 });
 
 APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
@@ -85,7 +85,7 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
     vm.updateWith(new Assert(insertBeforeRef));
   }
 
-  let block = vm.elements().pushRemoteElement(element, guid, insertBefore);
+  let block = vm.tree().pushRemoteElement(element, guid, insertBefore);
   if (block) vm.associateDestroyable(block);
 
   if (vm.env.debugRenderTree !== undefined) {
@@ -111,7 +111,7 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
 });
 
 APPEND_OPCODES.add(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
-  let bounds = vm.elements().popRemoteElement();
+  let bounds = vm.tree().popRemoteElement();
 
   if (vm.env.debugRenderTree !== undefined) {
     // The RemoteLiveBlock is also its bounds
@@ -128,11 +128,11 @@ APPEND_OPCODES.add(VM_FLUSH_ELEMENT_OP, (vm) => {
     vm.loadValue($t0, null);
   }
 
-  vm.elements().flushElement(modifiers);
+  vm.tree().flushElement(modifiers);
 });
 
 APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
-  let modifiers = vm.elements().closeElement();
+  let modifiers = vm.tree().closeElement();
 
   if (modifiers !== null) {
     modifiers.forEach((modifier) => {
@@ -157,7 +157,7 @@ APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
 
   let { manager } = definition;
 
-  let { constructing } = vm.elements();
+  let { constructing } = vm.tree();
 
   let capturedArgs = args.capture();
   let state = manager.create(
@@ -198,7 +198,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
   let args = check(stack.pop(), CheckArguments).capture();
   let { positional: outerPositional, named: outerNamed } = args;
 
-  let { constructing } = vm.elements();
+  let { constructing } = vm.tree();
   let initialOwner = vm.getOwner();
 
   let instanceRef = createComputeRef(() => {
@@ -375,7 +375,7 @@ APPEND_OPCODES.add(VM_STATIC_ATTR_OP, (vm, { op1: _name, op2: _value, op3: _name
   let value = vm.constants.getValue<string>(_value);
   let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
-  vm.elements().setStaticAttribute(name, value, namespace);
+  vm.tree().setStaticAttribute(name, value, namespace);
 });
 
 APPEND_OPCODES.add(VM_DYNAMIC_ATTR_OP, (vm, { op1: _name, op2: _trusting, op3: _namespace }) => {
@@ -385,7 +385,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_ATTR_OP, (vm, { op1: _name, op2: _trusting, op3: _
   let value = valueForRef(reference);
   let namespace = _namespace ? vm.constants.getValue<string>(_namespace) : null;
 
-  let attribute = vm.elements().setDynamicAttribute(name, value, trusting, namespace);
+  let attribute = vm.tree().setDynamicAttribute(name, value, trusting, namespace);
 
   if (!isConstRef(reference)) {
     vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute, vm.env));

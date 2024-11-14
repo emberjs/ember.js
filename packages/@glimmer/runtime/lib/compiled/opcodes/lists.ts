@@ -21,7 +21,7 @@ APPEND_OPCODES.add(VM_ENTER_LIST_OP, (vm, { op1: relativeStart, op2: elseTarget 
 
   if (iterator.isEmpty() === true) {
     // TODO: Fix this offset, should be accurate
-    vm.goto(elseTarget + 1);
+    vm.lowlevel.goto(elseTarget + 1);
   } else {
     vm.enterList(iteratorRef, relativeStart);
     vm.stack.push(iterator);
@@ -40,6 +40,6 @@ APPEND_OPCODES.add(VM_ITERATE_OP, (vm, { op1: breaks }) => {
   if (item !== null) {
     vm.registerItem(vm.enterItem(item));
   } else {
-    vm.goto(breaks);
+    vm.lowlevel.goto(breaks);
   }
 });

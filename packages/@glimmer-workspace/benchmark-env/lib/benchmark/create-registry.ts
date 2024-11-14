@@ -5,6 +5,7 @@ import type {
   InternalModifierManager,
   ModifierDefinitionState,
   ResolvedComponentDefinition,
+  SimpleDocument,
   SimpleElement,
 } from '@glimmer/interfaces';
 import {
@@ -13,11 +14,13 @@ import {
   setInternalHelperManager,
   setInternalModifierManager,
 } from '@glimmer/manager';
-import { programCompilationContext } from '@glimmer/opcode-compiler';
+import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
+import { runtimeContext } from '@glimmer/runtime';
 
 import type { UpdateBenchmark } from '../interfaces';
 
+import createEnvDelegate from './create-env-delegate';
 import renderBenchmark from './render-benchmark';
 
 export interface Registry {
@@ -77,9 +80,22 @@ export default function createRegistry(): Registry {
       setInternalModifierManager(manager, modifier);
       modifiers.set(name, modifier);
     },
-    render: (entry, args, element, isIteractive) => {
+    render: (entry, args, element, isInteractive) => {
       const sharedArtifacts = artifacts();
-      const context = programCompilationContext(
+      const document = element.ownerDocument as SimpleDocument;
+      const envDelegate = createEnvDelegate(isInteractive ?? true);
+      const runtime = runtimeContext(
+        {
+          document,
+        },
+        envDelegate,
+        sharedArtifacts,
+        {
+          lookupComponent: () => null,
+        }
+      );
+
+      const context = new EvaluationContextImpl(
         sharedArtifacts,
         {
           lookupHelper: (name) => helpers.get(name) ?? null,
@@ -89,7 +105,8 @@ export default function createRegistry(): Registry {
           lookupBuiltInHelper: () => null,
           lookupBuiltInModifier: () => null,
         },
-        (heap) => new RuntimeOpImpl(heap)
+        (heap) => new RuntimeOpImpl(heap),
+        runtime
       );
       const component = components.get(entry);
       if (!component) {
@@ -105,7 +122,7 @@ export default function createRegistry(): Registry {
         component,
         args,
         element as SimpleElement,
-        isIteractive
+        isInteractive
       );
     },
   };

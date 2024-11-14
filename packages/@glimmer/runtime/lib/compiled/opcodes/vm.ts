@@ -192,7 +192,7 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
       `Expected both handle and table to be null if either is null`
     );
     // To balance the pop{Frame,Scope}
-    vm.pushFrame();
+    vm.lowlevel.pushFrame();
     vm.pushScope(scope ?? vm.scope());
 
     return;
@@ -214,7 +214,7 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
     }
   }
 
-  vm.pushFrame();
+  vm.lowlevel.pushFrame();
   vm.pushScope(invokingScope);
 
   vm.call(handle);
@@ -226,11 +226,11 @@ APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
 
   if (isConstRef(reference)) {
     if (value === true) {
-      vm.goto(target);
+      vm.lowlevel.goto(target);
     }
   } else {
     if (value === true) {
-      vm.goto(target);
+      vm.lowlevel.goto(target);
     }
 
     vm.updateWith(new Assert(reference));
@@ -243,11 +243,11 @@ APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
 
   if (isConstRef(reference)) {
     if (value === false) {
-      vm.goto(target);
+      vm.lowlevel.goto(target);
     }
   } else {
     if (value === false) {
-      vm.goto(target);
+      vm.lowlevel.goto(target);
     }
 
     vm.updateWith(new Assert(reference));
@@ -258,7 +258,7 @@ APPEND_OPCODES.add(VM_JUMP_EQ_OP, (vm, { op1: target, op2: comparison }) => {
   let other = check(vm.stack.peek(), CheckNumber);
 
   if (other === comparison) {
-    vm.goto(target);
+    vm.lowlevel.goto(target);
   }
 });
 

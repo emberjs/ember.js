@@ -1,9 +1,9 @@
-import type { CompileTimeArtifacts, RuntimeArtifacts } from '@glimmer/interfaces';
+import type { RuntimeArtifacts } from '@glimmer/interfaces';
 
 import { ConstantsImpl } from './constants';
 import { HeapImpl } from './program';
 
-export function artifacts(): CompileTimeArtifacts & RuntimeArtifacts {
+export function artifacts(): RuntimeArtifacts {
   return {
     constants: new ConstantsImpl(),
     heap: new HeapImpl(),

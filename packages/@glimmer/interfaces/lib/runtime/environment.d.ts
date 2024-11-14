@@ -8,8 +8,10 @@ import type {
 import type { Nullable } from '../core.js';
 import type { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes.js';
 import type { WithCreateInstance } from '../managers.js';
+import type { ClassicResolver } from '../program.js';
 import type { DebugRenderTree } from './debug-render-tree.js';
 import type { ModifierInstance } from './modifier.js';
+import type { Program } from './runtime.js';
 
 export interface EnvironmentOptions {
   document?: SimpleDocument;
@@ -47,4 +49,10 @@ export interface Environment {
   debugRenderTree?: DebugRenderTree | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isArgumentCaptureError?: ((error: any) => boolean) | undefined;
+}
+
+export interface RuntimeOptions {
+  readonly env: Environment;
+  readonly program: Program;
+  readonly resolver: Nullable<ClassicResolver>;
 }

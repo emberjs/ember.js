@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type {
   Bounds,
-  ElementBuilder,
+  TreeBuilder,
   Environment,
   Maybe,
   ModifierInstance,
@@ -11,14 +11,14 @@ import type {
   SimpleText,
 } from '@glimmer/interfaces';
 import type { RemoteLiveBlock } from '@glimmer/runtime';
-import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
+import { ConcreteBounds, NewTreeBuilder } from '@glimmer/runtime';
 
 const TEXT_NODE = 3;
 
 const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
 
 function currentNode(
-  cursor: ElementBuilder | { element: SimpleElement; nextSibling: SimpleNode }
+  cursor: TreeBuilder | { element: SimpleElement; nextSibling: SimpleNode }
 ): Nullable<SimpleNode> {
   let { element, nextSibling } = cursor;
 
@@ -29,7 +29,7 @@ function currentNode(
   }
 }
 
-class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
+class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
   private serializeBlockDepth = 0;
 
   override __openBlock(): void {
@@ -143,6 +143,6 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 export function serializeBuilder(
   env: Environment,
   cursor: { element: SimpleElement; nextSibling: Nullable<SimpleNode> }
-): ElementBuilder {
+): TreeBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

@@ -3,7 +3,7 @@ import type {
   AttributeOperation,
   AttrNamespace,
   Dict,
-  ElementBuilder,
+  TreeBuilder,
   Environment,
   Nullable,
   SimpleElement,
@@ -77,12 +77,12 @@ function buildDynamicProperty(
 export abstract class DynamicAttribute implements AttributeOperation {
   constructor(public attribute: AttributeCursor) {}
 
-  abstract set(dom: ElementBuilder, value: unknown, env: Environment): void;
+  abstract set(dom: TreeBuilder, value: unknown, env: Environment): void;
   abstract update(value: unknown, env: Environment): void;
 }
 
 export class SimpleDynamicAttribute extends DynamicAttribute {
-  set(dom: ElementBuilder, value: unknown, _env: Environment): void {
+  set(dom: TreeBuilder, value: unknown, _env: Environment): void {
     const normalizedValue = normalizeValue(value);
 
     if (normalizedValue !== null) {
@@ -112,7 +112,7 @@ export class DefaultDynamicProperty extends DynamicAttribute {
   }
 
   value: unknown;
-  set(dom: ElementBuilder, value: unknown, _env: Environment): void {
+  set(dom: TreeBuilder, value: unknown, _env: Environment): void {
     if (value !== null && value !== undefined) {
       this.value = value;
       dom.__setProperty(this.normalizedName, value);
@@ -146,7 +146,7 @@ export class DefaultDynamicProperty extends DynamicAttribute {
 }
 
 export class SafeDynamicProperty extends DefaultDynamicProperty {
-  override set(dom: ElementBuilder, value: unknown, env: Environment): void {
+  override set(dom: TreeBuilder, value: unknown, env: Environment): void {
     const { element, name } = this.attribute;
     const sanitized = sanitizeAttributeValue(element, name, value);
     super.set(dom, sanitized, env);
@@ -160,7 +160,7 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
 }
 
 export class SafeDynamicAttribute extends SimpleDynamicAttribute {
-  override set(dom: ElementBuilder, value: unknown, env: Environment): void {
+  override set(dom: TreeBuilder, value: unknown, env: Environment): void {
     const { element, name } = this.attribute;
     const sanitized = sanitizeAttributeValue(element, name, value);
     super.set(dom, sanitized, env);
@@ -174,7 +174,7 @@ export class SafeDynamicAttribute extends SimpleDynamicAttribute {
 }
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
-  override set(dom: ElementBuilder, value: unknown) {
+  override set(dom: TreeBuilder, value: unknown) {
     dom.__setProperty('value', normalizeStringValue(value));
   }
 
@@ -189,7 +189,7 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
 }
 
 export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
-  override set(dom: ElementBuilder, value: unknown): void {
+  override set(dom: TreeBuilder, value: unknown): void {
     if (value !== null && value !== undefined && value !== false) {
       dom.__setProperty('selected', true);
     }
@@ -240,7 +240,7 @@ let DebugStyleAttributeManager: {
 
 if (import.meta.env.DEV) {
   DebugStyleAttributeManager = class extends SimpleDynamicAttribute {
-    override set(dom: ElementBuilder, value: unknown, env: Environment): void {
+    override set(dom: TreeBuilder, value: unknown, env: Environment): void {
       warnIfStyleNotTrusted(value);
 
       super.set(dom, value, env);
