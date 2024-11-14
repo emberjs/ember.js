@@ -39,7 +39,7 @@ export { hash } from './lib/helpers/hash';
 export { invokeHelper } from './lib/helpers/invoke';
 export { on } from './lib/modifiers/on';
 export { renderComponent, renderMain, renderSync } from './lib/render';
-export { DynamicScopeImpl, PartialScopeImpl } from './lib/scope';
+export { DynamicScopeImpl, ScopeImpl } from './lib/scope';
 export type { SafeString } from './lib/upsert';
 export { UpdatingVM, type VM } from './lib/vm';
 export {

@@ -53,15 +53,15 @@ class ScopeInspector {
     let parts = path.split('.');
     let [head, ...tail] = path.split('.') as [string, ...string[]];
 
-    let evalScope = scope.getEvalScope()!;
+    let debuggerScope = scope.getDebuggerScope()!;
     let ref: Reference;
 
     if (head === 'this') {
       ref = scope.getSelf();
     } else if (locals[head]) {
       ref = unwrap(locals[head]);
-    } else if (head.indexOf('@') === 0 && evalScope[head]) {
-      ref = evalScope[head] as Reference;
+    } else if (head.indexOf('@') === 0 && debuggerScope[head]) {
+      ref = debuggerScope[head] as Reference;
     } else {
       ref = this.scope.getSelf();
       tail = parts;
