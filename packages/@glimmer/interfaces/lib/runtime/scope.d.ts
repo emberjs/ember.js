@@ -18,19 +18,13 @@ export interface Scope {
   getSelf(): Reference;
   getSymbol(symbol: number): Reference;
   getBlock(symbol: number): Nullable<ScopeBlock>;
-  getEvalScope(): Nullable<Dict<ScopeSlot>>;
-  getPartialMap(): Nullable<Dict<Reference>>;
+  getDebuggerScope(): Nullable<Dict<ScopeSlot>>;
   bind(symbol: number, value: ScopeSlot): void;
   bindSelf(self: Reference): void;
   bindSymbol(symbol: number, value: Reference): void;
   bindBlock(symbol: number, value: Nullable<ScopeBlock>): void;
-  bindEvalScope(map: Nullable<Dict<ScopeSlot>>): void;
-  bindPartialMap(map: Dict<Reference>): void;
+  bindDebuggerScope(map: Nullable<Dict<ScopeSlot>>): void;
   child(): Scope;
-}
-
-export interface PartialScope extends Scope {
-  bindEvalScope(scope: Nullable<Dict<ScopeSlot>>): void;
 }
 
 export interface DynamicScope {

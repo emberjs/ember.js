@@ -96,8 +96,8 @@ export type VmPutComponentOperations = 89;
 export type VmGetComponentSelf = 90;
 export type VmGetComponentTagName = 91;
 export type VmGetComponentLayout = 92;
-export type VmBindEvalScope = 93;
-export type VmSetupForEval = 94;
+export type VmBindDebuggerScope = 93;
+export type VmSetupForDebugger = 94;
 export type VmPopulateLayout = 95;
 export type VmInvokeComponentLayout = 96;
 export type VmBeginComponentTransaction = 97;
@@ -193,8 +193,8 @@ export type VmOp =
   | VmGetComponentSelf
   | VmGetComponentTagName
   | VmGetComponentLayout
-  | VmBindEvalScope
-  | VmSetupForEval
+  | VmBindDebuggerScope
+  | VmSetupForDebugger
   | VmPopulateLayout
   | VmInvokeComponentLayout
   | VmBeginComponentTransaction
