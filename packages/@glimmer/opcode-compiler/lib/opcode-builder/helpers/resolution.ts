@@ -4,13 +4,13 @@ import type {
   Expressions,
   Nullable,
   Owner,
+  ProgramConstants,
   ResolutionTimeConstants,
   ResolveComponentOp,
   ResolveComponentOrHelperOp,
   ResolveHelperOp,
   ResolveModifierOp,
   ResolveOptionalComponentOrHelperOp,
-  ProgramConstants,
   SexpOpcode,
 } from '@glimmer/interfaces';
 import { assert, debugToString, expect, unwrap } from '@glimmer/debug-util';

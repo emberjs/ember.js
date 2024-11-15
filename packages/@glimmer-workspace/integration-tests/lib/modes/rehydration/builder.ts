@@ -1,4 +1,4 @@
-import type { Cursor, TreeBuilder, Environment, SimpleNode } from '@glimmer/interfaces';
+import type { Cursor, Environment, SimpleNode, TreeBuilder } from '@glimmer/interfaces';
 import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
 import { RehydrateBuilder } from '@glimmer/runtime';
 

@@ -2,7 +2,6 @@ import type {
   Cursor,
   Dict,
   DynamicScope,
-  TreeBuilder,
   ElementNamespace,
   Environment,
   Helper,
@@ -11,6 +10,7 @@ import type {
   SimpleDocumentFragment,
   SimpleElement,
   SimpleText,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { EnvironmentDelegate } from '@glimmer/runtime';

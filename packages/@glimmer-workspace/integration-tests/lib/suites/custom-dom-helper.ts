@@ -1,4 +1,4 @@
-import type { Cursor, TreeBuilder, Environment } from '@glimmer/interfaces';
+import type { Cursor, Environment, TreeBuilder } from '@glimmer/interfaces';
 import { precompile } from '@glimmer/compiler';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
 

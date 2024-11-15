@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type {
   Bounds,
-  TreeBuilder,
   Environment,
   Maybe,
   ModifierInstance,
@@ -9,6 +8,7 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { RemoteLiveBlock } from '@glimmer/runtime';
 import { ConcreteBounds, NewTreeBuilder } from '@glimmer/runtime';

@@ -1,7 +1,6 @@
 import type {
   AttrNamespace,
   Bounds,
-  TreeBuilder,
   Environment,
   Maybe,
   Nullable,
@@ -10,6 +9,7 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Stack } from '@glimmer/util';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants';

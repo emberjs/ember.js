@@ -687,10 +687,3 @@ export class Closure {
     return new VM(this.state, tree, this.context);
   }
 }
-
-function sliceTuple<T extends unknown[], Prefix extends unknown[]>(
-  tuple: T,
-  prefix: Prefix
-): T extends [...Prefix, ...infer Rest] ? Rest : never {
-  return tuple.slice(prefix.length) as T extends [...Prefix, ...infer Rest] ? Rest : never;
-}

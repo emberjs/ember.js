@@ -3,10 +3,10 @@ import type {
   AttributeOperation,
   AttrNamespace,
   Dict,
-  TreeBuilder,
   Environment,
   Nullable,
   SimpleElement,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import { NS_SVG } from '@glimmer/constants';
 import { castToBrowser } from '@glimmer/debug-util';
