@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.0.1 (November 15, 2024)
+
+- [#20792](https://github.com/emberjs/ember.js/pull/20792) [BUGFIX] Fix importing ember-source/types
+
 ## v6.0.0 (November 11, 2024)
  
 - [BREAKING] Features and APIs that were deprecated until v6.0 will now throw exceptions and the related code will be removed imminently. For a list of deprecations, see the [Deprecation Guide](https://deprecations.emberjs.com/v5.x).
