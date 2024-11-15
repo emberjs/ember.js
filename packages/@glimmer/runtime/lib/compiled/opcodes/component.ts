@@ -173,7 +173,7 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
       );
     }
 
-    let resolvedDefinition = resolveComponent(vm.runtime.resolver, constants, component, owner);
+    let resolvedDefinition = resolveComponent(vm.context.resolver, constants, component, owner);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
   } else if (isCurriedValue(component)) {
@@ -291,7 +291,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
     if (resolved === true) {
       definition = resolvedDefinition as ComponentDefinition;
     } else if (typeof resolvedDefinition === 'string') {
-      let resolvedValue = vm.runtime.resolver.lookupComponent(resolvedDefinition, owner);
+      let resolvedValue = vm.context.resolver?.lookupComponent?.(resolvedDefinition, owner) ?? null;
 
       definition = constants.resolvedComponent(
         expect(resolvedValue, 'BUG: expected resolved component'),
@@ -617,9 +617,7 @@ function setDeferredAttr(
   if (typeof value === 'string') {
     vm.tree().setStaticAttribute(name, value, namespace);
   } else {
-    let attribute = vm
-      .tree()
-      .setDynamicAttribute(name, valueForRef(value), trusting, namespace);
+    let attribute = vm.tree().setDynamicAttribute(name, valueForRef(value), trusting, namespace);
     if (!isConstRef(value)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
     }
@@ -675,7 +673,8 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
         'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
       );
 
-      compilable = manager.getDynamicLayout(state, vm.runtime.resolver);
+      let resolver = vm.context.resolver;
+      compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
 
       if (compilable !== null) {
         moduleName = compilable.moduleName;
@@ -761,7 +760,8 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
       'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
     );
 
-    compilable = manager.getDynamicLayout(instance.state, vm.runtime.resolver);
+    let resolver = vm.context.resolver;
+    compilable = resolver === null ? null : manager.getDynamicLayout(instance.state, resolver);
 
     if (compilable === null) {
       if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.wrapped)) {

@@ -1,6 +1,6 @@
 import type {
-  Environment,
   AppendingBlock,
+  Environment,
   RenderResult,
   SimpleElement,
   SimpleNode,

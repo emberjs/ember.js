@@ -91,20 +91,17 @@ export default function createRegistry(): Registry {
         envDelegate,
         sharedArtifacts,
         {
-          lookupComponent: () => null,
-        }
-      );
-
-      const context = new EvaluationContextImpl(
-        sharedArtifacts,
-        {
           lookupHelper: (name) => helpers.get(name) ?? null,
           lookupModifier: (name) => modifiers.get(name) ?? null,
           lookupComponent: (name) => components.get(name) ?? null,
 
           lookupBuiltInHelper: () => null,
           lookupBuiltInModifier: () => null,
-        },
+        }
+      );
+
+      const context = new EvaluationContextImpl(
+        sharedArtifacts,
         (heap) => new RuntimeOpImpl(heap),
         runtime
       );
@@ -113,17 +110,7 @@ export default function createRegistry(): Registry {
         throw new Error(`missing ${entry} component`);
       }
 
-      return renderBenchmark(
-        sharedArtifacts,
-        context,
-        {
-          lookupComponent: () => null,
-        },
-        component,
-        args,
-        element as SimpleElement,
-        isInteractive
-      );
+      return renderBenchmark(context, component, args, element as SimpleElement);
     },
   };
 }

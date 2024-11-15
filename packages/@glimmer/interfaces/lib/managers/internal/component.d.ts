@@ -2,6 +2,7 @@ import type { ComponentInstanceState, PreparedArguments } from '../../components
 import type { Destroyable, Nullable } from '../../core.js';
 import type { Bounds } from '../../dom/bounds.js';
 import type { SimpleElement } from '../../dom/simple.js';
+import type { ClassicResolver } from '../../program.js';
 import type { Reference } from '../../references.js';
 import type { Owner } from '../../runtime.js';
 import type { CapturedArguments, VMArguments } from '../../runtime/arguments.js';
@@ -9,7 +10,6 @@ import type { RenderNode } from '../../runtime/debug-render-tree.js';
 import type { ElementOperations } from '../../runtime/element.js';
 import type { Environment } from '../../runtime/environment.js';
 import type { DynamicScope } from '../../runtime/scope.js';
-import type { RuntimeResolver } from '../../serialize.js';
 import type { CompilableProgram } from '../../template.js';
 import type { ProgramSymbolTable } from '../../tier1/symbol-table.js';
 
@@ -237,7 +237,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
 
 export interface WithDynamicLayout<
   I = ComponentInstanceState,
-  R extends RuntimeResolver = RuntimeResolver,
+  R extends ClassicResolver = ClassicResolver,
 > extends InternalComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might

@@ -254,12 +254,8 @@ class DebugRenderTreeTest extends RenderTest {
         args: (actual) => {
           const args = { positional: [], named: { arg: 'first', arg2: { error } } };
           this.assert.deepEqual(actual, args);
-          this.assert.ok(
-            !this.delegate.context.runtime.env.isArgumentCaptureError!(actual.named['arg'])
-          );
-          this.assert.ok(
-            this.delegate.context.runtime.env.isArgumentCaptureError!(actual.named['arg2'])
-          );
+          this.assert.ok(!this.delegate.context.env.isArgumentCaptureError!(actual.named['arg']));
+          this.assert.ok(this.delegate.context.env.isArgumentCaptureError!(actual.named['arg2']));
           return true;
         },
         instance: (instance: EmberishCurlyComponent) => (instance as any).arg === 'first',

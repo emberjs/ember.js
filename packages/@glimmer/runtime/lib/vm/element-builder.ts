@@ -11,13 +11,13 @@ import type {
   Maybe,
   ModifierInstance,
   Nullable,
+  ResettableBlock,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
   TreeBuilder,
-  UpdatableBlock,
 } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/debug-util';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
@@ -89,7 +89,7 @@ export class NewTreeBuilder implements TreeBuilder {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
   }
 
-  static resume(env: Environment, block: UpdatableBlock): NewTreeBuilder {
+  static resume(env: Environment, block: ResettableBlock): NewTreeBuilder {
     let parentNode = block.parentElement();
     let nextSibling = block.reset(env);
 
@@ -475,7 +475,7 @@ export class RemoteLiveBlock extends SimpleLiveBlock {
   }
 }
 
-export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBlock {
+export class UpdatableBlockImpl extends SimpleLiveBlock implements ResettableBlock {
   reset(): Nullable<SimpleNode> {
     destroy(this);
     let nextSibling = clear(this);

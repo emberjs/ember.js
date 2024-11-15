@@ -1,11 +1,11 @@
 import type {
   CapturedArguments,
+  ClassicResolver,
   CurriedType,
   Dict,
   Maybe,
   Nullable,
   Owner,
-  RuntimeResolver,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
@@ -20,7 +20,7 @@ export default function createCurryRef(
   inner: Reference,
   owner: Owner,
   args: Nullable<CapturedArguments>,
-  resolver: RuntimeResolver,
+  resolver: Nullable<ClassicResolver>,
   isStrict: boolean
 ) {
   let lastValue: Maybe<Dict> | string, curriedDefinition: object | string | null;
@@ -45,10 +45,11 @@ export default function createCurryRef(
           );
         }
 
-        let resolvedDefinition = expect(
-          resolver,
-          'BUG: expected resolver for curried component definitions'
-        ).lookupComponent(value, owner);
+        let resolvedDefinition =
+          expect(
+            resolver,
+            'BUG: expected resolver for curried component definitions'
+          ).lookupComponent?.(value, owner) ?? null;
 
         if (!resolvedDefinition) {
           throw new Error(
