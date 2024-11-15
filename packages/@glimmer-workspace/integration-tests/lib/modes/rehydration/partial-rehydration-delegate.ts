@@ -16,13 +16,13 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     element: SimpleElement
   ): RenderResult {
     let cursor = { element, nextSibling: null };
-    let { program, runtime } = this.clientEnv;
-    let builder = this.getElementBuilder(runtime.env, cursor) as DebugRehydrationBuilder;
+    let context = this.clientContext;
+    let builder = this.getElementBuilder(context.env, cursor) as DebugRehydrationBuilder;
     let component = this.clientRegistry.lookupComponent(name)!;
 
-    let iterator = renderComponent(runtime, builder, program, {}, component.state, args);
+    let iterator = renderComponent(context, builder, {}, component.state, args);
 
-    const result = renderSync(runtime.env, iterator);
+    const result = renderSync(context.env, iterator);
 
     this.rehydrationStats = {
       clearedNodes: builder.clearedNodes,
@@ -34,14 +34,14 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
   renderComponentServerSide(name: string, args: Dict<unknown>): string {
     const element = this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
-    let { program, runtime } = this.serverEnv;
-    let builder = this.getElementBuilder(runtime.env, cursor);
+    let context = this.serverContext;
+    let builder = this.getElementBuilder(context.env, cursor);
 
     let component = this.serverRegistry.lookupComponent(name)!;
 
-    let iterator = renderComponent(runtime, builder, program, {}, component.state, args);
+    let iterator = renderComponent(context, builder, {}, component.state, args);
 
-    renderSync(runtime.env, iterator);
+    renderSync(context.env, iterator);
 
     return this.serialize(element);
   }

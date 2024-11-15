@@ -77,7 +77,7 @@ APPEND_OPCODES.add(VM_CURRY_OP, (vm, { op1: type, op2: _isStrict }) => {
   let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
   let owner = vm.getOwner();
-  let resolver = vm.runtime.resolver;
+  let resolver = vm.context.resolver;
 
   let isStrict = false;
 

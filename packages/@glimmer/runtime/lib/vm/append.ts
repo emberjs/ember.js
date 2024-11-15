@@ -253,6 +253,7 @@ export class VM {
 
     this.#destructor = {};
     this.#destroyableStack.push(this.#destructor);
+    associateDestroyableChild(this.#stacks.drop, this.#destructor);
 
     if (LOCAL_DEBUG) {
       const templates = new DebugTemplatesImpl!();
@@ -270,6 +271,8 @@ export class VM {
         registers: this.#registers,
       } satisfies DebugVmState;
     }
+
+    this.pushUpdating();
   }
 
   static initial(context: EvaluationContext, options: InitialVmState) {

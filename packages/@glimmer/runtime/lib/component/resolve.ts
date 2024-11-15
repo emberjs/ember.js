@@ -1,22 +1,23 @@
 import type {
+  ClassicResolver,
   ComponentDefinition,
   Nullable,
   Owner,
   ResolutionTimeConstants,
-  RuntimeResolver,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/debug-util';
 
 export function resolveComponent(
-  resolver: RuntimeResolver,
+  resolver: Nullable<ClassicResolver>,
   constants: ResolutionTimeConstants,
   name: string,
   owner: Owner | null
 ): Nullable<ComponentDefinition> {
-  let definition = resolver.lookupComponent(
-    name,
-    expect(owner, 'BUG: expected owner when looking up component')
-  );
+  let definition =
+    resolver?.lookupComponent?.(
+      name,
+      expect(owner, 'BUG: expected owner when looking up component')
+    ) ?? null;
 
   if (import.meta.env.DEV && !definition) {
     throw new Error(

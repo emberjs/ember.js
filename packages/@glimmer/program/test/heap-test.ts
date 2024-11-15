@@ -1,10 +1,10 @@
-import { HeapImpl } from '@glimmer/program';
+import { ProgramHeapImpl } from '@glimmer/program';
 
 QUnit.module('Heap');
 
 QUnit.test('Can grow', (assert) => {
   let size = 0x100000;
-  let heap = new HeapImpl();
+  let heap = new ProgramHeapImpl();
 
   let i = 0;
 

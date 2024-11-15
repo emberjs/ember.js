@@ -1,5 +1,5 @@
 import type {
-  ContainingMetadata,
+  BlockMetadata,
   LayoutWithContext,
   NamedBlocks,
   Nullable,
@@ -105,7 +105,7 @@ export function CompilePositional(
   return positional.length;
 }
 
-export function meta(layout: LayoutWithContext): ContainingMetadata {
+export function meta(layout: LayoutWithContext): BlockMetadata {
   let [, symbols, , upvars, debugSymbols] = layout.block;
 
   return {

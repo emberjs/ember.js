@@ -1,13 +1,11 @@
 import type {
-  CompileTimeConstants,
   ComponentDefinition,
   ComponentDefinitionState,
   ConstantPool,
   HelperDefinitionState,
   ModifierDefinitionState,
-  ResolutionTimeConstants,
-  ResolvedComponentDefinition,
   ProgramConstants,
+  ResolvedComponentDefinition,
   Template,
 } from '@glimmer/interfaces';
 import { constants } from '@glimmer/constants';
@@ -30,13 +28,32 @@ const WELL_KNOWN_EMPTY_ARRAY: unknown = Object.freeze([]);
 const STARTER_CONSTANTS = constants(WELL_KNOWN_EMPTY_ARRAY);
 const WELL_KNOWN_EMPTY_ARRAY_POSITION: number = STARTER_CONSTANTS.indexOf(WELL_KNOWN_EMPTY_ARRAY);
 
-export class CompileTimeConstantImpl implements CompileTimeConstants {
-  // `0` means NULL
+export class ConstantsImpl implements ProgramConstants {
+  protected reifiedArrs: { [key: number]: unknown[] } = {
+    [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
+  };
 
-  protected values: unknown[] = STARTER_CONSTANTS.slice();
-  protected indexMap: Map<unknown, number> = new Map(
+  defaultTemplate: Template = templateFactory(DEFAULT_TEMPLATE)();
+
+  // Used for tests and debugging purposes, and to be able to analyze large apps
+  // This is why it's enabled even in production
+  helperDefinitionCount = 0;
+  modifierDefinitionCount = 0;
+  componentDefinitionCount = 0;
+
+  private values: unknown[] = STARTER_CONSTANTS.slice();
+  private indexMap: Map<unknown, number> = new Map(
     this.values.map((value, index) => [value, index])
   );
+
+  private helperDefinitionCache = new WeakMap<HelperDefinitionState, number | null>();
+
+  private modifierDefinitionCache = new WeakMap<ModifierDefinitionState, number | null>();
+
+  private componentDefinitionCache = new WeakMap<
+    ComponentDefinitionState | ResolvedComponentDefinition,
+    ComponentDefinition | null
+  >();
 
   value(value: unknown) {
     let indexMap = this.indexMap;
@@ -67,55 +84,6 @@ export class CompileTimeConstantImpl implements CompileTimeConstants {
   toPool(): ConstantPool {
     return this.values;
   }
-}
-
-export class RuntimeConstantsImpl implements ProgramConstants {
-  protected values: unknown[];
-
-  constructor(pool: ConstantPool) {
-    this.values = pool;
-  }
-
-  getValue<T>(handle: number) {
-    return this.values[handle] as T;
-  }
-
-  getArray<T>(value: number): T[] {
-    let handles = this.getValue<number[]>(value);
-    let reified: T[] = new Array(handles.length);
-
-    for (const [i, n] of enumerate(handles)) {
-      reified[i] = this.getValue(n);
-    }
-
-    return reified;
-  }
-}
-
-export class ConstantsImpl
-  extends CompileTimeConstantImpl
-  implements ProgramConstants, ResolutionTimeConstants
-{
-  protected reifiedArrs: { [key: number]: unknown[] } = {
-    [WELL_KNOWN_EMPTY_ARRAY_POSITION]: WELL_KNOWN_EMPTY_ARRAY as unknown[],
-  };
-
-  defaultTemplate: Template = templateFactory(DEFAULT_TEMPLATE)();
-
-  // Used for tests and debugging purposes, and to be able to analyze large apps
-  // This is why it's enabled even in production
-  helperDefinitionCount = 0;
-  modifierDefinitionCount = 0;
-  componentDefinitionCount = 0;
-
-  private helperDefinitionCache = new WeakMap<HelperDefinitionState, number | null>();
-
-  private modifierDefinitionCache = new WeakMap<ModifierDefinitionState, number | null>();
-
-  private componentDefinitionCache = new WeakMap<
-    ComponentDefinitionState | ResolvedComponentDefinition,
-    ComponentDefinition | null
-  >();
 
   helper(
     definitionState: HelperDefinitionState,
