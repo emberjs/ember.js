@@ -3,13 +3,13 @@
 ## 2.0.0 2024-10-29
 
  - BREAKING: converted to V2 addon
- - BREAKING: dropped support for ember < 3.13
+ - BREAKING: dropped support for ember < 4.10
 
 
 ## 2.0.0-beta.22 2024-10-29
 
  - BREAKING: converted to V2 addon
- - BREAKING: dropped support for ember < 3.13
+ - BREAKING: dropped support for ember < 4.10
 
 
 ## Older Releases

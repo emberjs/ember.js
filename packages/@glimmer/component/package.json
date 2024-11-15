@@ -23,6 +23,9 @@
   "devDependencies": {
     "typescript": "5.1"
   },
+  "peerDependencies": {
+    "ember-source": ">= 4.10.0"
+  },
   "engines": {
     "node": ">= 18"
   },
