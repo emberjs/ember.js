@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';

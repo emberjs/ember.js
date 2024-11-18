@@ -1,7 +1,6 @@
 import type {
   AttrNamespace,
   Bounds,
-  ElementBuilder,
   Environment,
   Maybe,
   Nullable,
@@ -10,13 +9,14 @@ import type {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Stack } from '@glimmer/util';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants';
 import { assert, castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
-import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
+import { CURSOR_STACK, NewTreeBuilder, RemoteLiveBlock } from './element-builder';
 
 export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
 
@@ -38,7 +38,7 @@ export class RehydratingCursor extends CursorImpl {
   }
 }
 
-export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
+export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
   private unmatchedAttributes: Nullable<SimpleAttr[]> = null;
   declare [CURSOR_STACK]: Stack<RehydratingCursor>; // Hides property on base class
   blockDepth = 0;
@@ -126,7 +126,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     /** called from parent constructor before we initialize this */
     this:
       | RehydrateBuilder
-      | (NewElementBuilder & Partial<Pick<RehydrateBuilder, 'blockDepth' | 'candidate'>>),
+      | (NewTreeBuilder & Partial<Pick<RehydrateBuilder, 'blockDepth' | 'candidate'>>),
     element: SimpleElement,
     nextSibling: Maybe<SimpleNode> = null
   ) {
@@ -550,6 +550,6 @@ function findByName(array: SimpleAttr[], name: string): SimpleAttr | undefined {
   return undefined;
 }
 
-export function rehydrationBuilder(env: Environment, cursor: CursorImpl): ElementBuilder {
+export function rehydrationBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {
   return RehydrateBuilder.forInitialRender(env, cursor);
 }

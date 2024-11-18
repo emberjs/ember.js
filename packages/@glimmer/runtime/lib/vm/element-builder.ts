@@ -1,23 +1,23 @@
 import type {
+  AppendingBlock,
   AttrNamespace,
   Bounds,
   Cursor,
   CursorStackSymbol,
-  ElementBuilder,
   ElementOperations,
   Environment,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
-  LiveBlock,
   Maybe,
   ModifierInstance,
   Nullable,
+  ResettableBlock,
   SimpleComment,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleNode,
   SimpleText,
-  UpdatableBlock,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/debug-util';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
@@ -74,7 +74,7 @@ export class Fragment implements Bounds {
 
 export const CURSOR_STACK: CursorStackSymbol = Symbol('CURSOR_STACK') as CursorStackSymbol;
 
-export class NewElementBuilder implements ElementBuilder {
+export class NewTreeBuilder implements TreeBuilder {
   public dom: GlimmerTreeConstruction;
   public updateOperations: GlimmerTreeChanges;
   public constructing: Nullable<SimpleElement> = null;
@@ -83,13 +83,13 @@ export class NewElementBuilder implements ElementBuilder {
 
   [CURSOR_STACK] = new Stack<Cursor>();
   private modifierStack = new Stack<Nullable<ModifierInstance[]>>();
-  private blockStack = new Stack<LiveBlock>();
+  private blockStack = new Stack<AppendingBlock>();
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
   }
 
-  static resume(env: Environment, block: UpdatableBlock): NewElementBuilder {
+  static resume(env: Environment, block: ResettableBlock): NewTreeBuilder {
     let parentNode = block.parentElement();
     let nextSibling = block.reset(env);
 
@@ -107,11 +107,11 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   protected initialize(): this {
-    this.pushSimpleBlock();
+    this.pushAppendingBlock();
     return this;
   }
 
-  debugBlocks(): LiveBlock[] {
+  debugBlocks(): AppendingBlock[] {
     return this.blockStack.toArray();
   }
 
@@ -127,7 +127,7 @@ export class NewElementBuilder implements ElementBuilder {
     return this.blockStack.size > 0;
   }
 
-  protected block(): LiveBlock {
+  protected block(): AppendingBlock {
     return expect(this.blockStack.current, 'Expected a current live block');
   }
 
@@ -136,19 +136,19 @@ export class NewElementBuilder implements ElementBuilder {
     expect(this[CURSOR_STACK].current, "can't pop past the last element");
   }
 
-  pushSimpleBlock(): LiveBlock {
+  pushAppendingBlock(): AppendingBlock {
     return this.pushLiveBlock(new SimpleLiveBlock(this.element));
   }
 
-  pushUpdatableBlock(): UpdatableBlockImpl {
+  pushResettableBlock(): UpdatableBlockImpl {
     return this.pushLiveBlock(new UpdatableBlockImpl(this.element));
   }
 
-  pushBlockList(list: LiveBlock[]): LiveBlockList {
+  pushBlockList(list: AppendingBlock[]): LiveBlockList {
     return this.pushLiveBlock(new LiveBlockList(this.element, list));
   }
 
-  protected pushLiveBlock<T extends LiveBlock>(block: T, isRemote = false): T {
+  protected pushLiveBlock<T extends AppendingBlock>(block: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
@@ -162,7 +162,7 @@ export class NewElementBuilder implements ElementBuilder {
     return block;
   }
 
-  popBlock(): LiveBlock {
+  popBlock(): AppendingBlock {
     this.block().finalize(this);
     this.__closeBlock();
     return expect(this.blockStack.pop(), 'Expected popBlock to return a block');
@@ -374,7 +374,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 }
 
-export class SimpleLiveBlock implements LiveBlock {
+export class SimpleLiveBlock implements AppendingBlock {
   protected first: Nullable<FirstNode> = null;
   protected last: Nullable<LastNode> = null;
   protected nesting = 0;
@@ -432,7 +432,7 @@ export class SimpleLiveBlock implements LiveBlock {
     this.last = bounds;
   }
 
-  finalize(stack: ElementBuilder) {
+  finalize(stack: TreeBuilder) {
     if (this.first === null) {
       stack.appendComment('');
     }
@@ -475,7 +475,7 @@ export class RemoteLiveBlock extends SimpleLiveBlock {
   }
 }
 
-export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBlock {
+export class UpdatableBlockImpl extends SimpleLiveBlock implements ResettableBlock {
   reset(): Nullable<SimpleNode> {
     destroy(this);
     let nextSibling = clear(this);
@@ -489,10 +489,10 @@ export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBloc
 }
 
 // FIXME: All the noops in here indicate a modelling problem
-export class LiveBlockList implements LiveBlock {
+export class LiveBlockList implements AppendingBlock {
   constructor(
     private readonly parent: SimpleElement,
-    public boundList: LiveBlock[]
+    public boundList: AppendingBlock[]
   ) {
     this.parent = parent;
     this.boundList = boundList;
@@ -536,11 +536,11 @@ export class LiveBlockList implements LiveBlock {
 
   didAppendBounds(_bounds: Bounds) {}
 
-  finalize(_stack: ElementBuilder) {
+  finalize(_stack: TreeBuilder) {
     assert(this.boundList.length > 0, 'boundsList cannot be empty');
   }
 }
 
-export function clientBuilder(env: Environment, cursor: CursorImpl): ElementBuilder {
-  return NewElementBuilder.forInitialRender(env, cursor);
+export function clientBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {
+  return NewTreeBuilder.forInitialRender(env, cursor);
 }

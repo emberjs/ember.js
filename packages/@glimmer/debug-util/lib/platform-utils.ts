@@ -10,14 +10,15 @@ export function unwrap<T>(val: Maybe<T>): T {
   return val as T;
 }
 
-export const expect = (
-  LOCAL_DEBUG
-    ? <T>(value: T, _message: string) => value
-    : <T>(val: T, message: string): Present<T> => {
-        if (LOCAL_DEBUG) if (val === null || val === undefined) throw new Error(message);
-        return val as Present<T>;
-      }
-) as <T>(value: T, message: string) => NonNullable<T>;
+export const expect = (LOCAL_DEBUG
+  ? <T>(value: T, _message: string) => value
+  : <T>(val: T, message: string): Present<T> => {
+      if (LOCAL_DEBUG) if (val === null || val === undefined) throw new Error(message);
+      return val as Present<T>;
+    }) as <T>(value: T, message: string) => NonNullable<T> as <T>(
+  value: T,
+  message: string
+) => Present<T>;
 
 export const unreachable = LOCAL_DEBUG
   ? () => {}

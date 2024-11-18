@@ -98,7 +98,7 @@ APPEND_OPCODES.add(VM_APPEND_HTML_OP, (vm) => {
   let rawValue = valueForRef(reference);
   let value = isEmpty(rawValue) ? '' : String(rawValue);
 
-  vm.elements().appendDynamicHTML(value);
+  vm.tree().appendDynamicHTML(value);
 });
 
 APPEND_OPCODES.add(VM_APPEND_SAFE_HTML_OP, (vm) => {
@@ -107,7 +107,7 @@ APPEND_OPCODES.add(VM_APPEND_SAFE_HTML_OP, (vm) => {
   let rawValue = check(valueForRef(reference), CheckSafeString).toHTML();
   let value = isEmpty(rawValue) ? '' : check(rawValue, CheckString);
 
-  vm.elements().appendDynamicHTML(value);
+  vm.tree().appendDynamicHTML(value);
 });
 
 APPEND_OPCODES.add(VM_APPEND_TEXT_OP, (vm) => {
@@ -116,7 +116,7 @@ APPEND_OPCODES.add(VM_APPEND_TEXT_OP, (vm) => {
   let rawValue = valueForRef(reference);
   let value = isEmpty(rawValue) ? '' : String(rawValue);
 
-  let node = vm.elements().appendDynamicText(value);
+  let node = vm.tree().appendDynamicText(value);
 
   if (!isConstRef(reference)) {
     vm.updateWith(new DynamicTextContent(node, reference, value));
@@ -128,7 +128,7 @@ APPEND_OPCODES.add(VM_APPEND_DOCUMENT_FRAGMENT_OP, (vm) => {
 
   let value = check(valueForRef(reference), CheckDocumentFragment);
 
-  vm.elements().appendDynamicFragment(value);
+  vm.tree().appendDynamicFragment(value);
 });
 
 APPEND_OPCODES.add(VM_APPEND_NODE_OP, (vm) => {
@@ -136,5 +136,5 @@ APPEND_OPCODES.add(VM_APPEND_NODE_OP, (vm) => {
 
   let value = check(valueForRef(reference), CheckNode);
 
-  vm.elements().appendDynamicNode(value);
+  vm.tree().appendDynamicNode(value);
 });

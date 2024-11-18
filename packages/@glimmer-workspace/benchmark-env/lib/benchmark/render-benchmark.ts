@@ -1,47 +1,32 @@
 import type {
-  CompileTimeCompilationContext,
   Dict,
+  EvaluationContext,
   ResolvedComponentDefinition,
-  RuntimeArtifacts,
-  RuntimeResolver,
   SimpleElement,
 } from '@glimmer/interfaces';
-import { NewElementBuilder, renderComponent, renderSync, runtimeContext } from '@glimmer/runtime';
+import { NewTreeBuilder, renderComponent, renderSync } from '@glimmer/runtime';
 
 import type { UpdateBenchmark } from '../interfaces';
 
-import createEnvDelegate, { registerResult } from './create-env-delegate';
+import { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
 
 export default async function renderBenchmark(
-  artifacts: RuntimeArtifacts,
-  context: CompileTimeCompilationContext,
-  runtimeResolver: RuntimeResolver,
+  context: EvaluationContext,
   component: ResolvedComponentDefinition,
   args: Dict,
-  element: SimpleElement,
-  isInteractive = true
+  element: SimpleElement
 ): Promise<UpdateBenchmark> {
   let resolveRender: (() => void) | undefined;
 
   await measureRender('render', 'renderStart', 'renderEnd', () => {
-    const document = element.ownerDocument;
-    const envDelegate = createEnvDelegate(isInteractive);
-    const runtime = runtimeContext(
-      {
-        document,
-      },
-      envDelegate,
-      artifacts,
-      runtimeResolver
-    );
-    const env = runtime.env;
+    const env = context.env;
     const cursor = { element, nextSibling: null };
-    const treeBuilder = NewElementBuilder.forInitialRender(env, cursor);
+    const treeBuilder = NewTreeBuilder.forInitialRender(env, cursor);
 
     const result = renderSync(
       env,
-      renderComponent(runtime, treeBuilder, context, {}, component.state, args)
+      renderComponent(context, treeBuilder, {}, component.state, args)
     );
 
     registerResult(result, () => {

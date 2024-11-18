@@ -1,12 +1,13 @@
 import type { Encoder } from './compile/index.js';
 import type { ComponentDefinition, ComponentDefinitionState } from './components.js';
-import type { HelperDefinitionState } from './runtime.js';
+import type { Nullable } from './core.js';
+import type { Environment, HelperDefinitionState, Owner, Program } from './runtime.js';
 import type { ModifierDefinitionState } from './runtime/modifier.js';
-import type { CompileTimeResolver, ResolvedComponentDefinition } from './serialize.js';
-import type { ContainingMetadata, STDLib, Template } from './template.js';
+import type { ResolvedComponentDefinition } from './serialize.js';
+import type { BlockMetadata, STDLib, Template } from './template.js';
 import type { SomeVmOp, VmMachineOp, VmOp } from './vm-opcodes.js';
 
-export type CreateRuntimeOp = (heap: CompileTimeHeap) => RuntimeOp;
+export type CreateRuntimeOp = (heap: ProgramHeap) => RuntimeOp;
 
 export interface RuntimeOp {
   offset: number;
@@ -24,11 +25,7 @@ export interface SerializedHeap {
   handle: number;
 }
 
-export interface OpcodeHeap {
-  getbyaddr(address: number): number;
-}
-
-export interface CompileTimeHeap extends OpcodeHeap {
+export interface ProgramHeap {
   pushRaw(value: number): void;
   pushOp(name: VmOp, op1?: number, op2?: number, op3?: number): void;
   pushMachine(name: VmMachineOp, op1?: number, op2?: number, op3?: number): void;
@@ -44,25 +41,36 @@ export interface CompileTimeHeap extends OpcodeHeap {
   setbyaddr(address: number, value: number): void;
 }
 
-export interface RuntimeHeap extends OpcodeHeap {
-  getaddr(handle: number): number;
-  sizeof(handle: number): number;
-}
-
-export interface CompileTimeCompilationContext {
-  // The offsets to stdlib functions
+/**
+ * The `EvaluationContext` is the context that remains the same across all of the templates and
+ * evaluations in a single program.
+ *
+ * Note that multiple programs can co-exist on the same page, sharing tracking logic (and the
+ * global tracking context) but having different *evaluation* contexts.
+ */
+export interface EvaluationContext {
+  /**
+   * The program's environment, which contains customized framework behavior.
+   */
+  readonly env: Environment;
+  /**
+   * The compiled program itself: the constants and heap
+   */
+  readonly program: Program;
+  /**
+   * The offsets to stdlib functions
+   */
   readonly stdlib: STDLib;
-
+  /**
+   * A framework-specified resolver for resolving free variables in classic templates.
+   *
+   * A strict component can invoke a classic component and vice versa, but only classic components
+   * will use the resolver. If no resolver is available in the `ProgramContext`, only strict components
+   * will compile and run.
+   */
+  readonly resolver: Nullable<ClassicResolver>;
+  // Create a runtime op from the heap
   readonly createOp: CreateRuntimeOp;
-
-  // Interned constants
-  readonly constants: CompileTimeConstants & ResolutionTimeConstants;
-
-  // The mechanism of resolving names to values at compile-time
-  readonly resolver: CompileTimeResolver;
-
-  // The heap that the program is serializing into
-  readonly heap: CompileTimeHeap;
 }
 
 /**
@@ -70,10 +78,10 @@ export interface CompileTimeCompilationContext {
  * along the static information associated with the entire
  * template when compiling blocks nested inside of it.
  */
-export interface TemplateCompilationContext {
-  readonly program: CompileTimeCompilationContext;
+export interface CompilationContext {
+  readonly evaluation: EvaluationContext;
   readonly encoder: Encoder;
-  readonly meta: ContainingMetadata;
+  readonly meta: BlockMetadata;
 }
 
 export type EMPTY_ARRAY = Array<ReadonlyArray<never>>;
@@ -134,14 +142,21 @@ export interface ResolutionTimeConstants {
   ): ComponentDefinition;
 }
 
-export interface RuntimeConstants {
+export interface ReadonlyConstants {
   getValue<T>(handle: number): T;
   getArray<T>(handle: number): T[];
 }
 
-export type JitConstants = CompileTimeConstants & ResolutionTimeConstants & RuntimeConstants;
+export type ProgramConstants = CompileTimeConstants & ResolutionTimeConstants & ReadonlyConstants;
 
-export interface CompileTimeArtifacts {
-  heap: CompileTimeHeap;
-  constants: CompileTimeConstants & ResolutionTimeConstants;
+export interface ClassicResolver<O extends Owner = Owner> {
+  lookupHelper?(name: string, owner: O): Nullable<HelperDefinitionState>;
+  lookupModifier?(name: string, owner: O): Nullable<ModifierDefinitionState>;
+  lookupComponent?(name: string, owner: O): Nullable<ResolvedComponentDefinition>;
+
+  // TODO: These are used to lookup keywords that are implemented as helpers/modifiers.
+  // We should try to figure out a cleaner way to do this.
+  lookupBuiltInHelper?(name: string): Nullable<HelperDefinitionState>;
+  lookupBuiltInModifier?(name: string): Nullable<ModifierDefinitionState>;
+  lookupComponent?(name: string, owner: O): Nullable<ResolvedComponentDefinition>;
 }

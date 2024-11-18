@@ -12,23 +12,30 @@ import type {
   SimpleText,
 } from './simple.js';
 
-export interface LiveBlock extends Bounds {
+export interface AppendingBlock extends Bounds {
   openElement(element: SimpleElement): void;
   closeElement(): void;
   didAppendNode(node: SimpleNode): void;
   didAppendBounds(bounds: Bounds): void;
-  finalize(stack: ElementBuilder): void;
+  finalize(stack: TreeBuilder): void;
 }
 
-export interface SimpleLiveBlock extends LiveBlock {
-  parentElement(): SimpleElement;
-  firstNode(): SimpleNode;
-  lastNode(): SimpleNode;
-}
+/**
+ * A `FixedBlock` is a block that is only rendered once, during initial render. Its *children* may
+ * change during the updating phase, and this may cause its *bounds* to change, but the block itself
+ * remains stable.
+ */
+export interface FixedBlock extends AppendingBlock {}
 
-export type RemoteLiveBlock = SimpleLiveBlock;
-
-export interface UpdatableBlock extends SimpleLiveBlock {
+/**
+ * A `ResettableBlock` can be reset during the updating phase and rendered again.
+ *
+ * This occurs for two reasons:
+ *
+ * 1. The block represents an element in a list, and the element has been removed
+ * 2. The block represents a conditional, and the condition has changed
+ */
+export interface ResettableBlock extends FixedBlock {
   reset(env: Environment): Nullable<SimpleNode>;
 }
 
@@ -37,8 +44,8 @@ export interface DOMStack {
     element: SimpleElement,
     guid: string,
     insertBefore: Maybe<SimpleNode>
-  ): RemoteLiveBlock;
-  popRemoteElement(): RemoteLiveBlock;
+  ): FixedBlock;
+  popRemoteElement(): FixedBlock;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
   flushElement(modifiers: Nullable<ModifierInstance[]>): void;
@@ -77,7 +84,7 @@ export interface TreeOperations {
 declare const CURSOR_STACK: unique symbol;
 export type CursorStackSymbol = typeof CURSOR_STACK;
 
-export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
+export interface TreeBuilder extends Cursor, DOMStack, TreeOperations {
   [CURSOR_STACK]: Stack<Cursor>;
 
   nextSibling: Nullable<SimpleNode>;
@@ -87,12 +94,12 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
   element: SimpleElement;
 
   hasBlocks: boolean;
-  debugBlocks(): LiveBlock[];
+  debugBlocks(): AppendingBlock[];
 
-  pushSimpleBlock(): LiveBlock;
-  pushUpdatableBlock(): UpdatableBlock;
-  pushBlockList(list: Bounds[]): LiveBlock;
-  popBlock(): LiveBlock;
+  pushAppendingBlock(): AppendingBlock;
+  pushResettableBlock(): ResettableBlock;
+  pushBlockList(list: Bounds[]): AppendingBlock;
+  popBlock(): AppendingBlock;
 
   didAppendBounds(bounds: Bounds): void;
 }
@@ -105,6 +112,6 @@ export interface AttributeCursor {
 
 export interface AttributeOperation {
   attribute: AttributeCursor;
-  set(dom: ElementBuilder, value: unknown, env: Environment): void;
+  set(dom: TreeBuilder, value: unknown, env: Environment): void;
   update(value: unknown, env: Environment): void;
 }

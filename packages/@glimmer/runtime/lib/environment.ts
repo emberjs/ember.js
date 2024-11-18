@@ -1,19 +1,19 @@
 import type {
+  ClassicResolver,
   ComponentInstanceWithCreate,
   Environment,
   EnvironmentOptions,
+  EvaluationContext,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   ModifierInstance,
   Nullable,
   RuntimeArtifacts,
-  RuntimeContext,
-  RuntimeResolver,
   Transaction,
   TransactionSymbol,
 } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/debug-util';
-import { RuntimeProgramImpl } from '@glimmer/program';
+import { ProgramImpl } from '@glimmer/program';
 import { track, updateTag } from '@glimmer/validator';
 
 import DebugRenderTree from './debug-render-tree';
@@ -203,12 +203,12 @@ export function runtimeContext(
   options: EnvironmentOptions,
   delegate: EnvironmentDelegate,
   artifacts: RuntimeArtifacts,
-  resolver: RuntimeResolver
-): RuntimeContext {
+  resolver: ClassicResolver
+): Pick<EvaluationContext, 'env' | 'program' | 'resolver'> {
   return {
     env: new EnvironmentImpl(options, delegate),
-    program: new RuntimeProgramImpl(artifacts.constants, artifacts.heap),
-    resolver: resolver,
+    program: new ProgramImpl(artifacts.constants, artifacts.heap),
+    resolver,
   };
 }
 

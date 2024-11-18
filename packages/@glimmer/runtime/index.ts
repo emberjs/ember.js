@@ -58,7 +58,7 @@ export {
 } from './lib/vm/attributes/dynamic';
 export {
   clientBuilder,
-  NewElementBuilder,
+  NewTreeBuilder,
   RemoteLiveBlock,
   UpdatableBlockImpl,
 } from './lib/vm/element-builder';
