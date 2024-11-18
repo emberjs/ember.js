@@ -39,8 +39,10 @@ jobs:
           LATEST_ALPHA=`npm view ember-source dist-tags.alpha`
           export NEXT_ALPHA=`node bin/next-alpha-version.js ${LATEST_ALPHA}`
           echo "NEXT_ALPHA=$NEXT_ALPHA" >> $GITHUB_ENV
-      - name: tag the next alpha
-        run: npm version ${{env.NEXT_ALPHA}} --allow-same-version
+      - name: bump version
+        run: npm version ${{env.NEXT_ALPHA}} --allow-same-version --no-git-tag-version
+      - name: create tag
+        run: git tag v${{env.NEXT_ALPHA}}-ember-source
       - name: build for publish
         env:
           BUILD_TYPE: alpha
