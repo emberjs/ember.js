@@ -41,25 +41,33 @@ export function isScopeReference(s: ScopeSlot): s is Reference {
   return true;
 }
 
+export interface ScopeOptions {
+  /** @default {UNDEFINED_REFERENCE} */
+  self: Reference<unknown>;
+  /** @default {0} */
+  size?: number | undefined;
+}
+
 export class ScopeImpl implements Scope {
-  static root(self: Reference<unknown>, size = 0, owner: Owner): Scope {
+  static root(owner: Owner, { self, size = 0 }: ScopeOptions): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
-    return new ScopeImpl(refs, owner, null, null).init({ self });
+    return new ScopeImpl(owner, refs, null, null).init({ self });
   }
 
-  static sized(size = 0, owner: Owner): Scope {
+  static sized(owner: Owner, size = 0): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
-    return new ScopeImpl(refs, owner, null, null);
+    return new ScopeImpl(owner, refs, null, null);
   }
 
   constructor(
+    readonly owner: Owner,
     // the 0th slot is `self`
     readonly slots: Array<ScopeSlot>,
-    readonly owner: Owner,
+    // a single program can mix owners via curried components, and the state lives on root scopes
     private callerScope: Scope | null,
-    // named arguments and blocks passed to a layout that uses debugger
+    // named arguments and blocks passed to a layout that uses eval
     private debuggerScope: Dict<ScopeSlot> | null
   ) {}
 
@@ -114,7 +122,7 @@ export class ScopeImpl implements Scope {
   }
 
   child(): Scope {
-    return new ScopeImpl(this.slots.slice(), this.owner, this.callerScope, this.debuggerScope);
+    return new ScopeImpl(this.owner, this.slots.slice(), this.callerScope, this.debuggerScope);
   }
 
   private get<T extends ScopeSlot>(index: number): T {

@@ -1,27 +1,26 @@
 import type {
   CapturedRenderNode,
-  CompileTimeCompilationContext,
   Cursor,
   Dict,
   DynamicScope,
-  ElementBuilder,
   ElementNamespace,
   Environment,
+  EvaluationContext,
   HandleResult,
   Helper,
   Nullable,
   RenderResult,
-  RuntimeContext,
   SimpleDocument,
   SimpleDocumentFragment,
   SimpleElement,
   SimpleText,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import type { CurriedValue, EnvironmentDelegate } from '@glimmer/runtime';
 import type { ASTPluginBuilder, PrecompileOptions } from '@glimmer/syntax';
 import { castToBrowser, castToSimple, expect, unwrapTemplate } from '@glimmer/debug-util';
-import { programCompilationContext } from '@glimmer/opcode-compiler';
+import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import { createConstRef } from '@glimmer/reference';
 import {
@@ -58,24 +57,20 @@ import { TestJitRegistry } from './registry';
 import { renderTemplate } from './render';
 import { TestJitRuntimeResolver } from './resolver';
 
-export interface JitTestDelegateContext {
-  runtime: RuntimeContext;
-  program: CompileTimeCompilationContext;
-}
-
 export function JitDelegateContext(
   doc: SimpleDocument,
   resolver: TestJitRuntimeResolver,
   env: EnvironmentDelegate
-): JitTestDelegateContext {
+): EvaluationContext {
   let sharedArtifacts = artifacts();
-  let context = programCompilationContext(
+  let runtime = runtimeContext(
+    { document: doc },
+    env,
     sharedArtifacts,
-    new JitCompileTimeLookup(resolver),
-    (heap) => new RuntimeOpImpl(heap)
+    new JitCompileTimeLookup(resolver)
   );
-  let runtime = runtimeContext({ document: doc }, env, sharedArtifacts, resolver);
-  return { runtime, program: context };
+
+  return new EvaluationContextImpl(sharedArtifacts, (heap) => new RuntimeOpImpl(heap), runtime);
 }
 
 export class JitRenderDelegate implements RenderDelegate {
@@ -86,7 +81,7 @@ export class JitRenderDelegate implements RenderDelegate {
   protected resolver: TestJitRuntimeResolver;
 
   private plugins: ASTPluginBuilder[] = [];
-  private _context: JitTestDelegateContext | null = null;
+  private _context: Nullable<EvaluationContext> = null;
   private self: Nullable<Reference> = null;
   private doc: SimpleDocument;
   private env: EnvironmentDelegate;
@@ -108,7 +103,7 @@ export class JitRenderDelegate implements RenderDelegate {
     this.registry.register('helper', 'concat', concat);
   }
 
-  get context(): JitTestDelegateContext {
+  get context(): EvaluationContext {
     if (this._context === null) {
       this._context = JitDelegateContext(this.doc, this.resolver, this.env);
     }
@@ -118,7 +113,7 @@ export class JitRenderDelegate implements RenderDelegate {
 
   getCapturedRenderTree(): CapturedRenderNode[] {
     return expect(
-      this.context.runtime.env.debugRenderTree,
+      this.context.env.debugRenderTree,
       'Attempted to capture the DebugRenderTree during tests, but it was not created. Did you enable it in the environment?'
     ).capture();
   }
@@ -191,7 +186,7 @@ export class JitRenderDelegate implements RenderDelegate {
     registerInternalHelper(this.registry, name, helper);
   }
 
-  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+  getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     return clientBuilder(env, cursor);
   }
 
@@ -206,13 +201,13 @@ export class JitRenderDelegate implements RenderDelegate {
   compileTemplate(template: string): HandleResult {
     let compiled = preprocess(template, this.precompileOptions);
 
-    return unwrapTemplate(compiled).asLayout().compile(this.context.program);
+    return unwrapTemplate(compiled).asLayout().compile(this.context);
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
     let cursor = { element, nextSibling: null };
 
-    let { env } = this.context.runtime;
+    let { env } = this.context;
 
     return renderTemplate(
       template,
@@ -230,11 +225,11 @@ export class JitRenderDelegate implements RenderDelegate {
     dynamicScope?: DynamicScope
   ): RenderResult {
     let cursor = { element, nextSibling: null };
-    let { program, runtime } = this.context;
-    let builder = this.getElementBuilder(runtime.env, cursor);
-    let iterator = renderComponent(runtime, builder, program, {}, component, args, dynamicScope);
+    let { env } = this.context;
+    let builder = this.getElementBuilder(env, cursor);
+    let iterator = renderComponent(this.context, builder, {}, component, args, dynamicScope);
 
-    return renderSync(runtime.env, iterator);
+    return renderSync(env, iterator);
   }
 
   private get precompileOptions(): PrecompileOptions {

@@ -1,9 +1,10 @@
 import type {
-  CompileTimeConstants,
-  CompileTimeResolver,
-  ContainingMetadata,
+  BlockMetadata,
+  ClassicResolver,
   Expressions,
+  Nullable,
   Owner,
+  ProgramConstants,
   ResolutionTimeConstants,
   ResolveComponentOp,
   ResolveComponentOrHelperOp,
@@ -45,12 +46,12 @@ export const isGetFreeComponentOrHelper = makeResolutionTypeVerifier(
   SexpOpcodes.GetFreeAsComponentOrHelperHead
 );
 
-interface ResolvedContainingMetadata extends ContainingMetadata {
+interface ResolvedBlockMetadata extends BlockMetadata {
   owner: Owner;
   upvars: string[];
 }
 
-function assertResolverInvariants(meta: ContainingMetadata): ResolvedContainingMetadata {
+function assertResolverInvariants(meta: BlockMetadata): ResolvedBlockMetadata {
   if (import.meta.env.DEV) {
     if (!meta.upvars) {
       throw new Error(
@@ -65,7 +66,7 @@ function assertResolverInvariants(meta: ContainingMetadata): ResolvedContainingM
     }
   }
 
-  return meta as unknown as ResolvedContainingMetadata;
+  return meta as unknown as ResolvedBlockMetadata;
 }
 
 /**
@@ -74,9 +75,9 @@ function assertResolverInvariants(meta: ContainingMetadata): ResolvedContainingM
  * <Foo @arg={{true}} />
  */
 export function resolveComponent(
-  resolver: CompileTimeResolver,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  meta: ContainingMetadata,
+  resolver: Nullable<ClassicResolver>,
+  constants: ProgramConstants,
+  meta: BlockMetadata,
   [, expr, then]: ResolveComponentOp
 ): void {
   assert(isGetFreeComponent(expr), 'Attempted to resolve a component with incorrect opcode');
@@ -111,7 +112,7 @@ export function resolveComponent(
     let { upvars, owner } = assertResolverInvariants(meta);
 
     let name = unwrap(upvars[expr[1]]);
-    let definition = resolver.lookupComponent(name, owner)!;
+    let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (import.meta.env.DEV && (typeof definition !== 'object' || definition === null)) {
       assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -121,7 +122,7 @@ export function resolveComponent(
       );
     }
 
-    then(constants.resolvedComponent(definition, name));
+    then(constants.resolvedComponent(definition!, name));
   }
 }
 
@@ -130,9 +131,9 @@ export function resolveComponent(
  * (helper arg)
  */
 export function resolveHelper(
-  resolver: CompileTimeResolver,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  meta: ContainingMetadata,
+  resolver: Nullable<ClassicResolver>,
+  constants: ProgramConstants,
+  meta: BlockMetadata,
   [, expr, then]: ResolveHelperOp
 ): void {
   assert(isGetFreeHelper(expr), 'Attempted to resolve a helper with incorrect opcode');
@@ -154,7 +155,7 @@ export function resolveHelper(
     let { upvars, owner } = assertResolverInvariants(meta);
 
     let name = unwrap(upvars[expr[1]]);
-    let helper = resolver.lookupHelper(name, owner)!;
+    let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (import.meta.env.DEV && helper === null) {
       assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -164,7 +165,7 @@ export function resolveHelper(
       );
     }
 
-    then(constants.helper(helper, name));
+    then(constants.helper(helper!, name));
   }
 }
 
@@ -174,9 +175,9 @@ export function resolveHelper(
  * <Foo {{modifier}}/>
  */
 export function resolveModifier(
-  resolver: CompileTimeResolver,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  meta: ContainingMetadata,
+  resolver: Nullable<ClassicResolver>,
+  constants: ProgramConstants,
+  meta: BlockMetadata,
   [, expr, then]: ResolveModifierOp
 ): void {
   assert(isGetFreeModifier(expr), 'Attempted to resolve a modifier with incorrect opcode');
@@ -193,7 +194,7 @@ export function resolveModifier(
   } else if (type === SexpOpcodes.GetStrictKeyword) {
     let { upvars } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
-    let modifier = resolver.lookupBuiltInModifier(name);
+    let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
 
     if (import.meta.env.DEV && modifier === null) {
       assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -207,7 +208,7 @@ export function resolveModifier(
   } else {
     let { upvars, owner } = assertResolverInvariants(meta);
     let name = unwrap(upvars[expr[1]]);
-    let modifier = resolver.lookupModifier(name, owner)!;
+    let modifier = resolver?.lookupModifier?.(name, owner) ?? null;
 
     if (import.meta.env.DEV && modifier === null) {
       assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -217,7 +218,7 @@ export function resolveModifier(
       );
     }
 
-    then(constants.modifier(modifier));
+    then(constants.modifier(modifier!));
   }
 }
 
@@ -225,9 +226,9 @@ export function resolveModifier(
  * {{component-or-helper arg}}
  */
 export function resolveComponentOrHelper(
-  resolver: CompileTimeResolver,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  meta: ContainingMetadata,
+  resolver: Nullable<ClassicResolver>,
+  constants: ProgramConstants,
+  meta: BlockMetadata,
   [, expr, { ifComponent, ifHelper }]: ResolveComponentOrHelperOp
 ): void {
   assert(
@@ -282,12 +283,12 @@ export function resolveComponentOrHelper(
     let { upvars, owner } = assertResolverInvariants(meta);
 
     let name = unwrap(upvars[expr[1]]);
-    let definition = resolver.lookupComponent(name, owner);
+    let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
       ifComponent(constants.resolvedComponent(definition, name));
     } else {
-      let helper = resolver.lookupHelper(name, owner);
+      let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
       if (import.meta.env.DEV && helper === null) {
         assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
@@ -306,9 +307,9 @@ export function resolveComponentOrHelper(
  * {{maybeHelperOrComponent}}
  */
 export function resolveOptionalComponentOrHelper(
-  resolver: CompileTimeResolver,
-  constants: CompileTimeConstants & ResolutionTimeConstants,
-  meta: ContainingMetadata,
+  resolver: Nullable<ClassicResolver>,
+  constants: ProgramConstants,
+  meta: BlockMetadata,
   [, expr, { ifComponent, ifHelper, ifValue }]: ResolveOptionalComponentOrHelperOp
 ): void {
   assert(
@@ -361,14 +362,14 @@ export function resolveOptionalComponentOrHelper(
     let { upvars, owner } = assertResolverInvariants(meta);
 
     let name = unwrap(upvars[expr[1]]);
-    let definition = resolver.lookupComponent(name, owner);
+    let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (definition !== null) {
       ifComponent(constants.resolvedComponent(definition, name));
       return;
     }
 
-    let helper = resolver.lookupHelper(name, owner);
+    let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (helper !== null) {
       ifHelper(constants.helper(helper, name));
@@ -378,15 +379,15 @@ export function resolveOptionalComponentOrHelper(
 
 function lookupBuiltInHelper(
   expr: Expressions.GetStrictFree,
-  resolver: CompileTimeResolver,
-  meta: ContainingMetadata,
+  resolver: Nullable<ClassicResolver>,
+  meta: BlockMetadata,
   constants: ResolutionTimeConstants,
   type: string
 ): number {
   let { upvars } = assertResolverInvariants(meta);
 
   let name = unwrap(upvars[expr[1]]);
-  let helper = resolver.lookupBuiltInHelper(name);
+  let helper = resolver?.lookupBuiltInHelper?.(name) ?? null;
 
   if (import.meta.env.DEV && helper === null) {
     assert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');

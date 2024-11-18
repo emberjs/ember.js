@@ -1,15 +1,14 @@
 import type {
   CompilableProgram,
-  CompileTimeCompilationContext,
   ComponentDefinitionState,
   DynamicScope,
-  ElementBuilder,
   Environment,
+  EvaluationContext,
   Owner,
   RenderResult,
   RichIteratorResult,
-  RuntimeContext,
   TemplateIterator,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { expect, unwrapHandle } from '@glimmer/debug-util';
@@ -44,22 +43,20 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 }
 
 export function renderMain(
-  runtime: RuntimeContext,
-  context: CompileTimeCompilationContext,
+  context: EvaluationContext,
   owner: Owner,
   self: Reference,
-  treeBuilder: ElementBuilder,
+  treeBuilder: TreeBuilder,
   layout: CompilableProgram,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let handle = unwrapHandle(layout.compile(context));
   let numSymbols = layout.symbolTable.symbols.length;
-  let vm = VM.initial(runtime, context, {
-    self,
+  let vm = VM.initial(context, {
+    scope: { self, size: numSymbols },
     dynamicScope,
-    treeBuilder,
+    tree: treeBuilder,
     handle,
-    numSymbols,
     owner,
   });
   return new TemplateIteratorImpl(vm);
@@ -67,7 +64,7 @@ export function renderMain(
 
 function renderInvocation(
   vm: VM,
-  context: CompileTimeCompilationContext,
+  context: EvaluationContext,
   owner: Owner,
   definition: ComponentDefinitionState,
   args: Record<string, Reference>
@@ -82,7 +79,7 @@ function renderInvocation(
 
   let reified = vm.constants.component(definition, owner, undefined, '{ROOT}');
 
-  vm.pushFrame();
+  vm.lowlevel.pushFrame();
 
   // Push blocks on to the stack, three stack values per block
   for (let i = 0; i < 3 * blockNames.length; i++) {
@@ -116,19 +113,19 @@ function renderInvocation(
 }
 
 export function renderComponent(
-  runtime: RuntimeContext,
-  treeBuilder: ElementBuilder,
-  context: CompileTimeCompilationContext,
+  context: EvaluationContext,
+  treeBuilder: TreeBuilder,
   owner: Owner,
   definition: ComponentDefinitionState,
   args: Record<string, unknown> = {},
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = VM.empty(
-    runtime,
-    { treeBuilder, handle: context.stdlib.main, dynamicScope, owner },
-    context
-  );
+  let vm = VM.empty(context, {
+    tree: treeBuilder,
+    handle: context.stdlib.main,
+    dynamicScope,
+    owner,
+  });
   return renderInvocation(vm, context, owner, definition, recordToReference(args));
 }
 

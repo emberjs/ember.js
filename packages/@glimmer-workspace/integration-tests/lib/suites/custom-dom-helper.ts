@@ -1,4 +1,4 @@
-import type { Cursor, ElementBuilder, Environment } from '@glimmer/interfaces';
+import type { Cursor, Environment, TreeBuilder } from '@glimmer/interfaces';
 import { precompile } from '@glimmer/compiler';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
 
@@ -39,7 +39,7 @@ export class CompilationTests extends RenderTest {
 export class JitSerializationDelegate extends NodeJitRenderDelegate {
   static override style = 'jit serialization';
 
-  override getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+  override getElementBuilder(env: Environment, cursor: Cursor): TreeBuilder {
     return serializeBuilder(env, cursor);
   }
 }

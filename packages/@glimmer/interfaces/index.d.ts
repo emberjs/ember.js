@@ -15,7 +15,6 @@ export * from './lib/managers.js';
 export * from './lib/program.js';
 export * from './lib/references.js';
 export * from './lib/runtime.js';
-export * from './lib/runtime/vm.js';
 export * from './lib/serialize.js';
 export * from './lib/stack.js';
 export * from './lib/tags.js';

@@ -1,12 +1,11 @@
 import type {
-  CompileTimeHeap,
-  JitConstants,
-  RuntimeHeap,
-  RuntimeProgram,
+  Program,
+  ProgramConstants,
+  ProgramHeap,
   SerializedHeap,
   StdLibOperand,
 } from '@glimmer/interfaces';
-import { expect, unwrap } from '@glimmer/debug-util';
+import { unwrap } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { MACHINE_MASK } from '@glimmer/vm';
 
@@ -23,36 +22,6 @@ export type Placeholder = [number, () => number];
 export type StdlibPlaceholder = [number, StdLibOperand];
 
 const PAGE_SIZE = 0x100000;
-
-export class RuntimeHeapImpl implements RuntimeHeap {
-  private heap: Int32Array;
-  private table: number[];
-
-  constructor(serializedHeap: SerializedHeap) {
-    let { buffer, table } = serializedHeap;
-    this.heap = new Int32Array(buffer);
-    this.table = table;
-  }
-
-  // It is illegal to close over this address, as compaction
-  // may move it. However, it is legal to use this address
-  // multiple times between compactions.
-  getaddr(handle: number): number {
-    return unwrap(this.table[handle]);
-  }
-
-  getbyaddr(address: number): number {
-    return expect(this.heap[address], 'Access memory out of bounds of the heap');
-  }
-
-  sizeof(handle: number): number {
-    return sizeof(this.table, handle);
-  }
-}
-
-export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
-  return new RuntimeHeapImpl(serializedHeap);
-}
 
 /**
  * The Heap is responsible for dynamically allocating
@@ -74,7 +43,7 @@ export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
  * valid during the execution. This means you cannot close
  * over them as you will have a bad memory access exception.
  */
-export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
+export class ProgramHeapImpl implements ProgramHeap {
   offset = 0;
 
   private heap: Int32Array;
@@ -202,14 +171,14 @@ export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   }
 }
 
-export class RuntimeProgramImpl implements RuntimeProgram {
+export class ProgramImpl implements Program {
   [key: number]: never;
 
   private _opcode: RuntimeOpImpl;
 
   constructor(
-    public constants: JitConstants,
-    public heap: RuntimeHeap
+    public constants: ProgramConstants,
+    public heap: ProgramHeap
   ) {
     this._opcode = new RuntimeOpImpl(this.heap);
   }

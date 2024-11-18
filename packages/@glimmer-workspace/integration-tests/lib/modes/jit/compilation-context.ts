@@ -1,5 +1,5 @@
 import type {
-  CompileTimeResolver,
+  ClassicResolver,
   HelperDefinitionState,
   ModifierDefinitionState,
   Nullable,
@@ -8,7 +8,7 @@ import type {
 
 import type { TestJitRuntimeResolver } from './resolver';
 
-export default class JitCompileTimeLookup implements CompileTimeResolver {
+export default class JitCompileTimeLookup implements ClassicResolver {
   constructor(private resolver: TestJitRuntimeResolver) {}
 
   lookupHelper(name: string): Nullable<HelperDefinitionState> {

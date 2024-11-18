@@ -1,28 +1,40 @@
 import type {
-  CompileTimeArtifacts,
-  CompileTimeCompilationContext,
-  CompileTimeConstants,
-  CompileTimeHeap,
-  CompileTimeResolver,
+  ClassicResolver,
   CreateRuntimeOp,
-  ResolutionTimeConstants,
+  Environment,
+  EvaluationContext,
+  Nullable,
+  Program,
+  ProgramConstants,
+  ProgramHeap,
+  RuntimeArtifacts,
+  RuntimeOptions,
   STDLib,
 } from '@glimmer/interfaces';
 
 import { compileStd } from './opcode-builder/helpers/stdlib';
 
-export class CompileTimeCompilationContextImpl implements CompileTimeCompilationContext {
-  readonly constants: CompileTimeConstants & ResolutionTimeConstants;
-  readonly heap: CompileTimeHeap;
+export class EvaluationContextImpl implements EvaluationContext {
+  readonly constants: ProgramConstants;
+  readonly heap: ProgramHeap;
+  readonly resolver: Nullable<ClassicResolver>;
   readonly stdlib: STDLib;
+  readonly createOp: CreateRuntimeOp;
+  readonly env: Environment;
+  readonly program: Program;
 
   constructor(
-    { constants, heap }: CompileTimeArtifacts,
-    readonly resolver: CompileTimeResolver,
-    readonly createOp: CreateRuntimeOp
+    { constants, heap }: RuntimeArtifacts,
+    createOp: CreateRuntimeOp,
+    runtime: RuntimeOptions
   ) {
     this.constants = constants;
     this.heap = heap;
+    this.resolver = runtime.resolver;
+    this.createOp = createOp;
+    this.env = runtime.env;
+    this.program = runtime.program;
+
     this.stdlib = compileStd(this);
   }
 }

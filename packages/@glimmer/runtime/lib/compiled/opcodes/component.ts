@@ -65,6 +65,7 @@ import {
   CheckProgramSymbolTable,
   CheckRegister,
   CheckString,
+  CheckSyscallRegister,
 } from '@glimmer/debug';
 import { assert, debugToString, expect, unwrap, unwrapTemplate } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
@@ -172,7 +173,7 @@ APPEND_OPCODES.add(VM_RESOLVE_DYNAMIC_COMPONENT_OP, (vm, { op1: _isStrict }) => 
       );
     }
 
-    let resolvedDefinition = resolveComponent(vm.runtime.resolver, constants, component, owner);
+    let resolvedDefinition = resolveComponent(vm.context.resolver, constants, component, owner);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
   } else if (isCurriedValue(component)) {
@@ -290,7 +291,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
     if (resolved === true) {
       definition = resolvedDefinition as ComponentDefinition;
     } else if (typeof resolvedDefinition === 'string') {
-      let resolvedValue = vm.runtime.resolver.lookupComponent(resolvedDefinition, owner);
+      let resolvedValue = vm.context.resolver?.lookupComponent?.(resolvedDefinition, owner) ?? null;
 
       definition = constants.resolvedComponent(
         expect(resolvedValue, 'BUG: expected resolved component'),
@@ -448,7 +449,7 @@ APPEND_OPCODES.add(VM_BEGIN_COMPONENT_TRANSACTION_OP, (vm, { op1: register }) =>
   }
 
   vm.beginCacheGroup(name);
-  vm.elements().pushSimpleBlock();
+  vm.tree().pushAppendingBlock();
 });
 
 APPEND_OPCODES.add(VM_PUT_COMPONENT_OPERATIONS_OP, (vm) => {
@@ -533,7 +534,7 @@ export class ComponentElementOperations implements ElementOperations {
         return;
       }
 
-      let { element, constructing } = vm.elements();
+      let { element, constructing } = vm.tree();
       let name = definition.resolvedName ?? manager.getDebugName(definition.state);
       let instance = manager.getDebugInstance(state);
 
@@ -614,11 +615,9 @@ function setDeferredAttr(
   trusting = false
 ) {
   if (typeof value === 'string') {
-    vm.elements().setStaticAttribute(name, value, namespace);
+    vm.tree().setStaticAttribute(name, value, namespace);
   } else {
-    let attribute = vm
-      .elements()
-      .setDynamicAttribute(name, valueForRef(value), trusting, namespace);
+    let attribute = vm.tree().setDynamicAttribute(name, valueForRef(value), trusting, namespace);
     if (!isConstRef(value)) {
       vm.updateWith(new UpdateDynamicAttributeOpcode(value, attribute, vm.env));
     }
@@ -636,7 +635,7 @@ APPEND_OPCODES.add(VM_DID_CREATE_ELEMENT_OP, (vm, { op1: register }) => {
 
   (manager as WithElementHook<unknown>).didCreateElement(
     state,
-    expect(vm.elements().constructing, `Expected a constructing element in DidCreateOpcode`),
+    expect(vm.tree().constructing, `Expected a constructing element in DidCreateOpcode`),
     operations
   );
 });
@@ -674,7 +673,8 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
         'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
       );
 
-      compilable = manager.getDynamicLayout(state, vm.runtime.resolver);
+      let resolver = vm.context.resolver;
+      compilable = resolver === null ? null : manager.getDynamicLayout(state, resolver);
 
       if (compilable !== null) {
         moduleName = compilable.moduleName;
@@ -760,7 +760,8 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
       'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
     );
 
-    compilable = manager.getDynamicLayout(instance.state, vm.runtime.resolver);
+    let resolver = vm.context.resolver;
+    compilable = resolver === null ? null : manager.getDynamicLayout(instance.state, resolver);
 
     if (compilable === null) {
       if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.wrapped)) {
@@ -793,7 +794,7 @@ APPEND_OPCODES.add(VM_MAIN_OP, (vm, { op1: register }) => {
     lookup: null,
   };
 
-  vm.loadValue(check(register, CheckRegister), state);
+  vm.loadValue(check(register, CheckSyscallRegister), state);
 });
 
 APPEND_OPCODES.add(VM_POPULATE_LAYOUT_OP, (vm, { op1: register }) => {
@@ -898,7 +899,7 @@ APPEND_OPCODES.add(VM_INVOKE_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
 APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
   let instance = check(vm.fetchValue(check(register, CheckRegister)), CheckComponentInstance);
   let { manager, state, capabilities } = instance;
-  let bounds = vm.elements().popBlock();
+  let bounds = vm.tree().popBlock();
 
   if (vm.env.debugRenderTree !== undefined) {
     if (hasCustomDebugRenderTreeLifecycle(manager)) {

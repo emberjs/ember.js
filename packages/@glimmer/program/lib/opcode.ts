@@ -1,9 +1,9 @@
-import type { OpcodeHeap, RuntimeOp, SomeVmOp } from '@glimmer/interfaces';
+import type { ProgramHeap, RuntimeOp, SomeVmOp } from '@glimmer/interfaces';
 import { ARG_SHIFT, MACHINE_MASK, OPERAND_LEN_MASK, TYPE_MASK } from '@glimmer/vm';
 
 export class RuntimeOpImpl implements RuntimeOp {
   public offset = 0;
-  constructor(readonly heap: OpcodeHeap) {}
+  constructor(readonly heap: ProgramHeap) {}
 
   get size() {
     let rawType = this.heap.getbyaddr(this.offset);

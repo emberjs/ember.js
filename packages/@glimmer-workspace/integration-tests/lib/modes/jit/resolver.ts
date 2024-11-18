@@ -1,14 +1,14 @@
 import type {
+  ClassicResolver,
   HelperDefinitionState,
   ModifierDefinitionState,
   Nullable,
   ResolvedComponentDefinition,
-  RuntimeResolver,
 } from '@glimmer/interfaces';
 
 import type { TestJitRegistry } from './registry';
 
-export class TestJitRuntimeResolver implements RuntimeResolver {
+export class TestJitRuntimeResolver implements ClassicResolver {
   constructor(private registry: TestJitRegistry) {}
 
   lookupHelper(name: string): Nullable<HelperDefinitionState> {

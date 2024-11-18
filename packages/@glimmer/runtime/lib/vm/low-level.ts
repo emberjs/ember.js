@@ -1,4 +1,4 @@
-import type { Nullable, RuntimeHeap, RuntimeOp, RuntimeProgram } from '@glimmer/interfaces';
+import type { EvaluationContext, Nullable, RuntimeOp } from '@glimmer/interfaces';
 import type { MachineRegister } from '@glimmer/vm';
 import {
   VM_INVOKE_STATIC_OP,
@@ -17,12 +17,7 @@ import type { VM } from './append';
 
 import { APPEND_OPCODES } from '../opcodes';
 
-export interface LowLevelRegisters {
-  [$pc]: number;
-  [$ra]: number;
-  [$sp]: number;
-  [$fp]: number;
-}
+export type LowLevelRegisters = [$pc: number, $ra: number, $sp: number, $fp: number];
 
 export function initializeRegisters(): LowLevelRegisters {
   return [0, -1, 0, 0];
@@ -41,9 +36,13 @@ export function initializeRegistersWithPC(pc: number): LowLevelRegisters {
 }
 
 export interface VmStack {
+  readonly registers: LowLevelRegisters;
+
   push(value: unknown): void;
   get(position: number): number;
   pop<T>(): T;
+
+  snapshot?(): unknown[];
 }
 
 export interface Externs {
@@ -53,14 +52,18 @@ export interface Externs {
 
 export class LowLevelVM {
   public currentOpSize = 0;
+  readonly registers: LowLevelRegisters;
+  readonly context: EvaluationContext;
 
   constructor(
     public stack: VmStack,
-    public heap: RuntimeHeap,
-    public program: RuntimeProgram,
+    context: EvaluationContext,
     public externs: Externs | undefined,
-    readonly registers: LowLevelRegisters
-  ) {}
+    registers: LowLevelRegisters
+  ) {
+    this.context = context;
+    this.registers = registers;
+  }
 
   fetchRegister(register: MachineRegister): number {
     return this.registers[register];
@@ -111,7 +114,7 @@ export class LowLevelVM {
     assert(handle < 0xffffffff, `Jumping to placeholder address`);
 
     this.registers[$ra] = this.registers[$pc];
-    this.setPc(this.heap.getaddr(handle));
+    this.setPc(this.context.program.heap.getaddr(handle));
   }
 
   // Put a specific `program` address in $ra
@@ -125,7 +128,10 @@ export class LowLevelVM {
   }
 
   nextStatement(): Nullable<RuntimeOp> {
-    let { registers, program } = this;
+    let {
+      registers,
+      context: { program },
+    } = this;
 
     let pc = registers[$pc];
 
@@ -162,13 +168,13 @@ export class LowLevelVM {
 
   evaluateInner(opcode: RuntimeOp, vm: VM) {
     if (opcode.isMachine) {
-      this.evaluateMachine(opcode);
+      this.evaluateMachine(opcode, vm);
     } else {
       this.evaluateSyscall(opcode, vm);
     }
   }
 
-  evaluateMachine(opcode: RuntimeOp) {
+  evaluateMachine(opcode: RuntimeOp, vm: VM) {
     switch (opcode.type) {
       case VM_PUSH_FRAME_OP:
         return this.pushFrame();
@@ -177,11 +183,11 @@ export class LowLevelVM {
       case VM_INVOKE_STATIC_OP:
         return this.call(opcode.op1);
       case VM_INVOKE_VIRTUAL_OP:
-        return this.call(this.stack.pop());
+        return vm.call(this.stack.pop());
       case VM_JUMP_OP:
         return this.goto(opcode.op1);
       case VM_RETURN_OP:
-        return this.return();
+        return vm.return();
       case VM_RETURN_TO_OP:
         return this.returnTo(opcode.op1);
     }

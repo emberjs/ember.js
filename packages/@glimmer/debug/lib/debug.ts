@@ -1,11 +1,11 @@
 import type {
+  CompilationContext,
   CompileTimeConstants,
   Dict,
   Maybe,
   Recast,
   ResolutionTimeConstants,
   RuntimeOp,
-  TemplateCompilationContext,
 } from '@glimmer/interfaces';
 import { decodeHandle, decodeImmediate } from '@glimmer/constants';
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
@@ -21,21 +21,20 @@ export interface DebugConstants {
   getArray<T>(value: number): T[];
 }
 
-export function debugSlice(context: TemplateCompilationContext, start: number, end: number) {
+export function debugSlice(context: CompilationContext, start: number, end: number) {
   if (LOCAL_TRACE_LOGGING) {
     LOCAL_LOGGER.group(`%c${start}:${end}`, 'color: #999');
 
-    let heap = context.program.heap;
-    let opcode = context.program.createOp(heap);
+    const constants = context.evaluation.program.constants;
+
+    let heap = context.evaluation.program.heap;
+    let opcode = context.evaluation.createOp(heap);
 
     let _size = 0;
     for (let i = start; i < end; i = i + _size) {
       opcode.offset = i;
       let [name, params] = debug(
-        context.program.constants as Recast<
-          CompileTimeConstants & ResolutionTimeConstants,
-          DebugConstants
-        >,
+        constants as Recast<CompileTimeConstants & ResolutionTimeConstants, DebugConstants>,
         opcode,
         opcode.isMachine
       )!;
