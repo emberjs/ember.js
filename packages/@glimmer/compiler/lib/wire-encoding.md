@@ -130,9 +130,9 @@ when otherwise explicitly stated.
 
 ## Flags
 
-| 0        | 1        | 2        | 3        | 4          | 5           |
-| -------- | -------- | -------- | -------- | ---------- | ----------- |
-| reserved | reserved | reserved | reserved | has upvars | hasDebugger |
+| 0        | 1        | 2        | 3        | 4          |
+| -------- | -------- | -------- | -------- | ---------- |
+| reserved | reserved | reserved | reserved | has upvars |
 
 # Expression
 

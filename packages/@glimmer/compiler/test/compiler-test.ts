@@ -36,12 +36,7 @@ function test(desc: string, template: string, ...expectedStatements: BuilderStat
 
     let statements = buildStatements(expectedStatements, symbols);
 
-    let expected: SerializedTemplateBlock = [
-      statements,
-      symbols.toSymbols(),
-      false,
-      symbols.toUpvars(),
-    ];
+    let expected: SerializedTemplateBlock = [statements, symbols.toSymbols(), symbols.toUpvars()];
 
     let debugExpected = new WireFormatDebugger(expected).format(expected);
     let debugActual = new WireFormatDebugger(actual.block).format(actual.block);

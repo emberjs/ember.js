@@ -51,7 +51,6 @@ import {
   VM_SET_BLOCKS_OP,
   VM_SET_NAMED_VARIABLES_OP,
   VM_SET_VARIABLE_OP,
-  VM_SETUP_FOR_DEBUGGER_OP,
   VM_VIRTUAL_ROOT_SCOPE_OP,
 } from '@glimmer/constants';
 import { unwrap } from '@glimmer/debug-util';
@@ -195,9 +194,7 @@ function InvokeStaticComponent(
 ): void {
   let { symbolTable } = layout;
 
-  let bailOut =
-    symbolTable.hasDebugger ||
-    hasCapability(capabilities, InternalComponentCapabilities.prepareArgs);
+  let bailOut = hasCapability(capabilities, InternalComponentCapabilities.prepareArgs);
 
   if (bailOut) {
     InvokeNonStaticComponent(op, {
@@ -464,7 +461,6 @@ export function invokePreparedComponent(
 
   op(VM_VIRTUAL_ROOT_SCOPE_OP, $s0);
   op(VM_SET_VARIABLE_OP, 0);
-  op(VM_SETUP_FOR_DEBUGGER_OP, $s0);
 
   if (bindableAtNames) op(VM_SET_NAMED_VARIABLES_OP, $s0);
   if (bindableBlocks) op(VM_SET_BLOCKS_OP, $s0);

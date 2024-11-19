@@ -98,7 +98,6 @@ export const APPEND_KEYWORDS = keywords('Append')
       node: ASTv2.AppendContent;
       state: NormalizationState;
     }): Result<mir.Statement> {
-      scope.setHasDebugger();
       return Ok(new mir.Debugger({ loc: node.loc, scope }));
     },
   })

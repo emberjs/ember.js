@@ -56,7 +56,7 @@ export class ContentEncoder {
   private visitContent(stmt: mir.Statement): WireFormat.Statement | WireStatements {
     switch (stmt.type) {
       case 'Debugger':
-        return [SexpOpcodes.Debugger, stmt.scope.getDebugInfo()];
+        return [SexpOpcodes.Debugger, ...stmt.scope.getDebugInfo(), {}];
       case 'AppendComment':
         return this.AppendComment(stmt);
       case 'AppendTextNode':
