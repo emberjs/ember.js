@@ -1,5 +1,5 @@
 import type { Core, Dict } from '@glimmer/interfaces';
-import { unwrap } from '@glimmer/debug-util';
+import { setLocalDebugType, unwrap } from '@glimmer/debug-util';
 import { dict } from '@glimmer/util';
 import { SexpOpcodes } from '@glimmer/wire-format';
 
@@ -54,6 +54,18 @@ export class ProgramSymbolTable extends SymbolTable {
     private options: SymbolTableOptions
   ) {
     super();
+
+    setLocalDebugType('syntax:symbol-table:program', this, {
+      debug: () => ({
+        templateLocals: this.templateLocals,
+        keywords: this.keywords,
+        symbols: this.symbols,
+        upvars: this.upvars,
+        named: this.named,
+        blocks: this.blocks,
+        hasDebugger: this.hasDebugger,
+      }),
+    });
   }
 
   public symbols: string[] = [];
@@ -86,7 +98,7 @@ export class ProgramSymbolTable extends SymbolTable {
     this.#hasDebugger = true;
   }
 
-  get hasEval(): boolean {
+  get hasDebugger(): boolean {
     return this.#hasDebugger;
   }
 

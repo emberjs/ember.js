@@ -1,3 +1,5 @@
+import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
+
 import { GlimmerishComponent, jitSuite, RenderTest, test, tracked } from '../..';
 
 class HashTest extends RenderTest {
@@ -161,7 +163,7 @@ class HashTest extends RenderTest {
     this.assertHTML('Chad Hietala');
   }
 
-  @test
+  @test({ skip: LOCAL_TRACE_LOGGING })
   'individual hash values are accessed lazily'(assert: Assert) {
     class FooBar extends GlimmerishComponent {
       firstName = 'Godfrey';

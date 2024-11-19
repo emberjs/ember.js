@@ -1,5 +1,7 @@
 import type { Dict, Nullable, PresentArray } from '@glimmer/interfaces';
 
+import type { ShorthandOperand, ShorthandOperandList } from './dism/operand-types';
+
 // TODO: How do these map onto constant and machine types?
 export const OPERAND_TYPES = [
   'u32',
@@ -18,11 +20,6 @@ export const OPERAND_TYPES = [
   'scope',
 ];
 
-function isOperandType(s: string): s is OperandType {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return OPERAND_TYPES.indexOf(s as any) !== -1;
-}
-
 export type OperandType = (typeof OPERAND_TYPES)[number];
 
 export interface Operand {
@@ -30,24 +27,21 @@ export interface Operand {
   name: string;
 }
 
-export type OperandList = ([] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand]) &
-  Operand[];
-
 export interface NormalizedMetadata {
   name: string;
   mnemonic: string;
-  before: null;
   stackChange: Nullable<number>;
-  ops: OperandList;
-  operands: number;
-  check: boolean;
+  /** @default [] */
+  ops?: ShorthandOperandList;
+  /** @default true */
+  check?: boolean;
 }
 
 export type Stack = [string[], string[]];
 
 export interface RawOperandMetadata {
   kind: 'machine' | 'syscall';
-  format: RawOperandFormat;
+  format: ShorthandOperandList;
   skip?: true;
   operation: string;
   'operand-stack'?: [string[], string[]];
@@ -58,27 +52,23 @@ export type OperandName = `${string}:${string}`;
 export type RawOperandFormat = OperandName | PresentArray<OperandName>;
 
 export function normalize(key: string, input: RawOperandMetadata): NormalizedMetadata {
-  let name: string;
+  let name: ShorthandOperand;
 
   if (input.format === undefined) {
     throw new Error(`Missing format in ${JSON.stringify(input)}`);
   }
 
   if (Array.isArray(input.format)) {
-    name = input.format[0];
+    name = input.format[0]!;
   } else {
     name = input.format;
   }
 
-  let ops: OperandList = Array.isArray(input.format) ? operands(input.format.slice(1)) : [];
-
   return {
     name,
     mnemonic: key,
-    before: null,
     stackChange: stackChange(input['operand-stack']),
-    ops,
-    operands: ops.length,
+    ops: input.format,
     check: input.skip === true ? false : true,
   };
 }
@@ -103,23 +93,6 @@ function hasRest(input: string[]): boolean {
     throw new Error(`Unexpected stack entry: ${JSON.stringify(input)}`);
   }
   return input.some((s) => s.slice(-3) === '...');
-}
-
-function operands(input: `${string}:${string}`[]): OperandList {
-  if (!Array.isArray(input)) {
-    throw new Error(`Expected operands array, got ${JSON.stringify(input)}`);
-  }
-  return input.map(op) as OperandList;
-}
-
-function op(input: `${string}:${string}`): Operand {
-  let [name, type] = input.split(':') as [string, string];
-
-  if (isOperandType(type)) {
-    return { name, type };
-  } else {
-    throw new Error(`Expected operand, found ${JSON.stringify(input)}`);
-  }
 }
 
 export interface NormalizedOpcodes {

@@ -1,3 +1,4 @@
+export * from './lib/brand';
 export * from './lib/builder-constants';
 export * from './lib/curried';
 export * from './lib/dom';

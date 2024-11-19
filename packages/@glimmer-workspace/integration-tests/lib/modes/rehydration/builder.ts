@@ -1,8 +1,8 @@
 import type { Cursor, Environment, SimpleNode, TreeBuilder } from '@glimmer/interfaces';
 import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
-import { RehydrateBuilder } from '@glimmer/runtime';
+import { RehydrateTree } from '@glimmer/runtime';
 
-export class DebugRehydrationBuilder extends RehydrateBuilder {
+export class DebugRehydrateTree extends RehydrateTree {
   clearedNodes: SimpleNode[] = [];
 
   override remove(node: SimpleNode) {
@@ -23,6 +23,6 @@ export class DebugRehydrationBuilder extends RehydrateBuilder {
   }
 }
 
-export function debugRehydration(env: Environment, cursor: Cursor): TreeBuilder {
-  return DebugRehydrationBuilder.forInitialRender(env, cursor);
+export function debugRehydrateTree(env: Environment, cursor: Cursor): TreeBuilder {
+  return DebugRehydrateTree.forInitialRender(env, cursor);
 }

@@ -128,10 +128,7 @@ export class LowLevelVM {
   }
 
   nextStatement(): Nullable<RuntimeOp> {
-    let {
-      registers,
-      context: { program },
-    } = this;
+    let { registers, context } = this;
 
     let pc = registers[$pc];
 
@@ -146,7 +143,7 @@ export class LowLevelVM {
     // to where we are going. We can't simply ask for the size
     // in a jump because we have have already incremented the
     // program counter to the next instruction prior to executing.
-    let opcode = program.opcode(pc);
+    let opcode = context.program.opcode(pc);
     let operationSize = (this.currentOpSize = opcode.size);
     this.registers[$pc] += operationSize;
 

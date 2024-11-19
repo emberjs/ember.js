@@ -29,7 +29,7 @@ export {
   type EnvironmentDelegate,
   EnvironmentImpl,
   inTransaction,
-  runtimeContext,
+  runtimeOptions,
 } from './lib/environment';
 export { array } from './lib/helpers/array';
 export { concat } from './lib/helpers/concat';
@@ -59,13 +59,13 @@ export {
 export {
   clientBuilder,
   NewTreeBuilder,
-  RemoteLiveBlock,
-  UpdatableBlockImpl,
+  RemoteBlock,
+  ResettableBlockImpl,
 } from './lib/vm/element-builder';
 export { LowLevelVM } from './lib/vm/low-level';
 export {
   isSerializationFirstNode,
-  RehydrateBuilder,
+  RehydrateTree,
   rehydrationBuilder,
   SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/vm/rehydrate-builder';

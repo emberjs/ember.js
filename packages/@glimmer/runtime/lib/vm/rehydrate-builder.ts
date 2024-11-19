@@ -16,7 +16,7 @@ import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constant
 import { assert, castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
-import { CURSOR_STACK, NewTreeBuilder, RemoteLiveBlock } from './element-builder';
+import { NewTreeBuilder, RemoteBlock } from './element-builder';
 
 export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
 
@@ -38,9 +38,9 @@ export class RehydratingCursor extends CursorImpl {
   }
 }
 
-export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
+export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   private unmatchedAttributes: Nullable<SimpleAttr[]> = null;
-  declare [CURSOR_STACK]: Stack<RehydratingCursor>; // Hides property on base class
+  declare cursors: Stack<RehydratingCursor>; // Hides property on base class
   blockDepth = 0;
   startingBlockOffset: number;
 
@@ -87,7 +87,7 @@ export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
   }
 
   get currentCursor(): Nullable<RehydratingCursor> {
-    return this[CURSOR_STACK].current;
+    return this.cursors.current;
   }
 
   get candidate(): Nullable<SimpleNode> {
@@ -125,8 +125,8 @@ export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
   override pushElement(
     /** called from parent constructor before we initialize this */
     this:
-      | RehydrateBuilder
-      | (NewTreeBuilder & Partial<Pick<RehydrateBuilder, 'blockDepth' | 'candidate'>>),
+      | RehydrateTree
+      | (NewTreeBuilder & Partial<Pick<RehydrateTree, 'blockDepth' | 'candidate'>>),
     element: SimpleElement,
     nextSibling: Maybe<SimpleNode> = null
   ) {
@@ -147,7 +147,7 @@ export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
       this.candidate = element.nextSibling;
     }
 
-    this[CURSOR_STACK].push(cursor);
+    this.cursors.push(cursor);
   }
 
   // clears until the end of the current container
@@ -456,7 +456,7 @@ export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
     element: SimpleElement,
     cursorId: string,
     insertBefore: Maybe<SimpleNode>
-  ): RemoteLiveBlock {
+  ): RemoteBlock {
     const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
     assert(
@@ -473,7 +473,7 @@ export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
     }
 
     const cursor = new RehydratingCursor(element, null, this.blockDepth);
-    this[CURSOR_STACK].push(cursor);
+    this.cursors.push(cursor);
 
     if (marker === null) {
       this.disableRehydration(insertBefore);
@@ -481,8 +481,8 @@ export class RehydrateBuilder extends NewTreeBuilder implements TreeBuilder {
       this.candidate = this.remove(marker);
     }
 
-    const block = new RemoteLiveBlock(element);
-    return this.pushLiveBlock(block, true);
+    const block = new RemoteBlock(element);
+    return this.pushBlock(block, true);
   }
 
   override didAppendBounds(bounds: Bounds): Bounds {
@@ -551,5 +551,5 @@ function findByName(array: SimpleAttr[], name: string): SimpleAttr | undefined {
 }
 
 export function rehydrationBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {
-  return RehydrateBuilder.forInitialRender(env, cursor);
+  return RehydrateTree.forInitialRender(env, cursor);
 }

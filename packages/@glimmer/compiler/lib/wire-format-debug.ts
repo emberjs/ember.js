@@ -16,7 +16,7 @@ export default class WireFormatDebugger {
   private upvars: string[];
   private symbols: string[];
 
-  constructor([_statements, symbols, _hasEval, upvars]: SerializedTemplateBlock) {
+  constructor([_statements, symbols, _hasDebugger, upvars]: SerializedTemplateBlock) {
     this.upvars = upvars;
     this.symbols = symbols;
   }

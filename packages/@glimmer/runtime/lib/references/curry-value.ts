@@ -11,7 +11,7 @@ import type { Reference } from '@glimmer/reference';
 import { CURRIED_COMPONENT } from '@glimmer/constants';
 import { expect } from '@glimmer/debug-util';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { isObject } from '@glimmer/util';
+import { isIndexable } from '@glimmer/util';
 
 import { curry, isCurriedType } from '../curried-value';
 
@@ -59,7 +59,7 @@ export default function createCurryRef(
       }
 
       curriedDefinition = curry(type, value, owner, args);
-    } else if (isObject(value)) {
+    } else if (isIndexable(value)) {
       curriedDefinition = curry(type, value, owner, args);
     } else {
       curriedDefinition = null;

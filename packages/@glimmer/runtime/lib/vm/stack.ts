@@ -19,7 +19,8 @@ export interface EvaluationStack {
   slice<T = unknown>(start: number, end: number): T[];
   capture(items: number): unknown[];
   reset(): void;
-  toArray(): unknown[];
+
+  snapshot?(): unknown[];
 }
 
 export default class EvaluationStackImpl implements EvaluationStack {
@@ -45,6 +46,11 @@ export default class EvaluationStackImpl implements EvaluationStack {
     this.registers = registers;
 
     if (LOCAL_DEBUG) {
+      this.snapshot = () => {
+        const fpRegister = this.registers[$fp];
+        const fp = fpRegister === -1 ? 0 : fpRegister;
+        return this.stack.slice(fp, this.registers[$sp] + 1);
+      };
       Object.seal(this);
     }
   }
@@ -93,7 +99,13 @@ export default class EvaluationStackImpl implements EvaluationStack {
     this.stack.length = 0;
   }
 
-  toArray() {
-    return this.stack.slice(this.registers[$fp], this.registers[$sp] + 1);
+  declare snapshot?: (this: EvaluationStackImpl) => unknown[];
+
+  static {
+    if (LOCAL_DEBUG) {
+      EvaluationStackImpl.prototype.snapshot = function () {
+        return this.stack.slice(this.registers[$fp], this.registers[$sp] + 1);
+      };
+    }
   }
 }

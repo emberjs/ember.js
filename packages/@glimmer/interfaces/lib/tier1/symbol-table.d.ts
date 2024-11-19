@@ -1,5 +1,5 @@
 export interface ProgramSymbolTable {
-  hasEval: boolean;
+  hasDebugger: boolean;
   symbols: string[];
 }
 

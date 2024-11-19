@@ -1,12 +1,14 @@
 import type {
   BlockMetadata,
   CompilableTemplate,
+  DebugStacks,
   DebugTemplates,
+  DebugVmSnapshot,
+  DebugVmTrace,
   Destroyable,
   DynamicScope,
   Environment,
   EvaluationContext,
-  Nullable,
   Owner,
   Program,
   ProgramConstants,
@@ -17,10 +19,9 @@ import type {
   TreeBuilder,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
-import type { RuntimeOpImpl } from '@glimmer/program';
 import type { OpaqueIterationItem, OpaqueIterator, Reference } from '@glimmer/reference';
 import type { MachineRegister, Register, SyscallRegister } from '@glimmer/vm';
-import { expect, unwrapHandle } from '@glimmer/debug-util';
+import { dev, expect, unwrapHandle } from '@glimmer/debug-util';
 import { associateDestroyableChild } from '@glimmer/destroyable';
 import { assertGlobalContextWasSet } from '@glimmer/global-context';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
@@ -29,18 +30,17 @@ import { LOCAL_LOGGER, reverse, Stack } from '@glimmer/util';
 import { beginTrackFrame, endTrackFrame, resetTracking } from '@glimmer/validator';
 import { $pc, isLowLevelRegister } from '@glimmer/vm';
 
-import type { DebugState } from '../opcodes';
 import type { ScopeOptions } from '../scope';
-import type { LiveBlockList } from './element-builder';
+import type { AppendingBlockList } from './element-builder';
 import type { EvaluationStack } from './stack';
-import type { BlockOpcode, VMState } from './update';
+import type { BlockOpcode } from './update';
 
 import {
   BeginTrackFrameOpcode,
   EndTrackFrameOpcode,
   JumpIfNotModifiedOpcode,
 } from '../compiled/opcodes/vm';
-import { APPEND_OPCODES } from '../opcodes';
+import { externs } from '../opcodes';
 import { ScopeImpl } from '../scope';
 import { VMArgumentsImpl } from './arguments';
 import { LowLevelVM } from './low-level';
@@ -49,6 +49,7 @@ import EvaluationStackImpl from './stack';
 import { ListBlockOpcode, ListItemOpcode, TryOpcode } from './update';
 
 class Stacks {
+  declare debug?: () => DebugStacks;
   readonly drop: object = {};
 
   readonly scope = new Stack<Scope>();
@@ -62,6 +63,19 @@ class Stacks {
     this.scope.push(scope);
     this.dynamicScope.push(dynamicScope);
     this.destroyable.push(this.drop);
+
+    if (LOCAL_DEBUG) {
+      this.debug = (): DebugStacks => {
+        return {
+          scope: this.scope.snapshot(),
+          dynamicScope: this.dynamicScope.snapshot(),
+          updating: this.updating.snapshot(),
+          cache: this.cache.snapshot(),
+          list: this.list.snapshot(),
+          destroyable: this.destroyable.snapshot(),
+        };
+      };
+    }
   }
 }
 
@@ -93,26 +107,13 @@ if (LOCAL_DEBUG) {
   };
 }
 
-interface DebugVmState {
-  context: EvaluationContext;
-  trace: { templates: DebugTemplates };
-  lowlevel: LowLevelVM;
-  registers: SyscallRegisters;
-  destroyableStack: Stack<object>;
-  stacks: Stacks;
-}
-
 export class VM {
   readonly #stacks: Stacks;
-  readonly #destructor: object;
-  readonly #destroyableStack = new Stack<object>();
-  readonly context: EvaluationContext;
-  readonly #tree: TreeBuilder;
-
   readonly args: VMArgumentsImpl;
   readonly lowlevel: LowLevelVM;
 
-  readonly debug?: DebugVmState;
+  readonly debug?: () => DebugVmSnapshot;
+  readonly trace?: () => DebugVmTrace;
 
   get stack(): EvaluationStack {
     return this.lowlevel.stack as EvaluationStack;
@@ -197,7 +198,7 @@ export class VM {
   call(handle: number | null) {
     if (handle !== null) {
       if (LOCAL_DEBUG) {
-        this.debug?.trace.templates.willCall(handle);
+        dev(this.trace).willCall(handle);
       }
 
       this.lowlevel.call(handle);
@@ -207,20 +208,19 @@ export class VM {
   // Return to the `program` address stored in $ra
   return() {
     if (LOCAL_DEBUG) {
-      this.debug?.trace.templates.return();
+      dev(this.trace).return();
     }
 
     this.lowlevel.return();
   }
 
-  /**
-   * End of migrated.
-   */
+  readonly #tree: TreeBuilder;
+  readonly context: EvaluationContext;
 
   constructor(
-    { pc, scope, dynamicScope, stack }: ClosureState,
-    tree: TreeBuilder,
-    context: EvaluationContext
+    { scope, dynamicScope, stack, pc }: ClosureState,
+    context: EvaluationContext,
+    tree: TreeBuilder
   ) {
     if (import.meta.env.DEV) {
       assertGlobalContextWasSet!();
@@ -228,48 +228,36 @@ export class VM {
 
     let evalStack = EvaluationStackImpl.restore(stack, pc);
 
-    this.context = context;
     this.#tree = tree;
+    this.context = context;
 
     this.#stacks = new Stacks(scope, dynamicScope);
 
     this.args = new VMArgumentsImpl();
-    this.lowlevel = new LowLevelVM(
-      evalStack,
-      context,
-      import.meta.env.VM_LOCAL_DEV
-        ? {
-            debugBefore: (opcode: RuntimeOpImpl): DebugState => {
-              return APPEND_OPCODES.debugBefore!(this, opcode);
-            },
-
-            debugAfter: (state: DebugState): void => {
-              APPEND_OPCODES.debugAfter!(this, state);
-            },
-          }
-        : undefined,
-      evalStack.registers
-    );
-
-    this.#destructor = {};
-    this.#destroyableStack.push(this.#destructor);
-    associateDestroyableChild(this.#stacks.drop, this.#destructor);
+    this.lowlevel = new LowLevelVM(evalStack, context, externs(this), evalStack.registers);
 
     if (LOCAL_DEBUG) {
       const templates = new DebugTemplatesImpl!();
 
-      this.debug = {
-        context: this.context,
+      this.trace = () => templates;
 
-        trace: {
-          templates,
-        },
+      this.debug = () => ({
+        context,
 
-        stacks: this.#stacks,
-        destroyableStack: this.#destroyableStack,
-        lowlevel: this.lowlevel,
-        registers: this.#registers,
-      } satisfies DebugVmState;
+        trace: templates,
+
+        elements: this.tree().debug!(),
+
+        stacks: this.#stacks.debug!(),
+
+        template: templates.active,
+        scope: this.scope().snapshot(),
+        stack: this.lowlevel.stack.snapshot!(),
+        registers: [
+          ...this.lowlevel.registers,
+          ...sliceTuple(this.#registers, this.lowlevel.registers),
+        ],
+      });
     }
 
     this.pushUpdating();
@@ -280,49 +268,21 @@ export class VM {
       options.owner,
       options.scope ?? { self: UNDEFINED_REFERENCE, size: 0 }
     );
-    return VM.create({
-      ...options,
+
+    const state = closureState(
+      context.program.heap.getaddr(options.handle),
       scope,
-      context,
-    });
-  }
-
-  static create({
-    scope,
-    dynamicScope,
-    handle,
-    tree,
-    context,
-  }: {
-    scope: Scope;
-    dynamicScope: DynamicScope;
-    handle: number;
-    tree: TreeBuilder;
-    context: EvaluationContext;
-  }) {
-    let state = closureState(context.program.heap.getaddr(handle), scope, dynamicScope);
-    let vm = new VM(state, tree, context);
-    return vm;
-  }
-
-  static empty(context: EvaluationContext, options: InitialVmState) {
-    let scope = ScopeImpl.root(
-      options.owner,
-      options.scope ?? { self: UNDEFINED_REFERENCE, size: 0 }
+      options.dynamicScope
     );
 
-    return VM.create({
-      ...options,
-      scope,
-      context,
-    });
+    return new VM(state, context, options.tree);
   }
 
   compile(block: CompilableTemplate): number {
     let handle = unwrapHandle(block.compile(this.context));
 
     if (LOCAL_DEBUG) {
-      this.debug?.trace.templates.register(handle, block.meta);
+      dev(this.trace).register(handle, block.meta);
     }
 
     return handle;
@@ -340,15 +300,6 @@ export class VM {
     return this.context.env;
   }
 
-  captureState(args: number, pc = this.lowlevel.fetchRegister($pc)): VMState {
-    return {
-      pc,
-      scope: this.scope(),
-      dynamicScope: this.dynamicScope(),
-      stack: this.stack.capture(args),
-    };
-  }
-
   private captureClosure(args: number, pc = this.lowlevel.fetchRegister($pc)): ClosureState {
     return {
       pc,
@@ -362,6 +313,20 @@ export class VM {
     return new Closure(this.captureClosure(args, pc), this.context);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `BeginComponentTransaction`
+   *
+   * ## State Changes
+   *
+   * [ ] create `guard` (`JumpIfNotModifiedOpcode`)
+   * [ ] create `tracker` (`BeginTrackFrameOpcode`)
+   * [!] push Updating Stack <- `guard`
+   * [!] push Updating Stack <- `tracker`
+   * [!] push Cache Stack <- `guard`
+   * [!] push Tracking Stack
+   */
   beginCacheGroup(name?: string) {
     let opcodes = this.updating();
     let guard = new JumpIfNotModifiedOpcode();
@@ -373,6 +338,20 @@ export class VM {
     beginTrackFrame(name);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `CommitComponentTransaction`
+   *
+   * ## State Changes
+   *
+   * Create a new `EndTrackFrameOpcode` (`end`)
+   *
+   * [!] pop CacheStack -> `guard`
+   * [!] pop Tracking Stack -> `tag`
+   * [ ] create `end` (`EndTrackFrameOpcode`) with `guard`
+   * [-] consume `tag`
+   */
   commitCacheGroup() {
     let opcodes = this.updating();
     let guard = expect(this.#stacks.cache.pop(), 'VM BUG: Expected a cache group');
@@ -383,6 +362,22 @@ export class VM {
     guard.finalize(tag, opcodes.length);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `Enter`
+   *
+   * ## State changes
+   *
+   * [!] push Element Stack as `block`
+   * [ ] create `try` (`TryOpcode`) with `block`, capturing `args` from the Eval Stack
+   *
+   * Did Enter (`try`):
+   * [-] associate destroyable `try`
+   * [!] push Destroyable Stack <- `try`
+   * [!] push Updating List <- `try`
+   * [!] push Updating Stack <- `try.children`
+   */
   enter(args: number) {
     let updating: UpdatingOpcode[] = [];
 
@@ -394,6 +389,31 @@ export class VM {
     this.didEnter(tryOpcode);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `Iterate`
+   * - Update: `ListBlock`
+   *
+   * ## State changes
+   *
+   * Create a new ref for the iterator item (`value`).
+   * Create a new ref for the iterator key (`key`).
+   *
+   * [ ] create `valueRef` (`Reference`) from `value`
+   * [ ] create `keyRef` (`Reference`) from `key`
+   * [!] push Eval Stack <- `valueRef`
+   * [!] push Eval Stack <- `keyRef`
+   * [!] push Element Stack <- `UpdatableBlock` as `block`
+   * [ ] capture `closure` with *2* items from the Eval Stack
+   * [ ] create `iteration` (`ListItemOpcode`) with `closure`, `block`, `key`, `keyRef` and `valueRef`
+   *
+   * Did Enter (`iteration`):
+   * [-] associate destroyable `iteration`
+   * [!] push Destroyable Stack <- `iteration`
+   * [!] push Updating List <- `iteration`
+   * [!] push Updating Stack <- `iteration.children`
+   */
   enterItem({ key, value, memo }: OpaqueIterationItem): ListItemOpcode {
     let { stack } = this;
 
@@ -416,12 +436,31 @@ export class VM {
     this.listBlock().initializeChild(opcode);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `EnterList`
+   *
+   * ## State changes
+   *
+   * [ ] capture `closure` with *0* items from the Eval Stack, and `$pc` from `offset`
+   * [ ] create `updating` (empty `Array`)
+   * [!] push Element Stack <- `list` (`BlockList`) with `updating`
+   * [ ] create `list` (`ListBlockOpcode`) with `closure`, `list`, `updating` and `iterableRef`
+   * [!] push List Stack <- `list`
+   *
+   * Did Enter (`list`):
+   * [-] associate destroyable `list`
+   * [!] push Destroyable Stack <- `list`
+   * [!] push Updating List <- `list`
+   * [!] push Updating Stack <- `list.children`
+   */
   enterList(iterableRef: Reference<OpaqueIterator>, offset: number) {
     let updating: ListItemOpcode[] = [];
 
     let addr = this.lowlevel.target(offset);
     let state = this.capture(0, addr);
-    let list = this.tree().pushBlockList(updating) as LiveBlockList;
+    let list = this.tree().pushBlockList(updating) as AppendingBlockList;
 
     let opcode = new ListBlockOpcode(state, this.context, list, updating, iterableRef);
 
@@ -430,93 +469,231 @@ export class VM {
     this.didEnter(opcode);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `Enter`
+   * - Append: `Iterate`
+   * - Append: `EnterList`
+   * - Update: `ListBlock`
+   *
+   * ## State changes
+   *
+   * [-] associate destroyable `opcode`
+   * [!] push Destroyable Stack <- `opcode`
+   * [!] push Updating List <- `opcode`
+   * [!] push Updating Stack <- `opcode.children`
+   *
+   */
   private didEnter(opcode: BlockOpcode) {
     this.associateDestroyable(opcode);
-    this.#destroyableStack.push(opcode);
+    this.#stacks.destroyable.push(opcode);
     this.updateWith(opcode);
     this.pushUpdating(opcode.children);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `Exit`
+   * - Append: `ExitList`
+   *
+   * ## State changes
+   *
+   * [!] pop Destroyable Stack
+   * [!] pop Element Stack
+   * [!] pop Updating Stack
+   */
   exit() {
-    this.#destroyableStack.pop();
-    this.tree().popBlock();
+    this.#stacks.destroyable.pop();
+    this.#tree.popBlock();
     this.popUpdating();
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `ExitList`
+   *
+   * ## State changes
+   *
+   * Pop List:
+   * [!] pop Destroyable Stack
+   * [!] pop Element Stack
+   * [!] pop Updating Stack
+   *
+   * [!] pop List Stack
+   */
   exitList() {
     this.exit();
     this.#stacks.list.pop();
   }
 
-  pushUpdating(list: UpdatingOpcode[] = []): void {
-    this.#stacks.updating.push(list);
-  }
-
-  popUpdating(): UpdatingOpcode[] {
-    return expect(this.#stacks.updating.pop(), "can't pop an empty stack");
-  }
-
-  updateWith(opcode: UpdatingOpcode) {
-    this.updating().push(opcode);
-  }
-
-  listBlock(): ListBlockOpcode {
-    return expect(this.#stacks.list.current, 'expected a list block');
-  }
-
-  associateDestroyable(child: Destroyable): void {
-    let parent = expect(this.#destroyableStack.current, 'Expected destructor parent');
-    associateDestroyableChild(parent, child);
-  }
-
-  tryUpdating(): Nullable<UpdatingOpcode[]> {
-    return this.#stacks.updating.current;
-  }
-
-  updating(): UpdatingOpcode[] {
-    return expect(
-      this.#stacks.updating.current,
-      'expected updating opcode on the updating opcode stack'
-    );
-  }
-
-  tree(): TreeBuilder {
-    return this.#tree;
-  }
-
-  scope(): Scope {
-    return expect(this.#stacks.scope.current, 'expected scope on the scope stack');
-  }
-
-  dynamicScope(): DynamicScope {
-    return expect(
-      this.#stacks.dynamicScope.current,
-      'expected dynamic scope on the dynamic scope stack'
-    );
-  }
-
-  pushChildScope() {
-    this.#stacks.scope.push(this.scope().child());
-  }
-
-  pushDynamicScope(): DynamicScope {
-    let child = this.dynamicScope().child();
-    this.#stacks.dynamicScope.push(child);
-    return child;
-  }
-
+  /**
+   * ## Opcodes
+   *
+   * - Append: `RootScope`
+   * - Append: `VirtualRootScope`
+   *
+   * ## State changes
+   *
+   * [!] push Scope Stack
+   */
   pushRootScope(size: number, owner: Owner): Scope {
     let scope = ScopeImpl.sized(owner, size);
     this.#stacks.scope.push(scope);
     return scope;
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `ChildScope`
+   *
+   * ## State changes
+   *
+   * [!] push Scope Stack <- `child` of current Scope
+   */
+  pushChildScope() {
+    this.#stacks.scope.push(this.scope().child());
+  }
+
+  /**
+   * ## Opcodes
+   *
+   * - Append: `Yield`
+   *
+   * ## State changes
+   *
+   * [!] push Scope Stack <- `scope`
+   */
   pushScope(scope: Scope) {
     this.#stacks.scope.push(scope);
   }
 
+  /**
+   * ## Opcodes
+   *
+   * - Append: `PopScope`
+   *
+   * ## State changes
+   *
+   * [!] pop Scope Stack
+   */
   popScope() {
     this.#stacks.scope.pop();
+  }
+
+  /**
+   * ## Opcodes
+   *
+   * - Append: `PushDynamicScope`
+   *
+   * ## State changes:
+   *
+   * [!] push Dynamic Scope Stack <- child of current Dynamic Scope
+   */
+  pushDynamicScope(): DynamicScope {
+    let child = this.dynamicScope().child();
+    this.#stacks.dynamicScope.push(child);
+    return child;
+  }
+
+  /**
+   * ## Opcodes
+   *
+   * - Append: `BindDynamicScope`
+   *
+   * ## State changes:
+   *
+   * [!] pop Dynamic Scope Stack `names.length` times
+   */
+  bindDynamicScope(names: string[]) {
+    let scope = this.dynamicScope();
+
+    for (const name of reverse(names)) {
+      scope.set(name, this.stack.pop<Reference<unknown>>());
+    }
+  }
+
+  /**
+   * ## State changes
+   *
+   * - [!] push Updating Stack
+   *
+   * @utility
+   */
+  pushUpdating(list: UpdatingOpcode[] = []): void {
+    this.#stacks.updating.push(list);
+  }
+
+  /**
+   * ## State changes
+   *
+   * [!] pop Updating Stack
+   *
+   * @utility
+   */
+  popUpdating(): UpdatingOpcode[] {
+    return expect(this.#stacks.updating.pop(), "can't pop an empty stack");
+  }
+
+  /**
+   * ## State changes
+   *
+   * [!] push Updating List
+   *
+   * @utility
+   */
+  updateWith(opcode: UpdatingOpcode) {
+    this.updating().push(opcode);
+  }
+
+  private listBlock(): ListBlockOpcode {
+    return expect(this.#stacks.list.current, 'expected a list block');
+  }
+
+  /**
+   * ## State changes
+   *
+   * [-] associate destroyable `child`
+   *
+   * @utility
+   */
+  associateDestroyable(child: Destroyable): void {
+    let parent = expect(this.#stacks.destroyable.current, 'Expected destructor parent');
+    associateDestroyableChild(parent, child);
+  }
+
+  private updating(): UpdatingOpcode[] {
+    return expect(
+      this.#stacks.updating.current,
+      'expected updating opcode on the updating opcode stack'
+    );
+  }
+
+  /**
+   * Get Tree Builder
+   */
+  tree(): TreeBuilder {
+    return this.#tree;
+  }
+
+  /**
+   * Get current Scope
+   */
+  scope(): Scope {
+    return expect(this.#stacks.scope.current, 'expected scope on the scope stack');
+  }
+
+  /**
+   * Get current Dynamic Scope
+   */
+  dynamicScope(): DynamicScope {
+    return expect(
+      this.#stacks.dynamicScope.current,
+      'expected dynamic scope on the dynamic scope stack'
+    );
   }
 
   popDynamicScope() {
@@ -587,7 +764,6 @@ export class VM {
 
   next(): RichIteratorResult<null, RenderResult> {
     let { env } = this;
-    let tree = this.#tree;
     let opcode = this.lowlevel.nextStatement();
     let result: RichIteratorResult<null, RenderResult>;
     if (opcode !== null) {
@@ -599,27 +775,16 @@ export class VM {
 
       result = {
         done: true,
-        value: new RenderResultImpl(env, this.popUpdating(), tree.popBlock(), this.#stacks.drop),
+        value: new RenderResultImpl(
+          env,
+          this.popUpdating(),
+          this.#tree.popBlock(),
+          this.#stacks.drop
+        ),
       };
     }
     return result;
   }
-
-  bindDynamicScope(names: string[]) {
-    let scope = this.dynamicScope();
-
-    for (const name of reverse(names)) {
-      scope.set(name, this.stack.pop<Reference<unknown>>());
-    }
-  }
-}
-
-export interface InitialVmState {
-  handle: number;
-  tree: TreeBuilder;
-  dynamicScope: DynamicScope;
-  owner: Owner;
-  scope?: ScopeOptions;
 }
 
 function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): ClosureState {
@@ -631,16 +796,25 @@ function closureState(pc: number, scope: Scope, dynamicScope: DynamicScope): Clo
   };
 }
 
-export interface MinimalInitOptions {
+export interface InitialVmState {
+  /**
+   * The address of the compiled template. This is converted into a
+   * pc when the VM is created.
+   */
   handle: number;
-  treeBuilder: TreeBuilder;
+
+  /**
+   * Optionally, specify the root scope for the VM. If not specified,
+   * the VM will use a root scope with no `this` reference and no
+   * symbols.
+   */
+  scope?: ScopeOptions;
+  /**
+   *
+   */
+  tree: TreeBuilder;
   dynamicScope: DynamicScope;
   owner: Owner;
-}
-
-export interface InitOptions extends MinimalInitOptions {
-  self: Reference;
-  numSymbols: number;
 }
 
 export interface ClosureState {
@@ -684,6 +858,13 @@ export class Closure {
   }
 
   evaluate(tree: TreeBuilder): VM {
-    return new VM(this.state, tree, this.context);
+    return new VM(this.state, this.context, tree);
   }
+}
+
+function sliceTuple<T extends unknown[], Prefix extends unknown[]>(
+  tuple: T,
+  prefix: Prefix
+): T extends [...Prefix, ...infer Rest] ? Rest : never {
+  return tuple.slice(prefix.length) as T extends [...Prefix, ...infer Rest] ? Rest : never;
 }
