@@ -24,6 +24,8 @@ export abstract class SymbolTable {
     return new ProgramSymbolTable(locals, keywords, options);
   }
 
+  abstract root(): ProgramSymbolTable;
+
   abstract has(name: string): boolean;
   abstract get(name: string): [symbol: number, isRoot: boolean];
 
@@ -33,8 +35,7 @@ export abstract class SymbolTable {
   abstract hasLexical(name: string): boolean;
 
   abstract getLocalsMap(): Dict<number>;
-  abstract getDebugInfo(): Core.DebugInfo;
-  abstract setHasDebugger(): void;
+  abstract getDebugInfo(): Core.DebugSymbols;
 
   abstract allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number;
   abstract allocateNamed(name: string): number;
@@ -63,20 +64,21 @@ export class ProgramSymbolTable extends SymbolTable {
         upvars: this.upvars,
         named: this.named,
         blocks: this.blocks,
-        hasDebugger: this.hasDebugger,
       }),
     });
   }
 
-  public symbols: string[] = [];
-  public upvars: string[] = [];
+  readonly symbols: string[] = [];
+  readonly upvars: string[] = [];
 
   private size = 1;
-  private named = dict<number>();
-  private blocks = dict<number>();
-  private usedTemplateLocals: string[] = [];
+  readonly named = dict<number>();
+  readonly blocks = dict<number>();
+  readonly usedTemplateLocals: string[] = [];
 
-  #hasDebugger = false;
+  root(): ProgramSymbolTable {
+    return this;
+  }
 
   hasLexical(name: string): boolean {
     return this.options.lexicalScope(name);
@@ -92,14 +94,6 @@ export class ProgramSymbolTable extends SymbolTable {
 
   getUsedTemplateLocals(): string[] {
     return this.usedTemplateLocals;
-  }
-
-  setHasDebugger(): void {
-    this.#hasDebugger = true;
-  }
-
-  get hasDebugger(): boolean {
-    return this.#hasDebugger;
   }
 
   has(name: string): boolean {
@@ -122,8 +116,8 @@ export class ProgramSymbolTable extends SymbolTable {
     return dict();
   }
 
-  getDebugInfo(): Core.DebugInfo {
-    return Object.values(this.getLocalsMap());
+  getDebugInfo(): Core.DebugSymbols {
+    return [this.getLocalsMap(), this.named];
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {
@@ -186,6 +180,10 @@ export class BlockSymbolTable extends SymbolTable {
     super();
   }
 
+  root(): ProgramSymbolTable {
+    return this.parent.root();
+  }
+
   get locals(): string[] {
     return this.symbols;
   }
@@ -222,12 +220,12 @@ export class BlockSymbolTable extends SymbolTable {
     return dict;
   }
 
-  getDebugInfo(): Core.DebugInfo {
-    return Object.values(this.getLocalsMap());
-  }
+  getDebugInfo(): [locals: Record<string, number>, upvars: Record<string, number>] {
+    const locals = this.getLocalsMap();
+    const root = this.root();
+    const named = root.named;
 
-  setHasDebugger(): void {
-    this.parent.setHasDebugger();
+    return [{ ...locals, ...named }, Object.fromEntries(root.upvars.map((s, i) => [s, i]))];
   }
 
   allocateFree(name: string, resolution: ASTv2.FreeVarResolution): number {

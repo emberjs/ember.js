@@ -511,7 +511,6 @@ export const CheckBlockSymbolTable: Checker<BlockSymbolTable> = LOCAL_DEBUG
 
 export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> = LOCAL_DEBUG
   ? CheckInterface({
-      hasDebugger: CheckBoolean,
       symbols: CheckArray(CheckString),
     })
   : new NoopChecker();

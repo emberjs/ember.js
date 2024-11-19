@@ -30,7 +30,7 @@ export class WrappedBuilder implements CompilableProgram {
     public moduleName: string
   ) {
     let { block } = layout;
-    let [, symbols, hasDebugger] = block;
+    let [, symbols] = block;
 
     symbols = symbols.slice();
 
@@ -43,7 +43,6 @@ export class WrappedBuilder implements CompilableProgram {
     }
 
     this.symbolTable = {
-      hasDebugger,
       symbols,
     };
 

@@ -10,7 +10,6 @@ import {
   VM_APPEND_TEXT_OP,
   VM_ASSERT_SAME_OP,
   VM_BEGIN_COMPONENT_TRANSACTION_OP,
-  VM_BIND_DEBUGGER_SCOPE_OP,
   VM_BIND_DYNAMIC_SCOPE_OP,
   VM_CAPTURE_ARGS_OP,
   VM_CHILD_SCOPE_OP,
@@ -94,7 +93,6 @@ import {
   VM_SET_BLOCKS_OP,
   VM_SET_NAMED_VARIABLES_OP,
   VM_SET_VARIABLE_OP,
-  VM_SETUP_FOR_DEBUGGER_OP,
   VM_SPREAD_BLOCK_OP,
   VM_STATIC_ATTR_OP,
   VM_SYSCALL_SIZE,
@@ -693,20 +691,6 @@ if (LOCAL_DEBUG) {
     ops: ['state:register'],
   };
 
-  METADATA[VM_BIND_DEBUGGER_SCOPE_OP] = {
-    name: 'BindDebuggerScope',
-    mnemonic: 'debugger_scope',
-    stackChange: 0,
-    ops: ['state:register'],
-  };
-
-  METADATA[VM_SETUP_FOR_DEBUGGER_OP] = {
-    name: 'SetupForDebugger',
-    mnemonic: 'debugger_setup',
-    stackChange: 0,
-    ops: ['state:register'],
-  };
-
   METADATA[VM_POPULATE_LAYOUT_OP] = {
     name: 'PopulateLayout',
     mnemonic: 'comp_layoutput',
@@ -751,6 +735,6 @@ if (LOCAL_DEBUG) {
     name: 'Debugger',
     mnemonic: 'debugger',
     stackChange: 0,
-    ops: ['symbols:const/any', 'debugInfo:const/i32[]'],
+    ops: ['symbols:const/any'],
   };
 }

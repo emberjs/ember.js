@@ -33,7 +33,11 @@ export interface IsStrictModeOperand {
 
 export interface DebugSymbolsOperand {
   type: DebugSymbolsOperandType;
-  value: undefined;
+  value: {
+    locals: Record<string, number>;
+    upvars: Record<string, number>;
+    lexical: Record<string, number>;
+  };
 }
 
 export interface BlockOperand {
