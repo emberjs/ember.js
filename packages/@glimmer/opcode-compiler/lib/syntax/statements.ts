@@ -163,9 +163,9 @@ STATEMENTS.add(SexpOpcodes.Yield, (op, [, to, params]) => YieldBlock(op, to, par
 
 STATEMENTS.add(SexpOpcodes.AttrSplat, (op, [, to]) => YieldBlock(op, to, null));
 
-STATEMENTS.add(SexpOpcodes.Debugger, (op, [, debugInfo]) =>
-  op(VM_DEBUGGER_OP, debugSymbolsOperand(), debugInfo)
-);
+STATEMENTS.add(SexpOpcodes.Debugger, (op, [, locals, upvars, lexical]) => {
+  op(VM_DEBUGGER_OP, debugSymbolsOperand(locals, upvars, lexical));
+});
 
 STATEMENTS.add(SexpOpcodes.Append, (op, [, value]) => {
   // Special case for static values

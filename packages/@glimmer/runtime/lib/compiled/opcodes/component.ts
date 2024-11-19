@@ -51,7 +51,6 @@ import {
   VM_RESOLVE_DYNAMIC_COMPONENT_OP,
   VM_SET_BLOCKS_OP,
   VM_SET_NAMED_VARIABLES_OP,
-  VM_SETUP_FOR_DEBUGGER_OP,
   VM_STATIC_COMPONENT_ATTR_OP,
   VM_VIRTUAL_ROOT_SCOPE_OP,
 } from '@glimmer/constants';
@@ -838,15 +837,6 @@ APPEND_OPCODES.add(VM_VIRTUAL_ROOT_SCOPE_OP, (vm, { op1: register }) => {
   }
 
   vm.pushRootScope(table.symbols.length + 1, owner);
-});
-
-APPEND_OPCODES.add(VM_SETUP_FOR_DEBUGGER_OP, (vm, { op1: register }) => {
-  let state = check(vm.fetchValue(check(register, CheckRegister)), CheckFinishedComponentInstance);
-
-  if (state.table.hasDebugger) {
-    let lookup = (state.lookup = dict<ScopeSlot>());
-    vm.scope().bindDebuggerScope(lookup);
-  }
 });
 
 APPEND_OPCODES.add(VM_SET_NAMED_VARIABLES_OP, (vm, { op1: register }) => {

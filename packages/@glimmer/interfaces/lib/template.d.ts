@@ -110,11 +110,16 @@ export interface BlockSymbolNames {
   upvars: Nullable<string[]>;
 }
 
+export interface DebuggerInfo {
+  locals: Record<string, number>;
+  lexical: Record<string, number>;
+  upvars: Record<string, number>;
+}
+
 export interface BlockMetadata {
   symbols: BlockSymbolNames;
   scopeValues: unknown[] | null;
   isStrictMode: boolean;
-  hasDebugger: boolean;
   moduleName: string;
   owner: Owner | null;
   size: number;

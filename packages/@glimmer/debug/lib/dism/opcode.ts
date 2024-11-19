@@ -272,15 +272,12 @@ function describeProgramSymbolTable(
 ) {
   const debug = dev(classified.options.debug);
 
-  const hasDebugger = debug.hasDebugger
-    ? frag`(${as.kw('has debugger')})`
-    : frag`(${as.dim('no debugger')})`.subtle();
   const keywords = labelledList('keywords', debug.keywords);
   const upvars = labelledList('upvars', debug.upvars);
   const atNames = labelledList('@-names', Object.keys(debug.named));
   const blocks = labelledList('blocks', Object.keys(debug.blocks));
 
-  const fields = join([hasDebugger, keywords, atNames, upvars, blocks], ' ');
+  const fields = join([keywords, atNames, upvars, blocks], ' ');
 
   const full = frag` ${value(debug, { ref: 'debug' })}`.subtle();
 

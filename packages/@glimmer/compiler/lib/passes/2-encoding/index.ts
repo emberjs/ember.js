@@ -10,12 +10,7 @@ import { CONTENT } from './content';
 export function visit(template: mir.Template): WireFormat.SerializedTemplateBlock {
   let statements = CONTENT.list(template.body);
   let scope = template.scope;
-  let block: WireFormat.SerializedTemplateBlock = [
-    statements,
-    scope.symbols,
-    scope.hasDebugger,
-    scope.upvars,
-  ];
+  let block: WireFormat.SerializedTemplateBlock = [statements, scope.symbols, scope.upvars];
 
   if (LOCAL_TRACE_LOGGING) {
     let debug = new WireFormatDebugger(block);

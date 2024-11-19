@@ -80,7 +80,6 @@ export interface DebugProgramSymbolTable {
   readonly upvars: readonly string[];
   readonly named: Dict<number>;
   readonly blocks: Dict<number>;
-  readonly hasDebugger: boolean;
 }
 
 export type LocalDebugType = keyof LocalDebugMap;
