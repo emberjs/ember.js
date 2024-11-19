@@ -54,5 +54,5 @@ export interface Environment {
 export interface RuntimeOptions {
   readonly env: Environment;
   readonly program: Program;
-  readonly resolver: Nullable<ClassicResolver>;
+  readonly resolver: ClassicResolver | null;
 }

@@ -1,7 +1,7 @@
 import type { Dict, RenderResult, SimpleElement } from '@glimmer/interfaces';
 import { renderComponent, renderSync } from '@glimmer/runtime';
 
-import type { DebugRehydrationBuilder } from './builder';
+import type { DebugRehydrateTree } from './builder';
 
 import { RehydrationDelegate } from './delegate';
 
@@ -17,15 +17,15 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
   ): RenderResult {
     let cursor = { element, nextSibling: null };
     let context = this.clientContext;
-    let builder = this.getElementBuilder(context.env, cursor) as DebugRehydrationBuilder;
+    let tree = this.getElementBuilder(context.env, cursor) as DebugRehydrateTree;
     let component = this.clientRegistry.lookupComponent(name)!;
 
-    let iterator = renderComponent(context, builder, {}, component.state, args);
+    let iterator = renderComponent(context, tree, {}, component.state, args);
 
     const result = renderSync(context.env, iterator);
 
     this.rehydrationStats = {
-      clearedNodes: builder.clearedNodes,
+      clearedNodes: tree.clearedNodes,
     };
 
     return result;

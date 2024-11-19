@@ -6,7 +6,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 const ROOT = new URL('..', import.meta.url).pathname;
 $.verbose = true;
 
-const REUSE_CONTROL = !!process.env['REUSE_CONTROL'];
+const REUSE_CONTROL = !!(process.env['REUSE_DIRS'] || process.env['REUSE_CONTROL']);
+const REUSE_EXPERIMENT = !!(process.env['REUSE_DIRS'] || process.env['REUSE_EXPERIMENT']);
 
 /*
 
@@ -81,8 +82,10 @@ if (!REUSE_CONTROL) {
   await $`mkdir ${CONTROL_DIR}`;
 }
 
-await $`rm -rf ${EXPERIMENT_DIR}`;
-await $`mkdir ${EXPERIMENT_DIR}`;
+if (!REUSE_EXPERIMENT) {
+  await $`rm -rf ${EXPERIMENT_DIR}`;
+  await $`mkdir ${EXPERIMENT_DIR}`;
+}
 
 // Intentionally use the same folder for both experiment and control to make it easier to
 // make changes to the benchmark suite itself and compare the results.
@@ -138,16 +141,10 @@ console.info({
 });
 
 // setup experiment
-await within(async () => {
-  await buildRepo(EXPERIMENT_DIR, experimentRef);
-});
+await buildRepo(EXPERIMENT_DIR, experimentRef, REUSE_EXPERIMENT);
 
-if (!REUSE_CONTROL) {
-  // setup control
-  await within(async () => {
-    await buildRepo(CONTROL_DIR, controlRef);
-  });
-}
+// setup control
+await buildRepo(CONTROL_DIR, controlRef, REUSE_CONTROL);
 
 // start build assets
 $`cd ${CONTROL_BENCH_DIR} && pnpm vite preview --port ${CONTROL_PORT}`;
@@ -177,36 +174,48 @@ process.exit(0);
 /**
  * @param {string} directory the directory to clone into
  * @param {string} ref the ref to checkout
+ * @param {boolean} reuse reuse the existing directory
  */
-async function buildRepo(directory, ref) {
-  // the benchmark directory is located in `packages/@glimmer/benchmark` in each of the
-  // experiment and control checkouts
-  const benchDir = join(directory, 'benchmark', 'benchmarks', 'krausest');
+async function buildRepo(directory, ref, reuse) {
+  if (!reuse) {
+    await $`rm -rf ${directory}`;
+    await $`mkdir ${directory}`;
+  }
 
-  await cd(directory);
+  await within(async () => {
+    // the benchmark directory is located in `packages/@glimmer/benchmark` in each of the
+    // experiment and control checkouts
+    const benchDir = join(directory, 'benchmark', 'benchmarks', 'krausest');
 
-  // write the `pwd` to the output to make it easier to debug if something goes wrong
-  await $`pwd`;
+    await cd(directory);
 
-  // clone the raw git repo for the experiment
-  await $`git clone ${join(ROOT, '.git')} .`;
+    // write the `pwd` to the output to make it easier to debug if something goes wrong
+    await $`pwd`;
 
-  // checkout the repo to the HEAD of the current branch
-  await $`git checkout --force ${ref}`;
+    if (reuse) {
+      await $`git fetch`;
+    } else {
+      // clone the raw git repo for the experiment
+      await $`git clone ${join(ROOT, '.git')} .`;
+    }
 
-  // recreate the benchmark directory
-  await $`rm -rf ./benchmark`;
-  // intentionally use the same folder for both experiment and control
-  await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
+    // checkout the repo to the HEAD of the current branch
+    await $`git checkout --force ${ref}`;
 
-  // `pnpm install` and build the repo
-  await $`pnpm install --no-frozen-lockfile`;
-  await $`pnpm build`;
+    // recreate the benchmark directory
+    await $`rm -rf ./benchmark`;
+    // intentionally use the same folder for both experiment and control
+    await $`cp -r ${BENCHMARK_FOLDER} ./benchmark`;
 
-  // rewrite all `package.json`s to behave like published packages
-  await rewritePackageJson();
+    // `pnpm install` and build the repo
+    await $`pnpm install --no-frozen-lockfile`;
+    await $`pnpm build`;
 
-  // build the benchmarks using vite
-  await cd(benchDir);
-  await $`pnpm vite build`;
+    // rewrite all `package.json`s to behave like published packages
+    await rewritePackageJson();
+
+    // build the benchmarks using vite
+    await cd(benchDir);
+    await $`pnpm vite build`;
+  });
 }

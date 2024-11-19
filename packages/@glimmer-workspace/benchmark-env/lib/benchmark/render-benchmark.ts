@@ -2,6 +2,7 @@ import type {
   Dict,
   EvaluationContext,
   ResolvedComponentDefinition,
+  RuntimeArtifacts,
   SimpleElement,
 } from '@glimmer/interfaces';
 import { NewTreeBuilder, renderComponent, renderSync } from '@glimmer/runtime';
@@ -12,6 +13,7 @@ import { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
 
 export default async function renderBenchmark(
+  artifacts: RuntimeArtifacts,
   context: EvaluationContext,
   component: ResolvedComponentDefinition,
   args: Dict,

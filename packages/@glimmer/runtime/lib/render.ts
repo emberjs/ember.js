@@ -11,7 +11,8 @@ import type {
   TreeBuilder,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
-import { expect, unwrapHandle } from '@glimmer/debug-util';
+import { dev, expect, unwrapHandle } from '@glimmer/debug-util';
+import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { childRefFor, createConstRef } from '@glimmer/reference';
 import { debug } from '@glimmer/validator';
 
@@ -46,16 +47,20 @@ export function renderMain(
   context: EvaluationContext,
   owner: Owner,
   self: Reference,
-  treeBuilder: TreeBuilder,
+  tree: TreeBuilder,
   layout: CompilableProgram,
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
   let handle = unwrapHandle(layout.compile(context));
   let numSymbols = layout.symbolTable.symbols.length;
+
   let vm = VM.initial(context, {
-    scope: { self, size: numSymbols },
+    scope: {
+      self,
+      size: numSymbols,
+    },
     dynamicScope,
-    tree: treeBuilder,
+    tree,
     handle,
     owner,
   });
@@ -109,23 +114,22 @@ function renderInvocation(
   vm.stack.push(invocation);
   vm.stack.push(reified);
 
+  if (LOCAL_DEBUG) {
+    dev(vm.trace).willCall(invocation.handle);
+  }
+
   return new TemplateIteratorImpl(vm);
 }
 
 export function renderComponent(
   context: EvaluationContext,
-  treeBuilder: TreeBuilder,
+  tree: TreeBuilder,
   owner: Owner,
   definition: ComponentDefinitionState,
   args: Record<string, unknown> = {},
   dynamicScope: DynamicScope = new DynamicScopeImpl()
 ): TemplateIterator {
-  let vm = VM.empty(context, {
-    tree: treeBuilder,
-    handle: context.stdlib.main,
-    dynamicScope,
-    owner,
-  });
+  let vm = VM.initial(context, { tree, handle: context.stdlib.main, dynamicScope, owner });
   return renderInvocation(vm, context, owner, definition, recordToReference(args));
 }
 

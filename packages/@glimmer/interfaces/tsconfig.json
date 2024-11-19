@@ -2,7 +2,7 @@
   "extends": ["../tsconfig.json"],
   "compilerOptions": {
     "rootDir": ".",
-    "moduleResolution": "Node16"
+    "moduleResolution": "bundler"
   },
   "include": ["index.d.ts", "lib"]
 }

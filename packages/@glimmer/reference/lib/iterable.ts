@@ -1,6 +1,6 @@
 import type { Dict, Nullable } from '@glimmer/interfaces';
 import { getPath, toIterator } from '@glimmer/global-context';
-import { EMPTY_ARRAY, isObject } from '@glimmer/util';
+import { EMPTY_ARRAY, isIndexable } from '@glimmer/util';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
 
 import type { Reference, ReferenceEnvironment } from './reference';
@@ -88,7 +88,7 @@ class WeakMapWithPrimitives<T> {
   }
 
   set(key: unknown, value: T) {
-    if (isObject(key)) {
+    if (isIndexable(key)) {
       this.weakMap.set(key, value);
     } else {
       this.primitiveMap.set(key, value);
@@ -96,7 +96,7 @@ class WeakMapWithPrimitives<T> {
   }
 
   get(key: unknown): T | undefined {
-    if (isObject(key)) {
+    if (isIndexable(key)) {
       return this.weakMap.get(key);
     } else {
       return this.primitiveMap.get(key);

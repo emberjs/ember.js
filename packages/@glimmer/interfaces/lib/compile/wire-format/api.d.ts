@@ -364,13 +364,9 @@ export type SerializedInlineBlock = [statements: Statements.Statement[], paramet
  * A JSON object that the compiled TemplateBlock was serialized into.
  */
 export type SerializedTemplateBlock = [
-  // statements
   statements: Statements.Statement[],
-  // symbols
-  symbols: string[],
-  // hasDebug
-  hasDebug: boolean,
-  // upvars
+  locals: string[],
+  hasDebugger: boolean,
   upvars: string[],
   lexicalSymbols?: string[],
 ];

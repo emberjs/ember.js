@@ -38,7 +38,7 @@ import { debugToString, expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, destroy, registerDestructor } from '@glimmer/destroyable';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { createComputeRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { isObject } from '@glimmer/util';
+import { isIndexable } from '@glimmer/util';
 import { consumeTag, CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import { $t0 } from '@glimmer/vm';
 
@@ -114,7 +114,7 @@ APPEND_OPCODES.add(VM_POP_REMOTE_ELEMENT_OP, (vm) => {
   let bounds = vm.tree().popRemoteElement();
 
   if (vm.env.debugRenderTree !== undefined) {
-    // The RemoteLiveBlock is also its bounds
+    // The RemoteBlock is also its bounds
     vm.env.debugRenderTree.didRender(bounds, bounds);
   }
 });
@@ -205,7 +205,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
     let value = valueForRef(ref);
     let owner: Owner;
 
-    if (!isObject(value)) {
+    if (!isIndexable(value)) {
       return;
     }
 

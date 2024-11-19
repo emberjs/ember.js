@@ -22,7 +22,7 @@ import { logStep, Stack } from '@glimmer/util';
 import { debug, resetTracking } from '@glimmer/validator';
 
 import type { Closure } from './append';
-import type { LiveBlockList } from './element-builder';
+import type { AppendingBlockList } from './element-builder';
 
 import { clear, move as moveBounds } from '../bounds';
 import { NewTreeBuilder } from './element-builder';
@@ -158,11 +158,9 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     let tree = NewTreeBuilder.resume(env, bounds);
     let vm = state.evaluate(tree);
 
-    let updating: UpdatingOpcode[] = [];
     let children = (this.children = []);
 
     let result = vm.execute((vm) => {
-      vm.pushUpdating(updating);
       vm.updateWith(this);
       vm.pushUpdating(children);
     });
@@ -186,12 +184,6 @@ export class ListItemOpcode extends TryOpcode {
     super(state, context, bounds, []);
   }
 
-  updateReferences(item: OpaqueIterationItem) {
-    this.retained = true;
-    updateRef(this.value, item.value);
-    updateRef(this.memo, item.memo);
-  }
-
   shouldRemove(): boolean {
     return !this.retained;
   }
@@ -209,12 +201,12 @@ export class ListBlockOpcode extends BlockOpcode {
   private marker: SimpleComment | null = null;
   private lastIterator: OpaqueIterator;
 
-  protected declare readonly bounds: LiveBlockList;
+  protected declare readonly bounds: AppendingBlockList;
 
   constructor(
     state: Closure,
     context: EvaluationContext,
-    bounds: LiveBlockList,
+    bounds: AppendingBlockList,
     children: ListItemOpcode[],
     private iterableRef: Reference<OpaqueIterator>
   ) {
@@ -365,7 +357,6 @@ export class ListBlockOpcode extends BlockOpcode {
     let vm = state.evaluate(elementStack);
 
     vm.execute((vm) => {
-      vm.pushUpdating();
       let opcode = vm.enterItem(item);
 
       opcode.index = children.length;

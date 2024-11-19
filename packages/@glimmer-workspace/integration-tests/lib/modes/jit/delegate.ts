@@ -33,7 +33,7 @@ import {
   on,
   renderComponent,
   renderSync,
-  runtimeContext,
+  runtimeOptions,
 } from '@glimmer/runtime';
 import { assign } from '@glimmer/util';
 
@@ -63,7 +63,7 @@ export function JitDelegateContext(
   env: EnvironmentDelegate
 ): EvaluationContext {
   let sharedArtifacts = artifacts();
-  let runtime = runtimeContext(
+  let runtime = runtimeOptions(
     { document: doc },
     env,
     sharedArtifacts,

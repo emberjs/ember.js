@@ -15,7 +15,7 @@ import {
   YieldSuite,
 } from '..';
 
-jitSuite(DebuggerSuite);
+jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);
 jitSuite(InElementSuite);
 

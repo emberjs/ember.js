@@ -39,6 +39,14 @@ export interface ProgramHeap {
   sizeof(handle: number): number;
   getbyaddr(address: number): number;
   setbyaddr(address: number, value: number): void;
+
+  /**
+   * Return the number of entries in the table. A handle is legal if
+   * it is less than this number.
+   *
+   * @debugging
+   */
+  entries(): number;
 }
 
 /**
@@ -142,12 +150,18 @@ export interface ResolutionTimeConstants {
   ): ComponentDefinition;
 }
 
-export interface ReadonlyConstants {
+export interface RuntimeConstants {
+  hasHandle(handle: number): boolean;
   getValue<T>(handle: number): T;
   getArray<T>(handle: number): T[];
 }
 
-export type ProgramConstants = CompileTimeConstants & ResolutionTimeConstants & ReadonlyConstants;
+export type ProgramConstants = CompileTimeConstants & ResolutionTimeConstants & RuntimeConstants;
+
+export interface CompileTimeArtifacts {
+  heap: ProgramHeap;
+  constants: ProgramConstants;
+}
 
 export interface ClassicResolver<O extends Owner = Owner> {
   lookupHelper?(name: string, owner: O): Nullable<HelperDefinitionState>;

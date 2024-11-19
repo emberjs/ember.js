@@ -3,7 +3,7 @@ lockfileVersion: '6.0'
 overrides:
   '@rollup/pluginutils': ^5.0.2
   '@types/node': ^20.9.4
-  typescript: ^5.0.4
+  typescript: ~5.0.4
 
 importers:
 
@@ -208,7 +208,7 @@ importers:
         specifier: ^1.9.3
         version: 1.9.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
       vite:
         specifier: ^5.4.10
@@ -410,7 +410,7 @@ importers:
         specifier: ^20.9.4
         version: 20.9.4
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer-workspace/eslint-plugin:
@@ -599,6 +599,9 @@ importers:
       '@glimmer/constants':
         specifier: workspace:*
         version: link:../constants
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
       '@glimmer/debug-util':
         specifier: workspace:*
         version: link:../debug-util
@@ -618,7 +621,7 @@ importers:
         specifier: ^4.24.3
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/compiler/test:
@@ -671,7 +674,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/constants/test:
@@ -698,6 +701,9 @@ importers:
       '@glimmer/interfaces':
         specifier: workspace:*
         version: link:../interfaces
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../reference
       '@glimmer/util':
         specifier: workspace:*
         version: link:../util
@@ -730,7 +736,7 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/debug-util:
@@ -761,7 +767,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/debug-util/test:
@@ -814,7 +820,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/destroyable/test:
@@ -855,7 +861,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/global-context:
@@ -873,7 +879,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/interfaces:
@@ -895,7 +901,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/local-debug-babel-plugin: {}
@@ -955,7 +961,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/manager/test:
@@ -1010,7 +1016,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/opcode-compiler:
@@ -1068,7 +1074,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/owner:
@@ -1093,7 +1099,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/owner/test:
@@ -1151,7 +1157,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/program/test:
@@ -1197,7 +1203,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/reference/test:
@@ -1289,7 +1295,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/syntax:
@@ -1332,7 +1338,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/syntax/test:
@@ -1391,7 +1397,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/util/test:
@@ -1434,7 +1440,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/validator/test:
@@ -1471,7 +1477,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/vm-babel-plugins:
@@ -1499,7 +1505,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@glimmer/wire-format:
@@ -1524,7 +1530,7 @@ importers:
         specifier: ^4.5.1
         version: 4.24.3
       typescript:
-        specifier: ^5.0.4
+        specifier: ~5.0.4
         version: 5.0.4
 
   packages/@types/js-reporters: {}

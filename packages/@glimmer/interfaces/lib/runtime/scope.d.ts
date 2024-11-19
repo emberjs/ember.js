@@ -11,19 +11,26 @@ export type BlockValue = ScopeBlock[0 | 1 | 2];
 export type ScopeSlot = Reference | ScopeBlock | null;
 
 export interface Scope {
-  // for debug only
-  readonly slots: Array<ScopeSlot>;
+  /**
+   * A single program can mix and match multiple owners. This can happen component is curried from a
+   * template with one owner and then rendered in a second owner.
+   *
+   * Note: Owners can change when new root scopes are created (including when rendering a
+   * component), but not in child scopes.
+   */
   readonly owner: Owner;
+  // for debug only
+  snapshot(): ScopeSlot[];
 
   getSelf(): Reference;
   getSymbol(symbol: number): Reference;
   getBlock(symbol: number): Nullable<ScopeBlock>;
   getDebuggerScope(): Nullable<Dict<ScopeSlot>>;
+  bindDebuggerScope(map: Nullable<Dict<ScopeSlot>>): void;
   bind(symbol: number, value: ScopeSlot): void;
   bindSelf(self: Reference): void;
   bindSymbol(symbol: number, value: Reference): void;
   bindBlock(symbol: number, value: Nullable<ScopeBlock>): void;
-  bindDebuggerScope(map: Nullable<Dict<ScopeSlot>>): void;
   child(): Scope;
 }
 

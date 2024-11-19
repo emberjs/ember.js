@@ -85,6 +85,10 @@ export class ConstantsImpl implements ProgramConstants {
     return this.values;
   }
 
+  hasHandle(handle: number): boolean {
+    return this.values.length > handle;
+  }
+
   helper(
     definitionState: HelperDefinitionState,
 
