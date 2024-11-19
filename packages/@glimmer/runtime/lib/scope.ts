@@ -52,34 +52,30 @@ export class ScopeImpl implements Scope {
   static root(owner: Owner, { self, size = 0 }: ScopeOptions): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
-    return new ScopeImpl(owner, refs, null, null).init({ self });
+    return new ScopeImpl(owner, refs, null).init({ self });
   }
 
   static sized(owner: Owner, size = 0): Scope {
     let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
 
-    return new ScopeImpl(owner, refs, null, null);
+    return new ScopeImpl(owner, refs, null);
   }
 
   readonly owner: Owner;
 
   private slots: ScopeSlot[];
-  private callerScope: Scope | null;
-  private debuggerScope: Dict<ScopeSlot> | null;
+  private callerScope: Nullable<Scope>;
 
   constructor(
     owner: Owner,
     // the 0th slot is `self`
     slots: Array<ScopeSlot>,
     // a single program can mix owners via curried components, and the state lives on root scopes
-    callerScope: Scope | null,
-    // named arguments and blocks passed to a layout that uses eval
-    debuggerScope: Dict<ScopeSlot> | null
+    callerScope: Nullable<Scope>
   ) {
     this.owner = owner;
     this.slots = slots;
     this.callerScope = callerScope;
-    this.debuggerScope = debuggerScope;
   }
 
   init({ self }: { self: Reference<unknown> }): this {
@@ -107,10 +103,6 @@ export class ScopeImpl implements Scope {
     return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock);
   }
 
-  getDebuggerScope(): Nullable<Dict<ScopeSlot>> {
-    return this.debuggerScope;
-  }
-
   bind(symbol: number, value: ScopeSlot) {
     this.set(symbol, value);
   }
@@ -127,10 +119,6 @@ export class ScopeImpl implements Scope {
     this.set<Nullable<ScopeBlock>>(symbol, value);
   }
 
-  bindDebuggerScope(map: Nullable<Dict<ScopeSlot>>) {
-    this.debuggerScope = map;
-  }
-
   bindCallerScope(scope: Nullable<Scope>): void {
     this.callerScope = scope;
   }
@@ -140,7 +128,7 @@ export class ScopeImpl implements Scope {
   }
 
   child(): Scope {
-    return new ScopeImpl(this.owner, this.slots.slice(), this.callerScope, this.debuggerScope);
+    return new ScopeImpl(this.owner, this.slots.slice(), this.callerScope);
   }
 
   private get<T extends ScopeSlot>(index: number): T {

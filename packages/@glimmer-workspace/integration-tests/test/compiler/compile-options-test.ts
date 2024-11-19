@@ -116,7 +116,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       `component name is a free variable lookup`
     );
 
-    let componentName = block[3][componentNameExpr[1]];
+    let componentName = block[2][componentNameExpr[1]];
     assert.strictEqual(componentName, 'ooFX', 'customized component name was used');
   });
 
@@ -140,7 +140,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       `component name is a free variable lookup`
     );
 
-    let componentName = block[3][componentNameExpr[1]];
+    let componentName = block[2][componentNameExpr[1]];
     assert.strictEqual(componentName, 'rental', 'customized component name was used');
   });
 
@@ -163,7 +163,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       `component name is a free variable lookup`
     );
 
-    let componentName = block[3][componentNameExpr[1]];
+    let componentName = block[2][componentNameExpr[1]];
     assert.strictEqual(componentName, 'my-component', 'original component name was used');
   });
 
@@ -186,7 +186,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
       `component name is a free variable lookup`
     );
 
-    let componentName = block[3][componentNameExpr[1]];
+    let componentName = block[2][componentNameExpr[1]];
     assert.strictEqual(componentName, 'MyComponent', 'original component name was used');
   });
 

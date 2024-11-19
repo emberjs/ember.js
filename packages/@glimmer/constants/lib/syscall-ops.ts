@@ -6,7 +6,6 @@ import type {
   VmAppendText,
   VmAssertSame,
   VmBeginComponentTransaction,
-  VmBindDebuggerScope,
   VmBindDynamicScope,
   VmCaptureArgs,
   VmChildScope,
@@ -86,7 +85,6 @@ import type {
   VmSetBlock,
   VmSetBlocks,
   VmSetNamedVariables,
-  VmSetupForDebugger,
   VmSetVariable,
   VmSize,
   VmSpreadBlock,
@@ -174,8 +172,6 @@ export const VM_PUT_COMPONENT_OPERATIONS_OP = 89 satisfies VmPutComponentOperati
 export const VM_GET_COMPONENT_SELF_OP = 90 satisfies VmGetComponentSelf;
 export const VM_GET_COMPONENT_TAG_NAME_OP = 91 satisfies VmGetComponentTagName;
 export const VM_GET_COMPONENT_LAYOUT_OP = 92 satisfies VmGetComponentLayout;
-export const VM_BIND_DEBUGGER_SCOPE_OP = 93 satisfies VmBindDebuggerScope;
-export const VM_SETUP_FOR_DEBUGGER_OP = 94 satisfies VmSetupForDebugger;
 export const VM_POPULATE_LAYOUT_OP = 95 satisfies VmPopulateLayout;
 export const VM_INVOKE_COMPONENT_LAYOUT_OP = 96 satisfies VmInvokeComponentLayout;
 export const VM_BEGIN_COMPONENT_TRANSACTION_OP = 97 satisfies VmBeginComponentTransaction;

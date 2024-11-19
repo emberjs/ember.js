@@ -193,7 +193,7 @@ export class EncoderImpl implements Encoder {
             return encodeHandle(constants.value(this.meta.isStrictMode));
 
           case HighLevelOperands.DebugSymbols:
-            return encodeHandle(constants.value(this.meta.symbols));
+            return encodeHandle(constants.value(operand.value));
 
           case HighLevelOperands.Block:
             return encodeHandle(constants.value(compilableBlock(operand.value, this.meta)));

@@ -1,4 +1,4 @@
-import type { Dict, Nullable } from '../core.js';
+import type { Nullable } from '../core.js';
 import type { Reference } from '../references.js';
 import type { CompilableBlock } from '../template.js';
 import type { BlockSymbolTable } from '../tier1/symbol-table.js';
@@ -25,8 +25,6 @@ export interface Scope {
   getSelf(): Reference;
   getSymbol(symbol: number): Reference;
   getBlock(symbol: number): Nullable<ScopeBlock>;
-  getDebuggerScope(): Nullable<Dict<ScopeSlot>>;
-  bindDebuggerScope(map: Nullable<Dict<ScopeSlot>>): void;
   bind(symbol: number, value: ScopeSlot): void;
   bindSelf(self: Reference): void;
   bindSymbol(symbol: number, value: Reference): void;

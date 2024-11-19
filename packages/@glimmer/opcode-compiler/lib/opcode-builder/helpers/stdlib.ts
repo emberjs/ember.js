@@ -121,7 +121,6 @@ export const STDLIB_META: BlockMetadata = {
     locals: null,
     upvars: null,
   },
-  hasDebugger: false,
   moduleName: 'stdlib',
 
   // TODO: ??

@@ -28,8 +28,12 @@ export class DebuggerSuite extends RenderTest {
       callbackExecuted++;
       this.assert.strictEqual(context.foo, expectedContext.foo, 'reading from the context');
       this.assert.strictEqual(get('foo'), expectedContext.foo, 'reading from a local');
-      this.assert.strictEqual(get('@a'), expectedContext.a, 'reading from an unused named args');
-      this.assert.strictEqual(get('@used'), expectedContext.used, 'reading from a used named args');
+      this.assert.strictEqual(
+        get('this.args.a'),
+        expectedContext.a,
+        'reading from an unused named arg (available on this.args)'
+      );
+      this.assert.strictEqual(get('@used'), expectedContext.used, 'reading from a used named arg');
     });
 
     this.registerComponent(
