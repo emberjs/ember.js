@@ -14,7 +14,7 @@ import type {
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
-  ElementBuilder,
+  TreeBuilder,
   Environment,
   RenderResult,
   RuntimeContext,
@@ -52,7 +52,7 @@ import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 
-export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
+export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
 export interface View {
   parentView: Nullable<View>;
