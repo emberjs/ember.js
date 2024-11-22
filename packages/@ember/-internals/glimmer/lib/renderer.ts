@@ -31,14 +31,16 @@ import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/refer
 import type { CurriedValue } from '@glimmer/runtime';
 import {
   clientBuilder,
+  createCapturedArgs,
   curry,
   DOMChanges,
   DOMTreeConstruction,
+  EMPTY_POSITIONAL,
   inTransaction,
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { dict, unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -51,6 +53,7 @@ import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
+import { makeRouteTemplate } from './component-managers/route-template';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
@@ -370,10 +373,37 @@ export class Renderer {
   // renderer HOOKS
 
   appendOutletView(view: OutletView, target: SimpleElement): void {
-    let definition = createRootOutlet(view);
+    // TODO: This bypasses the {{outlet}} syntax so logically duplicates
+    // some of the set up code. Since this is all internal (or is it?),
+    // we can refactor this to do something more direct/less convoluted
+    // and with less setup, but get it working first
+    let outlet = createRootOutlet(view);
+    let { name, /* controller, */ template } = view.state;
+
+    let named = dict<Reference>();
+
+    named['Component'] = createConstRef(
+      makeRouteTemplate(view.owner, name, template as Template),
+      '@Component'
+    );
+
+    // TODO: is this guaranteed to be undefined? It seems to be the
+    // case in the `OutletView` class. Investigate how much that class
+    // exists as an internal implementation detail only, or if it was
+    // used outside of core. As far as I can tell, test-helpers uses
+    // it but only for `setOutletState`.
+    // named['controller'] = createConstRef(controller, '@controller');
+    // Update: at least according to the debug render tree tests, we
+    // appear to always expect this to be undefined. Not a definitive
+    // source by any means, but is useful evidence
+    named['controller'] = UNDEFINED_REFERENCE;
+    named['model'] = UNDEFINED_REFERENCE;
+
+    let args = createCapturedArgs(named, EMPTY_POSITIONAL);
+
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, view.owner, null, true),
+      curry(CurriedType.Component, outlet, view.owner, args, true),
       target
     );
   }
