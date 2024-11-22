@@ -1842,8 +1842,6 @@ function buildRenderState(route: Route): RenderState {
 
   let render: RenderState = {
     owner,
-    into: undefined,
-    outlet: 'main',
     name,
     controller,
     model,

@@ -67,8 +67,6 @@ export default class OutletView {
       outlets: { main: undefined },
       render: {
         owner: owner,
-        into: undefined,
-        outlet: 'main',
         name: TOP_LEVEL_NAME,
         controller: undefined,
         model: undefined,
