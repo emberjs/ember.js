@@ -1,5 +1,77 @@
 # Changelog
 
+## Release (2024-11-22)
+
+@glimmer/compiler 0.93.0 (minor)
+@glimmer/destroyable 0.93.0 (minor)
+@glimmer/encoder 0.92.4 (patch)
+@glimmer/global-context 0.92.4 (patch)
+@glimmer/interfaces 0.93.0 (minor)
+@glimmer/manager 0.93.0 (minor)
+@glimmer/node 0.93.0 (minor)
+@glimmer/opcode-compiler 0.93.0 (minor)
+@glimmer/owner 0.92.4 (patch)
+@glimmer/program 0.93.0 (minor)
+@glimmer/reference 0.93.0 (minor)
+@glimmer/runtime 0.93.0 (minor)
+@glimmer/syntax 0.93.0 (minor)
+@glimmer/util 0.93.0 (minor)
+@glimmer/validator 0.93.0 (minor)
+@glimmer/vm 0.93.0 (minor)
+@glimmer/vm-babel-plugins 0.92.4 (patch)
+@glimmer/wire-format 0.93.0 (minor)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#1665](https://github.com/glimmerjs/glimmer-vm/pull/1665) Feature/pass args to debugger ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/integration-tests`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1663](https://github.com/glimmerjs/glimmer-vm/pull/1663) Streamline and modernize naming ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1664](https://github.com/glimmerjs/glimmer-vm/pull/1664) Move curried types to constants ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/bin`, `@glimmer/constants`, `@glimmer/debug`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/vm`
+  * [#1662](https://github.com/glimmerjs/glimmer-vm/pull/1662) Remove Partial infra and rename eval -> debugger ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/krausest`, `@glimmer-workspace/bin`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/build-support`, `@glimmer-workspace/integration-tests`, `@glimmer-workspace/test-utils`, `@glimmer/compiler`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1646](https://github.com/glimmerjs/glimmer-vm/pull/1646) Streamline append VM implementation ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#1634](https://github.com/glimmerjs/glimmer-vm/pull/1634) Plumb debug symbols when using lexical scope ([@wycats](https://github.com/wycats))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1651](https://github.com/glimmerjs/glimmer-vm/pull/1651) Revert "allow uppercase elements in strict mode" ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1650](https://github.com/glimmerjs/glimmer-vm/pull/1650) allow uppercase elements in strict mode ([@patricklx](https://github.com/patricklx))
+
+#### :house: Internal
+* `@glimmer-workspace/krausest`, `@glimmer-workspace/bin`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`
+  * [#1649](https://github.com/glimmerjs/glimmer-vm/pull/1649) Continue on with error-recovery infra refresh ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/integration-tests`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`
+  * [#1663](https://github.com/glimmerjs/glimmer-vm/pull/1663) Streamline and modernize naming ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/integration-tests`
+  * [#1658](https://github.com/glimmerjs/glimmer-vm/pull/1658) Additional coverage for each iteration with undefined item and specified key ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/bin`
+  * [#1659](https://github.com/glimmerjs/glimmer-vm/pull/1659) Make tests fail when tests fail ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1653](https://github.com/glimmerjs/glimmer-vm/pull/1653) Fix perf bench comment ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/krausest`, `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`, `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/interfaces`, `@glimmer/local-debug-flags`, `@glimmer/opcode-compiler`, `@glimmer/program`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/vm`
+  * [#1645](https://github.com/glimmerjs/glimmer-vm/pull/1645) Move from const enums to consts ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/bin`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-babel-plugin`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1648](https://github.com/glimmerjs/glimmer-vm/pull/1648) Improve benchmark setup, consistently rely on publishConfig ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/krausest`, `@glimmer-workspace/bin`, `@glimmer-workspace/build-support`, `@glimmer-workspace/test-utils`, `@glimmer/debug`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`
+  * [#1647](https://github.com/glimmerjs/glimmer-vm/pull/1647) Improve benchmark setup ([@wycats](https://github.com/wycats))
+* Other
+  * [#1640](https://github.com/glimmerjs/glimmer-vm/pull/1640) Run perf tests if a PR has the 'perf' label ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1638](https://github.com/glimmerjs/glimmer-vm/pull/1638) Allow perf to run on PRs from forkrs ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1627](https://github.com/glimmerjs/glimmer-vm/pull/1627) Add `packageManager` to root package.json and `use-node-version` to the .npmrc ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/bin`, `@glimmer/syntax`, `@types/puppeteer-chromium-resolver`
+  * [#1628](https://github.com/glimmerjs/glimmer-vm/pull/1628) Update puppeteer, node (for perf testing), and the setup script which launches tracerbench ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/bin`, `@glimmer/debug`, `@glimmer/manager`, `@glimmer/opcode-compiler`, `@glimmer/syntax`
+  * [#1625](https://github.com/glimmerjs/glimmer-vm/pull/1625) Don't build @glimmer/debug, as no package should be using it during publish-time ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/bin`, `@glimmer/compiler`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1624](https://github.com/glimmerjs/glimmer-vm/pull/1624) Force bump, plan fix for release-plan ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 3
+- Patrick Pircher ([@patricklx](https://github.com/patricklx))
+- Yehuda Katz ([@wycats](https://github.com/wycats))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-09-13)
 
 
