@@ -18,9 +18,9 @@ function extract(node: EqualsElement): DebugElement {
   } else if (isDebugElement(node)) {
     return node;
   } else if (isSimpleElement(node)) {
-    return { element: node, description: `${node.tagName}` };
+    return { element: node, description: node.tagName };
   } else {
-    return { element: null, description: `${node.constructor.name}` };
+    return { element: null, description: node.constructor.name };
   }
 }
 
@@ -103,8 +103,7 @@ export function equalsElement(
   }
 }
 
-// TODO: Consider removing this
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 interface CompatibleTagNameMap extends ElementTagNameMap {
   foreignobject: SVGForeignObjectElement;
 }
@@ -159,10 +158,10 @@ export function equalsAttr(expected: any): Matcher {
 export function assertEmberishElement(
   element: SimpleElement,
   tagName: string,
-  attrs: Object,
+  attrs: object,
   contents: string
 ): void;
-export function assertEmberishElement(element: SimpleElement, tagName: string, attrs: Object): void;
+export function assertEmberishElement(element: SimpleElement, tagName: string, attrs: object): void;
 export function assertEmberishElement(
   element: SimpleElement,
   tagName: string,
@@ -261,10 +260,10 @@ export function processAssertComponentArgs(
 export function assertElementShape(
   element: SimpleElement,
   tagName: string,
-  attrs: Object,
+  attrs: object,
   contents: string
 ): void;
-export function assertElementShape(element: SimpleElement, tagName: string, attrs: Object): void;
+export function assertElementShape(element: SimpleElement, tagName: string, attrs: object): void;
 export function assertElementShape(element: SimpleElement, tagName: string, contents: string): void;
 export function assertElementShape(element: SimpleElement, tagName: string): void;
 export function assertElementShape(...args: any[]): void {

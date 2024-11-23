@@ -54,11 +54,8 @@ export type RawOperandFormat = OperandName | PresentArray<OperandName>;
 export function normalize(key: string, input: RawOperandMetadata): NormalizedMetadata {
   let name: ShorthandOperand;
 
-  if (input.format === undefined) {
-    throw new Error(`Missing format in ${JSON.stringify(input)}`);
-  }
-
   if (Array.isArray(input.format)) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     name = input.format[0]!;
   } else {
     name = input.format;
@@ -135,6 +132,7 @@ export function buildEnum(
     last = i;
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   e.push(`  Size = ${last! + offset + 1},`);
   e.push('}');
 
@@ -168,12 +166,14 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
     out += `${string}${dynamic}`;
   }
 
-  // eslint-disable-next-line regexp/no-super-linear-backtracking
+  /* eslint-disable-next-line regexp/no-super-linear-backtracking,
+     @typescript-eslint/no-non-null-assertion -- @fixme */
   out = /^\s*?\n?([\s\S]*?)\s*$/u.exec(out)![1] as string;
 
   let min = Number.MAX_SAFE_INTEGER;
 
   for (let line of out.split('\n')) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     let leading = /^\s*/u.exec(line)![0].length;
 
     min = Math.min(min, leading);
@@ -197,6 +197,7 @@ export function buildSingleMeta<D extends Dict<NormalizedMetadata>>(
   key: keyof D
 ): string {
   let e = kind === 'MACHINE_METADATA' ? 'MachineOp' : 'Op';
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   return `${kind}[${e}.${all[key]!.name}] = ${stringify(all[key], 0)};`;
 }
 

@@ -9,10 +9,11 @@ import {
   VM_RETURN_OP,
   VM_RETURN_TO_OP,
 } from '@glimmer/constants';
-import { assert } from '@glimmer/debug-util';
+import { localAssert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { $fp, $pc, $ra, $sp } from '@glimmer/vm';
 
+import type { DebugState } from '../opcodes';
 import type { VM } from './append';
 
 import { APPEND_OPCODES } from '../opcodes';
@@ -46,8 +47,8 @@ export interface VmStack {
 }
 
 export interface Externs {
-  debugBefore(opcode: RuntimeOp): unknown;
-  debugAfter(state: unknown): void;
+  debugBefore: (opcode: RuntimeOp) => DebugState;
+  debugAfter: (state: DebugState) => void;
 }
 
 export class LowLevelVM {
@@ -74,7 +75,7 @@ export class LowLevelVM {
   }
 
   setPc(pc: number): void {
-    assert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
+    localAssert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
     this.registers[$pc] = pc;
   }
 
@@ -111,7 +112,7 @@ export class LowLevelVM {
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: number) {
-    assert(handle < 0xffffffff, `Jumping to placeholder address`);
+    localAssert(handle < 0xffffffff, `Jumping to placeholder address`);
 
     this.registers[$ra] = this.registers[$pc];
     this.setPc(this.context.program.heap.getaddr(handle));
@@ -132,7 +133,7 @@ export class LowLevelVM {
 
     let pc = registers[$pc];
 
-    assert(typeof pc === 'number', 'pc is a number');
+    localAssert(typeof pc === 'number', 'pc is a number');
 
     if (pc === -1) {
       return null;
@@ -174,19 +175,19 @@ export class LowLevelVM {
   evaluateMachine(opcode: RuntimeOp, vm: VM) {
     switch (opcode.type) {
       case VM_PUSH_FRAME_OP:
-        return this.pushFrame();
+        return void this.pushFrame();
       case VM_POP_FRAME_OP:
-        return this.popFrame();
+        return void this.popFrame();
       case VM_INVOKE_STATIC_OP:
-        return this.call(opcode.op1);
+        return void this.call(opcode.op1);
       case VM_INVOKE_VIRTUAL_OP:
-        return vm.call(this.stack.pop());
+        return void vm.call(this.stack.pop());
       case VM_JUMP_OP:
-        return this.goto(opcode.op1);
+        return void this.goto(opcode.op1);
       case VM_RETURN_OP:
-        return vm.return();
+        return void vm.return();
       case VM_RETURN_TO_OP:
-        return this.returnTo(opcode.op1);
+        return void this.returnTo(opcode.op1);
     }
   }
 

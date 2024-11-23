@@ -5,7 +5,7 @@ import {
   jitSuite,
   RenderTest,
   test,
-} from '../..';
+} from '@glimmer-workspace/integration-tests';
 
 class DynamicHelpersResolutionModeTest extends RenderTest {
   static suiteName = 'dynamic helpers in resolution mode';

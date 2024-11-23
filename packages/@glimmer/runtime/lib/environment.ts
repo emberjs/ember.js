@@ -12,7 +12,7 @@ import type {
   Transaction,
   TransactionSymbol,
 } from '@glimmer/interfaces';
-import { assert, expect } from '@glimmer/debug-util';
+import { expect,localAssert } from '@glimmer/debug-util';
 import { ProgramImpl } from '@glimmer/program';
 import { track, updateTag } from '@glimmer/validator';
 
@@ -96,7 +96,7 @@ class TransactionImpl implements Transaction {
 export class EnvironmentImpl implements Environment {
   [TRANSACTION]: Nullable<TransactionImpl> = null;
 
-  protected declare appendOperations: GlimmerTreeConstruction;
+  declare protected appendOperations: GlimmerTreeConstruction;
   protected updateOperations?: GlimmerTreeChanges | undefined;
 
   // Delegate methods and values
@@ -136,7 +136,7 @@ export class EnvironmentImpl implements Environment {
   }
 
   begin() {
-    assert(
+    localAssert(
       !this[TRANSACTION],
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );

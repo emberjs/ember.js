@@ -31,7 +31,6 @@ export interface ProgramHeap {
   pushMachine(name: VmMachineOp, op1?: number, op2?: number, op3?: number): void;
   malloc(): number;
   finishMalloc(handle: number, scopeSize: number): void;
-  capture(offset?: number): SerializedHeap;
   offset: number;
 
   // for debugging

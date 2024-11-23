@@ -55,6 +55,7 @@ if (import.meta.env.DEV) {
     );
   });
   QUnit.test('should return debug name for class', (assert) => {
+    // eslint-disable-next-line @typescript-eslint/no-extraneous-class
     assert.deepEqual(debugToString(class Foo {}), 'Foo');
   });
   QUnit.test('should return debug name for ember-like object #1', (assert) => {

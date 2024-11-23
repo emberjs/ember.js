@@ -328,6 +328,7 @@ test('Helper', (assert) => {
           { nodeType: 'PathExpression', key: null },
         ]);
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         assert.notEqual((path.parent!.node as AST.SubExpression).params.indexOf(node), -1);
       }
     },
@@ -356,6 +357,7 @@ test('Modifier', (assert) => {
           ['ElementModifierStatement', 'ElementNode', 'Template']
         );
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         assert.strictEqual((path.parent!.node as AST.ElementModifierStatement).path, node);
       }
     },

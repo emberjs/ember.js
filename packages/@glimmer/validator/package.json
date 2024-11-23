@@ -9,10 +9,7 @@
     "directory": "packages/@glimmer/validator"
   },
   "type": "module",
-  "exports": {
-    "types": "./index.ts",
-    "development": "./index.ts"
-  },
+  "exports": "./index.ts",
   "publishConfig": {
     "access": "public",
     "exports": {
@@ -32,23 +29,20 @@
   ],
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
-    "test:lint": "eslint .",
+    "test:lint": "eslint . --quiet",
     "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "workspace:*",
-    "@glimmer/interfaces": "workspace:*",
-    "@glimmer/util": "workspace:*"
+    "@glimmer/interfaces": "workspace:*"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
-    "@glimmer/local-debug-flags": "workspace:*",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "eslint": "^9.18.0",
+    "publint": "^0.3.2",
+    "rollup": "^4.31.0-0",
     "typescript": "*"
   }
 }

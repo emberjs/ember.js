@@ -42,7 +42,10 @@ function assertHasBlockKeyword(type: string) {
 
 function translateHasBlockKeyword(type: string) {
   return (
-    { node, state: { scope } }: { node: ASTv2.CallExpression; state: NormalizationState },
+    {
+      node,
+      state: { scope },
+    }: { node: ASTv2.CallExpression | ASTv2.AppendContent; state: NormalizationState },
     target: SourceSlice
   ): Result<mir.HasBlock | mir.HasBlockParams> => {
     let block =

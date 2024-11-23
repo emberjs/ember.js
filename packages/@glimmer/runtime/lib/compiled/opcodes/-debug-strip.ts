@@ -94,7 +94,7 @@ export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface
 
 export const CheckScope: Checker<Scope> = wrap(() => CheckInstanceof(ScopeImpl));
 
-export const CheckComponentManager: Checker<InternalComponentManager<unknown>> = CheckInterface({
+export const CheckComponentManager: Checker<InternalComponentManager> = CheckInterface({
   getCapabilities: CheckFunction,
 });
 

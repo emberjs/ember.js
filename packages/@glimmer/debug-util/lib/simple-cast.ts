@@ -23,13 +23,14 @@ type BrowserTag = keyof BrowserTags;
 
 type NodeCheck<N extends Node> = (node: Node) => node is N;
 type SugaryNodeCheck<K extends BrowserTag = BrowserTag> = NodeCheck<BrowserTags[K]> | K | K[];
-type NodeForSugaryCheck<S extends SugaryNodeCheck<BrowserTag>> = S extends NodeCheck<infer N>
-  ? N
-  : S extends keyof BrowserTags
-    ? BrowserTags[S]
-    : S extends (keyof BrowserTags)[]
-      ? BrowserTags[S[number]]
-      : never;
+type NodeForSugaryCheck<S extends SugaryNodeCheck> =
+  S extends NodeCheck<infer N>
+    ? N
+    : S extends keyof BrowserTags
+      ? BrowserTags[S]
+      : S extends (keyof BrowserTags)[]
+        ? BrowserTags[S[number]]
+        : never;
 
 type BrowserNode = Element | Document | DocumentFragment | Text | Comment | Node;
 
@@ -92,6 +93,7 @@ export function castToBrowser<S extends SugaryNodeCheck>(
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   return checkBrowserNode<S>(node, sugaryCheck!);
 }
 
@@ -126,14 +128,14 @@ export function checkBrowserNode<S extends SugaryNodeCheck>(
     } else if (Array.isArray(check)) {
       isMatch = check.some((c) => stringCheckNode(node, c));
     } else {
-      throw unreachable();
+      unreachable();
     }
   }
 
   if (isMatch && node instanceof Node) {
     return node as NodeForSugaryCheck<S>;
   } else {
-    throw checkError(`SimpleElement(${node?.constructor?.name ?? 'null'})`, check);
+    throw checkError(`SimpleElement(${node?.constructor.name ?? 'null'})`, check);
   }
 }
 

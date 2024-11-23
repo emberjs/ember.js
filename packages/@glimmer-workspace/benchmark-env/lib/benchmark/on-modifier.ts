@@ -17,7 +17,8 @@ interface OnModifierState {
   listener: EventListener | null;
 }
 
-class OnModifierManager implements InternalModifierManager<OnModifierState, object> {
+class OnModifierManager implements InternalModifierManager<OnModifierState> {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   create(_owner: Owner, element: SimpleElement, _: {}, args: CapturedArguments) {
     return {
       element,
@@ -49,6 +50,7 @@ class OnModifierManager implements InternalModifierManager<OnModifierState, obje
     const name = valueForRef(state.nameRef);
     const listener = valueForRef(state.listenerRef);
     if (name !== state.name || listener !== state.listener) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       element.removeEventListener(state.name!, state.listener!);
       element.addEventListener(name, listener);
       state.name = name;
@@ -65,6 +67,6 @@ class OnModifierManager implements InternalModifierManager<OnModifierState, obje
   }
 }
 
-const onModifier: InternalModifierManager<unknown, object> = new OnModifierManager();
+const onModifier: InternalModifierManager = new OnModifierManager();
 
 export default onModifier;

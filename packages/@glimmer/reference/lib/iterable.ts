@@ -106,8 +106,7 @@ class WeakMapWithPrimitives<T> {
 
 const IDENTITIES = new WeakMapWithPrimitives<object[]>();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function identityForNthOccurence(value: any, count: number) {
+function identityForNthOccurence(value: unknown, count: number) {
   let identities = IDENTITIES.get(value);
 
   if (identities === undefined) {
@@ -207,7 +206,7 @@ class IteratorWrapper implements OpaqueIterator {
   }
 
   next() {
-    let nextValue = this.inner.next() as OpaqueIterationItem;
+    let nextValue = this.inner.next() as OpaqueIterationItem | null;
 
     if (nextValue !== null) {
       nextValue.key = this.keyFor(nextValue.value, nextValue.memo);

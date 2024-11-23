@@ -43,20 +43,20 @@ export function isScopeReference(s: ScopeSlot): s is Reference {
 
 export interface ScopeOptions {
   /** @default {UNDEFINED_REFERENCE} */
-  self: Reference<unknown>;
+  self: Reference;
   /** @default {0} */
   size?: number | undefined;
 }
 
 export class ScopeImpl implements Scope {
   static root(owner: Owner, { self, size = 0 }: ScopeOptions): Scope {
-    let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
+    let refs = new Array<Reference>(size + 1).fill(UNDEFINED_REFERENCE);
 
     return new ScopeImpl(owner, refs, null).init({ self });
   }
 
   static sized(owner: Owner, size = 0): Scope {
-    let refs: Reference<unknown>[] = new Array(size + 1).fill(UNDEFINED_REFERENCE);
+    let refs = new Array<Reference>(size + 1).fill(UNDEFINED_REFERENCE);
 
     return new ScopeImpl(owner, refs, null);
   }
@@ -78,7 +78,7 @@ export class ScopeImpl implements Scope {
     this.callerScope = callerScope;
   }
 
-  init({ self }: { self: Reference<unknown> }): this {
+  init({ self }: { self: Reference }): this {
     this.slots[0] = self;
     return this;
   }
@@ -90,12 +90,12 @@ export class ScopeImpl implements Scope {
     return this.slots.slice();
   }
 
-  getSelf(): Reference<unknown> {
-    return this.get<Reference<unknown>>(0);
+  getSelf(): Reference {
+    return this.get<Reference>(0);
   }
 
-  getSymbol(symbol: number): Reference<unknown> {
-    return this.get<Reference<unknown>>(symbol);
+  getSymbol(symbol: number): Reference {
+    return this.get<Reference>(symbol);
   }
 
   getBlock(symbol: number): Nullable<ScopeBlock> {
@@ -107,11 +107,11 @@ export class ScopeImpl implements Scope {
     this.set(symbol, value);
   }
 
-  bindSelf(self: Reference<unknown>) {
-    this.set<Reference<unknown>>(0, self);
+  bindSelf(self: Reference) {
+    this.set<Reference>(0, self);
   }
 
-  bindSymbol(symbol: number, value: Reference<unknown>) {
+  bindSymbol(symbol: number, value: Reference) {
     this.set(symbol, value);
   }
 

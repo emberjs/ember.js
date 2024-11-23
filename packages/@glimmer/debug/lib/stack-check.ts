@@ -1,4 +1,5 @@
 import type {
+  AnyFn,
   BlockSymbolTable,
   Dict,
   Maybe,
@@ -51,7 +52,7 @@ export function wrap<T>(checker: () => Checker<T>): Checker<T> {
   return new Wrapped();
 }
 
-export interface Constructor<T> extends Function {
+export interface Constructor<T> extends AnyFn {
   prototype: T;
 }
 
@@ -74,9 +75,9 @@ class PrimitiveChecker implements Checker<Primitive> {
 
   validate(value: unknown): value is Primitive {
     return (
-      typeof value !== 'string' ||
-      typeof value === 'number' ||
       typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
       value === undefined ||
       value === null
     );
@@ -198,8 +199,7 @@ class PropertyChecker<T> implements Checker<T> {
   constructor(private checkers: Dict<Checker<unknown>>) {}
 
   validate(obj: unknown): obj is T {
-    if (typeof obj !== 'object') return false;
-    if (obj === null || obj === undefined) return false;
+    if (obj === null || typeof obj !== 'object') return false;
 
     return Object.entries(this.checkers).every(([k, checker]) =>
       k in obj ? checker.validate((obj as Dict)[k]) : false
@@ -292,8 +292,9 @@ class SafeStringChecker implements Checker<SafeString> {
 
   validate(value: unknown): value is SafeString {
     return (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function'
+      typeof value === 'object' &&
+      value !== null &&
+      typeof (value as { toHTML?: unknown }).toHTML === 'function'
     );
   }
 
@@ -302,12 +303,11 @@ class SafeStringChecker implements Checker<SafeString> {
   }
 }
 
-export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> {
-  if (!LOCAL_DEBUG) {
-    return new NoopChecker();
+export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T>;
+export function CheckInstanceof<T>(Class: Constructor<T>): Checker<T> | undefined {
+  if (LOCAL_DEBUG) {
+    return new InstanceofChecker<T>(Class);
   }
-
-  return new InstanceofChecker<T>(Class);
 }
 
 export const CheckRegister: Checker<Register> = new (class {
@@ -370,51 +370,52 @@ export const CheckMachineRegister: Checker<MachineRegister> = new (class {
   }
 })();
 
-export function CheckNullable<T>(checker: Checker<T>): Checker<Nullable<T>> {
-  if (!LOCAL_DEBUG) {
-    return new NoopChecker();
+export function CheckNullable<T>(checker: Checker<T>): Checker<Nullable<T>>;
+export function CheckNullable<T>(checker: Checker<T>): Checker<Nullable<T>> | undefined {
+  if (LOCAL_DEBUG) {
+    return new OptionChecker(checker, null);
   }
-
-  return new OptionChecker(checker, null);
 }
 
-export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
-  if (!LOCAL_DEBUG) {
-    return new NoopChecker();
+export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>>;
+export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> | undefined {
+  if (LOCAL_DEBUG) {
+    return new MaybeChecker(checker);
   }
-
-  return new MaybeChecker(checker);
 }
 
 export function CheckInterface<
   I extends { [P in keyof O]: O[P]['type'] },
   O extends Dict<Checker<unknown>>,
->(obj: O): Checker<I> {
-  if (!LOCAL_DEBUG) {
-    return new NoopChecker();
+>(obj: O): Checker<I>;
+export function CheckInterface<
+  I extends { [P in keyof O]: O[P]['type'] },
+  O extends Dict<Checker<unknown>>,
+>(obj: O): Checker<I> | undefined {
+  if (LOCAL_DEBUG) {
+    return new PropertyChecker(obj);
   }
-
-  return new PropertyChecker(obj);
 }
 
-export function CheckArray<T>(obj: Checker<T>): Checker<T[]> {
-  if (!LOCAL_DEBUG) {
-    return new NoopChecker();
+export function CheckArray<T>(obj: Checker<T>): Checker<T[]>;
+export function CheckArray<T>(obj: Checker<T>): Checker<T[]> | undefined {
+  if (LOCAL_DEBUG) {
+    return new ArrayChecker(obj);
   }
-  return new ArrayChecker(obj);
 }
 
-export function CheckDict<T>(obj: Checker<T>): Checker<Dict<T>> {
-  if (!LOCAL_DEBUG) {
-    return new NoopChecker();
+export function CheckDict<T>(obj: Checker<T>): Checker<Dict<T>>;
+export function CheckDict<T>(obj: Checker<T>): Checker<Dict<T>> | undefined {
+  if (LOCAL_DEBUG) {
+    return new DictChecker(obj);
   }
-  return new DictChecker(obj);
 }
 
 function defaultMessage(value: unknown, expected: string): string {
   return `Got ${value}, expected:\n${expected}`;
 }
 
+/*@__PURE__*/
 export function check<T>(
   value: unknown,
   checker: Checker<T>,
@@ -424,7 +425,7 @@ export function check<T, U extends T>(value: T, checker: (value: T) => asserts v
 export function check<T>(
   value: unknown,
   checker: Checker<T> | ((value: unknown) => void),
-  message: (value: unknown, expected: string) => string = defaultMessage
+  message?: (value: unknown, expected: string) => string
 ): T {
   if (!LOCAL_DEBUG) {
     return value as T;
@@ -437,7 +438,7 @@ export function check<T>(
   if (checker.validate(value)) {
     return value;
   } else {
-    throw new Error(message(value, checker.expected()));
+    throw new Error((message ?? defaultMessage)(value, checker.expected()));
   }
 }
 
@@ -464,9 +465,9 @@ export function expectStackChange(stack: { sp: number }, expected: number, name:
 export const CheckPrimitive: Checker<Primitive> = !LOCAL_DEBUG
   ? new NoopChecker()
   : new PrimitiveChecker();
-export const CheckFunction: Checker<Function> = !LOCAL_DEBUG
+export const CheckFunction: Checker<AnyFn> = !LOCAL_DEBUG
   ? new NoopChecker()
-  : new TypeofChecker<Function>('function');
+  : new TypeofChecker<AnyFn>('function');
 export const CheckNumber: Checker<number> = !LOCAL_DEBUG
   ? new NoopChecker()
   : new TypeofChecker<number>('number');

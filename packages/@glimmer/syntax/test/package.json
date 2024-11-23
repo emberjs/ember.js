@@ -2,11 +2,11 @@
   "private": true,
   "name": "@glimmer-test/syntax",
   "dependencies": {
-    "@glimmer/syntax": "workspace:*",
     "@glimmer-workspace/integration-tests": "workspace:*",
+    "@glimmer-workspace/test-utils": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
-    "@glimmer/util": "workspace:*",
-    "@glimmer-workspace/test-utils": "workspace:*"
+    "@glimmer/syntax": "workspace:*",
+    "@glimmer/util": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*"

@@ -1,5 +1,5 @@
 import type { Nullable } from '@glimmer/interfaces';
-import { asPresentArray, assert, expect, getLast, unwrap } from '@glimmer/debug-util';
+import { asPresentArray, expect, getLast, localAssert, unwrap } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 import {
   EntityParser,
@@ -133,31 +133,31 @@ export abstract class Parser {
 
   get currentTag(): ParserNodeBuilder<StartTag> | ParserNodeBuilder<EndTag> {
     let node = this.currentNode;
-    assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
+    localAssert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
     return node;
   }
 
   get currentStartTag(): ParserNodeBuilder<StartTag> {
     let node = this.currentNode;
-    assert(node && node.type === 'StartTag', 'expected start tag');
+    localAssert(node && node.type === 'StartTag', 'expected start tag');
     return node;
   }
 
   get currentEndTag(): ParserNodeBuilder<EndTag> {
     let node = this.currentNode;
-    assert(node && node.type === 'EndTag', 'expected end tag');
+    localAssert(node && node.type === 'EndTag', 'expected end tag');
     return node;
   }
 
   get currentComment(): ParserNodeBuilder<ASTv1.CommentStatement> {
     let node = this.currentNode;
-    assert(node && node.type === 'CommentStatement', 'expected a comment');
+    localAssert(node && node.type === 'CommentStatement', 'expected a comment');
     return node;
   }
 
   get currentData(): ParserNodeBuilder<ASTv1.TextNode> {
     let node = this.currentNode;
-    assert(node && node.type === 'TextNode', 'expected a text node');
+    localAssert(node && node.type === 'TextNode', 'expected a text node');
     return node;
   }
 

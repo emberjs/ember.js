@@ -39,7 +39,7 @@ export interface Benchmark {
    */
   render(
     entry: string,
-    args: Dict<unknown>,
+    args: Dict,
     element: SimpleElement | HTMLElement,
     isInteractive?: boolean
   ): Promise<UpdateBenchmark>;

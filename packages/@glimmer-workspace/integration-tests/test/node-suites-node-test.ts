@@ -9,7 +9,7 @@ import {
   ServerSideComponentSuite,
   ServerSideSuite,
   suite,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
 
 nodeSuite(ServerSideSuite);
 nodeComponentSuite(ServerSideComponentSuite);

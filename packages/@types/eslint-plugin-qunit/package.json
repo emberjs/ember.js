@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "name": "@types/eslint-plugin-qunit",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@types/eslint": "^9.6.1"
+  }
+}

@@ -116,7 +116,7 @@ export function InvokeComponent(
   let elementBlock = _elementBlock
     ? ([_elementBlock, []] as WireFormat.SerializedInlineBlock)
     : null;
-  let blocks = Array.isArray(_blocks) || _blocks === null ? namedBlocks(_blocks) : _blocks;
+  let blocks = namedBlocks(_blocks);
 
   if (compilable) {
     op(VM_PUSH_COMPONENT_DEFINITION_OP, handle);
@@ -154,7 +154,7 @@ export function InvokeDynamicComponent(
   let elementBlock = _elementBlock
     ? ([_elementBlock, []] as WireFormat.SerializedInlineBlock)
     : null;
-  let blocks = Array.isArray(_blocks) || _blocks === null ? namedBlocks(_blocks) : _blocks;
+  let blocks = namedBlocks(_blocks);
 
   Replayable(
     op,

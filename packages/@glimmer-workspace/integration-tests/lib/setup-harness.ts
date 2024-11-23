@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import type { Expand } from '@glimmer/interfaces';
+import type { Runner } from 'js-reporters';
 import { debug } from '@glimmer/validator';
 import { autoRegister } from 'js-reporters';
 import { default as QUnit } from 'qunit';
@@ -50,9 +51,11 @@ export async function setupQunit() {
 
   testing.begin(() => {
     if (testing.config.ci) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const tap = qunitLib.reporters.tap;
+      // @ts-expect-error add reporters.tap to the types
+
+      const tap = qunitLib.reporters.tap as {
+        init: (runner: Runner, options: { log: (message: string) => void }) => void;
+      };
       tap.init(runner, { log: console.info });
     }
   });
@@ -138,18 +141,7 @@ function hasFlag(flag: string): boolean {
 
 function hasSpecificFlag(flag: string): boolean {
   let location = typeof window !== 'undefined' && window.location;
-  return location && new RegExp(`[?&]${flag}`).test(location.search);
-}
-
-// eslint-disable-next-line unused-imports/no-unused-vars
-function getSpecificFlag(flag: string): string | undefined {
-  let location = typeof window !== 'undefined' && window.location;
-  if (!location) {
-    return undefined;
-  }
-
-  const matches = new RegExp(`[?&]${flag}=([^&]*)`).exec(location.search);
-  return matches ? matches[1] : undefined;
+  return location && new RegExp(`[?&]${flag}`, 'u').test(location.search);
 }
 
 interface UrlConfig {

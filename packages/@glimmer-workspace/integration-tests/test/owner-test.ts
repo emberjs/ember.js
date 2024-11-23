@@ -6,11 +6,9 @@ import type {
   WithSubOwner,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
+import type { RenderDelegateOptions } from '@glimmer-workspace/integration-tests';
 import { setInternalComponentManager } from '@glimmer/manager';
 import { NULL_REFERENCE } from '@glimmer/reference';
-
-import type { RenderDelegateOptions } from '..';
-
 import {
   createTemplate,
   defineComponent,
@@ -21,7 +19,7 @@ import {
   suite,
   test,
   TestJitRuntimeResolver,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
 
 class OwnerJitRuntimeResolver extends TestJitRuntimeResolver {
   override lookupComponent(name: string, owner: () => void): ResolvedComponentDefinition | null {
@@ -56,6 +54,7 @@ const CAPABILITIES = {
   hasSubOwner: true,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class MountComponent {
   static owner: object;
 }

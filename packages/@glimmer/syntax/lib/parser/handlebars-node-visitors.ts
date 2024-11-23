@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Nullable, Recast } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
-import { assert, getLast, isPresentArray, unwrap } from '@glimmer/debug-util';
+import { getLast, isPresentArray, localAssert, unwrap } from '@glimmer/debug-util';
 
 import type { ParserNodeBuilder, StartTag } from '../parser';
+import type * as src from '../source/api';
 import type { SourceOffset, SourceSpan } from '../source/span';
 import type * as ASTv1 from '../v1/api';
 import type * as HBS from '../v1/handlebars-ast';
@@ -36,7 +37,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   abstract override beginAttributeValue(quoted: boolean): void;
   abstract override finishAttributeValue(): void;
 
-  parse(program: HBS.Program, blockParams: string[]): ASTv1.Template {
+  parse(program: HBS.UpstreamProgram, blockParams: string[]): ASTv1.Template {
+    localAssert(program.loc, '[BUG] Program in parser unexpectedly did not have loc');
+
     let node = b.template({
       body: [],
       blockParams,
@@ -58,9 +61,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     // The abstract signature doesn't have the blockParams argument, but in
     // practice we can only come from this.BlockStatement() which adds the
     // extra argument for us
-    assert(
+    localAssert(
       Array.isArray(blockParams),
       '[BUG] Program in parser unexpectedly called without block params'
+    );
+
+    localAssert(
+      program.loc,
+      '[BUG] Program in parser unexpectedly did not have loc. This should have been fixed in BlockStatement'
     );
 
     let node = b.blockItself({
@@ -73,7 +81,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return this.parseProgram(node, program);
   }
 
-  private parseProgram<T extends ASTv1.ParentNode>(node: T, program: HBS.Program): T {
+  private parseProgram<T extends ASTv1.ParentNode>(node: T, program: HBS.UpstreamProgram): T {
     if (program.body.length === 0) {
       return node;
     }
@@ -97,17 +105,18 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       } else {
         // If the stack is not balanced, then it is likely our own bug, because
         // any unclosed Handlebars blocks should already been caught by now
-        assert(poppedNode !== undefined, '[BUG] empty parser elementStack');
-        assert(false, `[BUG] mismatched parser elementStack node: ${node.type}`);
+        localAssert(poppedNode !== undefined, '[BUG] empty parser elementStack');
+        localAssert(false, `[BUG] mismatched parser elementStack node: ${node.type}`);
       }
     }
 
     return node;
   }
 
-  BlockStatement(block: HBS.BlockStatement): ASTv1.BlockStatement | void {
+  BlockStatement(block: HBS.UpstreamBlockStatement): ASTv1.BlockStatement | void {
     if (this.tokenizer.state === 'comment') {
-      this.appendToCommentData(this.sourceForNode(block));
+      localAssert(block.loc, '[BUG] BlockStatement in parser unexpectedly did not have loc');
+      this.appendToCommentData(this.sourceForNode(block as HBS.Node));
       return;
     }
 
@@ -123,6 +132,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     // Backfill block params loc for the default block
     let blockParams: ASTv1.VarHead[] = [];
+    let repairedBlock: HBS.BlockStatement;
 
     if (block.program.blockParams?.length) {
       // Start from right after the hash
@@ -138,6 +148,8 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         // this can only happen if the block statement is empty anyway
         span = span.withEnd(loc.getEnd());
       }
+
+      repairedBlock = repairBlock(this.source, block, span);
 
       // Now we have a span for something like this:
       //
@@ -177,19 +189,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
         blockParams.push(b.var({ name, loc }));
       }
+    } else {
+      repairedBlock = repairBlock(this.source, block, loc);
     }
 
-    // These are bugs in Handlebars upstream
-    if (!block.program.loc) {
-      block.program.loc = NON_EXISTENT_LOCATION;
-    }
-
-    if (block.inverse && !block.inverse.loc) {
-      block.inverse.loc = NON_EXISTENT_LOCATION;
-    }
-
-    const program = this.Program(block.program, blockParams);
-    const inverse = block.inverse ? this.Program(block.inverse, []) : null;
+    const program = this.Program(repairedBlock.program, blockParams);
+    const inverse = repairedBlock.inverse ? this.Program(repairedBlock.inverse, []) : null;
 
     const node = b.block({
       path,
@@ -595,7 +600,7 @@ function acceptCallNodes(
       | HBS.NumberLiteral
       | HBS.BooleanLiteral;
     params: HBS.Expression[];
-    hash: HBS.Hash;
+    hash?: HBS.Hash;
   }
 ): {
   path: ASTv1.PathExpression | ASTv1.SubExpression;
@@ -639,9 +644,7 @@ function acceptCallNodes(
     }
   }
 
-  const params = node.params
-    ? node.params.map((e) => compiler.acceptNode<HBS.Expression['type']>(e))
-    : [];
+  const params = node.params.map((e) => compiler.acceptNode<HBS.Expression['type']>(e));
 
   // if there is no hash, position it as a collapsed node immediately after the last param (or the
   // path, if there are also no params)
@@ -672,4 +675,34 @@ function addElementModifier(
 
   const modifier = b.elementModifier({ path, params, hash, loc });
   element.modifiers.push(modifier);
+}
+
+function repairBlock(
+  source: src.Source,
+  block: HBS.UpstreamBlockStatement,
+  fallbackStart: SourceSpan
+): HBS.BlockStatement {
+  // Extend till the beginning of the block
+  if (!block.program.loc) {
+    const start = block.program.body.at(0);
+    const end = block.program.body.at(-1);
+
+    if (start && end) {
+      block.program.loc = {
+        ...start.loc,
+        end: end.loc.end,
+      };
+    } else {
+      const loc = source.spanFor(block.loc);
+      block.program.loc = fallbackStart.withEnd(loc.getEnd());
+    }
+  }
+
+  let endProgram = source.spanFor(block.program.loc).getEnd();
+
+  if (block.inverse && !block.inverse.loc) {
+    block.inverse.loc = endProgram.collapsed();
+  }
+
+  return block as HBS.BlockStatement;
 }

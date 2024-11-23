@@ -10,7 +10,7 @@
     "index.d.ts"
   ],
   "scripts": {
-    "test:lint": "eslint .",
+    "test:lint": "eslint . --quiet",
     "test:publint": "publint",
     "test:types": "tsc --noEmit"
   },
@@ -18,10 +18,8 @@
     "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:*",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "eslint": "^9.18.0",
+    "publint": "^0.3.2",
     "typescript": "*"
   }
 }

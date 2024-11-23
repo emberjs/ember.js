@@ -12,10 +12,10 @@
   "private": true,
   "exports": "./index.ts",
   "scripts": {
-    "test:lint": "eslint .",
+    "test:lint": "eslint . --quiet",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "devDependencies": {
-    "eslint": "^8.52.0"
+    "eslint": "^9.18.0"
   }
 }

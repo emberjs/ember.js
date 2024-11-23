@@ -9,14 +9,14 @@ export interface ComponentTestMeta {
 
 export function test(meta: ComponentTestMeta): MethodDecorator;
 export function test<T>(
-  _target: Object | ComponentTestMeta,
+  _target: object | ComponentTestMeta,
   _name?: string,
   descriptor?: TypedPropertyDescriptor<T>
 ): TypedPropertyDescriptor<T> | void;
 export function test(...args: any[]) {
   if (args.length === 1) {
     let meta: ComponentTestMeta = args[0];
-    return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
+    return (_target: object, _name: string, descriptor: PropertyDescriptor) => {
       let testFunction = descriptor.value;
       keys(meta).forEach((key) => (testFunction[key] = meta[key]));
       setTestingDescriptor(descriptor);

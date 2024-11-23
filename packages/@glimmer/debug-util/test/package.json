@@ -2,8 +2,8 @@
   "private": true,
   "name": "@glimmer-test/debug-util",
   "dependencies": {
-    "@glimmer/util": "workspace:*",
-    "@glimmer/env": "0.1.7"
+    "@glimmer/env": "0.1.7",
+    "@glimmer/util": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",

@@ -28,5 +28,6 @@ function castToString(value: string | object) {
     return '';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
   return String(value);
 }

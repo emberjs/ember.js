@@ -13,7 +13,7 @@ import { registerResult } from './create-env-delegate';
 import { measureRender } from './util';
 
 export default async function renderBenchmark(
-  artifacts: RuntimeArtifacts,
+  _artifacts: RuntimeArtifacts,
   context: EvaluationContext,
   component: ResolvedComponentDefinition,
   args: Dict,

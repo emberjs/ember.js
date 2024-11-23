@@ -41,7 +41,7 @@ import {
   CheckRegister,
   CheckSyscallRegister,
 } from '@glimmer/debug';
-import { assert, expect, unwrap } from '@glimmer/debug-util';
+import { expect, localAssert, unwrap } from '@glimmer/debug-util';
 import { toBool } from '@glimmer/global-context';
 import {
   createComputeRef,
@@ -70,7 +70,6 @@ import type { VM } from '../../vm/append';
 import { APPEND_OPCODES } from '../../opcodes';
 import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
-import { stackAssert } from './assert';
 
 APPEND_OPCODES.add(VM_CHILD_SCOPE_OP, (vm) => vm.pushChildScope());
 
@@ -179,15 +178,10 @@ APPEND_OPCODES.add(VM_INVOKE_YIELD_OP, (vm) => {
   let scope = check(stack.pop(), CheckNullable(CheckScope));
   let table = check(stack.pop(), CheckNullable(CheckBlockSymbolTable));
 
-  assert(
-    table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
-    stackAssert('Nullable<BlockSymbolTable>', table)
-  );
-
   let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
   if (table === null || handle === null) {
-    assert(
+    localAssert(
       handle === null && table === null,
       `Expected both handle and table to be null if either is null`
     );
@@ -225,11 +219,11 @@ APPEND_OPCODES.add(VM_JUMP_IF_OP, (vm, { op1: target }) => {
   let value = Boolean(valueForRef(reference));
 
   if (isConstRef(reference)) {
-    if (value === true) {
+    if (value) {
       vm.lowlevel.goto(target);
     }
   } else {
-    if (value === true) {
+    if (value) {
       vm.lowlevel.goto(target);
     }
 
@@ -242,11 +236,11 @@ APPEND_OPCODES.add(VM_JUMP_UNLESS_OP, (vm, { op1: target }) => {
   let value = Boolean(valueForRef(reference));
 
   if (isConstRef(reference)) {
-    if (value === false) {
+    if (!value) {
       vm.lowlevel.goto(target);
     }
   } else {
-    if (value === false) {
+    if (!value) {
       vm.lowlevel.goto(target);
     }
 
@@ -265,7 +259,7 @@ APPEND_OPCODES.add(VM_JUMP_EQ_OP, (vm, { op1: target, op2: comparison }) => {
 APPEND_OPCODES.add(VM_ASSERT_SAME_OP, (vm) => {
   let reference = check(vm.stack.peek(), CheckReference);
 
-  if (isConstRef(reference) === false) {
+  if (!isConstRef(reference)) {
     vm.updateWith(new Assert(reference));
   }
 });

@@ -1,30 +1,32 @@
 {
   "name": "@glimmer-workspace/eslint-plugin",
   "private": true,
-  "type": "commonjs",
-  "main": "lib/index.cjs",
+  "type": "module",
+  "exports": "./index.js",
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-import-resolver-typescript": "^3.6.0",
-    "eslint-plugin-deprecation": "^2.0.0",
-    "eslint-plugin-import": "^2.28.0",
-    "eslint-plugin-n": "^16.3.1",
-    "eslint-plugin-qunit": "^8.0.0",
-    "eslint-plugin-regexp": "^2.1.1",
-    "eslint-plugin-simple-import-sort": "^10.0.0",
-    "eslint-plugin-unused-imports": "^3.0.0",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@glimmer-workspace/repo-metadata": "workspace:*",
+    "@pnpm/workspace.find-packages": "^1000.0.5",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint-config-prettier": "10.0.1",
+    "eslint-plugin-import-x": "^4.6.1",
+    "eslint-plugin-jsonc": "^2.18.2",
+    "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-qunit": "^8.1.2",
+    "eslint-plugin-regexp": "^2.7.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
     "eslint-utils": "^3.0.0",
-    "ignore": "^5.2.4"
+    "typescript-eslint": "^8.20.0"
   },
   "peerDependencies": {
-    "eslint": "^8.47.0"
+    "eslint": ">=9.18.0"
   },
   "devDependencies": {
-    "@types/eslint": "^8.44.7",
+    "@types/eslint": "9.6.1",
     "@types/eslint-utils": "^3.0.5",
-    "@types/node": "^20.9.4",
-    "eslint": "^8.47.0"
+    "@types/node": "22.10.2",
+    "eslint": "^9.18.0"
   }
 }

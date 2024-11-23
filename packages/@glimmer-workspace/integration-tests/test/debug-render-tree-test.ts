@@ -9,13 +9,11 @@ import type {
   SimpleNode,
 } from '@glimmer/interfaces';
 import type { TemplateOnlyComponent } from '@glimmer/runtime';
+import type { EmberishCurlyComponent } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { modifierCapabilities, setComponentTemplate, setModifierManager } from '@glimmer/manager';
 import { EMPTY_ARGS, templateOnlyComponent, TemplateOnlyComponentManager } from '@glimmer/runtime';
 import { assign } from '@glimmer/util';
-
-import type { EmberishCurlyComponent } from '..';
-
 import {
   BaseEnv,
   createTemplate,
@@ -28,7 +26,7 @@ import {
   test,
   tracked,
   trackedObj,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
@@ -56,7 +54,7 @@ class DebugRenderTreeDelegate extends JitRenderDelegate {
   registerCustomComponent(
     name: string,
     template: string,
-    Manager: { new (): InternalComponentManager<unknown> }
+    Manager: { new (): InternalComponentManager }
   ) {
     const ComponentClass = templateOnlyComponent();
 
@@ -222,7 +220,7 @@ class DebugRenderTreeTest extends RenderTest {
 
   @test 'emberish curly components'() {
     this.registerComponent('Curly', 'HelloWorld', 'Hello World');
-    let error: Error | null = null;
+    let error = null as Error | null;
     class State {
       @tracked doFail = false;
       get getterWithError() {
@@ -393,7 +391,7 @@ class DebugRenderTreeTest extends RenderTest {
             type: 'keyword',
             name: 'in-element',
             args: { positional: [this.element.firstChild], named: {} },
-            instance: (instance: GlimmerishComponent) => instance === null,
+            instance: (instance: GlimmerishComponent | null) => instance === null,
             template: null,
             bounds: this.elementBounds(this.element.firstChild! as unknown as SimpleElement),
             children: [
@@ -426,6 +424,7 @@ class DebugRenderTreeTest extends RenderTest {
 
     this.registerModifier('did-insert', DidInsertModifier);
 
+    // eslint-disable-next-line @typescript-eslint/no-extraneous-class
     class MyCustomModifier {}
 
     setModifierManager(

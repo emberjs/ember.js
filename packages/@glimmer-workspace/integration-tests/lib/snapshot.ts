@@ -151,7 +151,7 @@ export function normalizeSnapshot(
   const normalizedOld: IndividualSnapshot[] = [];
   const normalizedNew: IndividualSnapshot[] = [];
 
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     const nextOld = oldIterator.peek();
     const nextNew = newIterator.peek();

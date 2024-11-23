@@ -148,7 +148,7 @@ export function normalizeStatement(statement: BuilderStatement): NormalizedState
   } else if (typeof statement === 'string') {
     return normalizeAppendHead(normalizeDottedPath(statement), false);
   } else {
-    throw assertNever(statement);
+    assertNever(statement);
   }
 }
 
@@ -442,7 +442,7 @@ export function normalizeBuilderBlockStatement(
     }
 
     blocks = normalizeBlocks(statement[2]);
-  } else if (statement.length === 4) {
+  } else {
     params = normalizeParams(statement[1]);
     ({ hash, blockParams } = normalizeBlockHash(statement[2]));
     blocks = normalizeBlocks(statement[3]);
@@ -480,10 +480,11 @@ function normalizeBlockHash(hash: BuilderBlockHash): {
   return { hash: out, blockParams };
 }
 
-export function entries<D extends Dict>(
-  dict: D,
-  callback: <K extends keyof D>(key: K, value: D[K]) => void
-): void {
+type Entry<T> = {
+  [K in keyof T]: [K, T[K]];
+}[keyof T];
+
+export function entries<D extends Dict>(dict: D, callback: (...entry: Entry<D>) => void): void {
   Object.keys(dict).forEach((key) => {
     const value = dict[key];
     callback(key, value as D[keyof D]);
@@ -515,7 +516,7 @@ function normalizeAttr(attr: BuilderAttr): { expr: NormalizedAttr; trusted: bool
   }
 }
 
-function mapObject<T extends Dict<unknown>, Out>(
+function mapObject<T extends Dict, Out>(
   object: T,
   mapper: (value: DictValue<T>, key: keyof T) => Out
 ): { [P in keyof T]: Out } {
@@ -582,7 +583,10 @@ export type BuilderStatement =
   | TupleBuilderExpression
   | string;
 
-export type BuilderAttr = 'splat' | BuilderExpression;
+/**
+ * The special value 'splat' is used to indicate that the attribute is a splat
+ */
+export type BuilderAttr = BuilderExpression;
 
 export type TupleBuilderExpression =
   | [BUILDER_LITERAL, string | boolean | null | undefined]
@@ -730,10 +734,10 @@ export function normalizeAppendExpression(
         };
 
       default:
-        throw assertNever(expression);
+        assertNever(expression);
     }
   } else {
-    throw assertNever(expression);
+    assertNever(expression);
   }
 }
 
@@ -798,10 +802,10 @@ export function normalizeExpression(expression: BuilderExpression): NormalizedEx
         return { type: LITERAL_EXPR, value: expression };
 
       default:
-        throw assertNever(expression);
+        assertNever(expression);
     }
   } else {
-    throw assertNever(expression);
+    assertNever(expression);
   }
 }
 

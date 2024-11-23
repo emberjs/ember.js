@@ -2,8 +2,8 @@
   "private": true,
   "name": "@glimmer-test/destroyable",
   "dependencies": {
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
+    "@glimmer/global-context": "workspace:*",
     "@glimmer/util": "workspace:*"
   },
   "devDependencies": {

@@ -1,9 +1,12 @@
 {
   "private": true,
   "name": "@glimmer-test/manager",
+  "repo-meta": {
+    "strictness": "loose"
+  },
   "dependencies": {
-    "@glimmer/manager": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
+    "@glimmer/manager": "workspace:*",
     "@glimmer/reference": "workspace:*",
     "@glimmer/validator": "workspace:*",
     "@glimmer/vm": "workspace:*"

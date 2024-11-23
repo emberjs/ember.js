@@ -6,6 +6,7 @@ import type {
   SimpleNode,
   UpdatingOpcode,
 } from '@glimmer/interfaces';
+import { unreachable } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 
 import { clear } from '../bounds';
@@ -41,6 +42,6 @@ export default class RenderResultImpl implements RenderResult {
   }
 
   handleException() {
-    throw 'this should never happen';
+    unreachable(`this should never happen`);
   }
 }

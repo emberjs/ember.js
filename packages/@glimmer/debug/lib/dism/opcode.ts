@@ -29,7 +29,7 @@ export function describeOp(
   program: Program,
   meta: Nullable<BlockMetadata>
 ): Fragment {
-  const { name, params } = debugOp(program, op, meta)!;
+  const { name, params } = debugOp(program, op, meta);
 
   const block = new SerializeBlockContext(meta?.symbols ?? null);
 
@@ -70,6 +70,7 @@ export class SerializeBlockContext {
         } else if (this.#symbols?.lexical && this.#symbols.lexical.length >= value) {
           // @fixme something is wrong here -- remove the `&&` to get test failures
           return frag`${as.varReference(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
             this.#symbols.lexical[value - 1]!
           )}${frag`:${value}`.subtle()}`;
         } else {
@@ -89,10 +90,9 @@ export class SerializeBlockContext {
     }
   }
 
-  #stringify(value: number, type: 'constant'): string;
+  #stringify(value: number, type: 'constant' | 'variable' | 'pc'): string;
   #stringify(value: RegisterName, type: 'register'): string;
-  #stringify(value: number, type: 'variable' | 'pc'): string;
-  #stringify(value: DisassembledOperand['value'], type: 'stringify' | 'unknown'): IntoFragment;
+  #stringify(value: DisassembledOperand['value'], type: 'stringify' | 'unknown'): string;
   #stringify(
     value: unknown,
     type: 'stringify' | 'constant' | 'register' | 'variable' | 'pc' | 'unknown'
@@ -101,7 +101,7 @@ export class SerializeBlockContext {
       case 'stringify':
         return JSON.stringify(value);
       case 'constant':
-        return `${this.#stringify(value, 'unknown')}`;
+        return this.#stringify(value, 'unknown');
       case 'register':
         return value;
       case 'variable': {
@@ -125,7 +125,7 @@ export class SerializeBlockContext {
           case 'boolean':
             return JSON.stringify(value);
           case 'symbol':
-            return `${String(value)}`;
+            return String(value);
           case 'undefined':
             return 'undefined';
           case 'object': {
@@ -163,9 +163,10 @@ export class SerializeBlockContext {
 
 export function debugValue(item: unknown, options?: ValueRefOptions): Fragment {
   if (isIndexable(item)) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     const classified = getLocalDebugType(item)!;
 
-    if (classified) return describeValue(classified);
+    return describeValue(classified);
   }
 
   return unknownValue(item, options);

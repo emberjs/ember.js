@@ -41,7 +41,7 @@ import { internalHelper } from './internal-helper';
    @return {Object} Hash
    @public
  */
-export const hash = internalHelper(({ named }: CapturedArguments): Reference<Dict<unknown>> => {
+export const hash = internalHelper(({ named }: CapturedArguments): Reference<Dict> => {
   let ref = createComputeRef(
     () => {
       return reifyNamed(named);

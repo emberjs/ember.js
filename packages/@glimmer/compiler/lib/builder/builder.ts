@@ -38,7 +38,7 @@ import {
   SPLAT_HEAD,
   THIS_VAR,
 } from '@glimmer/constants';
-import { assert, exhausted, expect, isPresentArray } from '@glimmer/debug-util';
+import { exhausted, expect, isPresentArray, localAssert } from '@glimmer/debug-util';
 import { assertNever, dict, values } from '@glimmer/util';
 import { SexpOpcodes as Op, VariableResolutionContext } from '@glimmer/wire-format';
 
@@ -307,7 +307,7 @@ export function buildStatement(
       throw unimpl('dynamic component');
 
     default:
-      throw assertNever(normalized);
+      assertNever(normalized);
   }
 }
 
@@ -316,6 +316,7 @@ export function s(
   ...interpolated: unknown[]
 ): [BUILDER_LITERAL, string] {
   let result = arr.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
     (result, string, i) => result + `${string}${interpolated[i] ? String(interpolated[i]) : ''}`,
     ''
   );
@@ -325,6 +326,7 @@ export function s(
 
 export function c(arr: TemplateStringsArray, ...interpolated: unknown[]): BuilderComment {
   let result = arr.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
     (result, string, i) => result + `${string}${interpolated[i] ? String(interpolated[i]) : ''}`,
     ''
   );
@@ -381,16 +383,15 @@ function buildElement(
   if (attrs) {
     let { params, args } = buildElementParams(attrs, symbols);
     out.push(...params);
-    assert(args === null, `Can't pass args to a simple element`);
+    localAssert(args === null, `Can't pass args to a simple element`);
   }
   out.push([Op.FlushElement]);
 
   if (Array.isArray(block)) {
     block.forEach((s) => out.push(...buildStatement(s, symbols)));
-  } else if (block === null) {
-    // do nothing
   } else {
-    throw assertNever(block);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    localAssert(block === null, `The only remaining type of 'block' is 'null'`);
   }
 
   out.push([Op.CloseElement]);
@@ -680,7 +681,7 @@ export function buildVar(
   if (path === undefined || path.length === 0) {
     return [op, sym];
   } else {
-    assert(op !== Op.GetStrictKeyword, '[BUG] keyword with a path');
+    localAssert(op !== Op.GetStrictKeyword, '[BUG] keyword with a path');
     return [op, sym, path];
   }
 }

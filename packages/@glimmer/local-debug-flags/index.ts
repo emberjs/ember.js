@@ -58,7 +58,11 @@ if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
   console.log();
   console.groupEnd();
 
-  function log(flag: string, value: boolean | string | string[] | undefined, explanation: string) {
+  function log(
+    flag: string,
+    value: boolean | string | string[] | null | undefined,
+    explanation: string
+  ) {
     const { formatted, style } = format(value);
 
     const header = [
@@ -77,11 +81,11 @@ if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
     }
   }
 
-  function format(flagValue: boolean | string | string[] | undefined): {
+  function format(flagValue: boolean | string | string[] | null | undefined): {
     formatted: string;
     style: string;
   } {
-    if (flagValue === undefined || flagValue === false) {
+    if (flagValue === null || flagValue === undefined || flagValue === false) {
       return { formatted: 'off', style: 'grey' };
     } else if (flagValue === true) {
       return { formatted: 'on', style: 'green' };
@@ -108,8 +112,7 @@ if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
 // https://tiny.katz.zone/BNqN3F
 function hasFlag(flag: string): true | false {
   if (import.meta.env.VM_LOCAL_DEV) {
-    const url =
-      typeof window !== 'undefined' && window.location ? new URL(window.location.href) : null;
+    const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     return url?.searchParams.has(flag) ?? false;
   } else {
@@ -130,8 +133,7 @@ if (import.meta.env.VM_LOCAL_DEV) {
  */
 export function hasFlagWith(flag: string, value: string): boolean {
   if (import.meta.env.VM_LOCAL_DEV) {
-    const url =
-      typeof window !== 'undefined' && window.location ? new URL(window.location.href) : null;
+    const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     const pattern = new RegExp(`^${value.replace(/\*/gu, '.*')}$`, 'u');
 
@@ -143,8 +145,7 @@ export function hasFlagWith(flag: string, value: string): boolean {
 
 export function getFlagValues(flag: string): string[] {
   if (import.meta.env.VM_LOCAL_DEV) {
-    const url =
-      typeof window !== 'undefined' && window.location ? new URL(window.location.href) : null;
+    const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     const all = url?.searchParams.getAll(flag);
     return all?.filter((a) => a !== '') ?? [];
@@ -153,21 +154,22 @@ export function getFlagValues(flag: string): string[] {
   }
 }
 
-export function getFlag(flag: string): boolean | string | string[] | undefined {
+export function getFlag(flag: string): boolean | string | string[] | null {
   if (import.meta.env.VM_LOCAL_DEV) {
-    const url =
-      typeof window !== 'undefined' && window.location ? new URL(window.location.href) : null;
+    const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     const all = url?.searchParams.getAll(flag);
 
     if (all) {
       if (all.length === 1) {
-        return all[0] === '' ? true : all[0];
+        return all[0] === '' ? true : (all[0] ?? null);
       } else {
         return all;
       }
     }
+
+    return null;
   } else {
-    return undefined;
+    return null;
   }
 }

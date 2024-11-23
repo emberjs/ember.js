@@ -31,8 +31,32 @@ export interface NodeMap {
   NullLiteral: { input: NullLiteral; output: ASTv1.NullLiteral };
 }
 
+/**
+ * `loc` is sometimes missing in the upstream Handlebars parser. This is a bug that should be
+ * fixed. In addition, we should use the types from the upstream parser rather than our own types,
+ * and if they're not accurate, we should fix them upstream.
+ *
+ * @see {https://github.com/handlebars-lang/handlebars-parser/blob/master/types/ast.d.ts}
+ */
+export interface UpstreamProgram extends Omit<Program, 'loc'> {
+  loc?: SourceLocation;
+}
+
+export interface UpstreamBlockStatement extends Omit<BlockStatement, 'program' | 'inverse'> {
+  program: UpstreamProgram;
+  inverse?: UpstreamProgram;
+}
+
+export interface UpstreamNodeMap extends Omit<NodeMap, 'Program'> {
+  Program: { input: UpstreamProgram; output: ASTv1.Block };
+}
+
 export type NodeType = keyof NodeMap;
 export type Node<T extends NodeType = NodeType> = NodeMap[T]['input'];
+
+export type UpstreamNodeType = keyof UpstreamNodeMap;
+export type UpstreamNode<T extends UpstreamNodeType = UpstreamNodeType> =
+  UpstreamNodeMap[T]['input'];
 
 export type Output<T extends NodeType> = NodeMap[T]['output'];
 
@@ -85,7 +109,7 @@ export interface CommonBlock extends CommonNode {
   params: Expression[];
   hash: Hash;
   program: Program;
-  inverse: Program;
+  inverse?: Program;
   openStrip?: StripFlags;
   inverseStrip?: StripFlags;
   closeStrip?: StripFlags;

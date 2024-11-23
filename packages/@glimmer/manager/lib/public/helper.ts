@@ -10,6 +10,7 @@ import type {
   Owner,
 } from '@glimmer/interfaces';
 import { associateDestroyableChild } from '@glimmer/destroyable';
+import { debugAssert } from '@glimmer/global-context';
 import { createComputeRef, createConstRef, UNDEFINED_REFERENCE } from '@glimmer/reference';
 
 import type { ManagerFactory } from './index';
@@ -21,9 +22,12 @@ export function helperCapabilities<Version extends keyof HelperCapabilitiesVersi
   managerAPI: Version,
   options: Partial<HelperCapabilities> = {}
 ): HelperCapabilities {
-  if (import.meta.env.DEV && managerAPI !== '3.23') {
-    throw new Error('Invalid helper manager compatibility specified');
-  }
+  debugAssert(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+    managerAPI === '3.23',
+    () =>
+      `Invalid helper manager compatibility specified; you specified ${managerAPI}, but only '3.23' is supported.`
+  );
 
   if (
     import.meta.env.DEV &&
@@ -77,6 +81,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
       let { factory } = this;
       delegate = factory(owner);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       if (import.meta.env.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
@@ -117,7 +122,7 @@ export class CustomHelperManager<O extends Owner = Owner> implements InternalHel
 
       if (hasValue(manager)) {
         let cache = createComputeRef(
-          () => (manager as HelperManagerWithValue<unknown>).getValue(bucket),
+          () => manager.getValue(bucket),
           null,
           import.meta.env.DEV && manager.getDebugName && manager.getDebugName(definition)
         );

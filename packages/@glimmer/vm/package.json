@@ -8,44 +8,33 @@
   "publishConfig": {
     "access": "public",
     "exports": {
-      ".": {
-        "require": {
-          "development": {
-            "types": "./dist/dev/index.d.cts",
-            "default": "./dist/dev/index.cjs"
-          }
-        },
-        "default": {
-          "development": {
-            "types": "./dist/dev/index.d.ts",
-            "default": "./dist/dev/index.js"
-          },
-          "default": {
-            "types": "./dist/prod/index.d.ts",
-            "default": "./dist/prod/index.js"
-          }
-        }
+      "development": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/dev/index.js"
+      },
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/prod/index.js"
       }
-    }
+    },
+    "files": [
+      "dist"
+    ]
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
-    "test:lint": "eslint .",
+    "test:lint": "eslint . --quiet",
     "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
-    "@glimmer/interfaces": "workspace:*",
-    "@glimmer/util": "workspace:*"
+    "@glimmer/interfaces": "workspace:*"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "eslint": "^9.18.0",
+    "publint": "^0.3.2",
+    "rollup": "^4.31.0-0",
     "typescript": "*"
   }
 }

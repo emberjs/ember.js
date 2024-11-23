@@ -12,6 +12,8 @@ import { NS_SVG } from '@glimmer/constants';
 import { castToBrowser } from '@glimmer/debug-util';
 import { warnIfStyleNotTrusted } from '@glimmer/global-context';
 
+import type { MutableKey } from '../element-builder';
+
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
@@ -123,8 +125,8 @@ export class DefaultDynamicProperty extends DynamicAttribute {
     const { element } = this.attribute;
 
     if (this.value !== value) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (element as any)[this.normalizedName] = this.value = value;
+      (element as unknown as Element)[this.normalizedName as MutableKey<Element>] = this.value =
+        value as never;
 
       if (value === null || value === undefined) {
         this.removeAttribute();
@@ -231,6 +233,7 @@ function normalizeValue(value: unknown): Nullable<string> {
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
   return String(value);
 }
 

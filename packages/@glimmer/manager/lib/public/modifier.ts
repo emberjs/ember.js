@@ -11,6 +11,7 @@ import type {
 } from '@glimmer/interfaces';
 import { castToBrowser } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
+import { debugAssert } from '@glimmer/global-context';
 import { valueForRef } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
 import { createUpdatableTag, untrack } from '@glimmer/validator';
@@ -24,9 +25,11 @@ export function modifierCapabilities<Version extends keyof ModifierCapabilitiesV
   managerAPI: Version,
   optionalFeatures: ModifierCapabilitiesVersions[Version] = {}
 ): ModifierCapabilities {
-  if (import.meta.env.DEV && managerAPI !== '3.22') {
-    throw new Error('Invalid modifier manager compatibility specified');
-  }
+  debugAssert(
+    (managerAPI as string) === '3.22',
+    () =>
+      `Invalid modifier manager compatibility specified; you specified ${managerAPI}, but only '3.22' is supported.`
+  );
 
   return buildCapabilities({
     disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
@@ -81,6 +84,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
       let { factory } = this;
       delegate = factory(owner);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       if (import.meta.env.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(
@@ -138,7 +142,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
   install({ element, args, modifier, delegate }: CustomModifierState<ModifierInstance>) {
     let { capabilities } = delegate;
 
-    if (capabilities.disableAutoTracking === true) {
+    if (capabilities.disableAutoTracking) {
       untrack(() => delegate.installModifier(modifier, castToBrowser(element, 'ELEMENT'), args));
     } else {
       delegate.installModifier(modifier, castToBrowser(element, 'ELEMENT'), args);
@@ -148,7 +152,7 @@ export class CustomModifierManager<O extends Owner, ModifierInstance>
   update({ args, modifier, delegate }: CustomModifierState<ModifierInstance>) {
     let { capabilities } = delegate;
 
-    if (capabilities.disableAutoTracking === true) {
+    if (capabilities.disableAutoTracking) {
       untrack(() => delegate.updateModifier(modifier, args));
     } else {
       delegate.updateModifier(modifier, args);

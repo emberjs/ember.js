@@ -61,13 +61,16 @@ function getKeyHandler<N extends ASTv1.Node, K extends VisitorKey<N>>(
 function getNodeHandler<N extends ASTv1.Node>(
   visitor: NodeVisitor,
   nodeType: N['type']
-): NodeTraversal<N>;
-function getNodeHandler(visitor: NodeVisitor, nodeType: 'All'): NodeTraversal<ASTv1.Node>;
+): NodeTraversal<N> | undefined;
+function getNodeHandler(
+  visitor: NodeVisitor,
+  nodeType: 'All'
+): NodeTraversal<ASTv1.Node> | undefined;
 function getNodeHandler<N extends ASTv1.Node>(
   visitor: NodeVisitor,
   nodeType: N['type']
 ): NodeTraversal<ASTv1.Node> | undefined {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (visitor.Program) {
     if (
       (nodeType === 'Template' && !visitor.Template) ||
@@ -77,7 +80,7 @@ function getNodeHandler<N extends ASTv1.Node>(
         `The 'Program' visitor node is deprecated. Use 'Template' or 'Block' instead (node was '${nodeType}') `
       );
 
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return visitor.Program as NodeTraversal<ASTv1.Node>;
     }
   }
@@ -95,9 +98,9 @@ function visitNode<N extends ASTv1.Node>(
 ): ASTv1.Node | ASTv1.Node[] | undefined | null | void {
   let { node, parent, parentKey } = path;
 
-  let handler: NodeTraversal<N> = getNodeHandler(visitor, node.type);
-  let enter;
-  let exit;
+  let handler: NodeTraversal<N> | undefined = getNodeHandler(visitor, node.type);
+  let enter: NodeHandler<N> | undefined;
+  let exit: NodeHandler<N> | undefined;
 
   if (handler !== undefined) {
     enter = getEnterFunction(handler);
@@ -141,8 +144,8 @@ function visitNode<N extends ASTv1.Node>(
 function get<N extends ASTv1.Node>(
   node: N,
   key: VisitorKeys[N['type']] & keyof N
-): ASTv1.Node | ASTv1.Node[] {
-  return node[key] as unknown as ASTv1.Node | ASTv1.Node[];
+): ASTv1.Node | ASTv1.Node[] | undefined {
+  return node[key] as unknown as ASTv1.Node | ASTv1.Node[] | undefined;
 }
 
 function set<N extends ASTv1.Node, K extends keyof N>(node: N, key: K, value: N[K]): void {
@@ -151,7 +154,7 @@ function set<N extends ASTv1.Node, K extends keyof N>(node: N, key: K, value: N[
 
 function visitKey<N extends ASTv1.Node>(
   visitor: NodeVisitor,
-  handler: NodeTraversal<N>,
+  handler: NodeTraversal<N> | undefined,
   path: WalkerPath<N>,
   key: VisitorKeys[N['type']] & keyof N
 ) {
@@ -162,8 +165,8 @@ function visitKey<N extends ASTv1.Node>(
     return;
   }
 
-  let keyEnter;
-  let keyExit;
+  let keyEnter: KeyHandler<N, VisitorKeys[N['type']] & keyof N> | undefined;
+  let keyExit: KeyHandler<N, VisitorKeys[N['type']] & keyof N> | undefined;
 
   if (handler !== undefined) {
     let keyHandler = getKeyHandler(handler, key);
@@ -174,6 +177,7 @@ function visitKey<N extends ASTv1.Node>(
   }
 
   if (keyEnter !== undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- JS API
     if (keyEnter(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
@@ -188,12 +192,13 @@ function visitKey<N extends ASTv1.Node>(
       // TODO: dynamically check the results by having a table of
       // expected node types in value space, not just type space
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       assignKey(node, key, value, result as any);
     }
   }
 
   if (keyExit !== undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- JS API
     if (keyExit(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
@@ -225,6 +230,7 @@ function assignKey<N extends ASTv1.Node, K extends VisitorKey<N>>(
   if (result === null) {
     throw cannotRemoveNode(value, node, key);
   } else if (Array.isArray(result)) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (result.length === 1) {
       set(node, key, result[0]);
     } else {

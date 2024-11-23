@@ -200,9 +200,10 @@ function assertCache<T>(
   value: Cache<T> | InternalCache<T>,
   fnName: string
 ): asserts value is InternalCache<T> {
-  if (import.meta.env.DEV && !(typeof value === 'object' && value !== null && FN in value)) {
+  if (import.meta.env.DEV && !(typeof value === 'object' && FN in value)) {
     throw new Error(
       `${fnName}() can only be used on an instance of a cache created with createCache(). Called with: ${String(
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
         value
       )}`
     );

@@ -96,13 +96,11 @@ export function suite<D extends RenderDelegate>(
 
       if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
         if (isSkippedTest(test)) {
-          // eslint-disable-next-line no-loop-func
           QUnit.skip(prop, (assert) => {
             test.call(instance!, assert, instance!.count);
             instance!.count.assert();
           });
         } else {
-          // eslint-disable-next-line no-loop-func
           QUnit.test(prop, (assert) => {
             let result = test.call(instance!, assert, instance!.count);
             instance!.count.assert();
@@ -165,13 +163,10 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
             tests.dynamic.push(createTest(prop, test, true));
             break;
           case true:
-            if (test['kind'] === 'templateOnly') {
-              tests.templateOnly.push(createTest(prop, test, true));
-            } else {
-              ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
-                tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
-              });
-            }
+            ['glimmer', 'curly', 'dynamic'].forEach((kind) => {
+              tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
+            });
+            break;
           default:
             tests.glimmer.push(createTest(prop, test));
             tests.curly.push(createTest(prop, test));

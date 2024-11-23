@@ -46,7 +46,7 @@ export const STYLES = {
 
 export type StyleName = keyof typeof STYLES;
 
-export function mergeStyle(a?: string | undefined, b?: string | undefined): string | undefined {
+export function mergeStyle(a?: string  , b?: string  ): string | undefined {
   if (a && b) {
     return `${a}; ${b}`;
   } else {

@@ -1,5 +1,5 @@
 {
   "private": true,
   "name": "@types/js-reporters",
-  "types": "index.d.ts"
+  "exports": "./index.d.ts"
 }

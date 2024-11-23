@@ -1,6 +1,5 @@
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-
-import { jitSuite, RenderTest, test } from '../..';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class LogTest extends RenderTest {
   static suiteName = '{{log}} keyword';

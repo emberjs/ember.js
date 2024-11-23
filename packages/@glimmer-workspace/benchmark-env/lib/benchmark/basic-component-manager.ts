@@ -25,12 +25,12 @@ const BASIC_COMPONENT_CAPABILITIES = {
 };
 
 interface BasicState {
-  self: Reference<unknown>;
+  self: Reference;
   instance: object;
 }
 
 class BasicComponentManager
-  implements WithCreateInstance<BasicState, new (args: Readonly<Dict<unknown>>) => object, Owner>
+  implements WithCreateInstance<BasicState, new (args: Readonly<Dict>) => object>
 {
   create(
     _owner: Owner,
@@ -75,6 +75,7 @@ class BasicComponentManager
   }
 
   getStaticLayout(definition: object): Template {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return getComponentTemplate(definition)!();
   }
 }
