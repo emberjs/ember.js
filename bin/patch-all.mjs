@@ -1,6 +1,8 @@
-import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
+
 import fsExtra from 'fs-extra';
+
 const { readJSONSync, writeJSONSync } = fsExtra;
 
 let file;

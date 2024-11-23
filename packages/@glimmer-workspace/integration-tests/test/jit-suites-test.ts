@@ -13,7 +13,7 @@ import {
   TemplateOnlyComponents,
   WithDynamicVarsSuite,
   YieldSuite,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
 
 jitComponentSuite(DebuggerSuite);
 jitSuite(EachSuite);

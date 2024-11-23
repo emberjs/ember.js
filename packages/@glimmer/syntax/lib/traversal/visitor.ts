@@ -8,7 +8,10 @@ export interface FullNodeTraversal<N extends ASTv1.Node> {
   keys?: KeysVisitor<N>;
 }
 
-export type NodeHandler<N extends ASTv1.Node> = (node: N, path: WalkerPath<N>) => void;
+export type NodeHandler<N extends ASTv1.Node> = (
+  node: N,
+  path: WalkerPath<N>
+) => ASTv1.Node | ASTv1.Node[] | undefined | void;
 export type NodeTraversal<N extends ASTv1.Node> = FullNodeTraversal<N> | NodeHandler<N>;
 
 export type NodeVisitor = { [P in keyof ASTv1.Nodes]?: NodeTraversal<ASTv1.Nodes[P]> } & {

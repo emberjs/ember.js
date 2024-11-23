@@ -160,6 +160,7 @@ export class VmSnapshotArrayDiff<N extends string | number, T extends unknown[]>
         pre = frag`${value(before, { ref: `${i}:popped` })} -> `;
       } else if (op === 'retain') {
         pre = frag`${value(before, { ref: `${i}:before` })} -> `;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- exhaustion check
       } else if (op === 'push') {
         pre = frag`push -> `.subtle();
       } else {
@@ -172,6 +173,7 @@ export class VmSnapshotArrayDiff<N extends string | number, T extends unknown[]>
         post = value(after, { ref: `${i}:push` });
       } else if (op === 'retain') {
         post = value(after, { ref: `${i}:after` });
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- exhaustion check
       } else if (op === 'pop') {
         post = frag`${as.diffDelete('<removed>')}`;
       } else {

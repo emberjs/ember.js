@@ -1,3 +1,4 @@
+/* eslint-disable n/no-process-exit */
 // @ts-check
 
 import child from 'child_process';
@@ -50,10 +51,10 @@ const browser = await puppeteer.launch({
 console.log('[ci] puppeteer launched');
 
 try {
-  await /** @type {Promise<void>} */ (
-    new Promise(async (fulfill, reject) => {
-      const page = await browser.newPage();
+  const page = await browser.newPage();
 
+  await /** @type {Promise<void>} */ (
+    new Promise((fulfill, reject) => {
       page.on('console', (msg) => {
         const location = msg.location();
         const text = msg.text();
@@ -70,13 +71,14 @@ try {
         } else if (text === `[HARNESS] done`) {
           fulfill();
         } else if (text === `[HARNESS] fail`) {
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           reject();
         }
       });
-
-      await page.goto('http://localhost:60173?hidepassed&ci');
     })
   );
+
+  await page.goto('http://localhost:60173?hidepassed&ci');
 } catch {
   await browser.close();
   process.exit(1);

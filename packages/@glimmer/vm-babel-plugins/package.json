@@ -37,7 +37,7 @@
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
     "test": "mocha",
-    "test:lint": "eslint .",
+    "test:lint": "eslint . --quiet",
     "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
@@ -47,13 +47,13 @@
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
     "babel-plugin-tester": "^11.0.4",
-    "eslint": "^8.54.0",
+    "eslint": "^9.18.0",
     "mocha": "^10.2.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "publint": "^0.3.2",
+    "rollup": "^4.31.0-0",
     "typescript": "*"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18.18.0"
   }
 }

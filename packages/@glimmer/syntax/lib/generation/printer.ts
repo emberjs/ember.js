@@ -494,7 +494,7 @@ export default class Printer {
       return;
     }
 
-    this.buffer += bool.value;
+    this.buffer += String(bool.value);
   }
 
   NumberLiteral(number: ASTv1.NumberLiteral): void {
@@ -502,7 +502,7 @@ export default class Printer {
       return;
     }
 
-    this.buffer += number.value;
+    this.buffer += String(number.value);
   }
 
   UndefinedLiteral(node: ASTv1.UndefinedLiteral): void {

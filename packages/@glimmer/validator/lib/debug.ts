@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- @fixme */
 import type { Tag } from '@glimmer/interfaces';
 import { asPresentArray, getLast } from '@glimmer/debug-util';
 import { assert } from '@glimmer/global-context';
@@ -43,12 +44,13 @@ if (import.meta.env.DEV) {
       if (typeof obj === 'function') {
         objName = obj.name;
       } else if (typeof obj === 'object' && obj !== null) {
-        let className = (obj.constructor && obj.constructor.name) || '(unknown class)';
+        let className = obj.constructor.name || '(unknown class)';
 
         objName = `(an instance of ${className})`;
       } else if (obj === undefined) {
         objName = '(an unknown tag)';
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         objName = String(obj);
       }
 
@@ -117,7 +119,7 @@ if (import.meta.env.DEV) {
       didError = false;
       return value;
     } finally {
-      if (didError !== true) {
+      if (!didError) {
         debug.endTrackingTransaction!();
       }
 
@@ -212,7 +214,7 @@ if (import.meta.env.DEV) {
         if (updateStackBegin !== -1) {
           let start = nthIndex(e.stack, '\n', 1, updateStackBegin);
           let end = nthIndex(e.stack, '\n', 4, updateStackBegin);
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated -- @fixme
           e.stack = e.stack.substr(0, start) + e.stack.substr(end);
         }
       }

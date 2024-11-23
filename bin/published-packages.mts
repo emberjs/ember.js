@@ -1,5 +1,5 @@
-import { $ } from 'zx';
 import chalk from 'chalk';
+
 import { packages } from './packages.mjs';
 
 /*
@@ -32,7 +32,7 @@ import { packages } from './packages.mjs';
  * @typedef {} PackageEntry
  */
 
-const entries = await packages('@glimmer');
+const entries = packages('@glimmer');
 
 const quiet = process.argv.includes('--quiet') || process.argv.includes('-q');
 

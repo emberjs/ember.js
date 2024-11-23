@@ -1,5 +1,5 @@
-import type { Dict, Nullable } from '@glimmer/interfaces';
-import { asPresentArray, assert, deprecate, isPresentArray } from '@glimmer/debug-util';
+import type { Dict, Maybe, Nullable } from '@glimmer/interfaces';
+import { asPresentArray, deprecate, isPresentArray,localAssert } from '@glimmer/debug-util';
 
 import type { SourceLocation, SourcePosition } from '../source/location';
 import type * as ASTv1 from './api';
@@ -78,7 +78,7 @@ function buildBlock(
 
   if (_elseBlock?.type === 'Template') {
     deprecate(`b.program is deprecated. Use b.blockItself instead.`);
-    assert(_elseBlock.blockParams.length === 0, '{{else}} block cannot have block params');
+    localAssert(_elseBlock.blockParams.length === 0, '{{else}} block cannot have block params');
 
     elseBlock = b.blockItself({
       params: [],
@@ -183,7 +183,7 @@ export interface BuildElementOptions {
   comments?: ASTv1.MustacheCommentStatement[];
   blockParams?: ASTv1.VarHead[] | string[];
   openTag?: SourceLocation;
-  closeTag?: Nullable<SourceLocation>;
+  closeTag?: Maybe<SourceLocation>;
   loc?: SourceLocation;
 }
 
@@ -211,10 +211,12 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
       path = buildPath(tag);
     }
   } else if ('type' in tag) {
-    assert(tag.type === 'PathExpression', `Invalid tag type ${tag.type}`);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- supports JS users
+    localAssert(tag.type === 'PathExpression', `Invalid tag type ${tag.type}`);
     path = tag;
   } else if ('path' in tag) {
-    assert(tag.path.type === 'PathExpression', `Invalid tag type ${tag.path.type}`);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- supports JS users
+    localAssert(tag.path.type === 'PathExpression', `Invalid tag type ${tag.path.type}`);
     path = tag.path;
     selfClosing = tag.selfClosing;
   } else {
@@ -223,7 +225,7 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
   }
 
   if (selfClosing) {
-    assert(
+    localAssert(
       _closeTag === null || _closeTag === undefined,
       'Cannot build a self-closing tag with a closeTag source location'
     );
@@ -240,7 +242,7 @@ function buildElement(tag: TagDescriptor, options: BuildElementOptions = {}): AS
   let closeTag: Nullable<SourceSpan> = null;
 
   if (_closeTag) {
-    closeTag = buildLoc(_closeTag || null);
+    closeTag = buildLoc(_closeTag);
   } else if (_closeTag === undefined) {
     closeTag = selfClosing || isVoidTag(path.original) ? null : buildLoc(null);
   }
@@ -325,8 +327,10 @@ function buildPath(
   loc?: SourceLocation
 ): ASTv1.PathExpression;
 function buildPath(path: BuilderHead, loc?: SourceLocation): ASTv1.CallableExpression;
-function buildPath(path: BuilderHead | ASTv1.Literal, loc?: SourceLocation): ASTv1.Expression;
-function buildPath(path: ASTv1.Expression, loc?: SourceLocation): ASTv1.Expression;
+function buildPath(
+  path: BuilderHead | ASTv1.Literal | ASTv1.Expression,
+  loc?: SourceLocation
+): ASTv1.Expression;
 function buildPath(
   path: BuilderHead | ASTv1.Expression | { head: string; tail: string[] },
   loc?: SourceLocation
@@ -337,7 +341,7 @@ function buildPath(
     if ('type' in path) {
       return path;
     } else {
-      assert(
+      localAssert(
         path.head.indexOf('.') === -1,
         `builder.path({ head, tail }) should not be called with a head with dots in it`
       );

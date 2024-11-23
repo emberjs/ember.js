@@ -6,7 +6,7 @@ import type {
   SimpleNode,
 } from '@glimmer/interfaces';
 import { INSERT_AFTER_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/constants';
-import { assert, castToBrowser, unwrap } from '@glimmer/debug-util';
+import { castToBrowser, localAssert, unwrap } from '@glimmer/debug-util';
 import { clearElement } from '@glimmer/util';
 
 import type { DOMOperations } from '../dom/operations';
@@ -62,7 +62,7 @@ function fixSVG(
   html: string,
   reference: Nullable<SimpleNode>
 ): Bounds {
-  assert(html !== '', 'html cannot be empty');
+  localAssert(html !== '', 'html cannot be empty');
 
   let source: SimpleNode;
 
@@ -76,6 +76,7 @@ function fixSVG(
     clearElement(div);
     div.insertAdjacentHTML(INSERT_AFTER_BEGIN, wrappedHtml);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     source = div.firstChild!.firstChild!;
   } else {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG
@@ -85,6 +86,7 @@ function fixSVG(
     clearElement(div);
     div.insertAdjacentHTML(INSERT_AFTER_BEGIN, wrappedHtml);
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     source = div.firstChild!;
   }
 
@@ -96,7 +98,7 @@ function shouldApplyFix(document: SimpleDocument, svgNamespace: typeof NS_SVG) {
 
   try {
     svg.insertAdjacentHTML(INSERT_BEFORE_END, '<circle></circle>');
-  } catch (e) {
+  } catch {
     // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
     // Safari: Will throw, insertAdjacentHTML is not present on SVG
   } finally {

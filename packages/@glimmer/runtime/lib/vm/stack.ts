@@ -1,4 +1,4 @@
-import { assert } from '@glimmer/debug-util';
+import { localAssert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { $fp, $pc, $sp } from '@glimmer/vm';
 
@@ -27,7 +27,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
   static restore(snapshot: unknown[], pc: number): EvaluationStackImpl {
     const stack = new this(snapshot.slice(), initializeRegistersWithSP(snapshot.length - 1));
 
-    assert(typeof pc === 'number', 'pc is a number');
+    localAssert(typeof pc === 'number', 'pc is a number');
 
     stack.registers[$pc] = pc;
     stack.registers[$sp] = snapshot.length - 1;

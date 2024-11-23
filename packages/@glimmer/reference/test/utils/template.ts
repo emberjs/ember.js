@@ -1,7 +1,5 @@
 import type { IteratorDelegate } from '@glimmer/reference';
 
-import objectValues from './platform';
-
 abstract class BoundedIterator implements IteratorDelegate {
   private position = 0;
 
@@ -40,7 +38,7 @@ interface Indexable {
 class ObjectIterator extends BoundedIterator {
   static fromIndexable(obj: Indexable) {
     let keys = Object.keys(obj);
-    let values = objectValues(obj);
+    let values = Object.values(obj);
 
     return new this(keys, values);
   }
@@ -62,19 +60,18 @@ class ObjectIterator extends BoundedIterator {
 }
 
 export const TestContext = {
-  getProp(obj: unknown, path: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (obj as any)[path];
+  getProp(obj: object, path: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return Reflect.get(obj, path);
   },
 
-  getPath(obj: unknown, path: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (obj as any)[path];
+  getPath(obj: object, path: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return Reflect.get(obj, path);
   },
 
-  setProp(obj: unknown, path: string, value: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ((obj as any)[path] = value);
+  setProp(obj: object, path: string, value: unknown) {
+    Reflect.set(obj, path, value);
   },
 
   toIterator(obj: unknown) {

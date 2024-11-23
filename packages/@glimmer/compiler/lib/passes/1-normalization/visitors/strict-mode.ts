@@ -168,6 +168,7 @@ export default class StrictModeValidationPass {
     // makes for a slightly better error to report that entire span. However,
     // when there are more than one, we need to be specific.
     if (expressions.length === 1) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme PresentArray
       result = this.Expression(expressions[0]!, span);
     } else {
       result = this.Expressions(expressions);

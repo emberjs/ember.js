@@ -1,9 +1,12 @@
 {
   "private": true,
   "name": "@glimmer-test/validator",
+  "repo-meta": {
+    "strictness": "strict"
+  },
   "dependencies": {
-    "@glimmer/validator": "workspace:*",
     "@glimmer/global-context": "workspace:*",
-    "@glimmer/interfaces": "workspace:*"
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/validator": "workspace:*"
   }
 }

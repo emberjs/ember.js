@@ -1,12 +1,14 @@
-import { readFile, writeFile, unlink } from 'node:fs/promises';
+import { writeFileSync } from 'node:fs';
+import { readFile, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import chalk from 'chalk';
 import { execa } from 'execa';
 import { mkdirp } from 'mkdirp';
 import { rimraf } from 'rimraf';
 import { x as untar } from 'tar';
+
 import { packages } from './packages.mjs';
-import { writeFileSync } from 'node:fs';
 
 const dist = new URL('../dist', import.meta.url).pathname;
 const pkgs = packages('@glimmer');
@@ -55,7 +57,7 @@ const unpack = pkgs.map(async (pkg) => {
     const packageJsonPath = join(pkgDest, 'package.json');
     const packageJson = JSON.parse(await readFile(packageJsonPath, { encoding: 'utf8' }));
     delete packageJson.devDependencies;
-    await writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), {
+    writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), {
       encoding: 'utf8',
     });
 

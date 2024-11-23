@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * This package contains global context functions for Glimmer. These functions
@@ -120,6 +121,17 @@ export let warnIfStyleNotTrusted: (value: unknown) => void;
  */
 export let assert: (test: unknown, msg: string, options?: { id: string }) => asserts test;
 
+export function debugAssert(
+  test: unknown,
+  msg: string | (() => string),
+  options?: { id: string }
+): asserts test {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (import.meta.env.DEV && assert) {
+    assert(test, typeof msg === 'string' ? msg : msg(), options);
+  }
+}
+
 /**
  * Hook to customize deprecation messages in the VM. Usages can be stripped out
  * by using the @glimmer/vm-babel-plugins package.
@@ -190,7 +202,7 @@ export let testOverrideGlobalContext:
 
 if (import.meta.env.DEV) {
   assertGlobalContextWasSet = () => {
-    if (globalContextWasSet === false) {
+    if (!globalContextWasSet) {
       throw new Error(
         'The global context for Glimmer VM was not set. You must set these global context functions to let Glimmer VM know how to accomplish certain operations. You can do this by importing `setGlobalContext` from `@glimmer/global-context`'
       );

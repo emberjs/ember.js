@@ -146,7 +146,7 @@ export class CharPosition implements PositionData {
    *
    * {@see HbsPosition} for the alternative.
    */
-  toCharPos(): CharPosition {
+  toCharPos(): this {
     return this;
   }
 
@@ -245,7 +245,7 @@ export class HbsPosition implements PositionData {
    *
    * {@see CharPosition} for the alternative.
    */
-  toHbsPos(): HbsPosition {
+  toHbsPos(): this {
     return this;
   }
 }

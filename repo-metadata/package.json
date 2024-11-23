@@ -1,0 +1,21 @@
+{
+  "name": "@glimmer-workspace/repo-metadata",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./metadata.json": "./metadata.json"
+  },
+  "dependencies": {
+    "execa": "^9.5.2"
+  },
+  "devDependencies": {
+    "@pnpm/types": "^1000.1.0",
+    "@pnpm/workspace.find-packages": "^1000.0.5",
+    "@types/node": "^22.10.6",
+    "pkg-entry-points": "^1.1.1"
+  }
+}

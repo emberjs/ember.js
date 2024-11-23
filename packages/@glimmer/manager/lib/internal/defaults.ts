@@ -31,7 +31,7 @@ export class FunctionHelperManager implements HelperManagerWithValue<State> {
 
   getValue({ fn, args }: State): unknown {
     if (Object.keys(args.named).length > 0) {
-      let argsForFn: FnArgs<Arguments> = [...args.positional, args.named];
+      let argsForFn: FnArgs = [...args.positional, args.named];
 
       return fn(...argsForFn);
     }

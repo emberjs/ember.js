@@ -160,7 +160,7 @@ export class InElementSuite extends RenderTest {
     this.assertStableNodes();
 
     this.rerender({ externalElement: null });
-    equalsElement(externalElement, 'div', {}, `${initialContent}`);
+    equalsElement(externalElement, 'div', {}, initialContent);
     this.assertHTML('<!---->');
     this.assertStableRerender();
 
@@ -431,7 +431,7 @@ export class InElementSuite extends RenderTest {
 
     equalsElement(first.element, 'div', {}, '<p>foo</p>');
     equalsElement(second.element, 'div', {}, '<p>bar</p>');
-    equalsElement(third?.element, 'div', {}, '<p>baz</p>');
+    equalsElement(third.element, 'div', {}, '<p>baz</p>');
     this.assertHTML('<!----><!----><!--->');
     this.assertStableRerender();
 

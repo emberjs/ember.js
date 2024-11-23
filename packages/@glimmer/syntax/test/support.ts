@@ -1,4 +1,4 @@
-import type { AST, PreprocessOptions } from '@glimmer/syntax';
+import type { AST, ASTv1, PreprocessOptions } from '@glimmer/syntax';
 import { preprocess as parse } from '@glimmer/syntax';
 import { entries } from '@glimmer/util';
 
@@ -10,7 +10,7 @@ function isLoc(key: string | number | symbol): boolean {
   return key === 'loc' || key === 'openTag' || key === 'closeTag';
 }
 
-function normalizeValue<T extends AST.Node | AST.Node[] | unknown>(obj: T): T {
+function normalizeValue<T>(obj: T): T {
   if (obj && typeof obj === 'object') {
     if (Array.isArray(obj)) {
       return obj.map(normalizeValue) as T;
@@ -30,21 +30,18 @@ type FromEntries<T extends [PropertyKey, unknown][]> = {
 };
 
 function fromEntries<T extends [PropertyKey, unknown][]>(entries: T): FromEntries<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const out: any = {};
+  const out: Record<string, unknown> = {};
 
   for (const [key, value] of entries) {
-    out[key as string] = value;
+    out[key as keyof typeof out] = value;
   }
 
   return out as FromEntries<T>;
 }
 
 export function astEqual(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  actual: any | null | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  expected: any | null | undefined,
+  actual: string | ASTv1.Node | ASTv1.Node[],
+  expected: string | ASTv1.Node | ASTv1.Node[],
   message?: string,
   parseOptions?: PreprocessOptions
 ) {

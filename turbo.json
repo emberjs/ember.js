@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turbo.build/schema.v1.json",
+  "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
     "pnpm-lock.yaml",
     "patches",
@@ -20,7 +20,7 @@
     "packages/@glimmer-workspace/eslint-plugin/**/*",
     "packages/@glimmer-workspace/build/lib/config.js"
   ],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]

@@ -24,7 +24,7 @@ export function createReplacePlugin(test, replacements, sourcemap) {
         })
         .join('|') +
       ')\\b',
-    'g'
+    'gu'
   );
 
   return {
@@ -70,7 +70,9 @@ export function createReplacePlugin(test, replacements, sourcemap) {
         /** @type {TransformResult} */
         const result = { code: s.toString() };
         if (sourcemap) {
-          result.map = s.generateMap({ hires: true });
+          // s.generateMap returns a slightly different SourceMap object, which allows nulls in
+          // sourcesContent, which rollup doesn't like.
+          result.map = /** @type {import("rollup").SourceMap} */ (s.generateMap({ hires: true }));
         }
         return result;
       }

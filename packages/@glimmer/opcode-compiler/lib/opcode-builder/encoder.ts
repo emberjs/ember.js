@@ -16,7 +16,7 @@ import type {
   STDLib,
 } from '@glimmer/interfaces';
 import { encodeHandle, isMachineOp, VM_PRIMITIVE_OP, VM_RETURN_OP } from '@glimmer/constants';
-import { assert, expect, isPresentArray } from '@glimmer/debug-util';
+import { expect, isPresentArray, localAssert } from '@glimmer/debug-util';
 import { InstructionEncoderImpl } from '@glimmer/encoder';
 import { dict, Stack } from '@glimmer/util';
 import { ARG_SHIFT, MACHINE_MASK, TYPE_SIZE } from '@glimmer/vm';
@@ -48,9 +48,13 @@ export class Labels {
     let { targets, labels } = this;
 
     for (const { at, target } of targets) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       let address = labels[target]! - at;
 
-      assert(heap.getbyaddr(at) === -1, 'Expected heap to contain a placeholder, but it did not');
+      localAssert(
+        heap.getbyaddr(at) === -1,
+        'Expected heap to contain a placeholder, but it did not'
+      );
 
       heap.setbyaddr(at, address);
     }
@@ -91,13 +95,13 @@ export function encodeOp(
         return resolveOptionalComponentOrHelper(resolver, constants, meta, op);
 
       case HighLevelResolutionOpcodes.Local: {
-        let freeVar = op[1];
+        let [, freeVar, andThen] = op;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         let name = expect(
           meta.symbols.upvars,
           'BUG: attempted to resolve value but no upvars found'
         )[freeVar]!;
 
-        let andThen = op[2];
         andThen(name, meta.moduleName);
 
         break;

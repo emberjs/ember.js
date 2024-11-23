@@ -1,4 +1,4 @@
-/dist/
+/dist
 **/dist
 /control-dist/
 node_modules/

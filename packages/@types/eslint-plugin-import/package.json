@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "@types/eslint-plugin-import",
+  "type": "module",
+  "exports": "./index.d.ts",
+  "dependencies": {
+    "@types/eslint": "^9.6.1"
+  }
+}

@@ -30,7 +30,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
   static integer(
     this: void,
     value: number,
-    options?: Omit<IntegerFragment, 'kind' | 'value'> | undefined
+    options?: Omit<IntegerFragment, 'kind' | 'value'>
   ): Fragment<IntegerFragment> {
     return new Fragment({ kind: 'integer', value, ...options });
   }
@@ -38,7 +38,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
   static float(
     this: void,
     value: number,
-    options?: Omit<FloatFragment, 'kind' | 'value'> | undefined
+    options?: Omit<FloatFragment, 'kind' | 'value'>
   ): Fragment<FloatFragment> {
     return new Fragment({ kind: 'float', value, ...options });
   }
@@ -46,7 +46,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
   static string(
     this: void,
     value: string,
-    options?: Omit<StringFragment, 'kind' | 'value'> | undefined
+    options?: Omit<StringFragment, 'kind' | 'value'>
   ): Fragment<StringFragment> {
     return new Fragment({ kind: 'string', value, ...options });
   }
@@ -54,7 +54,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
   static special(
     this: void,
     value: Node | SimpleNode | AnyFn | unknown[],
-    options?: Omit<SpecialFragment, 'kind' | 'value'> | undefined
+    options?: Omit<SpecialFragment, 'kind' | 'value'>
   ): Fragment<SpecialFragment> {
     return new Fragment({ kind: 'special', value, ...options });
   }
@@ -119,7 +119,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
    * If `isSubtle` is true, the fragment will also be styled with the `subtle` style.
    */
   subtle(isSubtle = true): Fragment<T> {
-    if (this.isSubtle() === false && isSubtle === false) {
+    if (!this.isSubtle() && !isSubtle) {
       return this;
     }
 
@@ -181,6 +181,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
         if (fragment.kind === 'value') {
           return `<object>`;
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
           return String(fragment.value);
         }
       })
@@ -304,7 +305,7 @@ export class Fragment<T extends FragmentType = FragmentType> {
 
         buffer.addFootnoted(fragment.subtle ?? false, ({ n, style }, footnote) => {
           const appendValueAsFootnote = (ref: string) =>
-            footnote.append(
+            void footnote.append(
               subtle,
               `%c| %c[${ref}]%c ${FORMATTERS[fragment.kind]}`,
               STYLES.dim,

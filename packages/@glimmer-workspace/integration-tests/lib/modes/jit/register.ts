@@ -89,7 +89,7 @@ export function registerInternalHelper(
 export function registerInternalModifier(
   registry: TestJitRegistry,
   name: string,
-  manager: InternalModifierManager<unknown, object>,
+  manager: InternalModifierManager,
   state: object
 ) {
   setInternalModifierManager(manager, state);

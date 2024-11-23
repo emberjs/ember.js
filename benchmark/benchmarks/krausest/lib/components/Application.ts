@@ -1,6 +1,9 @@
-import { swapRows, type Item, updateData, buildData } from '@/utils/data';
-import { createCell } from '@glimmer-workspace/benchmark-env';
 import { fn } from '@glimmer/runtime';
+import { createCell } from '@glimmer-workspace/benchmark-env';
+
+import type { Item } from '#utils/data.ts';
+import { buildData, swapRows, updateData } from '#utils/data.ts';
+
 export default class Application {
   cell!: ReturnType<typeof createCell>;
   selectedItemCell!: ReturnType<typeof createCell>;

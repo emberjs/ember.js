@@ -5,7 +5,6 @@ import { testOverrideGlobalContext } from '@glimmer/global-context';
 import { createComputeRef, createIteratorRef, valueForRef } from '@glimmer/reference';
 import { consumeTag, VOLATILE_TAG } from '@glimmer/validator';
 
-import objectValues from './utils/platform';
 import { module, test } from './utils/qunit';
 import { TestContext } from './utils/template';
 
@@ -60,23 +59,22 @@ module('@glimmer/reference: IterableReference', (hooks) => {
       let obj = { a: 'Yehuda', b: 'Godfrey' };
       let target = new IterableWrapper(obj);
 
-      assert.deepEqual(target.toValues(), objectValues(obj));
+      assert.deepEqual(target.toValues(), Object.values(obj));
     });
 
     test('it correctly synchronizes delegates when changed', (assert) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let obj = { a: 'Yehuda', b: 'Godfrey' } as any;
+      let obj = { a: 'Yehuda', b: 'Godfrey' } as Record<string, string>;
       let target = new IterableWrapper(obj);
 
-      assert.deepEqual(target.toValues(), objectValues(obj));
+      assert.deepEqual(target.toValues(), Object.values(obj));
 
-      obj.c = 'Rob';
+      obj['c'] = 'Rob';
 
-      assert.deepEqual(target.toValues(), objectValues(obj));
+      assert.deepEqual(target.toValues(), Object.values(obj));
 
-      obj.a = 'Godhuda';
+      obj['a'] = 'Godhuda';
 
-      assert.deepEqual(target.toValues(), objectValues(obj));
+      assert.deepEqual(target.toValues(), Object.values(obj));
     });
 
     test('it handles null delegates', (assert) => {

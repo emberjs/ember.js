@@ -113,7 +113,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   renderServerSide(
     template: string,
-    context: Dict<unknown>,
+    context: Dict,
     takeSnapshot: () => void,
     element: SimpleElement | undefined = undefined
   ): string {
@@ -146,7 +146,7 @@ export class RehydrationDelegate implements RenderDelegate {
     return toInnerHTML(element);
   }
 
-  renderClientSide(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
+  renderClientSide(template: string, context: Dict, element: SimpleElement): RenderResult {
     let { env } = this.clientContext;
     this.self = null;
 
@@ -170,7 +170,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   renderTemplate(
     template: string,
-    context: Dict<unknown>,
+    context: Dict,
     element: SimpleElement,
     snapshot: () => void
   ): RenderResult {

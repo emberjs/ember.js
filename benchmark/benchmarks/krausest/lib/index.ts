@@ -1,11 +1,16 @@
 import { createBenchmark } from '@glimmer-workspace/benchmark-env';
 
-import Application from '@/components/Application';
-import ApplicationTemplate from '@/components/Application.hbs';
-import Row from '@/components/Row';
-import RowTemplate from '@/components/Row.hbs';
-import ButtonTemplate from '@/components/BsButton.hbs';
-import { enforcePaintEvent, ButtonSelectors, emitDomClickEvent, waitForIdle } from '@/utils/compat';
+import ApplicationTemplate from '#components/Application.hbs';
+import Application from '#components/Application.ts';
+import ButtonTemplate from '#components/BsButton.hbs';
+import RowTemplate from '#components/Row.hbs';
+import Row from '#components/Row.ts';
+import {
+  ButtonSelectors,
+  emitDomClickEvent,
+  enforcePaintEvent,
+  waitForIdle,
+} from '#utils/compat.ts';
 
 export default async function render(element: HTMLElement, isInteractive: boolean) {
   const benchmark = createBenchmark();

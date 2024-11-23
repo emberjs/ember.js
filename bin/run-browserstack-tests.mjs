@@ -17,6 +17,8 @@ function run(command, args = []) {
   });
 }
 
+// investigate and document why this shouldn't be `await`ed
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async function () {
   await run('ember', ['browserstack:connect']);
 
@@ -36,13 +38,13 @@ function run(command, args = []) {
       ]);
 
       console.log('success');
-      // eslint-disable-next-line n/no-process-exit
-      process.exit(0);
     } finally {
       if (process.env['GITHUB_RUN_ID']) {
         await run('ember', ['browserstack:results']);
       }
       await run('ember', ['browserstack:disconnect']);
+      // eslint-disable-next-line n/no-process-exit
+      process.exit(0);
     }
   } catch (error) {
     console.log('error');

@@ -3,232 +3,143 @@
   "[ignore][properties][shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
-  "[json][jsonc][markdown][yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
   "[javascript][typescript]": {
-    "editor.formatOnSave": false,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
-      "source.unusedImports": "explicit",
-      "source.fixAll": "explicit",
+      "source.fixAll": "always",
       "source.formatDocument": "always"
-    }
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.rulers": [
+      100
+    ]
   },
+  "[json][jsonc][markdown][yaml]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.formatDocument": "always"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
+  },
+  "dependi.npm.informPatchUpdates": true,
+  "dependi.npm.lockFileEnabled": true,
   "editor.formatOnSave": true,
-  "eslint.enable": true,
+  "editor.rulers": [
+    {
+      "color": "#cc999966",
+      "column": 100
+    },
+    {
+      "color": "#aaaaaa66",
+      "column": 80
+    },
+  ],
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },
   "eslint.codeActionsOnSave.mode": "all",
+  "eslint.enable": true,
   "eslint.lintTask.enable": true,
   "eslint.onIgnoredFiles": "warn",
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js"
+  },
+  "eslint.problems.shortenToSingleLine": true,
+  "eslint.runtime": "node",
+  "eslint.useFlatConfig": true,
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "json",
+    "jsonc"
+  ],
   "eslint.workingDirectories": [
     {
-      "mode": "auto"
+      "pattern": "."
     }
   ],
-  "eslint.validate": ["javascript", "typescript", "json", "jsonc"],
+  "explorer.excludeGitIgnore": true,
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true,
-    "**/node_modules": true,
     "**/dist": true,
+    "**/node_modules": true,
     "tracerbench-results": true
   },
-  "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true,
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true
   },
-  "javascript.updateImportsOnFileMove.enabled": "always",
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "javascript.preferences.importModuleSpecifier": "project-relative",
-  "typescript.preferences.importModuleSpecifier": "project-relative",
-  "typescript.preferences.importModuleSpecifierEnding": "auto",
-  "typescript.preferences.useAliasesForRenames": false,
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.tsserver.experimental.enableProjectDiagnostics": true,
-  "typescript.workspaceSymbols.scope": "currentProject",
-  "typescript.experimental.updateImportsOnPaste": true,
-  "eslint.problems.shortenToSingleLine": true,
-  "typescript.experimental.expandableHover": true,
-  "inline-bookmarks.expert.custom.words.mapping": {
-    "warn": ["@premerge(\\s|$)"],
-    "active": ["@active(\\s|$)"],
-    "fixme": ["@fixme(\\s|$)"]
-  },
   "inline-bookmarks.expert.custom.styles": {
     "active": {
+      "dark": {
+        "color": "#00ffff",
+        "fontWeight": "bold"
+      },
       // teal
       "gutterIconColor": "#009999",
-      "overviewRulerColor": "rgba(0, 150, 150, 0.7)",
       "light": {
-        "fontWeight": "bold",
-        "color": "#009999"
+        "color": "#009999",
+        "fontWeight": "bold"
       },
-      "dark": {
-        "fontWeight": "bold",
-        "color": "#00ffff"
-      }
+      "overviewRulerColor": "rgba(0, 150, 150, 0.7)"
     },
     "fixme": {
+      "dark": {
+        "color": "#ff0000",
+        "fontWeight": "bold"
+      },
       // yellow
       "gutterIconColor": "#990000",
-      "overviewRulerColor": "rgba(150, 0, 0, 0.7)",
       "light": {
-        "fontWeight": "bold",
-        "color": "#990000"
+        "color": "#990000",
+        "fontWeight": "bold"
       },
-      "dark": {
-        "fontWeight": "bold",
-        "color": "#ff0000"
-      }
+      "overviewRulerColor": "rgba(150, 0, 0, 0.7)"
     },
     "warn": {
+      "dark": {
+        "color": "#ffff00",
+        "fontWeight": "bold"
+      },
       // yellow
       "gutterIconColor": "#999900",
-      "overviewRulerColor": "rgba(150, 150, 0, 0.7)",
       "light": {
-        "fontWeight": "bold",
-        "color": "#999900"
+        "color": "#999900",
+        "fontWeight": "bold"
       },
-      "dark": {
-        "fontWeight": "bold",
-        "color": "#ffff00"
-      }
+      "overviewRulerColor": "rgba(150, 150, 0, 0.7)"
     }
   },
+  "inline-bookmarks.expert.custom.words.mapping": {
+    "audit": [
+      "@audit(\\s|$)"
+    ],
+    "fixme": [
+      "@fixme(\\s|$)"
+    ],
+    "warn": [
+      "@premerge(\\s|$)"
+    ]
+  },
   "inline-bookmarks.view.showVisibleFilesOnly": true,
-  "commit-message-editor.staticTemplate": [
-    "feat: Short description",
-    "",
-    "Message body",
-    "",
-    "Message footer"
-  ],
-  "commit-message-editor.dynamicTemplate": [
-    "{type}{scope}: {description}",
-    "",
-    "{body}",
-    "",
-    "{breaking_change}{footer}"
-  ],
-  "commit-message-editor.tokens": [
-    {
-      "label": "Type",
-      "name": "type",
-      "type": "enum",
-      "options": [
-        {
-          "label": "---",
-          "value": ""
-        },
-        {
-          "label": "build",
-          "description": "Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)"
-        },
-        {
-          "label": "chore",
-          "description": "Updating grunt tasks etc; no production code change"
-        },
-        {
-          "label": "ci",
-          "description": "Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)"
-        },
-        {
-          "label": "docs",
-          "description": "Documentation only changes"
-        },
-        {
-          "label": "feat",
-          "description": "A new feature"
-        },
-        {
-          "label": "fix",
-          "description": "A bug fix"
-        },
-        {
-          "label": "editor",
-          "description": "A change to editor/IDE support"
-        },
-        {
-          "label": "infra",
-          "description": "A change to the build, test or CI infrastructure"
-        },
-        {
-          "label": "perf",
-          "description": "A code change that improves performance"
-        },
-        {
-          "label": "refactor",
-          "description": "A code change that neither fixes a bug nor adds a feature"
-        },
-        {
-          "label": "revert"
-        },
-        {
-          "label": "style",
-          "description": "Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)"
-        },
-        {
-          "label": "test",
-          "description": "Adding missing tests or correcting existing tests"
-        }
-      ],
-      "description": "Type of changes"
-    },
-    {
-      "label": "Scope",
-      "name": "scope",
-      "description": "A scope may be provided to a commit’s type, to provide additional contextual information and is contained within parenthesis, e.g., \"feat(parser): add ability to parse arrays\".",
-      "type": "text",
-      "multiline": false,
-      "prefix": "(",
-      "suffix": ")"
-    },
-    {
-      "label": "Short description",
-      "name": "description",
-      "description": "Short description in the subject line.",
-      "type": "text",
-      "multiline": false
-    },
-    {
-      "label": "Body",
-      "name": "body",
-      "description": "Optional body",
-      "type": "text",
-      "multiline": true,
-      "lines": 5,
-      "maxLines": 10
-    },
-    {
-      "label": "Breaking change",
-      "name": "breaking_change",
-      "type": "boolean",
-      "value": "BREAKING CHANGE: ",
-      "default": false
-    },
-    {
-      "label": "Footer",
-      "name": "footer",
-      "description": "Optional footer",
-      "type": "text",
-      "multiline": true
-    }
-  ],
+  "javascript.preferences.importModuleSpecifier": "project-relative",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "rewrap.autoWrap.enabled": true,
+  "rewrap.onSave": false,
+  "rewrap.reformat": true,
+  "rewrap.wholeComment": false,
   "surround.custom": {
     "register": {
       "label": "register helper",
       "snippet": "{ ${1:helper}: $TM_SELECTED_TEXT }"
     }
   },
-  "rewrap.wrappingColumn": 100,
-  "rewrap.onSave": false,
-  "rewrap.autoWrap.enabled": true,
-  "rewrap.reformat": true,
-  "rewrap.wholeComment": false,
-  "explorer.excludeGitIgnore": true
+  "typescript.experimental.updateImportsOnPaste": true,
+  "typescript.preferences.importModuleSpecifier": "project-relative",
+  "typescript.preferences.importModuleSpecifierEnding": "auto",
+  "typescript.preferences.useAliasesForRenames": false,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.updateImportsOnFileMove.enabled": "always"
 }

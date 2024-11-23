@@ -4,7 +4,20 @@ export type Optional<T> = T | undefined;
 export type Maybe<T> = Nullable<T> | Optional<T>;
 export type FIXME<T, _S extends string> = T;
 
+/**
+ * A special version of `Optional` that is used for values that are expected to be initialized. This
+ * documents the intent that the value will be initialized before it is used, and therefore that
+ * null assertions or `?.` are not appropriate.
+ */
+export type Initializable<T> = T | undefined;
+
 export type Dict<T = unknown> = Record<string, T>;
+
+/**
+ * A type that has an index signature, but nothing else is know about it. Useful in generic code
+ * that needs to index into an opaque, user-specified object.
+ */
+export type Indexable = Dict;
 
 export type DictValue<D extends Dict> = D extends Dict<infer V> ? V : never;
 
@@ -14,6 +27,7 @@ export interface Unique<T> {
 
 export type Recast<T, U> = (T & U) | U;
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export type AnyFn = Function;
 
 /**

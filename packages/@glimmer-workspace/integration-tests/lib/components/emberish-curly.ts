@@ -249,7 +249,7 @@ export class EmberishCurlyComponentManager
     return { component, selfRef };
   }
 
-  getSelf({ selfRef }: EmberishCurlyComponentState): Reference<unknown> {
+  getSelf({ selfRef }: EmberishCurlyComponentState): Reference {
     return selfRef;
   }
 

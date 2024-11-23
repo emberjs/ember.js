@@ -1,33 +1,47 @@
 {
+  "extends": "@tsconfig/strictest",
   "compilerOptions": {
-    "skipLibCheck": true,
-    "module": "esnext",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "esnext",
     "moduleResolution": "bundler",
-    "strict": true,
-    "baseUrl": "."
+    "module": "esnext",
+    "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitReturns": false,
+    "noUnusedLocals": false,
+    "stripInternal": true,
+    // TODO: Remove these and use the decorators manually to avoid infecting
+    // the entire codebase with legacy transpilation semantics.
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "outDir": "ts-dist",
+    "customConditions": [
+      "@glimmer-vm/source"
+    ]
   },
-  "files": [],
-  "references": [
-    {
-      "path": "./benchmark/benchmarks/krausest/tsconfig.json"
-    },
-    {
-      "path": "./bin/tsconfig.json"
-    },
-    {
-      "path": "./packages/@glimmer/tsconfig.json"
-    },
-    {
-      "path": "./packages/@glimmer/tsconfig.test.json"
-    },
-    {
-      "path": "./packages/@glimmer-workspace/tsconfig.json"
-    },
-    {
-      "path": "./server/tsconfig.json"
-    },
-    {
-      "path": "./tsconfig.cjs.json"
-    }
+  "files": [
+    "eslint.config.js"
+  ],
+  "include": [
+    "repo-metadata/**/*",
+    "packages/@glimmer/*/index.*",
+    "packages/@glimmer/*/lib/**/*",
+    "packages/@glimmer/*/test/**/*",
+    "packages/@glimmer-workspace/*/index.*",
+    "packages/@glimmer-workspace/*/lib/**/*",
+    "packages/@glimmer-workspace/eslint-plugin/lib/types.ts",
+    "packages/@glimmer-workspace/*/test/**/*",
+    "packages/@types/*/index.*",
+    "packages/@types/*/lib/**/*",
+    "benchmark/**/*",
+    "bin/**/*",
+    "**/*.config.mts"
+  ],
+  "exclude": [
+    "ts-dist",
+    "**/fixtures/**"
   ]
 }

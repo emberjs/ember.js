@@ -1,6 +1,6 @@
-import type { EmberishCurlyComponentFactory } from '..';
+import type { EmberishCurlyComponentFactory } from '@glimmer-workspace/integration-tests';
+import { EmberishCurlyComponent, jitSuite, test } from '@glimmer-workspace/integration-tests';
 
-import { EmberishCurlyComponent, jitSuite, test } from '..';
 import { AttributesTests } from './attributes-test';
 
 abstract class RangeTests extends AttributesTests {

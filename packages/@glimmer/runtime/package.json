@@ -34,13 +34,12 @@
   ],
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
-    "test:lint": "eslint .",
+    "test:lint": "eslint . --quiet",
     "test:publint": "publint",
     "test:types": "tsc --noEmit -p ../tsconfig.json"
   },
   "dependencies": {
     "@glimmer/destroyable": "workspace:*",
-    "@glimmer/env": "0.1.7",
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",
@@ -49,8 +48,7 @@
     "@glimmer/reference": "workspace:*",
     "@glimmer/util": "workspace:*",
     "@glimmer/validator": "workspace:*",
-    "@glimmer/vm": "workspace:*",
-    "@glimmer/wire-format": "workspace:*"
+    "@glimmer/vm": "workspace:*"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
@@ -58,11 +56,9 @@
     "@glimmer/debug": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
-    "@glimmer/opcode-compiler": "workspace:*",
-    "@types/qunit": "^2.19.9",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "eslint": "^9.18.0",
+    "publint": "^0.3.2",
+    "rollup": "^4.31.0-0",
     "typescript": "*"
   }
 }

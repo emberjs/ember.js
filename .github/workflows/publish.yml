@@ -53,7 +53,7 @@ jobs:
       - uses: wyvox/action-setup-pnpm@v3
         with:
           args: '--ignore-scripts'
-          node-version: 20.1.0
+          node-version: 22.13.0
           # This creates an .npmrc that reads the NODE_AUTH_TOKEN environment variable
           node-registry-url: 'https://registry.npmjs.org'
 

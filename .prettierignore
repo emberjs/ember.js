@@ -9,4 +9,5 @@ ts-dist/
 !packages/**/*.md
 *.yaml
 *.yml
-guides/
+guides/**/*.md
+!guides/workspace/**/*.md

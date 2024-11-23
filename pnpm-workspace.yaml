@@ -1,9 +1,8 @@
 packages:
   - 'bin'
+  - 'repo-metadata'
   - 'build'
   - 'packages'
-  - 'benchmark'
-  - 'benchmark/benchmarks/krausest'
   - 'packages/@glimmer/*'
   - 'packages/@glimmer/*/test'
   - 'packages/@glimmer-workspace/*'

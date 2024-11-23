@@ -44,6 +44,7 @@ export class UpdatingVM implements IUpdatingVM {
     if (import.meta.env.DEV) {
       let hasErrored = true;
       try {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         debug.runInTrackingTransaction!(
           () => this._execute(opcodes, handler),
           '- While rendering:'
@@ -140,7 +141,7 @@ export abstract class BlockOpcode implements UpdatingOpcode, Bounds {
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   public type = 'try';
 
-  protected declare bounds: ResettableBlock; // Shadows property on base class
+  declare protected bounds: ResettableBlock; // Shadows property on base class
 
   override evaluate(vm: UpdatingVM) {
     vm.try(this.children, this);
@@ -195,13 +196,13 @@ export class ListItemOpcode extends TryOpcode {
 
 export class ListBlockOpcode extends BlockOpcode {
   public type = 'list-block';
-  public declare children: ListItemOpcode[];
+  declare public children: ListItemOpcode[];
 
   private opcodeMap = new Map<unknown, ListItemOpcode>();
   private marker: SimpleComment | null = null;
   private lastIterator: OpaqueIterator;
 
-  protected declare readonly bounds: AppendingBlockList;
+  declare protected readonly bounds: AppendingBlockList;
 
   constructor(
     state: Closure,
@@ -252,7 +253,6 @@ export class ListBlockOpcode extends BlockOpcode {
 
     this.children = this.bounds.boundList = [];
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       let item = iterator.next();
 
@@ -263,7 +263,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
       // Items that have already been found and moved will already be retained,
       // we can continue until we find the next unretained item
-      while (opcode !== undefined && opcode.retained === true) {
+      while (opcode !== undefined && opcode.retained) {
         opcode = children[++currentOpcodeIndex];
       }
 
@@ -271,6 +271,7 @@ export class ListBlockOpcode extends BlockOpcode {
         this.retainItem(opcode, item);
         currentOpcodeIndex++;
       } else if (itemMap.has(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         let itemOpcode = itemMap.get(key)!;
 
         // The item opcode was seen already, so we should move it.
@@ -288,7 +289,7 @@ export class ListBlockOpcode extends BlockOpcode {
           // the position of the item's opcode, and determine if they are all
           // retained.
           for (let i = currentOpcodeIndex + 1; i < seenIndex; i++) {
-            if (unwrap(children[i]).retained === false) {
+            if (!unwrap(children[i]).retained) {
               seenUnretained = true;
               break;
             }
@@ -297,7 +298,7 @@ export class ListBlockOpcode extends BlockOpcode {
           // If we have seen only retained opcodes between this and the matching
           // opcode, it means that all the opcodes in between have been moved
           // already, and we can safely retain this item's opcode.
-          if (seenUnretained === false) {
+          if (!seenUnretained) {
             this.retainItem(itemOpcode, item);
             currentOpcodeIndex = seenIndex + 1;
           } else {
@@ -311,7 +312,7 @@ export class ListBlockOpcode extends BlockOpcode {
     }
 
     for (const opcode of children) {
-      if (opcode.retained === false) {
+      if (!opcode.retained) {
         this.deleteItem(opcode);
       } else {
         opcode.reset();
@@ -321,6 +322,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
   private retainItem(opcode: ListItemOpcode, item: OpaqueIterationItem) {
     if (LOCAL_DEBUG) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       logStep!('list-updates', ['retain', item.key]);
     }
 
@@ -336,6 +338,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
   private insertItem(item: OpaqueIterationItem, before: ListItemOpcode | undefined) {
     if (LOCAL_DEBUG) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       logStep!('list-updates', ['insert', item.key]);
     }
 
@@ -399,12 +402,14 @@ export class ListBlockOpcode extends BlockOpcode {
 
     if (LOCAL_DEBUG) {
       let type = currentSibling && currentSibling === nextSibling ? 'move-retain' : 'move';
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       logStep!('list-updates', [type, item.key]);
     }
   }
 
   private deleteItem(opcode: ListItemOpcode) {
     if (LOCAL_DEBUG) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       logStep!('list-updates', ['delete', opcode.key]);
     }
 

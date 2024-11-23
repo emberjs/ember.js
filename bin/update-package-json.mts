@@ -1,9 +1,12 @@
+ 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import chalk from 'chalk';
 
-import { type Package, packages } from './packages.mjs';
+import type { Package } from './packages.mjs';
+
+import { packages } from './packages.mjs';
 
 const ROLLUP_CONFIG = [
   `import { Package } from '@glimmer-workspace/build-support'`,
@@ -60,9 +63,9 @@ function update(
   pkg: Package,
   updater: (packageJSON: PackageJSON) => PackageJSON
 ): { updates: string[]; packageJSON: PackageJSON } {
-  let packageJSON: PackageJSON = JSON.parse(
+  let packageJSON = JSON.parse(
     readFileSync(`${pkg.path}/package.json`, { encoding: 'utf-8' })
-  );
+  ) as PackageJSON;
   const original = JSON.stringify(packageJSON);
 
   packageJSON = updater(packageJSON);

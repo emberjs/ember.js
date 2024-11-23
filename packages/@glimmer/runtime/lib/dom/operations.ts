@@ -24,7 +24,7 @@ const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
 // TODO: Adjust SVG elements
 
 // http://www.w3.org/TR/html/syntax.html#parsing-main-inforeign
-export const BLACKLIST_TABLE = Object.create(null);
+export const BLACKLIST_TABLE = Object.create(null) as Dict<1>;
 
 export class DOMOperations {
   protected declare uselessElement: SimpleElement; // Set by this.setupUselessElement() in constructor

@@ -35,7 +35,7 @@ export class ContentEncoder {
     for (let statement of statements) {
       let result = CONTENT.content(statement);
 
-      if (result && result instanceof WireStatements) {
+      if (result instanceof WireStatements) {
         out.push(...result.toArray());
       } else {
         out.push(result);

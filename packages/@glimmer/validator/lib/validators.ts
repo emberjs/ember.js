@@ -122,7 +122,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   [COMPUTE](): Revision {
     let { lastChecked } = this;
 
-    if (this.isUpdating === true) {
+    if (this.isUpdating) {
       if (import.meta.env.DEV && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
@@ -164,6 +164,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   }
 
   static updateTag(this: void, _tag: UpdatableTag, _subtag: Tag) {
+    // catch bug by non-TS users
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (import.meta.env.DEV && _tag[TYPE] !== UPDATABLE_TAG_ID) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
@@ -205,6 +207,8 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   ) {
     if (
       import.meta.env.DEV &&
+      // catch bug by non-TS users
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       !(tag[TYPE] === UPDATABLE_TAG_ID || tag[TYPE] === DIRYTABLE_TAG_ID)
     ) {
       throw new Error('Attempted to dirty a tag that was not dirtyable');

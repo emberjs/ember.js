@@ -1,2 +1,2 @@
 export type { SourcePosition as Position, SourceLocation, SourcePosition } from '../source/api';
-export * from './nodes-v1';
+export type * from './nodes-v1';

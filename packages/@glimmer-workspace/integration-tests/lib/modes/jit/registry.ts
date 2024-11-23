@@ -8,7 +8,7 @@ import type {
   ResolvedComponentDefinition,
   Template,
 } from '@glimmer/interfaces';
-import { assert } from '@glimmer/debug-util';
+import { localAssert } from '@glimmer/debug-util';
 import { getComponentTemplate } from '@glimmer/manager';
 import { dict } from '@glimmer/util';
 
@@ -88,7 +88,7 @@ export class TestJitRegistry {
     if (definition.template === null) {
       let templateFactory = getComponentTemplate(state);
 
-      assert(
+      localAssert(
         templateFactory || capabilities.dynamicLayout,
         'expected a template to be associated with this component'
       );

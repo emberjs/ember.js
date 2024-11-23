@@ -26,7 +26,7 @@ jobs:
       - uses: wyvox/action@v1
         with:
           pnpm-args: '--ignore-scripts'
-          node-version: 20.1.0
+          node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm turbo build
       - run: node ./bin/build-verify.mjs
@@ -41,7 +41,7 @@ jobs:
       - uses: wyvox/action@v1
         with:
           pnpm-args: '--ignore-scripts'
-          node-version: 20.1.0
+          node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm lint
 
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: wyvox/action@v1
         with:
-          node-version: 20.1.0
+          node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm turbo test:types
 

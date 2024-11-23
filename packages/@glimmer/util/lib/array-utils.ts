@@ -17,6 +17,7 @@ export function isEmptyArray(input: unknown[] | readonly unknown[]): boolean {
 
 export function* reverse<T>(input: T[]): IterableIterator<T> {
   for (let i = input.length - 1; i >= 0; i--) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     yield input[i]!;
   }
 }

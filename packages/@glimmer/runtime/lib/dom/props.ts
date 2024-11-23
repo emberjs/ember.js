@@ -71,5 +71,5 @@ const ATTR_OVERRIDES: Dict<Dict> = {
 
 function preferAttr(tagName: string, propName: string) {
   let tag = ATTR_OVERRIDES[tagName.toUpperCase()];
-  return (tag && tag[propName.toLowerCase()]) || false;
+  return !!(tag && tag[propName.toLowerCase()]);
 }

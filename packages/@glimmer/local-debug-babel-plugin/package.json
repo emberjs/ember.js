@@ -2,6 +2,9 @@
   "name": "@glimmer/local-debug-babel-plugin",
   "version": "0.92.0",
   "license": "MIT",
+  "repo-meta": {
+    "strictness": "loose"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/glimmerjs/glimmer-vm.git",

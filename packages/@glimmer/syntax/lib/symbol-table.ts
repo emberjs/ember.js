@@ -76,7 +76,7 @@ export class ProgramSymbolTable extends SymbolTable {
   readonly blocks = dict<number>();
   readonly usedTemplateLocals: string[] = [];
 
-  root(): ProgramSymbolTable {
+  root(): this {
     return this;
   }
 

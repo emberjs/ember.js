@@ -1,7 +1,7 @@
 import { assign } from '@glimmer/util';
 
 interface NestedHooks {
-  test(name: string, callback: (assert: Assert) => void): void;
+  test: (name: string, callback: (assert: Assert) => void) => void;
 
   /**
    * Runs after the last test. If additional tests are defined after the
@@ -28,8 +28,11 @@ interface NestedHooks {
 type NestedCallback = (hooks: NestedHooks) => void;
 
 export function module(name: string, nested: (hooks: NestedHooks) => void): void;
-export function module(name: string, setup: Partial<NestedHooks>): void;
-export function module(name: string, setup: Partial<NestedHooks>, nested: NestedCallback): void;
+export function module(
+  name: string,
+  setup: Partial<NestedHooks>,
+  nested: Partial<NestedHooks> | NestedCallback
+): void;
 export function module(name: string, second?: any, third?: any) {
   let nested: NestedCallback;
   let setup;
@@ -45,13 +48,13 @@ export function module(name: string, second?: any, third?: any) {
     }
   }
 
-  return QUnit.module(`integration - ${name}`, setup, (supplied) => {
+  return void QUnit.module(`integration - ${name}`, setup, (supplied) => {
     nested(assign({}, supplied, { test: QUnit.test }));
   });
 }
 
 export function test(name: string, callback: (assert: Assert) => void) {
-  return QUnit.test(name, callback);
+  return void QUnit.test(name, callback);
 }
 
 export function todo(name: string, callback: (assert: Assert) => void) {

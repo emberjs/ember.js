@@ -9,6 +9,7 @@ export function assertPresent<T extends string>(value: T): asserts value is Pres
 export function assertPresent<T>(value: T, message: string): asserts value is Present<T>;
 export function assertPresent<T>(value: T, message?: string): asserts value is Present<T> {
   if (LOCAL_DEBUG && !isPresent(value)) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     throw new Error(`Expected present, got ${typeof value === 'string' ? value : message!}`);
   }
 }

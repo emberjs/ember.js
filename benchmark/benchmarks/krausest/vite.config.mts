@@ -21,10 +21,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@glimmer-workspace/benchmark-env': '@glimmer-workspace/benchmark-env/index.ts',
-      '@glimmer/runtime': packagePath('@glimmer/runtime'),
-      '@/components': path.join(currentPath, 'lib', 'components'),
-      '@/utils': path.join(currentPath, 'lib', 'utils'),
+      // This shouldn't be necessary, but the current `main` doesn't have properly
+      // set up `package.json` files, so the built package isn't properly resolved.
+      '@glimmer/compiler': packagePath('@glimmer/compiler'),
+      '#components': path.join(currentPath, 'lib', 'components'),
+      '#utils': path.join(currentPath, 'lib', 'utils'),
     },
   },
 });

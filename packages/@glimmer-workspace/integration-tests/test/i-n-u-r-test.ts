@@ -1,6 +1,6 @@
 import { castToSimple } from '@glimmer/debug-util';
+import { JitRenderDelegate, RenderTest } from '@glimmer-workspace/integration-tests';
 
-import { JitRenderDelegate, RenderTest } from '..';
 import { module } from './support';
 
 // "I-N-U-R" cycle

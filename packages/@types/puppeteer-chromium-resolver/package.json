@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@types/puppeteer-chromium-resolver",
-  "types": "index.d.ts",
+  "exports": "./index.d.ts",
   "dependencies": {
     "puppeteer": "23.11.1"
   }
