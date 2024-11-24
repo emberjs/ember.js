@@ -38,7 +38,6 @@ import {
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -51,6 +50,7 @@ import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
+import { unwrapTemplate } from './utils/template';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
