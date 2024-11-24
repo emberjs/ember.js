@@ -16,7 +16,6 @@ import type {
   TreeBuilder,
   Environment,
   RenderResult,
-  RuntimeContext,
   Template,
   TemplateFactory,
   EvaluationContext,
@@ -128,7 +127,7 @@ class RootState {
 
   constructor(
     public root: Component | OutletView,
-    public runtime: RuntimeContext,
+    public runtime: Pick<EvaluationContext, 'env' | 'program' | 'resolver'>,
     context: EvaluationContext,
     owner: InternalOwner,
     template: Template,
@@ -291,7 +290,7 @@ export class Renderer {
 
   private _owner: InternalOwner;
   private _context: EvaluationContext;
-  private _runtime: RuntimeContext;
+  private _runtime: Pick<EvaluationContext, 'env' | 'program' | 'resolver'>;
 
   private _lastRevision = -1;
   private _destroyed = false;
