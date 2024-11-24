@@ -8,6 +8,7 @@ import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
+import type { CurriedComponent } from '@glimmer/interfaces';
 import type {
   Bounds,
   Cursor,
@@ -21,7 +22,6 @@ import type {
   EvaluationContext,
 } from '@glimmer/interfaces';
 
-import { CurriedType } from '@glimmer/vm';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
@@ -372,7 +372,7 @@ export class Renderer {
     let definition = createRootOutlet(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, view.owner, null, true),
+      curry(0 as CurriedComponent, definition, view.owner, null, true),
       target
     );
   }
@@ -381,7 +381,7 @@ export class Renderer {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, this._owner, null, true),
+      curry(0 as CurriedComponent, definition, this._owner, null, true),
       target
     );
   }
