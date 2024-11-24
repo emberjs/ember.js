@@ -10,7 +10,6 @@ import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
-  CompileTimeCompilationContext,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
@@ -20,6 +19,7 @@ import type {
   RuntimeContext,
   Template,
   TemplateFactory,
+  EvaluationContext,
 } from '@glimmer/interfaces';
 
 import { CurriedType } from '@glimmer/vm';
@@ -129,7 +129,7 @@ class RootState {
   constructor(
     public root: Component | OutletView,
     public runtime: RuntimeContext,
-    context: CompileTimeCompilationContext,
+    context: EvaluationContext,
     owner: InternalOwner,
     template: Template,
     self: Reference<unknown>,
@@ -290,7 +290,7 @@ export class Renderer {
   private _inRenderTransaction = false;
 
   private _owner: InternalOwner;
-  private _context: CompileTimeCompilationContext;
+  private _context: EvaluationContext;
   private _runtime: RuntimeContext;
 
   private _lastRevision = -1;
