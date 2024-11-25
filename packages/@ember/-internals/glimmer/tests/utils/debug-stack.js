@@ -1,5 +1,11 @@
 function debugStackMessage(message, renderTree, includeTopLevel) {
-  let topLevel = includeTopLevel ? '-top-level\n {4}' : '';
+  let topLevel = '';
+
+  if (includeTopLevel === 'outlet') {
+    topLevel = '{{outlet}} for -top-level\n {4}-top-level\n {6}';
+  } else if (includeTopLevel) {
+    topLevel = '-top-level\n {4}';
+  }
 
   return `${message}[\\S\\s]*- While rendering:\n {2}${topLevel}${renderTree.join('\\n\\s*')}`;
 }
