@@ -9,6 +9,8 @@ question on Stack Overflow: http://stackoverflow.com/questions/ask?tags=ember.js
 
 Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels) for Github Issues.
 
+Issues related to `@glimmer/component` package are labeled [`pkg:@glimmer/component`](https://github.com/emberjs/ember.js/issues?q=sort%3Aupdated-desc+is%3Aopen+label%3Apkg%3A%40glimmer%2Fcomponent).
+
 # Issues
 
 Think you've found a bug or have a new feature to suggest? Let us know!
