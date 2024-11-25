@@ -8,21 +8,20 @@ import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
 import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
+import type { CurriedComponent } from '@glimmer/interfaces';
 import type {
   Bounds,
-  CompileTimeCompilationContext,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
-  ElementBuilder,
+  TreeBuilder,
   Environment,
   RenderResult,
-  RuntimeContext,
   Template,
   TemplateFactory,
+  EvaluationContext,
 } from '@glimmer/interfaces';
 
-import { CurriedType } from '@glimmer/vm';
 import type { Nullable } from '@ember/-internals/utility-types';
 import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
@@ -38,7 +37,6 @@ import {
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -51,8 +49,9 @@ import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
+import { unwrapTemplate } from './utils/template';
 
-export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
+export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
 export interface View {
   parentView: Nullable<View>;
@@ -128,8 +127,8 @@ class RootState {
 
   constructor(
     public root: Component | OutletView,
-    public runtime: RuntimeContext,
-    context: CompileTimeCompilationContext,
+    public runtime: Pick<EvaluationContext, 'env' | 'program' | 'resolver'>,
+    context: EvaluationContext,
     owner: InternalOwner,
     template: Template,
     self: Reference<unknown>,
@@ -290,8 +289,8 @@ export class Renderer {
   private _inRenderTransaction = false;
 
   private _owner: InternalOwner;
-  private _context: CompileTimeCompilationContext;
-  private _runtime: RuntimeContext;
+  private _context: EvaluationContext;
+  private _runtime: Pick<EvaluationContext, 'env' | 'program' | 'resolver'>;
 
   private _lastRevision = -1;
   private _destroyed = false;
@@ -373,7 +372,7 @@ export class Renderer {
     let definition = createRootOutlet(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, view.owner, null, true),
+      curry(0 as CurriedComponent, definition, view.owner, null, true),
       target
     );
   }
@@ -382,7 +381,7 @@ export class Renderer {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, this._owner, null, true),
+      curry(0 as CurriedComponent, definition, this._owner, null, true),
       target
     );
   }
