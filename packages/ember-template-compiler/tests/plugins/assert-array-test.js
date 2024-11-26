@@ -38,5 +38,23 @@ moduleFor(
       this.assertHTML('<ul><li>2</li><li>4</li><li>6</li></ul>');
       this.assertStableRerender();
     }
+
+    ['@test survives undefined item with key'](assert) {
+      // Intentionally double all of the values to verify that this
+      // version of the `array` function is used.
+      function array(...values) {
+        return values.map((value) => value * 2);
+      }
+
+      let Root = defineComponent(
+        { array },
+        `<ul>{{#each (array undefined) key="anything" as |item|}}<li>{{item}}</li>{{/each}}</ul>`
+      );
+      this.registerComponent('root', { ComponentClass: Root });
+
+      this.render('<Root />');
+      this.assertHTML('<ul><li></li></ul>');
+      this.assertStableRerender();
+    }
   }
 );
