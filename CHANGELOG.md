@@ -1,5 +1,30 @@
 # Changelog
 
+## Release (2024-11-27)
+
+@glimmer/compiler 0.93.1 (patch)
+@glimmer/destroyable 0.93.1 (patch)
+@glimmer/encoder 0.92.5 (patch)
+@glimmer/manager 0.93.1 (patch)
+@glimmer/node 0.93.1 (patch)
+@glimmer/opcode-compiler 0.93.1 (patch)
+@glimmer/owner 0.92.5 (patch)
+@glimmer/program 0.93.1 (patch)
+@glimmer/reference 0.93.1 (patch)
+@glimmer/runtime 0.93.1 (patch)
+@glimmer/syntax 0.93.1 (patch)
+@glimmer/util 0.93.1 (patch)
+@glimmer/validator 0.93.1 (patch)
+@glimmer/vm 0.93.1 (patch)
+@glimmer/wire-format 0.93.1 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`, `@glimmer/util`, `@glimmer/wire-format`
+  * [#1669](https://github.com/glimmerjs/glimmer-vm/pull/1669) Closes [#1668](https://github.com/glimmerjs/glimmer-vm/issues/1668): Node does not use the 'development' condition with default require() - this PR removes the `development` condition under `require` for `@glimmer/syntax` and dependents. ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-11-22)
 
 @glimmer/compiler 0.93.0 (minor)
