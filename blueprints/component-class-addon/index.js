@@ -5,7 +5,7 @@ const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 
-const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = {
   description: 'Generates a component class.',
@@ -14,7 +14,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    maybePolyfillTypeScriptBlueprints(this);
+    typescriptBlueprintPolyfill(this);
   },
 
   fileMapTokens: function () {

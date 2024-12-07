@@ -150,7 +150,6 @@ module.exports = {
         'node-tests/**/*.js',
         'tests/node/**/*.js',
         'blueprints/**/*.js',
-        'blueprints-js/**/*.js',
         'bin/**/*.js',
         'bin/**/*.mjs',
         'tests/docs/*.js',

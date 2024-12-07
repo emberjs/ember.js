@@ -7,7 +7,7 @@ const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { has } = require('@ember/edition-utils');
 const { generateComponentSignature } = require('../-utils');
 
-const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 const OCTANE = has('octane');
 
@@ -47,17 +47,10 @@ module.exports = {
     },
   ],
 
-  /**
-    Flag to let us correctly handle the case where we are running against a
-    version of Ember CLI which does not support TS-based emit, and where we
-    therefore *must* not emit a `defaultExport` local which includes a type
-    parameter in the exported function call or class definition.
-   */
-  _isUsingTS: false,
-
   init() {
     this._super && this._super.init.apply(this, arguments);
-    this._isUsingTS = maybePolyfillTypeScriptBlueprints(this);
+    typescriptBlueprintPolyfill(this);
+
     let isOctane = has('octane');
 
     this.availableOptions.forEach((option) => {
@@ -132,21 +125,13 @@ module.exports = {
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        if (this._isUsingTS) {
-          componentSignature = generateComponentSignature(classifiedModuleName);
-          defaultExport = `class ${classifiedModuleName} extends Component<${classifiedModuleName}Signature> {}`;
-        } else {
-          defaultExport = `class ${classifiedModuleName} extends Component {}`;
-        }
+        componentSignature = generateComponentSignature(classifiedModuleName);
+        defaultExport = `class ${classifiedModuleName} extends Component<${classifiedModuleName}Signature> {}`;
         break;
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
-        if (this._isUsingTS) {
-          componentSignature = generateComponentSignature(classifiedModuleName);
-          defaultExport = `templateOnly<${classifiedModuleName}Signature>();`;
-        } else {
-          defaultExport = `templateOnly();`;
-        }
+        componentSignature = generateComponentSignature(classifiedModuleName);
+        defaultExport = `templateOnly<${classifiedModuleName}Signature>();`;
         break;
     }
 
