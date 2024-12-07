@@ -22,7 +22,6 @@
   "files": [
     "build-metadata.json",
     "blueprints",
-    "blueprints-js",
     "dist/packages",
     "dist/dependencies",
     "dist/ember-template-compiler.js",
@@ -54,9 +53,7 @@
     "lint:eslint:fix": "npm-run-all \"lint:eslint --fix\"",
     "lint:fix": "npm-run-all lint:*:fix",
     "test": "node bin/run-tests.js",
-    "test:blueprints:js": "EMBER_TYPESCRIPT_BLUEPRINTS=false pnpm test:blueprints:ts",
-    "test:blueprints:ts": "mocha node-tests/blueprints/**/*-test.js",
-    "test:blueprints": "pnpm test:blueprints:js && pnpm test:blueprints:ts",
+    "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:wip": "vite build --mode development --minify false && testem ci",
