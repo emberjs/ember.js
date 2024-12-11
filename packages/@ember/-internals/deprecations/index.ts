@@ -139,6 +139,15 @@ export const DEPRECATIONS = {
       enabled: '5.10.0',
     },
   }),
+  DEPRECATE_IMPORT_INJECT: deprecation({
+    for: 'ember-source',
+    id: 'importing-inject-from-ember-service',
+    since: {
+      available: '6.2.0',
+    },
+    until: '7.0.0',
+    url: 'https://deprecations.emberjs.com/id/importing-inject-from-ember-service',
+  }),
 };
 
 export function deprecateUntil(message: string, deprecation: DeprecationObject) {
