@@ -17,7 +17,7 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_IMPORT_INJECT.isRemoved
     )} @test works with native decorators`](assert: QUnit['assert']) {
       expectDeprecation(
-        /'Importing `inject` from `@ember\/service` is deprecated. Please import `service` instead.'/,
+        /Importing `inject` from `@ember\/service` is deprecated. Please import `service` instead./,
         DEPRECATIONS.DEPRECATE_IMPORT_INJECT.isEnabled
       );
 
@@ -43,7 +43,7 @@ moduleFor(
       DEPRECATIONS.DEPRECATE_IMPORT_INJECT.isRemoved
     )} @test uses the decorated property key if not provided`](assert: QUnit['assert']) {
       expectDeprecation(
-        /'Importing `inject` from `@ember\/service` is deprecated. Please import `service` instead.'/,
+        /Importing `inject` from `@ember\/service` is deprecated. Please import `service` instead./,
         DEPRECATIONS.DEPRECATE_IMPORT_INJECT.isEnabled
       );
 
