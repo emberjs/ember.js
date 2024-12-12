@@ -11,7 +11,6 @@ runs:
     - uses: pnpm/action-setup@v4
       name: Install pnpm
       with:
-        version: 8
         run_install: false
     - name: Install Node.js
       uses: actions/setup-node@v4
@@ -29,7 +28,7 @@ runs:
         path: .puppeteer-cache
         key: ${{ runner.os }}-puppeteer-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
-          ${{ runner.os }}-puppeteer-          
+          ${{ runner.os }}-puppeteer-
 
     - run: pnpm install ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
       shell: bash
