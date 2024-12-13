@@ -2,7 +2,7 @@
 declare const mainContext: object | undefined;
 
 // from lodash to catch fake globals
-function checkGlobal(value: any | null | undefined): value is object {
+function checkGlobal(value: any | null | undefined): object | undefined {
   return value && value.Object === Object ? value : undefined;
 }
 
