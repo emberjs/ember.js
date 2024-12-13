@@ -161,7 +161,15 @@ moduleFor(
         ComponentWithBacktrackingSet;
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['application', 'route-with-mount', 'chat', 'this.person.name'],
+        includeTopLevel: 'outlet',
+        renderTree: [
+          '{{outlet}} for application',
+          'application',
+          '{{outlet}} for route-with-mount',
+          'route-with-mount',
+          'chat',
+          'this.person.name',
+        ],
       });
 
       await this.visit('/');

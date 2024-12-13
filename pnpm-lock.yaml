@@ -1777,6 +1777,9 @@ importers:
       ember-source:
         specifier: workspace:*
         version: link:../..
+      ember-template-imports:
+        specifier: ^4.1.2
+        version: 4.2.0
       ember-template-lint:
         specifier: ^6.0.0
         version: 6.0.0
@@ -7465,6 +7468,9 @@ packages:
 
   /ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
+    peerDependenciesMeta:
+      ajv:
+        optional: true
     dependencies:
       ajv: 8.12.0
 
@@ -9714,6 +9720,10 @@ packages:
     resolution: {integrity: sha512-9guqKIx2H+78N17otBpl8yLZbQGL5q1vBO/jDb3gF2JjixtcVpC62jDUNxjVMNoaZ09oxRX84ZOD6VX02qkVvg==}
     dev: true
 
+  /content-tag@3.0.0:
+    resolution: {integrity: sha512-HxWPmF9hzehv5PV7TSK7QSzlVBhmwQA8NgBrXmL+fqXfM3L1r3ResAPzeiGbxra3Zw6U3gdhw3cIDJADQnuCVQ==}
+    dev: true
+
   /content-type@1.0.5:
     resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
     engines: {node: '>= 0.6'}
@@ -11245,6 +11255,17 @@ packages:
       parse-static-imports: 1.1.0
       string.prototype.matchall: 4.0.11
       validate-peer-dependencies: 1.2.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /ember-template-imports@4.2.0:
+    resolution: {integrity: sha512-qwf/38E1ut8M2/1tsFJl6kL99799MvxQrx0lN3LAc0HJRQhM/lYHqnHhzS30rkH76g+76TfxcMB5JJZQabWk2A==}
+    engines: {node: 16.* || >= 18}
+    dependencies:
+      broccoli-stew: 3.0.0
+      content-tag: 3.0.0
+      ember-cli-version-checker: 5.1.2
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -13217,7 +13238,7 @@ packages:
       function-bind: 1.1.2
 
   /hawk@1.1.1:
-    resolution: {integrity: sha1-h81JH5tG5OKurKM1QWdmiF0tHtk=}
+    resolution: {integrity: sha512-am8sVA2bCJIw8fuuVcKvmmNnGFUGW8spTkVtj2fXTEZVkfN42bwFZFtDem57eFi+NSxurJB8EQ7Jd3uCHLn8Vw==}
     engines: {node: '>=0.8.0'}
     deprecated: This module moved to @hapi/hawk. Please make sure to switch over as this distribution is no longer supported and may contain bugs and critical security issues.
     requiresBuild: true
@@ -13365,7 +13386,7 @@ packages:
     dependencies:
       '@tootallnate/once': 1.1.2
       agent-base: 6.0.2(supports-color@8.1.1)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -13417,7 +13438,7 @@ packages:
     engines: {node: '>= 6'}
     dependencies:
       agent-base: 6.0.2(supports-color@8.1.1)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -17412,7 +17433,7 @@ packages:
     resolution: {integrity: sha512-GqXBq2SPWv9hTXDFKS8WrKK1aISB0aKGHZzH+uD4ShAgs+Fz20ZfoerLOm8U+f62iRWLrw6nimOY/uYuTcVhvg==}
     engines: {node: 6.* || 8.* || >= 10.*}
     dependencies:
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.7(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
     dev: true

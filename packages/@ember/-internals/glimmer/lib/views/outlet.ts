@@ -90,7 +90,6 @@ export default class OutletView {
       name: TOP_LEVEL_NAME,
       template,
       controller: undefined,
-      model: undefined,
     };
   }
 
