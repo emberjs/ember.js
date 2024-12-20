@@ -25,9 +25,10 @@ export interface RenderState {
   model: unknown;
 
   /**
-   * The template (the route template to use in the {{outlet}})
+   * The route's template – this is either a Template or a component, and it
+   * gets normalized during the render process.
    */
-  template: Template | undefined;
+  template: Template | object | undefined;
 }
 
 export interface OutletState {
