@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.1.0-beta.2 (December 20, 2024)
+
+- [#20792](https://github.com/emberjs/ember.js/pull/20792) [BUGFIX] Fix importing ember-source/types
+
 ## v6.1.0-beta.1 (November 11, 2024)
 
 - [#20782](https://github.com/emberjs/ember.js/pull/20782) [BUGFIX] Fixes Ember keyword shadowing: keywords should always be superseded by in-scope lexical variables
