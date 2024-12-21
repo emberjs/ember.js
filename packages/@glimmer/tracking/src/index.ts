@@ -7,9 +7,18 @@
 
   We can do this by marking the field with the `@tracked` decorator.
 
+  ### Caching a getter value
+
+  The `@cached` decorator can be used on getters in order to cache the
+  return value of the getter.
+
+  This method adds an extra overhead to each memoized getter, therefore caching
+  the values should not be the default strategy, but used in last resort.
+
   @module @glimmer/tracking
   @public
 */
+
 import { meta as metaFor } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
@@ -299,60 +308,93 @@ export class TrackedDescriptor {
 }
 
 /**
-  The `@cached` decorator can be used on getters in order to cache the return
-  value of the getter. This is useful when a getter is expensive and used very
-  often. For instance, in this guest list class, we have the `sortedGuests`
+  Gives the getter a caching behavior. The return value of the getter
+  will be cached until any of the properties it is entangled with
+  are invalidated. This is useful when a getter is expensive and
+  used very often.
+
+  For instance, in this `GuestList` class, we have the `sortedGuests`
   getter that sorts the guests alphabetically:
 
-  ```js
-  import { tracked } from '@glimmer/tracking';
+  ```javascript
+    import { tracked } from '@glimmer/tracking';
 
-  class GuestList {
-    @tracked guests = ['Zoey', 'Tomster'];
+    class GuestList {
+      @tracked guests = ['Zoey', 'Tomster'];
 
-    get sortedGuests() {
-      return this.guests.slice().sort()
+      get sortedGuests() {
+        return this.guests.slice().sort()
+      }
     }
-  }
   ```
 
   Every time `sortedGuests` is accessed, a new array will be created and sorted,
-  because JavaScript getters do not cache by default. When the guest list is
-  small, like the one in the example, this is not a problem. However, if the guest
-  list were to grow very large, it would mean that we would be doing a large
-  amount of work each time we accessed `sortedGetters`. With `@cached`, we can
-  cache the value instead:
+  because JavaScript getters do not cache by default. When the guest list
+  is small, like the one in the example, this is not a problem. However, if
+  the guest list were to grow very large, it would mean that we would be doing
+  a large amount of work each time we accessed `sortedGuests`. With `@cached`,
+  we can cache the value instead:
 
-  ```js
-  import { tracked, cached } from '@glimmer/tracking';
+  ```javascript
+    import { tracked, cached } from '@glimmer/tracking';
 
-  class GuestList {
-    @tracked guests = ['Zoey', 'Tomster'];
+    class GuestList {
+      @tracked guests = ['Zoey', 'Tomster'];
 
-    @cached
-    get sortedGuests() {
-      return this.guests.slice().sort()
+      @cached
+      get sortedGuests() {
+        return this.guests.slice().sort()
+      }
     }
+  ```
+
+  Now the `sortedGuests` getter will be cached based on autotracking.
+  It will only rerun and create a new sorted array when the guests tracked
+  property is updated.
+
+
+  ### Tradeoffs
+
+  Overuse is discouraged.
+
+  In general, you should avoid using `@cached` unless you have confirmed that
+  the getter you are decorating is computationally expensive, since `@cached`
+  adds a small amount of overhead to the getter.
+  While the individual costs are small, a systematic use of the `@cached`
+  decorator can add up to a large impact overall in your app.
+  Many getters and tracked properties are only accessed once during rendering,
+  and then never rerendered, so adding `@cached` when unnecessary can
+  negatively impact performance.
+
+  Also, `@cached` may rerun even if the values themselves have not changed,
+  since tracked properties will always invalidate.
+  For example updating an integer value from `5` to an other `5` will trigger
+  a rerun of the cached properties building from this integer.
+
+  Avoiding a cache invalidation in this case is not something that can
+  be achieved on the `@cached` decorator itself, but rather when updating
+  the underlying tracked values, by applying some diff checking mechanisms:
+
+  ```javascript
+  if (nextValue !== this.trackedProp) {
+    this.trackedProp = nextValue;
   }
   ```
 
-  Now the `sortedGuests` getter will be cached based on _autotracking_. It will
-  only rerun and create a new sorted array when the `guests` tracked property is
-  updated.
+  Here equal values won't update the property, therefore not triggering
+  the subsequent cache invalidations of the `@cached` properties who were
+  using this `trackedProp`.
 
-  In general, you should avoid using `@cached` unless you have confirmed that the
-  getter you are decorating is computationally expensive. `@cached` adds a small
-  amount of overhead to the getter, making it more expensive. While this overhead
-  is small, if `@cached` is overused it can add up to a large impact overall in
-  your app. Many getters and tracked properties are only accessed once, rendered,
-  and then never rerendered, so adding `@cached` when it is unnecessary can
-  negatively impact performance.
+  Remember that setting tracked data should only be done during initialization,
+  or as the result of a user action. Setting tracked data during render
+  (such as in a getter), is not supported.
 
   @method cached
   @static
   @for @glimmer/tracking
   @public
  */
+
 export const cached: MethodDecorator = (...args: any[]) => {
   const [target, key, descriptor] = args;
 
