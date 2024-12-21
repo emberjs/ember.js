@@ -86,6 +86,7 @@ function glimmerTracking() {
     onLog: handleRollupWarnings,
     input: {
       index: './packages/@glimmer/tracking/src/index.ts',
+      'primitives/cache': './packages/@glimmer/tracking/src/primitives/cache.ts',
     },
     output: {
       format: 'es',

@@ -54,7 +54,7 @@
     "@glimmer/reference": "0.92.3",
     "@glimmer/runtime": "0.92.4",
     "@glimmer/syntax": "0.92.3",
-    "@glimmer/tracking": "workspace:*",
+    "@glimmer/tracking": "workspace:^",
     "@glimmer/util": "0.92.3",
     "@glimmer/validator": "0.92.3",
     "@glimmer/vm": "0.92.3",

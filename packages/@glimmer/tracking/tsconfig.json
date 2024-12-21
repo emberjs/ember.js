@@ -6,7 +6,8 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "paths": {
-      "@ember/array": ["../../../types/stable/@ember/array/index.d.ts"],
+      "@ember/array/*": ["../../../types/stable/@ember/array/*"],
+      "@ember/debug": ["../../../types/stable/@ember/debug/index.d.ts"],
       "@ember/-internals/*": ["../../../types/stable/@ember/-internals/*"]
     },
     "lib": ["es2020", "dom"],
