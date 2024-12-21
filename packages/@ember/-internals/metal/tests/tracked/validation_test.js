@@ -1,12 +1,5 @@
-import {
-  computed,
-  defineProperty,
-  get,
-  set,
-  tagForProperty,
-  tracked,
-  notifyPropertyChange,
-} from '../..';
+import { computed, defineProperty, get, set, tagForProperty, notifyPropertyChange } from '../..';
+import { tracked } from '@glimmer/tracking';
 
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { track, valueForTag, validateTag } from '@glimmer/validator';
