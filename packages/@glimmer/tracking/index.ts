@@ -1,5 +1,3 @@
-export { tracked, cached } from '@ember/-internals/metal';
-
 /**
   In order to tell Ember a value might change, we need to mark it as trackable.
   Trackable values are values that:
@@ -12,6 +10,30 @@ export { tracked, cached } from '@ember/-internals/metal';
   @module @glimmer/tracking
   @public
 */
+import { meta as metaFor } from '@ember/-internals/meta';
+import { isEmberArray } from '@ember/array/-internals';
+import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
+import {
+  consumeTag,
+  dirtyTagFor,
+  tagFor,
+  trackedData,
+  createCache,
+  getValue,
+} from '@glimmer/validator';
+import type { ElementDescriptor } from '@ember/-internals/metal';
+import { CHAIN_PASS_THROUGH } from '@ember/-internals/metal/lib/chain-tags';
+import type {
+  ExtendedMethodDecorator,
+  DecoratorPropertyDescriptor,
+} from '@ember/-internals/metal/lib/decorator';
+import {
+  COMPUTED_SETTERS,
+  isElementDescriptor,
+  setClassicDecorator,
+} from '@ember/-internals/metal/lib/decorator';
+import { SELF_TAG } from '@ember/-internals/metal/lib/tags';
 
 /**
   Marks a property as tracked. By default, values that are rendered in Ember app
@@ -146,6 +168,135 @@ export { tracked, cached } from '@ember/-internals/metal';
   @for @glimmer/tracking
   @public
 */
+export function tracked(propertyDesc: {
+  value: any;
+  initializer: () => any;
+}): ExtendedMethodDecorator;
+export function tracked(target: object, key: string): void;
+export function tracked(
+  target: object,
+  key: string,
+  desc: DecoratorPropertyDescriptor
+): DecoratorPropertyDescriptor;
+export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorPropertyDescriptor {
+  assert(
+    `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
+    !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
+  );
+
+  if (!isElementDescriptor(args)) {
+    let propertyDesc = args[0];
+
+    assert(
+      `tracked() may only receive an options object containing 'value' or 'initializer', received ${propertyDesc}`,
+      args.length === 0 || (typeof propertyDesc === 'object' && propertyDesc !== null)
+    );
+
+    if (DEBUG && propertyDesc) {
+      let keys = Object.keys(propertyDesc);
+
+      assert(
+        `The options object passed to tracked() may only contain a 'value' or 'initializer' property, not both. Received: [${keys}]`,
+        keys.length <= 1 &&
+          (keys[0] === undefined || keys[0] === 'value' || keys[0] === 'initializer')
+      );
+
+      assert(
+        `The initializer passed to tracked must be a function. Received ${propertyDesc.initializer}`,
+        !('initializer' in propertyDesc) || typeof propertyDesc.initializer === 'function'
+      );
+    }
+
+    let initializer = propertyDesc ? propertyDesc.initializer : undefined;
+    let value = propertyDesc ? propertyDesc.value : undefined;
+
+    let decorator = function (
+      target: object,
+      key: string,
+      _desc?: DecoratorPropertyDescriptor,
+      _meta?: any,
+      isClassicDecorator?: boolean
+    ): DecoratorPropertyDescriptor {
+      assert(
+        `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+        isClassicDecorator
+      );
+
+      let fieldDesc = {
+        initializer: initializer || (() => value),
+      };
+
+      return descriptorForField([target, key, fieldDesc]);
+    };
+
+    setClassicDecorator(decorator);
+
+    return decorator;
+  }
+
+  return descriptorForField(args);
+}
+
+if (DEBUG) {
+  // Normally this isn't a classic decorator, but we want to throw a helpful
+  // error in development so we need it to treat it like one
+  setClassicDecorator(tracked);
+}
+
+function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPropertyDescriptor {
+  assert(
+    `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
+    !desc || (!desc.value && !desc.get && !desc.set)
+  );
+
+  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
+
+  function get(this: object): unknown {
+    let value = getter(this);
+
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(value) || isEmberArray(value)) {
+      consumeTag(tagFor(value, '[]'));
+    }
+
+    return value;
+  }
+
+  function set(this: object, newValue: unknown): void {
+    setter(this, newValue);
+    dirtyTagFor(this, SELF_TAG);
+  }
+
+  let newDesc = {
+    enumerable: true,
+    configurable: true,
+    isTracked: true,
+
+    get,
+    set,
+  };
+
+  COMPUTED_SETTERS.add(set);
+
+  metaFor(target).writeDescriptors(key, new TrackedDescriptor(get, set));
+
+  return newDesc;
+}
+
+export class TrackedDescriptor {
+  constructor(private _get: () => unknown, private _set: (value: unknown) => void) {
+    CHAIN_PASS_THROUGH.add(this);
+  }
+
+  get(obj: object): unknown {
+    return this._get.call(obj);
+  }
+
+  set(obj: object, _key: string, value: unknown): void {
+    this._set.call(obj, value);
+  }
+}
 
 /**
   The `@cached` decorator can be used on getters in order to cache the return
@@ -202,3 +353,54 @@ export { tracked, cached } from '@ember/-internals/metal';
   @for @glimmer/tracking
   @public
  */
+export const cached: MethodDecorator = (...args: any[]) => {
+  const [target, key, descriptor] = args;
+
+  // Error on `@cached()`, `@cached(...args)`, and `@cached propName = value;`
+  if (DEBUG && target === undefined) throwCachedExtraneousParens();
+  if (
+    DEBUG &&
+    (typeof target !== 'object' ||
+      typeof key !== 'string' ||
+      typeof descriptor !== 'object' ||
+      args.length !== 3)
+  ) {
+    throwCachedInvalidArgsError(args);
+  }
+  if (DEBUG && (!('get' in descriptor) || typeof descriptor.get !== 'function')) {
+    throwCachedGetterOnlyError(key);
+  }
+
+  const caches = new WeakMap();
+  const getter = descriptor.get;
+
+  descriptor.get = function (): unknown {
+    if (!caches.has(this)) {
+      caches.set(this, createCache(getter.bind(this)));
+    }
+
+    return getValue(caches.get(this));
+  };
+};
+
+function throwCachedExtraneousParens(): never {
+  throw new Error(
+    'You attempted to use @cached(), which is not necessary nor supported. Remove the parentheses and you will be good to go!'
+  );
+}
+
+function throwCachedGetterOnlyError(key: string): never {
+  throw new Error(`The @cached decorator must be applied to getters. '${key}' is not a getter.`);
+}
+
+function throwCachedInvalidArgsError(args: unknown[] = []): never {
+  throw new Error(
+    `You attempted to use @cached on with ${
+      args.length > 1 ? 'arguments' : 'an argument'
+    } ( @cached(${args
+      .map((d) => `'${d}'`)
+      .join(
+        ', '
+      )}), which is not supported. Dependencies are automatically tracked, so you can just use ${'`@cached`'}`
+  );
+}

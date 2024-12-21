@@ -1,4 +1,4 @@
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import { assert } from '@ember/debug';
 import { action } from '@ember/object';
 import type { Reference } from '@glimmer/reference';
