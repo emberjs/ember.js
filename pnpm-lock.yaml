@@ -416,7 +416,7 @@ importers:
         specifier: 0.92.3
         version: 0.92.3
       '@glimmer/tracking':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../@glimmer/tracking
       '@glimmer/util':
         specifier: 0.92.3
