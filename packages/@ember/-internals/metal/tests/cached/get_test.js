@@ -1,5 +1,5 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { cached, tracked } from '../..';
+import { cached, tracked } from '@glimmer/tracking';
 
 moduleFor(
   '@cached decorator: get',

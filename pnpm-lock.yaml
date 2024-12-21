@@ -1313,6 +1313,12 @@ importers:
       '@ember/-internals':
         specifier: workspace:*
         version: link:../../@ember/-internals
+      '@embroider/addon-shim':
+        specifier: ^1.8.9
+        version: 1.9.0
+      '@glimmer/env':
+        specifier: ^0.1.7
+        version: 0.1.7
 
   packages/ember:
     dependencies:

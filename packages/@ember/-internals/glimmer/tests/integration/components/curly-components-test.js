@@ -13,7 +13,7 @@ import {
 import { action } from '@ember/object';
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import { alias } from '@ember/object/computed';
 import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
