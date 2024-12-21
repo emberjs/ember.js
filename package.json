@@ -41,6 +41,7 @@
     "url": "git+https://github.com/emberjs/ember.js.git"
   },
   "scripts": {
+    "prepare": "pnpm build",
     "build:js": "rollup --config",
     "build:types": "node types/publish.mjs",
     "build": "npm-run-all build:*",
@@ -399,3 +400,4 @@
     "pnpm": "8.10.0"
   }
 }
+
