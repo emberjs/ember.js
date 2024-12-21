@@ -18,6 +18,7 @@ const testDependencies = ['qunit', 'vite'];
 
 let configs = [
   esmConfig(),
+  glimmerTracking(),
   legacyBundleConfig('./broccoli/amd-compat-entrypoints/ember.debug.js', 'ember.debug.js', {
     isDeveloping: true,
   }),
@@ -76,6 +77,31 @@ function esmConfig() {
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
       pruneEmptyBundles(),
       packageMeta(),
+    ],
+  };
+}
+
+function glimmerTracking() {
+  return {
+    onLog: handleRollupWarnings,
+    input: {
+      index: './packages/@glimmer/tracking/src/index.ts',
+    },
+    output: {
+      format: 'es',
+      dir: 'packages/@glimmer/tracking/dist',
+      hoistTransitiveImports: false,
+      generatedCode: 'es2015',
+    },
+    plugins: [
+      babel({
+        babelHelpers: 'bundled',
+        extensions: ['.js', '.ts'],
+        configFile: false,
+        ...sharedBabelConfig,
+      }),
+      resolveTS(),
+      externalizePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
     ],
   };
 }
@@ -172,6 +198,7 @@ function packages() {
 
       // this is a real package that publishes by itself
       '@glimmer/component/**',
+      '@glimmer/tracking/**',
 
       // exclude these so we can add only their entrypoints below
       ...rolledUpPackages().map((name) => `${name}/**`),
@@ -356,6 +383,11 @@ export function resolvePackages(deps, isExternal) {
           if (existsSync(candidate) && statSync(candidate).isFile()) {
             return candidate;
           }
+        }
+
+        // Where does this go?
+        if (source.startsWith('@glimmer/tracking')) {
+          return { external: true, id: source };
         }
 
         if (testDependencies.includes(pkgName)) {

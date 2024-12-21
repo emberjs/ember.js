@@ -157,6 +157,9 @@ importers:
       '@glimmer/component':
         specifier: workspace:^
         version: link:packages/@glimmer/component
+      '@glimmer/tracking':
+        specifier: workspace:^
+        version: link:packages/@glimmer/tracking
       '@rollup/plugin-babel':
         specifier: ^6.0.4
         version: 6.0.4(@babel/core@7.24.4)(rollup@4.16.4)
@@ -1310,15 +1313,16 @@ importers:
 
   packages/@glimmer/tracking:
     dependencies:
-      '@ember/-internals':
-        specifier: workspace:*
-        version: link:../../@ember/-internals
       '@embroider/addon-shim':
         specifier: ^1.8.9
         version: 1.9.0
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
+    devDependencies:
+      typescript:
+        specifier: '5.1'
+        version: 5.1.6
 
   packages/ember:
     dependencies:

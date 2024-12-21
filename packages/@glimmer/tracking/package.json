@@ -8,10 +8,6 @@
     "ember-addon"
   ],
   "exports": {
-    ".": "./index.ts",
-    "./primitives/cache": "./primitives/cache.ts"
-  },
-  "publishConfig": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
@@ -21,6 +17,10 @@
       "default": "./dist/primitives/cache.js"
     }
   },
+  "files": [
+    "src",
+    "dist"
+  ],
   "typesVersions": {
     "*": {
       "*": [
@@ -30,8 +30,10 @@
   },
   "dependencies": {
     "@embroider/addon-shim": "^1.8.9",
-    "@glimmer/env": "^0.1.7",
-    "@ember/-internals": "workspace:*"
+    "@glimmer/env": "^0.1.7"
+  },
+  "devDependencies": {
+    "typescript": "5.1"
   },
   "ember": {
     "edition": "octane"
