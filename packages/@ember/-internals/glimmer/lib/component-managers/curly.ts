@@ -28,7 +28,7 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { EMPTY_ARRAY } from '@glimmer/util';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -51,6 +51,7 @@ import {
 
 import ComponentStateBucket from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { unwrapTemplate } from '../utils/template';
 
 export const ARGS = enumerableSymbol('ARGS');
 export const HAS_BLOCK = enumerableSymbol('HAS_BLOCK');

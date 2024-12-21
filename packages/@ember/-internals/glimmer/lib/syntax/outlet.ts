@@ -1,8 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/vm';
+import type { CapturedArguments, DynamicScope, CurriedComponent } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
   childRefFromParts,
@@ -94,7 +93,7 @@ export const outletHelper = internalHelper(
 
           let args = createCapturedArgs(named, EMPTY_POSITIONAL);
           definition = curry(
-            CurriedType.Component,
+            0 as CurriedComponent,
             new OutletComponentDefinition(state),
             outletState?.render?.owner ?? owner,
             args,

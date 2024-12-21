@@ -21,11 +21,11 @@ import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, valueForRef } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
 
 import type { DynamicScope } from '../renderer';
 import type { OutletState } from '../utils/outlet';
 import type OutletView from '../views/outlet';
+import { unwrapTemplate } from '../utils/template';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   // "main" used to be the outlet name, keeping it around for compatibility
