@@ -1,5 +1,11 @@
 # Ember Changelog
 
+## v6.2.0-beta.1 (December 23, 2024)
+
+- [#20798](https://github.com/emberjs/ember.js/pull/20798) [CLEANUP] Remove old code that supported old ember-test-helpers
+- [#20809](https://github.com/emberjs/ember.js/pull/20809) [CLEANUP] Remove long enabled `EMBER_TYPESCRIPT_BLUEPRINTS` feature flag
+- [#20811](https://github.com/emberjs/ember.js/pull/20811) Fix typescript@next support
+
 ## v6.1.0 (December 23, 2024)
 
 - [#20782](https://github.com/emberjs/ember.js/pull/20782) [BUGFIX] Fixes Ember keyword shadowing: keywords should always be superseded by in-scope lexical variables
