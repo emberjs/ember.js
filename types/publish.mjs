@@ -156,6 +156,16 @@ async function main() {
       process.exit(1);
     }
   });
+  // @glimmer/tracking publishes as a separate package. We need to build its
+  // types after building the ember-source types.
+  doOrDie(() => {
+    let result = spawnSync('pnpm', ['tsc'], { cwd: 'packages/@glimmer/tracking' });
+    if (result.status !== 0) {
+      console.log(`@glimmer/tracking types build failed:`);
+      console.error(result.output.toString());
+      process.exit(1);
+    }
+  });
 
   process.exit(status === 'success' ? 0 : 1);
 }

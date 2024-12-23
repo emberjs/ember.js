@@ -1,11 +1,8 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
-import {
-  tracked,
-  nativeDescDecorator as descriptor,
-  notifyPropertyChange,
-} from '@ember/-internals/metal';
+import { nativeDescDecorator as descriptor, notifyPropertyChange } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 

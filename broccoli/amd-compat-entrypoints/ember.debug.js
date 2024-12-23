@@ -455,7 +455,7 @@ d('@glimmer/reference', glimmerReference);
 import * as glimmerRuntime from '@glimmer/runtime';
 d('@glimmer/runtime', glimmerRuntime);
 
-import * as glimmerTrackingIndex from '@glimmer/tracking/index';
+import * as glimmerTrackingIndex from '@glimmer/tracking';
 d('@glimmer/tracking/index', glimmerTrackingIndex);
 
 import * as glimmerTrackingPrimitivesCache from '@glimmer/tracking/primitives/cache';
