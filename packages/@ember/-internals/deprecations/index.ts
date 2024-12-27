@@ -102,13 +102,6 @@ export const DEPRECATIONS = {
       ).toLowerCase()}-from-ember`,
     });
   },
-  DEPRECATE_IMPLICIT_ROUTE_MODEL: deprecation({
-    id: 'deprecate-implicit-route-model',
-    for: 'ember-source',
-    since: { available: '5.3.0', enabled: '5.3.0' },
-    until: '6.0.0',
-    url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
-  }),
   DEPRECATE_TEMPLATE_ACTION: deprecation({
     id: 'template-action',
     url: 'https://deprecations.emberjs.com/id/template-action',
