@@ -1,6 +1,7 @@
 import type {
   Bounds,
   Dict,
+  Namespace,
   Nullable,
   SimpleComment,
   SimpleDocument,
@@ -8,7 +9,7 @@ import type {
   SimpleNode,
   SimpleText,
 } from '@glimmer/interfaces';
-import { INSERT_BEFORE_BEGIN, INSERT_BEFORE_END, NS_SVG } from '@glimmer/constants';
+import { INSERT_BEFORE_BEGIN, INSERT_BEFORE_END, NS_MATHML, NS_SVG } from '@glimmer/constants';
 import { expect } from '@glimmer/debug-util';
 
 import { ConcreteBounds } from '../bounds';
@@ -39,25 +40,35 @@ export class DOMOperations {
   }
 
   createElement(tag: string, context?: SimpleElement): SimpleElement {
-    let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
+    let isElementInSVGNamespace: boolean,
+      isHTMLIntegrationPoint: boolean,
+      isElementInMathMlNamespace: boolean,
+      ns: Namespace;
 
     if (context) {
       isElementInSVGNamespace = context.namespaceURI === NS_SVG || tag === 'svg';
+      isElementInMathMlNamespace = context.namespaceURI === NS_MATHML || tag === 'math';
       isHTMLIntegrationPoint = !!(SVG_INTEGRATION_POINTS as Dict<number>)[context.tagName];
     } else {
       isElementInSVGNamespace = tag === 'svg';
+      isElementInMathMlNamespace = tag === 'math';
       isHTMLIntegrationPoint = false;
     }
 
-    if (isElementInSVGNamespace && !isHTMLIntegrationPoint) {
+    if ((isElementInMathMlNamespace || isElementInSVGNamespace) && !isHTMLIntegrationPoint) {
       // FIXME: This does not properly handle <font> with color, face, or
       // size attributes, which is also disallowed by the spec. We should fix
       // this.
       if (BLACKLIST_TABLE[tag]) {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
+      if (isElementInMathMlNamespace) {
+        ns = NS_MATHML;
+      } else {
+        ns = NS_SVG;
+      }
 
-      return this.document.createElementNS(NS_SVG, tag);
+      return this.document.createElementNS(ns, tag);
     } else {
       return this.document.createElement(tag);
     }
