@@ -47,6 +47,7 @@
     "ember-qunit": "^8.0.2",
     "ember-resolver": "^11.0.1",
     "ember-source": "workspace:*",
+    "ember-template-imports": "^4.1.2",
     "ember-template-lint": "^6.0.0",
     "ember-welcome-page": "^7.0.2",
     "eslint": "^8.0.0",
