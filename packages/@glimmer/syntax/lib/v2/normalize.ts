@@ -323,6 +323,10 @@ class ExpressionNormalizer {
 
     switch (head.type) {
       case 'ThisHead':
+        if (block.hasBinding('this')) {
+          let [symbol, isRoot] = table.get('this');
+          return block.builder.localVar('this', symbol, isRoot, offsets);
+        }
         return builder.self(offsets);
       case 'AtHead': {
         let symbol = table.allocateNamed(head.name);

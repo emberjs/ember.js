@@ -210,4 +210,21 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     let elementName = openElementExpr[1];
     assert.strictEqual(elementName, 'rental', 'element name is correct');
   });
+
+  test('when "this" in in locals, it compiles to GetLexicalSymbol', (assert) => {
+    let target = { message: 'hello' };
+    let _wire: ReturnType<typeof compile>;
+    (function() {
+      _wire = compile(`{{this.message}}`, ['this'], (source) => eval(source));
+    }).call(target)
+    let wire = _wire!;
+    assert.deepEqual(wire.scope?.(), [target]);
+    assert.deepEqual(wire.block[0], [[SexpOpcodes.Append,[SexpOpcodes.GetLexicalSymbol,0,["message"]]]])
+  });
+
+  test('when "this" is not in locals, it compiles to GetSymbol', (assert) => {
+    let wire = compile(`{{this.message}}`, [], (source) => eval(source));
+    assert.strictEqual(wire.scope, undefined);
+    assert.deepEqual(wire.block[0], [[SexpOpcodes.Append,[SexpOpcodes.GetSymbol,0,["message"]]]])
+  });
 });
