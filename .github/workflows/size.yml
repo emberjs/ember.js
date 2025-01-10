@@ -1,0 +1,83 @@
+name: Size
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: {}
+
+env:
+  TURBO_API: http://127.0.0.1:9080
+  TURBO_TOKEN: this-is-not-a-secret
+  TURBO_TEAM: myself
+
+jobs:
+  install_dependencies:
+    name: 'Setup'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          pnpm-args: '--ignore-scripts'
+          node-version: 20.1.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm turbo build
+      - run: sudo snap install dust
+      - name: "Get sizes for development outputs"
+        id: dev
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/dev\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "Get sizes for production outputs"
+        id: prod
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/prod\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            <table><thead><tr><th></th><th>Dev</th><th>Prod</th></tr></thead>
+            <tbody>
+            <tr><td>This PR</td><td>
+
+            ```
+            ${{ steps.dev.outputs.sizes }}
+            ```
+
+            </td><td>
+
+            ```
+            ${{ steps.prod.outputs.sizes }}
+            ```
+
+            </td></tr>
+            </tbody></table>
+
+
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
