@@ -1,5 +1,3 @@
-import { helper } from '@ember/component/helper';
-
-export default helper(function fooBarBaz(positional /*, named*/) {
-  return positional;
-});
+export default function fooBarBaz(positionalA /*, positionalB, named*/) {
+  return positionalA;
+}
