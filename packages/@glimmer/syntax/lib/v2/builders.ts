@@ -208,7 +208,6 @@ export class Builder {
     isTemplateLocal: boolean,
     loc: SourceSpan
   ): ASTv2.VariableReference {
-    assert(name !== 'this', `You called builders.var() with 'this'. Call builders.this instead`);
     assert(
       name[0] !== '@',
       `You called builders.var() with '${name}'. Call builders.at('${name}') instead`
