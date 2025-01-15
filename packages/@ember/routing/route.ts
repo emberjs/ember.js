@@ -7,7 +7,6 @@ import {
 } from '@ember/-internals/metal';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { ENV } from '@ember/-internals/environment';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
@@ -19,7 +18,6 @@ import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
 import { assert, info, isTesting } from '@ember/debug';
-import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
@@ -61,16 +59,6 @@ type RouteTransitionState = TransitionState<Route> & {
 
 type MaybeParameters<T> = T extends AnyFn ? Parameters<T> : unknown[];
 type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
-
-interface StoreLike {
-  find(type: string, value: unknown): unknown;
-}
-
-function isStoreLike(store: unknown): store is StoreLike {
-  return (
-    typeof store === 'object' && store !== null && typeof (store as StoreLike).find === 'function'
-  );
-}
 
 const RENDER = Symbol('render');
 const RENDER_STATE = Symbol('render-state');
@@ -1190,7 +1178,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     params: Record<string, unknown>,
     transition: Transition
   ): Model | PromiseLike<Model> | undefined {
-    let name, sawParams, value;
+    let name, sawParams;
     // SAFETY: Since `_qp` is protected we can't infer the type
     let queryParams = (get(this, '_qp') as Route<Model>['_qp']).map;
 
@@ -1202,7 +1190,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       let match = prop.match(/^(.*)_id$/);
       if (match !== null) {
         name = match[1];
-        value = params[prop];
       }
       sawParams = true;
     }
@@ -1223,7 +1210,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       }
     }
 
-    return this.findModel(name, value);
+    return undefined;
   }
 
   /**
@@ -1237,30 +1224,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
    */
   deserialize(_params: Record<string, unknown>, transition: Transition) {
     return this.model(this._paramsFor(this.routeName, _params), transition);
-  }
-
-  /**
-
-    @method findModel
-    @param {String} type the model type
-    @param {Object} value the value passed to find
-    @private
-  */
-  findModel(type: string, value: unknown) {
-    if (ENV._NO_IMPLICIT_ROUTE_MODEL) {
-      return;
-    }
-    deprecateUntil(
-      `The implicit model loading behavior for routes is deprecated. ` +
-        `Please define an explicit model hook for ${this.fullRouteName}.`,
-      DEPRECATIONS.DEPRECATE_IMPLICIT_ROUTE_MODEL
-    );
-
-    const store = 'store' in this ? this.store : get(this, '_store');
-    assert('Expected route to have a store with a find method', isStoreLike(store));
-
-    // SAFETY: We don't actually know it will return this, but this code path is also deprecated.
-    return store.find(type, value) as Model | PromiseLike<Model> | undefined;
   }
 
   /**
