@@ -2,6 +2,12 @@ name: PerformanceCheck
 
 on:
   workflow_dispatch:
+    inputs:
+      BRANCH:
+        description: Branch to checkout
+        required: false
+        default: 'main'
+        type: string
   # Don't run on every merge to main, because many merges
   # may not even be vm related, but infra, or GH Actions
   pull_request:
@@ -28,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.BRANCH }}
 
       - uses: marceloprado/has-changed-path@v1.0.1
         id: did-change

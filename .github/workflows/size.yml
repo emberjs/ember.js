@@ -2,6 +2,12 @@ name: Size
 
 on:
   workflow_dispatch:
+    inputs:
+      BRANCH:
+        description: Branch to checkout
+        required: false
+        default: 'main'
+        type: string
   push:
     branches:
       - main
@@ -23,6 +29,7 @@ jobs:
           pnpm-args: '--ignore-scripts'
           node-version: 20.1.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ inputs.BRANCH }}
       - run: pnpm turbo build
       - run: sudo snap install dust
       - name: "Get sizes for development outputs"
