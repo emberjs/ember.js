@@ -19,19 +19,25 @@ env:
   TURBO_TEAM: myself
 
 jobs:
-  install_dependencies:
-    name: 'Setup'
+  compare_sizes:
+    name: 'Compare Sizes and Comment'
     runs-on: 'ubuntu-latest'
 
     steps:
+      - name: '[DEBUG] Dump GitHub context'
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - uses: wyvox/action@v1
         with:
           pnpm-args: '--ignore-scripts'
-          node-version: 20.1.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.BRANCH }}
+
       - run: pnpm turbo build
       - run: sudo snap install dust
+
       - name: "Get sizes for development outputs"
         id: dev
         run: |
@@ -64,6 +70,47 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
           cat out.txt
 
+      - name: "Get sizes from the main branch"
+        run: |
+          git remote -v
+          git fetch origin
+          git checkout main
+          git clean -Xfd
+          pnpm install
+          pnpm turbo build
+
+      - name: "[Main] Get sizes for development outputs"
+        id: main-dev
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/dev\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "[Main] Get sizes for production outputs"
+        id: main-prod
+        run: |
+          cd packages/\@glimmer
+          dust --ignore_hidden \
+             --reverse --apparent-size \
+             --filter ".+\/dist\/prod\/index.js$" \
+             --no-percent-bars --only-dir --depth 1 > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
       - uses: mshick/add-pr-comment@v2
         with:
           message: |
@@ -79,6 +126,19 @@ jobs:
 
             ```
             ${{ steps.prod.outputs.sizes }}
+            ```
+
+            </td></tr>
+            <tr><td>Main</td><td>
+
+            ```
+            ${{ steps.main-dev.outputs.sizes }}
+            ```
+
+            </td><td>
+
+            ```
+            ${{ steps.main-prod.outputs.sizes }}
             ```
 
             </td></tr>
