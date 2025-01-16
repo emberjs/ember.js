@@ -5,6 +5,8 @@
   "type": "module",
   "private": true,
   "exports": {
+    "./metal/lib/computed": "./metal/lib/computed.js",
+    "./metal/lib/tags": "./metal/lib/tags.js",
     "./browser-environment": "./browser-environment/index.ts",
     "./container": "./container/index.ts",
     "./environment": "./environment/index.ts",
@@ -70,4 +72,6 @@
   "devDependencies": {
     "@ember/template-compiler": "workspace:*"
   }
+
 }
+
