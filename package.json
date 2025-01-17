@@ -153,7 +153,7 @@
     "mocha": "^10.2.0",
     "npm-run-all2": "^6.0.6",
     "prettier": "^2.8.0",
-    "puppeteer": "^20.9.0",
+    "puppeteer": "^24.1.0",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
     "rollup": "^4.2.0",

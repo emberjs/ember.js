@@ -65,7 +65,7 @@ module.exports = class BrowserRunner {
   }
 
   async newBrowser() {
-    let browser = await puppeteer.launch({ dumpio: true });
+    let browser = await puppeteer.launch({ dumpio: true, headless: 'new' });
     return browser;
   }
 
