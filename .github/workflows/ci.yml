@@ -184,7 +184,7 @@ jobs:
 
   browser-test:
     name: Browser Tests (Firefox)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 # Firefox is not installing on Ubuntu 24 on GitHub Actions https://github.com/browser-actions/setup-firefox/issues/622
     needs: [basic-test, lint, types]
     steps:
       - uses: actions/checkout@v4
