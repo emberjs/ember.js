@@ -35,6 +35,7 @@ runs:
       # See https://github.com/puppeteer/puppeteer/issues/12818 "No usable sandbox!"
       # this is taken from the solution used in Puppeteer's own CI: https://github.com/puppeteer/puppeteer/pull/13196
       # The alternative is to pin Ubuntu 22 or to use aa-exec to disable AppArmor for commands that need Puppeteer.
+      # This is also suggested by Chromium https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
       run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
       shell: bash
 
