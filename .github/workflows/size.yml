@@ -111,12 +111,20 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
           cat out.txt
 
+      #########################
+      # Intended Layout:
+      #
+      #  |      | This PR | Main |
+      #  | Dev  |   x1    |  y1  |
+      #  | Prod |   x2    |  y2  |
+      #
+      #########################
       - uses: mshick/add-pr-comment@v2
         with:
           message: |
-            <table><thead><tr><th></th><th>Dev</th><th>Prod</th></tr></thead>
+            <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
             <tbody>
-            <tr><td>This PR</td><td>
+            <tr><td>Dev</td><td>
 
             ```
             ${{ steps.dev.outputs.sizes }}
@@ -125,14 +133,14 @@ jobs:
             </td><td>
 
             ```
-            ${{ steps.prod.outputs.sizes }}
+            ${{ steps.main-dev.outputs.sizes }}
             ```
 
             </td></tr>
-            <tr><td>Main</td><td>
+            <tr><td>Prod</td><td>
 
             ```
-            ${{ steps.main-dev.outputs.sizes }}
+            ${{ steps.prod.outputs.sizes }}
             ```
 
             </td><td>
