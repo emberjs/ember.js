@@ -37,8 +37,7 @@ interface NodeUrlModule {
   parse(url: string): NodeUrlParseResult;
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-type WeirdUrl = typeof import('url') | typeof URL | undefined | null;
+type WeirdUrl = { parse: (typeof URL)['parse'] } | typeof URL | undefined | null;
 
 function findProtocolForURL() {
   const weirdURL = URL as WeirdUrl;
@@ -49,7 +48,6 @@ function findProtocolForURL() {
     // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
     // thinks it is `never` without this `as unknown as any`
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     typeof weirdURL.parse === 'function'
   ) {
     // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`

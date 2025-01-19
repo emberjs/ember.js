@@ -1,36 +1,22 @@
 {
   "name": "@glimmer-workspace/benchmark-env",
-  "version": "0.84.3",
   "private": true,
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer-workspace/benchmark-env",
+  "version": "0.92.0",
   "type": "module",
   "exports": "./index.ts",
   "repo-meta": {
     "strictness": "loose",
-    "env": [
-      "built"
-    ]
+    "built": true
   },
   "publishConfig": {
-    "access": "public",
     "exports": {
-      ".": {
-        "require": {
-          "development": {
-            "types": "./dist/dev/index.d.cts",
-            "default": "./dist/dev/index.cjs"
-          }
-        },
-        "default": {
-          "development": {
-            "types": "./dist/dev/index.d.ts",
-            "default": "./dist/dev/index.js"
-          },
-          "default": {
-            "types": "./dist/prod/index.d.ts",
-            "default": "./dist/prod/index.js"
-          }
-        }
+      "development": {
+        "types": "./dist/dev/index.d.ts",
+        "default": "./dist/dev/index.js"
+      },
+      "default": {
+        "types": "./dist/prod/index.d.ts",
+        "default": "./dist/prod/index.js"
       }
     }
   },
@@ -38,10 +24,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
+    "prepack": "rollup -c rollup.config.mjs",
     "test:lint": "eslint . --quiet",
-    "test:publint": "publint",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:publint": "publint"
   },
   "dependencies": {
     "@glimmer/global-context": "workspace:*",
@@ -55,6 +40,7 @@
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer-workspace/env": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "eslint": "^9.18.0",

@@ -42,6 +42,7 @@ const CONSTANT_TAG_ID: ICONSTANT_TAG_ID = 3;
 //////////
 
 export const COMPUTE: TagComputeSymbol = Symbol('TAG_COMPUTE') as TagComputeSymbol;
+Reflect.set(globalThis, 'COMPUTE_SYMBOL', COMPUTE);
 
 //////////
 
@@ -113,7 +114,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   public subtag: Tag | Tag[] | null = null;
   private subtagBufferCache: Revision | null = null;
 
-  [TYPE]: T;
+  declare [TYPE]: T;
 
   constructor(type: T) {
     this[TYPE] = type;

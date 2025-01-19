@@ -5,6 +5,31 @@ import { debug } from '@glimmer/validator';
 import { autoRegister } from 'js-reporters';
 import { default as QUnit } from 'qunit';
 
+const SMOKE_TEST_FILE = './packages/@glimmer-workspace/integration-tests/test/smoke-test.ts';
+
+export async function runTests(packages: Record<string, () => Promise<void>>) {
+  const { smokeTest } = await setupQunit();
+  return bootQunit(packages, { smokeTest });
+}
+
+export async function bootQunit(
+  packages: Record<string, () => Promise<void>>,
+  options: { smokeTest?: boolean } = {}
+) {
+  const { smokeTest } = options;
+
+  for (const [name, pkg] of Object.entries(packages)) {
+    if (name === SMOKE_TEST_FILE && !smokeTest) {
+      console.log('skipping', name);
+      continue;
+    }
+
+    await pkg();
+  }
+
+  QUnit.start();
+}
+
 export async function setupQunit() {
   const qunitLib: QUnit = await import('qunit');
   await import('qunit/qunit/qunit.css');

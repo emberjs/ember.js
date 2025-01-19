@@ -2,7 +2,7 @@
 
 import { FlatCompat } from '@eslint/eslintrc';
 import jslint from '@eslint/js';
-import packageInfos, { WORKSPACE_ROOT } from '@glimmer-workspace/repo-metadata';
+import repoMeta, { WORKSPACE_ROOT } from '@glimmer-workspace/repo-metadata';
 import tsParser from '@typescript-eslint/parser';
 
 import javascript from './base/javascript.js';
@@ -117,7 +117,7 @@ export class WorkspaceConfig {
    */
   code = (name, { filter: someFilter, ...options }) => {
     const { desc, matches } = parseFilter(someFilter);
-    const packages = packageInfos.filter(matches);
+    const packages = repoMeta.packages.filter(matches);
 
     return this.#code(`${name} (${desc})`, packages, options);
   };
@@ -129,7 +129,7 @@ export class WorkspaceConfig {
    */
   override = (name, { filter: someFilter, files, extensions, ...options }) => {
     const { desc, matches } = parseFilter(someFilter);
-    const packages = packageInfos.filter(matches);
+    const packages = repoMeta.packages.filter(matches);
 
     const filesOptions = files
       ? { files }

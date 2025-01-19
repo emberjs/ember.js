@@ -1,4 +1,4 @@
-import { jitSuite, RenderTest, test } from "@glimmer-workspace/integration-tests";
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class SmokeTests extends RenderTest {
   static suiteName = 'Smoke Tests';

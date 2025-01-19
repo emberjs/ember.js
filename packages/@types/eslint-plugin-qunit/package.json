@@ -2,6 +2,10 @@
   "private": true,
   "name": "@types/eslint-plugin-qunit",
   "types": "index.d.ts",
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
     "@types/eslint": "^9.6.1"
   }

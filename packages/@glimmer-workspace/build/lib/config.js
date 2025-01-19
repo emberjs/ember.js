@@ -6,9 +6,10 @@ import { fileURLToPath } from 'node:url';
 import replace from '@rollup/plugin-replace';
 import rollupSWC from '@rollup/plugin-swc';
 import terser from '@rollup/plugin-terser';
+import ms from 'ms';
 import * as insert from 'rollup-plugin-insert';
 import ts from 'typescript';
-import { $ } from 'zx';
+import { $, chalk } from 'zx';
 
 import inline from './inline.js';
 
@@ -77,9 +78,14 @@ export function tsconfig(updates) {
 
 /**
  * @param {PackageInfo} pkg
+ * @param {'dev' | 'prod'} env
  * @returns {RollupPlugin[]}
  */
-export function typescript(pkg) {
+export function typescript(pkg, env) {
+  if (!env) {
+    throw new Error('env is required');
+  }
+
   return [
     rollupSWC({
       swc: {
@@ -97,12 +103,26 @@ export function typescript(pkg) {
     }),
     {
       name: 'Build Declarations',
-      closeBundle: async () => {
-        console.info('Building types');
+      closeBundle: async function () {
+        const types = ['@glimmer-workspace/env'];
+        if (pkg.devDependencies['@types/node']) {
+          types.push('node');
+        }
+
+        const start = performance.now();
         await $({
+          verbose: true,
           stdio: 'inherit',
-        })`pnpm tsc --declaration --declarationDir dist --emitDeclarationOnly --module esnext --moduleResolution bundler ${pkg.exports} --types vite/client,node --skipLibCheck --target esnext --strict`;
-        console.info('Types emitted');
+          cwd: pkg.root,
+        })`pnpm tsc --skipLibCheck --declaration --declarationDir dist/${env} --emitDeclarationOnly --module esnext --moduleResolution bundler ${
+          pkg.exports
+        } --types ${types.join(',')} --target esnext --strict`;
+        const duration = performance.now() - start;
+        console.error(
+          `${chalk.green('created')} ${chalk.green.bold(`dist/${env}/index.d.ts`)} ${chalk.green(
+            'in'
+          )} ${chalk.green.bold(ms(duration))}`
+        );
       },
     },
 
@@ -196,6 +216,7 @@ export class Package {
         name: json.name,
         exports: resolve(root, json.exports),
         root,
+        devDependencies: json['devDependencies'] ?? {},
       });
     } else {
       for (const main of ['index.ts', 'index.js', 'index.d.ts']) {
@@ -205,6 +226,7 @@ export class Package {
             name: json.name,
             exports: path,
             root,
+            devDependencies: json['devDependencies'] ?? {},
           });
         }
       }
@@ -247,6 +269,13 @@ export class Package {
    */
   constructor(pkg) {
     this.#package = pkg;
+  }
+
+  /**
+   * @returns {Record<string, string>}
+   */
+  get devDependencies() {
+    return this.#package.devDependencies;
   }
 
   /**
@@ -354,7 +383,7 @@ export class Package {
                   }),
                 ]),
             postcss(),
-            ...typescript(this.#package),
+            ...typescript(this.#package, env),
           ],
         })
     );

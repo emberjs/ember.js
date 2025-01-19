@@ -6,7 +6,7 @@
 
 import { join } from 'node:path';
 
-import packageInfos from '@glimmer-workspace/repo-metadata';
+import repoMeta from '@glimmer-workspace/repo-metadata';
 import jsonc from 'eslint-plugin-jsonc';
 
 /**
@@ -14,7 +14,7 @@ import jsonc from 'eslint-plugin-jsonc';
  */
 export const JSON_CONFIG = /** @type {const} */ ({
   name: 'package.json files',
-  files: packageInfos.map((pkg) => join(pkg.root, 'package.json')),
+  files: repoMeta.packages.map((pkg) => join(pkg.root, 'package.json')),
   // @ts-expect-error the extends type is narrow and not always ecosystem-compatible
   extends: [jsonc.configs['flat/recommended-with-jsonc']],
   rules: {

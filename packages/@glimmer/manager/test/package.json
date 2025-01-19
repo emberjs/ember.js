@@ -4,6 +4,10 @@
   "repo-meta": {
     "strictness": "loose"
   },
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/manager": "workspace:*",

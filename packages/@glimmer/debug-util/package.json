@@ -1,15 +1,13 @@
 {
   "name": "@glimmer/debug-util",
   "private": true,
-  "version": "0.92.3",
+  "version": "0.92.0",
   "license": "MIT",
   "description": "Common utilities used in Glimmer with debug-specific behavior",
-  "repository": "https://github.com/tildeio/glimmer/tree/main/packages/@glimmer/debug-util",
   "type": "module",
   "exports": "./index.ts",
   "scripts": {
-    "test:lint": "eslint . --quiet",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:lint": "eslint . --quiet"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:*"
