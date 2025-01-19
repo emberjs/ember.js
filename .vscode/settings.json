@@ -85,6 +85,19 @@
       },
       "overviewRulerColor": "rgba(0, 150, 150, 0.7)"
     },
+    "bandaid": {
+      "dark": {
+        "color": "#ffff00",
+        "fontWeight": "bold"
+      },
+      // teal
+      "gutterIconColor": "#999900",
+      "light": {
+        "color": "#999900",
+        "fontWeight": "bold"
+      },
+      "overviewRulerColor": "rgba(150, 150, 0, 0.7)"
+    },
     "fixme": {
       "dark": {
         "color": "#ff0000",
@@ -121,6 +134,11 @@
     ],
     "warn": [
       "@premerge(\\s|$)"
+    ],
+    "bandaid": [
+      "@bandaid\\(until:[^)]+\\)(\\s|$)",
+      "@bandaid(?=\\{@link [^}]+\\}(\\s|$))",
+      "@bandaid(?!\\()"
     ]
   },
   "inline-bookmarks.view.showVisibleFilesOnly": true,
@@ -141,5 +159,6 @@
   "typescript.preferences.importModuleSpecifierEnding": "auto",
   "typescript.preferences.useAliasesForRenames": false,
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.updateImportsOnFileMove.enabled": "always"
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.reportStyleChecksAsWarnings": false
 }

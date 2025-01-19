@@ -1,8 +1,12 @@
 {
   "name": "@glimmer-workspace/eslint-plugin",
   "private": true,
+  "version": "0.92.0",
   "type": "module",
   "exports": "./index.js",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",

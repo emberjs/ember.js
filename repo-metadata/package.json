@@ -1,6 +1,7 @@
 {
   "name": "@glimmer-workspace/repo-metadata",
   "private": true,
+  "version": "0.92.0",
   "type": "module",
   "exports": {
     ".": {
@@ -9,8 +10,13 @@
     },
     "./metadata.json": "./metadata.json"
   },
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
-    "execa": "^9.5.2"
+    "chalk": "^5.4.1",
+    "execa": "^9.5.2",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@pnpm/types": "^1000.1.0",

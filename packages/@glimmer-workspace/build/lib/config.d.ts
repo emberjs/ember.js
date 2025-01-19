@@ -5,6 +5,7 @@ export interface PackageInfo {
   readonly name: string;
   readonly root: string;
   readonly exports: string;
+  readonly devDependencies: Record<string, string>;
 }
 
 export type JsonArray = JsonValue[];
@@ -21,6 +22,7 @@ export type Setting<T extends keyof CompilerOptions> = CompilerOptions[T] & stri
 export type PackageJsonInline = string | [ExternalOperator, string];
 
 export interface PackageJSON {
+  [x: string]: Record<string, string>;
   readonly exports: string;
   readonly types: string;
   readonly private: boolean;

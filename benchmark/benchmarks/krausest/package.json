@@ -7,8 +7,7 @@
   },
   "scripts": {
     "start": "vite --mode production",
-    "test:lint": "eslint . --quiet",
-    "test:types": "tsc --noEmit -p ../../tsconfig.json"
+    "test:lint": "eslint . --quiet"
   },
   "dependencies": {
     "@glimmer-workspace/benchmark-env": "file:packages/@glimmer-workspace/benchmark-env.tgz",
@@ -41,7 +40,8 @@
       "@glimmer/program": "file:packages/@glimmer/program.tgz",
       "@glimmer/reference": "file:packages/@glimmer/reference.tgz",
       "@glimmer/util": "file:packages/@glimmer/util.tgz",
-      "@glimmer/validator": "file:packages/@glimmer/validator.tgz"
+      "@glimmer/validator": "file:packages/@glimmer/validator.tgz",
+      "@glimmer-workspace/env": "file:packages/@glimmer-workspace/env.tgz"
     }
   }
 }

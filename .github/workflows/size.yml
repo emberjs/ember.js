@@ -35,7 +35,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ inputs.BRANCH }}
 
-      - run: pnpm turbo build
+      - run: pnpm turbo prepack
       - run: sudo snap install dust
 
       - name: "Get sizes for development outputs"
@@ -77,7 +77,7 @@ jobs:
           git checkout main
           git clean -Xfd
           pnpm install
-          pnpm turbo build
+          pnpm turbo prepack
 
       - name: "[Main] Get sizes for development outputs"
         id: main-dev

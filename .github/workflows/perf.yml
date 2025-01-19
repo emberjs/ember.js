@@ -46,9 +46,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: RUN
+      - name: Setup Benchmark Directory
         if: steps.did-change.outputs.changed == 'true'
         run: pnpm run benchmark:setup
+        
+      - name: RUN
+        if: steps.did-change.outputs.changed == 'true'
+        run: pnpm run benchmark:run
 
       - name: Remove unused artifacts
         if: steps.did-change.outputs.changed == 'true'

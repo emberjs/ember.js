@@ -5,12 +5,10 @@
   "repo-meta": {
     "strictness": "loose"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/glimmerjs/glimmer-vm.git",
-    "directory": "packages/@glimmer/local-debug-babel-plugin"
-  },
   "type": "module",
   "private": true,
-  "exports": "./index.js"
+  "exports": "./index.js",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  }
 }

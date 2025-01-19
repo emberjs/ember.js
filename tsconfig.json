@@ -26,6 +26,7 @@
     "eslint.config.js"
   ],
   "include": [
+    ".meta-updater/**/*",
     "repo-metadata/**/*",
     "packages/@glimmer/*/index.*",
     "packages/@glimmer/*/lib/**/*",
@@ -42,6 +43,8 @@
   ],
   "exclude": [
     "ts-dist",
+    "**/dist/**",
+    "**/node_modules/**",
     "**/fixtures/**"
   ]
 }

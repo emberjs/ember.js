@@ -1,7 +1,6 @@
 {
   "name": "@glimmer-workspace/integration-tests",
-  "version": "0.84.3",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer-workspace/integration-tests",
+  "version": "0.92.0",
   "type": "module",
   "private": true,
   "exports": "./index.ts",
@@ -14,8 +13,7 @@
     ]
   },
   "scripts": {
-    "test:lint": "eslint . --quiet",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:lint": "eslint . --quiet"
   },
   "dependencies": {
     "@glimmer-workspace/test-utils": "workspace:*",

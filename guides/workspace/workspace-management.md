@@ -111,10 +111,86 @@ These annotations identify areas of code in a structured way.
 > help enforce them in pull request reviews. We will add additional checks to enforce these
 > requirements in the future.
 
-## Turbo Workflows
+## Repo-Wide Workflows
 
-### `build`
+Workflows in this section are typically run against all packages in the repository via `turbo`.
 
-### `lint`
+> [!TIP]
+>
+> Turbo runs commands against all packages in the workspace with the specified script in the
+> `package.json` for the package.
+>
+> This means that commands in the sections below are run against all
+> packages with the script specified in the _Runs_ column in their `package.json`.
 
-### `publint`
+### `pnpm repo:prepack`
+
+| Runs                 | Depends On     |
+| -------------------- | -------------- |
+| `prepack`, `prepare` | `repo:prepack` |
+
+Runs the lifecycle scripts `prepack` and `prepare` in each workspace package. This produces the same
+`dist` directory as the published packages, which is perfect for verifying the results of the build
+process.
+
+### Linting
+
+#### `pnpm repo:lint:files`
+
+| Runs           | Depends On |
+| -------------- | ---------- |
+| `test:publint` | 🛇 Nothing  |
+
+Verifies that all files in the repository are properly linted.
+
+Runs `pnpm test:lint` in each workspace package.
+
+#### `pnpm repo:lint:pub`
+
+| Runs           | Depends On     |
+| -------------- | -------------- |
+| `test:publint` | `repo:prepack` |
+
+Verifies that all **published** packages have the correct metadata for `npm publish`.
+
+#### `pnpm repo:lint:types`
+
+| Runs                                | Depends On |
+| ----------------------------------- | ---------- |
+| `tsc -b` (once, in workspace scope) | 🛇 Nothing  |
+
+Verifies that all TypeScript files in the repository are properly type-checked.
+
+> [!NOTE]
+>
+> In general, `@typescript-eslint` detects many more type errors than `tsc`. However,
+> `@typescript-eslint` assumes that it's being run _on top of_ `tsc`, and it's therefore necessary
+> to run both `tsc` and `@typescript-eslint` to fully verify that all types are correct.
+>
+> Since `tsc` is run once for the entire repository, this also means that you get linting feedback
+> from type-enhanced lints in the turbo output for a specific package, but all type feedback from
+> `tsc` is emitted at once.
+>
+> When editing files in vscode, both type checking and type-aware linting are integrated seamlessly.
+
+#### `pnpm repo:lint:all`
+
+| Depends On        |
+| ----------------- |
+| `repo:lint:files` |
+| `repo:lint:pub`   |
+
+A shortcut for running `repo:lint:files` and `repo:lint:pub`.
+
+#### `pnpm repo:lint:fix`
+
+| Runs                                                  |
+| ----------------------------------------------------- |
+| `repo:lint:files` (with `--fix` arg for each package) |
+| `prettier -w`                                         |
+
+<!-- @bandaid(until: prettier is a turbo task) -->
+
+> [!NOTE]
+>
+> `prettier -w` should really be a `turbo` task, and this should happen as follow-up work soon.

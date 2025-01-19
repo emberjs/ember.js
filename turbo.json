@@ -21,17 +21,20 @@
     "packages/@glimmer-workspace/build/lib/config.js"
   ],
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
-    "lint": {
+    "lint:all": {
       "cache": false,
       "dependsOn": ["test:lint", "test:publint"]
     },
     "test:lint": {},
     "test:publint": {
-      "dependsOn": ["build"]
+      "dependsOn": ["prepack", "prepare"]
+    },
+    "prepare": {
+      "dependsOn": ["prepack"],
+      "outputs": ["dist/**"]
+    },
+    "prepack": {
+      "outputs": ["dist/**"]
     },
     "//#test:types": {
       "inputs": ["**/dist/**", "tsconfig.dist.json"],

@@ -2,36 +2,40 @@
   "name": "@glimmer/vm",
   "version": "0.93.1",
   "license": "MIT",
-  "repository": "https://github.com/glimmerjs/glimmer-vm/tree/main/packages/@glimmer/vm",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/vm"
+  },
   "type": "module",
   "exports": "./index.ts",
   "publishConfig": {
     "access": "public",
     "exports": {
       "development": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/dev/index.d.ts",
         "default": "./dist/dev/index.js"
       },
       "default": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/prod/index.d.ts",
         "default": "./dist/prod/index.js"
       }
-    },
-    "files": [
-      "dist"
-    ]
+    }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
+    "prepack": "rollup -c rollup.config.mjs",
     "test:lint": "eslint . --quiet",
-    "test:publint": "publint",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:publint": "publint"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:*"
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer-workspace/env": "workspace:*",
     "eslint": "^9.18.0",
     "publint": "^0.3.2",
     "rollup": "^4.31.0-0",

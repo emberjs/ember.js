@@ -5,7 +5,7 @@
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/glimmerjs/glimmer-vm",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
     "directory": "packages/@glimmer/validator"
   },
   "type": "module",
@@ -13,14 +13,13 @@
   "publishConfig": {
     "access": "public",
     "exports": {
-      ".": {
+      "development": {
         "types": "./dist/dev/index.d.ts",
-        "development": {
-          "require": "./dist/dev/index.cjs",
-          "import": "./dist/dev/index.js"
-        },
-        "require": "./dist/dev/index.cjs",
-        "import": "./dist/prod/index.js"
+        "default": "./dist/dev/index.js"
+      },
+      "default": {
+        "types": "./dist/prod/index.d.ts",
+        "default": "./dist/prod/index.js"
       }
     }
   },
@@ -28,10 +27,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
+    "prepack": "rollup -c rollup.config.mjs",
     "test:lint": "eslint . --quiet",
-    "test:publint": "publint",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:publint": "publint"
   },
   "dependencies": {
     "@glimmer/global-context": "workspace:*",
@@ -39,6 +37,7 @@
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer-workspace/env": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "eslint": "^9.18.0",
     "publint": "^0.3.2",

@@ -1,8 +1,12 @@
 {
   "private": true,
   "name": "@types/eslint-plugin-import",
+  "version": "0.92.0",
   "type": "module",
   "exports": "./index.d.ts",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
     "@types/eslint": "^9.6.1"
   }

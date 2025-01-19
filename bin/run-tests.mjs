@@ -51,11 +51,15 @@ const browser = await puppeteer.launch({
 console.log('[ci] puppeteer launched');
 
 try {
+  console.log('[ci] navigating to new page');
   const page = await browser.newPage();
+  console.log('[ci] done navigating');
 
-  await /** @type {Promise<void>} */ (
+  console.log('[ci] waiting for console');
+  const promise = /** @type {Promise<void>} */ (
     new Promise((fulfill, reject) => {
       page.on('console', (msg) => {
+        console.error(msg.text());
         const location = msg.location();
         const text = msg.text();
 
@@ -77,8 +81,13 @@ try {
       });
     })
   );
+  console.log('[ci] done waiting');
 
-  await page.goto('http://localhost:60173?hidepassed&ci');
+  console.log('[ci] navigating to test page');
+  void page.goto('http://localhost:60173?hidepassed&ci');
+  console.log('[ci] done navigating');
+
+  await promise;
 } catch {
   await browser.close();
   process.exit(1);

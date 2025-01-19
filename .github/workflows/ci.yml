@@ -28,7 +28,7 @@ jobs:
           pnpm-args: '--ignore-scripts'
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm turbo build
+      - run: pnpm turbo prepack
       - run: node ./bin/build-verify.mjs
 
   lint:
@@ -43,7 +43,7 @@ jobs:
           pnpm-args: '--ignore-scripts'
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm lint
+      - run: pnpm repo:lint:all
 
   test-chrome:
     name: Chrome
@@ -64,7 +64,7 @@ jobs:
             xdg-utils wget libcairo2
       - uses: wyvox/action@v1
         with:
-          node-version: 20.1.0
+          node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm test
 
@@ -115,7 +115,7 @@ jobs:
         with:
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm turbo test:types
+      - run: pnpm repo:lint:types
 
   floating-dependencies:
     name: Floating Dependencies
@@ -127,6 +127,6 @@ jobs:
       - uses: wyvox/action@v1
         with:
           pnpm-args: '--no-lockfile'
-          node-version: 20.1.0
+          node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm test

@@ -1,4 +1,4 @@
-import { dirname, join, relative, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 
 import type { Project } from '@pnpm/workspace.find-packages';
 import type { PackageJson } from 'type-fest';
@@ -6,9 +6,9 @@ import { findWorkspacePackagesNoCheck } from '@pnpm/workspace.find-packages';
 import chalk from 'chalk';
 import { $ } from 'execa';
 import fs from 'fs-extra';
-import { mkdirp } from 'mkdirp';
+import pMap from 'p-map';
 
-const { move, writeFile } = fs;
+const { writeFile } = fs;
 
 interface Roots {
   /**
@@ -47,7 +47,21 @@ export async function buildKrausestDeps({
   await buildPkg(roots, benchEnvPkg);
 
   const allDeps = new Set([...benchEnvDeps, ...krausestDeps]);
-  const built = await Promise.all([...allDeps].map((pkg) => buildPkg(roots, pkg)));
+
+  const built = await pMap(
+    [...allDeps],
+    async (pkg) => {
+      return await buildPkg(roots, pkg);
+    },
+    { concurrency: 1 }
+  );
+
+  // const built: { name: string; filename: string }[] = [];
+  // for (const pkg of allDeps) {
+  //   built.push(await buildPkg(roots, pkg));
+  // }
+
+  // const built = await Promise.all([...allDeps].map((pkg) => buildPkg(roots, pkg)));
 
   {
     const deps = krausestManifest.dependencies ?? {};
@@ -178,43 +192,25 @@ function update(
   return false;
 }
 
-async function buildPkg(roots: Roots, pkg: Project) {
+async function buildPkg(roots: Roots, pkg: Project): Promise<{ name: string; filename: string }> {
+  if (!pkg.manifest.name) {
+    throw new Error(`Package at ${pkg.rootDir} has no name`);
+  }
+
   const packagesDest = join(roots.benchmark, 'packages');
+  const dest = join(packagesDest, `${pkg.manifest.name}.tgz`);
 
   const result = await $({
     stdio: 'pipe',
-  })`pnpm -C ${pkg.rootDir} pack --pack-destination ${packagesDest} --json`;
+    verbose: true,
+  })`pnpm -C ${pkg.rootDir} pack --out ${dest}`;
 
   if (result.failed) {
     console.error(`Failed to build ${pkg.manifest.name}`);
     throw new Error(result.stderr);
   }
 
-  const parsed = JSON.parse(result.stdout) as {
-    name: string;
-    version: string;
-    filename: string;
-    files: { path: string }[];
-  };
-
-  const { name: filename, version } = /\/(?<name>[^/]+)-(?<version>[.0-9]+)\.tgz$/u.exec(
-    parsed.filename
-  )?.groups as {
-    name: string;
-    version: string;
-  };
-
-  if (filename === undefined || version === undefined) {
-    throw new Error(`Could not parse ${parsed.filename}`);
-  }
-
-  const dest = join(packagesDest, `${parsed.name}.tgz`);
-  const destRoot = dirname(dest);
-
-  await mkdirp(destRoot);
-  await move(parsed.filename, dest, { overwrite: true });
-
-  return { name: parsed.name, filename: relative(roots.benchmark, dest), version, parsed };
+  return { name: pkg.manifest.name, filename: relative(roots.benchmark, dest) };
 }
 
 if (process.argv[1] === import.meta.filename) {

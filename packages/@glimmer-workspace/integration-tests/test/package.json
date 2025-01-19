@@ -1,6 +1,10 @@
 {
   "private": true,
   "name": "@glimmer-test/integration-tests",
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
     "@glimmer-workspace/integration-tests": "workspace:*",
     "@glimmer-workspace/test-utils": "workspace:*",

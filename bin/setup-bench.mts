@@ -14,7 +14,11 @@ const { ensureDirSync, writeFileSync } = fs;
 const ROOT = new URL('..', import.meta.url).pathname;
 $.verbose = true;
 
-const REUSE_CONTROL = !!process.env['REUSE_CONTROL'];
+/**
+ * By default, we rebuild the control branch every time. The `REUSE_CONTROL` env var
+ * can be used to reuse the checked out control branch.
+ */
+const FRESH_CONTROL_CHECKOUT = !process.env['REUSE_CONTROL'];
 
 /*
 
@@ -59,6 +63,7 @@ const appMarkers = [
 ].reduce((acc, marker) => {
   return acc + ',' + marker + 'Start,' + marker + 'End';
 }, '');
+
 const markers = (process.env['MARKERS'] || appMarkers)
   .split(',')
   .filter((el) => el.length)
@@ -95,7 +100,7 @@ const pnpm = await which('pnpm');
   await buildKrausestDeps({
     roots: { benchmark: EXPERIMENT_DIRS.bench, workspace: WORKSPACE_ROOT },
   });
-  await $`rm -r ${EXPERIMENT_DIRS.bench}/node_modules`;
+  await $`rm -rf ${EXPERIMENT_DIRS.bench}/node_modules`;
   await $({ cwd: EXPERIMENT_DIRS.bench })`${pnpm} install`;
   await $({ cwd: EXPERIMENT_DIRS.bench })`${pnpm} vite build`;
 }
@@ -115,60 +120,51 @@ console.info({
 
 // set up control
 {
-  if (!REUSE_CONTROL) {
+  if (FRESH_CONTROL_CHECKOUT) {
+    // A fresh checkout will reset the control directory and re-clone the repo from scratch at the
+    // control ref (i.e. `main`).
     await $`rm -rf ${CONTROL_DIRS.root}`;
     await $`mkdir -p ${CONTROL_DIRS.bench}`;
 
-    // Intentionally use the `krausest` folder from the experiment in both
-    // control and experiment
-    await $`cp -r ${EXPERIMENT_DIRS.src}/* ${CONTROL_DIRS.bench}/`;
-
     // clone the raw git repo for the experiment
     await $`git clone ${join(ROOT, '.git')} ${CONTROL_DIRS.repo}`;
+  } else {
+    // When reusing the control checkout, we just need to make sure the repo is up to date.
+    await $({ cwd: CONTROL_DIRS.repo })`git fetch`;
   }
 
+  // Update the checkout to the control ref.
   await $({ cwd: CONTROL_DIRS.repo })`git checkout --force ${controlRef}`;
+
+  await $`rm -rf ${CONTROL_DIRS.bench}`;
+  // Intentionally use the `krausest` folder from the experiment in both
+  // control and experiment
+  await $`cp -r ${EXPERIMENT_DIRS.src}/* ${CONTROL_DIRS.bench}/`;
+
   await $({ cwd: CONTROL_DIRS.repo })`${pnpm} install`;
   await $({ cwd: CONTROL_DIRS.repo })`${pnpm} build --output-logs=new-only`;
 
   const benchmarkEnv = join(CONTROL_DIRS.repo, 'packages/@glimmer-workspace/benchmark-env');
 
-  // Right now, the `main` branch of `@glimmer-workspace/benchmark-env` does not have a buildable
-  // version of `@glimmer-workspace/benchmark-env`, so we need to manually build it.
-  //
-  // Once this PR is merged, we can remove this code because all future control branches will have
-  // built `@glimmer-workspace/benchmark-env` in the `pnpm build` step above.
-  writeFileSync(
-    join(benchmarkEnv, 'rollup.config.mjs'),
-    [
-      `import { Package } from '@glimmer-workspace/build-support';`,
-
-      `export default Package.config(import.meta);`,
-    ].join('\n\n')
-  );
-
-  const manifest = JSON.parse(
-    await fs.readFile(join(benchmarkEnv, 'package.json'), 'utf8')
-  ) as PackageJson;
-  manifest.publishConfig ??= {};
-  manifest.publishConfig['exports'] = './dist/prod/index.js';
-  writeFileSync(join(benchmarkEnv, 'package.json'), JSON.stringify(manifest, null, 2), 'utf8');
-
-  // This is also a patch for incorrect behavior on the current `main`.
-  await $({ cwd: benchmarkEnv })`${pnpm} rollup --config rollup.config.mjs --external`;
+  /** @bandaid{@link patchControl} */
+  await patchControl(benchmarkEnv);
 
   await buildKrausestDeps({
     roots: { benchmark: CONTROL_DIRS.bench, workspace: CONTROL_DIRS.repo },
   });
 
-  await $`rm -r ${CONTROL_DIRS.bench}/node_modules`;
+  await $`rm -rf ${CONTROL_DIRS.bench}/node_modules`;
   await $({ cwd: CONTROL_DIRS.bench })`${pnpm} install`;
   await $({ cwd: CONTROL_DIRS.bench })`${pnpm} vite build`;
 }
 
 // Intentionally don't await these. TODO: Investigate if theer's a better structure.
-void $`cd ${CONTROL_DIRS.bench} && pnpm vite preview --port ${CONTROL_PORT}`;
-void $`cd ${EXPERIMENT_DIRS.bench} && pnpm vite preview --port ${EXPERIMENT_PORT}`;
+const control = $`cd ${CONTROL_DIRS.bench} && pnpm vite preview --port ${CONTROL_PORT}`;
+const experiment = $`cd ${EXPERIMENT_DIRS.bench} && pnpm vite preview --port ${EXPERIMENT_PORT}`;
+
+process.on('exit', () => {
+  void Promise.allSettled([control.kill(), experiment.kill()]);
+});
 
 await new Promise((resolve) => {
   // giving 5 seconds for the server to start
@@ -189,4 +185,30 @@ try {
   process.exit(1);
 }
 
-process.exit(0);
+// @bandaid(until: the current PR is merged)
+//
+// Right now, the `main` branch of `@glimmer-workspace/benchmark-env` does not have a buildable
+// version of `@glimmer-workspace/benchmark-env`, so we need to manually build it.
+//
+// Once this PR is merged, we can remove this code because all future control branches will have
+// built `@glimmer-workspace/benchmark-env` in the `pnpm build` step above.
+async function patchControl(benchmarkEnv: string) {
+  writeFileSync(
+    join(benchmarkEnv, 'rollup.config.mjs'),
+    [
+      `import { Package } from '@glimmer-workspace/build-support';`,
+
+      `export default Package.config(import.meta);`,
+    ].join('\n\n')
+  );
+
+  const manifest = JSON.parse(
+    await fs.readFile(join(benchmarkEnv, 'package.json'), 'utf8')
+  ) as PackageJson;
+  manifest.publishConfig ??= {};
+  manifest.publishConfig['exports'] = './dist/prod/index.js';
+  writeFileSync(join(benchmarkEnv, 'package.json'), JSON.stringify(manifest, null, 2), 'utf8');
+
+  // This is also a patch for incorrect behavior on the current `main`.
+  await $({ cwd: benchmarkEnv })`${pnpm} rollup --config rollup.config.mjs --external`;
+}

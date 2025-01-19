@@ -1,11 +1,10 @@
 {
+  "name": "@glimmer-workspace/env",
   "private": true,
-  "name": "@glimmer-test/program",
   "version": "0.92.0",
+  "type": "module",
+  "exports": "./index.d.ts",
   "scripts": {
     "test:lint": "eslint . --quiet"
-  },
-  "dependencies": {
-    "@glimmer/program": "workspace:*"
   }
 }
