@@ -13,7 +13,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { Stack } from '@glimmer/util';
 import { COMMENT_NODE, ELEMENT_NODE, NS_SVG, TEXT_NODE } from '@glimmer/constants';
-import { assert, castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
+import { castToBrowser, castToSimple, expect, localAssert } from '@glimmer/debug-util';
 
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { NewTreeBuilder, RemoteBlock } from './element-builder';
@@ -48,6 +48,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     let node = this.currentCursor!.element.firstChild;
 
     while (node !== null) {
@@ -57,7 +58,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       node = node.nextSibling;
     }
 
-    assert(node, 'Must have opening comment for rehydration.');
+    localAssert(node, 'Must have opening comment for rehydration.');
     this.candidate = node;
     const startingBlockOffset = getBlockDepth(node);
     if (startingBlockOffset !== 0) {
@@ -67,6 +68,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       const newBlockDepth = startingBlockOffset - 1;
       const newCandidate = this.dom.createComment(`%+b:${newBlockDepth}%`);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       node.parentNode!.insertBefore(newCandidate, this.candidate);
       let closingNode = node.nextSibling;
       while (closingNode !== null) {
@@ -76,8 +78,9 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
         closingNode = closingNode.nextSibling;
       }
 
-      assert(closingNode, 'Must have closing comment for starting block comment');
+      localAssert(closingNode, 'Must have closing comment for starting block comment');
       const newClosingBlock = this.dom.createComment(`%-b:${newBlockDepth}%`);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       node.parentNode!.insertBefore(newClosingBlock, closingNode.nextSibling);
       this.candidate = newCandidate;
       this.startingBlockOffset = newBlockDepth;
@@ -92,6 +95,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
 
   get candidate(): Nullable<SimpleNode> {
     if (this.currentCursor) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return this.currentCursor.candidate!;
     }
 
@@ -99,12 +103,14 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   set candidate(node: Nullable<SimpleNode>) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     const currentCursor = this.currentCursor!;
 
     currentCursor.candidate = node;
   }
 
   disableRehydration(nextSibling: Nullable<SimpleNode>) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     const currentCursor = this.currentCursor!;
 
     // rehydration will be disabled until we either:
@@ -116,6 +122,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   }
 
   enableRehydration(candidate: Nullable<SimpleNode>) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     const currentCursor = this.currentCursor!;
 
     currentCursor.candidate = candidate;
@@ -239,7 +246,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       }
     }
 
-    if (isRehydrating === false) {
+    if (!isRehydrating) {
       // check if nextSibling matches our expected close block
       // if so, we remove the close block comment and
       // restore rehydration after clearMismatch disabled
@@ -275,9 +282,11 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const candidateBounds = this.markerBounds();
 
     if (candidateBounds) {
-      const first = candidateBounds.firstNode()!;
-      const last = candidateBounds.lastNode()!;
+      const first = candidateBounds.firstNode();
 
+      const last = candidateBounds.lastNode();
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       const newBounds = new ConcreteBounds(this.element, first.nextSibling!, last.previousSibling!);
 
       const possibleEmptyMarker = this.remove(first);
@@ -311,7 +320,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
       const first = _candidate;
       let last = expect(first.nextSibling, `BUG: serialization markers must be paired`);
 
-      while (last && !isMarker(last)) {
+      while (!isMarker(last)) {
         last = expect(last.nextSibling, `BUG: serialization markers must be paired`);
       }
 
@@ -375,6 +384,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     } else if (_candidate) {
       if (isElement(_candidate) && _candidate.tagName === 'TBODY') {
         this.pushElement(_candidate, null);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         this.currentCursor!.injectedOmittedNode = true;
         return this.__openElement(tag);
       }
@@ -422,6 +432,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     const { unmatchedAttributes: unmatched } = this;
     if (unmatched) {
       for (const attr of unmatched) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         this.constructing!.removeAttribute(attr.name);
       }
       this.unmatchedAttributes = null;
@@ -459,7 +470,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
   ): RemoteBlock {
     const marker = this.getMarker(castToBrowser(element, 'HTML'), cursorId);
 
-    assert(
+    localAssert(
       !marker || marker.parentNode === element,
       `expected remote element marker's parent node to match remote element`
     );
@@ -489,7 +500,7 @@ export class RehydrateTree extends NewTreeBuilder implements TreeBuilder {
     super.didAppendBounds(bounds);
     if (this.candidate) {
       const last = bounds.lastNode();
-      this.candidate = last && last.nextSibling;
+      this.candidate = last.nextSibling;
     }
     return bounds;
   }

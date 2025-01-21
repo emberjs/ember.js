@@ -1,7 +1,6 @@
 import type { KeywordType } from '@glimmer/syntax';
 import { KEYWORDS_TYPES } from '@glimmer/syntax';
-
-import { jitSuite, preprocess, RenderTest, test } from '../..';
+import { jitSuite, preprocess, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 type KeywordName = keyof typeof KEYWORDS_TYPES;
 const TYPES: Record<KeywordName, readonly KeywordType[]> = KEYWORDS_TYPES;
@@ -12,7 +11,7 @@ const APPEND_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Append'));
 const CALL_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Call'));
 const MODIFIER_KEYWORDS = KEYWORDS.filter((key) => TYPES[key].includes('Modifier'));
 
-for (let keyword of KEYWORDS) {
+for (const keyword of KEYWORDS) {
   class KeywordSyntaxErrors extends RenderTest {
     static suiteName = `\`${keyword}\` keyword syntax errors`;
 
@@ -153,7 +152,8 @@ for (let keyword of KEYWORDS) {
           preprocess(`{{#${keyword}}}{{/${keyword}}}`, { meta: { moduleName: 'test-module' } });
         },
         new RegExp(
-          `The \`${keyword}\` keyword was used incorrectly. It was used as a block statement, but its valid usages are:`
+          `The \`${keyword}\` keyword was used incorrectly. It was used as a block statement, but its valid usages are:`,
+          'u'
         )
       );
     }
@@ -169,7 +169,8 @@ for (let keyword of KEYWORDS) {
           preprocess(`{{${keyword}}}`, { meta: { moduleName: 'test-module' } });
         },
         new RegExp(
-          `The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`
+          `The \`${keyword}\` keyword was used incorrectly. It was used as an append statement, but its valid usages are:`,
+          'u'
         )
       );
     }
@@ -185,7 +186,8 @@ for (let keyword of KEYWORDS) {
           preprocess(`{{some-helper (${keyword})}}`, { meta: { moduleName: 'test-module' } });
         },
         new RegExp(
-          `The \`${keyword}\` keyword was used incorrectly. It was used as a call expression, but its valid usages are:`
+          `The \`${keyword}\` keyword was used incorrectly. It was used as a call expression, but its valid usages are:`,
+          'u'
         )
       );
     }
@@ -201,7 +203,8 @@ for (let keyword of KEYWORDS) {
           preprocess(`<div {{${keyword}}}></div>`, { meta: { moduleName: 'test-module' } });
         },
         new RegExp(
-          `The \`${keyword}\` keyword was used incorrectly. It was used as a modifier, but its valid usages are:`
+          `The \`${keyword}\` keyword was used incorrectly. It was used as a modifier, but its valid usages are:`,
+          'u'
         )
       );
     }

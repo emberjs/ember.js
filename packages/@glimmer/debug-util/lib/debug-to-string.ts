@@ -1,10 +1,12 @@
+import type { AnyFn } from '@glimmer/interfaces';
+
 let debugToString: undefined | ((value: unknown) => string);
 
 if (import.meta.env.DEV) {
-  let getFunctionName = (fn: Function) => {
+  let getFunctionName = (fn: AnyFn) => {
     let functionName = fn.name;
 
-    if (functionName === undefined) {
+    if (functionName === '') {
       let match = /function (\w+)\s*\(/u.exec(String(fn));
 
       functionName = (match && match[1]) || '';
@@ -17,7 +19,7 @@ if (import.meta.env.DEV) {
     let name;
     let className;
 
-    if (obj.constructor && typeof obj.constructor === 'function') {
+    if (typeof obj.constructor === 'function') {
       className = getFunctionName(obj.constructor);
     }
 

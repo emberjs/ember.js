@@ -119,6 +119,7 @@ class SerializeBuilder extends NewTreeBuilder implements TreeBuilder {
         // under the auto inserted tbody. Rehydration builder needs to
         // account for the insertion since it is injected here and not
         // really in the template.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         NEEDS_EXTRA_CLOSE.set(this.constructing!, true);
         this.flushElement(null);
       }

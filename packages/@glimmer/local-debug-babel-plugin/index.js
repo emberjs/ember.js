@@ -1,37 +1,39 @@
 /**
  * https://astexplorer.net/#/gist/c3f41b75af73006f64476775e73f7daa/e6e3e120df8404b1bff308bec3ed89eaaf0b05f2
  *
- * This plugin exists because, _even when we inline @glimmer/debug_,
- * we cannot get terser to remove/inline/unwrap identity functions.
- *
- * Repro here: https://try.terser.org/
- *
- * ```js
-    function x(x) { return x; }
-    function y(x, y, z) { return x; };
+ * This plugin exists because, _even when we inline
+ * @glimmer /debug_,
+we cannot get terser to remove/inline/unwrap identity functions.
 
-    function abc(a) { return x(a); }
-    function abc2(a) { return y(a); }
+Repro here: https://try.terser.org/
 
-    export function example() {
-      return `${x(2)} ${y("2")} ${abc(3)} ${abc2("3")}`;
-    }
-  ```
+```js
+function x(x) { return x; }
+function y(x, y, z) { return x; };
 
-  With Options:
+function abc(a) { return x(a); }
+function abc2(a) { return y(a); }
 
-  {
-    module: true,
-    compress: {
-      passes: 6,
-      module: true,
-      inline: 3, // default
-    },
-    mangle: {},
-    output: {},
-    parse: {},
-    rename: {},
-  }
+export function example() {
+return `${x(2)} ${y("2")} ${abc(3)} ${abc2("3")}`;
+}
+```
+
+With Options:
+
+{
+module: true,
+compress: {
+passes: 6,
+module: true,
+inline: 3, // default
+},
+mangle: {},
+output: {},
+parse: {},
+rename: {},
+}
+ * @param {{ template: any; }} babel
  */
 export default function (babel) {
   let _removeCheck = removeChecks(babel);
@@ -39,9 +41,17 @@ export default function (babel) {
   return {
     name: 'Cleanup local-debug code that terser could not',
     visitor: {
+      /**
+       * @param {any} path
+       * @param {any} state
+       */
       ImportDeclaration(path, state) {
         _removeCheck.ImportDeclaration(path, state);
       },
+      /**
+       * @param {any} path
+       * @param {any} state
+       */
       CallExpression(path, state) {
         _removeCheck.CallExpression(path, state);
       },
@@ -49,6 +59,9 @@ export default function (babel) {
   };
 }
 
+/**
+ * @param {{ template: any; }} babel
+ */
 function removeChecks({ template }) {
   let stateKey = Symbol.for('removeChecks');
 
@@ -56,6 +69,10 @@ function removeChecks({ template }) {
   const trueFn = ['CheckInterface', 'wrap', 'CheckOr', 'CheckFunction', 'CheckObject'];
   const removeEntirely = ['recordStackSize'];
 
+  /**
+   * @param {{ node: { callee: { name: any; }; }; }} callPath
+   * @param {{ [key: symbol]: any; }} state
+   */
   function isToBeRemoved(callPath, state) {
     if (!state) return;
 
@@ -72,6 +89,10 @@ function removeChecks({ template }) {
   }
 
   return {
+    /**
+     * @param {{ node: any; }} path
+     * @param {{ [x: symbol]: { names: Set<any>; nodes: any[]; }; }} state
+     */
     ImportDeclaration(path, state) {
       let node = path.node;
 
@@ -80,16 +101,20 @@ function removeChecks({ template }) {
 
       state[stateKey] ??= { names: new Set(), nodes: [] };
 
-      node.specifiers.forEach((specifier) => {
+      node.specifiers.forEach((/** @type {{ local: { name: any; }; }} */ specifier) => {
         let name = specifier.local.name;
         let relevant =
           unwrap.includes(name) || removeEntirely.includes(name) || trueFn.includes(name);
         if (!relevant) return;
 
-        state[stateKey].names.add(name);
-        state[stateKey].nodes.push(specifier.local);
+        state[stateKey]?.names.add(name);
+        state[stateKey]?.nodes.push(specifier.local);
       });
     },
+    /**
+     * @param {{ node: { callee: { name: any; }; arguments: any[]; }; remove: () => void; replaceWith: (arg0: any) => void; }} path
+     * @param {{ [key: symbol]: { names: Set<any>; nodes: any[]; }; }} state
+     */
     CallExpression(path, state) {
       if (isToBeRemoved(path, state)) {
         let name = path.node.callee.name;

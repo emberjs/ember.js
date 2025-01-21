@@ -51,7 +51,7 @@ export interface Registry {
 
   render(
     entry: string,
-    args: Dict<unknown>,
+    args: Dict,
     element: SimpleElement | HTMLElement,
     isInteractive?: boolean
   ): Promise<UpdateBenchmark>;

@@ -32,6 +32,7 @@ export interface AppendingBlock extends Bounds {
  * change during the updating phase, and this may cause its *bounds* to change, but the block itself
  * remains stable.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
 export interface FixedBlock extends AppendingBlock {}
 
 /**

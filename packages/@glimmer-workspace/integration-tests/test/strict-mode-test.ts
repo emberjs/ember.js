@@ -1,6 +1,5 @@
 import { castToBrowser } from '@glimmer/debug-util';
 import { array, concat, fn, get, hash, on } from '@glimmer/runtime';
-
 import {
   defineComponent,
   defineSimpleHelper,
@@ -12,7 +11,7 @@ import {
   test,
   TestHelper,
   trackedObj,
-} from '..';
+} from "@glimmer-workspace/integration-tests";
 
 class GeneralStrictModeTest extends RenderTest {
   static suiteName = 'strict mode: general properties';
@@ -1076,7 +1075,7 @@ class DynamicStrictModeTest extends RenderTest {
     const world = defineSimpleModifier((element: Element) => {
       element.innerHTML = `Hello, world!`;
 
-      return () => assert.ok(true, 'destructor called');
+      return () => void assert.ok(true, 'destructor called');
     });
     const nebula = defineSimpleModifier(
       (element: Element, [name]: string[]) => (element.innerHTML = `Hello, ${name}!`)

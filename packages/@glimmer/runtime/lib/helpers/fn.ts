@@ -1,4 +1,4 @@
-import type { CapturedArguments } from '@glimmer/interfaces';
+import type { AnyFn, CapturedArguments } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { check } from '@glimmer/debug';
 import { buildUntouchableThis } from '@glimmer/debug-util';
@@ -85,9 +85,10 @@ export const fn = internalHelper(({ positional }: CapturedArguments) => {
 
         if (isInvokableRef(callbackRef)) {
           let value = args.length > 0 ? args[0] : invocationArgs[0];
-          return updateRef(callbackRef, value);
+          return void updateRef(callbackRef, value);
         } else {
-          return (fn as Function).call(context, ...args, ...invocationArgs);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- @fixme
+          return (fn as AnyFn).call(context, ...args, ...invocationArgs);
         }
       };
     },

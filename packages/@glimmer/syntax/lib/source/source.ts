@@ -1,5 +1,5 @@
 import type { Nullable } from '@glimmer/interfaces';
-import { assert, setLocalDebugType } from '@glimmer/debug-util';
+import { localAssert, setLocalDebugType } from '@glimmer/debug-util';
 
 import type { PrecompileOptions } from '../parser/tokenizer-event-handlers';
 import type { SourceLocation, SourcePosition } from './location';
@@ -48,7 +48,7 @@ export class Source {
       return null;
     }
 
-    // eslint-disable-next-line no-constant-condition
+     
     while (true) {
       let nextLine = this.source.indexOf('\n', seenChars);
 
@@ -80,9 +80,9 @@ export class Source {
 
         if (import.meta.env.DEV) {
           let roundTrip = this.hbsPosFor(seenChars + column);
-          assert(roundTrip !== null, `the returned offset failed to round-trip`);
-          assert(roundTrip.line === line, `the round-tripped line didn't match the original line`);
-          assert(
+          localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
+          localAssert(roundTrip.line === line, `the round-tripped line didn't match the original line`);
+          localAssert(
             roundTrip.column === column,
             `the round-tripped column didn't match the original column`
           );

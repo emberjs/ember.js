@@ -120,7 +120,7 @@ export interface BlockMetadata {
   symbols: BlockSymbolNames;
   scopeValues: unknown[] | null;
   isStrictMode: boolean;
-  moduleName: string;
+  moduleName: string | undefined;
   owner: Owner | null;
   size: number;
 }

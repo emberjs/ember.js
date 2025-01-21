@@ -8,8 +8,8 @@ import type { NormalizationState } from '../context';
 import { Err } from '../../../shared/result';
 
 export interface KeywordDelegate<Match extends KeywordMatch, V, Out> {
-  assert(options: Match, state: NormalizationState): Result<V>;
-  translate(options: { node: Match; state: NormalizationState }, param: V): Result<Out>;
+  assert: (options: Match, state: NormalizationState) => Result<V>;
+  translate: (options: { node: Match; state: NormalizationState }, param: V) => Result<Out>;
 }
 
 export interface Keyword<K extends KeywordType = KeywordType, Out = unknown> {
@@ -115,20 +115,9 @@ export type KeywordNode =
   | ASTv2.InvokeBlock
   | ASTv2.ElementModifier;
 
-export function keyword<
-  K extends KeywordType,
-  D extends KeywordDelegate<KeywordMatches[K], unknown, Out>,
-  Out = unknown,
->(keyword: string, type: K, delegate: D): Keyword<K, Out> {
-  return new KeywordImpl(keyword, type, delegate as KeywordDelegate<KeywordMatch, unknown, Out>);
-}
-
 export type PossibleKeyword = KeywordNode;
-type OutFor<K extends Keyword | BlockKeyword> = K extends BlockKeyword<infer Out>
-  ? Out
-  : K extends Keyword<KeywordType, infer Out>
-    ? Out
-    : never;
+type OutFor<K extends Keyword | BlockKeyword> =
+  K extends BlockKeyword<infer Out> ? Out : K extends Keyword<KeywordType, infer Out> ? Out : never;
 
 function getCalleeExpression(
   node: KeywordNode | ASTv2.ExpressionNode
@@ -159,11 +148,11 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
     this._type = type;
   }
 
-  kw<S extends string = string, Out = unknown>(
+  kw<V, S extends string = string, Out = unknown>(
     name: S,
-    delegate: KeywordDelegate<KeywordMatches[K], unknown, Out>
-  ): Keywords<K, KeywordList | Keyword<K, Out>> {
-    this._keywords.push(keyword(name, this._type, delegate));
+    delegate: KeywordDelegate<KeywordMatches[K], V, Out>
+  ): this {
+    this._keywords.push(new KeywordImpl(name, this._type, delegate));
 
     return this;
   }
@@ -173,9 +162,9 @@ export class Keywords<K extends KeywordType, KeywordList extends Keyword<K> = ne
     state: NormalizationState
   ): Result<OutFor<KeywordList>> | null {
     for (let keyword of this._keywords) {
-      let result = keyword.translate(node, state) as Result<OutFor<KeywordList>>;
+      let result = keyword.translate(node, state);
       if (result !== null) {
-        return result;
+        return result as Result<OutFor<KeywordList>>;
       }
     }
 

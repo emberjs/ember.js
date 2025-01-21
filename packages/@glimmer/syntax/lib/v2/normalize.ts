@@ -1,5 +1,5 @@
 import type { PresentArray } from '@glimmer/interfaces';
-import { asPresentArray, assert, isPresentArray } from '@glimmer/debug-util';
+import { asPresentArray, isPresentArray,localAssert } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 
 import type {
@@ -191,7 +191,7 @@ class ExpressionNormalizer {
       case 'UndefinedLiteral':
         return this.block.builder.literal(expr.value, this.block.loc(expr.loc));
       case 'PathExpression':
-        assert(resolution, '[BUG] resolution is required');
+        localAssert(resolution, '[BUG] resolution is required');
         return this.path(expr, resolution);
       case 'SubExpression': {
         // expr.path used to incorrectly have the type ASTv1.Expression
@@ -671,7 +671,7 @@ class ElementNormalizer {
   }
 
   private attr(m: ASTv1.AttrNode): ASTv2.HtmlOrSplatAttr {
-    assert(m.name[0] !== '@', 'An attr name must not start with `@`');
+    localAssert(m.name[0] !== '@', 'An attr name must not start with `@`');
 
     if (m.name === '...attributes') {
       return this.ctx.builder.splatAttr(this.ctx.table.allocateBlock('attrs'), this.ctx.loc(m.loc));
@@ -729,7 +729,7 @@ class ElementNormalizer {
   }
 
   private arg(arg: ASTv1.AttrNode): ASTv2.ComponentArg {
-    assert(arg.name[0] === '@', 'An arg name must start with `@`');
+    localAssert(arg.name[0] === '@', 'An arg name must start with `@`');
     this.checkArgCall(arg);
 
     let offsets = this.ctx.loc(arg.loc);

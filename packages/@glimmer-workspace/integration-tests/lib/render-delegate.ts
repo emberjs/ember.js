@@ -46,7 +46,7 @@ export default interface RenderDelegate {
   registerModifier(name: string, klass: unknown): void;
   renderTemplate(
     template: string,
-    context: Dict<unknown>,
+    context: Dict,
     element: SimpleElement,
     snapshot: () => void
   ): RenderResult;

@@ -3,6 +3,7 @@ import type {
   CompilationContext,
   Dict,
   Nullable,
+  Optional,
   Program,
   ProgramConstants,
   RuntimeOp,
@@ -52,7 +53,10 @@ export function logOpcodeSlice(context: CompilationContext, start: number, end: 
   }
 }
 
-export function describeOpcode(type: string, params: Dict<SomeDisassembledOperand>): string | void {
+export function describeOpcode(
+  type: string,
+  params: Optional<Dict<SomeDisassembledOperand>>
+): string | void {
   if (LOCAL_DEBUG) {
     let out = type;
 
@@ -66,9 +70,8 @@ export function describeOpcode(type: string, params: Dict<SomeDisassembledOperan
   }
 }
 
-function stringify(value: number, type: 'constant'): string;
+function stringify(value: number, type: 'constant' | 'variable' | 'pc'): string;
 function stringify(value: RegisterName, type: 'register'): string;
-function stringify(value: number, type: 'variable' | 'pc'): string;
 function stringify(value: DisassembledOperand['value'], type: 'stringify' | 'unknown'): string;
 function stringify(
   value: unknown,
@@ -78,7 +81,7 @@ function stringify(
     case 'stringify':
       return JSON.stringify(value);
     case 'constant':
-      return `${stringify(value, 'unknown')}`;
+      return stringify(value, 'unknown');
     case 'register':
       return value;
     case 'variable':
@@ -95,7 +98,7 @@ function stringify(
         case 'boolean':
           return JSON.stringify(value);
         case 'symbol':
-          return `${String(value)}`;
+          return String(value);
         case 'undefined':
           return 'undefined';
         case 'object': {
@@ -133,7 +136,7 @@ function stringify(
 function jsonify(param: SomeDisassembledOperand): string | string[] | null {
   const result = json(param);
 
-  return Array.isArray(result) ? JSON.stringify(result) : result ?? 'null';
+  return Array.isArray(result) ? JSON.stringify(result) : (result ?? 'null');
 }
 
 function json(param: SomeDisassembledOperand): string | string[] | null {
@@ -183,7 +186,8 @@ export type OperandOptionsA<O extends AnyOperand> = O extends [
   options: infer Options,
 ]
   ? Options
-  : {};
+  : // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    {};
 
 type ExtractA<O> = O extends { a: infer A } ? A : never;
 type ExpandUnion<U> = U extends infer O ? ExtractA<{ a: O }> : never;
@@ -354,7 +358,7 @@ export function debugOp(program: Program, op: OpSnapshot, meta: BlockMetadata | 
   if (LOCAL_DEBUG) {
     let metadata = opcodeMetadata(op.type);
 
-    let out: Dict<RawDisassembledOperand> = Object.create(null);
+    let out = Object.create(null) as Dict<RawDisassembledOperand>;
     if (!metadata) {
       for (let i = 0; i < op.size; i++) {
         out[i] = ['error:opcode', i, { kind: op.type }];
@@ -377,7 +381,7 @@ export function debugOp(program: Program, op: OpSnapshot, meta: BlockMetadata | 
     return { name: metadata.name, params: fromRaw(out), meta };
   }
 
-  throw unreachable(`BUG: Don't try to debug opcodes while trace is disabled`);
+  unreachable(`BUG: Don't try to debug opcodes while trace is disabled`);
 }
 
 function normalizeOperand(operand: ShorthandOperand): NormalizedOperand {

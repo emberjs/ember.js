@@ -1,4 +1,4 @@
-import { assert, isPresentArray } from '@glimmer/debug-util';
+import { isPresentArray, localAssert } from '@glimmer/debug-util';
 
 import type { CharOffsetKind, HbsPositionKind, OffsetKind } from './kinds';
 import type { CharPosition, HbsPosition, InvisiblePosition, PositionData } from './offset';
@@ -90,12 +90,8 @@ class When<Out> {
   }
 }
 
-type ExhaustiveCheck<Out, In extends Matches, Removed extends Matches> = Exclude<
-  In,
-  Removed
-> extends never
-  ? ExhaustiveMatcher<Out>
-  : Matcher<Out, Exclude<In, Removed>>;
+type ExhaustiveCheck<Out, In extends Matches, Removed extends Matches> =
+  Exclude<In, Removed> extends never ? ExhaustiveMatcher<Out> : Matcher<Out, Exclude<In, Removed>>;
 
 export type MatchFn<Out> = (left: PositionData, right: PositionData) => Out;
 
@@ -123,14 +119,14 @@ class Matcher<Out, M extends Matches = Matches> {
   ): (left: PositionData, right: PositionData) => Out {
     const nesteds = this._whens.match(left);
 
-    assert(
+    localAssert(
       isPresentArray(nesteds),
       `no match defined for (${left}, ${right}) and no AnyMatch defined either`
     );
 
     const callback = new WhenList(nesteds).first(right);
 
-    assert(
+    localAssert(
       callback !== null,
       `no match defined for (${left}, ${right}) and no AnyMatch defined either`
     );
@@ -182,7 +178,7 @@ class Matcher<Out, M extends Matches = Matches> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: (left: any, right: any) => Out
-  ): Matcher<Out, Matches> | ExhaustiveMatcher<Out> {
+  ): ExhaustiveCheck<Out, M, M> | Matcher<Out, Exclude<M, M>> {
     this._whens.get(left, () => new When()).add(right, callback);
 
     return this;

@@ -7,7 +7,7 @@ import { isEmpty, isString } from '../../dom/normalize';
 export default class DynamicTextContent implements UpdatingOpcode {
   constructor(
     public node: SimpleText,
-    private reference: Reference<unknown>,
+    private reference: Reference,
     private lastValue: string
   ) {}
 

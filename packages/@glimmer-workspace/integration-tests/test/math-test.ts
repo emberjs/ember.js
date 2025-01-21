@@ -1,7 +1,6 @@
 import type { Namespace } from '@glimmer/interfaces';
 import { NS_HTML, NS_MATHML, NS_SVG } from '@glimmer/constants';
-
-import { defineComponent, jitSuite, RenderTest, test } from '..';
+import { defineComponent, jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
 
 class MathElementTest extends RenderTest {
   static suiteName = '<math>';

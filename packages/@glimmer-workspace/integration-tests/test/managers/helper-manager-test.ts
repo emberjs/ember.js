@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import type { Arguments, Owner } from '@glimmer/interfaces';
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
-
 import {
   defineComponent,
   GlimmerishComponent,
@@ -11,7 +11,8 @@ import {
   TestHelperManager,
   tracked,
   trackedObj,
-} from '../..';
+} from '@glimmer-workspace/integration-tests';
+import { consume } from '@glimmer-workspace/test-utils';
 
 class HelperManagerTest extends RenderTest {
   static suiteName = 'Helper Managers';
@@ -355,7 +356,7 @@ class HelperManagerTest extends RenderTest {
       @tracked foo = 123;
 
       value() {
-        this.foo;
+        consume(this.foo);
         this.foo = 456;
       }
     }
@@ -452,7 +453,7 @@ class HelperManagerTest extends RenderTest {
 
         // first read the tracked property
 
-        this.foo;
+        consume(this.foo);
 
         // then attempt to update the tracked property
         this.foo = 456;
@@ -478,7 +479,7 @@ class HelperManagerTest extends RenderTest {
       value() {
         // first read the tracked property
 
-        this.foo;
+        consume(this.foo);
 
         // then attempt to update the tracked property
         this.foo = 456;

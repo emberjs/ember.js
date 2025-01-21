@@ -109,11 +109,6 @@ function inspectHooks<T extends EmberishCurlyComponentFactory>(ComponentClass: T
 function assertFired(component: HookedComponent, name: string, count = 1) {
   let hooks = component.hooks;
 
-  if (!hooks) {
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    throw new TypeError(`Not hooked: ${component}`);
-  }
-
   if (name in hooks) {
     assert.strictEqual(
       hooks[name as keyof ComponentHooks],
@@ -128,17 +123,14 @@ function assertFired(component: HookedComponent, name: string, count = 1) {
 export function assertElementIsEmberishElement(
   element: SimpleElement | null,
   tagName: string,
-  attrs: Object,
-  contents: string
+  attrs: object,
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  contents?: string
 ): void;
 export function assertElementIsEmberishElement(
   element: SimpleElement | null,
   tagName: string,
-  attrs: Object
-): void;
-export function assertElementIsEmberishElement(
-  element: SimpleElement | null,
-  tagName: string,
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   contents: string
 ): void;
 export function assertElementIsEmberishElement(
@@ -169,8 +161,9 @@ export function assertElementIsEmberishElement(
 // }
 
 class CurlyTest extends RenderTest {
-  assertEmberishElement(tagName: string, attrs: Object, contents: string): void;
-  assertEmberishElement(tagName: string, attrs: Object): void;
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  assertEmberishElement(tagName: string, attrs: object, contents?: string): void;
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
   assertEmberishElement(tagName: string, contents: string): void;
   assertEmberishElement(tagName: string): void;
   assertEmberishElement(...args: any[]): void {
@@ -1411,6 +1404,7 @@ class CurlyGlimmerComponentTest extends CurlyTest {
 
   @test
   'Custom element with element modifier'() {
+    // eslint-disable-next-line @typescript-eslint/no-extraneous-class
     this.registerModifier('foo', class {});
 
     this.render('<some-custom-element {{foo "foo"}}></some-custom-element>');
@@ -2166,9 +2160,6 @@ class CurlyBoundsTrackingTest extends CurlyTest {
 
     assert.ok(instance, 'instance is created');
 
-    if (!instance) {
-      return;
-    }
 
     this.assertEmberishElement('span', {}, 'foo bar');
 

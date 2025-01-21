@@ -1,6 +1,5 @@
 import type { Arguments, InternalHelperManager } from '@glimmer/interfaces';
 import type { Cache } from '@glimmer/validator';
-import { debugToString } from '@glimmer/debug-util';
 import { associateDestroyableChild, isDestroyed, isDestroying } from '@glimmer/destroyable';
 import { getInternalHelperManager, hasDestroyable, hasValue } from '@glimmer/manager';
 import { getOwner } from '@glimmer/owner';
@@ -13,6 +12,7 @@ let ARGS_CACHES = import.meta.env.DEV
   : undefined;
 
 function getArgs(proxy: SimpleArgsProxy): Partial<Arguments> {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   return getValue(import.meta.env.DEV ? ARGS_CACHES!.get(proxy)! : proxy.argsCache!)!;
 }
 
@@ -26,6 +26,7 @@ class SimpleArgsProxy {
     let argsCache = createCache(() => computeArgs(context));
 
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       ARGS_CACHES!.set(this, argsCache);
       Object.freeze(this);
     } else {
@@ -48,7 +49,8 @@ export function invokeHelper(
   context: object,
   definition: object,
   computeArgs?: (context: object) => Partial<Arguments>
-): Cache<unknown> {
+): Cache {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS usage
   if (import.meta.env.DEV && (typeof context !== 'object' || context === null)) {
     throw new Error(
       `Expected a context object to be passed as the first parameter to invokeHelper, got ${context}`
@@ -56,16 +58,8 @@ export function invokeHelper(
   }
 
   const owner = getOwner(context);
-  const internalManager = getInternalHelperManager(definition)!;
 
-  // TODO: figure out why assert isn't using the TS assert thing
-  if (import.meta.env.DEV && !internalManager) {
-    throw new Error(
-      `Expected a helper definition to be passed as the second parameter to invokeHelper, but no helper manager was found. The definition value that was passed was \`${debugToString!(
-        definition
-      )}\`. Did you use setHelperManager to associate a helper manager with this value?`
-    );
-  }
+  const internalManager = getInternalHelperManager(definition);
 
   if (import.meta.env.DEV && typeof internalManager === 'function') {
     throw new Error(
@@ -77,7 +71,7 @@ export function invokeHelper(
   let args = new SimpleArgsProxy(context, computeArgs);
   let bucket = manager.createHelper(definition, args);
 
-  let cache: Cache<unknown>;
+  let cache: Cache;
 
   if (hasValue(manager)) {
     cache = createCache(() => {

@@ -1,5 +1,6 @@
 import type {
   CompilableProgram,
+  Initializable,
   LayoutWithContext,
   Nullable,
   Owner,
@@ -54,14 +55,14 @@ export default function templateFactory({
   // TODO: This caches JSON serialized output once in case a template is
   // compiled by multiple owners, but we haven't verified if this is actually
   // helpful. We should benchmark this in the future.
-  let parsedBlock: SerializedTemplateBlock;
+  let parsedBlock: Initializable<SerializedTemplateBlock>;
 
   let ownerlessTemplate: Template | null = null;
   let templateCache = new WeakMap<object, Template>();
 
   let factory: TemplateFactoryWithIdAndMeta = (owner?: Owner) => {
     if (parsedBlock === undefined) {
-      parsedBlock = JSON.parse(block);
+      parsedBlock = JSON.parse(block) as SerializedTemplateBlock;
     }
 
     if (owner === undefined) {
@@ -82,7 +83,7 @@ export default function templateFactory({
       return ownerlessTemplate;
     }
 
-    let result = templateCache.get(owner) as Template;
+    let result = templateCache.get(owner);
 
     if (result === undefined) {
       templateCacheCounters.cacheMiss++;

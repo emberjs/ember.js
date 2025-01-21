@@ -39,7 +39,7 @@ export function CompileArgs(
 
   if (atNames) flags |= 0b1000;
 
-  if (blocks) {
+  if (blocks.hasAny) {
     flags |= 0b111;
   }
 

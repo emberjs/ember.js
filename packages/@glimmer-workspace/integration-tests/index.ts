@@ -14,7 +14,7 @@ export * from './lib/modes/jit/resolver';
 export * from './lib/modes/node/env';
 export * from './lib/modes/rehydration/delegate';
 export * from './lib/modes/rehydration/partial-rehydration-delegate';
-export type { RenderDelegateOptions } from './lib/render-delegate';
+export type { default as RenderDelegate, RenderDelegateOptions } from './lib/render-delegate';
 export * from './lib/render-test';
 export * from './lib/setup-harness';
 export * from './lib/snapshot';

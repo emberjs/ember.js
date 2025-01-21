@@ -12,6 +12,7 @@ APPEND_OPCODES.add(VM_ENTER_LIST_OP, (vm, { op1: relativeStart, op2: elseTarget 
   let keyRef = check(stack.pop(), CheckReference);
 
   let keyValue = valueForRef(keyRef);
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
   let key = keyValue === null ? '@identity' : String(keyValue);
 
   let iteratorRef = createIteratorRef(listRef, key);
@@ -19,7 +20,7 @@ APPEND_OPCODES.add(VM_ENTER_LIST_OP, (vm, { op1: relativeStart, op2: elseTarget 
 
   vm.updateWith(new AssertFilter(iteratorRef, (iterator) => iterator.isEmpty()));
 
-  if (iterator.isEmpty() === true) {
+  if (iterator.isEmpty()) {
     // TODO: Fix this offset, should be accurate
     vm.lowlevel.goto(elseTarget + 1);
   } else {

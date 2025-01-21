@@ -9,7 +9,7 @@ import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
 import createHTMLDocument from '@simple-dom/document';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
-  protected declare document: SimpleDocument; // Hides property on base class
+  declare protected document: SimpleDocument; // Hides property on base class
   constructor(doc: Nullable<SimpleDocument>) {
     super(doc || createHTMLDocument());
   }
@@ -22,7 +22,7 @@ export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
     reference: Nullable<SimpleNode>,
     html: string
   ): Bounds {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated, @typescript-eslint/no-non-null-assertion
     let raw = this.document.createRawHTMLSection!(html);
     parent.insertBefore(raw, reference);
     return new ConcreteBounds(parent, raw, raw);

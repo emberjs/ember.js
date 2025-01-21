@@ -31,6 +31,7 @@ function convertToInt(prop: number | string | symbol): number | null {
 function tagForNamedArg(namedArgs: CapturedNamedArguments, key: string): Tag {
   return track(() => {
     if (key in namedArgs) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       valueForRef(namedArgs[key]!);
     }
   });
@@ -47,16 +48,20 @@ function tagForPositionalArg(positionalArgs: CapturedPositionalArguments, key: s
 
     if (parsed !== null && parsed < positionalArgs.length) {
       // consume the tag of the referenced index
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       valueForRef(positionalArgs[parsed]!);
     }
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
 class NamedArgsProxy implements ProxyHandler<{}> {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
   declare set?: (target: {}, prop: string | number | symbol) => boolean;
 
   constructor(private named: CapturedNamedArguments) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
   get(_target: {}, prop: string | number | symbol) {
     const ref = this.named[prop as string];
 
@@ -65,6 +70,7 @@ class NamedArgsProxy implements ProxyHandler<{}> {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
   has(_target: {}, prop: string | number | symbol) {
     return prop in this.named;
   }
@@ -77,6 +83,7 @@ class NamedArgsProxy implements ProxyHandler<{}> {
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- @fixme
   getOwnPropertyDescriptor(_target: {}, prop: string | number | symbol) {
     if (import.meta.env.DEV && !(prop in this.named)) {
       throw new Error(
@@ -109,10 +116,11 @@ class PositionalArgsProxy implements ProxyHandler<[]> {
     const parsed = convertToInt(prop);
 
     if (parsed !== null && parsed < positional.length) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return valueForRef(positional[parsed]!);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return (target as any)[prop];
   }
 
@@ -139,6 +147,7 @@ export const argsProxyFor = (
   const namedHandler = new NamedArgsProxy(named);
   const positionalHandler = new PositionalArgsProxy(positional);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const namedTarget = Object.create(null);
   const positionalTarget: unknown[] = [];
 
@@ -162,13 +171,16 @@ export const argsProxyFor = (
     positionalHandler.ownKeys = forInDebugHandler;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const namedProxy = new Proxy(namedTarget, namedHandler);
   const positionalProxy = new Proxy(positionalTarget, positionalHandler);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   setCustomTagFor(namedProxy, getNamedTag);
   setCustomTagFor(positionalProxy, getPositionalTag);
 
   return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     named: namedProxy,
     positional: positionalProxy,
   };

@@ -21,7 +21,7 @@ import {
   recordStackSize,
   VmSnapshot,
 } from '@glimmer/debug';
-import { assert, dev, unwrap } from '@glimmer/debug-util';
+import { dev, localAssert, unwrap } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 import { LOCAL_LOGGER } from '@glimmer/util';
 import { $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
@@ -56,13 +56,16 @@ export type DebugState = {
     size: number;
   };
   closeGroup?: undefined | (() => void);
-  params?: Maybe<Dict<SomeDisassembledOperand>> | undefined;
+  params?: Optional<Dict<SomeDisassembledOperand>>;
   op?: Optional<DebugOp>;
   debug: DebugVmSnapshot;
   snapshot: VmSnapshot;
 };
 
 export class AppendOpcodes {
+  // This code is intentionally putting unsafe `null`s into the array that it
+  // will intentionally overwrite before anyone can see them.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   private evaluateOpcode: Evaluate[] = new Array(VM_SYSCALL_SIZE).fill(null);
 
   declare debugBefore?: (vm: DebugVmSnapshot, opcode: RuntimeOp) => DebugState;
@@ -128,12 +131,13 @@ export class AppendOpcodes {
         if (
           meta &&
           meta.check !== false &&
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           typeof meta.stackChange! === 'number' &&
           meta.stackChange !== actualChange
         ) {
           throw new Error(
             `Error in ${pre.op?.name}:\n\n${pre.debug.registers[$pc]}. ${
-              pre.op ? describeOpcode(pre.op?.name, pre.params!) : unwrap(opcodeMetadata(type)).name
+              pre.op ? describeOpcode(pre.op.name, pre.params) : unwrap(opcodeMetadata(type)).name
             }\n\nStack changed by ${actualChange}, expected ${meta.stackChange}`
           );
         }
@@ -186,13 +190,13 @@ export class AppendOpcodes {
     let operation = unwrap(this.evaluateOpcode[type]);
 
     if (operation.syscall) {
-      assert(
+      localAssert(
         !opcode.isMachine,
         `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );
       operation.evaluate(vm, opcode);
     } else {
-      assert(
+      localAssert(
         opcode.isMachine,
         `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );
@@ -205,10 +209,12 @@ export function externs(vm: VM): Externs | undefined {
   return LOCAL_DEBUG
     ? {
         debugBefore: (opcode: RuntimeOp): DebugState => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           return APPEND_OPCODES.debugBefore!(dev(vm.debug), opcode);
         },
 
         debugAfter: (state: DebugState): void => {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           APPEND_OPCODES.debugAfter!(dev(vm.debug), state);
         },
       }

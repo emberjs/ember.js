@@ -86,7 +86,7 @@ APPEND_OPCODES.add(VM_PUSH_REMOTE_ELEMENT_OP, (vm) => {
   }
 
   let block = vm.tree().pushRemoteElement(element, guid, insertBefore);
-  if (block) vm.associateDestroyable(block);
+  vm.associateDestroyable(block);
 
   if (vm.env.debugRenderTree !== undefined) {
     // Note that there is nothing to update – when the args for an
@@ -147,7 +147,7 @@ APPEND_OPCODES.add(VM_CLOSE_ELEMENT_OP, (vm) => {
 });
 
 APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
-  if (vm.env.isInteractive === false) {
+  if (!vm.env.isInteractive) {
     return;
   }
 
@@ -189,7 +189,7 @@ APPEND_OPCODES.add(VM_MODIFIER_OP, (vm, { op1: handle }) => {
 });
 
 APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
-  if (vm.env.isInteractive === false) {
+  if (!vm.env.isInteractive) {
     return;
   }
 
@@ -227,6 +227,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_MODIFIER_OP, (vm) => {
       }
 
       if (named !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         args.named = Object.assign({}, ...named, outerNamed);
       }
     } else {
@@ -360,6 +361,7 @@ export class UpdateDynamicModifierOpcode implements UpdatingOpcode {
 
       this.instance = newInstance;
     } else if (tag !== null && !validateTag(tag, lastUpdated)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       vm.env.scheduleUpdateModifier(instance!);
       this.lastUpdated = valueForTag(tag);
     }
@@ -395,13 +397,13 @@ APPEND_OPCODES.add(VM_DYNAMIC_ATTR_OP, (vm, { op1: _name, op2: _trusting, op3: _
 export class UpdateDynamicAttributeOpcode implements UpdatingOpcode {
   private updateRef: Reference;
 
-  constructor(reference: Reference<unknown>, attribute: DynamicAttribute, env: Environment) {
+  constructor(reference: Reference, attribute: DynamicAttribute, env: Environment) {
     let initialized = false;
 
     this.updateRef = createComputeRef(() => {
       let value = valueForRef(reference);
 
-      if (initialized === true) {
+      if (initialized) {
         attribute.update(value, env);
       } else {
         initialized = true;

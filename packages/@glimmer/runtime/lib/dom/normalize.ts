@@ -1,4 +1,4 @@
-import type { Dict, SimpleDocumentFragment, SimpleNode } from '@glimmer/interfaces';
+import type { Dict, Indexable, SimpleDocumentFragment, SimpleNode } from '@glimmer/interfaces';
 
 export interface SafeString {
   toHTML(): string;
@@ -43,19 +43,20 @@ export function isEmpty(value: unknown): boolean {
   return value === null || value === undefined || typeof (value as Dict).toString !== 'function';
 }
 
+export function isIndexable(value: unknown): value is Indexable {
+  return value !== null && typeof value === 'object';
+}
+
 export function isSafeString(value: unknown): value is SafeString {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
+  return isIndexable(value) && typeof value['toHTML'] === 'function';
 }
 
 export function isNode(value: unknown): value is SimpleNode {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return typeof value === 'object' && value !== null && typeof (value as any).nodeType === 'number';
+  return isIndexable(value) && typeof value['nodeType'] === 'number';
 }
 
 export function isFragment(value: unknown): value is SimpleDocumentFragment {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-  return isNode(value) && value.nodeType === 11;
+  return isIndexable(value) && value['nodeType'] === 11;
 }
 
 export function isString(value: unknown): value is string {

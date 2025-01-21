@@ -1,9 +1,16 @@
 {
   "private": true,
   "name": "@glimmer-test/manager",
+  "repo-meta": {
+    "strictness": "loose"
+  },
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
-    "@glimmer/manager": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
+    "@glimmer/manager": "workspace:*",
     "@glimmer/reference": "workspace:*",
     "@glimmer/validator": "workspace:*",
     "@glimmer/vm": "workspace:*"

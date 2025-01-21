@@ -1,4 +1,5 @@
-import { JitRenderDelegate, RenderTest } from '..';
+import { JitRenderDelegate, RenderTest } from '@glimmer-workspace/integration-tests';
+
 import { module } from './support';
 
 let renderTests: RenderTest;

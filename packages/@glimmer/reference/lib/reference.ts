@@ -169,6 +169,7 @@ export function valueForRef<T>(_ref: Reference<T>): T {
 
     const newTag = track(
       () => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         lastValue = ref.lastValue = compute!();
       },
       import.meta.env.DEV && ref.debugLabel
@@ -205,11 +206,9 @@ export function childRefFor(_parentRef: Reference, path: string): Reference {
   if (children === null) {
     children = parentRef.children = new Map();
   } else {
-    child = children.get(path)!;
+    const next = children.get(path);
 
-    if (child !== undefined) {
-      return child;
-    }
+    if (next) return next;
   }
 
   if (type === UNBOUND) {
@@ -265,7 +264,7 @@ export let createDebugAliasRef: undefined | ((debugLabel: string, inner: Referen
 
 if (import.meta.env.DEV) {
   createDebugAliasRef = (debugLabel: string, inner: Reference) => {
-    const update = isUpdatableRef(inner) ? (value: unknown) => updateRef(inner, value) : null;
+    const update = isUpdatableRef(inner) ? (value: unknown): void => updateRef(inner, value) : null;
     const ref = createComputeRef(() => valueForRef(inner), update);
 
     ref[REFERENCE] = inner[REFERENCE];

@@ -1,12 +1,10 @@
 import type { Nullable, SimpleElement, SimpleNode } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
+import type { JitRenderDelegate } from '@glimmer-workspace/integration-tests';
 import { expect } from '@glimmer/debug-util';
 import { associateDestroyableChild, registerDestructor } from '@glimmer/destroyable';
 import { createComputeRef, createConstRef, createPrimitiveRef } from '@glimmer/reference';
 import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
-
-import type { JitRenderDelegate } from '..';
-
 import {
   assertNodeTagName,
   getElementByClassName,
@@ -18,7 +16,8 @@ import {
   test,
   tracked,
   trimLines,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
+
 import { assert } from './support';
 
 function makeSafeString(value: string): SafeString {
@@ -99,7 +98,7 @@ class UpdatingTest extends RenderTest {
       false: 'false',
       this: 'this',
       'foo.bar': 'foo.bar',
-      nested: null as any | null,
+      nested: null as unknown,
     };
 
     state.nested = state;

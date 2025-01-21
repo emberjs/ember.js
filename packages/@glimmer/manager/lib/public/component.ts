@@ -121,6 +121,7 @@ export class CustomComponentManager<O extends Owner, ComponentInstance>
       let { factory } = this;
       delegate = factory(owner);
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       if (import.meta.env.DEV && !FROM_CAPABILITIES!.has(delegate.capabilities)) {
         // TODO: This error message should make sense in both Ember and Glimmer https://github.com/glimmerjs/glimmer-vm/issues/1200
         throw new Error(

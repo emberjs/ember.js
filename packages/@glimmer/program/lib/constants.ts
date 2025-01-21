@@ -4,12 +4,13 @@ import type {
   ConstantPool,
   HelperDefinitionState,
   ModifierDefinitionState,
+  Optional,
   ProgramConstants,
   ResolvedComponentDefinition,
   Template,
 } from '@glimmer/interfaces';
 import { constants } from '@glimmer/constants';
-import { assert, expect, unwrapTemplate } from '@glimmer/debug-util';
+import { expect, localAssert, unwrapTemplate } from '@glimmer/debug-util';
 import {
   capabilityFlagsFrom,
   getComponentTemplate,
@@ -72,7 +73,7 @@ export class ConstantsImpl implements ProgramConstants {
       return WELL_KNOWN_EMPTY_ARRAY_POSITION;
     }
 
-    let handles: number[] = new Array(values.length);
+    let handles = new Array<number>(values.length);
 
     for (let i = 0; i < values.length; i++) {
       handles[i] = this.value(values[i]);
@@ -119,7 +120,7 @@ export class ConstantsImpl implements ProgramConstants {
         return null;
       }
 
-      assert(managerOrHelper, 'BUG: expected manager or helper');
+      localAssert(managerOrHelper, 'BUG: expected manager or helper');
 
       let helper =
         typeof managerOrHelper === 'function'
@@ -188,7 +189,7 @@ export class ConstantsImpl implements ProgramConstants {
         return null;
       }
 
-      assert(manager, 'BUG: expected manager');
+      localAssert(manager, 'BUG: expected manager');
 
       let capabilities = capabilityFlagsFrom(manager.getCapabilities(definitionState));
 
@@ -287,14 +288,14 @@ export class ConstantsImpl implements ProgramConstants {
   }
 
   getValue<T>(index: number) {
-    assert(index >= 0, `cannot get value for handle: ${index}`);
+    localAssert(index >= 0, `cannot get value for handle: ${index}`);
 
     return this.values[index] as T;
   }
 
   getArray<T>(index: number): T[] {
     let reifiedArrs = this.reifiedArrs;
-    let reified = reifiedArrs[index] as T[];
+    let reified = reifiedArrs[index] as Optional<T[]>;
 
     if (reified === undefined) {
       let names: number[] = this.getValue(index);

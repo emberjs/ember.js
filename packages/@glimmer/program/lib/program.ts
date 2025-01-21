@@ -1,10 +1,4 @@
-import type {
-  Program,
-  ProgramConstants,
-  ProgramHeap,
-  SerializedHeap,
-  StdLibOperand,
-} from '@glimmer/interfaces';
+import type { Program, ProgramConstants, ProgramHeap, StdLibOperand } from '@glimmer/interfaces';
 import { unwrap } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { MACHINE_MASK } from '@glimmer/vm';
@@ -163,16 +157,6 @@ export class ProgramHeapImpl implements ProgramHeap {
 
     this.offset = this.offset - compactedSize;
   }
-
-  capture(offset = this.offset): SerializedHeap {
-    // Only called in eager mode
-    let buffer = slice(this.heap, 0, offset).buffer;
-    return {
-      handle: this.handle,
-      table: this.handleTable,
-      buffer: buffer as ArrayBuffer,
-    };
-  }
 }
 
 export class ProgramImpl implements Program {
@@ -191,20 +175,6 @@ export class ProgramImpl implements Program {
     this._opcode.offset = offset;
     return this._opcode;
   }
-}
-
-function slice(arr: Int32Array, start: number, end: number): Int32Array {
-  if (arr.slice !== undefined) {
-    return arr.slice(start, end);
-  }
-
-  let ret = new Int32Array(end);
-
-  for (; start < end; start++) {
-    ret[start] = unwrap(arr[start]);
-  }
-
-  return ret;
 }
 
 function sizeof(table: number[], handle: number) {

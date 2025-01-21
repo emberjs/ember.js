@@ -66,7 +66,7 @@ import {
   CheckString,
   CheckSyscallRegister,
 } from '@glimmer/debug';
-import { assert, debugToString, expect, unwrap, unwrapTemplate } from '@glimmer/debug-util';
+import { debugToString, expect, localAssert, unwrap, unwrapTemplate } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { managerHasCapability } from '@glimmer/manager';
 import { isConstRef, valueForRef } from '@glimmer/reference';
@@ -134,7 +134,7 @@ export interface PartialComponentDefinition {
 
 APPEND_OPCODES.add(VM_PUSH_COMPONENT_DEFINITION_OP, (vm, { op1: handle }) => {
   let definition = vm.constants.getValue<ComponentDefinition>(handle);
-  assert(!!definition, `Missing component for ${handle}`);
+  localAssert(!!definition, `Missing component for ${handle}`);
 
   let { manager, capabilities } = definition;
 
@@ -272,7 +272,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
   let { definition } = instance;
 
   if (isCurriedType(definition, CURRIED_COMPONENT)) {
-    assert(
+    localAssert(
       !definition.manager,
       "If the component definition was curried, we don't yet have a manager"
     );
@@ -287,7 +287,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
       named,
     } = resolveCurriedValue(definition);
 
-    if (resolved === true) {
+    if (resolved) {
       definition = resolvedDefinition as ComponentDefinition;
     } else if (typeof resolvedDefinition === 'string') {
       let resolvedValue = vm.context.resolver?.lookupComponent?.(resolvedDefinition, owner) ?? null;
@@ -301,6 +301,7 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
     }
 
     if (named !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       args.named.merge(assign({}, ...named));
     }
 
@@ -310,12 +311,6 @@ APPEND_OPCODES.add(VM_PREPARE_ARGS_OP, (vm, { op1: register }) => {
     }
 
     let { manager } = definition;
-
-    assert(instance.manager === null, 'component instance manager should not be populated yet');
-    assert(
-      instance.capabilities === null,
-      'component instance manager should not be populated yet'
-    );
 
     instance.definition = definition;
     instance.manager = manager;
@@ -485,22 +480,17 @@ APPEND_OPCODES.add(
 );
 
 type DeferredAttribute = {
-  value: string | Reference<unknown>;
+  value: string | Reference;
   namespace: Nullable<string>;
   trusting?: boolean;
 };
 
 export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
-  private classes: (string | Reference<unknown>)[] = [];
+  private classes: (string | Reference)[] = [];
   private modifiers: ModifierInstance[] = [];
 
-  setAttribute(
-    name: string,
-    value: Reference<unknown>,
-    trusting: boolean,
-    namespace: Nullable<string>
-  ) {
+  setAttribute(name: string, value: Reference, trusting: boolean, namespace: Nullable<string>) {
     let deferred = { value, namespace, trusting };
 
     if (name === 'class') {
@@ -537,7 +527,7 @@ export class ComponentElementOperations implements ElementOperations {
       let name = definition.resolvedName ?? manager.getDebugName(definition.state);
       let instance = manager.getDebugInstance(state);
 
-      assert(constructing, `Expected a constructing element in addModifier`);
+      localAssert(constructing, `Expected a constructing element in addModifier`);
 
       let bounds = new ConcreteBounds(element, constructing, constructing);
 
@@ -588,7 +578,7 @@ export class ComponentElementOperations implements ElementOperations {
   }
 }
 
-function mergeClasses(classes: (string | Reference)[]): string | Reference<unknown> {
+function mergeClasses(classes: (string | Reference)[]): string | Reference {
   if (classes.length === 0) {
     return '';
   }
@@ -602,14 +592,14 @@ function mergeClasses(classes: (string | Reference)[]): string | Reference<unkno
   return createClassListRef(classes as Reference[]);
 }
 
-function allStringClasses(classes: (string | Reference<unknown>)[]): classes is string[] {
+function allStringClasses(classes: (string | Reference)[]): classes is string[] {
   return classes.every((c) => typeof c === 'string');
 }
 
 function setDeferredAttr(
   vm: VM,
   name: string,
-  value: string | Reference<unknown>,
+  value: string | Reference,
   namespace: Nullable<string>,
   trusting = false
 ) {
@@ -663,7 +653,7 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
     let compilable: CompilableProgram | null = definition.compilable;
 
     if (compilable === null) {
-      assert(
+      localAssert(
         managerHasCapability(
           manager,
           instance.capabilities,
@@ -697,6 +687,7 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_SELF_OP, (vm, { op1: register, op2: _names }
 
       nodes.forEach((node) => {
         let { bucket } = node;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         vm.env.debugRenderTree!.create(bucket, node);
 
         registerDestructor(instance, () => {
@@ -754,7 +745,7 @@ APPEND_OPCODES.add(VM_GET_COMPONENT_LAYOUT_OP, (vm, { op1: register }) => {
   if (compilable === null) {
     let { capabilities } = instance;
 
-    assert(
+    localAssert(
       managerHasCapability(manager, capabilities, InternalComponentCapabilities.dynamicLayout),
       'BUG: No template was found for this component, and the component did not have the dynamic layout capability'
     );
@@ -898,6 +889,7 @@ APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
       nodes.reverse().forEach((node) => {
         let { bucket } = node;
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         vm.env.debugRenderTree!.didRender(bucket, bounds);
 
         vm.updateWith(new DebugRenderTreeDidRenderOpcode(bucket, bounds));
@@ -911,6 +903,7 @@ APPEND_OPCODES.add(VM_DID_RENDER_LAYOUT_OP, (vm, { op1: register }) => {
 
   if (managerHasCapability(manager, capabilities, InternalComponentCapabilities.createInstance)) {
     let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- @fixme
     mgr.didRenderLayout(state, bounds);
 
     vm.env.didCreate(instance as ComponentInstanceWithCreate);

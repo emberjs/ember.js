@@ -5,7 +5,7 @@
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/glimmerjs/glimmer-vm.git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
     "directory": "packages/@glimmer/reference"
   },
   "type": "module",
@@ -13,23 +13,13 @@
   "publishConfig": {
     "access": "public",
     "exports": {
-      ".": {
-        "require": {
-          "development": {
-            "types": "./dist/dev/index.d.cts",
-            "default": "./dist/dev/index.cjs"
-          }
-        },
-        "default": {
-          "development": {
-            "types": "./dist/dev/index.d.ts",
-            "default": "./dist/dev/index.js"
-          },
-          "default": {
-            "types": "./dist/prod/index.d.ts",
-            "default": "./dist/prod/index.js"
-          }
-        }
+      "development": {
+        "types": "./dist/dev/index.d.ts",
+        "default": "./dist/dev/index.js"
+      },
+      "default": {
+        "types": "./dist/prod/index.d.ts",
+        "default": "./dist/prod/index.js"
       }
     }
   },
@@ -37,13 +27,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.mjs",
-    "test:lint": "eslint .",
-    "test:publint": "publint",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "prepack": "rollup -c rollup.config.mjs",
+    "test:lint": "eslint . --quiet",
+    "test:publint": "publint"
   },
   "dependencies": {
-    "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*",
@@ -51,11 +39,11 @@
   },
   "devDependencies": {
     "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer-workspace/env": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
-    "@glimmer/local-debug-flags": "workspace:*",
-    "eslint": "^8.52.0",
-    "publint": "^0.2.5",
-    "rollup": "^4.5.1",
+    "eslint": "^9.18.0",
+    "publint": "^0.3.2",
+    "rollup": "^4.31.0-0",
     "typescript": "*"
   }
 }

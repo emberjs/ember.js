@@ -1,9 +1,13 @@
 {
   "private": true,
   "name": "@glimmer-test/destroyable",
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
-    "@glimmer/global-context": "workspace:*",
     "@glimmer/destroyable": "workspace:*",
+    "@glimmer/global-context": "workspace:*",
     "@glimmer/util": "workspace:*"
   },
   "devDependencies": {

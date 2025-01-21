@@ -1,4 +1,4 @@
-export let assign = Object.assign;
+export const assign = Object.assign;
 
 export function values<T>(obj: { [s: string]: T }): T[] {
   return Object.values(obj);

@@ -204,7 +204,7 @@ export class JitRenderDelegate implements RenderDelegate {
     return unwrapTemplate(compiled).asLayout().compile(this.context);
   }
 
-  renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
+  renderTemplate(template: string, context: Dict, element: SimpleElement): RenderResult {
     let cursor = { element, nextSibling: null };
 
     let { env } = this.context;

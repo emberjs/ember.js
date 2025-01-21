@@ -5,6 +5,7 @@ import type {
   Owner,
 } from '@glimmer/interfaces';
 import { debugToString } from '@glimmer/debug-util';
+import { debugAssert } from '@glimmer/global-context';
 
 import { CustomHelperManager } from '../public/helper';
 import { FunctionHelperManager } from './defaults';
@@ -23,27 +24,25 @@ const HELPER_MANAGERS = new WeakMap<object, CustomHelperManager | Helper>();
 
 ///////////
 
-const getPrototypeOf = Object.getPrototypeOf;
+const getPrototypeOf = Reflect.getPrototypeOf;
 
 function setManager<Def extends object>(
   map: WeakMap<object, object>,
   manager: object,
   obj: Def
 ): Def {
-  if (
-    import.meta.env.DEV &&
-    (typeof obj !== 'object' || obj === null) &&
-    typeof obj !== 'function'
-  ) {
-    throw new Error(
+  if (import.meta.env.DEV) {
+    debugAssert(
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+      obj !== null && (typeof obj === 'object' || typeof obj === 'function'),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       `Attempted to set a manager on a non-object value. Managers can only be associated with objects or functions. Value was ${debugToString!(
         obj
       )}`
     );
-  }
 
-  if (import.meta.env.DEV && map.has(obj)) {
-    throw new Error(
+    debugAssert(
+      !map.has(obj), // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       `Attempted to set the same type of manager multiple times on a value. You can only associate one manager of each type with a given value. Value was ${debugToString!(
         obj
       )}`
@@ -58,8 +57,8 @@ function getManager<M extends InternalManager>(
   map: WeakMap<object, M>,
   obj: object
 ): M | undefined {
-  let pointer = obj;
-  while (pointer !== undefined && pointer !== null) {
+  let pointer: object | null = obj;
+  while (pointer !== null) {
     const manager = map.get(pointer);
 
     if (manager !== undefined) {
@@ -88,30 +87,32 @@ export function getInternalModifierManager(
 ): InternalModifierManager | null;
 export function getInternalModifierManager(
   definition: object,
-  isOptional?: true | undefined
+  isOptional?: true
 ): InternalModifierManager | null {
-  if (
-    import.meta.env.DEV &&
-    typeof definition !== 'function' &&
-    (typeof definition !== 'object' || definition === null)
-  ) {
-    throw new Error(
-      `Attempted to use a value as a modifier, but it was not an object or function. Modifier definitions must be objects or functions with an associated modifier manager. The value was: ${definition}`
+  if (import.meta.env.DEV) {
+    debugAssert(
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+      (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
+      () =>
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
+        `Attempted to use a value as a modifier, but it was not an object or function. Modifier definitions must be objects or functions with an associated modifier manager. The value was: ${definition}`
     );
   }
 
-  const manager = getManager(MODIFIER_MANAGERS, definition)!;
+  const manager = getManager(MODIFIER_MANAGERS, definition);
 
   if (manager === undefined) {
-    if (isOptional === true) {
-      return null;
-    } else if (import.meta.env.DEV) {
-      throw new Error(
+    if (import.meta.env.DEV) {
+      debugAssert(
+        isOptional,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         `Attempted to load a modifier, but there wasn't a modifier manager associated with the definition. The definition was: ${debugToString!(
           definition
         )}`
       );
     }
+
+    return null;
   }
 
   return manager;
@@ -133,17 +134,15 @@ export function getInternalHelperManager(
 ): CustomHelperManager | Helper | null;
 export function getInternalHelperManager(
   definition: object,
-  isOptional?: true | undefined
+  isOptional?: true
 ): CustomHelperManager | Helper | null {
-  if (
-    import.meta.env.DEV &&
-    typeof definition !== 'function' &&
-    (typeof definition !== 'object' || definition === null)
-  ) {
-    throw new Error(
+  debugAssert(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+    (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
+    () =>
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
       `Attempted to use a value as a helper, but it was not an object or function. Helper definitions must be objects or functions with an associated helper manager. The value was: ${definition}`
-    );
-  }
+  );
 
   let manager = getManager(HELPER_MANAGERS, definition);
 
@@ -159,6 +158,7 @@ export function getInternalHelperManager(
     return null;
   } else if (import.meta.env.DEV) {
     throw new Error(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       `Attempted to load a helper, but there wasn't a helper manager associated with the definition. The definition was: ${debugToString!(
         definition
       )}`
@@ -182,30 +182,29 @@ export function getInternalComponentManager(
 ): InternalComponentManager | null;
 export function getInternalComponentManager(
   definition: object,
-  isOptional?: true | undefined
+  isOptional?: true
 ): InternalComponentManager | null {
-  if (
-    import.meta.env.DEV &&
-    typeof definition !== 'function' &&
-    (typeof definition !== 'object' || definition === null)
-  ) {
-    throw new Error(
+  debugAssert(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS-only check
+    (typeof definition === 'object' && definition !== null) || typeof definition === 'function',
+    () =>
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
       `Attempted to use a value as a component, but it was not an object or function. Component definitions must be objects or functions with an associated component manager. The value was: ${definition}`
-    );
-  }
+  );
 
-  const manager = getManager(COMPONENT_MANAGERS, definition)!;
+  const manager = getManager(COMPONENT_MANAGERS, definition);
 
   if (manager === undefined) {
-    if (isOptional === true) {
-      return null;
-    } else if (import.meta.env.DEV) {
-      throw new Error(
+    debugAssert(
+      isOptional,
+      () =>
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         `Attempted to load a component, but there wasn't a component manager associated with the definition. The definition was: ${debugToString!(
           definition
         )}`
-      );
-    }
+    );
+
+    return null;
   }
 
   return manager;

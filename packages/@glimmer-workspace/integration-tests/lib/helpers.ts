@@ -5,7 +5,7 @@ import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { createComputeRef } from '@glimmer/reference';
 import { reifyNamed, reifyPositional } from '@glimmer/runtime';
 
-export type UserHelper = (args: ReadonlyArray<unknown>, named: Dict<unknown>) => unknown;
+export type UserHelper = (args: ReadonlyArray<unknown>, named: Dict) => unknown;
 
 export function createHelperRef(helper: UserHelper, args: CapturedArguments): Reference {
   return createComputeRef(

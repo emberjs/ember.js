@@ -37,14 +37,18 @@ interface NodeUrlModule {
   parse(url: string): NodeUrlParseResult;
 }
 
+type WeirdUrl = { parse: (typeof URL)['parse'] } | typeof URL | undefined | null;
+
 function findProtocolForURL() {
+  const weirdURL = URL as WeirdUrl;
+
   if (
-    typeof URL === 'object' &&
-    URL !== null &&
+    typeof weirdURL === 'object' &&
+    weirdURL !== null &&
     // this is super annoying, TS thinks that URL **must** be a function so `URL.parse` check
     // thinks it is `never` without this `as unknown as any`
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeof (URL as unknown as any).parse === 'function'
+
+    typeof weirdURL.parse === 'function'
   ) {
     // In Ember-land the `fastboot` package sets the `URL` global to `require('url')`
     // ultimately, this should be changed (so that we can either rely on the natural `URL` global
@@ -53,7 +57,7 @@ function findProtocolForURL() {
     // a future version of `fastboot` will detect if this legacy URL setup is required (by
     // inspecting Ember version) and if new enough, it will avoid shadowing the `URL` global
     // constructor with `require('url')`.
-    let nodeURL = URL as NodeUrlModule;
+    let nodeURL = weirdURL as NodeUrlModule;
 
     return (url: string) => {
       let protocol = null;
@@ -64,13 +68,13 @@ function findProtocolForURL() {
 
       return protocol === null ? ':' : protocol;
     };
-  } else if (typeof URL === 'function') {
+  } else if (typeof weirdURL === 'function') {
     return (_url: string) => {
       try {
-        let url = new URL(_url);
+        let url = new weirdURL(_url);
 
         return url.protocol;
-      } catch (error) {
+      } catch {
         // any non-fully qualified url string will trigger an error (because there is no
         // baseURI that we can provide; in that case we **know** that the protocol is
         // "safe" because it isn't specifically one of the `badProtocols` listed above
@@ -96,8 +100,6 @@ export function sanitizeAttributeValue(
   attribute: string,
   value: unknown
 ): unknown {
-  let tagName: Nullable<string> = null;
-
   if (value === null || value === undefined) {
     return value;
   }
@@ -106,11 +108,7 @@ export function sanitizeAttributeValue(
     return value.toHTML();
   }
 
-  if (!element) {
-    tagName = null;
-  } else {
-    tagName = element.tagName.toUpperCase();
-  }
+  const tagName = element.tagName.toUpperCase();
 
   let str = normalizeStringValue(value);
 

@@ -1,9 +1,7 @@
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
 import type { SafeString } from '@glimmer/runtime';
+import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, expect } from '@glimmer/debug-util';
-
-import type { ComponentBlueprint, Content } from '..';
-
 import {
   assertElementShape,
   assertEmberishElement,
@@ -27,7 +25,7 @@ import {
   test,
   toInnerHTML,
   toTextContent,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
 
 class RenderTests extends InitialRenderSuite {
   static override suiteName = 'initial render (client)';
@@ -36,12 +34,12 @@ class RenderTests extends InitialRenderSuite {
 
 class AbstractRehydrationTests extends InitialRenderSuite {
   override name = 'rehydration';
-  protected declare delegate: RehydrationDelegate;
-  protected declare serverOutput: Nullable<string>;
+  declare protected delegate: RehydrationDelegate;
+  declare protected serverOutput: Nullable<string>;
 
   renderServerSide(
     template: string | ComponentBlueprint,
-    context: Dict<unknown>,
+    context: Dict,
     element: SimpleElement | undefined = undefined
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
@@ -53,7 +51,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
     replaceHTML(this.element, this.serverOutput);
   }
 
-  renderClientSide(template: string | ComponentBlueprint, context: Dict<unknown>): void {
+  renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
     this.context = context;
     this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
   }
@@ -88,7 +86,7 @@ class Rehydration extends AbstractRehydrationTests {
     let noScriptString = '<noscript></noscript>';
     let template = '<div>Hi!</div>';
     this.renderServerSide(template, {}, rootElement);
-    this.assertExactServerOutput(content([noScriptString, OPEN, ...template, CLOSE]));
+    this.assertExactServerOutput(content([noScriptString, OPEN, template, CLOSE]));
     this.renderClientSide(template, {});
     this.assertHTML('<noscript></noscript><div>Hi!</div>');
     this.assertRehydrationStats({ nodesRemoved: 0 });
@@ -960,7 +958,7 @@ class Rehydration extends AbstractRehydrationTests {
 }
 
 class RehydratingComponents extends AbstractRehydrationTests {
-  _buildComponent(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
+  _buildComponent(blueprint: ComponentBlueprint, properties: Dict = {}) {
     let template = this.buildComponent(blueprint);
     if (this.testType === 'Dynamic' && properties['componentName'] === undefined) {
       properties['componentName'] = blueprint.name || GLIMMER_TEST_COMPONENT;
@@ -968,7 +966,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
     return template;
   }
 
-  assertServerComponent(html: string, attrs: Object = {}) {
+  assertServerComponent(html: string, attrs: object = {}) {
     // the Dynamic test type is using {{component 'foo'}} style invocation
     // and therefore an extra node is added delineating the block start
     let elementIndex = this.testType === 'Dynamic' ? 3 : 2;
@@ -981,12 +979,12 @@ class RehydratingComponents extends AbstractRehydrationTests {
     }
   }
 
-  override renderServerSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
+  override renderServerSide(blueprint: ComponentBlueprint, properties: Dict = {}) {
     let template = this._buildComponent(blueprint, properties);
     super.renderServerSide(template, properties);
   }
 
-  override renderClientSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
+  override renderClientSide(blueprint: ComponentBlueprint, properties: Dict = {}) {
     let template = this._buildComponent(blueprint, properties);
     super.renderClientSide(template, properties);
   }

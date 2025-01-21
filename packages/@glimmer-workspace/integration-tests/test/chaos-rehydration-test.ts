@@ -1,11 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import type { Dict, Nullable, SimpleElement } from '@glimmer/interfaces';
-import { COMMENT_NODE, ELEMENT_NODE } from '@glimmer/constants';
+import type { ComponentBlueprint, Content } from '@glimmer-workspace/integration-tests';
 import { castToBrowser, castToSimple, expect } from '@glimmer/debug-util';
 import { isIndexable, LOCAL_LOGGER } from '@glimmer/util';
-
-import type { ComponentBlueprint, Content } from '..';
-
 import {
   blockStack,
   CLOSE,
@@ -19,10 +15,10 @@ import {
   replaceHTML,
   suite,
   test,
-} from '..';
+} from '@glimmer-workspace/integration-tests';
 
 abstract class AbstractChaosMonkeyTest extends RenderTest {
-  abstract renderClientSide(template: string | ComponentBlueprint, context: Dict<unknown>): void;
+  abstract renderClientSide(template: string | ComponentBlueprint, context: Dict): void;
 
   getRandomForIteration(iteration: number) {
     const { seed } = QUnit.config;
@@ -91,11 +87,11 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
 
     let removedNodeDisplay: Nullable<string>;
     switch (nodeToRemove.nodeType) {
-      case COMMENT_NODE:
+      case 8 satisfies typeof Node.COMMENT_NODE:
         removedNodeDisplay = `<!--${nodeToRemove.nodeValue}-->`;
         break;
 
-      case ELEMENT_NODE:
+      case 1 satisfies typeof Node.ELEMENT_NODE:
         removedNodeDisplay = castToBrowser(nodeToRemove, ['HTML', 'SVG']).outerHTML;
         break;
       default:
@@ -115,7 +111,7 @@ abstract class AbstractChaosMonkeyTest extends RenderTest {
     );
   }
 
-  runIterations(template: string, context: Dict<unknown>, expectedHTML: string, count: number) {
+  runIterations(template: string, context: Dict, expectedHTML: string, count: number) {
     const element = castToBrowser(this.element, 'HTML');
     const elementResetValue = element.innerHTML;
 
@@ -180,12 +176,12 @@ function getErrorMessage(assert: Assert, error: unknown): string {
 class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
   static suiteName = 'chaos-rehydration';
 
-  protected declare delegate: RehydrationDelegate;
-  protected declare serverOutput: Nullable<string>;
+  declare protected delegate: RehydrationDelegate;
+  declare protected serverOutput: Nullable<string>;
 
   renderServerSide(
     template: string | ComponentBlueprint,
-    context: Dict<unknown>,
+    context: Dict,
     element: SimpleElement | undefined = undefined
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
@@ -197,7 +193,7 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
     replaceHTML(this.element, this.serverOutput);
   }
 
-  renderClientSide(template: string | ComponentBlueprint, context: Dict<unknown>): void {
+  renderClientSide(template: string | ComponentBlueprint, context: Dict): void {
     this.context = context;
     this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
   }
@@ -245,9 +241,9 @@ class ChaosMonkeyRehydration extends AbstractChaosMonkeyTest {
 
 class ChaosMonkeyPartialRehydration extends AbstractChaosMonkeyTest {
   static suiteName = 'chaos-partial-rehydration';
-  protected declare delegate: PartialRehydrationDelegate;
+  declare protected delegate: PartialRehydrationDelegate;
 
-  renderClientSide(componentName: string, args: Dict<unknown>): void {
+  renderClientSide(componentName: string, args: Dict): void {
     this.renderResult = this.delegate.renderComponentClientSide(componentName, args, this.element);
   }
 

@@ -1,0 +1,10 @@
+{
+  "name": "@glimmer-workspace/env",
+  "private": true,
+  "version": "0.92.0",
+  "type": "module",
+  "exports": "./index.d.ts",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  }
+}

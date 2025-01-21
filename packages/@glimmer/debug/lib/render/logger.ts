@@ -53,12 +53,10 @@ export class DebugLogger {
   #lines(type: 'log' | 'debug' | 'group' | 'groupCollapsed', lines: FlushedLines): void {
     const [first, ...rest] = lines;
 
-    if (first) {
-      this.#logger[type](...first.line);
+    this.#logger[type](...first.line);
 
-      for (const entry of rest) {
-        this.#logEntry(entry);
-      }
+    for (const entry of rest) {
+      this.#logEntry(entry);
     }
   }
 

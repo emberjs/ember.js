@@ -140,8 +140,7 @@ export class PositionalArgumentsImpl implements PositionalArguments {
   public base = 0;
   public length = 0;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private stack: EvaluationStack = null as any;
+  private stack = null as Nullable<EvaluationStack>;
 
   private _references: Nullable<readonly Reference[]> = null;
 
@@ -176,7 +175,8 @@ export class PositionalArgumentsImpl implements PositionalArguments {
       return UNDEFINED_REFERENCE;
     }
 
-    return check(stack.get(position, base), CheckReference);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+    return check(stack!.get(position, base), CheckReference);
   }
 
   capture(): CapturedPositionalArguments {
@@ -193,7 +193,8 @@ export class PositionalArgumentsImpl implements PositionalArguments {
       this.length = length + additions;
 
       for (let i = 0; i < additions; i++) {
-        stack.set(other[i], i, base);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+        stack!.set(other[i], i, base);
       }
 
       this._references = null;
@@ -205,7 +206,9 @@ export class PositionalArgumentsImpl implements PositionalArguments {
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.slice<Reference>(base, base + length);
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+      references = this._references = stack!.slice<Reference>(base, base + length);
     }
 
     return references;
@@ -216,7 +219,7 @@ export class NamedArgumentsImpl implements NamedArguments {
   public base = 0;
   public length = 0;
 
-  private declare stack: EvaluationStack;
+  declare private stack: EvaluationStack;
 
   private _references: Nullable<readonly Reference[]> = null;
 
@@ -269,6 +272,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     let names = this._names;
 
     if (!names) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       names = this._names = this._atNames!.map(this.toSyntheticName);
     }
 
@@ -279,6 +283,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     let atNames = this._atNames;
 
     if (!atNames) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       atNames = this._atNames = this._names!.map(this.toAtName);
     }
 
@@ -303,6 +308,7 @@ export class NamedArgumentsImpl implements NamedArguments {
     let ref = stack.get<Reference>(idx, base);
 
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return createDebugAliasRef!(atNames ? name : `@${name}`, ref);
     } else {
       return ref;
@@ -315,6 +321,7 @@ export class NamedArgumentsImpl implements NamedArguments {
 
     for (const [i, name] of enumerate(names)) {
       if (import.meta.env.DEV) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         map[name] = createDebugAliasRef!(`@${name}`, unwrap(references[i]));
       } else {
         map[name] = unwrap(references[i]);
@@ -374,7 +381,7 @@ function toSymbolName(name: string): string {
 const EMPTY_BLOCK_VALUES = emptyArray<BlockValue>();
 
 export class BlockArgumentsImpl implements BlockArguments {
-  private declare stack: EvaluationStack;
+  declare private stack: EvaluationStack;
   private internalValues: Nullable<readonly BlockValue[]> = null;
   private _symbolNames: Nullable<readonly string[]> = null;
 
@@ -533,6 +540,7 @@ export function isArgumentError(arg: unknown): arg is ArgumentError {
 function ArgumentErrorImpl(error: any) {
   return {
     [ARGUMENT_ERROR]: true,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     error,
   };
 }

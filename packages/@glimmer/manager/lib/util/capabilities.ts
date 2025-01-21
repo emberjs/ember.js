@@ -30,6 +30,7 @@ export const FROM_CAPABILITIES = import.meta.env.DEV ? new WeakSet() : undefined
 
 export function buildCapabilities<T extends object>(capabilities: T): T & Capabilities {
   if (import.meta.env.DEV) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     FROM_CAPABILITIES!.add(capabilities);
     Object.freeze(capabilities);
   }

@@ -18,6 +18,7 @@ export function trackedData<T extends object, K extends keyof T>(
 
     // If the field has never been initialized, we should initialize it
     if (hasInitializer && !values.has(self)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       value = initializer!.call(self);
       values.set(self, value);
     } else {

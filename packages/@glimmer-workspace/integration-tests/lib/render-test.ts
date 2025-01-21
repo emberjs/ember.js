@@ -11,7 +11,7 @@ import type {
 } from '@glimmer/interfaces';
 import type { ASTPluginBuilder } from '@glimmer/syntax';
 import type { NTuple } from '@glimmer-workspace/test-utils';
-import { assert, expect, isPresent, unwrap } from '@glimmer/debug-util';
+import { expect, isPresent, localAssert, unwrap } from '@glimmer/debug-util';
 import { destroy } from '@glimmer/destroyable';
 import { inTransaction } from '@glimmer/runtime';
 import { clearElement, dict } from '@glimmer/util';
@@ -136,7 +136,7 @@ export class RenderTest implements IRenderTest {
       needsCurlies = true;
     }
 
-    return `${Object.keys(args)
+    return Object.keys(args)
       .map((arg) => {
         let rightSide: string;
 
@@ -154,15 +154,15 @@ export class RenderTest implements IRenderTest {
 
         return `${sigil}${arg}=${rightSide}`;
       })
-      .join(' ')}`;
+      .join(' ');
   }
 
   private buildBlockParams(blockParams: string[]): string {
-    return `${blockParams.length > 0 ? ` as |${blockParams.join(' ')}|` : ''}`;
+    return blockParams.length > 0 ? ` as |${blockParams.join(' ')}|` : '';
   }
 
   private buildElse(elseBlock: string | undefined): string {
-    return `${elseBlock ? `{{else}}${elseBlock}` : ''}`;
+    return elseBlock ? `{{else}}${elseBlock}` : '';
   }
 
   private buildAttributes(attrs: Dict = {}): string {
@@ -222,7 +222,7 @@ export class RenderTest implements IRenderTest {
     let layoutAttrs = this.buildAttributes(blueprint.layoutAttributes);
     this.assert.ok(
       true,
-      `generated glimmer layout as ${`<${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`}`
+      `generated glimmer layout as <${tag} ${layoutAttrs} ...attributes>${layout}</${tag}>`
     );
     this.delegate.registerComponent(
       'Glimmer',
@@ -295,7 +295,7 @@ export class RenderTest implements IRenderTest {
     let { layout, name = GLIMMER_TEST_COMPONENT } = blueprint;
     let invocation = this.buildAngleBracketComponent(blueprint);
     this.assert.ok(true, `generated fragment layout as ${layout}`);
-    this.delegate.registerComponent('TemplateOnly', this.testType, name, `${layout}`);
+    this.delegate.registerComponent('TemplateOnly', this.testType, name, layout);
     this.assert.ok(true, `generated fragment invocation as ${invocation}`);
     return invocation;
   }
@@ -361,7 +361,7 @@ export class RenderTest implements IRenderTest {
     });
   }
 
-  render(template: string | ComponentBlueprint, properties: Dict<unknown> = {}): void {
+  render(template: string | ComponentBlueprint, properties: Dict = {}): void {
     try {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       QUnit.assert.ok(true, `Rendering ${template} with ${JSON.stringify(properties)}`);
@@ -387,16 +387,17 @@ export class RenderTest implements IRenderTest {
 
   renderComponent(
     component: ComponentDefinitionState,
-    args: Dict<unknown> = {},
+    args: Dict = {},
     dynamicScope?: DynamicScope
   ): void {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       QUnit.assert.ok(true, `Rendering ${String(component)} with ${JSON.stringify(args)}`);
     } catch {
       // couldn't stringify, possibly has a circular dependency
     }
 
-    assert(
+    localAssert(
       !!this.delegate.renderComponent,
       'Attempted to render a component, but the delegate did not implement renderComponent'
     );
@@ -404,7 +405,7 @@ export class RenderTest implements IRenderTest {
     this.renderResult = this.delegate.renderComponent(component, args, this.element, dynamicScope);
   }
 
-  rerender(properties: Dict<unknown> = {}): void {
+  rerender(properties: Dict = {}): void {
     try {
       QUnit.assert.ok(true, `rerender ${JSON.stringify(properties)}`);
     } catch {
@@ -434,7 +435,7 @@ export class RenderTest implements IRenderTest {
     dirtyTagFor(this.context, key);
   }
 
-  protected setProperties(properties: Dict<unknown>): void {
+  protected setProperties(properties: Dict): void {
     for (let key in properties) {
       this.set(key, properties[key]);
     }
@@ -593,7 +594,7 @@ export class RenderTest implements IRenderTest {
     this.takeSnapshot();
   }
 
-  protected assertComponent(content: string, attrs: Object = {}) {
+  protected assertComponent(content: string, attrs: object = {}) {
     let element = assertingElement(this.element.firstChild);
 
     switch (this.testType) {

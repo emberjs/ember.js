@@ -31,7 +31,7 @@ export { default as WalkerPath } from './lib/traversal/path';
 export { default as traverse } from './lib/traversal/traverse';
 export type { NodeVisitor } from './lib/traversal/visitor';
 export { default as Walker } from './lib/traversal/walker';
-export * as ASTv1 from './lib/v1/api';
+export type * as ASTv1 from './lib/v1/api';
 export { default as builders } from './lib/v1/public-builders';
 export { default as visitorKeys } from './lib/v1/visitor-keys';
 export * as ASTv2 from './lib/v2/api';
@@ -42,4 +42,4 @@ export { node } from './lib/v2/objects/node';
 export { default as Path } from './lib/traversal/walker';
 
 /** @deprecated use ASTv1 instead */
-export * as AST from './lib/v1/api';
+export type * as AST from './lib/v1/api';

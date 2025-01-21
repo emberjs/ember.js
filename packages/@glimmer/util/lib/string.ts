@@ -5,6 +5,7 @@ import { enumerate } from './array-utils';
 export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   let out = '';
   for (const [i, string] of enumerate(strings)) {
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- @fixme
     let dynamic = args[i] !== undefined ? String(args[i]) : '';
 
     out += `${string}${dynamic}`;
@@ -23,6 +24,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
   let min = Infinity;
 
   for (let line of lines) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     let leading = /^\s*/u.exec(line)![0].length;
 
     min = Math.min(min, leading);
