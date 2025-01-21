@@ -139,7 +139,11 @@
   },
   "packageManager": "pnpm@10.0.0",
   "pnpm": {
+    "notes": {
+      "override:@glimemr/syntax": "when we run prettier, we want to use our local copy of prettier, not the one it declared in its package.json. This ensures that we don't accidentally break prettier as we make changes to @glimmer/syntax"
+    },
     "overrides": {
+      "@glimmer/syntax": "workspace:*",
       "@rollup/pluginutils": "^5.0.2",
       "@types/node": "$@types/node",
       "typescript": "$typescript"
