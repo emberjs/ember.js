@@ -223,6 +223,7 @@ export class VM {
     tree: TreeBuilder
   ) {
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       assertGlobalContextWasSet!();
     }
 
@@ -237,6 +238,7 @@ export class VM {
     this.lowlevel = new LowLevelVM(evalStack, context, externs(this), evalStack.registers);
 
     if (LOCAL_DEBUG) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       const templates = new DebugTemplatesImpl!();
 
       this.trace = () => templates;
@@ -246,12 +248,15 @@ export class VM {
 
         trace: templates,
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         elements: this.tree().debug!(),
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         stacks: this.#stacks.debug!(),
 
         template: templates.active,
         scope: this.scope().snapshot(),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         stack: this.lowlevel.stack.snapshot!(),
         registers: [
           ...this.lowlevel.registers,
@@ -612,7 +617,7 @@ export class VM {
     let scope = this.dynamicScope();
 
     for (const name of reverse(names)) {
-      scope.set(name, this.stack.pop<Reference<unknown>>());
+      scope.set(name, this.stack.pop<Reference>());
     }
   }
 

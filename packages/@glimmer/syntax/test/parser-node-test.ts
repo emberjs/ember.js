@@ -1122,14 +1122,7 @@ export type TagDescriptor = BuildElementParams[0];
 export type BuildElementOptions = NonNullable<BuildElementParams[1]>;
 
 export function element(tag: TagDescriptor, ...options: ElementParts[]): ASTv1.ElementNode {
-  let normalized: BuildElementOptions;
-  if (Array.isArray(options)) {
-    normalized = normalizeElementParts(...options);
-  } else {
-    normalized = options || {};
-  }
-
-  return b.element(tag, normalized);
+  return b.element(tag, normalizeElementParts(...options));
 }
 
 export function normalizeElementParts(...args: ElementParts[]): BuildElementOptions {
@@ -1249,7 +1242,7 @@ export function isLocSexp(value: SexpValue): value is LocSexp {
 }
 
 export function isHashSexp(value: SexpValue): value is Dict<ASTv1.Expression> {
-  if (typeof value === 'object' && value && !Array.isArray(value)) {
+  if (typeof value === 'object' && !Array.isArray(value)) {
     expectType<Dict<ASTv1.Expression>>(value);
     return true;
   } else {

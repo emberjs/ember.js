@@ -1,6 +1,10 @@
 {
   "private": true,
   "name": "@glimmer-test/util",
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
     "@glimmer/util": "workspace:*"
   }

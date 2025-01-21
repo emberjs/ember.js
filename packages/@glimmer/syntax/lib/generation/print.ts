@@ -7,6 +7,7 @@ export default function build(
   ast: ASTv1.Node,
   options: PrinterOptions = { entityEncoding: 'transformed' }
 ): string {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- JS users
   if (!ast) {
     return '';
   }

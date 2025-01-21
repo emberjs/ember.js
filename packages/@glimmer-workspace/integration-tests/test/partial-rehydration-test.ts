@@ -1,5 +1,4 @@
 import { castToSimple } from '@glimmer/debug-util';
-
 import {
   CLOSE,
   content,
@@ -11,7 +10,7 @@ import {
   stripTight,
   suite,
   test,
-} from '..';
+} from "@glimmer-workspace/integration-tests";
 
 export class PartialRehydrationTest extends RenderTest {
   static suiteName = 'partial rehydration';

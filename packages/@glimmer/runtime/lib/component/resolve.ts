@@ -25,5 +25,6 @@ export function resolveComponent(
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   return constants.resolvedComponent(definition!, name);
 }

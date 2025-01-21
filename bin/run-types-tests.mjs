@@ -54,7 +54,8 @@ function getMessage(err) {
   return inspect(err);
 }
 
-main();
+// @fixme Investigate and document why this shouldn't be `await`ed
+void main();
 
 /** @typedef {{ name: string; version: string; path: string; main: string; private: boolean; }} PnpmPackage */
 
@@ -64,5 +65,5 @@ function getPackages() {
     execSync(`pnpm -r ls --depth -1 --json`, { encoding: 'utf-8' }).trim()
   );
 
-  return allPackages.filter((pkg) => pkg.private !== true && pkg.name !== '@glimmer/interfaces');
+  return allPackages.filter((pkg) => !pkg.private && pkg.name !== '@glimmer/interfaces');
 }

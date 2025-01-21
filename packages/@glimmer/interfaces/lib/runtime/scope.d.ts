@@ -33,7 +33,7 @@ export interface Scope {
 }
 
 export interface DynamicScope {
-  get(key: string): Reference<unknown>;
-  set(key: string, reference: Reference<unknown>): Reference<unknown>;
+  get(key: string): Reference;
+  set(key: string, reference: Reference): Reference;
   child(): DynamicScope;
 }

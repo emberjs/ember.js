@@ -65,7 +65,7 @@ export function compactArray<T>(
   const [first] = items;
 
   if (first === undefined) {
-    return options.when?.empty ? intoFragment(options.when.empty) : frag`[]`.subtle();
+    return options.when.empty ? intoFragment(options.when.empty) : frag`[]`.subtle();
   }
 
   const { map, isSubtle } = normalizeOptions(options);

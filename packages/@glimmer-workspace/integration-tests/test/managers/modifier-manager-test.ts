@@ -1,8 +1,15 @@
 import type { Arguments, ModifierManager, Owner } from '@glimmer/interfaces';
 import { modifierCapabilities, setModifierManager } from '@glimmer/manager';
 import { getOwner, setOwner } from '@glimmer/owner';
-
-import { defineComponent, jitSuite, RenderTest, test, tracked, trackedObj } from '../..';
+import {
+  defineComponent,
+  jitSuite,
+  RenderTest,
+  test,
+  tracked,
+  trackedObj,
+} from '@glimmer-workspace/integration-tests';
+import { consume } from '@glimmer-workspace/test-utils';
 
 abstract class CustomModifier {
   static create<This extends { new (owner: object, args: Arguments): unknown }>(
@@ -127,6 +134,7 @@ abstract class ModifierManagerTest extends RenderTest {
         override didInsertElement() {
           // consume first positional argument (ensures updates run)
 
+          // eslint-disable-next-line @typescript-eslint/no-unused-expressions -- intentionally consume
           this.args.positional[0];
 
           assert.strictEqual(this.element.tagName, 'H1');
@@ -169,14 +177,14 @@ abstract class ModifierManagerTest extends RenderTest {
         override didInsertElement() {
           // track the count of the first item
 
-          trackedOne.count;
+          consume(trackedOne.count);
           insertCount++;
         }
 
         override didUpdate() {
           // track the count of the second item
 
-          trackedTwo.count;
+          consume(trackedTwo.count);
           updateCount++;
         }
       }
@@ -219,7 +227,7 @@ abstract class ModifierManagerTest extends RenderTest {
 
         // first read the tracked property
 
-        this.foo;
+        consume(this.foo);
 
         // then attempt to update the tracked property
         this.foo = 456;
@@ -257,7 +265,7 @@ abstract class ModifierManagerTest extends RenderTest {
       @tracked show = true;
 
       get bar() {
-        if (this.show === false) {
+        if (!this.show) {
           barCount++;
         }
 
@@ -265,7 +273,7 @@ abstract class ModifierManagerTest extends RenderTest {
       }
 
       get baz() {
-        if (this.show === false) {
+        if (!this.show) {
           bazCount++;
         }
 
@@ -328,7 +336,7 @@ class ModifierManagerTest322 extends ModifierManagerTest {
 
           // consume the second positional
 
-          this.args.positional[1];
+          consume(this.args.positional[1]);
         }
 
         override didUpdate() {
@@ -336,7 +344,7 @@ class ModifierManagerTest322 extends ModifierManagerTest {
 
           // consume the second positional
 
-          this.args.positional[1];
+          consume(this.args.positional[1]);
         }
       }
     );
@@ -378,11 +386,8 @@ class ModifierManagerTest322 extends ModifierManagerTest {
         override didInsertElement() {
           insertCount++;
 
-          // consume the second positional
-
-          // consume the second positional
-
-          this.args.named['qux'];
+          // consume the named arg
+          consume(this.args.named['qux']);
         }
 
         override didUpdate() {

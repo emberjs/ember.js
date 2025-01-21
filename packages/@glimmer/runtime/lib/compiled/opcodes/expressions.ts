@@ -3,6 +3,7 @@ import type {
   CurriedType,
   Helper,
   HelperDefinitionState,
+  Initializable,
   ScopeBlock,
 } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
@@ -35,9 +36,9 @@ import {
   CheckNullable,
   CheckOr,
 } from '@glimmer/debug';
-import { assert, debugToString } from '@glimmer/debug-util';
+import { debugToString,localAssert } from '@glimmer/debug-util';
 import { _hasDestroyableChildren, associateDestroyableChild, destroy } from '@glimmer/destroyable';
-import { toBool } from '@glimmer/global-context';
+import { debugAssert, toBool } from '@glimmer/global-context';
 import { getInternalHelperManager } from '@glimmer/manager';
 import {
   childRefFor,
@@ -93,7 +94,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
   let ref = check(stack.pop(), CheckReference);
   let args = check(stack.pop(), CheckArguments).capture();
 
-  let helperRef: Reference;
+  let helperRef: Initializable<Reference>;
   let initialOwner = vm.getOwner();
 
   let helperInstanceRef = createComputeRef(() => {
@@ -109,6 +110,7 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
       let helper = resolveHelper(resolvedDef, ref);
 
       if (named !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         args.named = assign({}, ...named, args.named);
       }
 
@@ -133,7 +135,8 @@ APPEND_OPCODES.add(VM_DYNAMIC_HELPER_OP, (vm) => {
 
   let helperValueRef = createComputeRef(() => {
     valueForRef(helperInstanceRef);
-    return valueForRef(helperRef);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+    return valueForRef(helperRef!);
   });
 
   vm.associateDestroyable(helperInstanceRef);
@@ -150,20 +153,20 @@ function resolveHelper(definition: HelperDefinitionState, ref: Reference): Helpe
       typeof managerOrHelper === 'function'
         ? managerOrHelper
         : managerOrHelper.getHelper(definition);
-    assert(managerOrHelper, 'BUG: expected manager or helper');
+    localAssert(managerOrHelper, 'BUG: expected manager or helper');
   }
 
-  if (import.meta.env.DEV && helper === null) {
-    throw new Error(
+  debugAssert(
+    helper !== null,
+    () =>
       `Expected a dynamic helper definition, but received an object or function that did not have a helper manager associated with it. The dynamic invocation was \`{{${
         ref.debugLabel
       }}}\` or \`(${ref.debugLabel})\`, and the incorrect definition is the value at the path \`${
         ref.debugLabel
       }\`, which was: ${debugToString?.(definition)}`
-    );
-  }
+  );
 
-  return helper!;
+  return helper;
 }
 
 APPEND_OPCODES.add(VM_HELPER_OP, (vm, { op1: handle }) => {
@@ -233,7 +236,7 @@ APPEND_OPCODES.add(VM_SPREAD_BLOCK_OP, (vm) => {
 });
 
 function isUndefinedReference(input: ScopeBlock | Reference): input is Reference {
-  assert(
+  localAssert(
     Array.isArray(input) || input === UNDEFINED_REFERENCE,
     'a reference other than UNDEFINED_REFERENCE is illegal here'
   );
@@ -265,7 +268,7 @@ APPEND_OPCODES.add(VM_HAS_BLOCK_PARAMS_OP, (vm) => {
 });
 
 APPEND_OPCODES.add(VM_CONCAT_OP, (vm, { op1: count }) => {
-  let out: Array<Reference<unknown>> = new Array(count);
+  let out = new Array<Reference>(count);
 
   for (let i = count; i > 0; i--) {
     let offset = i - 1;
@@ -282,7 +285,7 @@ APPEND_OPCODES.add(VM_IF_INLINE_OP, (vm) => {
 
   vm.stack.push(
     createComputeRef(() => {
-      if (toBool(valueForRef(condition)) === true) {
+      if (toBool(valueForRef(condition))) {
         return valueForRef(truthy);
       } else {
         return valueForRef(falsy);

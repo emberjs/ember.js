@@ -1,7 +1,0 @@
-{
-  "depcheck": {
-    "ignoreMatches": [
-      "@handlebars/parser"
-    ]
-  }
-}

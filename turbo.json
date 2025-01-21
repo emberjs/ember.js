@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turbo.build/schema.v1.json",
+  "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
     "pnpm-lock.yaml",
     "patches",
@@ -20,18 +20,21 @@
     "packages/@glimmer-workspace/eslint-plugin/**/*",
     "packages/@glimmer-workspace/build/lib/config.js"
   ],
-  "pipeline": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
-    "lint": {
+  "tasks": {
+    "lint:all": {
       "cache": false,
       "dependsOn": ["test:lint", "test:publint"]
     },
     "test:lint": {},
     "test:publint": {
-      "dependsOn": ["build"]
+      "dependsOn": ["prepack", "prepare"]
+    },
+    "prepare": {
+      "dependsOn": ["prepack"],
+      "outputs": ["dist/**"]
+    },
+    "prepack": {
+      "outputs": ["dist/**"]
     },
     "//#test:types": {
       "inputs": ["**/dist/**", "tsconfig.dist.json"],

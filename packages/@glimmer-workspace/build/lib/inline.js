@@ -5,7 +5,7 @@ const INLINE_PREFIX = '\0inline:';
 /**
  * @returns {import("rollup").Plugin}
  */
-export const inline = () => {
+const inline = () => {
   return {
     name: 'inline',
 

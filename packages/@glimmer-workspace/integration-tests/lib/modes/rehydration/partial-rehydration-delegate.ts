@@ -12,7 +12,7 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
 
   renderComponentClientSide(
     name: string,
-    args: Dict<unknown>,
+    args: Dict,
     element: SimpleElement
   ): RenderResult {
     let cursor = { element, nextSibling: null };
@@ -31,7 +31,7 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     return result;
   }
 
-  renderComponentServerSide(name: string, args: Dict<unknown>): string {
+  renderComponentServerSide(name: string, args: Dict): string {
     const element = this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
     let context = this.serverContext;

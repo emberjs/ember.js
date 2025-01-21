@@ -13,7 +13,7 @@ import {
   CheckString,
   CheckUndefined,
 } from '@glimmer/debug';
-import { assert, buildUntouchableThis } from '@glimmer/debug-util';
+import { buildUntouchableThis,localAssert } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';
@@ -56,7 +56,7 @@ export class OnModifierState {
   updateListener(): void {
     let { element, args, listener } = this;
 
-    assert(
+    localAssert(
       args.positional[0],
       'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
@@ -67,7 +67,7 @@ export class OnModifierState {
       () => 'You must pass a valid DOM event name as the first argument to the `on` modifier'
     );
 
-    assert(
+    localAssert(
       args.positional[1],
       'You must pass a function as the second argument to the `on` modifier'
     );
@@ -93,18 +93,21 @@ export class OnModifierState {
 
       once = check(_once, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
         return `You must pass a boolean or undefined as the \`once\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           args.named['once']!.debugLabel ?? `{unlabeled value}`
         }`;
       });
 
       passive = check(_passive, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
         return `You must pass a boolean or undefined as the \`passive\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           args.named['passive']!.debugLabel ?? `{unlabeled value}`
         }`;
       });
 
       capture = check(_capture, CheckOr(CheckBoolean, CheckUndefined), (actual) => {
         return `You must pass a boolean or undefined as the \`capture\` argument to the \`on\` modifier; you passed ${actual}. While rendering:\n\n${
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
           args.named['capture']!.debugLabel ?? `{unlabeled value}`
         }`;
       });
@@ -168,7 +171,7 @@ export class OnModifierState {
             event.preventDefault = () => {
               throw new Error(
                 `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${
-                  userProvidedCallback.name ?? `{anonymous function}`
+                  userProvidedCallback.name || `{anonymous function}`
                 }`
               );
             };
@@ -307,7 +310,7 @@ function addEventListener(
   @method on
   @public
 */
-class OnModifierManager implements InternalModifierManager<OnModifierState, object> {
+class OnModifierManager implements InternalModifierManager<OnModifierState> {
   getDebugName(): string {
     return 'on';
   }

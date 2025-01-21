@@ -115,8 +115,9 @@ export function registerDestructor<T extends Destroyable>(
 
   let meta = getDestroyableMeta(destroyable);
 
-  let destructorsKey: 'eagerDestructors' | 'destructors' =
-    eager === true ? 'eagerDestructors' : 'destructors';
+  let destructorsKey: 'eagerDestructors' | 'destructors' = eager
+    ? 'eagerDestructors'
+    : 'destructors';
 
   meta[destructorsKey] = push(meta[destructorsKey], destructor);
 
@@ -136,8 +137,9 @@ export function unregisterDestructor<T extends Destroyable>(
 
   let meta = getDestroyableMeta(destroyable);
 
-  let destructorsKey: 'eagerDestructors' | 'destructors' =
-    eager === true ? 'eagerDestructors' : 'destructors';
+  let destructorsKey: 'eagerDestructors' | 'destructors' = eager
+    ? 'eagerDestructors'
+    : 'destructors';
 
   meta[destructorsKey] = remove(
     meta[destructorsKey],
@@ -159,11 +161,17 @@ export function destroy(destroyable: Destroyable) {
   meta.state = DESTROYING_STATE;
 
   iterate(children, destroy);
-  iterate(eagerDestructors, (destructor) => destructor(destroyable));
-  iterate(destructors, (destructor) => scheduleDestroy(destroyable, destructor));
+  iterate(eagerDestructors, (destructor) => {
+    destructor(destroyable);
+  });
+  iterate(destructors, (destructor) => {
+    scheduleDestroy(destroyable, destructor);
+  });
 
   scheduleDestroyed(() => {
-    iterate(parents, (parent) => removeChildFromParent(destroyable, parent));
+    iterate(parents, (parent) => {
+      removeChildFromParent(destroyable, parent);
+    });
 
     meta.state = DESTROYED_STATE;
   });
@@ -243,11 +251,13 @@ if (import.meta.env.DEV) {
 
     map.forEach((meta) => {
       if (meta.state !== DESTROYED_STATE) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
         undestroyed.push(meta.source!);
       }
     });
 
     if (undestroyed.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       let objectsToString = undestroyed.map(debugToString!).join('\n    ');
       let error = new Error(
         `Some destroyables were not destroyed during this test:\n    ${objectsToString}`

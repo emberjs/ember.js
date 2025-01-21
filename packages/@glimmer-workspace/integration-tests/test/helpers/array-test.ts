@@ -1,4 +1,11 @@
-import { GlimmerishComponent, jitSuite, RenderTest, strip, test, tracked } from '../..';
+import {
+  GlimmerishComponent,
+  jitSuite,
+  RenderTest,
+  strip,
+  test,
+  tracked,
+} from '@glimmer-workspace/integration-tests';
 
 class ArrayTest extends RenderTest {
   static suiteName = 'Helpers test: {{array}}';

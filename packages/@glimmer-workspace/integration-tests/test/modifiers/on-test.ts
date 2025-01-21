@@ -1,29 +1,31 @@
 import { castToBrowser, expect } from '@glimmer/debug-util';
 import { getInternalModifierManager } from '@glimmer/manager';
 import { on } from '@glimmer/runtime';
-
-import { jitSuite, RenderTest, test } from '../..';
+import { jitSuite, RenderTest, test } from '@glimmer-workspace/integration-tests';
+import { consume } from '@glimmer-workspace/test-utils';
 
 // check if window exists and actually is the global
 const hasDom =
   typeof self === 'object' &&
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   self !== null &&
   self.Object === Object &&
   typeof Window !== 'undefined' &&
   self.constructor === Window &&
   typeof document === 'object' &&
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   document !== null &&
   self.document === document &&
   typeof location === 'object' &&
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   location !== null &&
   self.location === location &&
   typeof history === 'object' &&
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   history !== null &&
-  self.history === history &&
-  typeof navigator === 'object' &&
-  navigator !== null &&
-  self.navigator === navigator &&
-  typeof navigator.userAgent === 'string';
+  self.history === history;
+// node >= 21 has experimental `navigator` support, so it's no
+// longer a good heuristic
 
 interface Counters {
   adds: number;
@@ -370,7 +372,7 @@ if (hasDom) {
       this.render(`<button {{on 'click' this.myFunc}}>Click Me</button>`, {
         myFunc(this: any) {
           assert.throws(() => {
-            this.arg1;
+            consume(this.arg1);
           }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to use a bound function/u);
         },
 

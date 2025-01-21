@@ -55,7 +55,7 @@ jobs:
       - uses: wyvox/action-setup-pnpm@v3
         with:
           args: '--ignore-scripts'
-          node-version: 20.1.0
+          node-version: 22.13.0
 
       - name: "Generate Explanation and Prep Changelogs"
         id: explanation

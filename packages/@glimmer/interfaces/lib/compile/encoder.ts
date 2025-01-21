@@ -1,6 +1,6 @@
-import type { CompileTimeComponent } from '../../index.js';
-import type { Nullable } from '../core.js';
+import type { Nullable, Optional } from '../core.js';
 import type { CompileTimeConstants } from '../program.js';
+import type { CompileTimeComponent } from '../serialize.js';
 import type { HandleResult, NamedBlocks } from '../template.js';
 import type { VmMachineOp as MachineOp, VmOp as Op } from '../vm-opcodes.js';
 import type { SingleBuilderOperand } from './operands.js';
@@ -100,7 +100,7 @@ export type ResolveTemplateLocalOp = [
 export type ResolveLocalOp = [
   op: HighLevelResolveLocal,
   op1: number,
-  op2: (name: string, moduleName: string) => void,
+  op2: (name: string, moduleName: Optional<string>) => void,
 ];
 
 export type HighLevelResolutionOp =

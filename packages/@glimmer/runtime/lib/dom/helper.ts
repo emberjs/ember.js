@@ -60,7 +60,7 @@ import { BLACKLIST_TABLE, DOMOperations } from './operations';
 ].forEach((tag) => (BLACKLIST_TABLE[tag] = 1));
 
 const WHITESPACE =
-  /[\t\n\v\f\r \xA0\u{1680}\u{180e}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}]/u;
+  /[\t\n\v\f\r \xa0\u{1680}\u{180e}\u{2000}-\u{200a}\u{2028}\u{2029}\u{202f}\u{205f}\u{3000}\u{feff}]/u;
 
 const doc: Nullable<SimpleDocument> =
   typeof document === 'undefined' ? null : castToSimple(document);

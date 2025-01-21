@@ -1,11 +1,15 @@
 {
   "private": true,
   "name": "@glimmer-test/reference",
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
   "dependencies": {
+    "@glimmer/global-context": "workspace:*",
     "@glimmer/reference": "workspace:*",
-    "@glimmer/validator": "workspace:*",
     "@glimmer/util": "workspace:*",
-    "@glimmer/global-context": "workspace:*"
+    "@glimmer/validator": "workspace:*"
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*"

@@ -1,5 +1,9 @@
 {
   "private": true,
   "name": "@types/js-reporters",
-  "types": "index.d.ts"
+  "version": "0.92.0",
+  "exports": "./index.d.ts",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  }
 }

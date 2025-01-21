@@ -21,7 +21,9 @@ export interface TraversalErrorConstructor {
 }
 
 const TraversalError: TraversalErrorConstructor = (function () {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   TraversalError.prototype = Object.create(Error.prototype);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   TraversalError.prototype.constructor = TraversalError;
 
   function TraversalError(

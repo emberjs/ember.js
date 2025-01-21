@@ -12,7 +12,7 @@ interface GetTemplateLocalsOptions {
 /**
  * Gets the correct Token from the Node based on it's type
  */
-function tokensFromType(
+function getPathName(
   node: ASTv1.Node,
   scopedTokens: string[],
   options: GetTemplateLocalsOptions
@@ -40,7 +40,7 @@ function tokensFromType(
       return;
     }
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- @fixme
     if (tag.substr(0, 5) === 'this.') {
       return;
     }
@@ -71,16 +71,14 @@ function addTokens(
   scopedTokens: string[],
   options: GetTemplateLocalsOptions
 ) {
-  const maybeTokens = tokensFromType(node, scopedTokens, options);
+  const maybePathName = getPathName(node, scopedTokens, options);
 
-  (Array.isArray(maybeTokens) ? maybeTokens : [maybeTokens]).forEach((maybeToken) => {
-    if (maybeToken !== undefined && maybeToken[0] !== '@') {
-      const maybeTokenFirstSegment = maybeToken.split('.')[0];
-      if (!scopedTokens.includes(maybeTokenFirstSegment)) {
-        tokensSet.add(maybeToken.split('.')[0]);
-      }
+  if (maybePathName !== undefined && maybePathName[0] !== '@') {
+    const maybeFirstPathSegment = maybePathName.split('.')[0];
+    if (maybeFirstPathSegment && !scopedTokens.includes(maybeFirstPathSegment)) {
+      tokensSet.add(maybeFirstPathSegment);
     }
-  });
+  }
 }
 
 /**
@@ -138,7 +136,7 @@ export function getTemplateLocals(
 
   tokensSet.forEach((s) => tokens.push(s));
 
-  if (!options?.includeKeywords) {
+  if (!options.includeKeywords) {
     tokens = tokens.filter((token) => !isKeyword(token));
   }
 

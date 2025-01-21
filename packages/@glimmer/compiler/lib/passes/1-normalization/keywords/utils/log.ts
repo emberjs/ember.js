@@ -14,15 +14,15 @@ function assertLogKeyword(node: GenericKeywordNode): Result<ASTv2.PositionalArgu
     args: { named, positional },
   } = node;
 
-  if (named && !named.isEmpty()) {
+  if (named.isEmpty()) {
+    return Ok(positional);
+  } else {
     return Err(generateSyntaxError(`(log) does not take any named arguments`, node.loc));
   }
-
-  return Ok(positional);
 }
 
 function translateLogKeyword(
-  { node, state }: { node: ASTv2.CallExpression; state: NormalizationState },
+  { node, state }: { node: ASTv2.CallExpression | ASTv2.AppendContent; state: NormalizationState },
   positional: ASTv2.PositionalArguments
 ): Result<mir.Log> {
   return VISIT_EXPRS.Positional(positional, state).mapOk(

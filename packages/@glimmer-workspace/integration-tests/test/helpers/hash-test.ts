@@ -1,6 +1,11 @@
 import { LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
-
-import { GlimmerishComponent, jitSuite, RenderTest, test, tracked } from '../..';
+import {
+  GlimmerishComponent,
+  jitSuite,
+  RenderTest,
+  test,
+  tracked,
+} from '@glimmer-workspace/integration-tests';
 
 class HashTest extends RenderTest {
   static suiteName = 'Helpers test: {{hash}}';

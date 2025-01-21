@@ -1,4 +1,4 @@
-import { defineSimpleHelper, jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from '../..';
+import { defineSimpleHelper, jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from "@glimmer-workspace/integration-tests";
 
 class ArgumentLessHelperParenLessInvokeTest extends RenderTest {
   static suiteName = 'argument-less helper paren-less invoke';

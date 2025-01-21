@@ -1,6 +1,6 @@
-import { dirname, resolve } from 'node:path';
+/* eslint-disable n/no-process-exit */
 import chalk from 'chalk';
-import { execSync, spawnSync } from 'node:child_process';
+
 import { Emitter } from './opcodes/utils.mjs';
 
 const emitter = Emitter.argv('opcodes.json', import.meta);
@@ -16,11 +16,11 @@ const ALL: (string | null)[] = [
 const TYPES = ['interface', 'code', 'debug', 'all'] as const;
 
 if (emitter.options.help) {
-  throw usage();
+  usage();
 }
 
 if (emitter.type === undefined) {
-  throw usage('Missing type');
+  usage('Missing type');
 }
 
 compute(emitter.type);
@@ -55,8 +55,6 @@ function compute(type: string) {
     }
 
     case 'code': {
-      const OP_TYPE = `OpType`;
-
       const CODE_MEMBERS = ALL.flatMap((name, i) => {
         if (name === null) return [];
         return [`  ${name}: ${i},`];

@@ -1,6 +1,6 @@
 /// <reference types="qunit" />
 
-import { assert, expect } from '@glimmer/debug-util';
+import { expect,localAssert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
 import { LOCAL_LOGGER } from '../index';
@@ -17,13 +17,13 @@ if (LOCAL_DEBUG) {
   let LOGGED_STEPS: Record<string, unknown[]> | null = null;
 
   beginTestSteps = () => {
-    assert(LOGGED_STEPS === null, 'attempted to start steps, but it already began');
+    localAssert(LOGGED_STEPS === null, 'attempted to start steps, but it already began');
 
     LOGGED_STEPS = {};
   };
 
   endTestSteps = () => {
-    assert(LOGGED_STEPS, 'attempted to end steps, but they were not started');
+    localAssert(LOGGED_STEPS, 'attempted to end steps, but they were not started');
 
     LOGGED_STEPS = null;
   };
@@ -53,9 +53,13 @@ if (LOCAL_DEBUG) {
     loggedSteps[type] = [];
 
     if (Array.isArray(expectedSteps)) {
-      QUnit.config.current.assert.deepEqual(steps, expectedSteps, message);
+      getCurrent().assert.deepEqual(steps, expectedSteps, message);
     } else {
       expectedSteps(steps);
     }
   };
+
+  function getCurrent(): QUnit {
+    return QUnit.config.current as QUnit;
+  }
 }

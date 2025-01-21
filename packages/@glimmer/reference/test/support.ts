@@ -1,19 +1,15 @@
 import { trackedData } from '@glimmer/validator';
 
-export function tracked<T extends object, K extends keyof T>(obj: T, key: K): void;
 export function tracked<T extends object, K extends keyof T>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  k: { new (...args: any[]): T },
-  key: K
-): void;
-export function tracked<T extends object, K extends keyof T>(
-  obj: T | { new (...args: unknown[]): T },
+  obj: T | { new (...args: any[]): T },
   key: K
 ): void {
   let target: T;
   let initializer: (() => T[K]) | undefined;
 
   if (typeof obj === 'function') {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     target = obj.prototype;
   } else {
     target = obj;
@@ -24,11 +20,11 @@ export function tracked<T extends object, K extends keyof T>(
   let { getter, setter } = trackedData<T, K>(key, initializer);
 
   Object.defineProperty(target, key, {
-    get() {
+    get(this: T) {
       return getter(this);
     },
-    set(value) {
-      return setter(this, value);
+    set(this: T, value: T[K]) {
+      setter(this, value);
     },
   });
 }

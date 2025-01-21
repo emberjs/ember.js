@@ -1,3 +1,5 @@
+// Allow the contents of `debugCallback` without extra annotations
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import type { DebuggerInfo, Scope } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { decodeHandle, VM_DEBUGGER_OP } from '@glimmer/constants';
@@ -54,7 +56,7 @@ class ScopeInspector {
     if (head === 'this') {
       ref = scope.getSelf();
     } else if (symbols.locals[head]) {
-      ref = unwrap(scope.getSymbol(symbols.locals[head]!));
+      ref = unwrap(scope.getSymbol(symbols.locals[head]));
     } else {
       ref = this.scope.getSelf();
       tail = parts;

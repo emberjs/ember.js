@@ -28,6 +28,7 @@ class TemplateIteratorImpl implements TemplateIterator {
 
   sync(): RenderResult {
     if (import.meta.env.DEV) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       return debug.runInTrackingTransaction!(() => this.vm.execute(), '- While rendering:');
     } else {
       return this.vm.execute();
@@ -40,6 +41,7 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 
   inTransaction(env, () => (result = iterator.sync()));
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
   return result!;
 }
 
@@ -136,11 +138,8 @@ export function renderComponent(
 function recordToReference(record: Record<string, unknown>): Record<string, Reference> {
   const root = createConstRef(record, 'args');
 
-  return Object.keys(record).reduce(
-    (acc, key) => {
-      acc[key] = childRefFor(root, key);
-      return acc;
-    },
-    {} as Record<string, Reference>
-  );
+  return Object.keys(record).reduce<Record<string, Reference>>((acc, key) => {
+    acc[key] = childRefFor(root, key);
+    return acc;
+  }, {});
 }

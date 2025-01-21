@@ -25,6 +25,7 @@ export class GlimmerishComponent {
 }
 
 export interface Constructor<T> {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   new (owner: unknown, args: {}): T;
 }
 

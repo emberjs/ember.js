@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
 import { createCell } from '@glimmer-workspace/benchmark-env';
 
 export class Item {

@@ -2,7 +2,7 @@ import type { Dict, Nullable, Stack } from '@glimmer/interfaces';
 import { getLast, unwrap } from '@glimmer/debug-util';
 
 export function dict<T = unknown>(): Dict<T> {
-  return Object.create(null);
+  return Object.create(null) as Dict<T>;
 }
 
 export function isDict<T>(u: T): u is Dict & T {

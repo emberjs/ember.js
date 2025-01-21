@@ -1,10 +1,10 @@
 import type { WireFormat } from '@glimmer/interfaces';
 import type { TemplateWithIdAndReferrer } from '@glimmer/opcode-compiler';
 import { precompile } from '@glimmer/compiler';
-import { assert as glimmerAssert, unwrapTemplate } from '@glimmer/debug-util';
+import { localAssert, unwrapTemplate } from '@glimmer/debug-util';
 import { SexpOpcodes } from '@glimmer/wire-format';
+import { preprocess } from '@glimmer-workspace/integration-tests';
 
-import { preprocess } from '../..';
 import { module } from '../support';
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
@@ -110,7 +110,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
     let [[, componentNameExpr]] = block[0] as [WireFormat.Statements.Component];
 
-    glimmerAssert(
+    localAssert(
       Array.isArray(componentNameExpr) &&
         componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
       `component name is a free variable lookup`
@@ -134,7 +134,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     let [[, , letBlock]] = block[0] as [WireFormat.Statements.Let];
     let [[, componentNameExpr]] = letBlock[0] as [WireFormat.Statements.Component];
 
-    glimmerAssert(
+    localAssert(
       Array.isArray(componentNameExpr) &&
         componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
       `component name is a free variable lookup`
@@ -157,7 +157,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
 
     let [[, componentNameExpr]] = block[0] as [WireFormat.Statements.Block];
 
-    glimmerAssert(
+    localAssert(
       Array.isArray(componentNameExpr) &&
         componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
       `component name is a free variable lookup`
@@ -180,7 +180,7 @@ module('[glimmer-compiler] precompile', ({ test }) => {
 
     let [[, componentNameExpr]] = block[0] as [WireFormat.Statements.Block];
 
-    glimmerAssert(
+    localAssert(
       Array.isArray(componentNameExpr) &&
         componentNameExpr[0] === SexpOpcodes.GetFreeAsComponentHead,
       `component name is a free variable lookup`
@@ -200,9 +200,9 @@ module('[glimmer-compiler] precompile', ({ test }) => {
     );
 
     let block: WireFormat.SerializedTemplateBlock = JSON.parse(wire.block);
-    let [openElementExpr] = block[0] as [WireFormat.Statements.OpenElement];
+    let [openElementExpr] = block[0];
 
-    glimmerAssert(
+    localAssert(
       Array.isArray(openElementExpr) && openElementExpr[0] === SexpOpcodes.OpenElement,
       `expr is open element`
     );

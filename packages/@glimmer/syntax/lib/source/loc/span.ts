@@ -3,7 +3,7 @@ import { assertNever } from '@glimmer/util';
 
 import type { SourceLocation, SourcePosition } from '../location';
 import type { Source } from '../source';
-import type { BrokenKind, InvisibleKind, NonExistentKind, OffsetKind } from './kinds';
+import type { InvisibleKind, OffsetKind } from './kinds';
 import type { MatchFn } from './match';
 import type { AnyPosition, SourceOffset } from './offset';
 
@@ -379,7 +379,7 @@ class CharPositionSpan implements SpanData {
     }
   }
 
-  toCharPosSpan(): CharPositionSpan {
+  toCharPosSpan(): this {
     return this;
   }
 }
@@ -458,7 +458,7 @@ export class HbsSpan implements SpanData {
     };
   }
 
-  toHbsSpan(): HbsSpan {
+  toHbsSpan(): this {
     return this;
   }
 
@@ -534,7 +534,7 @@ class InvisibleSpan implements SpanData {
     return new InvisiblePosition(this.kind, this.loc.end);
   }
 
-  toCharPosSpan(): InvisibleSpan {
+  toCharPosSpan(): this {
     return this;
   }
 
@@ -590,4 +590,5 @@ export type SerializedConcreteSourceSpan =
   | /** normal */ [start: number, size: number]
   | /** synthetic */ string;
 
-export type SerializedSourceSpan = SerializedConcreteSourceSpan | NonExistentKind | BrokenKind;
+// `string` includes NON_EXISTENT_KIND and BROKEN_KIND
+export type SerializedSourceSpan = SerializedConcreteSourceSpan;

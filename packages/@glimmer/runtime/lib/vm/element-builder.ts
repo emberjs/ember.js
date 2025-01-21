@@ -18,7 +18,7 @@ import type {
   SimpleText,
   TreeBuilder,
 } from '@glimmer/interfaces';
-import { assert, expect, setLocalDebugType } from '@glimmer/debug-util';
+import { expect, localAssert, setLocalDebugType } from '@glimmer/debug-util';
 import { destroy, registerDestructor } from '@glimmer/destroyable';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { Stack } from '@glimmer/util';
@@ -130,10 +130,12 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   get element(): SimpleElement {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return this.cursors.current!.element;
   }
 
   get nextSibling(): Nullable<SimpleNode> {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     return this.cursors.current!.nextSibling;
   }
 
@@ -252,7 +254,7 @@ export class NewTreeBuilder implements TreeBuilder {
 
   popRemoteElement(): RemoteBlock {
     const block = this.popBlock();
-    assert(block instanceof RemoteBlock, '[BUG] expecting a RemoteBlock');
+    localAssert(block instanceof RemoteBlock, '[BUG] expecting a RemoteBlock');
     this.popElement();
     return block;
   }
@@ -308,6 +310,7 @@ export class NewTreeBuilder implements TreeBuilder {
     let first = fragment.firstChild;
 
     if (first) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
       let ret = new ConcreteBounds(this.element, first, fragment.lastChild!);
       this.dom.insertBefore(this.element, fragment, this.nextSibling);
       return ret;
@@ -363,12 +366,13 @@ export class NewTreeBuilder implements TreeBuilder {
   }
 
   __setAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     this.dom.setAttribute(this.constructing!, name, value, namespace);
   }
 
   __setProperty(name: string, value: unknown): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.constructing! as any)[name] = value;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
+    (this.constructing! as unknown as Element)[name as MutableKey<Element>] = value as never;
   }
 
   setStaticAttribute(name: string, value: string, namespace: Nullable<AttrNamespace>): void {
@@ -381,6 +385,7 @@ export class NewTreeBuilder implements TreeBuilder {
     trusting: boolean,
     namespace: Nullable<AttrNamespace>
   ): DynamicAttribute {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
     let element = this.constructing!;
     let attribute = dynamicAttribute(element, name, namespace, trusting);
     attribute.set(this, value, this.env);
@@ -555,24 +560,34 @@ export class AppendingBlockList implements AppendingBlock {
   }
 
   openElement(_element: SimpleElement) {
-    assert(false, 'Cannot openElement directly inside a block list');
+    localAssert(false, 'Cannot openElement directly inside a block list');
   }
 
   closeElement() {
-    assert(false, 'Cannot closeElement directly inside a block list');
+    localAssert(false, 'Cannot closeElement directly inside a block list');
   }
 
   didAppendNode(_node: SimpleNode) {
-    assert(false, 'Cannot create a new node directly inside a block list');
+    localAssert(false, 'Cannot create a new node directly inside a block list');
   }
 
   didAppendBounds(_bounds: Bounds) {}
 
   finalize(_stack: TreeBuilder) {
-    assert(this.boundList.length > 0, 'boundsList cannot be empty');
+    localAssert(this.boundList.length > 0, 'boundsList cannot be empty');
   }
 }
 
 export function clientBuilder(env: Environment, cursor: CursorImpl): TreeBuilder {
   return NewTreeBuilder.forInitialRender(env, cursor);
 }
+
+export type MutableKey<T> = {
+  [P in keyof T]-?: (<U>() => U extends { [K in P]: T[P] } ? 1 : 2) extends <U>() => U extends {
+    -readonly [K in P]: T[P];
+  }
+    ? 1
+    : 2
+    ? P
+    : never;
+}[keyof T];

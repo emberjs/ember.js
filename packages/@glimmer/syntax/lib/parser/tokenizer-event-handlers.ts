@@ -2,11 +2,11 @@ import type { Nullable } from '@glimmer/interfaces';
 import type { TokenizerState } from 'simple-html-tokenizer';
 import {
   asPresentArray,
-  assert,
   assertPresentArray,
   getFirst,
   getLast,
   isPresentArray,
+  localAssert,
 } from '@glimmer/debug-util';
 import { assign } from '@glimmer/util';
 import { parse, parseWithoutProcessing } from '@handlebars/parser';
@@ -126,7 +126,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       if (voidMap.has(tag.name) || tag.selfClosing) {
         this.finishEndTag(true);
       }
-    } else if (tag.type === 'EndTag') {
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- exhaustive
+      localAssert(tag.type === 'EndTag', `Invalid tag type ${tag.type}`);
       this.finishEndTag(false);
     }
   }
@@ -135,9 +137,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let { name, nameStart, nameEnd } = this.currentStartTag;
 
     // <> should probably be a syntax error, but s-h-t is currently broken for that case
-    assert(name !== '', 'tag name cannot be empty');
-    assert(nameStart !== null, 'nameStart unexpectedly null');
-    assert(nameEnd !== null, 'nameEnd unexpectedly null');
+    localAssert(name !== '', 'tag name cannot be empty');
+    localAssert(nameStart !== null, 'nameStart unexpectedly null');
+    localAssert(nameEnd !== null, 'nameEnd unexpectedly null');
 
     let nameLoc = nameStart.until(nameEnd);
     let [head, ...tail] = asPresentArray(name.split('.'));
@@ -170,7 +172,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     let { start: closeTagStart } = this.currentTag;
     let tag = this.finish<StartTag | EndTag>(this.currentTag);
 
-    let element = this.elementStack.pop() as ASTv1.ElementNode;
+    let element = this.elementStack.pop() as ASTv1.ParentNode;
 
     this.validateEndTag(tag, element, isVoid);
     let parent = this.currentElement();
@@ -178,7 +180,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     if (isVoid) {
       element.closeTag = null;
     } else if (element.selfClosing) {
-      assert(element.closeTag === null, 'element.closeTag unexpectedly present');
+      localAssert(element.closeTag === null, 'element.closeTag unexpectedly present');
     } else {
       element.closeTag = closeTagStart.until(this.offset());
     }
@@ -211,7 +213,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       let offset = this.offset();
 
       if (tag.nameStart === null) {
-        assert(tag.nameEnd === null, 'nameStart and nameEnd must both be null');
+        localAssert(tag.nameEnd === null, 'nameStart and nameEnd must both be null');
 
         // Note that the tokenizer already consumed the token here
         tag.nameStart = offset.move(-1);
@@ -319,6 +321,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     // Regex to validate the identifier for block parameters.
     // Based on the ID validation regex in Handlebars.
+
     const ID_INVERSE_PATTERN = /[!"#%&'()*+./;<=>@[\\\]^`{|}~]/u;
 
     type States = {
@@ -343,7 +346,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     type Handler = (next: string) => void;
 
-    assert(this.tokenizer.state === ATTRIBUTE_NAME, 'must be in TokenizerState.attributeName');
+    localAssert(this.tokenizer.state === ATTRIBUTE_NAME, 'must be in TokenizerState.attributeName');
 
     const element = this.currentStartTag;
     const as = this.currentAttr;
@@ -352,7 +355,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
 
     const handlers = {
       PossibleAs: (next: string) => {
-        assert(state.state === 'PossibleAs', 'bug in block params parser');
+        localAssert(state.state === 'PossibleAs', 'bug in block params parser');
 
         if (isSpace(next)) {
           // " as ..."
@@ -374,7 +377,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       BeforeStartPipe: (next: string) => {
-        assert(state.state === 'BeforeStartPipe', 'bug in block params parser');
+        localAssert(state.state === 'BeforeStartPipe', 'bug in block params parser');
 
         if (isSpace(next)) {
           this.tokenizer.consume();
@@ -390,7 +393,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       BeforeBlockParamName: (next: string) => {
-        assert(state.state === 'BeforeBlockParamName', 'bug in block params parser');
+        localAssert(state.state === 'BeforeBlockParamName', 'bug in block params parser');
 
         if (isSpace(next)) {
           this.tokenizer.consume();
@@ -440,7 +443,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       BlockParamName: (next: string) => {
-        assert(state.state === 'BlockParamName', 'bug in block params parser');
+        localAssert(state.state === 'BlockParamName', 'bug in block params parser');
 
         if (next === '') {
           // The HTML tokenizer ran out of characters, so we are either
@@ -488,7 +491,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       AfterEndPipe: (next: string) => {
-        assert(state.state === 'AfterEndPipe', 'bug in block params parser');
+        localAssert(state.state === 'AfterEndPipe', 'bug in block params parser');
 
         if (isSpace(next)) {
           this.tokenizer.consume();
@@ -527,7 +530,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       Error: (next: string) => {
-        assert(state.state === 'Error', 'bug in block params parser');
+        localAssert(state.state === 'Error', 'bug in block params parser');
 
         if (next === '' || next === '/' || next === '>' || isSpace(next)) {
           throw generateSyntaxError(state.message, state.start.until(this.offset()));
@@ -538,7 +541,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       },
 
       Done: () => {
-        assert(false, 'This should never be called');
+        localAssert(false, 'This should never be called');
       },
     } as const satisfies {
       [S in keyof States]: Handler;
@@ -551,7 +554,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
       handlers[state.state](next);
     } while (state.state !== 'Done' && next !== '');
 
-    assert(state.state === 'Done', 'bug in block params parser');
+    localAssert(state.state === 'Done', 'bug in block params parser');
   }
 
   reportSyntaxError(message: string): void {
@@ -561,15 +564,6 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   assembleConcatenatedValue(
     parts: (ASTv1.MustacheStatement | ASTv1.TextNode)[]
   ): ASTv1.ConcatStatement {
-    for (const part of parts) {
-      if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
-        throw generateSyntaxError(
-          `Unsupported node in quoted attribute value: ${part['type'] as string}`,
-          (part as ASTv1.BaseNode).loc
-        );
-      }
-    }
-
     assertPresentArray(parts, `the concatenation parts of an element should not be empty`);
 
     let first = getFirst(parts);
@@ -581,7 +575,11 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     });
   }
 
-  validateEndTag(tag: StartTag | EndTag, element: ASTv1.ElementNode, selfClosing: boolean): void {
+  validateEndTag(
+    tag: StartTag | EndTag,
+    element: ASTv1.ParentNode,
+    selfClosing: boolean
+  ): asserts element is ASTv1.ElementNode {
     if (voidMap.has(tag.name) && !selfClosing) {
       // EngTag is also called by StartTag for void and self-closing tags (i.e.
       // <input> or <br />, so we need to check for that here. Otherwise, we would
@@ -590,7 +588,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
         `<${tag.name}> elements do not need end tags. You should remove it`,
         tag.loc
       );
-    } else if (element.tag === undefined) {
+    } else if (element.type !== 'ElementNode') {
       throw generateSyntaxError(`Closing tag </${tag.name}> without an open tag`, tag.loc);
     } else if (element.tag !== tag.name) {
       throw generateSyntaxError(
@@ -677,6 +675,14 @@ export interface PrecompileOptions extends PreprocessOptions {
    */
   keywords?: readonly string[];
 
+  /**
+   * In loose mode, this hook allows embedding environments to customize the name of an
+   * angle-bracket component. In practice, this means that `<HelloWorld />` in Ember is
+   * compiled by Glimmer as an invocation of a component named `hello-world`.
+   *
+   * It's a little weird that this is needed in addition to the resolver, but it's a
+   * classic-only feature and it seems fine to leave it alone for classic consumers.
+   */
   customizeComponentName?: ((input: string) => string) | undefined;
 }
 
@@ -687,9 +693,11 @@ export interface PrecompileOptionsWithLexicalScope extends PrecompileOptions {
    * If `emit.debugSymbols` is set to `true`, the name of lexical local variables
    * will be included in the wire format.
    */
-  emit?: {
-    debugSymbols?: boolean;
-  };
+  emit?:
+    | {
+        debugSymbols?: boolean;
+      }
+    | undefined;
 }
 
 export interface PreprocessOptions {
@@ -791,7 +799,7 @@ export function preprocess(
     options.locals ?? []
   );
 
-  if (options?.plugins?.ast) {
+  if (options.plugins?.ast) {
     for (const transform of options.plugins.ast) {
       let env: ASTPluginEnvironment = assign({}, options, { syntax }, { plugins: undefined });
 

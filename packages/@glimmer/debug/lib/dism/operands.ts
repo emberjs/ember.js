@@ -25,9 +25,8 @@ export type OperandDisassembler = (options: DisassemblyState) => RawDisassembled
 const todo: OperandDisassembler = ({ label, value }) => ['error:operand', value, { label }];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Left<D extends Disassembler<any>> = D extends Disassembler<infer Added>
-  ? Exclude<OperandType, Added>
-  : never;
+type Left<D extends Disassembler<any>> =
+  D extends Disassembler<infer Added> ? Exclude<OperandType, Added> : never;
 
 type AllOperands = OperandType;
 
@@ -59,6 +58,7 @@ class Disassembler<in out Added extends OperandType> {
   add<const K extends Left<this> & NonNullableOperandType>(
     names: K[],
     dism: OperandDisassembler
+     
   ): Disassembler<Added | K> {
     const add = (name: K, dism: OperandDisassembler) => (this.#disms[name] = dism);
     for (const name of names) {

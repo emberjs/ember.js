@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   ComponentManager,
   HelperManager,
@@ -201,7 +200,7 @@ module('Managers', () => {
       };
 
       let definition = setInternalHelperManager(helper, {});
-      let instance1 = getInternalHelperManager(definition)!;
+      let instance1 = getInternalHelperManager(definition);
 
       assert.strictEqual(instance1, helper, 'manager is the internal helper');
     });

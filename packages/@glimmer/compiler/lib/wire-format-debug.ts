@@ -255,7 +255,7 @@ export default class WireFormatDebugger {
       case CURRIED_MODIFIER:
         return 'modifier';
       default:
-        throw exhausted(value);
+        exhausted(value);
     }
   }
 

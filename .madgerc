@@ -1,7 +1,0 @@
-{
-	"detectiveOptions": {
-		"ts": {
-			"skipTypeImports": true
-		}
-	}
-}

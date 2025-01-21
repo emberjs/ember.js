@@ -16,7 +16,7 @@ export function unwrap<T>(val: Maybe<T>): T {
  * existing `LOCAL_DEBUG` check.
  */
 export function dev<T>(val: Optional<() => T>): T {
-  if (val === null || val === undefined) {
+  if (val === undefined) {
     throw new Error(
       `Expected debug method to be present. Make sure you're calling \`dev()\` in the context of a \`LOCAL_DEBUG\` check.`
     );

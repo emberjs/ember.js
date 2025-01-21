@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "name": "@glimmer-test/integration-tests",
+  "version": "0.92.0",
+  "scripts": {
+    "test:lint": "eslint . --quiet"
+  },
+  "dependencies": {
+    "@glimmer-workspace/integration-tests": "workspace:*",
+    "@glimmer-workspace/test-utils": "workspace:*",
+    "@glimmer/compiler": "workspace:*",
+    "@glimmer/constants": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
+    "@glimmer/destroyable": "workspace:*",
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
+    "@glimmer/manager": "workspace:*",
+    "@glimmer/opcode-compiler": "workspace:*",
+    "@glimmer/owner": "workspace:*",
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/runtime": "workspace:*",
+    "@glimmer/syntax": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/validator": "workspace:*",
+    "@glimmer/wire-format": "workspace:*"
+  }
+}

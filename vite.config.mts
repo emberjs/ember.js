@@ -1,10 +1,16 @@
-import { PluginOption, defineConfig } from 'vite';
+import { defineConfig } from 'vite';
+import repo from '@glimmer-workspace/repo-metadata';
+
+const published = repo.packages.filter((pkg) => !pkg.private).map((pkg) => pkg.name);
 
 export default defineConfig({
   server: {
     open: '?hidepassed',
   },
   mode: 'testing',
+  optimizeDeps: {
+    entries: ['./packages/{@glimmer,@glimmer-workspace}/*/test/**/*-test.ts'],
+  },
   plugins: [
     {
       name: 'define custom import.meta.env',

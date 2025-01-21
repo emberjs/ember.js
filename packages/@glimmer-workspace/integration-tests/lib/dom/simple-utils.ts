@@ -168,7 +168,7 @@ export function replaceHTML(parent: SimpleElement, value: string): void {
 
 export function assertingElement(node: Maybe<SimpleNode>): SimpleElement {
   if (!node || node.nodeType !== ELEMENT_NODE) {
-    throw new Error(`Expected element, got ${node}`);
+    throw new Error(`Expected element, got ${node?.constructor.name}`);
   }
 
   return node;
@@ -180,7 +180,7 @@ export function isSimpleElement(node: Maybe<SimpleNode>): node is SimpleElement 
 
 export function assertElement(node: Maybe<SimpleNode>): asserts node is SimpleElement {
   if (!isSimpleElement(node)) {
-    throw new Error(`Expected element, got ${node}`);
+    throw new Error(`Expected element, got ${node?.constructor.name}`);
   }
 }
 

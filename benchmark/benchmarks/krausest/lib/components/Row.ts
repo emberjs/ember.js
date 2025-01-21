@@ -1,4 +1,4 @@
-import type { Item } from '@/utils/data';
+import type { Item } from '#utils/data.ts';
 
 type RowArgs = {
   item: Item;

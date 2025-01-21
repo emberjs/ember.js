@@ -7,7 +7,7 @@ import {
   RenderTest,
   syntaxErrorFor,
   test,
-} from '../..';
+} from '@glimmer-workspace/integration-tests';
 
 class DynamicModifiersResolutionModeTest extends RenderTest {
   static suiteName = 'dynamic modifiers in resolution mode';

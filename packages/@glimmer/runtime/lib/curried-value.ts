@@ -16,7 +16,7 @@ const RESOLVED: unique symbol = Symbol('RESOLVED');
 
 const CURRIED_VALUES = new WeakSet();
 
-export function isCurriedValue(value: unknown): value is CurriedValue<CurriedType> {
+export function isCurriedValue(value: unknown): value is CurriedValue {
   return CURRIED_VALUES.has(value as object);
 }
 
@@ -66,14 +66,13 @@ export function resolveCurriedValue(
   curriedValue: CurriedValue<CurriedHelper> | CurriedValue<CurriedModifier>
 ): ResolvedCurriedValue<object>;
 export function resolveCurriedValue(
-  curriedValue: CurriedValue<CurriedType>
+  curriedValue: CurriedValue
 ): ResolvedCurriedValue<object | string> {
   let currentWrapper = curriedValue;
   let positional: Reference[] | undefined;
   let named: Record<string, Reference>[] | undefined;
   let definition, owner, resolved;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     let { [ARGS]: curriedArgs, [INNER]: inner } = currentWrapper;
 

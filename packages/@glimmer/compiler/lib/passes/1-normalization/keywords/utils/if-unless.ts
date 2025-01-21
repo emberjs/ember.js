@@ -67,7 +67,7 @@ function assertIfUnlessInlineKeyword(type: string) {
             inverted ? 'false' : 'true'
           }, and 3. the value to return if the condition is ${
             inverted ? 'true' : 'false'
-          }. Received ${positional?.size ?? 0} parameters`,
+          }. Received ${positional.size} parameters`,
           originalNode.loc
         )
       );

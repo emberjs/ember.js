@@ -1,10 +1,11 @@
 {
   "private": true,
   "name": "@glimmer-workspace/test-utils",
+  "version": "0.92.0",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
-    "test:lint": "eslint .",
-    "test:types": "tsc --noEmit -p ../tsconfig.json"
+    "test:lint": "eslint . --quiet"
   },
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
@@ -12,6 +13,6 @@
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",
-    "eslint": "^8.52.0"
+    "eslint": "^9.18.0"
   }
 }

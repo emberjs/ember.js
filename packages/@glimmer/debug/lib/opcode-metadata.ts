@@ -114,8 +114,8 @@ export function opcodeMetadata(op: VmOp | VmMachineOp): Nullable<NormalizedMetad
   return value || null;
 }
 
-const METADATA: Nullable<NormalizedMetadata>[] = new Array(VM_SYSCALL_SIZE).fill(null);
-const MACHINE_METADATA: Nullable<NormalizedMetadata>[] = new Array(VM_MACHINE_SIZE).fill(null);
+const METADATA = new Array<Nullable<NormalizedMetadata>>(VM_SYSCALL_SIZE).fill(null);
+const MACHINE_METADATA = new Array<Nullable<NormalizedMetadata>>(VM_MACHINE_SIZE).fill(null);
 
 if (LOCAL_DEBUG) {
   MACHINE_METADATA[VM_PUSH_FRAME_OP] = {
