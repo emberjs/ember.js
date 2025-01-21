@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/owner",
-  "version": "0.92.5",
+  "version": "0.93.0",
   "license": "MIT",
   "description": "Implementation for the owner in Glimmer apps",
   "repository": {
