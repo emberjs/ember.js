@@ -4,6 +4,10 @@
   "version": "0.92.0",
   "license": "MIT",
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+  },
   "author": "Tilde, Inc.",
   "type": "module",
   "exports": null,
