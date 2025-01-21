@@ -1,5 +1,53 @@
 # Changelog
 
+## Release (2025-01-21)
+
+@glimmer/compiler 0.94.0 (minor)
+@glimmer/destroyable 0.94.0 (minor)
+@glimmer/encoder 0.93.0 (minor)
+@glimmer/global-context 0.93.0 (minor)
+@glimmer/interfaces 0.94.0 (minor)
+@glimmer/manager 0.94.0 (minor)
+@glimmer/node 0.94.0 (minor)
+@glimmer/opcode-compiler 0.94.0 (minor)
+@glimmer/owner 0.93.0 (minor)
+@glimmer/program 0.94.0 (minor)
+@glimmer/reference 0.94.0 (minor)
+@glimmer/runtime 0.94.0 (minor)
+@glimmer/syntax 0.94.0 (minor)
+@glimmer/util 0.94.0 (minor)
+@glimmer/validator 0.94.0 (minor)
+@glimmer/vm 0.94.0 (minor)
+@glimmer/vm-babel-plugins 0.93.0 (minor)
+@glimmer/wire-format 0.94.0 (minor)
+
+#### :rocket: Enhancement
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/bin`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/build-support`, `@glimmer-workspace/env`, `@glimmer-workspace/eslint-plugin`, `@glimmer-workspace/integration-tests`, `@glimmer-workspace/test-utils`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-babel-plugin`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`, `@types/eslint-community__eslint-plugin-eslint-comments`, `@types/eslint-plugin-import`, `@types/eslint-plugin-qunit`, `@types/js-reporters`, `@types/puppeteer-chromium-resolver`, `@glimmer-workspace/repo-metadata`
+  * [#1677](https://github.com/glimmerjs/glimmer-vm/pull/1677) Refresh tsconfig and eslint setup ([@wycats](https://github.com/wycats))
+* `@glimmer-workspace/integration-tests`, `@glimmer/syntax`
+  * [#1673](https://github.com/glimmerjs/glimmer-vm/pull/1673) Lexical "this" capture ([@ef4](https://github.com/ef4))
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/integration-tests`, `@glimmer/runtime`
+  * [#1672](https://github.com/glimmerjs/glimmer-vm/pull/1672) Feature: Basic mathml support ([@lifeart](https://github.com/lifeart))
+
+#### :house: Internal
+* Other
+  * [#1684](https://github.com/glimmerjs/glimmer-vm/pull/1684) Don't run the size check on main ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1683](https://github.com/glimmerjs/glimmer-vm/pull/1683) Use our own local copy of @glimemr/syntax when we run prettier to make sure we didn't break prettier ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1681](https://github.com/glimmerjs/glimmer-vm/pull/1681) Rotate the size chart ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1679](https://github.com/glimmerjs/glimmer-vm/pull/1679) Compare sizes with main ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1678](https://github.com/glimmerjs/glimmer-vm/pull/1678) Allow manual checkout for perf and size workflows ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+  * [#1641](https://github.com/glimmerjs/glimmer-vm/pull/1641) Measure sizes and post as a comment ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@types/puppeteer-chromium-resolver`
+  * [#1675](https://github.com/glimmerjs/glimmer-vm/pull/1675) Fix CI ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 4
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Yehuda Katz ([@wycats](https://github.com/wycats))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2024-11-27)
 
 @glimmer/compiler 0.93.1 (patch)
