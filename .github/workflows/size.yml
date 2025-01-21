@@ -8,9 +8,6 @@ on:
         required: false
         default: 'main'
         type: string
-  push:
-    branches:
-      - main
   pull_request: {}
 
 env:
