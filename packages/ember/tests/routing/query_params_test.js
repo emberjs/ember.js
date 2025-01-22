@@ -5,7 +5,7 @@ import { RSVP } from '@ember/-internals/runtime';
 import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';

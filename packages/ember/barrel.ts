@@ -2,6 +2,7 @@
 @module ember
 */
 
+import { tracked } from '@glimmer/tracking';
 import { getENV, getLookup, setLookup } from '@ember/-internals/environment';
 import * as utils from '@ember/-internals/utils';
 import {
@@ -177,7 +178,7 @@ namespace Ember {
   export const _descriptor = metal.nativeDescDecorator;
   export const _getPath = metal._getPath;
   export const _setClassicDecorator = metal.setClassicDecorator;
-  export const _tracked = metal.tracked; // Also exported from @glimmer/tracking
+  export const _tracked = tracked;
   export const beginPropertyChanges = metal.beginPropertyChanges;
   export const changeProperties = metal.changeProperties;
   export const endPropertyChanges = metal.endPropertyChanges;

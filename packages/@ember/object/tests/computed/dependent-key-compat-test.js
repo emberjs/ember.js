@@ -1,5 +1,5 @@
 import EmberObject, { computed, observer } from '@ember/object';
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 

@@ -4,7 +4,7 @@ import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
 import { service } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';

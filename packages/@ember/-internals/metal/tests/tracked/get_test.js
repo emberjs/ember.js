@@ -1,5 +1,6 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { get, tracked } from '../..';
+import { get } from '../..';
+import { tracked } from '@glimmer/tracking';
 
 let createObj = function () {
   class Obj {

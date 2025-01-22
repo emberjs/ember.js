@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { helperCapabilities, setHelperManager, setModifierManager } from '@glimmer/manager';
 import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import { tracked } from '@ember/-internals/metal';
+import { tracked } from '@glimmer/tracking';
 import { set } from '@ember/object';
 import { setOwner } from '@ember/-internals/owner';
 import Service, { service } from '@ember/service';
