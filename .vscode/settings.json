@@ -10,9 +10,7 @@
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": false,
-    "editor.rulers": [
-      100
-    ]
+    "editor.rulers": [100]
   },
   "[json][jsonc][markdown][yaml]": {
     "editor.codeActionsOnSave": {
@@ -33,7 +31,7 @@
     {
       "color": "#aaaaaa66",
       "column": 80
-    },
+    }
   ],
   "eslint.codeAction.showDocumentation": {
     "enable": true
@@ -48,12 +46,7 @@
   "eslint.problems.shortenToSingleLine": true,
   "eslint.runtime": "node",
   "eslint.useFlatConfig": true,
-  "eslint.validate": [
-    "javascript",
-    "typescript",
-    "json",
-    "jsonc"
-  ],
+  "eslint.validate": ["javascript", "typescript", "json", "jsonc"],
   "eslint.workingDirectories": [
     {
       "pattern": "."
@@ -126,15 +119,9 @@
     }
   },
   "inline-bookmarks.expert.custom.words.mapping": {
-    "audit": [
-      "@audit(\\s|$)"
-    ],
-    "fixme": [
-      "@fixme(\\s|$)"
-    ],
-    "warn": [
-      "@premerge(\\s|$)"
-    ],
+    "audit": ["@audit(\\s|$)"],
+    "fixme": ["@fixme(\\s|$)"],
+    "warn": ["@premerge(\\s|$)"],
     "bandaid": [
       "@bandaid\\(until:[^)]+\\)(\\s|$)",
       "@bandaid(?=\\{@link [^}]+\\}(\\s|$))",

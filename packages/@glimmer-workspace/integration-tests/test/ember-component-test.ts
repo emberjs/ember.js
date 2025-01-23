@@ -2160,7 +2160,6 @@ class CurlyBoundsTrackingTest extends CurlyTest {
 
     assert.ok(instance, 'instance is created');
 
-
     this.assertEmberishElement('span', {}, 'foo bar');
 
     const { bounds, element } = instance.captured;

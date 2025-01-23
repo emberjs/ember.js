@@ -1,6 +1,6 @@
 /// <reference types="qunit" />
 
-import { expect,localAssert } from '@glimmer/debug-util';
+import { expect, localAssert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
 import { LOCAL_LOGGER } from '../index';

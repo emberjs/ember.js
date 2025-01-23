@@ -13,7 +13,7 @@ import {
   CheckString,
   CheckUndefined,
 } from '@glimmer/debug';
-import { buildUntouchableThis,localAssert } from '@glimmer/debug-util';
+import { buildUntouchableThis, localAssert } from '@glimmer/debug-util';
 import { registerDestructor } from '@glimmer/destroyable';
 import { setInternalModifierManager } from '@glimmer/manager';
 import { valueForRef } from '@glimmer/reference';

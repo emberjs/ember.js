@@ -1,4 +1,10 @@
-import { jitSuite, preprocess, RenderTest, syntaxErrorFor, test } from "@glimmer-workspace/integration-tests";
+import {
+  jitSuite,
+  preprocess,
+  RenderTest,
+  syntaxErrorFor,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 const types = ['if', 'unless'];
 
