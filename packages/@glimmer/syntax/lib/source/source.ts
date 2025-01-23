@@ -48,7 +48,6 @@ export class Source {
       return null;
     }
 
-     
     while (true) {
       let nextLine = this.source.indexOf('\n', seenChars);
 
@@ -81,7 +80,10 @@ export class Source {
         if (import.meta.env.DEV) {
           let roundTrip = this.hbsPosFor(seenChars + column);
           localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
-          localAssert(roundTrip.line === line, `the round-tripped line didn't match the original line`);
+          localAssert(
+            roundTrip.line === line,
+            `the round-tripped line didn't match the original line`
+          );
           localAssert(
             roundTrip.column === column,
             `the round-tripped column didn't match the original column`

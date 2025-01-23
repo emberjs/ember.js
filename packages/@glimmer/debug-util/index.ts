@@ -1,4 +1,4 @@
-export { assertNever, deprecate,default as localAssert } from './lib/assert';
+export { assertNever, deprecate, default as localAssert } from './lib/assert';
 export * from './lib/debug-brand';
 export { default as debugToString } from './lib/debug-to-string';
 export * from './lib/platform-utils';

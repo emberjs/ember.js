@@ -65,7 +65,7 @@ export class RehydrationDelegate implements RenderDelegate {
   public clientDoc: SimpleDocument;
   public serverDoc: SimpleDocument;
 
-  public declare rehydrationStats: RehydrationStats;
+  declare public rehydrationStats: RehydrationStats;
 
   private self: Nullable<Reference> = null;
 

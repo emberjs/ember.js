@@ -58,7 +58,6 @@ class Disassembler<in out Added extends OperandType> {
   add<const K extends Left<this> & NonNullableOperandType>(
     names: K[],
     dism: OperandDisassembler
-     
   ): Disassembler<Added | K> {
     const add = (name: K, dism: OperandDisassembler) => (this.#disms[name] = dism);
     for (const name of names) {

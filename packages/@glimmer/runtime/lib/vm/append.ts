@@ -98,7 +98,7 @@ if (LOCAL_DEBUG) {
 
     get active(): BlockMetadata | null {
       const current = this.#active.at(-1);
-      return current ? this.#templates.get(current) ?? null : null;
+      return current ? (this.#templates.get(current) ?? null) : null;
     }
 
     register(handle: Handle, metadata: BlockMetadata): void {

@@ -80,8 +80,5 @@ export function OptionalList<T>(value: readonly T[]): AnyOptionalList<T> {
 
 export type AnyOptionalList<T> = (PresentList<T> | EmptyList<T>) & OptionalList<T>;
 
-export type MapList<T, U, L extends OptionalList<T>> = L extends PresentList<T>
-  ? PresentList<U>
-  : L extends EmptyList<T>
-    ? EmptyList<U>
-    : never;
+export type MapList<T, U, L extends OptionalList<T>> =
+  L extends PresentList<T> ? PresentList<U> : L extends EmptyList<T> ? EmptyList<U> : never;
