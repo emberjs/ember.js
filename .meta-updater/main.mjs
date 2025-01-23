@@ -22,6 +22,7 @@ export default () =>
 
         if (pkg) {
           const isPublished = !pkg.private;
+          const isRoot = pkg.name === 'glimmer-engine';
 
           const scripts = /** @type { JsonObject } */ (actual.scripts ??= {});
 
@@ -30,12 +31,20 @@ export default () =>
           // replaced with prepack
           delete scripts['test:types'];
 
-          if (isPublished) {
+          const updateRepo = () => {
             update(actual, 'repository', {
               type: 'git',
               url: 'git+https://github.com/glimmerjs/glimmer-vm.git',
-              directory: pkg.root,
+              ...(pkg.root
+                ? {
+                    directory: pkg.root,
+                  }
+                : {}),
             });
+          };
+
+          if (isPublished) {
+            updateRepo();
             update(publishConfig, 'access', 'public');
           } else if (pkg['repo-meta']?.built) {
             delete publishConfig['access'];
@@ -43,7 +52,14 @@ export default () =>
             publishConfig = actual.publishConfig = {};
 
             update(actual, 'version', repo.workspace.version);
-            delete actual.repository;
+            /**
+             * Needed for release automation
+             */
+            if (isRoot) {
+              updateRepo();
+            } else {
+              delete actual.repository;
+            }
             delete scripts['test:publint'];
             cleanup(actual, 'publishConfig');
             return actual;
