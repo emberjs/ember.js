@@ -12,7 +12,7 @@ import type {
   Transaction,
   TransactionSymbol,
 } from '@glimmer/interfaces';
-import { expect,localAssert } from '@glimmer/debug-util';
+import { expect, localAssert } from '@glimmer/debug-util';
 import { ProgramImpl } from '@glimmer/program';
 import { track, updateTag } from '@glimmer/validator';
 

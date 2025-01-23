@@ -73,8 +73,6 @@ See [Standard Annotations](./workspace-management.md#standard-annotations) in `w
 
 <kbd> ![fixme](./demos/fixme.png) </kbd>
 
-
-
 ### NPM Dependency Links (`herrmannplatz.npm-dependency-links`)
 
 This extension will turn your dependencies and devDependencies in your `package.json` into links to

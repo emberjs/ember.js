@@ -126,7 +126,10 @@ export function resolveComponent(
     let definition = resolver?.lookupComponent?.(name, owner) ?? null;
 
     if (import.meta.env.DEV && (typeof definition !== 'object' || definition === null)) {
-      localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+      localAssert(
+        !meta.isStrictMode,
+        'Strict mode errors should already be handled at compile time'
+      );
 
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a component, but nothing was found.`
@@ -173,7 +176,10 @@ export function resolveHelper(
     let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
     if (import.meta.env.DEV && helper === null) {
-      localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+      localAssert(
+        !meta.isStrictMode,
+        'Strict mode errors should already be handled at compile time'
+      );
 
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a helper, but nothing was found.`
@@ -218,7 +224,10 @@ export function resolveModifier(
     let modifier = resolver?.lookupBuiltInModifier?.(name) ?? null;
 
     if (import.meta.env.DEV && modifier === null) {
-      localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+      localAssert(
+        !meta.isStrictMode,
+        'Strict mode errors should already be handled at compile time'
+      );
 
       throw new Error(
         `Attempted to resolve a modifier in a strict mode template, but it was not in scope: ${name}`
@@ -236,7 +245,10 @@ export function resolveModifier(
     let modifier = resolver?.lookupModifier?.(name, owner) ?? null;
 
     if (import.meta.env.DEV && modifier === null) {
-      localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+      localAssert(
+        !meta.isStrictMode,
+        'Strict mode errors should already be handled at compile time'
+      );
 
       throw new Error(
         `Attempted to resolve \`${name}\`, which was expected to be a modifier, but nothing was found.`
@@ -289,7 +301,10 @@ export function resolveComponentOrHelper(
     let helper = constants.helper(definition as object, null, true);
 
     if (import.meta.env.DEV && helper === null) {
-      localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+      localAssert(
+        !meta.isStrictMode,
+        'Strict mode errors should already be handled at compile time'
+      );
 
       throw new Error(
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- @fixme
@@ -325,7 +340,10 @@ export function resolveComponentOrHelper(
       let helper = resolver?.lookupHelper?.(name, owner) ?? null;
 
       if (import.meta.env.DEV && helper === null) {
-        localAssert(!meta.isStrictMode, 'Strict mode errors should already be handled at compile time');
+        localAssert(
+          !meta.isStrictMode,
+          'Strict mode errors should already be handled at compile time'
+        );
 
         throw new Error(
           `Attempted to resolve \`${name}\`, which was expected to be a component or helper, but nothing was found.`

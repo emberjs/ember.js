@@ -1,6 +1,11 @@
 import type { SimpleElement } from '@glimmer/interfaces';
 import { NS_HTML, NS_SVG, NS_XLINK } from '@glimmer/constants';
-import { assertNodeTagName, jitSuite, RenderTest, test } from "@glimmer-workspace/integration-tests";
+import {
+  assertNodeTagName,
+  jitSuite,
+  RenderTest,
+  test,
+} from '@glimmer-workspace/integration-tests';
 
 import { assert } from './support';
 

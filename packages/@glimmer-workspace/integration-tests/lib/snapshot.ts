@@ -151,7 +151,6 @@ export function normalizeSnapshot(
   const normalizedOld: IndividualSnapshot[] = [];
   const normalizedNew: IndividualSnapshot[] = [];
 
-   
   while (true) {
     const nextOld = oldIterator.peek();
     const nextNew = newIterator.peek();

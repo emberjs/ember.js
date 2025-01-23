@@ -18,13 +18,9 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "outDir": "ts-dist",
-    "customConditions": [
-      "@glimmer-vm/source"
-    ]
+    "customConditions": ["@glimmer-vm/source"]
   },
-  "files": [
-    "eslint.config.js"
-  ],
+  "files": ["eslint.config.js"],
   "include": [
     ".meta-updater/**/*",
     "repo-metadata/**/*",
@@ -41,10 +37,5 @@
     "bin/**/*",
     "**/*.config.mts"
   ],
-  "exclude": [
-    "ts-dist",
-    "**/dist/**",
-    "**/node_modules/**",
-    "**/fixtures/**"
-  ]
+  "exclude": ["ts-dist", "**/dist/**", "**/node_modules/**", "**/fixtures/**"]
 }

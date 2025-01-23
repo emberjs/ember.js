@@ -11,7 +11,7 @@ import {
   test,
   TestHelper,
   trackedObj,
-} from "@glimmer-workspace/integration-tests";
+} from '@glimmer-workspace/integration-tests';
 
 class GeneralStrictModeTest extends RenderTest {
   static suiteName = 'strict mode: general properties';

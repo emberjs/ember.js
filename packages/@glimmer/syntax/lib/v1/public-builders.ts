@@ -1,5 +1,5 @@
 import type { Dict, Maybe, Nullable } from '@glimmer/interfaces';
-import { asPresentArray, deprecate, isPresentArray,localAssert } from '@glimmer/debug-util';
+import { asPresentArray, deprecate, isPresentArray, localAssert } from '@glimmer/debug-util';
 
 import type { SourceLocation, SourcePosition } from '../source/location';
 import type * as ASTv1 from './api';
