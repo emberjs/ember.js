@@ -49,9 +49,8 @@ export function isOperandType(s: string): s is OperandType {
 
 export type OPERAND_TYPE = (typeof OPERAND_TYPES)[number];
 export type NonNullableOperandType = Exclude<OPERAND_TYPE, `${string}?`>;
-export type NullableOperandType = Extract<OPERAND_TYPE, `${string}?`> extends `${infer S}?`
-  ? S
-  : never;
+export type NullableOperandType =
+  Extract<OPERAND_TYPE, `${string}?`> extends `${infer S}?` ? S : never;
 export type OperandType = NonNullableOperandType | NullableOperandType | `${NullableOperandType}?`;
 
 export interface NormalizedOperand {

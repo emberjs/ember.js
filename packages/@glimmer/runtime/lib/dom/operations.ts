@@ -27,7 +27,7 @@ const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
 export const BLACKLIST_TABLE = Object.create(null) as Dict<1>;
 
 export class DOMOperations {
-  protected declare uselessElement: SimpleElement; // Set by this.setupUselessElement() in constructor
+  declare protected uselessElement: SimpleElement; // Set by this.setupUselessElement() in constructor
 
   constructor(protected document: SimpleDocument) {
     this.setupUselessElement();

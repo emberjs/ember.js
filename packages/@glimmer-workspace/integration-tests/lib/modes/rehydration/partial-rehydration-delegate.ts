@@ -10,11 +10,7 @@ export class PartialRehydrationDelegate extends RehydrationDelegate {
     this.registerComponent('TemplateOnly', 'TemplateOnly', name, layout);
   }
 
-  renderComponentClientSide(
-    name: string,
-    args: Dict,
-    element: SimpleElement
-  ): RenderResult {
+  renderComponentClientSide(name: string, args: Dict, element: SimpleElement): RenderResult {
     let cursor = { element, nextSibling: null };
     let context = this.clientContext;
     let tree = this.getElementBuilder(context.env, cursor) as DebugRehydrateTree;

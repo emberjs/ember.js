@@ -79,7 +79,10 @@ export function encodeNegative(num: number) {
 
 export function decodeNegative(num: number) {
   if (LOCAL_DEBUG) {
-    localAssert(num % 1 === 0 && num < ~MAX_INT && num >= MIN_SMI, `Could not decode negative: ${num}`);
+    localAssert(
+      num % 1 === 0 && num < ~MAX_INT && num >= MIN_SMI,
+      `Could not decode negative: ${num}`
+    );
   }
 
   return num | ~SIGN_BIT;
