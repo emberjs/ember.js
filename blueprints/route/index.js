@@ -29,6 +29,11 @@ module.exports = {
       name: 'reset-namespace',
       type: Boolean,
     },
+    {
+      name: 'strict-template',
+      type: Boolean,
+      default: false,
+    },
   ],
 
   init() {
@@ -78,6 +83,16 @@ module.exports = {
         return 'app';
       },
     };
+  },
+
+  files() {
+    let files = this._super.files.apply(this, arguments);
+
+    return files.filter((file) => {
+      const extensionToRemove = this.options.strictTemplate ? '.hbs' : '.gts';
+
+      return !file.endsWith(extensionToRemove);
+    });
   },
 
   locals: function (options) {
