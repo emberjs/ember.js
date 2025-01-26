@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/destroyable",
-  "version": "0.94.0",
+  "version": "0.94.1",
   "license": "MIT",
   "description": "Utilities for creating and managing a destroyable hierarchy of objects",
   "repository": {
