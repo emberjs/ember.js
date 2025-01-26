@@ -6,9 +6,7 @@
   "description": "Common utilities used in Glimmer with debug-specific behavior",
   "type": "module",
   "exports": "./index.ts",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/interfaces": "workspace:*"
   },

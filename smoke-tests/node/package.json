@@ -1,0 +1,42 @@
+{
+  "name": "@glimmer-workspace/smoke-tests-node",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "exports": {
+    ".": "./setup.ts"
+  },
+  "scripts": {
+    "test:lint": "eslint . --quiet",
+    "test:node": "vitest --run",
+    "test:setup": "node --disable-warning=ExperimentalWarning --experimental-strip-types ./setup.ts"
+  },
+  "devDependencies": {
+    "execa": "^9.5.2",
+    "vite": "^5.4.10",
+    "vitest": "^3.0.4"
+  },
+  "config": {
+    "tsconfig": "../../tsconfig.json"
+  },
+  "dependencies": {
+    "@glimmer/syntax": "file:./packages/@glimmer/syntax.tgz",
+    "@glimmer/util": "file:./packages/@glimmer/util.tgz",
+    "@glimmer/wire-format": "file:./packages/@glimmer/wire-format.tgz",
+    "@glimmer/compiler": "file:./packages/@glimmer/compiler.tgz",
+    "@glimmer/interfaces": "file:./packages/@glimmer/interfaces.tgz",
+    "@glimmer/runtime": "file:./packages/@glimmer/runtime.tgz"
+  },
+  "pnpm": {
+    "overrides": {
+      "@glimmer/syntax": "file:./packages/@glimmer/syntax.tgz",
+      "@glimmer/util": "file:./packages/@glimmer/util.tgz",
+      "@glimmer/wire-format": "file:./packages/@glimmer/wire-format.tgz",
+      "@glimmer/compiler": "file:./packages/@glimmer/compiler.tgz",
+      "@glimmer/interfaces": "file:./packages/@glimmer/interfaces.tgz",
+      "@glimmer/runtime": "file:./packages/@glimmer/runtime.tgz"
+    }
+  }
+}

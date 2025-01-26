@@ -10,9 +10,7 @@
     },
     "./metadata.json": "./metadata.json"
   },
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "chalk": "^5.4.1",
     "execa": "^9.5.2",

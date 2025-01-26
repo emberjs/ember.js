@@ -13,9 +13,7 @@
       "*"
     ]
   },
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer-workspace/repo-metadata": "workspace:*",
     "@pnpm/workspace.find-packages": "^1000.0.5",

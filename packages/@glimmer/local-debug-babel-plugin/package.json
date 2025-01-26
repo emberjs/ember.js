@@ -8,7 +8,5 @@
   "type": "module",
   "private": true,
   "exports": "./index.js",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  }
+  "scripts": {}
 }

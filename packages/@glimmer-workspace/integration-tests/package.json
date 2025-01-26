@@ -12,9 +12,7 @@
       "test/**/*"
     ]
   },
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer-workspace/test-utils": "workspace:*",
     "@glimmer/compiler": "workspace:*",

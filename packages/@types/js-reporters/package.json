@@ -3,7 +3,5 @@
   "name": "@types/js-reporters",
   "version": "0.92.0",
   "exports": "./index.d.ts",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  }
+  "scripts": {}
 }

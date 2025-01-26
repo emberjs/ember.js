@@ -16,7 +16,6 @@
     "index.d.ts"
   ],
   "scripts": {
-    "test:lint": "eslint . --quiet",
     "test:publint": "publint"
   },
   "dependencies": {

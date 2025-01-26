@@ -6,9 +6,7 @@
   "keywords": [
     "node"
   ],
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@pnpm/find-workspace-dir": "^1000.0.1",
     "@pnpm/meta-updater": "^2.0.3",

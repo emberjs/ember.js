@@ -45,6 +45,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm repo:lint:all
 
+
   verify:
     name: Verify
     runs-on: ubuntu-latest
@@ -61,6 +62,37 @@ jobs:
       - run: pnpm repo:update:conventions
       - run: pnpm repo:update:metadata
       - uses: wyvox/action-no-git-diff@v1
+
+
+  test-node:
+    name: Node
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 5
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm test:node
+
+  test-smoke:
+    name: Smoke
+    runs-on: ubuntu-latest
+    needs: ['install_dependencies']
+    timeout-minutes: 5
+
+    steps:
+      - uses: wyvox/action@v1
+        with:
+          node-version: 22.13.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - working-directory: ./smoke-tests/node
+        run: |
+          pnpm test:setup
+          pnpm test:node
+
 
   test-chrome:
     name: Chrome

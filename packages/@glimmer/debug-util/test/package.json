@@ -2,9 +2,7 @@
   "private": true,
   "name": "@glimmer-test/debug-util",
   "version": "0.92.0",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/env": "0.1.7",
     "@glimmer/util": "workspace:*"

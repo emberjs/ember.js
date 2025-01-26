@@ -34,6 +34,7 @@
     "packages/@types/*/index.*",
     "packages/@types/*/lib/**/*",
     "benchmark/**/*",
+    "smoke-tests/**/*",
     "bin/**/*",
     "**/*.config.mts"
   ],

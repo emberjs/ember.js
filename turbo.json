@@ -25,6 +25,7 @@
       "cache": false,
       "dependsOn": ["test:lint", "test:publint"]
     },
+    "test:node": {},
     "test:lint": {},
     "test:publint": {
       "dependsOn": ["prepack", "prepare"]
@@ -34,11 +35,25 @@
       "outputs": ["dist/**"]
     },
     "prepack": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "dependsOn": ["^prepack"]
     },
+    "//#test:lint": {
+      "dependsOn": ["//#repo:update:conventions", "//#repo:update:metadata"]
+    },
+    "//#repo:update:conventions": {},
+    "//#repo:update:metadata": {},
     "//#test:types": {
       "inputs": ["**/dist/**", "tsconfig.dist.json"],
-      "dependsOn": ["^build"]
+      "dependsOn": ["^prepack", "//#benchmark:setup", "//#smoke:setup"]
+    },
+    "//#benchmark:setup": {
+      "outputs": ["./benchmark/benchmarks/krausest/packages"],
+      "dependsOn": ["^prepack"]
+    },
+    "//#smoke:setup": {
+      "outputs": ["./smoke-tests/node/packages"],
+      "dependsOn": ["^prepack"]
     }
   }
 }

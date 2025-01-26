@@ -5,9 +5,7 @@
     "strictness": "strict"
   },
   "version": "0.92.0",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/global-context": "workspace:*",
     "@glimmer/interfaces": "workspace:*",

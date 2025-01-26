@@ -26,10 +26,9 @@ export default () =>
 
           const scripts = /** @type { JsonObject } */ (actual.scripts ??= {});
 
-          update(scripts, 'test:lint', 'eslint . --quiet');
-
           // replaced with prepack
           delete scripts['test:types'];
+          delete scripts['test:lint'];
 
           const updateRepo = () => {
             update(actual, 'repository', {
@@ -57,6 +56,7 @@ export default () =>
              */
             if (isRoot) {
               updateRepo();
+              update(scripts, 'test:lint', 'eslint . --quiet');
             } else {
               delete actual.repository;
             }
