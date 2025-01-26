@@ -1,5 +1,39 @@
 # Changelog
 
+## Release (2025-01-26)
+
+@glimmer/compiler 0.94.1 (patch)
+@glimmer/destroyable 0.94.1 (patch)
+@glimmer/encoder 0.93.1 (patch)
+@glimmer/global-context 0.93.1 (patch)
+@glimmer/interfaces 0.94.1 (patch)
+@glimmer/manager 0.94.1 (patch)
+@glimmer/node 0.94.1 (patch)
+@glimmer/opcode-compiler 0.94.1 (patch)
+@glimmer/owner 0.93.1 (patch)
+@glimmer/program 0.94.1 (patch)
+@glimmer/reference 0.94.1 (patch)
+@glimmer/runtime 0.94.1 (patch)
+@glimmer/syntax 0.94.1 (patch)
+@glimmer/util 0.94.1 (patch)
+@glimmer/validator 0.94.1 (patch)
+@glimmer/vm 0.94.1 (patch)
+@glimmer/vm-babel-plugins 0.93.1 (patch)
+@glimmer/wire-format 0.94.1 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/bin`, `@glimmer-workspace/benchmark-env`, `@glimmer-workspace/build-support`, `@glimmer-workspace/env`, `@glimmer-workspace/eslint-plugin`, `@glimmer-workspace/integration-node-tests`, `@glimmer-workspace/integration-tests`, `@glimmer-workspace/test-utils`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/interfaces`, `@glimmer/local-debug-babel-plugin`, `@glimmer/local-debug-flags`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`, `@types/eslint-community__eslint-plugin-eslint-comments`, `@types/eslint-plugin-import`, `@types/eslint-plugin-qunit`, `@types/js-reporters`, `@types/puppeteer-chromium-resolver`, `@glimmer-workspace/repo-metadata`
+  * [#1689](https://github.com/glimmerjs/glimmer-vm/pull/1689) Prevent #1688 (and other accidental prettier breakages) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/bin`, `@glimmer-workspace/integration-tests`, `@glimmer/compiler`, `@glimmer/constants`, `@glimmer/debug-util`, `@glimmer/debug`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer-workspace/repo-metadata`
+  * [#1691](https://github.com/glimmerjs/glimmer-vm/pull/1691) Fix Formatting, add verify step to CI that prevents accidentally git diffs from happening later ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* Other
+  * [#1685](https://github.com/glimmerjs/glimmer-vm/pull/1685) Root package.json needs a repository field ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-01-21)
 
 @glimmer/compiler 0.94.0 (minor)
