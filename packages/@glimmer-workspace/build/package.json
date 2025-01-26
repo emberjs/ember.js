@@ -14,9 +14,7 @@
       "console"
     ]
   },
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/local-debug-babel-plugin": "workspace:*",
     "@rollup/plugin-commonjs": "^25.0.7",

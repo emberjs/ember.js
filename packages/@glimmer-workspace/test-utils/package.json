@@ -4,9 +4,7 @@
   "version": "0.92.0",
   "type": "module",
   "main": "index.ts",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/util": "workspace:*"

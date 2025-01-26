@@ -14,8 +14,8 @@ export function assertPresent<T>(value: T, message?: string): asserts value is P
   }
 }
 
-export function isPresentArray<T>(list: readonly T[]): list is PresentArray<T> {
-  return list.length > 0;
+export function isPresentArray<T>(list?: readonly T[]): list is PresentArray<T> {
+  return list ? list.length > 0 : false;
 }
 
 export function ifPresent<T, U, V>(

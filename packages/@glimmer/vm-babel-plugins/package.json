@@ -31,7 +31,6 @@
   "scripts": {
     "prepack": "rollup -c rollup.config.mjs",
     "test": "mocha",
-    "test:lint": "eslint . --quiet",
     "test:publint": "publint"
   },
   "dependencies": {

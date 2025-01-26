@@ -7,9 +7,7 @@
   "sideEffects": false,
   "type": "module",
   "exports": "./index.ts",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@glimmer/interfaces": "workspace:*",
     "@glimmer/reference": "workspace:*",

@@ -1,0 +1,21 @@
+{
+  "name": "@glimmer-workspace/integration-node-tests",
+  "version": "0.92.0",
+  "type": "module",
+  "private": true,
+  "repo-meta": {
+    "strictness": "loose"
+  },
+  "scripts": {
+    "test:node": "vitest --run"
+  },
+  "dependencies": {
+    "@glimmer/syntax": "workspace:*",
+    "execa": "^9.5.2",
+    "prettier": "^3.4.2"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/repo-metadata": "workspace:*",
+    "vitest": "^3.0.4"
+  }
+}

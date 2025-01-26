@@ -6,9 +6,7 @@
   "type": "module",
   "private": true,
   "exports": "./index.ts",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "devDependencies": {
     "eslint": "^9.18.0"
   }

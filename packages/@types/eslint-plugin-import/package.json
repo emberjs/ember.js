@@ -4,9 +4,7 @@
   "version": "0.92.0",
   "type": "module",
   "exports": "./index.d.ts",
-  "scripts": {
-    "test:lint": "eslint . --quiet"
-  },
+  "scripts": {},
   "dependencies": {
     "@types/eslint": "^9.6.1"
   }
