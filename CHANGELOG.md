@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v6.2.0-beta.1 (December 23, 2024)
+## v6.2.0 (February 03, 2025)
 
 - [#20798](https://github.com/emberjs/ember.js/pull/20798) [CLEANUP] Remove old code that supported old ember-test-helpers
 - [#20809](https://github.com/emberjs/ember.js/pull/20809) [CLEANUP] Remove long enabled `EMBER_TYPESCRIPT_BLUEPRINTS` feature flag
