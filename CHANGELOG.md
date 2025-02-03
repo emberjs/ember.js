@@ -1,5 +1,12 @@
 # Ember Changelog
 
+## v6.3.0-beta.1 (February 03, 2025)
+
+- [#20800](https://github.com/emberjs/ember.js/pull/20800) [FEATURE] Support use of template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
+- [#20526](https://github.com/emberjs/ember.js/pull/20526) / [#20820](https://github.com/emberjs/ember.js/pull/20820) [DEPRECATION] Deprecate importing `inject` from `@ember/service`. The export is renamed to `service` per [RFC #0752](https://rfcs.emberjs.com/id/0752-inject-service/).
+- [#20817](https://github.com/emberjs/ember.js/pull/20817) Clean up `deprecate-implicit-route-model` deprecation. It was deprecated until 6.0. 
+- [#20825](https://github.com/emberjs/ember.js/pull/20825) Remove the `helper` wrapper from the helper generator. [Plain functions as helpers](https://guides.emberjs.com/release/components/helper-functions/#toc_global-helper-functions) have been supported since v4.5.
+
 ## v6.2.0 (February 03, 2025)
 
 - [#20798](https://github.com/emberjs/ember.js/pull/20798) [CLEANUP] Remove old code that supported old ember-test-helpers
