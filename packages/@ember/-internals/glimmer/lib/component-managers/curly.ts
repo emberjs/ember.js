@@ -24,11 +24,11 @@ import type {
   WithCreateInstance,
   WithDynamicLayout,
   WithDynamicTagName,
-} from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
+} from '@glimmer/ember/interfaces';
+import type { Reference } from '@glimmer/ember/reference';
+import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/ember/reference';
 import { reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/ember/util';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -37,7 +37,7 @@ import {
   endUntrackFrame,
   validateTag,
   valueForTag,
-} from '@glimmer/validator';
+} from '@glimmer/ember/validator';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import type RuntimeResolver from '../resolver';

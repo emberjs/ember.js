@@ -2,8 +2,8 @@
 @module ember
 */
 import { assert } from '@ember/debug';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createInvokableRef, isUpdatableRef } from '@glimmer/reference';
+import type { CapturedArguments } from '@glimmer/ember/interfaces';
+import { createInvokableRef, isUpdatableRef } from '@glimmer/ember/reference';
 import { internalHelper } from './internal-helper';
 
 /**

@@ -1,5 +1,5 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Template } from '@glimmer/interfaces';
+import type { Template } from '@glimmer/ember/interfaces';
 
 export interface RenderState {
   /**

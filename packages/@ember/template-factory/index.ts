@@ -1,1 +1,1 @@
-export { templateFactory as createTemplateFactory } from '@glimmer/opcode-compiler';
+export { templateFactory as createTemplateFactory } from '@glimmer/ember/opcode-compiler';

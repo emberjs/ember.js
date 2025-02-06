@@ -8,9 +8,9 @@ import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
+import type { CapturedArguments } from '@glimmer/ember/interfaces';
+import type { Reference } from '@glimmer/ember/reference';
+import { createUnboundRef, isInvokableRef, updateRef, valueForRef } from '@glimmer/ember/reference';
 import { internalHelper } from './internal-helper';
 
 export const ACTIONS = new WeakSet();

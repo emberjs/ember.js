@@ -4,8 +4,8 @@
 import type { FullName, InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
+import type { CapturedArguments } from '@glimmer/ember/interfaces';
+import { createConstRef, isConstRef, valueForRef } from '@glimmer/ember/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(

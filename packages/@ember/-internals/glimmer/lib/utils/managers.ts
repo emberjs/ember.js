@@ -1,7 +1,7 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { ComponentManager } from '@glimmer/interfaces';
-import { setComponentManager as glimmerSetComponentManager } from '@glimmer/manager';
-export { modifierCapabilities, componentCapabilities } from '@glimmer/manager';
+import type { ComponentManager } from '@glimmer/ember/interfaces';
+import { setComponentManager as glimmerSetComponentManager } from '@glimmer/ember/manager';
+export { modifierCapabilities, componentCapabilities } from '@glimmer/ember/manager';
 
 /**
    Associate a class with a component manager (an object that is responsible for

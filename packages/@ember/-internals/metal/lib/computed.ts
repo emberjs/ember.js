@@ -2,9 +2,9 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor } from '@ember/-internals/meta';
 import { toString } from '@ember/-internals/utils';
 import { assert, inspect } from '@ember/debug';
-import { isDestroyed } from '@glimmer/destroyable';
+import { isDestroyed } from '@glimmer/ember/destroyable';
 import { DEBUG } from '@glimmer/env';
-import type { UpdatableTag } from '@glimmer/validator';
+import type { UpdatableTag } from '@glimmer/ember/validator';
 import {
   ALLOW_CYCLES,
   consumeTag,
@@ -15,7 +15,7 @@ import {
   updateTag,
   validateTag,
   valueForTag,
-} from '@glimmer/validator';
+} from '@glimmer/ember/validator';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import type {
   ExtendedMethodDecorator,

@@ -2,7 +2,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/routing/-internals';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
-import { associateDestroyableChild } from '@glimmer/destroyable';
+import { associateDestroyableChild } from '@glimmer/ember/destroyable';
 import type {
   CapturedArguments,
   ComponentDefinition,
@@ -16,12 +16,12 @@ import type {
   WithCustomDebugRenderTree,
   WithDynamicLayout,
   WithSubOwner,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
-import { unwrapTemplate } from '@glimmer/util';
+import { capabilityFlagsFrom } from '@glimmer/ember/manager';
+import type { Reference } from '@glimmer/ember/reference';
+import { createConstRef, valueForRef } from '@glimmer/ember/reference';
+import { unwrapTemplate } from '@glimmer/ember/util';
 import type RuntimeResolver from '../resolver';
 
 interface EngineState {

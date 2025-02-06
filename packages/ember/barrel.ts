@@ -130,7 +130,7 @@ import {
   setComponentTemplate,
   getComponentTemplate,
   setHelperManager,
-} from '@glimmer/manager';
+} from '@glimmer/ember/manager';
 
 import {
   assertDestroyablesDestroyed,

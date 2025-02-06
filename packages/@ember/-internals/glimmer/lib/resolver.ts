@@ -11,13 +11,13 @@ import type {
   RuntimeResolver,
   Template,
   TemplateFactory,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
 import {
   getComponentTemplate,
   getInternalComponentManager,
   setInternalHelperManager,
-} from '@glimmer/manager';
+} from '@glimmer/ember/manager';
 import {
   array,
   concat,

@@ -1,9 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import type { schedule } from '@ember/runloop';
-import { registerDestructor } from '@glimmer/destroyable';
-import type { Tag } from '@glimmer/validator';
-import { CURRENT_TAG, tagMetaFor, validateTag, valueForTag } from '@glimmer/validator';
+import { registerDestructor } from '@glimmer/ember/destroyable';
+import type { Tag } from '@glimmer/ember/validator';
+import { CURRENT_TAG, tagMetaFor, validateTag, valueForTag } from '@glimmer/ember/validator';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';

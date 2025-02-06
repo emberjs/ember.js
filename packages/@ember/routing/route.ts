@@ -25,7 +25,7 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import type { RenderState } from '@ember/-internals/glimmer';
-import type { TemplateFactory } from '@glimmer/interfaces';
+import type { TemplateFactory } from '@glimmer/ember/interfaces';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
 import type { QueryParam, default as EmberRouter } from '@ember/routing/router';

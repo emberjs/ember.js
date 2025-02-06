@@ -2,8 +2,8 @@
 @module ember
 */
 import { assert } from '@ember/debug';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
+import type { CapturedArguments } from '@glimmer/ember/interfaces';
+import { createComputeRef, valueForRef } from '@glimmer/ember/reference';
 import { internalHelper } from './internal-helper';
 
 export default internalHelper(({ positional, named }: CapturedArguments) => {

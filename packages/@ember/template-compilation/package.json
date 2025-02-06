@@ -8,9 +8,8 @@
   "dependencies": {
     "@ember/-internals": "workspace:*",
     "@ember/canary-features": "workspace:*",
-    "@glimmer/compiler": "0.93.0",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/syntax": "0.93.0",
+    "@glimmer/ember": "0.93.0",
     "ember": "workspace:*",
     "ember-template-compiler": "workspace:*"
   }

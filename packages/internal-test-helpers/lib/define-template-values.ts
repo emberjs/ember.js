@@ -4,7 +4,7 @@ import {
   setComponentTemplate,
   setHelperManager,
   setModifierManager,
-} from '@glimmer/manager';
+} from '@glimmer/ember/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 
 import type {
@@ -12,7 +12,7 @@ import type {
   ComponentDefinitionState,
   HelperManager,
   ModifierManager,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 import compile from './compile';
 
 interface SimpleHelperState {

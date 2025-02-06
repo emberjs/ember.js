@@ -1,8 +1,8 @@
 import templateOnly, { type TemplateOnlyComponent } from '@ember/component/template-only';
-import { precompile as glimmerPrecompile } from '@glimmer/compiler';
-import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
-import { setComponentTemplate } from '@glimmer/manager';
-import { templateFactory } from '@glimmer/opcode-compiler';
+import { precompile as glimmerPrecompile } from '@glimmer/ember/compiler';
+import type { SerializedTemplateWithLazyBlock } from '@glimmer/ember/interfaces';
+import { setComponentTemplate } from '@glimmer/ember/manager';
+import { templateFactory } from '@glimmer/ember/opcode-compiler';
 import compileOptions from './compile-options';
 import type { EmberPrecompileOptions } from './types';
 

@@ -3,7 +3,7 @@ import type {
   ASTPluginEnvironment,
   builders,
   PrecompileOptions,
-} from '@glimmer/syntax';
+} from '@glimmer/ember/syntax';
 
 export type Builders = typeof builders;
 

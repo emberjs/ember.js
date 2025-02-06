@@ -2,7 +2,7 @@
 @module @ember/helper
 */
 
-import { setHelperManager as glimmerSetHelperManager, helperCapabilities } from '@glimmer/manager';
+import { setHelperManager as glimmerSetHelperManager, helperCapabilities } from '@glimmer/ember/manager';
 import {
   invokeHelper as glimmerInvokeHelper,
   hash as glimmerHash,

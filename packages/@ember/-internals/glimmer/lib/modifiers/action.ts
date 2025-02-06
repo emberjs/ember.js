@@ -5,18 +5,18 @@ import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { registerDestructor } from '@glimmer/destroyable';
+import { registerDestructor } from '@glimmer/ember/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
   CapturedArguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
   InternalModifierManager,
-} from '@glimmer/interfaces';
-import { setInternalModifierManager } from '@glimmer/manager';
-import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import type { UpdatableTag } from '@glimmer/validator';
-import { createUpdatableTag } from '@glimmer/validator';
+} from '@glimmer/ember/interfaces';
+import { setInternalModifierManager } from '@glimmer/ember/manager';
+import { isInvokableRef, updateRef, valueForRef } from '@glimmer/ember/reference';
+import type { UpdatableTag } from '@glimmer/ember/validator';
+import { createUpdatableTag } from '@glimmer/ember/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];

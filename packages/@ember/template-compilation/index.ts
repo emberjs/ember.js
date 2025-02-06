@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import type { TemplateFactory } from '@glimmer/interfaces';
+import type { TemplateFactory } from '@glimmer/ember/interfaces';
 import type * as ETC from 'ember-template-compiler';
 
 // (UN)SAFETY: the public API is that people can import and use this (and indeed

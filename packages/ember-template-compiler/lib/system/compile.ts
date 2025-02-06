@@ -3,7 +3,7 @@
 */
 import type { EmberPrecompileOptions } from '../types';
 import precompile from './precompile';
-import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/interfaces';
+import type { SerializedTemplateWithLazyBlock, TemplateFactory } from '@glimmer/ember/interfaces';
 import { template } from '@ember/-internals/glimmer';
 
 /**

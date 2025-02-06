@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { Tag } from '@glimmer/validator';
+import type { Tag } from '@glimmer/ember/validator';
 import lookupDescriptor from './lookup-descriptor';
 
 export let setupMandatorySetter:

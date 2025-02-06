@@ -1,7 +1,7 @@
 import { MUTABLE_CELL } from '@ember/-internals/views';
-import type { CapturedNamedArguments } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
-import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/reference';
+import type { CapturedNamedArguments } from '@glimmer/ember/interfaces';
+import type { Reference } from '@glimmer/ember/reference';
+import { isUpdatableRef, updateRef, valueForRef } from '@glimmer/ember/reference';
 import { assert } from '@ember/debug';
 import { ACTIONS } from '../helpers/action';
 

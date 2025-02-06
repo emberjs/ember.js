@@ -9,10 +9,10 @@ import { FrameworkObject } from '@ember/object/-internals';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { join } from '@ember/runloop';
-import type { Arguments, HelperManager } from '@glimmer/interfaces';
-import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/manager';
-import type { DirtyableTag } from '@glimmer/validator';
-import { consumeTag, createTag, dirtyTag } from '@glimmer/validator';
+import type { Arguments, HelperManager } from '@glimmer/ember/interfaces';
+import { getInternalHelperManager, helperCapabilities, setHelperManager } from '@glimmer/ember/manager';
+import type { DirtyableTag } from '@glimmer/ember/validator';
+import { consumeTag, createTag, dirtyTag } from '@glimmer/ember/validator';
 
 export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 

@@ -1,18 +1,18 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
+import type { CapturedArguments, DynamicScope } from '@glimmer/ember/interfaces';
 import { CurriedType } from '@glimmer/vm';
-import type { Reference } from '@glimmer/reference';
+import type { Reference } from '@glimmer/ember/reference';
 import {
   childRefFromParts,
   createComputeRef,
   createDebugAliasRef,
   valueForRef,
-} from '@glimmer/reference';
+} from '@glimmer/ember/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
-import { dict } from '@glimmer/util';
+import { dict } from '@glimmer/ember/util';
 import type { OutletDefinitionState } from '../component-managers/outlet';
 import { OutletComponentDefinition } from '../component-managers/outlet';
 import { internalHelper } from '../helpers/internal-helper';

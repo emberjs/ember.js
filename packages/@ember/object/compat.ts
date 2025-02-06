@@ -7,8 +7,8 @@ import {
 } from '@ember/-internals/metal';
 import type { ElementDescriptor } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import type { UpdatableTag } from '@glimmer/validator';
-import { consumeTag, tagFor, track, updateTag } from '@glimmer/validator';
+import type { UpdatableTag } from '@glimmer/ember/validator';
+import { consumeTag, tagFor, track, updateTag } from '@glimmer/ember/validator';
 
 let wrapGetterSetter = function (target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;

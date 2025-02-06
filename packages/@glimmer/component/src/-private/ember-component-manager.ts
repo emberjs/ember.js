@@ -4,7 +4,7 @@ import { schedule } from '@ember/runloop';
 import BaseComponentManager from './base-component-manager';
 
 import { type default as GlimmerComponent, setDestroyed, setDestroying } from './component';
-import type { Arguments } from '@glimmer/interfaces';
+import type { Arguments } from '@glimmer/ember/interfaces';
 
 const CAPABILITIES = capabilities('3.13', {
   destructor: true,

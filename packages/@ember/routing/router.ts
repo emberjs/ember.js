@@ -48,7 +48,7 @@ import type { Timer } from 'backburner.js';
 import EngineInstance from '@ember/engine/instance';
 import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
-import type { Template } from '@glimmer/interfaces';
+import type { Template } from '@glimmer/ember/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
 
 /**

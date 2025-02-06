@@ -14,12 +14,12 @@ import {
 } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { Environment, Template, TemplateFactory } from '@glimmer/interfaces';
-import { setInternalComponentManager } from '@glimmer/manager';
-import { isUpdatableRef, updateRef } from '@glimmer/reference';
+import type { Environment, Template, TemplateFactory } from '@glimmer/ember/interfaces';
+import { setInternalComponentManager } from '@glimmer/ember/manager';
+import { isUpdatableRef, updateRef } from '@glimmer/ember/reference';
 import { normalizeProperty } from '@glimmer/runtime';
-import type { DirtyableTag } from '@glimmer/validator';
-import { createTag, dirtyTag } from '@glimmer/validator';
+import type { DirtyableTag } from '@glimmer/ember/validator';
+import { createTag, dirtyTag } from '@glimmer/ember/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 import {
   ARGS,

@@ -7,7 +7,7 @@ import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
 import { runLoopSettled } from '../run';
 import { assert } from '@ember/debug';
-import { isElement } from '@glimmer/util';
+import { isElement } from '@glimmer/ember/util';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;

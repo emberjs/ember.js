@@ -1,5 +1,5 @@
 import { next, run, _getCurrentRunLoop, _hasScheduledTimers } from '@ember/runloop';
-import { destroy } from '@glimmer/destroyable';
+import { destroy } from '@glimmer/ember/destroyable';
 
 import { Promise } from 'rsvp';
 

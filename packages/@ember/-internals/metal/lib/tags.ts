@@ -1,10 +1,10 @@
 import { isObject, setupMandatorySetter, symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { isDestroyed } from '@glimmer/destroyable';
+import { isDestroyed } from '@glimmer/ember/destroyable';
 import { DEBUG } from '@glimmer/env';
-import { getCustomTagFor } from '@glimmer/manager';
-import type { Tag, TagMeta } from '@glimmer/validator';
-import { CONSTANT_TAG, dirtyTagFor, tagFor } from '@glimmer/validator';
+import { getCustomTagFor } from '@glimmer/ember/manager';
+import type { Tag, TagMeta } from '@glimmer/ember/validator';
+import { CONSTANT_TAG, dirtyTagFor, tagFor } from '@glimmer/ember/validator';
 
 /////////
 

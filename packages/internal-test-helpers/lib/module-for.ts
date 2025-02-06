@@ -6,7 +6,7 @@ import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';
-import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/destroyable';
+import { enableDestroyableTracking, assertDestroyablesDestroyed } from '@glimmer/ember/destroyable';
 import type AbstractTestCase from './test-cases/abstract';
 
 interface TestClass<T extends AbstractTestCase> {

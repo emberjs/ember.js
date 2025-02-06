@@ -1,6 +1,6 @@
-import { precompile } from '@glimmer/compiler';
+import { precompile } from '@glimmer/ember/compiler';
 import type { Nullable } from '@ember/-internals/utility-types';
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import type { AST, ASTPlugin } from '@glimmer/ember/syntax';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
 

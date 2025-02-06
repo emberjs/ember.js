@@ -5,9 +5,9 @@ import { tagForObject } from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
 import { isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createComputeRef, valueForRef } from '@glimmer/reference';
-import { consumeTag } from '@glimmer/validator';
+import type { CapturedArguments } from '@glimmer/ember/interfaces';
+import { createComputeRef, valueForRef } from '@glimmer/ember/reference';
+import { consumeTag } from '@glimmer/ember/validator';
 import { internalHelper } from './internal-helper';
 
 /**

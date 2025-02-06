@@ -1,15 +1,15 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/-internals/string';
-import type { ElementOperations } from '@glimmer/interfaces';
-import type { Reference } from '@glimmer/reference';
+import type { ElementOperations } from '@glimmer/ember/interfaces';
+import type { Reference } from '@glimmer/ember/reference';
 import {
   childRefFor,
   childRefFromParts,
   createComputeRef,
   createPrimitiveRef,
   valueForRef,
-} from '@glimmer/reference';
+} from '@glimmer/ember/reference';
 import type Component from '../component';
 
 function referenceForParts(rootRef: Reference<Component>, parts: string[]): Reference {

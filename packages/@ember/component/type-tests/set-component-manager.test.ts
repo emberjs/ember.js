@@ -1,6 +1,6 @@
 import type Owner from '@ember/owner';
 import { setComponentManager } from '@ember/component';
-import type { ComponentManager } from '@glimmer/interfaces';
+import type { ComponentManager } from '@glimmer/ember/interfaces';
 import { expectTypeOf } from 'expect-type';
 
 // Obviously this is invalid, but it works for our purposes.

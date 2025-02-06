@@ -6,7 +6,7 @@ import Evented from '@ember/object/evented';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
-import { consumeTag, tagFor } from '@glimmer/validator';
+import { consumeTag, tagFor } from '@glimmer/ember/validator';
 import type { ModelFor, Transition } from 'router_js';
 import type Route from '@ember/routing/route';
 import EmberRouter from '@ember/routing/router';

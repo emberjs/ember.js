@@ -2,7 +2,7 @@ import type {
   SerializedTemplateWithLazyBlock,
   Template,
   TemplateFactory,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock;
 export type OwnedTemplate = Template;

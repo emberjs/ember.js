@@ -3,7 +3,7 @@ import type {
   builders,
   PrecompileOptions,
   PrecompileOptionsWithLexicalScope,
-} from '@glimmer/syntax';
+} from '@glimmer/ember/syntax';
 
 export type Builders = typeof builders;
 

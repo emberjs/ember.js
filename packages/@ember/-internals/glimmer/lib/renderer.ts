@@ -6,7 +6,7 @@ import { guidFor } from '@ember/-internals/utils';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { _backburner, _getCurrentRunLoop } from '@ember/runloop';
-import { destroy } from '@glimmer/destroyable';
+import { destroy } from '@glimmer/ember/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
@@ -20,14 +20,14 @@ import type {
   RuntimeContext,
   Template,
   TemplateFactory,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 
 import { CurriedType } from '@glimmer/vm';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { programCompilationContext } from '@glimmer/opcode-compiler';
+import { programCompilationContext } from '@glimmer/ember/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
+import type { Reference } from '@glimmer/ember/reference';
+import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/ember/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import {
   clientBuilder,
@@ -38,8 +38,8 @@ import {
   renderMain,
   runtimeContext,
 } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
-import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
+import { unwrapTemplate } from '@glimmer/ember/util';
+import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/ember/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import type Component from './component';

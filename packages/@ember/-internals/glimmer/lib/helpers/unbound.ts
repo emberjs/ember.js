@@ -3,8 +3,8 @@
 */
 
 import { assert } from '@ember/debug';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { createUnboundRef, valueForRef } from '@glimmer/reference';
+import type { CapturedArguments } from '@glimmer/ember/interfaces';
+import { createUnboundRef, valueForRef } from '@glimmer/ember/reference';
 import { internalHelper } from './internal-helper';
 
 /**

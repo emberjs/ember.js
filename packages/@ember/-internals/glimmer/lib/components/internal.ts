@@ -12,11 +12,11 @@ import type {
   TemplateFactory,
   VMArguments,
   WithCreateInstance,
-} from '@glimmer/interfaces';
-import { setComponentTemplate, setInternalComponentManager } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, isConstRef, valueForRef } from '@glimmer/reference';
-import { untrack } from '@glimmer/validator';
+} from '@glimmer/ember/interfaces';
+import { setComponentTemplate, setInternalComponentManager } from '@glimmer/ember/manager';
+import type { Reference } from '@glimmer/ember/reference';
+import { createConstRef, isConstRef, valueForRef } from '@glimmer/ember/reference';
+import { untrack } from '@glimmer/ember/validator';
 
 function NOOP(): void {}
 

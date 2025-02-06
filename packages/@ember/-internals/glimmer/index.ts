@@ -443,7 +443,7 @@
   @public
  */
 
-export { templateFactory as template, templateCacheCounters } from '@glimmer/opcode-compiler';
+export { templateFactory as template, templateCacheCounters } from '@glimmer/ember/opcode-compiler';
 
 export { default as RootTemplate } from './lib/templates/root';
 export { default as Input } from './lib/components/input';

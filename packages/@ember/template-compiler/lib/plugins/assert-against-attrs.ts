@@ -1,5 +1,5 @@
 import { assert, deprecate } from '@ember/debug';
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import type { AST, ASTPlugin } from '@glimmer/ember/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import type { EmberASTPluginEnvironment } from '../types';
 import { trackLocals } from './utils';

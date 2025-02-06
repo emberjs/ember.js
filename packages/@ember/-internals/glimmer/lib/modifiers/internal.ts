@@ -2,13 +2,13 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { setOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { registerDestructor } from '@glimmer/destroyable';
+import { registerDestructor } from '@glimmer/ember/destroyable';
 import type {
   CapturedArguments,
   Destroyable,
   InternalModifierManager as ModifierManager,
-} from '@glimmer/interfaces';
-import { valueForRef } from '@glimmer/reference';
+} from '@glimmer/ember/interfaces';
+import { valueForRef } from '@glimmer/ember/reference';
 import type { SimpleElement } from '@simple-dom/interface';
 
 export default class InternalModifier {

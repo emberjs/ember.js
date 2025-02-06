@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import type { AST, ASTPlugin } from '@glimmer/syntax';
+import type { AST, ASTPlugin } from '@glimmer/ember/syntax';
 import type { EmberASTPluginEnvironment } from '../types';
 import { isPath } from './utils';
 

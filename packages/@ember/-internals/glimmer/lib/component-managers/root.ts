@@ -8,10 +8,10 @@ import type {
   InternalComponentCapabilities,
   Owner,
   VMArguments,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import { CONSTANT_TAG, consumeTag } from '@glimmer/validator';
+import { capabilityFlagsFrom } from '@glimmer/ember/manager';
+import { CONSTANT_TAG, consumeTag } from '@glimmer/ember/validator';
 import type Component from '../component';
 import type { DynamicScope } from '../renderer';
 import ComponentStateBucket from '../utils/curly-component-state-bucket';

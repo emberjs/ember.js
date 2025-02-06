@@ -1,5 +1,5 @@
 import { setComponentTemplate } from '@ember/component';
-import type { TemplateFactory } from '@glimmer/interfaces';
+import type { TemplateFactory } from '@glimmer/ember/interfaces';
 import { expectTypeOf } from 'expect-type';
 
 // Good enough for testing

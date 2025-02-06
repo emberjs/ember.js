@@ -1,7 +1,7 @@
 import type { HelperFactory, SimpleHelper } from '@ember/-internals/glimmer/lib/helper';
 import { getDebugName } from '@ember/-internals/utils';
 import { capabilities, setHelperManager } from '@ember/helper';
-import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
+import type { Arguments, Dict, HelperManager } from '@glimmer/ember/interfaces';
 import { expectTypeOf } from 'expect-type';
 
 class Wrapper<T = unknown, P extends unknown[] = unknown[], N extends Dict<unknown> = Dict<unknown>>

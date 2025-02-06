@@ -2,7 +2,7 @@ import { isHTMLSafe } from './string';
 import { get, tagForProperty } from '@ember/-internals/metal';
 import { isArray } from '@ember/array';
 import { isProxy } from '@ember/-internals/utils';
-import { consumeTag } from '@glimmer/validator';
+import { consumeTag } from '@glimmer/ember/validator';
 
 export default function toBool(predicate: unknown): boolean {
   if (isProxy(predicate)) {

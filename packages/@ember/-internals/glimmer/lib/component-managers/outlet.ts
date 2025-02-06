@@ -15,13 +15,13 @@ import type {
   VMArguments,
   WithCreateInstance,
   WithCustomDebugRenderTree,
-} from '@glimmer/interfaces';
+} from '@glimmer/ember/interfaces';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { capabilityFlagsFrom } from '@glimmer/manager';
-import type { Reference } from '@glimmer/reference';
-import { createConstRef, valueForRef } from '@glimmer/reference';
+import { capabilityFlagsFrom } from '@glimmer/ember/manager';
+import type { Reference } from '@glimmer/ember/reference';
+import { createConstRef, valueForRef } from '@glimmer/ember/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from '@glimmer/ember/util';
 
 import type { DynamicScope } from '../renderer';
 import type { OutletState } from '../utils/outlet';

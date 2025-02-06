@@ -1,7 +1,7 @@
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor } from '@ember/-internals/meta';
 import { assert, inspect } from '@ember/debug';
-import type { UpdatableTag } from '@glimmer/validator';
+import type { UpdatableTag } from '@glimmer/ember/validator';
 import {
   consumeTag,
   tagFor,
@@ -10,7 +10,7 @@ import {
   updateTag,
   validateTag,
   valueForTag,
-} from '@glimmer/validator';
+} from '@glimmer/ember/validator';
 import { CHAIN_PASS_THROUGH, finishLazyChains, getChainTagsForKey } from './chain-tags';
 import type { ExtendedMethodDecorator } from './decorator';
 import {

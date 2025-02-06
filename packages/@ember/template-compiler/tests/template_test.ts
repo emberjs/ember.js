@@ -1,6 +1,6 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { template } from '@ember/template-compiler';
-import { getComponentTemplate, getInternalComponentManager } from '@glimmer/manager';
+import { getComponentTemplate, getInternalComponentManager } from '@glimmer/ember/manager';
 
 moduleFor(
   'template',

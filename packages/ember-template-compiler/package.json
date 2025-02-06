@@ -26,12 +26,8 @@
     "@ember/template-compilation": "workspace:*",
     "@ember/template-compiler": "workspace:*",
     "@ember/utils": "workspace:*",
-    "@glimmer/compiler": "0.93.0",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/manager": "0.93.0",
-    "@glimmer/runtime": "0.93.0",
-    "@glimmer/syntax": "0.93.0",
-    "@glimmer/validator": "0.93.0",
+    "@glimmer/ember": "0.93.0",
     "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "internal-test-helpers": "workspace:*"

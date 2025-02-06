@@ -20,7 +20,7 @@ import EmberObject from '@ember/object';
 import EmberArray, { type NativeArray } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { assert } from '@ember/debug';
-import { setCustomTagFor } from '@glimmer/manager';
+import { setCustomTagFor } from '@glimmer/ember/manager';
 import {
   combine,
   consumeTag,
@@ -29,7 +29,7 @@ import {
   tagFor,
   type Tag,
   type Revision,
-} from '@glimmer/validator';
+} from '@glimmer/ember/validator';
 
 function isMutable<T>(obj: T[] | EmberArray<T>): obj is T[] | MutableArray<T> {
   return Array.isArray(obj) || typeof (obj as MutableArray<T>).replace === 'function';

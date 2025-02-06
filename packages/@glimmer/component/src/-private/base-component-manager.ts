@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import type { Arguments, ComponentManager, ComponentCapabilities } from '@glimmer/interfaces';
+import type { Arguments, ComponentManager, ComponentCapabilities } from '@glimmer/ember/interfaces';
 import { type default as BaseComponent, ARGS_SET } from './component';
 
 export interface Constructor<T> {

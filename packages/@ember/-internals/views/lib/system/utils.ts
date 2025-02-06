@@ -3,7 +3,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import type { Dict } from '@glimmer/interfaces';
+import type { Dict } from '@glimmer/ember/interfaces';
 
 import type { Nullable } from '@ember/-internals/utility-types';
 

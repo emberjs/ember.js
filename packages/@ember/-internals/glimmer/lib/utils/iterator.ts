@@ -3,8 +3,8 @@ import type EmberArray from '@ember/array';
 import { isEmberArray } from '@ember/array/-internals';
 import { isObject } from '@ember/-internals/utils';
 import type { Nullable } from '@ember/-internals/utility-types';
-import type { IteratorDelegate } from '@glimmer/reference';
-import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
+import type { IteratorDelegate } from '@glimmer/ember/reference';
+import { consumeTag, isTracking, tagFor } from '@glimmer/ember/validator';
 import { EachInWrapper } from '../helpers/each-in';
 import type { NativeArray } from '@ember/array';
 

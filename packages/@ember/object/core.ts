@@ -22,7 +22,7 @@ import { ActionHandler } from '@ember/-internals/runtime';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
+import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/ember/destroyable';
 import { OWNER } from '@glimmer/owner';
 
 type EmberClassConstructor<T> = new (owner?: Owner) => T;

@@ -1,7 +1,7 @@
-import { setModifierManager as glimmerSetModifierManager } from '@glimmer/manager';
+import { setModifierManager as glimmerSetModifierManager } from '@glimmer/ember/manager';
 
 import type Owner from '@ember/owner';
-import type { ModifierManager } from '@glimmer/interfaces';
+import type { ModifierManager } from '@glimmer/ember/interfaces';
 
 export { on, type OnModifier } from './on';
 
@@ -14,5 +14,5 @@ export const setModifierManager: <T extends object>(
 
 export type { ModifierManager };
 
-export type { ModifierCapabilities } from '@glimmer/interfaces';
+export type { ModifierCapabilities } from '@glimmer/ember/interfaces';
 export { modifierCapabilities as capabilities } from '@ember/-internals/glimmer';

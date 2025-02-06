@@ -3,7 +3,7 @@
   @public
  */
 
-export { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
+export { setComponentTemplate, getComponentTemplate } from '@glimmer/ember/manager';
 
 export { Component as default, Input, Textarea } from '@ember/-internals/glimmer';
 export {
@@ -101,7 +101,7 @@ export {
  * <MyComponent />
  * ```
  *
- * @param {(owner: Owner) => import('@glimmer/interfaces').ComponentManager} managerFactory
+ * @param {(owner: Owner) => import('@glimmer/ember/interfaces').ComponentManager} managerFactory
  * @param {object} object that will be managed by the return value of `managerFactory`
  *
  */
