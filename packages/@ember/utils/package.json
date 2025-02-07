@@ -13,12 +13,12 @@
     "@ember/enumerable": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/runloop": "workspace:*",
-    "@glimmer/destroyable": "0.94.2",
+    "@glimmer/destroyable": "0.94.3",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/manager": "0.94.2",
-    "@glimmer/owner": "0.93.1",
-    "@glimmer/util": "0.94.2",
-    "@glimmer/validator": "0.94.2",
+    "@glimmer/manager": "0.94.3",
+    "@glimmer/owner": "0.93.2",
+    "@glimmer/util": "0.94.3",
+    "@glimmer/validator": "0.94.3",
     "expect-type": "^0.15.0",
     "internal-test-helpers": "workspace:*"
   }
