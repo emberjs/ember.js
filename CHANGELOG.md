@@ -2,6 +2,37 @@
 
 ## Release (2025-02-07)
 
+@glimmer/compiler 0.94.3 (patch)
+@glimmer/destroyable 0.94.3 (patch)
+@glimmer/encoder 0.93.3 (patch)
+@glimmer/global-context 0.93.2 (patch)
+@glimmer/manager 0.94.3 (patch)
+@glimmer/node 0.94.3 (patch)
+@glimmer/opcode-compiler 0.94.3 (patch)
+@glimmer/owner 0.93.2 (patch)
+@glimmer/program 0.94.3 (patch)
+@glimmer/reference 0.94.3 (patch)
+@glimmer/runtime 0.94.3 (patch)
+@glimmer/syntax 0.94.3 (patch)
+@glimmer/util 0.94.3 (patch)
+@glimmer/validator 0.94.3 (patch)
+@glimmer/vm 0.94.3 (patch)
+@glimmer/vm-babel-plugins 0.93.2 (patch)
+@glimmer/wire-format 0.94.3 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/benchmark-env`, `@glimmer/compiler`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1698](https://github.com/glimmerjs/glimmer-vm/pull/1698) Fix exports ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/repo-metadata`
+  * [#1696](https://github.com/glimmerjs/glimmer-vm/pull/1696) Update package meta post-publish and tell the auto-publish infra to do this for us ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## Release (2025-02-07)
+
 @glimmer/compiler 0.94.2 (patch)
 @glimmer/destroyable 0.94.2 (patch)
 @glimmer/encoder 0.93.2 (patch)
