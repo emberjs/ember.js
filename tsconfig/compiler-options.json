@@ -5,6 +5,7 @@
     "target": "es2021",
     "module": "es2020",
     "sourceMap": true,
+    "skipLibCheck": true,
     "baseUrl": "../packages",
     "rootDir": "../packages",
 
