@@ -28,7 +28,8 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { EMPTY_ARRAY } from '@glimmer/util';
+import { unwrapTemplate } from './unwrap-template';
 import {
   beginTrackFrame,
   beginUntrackFrame,
