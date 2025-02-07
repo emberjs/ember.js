@@ -538,7 +538,8 @@ export function isFactory(obj: unknown): obj is InternalFactory<object> {
 // we document it there for the sake of public API docs and for TS consumption,
 // while having the richer `InternalOwner` representation for Ember itself.
 export function getOwner(object: object): InternalOwner | undefined {
-  return glimmerGetOwner(object);
+  // SAFETY: this is a convention. From the glimmer perspective, the owner really can be any object.
+  return glimmerGetOwner(object) as InternalOwner;
 }
 
 /**
