@@ -18,7 +18,7 @@ import { capabilityFlagsFrom } from '@glimmer/manager';
 import type { Reference } from '@glimmer/reference';
 import { createDebugAliasRef, valueForRef } from '@glimmer/reference';
 import { curry, type CurriedValue } from '@glimmer/runtime';
-import { unwrapTemplate } from '@glimmer/util';
+import { unwrapTemplate } from './unwrap-template';
 import { CurriedType } from '@glimmer/vm';
 
 interface RouteTemplateInstanceState {
