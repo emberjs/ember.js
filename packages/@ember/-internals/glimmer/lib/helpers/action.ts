@@ -292,7 +292,7 @@ export default internalHelper((args: CapturedArguments): Reference<Function> => 
   let [context, action, ...restArgs] = positional;
   assert('hash position arguments', context && action);
 
-  let debugKey: string = action.debugLabel!;
+  let debugKey = action.debugLabel!;
 
   let target = 'target' in named ? named['target'] : context;
   let processArgs = makeArgsProcessor(('value' in named && named['value']) || false, restArgs);
@@ -362,7 +362,7 @@ function makeDynamicClosureAction(
   targetRef: Reference<unknown>,
   actionRef: Reference<unknown>,
   processArgs: (args: unknown[]) => unknown[],
-  debugKey: string
+  debugKey: false | string
 ) {
   const action = valueForRef(actionRef);
 
@@ -391,7 +391,7 @@ function makeClosureAction(
   target: unknown,
   action: unknown | null | undefined | string | Function,
   processArgs: (args: unknown[]) => unknown[],
-  debugKey: string
+  debugKey: string | false
 ) {
   let self: object;
   let fn: Function;
