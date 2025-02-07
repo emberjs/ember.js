@@ -79,13 +79,15 @@ export default () =>
             update(actual, 'files', ['dist']);
 
             update(publishConfig, 'exports', {
-              development: {
-                types: './dist/dev/index.d.ts',
-                default: './dist/dev/index.js',
-              },
-              default: {
-                types: './dist/prod/index.d.ts',
-                default: './dist/prod/index.js',
+              '.': {
+                development: {
+                  types: './dist/dev/index.d.ts',
+                  default: './dist/dev/index.js',
+                },
+                default: {
+                  types: './dist/prod/index.d.ts',
+                  default: './dist/prod/index.js',
+                },
               },
             });
           } else {
