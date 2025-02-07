@@ -2,12 +2,12 @@
   "solution": {
     "@glimmer/compiler": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -26,24 +26,28 @@
     },
     "@glimmer/destroyable": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/global-context"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/destroyable/package.json"
     },
     "@glimmer/encoder": {
       "impact": "patch",
-      "oldVersion": "0.93.1",
-      "newVersion": "0.93.2",
+      "oldVersion": "0.93.2",
+      "newVersion": "0.93.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -53,24 +57,24 @@
       "pkgJSONPath": "./packages/@glimmer/encoder/package.json"
     },
     "@glimmer/global-context": {
-      "oldVersion": "0.93.1"
-    },
-    "@glimmer/interfaces": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.93.1",
+      "newVersion": "0.93.2",
       "constraints": [
         {
           "impact": "patch",
           "reason": "Appears in changelog section :bug: Bug Fix"
         }
       ],
-      "pkgJSONPath": "./packages/@glimmer/interfaces/package.json"
+      "pkgJSONPath": "./packages/@glimmer/global-context/package.json"
+    },
+    "@glimmer/interfaces": {
+      "oldVersion": "0.94.2"
     },
     "@glimmer/manager": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
@@ -78,7 +82,7 @@
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Has dependency `workspace:*` on @glimmer/global-context"
         },
         {
           "impact": "patch",
@@ -86,11 +90,15 @@
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/util"
+          "reason": "Has dependency `workspace:*` on @glimmer/validator"
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/validator"
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/util"
         },
         {
           "impact": "patch",
@@ -101,8 +109,8 @@
     },
     "@glimmer/node": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
@@ -110,7 +118,7 @@
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -121,8 +129,8 @@
     },
     "@glimmer/opcode-compiler": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
@@ -134,7 +142,7 @@
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -152,12 +160,21 @@
       "pkgJSONPath": "./packages/@glimmer/opcode-compiler/package.json"
     },
     "@glimmer/owner": {
-      "oldVersion": "0.93.1"
+      "impact": "patch",
+      "oldVersion": "0.93.1",
+      "newVersion": "0.93.2",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/owner/package.json"
     },
     "@glimmer/program": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
@@ -169,7 +186,7 @@
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -188,28 +205,32 @@
     },
     "@glimmer/reference": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
-        },
-        {
-          "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/util"
+          "reason": "Has dependency `workspace:*` on @glimmer/global-context"
         },
         {
           "impact": "patch",
           "reason": "Has dependency `workspace:*` on @glimmer/validator"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/util"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/reference/package.json"
     },
     "@glimmer/runtime": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
@@ -229,15 +250,23 @@
         },
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
-        },
-        {
-          "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/util"
+          "reason": "Has dependency `workspace:*` on @glimmer/global-context"
         },
         {
           "impact": "patch",
           "reason": "Has dependency `workspace:*` on @glimmer/validator"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/owner"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/util"
         },
         {
           "impact": "patch",
@@ -248,12 +277,12 @@
     },
     "@glimmer/syntax": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         },
         {
           "impact": "patch",
@@ -268,55 +297,68 @@
     },
     "@glimmer/util": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/util/package.json"
     },
     "@glimmer/validator": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Has dependency `workspace:*` on @glimmer/global-context"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/validator/package.json"
     },
     "@glimmer/vm": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/vm/package.json"
     },
     "@glimmer/vm-babel-plugins": {
-      "oldVersion": "0.93.1"
-    },
-    "@glimmer/wire-format": {
       "impact": "patch",
-      "oldVersion": "0.94.1",
-      "newVersion": "0.94.2",
+      "oldVersion": "0.93.1",
+      "newVersion": "0.93.2",
       "constraints": [
         {
           "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/interfaces"
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/vm-babel-plugins/package.json"
+    },
+    "@glimmer/wire-format": {
+      "impact": "patch",
+      "oldVersion": "0.94.2",
+      "newVersion": "0.94.3",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/wire-format/package.json"
     }
   },
-  "description": "## Release (2025-02-07)\n\n@glimmer/compiler 0.94.2 (patch)\n@glimmer/destroyable 0.94.2 (patch)\n@glimmer/encoder 0.93.2 (patch)\n@glimmer/interfaces 0.94.2 (patch)\n@glimmer/manager 0.94.2 (patch)\n@glimmer/node 0.94.2 (patch)\n@glimmer/opcode-compiler 0.94.2 (patch)\n@glimmer/program 0.94.2 (patch)\n@glimmer/reference 0.94.2 (patch)\n@glimmer/runtime 0.94.2 (patch)\n@glimmer/syntax 0.94.2 (patch)\n@glimmer/util 0.94.2 (patch)\n@glimmer/validator 0.94.2 (patch)\n@glimmer/vm 0.94.2 (patch)\n@glimmer/wire-format 0.94.2 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer/interfaces`\n  * [#1694](https://github.com/glimmerjs/glimmer-vm/pull/1694) Fix @glimmer/interfaces, we were not publishing anything ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+  "description": "## Release (2025-02-07)\n\n@glimmer/compiler 0.94.3 (patch)\n@glimmer/destroyable 0.94.3 (patch)\n@glimmer/encoder 0.93.3 (patch)\n@glimmer/global-context 0.93.2 (patch)\n@glimmer/manager 0.94.3 (patch)\n@glimmer/node 0.94.3 (patch)\n@glimmer/opcode-compiler 0.94.3 (patch)\n@glimmer/owner 0.93.2 (patch)\n@glimmer/program 0.94.3 (patch)\n@glimmer/reference 0.94.3 (patch)\n@glimmer/runtime 0.94.3 (patch)\n@glimmer/syntax 0.94.3 (patch)\n@glimmer/util 0.94.3 (patch)\n@glimmer/validator 0.94.3 (patch)\n@glimmer/vm 0.94.3 (patch)\n@glimmer/vm-babel-plugins 0.93.2 (patch)\n@glimmer/wire-format 0.94.3 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/benchmark-env`, `@glimmer/compiler`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm-babel-plugins`, `@glimmer/vm`, `@glimmer/wire-format`\n  * [#1698](https://github.com/glimmerjs/glimmer-vm/pull/1698) Fix exports ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* `@glimmer-workspace/repo-metadata`\n  * [#1696](https://github.com/glimmerjs/glimmer-vm/pull/1696) Update package meta post-publish and tell the auto-publish infra to do this for us ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
 }
