@@ -5,8 +5,7 @@ import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import type { Nullable } from '@ember/-internals/utility-types';
-import type { CapturedArguments } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/vm';
+import type { CapturedArguments, CurriedComponent } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
@@ -95,7 +94,7 @@ export const mountHelper = internalHelper(
         );
 
         lastName = name;
-        lastDef = curry(CurriedType.Component, new MountDefinition(name), owner, captured, true);
+        lastDef = curry(0 as CurriedComponent, new MountDefinition(name), owner, captured, true);
 
         return lastDef;
       } else {

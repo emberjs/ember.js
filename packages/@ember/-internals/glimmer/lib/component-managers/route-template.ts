@@ -4,6 +4,7 @@ import type {
   CapturedArguments,
   CompilableProgram,
   ComponentDefinition,
+  CurriedComponent,
   CustomRenderNode,
   Destroyable,
   InternalComponentCapabilities,
@@ -19,7 +20,6 @@ import type { Reference } from '@glimmer/reference';
 import { createDebugAliasRef, valueForRef } from '@glimmer/reference';
 import { curry, type CurriedValue } from '@glimmer/runtime';
 import { unwrapTemplate } from './unwrap-template';
-import { CurriedType } from '@glimmer/vm';
 
 interface RouteTemplateInstanceState {
   self: Reference;
@@ -158,5 +158,5 @@ export function makeRouteTemplate(
   template: Template
 ): CurriedValue {
   let routeTemplate = new RouteTemplate(name, template);
-  return curry(CurriedType.Component, routeTemplate, owner, null, true);
+  return curry(0 as CurriedComponent, routeTemplate, owner, null, true);
 }
