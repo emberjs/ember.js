@@ -13,7 +13,8 @@
     "access": "public"
   },
   "files": [
-    "index.d.ts"
+    "index.d.ts",
+    "lib"
   ],
   "scripts": {
     "test:publint": "publint"
