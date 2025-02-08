@@ -86,6 +86,7 @@ export function typescript(pkg, env) {
     throw new Error('env is required');
   }
 
+
   return [
     rollupSWC({
       swc: {
@@ -215,6 +216,7 @@ export class Package {
       return new Package({
         name: json.name,
         exports: resolve(root, json.exports),
+        publishConfig: json.publishConfig,
         root,
         devDependencies: json['devDependencies'] ?? {},
       });
@@ -226,6 +228,7 @@ export class Package {
             name: json.name,
             exports: path,
             root,
+            publishConfig: json.publishConfig,
             devDependencies: json['devDependencies'] ?? {},
           });
         }
@@ -300,6 +303,13 @@ export class Package {
   }
 
   /**
+   * @returns {object}
+   */
+  get publishConfig() {
+    return this.#package.publishConfig;
+  }
+
+  /**
    * @returns {import("rollup").RollupOptions[] | import("rollup").RollupOptions}
    */
   config() {
@@ -307,6 +317,10 @@ export class Package {
 
     builds.push(...this.rollupESM({ env: 'dev' }));
     builds.push(...this.rollupESM({ env: 'prod' }));
+
+    if (JSON.stringify(this.publishConfig).includes('.cjs')) {
+      builds.push(...this.rollupCJS({ env: 'dev' }));
+    }
 
     return builds;
   }
@@ -325,6 +339,45 @@ export class Package {
       },
       build: {},
     });
+  }
+
+  /**
+   * NOTE: CJS is intended for node environments where code duplication
+   * doesn't matter so much.
+   * In particular, only meant for:
+   * - @glimmer/compiler
+   *
+   * @param {RollupConfigurationOptions} options
+   * @returns {RollupOptions[]}
+   */
+  rollupCJS({ env }) {
+    return this.#shared('cjs', env).map(options => 
+      /** @satisfies {RollupOptions} */ ({
+        ...options,
+        // external: this.#external,
+        plugins: [
+          // inline(),
+          nodeResolve({ extensions: ['.js', '.ts'] }),
+          ...this.replacements(env),
+          rollupSWC({
+            swc: {
+              // module: {
+              //   type: 'commonjs'
+              // },
+              jsc: {
+                parser: {
+                  syntax: 'typescript',
+                  // decorators: true,
+                },
+                target: 'es2022',
+                transform: {
+                  // legacyDecorator: true,
+                },
+              },
+            },
+          }),
+      ]
+    }));
   }
 
   /**
