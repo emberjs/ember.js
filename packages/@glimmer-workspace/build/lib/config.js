@@ -86,7 +86,6 @@ export function typescript(pkg, env) {
     throw new Error('env is required');
   }
 
-
   return [
     rollupSWC({
       swc: {
@@ -351,24 +350,26 @@ export class Package {
    * @returns {RollupOptions[]}
    */
   rollupCJS({ env }) {
-    return this.#shared('cjs', env).map(options =>
-      /** @satisfies {RollupOptions} */ ({
-        ...options,
-        plugins: [
-          nodeResolve({ extensions: ['.js', '.ts'] }),
-          ...this.replacements(env),
-          rollupSWC({
-            swc: {
-              jsc: {
-                parser: {
-                  syntax: 'typescript',
+    return this.#shared('cjs', env).map(
+      (options) =>
+        /** @satisfies {RollupOptions} */ ({
+          ...options,
+          plugins: [
+            nodeResolve({ extensions: ['.js', '.ts'] }),
+            ...this.replacements(env),
+            rollupSWC({
+              swc: {
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                  },
+                  target: 'es2022',
                 },
-                target: 'es2022',
               },
-            },
-          }),
-      ]
-    }));
+            }),
+          ],
+        })
+    );
   }
 
   /**
