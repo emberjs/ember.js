@@ -1,5 +1,16 @@
 # Changelog
 
+## Release (2025-02-08)
+
+@glimmer/compiler 0.94.4 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/build-support`, `@glimmer/compiler`, `@glimmer-workspace/repo-metadata`
+  * [#1699](https://github.com/glimmerjs/glimmer-vm/pull/1699) Re-enable CJS for @glimmer/compiler (used by babel plugin) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-02-07)
 
 @glimmer/compiler 0.94.3 (patch)
