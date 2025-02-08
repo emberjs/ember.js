@@ -66,6 +66,11 @@ export interface RepoMetaForPackage {
    * Whether this package has buildable entry points and therefore needs to be built.
    */
   built?: true;
+
+  /**
+   * Whether this package has to support CJS (usually for legacy reasons)
+   */
+  supportcjs?: true;
 }
 
 type RepoMetaEnv = 'node' | 'console' | 'qunit' | 'decorator:classic';
@@ -79,6 +84,7 @@ export interface PackageInfo {
   entryPoints?: PackageEntryPoints;
   'repo-meta'?: {
     strictness?: 'strict' | 'loose';
+    supportcjs?: boolean;
     env?: RepoMetaEnv[];
     lint?: string[];
     built: boolean;

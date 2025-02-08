@@ -171,7 +171,8 @@
       "type": "module",
       "private": false,
       "repo-meta": {
-        "built": true
+        "built": true,
+        "supportcjs": true
       },
       "entryPoints": {
         ".": [[["default"], "./index.ts"]]
