@@ -317,7 +317,7 @@ export class Package {
     builds.push(...this.rollupESM({ env: 'dev' }));
     builds.push(...this.rollupESM({ env: 'prod' }));
 
-    if (JSON.stringify(this.publishConfig).includes('.cjs')) {
+    if (JSON.stringify(this.publishConfig).includes('require')) {
       builds.push(...this.rollupCJS({ env: 'dev' }));
     }
 
