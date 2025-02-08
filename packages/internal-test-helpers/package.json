@@ -24,7 +24,7 @@
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
     "@ember/utils": "workspace:*",
-    "@glimmer/compiler": "0.94.3",
+    "@glimmer/compiler": "0.94.4",
     "@glimmer/destroyable": "0.94.3",
     "@glimmer/env": "^0.1.7",
     "@glimmer/manager": "0.94.3",

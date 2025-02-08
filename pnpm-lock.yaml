@@ -22,8 +22,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       '@glimmer/compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/destroyable':
         specifier: 0.94.3
         version: 0.94.3
@@ -371,8 +371,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../@glimmer/component
@@ -1118,8 +1118,8 @@ importers:
         specifier: workspace:*
         version: link:../canary-features
       '@glimmer/compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1145,8 +1145,8 @@ importers:
         specifier: workspace:*
         version: link:../debug
       '@glimmer/compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1494,8 +1494,8 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1650,8 +1650,8 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/destroyable':
         specifier: 0.94.3
         version: 0.94.3
@@ -4978,8 +4978,8 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@glimmer/compiler@0.94.3:
-    resolution: {integrity: sha512-9edRjsxYgtWAts+PoFrIEI8Ny+Jr9Kfmf7ylEcLHW7nrXL8wZce2EfX+XmqvRysamZ6eKULlSM+xolHb8WcMOQ==}
+  /@glimmer/compiler@0.94.4:
+    resolution: {integrity: sha512-aT8C4z6USiIw0D4ww8I+WzpPfIF7WrADp4ju4l7qQWAbkiLM8D9H//WDSGN60FadaRNHXJOJIdBxVvhfWu8nLQ==}
     engines: {node: '>= 18.0.0'}
     dependencies:
       '@glimmer/interfaces': 0.94.2
