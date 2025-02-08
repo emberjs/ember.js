@@ -18,7 +18,6 @@
           "default": "./dist/dev/index.js"
         },
         "require": {
-          "types": "./dist/dev/index.d.cts",
           "default": "./dist/dev/index.cjs"
         },
         "default": {
