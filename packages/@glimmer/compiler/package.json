@@ -17,9 +17,6 @@
           "types": "./dist/dev/index.d.ts",
           "default": "./dist/dev/index.js"
         },
-        "require": {
-          "default": "./dist/dev/index.cjs"
-        },
         "default": {
           "types": "./dist/prod/index.d.ts",
           "default": "./dist/prod/index.js"
