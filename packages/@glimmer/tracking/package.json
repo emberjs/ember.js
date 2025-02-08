@@ -1,12 +1,47 @@
 {
   "name": "@glimmer/tracking",
-  "private": true,
+  "version": "2.0.0",
+  "description": "Glimmer tracking library",
+  "license": "MIT",
   "type": "module",
+  "keywords": [
+    "ember-addon"
+  ],
   "exports": {
-    ".": "./index.ts",
-    "./primitives/cache": "./primitives/cache.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./primitives/cache": {
+      "types": "./dist/primitives/cache.d.ts",
+      "default": "./dist/primitives/cache.js"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
   },
   "dependencies": {
-    "@ember/-internals": "workspace:*"
+    "@embroider/addon-shim": "^1.8.9",
+    "@glimmer/env": "^0.1.7"
+  },
+  "devDependencies": {
+    "typescript": "5.1"
+  },
+  "ember": {
+    "edition": "octane"
+  },
+  "ember-addon": {
+    "version": 2,
+    "type": "addon",
+    "main": "addon-main.cjs"
   }
 }
+
