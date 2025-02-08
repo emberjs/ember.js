@@ -90,6 +90,7 @@ const packagesMetadata = packages.map((pkg) => {
     if (repoMeta.lint) meta.lint = Array.isArray(repoMeta.lint) ? repoMeta.lint : [repoMeta.lint];
     if (repoMeta.env) meta.env = repoMeta.env;
     if (repoMeta.built) meta.built = repoMeta.built;
+    if (repoMeta.supportcjs) meta.supportcjs = repoMeta.supportcjs;
   }
 
   if (Object.keys(entryPoints).length > 0) {

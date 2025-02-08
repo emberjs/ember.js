@@ -10,7 +10,7 @@
   "type": "module",
   "exports": "./index.ts",
   "repo-meta": {
-    "support-cjs": true
+    "supportcjs": true
   },
   "publishConfig": {
     "access": "public",
