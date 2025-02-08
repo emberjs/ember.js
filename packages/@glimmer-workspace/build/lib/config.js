@@ -351,28 +351,19 @@ export class Package {
    * @returns {RollupOptions[]}
    */
   rollupCJS({ env }) {
-    return this.#shared('cjs', env).map(options => 
+    return this.#shared('cjs', env).map(options =>
       /** @satisfies {RollupOptions} */ ({
         ...options,
-        // external: this.#external,
         plugins: [
-          // inline(),
           nodeResolve({ extensions: ['.js', '.ts'] }),
           ...this.replacements(env),
           rollupSWC({
             swc: {
-              // module: {
-              //   type: 'commonjs'
-              // },
               jsc: {
                 parser: {
                   syntax: 'typescript',
-                  // decorators: true,
                 },
                 target: 'es2022',
-                transform: {
-                  // legacyDecorator: true,
-                },
               },
             },
           }),
