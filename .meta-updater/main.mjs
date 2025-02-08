@@ -84,6 +84,13 @@ export default () =>
                   types: './dist/dev/index.d.ts',
                   default: './dist/dev/index.js',
                 },
+                ...(pkg['repo-meta']?.['support-cjs']
+                  ? {
+                      require: {
+                        default: './dist/dev/index.cjs',
+                      },
+                    }
+                  : {}),
                 default: {
                   types: './dist/prod/index.d.ts',
                   default: './dist/prod/index.js',
