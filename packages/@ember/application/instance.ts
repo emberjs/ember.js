@@ -264,11 +264,6 @@ class ApplicationInstance extends EngineInstance {
     let handleTransitionReject = (error: any): unknown => {
       if (error.error && error.error instanceof Error) {
         throw error.error;
-      } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
-        return router._routerMicrolib.activeTransition.then(
-          handleTransitionResolve,
-          handleTransitionReject
-        );
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -285,6 +280,7 @@ class ApplicationInstance extends EngineInstance {
     // getURL returns the set url with the rootURL stripped off
     return router
       .handleURL(location.getURL())
+      .followRedirects()
       .then(handleTransitionResolve, handleTransitionReject);
   }
 
