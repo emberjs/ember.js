@@ -410,6 +410,7 @@ export class Package {
               output: {
                 dir: `dist/${env}`,
               },
+              external: this.#external,
               plugins: [
                 dts({
                   respectExternal: true,

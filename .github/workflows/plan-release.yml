@@ -60,10 +60,6 @@ jobs:
       - name: "Generate Explanation and Prep Changelogs"
         id: explanation
         run: |
-          # Don't forget to-re-add these when we update release-plan
-          pnpm repo:update:conventions
-          pnpm repo:update:metadata
-
           # Original Content Here
           set +e
           pnpm release-plan prepare 2> >(tee -a release-plan-stderr.txt >&2)
@@ -79,6 +75,9 @@ jobs:
             rm release-plan-stderr.txt
           fi
 
+          # Don't forget to-re-add these when we update release-plan
+          pnpm repo:update:conventions
+          pnpm repo:update:metadata
 
         env:
           GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
