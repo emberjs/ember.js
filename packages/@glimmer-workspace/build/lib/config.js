@@ -394,39 +394,43 @@ export class Package {
             ],
           })
       ),
-      /**
-       * Why is this a different rollup pipeline?
-       * - other plugins interfere with the output (terser)
-       *
-       * Why dts instead of tsc directrly or rollupTS
-       * - rollup-plugin-typescript outputs compiled code, we have SWC for that (faster)
-       * - tsc does not rollup types
-       */
-      {
-        input: this.#package.exports,
-        output: {
-          dir: `dist/${env}`,
-        },
-        plugins: [
-          dts({
-            respectExternal: true,
-            compilerOptions: {
-              skipLibCheck: true,
-              declaration: true,
-              declarationDir: `dist/${env}`,
-              emitDeclarationOnly: true,
-              moduleResolution: ts.ModuleResolutionKind.Bundler,
-              module: ts.ModuleKind.ESNext,
-              target: ts.ScriptTarget.ESNext,
-              strict: true,
-              types: [
-                '@glimmer-workspace/env',
-                ...(this.#package.devDependencies['@types/node'] ? ['node'] : []),
+      ...([`@glimmer/vm-babel-plugins`].includes(this.#package.name)
+        ? []
+        : [
+            /**
+             * Why is this a different rollup pipeline?
+             * - other plugins interfere with the output (terser)
+             *
+             * Why dts instead of tsc directrly or rollupTS
+             * - rollup-plugin-typescript outputs compiled code, we have SWC for that (faster)
+             * - tsc does not rollup types
+             */
+            {
+              input: this.#package.exports,
+              output: {
+                dir: `dist/${env}`,
+              },
+              plugins: [
+                dts({
+                  respectExternal: true,
+                  compilerOptions: {
+                    skipLibCheck: true,
+                    declaration: true,
+                    declarationDir: `dist/${env}`,
+                    emitDeclarationOnly: true,
+                    moduleResolution: ts.ModuleResolutionKind.Bundler,
+                    module: ts.ModuleKind.ESNext,
+                    target: ts.ScriptTarget.ESNext,
+                    strict: true,
+                    types: [
+                      '@glimmer-workspace/env',
+                      ...(this.#package.devDependencies['@types/node'] ? ['node'] : []),
+                    ],
+                  },
+                }),
               ],
             },
-          }),
-        ],
-      },
+          ]),
     ];
   }
 
