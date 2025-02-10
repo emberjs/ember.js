@@ -6,10 +6,9 @@ import { fileURLToPath } from 'node:url';
 import replace from '@rollup/plugin-replace';
 import rollupSWC from '@rollup/plugin-swc';
 import terser from '@rollup/plugin-terser';
-import ms from 'ms';
+import { dts } from 'rollup-plugin-dts';
 import * as insert from 'rollup-plugin-insert';
 import ts from 'typescript';
-import { $, chalk } from 'zx';
 
 import inline from './inline.js';
 
@@ -79,61 +78,23 @@ export function tsconfig(updates) {
 /**
  * @param {PackageInfo} pkg
  * @param {'dev' | 'prod'} env
- * @returns {RollupPlugin[]}
+ * @returns {RollupPlugin}
  */
 export function typescript(pkg, env) {
   if (!env) {
     throw new Error('env is required');
   }
 
-  return [
-    rollupSWC({
-      swc: {
-        jsc: {
-          parser: {
-            syntax: 'typescript',
-            // decorators: true,
-          },
-          target: 'es2022',
-          transform: {
-            // legacyDecorator: true,
-          },
+  return rollupSWC({
+    swc: {
+      jsc: {
+        parser: {
+          syntax: 'typescript',
         },
-      },
-    }),
-    {
-      name: 'Build Declarations',
-      closeBundle: async function () {
-        const types = ['@glimmer-workspace/env'];
-        if (pkg.devDependencies['@types/node']) {
-          types.push('node');
-        }
-
-        const start = performance.now();
-        await $({
-          verbose: true,
-          stdio: 'inherit',
-          cwd: pkg.root,
-        })`pnpm tsc --skipLibCheck --declaration --declarationDir dist/${env} --emitDeclarationOnly --module esnext --moduleResolution bundler ${
-          pkg.exports
-        } --types ${types.join(',')} --target esnext --strict`;
-        const duration = performance.now() - start;
-        console.error(
-          `${chalk.green('created')} ${chalk.green.bold(`dist/${env}/index.d.ts`)} ${chalk.green(
-            'in'
-          )} ${chalk.green.bold(ms(duration))}`
-        );
+        target: 'es2022',
       },
     },
-
-    // rollupTS({
-    //   compilerOptions: ts,
-    //   noForceEmit: true,
-    //   tsconfig: false,
-    //   // respectExternal: true,
-    //   // tsconfig: resolve(pkg.root, '../tsconfig.json'),
-    // }),
-  ];
+  });
 }
 
 /** @type {['is' | 'startsWith', string[], 'inline' | 'external'][]} */
@@ -380,58 +341,97 @@ export class Package {
    * @returns {RollupOptions[]}
    */
   rollupESM({ env }) {
-    return this.#shared('esm', env).map(
-      (options) =>
-        /** @satisfies {RollupOptions} */ ({
-          ...options,
-          external: this.#external,
-          plugins: [
-            inline(),
-            nodePolyfills(),
-            nodeResolve({ extensions: ['.js', '.ts'] }),
-            ...this.replacements(env),
-            ...(env === 'prod'
-              ? [
-                  terser({
-                    module: true,
-                    // to debug the output, uncomment this so you can read the
-                    // identifiers, unchanged
-                    // mangle: false,
-                    compress: {
-                      passes: 3,
-                      keep_fargs: false,
-                      keep_fnames: false,
-                      // unsafe_arrows: true,
-                      // unsafe_comps: true,
-                      // unsafe_math: true,
-                      // unsafe_symbols: true,
-                      // unsafe_function: true,
-                      // unsafe_undefined: true,
-                      // keep_classnames: false,
-                      // toplevel: true,
-                    },
-                  }),
-                ]
-              : [
-                  terser({
-                    module: true,
-                    mangle: false,
-                    compress: {
-                      passes: 3,
-                      keep_fargs: false,
-                      keep_fnames: false,
-                    },
-                    format: {
-                      comments: 'all',
-                      beautify: true,
-                    },
-                  }),
-                ]),
-            postcss(),
-            ...typescript(this.#package, env),
-          ],
-        })
-    );
+    return [
+      ...this.#shared('esm', env).map(
+        (options) =>
+          /** @satisfies {RollupOptions} */ ({
+            ...options,
+            external: this.#external,
+            plugins: [
+              inline(),
+              nodePolyfills(),
+              nodeResolve({ extensions: ['.js', '.ts'] }),
+              ...this.replacements(env),
+              ...(env === 'prod'
+                ? [
+                    terser({
+                      module: true,
+                      // to debug the output, uncomment this so you can read the
+                      // identifiers, unchanged
+                      // mangle: false,
+                      compress: {
+                        passes: 3,
+                        keep_fargs: false,
+                        keep_fnames: false,
+                        // unsafe_arrows: true,
+                        // unsafe_comps: true,
+                        // unsafe_math: true,
+                        // unsafe_symbols: true,
+                        // unsafe_function: true,
+                        // unsafe_undefined: true,
+                        // keep_classnames: false,
+                        // toplevel: true,
+                      },
+                    }),
+                  ]
+                : [
+                    terser({
+                      module: true,
+                      mangle: false,
+                      compress: {
+                        passes: 3,
+                        keep_fargs: false,
+                        keep_fnames: false,
+                      },
+                      format: {
+                        comments: 'all',
+                        beautify: true,
+                      },
+                    }),
+                  ]),
+              postcss(),
+              typescript(this.#package, env),
+            ],
+          })
+      ),
+      ...([`@glimmer/vm-babel-plugins`].includes(this.#package.name)
+        ? []
+        : [
+            /**
+             * Why is this a different rollup pipeline?
+             * - other plugins interfere with the output (terser)
+             *
+             * Why dts instead of tsc directrly or rollupTS
+             * - rollup-plugin-typescript outputs compiled code, we have SWC for that (faster)
+             * - tsc does not rollup types
+             */
+            {
+              input: this.#package.exports,
+              output: {
+                dir: `dist/${env}`,
+              },
+              plugins: [
+                dts({
+                  respectExternal: true,
+                  compilerOptions: {
+                    skipLibCheck: true,
+                    declaration: true,
+                    declarationDir: `dist/${env}`,
+                    emitDeclarationOnly: true,
+                    moduleResolution: ts.ModuleResolutionKind.Bundler,
+                    module: ts.ModuleKind.ESNext,
+                    target: ts.ScriptTarget.ESNext,
+                    strict: true,
+                    types: [
+                      '@glimmer-workspace/env',
+                      ...(this.#package.devDependencies['@types/node'] ? ['node'] : []),
+                    ],
+                  },
+                }),
+              ],
+            },
+          ]),
+    ];
   }
 
   /**
