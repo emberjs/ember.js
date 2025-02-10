@@ -22,11 +22,11 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       '@glimmer/compiler':
-        specifier: 0.94.4
-        version: 0.94.4
+        specifier: 0.94.6
+        version: 0.94.6
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -34,44 +34,44 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/interfaces':
-        specifier: 0.94.2
-        version: 0.94.2
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/node':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/opcode-compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/program':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/reference':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/syntax':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/vm':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/vm-babel-plugins':
-        specifier: 0.93.2
-        version: 0.93.2(@babel/core@7.24.4)
+        specifier: 0.93.3
+        version: 0.93.3(@babel/core@7.24.4)
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -371,14 +371,14 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/compiler':
-        specifier: 0.94.4
-        version: 0.94.4
+        specifier: 0.94.6
+        version: 0.94.6
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../@glimmer/component
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -386,41 +386,41 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/interfaces':
-        specifier: 0.94.2
-        version: 0.94.2
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/node':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/opcode-compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/program':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/reference':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/syntax':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/vm':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -489,8 +489,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -498,11 +498,11 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -549,23 +549,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -588,11 +588,11 @@ importers:
         specifier: workspace:*
         version: link:../-internals
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -615,8 +615,8 @@ importers:
         specifier: workspace:*
         version: link:../service
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -624,11 +624,11 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -669,23 +669,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -701,8 +701,8 @@ importers:
   packages/@ember/destroyable:
     dependencies:
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -743,8 +743,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -752,11 +752,11 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -785,8 +785,8 @@ importers:
         specifier: workspace:*
         version: link:../object
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -794,11 +794,11 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -812,11 +812,11 @@ importers:
         specifier: workspace:*
         version: link:../component
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -848,8 +848,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -860,11 +860,11 @@ importers:
         specifier: workspace:*
         version: link:../-internals
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
 
   packages/@ember/object:
     dependencies:
@@ -893,23 +893,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -995,23 +995,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1052,8 +1052,8 @@ importers:
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1079,8 +1079,8 @@ importers:
         specifier: workspace:*
         version: link:../object
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1088,11 +1088,11 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1118,14 +1118,14 @@ importers:
         specifier: workspace:*
         version: link:../canary-features
       '@glimmer/compiler':
-        specifier: 0.94.4
-        version: 0.94.4
+        specifier: 0.94.6
+        version: 0.94.6
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/syntax':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       ember:
         specifier: workspace:*
         version: link:../../ember
@@ -1145,23 +1145,23 @@ importers:
         specifier: workspace:*
         version: link:../debug
       '@glimmer/compiler':
-        specifier: 0.94.4
-        version: 0.94.4
+        specifier: 0.94.6
+        version: 0.94.6
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/interfaces':
-        specifier: 0.94.2
-        version: 0.94.2
+        specifier: 0.94.4
+        version: 0.94.4
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/opcode-compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/syntax':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1169,8 +1169,8 @@ importers:
   packages/@ember/template-factory:
     dependencies:
       '@glimmer/opcode-compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
 
   packages/@ember/test:
     dependencies:
@@ -1202,23 +1202,23 @@ importers:
         specifier: workspace:*
         version: link:../runloop
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1277,11 +1277,11 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1389,29 +1389,29 @@ importers:
         specifier: workspace:*
         version: link:../@ember/version
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/tracking':
         specifier: workspace:*
         version: link:../@glimmer/tracking
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1494,23 +1494,23 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.4
-        version: 0.94.4
+        specifier: 0.94.6
+        version: 0.94.6
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/syntax':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1563,8 +1563,8 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1572,11 +1572,11 @@ importers:
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1650,35 +1650,35 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.4
-        version: 0.94.4
+        specifier: 0.94.6
+        version: 0.94.6
       '@glimmer/destroyable':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/manager':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/opcode-compiler':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/owner':
         specifier: 0.93.2
         version: 0.93.2
       '@glimmer/runtime':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/syntax':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/util':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       '@glimmer/validator':
-        specifier: 0.94.3
-        version: 0.94.3
+        specifier: 0.94.5
+        version: 0.94.5
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -4978,28 +4978,28 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@glimmer/compiler@0.94.4:
-    resolution: {integrity: sha512-aT8C4z6USiIw0D4ww8I+WzpPfIF7WrADp4ju4l7qQWAbkiLM8D9H//WDSGN60FadaRNHXJOJIdBxVvhfWu8nLQ==}
+  /@glimmer/compiler@0.94.6:
+    resolution: {integrity: sha512-8iVsTb3SEgNBwcOG4UMkPuunoattC9iusClShgjYaI5yhvxsWQEuycHgdYCfUHFhPcBLcAYU4zWe+z2KV3QeSw==}
     engines: {node: '>= 18.0.0'}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/syntax': 0.94.3
-      '@glimmer/util': 0.94.3
-      '@glimmer/wire-format': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/syntax': 0.94.5
+      '@glimmer/util': 0.94.5
+      '@glimmer/wire-format': 0.94.5
     dev: false
 
-  /@glimmer/destroyable@0.94.3:
-    resolution: {integrity: sha512-4mZE/e9KCfreF4nDzi0ItQf8/lrvG9XbJNkmM1RbV98QfnXrZXwbWvQABRKNiY4VOpQ1duaD9eTCk4wVZFCuoA==}
+  /@glimmer/destroyable@0.94.5:
+    resolution: {integrity: sha512-wj0915fE8QSf3Iik+Vx6fiYWduN2qxbSmXYBAhybbrJCfKVyr7h/q9uRefYIgh60ChDagOFmuKfwk7RJxhunsA==}
     dependencies:
       '@glimmer/global-context': 0.93.2
-      '@glimmer/interfaces': 0.94.2
+      '@glimmer/interfaces': 0.94.4
     dev: false
 
-  /@glimmer/encoder@0.93.3:
-    resolution: {integrity: sha512-oOpBvWV0ZliETdFSncp4Wy//m9sHDM0hnAnWcgqY/04OOx5seQR95tlCvIcTE0OCGMG1KtshRn4C8cdnbPJhmA==}
+  /@glimmer/encoder@0.93.5:
+    resolution: {integrity: sha512-WgrhhX7Xvv+lckD95QGxYPtBZWfI6P0OLejd0pqE4lPKaWkfiAFgIGRfMFwxKdF/N5QnQP9aKG9OeqnvCOQtcg==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/vm': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/vm': 0.94.5
     dev: false
 
   /@glimmer/env@0.1.7:
@@ -5026,57 +5026,57 @@ packages:
       '@simple-dom/interface': 1.4.0
     dev: true
 
-  /@glimmer/interfaces@0.94.2:
-    resolution: {integrity: sha512-tDAAJpIyc1N7cYxpZWJElNHRF2+1vTG2W/HNYvvBjzTzoG2WLxtDJqOHCqGcUNqrOxq8ROiZCt/BQ/L3t5r5eg==}
+  /@glimmer/interfaces@0.94.4:
+    resolution: {integrity: sha512-K4s1l9apvUjAAAD4JJyA/k++xKRkpj2v2lJkALdln06O5aZcZgrAPXGPzpyBPykfX4chjQL9dffTAABvgRgUlg==}
     dependencies:
       '@simple-dom/interface': 1.4.0
     dev: false
 
-  /@glimmer/manager@0.94.3:
-    resolution: {integrity: sha512-q8Uhao1HwwToMl++4Mhg4MsAKBY2xNAId3iJneXc6rKHFPjYBAdQdprnEKcLVWj4xYfFiLuYomKpk4GdtwN5Vg==}
+  /@glimmer/manager@0.94.5:
+    resolution: {integrity: sha512-zj6DtB1lA5YLdxDsmttI5BENreX0eXEpx7ktU/QGJcwYjVLMOcynQlY/4HDA2zj4xIZdmJFuSWpJnYZv7kEw6Q==}
     dependencies:
-      '@glimmer/destroyable': 0.94.3
+      '@glimmer/destroyable': 0.94.5
       '@glimmer/global-context': 0.93.2
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/reference': 0.94.3
-      '@glimmer/util': 0.94.3
-      '@glimmer/validator': 0.94.3
-      '@glimmer/vm': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/reference': 0.94.5
+      '@glimmer/util': 0.94.5
+      '@glimmer/validator': 0.94.5
+      '@glimmer/vm': 0.94.5
     dev: false
 
-  /@glimmer/node@0.94.3:
-    resolution: {integrity: sha512-rhT51ean1kQb8OaRAarhdC2C3vG4nyOOzUyi4bp0+CS92V+m+CwST2GB49HxcwTrXjYJRiXCDo9x5PlpsTZQLw==}
+  /@glimmer/node@0.94.5:
+    resolution: {integrity: sha512-oGNjoK9cBZDaBNIunZjhQYQWe/q2NWoj89WGrfFF4Bx3mEJyNOTZ9tLUzUcE4XUqVfekoOIT5ckwV1IG9Nbj4A==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/runtime': 0.94.3
-      '@glimmer/util': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/runtime': 0.94.5
+      '@glimmer/util': 0.94.5
       '@simple-dom/document': 1.4.0
     dev: false
 
-  /@glimmer/opcode-compiler@0.94.3:
-    resolution: {integrity: sha512-7+aNzngohXWtMCSSR3H4CQbETY+U5fb4WAuI7r/PREcWUQ8gKeJWyOdVIy7EJtrP4grU+fUqv6aq02vgD9nX/w==}
+  /@glimmer/opcode-compiler@0.94.5:
+    resolution: {integrity: sha512-WCqAzWdLrilOA6te+HBH+1Iw8oOZi4ZfV01jOXSCjOWQEQuiFPQF36WzaNkLtNphDA3wotBT4KHM8wFac4gZ1g==}
     dependencies:
-      '@glimmer/encoder': 0.93.3
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/manager': 0.94.3
-      '@glimmer/util': 0.94.3
-      '@glimmer/vm': 0.94.3
-      '@glimmer/wire-format': 0.94.3
+      '@glimmer/encoder': 0.93.5
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/manager': 0.94.5
+      '@glimmer/util': 0.94.5
+      '@glimmer/vm': 0.94.5
+      '@glimmer/wire-format': 0.94.5
     dev: false
 
   /@glimmer/owner@0.93.2:
     resolution: {integrity: sha512-3ySi8qBE8byq3XdsuXAz1HfrgdD2xz4/sfxmpX7kpls8+IGgMMwJ1sgPSTy50MmjsI6zG4vrvfTjhqOy/UqnBg==}
     dev: false
 
-  /@glimmer/program@0.94.3:
-    resolution: {integrity: sha512-6HLYiy5zjDEL4WTcjhEV5Or8TSqDF555+2Mnslcxo9Gz0AkdqE7bIreN1k7/XbOUbq+hGT7OFRko+lbatmsN3Q==}
+  /@glimmer/program@0.94.5:
+    resolution: {integrity: sha512-T/AI3+1VM0O0bvnkjjOgNmkRx3k7dOjbXduMN4zEc871ylbsCCrXmxp/T0ruDnRs59AMtltRM8s2dL+ieHfFNA==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/manager': 0.94.3
-      '@glimmer/opcode-compiler': 0.94.3
-      '@glimmer/util': 0.94.3
-      '@glimmer/vm': 0.94.3
-      '@glimmer/wire-format': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/manager': 0.94.5
+      '@glimmer/opcode-compiler': 0.94.5
+      '@glimmer/util': 0.94.5
+      '@glimmer/vm': 0.94.5
+      '@glimmer/wire-format': 0.94.5
     dev: false
 
   /@glimmer/reference@0.84.3:
@@ -5089,28 +5089,28 @@ packages:
       '@glimmer/validator': 0.84.3
     dev: true
 
-  /@glimmer/reference@0.94.3:
-    resolution: {integrity: sha512-ZjXG1ife499P/QZEwTAIyQIM51uAnKX5ZxSxyTLj+fQZNyffiK3udjYw7g1A0yN0WXGnXan6KF29GkNgLK+Zgg==}
+  /@glimmer/reference@0.94.5:
+    resolution: {integrity: sha512-DWmI+D8sEUWSPL13T2fjj/lW+MG/cFzxjNegr1lCzsLF6OKkyE9Tvn0GuQr/auEof9rd20P7fv+gJx+LLvXqYQ==}
     dependencies:
       '@glimmer/global-context': 0.93.2
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/util': 0.94.3
-      '@glimmer/validator': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/util': 0.94.5
+      '@glimmer/validator': 0.94.5
     dev: false
 
-  /@glimmer/runtime@0.94.3:
-    resolution: {integrity: sha512-eYMKwMuUiaH8jeFvIwMLg5BfjUapLyjK3ga6rt1vSVyV33z9RY/Ss4yeSxlx94mAtU2RoI24PZS1vzkgVq3azw==}
+  /@glimmer/runtime@0.94.5:
+    resolution: {integrity: sha512-/1njTB5D1IkG3qUJa1ww0uqxl84SMgTizOLD4wJvLOCoN1/t2hK6+MFXBi28mV9WrQGjAlfDN+OF42B77M8ujg==}
     dependencies:
-      '@glimmer/destroyable': 0.94.3
+      '@glimmer/destroyable': 0.94.5
       '@glimmer/global-context': 0.93.2
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/manager': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/manager': 0.94.5
       '@glimmer/owner': 0.93.2
-      '@glimmer/program': 0.94.3
-      '@glimmer/reference': 0.94.3
-      '@glimmer/util': 0.94.3
-      '@glimmer/validator': 0.94.3
-      '@glimmer/vm': 0.94.3
+      '@glimmer/program': 0.94.5
+      '@glimmer/reference': 0.94.5
+      '@glimmer/util': 0.94.5
+      '@glimmer/validator': 0.94.5
+      '@glimmer/vm': 0.94.5
     dev: false
 
   /@glimmer/syntax@0.84.3:
@@ -5131,12 +5131,12 @@ packages:
       simple-html-tokenizer: 0.5.11
     dev: true
 
-  /@glimmer/syntax@0.94.3:
-    resolution: {integrity: sha512-2vDIWbqEvvw8+t+e985otfv1kdzIroLzpyogMxe4KtM1k/m0yQPsWuj3HMLd29o9INCVGuVp8qAEanBgEy7Big==}
+  /@glimmer/syntax@0.94.5:
+    resolution: {integrity: sha512-3EDg/Fnk+L0zF2BYAsyTfu+7zDU/lsFtiEK4945tkNZQrnt/7TFSS+EdbDskWwE4SWyzMPq+DlAe3S6mDK/SoQ==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
-      '@glimmer/util': 0.94.3
-      '@glimmer/wire-format': 0.94.3
+      '@glimmer/interfaces': 0.94.4
+      '@glimmer/util': 0.94.5
+      '@glimmer/wire-format': 0.94.5
       '@handlebars/parser': 2.0.0
       simple-html-tokenizer: 0.5.11
     dev: false
@@ -5162,10 +5162,10 @@ packages:
       '@glimmer/interfaces': 0.88.1
     dev: true
 
-  /@glimmer/util@0.94.3:
-    resolution: {integrity: sha512-TuRWXieDZOFt+mgE+lwqfh/GIKLH1WwAhDV1SqrixQEflQLNqGBMw4Cc5qux9A67hr1oIS+64rHpJLmBHG90dQ==}
+  /@glimmer/util@0.94.5:
+    resolution: {integrity: sha512-9XxQdiKayKgB+7QZrnNNyL+2WEDvs/01EN8coNu7XDGeFfWqmcayHp8XLeGkAcD4Ywa/t52Hd7sQasvsVWRN+w==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
+      '@glimmer/interfaces': 0.94.4
     dev: false
 
   /@glimmer/validator@0.44.0:
@@ -5179,15 +5179,15 @@ packages:
       '@glimmer/global-context': 0.84.3
     dev: true
 
-  /@glimmer/validator@0.94.3:
-    resolution: {integrity: sha512-aI5+caBjBV61UygNBnjnPAq5EPItTW0KIssQ58dxZEOq4yxhKmNrFuhARSI9asVBbJNvPC5EBo7jUVvqyqcRtg==}
+  /@glimmer/validator@0.94.5:
+    resolution: {integrity: sha512-4z+TyKpZVBajIVQn1iPxZzhigENBCATnOMlKBHt8OaGON164erlsPUC+JH91l8V9XHUYUjzQvN4PQoWd0dVv8g==}
     dependencies:
       '@glimmer/global-context': 0.93.2
-      '@glimmer/interfaces': 0.94.2
+      '@glimmer/interfaces': 0.94.4
     dev: false
 
-  /@glimmer/vm-babel-plugins@0.93.2(@babel/core@7.24.4):
-    resolution: {integrity: sha512-o2iYcBZhMLXlWKSBcRoOrqkMvAFS2WwAmSHy8Y7OCBL+Bq/liI9DSxf9IYwkiWdcatYIhqzJ9kEHUy/bf/xikA==}
+  /@glimmer/vm-babel-plugins@0.93.3(@babel/core@7.24.4):
+    resolution: {integrity: sha512-pBoSPkhOeQrvnV75dWk04aqf4MdTcYIHiXKjijQD2/jEsf3xOml7w2yVIFJy90i09Dhijn2A9VxLvfv1le4YTw==}
     engines: {node: '>=18.18.0'}
     dependencies:
       babel-plugin-debug-macros: 0.3.4(@babel/core@7.24.4)
@@ -5195,10 +5195,10 @@ packages:
       - '@babel/core'
     dev: false
 
-  /@glimmer/vm@0.94.3:
-    resolution: {integrity: sha512-If/hBh/pVr4TWvZ7z1R3c9wzOv3+Sdq26C19cWqRuwGfNRCT+TwlF7xJ/IdhS40AOm3nfLEmrtMqfNxCmJsRNg==}
+  /@glimmer/vm@0.94.5:
+    resolution: {integrity: sha512-kmaGMy8Saqu9bewXoHqIXLfucMdY9I6eZq/wL85f4T8YSASS54UIQt1L1Lhl+RFqNAeH3lBWO0GkC0ekLssfLQ==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
+      '@glimmer/interfaces': 0.94.4
     dev: false
 
   /@glimmer/wire-format@0.88.1:
@@ -5208,10 +5208,10 @@ packages:
       '@glimmer/util': 0.88.1
     dev: true
 
-  /@glimmer/wire-format@0.94.3:
-    resolution: {integrity: sha512-3i/R3+60kEkHHj49Cp5/b9Dwl0t3nzX+wPy+pQoTd1HRgkiGfsVr7CnqAO/vMFZTT5KfGkJVjDjBPKft7uc+JQ==}
+  /@glimmer/wire-format@0.94.5:
+    resolution: {integrity: sha512-xS/Ognm6wYf69klipTQQYTsoKmOcSYYjz8zv4Uwuw1xSEh9LO/7RH0QxJRDABfv7hCfOqEEqU4U81rfNKkmEdg==}
     dependencies:
-      '@glimmer/interfaces': 0.94.2
+      '@glimmer/interfaces': 0.94.4
     dev: false
 
   /@gwhitney/detect-indent@7.0.1:
