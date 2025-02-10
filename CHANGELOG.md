@@ -2,6 +2,31 @@
 
 ## Release (2025-02-10)
 
+@glimmer/compiler 0.94.6 (patch)
+@glimmer/destroyable 0.94.5 (patch)
+@glimmer/encoder 0.93.5 (patch)
+@glimmer/interfaces 0.94.4 (patch)
+@glimmer/manager 0.94.5 (patch)
+@glimmer/node 0.94.5 (patch)
+@glimmer/opcode-compiler 0.94.5 (patch)
+@glimmer/program 0.94.5 (patch)
+@glimmer/reference 0.94.5 (patch)
+@glimmer/runtime 0.94.5 (patch)
+@glimmer/syntax 0.94.5 (patch)
+@glimmer/util 0.94.5 (patch)
+@glimmer/validator 0.94.5 (patch)
+@glimmer/vm 0.94.5 (patch)
+@glimmer/wire-format 0.94.5 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/build-support`, `@glimmer/interfaces`, `@glimmer-workspace/repo-metadata`
+  * [#1704](https://github.com/glimmerjs/glimmer-vm/pull/1704) Fix types rollup ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## Release (2025-02-10)
+
 @glimmer/compiler 0.94.5 (patch)
 @glimmer/destroyable 0.94.4 (patch)
 @glimmer/encoder 0.93.4 (patch)
