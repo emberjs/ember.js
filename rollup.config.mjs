@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
+import { externalName } from '@embroider/reverse-exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
 
@@ -268,7 +269,7 @@ function walkGlimmerDeps(packageNames) {
       continue;
     }
 
-    let pkgModule = entrypoint(pkg, 'module');
+    let pkgModule = entrypoint(pkg, ['module', ['exports', '.', 'development', 'default']]);
 
     if (pkgModule && existsSync(pkgModule.path)) {
       entrypoints[pkg.name] = pkgModule.path;
@@ -293,6 +294,9 @@ function findFromProject(...names) {
 
 function entrypoint(pkg, which) {
   let module = pkg.packageJSON[which];
+  if (!module) {
+    module = externalName(pkg.packageJSON, '.');
+  }
   if (!module) {
     return;
   }

@@ -111,6 +111,7 @@
     "@babel/plugin-transform-typescript": "^7.22.9",
     "@babel/preset-env": "^7.16.11",
     "@babel/types": "^7.22.5",
+    "@embroider/reverse-exports": "0.1.1-unstable.6caf714",
     "@embroider/shared-internals": "^2.5.0",
     "@glimmer/component": "workspace:^",
     "@rollup/plugin-babel": "^6.0.4",
