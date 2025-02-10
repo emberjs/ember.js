@@ -78,25 +78,45 @@ export default () =>
 
             update(actual, 'files', ['dist']);
 
-            update(publishConfig, 'exports', {
-              '.': {
-                development: {
-                  types: './dist/dev/index.d.ts',
-                  default: './dist/dev/index.js',
+            if (pkg.name === '@glimmer/vm-babel-plugins') {
+              update(publishConfig, 'exports', {
+                '.': {
+                  development: {
+                    default: './dist/dev/index.js',
+                  },
+                  ...(pkg['repo-meta']?.supportcjs
+                    ? {
+                        require: {
+                          default: './dist/dev/index.cjs',
+                        },
+                      }
+                    : {}),
+                  default: {
+                    default: './dist/prod/index.js',
+                  },
                 },
-                ...(pkg['repo-meta']?.supportcjs
-                  ? {
-                      require: {
-                        default: './dist/dev/index.cjs',
-                      },
-                    }
-                  : {}),
-                default: {
-                  types: './dist/prod/index.d.ts',
-                  default: './dist/prod/index.js',
+              });
+            } else {
+              update(publishConfig, 'exports', {
+                '.': {
+                  development: {
+                    types: './dist/dev/index.d.ts',
+                    default: './dist/dev/index.js',
+                  },
+                  ...(pkg['repo-meta']?.supportcjs
+                    ? {
+                        require: {
+                          default: './dist/dev/index.cjs',
+                        },
+                      }
+                    : {}),
+                  default: {
+                    types: './dist/prod/index.d.ts',
+                    default: './dist/prod/index.js',
+                  },
                 },
-              },
-            });
+              });
+            }
           } else {
             delete publishConfig['exports'];
             delete scripts['prepack'];
