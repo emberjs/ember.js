@@ -1,5 +1,33 @@
 # Changelog
 
+## Release (2025-02-10)
+
+@glimmer/compiler 0.94.5 (patch)
+@glimmer/destroyable 0.94.4 (patch)
+@glimmer/encoder 0.93.4 (patch)
+@glimmer/interfaces 0.94.3 (patch)
+@glimmer/manager 0.94.4 (patch)
+@glimmer/node 0.94.4 (patch)
+@glimmer/opcode-compiler 0.94.4 (patch)
+@glimmer/program 0.94.4 (patch)
+@glimmer/reference 0.94.4 (patch)
+@glimmer/runtime 0.94.4 (patch)
+@glimmer/syntax 0.94.4 (patch)
+@glimmer/util 0.94.4 (patch)
+@glimmer/validator 0.94.4 (patch)
+@glimmer/vm 0.94.4 (patch)
+@glimmer/vm-babel-plugins 0.93.3 (patch)
+@glimmer/wire-format 0.94.4 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/interfaces`
+  * [#1703](https://github.com/glimmerjs/glimmer-vm/pull/1703) Add README to @glimmer/interfaces to try to force a release of dependent packages ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/build-support`, `@glimmer/vm-babel-plugins`, `@glimmer-workspace/repo-metadata`
+  * [#1701](https://github.com/glimmerjs/glimmer-vm/pull/1701) Rollup the types (solves missing types from unpublished packages) ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-02-08)
 
 @glimmer/compiler 0.94.4 (patch)
