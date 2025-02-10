@@ -151,9 +151,6 @@ importers:
       '@babel/types':
         specifier: ^7.22.5
         version: 7.24.0
-      '@embroider/reverse-exports':
-        specifier: 0.1.1-unstable.6caf714
-        version: 0.1.1-unstable.6caf714
       '@embroider/shared-internals':
         specifier: ^2.5.0
         version: 2.6.0
@@ -289,6 +286,9 @@ importers:
       recast:
         specifier: ^0.22.0
         version: 0.22.0
+      resolve.exports:
+        specifier: ^2.0.3
+        version: 2.0.3
       rollup:
         specifier: ^4.2.0
         version: 4.16.4
@@ -4627,12 +4627,6 @@ packages:
       semver: 7.6.0
     transitivePeerDependencies:
       - supports-color
-
-  /@embroider/reverse-exports@0.1.1-unstable.6caf714:
-    resolution: {integrity: sha512-QxoK245LYXDh7uzHsJin9/qYoyGzTLeI6VfcYalNj9gZc36BpC9okoZTps/RtXXlSCKgfSKv9bxf2hfHnYsmEw==}
-    dependencies:
-      resolve.exports: 2.0.3
-    dev: true
 
   /@embroider/shared-internals@2.6.0:
     resolution: {integrity: sha512-A2BYQkhotdKOXuTaxvo9dqOIMbk+2LqFyqvfaaePkZcFJvtCkvTaD31/sSzqvRF6rdeBHjdMwU9Z2baPZ55fEQ==}
