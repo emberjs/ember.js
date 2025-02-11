@@ -1,5 +1,17 @@
 # Changelog
 
+## Release (2025-02-11)
+
+@glimmer/compiler 0.94.8 (patch)
+@glimmer/syntax 0.94.7 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`, `@glimmer-workspace/repo-metadata`
+  * [#1708](https://github.com/glimmerjs/glimmer-vm/pull/1708) Bring back cjs for glimmer syntax ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-02-10)
 
 @glimmer/compiler 0.94.7 (patch)
