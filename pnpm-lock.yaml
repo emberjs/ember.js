@@ -170,8 +170,8 @@ importers:
         specifier: ^1.3.100
         version: 1.5.0
       '@tsconfig/ember':
-        specifier: ^3.0.9
-        version: 3.0.9
+        specifier: 3.0.8
+        version: 3.0.8
       '@types/qunit':
         specifier: ^2.19.4
         version: 2.19.10
@@ -6819,8 +6819,8 @@ packages:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}
     dev: true
 
-  /@tsconfig/ember@3.0.9:
-    resolution: {integrity: sha512-0B44GyEafxJLAZSixH9VBnm9kDFCpaLXu86httaJSDEm1nfl3WWI/XfY4diPsOyOg+pc9N1/YfqH7uKM2dF0lA==}
+  /@tsconfig/ember@3.0.8:
+    resolution: {integrity: sha512-OVnIsZIt/8q0VEtcdz3rRryNrm6gdJTxXlxefkGIrkZnME0wqslmwHlUEZ7mvh377df9FqBhNKrYNarhCW8zJA==}
     dev: true
 
   /@types/babel__code-frame@7.0.6:

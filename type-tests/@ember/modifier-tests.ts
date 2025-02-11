@@ -5,7 +5,7 @@ import {
   type OnModifier,
   type ModifierCapabilities,
 } from '@ember/modifier';
-import { ModifierManager } from '@glimmer/interfaces';
+import { type ModifierManager } from '@glimmer/interfaces';
 import { expectTypeOf } from 'expect-type';
 
 expectTypeOf(on).toEqualTypeOf<OnModifier>();

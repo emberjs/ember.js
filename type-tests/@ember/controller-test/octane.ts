@@ -1,4 +1,4 @@
-import Controller, { ControllerQueryParam, inject } from '@ember/controller';
+import Controller, { type ControllerQueryParam, inject } from '@ember/controller';
 import { expectTypeOf } from 'expect-type';
 import type Owner from '@ember/owner';
 
@@ -42,5 +42,7 @@ declare module '@ember/controller' {
 const owner = {} as Owner;
 
 expectTypeOf(owner.lookup('controller:first')).toEqualTypeOf<FirstController>();
-expectTypeOf(owner.lookup('controller:second')).toEqualTypeOf<InstanceType<typeof SecondController>>();
+expectTypeOf(owner.lookup('controller:second')).toEqualTypeOf<
+  InstanceType<typeof SecondController>
+>();
 expectTypeOf(owner.lookup('controller:non-registered')).toEqualTypeOf<Controller | undefined>();

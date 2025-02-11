@@ -1,4 +1,4 @@
-import { AnyFn } from '@ember/-internals/utility-types';
+import type { AnyFn } from '@ember/-internals/utility-types';
 import { A } from '@ember/array';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';

@@ -1,5 +1,5 @@
 import Object, { computed, get, notifyPropertyChange, set, setProperties } from '@ember/object';
-import Owner from '@ember/owner';
+import type Owner from '@ember/owner';
 import { expectTypeOf } from 'expect-type';
 
 class LifetimeHooks extends Object {

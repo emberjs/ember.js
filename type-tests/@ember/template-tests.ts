@@ -1,4 +1,4 @@
-import { htmlSafe, isHTMLSafe, SafeString } from '@ember/template';
+import { htmlSafe, isHTMLSafe, type SafeString } from '@ember/template';
 import { expectTypeOf } from 'expect-type';
 
 let trusted = htmlSafe('lorem ipsum...');

@@ -1,16 +1,16 @@
 import {
   array,
-  ArrayHelper,
+  type ArrayHelper,
   concat,
-  ConcatHelper,
+  type ConcatHelper,
   fn,
-  FnHelper,
+  type FnHelper,
   get,
-  GetHelper,
+  type GetHelper,
   hash,
-  HashHelper,
+  type HashHelper,
   uniqueId,
-  UniqueIdHelper,
+  type UniqueIdHelper,
 } from '@ember/helper';
 import { expectTypeOf } from 'expect-type';
 
