@@ -26,13 +26,8 @@ module.exports = {
 
     'disable-features/disable-async-await': 'error',
     'disable-features/disable-generator-functions': 'error',
-    'import/no-unresolved': [
-      'error',
-      {
-        // This lint doesn't know how to parse package.json#exports
-        ignore: ['@ember/template-compiler', '@glimmer/*'],
-      },
-    ],
+    // Doesn't work with package.json#exports
+    'import/no-unresolved': 'off',
   },
 
   settings: {
