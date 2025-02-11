@@ -22,8 +22,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       '@glimmer/compiler':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: 0.94.8
+        version: 0.94.8
       '@glimmer/destroyable':
         specifier: 0.94.6
         version: 0.94.6
@@ -58,8 +58,8 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/syntax':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: 0.94.7
+        version: 0.94.7
       '@glimmer/util':
         specifier: 0.94.6
         version: 0.94.6
@@ -374,8 +374,8 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/compiler':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: 0.94.8
+        version: 0.94.8
       '@glimmer/component':
         specifier: workspace:^
         version: link:../../@glimmer/component
@@ -413,8 +413,8 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/syntax':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: 0.94.7
+        version: 0.94.7
       '@glimmer/util':
         specifier: 0.94.6
         version: 0.94.6
@@ -1121,14 +1121,14 @@ importers:
         specifier: workspace:*
         version: link:../canary-features
       '@glimmer/compiler':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: 0.94.8
+        version: 0.94.8
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
       '@glimmer/syntax':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: 0.94.7
+        version: 0.94.7
       ember:
         specifier: workspace:*
         version: link:../../ember
@@ -1148,8 +1148,8 @@ importers:
         specifier: workspace:*
         version: link:../debug
       '@glimmer/compiler':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: 0.94.8
+        version: 0.94.8
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1163,8 +1163,8 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/syntax':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: 0.94.7
+        version: 0.94.7
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1497,8 +1497,8 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: 0.94.8
+        version: 0.94.8
       '@glimmer/env':
         specifier: ^0.1.7
         version: 0.1.7
@@ -1509,8 +1509,8 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/syntax':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: 0.94.7
+        version: 0.94.7
       '@glimmer/validator':
         specifier: 0.94.6
         version: 0.94.6
@@ -1653,8 +1653,8 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: 0.94.8
+        version: 0.94.8
       '@glimmer/destroyable':
         specifier: 0.94.6
         version: 0.94.6
@@ -1674,8 +1674,8 @@ importers:
         specifier: 0.94.6
         version: 0.94.6
       '@glimmer/syntax':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: 0.94.7
+        version: 0.94.7
       '@glimmer/util':
         specifier: 0.94.6
         version: 0.94.6
@@ -4982,12 +4982,12 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
-  /@glimmer/compiler@0.94.7:
-    resolution: {integrity: sha512-ZlWkbzzka/ssefvhYFeKn0xRfjXuwHdnvovf3eyCDCOTmBHEg0y4prITkZQtXAZR91BVOC1WssvvbyPXIW2gyA==}
+  /@glimmer/compiler@0.94.8:
+    resolution: {integrity: sha512-mqakVTK+f1QAHcibfL2I4rh9Y7hszOKqaCcgf60NFOPHJTnYNJHtH7TYR6h9Wcr9dRfOgjqxDUVhgrhxp3ojnQ==}
     engines: {node: '>= 18.0.0'}
     dependencies:
       '@glimmer/interfaces': 0.94.5
-      '@glimmer/syntax': 0.94.6
+      '@glimmer/syntax': 0.94.7
       '@glimmer/util': 0.94.6
       '@glimmer/wire-format': 0.94.6
     dev: false
@@ -5135,8 +5135,8 @@ packages:
       simple-html-tokenizer: 0.5.11
     dev: true
 
-  /@glimmer/syntax@0.94.6:
-    resolution: {integrity: sha512-uBRjZYU7NAj4JZ9oAaZxo99jgu78tXRzI2T7ObrtN1N4IpY2F1ir4Fxsm3/9u9UVJsTeR3acomk6Nv/jaiN1qw==}
+  /@glimmer/syntax@0.94.7:
+    resolution: {integrity: sha512-6L/1Yl6JLbLrY7ywTL5QFNGKAzxtCbC+kXsTExOcukBqsak+nN75vXvBkv+F+NsAZxhoRt72fNBuy9IrP9sghA==}
     dependencies:
       '@glimmer/interfaces': 0.94.5
       '@glimmer/util': 0.94.6

@@ -12,12 +12,12 @@
     "@ember/-internals": "workspace:*",
     "@ember/component": "workspace:*",
     "@ember/debug": "workspace:*",
-    "@glimmer/compiler": "0.94.7",
+    "@glimmer/compiler": "0.94.8",
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "0.94.5",
     "@glimmer/manager": "0.94.6",
     "@glimmer/opcode-compiler": "0.94.6",
-    "@glimmer/syntax": "0.94.6",
+    "@glimmer/syntax": "0.94.7",
     "expect-type": "^0.15.0"
   }
 }
