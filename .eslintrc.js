@@ -29,7 +29,8 @@ module.exports = {
     'import/no-unresolved': [
       'error',
       {
-        ignore: ['@ember/template-compiler'],
+        // This lint doesn't know how to parse package.json#exports
+        ignore: ['@ember/template-compiler', '@glimmer/*'],
       },
     ],
   },

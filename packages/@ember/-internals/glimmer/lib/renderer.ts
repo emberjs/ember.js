@@ -31,8 +31,6 @@ import {
   clientBuilder,
   createCapturedArgs,
   curry,
-  DOMChanges,
-  DOMTreeConstruction,
   EMPTY_POSITIONAL,
   inTransaction,
   renderMain,
@@ -47,7 +45,6 @@ import type Component from './component';
 import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
-import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
