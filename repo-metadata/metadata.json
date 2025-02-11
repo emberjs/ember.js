@@ -367,7 +367,7 @@
     {
       "root": "packages/@glimmer/manager",
       "name": "@glimmer/manager",
-      "version": "0.94.6",
+      "version": "0.94.7",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -394,7 +394,7 @@
     {
       "root": "packages/@glimmer/node",
       "name": "@glimmer/node",
-      "version": "0.94.6",
+      "version": "0.94.7",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -407,7 +407,7 @@
     {
       "root": "packages/@glimmer/opcode-compiler",
       "name": "@glimmer/opcode-compiler",
-      "version": "0.94.6",
+      "version": "0.94.7",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -446,7 +446,7 @@
     {
       "root": "packages/@glimmer/program",
       "name": "@glimmer/program",
-      "version": "0.94.6",
+      "version": "0.94.7",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -498,7 +498,7 @@
     {
       "root": "packages/@glimmer/runtime",
       "name": "@glimmer/runtime",
-      "version": "0.94.6",
+      "version": "0.94.7",
       "type": "module",
       "private": false,
       "repo-meta": {

@@ -1,16 +1,7 @@
 {
   "solution": {
     "@glimmer/compiler": {
-      "impact": "patch",
-      "oldVersion": "0.94.7",
-      "newVersion": "0.94.8",
-      "constraints": [
-        {
-          "impact": "patch",
-          "reason": "Has dependency `workspace:*` on @glimmer/syntax"
-        }
-      ],
-      "pkgJSONPath": "./packages/@glimmer/compiler/package.json"
+      "oldVersion": "0.94.8"
     },
     "@glimmer/destroyable": {
       "oldVersion": "0.94.6"
@@ -25,27 +16,6 @@
       "oldVersion": "0.94.5"
     },
     "@glimmer/manager": {
-      "oldVersion": "0.94.6"
-    },
-    "@glimmer/node": {
-      "oldVersion": "0.94.6"
-    },
-    "@glimmer/opcode-compiler": {
-      "oldVersion": "0.94.6"
-    },
-    "@glimmer/owner": {
-      "oldVersion": "0.93.2"
-    },
-    "@glimmer/program": {
-      "oldVersion": "0.94.6"
-    },
-    "@glimmer/reference": {
-      "oldVersion": "0.94.6"
-    },
-    "@glimmer/runtime": {
-      "oldVersion": "0.94.6"
-    },
-    "@glimmer/syntax": {
       "impact": "patch",
       "oldVersion": "0.94.6",
       "newVersion": "0.94.7",
@@ -55,7 +25,72 @@
           "reason": "Appears in changelog section :bug: Bug Fix"
         }
       ],
-      "pkgJSONPath": "./packages/@glimmer/syntax/package.json"
+      "pkgJSONPath": "./packages/@glimmer/manager/package.json"
+    },
+    "@glimmer/node": {
+      "impact": "patch",
+      "oldVersion": "0.94.6",
+      "newVersion": "0.94.7",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/runtime"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/node/package.json"
+    },
+    "@glimmer/opcode-compiler": {
+      "impact": "patch",
+      "oldVersion": "0.94.6",
+      "newVersion": "0.94.7",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/manager"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/opcode-compiler/package.json"
+    },
+    "@glimmer/owner": {
+      "oldVersion": "0.93.2"
+    },
+    "@glimmer/program": {
+      "impact": "patch",
+      "oldVersion": "0.94.6",
+      "newVersion": "0.94.7",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/opcode-compiler"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/manager"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/program/package.json"
+    },
+    "@glimmer/reference": {
+      "oldVersion": "0.94.6"
+    },
+    "@glimmer/runtime": {
+      "impact": "patch",
+      "oldVersion": "0.94.6",
+      "newVersion": "0.94.7",
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/program"
+        },
+        {
+          "impact": "patch",
+          "reason": "Has dependency `workspace:*` on @glimmer/manager"
+        }
+      ],
+      "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
+    },
+    "@glimmer/syntax": {
+      "oldVersion": "0.94.7"
     },
     "@glimmer/util": {
       "oldVersion": "0.94.6"
@@ -73,5 +108,5 @@
       "oldVersion": "0.94.6"
     }
   },
-  "description": "## Release (2025-02-11)\n\n@glimmer/compiler 0.94.8 (patch)\n@glimmer/syntax 0.94.7 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer/syntax`, `@glimmer-workspace/repo-metadata`\n  * [#1708](https://github.com/glimmerjs/glimmer-vm/pull/1708) Bring back cjs for glimmer syntax ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
+  "description": "## Release (2025-02-11)\n\n@glimmer/manager 0.94.7 (patch)\n@glimmer/node 0.94.7 (patch)\n@glimmer/opcode-compiler 0.94.7 (patch)\n@glimmer/program 0.94.7 (patch)\n@glimmer/runtime 0.94.7 (patch)\n\n#### :bug: Bug Fix\n* `@glimmer-workspace/integration-tests`, `@glimmer/manager`\n  * [#1710](https://github.com/glimmerjs/glimmer-vm/pull/1710) Fix rendering non-object, yet stringable values (Symbol?), moves Reflect.getPrototypeOf to Object.getPrototypeOf ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### :house: Internal\n* `@glimmer-workspace/bin`\n  * [#1711](https://github.com/glimmerjs/glimmer-vm/pull/1711) Pull benchmark changes from feature/emit-fn-calls ([@NullVoxPopuli](https://github.com/NullVoxPopuli))\n\n#### Committers: 1\n- [@NullVoxPopuli](https://github.com/NullVoxPopuli)\n"
 }
