@@ -2,6 +2,25 @@
 
 ## Release (2025-02-11)
 
+@glimmer/manager 0.94.7 (patch)
+@glimmer/node 0.94.7 (patch)
+@glimmer/opcode-compiler 0.94.7 (patch)
+@glimmer/program 0.94.7 (patch)
+@glimmer/runtime 0.94.7 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/integration-tests`, `@glimmer/manager`
+  * [#1710](https://github.com/glimmerjs/glimmer-vm/pull/1710) Fix rendering non-object, yet stringable values (Symbol?), moves Reflect.getPrototypeOf to Object.getPrototypeOf ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/bin`
+  * [#1711](https://github.com/glimmerjs/glimmer-vm/pull/1711) Pull benchmark changes from feature/emit-fn-calls ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
+## Release (2025-02-11)
+
 @glimmer/compiler 0.94.8 (patch)
 @glimmer/syntax 0.94.7 (patch)
 
