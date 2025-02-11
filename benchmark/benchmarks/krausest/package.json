@@ -39,8 +39,10 @@
       "@glimmer/opcode-compiler": "file:packages/@glimmer/opcode-compiler.tgz",
       "@glimmer/program": "file:packages/@glimmer/program.tgz",
       "@glimmer/reference": "file:packages/@glimmer/reference.tgz",
+      "@glimmer/syntax": "file:packages/@glimmer/syntax.tgz",
       "@glimmer/util": "file:packages/@glimmer/util.tgz",
       "@glimmer/validator": "file:packages/@glimmer/validator.tgz",
+      "@glimmer/wire-format": "file:packages/@glimmer/wire-format.tgz",
       "@glimmer-workspace/env": "file:packages/@glimmer-workspace/env.tgz"
     }
   }

@@ -19,6 +19,7 @@ $.verbose = true;
  * can be used to reuse the checked out control branch.
  */
 const FRESH_CONTROL_CHECKOUT = !process.env['REUSE_CONTROL'];
+const FRESH_EXPERIMENT_CHECKOUT = !process.env['REUSE_EXPERIMENT'];
 
 /*
 
@@ -93,16 +94,18 @@ const pnpm = await which('pnpm');
 
 // set up experiment
 {
-  await $`rm -rf ${EXPERIMENT_DIRS.root}`;
-  await $`mkdir -p ${EXPERIMENT_DIRS.bench}`;
-  await $`cp -r ${EXPERIMENT_DIRS.src}/* ${EXPERIMENT_DIRS.bench}/`;
-  await $`${pnpm} build --output-logs=new-only`;
-  await buildKrausestDeps({
-    roots: { benchmark: EXPERIMENT_DIRS.bench, workspace: WORKSPACE_ROOT },
-  });
-  await $`rm -rf ${EXPERIMENT_DIRS.bench}/node_modules`;
-  await $({ cwd: EXPERIMENT_DIRS.bench })`${pnpm} install`;
-  await $({ cwd: EXPERIMENT_DIRS.bench })`${pnpm} vite build`;
+  if (FRESH_EXPERIMENT_CHECKOUT) {
+    await $`rm -rf ${EXPERIMENT_DIRS.root}`;
+    await $`mkdir -p ${EXPERIMENT_DIRS.bench}`;
+    await $`cp -r ${EXPERIMENT_DIRS.src}/* ${EXPERIMENT_DIRS.bench}/`;
+    await $`${pnpm} turbo prepack --output-logs=new-only`;
+    await buildKrausestDeps({
+      roots: { benchmark: EXPERIMENT_DIRS.bench, workspace: WORKSPACE_ROOT },
+    });
+    await $`rm -rf ${EXPERIMENT_DIRS.bench}/node_modules`;
+    await $({ cwd: EXPERIMENT_DIRS.bench })`${pnpm} install`;
+    await $({ cwd: EXPERIMENT_DIRS.bench })`${pnpm} vite build`;
+  }
 }
 
 // make sure that the origin is up to date so we get the right control
@@ -139,10 +142,11 @@ console.info({
   await $`rm -rf ${CONTROL_DIRS.bench}`;
   // Intentionally use the `krausest` folder from the experiment in both
   // control and experiment
+  await $`mkdir -p ${CONTROL_DIRS.bench}`;
   await $`cp -r ${EXPERIMENT_DIRS.src}/* ${CONTROL_DIRS.bench}/`;
 
   await $({ cwd: CONTROL_DIRS.repo })`${pnpm} install`;
-  await $({ cwd: CONTROL_DIRS.repo })`${pnpm} build --output-logs=new-only`;
+  await $({ cwd: CONTROL_DIRS.repo })`${pnpm} turbo prepack --output-logs=new-only`;
 
   const benchmarkEnv = join(CONTROL_DIRS.repo, 'packages/@glimmer-workspace/benchmark-env');
 
