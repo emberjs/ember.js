@@ -24,7 +24,14 @@ const HELPER_MANAGERS = new WeakMap<object, CustomHelperManager | Helper>();
 
 ///////////
 
-const getPrototypeOf = Reflect.getPrototypeOf;
+/**
+ * There is also Reflect.getPrototypeOf,
+ * which errors when non-objects are passed.
+ *
+ * Since our conditional for figuring out whether to render primitives or not
+ * may contain non-object values, we don't want to throw errors when we call this.
+ */
+const getPrototypeOf = Object.getPrototypeOf;
 
 function setManager<Def extends object>(
   map: WeakMap<object, object>,
@@ -65,7 +72,7 @@ function getManager<M extends InternalManager>(
       return manager;
     }
 
-    pointer = getPrototypeOf(pointer);
+    pointer = getPrototypeOf(pointer) as object | null;
   }
 
   return undefined;
