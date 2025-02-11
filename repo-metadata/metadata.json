@@ -167,7 +167,7 @@
     {
       "root": "packages/@glimmer/compiler",
       "name": "@glimmer/compiler",
-      "version": "0.94.7",
+      "version": "0.94.8",
       "type": "module",
       "private": false,
       "repo-meta": {
@@ -511,7 +511,7 @@
     {
       "root": "packages/@glimmer/syntax",
       "name": "@glimmer/syntax",
-      "version": "0.94.6",
+      "version": "0.94.7",
       "type": "module",
       "private": false,
       "repo-meta": {
