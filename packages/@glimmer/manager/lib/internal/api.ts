@@ -72,7 +72,7 @@ function getManager<M extends InternalManager>(
       return manager;
     }
 
-    pointer = getPrototypeOf(pointer);
+    pointer = getPrototypeOf(pointer) as object | null;
   }
 
   return undefined;
