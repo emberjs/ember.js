@@ -332,7 +332,6 @@
       "@ember/utils/lib/is_present.js": "ember-source/@ember/utils/lib/is_present.js",
       "@ember/utils/lib/type-of.js": "ember-source/@ember/utils/lib/type-of.js",
       "@ember/version/index.js": "ember-source/@ember/version/index.js",
-      "@glimmer/debug/index.js": "ember-source/@glimmer/debug/index.js",
       "@glimmer/destroyable/index.js": "ember-source/@glimmer/destroyable/index.js",
       "@glimmer/encoder/index.js": "ember-source/@glimmer/encoder/index.js",
       "@glimmer/env/index.js": "ember-source/@glimmer/env/index.js",

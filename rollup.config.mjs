@@ -221,6 +221,7 @@ export function exposedDependencies() {
     router_js: require.resolve('router_js/dist/modules/index.js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
     ...walkGlimmerDeps([
+      '@glimmer/env',
       '@glimmer/node',
       '@simple-dom/document',
       '@glimmer/manager',
