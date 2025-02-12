@@ -345,12 +345,7 @@ export function resolvePackages(deps, isExternal) {
       if (pkgName) {
         // having a pkgName means this is not a relative import
 
-        // these packages are macros, handled by babel / transpilation
-        if (
-          pkgName === '@embroider/macros' ||
-          pkgName === '@glimmer/debug' ||
-          pkgName === '@glimmer/env'
-        ) {
+        if (pkgName === '@embroider/macros') {
           return { external: true, id: pkgName };
         }
 
@@ -397,7 +392,7 @@ export function externalizePackages(deps) {
       if (pkgName) {
         // having a pkgName means this is not a relative import
 
-        if (deps[source] || source === '@glimmer/env') {
+        if (deps[source]) {
           return { external: true, id: source };
         }
 
