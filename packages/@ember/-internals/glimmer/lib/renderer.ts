@@ -10,21 +10,19 @@ import { destroy } from '@glimmer/destroyable';
 import { DEBUG } from '@glimmer/env';
 import type {
   Bounds,
-  CompileTimeCompilationContext,
   Cursor,
   DebugRenderTree,
   DynamicScope as GlimmerDynamicScope,
-  ElementBuilder,
   Environment,
   RenderResult,
-  RuntimeContext,
   Template,
   TemplateFactory,
+  EvaluationContext,
+  CurriedComponent,
+  TreeBuilder,
 } from '@glimmer/interfaces';
 
-import { CurriedType } from '@glimmer/vm';
 import type { Nullable } from '@ember/-internals/utility-types';
-import { programCompilationContext } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeOpImpl } from '@glimmer/program';
 import type { Reference } from '@glimmer/reference';
 import { createConstRef, UNDEFINED_REFERENCE, valueForRef } from '@glimmer/reference';
@@ -33,14 +31,13 @@ import {
   clientBuilder,
   createCapturedArgs,
   curry,
-  DOMChanges,
-  DOMTreeConstruction,
   EMPTY_POSITIONAL,
   inTransaction,
   renderMain,
-  runtimeContext,
+  runtimeOptions,
 } from '@glimmer/runtime';
-import { dict, unwrapTemplate } from '@glimmer/util';
+import { dict } from '@glimmer/util';
+import { unwrapTemplate } from './component-managers/unwrap-template';
 import { CURRENT_TAG, validateTag, valueForTag } from '@glimmer/validator';
 import type { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
@@ -48,14 +45,14 @@ import type Component from './component';
 import { BOUNDS } from './component-managers/curly';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
-import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate } from './environment';
 import ResolverImpl from './resolver';
 import type { OutletState } from './utils/outlet';
 import OutletView from './views/outlet';
 import { makeRouteTemplate } from './component-managers/route-template';
+import { EvaluationContextImpl } from '@glimmer/opcode-compiler';
 
-export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
+export type IBuilder = (env: Environment, cursor: Cursor) => TreeBuilder;
 
 export interface View {
   parentView: Nullable<View>;
@@ -128,11 +125,11 @@ class RootState {
   public result: RenderResult | undefined;
   public destroyed: boolean;
   public render: () => void;
+  readonly env: Environment;
 
   constructor(
     public root: Component | OutletView,
-    public runtime: RuntimeContext,
-    context: CompileTimeCompilationContext,
+    context: EvaluationContext,
     owner: InternalOwner,
     template: Template,
     self: Reference<unknown>,
@@ -148,16 +145,16 @@ class RootState {
     this.id = root instanceof OutletView ? guidFor(root) : getViewId(root);
     this.result = undefined;
     this.destroyed = false;
+    this.env = context.env;
 
     this.render = errorLoopTransaction(() => {
       let layout = unwrapTemplate(template).asLayout();
 
       let iterator = renderMain(
-        runtime,
         context,
         owner,
         self,
-        builder(runtime.env, { element: parentElement, nextSibling: null }),
+        builder(context.env, { element: parentElement, nextSibling: null }),
         layout,
         dynamicScope
       );
@@ -174,14 +171,10 @@ class RootState {
   }
 
   destroy() {
-    let {
-      result,
-      runtime: { env },
-    } = this;
+    let { result, env } = this;
 
     this.destroyed = true;
 
-    this.runtime = undefined as any;
     this.root = null as any;
     this.result = undefined;
     this.render = undefined as any;
@@ -293,8 +286,7 @@ export class Renderer {
   private _inRenderTransaction = false;
 
   private _owner: InternalOwner;
-  private _context: CompileTimeCompilationContext;
-  private _runtime: RuntimeContext;
+  private _context: EvaluationContext;
 
   private _lastRevision = -1;
   private _destroyed = false;
@@ -303,6 +295,7 @@ export class Renderer {
   _isInteractive: boolean;
 
   readonly _runtimeResolver: ResolverImpl;
+  readonly env: Environment;
 
   static create(props: { _viewRegistry: any }): Renderer {
     let { _viewRegistry } = props;
@@ -321,7 +314,7 @@ export class Renderer {
   constructor(
     owner: InternalOwner,
     document: SimpleDocument,
-    env: { isInteractive: boolean; hasDOM: boolean },
+    envOptions: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     builder = clientBuilder
@@ -332,35 +325,25 @@ export class Renderer {
     this._roots = [];
     this._removedRoots = [];
     this._builder = builder;
-    this._isInteractive = env.isInteractive;
-
-    // resolver is exposed for tests
-    let resolver = (this._runtimeResolver = new ResolverImpl());
+    this._isInteractive = envOptions.isInteractive;
 
     let sharedArtifacts = artifacts();
 
-    this._context = programCompilationContext(
-      sharedArtifacts,
-      resolver,
-      (heap) => new RuntimeOpImpl(heap)
-    );
+    // resolver is exposed for tests
+    let resolver = (this._runtimeResolver = new ResolverImpl());
+    let env = new EmberEnvironmentDelegate(owner, envOptions.isInteractive);
+    let options = runtimeOptions({ document }, env, sharedArtifacts, resolver);
 
-    let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
-    this._runtime = runtimeContext(
-      {
-        appendOperations: env.hasDOM
-          ? new DOMTreeConstruction(document)
-          : new NodeDOMTreeConstruction(document),
-        updateOperations: new DOMChanges(document),
-      },
-      runtimeEnvironmentDelegate,
+    this._context = new EvaluationContextImpl(
       sharedArtifacts,
-      resolver
+      (heap) => new RuntimeOpImpl(heap),
+      options
     );
+    this.env = this._context.env;
   }
 
   get debugRenderTree(): DebugRenderTree {
-    let { debugRenderTree } = this._runtime.env;
+    let { debugRenderTree } = this.env;
 
     assert(
       'Attempted to access the DebugRenderTree, but it did not exist. Is the Ember Inspector open?',
@@ -403,7 +386,7 @@ export class Renderer {
 
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, outlet, view.owner, args, true),
+      curry(0 as CurriedComponent, outlet, view.owner, args, true),
       target
     );
   }
@@ -412,7 +395,7 @@ export class Renderer {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(
       view,
-      curry(CurriedType.Component, definition, this._owner, null, true),
+      curry(0 as CurriedComponent, definition, this._owner, null, true),
       target
     );
   }
@@ -426,7 +409,6 @@ export class Renderer {
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
-      this._runtime,
       this._context,
       this._owner,
       this._rootTemplate,
@@ -521,7 +503,7 @@ export class Renderer {
   }
 
   createElement(tagName: string): SimpleElement {
-    return this._runtime.env.getAppendOperations().createElement(tagName);
+    return this.env.getAppendOperations().createElement(tagName);
   }
 
   _renderRoot(root: RootState): void {
@@ -537,13 +519,13 @@ export class Renderer {
   }
 
   _renderRoots(): void {
-    let { _roots: roots, _runtime: runtime, _removedRoots: removedRoots } = this;
+    let { _roots: roots, _removedRoots: removedRoots } = this;
     let initialRootsLength: number;
 
     do {
       initialRootsLength = roots.length;
 
-      inTransaction(runtime.env, () => {
+      inTransaction(this.env, () => {
         // ensure that for the first iteration of the loop
         // each root is processed
         for (let i = 0; i < roots.length; i++) {

@@ -26,12 +26,8 @@ module.exports = {
 
     'disable-features/disable-async-await': 'error',
     'disable-features/disable-generator-functions': 'error',
-    'import/no-unresolved': [
-      'error',
-      {
-        ignore: ['@ember/template-compiler'],
-      },
-    ],
+    // Doesn't work with package.json#exports
+    'import/no-unresolved': 'off',
   },
 
   settings: {

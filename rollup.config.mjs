@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import glob from 'glob';
+import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
 
@@ -220,6 +221,7 @@ export function exposedDependencies() {
     router_js: require.resolve('router_js/dist/modules/index.js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
     ...walkGlimmerDeps([
+      '@glimmer/env',
       '@glimmer/node',
       '@simple-dom/document',
       '@glimmer/manager',
@@ -293,6 +295,12 @@ function findFromProject(...names) {
 
 function entrypoint(pkg, which) {
   let module = pkg.packageJSON[which];
+  if (!module) {
+    let resolved = resolveExports.exports(pkg.packageJSON, '.', {
+      conditions: ['default', 'module', 'import', 'browser', 'development'],
+    });
+    module = resolved?.[0];
+  }
   if (!module) {
     return;
   }

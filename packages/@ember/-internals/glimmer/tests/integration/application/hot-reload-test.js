@@ -2,7 +2,14 @@ import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-he
 
 import Service, { service } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
-import { expect } from '@glimmer/util';
+
+function expect(value) {
+  if (!value) {
+    throw new Error(`value missing`);
+  }
+
+  return value;
+}
 
 // This simuates what the template hot-reloading would do in development mode
 // to avoid regressions

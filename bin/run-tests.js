@@ -81,7 +81,13 @@ run()
     process.exit(0); // eslint-disable-line n/no-process-exit
   })
   .catch(function (err) {
-    console.error(chalk.red(err.toString()));
+    console.error(chalk.red(`Error!`));
+
+    if ('passed' in err) {
+      console.error(err);
+    } else {
+      console.error(chalk.red(err.toString()));
+    }
     console.error(chalk.red('Failed!'));
     process.exit(1); // eslint-disable-line n/no-process-exit
   });

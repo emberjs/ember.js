@@ -4,11 +4,10 @@ import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {
-  CompileTimeResolver,
+  ClassicResolver,
   HelperDefinitionState,
   ModifierDefinitionState,
   ResolvedComponentDefinition,
-  RuntimeResolver,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
@@ -170,9 +169,7 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
 
 const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
 
-export default class ResolverImpl
-  implements RuntimeResolver<InternalOwner>, CompileTimeResolver<InternalOwner>
-{
+export default class ResolverImpl implements ClassicResolver<InternalOwner> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
   lookupPartial(): null {

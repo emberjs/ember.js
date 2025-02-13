@@ -419,9 +419,6 @@ d('@ember/utils/lib/type-of', emberUtilsLibTypeOf);
 import * as emberVersionIndex from '@ember/version/index';
 d('@ember/version/index', emberVersionIndex);
 
-import * as glimmerDebug from '@glimmer/debug';
-d('@glimmer/debug', glimmerDebug);
-
 import * as glimmerDestroyable from '@glimmer/destroyable';
 d('@glimmer/destroyable', glimmerDestroyable);
 

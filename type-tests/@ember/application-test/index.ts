@@ -1,6 +1,6 @@
 import { getOwner, setOwner } from '@ember/application';
 import EngineInstance from '@ember/engine/instance';
-import Owner from '@ember/owner';
+import type Owner from '@ember/owner';
 import ApplicationInstance from '@ember/application/instance';
 import Service from '@ember/service';
 import { expectTypeOf } from 'expect-type';

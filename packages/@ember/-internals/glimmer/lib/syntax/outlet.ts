@@ -1,8 +1,12 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, DynamicScope, Template } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/vm';
+import type {
+  CapturedArguments,
+  CurriedComponent,
+  DynamicScope,
+  Template,
+} from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
   childRefFromParts,
@@ -167,7 +171,7 @@ export const outletHelper = internalHelper(
 
           // Package up everything
           outlet = curry(
-            CurriedType.Component,
+            0 as CurriedComponent,
             new OutletComponent(owner, state),
             outletOwner,
             args,

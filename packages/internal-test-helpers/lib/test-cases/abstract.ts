@@ -7,7 +7,6 @@ import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
 import { runLoopSettled } from '../run';
 import { assert } from '@ember/debug';
-import { isElement } from '@glimmer/util';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -192,7 +191,7 @@ export default abstract class AbstractTestCase {
       content?: unknown;
     }
   ) {
-    if (node === null || !isElement(node)) {
+    if (node === null || !(node?.nodeType === 1 && node instanceof Element)) {
       this.assert.ok(false, `Expected a ${ElementType.name}, but got ${String(node)}`);
       return;
     }

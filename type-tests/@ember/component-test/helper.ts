@@ -1,6 +1,6 @@
 import Helper, {
-  FunctionBasedHelper,
-  FunctionBasedHelperInstance,
+  type FunctionBasedHelper,
+  type FunctionBasedHelperInstance,
   helper,
 } from '@ember/component/helper';
 import { expectTypeOf } from 'expect-type';

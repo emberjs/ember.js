@@ -1,6 +1,7 @@
-import RouteInfo, { RouteInfoWithAttributes } from '@ember/routing/route-info';
+import type { RouteInfoWithAttributes } from '@ember/routing/route-info';
+import type RouteInfo from '@ember/routing/route-info';
 import RouterService from '@ember/routing/router-service';
-import Transition from '@ember/routing/transition';
+import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
 import type { Promise as RSVPPromise } from 'rsvp';
 

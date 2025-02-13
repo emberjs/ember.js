@@ -1,12 +1,12 @@
-import Owner, {
+import { getOwner, setOwner } from '@ember/owner';
+import type Owner from '@ember/owner';
+import type {
   Factory,
   FactoryManager,
   FullName,
   RegisterOptions,
   Resolver,
   KnownForTypeResult,
-  getOwner,
-  setOwner,
 } from '@ember/owner';
 import Component from '@glimmer/component';
 import { expectTypeOf } from 'expect-type';

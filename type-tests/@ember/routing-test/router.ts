@@ -2,7 +2,8 @@ import Router from '@ember/routing/router';
 import Service, { service } from '@ember/service';
 import EmberObject, { get } from '@ember/object';
 import RouterService from '@ember/routing/router-service';
-import RouteInfo, { RouteInfoWithAttributes } from '@ember/routing/route-info';
+import type RouteInfo from '@ember/routing/route-info';
+import type { RouteInfoWithAttributes } from '@ember/routing/route-info';
 
 import { expectTypeOf } from 'expect-type';
 
