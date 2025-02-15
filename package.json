@@ -25,16 +25,16 @@
     "dist/packages",
     "dist/dependencies",
     "dist/ember-template-compiler.js",
-    "dist/ember-template-compiler.map",
+    "dist/ember-template-compiler.js.map",
     "dist/ember.debug.js",
-    "dist/ember.debug.map",
+    "dist/ember.debug.js.map",
     "dist/ember.prod.js",
-    "dist/ember.prod.map",
+    "dist/ember.prod.js.map",
     "dist/ember-testing.js",
-    "dist/ember-testing.map",
+    "dist/ember-testing.js.map",
     "docs/data.json",
     "lib",
-    "types"
+    "types/stable"
   ],
   "repository": {
     "type": "git",
