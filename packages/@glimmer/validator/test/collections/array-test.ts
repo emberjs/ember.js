@@ -1,6 +1,5 @@
 /* eslint-disable import-x/no-extraneous-dependencies */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import { TrackedArray } from '@glimmer/validator';
 import { expectTypeOf } from 'expect-type';
 
@@ -53,11 +52,11 @@ module('@glimmer/validator: TrackedArray', () => {
     test('length', (assert) => {
       let arr = new TrackedArray();
 
-      assert.equal(arr.length, 0);
+      assert.strictEqual(arr.length, 0);
 
       arr[100] = 1;
 
-      assert.equal(arr.length, 101);
+      assert.strictEqual(arr.length, 101);
     });
 
     test('concat', (assert) => {
@@ -105,7 +104,7 @@ module('@glimmer/validator: TrackedArray', () => {
         isCorrect = isCorrect && value === 123;
       }
 
-      assert.equal(count, 100);
+      assert.strictEqual(count, 100);
       assert.ok(isCorrect);
     });
 
@@ -120,7 +119,7 @@ module('@glimmer/validator: TrackedArray', () => {
     test('find', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
 
-      assert.equal(
+      assert.strictEqual(
         arr.find((v) => v > 1),
         2
       );
@@ -129,7 +128,7 @@ module('@glimmer/validator: TrackedArray', () => {
     test('findIndex', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
 
-      assert.equal(
+      assert.strictEqual(
         arr.findIndex((v) => v > 1),
         1
       );
@@ -155,7 +154,7 @@ module('@glimmer/validator: TrackedArray', () => {
     test('forEach', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
 
-      arr.forEach((v, i) => assert.equal(v, i + 1));
+      arr.forEach((v, i) => assert.strictEqual(v, i + 1));
     });
 
     test('includes', (assert) => {
@@ -168,31 +167,31 @@ module('@glimmer/validator: TrackedArray', () => {
     test('indexOf', (assert) => {
       let arr = new TrackedArray([1, 2, 1]);
 
-      assert.equal(arr.indexOf(1), 0);
-      assert.equal(arr.indexOf(5), -1);
+      assert.strictEqual(arr.indexOf(1), 0);
+      assert.strictEqual(arr.indexOf(5), -1);
     });
 
     test('join', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
 
-      assert.equal(arr.join(','), '1,2,3');
+      assert.strictEqual(arr.join(','), '1,2,3');
     });
 
     test('keys', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
       let iter = arr.keys();
 
-      assert.equal(iter.next().value, 0);
-      assert.equal(iter.next().value, 1);
-      assert.equal(iter.next().value, 2);
+      assert.strictEqual(iter.next().value, 0);
+      assert.strictEqual(iter.next().value, 1);
+      assert.strictEqual(iter.next().value, 2);
       assert.true(iter.next().done);
     });
 
     test('lastIndexOf', (assert) => {
       let arr = new TrackedArray([3, 2, 3]);
 
-      assert.equal(arr.lastIndexOf(3), 2);
-      assert.equal(arr.lastIndexOf(5), -1);
+      assert.strictEqual(arr.lastIndexOf(3), 2);
+      assert.strictEqual(arr.lastIndexOf(5), -1);
     });
 
     test('map', (assert) => {
@@ -208,7 +207,7 @@ module('@glimmer/validator: TrackedArray', () => {
       let val = arr.pop();
 
       assert.deepEqual(arr, [1, 2]);
-      assert.equal(val, 3);
+      assert.strictEqual(val, 3);
     });
 
     test('push', (assert) => {
@@ -216,13 +215,14 @@ module('@glimmer/validator: TrackedArray', () => {
       let val = arr.push(4);
 
       assert.deepEqual(arr, [1, 2, 3, 4]);
-      assert.equal(val, 4);
+      assert.strictEqual(val, 4);
     });
 
     test('reduce', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
 
-      assert.equal(
+      assert.strictEqual(
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         arr.reduce((s, v) => s + v, ''),
         '123'
       );
@@ -231,7 +231,8 @@ module('@glimmer/validator: TrackedArray', () => {
     test('reduceRight', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
 
-      assert.equal(
+      assert.strictEqual(
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
         arr.reduceRight((s, v) => s + v, ''),
         '321'
       );
@@ -249,7 +250,7 @@ module('@glimmer/validator: TrackedArray', () => {
       let val = arr.shift();
 
       assert.deepEqual(arr, [2, 3]);
-      assert.equal(val, 1);
+      assert.strictEqual(val, 1);
     });
 
     test('slice', (assert) => {
@@ -272,7 +273,7 @@ module('@glimmer/validator: TrackedArray', () => {
       let arr = new TrackedArray([3, 1, 2]);
       let arr2 = arr.sort();
 
-      assert.equal(arr, arr2);
+      assert.strictEqual(arr, arr2);
       assert.deepEqual(arr, [1, 2, 3]);
     });
 
@@ -284,7 +285,7 @@ module('@glimmer/validator: TrackedArray', () => {
         return 0;
       });
 
-      assert.equal(arr, arr2);
+      assert.strictEqual(arr, arr2);
       assert.deepEqual(arr, [3, 2, 2, 1]);
     });
 
@@ -302,16 +303,16 @@ module('@glimmer/validator: TrackedArray', () => {
       let val = arr.unshift(0);
 
       assert.deepEqual(arr, [0, 1, 2, 3]);
-      assert.equal(val, 4);
+      assert.strictEqual(val, 4);
     });
 
     test('values', (assert) => {
       let arr = new TrackedArray([1, 2, 3]);
       let iter = arr.values();
 
-      assert.equal(iter.next().value, 1);
-      assert.equal(iter.next().value, 2);
-      assert.equal(iter.next().value, 3);
+      assert.strictEqual(iter.next().value, 1);
+      assert.strictEqual(iter.next().value, 2);
+      assert.strictEqual(iter.next().value, 3);
       assert.true(iter.next().done);
     });
 
