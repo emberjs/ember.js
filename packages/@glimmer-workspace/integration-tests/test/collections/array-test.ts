@@ -6,8 +6,6 @@ import {
   test,
 } from '@glimmer-workspace/integration-tests';
 
-import { reactivityTest } from '../-helpers/reactivity';
-
 const ARRAY_GETTER_METHODS = [
   'concat',
   'entries',
@@ -48,8 +46,7 @@ class TrackedArrayTest extends RenderTest {
 
   @test
   'getting and setting an index'() {
-    reactivityTest(
-      this,
+    this.assertReactivity(
       class extends Component {
         arr = new TrackedArray(['foo']);
 
@@ -66,13 +63,12 @@ class TrackedArrayTest extends RenderTest {
 
   @test
   'Can push into a newly created TrackedArray during construction'() {
-    reactivityTest(
-      this,
+    this.assertReactivity(
       class extends Component {
         arr = new TrackedArray<string>();
 
-        constructor(owner: Owner, args: object) {
-          super(owner, args);
+        constructor(...args: unknown[]) {
+          super(...args);
           this.arr.push('hello');
         }
 
@@ -89,13 +85,12 @@ class TrackedArrayTest extends RenderTest {
 
   @test
   'Can unshift into a newly created TrackedArray during construction'() {
-    reactivityTest(
-      this,
+    this.assertReactivity(
       class extends Component {
         arr = new TrackedArray<string>();
 
-        constructor(owner: Owner, args: object) {
-          super(owner, args);
+        constructor(...args: unknown[]) {
+          super(...args);
           this.arr.unshift('hello');
         }
 
@@ -109,130 +104,147 @@ class TrackedArrayTest extends RenderTest {
       }
     );
   }
+
+  @test
+  '{{each}} works with new items'() {
+    this.assertEachReactivity(
+      class extends Component {
+        collection = new TrackedArray([1, 2, 3]);
+
+        update() {
+          this.collection.push(4);
+        }
+      }
+    );
+  }
+
+  @test
+  '{{each}} works when updating old items'() {
+    this.assertEachReactivity(
+      class extends Component {
+        collection = new TrackedArray([1, 2, 3]);
+
+        update() {
+          this.collection[2] = 5;
+        }
+      }
+    );
+  }
+
+  @test({ skip: true })
+  '{{each-in}} works with new items'() {
+    this.assertEachInReactivity(
+      class extends Component {
+        collection = new TrackedArray([1, 2, 3]);
+
+        update() {
+          this.collection.push(4);
+        }
+      }
+    );
+  }
+
+  @test({ skip: true })
+  '{{each-in}} works when updating old items'() {
+    this.assertEachInReactivity(
+      class extends Component {
+        collection = new TrackedArray([1, 2, 3]);
+
+        update() {
+          this.collection[2] = 5;
+        }
+      }
+    );
+  }
+
+  @test
+  ARRAY_GETTER_METHODS() {
+    ARRAY_GETTER_METHODS.forEach((method) => {
+      this.assertReactivity(
+        class extends Component {
+          arr = new TrackedArray(['foo', 'bar']);
+
+          get value() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            return this.arr[method](() => {
+              /* no op */
+            });
+          }
+
+          update() {
+            this.arr[0] = 'bar';
+          }
+        },
+        true,
+        `[[${method} individual index]]`
+      );
+
+      this.assertReactivity(
+        class extends Component {
+          arr = new TrackedArray(['foo', 'bar']);
+
+          get value() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            return this.arr[method](() => {
+              /* no op */
+            });
+          }
+
+          update() {
+            this.arr.sort();
+          }
+        },
+        true,
+        `[[${method} collection tag]]`
+      );
+    });
+  }
+
+  @test
+  ARRAY_SETTER_METHODS() {
+    ARRAY_SETTER_METHODS.forEach((method) => {
+      this.assertReactivity(
+        class extends Component {
+          arr = new TrackedArray(['foo', 'bar']);
+
+          get value() {
+            return this.arr[0];
+          }
+
+          update() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            this.arr[method](undefined);
+          }
+        },
+        true,
+        `[[${method} individual index]]`
+      );
+
+      this.assertReactivity(
+        class extends Component {
+          arr = new TrackedArray(['foo', 'bar']);
+
+          get value() {
+            return void this.arr.forEach(() => {
+              /* no op */
+            });
+          }
+
+          update() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            this.arr[method](undefined);
+          }
+        },
+        true,
+
+        `[[${method} collection tag]]`
+      );
+    });
+  }
 }
 
 jitSuite(TrackedArrayTest);
-
-// QUnit.module('reactivity', () => {
-//   eachReactivityTest(
-//     '{{each}} works with new items',
-//     class extends Component {
-//       collection = new TrackedArray([1, 2, 3]);
-//
-//       update() {
-//         this.collection.push(4);
-//       }
-//     }
-//   );
-//
-//   eachReactivityTest(
-//     '{{each}} works when updating old items',
-//     class extends Component {
-//       collection = new TrackedArray([1, 2, 3]);
-//
-//       update() {
-//         this.collection[2] = 5;
-//       }
-//     }
-//   );
-//
-//   eachInReactivityTest(
-//     '{{each-in}} works with new items',
-//     class extends Component {
-//       collection = new TrackedArray([1, 2, 3]);
-//
-//       update() {
-//         this.collection.push(4);
-//       }
-//     }
-//   );
-//
-//   eachInReactivityTest(
-//     '{{each-in}} works when updating old items',
-//     class extends Component {
-//       collection = new TrackedArray([1, 2, 3]);
-//
-//       update() {
-//         this.collection[2] = 5;
-//       }
-//     }
-//   );
-//
-//   ARRAY_GETTER_METHODS.forEach((method) => {
-//     reactivityTest(
-//       `${method} individual index`,
-//       class extends Component {
-//         arr = new TrackedArray(['foo', 'bar']);
-//
-//         get value() {
-//           // @ts-ignore -- this can't be represented easily in TS, and we
-//           // don't actually care that it is; we're *just* testing reactivity.
-//           return this.arr[method](() => {
-//             /* no op */
-//           });
-//         }
-//
-//         update() {
-//           this.arr[0] = 'bar';
-//         }
-//       }
-//     );
-//
-//     reactivityTest(
-//       `${method} collection tag`,
-//       class extends Component {
-//         arr = new TrackedArray(['foo', 'bar']);
-//
-//         get value() {
-//           // @ts-ignore -- this can't be represented easily in TS, and we
-//           // don't actually care that it is; we're *just* testing reactivity.
-//           return this.arr[method](() => {
-//             /* no op */
-//           });
-//         }
-//
-//         update() {
-//           this.arr.sort();
-//         }
-//       }
-//     );
-//   });
-//
-//   ARRAY_SETTER_METHODS.forEach((method) => {
-//     reactivityTest(
-//       `${method} individual index`,
-//       class extends Component {
-//         arr = new TrackedArray(['foo', 'bar']);
-//
-//         get value() {
-//           return this.arr[0];
-//         }
-//
-//         update() {
-//           // @ts-ignore -- this can't be represented easily in TS, and we
-//           // don't actually care that it is; we're *just* testing reactivity.
-//           this.arr[method](undefined);
-//         }
-//       }
-//     );
-//
-//     reactivityTest(
-//       `${method} collection tag`,
-//       class extends Component {
-//         arr = new TrackedArray(['foo', 'bar']);
-//
-//         get value() {
-//           return void this.arr.forEach(() => {
-//             /* no op */
-//           });
-//         }
-//
-//         update() {
-//           // @ts-ignore -- this can't be represented easily in TS, and we
-//           // don't actually care that it is; we're *just* testing reactivity.
-//           this.arr[method](undefined);
-//         }
-//       }
-//     );
-//   });
-// });
