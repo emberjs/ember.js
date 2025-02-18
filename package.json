@@ -89,7 +89,6 @@
     "broccoli-funnel": "^3.0.8",
     "broccoli-merge-trees": "^4.2.0",
     "chalk": "^4.0.0",
-    "ember-auto-import": "^2.10.0",
     "ember-cli-babel": "^8.2.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
