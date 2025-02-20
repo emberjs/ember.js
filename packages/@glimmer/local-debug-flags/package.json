@@ -8,6 +8,6 @@
   "exports": "./index.ts",
   "scripts": {},
   "devDependencies": {
-    "eslint": "^9.18.0"
+    "eslint": "^9.20.1"
   }
 }
