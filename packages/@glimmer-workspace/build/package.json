@@ -17,28 +17,28 @@
   "scripts": {},
   "dependencies": {
     "@glimmer/local-debug-babel-plugin": "workspace:*",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-swc": "^0.4.0",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "magic-string": "^0.30.0",
-    "postcss": "^8.4.31",
-    "rollup": "^4.31.0-0",
+    "postcss": "^8.5.3",
+    "rollup": "^4.34.8",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-insert": "^1.3.2",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-postcss": "^4.0.2",
     "tslib": "^2.8.1",
-    "unplugin-fonts": "^1.0.3",
-    "vite": "^5.4.10",
-    "zx": "^8.2.2"
+    "unplugin-fonts": "^1.3.1",
+    "vite": "^6.1.1",
+    "zx": "^8.3.2"
   },
   "devDependencies": {
-    "@types/node": "^20.9.4",
-    "eslint": "^9.18.0",
-    "typescript": "*"
+    "@types/node": "^22.13.4",
+    "eslint": "^9.20.1",
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=20.9.0"
