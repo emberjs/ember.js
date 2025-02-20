@@ -12,10 +12,10 @@
   "dependencies": {
     "@glimmer/syntax": "workspace:*",
     "execa": "^9.5.2",
-    "prettier": "^3.4.2"
+    "prettier": "^3.5.1"
   },
   "devDependencies": {
     "@glimmer-workspace/repo-metadata": "workspace:*",
-    "vitest": "^3.0.4"
+    "vitest": "^3.0.6"
   }
 }

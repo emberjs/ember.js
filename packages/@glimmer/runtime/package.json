@@ -51,9 +51,9 @@
     "@glimmer/debug": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
-    "eslint": "^9.18.0",
+    "eslint": "^9.20.1",
     "publint": "^0.3.2",
-    "rollup": "^4.31.0-0",
-    "typescript": "*"
+    "rollup": "^4.34.8",
+    "typescript": "^5.7.3"
   }
 }

@@ -11,6 +11,6 @@
   },
   "devDependencies": {
     "@glimmer/debug-util": "workspace:*",
-    "eslint": "^9.18.0"
+    "eslint": "^9.20.1"
   }
 }
