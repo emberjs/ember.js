@@ -30,7 +30,8 @@ interface Crypto {
 export const defaultId: TemplateIdFn = (() => {
   const req = (
     typeof module === 'object' && typeof module.require === 'function'
-      ? module.require
+      ? // eslint-disable-next-line @typescript-eslint/unbound-method
+        module.require
       : globalThis.require
   ) as typeof require | undefined;
 

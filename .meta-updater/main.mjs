@@ -3,6 +3,7 @@ import { createUpdateOptions } from '@pnpm/meta-updater';
 import repo, { getPackageInfo, WORKSPACE_ROOT } from '@glimmer-workspace/repo-metadata';
 import { json, packageJson } from './formats/json.mjs';
 import { code } from './formats/code.mjs';
+import catalog from './catalog/package.json' with { type: 'json' };
 
 /**
  * @import { PackageInfo } from '@glimmer-workspace/repo-metadata';
@@ -67,11 +68,17 @@ export default () =>
 
           update(scripts, 'test:publint', 'publint');
 
+          const devDependencies = /** @type { JsonObject } */ (actual.devDependencies ??= {});
+
+          for (const [name, version] of Object.entries(catalog.devDependencies)) {
+            if (name in devDependencies) {
+              update(devDependencies, name, version);
+            }
+          }
+
           // Packages are built if they're published and have at least one `.ts` entry point that is
           // not a `.d.ts` file **or** if they are explicitly marked as built via `repo-meta.built`.
           if (pkg['repo-meta']?.built) {
-            const devDependencies = /** @type { JsonObject } */ (actual.devDependencies ??= {});
-
             update(devDependencies, '@glimmer-workspace/env', 'workspace:*');
 
             update(scripts, 'prepack', 'rollup -c rollup.config.mjs');
@@ -124,6 +131,7 @@ export default () =>
         }
 
         cleanup(actual, 'publishConfig');
+        cleanup(actual, 'devDependencies');
         return actual;
       },
 

@@ -22,11 +22,12 @@
     "test:publint": "publint"
   },
   "dependencies": {
-    "@simple-dom/interface": "^1.4.0"
+    "@simple-dom/interface": "^1.4.0",
+    "type-fest": "^4.35.0"
   },
   "devDependencies": {
-    "eslint": "^9.18.0",
+    "eslint": "^9.20.1",
     "publint": "^0.3.2",
-    "typescript": "*"
+    "typescript": "^5.7.3"
   }
 }
