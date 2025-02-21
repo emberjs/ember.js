@@ -1452,8 +1452,8 @@ importers:
         specifier: workspace:*
         version: link:../wire-format
       '@handlebars/parser':
-        specifier: ~2.1.0
-        version: 2.1.0
+        specifier: ~2.0.0
+        version: 2.0.0
       simple-html-tokenizer:
         specifier: ^0.5.11
         version: 0.5.11
@@ -2792,8 +2792,8 @@ packages:
     resolution: {integrity: sha512-7bQW+gkKa2kKZPeJf6+c6gFK9ARxQfn+FKy9ScTBppyKRWH2KzsmweXUoklqeEiHiNVWaeP5csIdsNq6w7QhzA==}
     engines: {node: '>=12.20'}
 
-  '@handlebars/parser@2.1.0':
-    resolution: {integrity: sha512-R14NuNaSKZ6eE9y4t0fg/1f8iKd5ZJtSOTIseGFzXINTV17XffhLG2Y0CvdKOgyVQ7+UnXi89YGzRo/xsgwHIA==}
+  '@handlebars/parser@2.0.0':
+    resolution: {integrity: sha512-EP9uEDZv/L5Qh9IWuMUGJRfwhXJ4h1dqKTT4/3+tY0eu7sPis7xh23j61SYUnNF4vqCQvvUXpDo9Bh/+q1zASA==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -11777,7 +11777,7 @@ snapshots:
 
   '@gwhitney/detect-indent@7.0.1': {}
 
-  '@handlebars/parser@2.1.0': {}
+  '@handlebars/parser@2.0.0': {}
 
   '@humanfs/core@0.19.1': {}
 
