@@ -1,3 +1,4 @@
+import { localAssert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG } from '@glimmer/local-debug-flags';
 import { assertNever } from '@glimmer/util';
 
@@ -206,23 +207,16 @@ export class SourceSpan implements SourceLocation {
   }
 
   /**
-   * Convert this `SourceSpan` into a `SourceSlice`. In debug mode, this method optionally checks
-   * that the byte offsets represented by this `SourceSpan` actually correspond to the expected
-   * string.
+   * Convert this `SourceSpan` into a `SourceSlice`.
    */
   toSlice(expected?: string): SourceSlice {
     const chars = this.data.asString();
 
-    if (import.meta.env.DEV) {
-      if (expected !== undefined && chars !== expected) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `unexpectedly found ${JSON.stringify(
-            chars
-          )} when slicing source, but expected ${JSON.stringify(expected)}`
-        );
-      }
-    }
+    localAssert(
+      expected === undefined || expected === chars,
+      `unexpectedly found ${JSON.stringify(chars)} when slicing source, ` +
+        `but expected ${JSON.stringify(expected)}`
+    );
 
     return new SourceSlice({
       loc: this,

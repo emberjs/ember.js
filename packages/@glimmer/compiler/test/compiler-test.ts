@@ -314,6 +314,88 @@ test('top-level comments', `<!-- {{foo}} -->`, c` {{foo}} `);
 
 test('handlebars comments', `<div>{{! Better not break! }}content</div>`, ['<div>', [s`content`]]);
 
+test('handlebars comments with whitespace removal', '<div>  {{~! some comment ~}}  content</div>', [
+  '<div>',
+  [s`content`],
+]);
+
+// Strange handlebars comments
+//
+// https://github.com/handlebars-lang/handlebars-parser/blob/a095229e292e814ed9d113d88c827f3509534d1a/lib/helpers.js#L44C26-L44C45
+//
+// These are all the ways I could find to write a comment with a single character 's':
+//
+// {{!s}}
+// {{!s-}}
+// {{!s--}}
+// {{!-s}}
+// {{!-s-}}
+// {{!-s--}}
+// {{!--s--}}
+//
+// Unclear if they are meant to work but the parser accepts them, and the compiler shouldn't break.
+//
+// This is really testing @glimmer/syntax's ASTv2 loc info, but that is currently only exercised by
+// the compiler and does not have its own dedicated test suite.
+const StrangeComments = [
+  // empty comments
+  '!',
+  '!-',
+  '!--',
+  '!---',
+  '!----',
+  // comment consisting of '-'
+  '!-----',
+  // comment consisting of '--'
+  '!------',
+  // comment consisting of '!'
+  '!!',
+  '!-!',
+  '!!-',
+  '!-!-',
+  '!-!--',
+  '!--!--',
+  // comment consisting of '!-'
+  '!!---',
+  '!-!---',
+  '!--!---',
+  // comment consisting of '!--'
+  '!!----',
+  '!-!----',
+  '!--!----',
+  // comment consisting of 's'
+  '!s',
+  '!s-',
+  '!s--',
+  '!-s',
+  '!-s-',
+  '!-s--',
+  '!--s--',
+  // notably does not work, probably a bug:
+  // '!--!',
+  // '!--!-',
+  // '!--s',
+  // '!--s-',
+];
+for (const c of StrangeComments) {
+  test(`strange handlebars comments {{${c}}}`, `<div>{{${c}}}content</div>`, [
+    '<div>',
+    [s`content`],
+  ]);
+  test(`strange handlebars comments {{~${c}}}`, `<div>  {{~${c}}}content</div>`, [
+    '<div>',
+    [s`content`],
+  ]);
+  test(`strange handlebars comments {{${c}~}}`, `<div>{{${c}~}}  content</div>`, [
+    '<div>',
+    [s`content`],
+  ]);
+  test(`strange handlebars comments {{~${c}~}}`, `<div>  {{~${c}~}}  content</div>`, [
+    '<div>',
+    [s`content`],
+  ]);
+}
+
 test('namespaced attribute', `<svg xlink:title='svg-title'>content</svg>`, [
   '<svg>',
   { 'xlink:title': s`svg-title` },
