@@ -121,7 +121,6 @@
     "rimraf": "^5.0.10",
     "rollup": "^4.34.8",
     "semver": "^7.7.1",
-    "strip-ansi": "^7.1.0",
     "testem-failure-only-reporter": "^1.0.0",
     "toml": "^3.0.0",
     "tracerbench": "^8.0.1",
