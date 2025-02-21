@@ -149,7 +149,7 @@
     "github": "^0.2.3",
     "glob": "^8.0.3",
     "html-differ": "^1.4.0",
-    "mocha": "^10.2.0",
+    "mocha": "^11.1.0",
     "npm-run-all2": "^6.0.6",
     "prettier": "^2.8.0",
     "puppeteer": "^24.2.0",
