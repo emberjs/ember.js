@@ -4,6 +4,7 @@
 import child from 'child_process';
 import { resolve } from 'path';
 import PCR from 'puppeteer-chromium-resolver';
+import stripAnsi from 'strip-ansi';
 import { fileURLToPath } from 'url';
 
 const { puppeteer, executablePath } = await PCR({});
@@ -61,7 +62,7 @@ try {
       page.on('console', (msg) => {
         console.error(msg.text());
         const location = msg.location();
-        const text = msg.text();
+        const text = stripAnsi(msg.text());
 
         if (text.includes('# fail')) {
           if (!text.includes('# fail 0')) {

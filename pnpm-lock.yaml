@@ -387,6 +387,9 @@ importers:
       spex:
         specifier: ^3.4.0
         version: 3.4.0
+      strip-ansi:
+        specifier: ^7.1.0
+        version: 7.1.0
       tar:
         specifier: ^6.2.0
         version: 6.2.0
