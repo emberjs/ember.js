@@ -35,6 +35,62 @@ QUnit.module('Docs coverage', function (hooks) {
       );
     });
   });
+
+  QUnit.module('classes', function (hooks) {
+    let docsItems, expectedItems;
+    hooks.before(function () {
+      docsItems = new Set(
+        Object.values(docs.classes)
+          .filter((item) => item?.access !== 'private' && !item.name.includes('@'))
+          .map((item) => item.name)
+      );
+      expectedItems = new Set(expected.classes);
+    });
+
+    QUnit.test('No missing classes', function (assert) {
+      let missing = setDifference(expectedItems, docsItems);
+      assert.emptySet(
+        missing,
+        'If you have added new classes, please update tests/docs/expected.js and confirm that any public properties are marked both @public and @static to be included in the Ember API Docs viewer.'
+      );
+    });
+
+    QUnit.test('No extraneous classes', function (assert) {
+      let extraneous = setDifference(docsItems, expectedItems);
+      assert.emptySet(
+        extraneous,
+        'If you intentionally removed a public API class, please update tests/docs/expected.js. Otherwise, documentation is missing, incorrectly formatted, or in a directory that is not watched by yuidoc. All files containing documentation must have a yuidoc class declaration.'
+      );
+    });
+  });
+
+  QUnit.module('modules (packages)', function (hooks) {
+    let docsItems, expectedItems;
+    hooks.before(function () {
+      docsItems = new Set(
+        Object.values(docs.modules)
+          .filter((item) => item?.access !== 'private')
+          .map((item) => item.name)
+      );
+      expectedItems = new Set(expected.modules);
+    });
+
+    QUnit.test('No missing modules (packages)', function (assert) {
+      let missing = setDifference(expectedItems, docsItems);
+      assert.emptySet(
+        missing,
+        'If you have added new modules (package), please update tests/docs/expected.js and confirm that any public properties are marked both @public and @static to be included in the Ember API Docs viewer.'
+      );
+    });
+
+    QUnit.test('No extraneous modules (packages)', function (assert) {
+      let extraneous = setDifference(docsItems, expectedItems);
+      assert.emptySet(
+        extraneous,
+        'If you intentionally removed a public API module (package), please update tests/docs/expected.js. Otherwise, documentation is missing, incorrectly formatted, or in a directory that is not watched by yuidoc. All files containing documentation must have a yuidoc class declaration.'
+      );
+    });
+  });
 });
 
 function buildDocs() {
