@@ -585,9 +585,12 @@ test('handlebars comment', () => {
       {{!-- derp herky --}}<div></div>
     </div>
     <span {{! derpy }}></span>
+
+      {{~!~}}
+
   `);
 
-  let [, div, , span] = ast.body;
+  let [, div, , span, standaloneComment] = ast.body;
   if (assertNodeType(div, 'ElementNode')) {
     let [comment1, , comment2, trailingDiv] = div.children;
     locEqual(comment1, 2, 9, 2, 39);
@@ -598,6 +601,7 @@ test('handlebars comment', () => {
       locEqual(span, 5, 4, 5, 30);
       locEqual(comment3, 5, 10, 5, 22);
     }
+    locEqual(standaloneComment, 7, 6, 7, 13);
   }
 });
 

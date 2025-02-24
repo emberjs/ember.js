@@ -390,17 +390,55 @@ class StatementNormalizer {
 
   MustacheCommentStatement(node: ASTv1.MustacheCommentStatement): ASTv2.GlimmerComment {
     let loc = this.block.loc(node.loc);
-    let textLoc: SourceSpan;
 
-    if (loc.asString().slice(0, 5) === '{{!--') {
-      textLoc = loc.slice({ skipStart: 5, skipEnd: 4 });
+    // If someone cares for these cases to have the right loc, feel free to attempt:
+    // {{!}} {{~!}} {{!~}} {{~!~}}
+    // {{!-}} {{~!-}} {{!-~}} {{~!-~}}
+    // {{!--}} {{~!--}} {{!--~}} {{~!--~}}
+    // {{!---}} {{~!---}} {{!---~}} {{~!---~}}
+    // {{!----}} {{~!----}} {{!----~}} {{~!----~}}
+    if (node.value === '') {
+      return new ASTv2.GlimmerComment({
+        loc,
+        text: SourceSlice.synthetic(''),
+      });
+    }
+
+    let source = loc.asString();
+    let span = loc;
+
+    if (node.value.startsWith('-')) {
+      localAssert(
+        /^\{\{~?!---/u.test(source),
+        `to start a comment's content with a '-', it must have started with {{!--`
+      );
+      span = span.sliceStartChars({
+        skipStart: source.startsWith('{{~') ? 6 : 5,
+        chars: node.value.length,
+      });
+    } else if (node.value.endsWith('-')) {
+      localAssert(
+        /--~?\}\}/u.test(source),
+        `to end a comment's content with a '-', it must have ended with --}}`
+      );
+
+      const skipEnd = source.endsWith('~}}') ? 5 : 4;
+      const skipStart = source.length - node.value.length - skipEnd;
+
+      span = span.slice({
+        skipStart,
+        skipEnd,
+      });
     } else {
-      textLoc = loc.slice({ skipStart: 3, skipEnd: 2 });
+      span = span.sliceStartChars({
+        skipStart: source.lastIndexOf(node.value),
+        chars: node.value.length,
+      });
     }
 
     return new ASTv2.GlimmerComment({
       loc,
-      text: textLoc.toSlice(node.value),
+      text: span.toSlice(node.value),
     });
   }
 

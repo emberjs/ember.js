@@ -794,6 +794,11 @@ test('a Handlebars comment', () => {
   );
 });
 
+test('a Handlebars comment with whitespace removal', function () {
+  let t = 'before {{~! some comment ~}} after';
+  astEqual(t, b.program([b.text('before'), b.mustacheComment(' some comment '), b.text('after')]));
+});
+
 test('a Handlebars comment in proper element space', () => {
   let t = 'before <div {{! some comment }} data-foo="bar" {{! other comment }}></div> after';
   astEqual(
