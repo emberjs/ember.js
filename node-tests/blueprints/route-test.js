@@ -20,6 +20,16 @@ const fixture = require('../helpers/fixture');
 const setupTestEnvironment = require('../helpers/setup-test-environment');
 const enableOctane = setupTestEnvironment.enableOctane;
 
+// TODO: move to a fixture
+const routeTemplateWithPageTitle = `\
+import { pageTitle } from 'ember-page-title';
+
+<template>
+  {{pageTitle "Foo"}}
+  {{outlet}}
+</template>
+`;
+
 describe('Blueprint: route', function () {
   setupTestHooks(this);
 
@@ -164,6 +174,21 @@ describe('Blueprint: route', function () {
         expect(file('app/router.js')).to.not.contain("this.route('basic')");
       }).then(() => {
         expect(file('app/router.js')).to.not.contain("this.route('basic')");
+      });
+    });
+
+    it('route foo --strict-template', function () {
+      return emberGenerateDestroy(['route', 'foo', '--strict-template'], (_file) => {
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+        expect(_file('app/templates/foo.gjs')).to.equal(routeTemplateWithPageTitle);
+        expect(_file('app/templates/foo.hbs')).to.not.exist;
+
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+
+        expect(file('app/router.js')).to.contain("this.route('foo')");
+      }).then(() => {
+        expect(file('app/router.js')).to.not.contain("this.route('foo')");
       });
     });
 
