@@ -171,7 +171,13 @@
   "pnpm": {
     "overrides": {
       "rollup": "^4.2.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "core-js",
+      "esbuild",
+      "puppeteer"
+    ]
   },
   "peerDependencies": {
     "@glimmer/component": ">= 1.1.2"
@@ -393,9 +399,5 @@
       ]
     }
   },
-  "packageManager": "pnpm@8.10.0",
-  "volta": {
-    "node": "16.20.0",
-    "pnpm": "8.10.0"
-  }
+  "packageManager": "pnpm@10.5.0"
 }

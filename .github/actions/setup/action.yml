@@ -27,8 +27,6 @@ runs:
         # cached.
         path: .puppeteer-cache
         key: ${{ runner.os }}-puppeteer-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-puppeteer-
 
     - name: Disable AppArmor
       # Ubuntu >= 23 has AppArmor enabled by default, which breaks Puppeteer.
