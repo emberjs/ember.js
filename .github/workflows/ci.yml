@@ -151,6 +151,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+        with:
+          use_lockfile: "false"
       - name: build
         run: pnpm build
       - name: test
