@@ -163,7 +163,7 @@
     "testem": "^3.10.1",
     "testem-failure-only-reporter": "^1.0.0",
     "typescript": "5.1",
-    "vite": "^5.4.12"
+    "vite": "^6.2.0"
   },
   "resolutions": {
     "socket.io": "^4.7.0"
