@@ -39,6 +39,3 @@ runs:
 
     - run: pnpm install ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
       shell: bash
-
-    - run: pnpm puppeteer browsers install chrome
-      shell: bash
