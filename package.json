@@ -172,7 +172,12 @@
     "overrides": {
       "rollup": "^4.2.0"
     },
-    "onlyBuiltDependencies": ["@swc/core", "core-js", "esbuild", "puppeteer"]
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "core-js",
+      "esbuild",
+      "puppeteer"
+    ]
   },
   "peerDependencies": {
     "@glimmer/component": ">= 1.1.2"
