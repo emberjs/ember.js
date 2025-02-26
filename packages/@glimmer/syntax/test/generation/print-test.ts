@@ -152,7 +152,38 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', () => {
     ' {{#foo}}\n  {{bar}}\n {{/foo}}',
 
     `<span class="stampFont" style="font-family: 'stampfont'">&#xf000;</span>`,
+
+    // preserves single quoting when it avoids introducing &quot;
+    `<div class='He said "yes"'></div>`,
   ].forEach(buildTest);
+
+  test('falls back to using entity encoding when necessary for correctness', (assert) => {
+    let ast = parse(`<div class='transform-target'></div>`, {
+      mode: 'codemod',
+      parseOptions: { ignoreStandalone: true },
+      plugins: {
+        ast: [
+          function (_env) {
+            return {
+              name: 'test',
+              visitor: {
+                TextNode(x) {
+                  if (x.chars === 'transform-target') {
+                    x.chars = 'He said "can\'t"';
+                  }
+                },
+              },
+            };
+          },
+        ],
+      },
+    });
+
+    assert.strictEqual(
+      print(ast, { entityEncoding: 'raw' }),
+      `<div class="He said &quot;can't&quot;"></div>`
+    );
+  });
 });
 
 QUnit.module('[glimmer-syntax] Code generation - override', () => {

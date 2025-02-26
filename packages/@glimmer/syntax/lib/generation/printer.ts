@@ -293,22 +293,32 @@ export default class Printer {
 
   AttrNodeValue(value: ASTv1.AttrNode['value']): void {
     if (value.type === 'TextNode') {
-      this.buffer += '"';
-      this.TextNode(value, true);
-      this.buffer += '"';
+      let quote: '"' | "'" = '"';
+      if (this.options.entityEncoding === 'raw') {
+        if (value.chars.includes('"') && !value.chars.includes("'")) {
+          quote = "'";
+        }
+      }
+      this.buffer += quote;
+      this.TextNode(value, quote);
+      this.buffer += quote;
     } else {
       this.Node(value);
     }
   }
 
-  TextNode(text: ASTv1.TextNode, isAttr?: boolean): void {
+  TextNode(text: ASTv1.TextNode, isInAttr?: "'" | '"'): void {
     if (this.handledByOverride(text)) {
       return;
     }
 
     if (this.options.entityEncoding === 'raw') {
-      this.buffer += text.chars;
-    } else if (isAttr) {
+      if (isInAttr && text.chars.includes(isInAttr)) {
+        this.buffer += escapeAttrValue(text.chars);
+      } else {
+        this.buffer += text.chars;
+      }
+    } else if (isInAttr) {
       this.buffer += escapeAttrValue(text.chars);
     } else {
       this.buffer += escapeText(text.chars);
@@ -393,7 +403,7 @@ export default class Printer {
     this.buffer += '"';
     concat.parts.forEach((part) => {
       if (part.type === 'TextNode') {
-        this.TextNode(part, true);
+        this.TextNode(part, '"');
       } else {
         this.Node(part);
       }
