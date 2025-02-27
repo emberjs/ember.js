@@ -151,7 +151,7 @@
     "html-differ": "^1.4.0",
     "mocha": "^10.2.0",
     "npm-run-all2": "^6.0.6",
-    "prettier": "^2.8.0",
+    "prettier": "^3.5.2",
     "puppeteer": "^24.2.0",
     "qunit": "^2.19.4",
     "recast": "^0.22.0",
