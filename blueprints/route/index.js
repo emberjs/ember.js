@@ -29,6 +29,12 @@ module.exports = {
       name: 'reset-namespace',
       type: Boolean,
     },
+    {
+      name: 'strict-route-template',
+      type: Boolean,
+      default: false,
+      aliases: ['strict'],
+    },
   ],
 
   init() {
@@ -78,6 +84,16 @@ module.exports = {
         return 'app';
       },
     };
+  },
+
+  files() {
+    let files = this._super.files.apply(this, arguments);
+
+    return files.filter((file) => {
+      const extensionToRemove = this.options.strictRouteTemplate ? '.hbs' : '.gts';
+
+      return !file.endsWith(extensionToRemove);
+    });
   },
 
   locals: function (options) {

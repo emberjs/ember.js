@@ -167,6 +167,36 @@ describe('Blueprint: route', function () {
       });
     });
 
+    it('route foo --strict-route-template', function () {
+      return emberGenerateDestroy(['route', 'foo', '--strict-route-template'], (_file) => {
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+        expect(_file('app/templates/foo.gjs')).to.equal(fixture('route/strict-route-template.gjs'));
+        expect(_file('app/templates/foo.hbs')).to.not.exist;
+
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+
+        expect(file('app/router.js')).to.contain("this.route('foo')");
+      }).then(() => {
+        expect(file('app/router.js')).to.not.contain("this.route('foo')");
+      });
+    });
+
+    it('route foo --strict', function () {
+      return emberGenerateDestroy(['route', 'foo', '--strict'], (_file) => {
+        expect(_file('app/routes/foo.js')).to.equal(fixture('route/route.js'));
+
+        expect(_file('app/templates/foo.gjs')).to.equal(fixture('route/strict-route-template.gjs'));
+        expect(_file('app/templates/foo.hbs')).to.not.exist;
+
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+
+        expect(file('app/router.js')).to.contain("this.route('foo')");
+      }).then(() => {
+        expect(file('app/router.js')).to.not.contain("this.route('foo')");
+      });
+    });
+
     it('route foo --pod', function () {
       return emberGenerateDestroy(['route', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo.js/route.js')).to.not.exist;
