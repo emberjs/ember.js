@@ -177,7 +177,10 @@
       "core-js",
       "esbuild",
       "puppeteer"
-    ]
+    ],
+    "patchedDependencies": {
+      "ember-cli@6.2.2": "patches/ember-cli@6.2.2.patch"
+    }
   },
   "peerDependencies": {
     "@glimmer/component": ">= 1.1.2"
