@@ -8,6 +8,11 @@ overrides:
   socket.io: ^4.7.0
   rollup: ^4.2.0
 
+patchedDependencies:
+  ember-cli@6.2.2:
+    hash: 7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347
+    path: patches/ember-cli@6.2.2.patch
+
 importers:
 
   .:
@@ -195,7 +200,7 @@ importers:
         version: 2.0.0(@babel/core@7.26.9)
       ember-cli:
         specifier: ^6.2.0
-        version: 6.2.2(handlebars@4.7.8)(underscore@1.13.7)
+        version: 6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)
       ember-cli-blueprint-test-helpers:
         specifier: ^0.19.2
         version: 0.19.2
@@ -204,7 +209,7 @@ importers:
         version: 2.1.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@6.2.2(handlebars@4.7.8)(underscore@1.13.7))
+        version: 3.3.3(ember-cli@6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -15388,10 +15393,10 @@ snapshots:
       resolve: 1.22.10
       semver: 5.7.2
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@6.2.2(handlebars@4.7.8)(underscore@1.13.7)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 6.2.2(handlebars@4.7.8)(underscore@1.13.7)
+      ember-cli: 6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.10
@@ -15682,7 +15687,7 @@ snapshots:
       - walrus
       - whiskers
 
-  ember-cli@6.2.2(handlebars@4.7.8)(underscore@1.13.7):
+  ember-cli@6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7):
     dependencies:
       '@pnpm/find-workspace-dir': 7.0.3
       babel-remove-types: 1.0.1

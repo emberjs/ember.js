@@ -1,0 +1,57 @@
+diff --git a/lib/models/blueprint.js b/lib/models/blueprint.js
+index ad4853950b4109d143b3a4d560cdf8b430e55691..a1eed678b08ff9759b571fb54b684a6c578f6034 100644
+--- a/lib/models/blueprint.js
++++ b/lib/models/blueprint.js
+@@ -15,12 +15,7 @@ const inflector = require('inflection');
+ const minimatch = require('minimatch');
+ const path = require('path');
+ const stringUtils = require('ember-cli-string-utils');
+-const merge = require('lodash/merge');
+-const zipObject = require('lodash/zipObject');
+-const intersection = require('lodash/intersection');
+-const cloneDeep = require('lodash/cloneDeep');
+-const compact = require('lodash/compact');
+-const uniq = require('lodash/uniq');
++const { merge, zipObject, intersection, cloneDeep, compact, uniq } = require('ember-cli-lodash-subset');
+ const walkSync = require('walk-sync');
+ const SilentError = require('silent-error');
+ const CoreObject = require('core-object');
+@@ -540,14 +535,18 @@ let Blueprint = CoreObject.extend({
+       const { Preprocessor } = require('content-tag');
+       const preprocessor = new Preprocessor();
+       // Strip template tags
+-      const templateTagIdentifier = (index) => `template = __TEMPLATE_TAG_${index}__;`;
+-      const templateTagIdentifierBraces = (index) => `(template = __TEMPLATE_TAG_${index}__);`;
++      const replacementClassMember = (i) => `template = __TEMPLATE_TAG_${i}__;`;
++      const replacementExpression = (i) => `__TEMPLATE_TAG_${i}__`;
+       const templateTagMatches = preprocessor.parse(code);
+       let strippedCode = code;
+       for (let i = 0; i < templateTagMatches.length; i++) {
+         const match = templateTagMatches[i];
+         const templateTag = substringBytes(code, match.range.start, match.range.end);
+-        strippedCode = strippedCode.replace(templateTag, templateTagIdentifier(i));
++        if (match.type === 'class-member') {
++          strippedCode = strippedCode.replace(templateTag, replacementClassMember(i));
++        } else {
++          strippedCode = strippedCode.replace(templateTag, replacementExpression(i));
++        }
+       }
+ 
+       // Remove types
+@@ -558,8 +557,14 @@ let Blueprint = CoreObject.extend({
+       for (let i = 0; i < templateTagMatches.length; i++) {
+         const match = templateTagMatches[i];
+         const templateTag = substringBytes(code, match.range.start, match.range.end);
+-        transformedWithTemplateTag = transformedWithTemplateTag.replace(templateTagIdentifier(i), templateTag);
+-        transformedWithTemplateTag = transformedWithTemplateTag.replace(templateTagIdentifierBraces(i), templateTag);
++        if (match.type === 'class-member') {
++          transformedWithTemplateTag = transformedWithTemplateTag.replace(replacementClassMember(i), templateTag);
++        } else {
++          // babel-remove-types uses prettier under the hood, and adds trailing `;` where allowed,
++          // so we need to take that into account when restoring the template tags:
++          transformedWithTemplateTag = transformedWithTemplateTag.replace(`${replacementExpression(i)};`, templateTag);
++          transformedWithTemplateTag = transformedWithTemplateTag.replace(replacementExpression(i), templateTag);
++        }
+       }
+ 
+       return transformedWithTemplateTag;
