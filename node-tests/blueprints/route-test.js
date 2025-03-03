@@ -17,15 +17,10 @@ const fs = require('fs-extra');
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
-const setupTestEnvironment = require('../helpers/setup-test-environment');
-const enableOctane = setupTestEnvironment.enableOctane;
-
 describe('Blueprint: route', function () {
   setupTestHooks(this);
 
-  describe('in app - octane', function () {
-    enableOctane();
-
+  describe('in app', function () {
     beforeEach(function () {
       return emberNew()
         .then(() =>
@@ -329,9 +324,7 @@ describe('Blueprint: route', function () {
     });
   });
 
-  describe('in addon - octane', function () {
-    enableOctane();
-
+  describe('in addon', function () {
     beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
@@ -569,7 +562,6 @@ describe('Blueprint: route', function () {
   });
 
   describe('in in-repo-addon', function () {
-    enableOctane();
     beforeEach(function () {
       return emberNew({ target: 'in-repo-addon' })
         .then(() =>
