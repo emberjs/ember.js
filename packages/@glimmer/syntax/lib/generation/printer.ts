@@ -285,7 +285,9 @@ export default class Printer {
     let { name, value } = attr;
 
     this.buffer += name;
-    if (value.type !== 'TextNode' || value.chars.length > 0) {
+    const isAttribute = !name.startsWith('@');
+    const shouldElideValue = isAttribute && value.type == 'TextNode' && value.chars.length === 0;
+    if (!shouldElideValue) {
       this.buffer += '=';
       this.AttrNodeValue(value);
     }
