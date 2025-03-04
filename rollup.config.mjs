@@ -7,6 +7,7 @@ import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
 
+// eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
 const { PackageCache, packageName } = require('@embroider/shared-internals');
 const projectRoot = dirname(fileURLToPath(import.meta.url));

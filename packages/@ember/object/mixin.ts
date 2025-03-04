@@ -227,6 +227,8 @@ function applyMergedProperties(
 }
 
 function mergeMixins(
+  // TODO: Why does eslint think `mixins` is unused?
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mixins: MixinLike[],
   meta: Meta,
   descs: { [key: string]: object },

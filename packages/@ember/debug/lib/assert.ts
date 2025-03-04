@@ -49,7 +49,6 @@ if (DEBUG) {
   */
   function assert(desc: string): never;
   function assert(desc: string, test: unknown): asserts test;
-  // eslint-disable-next-line no-inner-declarations
   function assert(desc: string, test?: unknown): asserts test {
     if (!test) {
       throw new Error(`Assertion Failed: ${desc}`);
