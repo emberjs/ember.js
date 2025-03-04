@@ -28,14 +28,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: wyvox/action-setup-pnpm@v3
         with:
-          node-version: 22
+          args: '--ignore-scripts'
+          node-version: 22.13.0
           # This creates an .npmrc that reads the NODE_AUTH_TOKEN environment variable
-          registry-url: 'https://registry.npmjs.org'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          node-registry-url: 'https://registry.npmjs.org'
       - name: Publish to NPM
         run: NPM_CONFIG_PROVENANCE=true pnpm release-plan publish
         env:

@@ -51,12 +51,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: 'main'
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: wyvox/action-setup-pnpm@v3
         with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          # We have to keep ignore-scripts so that we skip post-install.
+          # Post-install won't pass on CI and is meant for local smoke tests
+          args: '--ignore-scripts'
+          node-version: 22.13.0
       - name: "Generate Explanation and Prep Changelogs"
         id: explanation
         run: |
