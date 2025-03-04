@@ -2,12 +2,12 @@
   "name": "glimmer-engine",
   "version": "0.92.0",
   "private": true,
+  "license": "MIT",
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/glimmerjs/glimmer-vm.git"
   },
-  "license": "MIT",
   "author": "Tilde, Inc.",
   "type": "module",
   "exports": null,
@@ -132,10 +132,29 @@
     "zx": "^8.3.2"
   },
   "packageManager": "pnpm@10.0.0",
+  "changelog": {
+    "repo": "glimmerjs/glimmer-vm",
+    "labels": {
+      "breaking": ":boom: Breaking Change",
+      "enhancement": ":rocket: Enhancement",
+      "bug": ":bug: Bug Fix",
+      "documentation": ":memo: Documentation",
+      "internal": ":house: Internal"
+    }
+  },
   "engines": {
     "node": ">=22.12.0"
   },
   "pnpm": {
+    "notes": {
+      "override:@glimmer/syntax": "when we run prettier, we want to use our local copy of prettier, not the one it declared in its package.json. This ensures that we don't accidentally break prettier as we make changes to @glimmer/syntax"
+    },
+    "overrides": {
+      "@glimmer/syntax": "workspace:*",
+      "@rollup/pluginutils": "^5.0.2",
+      "@types/node": "$@types/node",
+      "typescript": "$typescript"
+    },
     "peerDependencyRules": {
       "allowAny": [
         "vite-plugin-babel",
@@ -146,25 +165,6 @@
         "rollup": "^4.31.0-0",
         "typescript": "5"
       }
-    },
-    "overrides": {
-      "@glimmer/syntax": "workspace:*",
-      "@rollup/pluginutils": "^5.0.2",
-      "@types/node": "$@types/node",
-      "typescript": "$typescript"
-    },
-    "notes": {
-      "override:@glimmer/syntax": "when we run prettier, we want to use our local copy of prettier, not the one it declared in its package.json. This ensures that we don't accidentally break prettier as we make changes to @glimmer/syntax"
-    }
-  },
-  "changelog": {
-    "repo": "glimmerjs/glimmer-vm",
-    "labels": {
-      "breaking": ":boom: Breaking Change",
-      "enhancement": ":rocket: Enhancement",
-      "bug": ":bug: Bug Fix",
-      "documentation": ":memo: Documentation",
-      "internal": ":house: Internal"
     }
   }
 }
