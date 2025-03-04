@@ -58,7 +58,6 @@
     "@glimmer-workspace/benchmark-env": "workspace:*",
     "@glimmer-workspace/build-support": "workspace:*",
     "@glimmer-workspace/eslint-plugin": "workspace:*",
-    "@glimmer-workspace/integration-node-tests": "workspace:*",
     "@glimmer-workspace/integration-tests": "workspace:*",
     "@glimmer-workspace/repo-metadata": "workspace:*",
     "@glimmer/env": "0.1.7",

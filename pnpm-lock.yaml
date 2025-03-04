@@ -56,9 +56,6 @@ importers:
       '@glimmer-workspace/eslint-plugin':
         specifier: workspace:*
         version: link:packages/@glimmer-workspace/eslint-plugin
-      '@glimmer-workspace/integration-node-tests':
-        specifier: workspace:*
-        version: link:packages/@glimmer-workspace/integration-node-tests
       '@glimmer-workspace/integration-tests':
         specifier: workspace:*
         version: link:packages/@glimmer-workspace/integration-tests
@@ -597,25 +594,6 @@ importers:
       eslint:
         specifier: ^9.20.1
         version: 9.20.1(jiti@2.4.2)
-
-  packages/@glimmer-workspace/integration-node-tests:
-    dependencies:
-      '@glimmer/syntax':
-        specifier: workspace:*
-        version: link:../../@glimmer/syntax
-      execa:
-        specifier: ^9.5.2
-        version: 9.5.2
-      prettier:
-        specifier: ^3.5.1
-        version: 3.5.1
-    devDependencies:
-      '@glimmer-workspace/repo-metadata':
-        specifier: workspace:*
-        version: link:../../../repo-metadata
-      vitest:
-        specifier: ^3.0.6
-        version: 3.0.6(@types/node@22.13.4)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0)
 
   packages/@glimmer-workspace/integration-tests:
     dependencies:
