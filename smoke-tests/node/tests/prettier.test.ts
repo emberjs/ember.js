@@ -7,13 +7,6 @@ const require = createRequire(import.meta.url);
 
 /**
  * See: https://github.com/glimmerjs/glimmer-vm/issues/1688
- *
- * Requires the root package.json#pnpm#overrides point at our internal
- * copy of @glimmer/syntax, or else prettier brings its own already published
- * copy of @glimmer/syntax
- *
- * NOTE: that this test alone is insufficient to test our built outputs.
- *       the smoke-tests/* folders are for that purpose.
  */
 describe('Prettier', () => {
   it(`SMOKE: we've symlinked to the in-repo copy of @glimmer/syntax`, () => {
