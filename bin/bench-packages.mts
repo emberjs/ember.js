@@ -220,5 +220,6 @@ if (process.argv[1] === import.meta.filename) {
     roots: { benchmark: BENCHMARK_ROOT, workspace: WORKSPACE_ROOT },
     format: true,
   });
-  await $({ cwd: BENCHMARK_ROOT, verbose: true })`pnpm install --ignore-workspace`;
+  await $({ cwd: BENCHMARK_ROOT, verbose: true })`pnpm install --ignore-workspace
+--no-frozen-lockfile --fix-lockfile`;
 }
