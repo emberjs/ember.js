@@ -11,11 +11,11 @@
     "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
     "@ember/object": "workspace:*",
-    "@glimmer/destroyable": "0.94.6",
+    "@glimmer/destroyable": "0.94.7",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/owner": "0.93.2",
-    "@glimmer/util": "0.94.6",
-    "@glimmer/validator": "0.94.6",
+    "@glimmer/owner": "0.93.3",
+    "@glimmer/util": "0.94.7",
+    "@glimmer/validator": "0.94.7",
     "internal-test-helpers": "workspace:*"
   }
 }
