@@ -4,6 +4,7 @@
     "pnpm-lock.yaml",
     "patches",
     ".env",
+    ".npmrc",
     ".env.testing",
     ".eslintignore",
     ".prettierrc.json",
