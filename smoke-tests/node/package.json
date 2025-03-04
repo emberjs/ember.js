@@ -16,7 +16,8 @@
   "devDependencies": {
     "execa": "^9.5.2",
     "vite": "^5.4.10",
-    "vitest": "^3.0.4"
+    "vitest": "^3.0.4",
+    "prettier": "3.5.3"
   },
   "config": {
     "tsconfig": "../../tsconfig.json"
@@ -28,7 +29,6 @@
     "@glimmer/compiler": "file:./packages/@glimmer/compiler.tgz",
     "@glimmer/interfaces": "file:./packages/@glimmer/interfaces.tgz",
     "@glimmer/runtime": "file:./packages/@glimmer/runtime.tgz",
-    "prettier": "3.5.3"
   },
   "pnpm": {
     "overrides": {
