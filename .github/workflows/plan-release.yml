@@ -59,6 +59,7 @@ jobs:
       - name: "Generate Explanation and Prep Changelogs"
         id: explanation
         run: |
+          # Original content here
           set +e
           pnpm release-plan prepare 2> >(tee -a release-plan-stderr.txt >&2)
 
@@ -76,6 +77,11 @@ jobs:
             echo 'text<<EOF' >> $GITHUB_OUTPUT
           echo "$release_plan_output" >> $GITHUB_OUTPUT
             echo 'EOF' >> $GITHUB_OUTPUT
+
+          # Don't forget to-re-add these when we update release-plan
+          pnpm repo:update:conventions
+          pnpm repo:update:metadata
+
         env:
           GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
 
