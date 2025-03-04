@@ -94,6 +94,9 @@ let templates = [
 
   // Comment in Angle Bracket component
   '<Foo {{!-- This is a comment --}} attribute></Foo>',
+
+  // Empty string literal: arguments use ="" while attributes are valueless
+  `<Hello @world="" data-foo />`,
 ];
 
 QUnit.module('[glimmer-syntax] Code generation', () => {
