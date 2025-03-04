@@ -1,7 +1,7 @@
 {
   "name": "glimmer-engine",
-  "private": true,
   "version": "0.92.0",
+  "private": true,
   "license": "MIT",
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "repository": {
@@ -116,7 +116,7 @@
     "puppeteer": "23.11.1",
     "puppeteer-chromium-resolver": "^23.0.0",
     "qunit": "^2.24.1",
-    "release-plan": "0.11.0",
+    "release-plan": "^0.13.1",
     "rimraf": "^5.0.10",
     "rollup": "^4.34.8",
     "semver": "^7.7.1",
@@ -131,6 +131,7 @@
     "vitest": "^3.0.6",
     "zx": "^8.3.2"
   },
+  "packageManager": "pnpm@10.0.0",
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
     "labels": {
@@ -144,7 +145,6 @@
   "engines": {
     "node": ">=22.12.0"
   },
-  "packageManager": "pnpm@10.0.0",
   "pnpm": {
     "notes": {
       "override:@glimmer/syntax": "when we run prettier, we want to use our local copy of prettier, not the one it declared in its package.json. This ensures that we don't accidentally break prettier as we make changes to @glimmer/syntax"
