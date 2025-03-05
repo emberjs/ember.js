@@ -18,7 +18,7 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
  */
 export type FullName<
   Type extends string = string,
-  Name extends string = string
+  Name extends string = string,
 > = `${Type}:${Name}`;
 
 /**

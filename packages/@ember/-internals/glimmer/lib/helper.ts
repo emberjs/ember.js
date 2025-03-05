@@ -127,7 +127,7 @@ export default class Helper<S = unknown> extends FrameworkObject {
 
   // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
   // here to preserve the type param.
-  private declare [SIGNATURE]: S;
+  declare private [SIGNATURE]: S;
 
   init(properties: object | undefined) {
     super.init(properties);

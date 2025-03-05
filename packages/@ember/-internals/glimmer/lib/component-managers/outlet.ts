@@ -178,8 +178,7 @@ const OUTLET_COMPONENT_TEMPLATE = precompileTemplate(
 );
 
 export class OutletComponent
-  implements
-    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
+  implements ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager>
 {
   // handle is not used by this custom definition
   public handle = -1;
@@ -188,7 +187,10 @@ export class OutletComponent
   public capabilities = CAPABILITIES_MASK;
   public compilable: CompilableProgram;
 
-  constructor(owner: InternalOwner, public state: OutletDefinitionState) {
+  constructor(
+    owner: InternalOwner,
+    public state: OutletDefinitionState
+  ) {
     this.compilable = unwrapTemplate(OUTLET_COMPONENT_TEMPLATE(owner)).asLayout();
   }
 }
