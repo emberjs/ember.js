@@ -5,7 +5,7 @@ import qunit from 'eslint-plugin-qunit';
 import disableFeatures from 'eslint-plugin-disable-features';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
-import n from 'eslint-plugin-n';
+import nodePlugin from 'eslint-plugin-n';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
@@ -197,9 +197,8 @@ export default [
       'disable-features/disable-generator-functions': 'off',
     },
   },
-  ...compat.extends('plugin:n/recommended').map((config) => ({
-    ...config,
-
+  {
+    ...nodePlugin.configs['flat/recommended'],
     files: [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',
@@ -220,7 +219,7 @@ export default [
       '**/ember-cli-build.js',
       '**/*.cjs',
     ],
-  })),
+  },
   {
     files: [
       '**/rollup.config.mjs',
@@ -244,7 +243,7 @@ export default [
     ],
 
     plugins: {
-      n,
+      n: nodePlugin,
     },
 
     languageOptions: {
@@ -257,7 +256,7 @@ export default [
     },
 
     rules: {
-      'no-process-exit': 'off',
+      'n/no-process-exit': 'off',
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
