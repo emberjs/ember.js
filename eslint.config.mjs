@@ -236,10 +236,6 @@ export default [
       '**/*.cjs',
     ],
 
-    plugins: {
-      n: nodePlugin,
-    },
-
     languageOptions: {
       globals: {
         ...globals.node,
@@ -250,7 +246,6 @@ export default [
     },
 
     rules: {
-      'n/no-process-exit': 'off',
       'no-throw-literal': 'error',
       'disable-features/disable-async-await': 'off',
       'disable-features/disable-generator-functions': 'off',
