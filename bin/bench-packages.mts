@@ -224,6 +224,6 @@ if (process.argv[1] === import.meta.filename) {
     cwd: BENCHMARK_ROOT,
     verbose: true,
     env: { CI: 'false' },
-  })`pnpm install --ignore-workspace-root-check
+  })`pnpm install --ignore-workspace
  --no-lockfile`;
 }
