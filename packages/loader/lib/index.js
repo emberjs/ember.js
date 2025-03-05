@@ -8,12 +8,12 @@ var define, require;
     typeof globalThis !== 'undefined'
       ? globalThis
       : typeof self !== 'undefined'
-      ? self
-      : typeof window !== 'undefined'
-      ? window
-      : typeof global !== 'undefined'
-      ? global
-      : null;
+        ? self
+        : typeof window !== 'undefined'
+          ? window
+          : typeof global !== 'undefined'
+            ? global
+            : null;
 
   if (globalObj === null) {
     throw new Error('unable to locate global object');

@@ -804,7 +804,7 @@ class Component<S = unknown>
 
   // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
   // here to preserve the type param.
-  private declare [SIGNATURE]: S;
+  declare private [SIGNATURE]: S;
 
   // SAFTEY: This is set in `init`.
   declare _superRerender: ViewMixin['rerender'];

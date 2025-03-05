@@ -70,6 +70,7 @@ export const GUID_KEY = intern(`__ember${Date.now()}`);
     separate the guid into separate namespaces.
   @return {String} the guid
 */
+// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
 export function generateGuid(obj: object, prefix = GUID_PREFIX): String {
   let guid = prefix + uuid().toString();
 

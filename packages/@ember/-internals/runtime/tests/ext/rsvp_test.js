@@ -58,7 +58,7 @@ moduleFor(
 
       try {
         run(RSVP, 'reject');
-      } catch (e) {
+      } catch {
         assert.ok(false, 'should not throw');
       } finally {
         setTesting(wasEmberTesting);

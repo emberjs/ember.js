@@ -55,7 +55,10 @@ class InternalModifierState implements Destroyable {
 export abstract class InternalModifierManager
   implements ModifierManager<InternalModifierState, typeof InternalModifier>
 {
-  constructor(private ModifierClass: typeof InternalModifier, private name: string) {}
+  constructor(
+    private ModifierClass: typeof InternalModifier,
+    private name: string
+  ) {}
 
   create(
     owner: InternalOwner,

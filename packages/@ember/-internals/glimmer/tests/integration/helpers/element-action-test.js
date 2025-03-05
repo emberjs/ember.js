@@ -1512,9 +1512,14 @@ moduleFor(
         template: '<a id="oops-bound-param" {{action this.ohNoeNotValid}}>Hi</a>',
       });
 
-      expectAssertion(() => {
-        this.render('{{example-component}}');
-      }, 'You specified a quoteless path, `this.ohNoeNotValid`, to the {{action}} helper ' + 'which did not resolve to an action name (a string). ' + 'Perhaps you meant to use a quoted actionName? (e.g. {{action "ohNoeNotValid"}}).');
+      expectAssertion(
+        () => {
+          this.render('{{example-component}}');
+        },
+        'You specified a quoteless path, `this.ohNoeNotValid`, to the {{action}} helper ' +
+          'which did not resolve to an action name (a string). ' +
+          'Perhaps you meant to use a quoted actionName? (e.g. {{action "ohNoeNotValid"}}).'
+      );
     }
 
     [`${testUnless(

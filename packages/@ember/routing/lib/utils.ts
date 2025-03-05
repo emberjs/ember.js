@@ -137,6 +137,7 @@ function _calculateCacheValuePrefix(prefix: string, part: string) {
 /*
   Stolen from Controller
 */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export function calculateCacheKey(prefix: string, parts: string[] = [], values: {} | null): string {
   let suffixes = '';
   for (let part of parts) {

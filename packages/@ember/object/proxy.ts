@@ -111,7 +111,7 @@ interface ObjectProxy<Content = unknown> extends _ProxyMixin<Content> {
     K extends keyof Content | keyof this,
     Hash extends Partial<
       Pick<Content, Exclude<K, keyof this>> & Pick<this, Exclude<K, keyof Content>>
-    >
+    >,
   >(
     hash: Hash
   ): Hash;

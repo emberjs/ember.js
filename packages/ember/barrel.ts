@@ -597,7 +597,6 @@ namespace Ember {
 // namespace merging semantics.)
 // eslint-disable-next-line @typescript-eslint/no-namespace
 declare namespace Ember {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export import RSVP = _RSVP;
 }
 

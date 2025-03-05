@@ -27,7 +27,7 @@ moduleFor(
       if (typeof JSON !== 'undefined' && 'stringify' in JSON) {
         try {
           JSON.stringify(obj);
-        } catch (e) {
+        } catch {
           assert.ok(false, 'meta should not fail JSON.stringify');
         }
       }

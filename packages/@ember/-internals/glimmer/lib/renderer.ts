@@ -65,7 +65,10 @@ export interface View {
 }
 
 export class DynamicScope implements GlimmerDynamicScope {
-  constructor(public view: View | null, public outletState: Reference<OutletState | undefined>) {}
+  constructor(
+    public view: View | null,
+    public outletState: Reference<OutletState | undefined>
+  ) {}
 
   child() {
     return new DynamicScope(this.view, this.outletState);

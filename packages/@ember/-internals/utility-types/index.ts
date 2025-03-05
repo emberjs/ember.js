@@ -26,7 +26,7 @@ export type OmitFirst<F> = F extends [any, ...infer R] ? R : [];
 // case (see e.g. `@ember/component/helper`'s use with functional helpers).
 declare const Data: unique symbol;
 export class Opaque<Data> {
-  private declare [Data]: Data;
+  declare private [Data]: Data;
 }
 
 export type Nullable<T> = T | null;

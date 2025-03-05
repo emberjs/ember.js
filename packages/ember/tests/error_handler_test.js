@@ -117,7 +117,7 @@ moduleFor(
         run(() => {
           throw error;
         });
-      } catch (e) {
+      } catch {
         assert.notOk(
           true,
           'Ember.onerror that does not rethrow is intentionally swallowing errors, try / catch wrapping does not see error'

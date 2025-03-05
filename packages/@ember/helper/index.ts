@@ -332,7 +332,7 @@ export const invokeHelper = glimmerInvokeHelper;
 // currently typed only as `object`, and we are replacing it with a similarly
 // low-information interface type: these are empty objects which are simply able
 // to be distinguished so that Glint can provide the relevant extensions.
-/* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 
 /**
  * Using the `{{hash}}` helper, you can pass objects directly from the template
@@ -491,4 +491,4 @@ export interface FnHelper extends Opaque<'helper:fn'> {}
 export const uniqueId = glimmerUniqueId;
 export type UniqueIdHelper = typeof uniqueId;
 
-/* eslint-enable @typescript-eslint/no-empty-interface */
+/* eslint-enable @typescript-eslint/no-empty-object-type */

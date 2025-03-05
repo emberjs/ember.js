@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable prefer-const */
 import Route from '@ember/routing/route';
 import type Array from '@ember/array';

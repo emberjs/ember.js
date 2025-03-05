@@ -269,7 +269,7 @@ moduleForDevelopment(
           for: 'namespace',
         });
         assert.ok(true, 'Deprecation did not throw');
-      } catch (e) {
+      } catch {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
       }
 
@@ -281,7 +281,7 @@ moduleForDevelopment(
           for: 'namespace',
         });
         assert.ok(true, 'Deprecation did not throw');
-      } catch (e) {
+      } catch {
         assert.ok(false, 'Deprecation was thrown despite being added to blacklist');
       }
 

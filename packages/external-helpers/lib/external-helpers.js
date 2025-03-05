@@ -1,5 +1,3 @@
-/* globals Reflect */
-
 import { DEBUG } from '@glimmer/env';
 
 const setPrototypeOf = Object.setPrototypeOf;

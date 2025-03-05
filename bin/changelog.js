@@ -1,6 +1,4 @@
-#!/usr/bin/env node
-
-/* eslint-disable no-console, n/shebang */
+/* eslint-disable no-console */
 
 'use strict';
 
@@ -125,7 +123,7 @@ async function getCommitMessage(commitInfo) {
           '..origin/main --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit',
         { encoding: 'utf8' }
       );
-    } catch (e) {
+    } catch {
       // ignored
     }
   }

@@ -21,7 +21,7 @@ import EmberObject from '.';
 // `OWNER` property key from the super class, eliminating the private name
 // shenanigans.
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface FrameworkObject extends EmberObject {}
 let FrameworkObject: typeof EmberObject = class FrameworkObject extends EmberObject {};
 

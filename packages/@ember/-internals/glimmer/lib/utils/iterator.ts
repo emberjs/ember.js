@@ -171,7 +171,10 @@ class ObjectIterator extends BoundedIterator {
     }
   }
 
-  constructor(private keys: unknown[], private values: unknown[]) {
+  constructor(
+    private keys: unknown[],
+    private values: unknown[]
+  ) {
     super(values.length);
   }
 
@@ -203,7 +206,10 @@ abstract class NativeIterator<T = unknown> implements IteratorDelegate {
 
   private position = 0;
 
-  constructor(private iterable: Iterator<T>, private result: IteratorResult<T>) {}
+  constructor(
+    private iterable: Iterator<T>,
+    private result: IteratorResult<T>
+  ) {}
 
   isEmpty(): false {
     return false;

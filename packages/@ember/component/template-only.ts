@@ -38,7 +38,7 @@ import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/
  * templates is null. This means that you can only reference passed in arguments
  * (e.g. `{{@arg}}`).
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TemplateOnlyComponent<S = unknown> extends Opaque<S> {}
 
 /**

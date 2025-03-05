@@ -109,6 +109,7 @@ export interface QueryParam {
   type: string;
   route: Route;
   parts?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   values: {} | null;
   scopedPropertyName: string;
   scope: string;
@@ -1068,6 +1069,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     targetRouteName: string,
     models: ModelFor<Route>[],
     queryParams: Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     _queryParams: {}
   ) {
     // merge in any queryParams from the active transition which could include

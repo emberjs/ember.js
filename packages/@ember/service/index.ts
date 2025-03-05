@@ -128,5 +128,5 @@ export default class Service extends FrameworkObject {
 // that would be for end users, because there is no actual contract to that
 // effect with Ember -- and in the future this choice would allow us to have
 // registered services which have no base class.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, object | undefined> {}

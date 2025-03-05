@@ -493,7 +493,7 @@ export function setFactoryFor<T extends object, C extends FactoryClass | object>
 
 export class InternalFactoryManager<
   T extends object,
-  C extends FactoryClass | object = FactoryClass
+  C extends FactoryClass | object = FactoryClass,
 > implements FactoryManager<T>
 {
   readonly container: Container;
