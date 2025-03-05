@@ -720,6 +720,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
 
     @property _optionsForQueryParam
   */
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   _optionsForQueryParam(qp: QueryParam): {} {
     const queryParams = get(this, 'queryParams');
     return (
@@ -2097,6 +2098,7 @@ Route.reopen({
     @returns {boolean}
     @private
    */
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     queryParamsDidChange<T>(this: Route<T>, changed: {}, _totalPresent: unknown, removed: {}) {
       // SAFETY: Since `_qp` is protected we can't infer the type
       let qpMap = (get(this, '_qp') as Route<T>['_qp']).map;
@@ -2120,6 +2122,7 @@ Route.reopen({
     finalizeQueryParamChange<T>(
       this: Route<T>,
       params: Record<string, string | null | undefined>,
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       finalParams: {}[],
       transition: Transition
     ) {

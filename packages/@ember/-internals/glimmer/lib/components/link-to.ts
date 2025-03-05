@@ -16,6 +16,7 @@ import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 import { type Opaque } from '@ember/-internals/utility-types';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 const EMPTY_ARRAY: {}[] = [];
 const EMPTY_QUERY_PARAMS = {};
 
@@ -32,6 +33,7 @@ function isPresent<T>(value: Maybe<T>): value is T {
 
 interface QueryParams {
   isQueryParams: true;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   values: Nullable<{}>;
 }
 
@@ -434,6 +436,7 @@ class _LinkTo extends InternalComponent {
   }
 
   // TODO: not sure why generateURL takes {}[] instead of unknown[]
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   private get models(): {}[] {
     if ('models' in this.args.named) {
       let models = this.named('models');
@@ -445,6 +448,7 @@ class _LinkTo extends InternalComponent {
 
       return models;
     } else if ('model' in this.args.named) {
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       return [this.named('model') as {}];
     } else {
       return EMPTY_ARRAY;
@@ -623,11 +627,13 @@ let descriptorFor = (target: object, property: string): Nullable<PropertyDescrip
     superModelsDescriptor && typeof superModelsDescriptor.get === 'function'
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   let superModelsGetter = superModelsDescriptor.get as (this: _LinkTo) => {}[];
 
   Object.defineProperty(prototype, 'models', {
     configurable: true,
     enumerable: false,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     get: function models(this: _LinkTo): {}[] {
       let models = superModelsGetter.call(this);
 
@@ -648,11 +654,13 @@ let descriptorFor = (target: object, property: string): Nullable<PropertyDescrip
     superQueryDescriptor && typeof superQueryDescriptor.get === 'function'
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   let superQueryGetter = superQueryDescriptor.get as (this: _LinkTo) => {};
 
   Object.defineProperty(prototype, 'query', {
     configurable: true,
     enumerable: false,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     get: function query(this: _LinkTo): {} {
       if ('query' in this.args.named) {
         let qp = superQueryGetter.call(this);

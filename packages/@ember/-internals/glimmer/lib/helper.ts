@@ -19,6 +19,7 @@ export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 // Signature type utilities
 type GetOr<T, K, Else> = K extends keyof T ? T[K] : Else;
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type Args<S> = GetOr<S, 'Args', {}>;
 
 type DefaultPositional = unknown[];

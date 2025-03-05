@@ -9,6 +9,7 @@ let uuid = 0;
 export interface RouteOptions {
   path?: string;
   resetNamespace?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined };
   overrideNameAssertion?: boolean;
 }
@@ -49,6 +50,7 @@ export interface DSLImplOptions {
 
 export default class DSLImpl implements DSL {
   parent: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
   matches: Array<Object | undefined>;
   enableLoadingSubstates: boolean;
   explicitIndex = false;
@@ -128,6 +130,7 @@ export default class DSLImpl implements DSL {
     url: string,
     name: string,
     callback?: MatchCallback,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined }
   ): void {
     let parts = name.split('.');
