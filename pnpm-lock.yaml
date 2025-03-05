@@ -266,8 +266,8 @@ importers:
         specifier: ^6.0.6
         version: 6.2.6
       prettier:
-        specifier: ^2.8.0
-        version: 2.8.8
+        specifier: ^3.5.3
+        version: 3.5.3
       puppeteer:
         specifier: ^24.2.0
         version: 24.3.0(typescript@5.1.6)
@@ -8535,6 +8535,11 @@ packages:
 
   prettier@3.5.2:
     resolution: {integrity: sha512-lc6npv5PH7hVqozBR7lkBNOGXV9vMwROAPlumdBkX0wTbbzPu/U1hk5yL8p2pt4Xoc+2mkT8t/sow2YrV/M5qg==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  prettier@3.5.3:
+    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -19137,6 +19142,8 @@ snapshots:
   prettier@2.8.8: {}
 
   prettier@3.5.2: {}
+
+  prettier@3.5.3: {}
 
   pretty-bytes@5.6.0: {}
 
