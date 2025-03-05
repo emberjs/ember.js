@@ -1,4 +1,3 @@
-import { fixupConfigRules } from '@eslint/compat';
 import emberInternal from 'eslint-plugin-ember-internal';
 import importPlugin from 'eslint-plugin-import';
 import qunitPluginRecommended from 'eslint-plugin-qunit/configs/recommended';
@@ -9,15 +8,9 @@ import nodePlugin from 'eslint-plugin-n';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pluginJs from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: pluginJs.configs.recommended,
-  allConfig: pluginJs.configs.all,
-});
 
 export default [
   {
@@ -38,7 +31,6 @@ export default [
   importPlugin.flatConfigs.errors,
   importPlugin.flatConfigs.typescript,
   qunitPluginRecommended,
-  ...fixupConfigRules(compat.extends('plugin:prettier/recommended')),
   {
     plugins: {
       'ember-internal': emberInternal,

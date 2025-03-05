@@ -1,0 +1,9 @@
+blueprints/*/*files/
+node-tests/fixtures/**/*.js
+docs/
+**/.*
+**/dist/
+**/tmp/
+**/smoke-tests/
+**/types/
+**/type-tests/
