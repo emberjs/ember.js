@@ -12,7 +12,7 @@ export type Builders = typeof builders;
  * interface with a new named export, but the I wasn't able to figure out the
  * typing. Here export the interface subclass with no modification.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PluginFunc extends ASTPluginBuilder<EmberASTPluginEnvironment> {}
 
 interface Plugins {

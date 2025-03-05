@@ -71,7 +71,7 @@ export type FullName<
   @for @ember/owner
   @private
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DIRegistry {}
 
 // Convenience utility for pulling a specific factory manager off `DIRegistry`

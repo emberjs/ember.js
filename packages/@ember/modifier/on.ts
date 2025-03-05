@@ -6,7 +6,7 @@ import type { Opaque } from '@ember/-internals/utility-types';
 // needs to be importable. Declaring it with a unique interface like this,
 // however, gives tools like Glint (that *do* have a richer notion of what it
 // is) a place to install more detailed type information.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface OnModifier extends Opaque<'modifier:on'> {}
 
 // SAFETY: at the time of writing, the cast here is from `{}` to `OnModifier`,
