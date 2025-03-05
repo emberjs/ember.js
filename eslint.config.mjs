@@ -1,7 +1,7 @@
-import { fixupConfigRules, fixupPluginRules } from '@eslint/compat';
+import { fixupConfigRules } from '@eslint/compat';
 import emberInternal from 'eslint-plugin-ember-internal';
 import importPlugin from 'eslint-plugin-import';
-import qunit from 'eslint-plugin-qunit';
+import qunitPluginRecommended from 'eslint-plugin-qunit/configs/recommended';
 import disableFeatures from 'eslint-plugin-disable-features';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
@@ -37,11 +37,11 @@ export default [
   pluginJs.configs.recommended,
   importPlugin.flatConfigs.errors,
   importPlugin.flatConfigs.typescript,
-  ...fixupConfigRules(compat.extends('plugin:qunit/recommended', 'plugin:prettier/recommended')),
+  qunitPluginRecommended,
+  ...fixupConfigRules(compat.extends('plugin:prettier/recommended')),
   {
     plugins: {
       'ember-internal': emberInternal,
-      qunit: fixupPluginRules(qunit),
       'disable-features': disableFeatures,
     },
 
