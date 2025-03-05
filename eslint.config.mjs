@@ -8,15 +8,15 @@ import globals from 'globals';
 import nodePlugin from 'eslint-plugin-n';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import js from '@eslint/js';
+import pluginJs from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
   baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
+  recommendedConfig: pluginJs.configs.recommended,
+  allConfig: pluginJs.configs.all,
 });
 
 export default [
@@ -34,9 +34,9 @@ export default [
       '**/type-tests/',
     ],
   },
+  pluginJs.configs.recommended,
   ...fixupConfigRules(
     compat.extends(
-      'eslint:recommended',
       'plugin:import/errors',
       'plugin:import/typescript',
       'plugin:qunit/recommended',
