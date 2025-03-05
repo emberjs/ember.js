@@ -3,7 +3,7 @@ import emberInternal from 'eslint-plugin-ember-internal';
 import _import from 'eslint-plugin-import';
 import qunit from 'eslint-plugin-qunit';
 import disableFeatures from 'eslint-plugin-disable-features';
-import tsParser from '@typescript-eslint/parser';
+import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import n from 'eslint-plugin-n';
 import path from 'node:path';
@@ -56,7 +56,7 @@ export default [
     },
 
     languageOptions: {
-      parser: tsParser,
+      parser: tseslint.parser,
     },
 
     settings: {
@@ -88,13 +88,12 @@ export default [
       'import/no-unresolved': 'off',
     },
   },
-  ...compat.extends('plugin:@typescript-eslint/recommended').map((config) => ({
+  ...tseslint.configs.recommended.map((config) => ({
     ...config,
     files: ['**/*.ts'],
   })),
   {
     files: ['**/*.ts'],
-
     languageOptions: {
       ecmaVersion: 5,
       sourceType: 'module',
