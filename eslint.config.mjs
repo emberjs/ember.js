@@ -135,6 +135,7 @@ export default [
 
       // TODO: Disabled when upgrading typescript-eslint from 5 to 8
       '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-unsafe-declaration-merging': 'off',
     },
   },
   {
