@@ -132,6 +132,9 @@ export default [
       'prefer-spread': 'off',
       'prefer-const': 'off',
       'prefer-rest-params': 'off',
+
+      // TODO: Disabled when upgrading typescript-eslint from 5 to 8
+      '@typescript-eslint/no-unsafe-function-type': 'off',
     },
   },
   {
