@@ -2,6 +2,11 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from './decorator-util';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -113,13 +118,23 @@ export function makeComputedDecorator(
   desc: ComputedDescriptor,
   DecoratorClass: { prototype: object }
 ): ExtendedMethodDecorator {
-  let decorator = function COMPUTED_DECORATOR(
-    target: object,
-    key: string,
-    propertyDesc?: DecoratorPropertyDescriptor,
-    maybeMeta?: Meta,
-    isClassicDecorator?: boolean
-  ): DecoratorPropertyDescriptor {
+  let decorator = function COMPUTED_DECORATOR(...args: unknown[]): DecoratorPropertyDescriptor {
+    if (isModernDecoratorArgs(args)) {
+      return computedDecorator2023(
+        args,
+        desc,
+        DecoratorClass
+      ) as unknown as DecoratorPropertyDescriptor;
+    }
+
+    let [target, key, propertyDesc, maybeMeta, isClassicDecorator] = args as [
+      object,
+      string,
+      DecoratorPropertyDescriptor | undefined,
+      Meta | undefined,
+      boolean | undefined
+    ];
+
     assert(
       `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
       isClassicDecorator ||
@@ -146,6 +161,16 @@ export function makeComputedDecorator(
   Object.setPrototypeOf(decorator, DecoratorClass.prototype);
 
   return decorator;
+}
+
+function computedDecorator2023(
+  args: Paramters<Decorator>,
+  desc: ComputedDescriptor,
+  DecoratorClass: { prototype: object }
+) {
+  let dec = identifyModernDecoratorArgs(args);
+  console.log(`ignoring modern decorator on ${dec.kind} ${dec.context.name?.toString()}`);
+  return;
 }
 
 /////////////

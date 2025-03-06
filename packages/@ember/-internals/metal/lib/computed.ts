@@ -40,6 +40,7 @@ import {
   notifyPropertyChange,
   PROPERTY_DID_CHANGE,
 } from './property_events';
+import { isModernDecoratorArgs } from './decorator-util';
 
 export type ComputedPropertyGetterFunction = (this: any, key: string) => unknown;
 export type ComputedPropertySetterFunction = (
@@ -884,6 +885,11 @@ export function computed(callback: ComputedPropertyCallback): ComputedDecorator;
 export function computed(
   ...args: ElementDescriptor | string[] | ComputedDecoratorKeysAndConfig
 ): ComputedDecorator | DecoratorPropertyDescriptor | void {
+  if (isModernDecoratorArgs(args)) {
+    console.log(`ignoring computed on ${args[1].kind} ${args[1].name?.toString()}`);
+    return;
+  }
+
   assert(
     `@computed can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: computed()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && (args[4] as unknown) === true)

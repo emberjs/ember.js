@@ -54,7 +54,11 @@ moduleFor(
       let tag = track(() => obj.first);
       let snapshot = valueForTag(tag);
 
-      assert.equal(obj.first, 'first: second', 'The value initializes correctly');
+      let expectedInitialValue = import.meta.env.VITE_STABLE_DECORATORS
+        ? 'first: undefined'
+        : 'first: second';
+
+      assert.equal(obj.first, expectedInitialValue, 'The value initializes correctly');
       assert.equal(validateTag(tag, snapshot), true);
 
       snapshot = valueForTag(tag);
@@ -65,7 +69,7 @@ moduleFor(
       // See: https://github.com/glimmerjs/glimmer-vm/pull/1018
       // assert.equal(validate(tag, snapshot), true);
 
-      assert.equal(obj.first, 'first: second', 'The value stays the same once initialized');
+      assert.equal(obj.first, expectedInitialValue, 'The value stays the same once initialized');
       snapshot = valueForTag(tag);
 
       assert.equal(validateTag(tag, snapshot), true);
