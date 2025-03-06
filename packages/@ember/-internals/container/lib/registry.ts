@@ -322,7 +322,7 @@ export default class Registry {
     } else if (this.fallback !== null) {
       return this.fallback.makeToString(factory, fullName);
     } else {
-      return typeof factory === 'string' ? factory : factory.name ?? '(unknown class)';
+      return typeof factory === 'string' ? factory : (factory.name ?? '(unknown class)');
     }
   }
 

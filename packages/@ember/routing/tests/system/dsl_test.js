@@ -27,17 +27,20 @@ moduleFor(
       assert.expect(reservedNames.length);
 
       reservedNames.forEach((reservedName) => {
-        expectAssertion(() => {
-          let Router = class extends this.Router {};
+        expectAssertion(
+          () => {
+            let Router = class extends this.Router {};
 
-          Router.map(function () {
-            this.route(reservedName);
-          });
+            Router.map(function () {
+              this.route(reservedName);
+            });
 
-          let owner = buildOwner();
-          owners.push(owner);
-          new Router(owner)._initRouterJs();
-        }, "'" + reservedName + "' cannot be used as a route name.");
+            let owner = buildOwner();
+            owners.push(owner);
+            new Router(owner)._initRouterJs();
+          },
+          "'" + reservedName + "' cannot be used as a route name."
+        );
       });
 
       owners.forEach((o) => runDestroy(o));

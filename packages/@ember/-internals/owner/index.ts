@@ -18,7 +18,7 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
  */
 export type FullName<
   Type extends string = string,
-  Name extends string = string
+  Name extends string = string,
 > = `${Type}:${Name}`;
 
 /**
@@ -71,7 +71,7 @@ export type FullName<
   @for @ember/owner
   @private
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DIRegistry {}
 
 // Convenience utility for pulling a specific factory manager off `DIRegistry`

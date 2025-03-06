@@ -124,5 +124,5 @@ export default interface Location {
 
 export type UpdateCallback = (url: string) => void;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, Location | undefined> {}
