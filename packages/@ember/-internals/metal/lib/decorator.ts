@@ -180,9 +180,11 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
           makeDescriptor(desc, this, dec.context.name as string)
         );
       });
-      return;
+      break;
     default:
-      console.log(`unimplemented: injected on ${dec.kind} ${dec.context.name?.toString()}`);
+      console.log(
+        `unimplemented: computedDecorator on ${dec.kind} ${dec.context.name?.toString()}`
+      );
   }
 }
 
