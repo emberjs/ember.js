@@ -120,11 +120,7 @@ export function makeComputedDecorator(
 ): ExtendedMethodDecorator {
   let decorator = function COMPUTED_DECORATOR(...args: unknown[]): DecoratorPropertyDescriptor {
     if (isModernDecoratorArgs(args)) {
-      return computedDecorator2023(
-        args,
-        desc,
-        DecoratorClass
-      ) as unknown as DecoratorPropertyDescriptor;
+      return computedDecorator2023(args, desc) as unknown as DecoratorPropertyDescriptor;
     }
 
     let [target, key, propertyDesc, maybeMeta, isClassicDecorator] = args as [
@@ -135,25 +131,7 @@ export function makeComputedDecorator(
       boolean | undefined
     ];
 
-    assert(
-      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
-      isClassicDecorator ||
-        !propertyDesc ||
-        !propertyDesc.get ||
-        !COMPUTED_GETTERS.has(propertyDesc.get)
-    );
-
-    let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
-    desc.setup(target, key, propertyDesc, meta!);
-
-    let computedDesc: PropertyDescriptor = {
-      enumerable: desc.enumerable,
-      configurable: desc.configurable,
-      get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
-      set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
-    };
-
-    return computedDesc;
+    return makeDescriptor(desc, target, key, propertyDesc, maybeMeta, isClassicDecorator);
   };
 
   setClassicDecorator(decorator, desc);
@@ -163,14 +141,49 @@ export function makeComputedDecorator(
   return decorator;
 }
 
-function computedDecorator2023(
-  args: Paramters<Decorator>,
+function makeDescriptor(
   desc: ComputedDescriptor,
-  DecoratorClass: { prototype: object }
-) {
-  let dec = identifyModernDecoratorArgs(args);
-  console.log(`ignoring modern decorator on ${dec.kind} ${dec.context.name?.toString()}`);
-  return;
+  target: object,
+  key: string,
+  propertyDesc?: DecoratorPropertyDescriptor,
+  maybeMeta?: Meta,
+  isClassicDecorator?: boolean
+): PropertyDescriptor {
+  assert(
+    `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
+    isClassicDecorator ||
+      !propertyDesc ||
+      !propertyDesc.get ||
+      !COMPUTED_GETTERS.has(propertyDesc.get)
+  );
+
+  let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
+  desc.setup(target, key, propertyDesc, meta!);
+
+  let computedDesc: PropertyDescriptor = {
+    enumerable: desc.enumerable,
+    configurable: desc.configurable,
+    get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
+    set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
+  };
+  return computedDesc;
+}
+
+function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescriptor) {
+  const dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      dec.context.addInitializer(function (this: any) {
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          makeDescriptor(desc, this, dec.context.name as string)
+        );
+      });
+      return;
+    default:
+      console.log(`unimplemented: injected on ${dec.kind} ${dec.context.name?.toString()}`);
+  }
 }
 
 /////////////

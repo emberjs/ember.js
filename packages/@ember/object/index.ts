@@ -11,6 +11,11 @@ import { setObservers } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import Observable from '@ember/object/observable';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from '@ember/-internals/metal/lib/decorator-util';
 
 export {
   notifyPropertyChange,
@@ -181,6 +186,10 @@ export function action(desc: PropertyDescriptor): ExtendedMethodDecorator;
 export function action(
   ...args: ElementDescriptor | [PropertyDescriptor]
 ): PropertyDescriptor | ExtendedMethodDecorator {
+  if (isModernDecoratorArgs(args)) {
+    return action2023(args) as unknown as PropertyDescriptor;
+  }
+
   let actionFn: object | Function;
 
   if (!isElementDescriptor(args)) {
@@ -308,4 +317,21 @@ export function observer<T extends AnyFn>(
     sync,
   });
   return func;
+}
+
+function action2023(args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'method':
+      dec.context.addInitializer(function (this: any) {
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          setupAction(this, dec.context.name, dec.value)
+        );
+      });
+      break;
+    default:
+      throw new Error(`unimplemented: action on ${dec.kind} ${dec.context.name?.toString()}`);
+  }
 }

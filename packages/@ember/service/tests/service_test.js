@@ -50,7 +50,6 @@ moduleFor(
       let owner = buildOwner();
 
       class MainService extends Service {}
-
       class Foo extends EmberObject {
         @inject main;
       }

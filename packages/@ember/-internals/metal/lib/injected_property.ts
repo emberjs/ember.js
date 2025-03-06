@@ -5,6 +5,11 @@ import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from './decorator-util';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
@@ -49,6 +54,10 @@ function inject(
   let elementDescriptor;
   let name: string | undefined;
 
+  if (isModernDecoratorArgs(args)) {
+    return inject2023(type, undefined, args);
+  }
+
   if (isElementDescriptor(args)) {
     elementDescriptor = args;
   } else if (typeof args[0] === 'string') {
@@ -85,6 +94,42 @@ function inject(
     return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
   } else {
     return decorator;
+  }
+}
+
+function inject2023(type: string, name: string | undefined, args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      dec.context.addInitializer(function (this: any) {
+        let getInjection = function (this: any) {
+          let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
+
+          assert(
+            `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+            Boolean(owner)
+          );
+
+          return owner.lookup(`${type}:${name || (dec.context.name as string)}`);
+        };
+
+        if (DEBUG) {
+          DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
+            type,
+            name,
+          });
+        }
+
+        Object.defineProperty(this, dec.context.name, {
+          get: getInjection,
+          set(value) {
+            defineProperty(this, dec.context.name as string, null, value);
+          },
+        });
+      });
+      return;
+    default:
+      throw new Error(`unimplemented: injected on ${dec.kind} ${dec.context.name?.toString()}`);
   }
 }
 
