@@ -43,6 +43,10 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: { noDiscovery: true },
     publicDir: 'tests/public',
     build,
+
+    // the stock esbuild support for typescript is horribly broken. For example,
+    // it will simply remove your decorators.
+    esbuild: false,
   };
 });
 

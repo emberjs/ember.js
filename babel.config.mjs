@@ -17,13 +17,14 @@ export default {
         allowDeclareFields: true,
       },
     ],
-    [
-      'module:decorator-transforms',
-      {
-        runEarly: true,
-        runtime: { import: 'decorator-transforms/runtime' },
-      },
-    ],
+    ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+    // [
+    //   'module:decorator-transforms',
+    //   {
+    //     runEarly: true,
+    //     runtime: { import: 'decorator-transforms/runtime' },
+    //   },
+    // ],
     [
       'babel-plugin-ember-template-compilation',
       {
