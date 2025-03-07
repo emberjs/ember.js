@@ -5,6 +5,12 @@ import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
+import {
+  type ClassFieldDecorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+  type Decorator,
+} from './decorator-util';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
@@ -46,6 +52,11 @@ function inject(
   ...args: [] | [name: string] | ElementDescriptor
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
   assert('a string type must be provided to inject', typeof type === 'string');
+
+  if (isModernDecoratorArgs(args)) {
+    return inject2023(type, undefined, args);
+  }
+
   let elementDescriptor;
   let name: string | undefined;
 
@@ -84,7 +95,38 @@ function inject(
   if (elementDescriptor) {
     return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
   } else {
-    return decorator;
+    return function (...args: unknown[]) {
+      if (isModernDecoratorArgs(args)) {
+        return inject2023(type, name, args);
+      } else {
+        return decorator(...(args as Parameters<typeof decorator>));
+      }
+    };
+  }
+}
+
+function inject2023(
+  type: string,
+  customName: string | undefined,
+  args: Parameters<Decorator>
+): ReturnType<ClassFieldDecorator> {
+  let dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      return function (this: object) {
+        let owner = getOwner(this) || (this as any).container; // fallback to `container` for backwards compat
+
+        assert(
+          `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+          Boolean(owner)
+        );
+
+        return owner.lookup(`${type}:${customName ?? String(dec.context.name)}`);
+      };
+    default:
+      throw new Error(
+        `tried to use injection decorator on ${dec.kind} but it only supports fields`
+      );
   }
 }
 
