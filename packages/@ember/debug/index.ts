@@ -98,7 +98,12 @@ if (DEBUG) {
       case 'debug':
         return (debug = callback as DebugFunc);
       case 'deprecate':
-        return (currentDeprecate = callback as DeprecateFunc);
+        if (callback === deprecate) {
+          currentDeprecate = undefined;
+          return deprecate;
+        } else {
+          return (currentDeprecate = callback as DeprecateFunc);
+        }
       case 'debugSeal':
         return (debugSeal = callback as DebugSealFunc);
       case 'debugFreeze':

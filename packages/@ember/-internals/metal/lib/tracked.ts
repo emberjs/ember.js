@@ -194,7 +194,10 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
 }
 
 export class TrackedDescriptor {
-  constructor(private _get: () => unknown, private _set: (value: unknown) => void) {
+  constructor(
+    private _get: () => unknown,
+    private _set: (value: unknown) => void
+  ) {
     CHAIN_PASS_THROUGH.add(this);
   }
 

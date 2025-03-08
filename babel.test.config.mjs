@@ -11,6 +11,7 @@ import { createRequire } from 'node:module';
 import vmBabelPlugins from '@glimmer/vm-babel-plugins';
 import baseConfig from './babel.config.mjs';
 
+// eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
 const buildDebugMacroPlugin = require('./broccoli/build-debug-macro-plugin.js');
 const isProduction = process.env.EMBER_ENV === 'production';

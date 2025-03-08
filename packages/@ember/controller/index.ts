@@ -390,5 +390,5 @@ export { Controller as default, ControllerMixin };
   Then `@inject` can check that the service is registered correctly, and APIs
   like `owner.lookup('controller:example')` can return `ExampleController`.
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, Controller | undefined> {}

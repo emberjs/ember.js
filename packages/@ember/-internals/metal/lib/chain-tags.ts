@@ -71,7 +71,6 @@ function getChainTags(
   // prevent closures
   let segment: string, descriptor: any;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     let lastSegmentEnd = segmentEnd + 1;
     segmentEnd = path.indexOf('.', lastSegmentEnd);
@@ -127,6 +126,7 @@ function getChainTags(
 
           // If the key is an alias, we need to bootstrap it
           if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             item[segment];
           }
         }
@@ -151,6 +151,7 @@ function getChainTags(
       // bootstrap the alias. This is because aliases, unlike other CPs, should
       // always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         current[segment];
       }
       break;

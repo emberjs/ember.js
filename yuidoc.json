@@ -14,7 +14,7 @@
       "packages/@glimmer"
     ],
     "exclude": "vendor",
-    "outdir":   "docs",
+    "outdir": "docs",
     "preprocessor": "bin/feature-flag-yuidoc-filter"
   }
 }

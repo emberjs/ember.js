@@ -34,7 +34,7 @@ export function moduleForDevelopment<T extends AbstractTestCase, M extends Gener
   ...mixins: Mixin<M>[]
 ) {
   // @ts-expect-error Our tests run in vite, vite supports this
-  if (import.meta.mode === 'development') {
+  if (import.meta.env.MODE === 'development') {
     moduleFor(description, TestClass, ...mixins);
   }
 }

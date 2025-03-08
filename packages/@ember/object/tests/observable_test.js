@@ -873,7 +873,7 @@ moduleFor(
         objectD.set('observableValue', 'hi world');
 
         await runLoopSettled();
-      } catch (e) {
+      } catch {
         encounteredError = true;
       }
       assert.equal(encounteredError, false);

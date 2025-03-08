@@ -16,10 +16,12 @@ import { DEBUG } from '@glimmer/env';
   @private
 */
 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export function generateControllerFactory(
   owner: Owner,
   controllerName: string
 ): InternalFactory<{}> {
+  /* eslint-enable @typescript-eslint/no-empty-object-type */
   let factoryManager = owner.factoryFor('controller:basic');
   assert(
     '[BUG] unexpectedly missing a factoryManager for `controller:basic`',
@@ -46,6 +48,7 @@ export function generateControllerFactory(
 
   owner.register(fullName, Factory);
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   return owner.factoryFor(fullName) as InternalFactory<{}>;
 }
 

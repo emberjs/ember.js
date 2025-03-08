@@ -42,7 +42,7 @@ moduleFor(
       run(() => {
         try {
           result = taco.createBreakfast();
-        } catch (e) {
+        } catch {
           result = 'Your breakfast was interrupted by an infinite stack error.';
         }
       });

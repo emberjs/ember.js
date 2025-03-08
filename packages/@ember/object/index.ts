@@ -42,7 +42,7 @@ export {
   @uses Observable
   @public
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface EmberObject extends Observable {}
 class EmberObject extends CoreObject.extend(Observable) {
   get _debugContainerKey() {
