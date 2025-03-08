@@ -1,21 +1,12 @@
 'use strict';
 
 const chalk = require('chalk');
-const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const { has } = require('@ember/edition-utils');
 const { generateComponentSignature } = require('../-utils');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
-
-const OCTANE = has('octane');
-
-// TODO: this should be reading from the @ember/canary-features module
-// need to refactor broccoli/features.js to be able to work more similarly
-// to https://github.com/emberjs/data/pull/6231
-const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 
 // intentionally avoiding use-edition-detector
 module.exports = {
@@ -33,14 +24,14 @@ module.exports = {
     {
       name: 'component-class',
       type: ['@ember/component', '@glimmer/component', '@ember/component/template-only', ''],
-      default: OCTANE ? '--no-component-class' : '@ember/component',
+      default: '--no-component-class',
       aliases: [
         { cc: '@ember/component' },
         { gc: '@glimmer/component' },
         { tc: '@ember/component/template-only' },
         { nc: '' },
         { 'no-component-class': '' },
-        { 'with-component-class': OCTANE ? '@glimmer/component' : '@ember/component' },
+        { 'with-component-class': '@glimmer/component' },
       ],
     },
     {
@@ -55,26 +46,8 @@ module.exports = {
     this._super && this._super.init.apply(this, arguments);
     typescriptBlueprintPolyfill(this);
 
-    let isOctane = has('octane');
-
-    this.availableOptions.forEach((option) => {
-      if (option.name === 'component-class') {
-        if (isOctane) {
-          option.default = '--no-component-class';
-        } else {
-          option.default = '@ember/component';
-        }
-      } else if (option.name === 'component-structure') {
-        option.type = ['flat', 'nested'];
-        option.default = 'flat';
-        option.aliases = [{ fs: 'flat' }, { ns: 'nested' }];
-      }
-    });
-
     this.skippedJsFiles = new Set();
     this.savedLocals = {};
-
-    this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
   },
 
   install(options) {
@@ -85,14 +58,6 @@ module.exports = {
       options.componentClass = '';
     }
 
-    if (!this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-      if (options.componentClass !== '@ember/component') {
-        throw new SilentError(
-          'Usage of --component-class argument to `ember generate component` is only available on canary'
-        );
-      }
-    }
-
     return this._super.install.apply(this, arguments);
   },
 
@@ -101,7 +66,7 @@ module.exports = {
     // matter what it is set to. All we want is to delete the optional JS
     // file if the user had created one (when using this generator, created
     // manually, added later with component-class generator...).
-    options.componentClass = '@ember/component';
+    options.componentClass = '@glimmer/component';
 
     return this._super.uninstall.apply(this, arguments);
   },
@@ -127,7 +92,7 @@ module.exports = {
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && commandOptions.componentStructure === 'flat') {
+    if (commandOptions.componentStructure === 'flat') {
       return {
         __path__() {
           return 'components';
@@ -139,10 +104,7 @@ module.exports = {
           return options.dasherizedModuleName;
         },
       };
-    } else if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      commandOptions.componentStructure === 'nested'
-    ) {
+    } else if (commandOptions.componentStructure === 'nested') {
       return {
         __path__() {
           return `components/${options.dasherizedModuleName}`;
@@ -163,7 +125,7 @@ module.exports = {
   files() {
     let files = this._super.files.apply(this, arguments);
 
-    if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
+    if (this.options.componentClass === '') {
       files = files.filter((file) => {
         if (file.endsWith('.js') || file.endsWith('.ts')) {
           this.skippedJsFiles.add(file);
@@ -184,10 +146,6 @@ module.exports = {
   },
 
   locals(options) {
-    let componentClass = this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-      ? options.componentClass
-      : '@ember/component';
-
     let sanitizedModuleName = options.entity.name.replace(/\//g, '-');
     let classifiedModuleName = stringUtil.classify(sanitizedModuleName);
 
@@ -196,7 +154,7 @@ module.exports = {
     let defaultExport = '';
     let componentSignature = '';
 
-    switch (componentClass) {
+    switch (options.componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
         defaultExport = `Component.extend({});`;

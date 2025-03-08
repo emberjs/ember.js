@@ -12,9 +12,6 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
-const setupTestEnvironment = require('../helpers/setup-test-environment');
-const enableOctane = setupTestEnvironment.enableOctane;
-
 const glimmerComponentContents = `import Component from '@glimmer/component';
 
 export default class Foo extends Component {}
@@ -33,9 +30,7 @@ export default templateOnly();
 describe('Blueprint: component', function () {
   setupTestHooks(this);
 
-  describe('in app - octane', function () {
-    enableOctane();
-
+  describe('in app', function () {
     beforeEach(function () {
       return emberNew()
         .then(() =>
@@ -63,7 +58,6 @@ describe('Blueprint: component', function () {
       });
     });
 
-    // Octane default
     it('component foo --component-structure=flat --component-class=@glimmer/component', function () {
       return emberGenerateDestroy(
         [
@@ -278,9 +272,7 @@ describe('Blueprint: component', function () {
     });
   });
 
-  describe('in addon - octane', function () {
-    enableOctane();
-
+  describe('in addon', function () {
     beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
@@ -392,9 +384,7 @@ describe('Blueprint: component', function () {
     });
   });
 
-  describe('in in-repo-addon - octane', function () {
-    enableOctane();
-
+  describe('in in-repo-addon', function () {
     beforeEach(function () {
       return emberNew({ target: 'in-repo-addon' })
         .then(() =>
