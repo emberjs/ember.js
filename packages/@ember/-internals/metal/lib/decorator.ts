@@ -128,7 +128,7 @@ export function makeComputedDecorator(
       string,
       DecoratorPropertyDescriptor | undefined,
       Meta | undefined,
-      boolean | undefined
+      boolean | undefined,
     ];
 
     return makeDescriptor(
@@ -166,7 +166,7 @@ function makeDescriptor(
       !COMPUTED_GETTERS.has(propertyDesc.get)
   );
 
-  let meta = argsLength === 3 ? metaFor(target) : maybeMeta;
+  let meta = argsLength < 4 ? metaFor(target) : maybeMeta;
   desc.setup(target, key, propertyDesc, meta!);
 
   let computedDesc: PropertyDescriptor = {
@@ -187,6 +187,17 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
           this,
           dec.context.name,
           makeDescriptor(desc, 2, this, dec.context.name as string)
+        );
+      });
+      break;
+    case 'getter':
+      dec.context.addInitializer(function (this: any) {
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          makeDescriptor(desc, 2, this, dec.context.name as string, {
+            get: dec.value as any,
+          })
         );
       });
       break;

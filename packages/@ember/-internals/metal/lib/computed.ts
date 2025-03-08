@@ -886,8 +886,11 @@ export function computed(
   ...args: ElementDescriptor | string[] | ComputedDecoratorKeysAndConfig
 ): ComputedDecorator | DecoratorPropertyDescriptor | void {
   if (isModernDecoratorArgs(args)) {
-    console.log(`ignoring computed on ${args[1].kind} ${args[1].name?.toString()}`);
-    return;
+    let decorator = makeComputedDecorator(
+      new ComputedProperty([]),
+      ComputedDecoratorImpl
+    ) as ComputedDecorator;
+    return decorator(...(args as [any, any]));
   }
 
   assert(
