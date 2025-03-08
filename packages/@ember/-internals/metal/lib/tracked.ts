@@ -126,10 +126,18 @@ export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorProp
       _meta?: any,
       isClassicDecorator?: boolean
     ): DecoratorPropertyDescriptor {
-      assert(
-        `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
-        isClassicDecorator
-      );
+      let args = Array.from(arguments);
+      if (isModernDecoratorArgs(args)) {
+        assert(
+          `You attempted to set a default value for ${args[1].name?.toString()} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+          isClassicDecorator
+        );
+      } else {
+        assert(
+          `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+          isClassicDecorator
+        );
+      }
 
       let fieldDesc = {
         initializer: initializer || (() => value),
