@@ -201,8 +201,19 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
         );
       });
       break;
+    case 'setter':
+      dec.context.addInitializer(function (this: any) {
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          makeDescriptor(desc, 2, this, dec.context.name as string, {
+            set: dec.value as any,
+          })
+        );
+      });
+      break;
     default:
-      console.log(
+      throw new Error(
         `unimplemented: computedDecorator on ${dec.kind} ${dec.context.name?.toString()}`
       );
   }
