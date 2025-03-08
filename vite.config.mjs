@@ -43,6 +43,7 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: { noDiscovery: true },
     publicDir: 'tests/public',
     build,
+    esbuild: false,
   };
 });
 
