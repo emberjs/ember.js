@@ -42,6 +42,12 @@ export function isElementDescriptor(args: unknown[]): args is ElementDescriptor 
   );
 }
 
+export function isDecoratorCall(
+  args: unknown[]
+): args is ElementDescriptor | Parameters<Decorator> {
+  return isElementDescriptor(args) || isModernDecoratorArgs(args);
+}
+
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
   let decorator = function () {
     return propertyDesc;
