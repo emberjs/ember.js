@@ -9,6 +9,7 @@
     "rootDir": "../packages",
 
     // Environment Configuration
+    "experimentalDecorators": true,
     "moduleResolution": "bundler",
 
     // Enhance Strictness
