@@ -321,17 +321,19 @@ export function observer<T extends AnyFn>(
 
 function action2023(args: Parameters<Decorator>) {
   const dec = identifyModernDecoratorArgs(args);
-  switch (dec.kind) {
-    case 'method':
-      dec.context.addInitializer(function (this: any) {
-        Object.defineProperty(
-          this,
-          dec.context.name,
-          setupAction(this, dec.context.name, dec.value)
-        );
-      });
-      break;
-    default:
-      throw new Error(`unimplemented: action on ${dec.kind} ${dec.context.name?.toString()}`);
-  }
+  assert(
+    'The @action decorator must be applied to methods when used in native classes',
+    dec.kind === 'method'
+  );
+  let needsSetup = true;
+  dec.context.addInitializer(function (this: any) {
+    if (needsSetup) {
+      Object.defineProperty(
+        this.constructor.prototype,
+        dec.context.name,
+        setupAction(this.constructor.prototype, dec.context.name, dec.value)
+      );
+      needsSetup = false;
+    }
+  });
 }
