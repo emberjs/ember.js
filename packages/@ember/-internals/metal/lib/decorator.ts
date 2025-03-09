@@ -7,6 +7,7 @@ import {
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
 } from './decorator-util';
+import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
 export type DecoratorPropertyDescriptor = (PropertyDescriptor & { initializer?: any }) | undefined;
 
@@ -167,45 +168,60 @@ function makeDescriptor(
   return computedDesc;
 }
 
+function once() {
+  let needsToRun = true;
+  return function (fn: () => void): void {
+    if (needsToRun) {
+      fn();
+      needsToRun = false;
+    }
+  };
+}
+
 function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescriptor) {
   const dec = identifyModernDecoratorArgs(args);
-
-  let setup: undefined | ((prototype: any, propDesc: any) => void) = function (
-    prototype,
-    propDesc
-  ) {
-    desc.setup(prototype, dec.context.name as string, propDesc, metaFor(prototype));
-    setup = undefined;
-  };
+  let setup = once();
 
   switch (dec.kind) {
     case 'field':
       dec.context.addInitializer(function (this: any) {
-        setup?.(this.constructor.prototype, undefined);
+        setup(() => {
+          desc.setup(
+            this.constructor.prototype,
+            dec.context.name as string,
+            undefined,
+            metaFor(this.constructor.prototype)
+          );
+        });
         Object.defineProperty(
           this,
           dec.context.name,
           makeDescriptor(desc, dec.context.name as string)
         );
       });
-      break;
+      return undefined;
+    case 'setter':
     case 'getter': {
-      let propDesc = {
-        get: dec.value as any,
-      };
       dec.context.addInitializer(function (this: any) {
-        setup?.(this.constructor.prototype, propDesc);
+        setup(() => {
+          let found = findDescriptor(this, dec.context.name);
+          if (!found) {
+            return;
+          }
+          desc.setup(
+            found.object,
+            dec.context.name as string,
+            found.descriptor,
+            metaFor(found.object)
+          );
+          Object.defineProperty(
+            found.object,
+            dec.context.name,
+            makeDescriptor(desc, dec.context.name as string, found.descriptor)
+          );
+        });
       });
-      return makeDescriptor(desc, dec.context.name as string, propDesc).get;
-    }
-    case 'setter': {
-      let propDesc = {
-        set: dec.value as any,
-      };
-      dec.context.addInitializer(function (this: any) {
-        setup?.(this.constructor.prototype, propDesc);
-      });
-      return makeDescriptor(desc, dec.context.name as string, propDesc).set;
+      return undefined;
     }
     case 'method':
       assert(

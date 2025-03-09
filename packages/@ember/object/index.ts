@@ -16,6 +16,7 @@ import {
   identifyModernDecoratorArgs,
   isModernDecoratorArgs,
 } from '@ember/-internals/metal/lib/decorator-util';
+import { findDescriptor } from '@ember/-internals/utils/lib/lookup-descriptor';
 
 export {
   notifyPropertyChange,
@@ -328,11 +329,14 @@ function action2023(args: Parameters<Decorator>) {
   let needsSetup = true;
   dec.context.addInitializer(function (this: any) {
     if (needsSetup) {
-      Object.defineProperty(
-        this.constructor.prototype,
-        dec.context.name,
-        setupAction(this.constructor.prototype, dec.context.name, dec.value)
-      );
+      let found = findDescriptor(this, dec.context.name);
+      if (found?.object) {
+        Object.defineProperty(
+          found.object,
+          dec.context.name,
+          setupAction(found.object, dec.context.name, dec.value)
+        );
+      }
       needsSetup = false;
     }
   });

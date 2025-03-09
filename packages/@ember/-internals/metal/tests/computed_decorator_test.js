@@ -71,6 +71,7 @@ moduleFor(
     ['@test computed property can be defined and accessed on a class constructor'](assert) {
       let count = 0;
 
+      debugger;
       class Obj {
         static bar = 123;
 
