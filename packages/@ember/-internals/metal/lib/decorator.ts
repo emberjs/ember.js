@@ -169,10 +169,19 @@ function makeDescriptor(
 
 function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescriptor) {
   const dec = identifyModernDecoratorArgs(args);
+
+  let setup: undefined | ((prototype: any, propDesc: any) => void) = function (
+    prototype,
+    propDesc
+  ) {
+    desc.setup(prototype, dec.context.name as string, propDesc, metaFor(prototype));
+    setup = undefined;
+  };
+
   switch (dec.kind) {
     case 'field':
       dec.context.addInitializer(function (this: any) {
-        desc.setup(this, dec.context.name as string, undefined, metaFor(this));
+        setup?.(this.constructor.prototype, undefined);
         Object.defineProperty(
           this,
           dec.context.name,
@@ -180,32 +189,32 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
         );
       });
       break;
-    case 'getter':
+    case 'getter': {
+      let propDesc = {
+        get: dec.value as any,
+      };
       dec.context.addInitializer(function (this: any) {
-        let propDesc = {
-          get: dec.value as any,
-        };
-        desc.setup(this, dec.context.name as string, propDesc, metaFor(this));
-        Object.defineProperty(
-          this,
-          dec.context.name,
-          makeDescriptor(desc, dec.context.name as string, propDesc)
-        );
+        setup?.(this.constructor.prototype, propDesc);
       });
-      break;
-    case 'setter':
+      return makeDescriptor(desc, dec.context.name as string, propDesc).get;
+    }
+    case 'setter': {
+      let propDesc = {
+        set: dec.value as any,
+      };
       dec.context.addInitializer(function (this: any) {
-        let propDesc = {
-          set: dec.value as any,
-        };
-        desc.setup(this, dec.context.name as string, propDesc, metaFor(this));
-        Object.defineProperty(
-          this,
-          dec.context.name,
-          makeDescriptor(desc, dec.context.name as string, propDesc)
-        );
+        setup?.(this.constructor.prototype, propDesc);
       });
-      break;
+      return makeDescriptor(desc, dec.context.name as string, propDesc).set;
+    }
+    case 'method':
+      assert(
+        `@computed can only be used on accessors or fields, attempted to use it with ${dec.context.name.toString()} but that was a method. Try converting it to a getter (e.g. \`get ${dec.context.name.toString()}() {}\`)`,
+        false
+      );
+    // TS knows "assert()" is terminal and will complain about unreachable code if
+    // I use a break here. ESLint complains if I *don't* use a break here.
+    // eslint-disable-next-line no-fallthrough
     default:
       throw new Error(
         `unimplemented: computedDecorator on ${dec.kind} ${dec.context.name?.toString()}`
