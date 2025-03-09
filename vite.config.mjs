@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
   const build = {
     rollupOptions: {
       preserveEntrySignatures: 'strict',
+      treeshake: false,
       output: {
         preserveModules: true,
       },
