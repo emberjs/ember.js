@@ -131,15 +131,10 @@ export function makeComputedDecorator(
       boolean | undefined,
     ];
 
-    return makeDescriptor(
-      desc,
-      args.length,
-      target,
-      key,
-      propertyDesc,
-      maybeMeta,
-      isClassicDecorator
-    );
+    let meta = args.length < 4 ? metaFor(target) : maybeMeta;
+    desc.setup(target, key, propertyDesc, meta!);
+
+    return makeDescriptor(desc, key, propertyDesc, isClassicDecorator);
   };
 
   setClassicDecorator(decorator, desc);
@@ -151,11 +146,8 @@ export function makeComputedDecorator(
 
 function makeDescriptor(
   desc: ComputedDescriptor,
-  argsLength: number,
-  target: object,
   key: string,
   propertyDesc?: DecoratorPropertyDescriptor,
-  maybeMeta?: Meta,
   isClassicDecorator?: boolean
 ): PropertyDescriptor {
   assert(
@@ -165,9 +157,6 @@ function makeDescriptor(
       !propertyDesc.get ||
       !COMPUTED_GETTERS.has(propertyDesc.get)
   );
-
-  let meta = argsLength < 4 ? metaFor(target) : maybeMeta;
-  desc.setup(target, key, propertyDesc, meta!);
 
   let computedDesc: PropertyDescriptor = {
     enumerable: desc.enumerable,
@@ -183,32 +172,37 @@ function computedDecorator2023(args: Parameters<Decorator>, desc: ComputedDescri
   switch (dec.kind) {
     case 'field':
       dec.context.addInitializer(function (this: any) {
+        desc.setup(this, dec.context.name as string, undefined, metaFor(this));
         Object.defineProperty(
           this,
           dec.context.name,
-          makeDescriptor(desc, 2, this, dec.context.name as string)
+          makeDescriptor(desc, dec.context.name as string)
         );
       });
       break;
     case 'getter':
       dec.context.addInitializer(function (this: any) {
+        let propDesc = {
+          get: dec.value as any,
+        };
+        desc.setup(this, dec.context.name as string, propDesc, metaFor(this));
         Object.defineProperty(
           this,
           dec.context.name,
-          makeDescriptor(desc, 2, this, dec.context.name as string, {
-            get: dec.value as any,
-          })
+          makeDescriptor(desc, dec.context.name as string, propDesc)
         );
       });
       break;
     case 'setter':
       dec.context.addInitializer(function (this: any) {
+        let propDesc = {
+          set: dec.value as any,
+        };
+        desc.setup(this, dec.context.name as string, propDesc, metaFor(this));
         Object.defineProperty(
           this,
           dec.context.name,
-          makeDescriptor(desc, 2, this, dec.context.name as string, {
-            set: dec.value as any,
-          })
+          makeDescriptor(desc, dec.context.name as string, propDesc)
         );
       });
       break;
