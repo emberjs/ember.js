@@ -43,7 +43,9 @@ moduleFor(
       assert.equal(validateTag(tag, snapshot), true);
     }
 
-    [`@test autotracking should work with initializers`](assert) {
+    [`@test autotracking should work with initializers (${import.meta.env.VITE_STABLE_DECORATORS ? 'stable' : 'legacy'} decorators)`](
+      assert
+    ) {
       class Tracked {
         @tracked first = `first: ${this.second}`;
         @tracked second = 'second';
