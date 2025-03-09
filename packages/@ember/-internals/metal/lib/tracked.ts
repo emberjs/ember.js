@@ -8,7 +8,11 @@ import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
-import { Decorator, identifyModernDecoratorArgs, isModernDecoratorArgs } from './decorator-util';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from './decorator-util';
 
 /**
   @decorator
