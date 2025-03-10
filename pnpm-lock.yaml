@@ -1825,6 +1825,9 @@ importers:
 
   smoke-tests/scenarios:
     devDependencies:
+      '@babel/plugin-proposal-decorators':
+        specifier: ^7.25.9
+        version: 7.25.9(@babel/core@7.26.9)
       '@embroider/compat':
         specifier: npm:@embroider/compat@latest
         version: 3.8.3(@embroider/core@3.5.2)
@@ -1846,6 +1849,9 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.17.19
+      ember-template-imports:
+        specifier: ^4.3.0
+        version: 4.3.0
       qunit:
         specifier: ^2.20.1
         version: 2.24.1

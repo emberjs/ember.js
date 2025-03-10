@@ -239,6 +239,17 @@ function tracked2023(args: Parameters<Decorator>) {
         );
       });
       return;
+    case 'accessor':
+      return {
+        get(this: object) {
+          consumeTag(tagFor(this, dec.context.name));
+          return dec.value.get.call(this);
+        },
+        set(this: object, value: unknown) {
+          dirtyTagFor(this, dec.context.name);
+          return dec.value.set.call(this, value);
+        },
+      };
     default:
       throw new Error(`unimplemented: tracked on ${dec.kind} ${dec.context.name?.toString()}`);
   }

@@ -2,6 +2,7 @@
   "name": "ember-source-scenarios",
   "private": true,
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.25.9",
     "@embroider/compat": "npm:@embroider/compat@latest",
     "@embroider/core": "npm:@embroider/core@latest",
     "@embroider/webpack": "npm:@embroider/webpack@latest",
@@ -9,6 +10,7 @@
     "@swc/core": "^1.4.17",
     "@swc/types": "^0.1.6",
     "@types/node": "^20.12.7",
+    "ember-template-imports": "^4.3.0",
     "qunit": "^2.20.1",
     "scenario-tester": "^4.0.0",
     "typescript": "5.1",
