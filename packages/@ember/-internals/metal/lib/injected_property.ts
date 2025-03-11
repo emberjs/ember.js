@@ -137,8 +137,9 @@ function inject2023(type: string, name: string | undefined, args: Parameters<Dec
         },
       };
     default:
-      throw new Error(
-        `The @service decorator does not support ${dec.kind} ${dec.context.name?.toString()}`
+      assert(
+        `The @service decorator does not support ${dec.kind} ${dec.context.name?.toString()}`,
+        false
       );
   }
 }

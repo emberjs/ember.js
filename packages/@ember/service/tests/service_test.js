@@ -128,18 +128,27 @@ moduleFor(
     }
 
     ['@test throws when used in wrong syntactic position'](assert) {
+      // I'm allowing the assertions to be different under the new decorator
+      // standard because the assertions on the old one were pretty bad.
+
+      let expectedAssertion = import.meta.env.VITE_STABLE_DECORATORS
+        ? /The @service decorator does not support method main/
+        : /@computed can only be used on accessors or fields/;
+
       assert.throws(() => {
         // eslint-disable-next-line no-unused-vars
         class Foo extends EmberObject {
           @service main() {}
         }
-      }, /The @service decorator does not support method main/);
+      }, expectedAssertion);
 
-      assert.throws(() => {
-        @service
-        // eslint-disable-next-line no-unused-vars
-        class Foo extends EmberObject {}
-      }, /The @service decorator does not support class Foo/);
+      if (import.meta.env.VITE_STABLE_DECORATORS) {
+        assert.throws(() => {
+          @service
+          // eslint-disable-next-line no-unused-vars
+          class Foo extends EmberObject {}
+        }, /The @service decorator does not support class Foo/);
+      }
     }
   }
 );
