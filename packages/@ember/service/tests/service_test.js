@@ -106,5 +106,40 @@ moduleFor(
 
       runDestroy(owner);
     }
+
+    ['@test can be replaced by assignment'](assert) {
+      let owner = buildOwner();
+
+      class MainService extends Service {}
+
+      class Foo extends EmberObject {
+        @service main;
+      }
+
+      owner.register('service:main', MainService);
+      owner.register('foo:main', Foo);
+
+      let foo = owner.lookup('foo:main');
+      let replacement = {};
+      foo.main = replacement;
+      assert.strictEqual(foo.main, replacement, 'replaced');
+
+      runDestroy(owner);
+    }
+
+    ['@test throws when used in wrong syntactic position'](assert) {
+      assert.throws(() => {
+        // eslint-disable-next-line no-unused-vars
+        class Foo extends EmberObject {
+          @service main() {}
+        }
+      }, /The @service decorator does not support method main/);
+
+      assert.throws(() => {
+        @service
+        // eslint-disable-next-line no-unused-vars
+        class Foo extends EmberObject {}
+      }, /The @service decorator does not support class Foo/);
+    }
   }
 );

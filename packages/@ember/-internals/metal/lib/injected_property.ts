@@ -99,37 +99,47 @@ function inject(
 
 function inject2023(type: string, name: string | undefined, args: Parameters<Decorator>) {
   const dec = identifyModernDecoratorArgs(args);
+
+  function getInjection(this: any) {
+    let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
+
+    assert(
+      `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+      Boolean(owner)
+    );
+
+    return owner.lookup(`${type}:${name || (dec.context.name as string)}`);
+  }
+
+  if (DEBUG) {
+    DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
+      type,
+      name,
+    });
+  }
+
   switch (dec.kind) {
     case 'field':
       dec.context.addInitializer(function (this: any) {
-        let getInjection = function (this: any) {
-          let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
-
-          assert(
-            `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
-            Boolean(owner)
-          );
-
-          return owner.lookup(`${type}:${name || (dec.context.name as string)}`);
-        };
-
-        if (DEBUG) {
-          DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
-            type,
-            name,
-          });
-        }
-
         Object.defineProperty(this, dec.context.name, {
           get: getInjection,
-          set(value) {
-            defineProperty(this, dec.context.name as string, null, value);
+          set(this: object, value: unknown) {
+            Object.defineProperty(this, dec.context.name, { value });
           },
         });
       });
       return;
+    case 'accessor':
+      return {
+        get: getInjection,
+        set(this: object, value: unknown) {
+          Object.defineProperty(this, dec.context.name, { value });
+        },
+      };
     default:
-      throw new Error(`unimplemented: injected on ${dec.kind} ${dec.context.name?.toString()}`);
+      throw new Error(
+        `The @service decorator does not support ${dec.kind} ${dec.context.name?.toString()}`
+      );
   }
 }
 
