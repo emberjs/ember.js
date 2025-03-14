@@ -363,6 +363,10 @@ export class Package {
                         passes: 3,
                         keep_fargs: false,
                         keep_fnames: false,
+                        /**
+                         * Required for {{debugger}} to work
+                         */
+                        drop_debugger: false,
                         // unsafe_arrows: true,
                         // unsafe_comps: true,
                         // unsafe_math: true,
@@ -382,6 +386,10 @@ export class Package {
                         passes: 3,
                         keep_fargs: false,
                         keep_fnames: false,
+                        /**
+                         * Required for {{debugger}} to work
+                         */
+                        drop_debugger: false,
                       },
                       format: {
                         comments: 'all',
