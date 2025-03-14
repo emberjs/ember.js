@@ -1,5 +1,20 @@
 # Changelog
 
+## Release (2025-03-14)
+
+
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/build-support`
+  * [#1734](https://github.com/glimmerjs/glimmer-vm/pull/1734) Restore {{debugger}} behavior ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* `@glimmer-workspace/bin`
+  * [#1732](https://github.com/glimmerjs/glimmer-vm/pull/1732) Fix bench post-install ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 1
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-03-04)
 
 @glimmer/compiler 0.94.9 (patch)
