@@ -3,6 +3,7 @@
 const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -23,11 +24,6 @@ export default Component.extend({});
 const templateOnlyContents = `import templateOnly from '@ember/component/template-only';
 
 export default templateOnly();
-`;
-
-const templateTagContents = `<template>
-  {{yield}}
-</template>
 `;
 
 describe('Blueprint: component', function () {
@@ -269,8 +265,48 @@ describe('Blueprint: component', function () {
 
     it('component foo --strict', function () {
       return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
-        expect(_file('app/components/foo.gjs')).to.equal(templateTagContents);
+        expect(_file('app/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
       });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component'],
+        (_file) => {
+          expect(_file('app/components/foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs')
+          );
+        }
+      );
+    });
+
+    it('component foo --strict --component-class=@ember/component', async function () {
+      await expect(
+        emberGenerate(['component', 'foo', '--strict', '--component-class=@ember/component'])
+      ).to.be.rejectedWith(
+        'The "@ember/component" component class cannot be used in combination with the "--strict" flag'
+      );
+    });
+
+    it('component foo --strict --typescript', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict', '--typescript'], (_file) => {
+        expect(_file('app/components/foo.gts')).to.equal(
+          fixture('component/template-only-component.gts')
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component --typescript', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component', '--typescript'],
+        (_file) => {
+          expect(_file('app/components/foo.gts')).to.equal(
+            fixture('component/glimmer-component.gts')
+          );
+        }
+      );
     });
   });
 
