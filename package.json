@@ -79,7 +79,7 @@
     "@glimmer/owner": "0.93.3",
     "@glimmer/program": "0.94.8",
     "@glimmer/reference": "0.94.7",
-    "@glimmer/runtime": "0.94.8",
+    "@glimmer/runtime": "0.94.9",
     "@glimmer/syntax": "0.94.8",
     "@glimmer/util": "0.94.7",
     "@glimmer/validator": "0.94.7",
