@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
+const SilentError = require('silent-error');
 const { generateComponentSignature } = require('../-utils');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
@@ -67,6 +68,18 @@ module.exports = {
     // what's passed to us literally if the user didn't override it.
     if (options.componentClass === '--no-component-class') {
       options.componentClass = '';
+    }
+
+    if (options.componentAuthoringFormat === 'strict') {
+      if (options.componentClass === '@ember/component') {
+        throw new SilentError(
+          'The "@ember/component" component class cannot be used in combination with the "--strict" flag'
+        );
+      }
+
+      if (options.componentClass === '') {
+        options.componentClass = '@ember/component/template-only';
+      }
     }
 
     return this._super.install.apply(this, arguments);
@@ -193,6 +206,7 @@ module.exports = {
     }
 
     return {
+      classifiedModuleName,
       importTemplate,
       importComponent,
       componentSignature,
