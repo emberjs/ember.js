@@ -35,7 +35,8 @@
     },
     "@glimmer/runtime": {
       "oldVersion": "0.94.8",
-      "newVersion": "0.94.9"
+      "newVersion": "0.94.9",
+      "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
     },
     "@glimmer/syntax": {
       "oldVersion": "0.94.8"
