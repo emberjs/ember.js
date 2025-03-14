@@ -40,7 +40,7 @@
       "constraints": [
         {
           "impact": "patch",
-          "reason": "@NullVoxPopuli said so"
+          "reason": "@NullVoxPopuli said so2"
         }
       ],
       "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
