@@ -34,7 +34,8 @@
       "oldVersion": "0.94.7"
     },
     "@glimmer/runtime": {
-      "oldVersion": "0.94.8"
+      "oldVersion": "0.94.8",
+      "newVersion": "0.94.9"
     },
     "@glimmer/syntax": {
       "oldVersion": "0.94.8"

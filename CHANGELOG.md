@@ -2,10 +2,10 @@
 
 ## Release (2025-03-14)
 
-
+@glimmer/runtime 0.94.9 (patch)
 
 #### :bug: Bug Fix
-* `@glimmer-workspace/build-support`
+* `@glimmer-workspace/build-support`, `@glimmer/runtime`
   * [#1734](https://github.com/glimmerjs/glimmer-vm/pull/1734) Restore {{debugger}} behavior ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
 
 #### :house: Internal
