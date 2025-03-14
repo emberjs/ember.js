@@ -36,7 +36,12 @@
     "@glimmer/runtime": {
       "oldVersion": "0.94.8",
       "newVersion": "0.94.9",
-      "constraints": [],
+      "constraints": [
+        {
+          "impact": "patch",
+          "reason": "@NullVoxPopuli said so"
+        }
+      ],
       "pkgJSONPath": "./packages/@glimmer/runtime/package.json"
     },
     "@glimmer/syntax": {
