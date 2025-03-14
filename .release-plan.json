@@ -34,6 +34,7 @@
       "oldVersion": "0.94.7"
     },
     "@glimmer/runtime": {
+      "impact": "patch",
       "oldVersion": "0.94.8",
       "newVersion": "0.94.9",
       "constraints": [
