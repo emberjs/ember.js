@@ -23,16 +23,6 @@
   "dependi.npm.informPatchUpdates": true,
   "dependi.npm.lockFileEnabled": true,
   "editor.formatOnSave": true,
-  "editor.rulers": [
-    {
-      "color": "#cc999966",
-      "column": 100
-    },
-    {
-      "color": "#aaaaaa66",
-      "column": 80
-    }
-  ],
   "eslint.codeAction.showDocumentation": {
     "enable": true
   },
