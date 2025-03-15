@@ -484,7 +484,7 @@
     {
       "root": "packages/@glimmer/runtime",
       "name": "@glimmer/runtime",
-      "version": "0.94.8",
+      "version": "0.94.9",
       "type": "module",
       "private": false,
       "repo-meta": {
