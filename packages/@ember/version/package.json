@@ -23,7 +23,7 @@
     "@ember/service": "workspace:*",
     "@ember/utils": "workspace:*",
     "@glimmer/manager": "0.94.8",
-    "@glimmer/runtime": "0.94.8",
+    "@glimmer/runtime": "0.94.9",
     "backburner.js": "^2.7.0",
     "ember": "workspace:*",
     "expect-type": "^0.15.0"
