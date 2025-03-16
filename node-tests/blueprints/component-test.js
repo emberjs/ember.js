@@ -268,6 +268,14 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/foo.gjs')).to.equal(
           fixture('component/template-only-component.gjs')
         );
+
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/rfc232.gjs', {
+            replace: {
+              modulePrefix: 'my-app',
+            },
+          })
+        );
       });
     });
 
@@ -277,6 +285,14 @@ describe('Blueprint: component', function () {
         (_file) => {
           expect(_file('app/components/foo.gjs')).to.equal(
             fixture('component/glimmer-component.gjs')
+          );
+
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/rfc232.gjs', {
+              replace: {
+                modulePrefix: 'my-app',
+              },
+            })
           );
         }
       );
@@ -295,6 +311,14 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/foo.gts')).to.equal(
           fixture('component/template-only-component.gts')
         );
+
+        expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+          fixture('component-test/rfc232.gts', {
+            replace: {
+              modulePrefix: 'my-app',
+            },
+          })
+        );
       });
     });
 
@@ -304,6 +328,14 @@ describe('Blueprint: component', function () {
         (_file) => {
           expect(_file('app/components/foo.gts')).to.equal(
             fixture('component/glimmer-component.gts')
+          );
+
+          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+            fixture('component-test/rfc232.gts', {
+              replace: {
+                modulePrefix: 'my-app',
+              },
+            })
           );
         }
       );
@@ -360,6 +392,64 @@ describe('Blueprint: component', function () {
           })
         );
       });
+    });
+
+
+    it('component foo --strict', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
+        expect(_file('addon/components/foo.js')).to.not.exist;
+        expect(_file('addon/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
+
+        expect(_file('app/components/foo.js')).to.contain(
+          "export { default } from 'my-addon/components/foo';"
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component'],
+        (_file) => {
+          expect(_file('addon/components/foo.js')).to.not.exist;
+          expect(_file('addon/components/foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs')
+          );
+
+          expect(_file('app/components/foo.js')).to.contain(
+            "export { default } from 'my-addon/components/foo';"
+          );
+        }
+      );
+    });
+
+    it('component foo --strict --typescript', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict', '--typescript'], (_file) => {
+        expect(_file('addon/components/foo.ts')).to.not.exist;
+        expect(_file('addon/components/foo.gts')).to.equal(
+          fixture('component/template-only-component.gts')
+        );
+
+        expect(_file('app/components/foo.js')).to.contain(
+          "export { default } from 'my-addon/components/foo';"
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component --typescript', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component', '--typescript'],
+        (_file) => {
+          expect(_file('addon/components/foo.gts')).to.equal(
+            fixture('component/glimmer-component.gts')
+          );
+
+          expect(_file('app/components/foo.js')).to.contain(
+            "export { default } from 'my-addon/components/foo';"
+          );
+        }
+      );
     });
 
     it('component foo/x-foo', function () {
