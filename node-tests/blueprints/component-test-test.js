@@ -30,10 +30,26 @@ describe('Blueprint: component-test', function () {
         );
       });
 
-      it('component-test x-foo --strict', function () {
-        return emberGenerateDestroy(['component-test', 'x-foo', '--strict'], (_file) => {
-          expect(_file('tests/integration/components/x-foo-test.gjs')).to.equal(
-            fixture('component-test/rfc232.gjs')
+      it('component-test foo --strict', function () {
+        return emberGenerateDestroy(['component-test', 'foo', '--strict'], (_file) => {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/rfc232.gjs', {
+              replace: {
+                modulePrefix: 'my-app'
+              }
+            })
+          );
+        });
+      });
+
+      it('component-test foo --strict --typescript', function () {
+        return emberGenerateDestroy(['component-test', 'foo', '--strict', '--typescript'], (_file) => {
+          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+            fixture('component-test/rfc232.gts', {
+              replace: {
+                modulePrefix: 'my-app'
+              }
+            })
           );
         });
       });
@@ -71,6 +87,28 @@ describe('Blueprint: component-test', function () {
         expect(_file('tests/unit/components/foo-test.js')).to.equal(
           fixture('component-test/addon-unit.js')
         );
+      });
+
+      it('component-test foo --strict', function () {
+        return emberGenerateDestroy(['component-test', 'foo', '--strict'], (_file) => {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/rfc232.gjs', {
+              replace: {
+                modulePrefix: 'dummy'
+              }
+            })
+          );
+        });
+      });
+
+      it('component-test foo --strict --typescript', function () {
+        return emberGenerateDestroy(['component-test', 'foo', '--strict', '--typescript'], (_file) => {
+          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+            fixture('component-test/rfc232.gts', { replace: {
+              modulePrefix: 'dummy'
+            }})
+          );
+        });
       });
     });
   });
