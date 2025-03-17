@@ -35,23 +35,26 @@ describe('Blueprint: component-test', function () {
           expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
             fixture('component-test/rfc232.gjs', {
               replace: {
-                modulePrefix: 'my-app'
-              }
+                modulePrefix: 'my-app',
+              },
             })
           );
         });
       });
 
       it('component-test foo --strict --typescript', function () {
-        return emberGenerateDestroy(['component-test', 'foo', '--strict', '--typescript'], (_file) => {
-          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
-            fixture('component-test/rfc232.gts', {
-              replace: {
-                modulePrefix: 'my-app'
-              }
-            })
-          );
-        });
+        return emberGenerateDestroy(
+          ['component-test', 'foo', '--strict', '--typescript'],
+          (_file) => {
+            expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+              fixture('component-test/rfc232.gts', {
+                replace: {
+                  modulePrefix: 'my-app',
+                },
+              })
+            );
+          }
+        );
       });
     });
 
@@ -94,21 +97,26 @@ describe('Blueprint: component-test', function () {
           expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
             fixture('component-test/rfc232.gjs', {
               replace: {
-                modulePrefix: 'dummy'
-              }
+                modulePrefix: 'dummy',
+              },
             })
           );
         });
       });
 
       it('component-test foo --strict --typescript', function () {
-        return emberGenerateDestroy(['component-test', 'foo', '--strict', '--typescript'], (_file) => {
-          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
-            fixture('component-test/rfc232.gts', { replace: {
-              modulePrefix: 'dummy'
-            }})
-          );
-        });
+        return emberGenerateDestroy(
+          ['component-test', 'foo', '--strict', '--typescript'],
+          (_file) => {
+            expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+              fixture('component-test/rfc232.gts', {
+                replace: {
+                  modulePrefix: 'dummy',
+                },
+              })
+            );
+          }
+        );
       });
     });
   });

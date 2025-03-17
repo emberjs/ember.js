@@ -394,7 +394,6 @@ describe('Blueprint: component', function () {
       });
     });
 
-
     it('component foo --strict', function () {
       return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
         expect(_file('addon/components/foo.js')).to.not.exist;
