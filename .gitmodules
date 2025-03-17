@@ -1,0 +1,3 @@
+[submodule "glimmer-vm"]
+	path = glimmer-vm
+	url = git@github.com:glimmerjs/glimmer-vm.git

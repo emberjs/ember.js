@@ -21,54 +21,6 @@ importers:
       '@embroider/addon-shim':
         specifier: ^1.9.0
         version: 1.9.0
-      '@glimmer/compiler':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
-      '@glimmer/global-context':
-        specifier: 0.93.3
-        version: 0.93.3
-      '@glimmer/interfaces':
-        specifier: 0.94.6
-        version: 0.94.6
-      '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/node':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/opcode-compiler':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
-      '@glimmer/program':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/reference':
-        specifier: 0.94.7
-        version: 0.94.7
-      '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/syntax':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
-      '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
-      '@glimmer/vm':
-        specifier: 0.94.7
-        version: 0.94.7
-      '@glimmer/vm-babel-plugins':
-        specifier: 0.93.4
-        version: 0.93.4(@babel/core@7.26.9)
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -151,9 +103,60 @@ importers:
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.21.0
+      '@glimmer/compiler':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/compiler
       '@glimmer/component':
         specifier: workspace:^
         version: link:packages/@glimmer/component
+      '@glimmer/destroyable':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/destroyable
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:packages/@glimmer/env
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/manager
+      '@glimmer/node':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/node
+      '@glimmer/opcode-compiler':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/opcode-compiler
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/owner
+      '@glimmer/program':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/program
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/reference
+      '@glimmer/runtime':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/runtime
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/syntax
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/util
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/validator
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/vm
+      '@glimmer/vm-babel-plugins':
+        specifier: workspace:*
+        version: link:glimmer-vm/packages/@glimmer/vm-babel-plugins
       '@rollup/plugin-babel':
         specifier: ^6.0.4
         version: 6.0.4(@babel/core@7.26.9)(rollup@4.34.8)
@@ -303,7 +306,911 @@ importers:
         version: 8.26.0(eslint@9.21.0)(typescript@5.1.6)
       vite:
         specifier: ^5.4.12
-        version: 5.4.14(@types/node@20.17.19)(terser@5.39.0)
+        version: 5.4.14(@types/node@22.13.10)(terser@5.39.0)
+
+  glimmer-vm/packages/@glimmer-workspace/integration-tests:
+    dependencies:
+      '@glimmer-workspace/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
+      '@glimmer/compiler':
+        specifier: workspace:*
+        version: link:../../@glimmer/compiler
+      '@glimmer/destroyable':
+        specifier: workspace:*
+        version: link:../../@glimmer/destroyable
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../../@glimmer/global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:../../@glimmer/manager
+      '@glimmer/node':
+        specifier: workspace:*
+        version: link:../../@glimmer/node
+      '@glimmer/opcode-compiler':
+        specifier: workspace:*
+        version: link:../../@glimmer/opcode-compiler
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:../../@glimmer/owner
+      '@glimmer/program':
+        specifier: workspace:*
+        version: link:../../@glimmer/program
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../../@glimmer/reference
+      '@glimmer/runtime':
+        specifier: workspace:*
+        version: link:../../@glimmer/runtime
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:../../@glimmer/syntax
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../@glimmer/util
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../../@glimmer/validator
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../../@glimmer/vm
+      '@glimmer/wire-format':
+        specifier: workspace:*
+        version: link:../../@glimmer/wire-format
+      '@simple-dom/document':
+        specifier: ^1.4.0
+        version: 1.4.0
+      '@simple-dom/serializer':
+        specifier: ^1.4.0
+        version: 1.4.0
+      '@simple-dom/void-map':
+        specifier: ^1.4.0
+        version: 1.4.0
+      js-reporters:
+        specifier: ^2.1.0
+        version: 2.1.0
+      qunit:
+        specifier: ^2.24.1
+        version: 2.24.1
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../../@glimmer/constants
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../@glimmer/debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../../@glimmer/local-debug-flags
+      '@types/js-reporters':
+        specifier: workspace:*
+        version: link:../../@types/js-reporters
+      '@types/qunit':
+        specifier: ^2.19.12
+        version: 2.19.12
+      dom-types:
+        specifier: ^1.1.2
+        version: 1.1.2
+
+  glimmer-vm/packages/@glimmer-workspace/test-utils:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../@glimmer/interfaces
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../@glimmer/util
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../@glimmer/debug-util
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+
+  glimmer-vm/packages/@glimmer/compiler:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:../syntax
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/wire-format':
+        specifier: workspace:*
+        version: link:../wire-format
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.13.10
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/compiler/test:
+    dependencies:
+      '@glimmer/compiler':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../interfaces
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:../../syntax
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../../constants
+
+  glimmer-vm/packages/@glimmer/constants:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/constants/test:
+    dependencies:
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../../packages/@glimmer/env
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../debug-util
+      vite:
+        specifier: ^6.1.1
+        version: 6.2.2(@types/node@22.13.10)(terser@5.39.0)
+
+  glimmer-vm/packages/@glimmer/debug:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../vm
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/debug-util:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/debug-util/test:
+    dependencies:
+      '@glimmer/env':
+        specifier: workspace:*
+        version: link:../../../../../packages/@glimmer/env
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:..
+      vite:
+        specifier: ^6.1.1
+        version: 6.2.2(@types/node@22.13.10)(terser@5.39.0)
+
+  glimmer-vm/packages/@glimmer/debug/test:
+    dependencies:
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:..
+
+  glimmer-vm/packages/@glimmer/destroyable:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/destroyable/test:
+    dependencies:
+      '@glimmer/destroyable':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../../global-context
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../debug-util
+
+  glimmer-vm/packages/@glimmer/encoder:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../vm
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/global-context:
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/interfaces:
+    dependencies:
+      '@simple-dom/interface':
+        specifier: ^1.4.0
+        version: 1.4.0
+      type-fest:
+        specifier: ^4.35.0
+        version: 4.37.0
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/local-debug-babel-plugin: {}
+
+  glimmer-vm/packages/@glimmer/local-debug-flags:
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+
+  glimmer-vm/packages/@glimmer/manager:
+    dependencies:
+      '@glimmer/destroyable':
+        specifier: workspace:*
+        version: link:../destroyable
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../validator
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../vm
+    devDependencies:
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/manager/test:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../../reference
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../../validator
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../../vm
+
+  glimmer-vm/packages/@glimmer/node:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/runtime':
+        specifier: workspace:*
+        version: link:../runtime
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@simple-dom/document':
+        specifier: ^1.4.0
+        version: 1.4.0
+    devDependencies:
+      '@glimmer/compiler':
+        specifier: workspace:*
+        version: link:../compiler
+      '@types/qunit':
+        specifier: ^2.19.12
+        version: 2.19.12
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/opcode-compiler:
+    dependencies:
+      '@glimmer/encoder':
+        specifier: workspace:*
+        version: link:../encoder
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:../manager
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../vm
+      '@glimmer/wire-format':
+        specifier: workspace:*
+        version: link:../wire-format
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      type-fest:
+        specifier: ^4.35.0
+        version: 4.37.0
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/owner:
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/owner/test:
+    dependencies:
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:..
+
+  glimmer-vm/packages/@glimmer/program:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:../manager
+      '@glimmer/opcode-compiler':
+        specifier: workspace:*
+        version: link:../opcode-compiler
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../vm
+      '@glimmer/wire-format':
+        specifier: workspace:*
+        version: link:../wire-format
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/program/test:
+    dependencies:
+      '@glimmer/program':
+        specifier: workspace:*
+        version: link:..
+
+  glimmer-vm/packages/@glimmer/reference:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../validator
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/reference/test:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../../global-context
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../../validator
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../debug-util
+
+  glimmer-vm/packages/@glimmer/runtime:
+    dependencies:
+      '@glimmer/destroyable':
+        specifier: workspace:*
+        version: link:../destroyable
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/manager':
+        specifier: workspace:*
+        version: link:../manager
+      '@glimmer/owner':
+        specifier: workspace:*
+        version: link:../owner
+      '@glimmer/program':
+        specifier: workspace:*
+        version: link:../program
+      '@glimmer/reference':
+        specifier: workspace:*
+        version: link:../reference
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:../validator
+      '@glimmer/vm':
+        specifier: workspace:*
+        version: link:../vm
+    devDependencies:
+      '@glimmer/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@glimmer/debug':
+        specifier: workspace:*
+        version: link:../debug
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/syntax:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../util
+      '@glimmer/wire-format':
+        specifier: workspace:*
+        version: link:../wire-format
+      '@handlebars/parser':
+        specifier: ~2.0.0
+        version: 2.0.0
+      simple-html-tokenizer:
+        specifier: ^0.5.11
+        version: 0.5.11
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/syntax/test:
+    dependencies:
+      '@glimmer-workspace/integration-tests':
+        specifier: workspace:*
+        version: link:../../../@glimmer-workspace/integration-tests
+      '@glimmer-workspace/test-utils':
+        specifier: workspace:*
+        version: link:../../../@glimmer-workspace/test-utils
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../interfaces
+      '@glimmer/syntax':
+        specifier: workspace:*
+        version: link:..
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:../../util
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../../debug-util
+
+  glimmer-vm/packages/@glimmer/util:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      '@glimmer/local-debug-flags':
+        specifier: workspace:*
+        version: link:../local-debug-flags
+      '@types/qunit':
+        specifier: ^2.19.12
+        version: 2.19.12
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/util/test:
+    dependencies:
+      '@glimmer/util':
+        specifier: workspace:*
+        version: link:..
+
+  glimmer-vm/packages/@glimmer/validator:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      '@glimmer/debug-util':
+        specifier: workspace:*
+        version: link:../debug-util
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/validator/test:
+    dependencies:
+      '@glimmer/global-context':
+        specifier: workspace:*
+        version: link:../../global-context
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../../interfaces
+      '@glimmer/validator':
+        specifier: workspace:*
+        version: link:..
+
+  glimmer-vm/packages/@glimmer/vm:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/vm-babel-plugins:
+    dependencies:
+      babel-plugin-debug-macros:
+        specifier: ^0.3.4
+        version: 0.3.4(@babel/core@7.26.9)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.13.10
+      babel-plugin-tester:
+        specifier: ^11.0.4
+        version: 11.0.4(@babel/core@7.26.9)
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      mocha:
+        specifier: ^10.2.0
+        version: 10.8.2
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@glimmer/wire-format:
+    dependencies:
+      '@glimmer/interfaces':
+        specifier: workspace:*
+        version: link:../interfaces
+    devDependencies:
+      eslint:
+        specifier: ^9.20.1
+        version: 9.21.0
+      publint:
+        specifier: ^0.3.2
+        version: 0.3.9
+      rollup:
+        specifier: ^4.2.0
+        version: 4.34.8
+      typescript:
+        specifier: ^5.7.3
+        version: 5.8.2
+
+  glimmer-vm/packages/@types/js-reporters: {}
 
   packages/@ember/-internals:
     dependencies:
@@ -365,56 +1272,56 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/compiler
       '@glimmer/component':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/component
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/global-context':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/global-context
       '@glimmer/interfaces':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/node':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/node
       '@glimmer/opcode-compiler':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/opcode-compiler
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/program':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/program
       '@glimmer/reference':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/reference
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/runtime
       '@glimmer/syntax':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/syntax
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       '@glimmer/vm':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/vm
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -483,20 +1390,20 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -543,23 +1450,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -582,11 +1489,11 @@ importers:
         specifier: workspace:*
         version: link:../-internals
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/runtime
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -609,20 +1516,20 @@ importers:
         specifier: workspace:*
         version: link:../service
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -663,23 +1570,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -695,8 +1602,8 @@ importers:
   packages/@ember/destroyable:
     dependencies:
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -737,20 +1644,20 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -779,20 +1686,20 @@ importers:
         specifier: workspace:*
         version: link:../object
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -806,11 +1713,11 @@ importers:
         specifier: workspace:*
         version: link:../component
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/runtime
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -839,11 +1746,11 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
@@ -854,8 +1761,8 @@ importers:
         specifier: workspace:*
         version: link:../-internals
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/runtime':
         specifier: 0.94.9
         version: 0.94.9
@@ -887,23 +1794,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -935,11 +1842,11 @@ importers:
         specifier: workspace:*
         version: link:../runloop
       '@glimmer/component':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../@glimmer/component
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -989,23 +1896,23 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1043,11 +1950,11 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1073,20 +1980,20 @@ importers:
         specifier: workspace:*
         version: link:../object
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1112,14 +2019,14 @@ importers:
         specifier: workspace:*
         version: link:../canary-features
       '@glimmer/compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/compiler
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/syntax':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/syntax
       ember:
         specifier: workspace:*
         version: link:../../ember
@@ -1139,23 +2046,23 @@ importers:
         specifier: workspace:*
         version: link:../debug
       '@glimmer/compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/compiler
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/interfaces':
-        specifier: 0.94.6
-        version: 0.94.6
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/interfaces
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/opcode-compiler':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/opcode-compiler
       '@glimmer/syntax':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/syntax
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1196,23 +2103,23 @@ importers:
         specifier: workspace:*
         version: link:../runloop
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/validator
       expect-type:
         specifier: ^0.15.0
         version: 0.15.0
@@ -1271,11 +2178,11 @@ importers:
         specifier: workspace:*
         version: link:../utils
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../../glimmer-vm/packages/@glimmer/runtime
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1292,8 +2199,8 @@ importers:
         specifier: ^1.8.9
         version: 1.9.0
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../env
     devDependencies:
       typescript:
         specifier: '5.1'
@@ -1385,29 +2292,29 @@ importers:
         specifier: workspace:*
         version: link:../@ember/version
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/runtime
       '@glimmer/tracking':
         specifier: workspace:*
         version: link:../@glimmer/tracking
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1490,23 +2397,23 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/compiler
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/runtime
       '@glimmer/syntax':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/syntax
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1559,20 +2466,20 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../@glimmer/env
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1640,35 +2547,35 @@ importers:
         specifier: workspace:*
         version: link:../@ember/utils
       '@glimmer/compiler':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/compiler
       '@glimmer/destroyable':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/destroyable
       '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
+        specifier: workspace:*
+        version: link:../@glimmer/env
       '@glimmer/manager':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/manager
       '@glimmer/opcode-compiler':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/opcode-compiler
       '@glimmer/owner':
-        specifier: 0.93.3
-        version: 0.93.3
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/owner
       '@glimmer/runtime':
-        specifier: 0.94.9
-        version: 0.94.9
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/runtime
       '@glimmer/syntax':
-        specifier: 0.94.8
-        version: 0.94.8
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/syntax
       '@glimmer/util':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/util
       '@glimmer/validator':
-        specifier: 0.94.7
-        version: 0.94.7
+        specifier: workspace:*
+        version: link:../../glimmer-vm/packages/@glimmer/validator
       backburner.js:
         specifier: ^2.7.0
         version: 2.8.0
@@ -1784,7 +2691,7 @@ importers:
         version: 9.1.0(eslint@8.57.1)
       eslint-plugin-ember:
         specifier: ^12.0.2
-        version: 12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)
+        version: 12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.8.2))(eslint@8.57.1)
       eslint-plugin-node:
         specifier: ^11.1.0
         version: 11.1.0(eslint@8.57.1)
@@ -2858,9 +3765,21 @@ packages:
     cpu: [ppc64]
     os: [aix]
 
+  '@esbuild/aix-ppc64@0.25.1':
+    resolution: {integrity: sha512-kfYGy8IdzTGy+z0vFGvExZtxkFlA4zAxgKEahG9KE1ScBjpQnFsNOX8KTU5ojNru5ed5CVoJYXFtoxaq5nFbjQ==}
+    engines: {node: '>=18'}
+    cpu: [ppc64]
+    os: [aix]
+
   '@esbuild/android-arm64@0.21.5':
     resolution: {integrity: sha512-c0uX9VAUBQ7dTDCjq+wdyGLowMdtR/GoC2U5IYk/7D1H1JYC0qseD7+11iMP2mRLN9RcCMRcjC4YMclCzGwS/A==}
     engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [android]
+
+  '@esbuild/android-arm64@0.25.1':
+    resolution: {integrity: sha512-50tM0zCJW5kGqgG7fQ7IHvQOcAn9TKiVRuQ/lN0xR+T2lzEFvAi1ZcS8DiksFcEpf1t/GYOeOfCAgDHFpkiSmA==}
+    engines: {node: '>=18'}
     cpu: [arm64]
     os: [android]
 
@@ -2870,9 +3789,21 @@ packages:
     cpu: [arm]
     os: [android]
 
+  '@esbuild/android-arm@0.25.1':
+    resolution: {integrity: sha512-dp+MshLYux6j/JjdqVLnMglQlFu+MuVeNrmT5nk6q07wNhCdSnB7QZj+7G8VMUGh1q+vj2Bq8kRsuyA00I/k+Q==}
+    engines: {node: '>=18'}
+    cpu: [arm]
+    os: [android]
+
   '@esbuild/android-x64@0.21.5':
     resolution: {integrity: sha512-D7aPRUUNHRBwHxzxRvp856rjUHRFW1SdQATKXH2hqA0kAZb1hKmi02OpYRacl0TxIGz/ZmXWlbZgjwWYaCakTA==}
     engines: {node: '>=12'}
+    cpu: [x64]
+    os: [android]
+
+  '@esbuild/android-x64@0.25.1':
+    resolution: {integrity: sha512-GCj6WfUtNldqUzYkN/ITtlhwQqGWu9S45vUXs7EIYf+7rCiiqH9bCloatO9VhxsL0Pji+PF4Lz2XXCES+Q8hDw==}
+    engines: {node: '>=18'}
     cpu: [x64]
     os: [android]
 
@@ -2882,9 +3813,21 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
+  '@esbuild/darwin-arm64@0.25.1':
+    resolution: {integrity: sha512-5hEZKPf+nQjYoSr/elb62U19/l1mZDdqidGfmFutVUjjUZrOazAtwK+Kr+3y0C/oeJfLlxo9fXb1w7L+P7E4FQ==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [darwin]
+
   '@esbuild/darwin-x64@0.21.5':
     resolution: {integrity: sha512-se/JjF8NlmKVG4kNIuyWMV/22ZaerB+qaSi5MdrXtd6R08kvs2qCN4C09miupktDitvh8jRFflwGFBQcxZRjbw==}
     engines: {node: '>=12'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@esbuild/darwin-x64@0.25.1':
+    resolution: {integrity: sha512-hxVnwL2Dqs3fM1IWq8Iezh0cX7ZGdVhbTfnOy5uURtao5OIVCEyj9xIzemDi7sRvKsuSdtCAhMKarxqtlyVyfA==}
+    engines: {node: '>=18'}
     cpu: [x64]
     os: [darwin]
 
@@ -2894,9 +3837,21 @@ packages:
     cpu: [arm64]
     os: [freebsd]
 
+  '@esbuild/freebsd-arm64@0.25.1':
+    resolution: {integrity: sha512-1MrCZs0fZa2g8E+FUo2ipw6jw5qqQiH+tERoS5fAfKnRx6NXH31tXBKI3VpmLijLH6yriMZsxJtaXUyFt/8Y4A==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [freebsd]
+
   '@esbuild/freebsd-x64@0.21.5':
     resolution: {integrity: sha512-J95kNBj1zkbMXtHVH29bBriQygMXqoVQOQYA+ISs0/2l3T9/kj42ow2mpqerRBxDJnmkUDCaQT/dfNXWX/ZZCQ==}
     engines: {node: '>=12'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@esbuild/freebsd-x64@0.25.1':
+    resolution: {integrity: sha512-0IZWLiTyz7nm0xuIs0q1Y3QWJC52R8aSXxe40VUxm6BB1RNmkODtW6LHvWRrGiICulcX7ZvyH6h5fqdLu4gkww==}
+    engines: {node: '>=18'}
     cpu: [x64]
     os: [freebsd]
 
@@ -2906,9 +3861,21 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@esbuild/linux-arm64@0.25.1':
+    resolution: {integrity: sha512-jaN3dHi0/DDPelk0nLcXRm1q7DNJpjXy7yWaWvbfkPvI+7XNSc/lDOnCLN7gzsyzgu6qSAmgSvP9oXAhP973uQ==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [linux]
+
   '@esbuild/linux-arm@0.21.5':
     resolution: {integrity: sha512-bPb5AHZtbeNGjCKVZ9UGqGwo8EUu4cLq68E95A53KlxAPRmUyYv2D6F0uUI65XisGOL1hBP5mTronbgo+0bFcA==}
     engines: {node: '>=12'}
+    cpu: [arm]
+    os: [linux]
+
+  '@esbuild/linux-arm@0.25.1':
+    resolution: {integrity: sha512-NdKOhS4u7JhDKw9G3cY6sWqFcnLITn6SqivVArbzIaf3cemShqfLGHYMx8Xlm/lBit3/5d7kXvriTUGa5YViuQ==}
+    engines: {node: '>=18'}
     cpu: [arm]
     os: [linux]
 
@@ -2918,9 +3885,21 @@ packages:
     cpu: [ia32]
     os: [linux]
 
+  '@esbuild/linux-ia32@0.25.1':
+    resolution: {integrity: sha512-OJykPaF4v8JidKNGz8c/q1lBO44sQNUQtq1KktJXdBLn1hPod5rE/Hko5ugKKZd+D2+o1a9MFGUEIUwO2YfgkQ==}
+    engines: {node: '>=18'}
+    cpu: [ia32]
+    os: [linux]
+
   '@esbuild/linux-loong64@0.21.5':
     resolution: {integrity: sha512-uHf1BmMG8qEvzdrzAqg2SIG/02+4/DHB6a9Kbya0XDvwDEKCoC8ZRWI5JJvNdUjtciBGFQ5PuBlpEOXQj+JQSg==}
     engines: {node: '>=12'}
+    cpu: [loong64]
+    os: [linux]
+
+  '@esbuild/linux-loong64@0.25.1':
+    resolution: {integrity: sha512-nGfornQj4dzcq5Vp835oM/o21UMlXzn79KobKlcs3Wz9smwiifknLy4xDCLUU0BWp7b/houtdrgUz7nOGnfIYg==}
+    engines: {node: '>=18'}
     cpu: [loong64]
     os: [linux]
 
@@ -2930,9 +3909,21 @@ packages:
     cpu: [mips64el]
     os: [linux]
 
+  '@esbuild/linux-mips64el@0.25.1':
+    resolution: {integrity: sha512-1osBbPEFYwIE5IVB/0g2X6i1qInZa1aIoj1TdL4AaAb55xIIgbg8Doq6a5BzYWgr+tEcDzYH67XVnTmUzL+nXg==}
+    engines: {node: '>=18'}
+    cpu: [mips64el]
+    os: [linux]
+
   '@esbuild/linux-ppc64@0.21.5':
     resolution: {integrity: sha512-1hHV/Z4OEfMwpLO8rp7CvlhBDnjsC3CttJXIhBi+5Aj5r+MBvy4egg7wCbe//hSsT+RvDAG7s81tAvpL2XAE4w==}
     engines: {node: '>=12'}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@esbuild/linux-ppc64@0.25.1':
+    resolution: {integrity: sha512-/6VBJOwUf3TdTvJZ82qF3tbLuWsscd7/1w+D9LH0W/SqUgM5/JJD0lrJ1fVIfZsqB6RFmLCe0Xz3fmZc3WtyVg==}
+    engines: {node: '>=18'}
     cpu: [ppc64]
     os: [linux]
 
@@ -2942,9 +3933,21 @@ packages:
     cpu: [riscv64]
     os: [linux]
 
+  '@esbuild/linux-riscv64@0.25.1':
+    resolution: {integrity: sha512-nSut/Mx5gnilhcq2yIMLMe3Wl4FK5wx/o0QuuCLMtmJn+WeWYoEGDN1ipcN72g1WHsnIbxGXd4i/MF0gTcuAjQ==}
+    engines: {node: '>=18'}
+    cpu: [riscv64]
+    os: [linux]
+
   '@esbuild/linux-s390x@0.21.5':
     resolution: {integrity: sha512-zus5sxzqBJD3eXxwvjN1yQkRepANgxE9lgOW2qLnmr8ikMTphkjgXu1HR01K4FJg8h1kEEDAqDcZQtbrRnB41A==}
     engines: {node: '>=12'}
+    cpu: [s390x]
+    os: [linux]
+
+  '@esbuild/linux-s390x@0.25.1':
+    resolution: {integrity: sha512-cEECeLlJNfT8kZHqLarDBQso9a27o2Zd2AQ8USAEoGtejOrCYHNtKP8XQhMDJMtthdF4GBmjR2au3x1udADQQQ==}
+    engines: {node: '>=18'}
     cpu: [s390x]
     os: [linux]
 
@@ -2954,15 +3957,45 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@esbuild/linux-x64@0.25.1':
+    resolution: {integrity: sha512-xbfUhu/gnvSEg+EGovRc+kjBAkrvtk38RlerAzQxvMzlB4fXpCFCeUAYzJvrnhFtdeyVCDANSjJvOvGYoeKzFA==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [linux]
+
+  '@esbuild/netbsd-arm64@0.25.1':
+    resolution: {integrity: sha512-O96poM2XGhLtpTh+s4+nP7YCCAfb4tJNRVZHfIE7dgmax+yMP2WgMd2OecBuaATHKTHsLWHQeuaxMRnCsH8+5g==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [netbsd]
+
   '@esbuild/netbsd-x64@0.21.5':
     resolution: {integrity: sha512-Woi2MXzXjMULccIwMnLciyZH4nCIMpWQAs049KEeMvOcNADVxo0UBIQPfSmxB3CWKedngg7sWZdLvLczpe0tLg==}
     engines: {node: '>=12'}
     cpu: [x64]
     os: [netbsd]
 
+  '@esbuild/netbsd-x64@0.25.1':
+    resolution: {integrity: sha512-X53z6uXip6KFXBQ+Krbx25XHV/NCbzryM6ehOAeAil7X7oa4XIq+394PWGnwaSQ2WRA0KI6PUO6hTO5zeF5ijA==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [netbsd]
+
+  '@esbuild/openbsd-arm64@0.25.1':
+    resolution: {integrity: sha512-Na9T3szbXezdzM/Kfs3GcRQNjHzM6GzFBeU1/6IV/npKP5ORtp9zbQjvkDJ47s6BCgaAZnnnu/cY1x342+MvZg==}
+    engines: {node: '>=18'}
+    cpu: [arm64]
+    os: [openbsd]
+
   '@esbuild/openbsd-x64@0.21.5':
     resolution: {integrity: sha512-HLNNw99xsvx12lFBUwoT8EVCsSvRNDVxNpjZ7bPn947b8gJPzeHWyNVhFsaerc0n3TsbOINvRP2byTZ5LKezow==}
     engines: {node: '>=12'}
+    cpu: [x64]
+    os: [openbsd]
+
+  '@esbuild/openbsd-x64@0.25.1':
+    resolution: {integrity: sha512-T3H78X2h1tszfRSf+txbt5aOp/e7TAz3ptVKu9Oyir3IAOFPGV6O9c2naym5TOriy1l0nNf6a4X5UXRZSGX/dw==}
+    engines: {node: '>=18'}
     cpu: [x64]
     os: [openbsd]
 
@@ -2972,9 +4005,21 @@ packages:
     cpu: [x64]
     os: [sunos]
 
+  '@esbuild/sunos-x64@0.25.1':
+    resolution: {integrity: sha512-2H3RUvcmULO7dIE5EWJH8eubZAI4xw54H1ilJnRNZdeo8dTADEZ21w6J22XBkXqGJbe0+wnNJtw3UXRoLJnFEg==}
+    engines: {node: '>=18'}
+    cpu: [x64]
+    os: [sunos]
+
   '@esbuild/win32-arm64@0.21.5':
     resolution: {integrity: sha512-Z0gOTd75VvXqyq7nsl93zwahcTROgqvuAcYDUr+vOv8uHhNSKROyU961kgtCD1e95IqPKSQKH7tBTslnS3tA8A==}
     engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@esbuild/win32-arm64@0.25.1':
+    resolution: {integrity: sha512-GE7XvrdOzrb+yVKB9KsRMq+7a2U/K5Cf/8grVFRAGJmfADr/e/ODQ134RK2/eeHqYV5eQRFxb1hY7Nr15fv1NQ==}
+    engines: {node: '>=18'}
     cpu: [arm64]
     os: [win32]
 
@@ -2984,9 +4029,21 @@ packages:
     cpu: [ia32]
     os: [win32]
 
+  '@esbuild/win32-ia32@0.25.1':
+    resolution: {integrity: sha512-uOxSJCIcavSiT6UnBhBzE8wy3n0hOkJsBOzy7HDAuTDE++1DJMRRVCPGisULScHL+a/ZwdXPpXD3IyFKjA7K8A==}
+    engines: {node: '>=18'}
+    cpu: [ia32]
+    os: [win32]
+
   '@esbuild/win32-x64@0.21.5':
     resolution: {integrity: sha512-tQd/1efJuzPC6rCFwEvLtci/xNFcTZknmXs98FYDfGE4wP9ClFV98nyKrzJKVPMhdDnjzLhdUyMX4PsQAPjwIw==}
     engines: {node: '>=12'}
+    cpu: [x64]
+    os: [win32]
+
+  '@esbuild/win32-x64@0.25.1':
+    resolution: {integrity: sha512-Y1EQdcfwMSeQN/ujR5VayLOJ1BHaK+ssyk0AEzPjC+t1lITgsnccPqFjb6V+LsTp/9Iov4ysfjxLaGJ9RPtkVg==}
+    engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
 
@@ -3032,10 +4089,6 @@ packages:
     resolution: {integrity: sha512-JubJ5B2pJ4k4yGxaNLdbjrnk9d/iDz6/q8wOilpIowd6PJPgaxCuHBnBszq7Ce2TyMrywm5r4PnKm6V3iiZF+g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@glimmer/compiler@0.94.9':
-    resolution: {integrity: sha512-Gk7joGf+fS2TJ/b94xRdRHG1EC2enmK+OSuVoYda4FxvdTgC9Y2CEWCJbYePcu5SkE8bSgpULk9u5cehxYWH2Q==}
-    engines: {node: '>= 18.0.0'}
-
   '@glimmer/destroyable@0.94.7':
     resolution: {integrity: sha512-fNJZGYhwWhmktXkPea90R399AP3I3gAePqtSgjj1YybmvhkpzU1FeCJNlK+q3Uwdr1KQVIu+UufMcxZ8wIB0/g==}
 
@@ -3066,9 +4119,6 @@ packages:
   '@glimmer/manager@0.94.8':
     resolution: {integrity: sha512-Kt3xs3cVYpeuMBb6Ub1losq/cm1KMDwyQ8/B77W3gAohj2hEXDNFY5SHqXSGwkrzuaUrJsl41rQP8qb5Fo09kA==}
 
-  '@glimmer/node@0.94.8':
-    resolution: {integrity: sha512-2L7VOAVkzmfjurd25aX3XqYlpHnvcgdj3aB6VoyUkr4O7MfVKNQCZnbpVncLHF7Z5avQ6982Qoh1cvFdwIDIyA==}
-
   '@glimmer/opcode-compiler@0.94.8':
     resolution: {integrity: sha512-g3nVV5w0XV+Ts2QJRMhOQ8pUc8ZWPhQbNdSJQXVfYEFNXPA+4tC1i43atTjJoIvVCTMm8l2htyC8mYDlPqPfCg==}
 
@@ -3084,9 +4134,6 @@ packages:
   '@glimmer/reference@0.94.7':
     resolution: {integrity: sha512-Q5oHZMUdYtBRUTxb1sljLtAjQi8DKOWUSTpLJnIy2n9DnLTN4mt2WAk7oYUK8j8ptrIEKylXvfb8aVc7iOkmDQ==}
 
-  '@glimmer/runtime@0.94.8':
-    resolution: {integrity: sha512-rAkBDhsIf05wbrCI9dN1kdqx6ht8X4pJ6NCOPs+POOZulM8jJrJTxRg6yg89OsfwzD0FY/yFh52b6SWBzIHeYQ==}
-
   '@glimmer/runtime@0.94.9':
     resolution: {integrity: sha512-hyamRY67Es56tCgLT/FLk3G3EoFar99AkAoqi1673C+xLyHNPG7hgEzsazWFVntFmgzzB5BU1969UG1Jq42MuQ==}
 
@@ -3098,9 +4145,6 @@ packages:
 
   '@glimmer/syntax@0.92.3':
     resolution: {integrity: sha512-7wPKQmULyXCYf0KvbPmfrs/skPISH2QGR9atCnmDWnHyLv5SSZVLm1P0Ctrpta6+Ci3uGQb7hGk0IjsLEavcYQ==}
-
-  '@glimmer/syntax@0.94.8':
-    resolution: {integrity: sha512-YeLQxmiPhN2M1hsry8/fMev/y4M3qP10lke2r1iu1NjiCIVmSH2RpE3Pgcqm8BMQkvjYroiSPRUmmv0118NYYw==}
 
   '@glimmer/tracking@1.1.2':
     resolution: {integrity: sha512-cyV32zsHh+CnftuRX84ALZpd2rpbDrhLhJnTXn9W//QpqdRZ5rdMsxSY9fOsj0CKEc706tmEU299oNnDc0d7tA==}
@@ -3125,10 +4169,6 @@ packages:
 
   '@glimmer/validator@0.94.7':
     resolution: {integrity: sha512-NBk+hbnurueqOkAmmP82sBsyV+361+nSJiBSLceXzV3H71yPK+aACIRH0Iq3kUC/6rKhn9/IQf6zg80agKxw3w==}
-
-  '@glimmer/vm-babel-plugins@0.93.4':
-    resolution: {integrity: sha512-+MjT+U/MsP7O32rXTYlvcmuiKtwI/PflokpVIW0M9wrkfFrsqgdhLQKvA+tNNxFW9LQ55zbhOtJweFNblHOvxg==}
-    engines: {node: '>=18.18.0'}
 
   '@glimmer/vm@0.94.7':
     resolution: {integrity: sha512-+GKT/CnF9OMpYrKpg81g/QsCKkMLD7lVBV4e42mo5/FkezNVwJFttQ6zKKv1nVyjnInZYx0cEu2bteZ56EGikA==}
@@ -3474,6 +4514,10 @@ packages:
   '@pnpm/write-project-manifest@6.0.1':
     resolution: {integrity: sha512-K94P822XIdQ2YhyHbBL/jzasVo2YKGOnfbMzJIM3xFBFeVpv+hPxM4Xkac4IskRFSJQoTQgjZy8KbXKXnXxfyw==}
     engines: {node: '>=18.12'}
+
+  '@publint/pack@0.1.2':
+    resolution: {integrity: sha512-S+9ANAvUmjutrshV4jZjaiG8XQyuJIZ8a4utWmN/vW1sgQ9IfBnPndwkmQYw53QmouOIytT874u65HEmu6H5jw==}
+    engines: {node: '>=18'}
 
   '@puppeteer/browsers@2.7.1':
     resolution: {integrity: sha512-MK7rtm8JjaxPN7Mf1JdZIZKPD2Z+W7osvrC1vjpvfOX1K0awDIHYbNi89f7eotp7eMUn2shWnt03HwVbriXtKQ==}
@@ -4022,6 +5066,9 @@ packages:
 
   '@types/node@20.17.19':
     resolution: {integrity: sha512-LEwC7o1ifqg/6r2gn9Dns0f1rhK+fPFDoMiceTJ6kWmVk6bgXBI/9IOWfVan4WiAavK9pIVWdX0/e3J+eEUh5A==}
+
+  '@types/node@22.13.10':
+    resolution: {integrity: sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -4584,6 +5631,12 @@ packages:
 
   babel-plugin-syntax-dynamic-import@6.18.0:
     resolution: {integrity: sha512-MioUE+LfjCEz65Wf7Z/Rm4XCP5k2c+TbMd2Z2JKc7U9uwjBhAfNPE48KC4GTGKhppMeYVepwDBNO/nGY6NYHBA==}
+
+  babel-plugin-tester@11.0.4:
+    resolution: {integrity: sha512-cqswtpSPo0e++rZB0l/54EG17LL25l9gLgh59yXfnmNxX+2lZTIOpx2zt4YI9QIClVXc8xf63J6yWwKkzy0jNg==}
+    engines: {node: ^14.20.0 || ^16.16.0 || >=18.5.0}
+    peerDependencies:
+      '@babel/core': '>=7.11.6'
 
   babylon@6.18.0:
     resolution: {integrity: sha512-q/UEjfGJ2Cm3oKV71DJz9d25TPnq5rhBVL2Q4fA5wcC3jcrdn7+SssEybFIxwAvvP+YCsCYNKughoF33GxgycQ==}
@@ -5443,6 +6496,9 @@ packages:
     resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
     deprecated: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
 
+  core-js@3.41.0:
+    resolution: {integrity: sha512-SJ4/EHwS36QMJd6h/Rg+GyR4A5xE0FSI3eZ+iBVpfqf1x0eTSg1smWLHrA+2jQThZSh97fmSgFSU8B61nxosxA==}
+
   core-object@3.1.5:
     resolution: {integrity: sha512-sA2/4+/PZ/KV6CKgjrVrrUVBKCkdDO02CUlQ0YKTQoYUwPYNOtOAcWlbYhd5v/1JqYaA6oZ4sDlOU4ppVw6Wbg==}
     engines: {node: '>= 4'}
@@ -5712,6 +6768,9 @@ packages:
 
   dom-element-descriptors@0.5.1:
     resolution: {integrity: sha512-DLayMRQ+yJaziF4JJX1FMjwjdr7wdTr1y9XvZ+NfHELfOMcYDnCHneAYXAS4FT1gLILh4V0juMZohhH1N5FsoQ==}
+
+  dom-types@1.1.2:
+    resolution: {integrity: sha512-yBe608cqVMPsjOzNnID8VdoOBvpewvp7e9Z4E+hcrDMHDlpl8Wv+HJ+xtNLMeA1X9rWtGIbscI6LDpe32H7Krw==}
 
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
@@ -6053,6 +7112,11 @@ packages:
   esbuild@0.21.5:
     resolution: {integrity: sha512-mg3OPMV4hXywwpoDxu3Qda5xCKQi+vCTZq8S9J/EpkhB2HzKXq4SNFZE3+NK93JYxc8VMSep+lOUSC/RVKaBqw==}
     engines: {node: '>=12'}
+    hasBin: true
+
+  esbuild@0.25.1:
+    resolution: {integrity: sha512-BGO5LtrGC7vxnqucAe/rmvKdJllfGaYWdyABvyMoXQlfYMb2bbRuReWR5tEGE//4LcNJj9XrkovTqNYRFZHAMQ==}
+    engines: {node: '>=18'}
     hasBin: true
 
   escalade@3.2.0:
@@ -7388,6 +8452,10 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
 
+  js-reporters@2.1.0:
+    resolution: {integrity: sha512-Q4GcEcPSb6ovhqp91claM3WPbSntQxbIn+3JiJgEXturys2ttWgs31VC60Yja+2unpNOH2A2qyjWFU2thCQ8sg==}
+    engines: {node: '>=10'}
+
   js-string-escape@1.0.1:
     resolution: {integrity: sha512-Smw4xcfIQ5LVjAOuJCvN/zIodzA/BBSsluuoSykP+lUvScIi4U6RJLfwHet5cxFnCswUjISV8oAXaqaJDY3chg==}
     engines: {node: '>= 0.8'}
@@ -7639,6 +8707,9 @@ packages:
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
+
+  lodash.mergewith@4.6.2:
+    resolution: {integrity: sha512-GK3g5RPZWTRSeLSpgP8Xhra+pnjBC56q9FZYe1d5RN3TJ35dbkGy3YqBSMbyCrlbi+CM9Z3Jk5yTL7RCsqboyQ==}
 
   lodash.omit@4.5.0:
     resolution: {integrity: sha512-XeqSp49hNGmlkj2EJlfrQFIzQ6lXdNro9sddtQzcJY8QaoC2GO0DT7xaIokHeyM+mIT0mPMlPvkYzg2xCuHdZg==}
@@ -7946,6 +9017,10 @@ packages:
 
   mout@1.2.4:
     resolution: {integrity: sha512-mZb9uOruMWgn/fw28DG4/yE3Kehfk1zKCLhuDU2O3vlKdnBBr4XaOCqVTflJ5aODavGUPqFHZgrFX3NJVuxGhQ==}
+
+  mri@1.2.0:
+    resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
+    engines: {node: '>=4'}
 
   ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
@@ -8292,6 +9367,9 @@ packages:
     resolution: {integrity: sha512-k3bdm2n25tkyxcjSKzB5x8kfVxlMdgsbPr0GkZcwHsLpba6cBjqCt1KlcChKEvxHIcTB1FVMuwoijZ26xex5MQ==}
     engines: {node: '>=8'}
 
+  package-manager-detector@0.2.11:
+    resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -8602,6 +9680,11 @@ packages:
     engines: {node: '>= 0.10'}
     hasBin: true
 
+  publint@0.3.9:
+    resolution: {integrity: sha512-irTwfRfYW38vomkxxoiZQtFtUOQKpz5m0p9Z60z4xpXrl1KmvSrX1OMARvnnolB5usOXeNfvLj6d/W3rwXKfBQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
   pump@3.0.2:
     resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
 
@@ -8635,6 +9718,9 @@ packages:
   qs@6.14.0:
     resolution: {integrity: sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==}
     engines: {node: '>=0.6'}
+
+  quansync@0.2.8:
+    resolution: {integrity: sha512-4+saucphJMazjt7iOM27mbFCk+D9dd/zmgMDCzRZ8MEoBfYp7lAvoN38et/phRQF6wOPMy/OROBGgoWeSKyluA==}
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -8974,6 +10060,10 @@ packages:
 
   rxjs@7.8.2:
     resolution: {integrity: sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==}
+
+  sade@1.8.1:
+    resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
+    engines: {node: '>=6'}
 
   safe-array-concat@1.1.3:
     resolution: {integrity: sha512-AURm5f0jYEOydBj7VQlVvDrjeFgthDdEF5H1dP+6mNpoXOMo1quQqJ4wvJDyRZ9+pO3kGWoOdmV08cSv2aJV6Q==}
@@ -9688,10 +10778,6 @@ packages:
     resolution: {integrity: sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==}
     engines: {node: '>=8'}
 
-  type-fest@4.35.0:
-    resolution: {integrity: sha512-2/AwEFQDFEy30iOLjrvHDIH7e4HEWH+f1Yl1bI5XMqzuoCUqwYCdxachgsgv0og/JdVZUhbfjcJAoHj5L1753A==}
-    engines: {node: '>=16'}
-
   type-fest@4.37.0:
     resolution: {integrity: sha512-S/5/0kFftkq27FPNye0XM1e2NsnoD/3FS+pBmbjmmtLT6I+i344KoOf7pvXreaFsDamWeaJX55nczA1m5PsBDg==}
     engines: {node: '>=16'}
@@ -9737,6 +10823,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@5.8.2:
+    resolution: {integrity: sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   uc.micro@1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==}
 
@@ -9757,6 +10848,9 @@ packages:
 
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
   unicode-canonical-property-names-ecmascript@2.0.1:
     resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
@@ -9910,6 +11004,46 @@ packages:
       sugarss:
         optional: true
       terser:
+        optional: true
+
+  vite@6.2.2:
+    resolution: {integrity: sha512-yW7PeMM+LkDzc7CgJuRLMW2Jz0FxMOsVJ8Lv3gpgW9WLcb9cTW+121UEr1hvmfR7w3SegR5ItvYyzVz1vxNJgQ==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
+      jiti: '>=1.21.0'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      sass-embedded: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.16.0
+      tsx: ^4.8.1
+      yaml: ^2.4.2
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      jiti:
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+      tsx:
+        optional: true
+      yaml:
         optional: true
 
   vow-fs@0.3.6:
@@ -11918,70 +13052,145 @@ snapshots:
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
 
+  '@esbuild/aix-ppc64@0.25.1':
+    optional: true
+
   '@esbuild/android-arm64@0.21.5':
+    optional: true
+
+  '@esbuild/android-arm64@0.25.1':
     optional: true
 
   '@esbuild/android-arm@0.21.5':
     optional: true
 
+  '@esbuild/android-arm@0.25.1':
+    optional: true
+
   '@esbuild/android-x64@0.21.5':
+    optional: true
+
+  '@esbuild/android-x64@0.25.1':
     optional: true
 
   '@esbuild/darwin-arm64@0.21.5':
     optional: true
 
+  '@esbuild/darwin-arm64@0.25.1':
+    optional: true
+
   '@esbuild/darwin-x64@0.21.5':
+    optional: true
+
+  '@esbuild/darwin-x64@0.25.1':
     optional: true
 
   '@esbuild/freebsd-arm64@0.21.5':
     optional: true
 
+  '@esbuild/freebsd-arm64@0.25.1':
+    optional: true
+
   '@esbuild/freebsd-x64@0.21.5':
+    optional: true
+
+  '@esbuild/freebsd-x64@0.25.1':
     optional: true
 
   '@esbuild/linux-arm64@0.21.5':
     optional: true
 
+  '@esbuild/linux-arm64@0.25.1':
+    optional: true
+
   '@esbuild/linux-arm@0.21.5':
+    optional: true
+
+  '@esbuild/linux-arm@0.25.1':
     optional: true
 
   '@esbuild/linux-ia32@0.21.5':
     optional: true
 
+  '@esbuild/linux-ia32@0.25.1':
+    optional: true
+
   '@esbuild/linux-loong64@0.21.5':
+    optional: true
+
+  '@esbuild/linux-loong64@0.25.1':
     optional: true
 
   '@esbuild/linux-mips64el@0.21.5':
     optional: true
 
+  '@esbuild/linux-mips64el@0.25.1':
+    optional: true
+
   '@esbuild/linux-ppc64@0.21.5':
+    optional: true
+
+  '@esbuild/linux-ppc64@0.25.1':
     optional: true
 
   '@esbuild/linux-riscv64@0.21.5':
     optional: true
 
+  '@esbuild/linux-riscv64@0.25.1':
+    optional: true
+
   '@esbuild/linux-s390x@0.21.5':
+    optional: true
+
+  '@esbuild/linux-s390x@0.25.1':
     optional: true
 
   '@esbuild/linux-x64@0.21.5':
     optional: true
 
+  '@esbuild/linux-x64@0.25.1':
+    optional: true
+
+  '@esbuild/netbsd-arm64@0.25.1':
+    optional: true
+
   '@esbuild/netbsd-x64@0.21.5':
+    optional: true
+
+  '@esbuild/netbsd-x64@0.25.1':
+    optional: true
+
+  '@esbuild/openbsd-arm64@0.25.1':
     optional: true
 
   '@esbuild/openbsd-x64@0.21.5':
     optional: true
 
+  '@esbuild/openbsd-x64@0.25.1':
+    optional: true
+
   '@esbuild/sunos-x64@0.21.5':
+    optional: true
+
+  '@esbuild/sunos-x64@0.25.1':
     optional: true
 
   '@esbuild/win32-arm64@0.21.5':
     optional: true
 
+  '@esbuild/win32-arm64@0.25.1':
+    optional: true
+
   '@esbuild/win32-ia32@0.21.5':
     optional: true
 
+  '@esbuild/win32-ia32@0.25.1':
+    optional: true
+
   '@esbuild/win32-x64@0.21.5':
+    optional: true
+
+  '@esbuild/win32-x64@0.25.1':
     optional: true
 
   '@eslint-community/eslint-utils@4.4.1(eslint@8.57.1)':
@@ -12047,13 +13256,6 @@ snapshots:
       '@eslint/core': 0.12.0
       levn: 0.4.1
 
-  '@glimmer/compiler@0.94.9':
-    dependencies:
-      '@glimmer/interfaces': 0.94.6
-      '@glimmer/syntax': 0.94.8
-      '@glimmer/util': 0.94.7
-      '@glimmer/wire-format': 0.94.7
-
   '@glimmer/destroyable@0.94.7':
     dependencies:
       '@glimmer/global-context': 0.93.3
@@ -12099,13 +13301,6 @@ snapshots:
       '@glimmer/validator': 0.94.7
       '@glimmer/vm': 0.94.7
 
-  '@glimmer/node@0.94.8':
-    dependencies:
-      '@glimmer/interfaces': 0.94.6
-      '@glimmer/runtime': 0.94.8
-      '@glimmer/util': 0.94.7
-      '@simple-dom/document': 1.4.0
-
   '@glimmer/opcode-compiler@0.94.8':
     dependencies:
       '@glimmer/encoder': 0.93.7
@@ -12141,19 +13336,6 @@ snapshots:
       '@glimmer/util': 0.94.7
       '@glimmer/validator': 0.94.7
 
-  '@glimmer/runtime@0.94.8':
-    dependencies:
-      '@glimmer/destroyable': 0.94.7
-      '@glimmer/global-context': 0.93.3
-      '@glimmer/interfaces': 0.94.6
-      '@glimmer/manager': 0.94.8
-      '@glimmer/owner': 0.93.3
-      '@glimmer/program': 0.94.8
-      '@glimmer/reference': 0.94.7
-      '@glimmer/util': 0.94.7
-      '@glimmer/validator': 0.94.7
-      '@glimmer/vm': 0.94.7
-
   '@glimmer/runtime@0.94.9':
     dependencies:
       '@glimmer/destroyable': 0.94.7
@@ -12187,14 +13369,6 @@ snapshots:
       '@glimmer/interfaces': 0.92.3
       '@glimmer/util': 0.92.3
       '@glimmer/wire-format': 0.92.3
-      '@handlebars/parser': 2.0.0
-      simple-html-tokenizer: 0.5.11
-
-  '@glimmer/syntax@0.94.8':
-    dependencies:
-      '@glimmer/interfaces': 0.94.6
-      '@glimmer/util': 0.94.7
-      '@glimmer/wire-format': 0.94.7
       '@handlebars/parser': 2.0.0
       simple-html-tokenizer: 0.5.11
 
@@ -12234,12 +13408,6 @@ snapshots:
     dependencies:
       '@glimmer/global-context': 0.93.3
       '@glimmer/interfaces': 0.94.6
-
-  '@glimmer/vm-babel-plugins@0.93.4(@babel/core@7.26.9)':
-    dependencies:
-      babel-plugin-debug-macros: 0.3.4(@babel/core@7.26.9)
-    transitivePeerDependencies:
-      - '@babel/core'
 
   '@glimmer/vm@0.94.7':
     dependencies:
@@ -12663,6 +13831,8 @@ snapshots:
       json5: 2.2.3
       write-file-atomic: 5.0.1
       write-yaml-file: 5.0.0
+
+  '@publint/pack@0.1.2': {}
 
   '@puppeteer/browsers@2.7.1':
     dependencies:
@@ -13317,6 +14487,10 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
+  '@types/node@22.13.10':
+    dependencies:
+      undici-types: 6.20.0
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/qs@6.9.18': {}
@@ -13388,15 +14562,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6)':
+  '@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.8.2)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.26.0
       '@typescript-eslint/types': 8.26.0
-      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 8.26.0(typescript@5.8.2)
       '@typescript-eslint/visitor-keys': 8.26.0
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 8.57.1
-      typescript: 5.1.6
+      typescript: 5.8.2
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -13444,6 +14618,21 @@ snapshots:
       typescript: 5.1.6
     transitivePeerDependencies:
       - supports-color
+
+  '@typescript-eslint/typescript-estree@8.26.0(typescript@5.8.2)':
+    dependencies:
+      '@typescript-eslint/types': 8.26.0
+      '@typescript-eslint/visitor-keys': 8.26.0
+      debug: 4.4.0(supports-color@8.1.1)
+      fast-glob: 3.3.3
+      is-glob: 4.0.3
+      minimatch: 9.0.5
+      semver: 7.7.1
+      ts-api-utils: 2.0.1(typescript@5.8.2)
+      typescript: 5.8.2
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
 
   '@typescript-eslint/utils@8.26.0(eslint@9.21.0)(typescript@5.1.6)':
     dependencies:
@@ -14012,6 +15201,17 @@ snapshots:
       - supports-color
 
   babel-plugin-syntax-dynamic-import@6.18.0: {}
+
+  babel-plugin-tester@11.0.4(@babel/core@7.26.9):
+    dependencies:
+      '@babel/core': 7.26.9(supports-color@8.1.1)
+      core-js: 3.41.0
+      debug: 4.4.0(supports-color@8.1.1)
+      lodash.mergewith: 4.6.2
+      prettier: 2.8.8
+      strip-indent: 3.0.0
+    transitivePeerDependencies:
+      - supports-color
 
   babylon@6.18.0: {}
 
@@ -15061,6 +16261,8 @@ snapshots:
 
   core-js@2.6.12: {}
 
+  core-js@3.41.0: {}
+
   core-object@3.1.5:
     dependencies:
       chalk: 2.4.2
@@ -15318,6 +16520,8 @@ snapshots:
       esutils: 2.0.3
 
   dom-element-descriptors@0.5.1: {}
+
+  dom-types@1.1.2: {}
 
   dot-case@3.0.4:
     dependencies:
@@ -15985,7 +17189,7 @@ snapshots:
       - ember-inflector
       - supports-color
 
-  ember-eslint-parser@0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1):
+  ember-eslint-parser@0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.8.2))(eslint@8.57.1):
     dependencies:
       '@babel/core': 7.26.9(supports-color@8.1.1)
       '@babel/eslint-parser': 7.26.8(@babel/core@7.26.9)(eslint@8.57.1)
@@ -15996,7 +17200,7 @@ snapshots:
       mathml-tag-names: 2.1.3
       svg-tags: 1.0.0
     optionalDependencies:
-      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.8.2)
     transitivePeerDependencies:
       - eslint
 
@@ -16293,6 +17497,34 @@ snapshots:
       '@esbuild/win32-ia32': 0.21.5
       '@esbuild/win32-x64': 0.21.5
 
+  esbuild@0.25.1:
+    optionalDependencies:
+      '@esbuild/aix-ppc64': 0.25.1
+      '@esbuild/android-arm': 0.25.1
+      '@esbuild/android-arm64': 0.25.1
+      '@esbuild/android-x64': 0.25.1
+      '@esbuild/darwin-arm64': 0.25.1
+      '@esbuild/darwin-x64': 0.25.1
+      '@esbuild/freebsd-arm64': 0.25.1
+      '@esbuild/freebsd-x64': 0.25.1
+      '@esbuild/linux-arm': 0.25.1
+      '@esbuild/linux-arm64': 0.25.1
+      '@esbuild/linux-ia32': 0.25.1
+      '@esbuild/linux-loong64': 0.25.1
+      '@esbuild/linux-mips64el': 0.25.1
+      '@esbuild/linux-ppc64': 0.25.1
+      '@esbuild/linux-riscv64': 0.25.1
+      '@esbuild/linux-s390x': 0.25.1
+      '@esbuild/linux-x64': 0.25.1
+      '@esbuild/netbsd-arm64': 0.25.1
+      '@esbuild/netbsd-x64': 0.25.1
+      '@esbuild/openbsd-arm64': 0.25.1
+      '@esbuild/openbsd-x64': 0.25.1
+      '@esbuild/sunos-x64': 0.25.1
+      '@esbuild/win32-arm64': 0.25.1
+      '@esbuild/win32-ia32': 0.25.1
+      '@esbuild/win32-x64': 0.25.1
+
   escalade@3.2.0: {}
 
   escape-html@1.0.3: {}
@@ -16347,11 +17579,11 @@ snapshots:
       line-column: 1.0.2
       requireindex: 1.2.0
 
-  eslint-plugin-ember@12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1):
+  eslint-plugin-ember@12.5.0(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.8.2))(eslint@8.57.1):
     dependencies:
       '@ember-data/rfc395-data': 0.0.4
       css-tree: 3.1.0
-      ember-eslint-parser: 0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)
+      ember-eslint-parser: 0.5.9(@babel/core@7.26.9)(@typescript-eslint/parser@8.26.0(eslint@8.57.1)(typescript@5.8.2))(eslint@8.57.1)
       ember-rfc176-data: 0.3.18
       eslint: 8.57.1
       eslint-utils: 3.0.0(eslint@8.57.1)
@@ -16361,7 +17593,7 @@ snapshots:
       requireindex: 1.2.0
       snake-case: 3.0.4
     optionalDependencies:
-      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/parser': 8.26.0(eslint@8.57.1)(typescript@5.8.2)
     transitivePeerDependencies:
       - '@babel/core'
 
@@ -16961,7 +18193,7 @@ snapshots:
       fs-extra: 10.1.0
       resolve-package-path: 4.0.3
       tmp: 0.0.33
-      type-fest: 4.35.0
+      type-fest: 4.37.0
       walk-sync: 3.0.0
     transitivePeerDependencies:
       - supports-color
@@ -17983,6 +19215,8 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
+  js-reporters@2.1.0: {}
+
   js-string-escape@1.0.1: {}
 
   js-tokens@4.0.0: {}
@@ -18252,6 +19486,8 @@ snapshots:
       lodash.isarray: 3.0.4
 
   lodash.merge@4.6.2: {}
+
+  lodash.mergewith@4.6.2: {}
 
   lodash.omit@4.5.0: {}
 
@@ -18581,6 +19817,8 @@ snapshots:
       - supports-color
 
   mout@1.2.4: {}
+
+  mri@1.2.0: {}
 
   ms@2.0.0: {}
 
@@ -18973,6 +20211,10 @@ snapshots:
       registry-url: 5.1.0
       semver: 6.3.1
 
+  package-manager-detector@0.2.11:
+    dependencies:
+      quansync: 0.2.8
+
   parent-module@1.0.1:
     dependencies:
       callsites: 3.1.0
@@ -19218,6 +20460,13 @@ snapshots:
     dependencies:
       event-stream: 3.3.4
 
+  publint@0.3.9:
+    dependencies:
+      '@publint/pack': 0.1.2
+      package-manager-detector: 0.2.11
+      picocolors: 1.1.1
+      sade: 1.8.1
+
   pump@3.0.2:
     dependencies:
       end-of-stream: 1.4.4
@@ -19265,6 +20514,8 @@ snapshots:
   qs@6.14.0:
     dependencies:
       side-channel: 1.1.0
+
+  quansync@0.2.8: {}
 
   queue-microtask@1.2.3: {}
 
@@ -19648,6 +20899,10 @@ snapshots:
   rxjs@7.8.2:
     dependencies:
       tslib: 2.8.1
+
+  sade@1.8.1:
+    dependencies:
+      mri: 1.2.0
 
   safe-array-concat@1.1.3:
     dependencies:
@@ -20619,6 +21874,11 @@ snapshots:
     dependencies:
       typescript: 5.1.6
 
+  ts-api-utils@2.0.1(typescript@5.8.2):
+    dependencies:
+      typescript: 5.8.2
+    optional: true
+
   tsconfig-paths@3.15.0:
     dependencies:
       '@types/json5': 0.0.29
@@ -20654,8 +21914,6 @@ snapshots:
   type-fest@0.6.0: {}
 
   type-fest@0.8.1: {}
-
-  type-fest@4.35.0: {}
 
   type-fest@4.37.0: {}
 
@@ -20717,6 +21975,8 @@ snapshots:
 
   typescript@5.1.6: {}
 
+  typescript@5.8.2: {}
+
   uc.micro@1.0.6: {}
 
   uglify-js@3.19.3:
@@ -20737,6 +21997,8 @@ snapshots:
   underscore@1.13.7: {}
 
   undici-types@6.19.8: {}
+
+  undici-types@6.20.0: {}
 
   unicode-canonical-property-names-ecmascript@2.0.1: {}
 
@@ -20839,13 +22101,23 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@5.4.14(@types/node@20.17.19)(terser@5.39.0):
+  vite@5.4.14(@types/node@22.13.10)(terser@5.39.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.3
       rollup: 4.34.8
     optionalDependencies:
-      '@types/node': 20.17.19
+      '@types/node': 22.13.10
+      fsevents: 2.3.3
+      terser: 5.39.0
+
+  vite@6.2.2(@types/node@22.13.10)(terser@5.39.0):
+    dependencies:
+      esbuild: 0.25.1
+      postcss: 8.5.3
+      rollup: 4.34.8
+    optionalDependencies:
+      '@types/node': 22.13.10
       fsevents: 2.3.3
       terser: 5.39.0
 

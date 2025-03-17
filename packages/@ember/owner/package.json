@@ -13,8 +13,8 @@
     "@ember/object": "workspace:*",
     "@ember/routing": "workspace:*",
     "@ember/runloop": "workspace:*",
-    "@glimmer/component": "workspace:^",
-    "@glimmer/env": "^0.1.7",
+    "@glimmer/component": "workspace:*",
+    "@glimmer/env": "workspace:*",
     "expect-type": "^0.15.0"
   }
 }
