@@ -27,9 +27,6 @@ importers:
       '@glimmer/destroyable':
         specifier: 0.94.7
         version: 0.94.7
-      '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
       '@glimmer/global-context':
         specifier: 0.93.3
         version: 0.93.3
@@ -1301,6 +1298,8 @@ importers:
       typescript:
         specifier: '5.1'
         version: 5.1.6
+
+  packages/@glimmer/env: {}
 
   packages/@glimmer/tracking:
     dependencies:

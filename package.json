@@ -70,7 +70,6 @@
     "@embroider/addon-shim": "^1.9.0",
     "@glimmer/compiler": "0.94.9",
     "@glimmer/destroyable": "0.94.7",
-    "@glimmer/env": "^0.1.7",
     "@glimmer/global-context": "0.93.3",
     "@glimmer/interfaces": "0.94.6",
     "@glimmer/manager": "0.94.8",
