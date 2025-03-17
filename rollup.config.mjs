@@ -168,7 +168,6 @@ function packages() {
 
       // these packages are special and don't get included here
       'loader/**',
-      'external-helpers/**',
       'ember-template-compiler/**',
       'internal-test-helpers/**',
 

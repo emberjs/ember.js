@@ -1587,12 +1587,6 @@ importers:
         specifier: ^8.0.5
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
-  packages/external-helpers:
-    dependencies:
-      '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
-
   packages/internal-test-helpers:
     dependencies:
       '@ember/-internals':
