@@ -357,11 +357,16 @@ export function resolvePackages(deps, isExternal) {
           return deps[source];
         }
 
-        let candidateStem = resolve(projectRoot, 'packages', source);
-        for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
-          let candidate = candidateStem + suffix;
-          if (existsSync(candidate) && statSync(candidate).isFile()) {
-            return candidate;
+        let candidateStems = [
+          resolve(projectRoot, 'packages', source),
+          resolve(projectRoot, 'glimmer-vm/packages', source),
+        ];
+        for (let candidateStem of candidateStems) {
+          for (let suffix of ['', '.ts', '.js', '/index.ts', '/index.js']) {
+            let candidate = candidateStem + suffix;
+            if (existsSync(candidate) && statSync(candidate).isFile()) {
+              return candidate;
+            }
           }
         }
 
