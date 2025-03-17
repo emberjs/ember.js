@@ -1,6 +1,6 @@
 # Ember Changelog
 
-## v6.3.0-beta.1 (February 03, 2025)
+## v6.3.0 (March 17, 2025)
 
 - [#20800](https://github.com/emberjs/ember.js/pull/20800) [FEATURE] Support use of template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
 - [#20526](https://github.com/emberjs/ember.js/pull/20526) / [#20820](https://github.com/emberjs/ember.js/pull/20820) [DEPRECATION] Deprecate importing `inject` from `@ember/service`. The export is renamed to `service` per [RFC #0752](https://rfcs.emberjs.com/id/0752-inject-service/).
