@@ -38,8 +38,6 @@
     "@simple-dom/document": "^1.4.0"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:*",
-    "@glimmer-workspace/env": "workspace:*",
     "@glimmer/compiler": "workspace:*",
     "@types/qunit": "^2.19.12",
     "eslint": "^9.20.1",

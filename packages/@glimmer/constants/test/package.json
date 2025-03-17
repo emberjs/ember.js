@@ -4,7 +4,7 @@
   "version": "0.92.0",
   "scripts": {},
   "dependencies": {
-    "@glimmer/env": "0.1.7",
+    "@glimmer/env": "workspace:*",
     "@glimmer/util": "workspace:*"
   },
   "devDependencies": {

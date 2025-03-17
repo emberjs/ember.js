@@ -33,8 +33,6 @@
     "test:publint": "publint"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:*",
-    "@glimmer-workspace/env": "workspace:*",
     "eslint": "^9.20.1",
     "publint": "^0.3.2",
     "rollup": "^4.34.8",

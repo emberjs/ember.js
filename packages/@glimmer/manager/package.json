@@ -41,8 +41,6 @@
     "@glimmer/vm": "workspace:*"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:*",
-    "@glimmer-workspace/env": "workspace:*",
     "@glimmer/debug": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "eslint": "^9.20.1",

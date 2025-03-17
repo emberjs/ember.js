@@ -45,8 +45,6 @@
     "simple-html-tokenizer": "^0.5.11"
   },
   "devDependencies": {
-    "@glimmer-workspace/build-support": "workspace:*",
-    "@glimmer-workspace/env": "workspace:*",
     "@glimmer/debug-util": "workspace:*",
     "@glimmer/local-debug-flags": "workspace:*",
     "eslint": "^9.20.1",

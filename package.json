@@ -60,7 +60,7 @@
     "@glimmer-workspace/eslint-plugin": "workspace:*",
     "@glimmer-workspace/integration-tests": "workspace:*",
     "@glimmer-workspace/repo-metadata": "workspace:*",
-    "@glimmer/env": "0.1.7",
+    "@glimmer/env": "workspace:*",
     "@pnpm/meta-updater": "^2.0.3",
     "@pnpm/workspace.find-packages": "^1000.0.10",
     "@rollup/plugin-sucrase": "^5.0.2",
