@@ -1,0 +1,12 @@
+{
+  "name": "@glimmer/env",
+  "version": "0.1.7",
+  "description": "Glimmer application environment variables stub",
+  "repository": "https://github.com/emberjs/ember.js",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  }
+}
