@@ -30,7 +30,7 @@ interface Transaction {
   debugLabel?: string | undefined;
 }
 
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   let CONSUMED_TAGS: WeakMap<Tag, Transaction> | null = null;
 
   const TRANSACTION_STACK: Transaction[] = [];

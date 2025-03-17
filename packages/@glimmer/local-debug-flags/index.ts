@@ -7,16 +7,16 @@ declare global {
 }
 
 // All of these flags are expected to become constant `false` in production builds.
-export const LOCAL_DEBUG = !!(import.meta.env.VM_LOCAL_DEV && !hasFlag('disable_local_debug'));
+export const LOCAL_DEBUG = !!(import.meta.env?.VM_LOCAL_DEV && !hasFlag('disable_local_debug'));
 export const LOCAL_TRACE_LOGGING = !!(
-  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_trace_logging')
+  import.meta.env?.VM_LOCAL_DEV && hasFlag('enable_trace_logging')
 );
 export const LOCAL_EXPLAIN_LOGGING =
-  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_trace_explanations');
+  import.meta.env?.VM_LOCAL_DEV && hasFlag('enable_trace_explanations');
 export const LOCAL_INTERNALS_LOGGING =
-  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_internals_logging');
+  import.meta.env?.VM_LOCAL_DEV && hasFlag('enable_internals_logging');
 export const LOCAL_SUBTLE_LOGGING =
-  import.meta.env.VM_LOCAL_DEV && hasFlag('enable_subtle_logging');
+  import.meta.env?.VM_LOCAL_DEV && hasFlag('enable_subtle_logging');
 
 if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
   console.group('%cLogger Flags:', 'font-weight: normal; color: teal');
@@ -106,12 +106,12 @@ if (LOCAL_INTERNALS_LOGGING || LOCAL_EXPLAIN_LOGGING) {
   }
 }
 
-// This function should turn into a constant `return false` in `import.meta.env.PROD`,
+// This function should turn into a constant `return false` in `import.meta.env?.PROD`,
 // which should inline properly via terser, swc and esbuild.
 //
 // https://tiny.katz.zone/BNqN3F
 function hasFlag(flag: string): true | false {
-  if (import.meta.env.VM_LOCAL_DEV) {
+  if (import.meta.env?.VM_LOCAL_DEV) {
     const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     return url?.searchParams.has(flag) ?? false;
@@ -120,7 +120,7 @@ function hasFlag(flag: string): true | false {
   }
 }
 
-if (import.meta.env.VM_LOCAL_DEV) {
+if (import.meta.env?.VM_LOCAL_DEV) {
   if ('stackTraceLimit' in Error) {
     Error.stackTraceLimit = Infinity;
   }
@@ -134,7 +134,7 @@ if (import.meta.env.VM_LOCAL_DEV) {
  * The pattern can have a `*`, which matches any number of characters.
  */
 export function hasFlagWith(flag: string, value: string): boolean {
-  if (import.meta.env.VM_LOCAL_DEV) {
+  if (import.meta.env?.VM_LOCAL_DEV) {
     const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     const pattern = new RegExp(`^${value.replace(/\*/gu, '.*')}$`, 'u');
@@ -146,7 +146,7 @@ export function hasFlagWith(flag: string, value: string): boolean {
 }
 
 export function getFlagValues(flag: string): string[] {
-  if (import.meta.env.VM_LOCAL_DEV) {
+  if (import.meta.env?.VM_LOCAL_DEV) {
     const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     const all = url?.searchParams.getAll(flag);
@@ -157,7 +157,7 @@ export function getFlagValues(flag: string): string[] {
 }
 
 export function getFlag(flag: string): boolean | string | string[] | null {
-  if (import.meta.env.VM_LOCAL_DEV) {
+  if (import.meta.env?.VM_LOCAL_DEV) {
     const url = typeof window !== 'undefined' ? new URL(window.location.href) : null;
 
     const all = url?.searchParams.getAll(flag);

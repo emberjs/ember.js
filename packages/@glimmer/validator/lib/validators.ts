@@ -79,7 +79,7 @@ const TYPE: TagTypeSymbol = Symbol('TAG_TYPE') as TagTypeSymbol;
 // this is basically a const
 export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   ALLOW_CYCLES = new WeakMap();
 }
 
@@ -124,7 +124,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     let { lastChecked } = this;
 
     if (this.isUpdating) {
-      if (import.meta.env.DEV && !allowsCycles(this)) {
+      if (import.meta.env?.DEV && !allowsCycles(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
@@ -167,7 +167,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
   static updateTag(this: void, _tag: UpdatableTag, _subtag: Tag) {
     // catch bug by non-TS users
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (import.meta.env.DEV && _tag[TYPE] !== UPDATABLE_TAG_ID) {
+    if (import.meta.env?.DEV && _tag[TYPE] !== UPDATABLE_TAG_ID) {
       throw new Error('Attempted to update a tag that was not updatable');
     }
 
@@ -207,7 +207,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
     disableConsumptionAssertion?: boolean
   ) {
     if (
-      import.meta.env.DEV &&
+      import.meta.env?.DEV &&
       // catch bug by non-TS users
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       !(tag[TYPE] === UPDATABLE_TAG_ID || tag[TYPE] === DIRYTABLE_TAG_ID)
@@ -215,7 +215,7 @@ class MonomorphicTagImpl<T extends MonomorphicTagId = MonomorphicTagId> {
       throw new Error('Attempted to dirty a tag that was not dirtyable');
     }
 
-    if (import.meta.env.DEV && disableConsumptionAssertion !== true) {
+    if (import.meta.env?.DEV && disableConsumptionAssertion !== true) {
       // Usually by this point, we've already asserted with better error information,
       // but this is our last line of defense.
       unwrap(debug.assertTagNotConsumed)(tag);
