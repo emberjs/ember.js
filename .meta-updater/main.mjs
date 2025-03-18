@@ -104,6 +104,7 @@ export default () =>
                 },
               });
             } else {
+              update(publishConfig, 'types', 'dist/dev/index.d.ts');
               update(publishConfig, 'exports', {
                 '.': {
                   development: {
