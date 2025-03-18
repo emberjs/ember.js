@@ -22,7 +22,8 @@
           "default": "./dist/prod/index.js"
         }
       }
-    }
+    },
+    "types": "dist/dev/index.d.ts"
   },
   "files": [
     "dist"
