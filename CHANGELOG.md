@@ -1,5 +1,40 @@
 # Changelog
 
+## Release (2025-03-18)
+
+@glimmer/compiler 0.94.10 (patch)
+@glimmer/destroyable 0.94.8 (patch)
+@glimmer/encoder 0.93.8 (patch)
+@glimmer/global-context 0.93.4 (patch)
+@glimmer/manager 0.94.9 (patch)
+@glimmer/node 0.94.9 (patch)
+@glimmer/opcode-compiler 0.94.9 (patch)
+@glimmer/owner 0.93.4 (patch)
+@glimmer/program 0.94.9 (patch)
+@glimmer/reference 0.94.8 (patch)
+@glimmer/runtime 0.94.10 (patch)
+@glimmer/syntax 0.94.9 (patch)
+@glimmer/util 0.94.8 (patch)
+@glimmer/validator 0.94.8 (patch)
+@glimmer/vm 0.94.8 (patch)
+@glimmer/wire-format 0.94.8 (patch)
+
+#### :bug: Bug Fix
+* `@glimmer-workspace/meta-updater`, `@glimmer-workspace/benchmark-env`, `@glimmer/compiler`, `@glimmer/destroyable`, `@glimmer/encoder`, `@glimmer/global-context`, `@glimmer/manager`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/owner`, `@glimmer/program`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/syntax`, `@glimmer/util`, `@glimmer/validator`, `@glimmer/vm`, `@glimmer/wire-format`
+  * [#1741](https://github.com/glimmerjs/glimmer-vm/pull/1741) Re-add support for tsconfig's moduleResolution=node10 ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### :house: Internal
+* Other
+  * [#1738](https://github.com/glimmerjs/glimmer-vm/pull/1738) Removing editor.rulers ([@ef4](https://github.com/ef4))
+* `@glimmer-workspace/repo-metadata`
+  * [#1736](https://github.com/glimmerjs/glimmer-vm/pull/1736) pnpm repo:update:metadata ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+* `@glimmer/runtime`
+  * [#1735](https://github.com/glimmerjs/glimmer-vm/pull/1735) Force release ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- [@NullVoxPopuli](https://github.com/NullVoxPopuli)
+
 ## Release (2025-03-14)
 
 @glimmer/runtime 0.94.9 (patch)
