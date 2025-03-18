@@ -6,7 +6,7 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@glimmer/destroyable": "0.94.7",
+    "@glimmer/destroyable": "0.94.8",
     "expect-type": "^0.15.0"
   }
 }
