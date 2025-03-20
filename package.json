@@ -131,7 +131,7 @@
     "vitest": "^3.0.6",
     "zx": "^8.3.2"
   },
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@10.6.5",
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
     "labels": {
