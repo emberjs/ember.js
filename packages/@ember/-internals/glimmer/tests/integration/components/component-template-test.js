@@ -1,9 +1,8 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, runTask, testUnless } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { setComponentTemplate, getComponentTemplate } from '@glimmer/manager';
 import { Component, compile } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: setComponentTemplate',
@@ -11,23 +10,6 @@ moduleFor(
     '@test it basically works'() {
       this.registerComponent('foo-bar', {
         ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
-      });
-
-      this.render('<FooBar />');
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, { content: 'hello' });
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-    )} it takes precedence over resolver`]() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: setComponentTemplate(compile('hello'), Component.extend()),
-        resolveableTemplate: 'noooooo!',
       });
 
       this.render('<FooBar />');
