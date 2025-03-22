@@ -270,11 +270,7 @@ describe('Blueprint: component', function () {
         );
 
         expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
-          fixture('component-test/rfc232.gjs', {
-            replace: {
-              modulePrefix: 'my-app',
-            },
-          })
+          fixture('component-test/app.gjs')
         );
       });
     });
@@ -288,11 +284,7 @@ describe('Blueprint: component', function () {
           );
 
           expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
-            fixture('component-test/rfc232.gjs', {
-              replace: {
-                modulePrefix: 'my-app',
-              },
-            })
+            fixture('component-test/app.gjs')
           );
         }
       );
@@ -313,11 +305,7 @@ describe('Blueprint: component', function () {
         );
 
         expect(_file('tests/integration/components/foo-test.gts')).to.equal(
-          fixture('component-test/rfc232.gts', {
-            replace: {
-              modulePrefix: 'my-app',
-            },
-          })
+          fixture('component-test/app.gts')
         );
       });
     });
@@ -331,11 +319,7 @@ describe('Blueprint: component', function () {
           );
 
           expect(_file('tests/integration/components/foo-test.gts')).to.equal(
-            fixture('component-test/rfc232.gts', {
-              replace: {
-                modulePrefix: 'my-app',
-              },
-            })
+            fixture('component-test/app.gts')
           );
         }
       );

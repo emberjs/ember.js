@@ -1,7 +1,7 @@
 import { module, test } from 'qunit';
-import { setupRenderingTest } from '<%= modulePrefix =%>/tests/helpers';
+import { setupRenderingTest } from 'my-app/tests/helpers';
 import { render } from '@ember/test-helpers';
-import Foo from '<%= modulePrefix =%>/components/foo';
+import Foo from 'my-app/components/foo';
 
 module('Integration | Component | foo', function (hooks) {
   setupRenderingTest(hooks);
