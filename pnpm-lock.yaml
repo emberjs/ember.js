@@ -9,9 +9,9 @@ overrides:
   rollup: ^4.2.0
 
 patchedDependencies:
-  ember-cli@6.2.2:
+  ember-cli@6.3.0-beta.3:
     hash: 7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347
-    path: patches/ember-cli@6.2.2.patch
+    path: patches/ember-cli@6.3.0-beta.3.patch
 
 importers:
 
@@ -199,8 +199,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0(@babel/core@7.26.9)
       ember-cli:
-        specifier: ^6.2.0
-        version: 6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)
+        specifier: ^6.3.0-beta.3
+        version: 6.3.0-beta.3(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)
       ember-cli-blueprint-test-helpers:
         specifier: ^0.19.2
         version: 0.19.2
@@ -209,7 +209,7 @@ importers:
         version: 2.1.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7))
+        version: 3.3.3(ember-cli@6.3.0-beta.3(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -5373,8 +5373,8 @@ packages:
   content-tag@2.0.3:
     resolution: {integrity: sha512-htLIdtfhhKW2fHlFLnZH7GFzHSdSpHhDLrWVswkNiiPMZ5uXq5JfrGboQKFhNQuAAFF8VNB2EYUj3MsdJrKKpg==}
 
-  content-tag@3.1.1:
-    resolution: {integrity: sha512-94puwVk6X8oJcbRIEY03UM80zWzA3dYgGkOiRJzeY1vXgwrFUh3OolDDi/D7YBa6Vsx+CgAvuk4uXlB8loZ1FA==}
+  content-tag@3.1.2:
+    resolution: {integrity: sha512-Z+MGhZfnFFKzYC+pUTWXnoDYhfiXP9ojZe3JbwsYufmDuoeq2EvuDyeFAJ/RnKokUwz5s9bQhDOrbvSYRShcrQ==}
 
   content-type@1.0.5:
     resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
@@ -5674,6 +5674,10 @@ packages:
     resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
     engines: {node: '>=0.3.1'}
 
+  diff@7.0.0:
+    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
+    engines: {node: '>=0.3.1'}
+
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
@@ -5836,8 +5840,8 @@ packages:
     engines: {node: '>= 18'}
     hasBin: true
 
-  ember-cli@6.2.2:
-    resolution: {integrity: sha512-PJNJ3Ib1IP85NJlw/AdzX76ZIDcyAAFJfDz/wFJQ+hqTFNWsjVjXl20X3ePQkKfZZlF421EC5nsLBOwbHqsh9g==}
+  ember-cli@6.3.0-beta.3:
+    resolution: {integrity: sha512-YnsRt7Y8jK5hxMhDzRxulZFrq4K3EjwIdAQS9cRhJL/gJGLRjqcug8yBm8vfVip8uP7mEMPg+1gCgrib3Tkk/g==}
     engines: {node: '>= 18'}
     hasBin: true
 
@@ -7512,6 +7516,9 @@ packages:
   linkify-it@4.0.1:
     resolution: {integrity: sha512-C7bfi1UZmoj8+PQx22XyeXCuBlokoyWQL5pWSP+EI6nzRylyThouddufc2c1NDIcP9k5agmN9fLpA7VNJfIiqw==}
 
+  linkify-it@5.0.0:
+    resolution: {integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ==}
+
   livereload-js@3.4.1:
     resolution: {integrity: sha512-5MP0uUeVCec89ZbNOT/i97Mc+q3SxXmiUGhRFOTmhrGPn//uWVQdCvcLJDy64MSBR5MidFdOR7B9viumoavy6g==}
 
@@ -7695,6 +7702,10 @@ packages:
     resolution: {integrity: sha512-FtwnEuuK+2yVU7goGn/MJ0WBZMM9ZPgU9spqlFs7/A/pDIUNSOQZhUgOqYCficIuR2QaFnrt8LHqBWsbTAoI5w==}
     hasBin: true
 
+  markdown-it@14.1.0:
+    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+    hasBin: true
+
   markdown-it@4.4.0:
     resolution: {integrity: sha512-Rl8dHHeLuAh3E72OPY0tY7CLvlxgHiLhlshIYswAAabAg4YDBLa6e/LTgNkkxBO2K61ESzoquPQFMw/iMrT1PA==}
     hasBin: true
@@ -7724,6 +7735,9 @@ packages:
 
   mdurl@1.0.1:
     resolution: {integrity: sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==}
+
+  mdurl@2.0.0:
+    resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
@@ -8550,6 +8564,10 @@ packages:
   pump@3.0.2:
     resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
 
+  punycode.js@2.3.1:
+    resolution: {integrity: sha512-uxFIHU0YlHYhDQtV4R9J6a52SLx28BCjT+4ieh7IGbgwVJWO+km431c4yRlREUAsAmt/uMjQUyQHNEPf0M39CA==}
+    engines: {node: '>=6'}
+
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -8568,6 +8586,7 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qs@1.0.2:
@@ -9689,6 +9708,9 @@ packages:
 
   uc.micro@1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==}
+
+  uc.micro@2.1.0:
+    resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
 
   uglify-js@3.19.3:
     resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
@@ -14924,7 +14946,7 @@ snapshots:
 
   content-tag@2.0.3: {}
 
-  content-tag@3.1.1: {}
+  content-tag@3.1.2: {}
 
   content-type@1.0.5: {}
 
@@ -15196,6 +15218,8 @@ snapshots:
 
   diff@5.2.0: {}
 
+  diff@7.0.0: {}
+
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
@@ -15393,10 +15417,10 @@ snapshots:
       resolve: 1.22.10
       semver: 5.7.2
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@6.3.0-beta.3(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)
+      ember-cli: 6.3.0-beta.3(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.10
@@ -15687,12 +15711,11 @@ snapshots:
       - walrus
       - whiskers
 
-  ember-cli@6.2.2(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7):
+  ember-cli@6.3.0-beta.3(patch_hash=7649c0d1386f77161a35436a9475d20553cb0a841a76fe0681b0939ab96d2347)(handlebars@4.7.8)(underscore@1.13.7):
     dependencies:
       '@pnpm/find-workspace-dir': 7.0.3
       babel-remove-types: 1.0.1
       broccoli: 3.5.2
-      broccoli-builder: 0.18.14
       broccoli-concat: 4.2.5
       broccoli-config-loader: 1.0.1
       broccoli-config-replace: 1.1.2
@@ -15712,10 +15735,10 @@ snapshots:
       compression: 1.8.0
       configstore: 5.0.1
       console-ui: 3.1.2
-      content-tag: 2.0.3
+      content-tag: 3.1.2
       core-object: 3.1.5
       dag-map: 2.0.2
-      diff: 5.2.0
+      diff: 7.0.0
       ember-cli-is-package-missing: 1.0.0
       ember-cli-normalize-entity-name: 1.0.0
       ember-cli-preprocess-registry: 5.0.1
@@ -15744,8 +15767,8 @@ snapshots:
       is-language-code: 3.1.0
       isbinaryfile: 5.0.4
       lodash: 4.17.21
-      markdown-it: 13.0.2
-      markdown-it-terminal: 0.4.0(markdown-it@13.0.2)
+      markdown-it: 14.1.0
+      markdown-it-terminal: 0.4.0(markdown-it@14.1.0)
       minimatch: 7.4.6
       morgan: 1.10.0
       nopt: 3.0.6
@@ -15936,7 +15959,7 @@ snapshots:
   ember-template-imports@4.3.0:
     dependencies:
       broccoli-stew: 3.0.0
-      content-tag: 3.1.1
+      content-tag: 3.1.2
       ember-cli-version-checker: 5.1.2
     transitivePeerDependencies:
       - supports-color
@@ -17988,6 +18011,10 @@ snapshots:
     dependencies:
       uc.micro: 1.0.6
 
+  linkify-it@5.0.0:
+    dependencies:
+      uc.micro: 2.1.0
+
   livereload-js@3.4.1: {}
 
   load-json-file@4.0.0:
@@ -18158,6 +18185,14 @@ snapshots:
       lodash.merge: 4.6.2
       markdown-it: 13.0.2
 
+  markdown-it-terminal@0.4.0(markdown-it@14.1.0):
+    dependencies:
+      ansi-styles: 3.2.1
+      cardinal: 1.0.0
+      cli-table: 0.3.11
+      lodash.merge: 4.6.2
+      markdown-it: 14.1.0
+
   markdown-it@13.0.2:
     dependencies:
       argparse: 2.0.1
@@ -18165,6 +18200,15 @@ snapshots:
       linkify-it: 4.0.1
       mdurl: 1.0.1
       uc.micro: 1.0.6
+
+  markdown-it@14.1.0:
+    dependencies:
+      argparse: 2.0.1
+      entities: 4.5.0
+      linkify-it: 5.0.0
+      mdurl: 2.0.0
+      punycode.js: 2.3.1
+      uc.micro: 2.1.0
 
   markdown-it@4.4.0:
     dependencies:
@@ -18194,6 +18238,8 @@ snapshots:
   mdn-links@0.1.0: {}
 
   mdurl@1.0.1: {}
+
+  mdurl@2.0.0: {}
 
   media-typer@0.3.0: {}
 
@@ -19034,6 +19080,8 @@ snapshots:
     dependencies:
       end-of-stream: 1.4.4
       once: 1.4.0
+
+  punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
 
@@ -20542,6 +20590,8 @@ snapshots:
   typescript@5.1.6: {}
 
   uc.micro@1.0.6: {}
+
+  uc.micro@2.1.0: {}
 
   uglify-js@3.19.3:
     optional: true
