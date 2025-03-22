@@ -1,4 +1,4 @@
-import { computed, isElementDescriptor, alias, expandProperties } from '@ember/-internals/metal';
+import { computed, isDecoratorCall, alias, expandProperties } from '@ember/-internals/metal';
 import { get, set } from '@ember/object';
 import type { DeprecationOptions } from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
@@ -33,7 +33,7 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
 
     assert(
       `You attempted to use @${name} as a decorator directly, but it requires at least one dependent key parameter`,
-      !isElementDescriptor(properties)
+      !isDecoratorCall(properties)
     );
 
     let dependentKeys = expandPropertiesToArray(name, properties);
@@ -98,7 +98,7 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
 export function empty(dependentKey: string) {
   assert(
     'You attempted to use @empty as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(`${dependentKey}.length`, function () {
@@ -144,7 +144,7 @@ export function empty(dependentKey: string) {
 export function notEmpty(dependentKey: string) {
   assert(
     'You attempted to use @notEmpty as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(`${dependentKey}.length`, function () {
@@ -187,7 +187,7 @@ export function notEmpty(dependentKey: string) {
 export function none(dependentKey: string) {
   assert(
     'You attempted to use @none as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -229,7 +229,7 @@ export function none(dependentKey: string) {
 export function not(dependentKey: string) {
   assert(
     'You attempted to use @not as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -277,7 +277,7 @@ export function not(dependentKey: string) {
 export function bool(dependentKey: string) {
   assert(
     'You attempted to use @bool as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -323,7 +323,7 @@ export function bool(dependentKey: string) {
 export function match(dependentKey: string, regexp: RegExp) {
   assert(
     'You attempted to use @match as a decorator directly, but it requires `dependentKey` and `regexp` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -369,7 +369,7 @@ export function match(dependentKey: string, regexp: RegExp) {
 export function equal(dependentKey: string, value: unknown) {
   assert(
     'You attempted to use @equal as a decorator directly, but it requires `dependentKey` and `value` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -414,7 +414,7 @@ export function equal(dependentKey: string, value: unknown) {
 export function gt(dependentKey: string, value: number) {
   assert(
     'You attempted to use @gt as a decorator directly, but it requires `dependentKey` and `value` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -459,7 +459,7 @@ export function gt(dependentKey: string, value: number) {
 export function gte(dependentKey: string, value: number) {
   assert(
     'You attempted to use @gte as a decorator directly, but it requires `dependentKey` and `value` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -504,7 +504,7 @@ export function gte(dependentKey: string, value: number) {
 export function lt(dependentKey: string, value: number) {
   assert(
     'You attempted to use @lt as a decorator directly, but it requires `dependentKey` and `value` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -549,7 +549,7 @@ export function lt(dependentKey: string, value: number) {
 export function lte(dependentKey: string, value: number) {
   assert(
     'You attempted to use @lte as a decorator directly, but it requires `dependentKey` and `value` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, function () {
@@ -723,7 +723,7 @@ export const or = generateComputedWithPredicate('or', (value) => !value);
 export function oneWay(dependentKey: string) {
   assert(
     'You attempted to use @oneWay as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return alias(dependentKey).oneWay() as PropertyDecorator;
@@ -787,7 +787,7 @@ export function oneWay(dependentKey: string) {
 export function readOnly(dependentKey: string) {
   assert(
     'You attempted to use @readOnly as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return alias(dependentKey).readOnly() as PropertyDecorator;
@@ -831,7 +831,7 @@ export function readOnly(dependentKey: string) {
 export function deprecatingAlias(dependentKey: string, options: DeprecationOptions) {
   assert(
     'You attempted to use @deprecatingAlias as a decorator directly, but it requires `dependentKey` and `options` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return computed(dependentKey, {
