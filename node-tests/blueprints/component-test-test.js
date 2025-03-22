@@ -38,6 +38,25 @@ describe('Blueprint: component-test', function () {
           );
         });
       });
+
+      it('component-test foo --strict', function () {
+        return emberGenerateDestroy(['component-test', 'foo', '--strict'], (_file) => {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs')
+          );
+        });
+      });
+
+      it('component-test foo --strict --typescript', function () {
+        return emberGenerateDestroy(
+          ['component-test', 'foo', '--strict', '--typescript'],
+          (_file) => {
+            expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+              fixture('component-test/app.gts')
+            );
+          }
+        );
+      });
     });
 
     describe('with ember-cli-qunit@4.1.0', function () {
@@ -173,6 +192,25 @@ describe('Blueprint: component-test', function () {
             fixture('component-test/rfc232-unit-addon.js')
           );
         });
+      });
+
+      it('component-test foo --strict', function () {
+        return emberGenerateDestroy(['component-test', 'foo', '--strict'], (_file) => {
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/addon.gjs')
+          );
+        });
+      });
+
+      it('component-test foo --strict --typescript', function () {
+        return emberGenerateDestroy(
+          ['component-test', 'foo', '--strict', '--typescript'],
+          (_file) => {
+            expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+              fixture('component-test/addon.gts')
+            );
+          }
+        );
       });
     });
   });
