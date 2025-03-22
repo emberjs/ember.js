@@ -5,12 +5,10 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: service', function () {
@@ -18,14 +16,7 @@ describe('Blueprint: service', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew();
     });
 
     it('service foo', function () {
@@ -33,7 +24,7 @@ describe('Blueprint: service', function () {
         expect(_file('app/services/foo.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -46,7 +37,7 @@ describe('Blueprint: service', function () {
         expect(_file('app/services/foo.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -56,7 +47,7 @@ describe('Blueprint: service', function () {
         expect(_file('app/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/nested.js')
         );
       });
     });
@@ -65,9 +56,7 @@ describe('Blueprint: service', function () {
       return emberGenerateDestroy(['service', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo/service.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/foo/service-test.js')).to.equal(
-          fixture('service-test/default.js')
-        );
+        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/rfc232.js'));
       });
     });
 
@@ -78,9 +67,7 @@ describe('Blueprint: service', function () {
 
         expect(_file('app/foo/service.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/foo/service-test.js')).to.equal(
-          fixture('service-test/default.js')
-        );
+        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/rfc232.js'));
       });
     });
 
@@ -89,7 +76,7 @@ describe('Blueprint: service', function () {
         expect(_file('app/foo/bar/service.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('tests/unit/foo/bar/service-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/nested.js')
         );
       });
     });
@@ -104,7 +91,7 @@ describe('Blueprint: service', function () {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
-            fixture('service-test/default.js')
+            fixture('service-test/rfc232.js')
           );
         });
       });
@@ -117,7 +104,7 @@ describe('Blueprint: service', function () {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
-            fixture('service-test/default.js')
+            fixture('service-test/rfc232.js')
           );
         });
       });
@@ -129,7 +116,7 @@ describe('Blueprint: service', function () {
           );
 
           expect(_file('tests/unit/pods/foo/bar/service-test.js')).to.equal(
-            fixture('service-test/default-nested.js')
+            fixture('service-test/nested.js')
           );
         });
       });
@@ -138,14 +125,7 @@ describe('Blueprint: service', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
     it('service foo', function () {
@@ -157,7 +137,7 @@ describe('Blueprint: service', function () {
         );
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232-addon.js')
         );
       });
     });
@@ -175,7 +155,7 @@ describe('Blueprint: service', function () {
         );
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232-addon.js')
         );
       });
     });
@@ -189,7 +169,7 @@ describe('Blueprint: service', function () {
         );
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/addon-nested.js')
         );
       });
     });
@@ -217,14 +197,7 @@ describe('Blueprint: service', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('service foo --in-repo-addon=my-addon', function () {
@@ -236,7 +209,7 @@ describe('Blueprint: service', function () {
         );
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -254,7 +227,7 @@ describe('Blueprint: service', function () {
         );
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -270,7 +243,7 @@ describe('Blueprint: service', function () {
         );
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/nested.js')
         );
       });
     });

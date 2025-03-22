@@ -5,12 +5,10 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: util', function () {
@@ -18,21 +16,14 @@ describe('Blueprint: util', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew();
     });
 
     it('util foo-bar', function () {
       return emberGenerateDestroy(['util', 'foo-bar'], (_file) => {
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -43,7 +34,7 @@ describe('Blueprint: util', function () {
 
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -52,7 +43,7 @@ describe('Blueprint: util', function () {
         expect(_file('app/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
+          fixture('util-test/nested.js')
         );
       });
     });
@@ -61,7 +52,7 @@ describe('Blueprint: util', function () {
       return emberGenerateDestroy(['util', 'foo-bar', '--pod'], (_file) => {
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -72,7 +63,7 @@ describe('Blueprint: util', function () {
 
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -81,7 +72,7 @@ describe('Blueprint: util', function () {
         expect(_file('app/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
+          fixture('util-test/nested.js')
         );
       });
     });
@@ -96,7 +87,7 @@ describe('Blueprint: util', function () {
           expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
           expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/default.js')
+            fixture('util-test/rfc232.js')
           );
         });
       });
@@ -109,7 +100,7 @@ describe('Blueprint: util', function () {
           expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
           expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/default.js')
+            fixture('util-test/rfc232.js')
           );
         });
       });
@@ -118,14 +109,7 @@ describe('Blueprint: util', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
     it('util foo-bar', function () {
@@ -136,9 +120,7 @@ describe('Blueprint: util', function () {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-          fixture('util-test/addon-default.js')
-        );
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/addon.js'));
       });
     });
 
@@ -154,9 +136,7 @@ describe('Blueprint: util', function () {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-          fixture('util-test/addon-default.js')
-        );
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/addon.js'));
       });
     });
 
@@ -169,7 +149,7 @@ describe('Blueprint: util', function () {
         );
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/addon-default-nested.js')
+          fixture('util-test/addon-nested.js')
         );
       });
     });
@@ -187,14 +167,7 @@ describe('Blueprint: util', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('util foo-bar --in-repo-addon=my-addon', function () {
@@ -205,7 +178,7 @@ describe('Blueprint: util', function () {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -221,7 +194,7 @@ describe('Blueprint: util', function () {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -236,7 +209,7 @@ describe('Blueprint: util', function () {
         );
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
+          fixture('util-test/nested.js')
         );
       });
     });

@@ -5,12 +5,10 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: controller', function () {
@@ -18,14 +16,7 @@ describe('Blueprint: controller', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew();
     });
 
     it('controller foo', function () {
@@ -33,7 +24,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -46,7 +37,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -58,7 +49,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-nested.js')
         );
       });
     });
@@ -68,7 +59,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/foo/controller-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -81,7 +72,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/foo/controller-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -93,7 +84,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/foo/bar/controller-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-nested.js')
         );
       });
     });
@@ -108,7 +99,7 @@ describe('Blueprint: controller', function () {
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
-            fixture('controller-test/default.js')
+            fixture('controller-test/rfc232.js')
           );
         });
       });
@@ -120,7 +111,7 @@ describe('Blueprint: controller', function () {
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
-            fixture('controller-test/default.js')
+            fixture('controller-test/rfc232.js')
           );
         });
       });
@@ -132,7 +123,7 @@ describe('Blueprint: controller', function () {
           );
 
           expect(_file('tests/unit/pods/foo/bar/controller-test.js')).to.equal(
-            fixture('controller-test/default-nested.js')
+            fixture('controller-test/rfc232-nested.js')
           );
         });
       });
@@ -141,14 +132,7 @@ describe('Blueprint: controller', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
     it('controller foo', function () {
@@ -160,7 +144,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232-addon.js')
         );
       });
     });
@@ -178,7 +162,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232-addon.js')
         );
       });
     });
@@ -194,7 +178,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-addon-nested.js')
         );
       });
     });
@@ -240,14 +224,7 @@ describe('Blueprint: controller', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('controller foo --in-repo-addon=my-addon', function () {
@@ -261,7 +238,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -281,7 +258,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -299,7 +276,7 @@ describe('Blueprint: controller', function () {
           );
 
           expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-            fixture('controller-test/default-nested.js')
+            fixture('controller-test/rfc232-nested.js')
           );
         }
       );
