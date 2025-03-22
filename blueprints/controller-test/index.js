@@ -2,13 +2,12 @@
 
 const stringUtil = require('ember-cli-string-utils');
 
-const useTestFrameworkDetector = require('../test-framework-detector');
 const path = require('path');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 const { modulePrefixForProject } = require('../-utils');
 
-module.exports = useTestFrameworkDetector({
+module.exports = {
   description: 'Generates a controller unit test.',
 
   shouldTransformTypeScript: true,
@@ -44,4 +43,4 @@ module.exports = useTestFrameworkDetector({
       },
     };
   },
-});
+};
