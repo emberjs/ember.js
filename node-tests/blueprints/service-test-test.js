@@ -20,9 +20,7 @@ describe('Blueprint: service-test', function () {
 
     it('service-test foo', function () {
       return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
   });
@@ -34,9 +32,7 @@ describe('Blueprint: service-test', function () {
 
     it('service-test foo', function () {
       return emberGenerateDestroy(['service-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/addon.js'));
       });
     });
   });

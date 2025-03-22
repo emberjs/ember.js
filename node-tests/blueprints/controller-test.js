@@ -24,7 +24,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -37,7 +37,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -49,7 +49,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/rfc232-nested.js')
+          fixture('controller-test/nested.js')
         );
       });
     });
@@ -59,7 +59,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/foo/controller-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -72,7 +72,7 @@ describe('Blueprint: controller', function () {
         expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/foo/controller-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -84,7 +84,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/foo/bar/controller-test.js')).to.equal(
-          fixture('controller-test/rfc232-nested.js')
+          fixture('controller-test/nested.js')
         );
       });
     });
@@ -99,7 +99,7 @@ describe('Blueprint: controller', function () {
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
-            fixture('controller-test/rfc232.js')
+            fixture('controller-test/app.js')
           );
         });
       });
@@ -111,7 +111,7 @@ describe('Blueprint: controller', function () {
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
-            fixture('controller-test/rfc232.js')
+            fixture('controller-test/app.js')
           );
         });
       });
@@ -123,7 +123,7 @@ describe('Blueprint: controller', function () {
           );
 
           expect(_file('tests/unit/pods/foo/bar/controller-test.js')).to.equal(
-            fixture('controller-test/rfc232-nested.js')
+            fixture('controller-test/nested.js')
           );
         });
       });
@@ -144,7 +144,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232-addon.js')
+          fixture('controller-test/addon.js')
         );
       });
     });
@@ -162,7 +162,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232-addon.js')
+          fixture('controller-test/addon.js')
         );
       });
     });
@@ -178,7 +178,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/rfc232-addon-nested.js')
+          fixture('controller-test/addon-nested.js')
         );
       });
     });
@@ -238,7 +238,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -258,7 +258,7 @@ describe('Blueprint: controller', function () {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -276,7 +276,7 @@ describe('Blueprint: controller', function () {
           );
 
           expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-            fixture('controller-test/rfc232-nested.js')
+            fixture('controller-test/nested.js')
           );
         }
       );

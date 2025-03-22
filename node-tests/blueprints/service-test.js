@@ -23,9 +23,7 @@ describe('Blueprint: service', function () {
       return emberGenerateDestroy(['service', 'foo'], (_file) => {
         expect(_file('app/services/foo.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
 
@@ -36,9 +34,7 @@ describe('Blueprint: service', function () {
 
         expect(_file('app/services/foo.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
 
@@ -56,7 +52,7 @@ describe('Blueprint: service', function () {
       return emberGenerateDestroy(['service', 'foo', '--pod'], (_file) => {
         expect(_file('app/foo/service.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/rfc232.js'));
+        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
 
@@ -67,7 +63,7 @@ describe('Blueprint: service', function () {
 
         expect(_file('app/foo/service.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/rfc232.js'));
+        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
 
@@ -91,7 +87,7 @@ describe('Blueprint: service', function () {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
-            fixture('service-test/rfc232.js')
+            fixture('service-test/app.js')
           );
         });
       });
@@ -104,7 +100,7 @@ describe('Blueprint: service', function () {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
-            fixture('service-test/rfc232.js')
+            fixture('service-test/app.js')
           );
         });
       });
@@ -136,9 +132,7 @@ describe('Blueprint: service', function () {
           "export { default } from 'my-addon/services/foo';"
         );
 
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/addon.js'));
       });
     });
 
@@ -154,9 +148,7 @@ describe('Blueprint: service', function () {
           "export { default } from 'my-addon/services/foo';"
         );
 
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/addon.js'));
       });
     });
 
@@ -208,9 +200,7 @@ describe('Blueprint: service', function () {
           "export { default } from 'my-addon/services/foo';"
         );
 
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
 
@@ -226,9 +216,7 @@ describe('Blueprint: service', function () {
           "export { default } from 'my-addon/services/foo';"
         );
 
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/rfc232.js')
-        );
+        expect(_file('tests/unit/services/foo-test.js')).to.equal(fixture('service-test/app.js'));
       });
     });
 

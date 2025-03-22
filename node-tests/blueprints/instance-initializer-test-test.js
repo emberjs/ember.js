@@ -21,7 +21,7 @@ describe('Blueprint: instance-initializer-test', function () {
     it('instance-initializer-test foo', function () {
       return emberGenerateDestroy(['instance-initializer-test', 'foo'], (_file) => {
         expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
-          fixture('instance-initializer-test/rfc232.js')
+          fixture('instance-initializer-test/app.js')
         );
       });
     });

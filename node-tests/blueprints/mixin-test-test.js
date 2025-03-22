@@ -20,7 +20,7 @@ describe('Blueprint: mixin-test', function () {
 
     it('mixin-test foo', function () {
       return emberGenerateDestroy(['mixin-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/rfc232.js'));
+        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/app.js'));
       });
     });
   });

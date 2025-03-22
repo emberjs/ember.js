@@ -39,7 +39,7 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
@@ -65,7 +65,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -83,7 +83,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -101,7 +101,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo/index.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -121,7 +121,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -141,7 +141,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -161,7 +161,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -179,7 +179,7 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
@@ -195,7 +195,7 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',
@@ -215,7 +215,7 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',
@@ -231,7 +231,7 @@ describe('Blueprint: component', function () {
         expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'foo/x-foo',
               componentInvocation: 'Foo::XFoo',
@@ -251,7 +251,7 @@ describe('Blueprint: component', function () {
           expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo/x-foo',
                 componentInvocation: 'Foo::XFoo',
@@ -387,7 +387,7 @@ describe('Blueprint: component', function () {
         expect(_file('lib/my-addon/app/components/foo.hbs')).to.not.exist;
 
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
@@ -411,7 +411,7 @@ describe('Blueprint: component', function () {
         expect(_file('lib/my-addon/app/components/x-foo.hbs')).to.not.exist;
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'x-foo',
               componentInvocation: 'XFoo',

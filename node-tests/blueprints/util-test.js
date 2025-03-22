@@ -23,7 +23,7 @@ describe('Blueprint: util', function () {
       return emberGenerateDestroy(['util', 'foo-bar'], (_file) => {
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
 
@@ -34,7 +34,7 @@ describe('Blueprint: util', function () {
 
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
 
@@ -52,7 +52,7 @@ describe('Blueprint: util', function () {
       return emberGenerateDestroy(['util', 'foo-bar', '--pod'], (_file) => {
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
 
@@ -63,7 +63,7 @@ describe('Blueprint: util', function () {
 
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
 
@@ -86,9 +86,7 @@ describe('Blueprint: util', function () {
         return emberGenerateDestroy(['util', 'foo-bar', '--pod'], (_file) => {
           expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/rfc232.js')
-          );
+          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
         });
       });
 
@@ -99,9 +97,7 @@ describe('Blueprint: util', function () {
 
           expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/rfc232.js')
-          );
+          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
         });
       });
     });
@@ -178,7 +174,7 @@ describe('Blueprint: util', function () {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
 
@@ -194,7 +190,7 @@ describe('Blueprint: util', function () {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
 

@@ -20,7 +20,7 @@ describe('Blueprint: route-test', function () {
 
     it('route-test foo', function () {
       return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
       });
     });
   });
@@ -32,9 +32,7 @@ describe('Blueprint: route-test', function () {
 
     it('route-test foo', function () {
       return emberGenerateDestroy(['route-test', 'foo'], (_file) => {
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(
-          fixture('route-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/addon.js'));
       });
     });
   });

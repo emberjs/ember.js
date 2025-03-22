@@ -21,7 +21,7 @@ describe('Blueprint: controller-test', function () {
     it('controller-test foo', function () {
       return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232.js')
+          fixture('controller-test/app.js')
         );
       });
     });
@@ -29,7 +29,7 @@ describe('Blueprint: controller-test', function () {
     it('controller-test foo/bar', function () {
       return emberGenerateDestroy(['controller-test', 'foo/bar'], (_file) => {
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/rfc232-nested.js')
+          fixture('controller-test/nested.js')
         );
       });
     });
@@ -43,7 +43,7 @@ describe('Blueprint: controller-test', function () {
     it('controller-test foo', function () {
       return emberGenerateDestroy(['controller-test', 'foo'], (_file) => {
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/rfc232-addon.js')
+          fixture('controller-test/addon.js')
         );
       });
     });

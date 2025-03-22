@@ -20,9 +20,7 @@ describe('Blueprint: acceptance-test', function () {
 
     it('acceptance-test foo', function () {
       return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
-        expect(_file('tests/acceptance/foo-test.js')).to.equal(
-          fixture('acceptance-test/qunit-rfc268.js')
-        );
+        expect(_file('tests/acceptance/foo-test.js')).to.equal(fixture('acceptance-test/app.js'));
       });
     });
   });
@@ -34,9 +32,7 @@ describe('Blueprint: acceptance-test', function () {
 
     it('acceptance-test foo', function () {
       return emberGenerateDestroy(['acceptance-test', 'foo'], (_file) => {
-        expect(_file('tests/acceptance/foo-test.js')).to.equal(
-          fixture('acceptance-test/qunit-rfc268-addon.js')
-        );
+        expect(_file('tests/acceptance/foo-test.js')).to.equal(fixture('acceptance-test/addon.js'));
       });
     });
   });

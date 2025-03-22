@@ -30,7 +30,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
       }).then(() => {
@@ -48,7 +48,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
         expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
@@ -74,7 +74,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/templates/foo.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js'))
           .to.contain("this.route('foo', {")
@@ -159,7 +159,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
       }).then(() => {
@@ -177,7 +177,7 @@ describe('Blueprint: route', function () {
 
         expect(_file('app/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
         expect(file('app/router.js')).to.contain("this.route('foo')");
         expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
@@ -234,9 +234,7 @@ describe('Blueprint: route', function () {
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(
-            fixture('route-test/rfc232.js')
-          );
+          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
           expect(file('app/router.js')).to.contain("this.route('foo')");
         }).then(() => {
@@ -254,9 +252,7 @@ describe('Blueprint: route', function () {
 
           expect(_file('app/pods/foo/template.hbs')).to.equal('{{page-title "Foo"}}\n{{outlet}}');
 
-          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(
-            fixture('route-test/rfc232.js')
-          );
+          expect(_file('tests/unit/pods/foo/route-test.js')).to.equal(fixture('route-test/app.js'));
 
           expect(file('app/router.js')).to.contain("this.route('foo')");
           expect(file('app/router.js')).to.not.contain("this.route('foo.js')");
@@ -330,9 +326,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(
-          fixture('route-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/addon.js'));
 
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('foo')");
       }).then(() => {
@@ -360,9 +354,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(
-          fixture('route-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/addon.js'));
 
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('foo')");
         expect(file('tests/dummy/app/router.js')).to.not.contain("this.route('foo.js')");
@@ -471,9 +463,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/foo/template';"
         );
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(
-          fixture('route-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/addon.js'));
       });
     });
 
@@ -497,9 +487,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/foo/template';"
         );
 
-        expect(_file('tests/unit/foo/route-test.js')).to.equal(
-          fixture('route-test/rfc232-addon.js')
-        );
+        expect(_file('tests/unit/foo/route-test.js')).to.equal(fixture('route-test/addon.js'));
       });
     });
 
@@ -569,7 +557,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
       });
     });
 
@@ -595,7 +583,7 @@ describe('Blueprint: route', function () {
           "export { default } from 'my-addon/templates/foo';"
         );
 
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/rfc232.js'));
+        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/app.js'));
       });
     });
 

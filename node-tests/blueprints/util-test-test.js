@@ -20,7 +20,7 @@ describe('Blueprint: util-test', function () {
 
     it('util-test foo-bar', function () {
       return emberGenerateDestroy(['util-test', 'foo-bar'], (_file) => {
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/app.js'));
       });
     });
   });

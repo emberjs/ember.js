@@ -21,7 +21,7 @@ describe('Blueprint: helper-test', function () {
     it('helper-test foo', function () {
       return emberGenerateDestroy(['helper-test', 'foo'], (_file) => {
         expect(_file('tests/integration/helpers/foo-test.js')).to.equal(
-          fixture('helper-test/rfc232.js')
+          fixture('helper-test/app.js')
         );
       });
     });
@@ -43,7 +43,7 @@ describe('Blueprint: helper-test', function () {
     it('helper-test foo', function () {
       return emberGenerateDestroy(['helper-test', 'foo'], (_file) => {
         expect(_file('tests/integration/helpers/foo-test.js')).to.equal(
-          fixture('helper-test/rfc232-addon.js')
+          fixture('helper-test/addon.js')
         );
       });
     });

@@ -21,7 +21,7 @@ describe('Blueprint: component-test', function () {
     it('component-test foo', function () {
       return emberGenerateDestroy(['component-test', 'foo'], (_file) => {
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/rfc232.js', {
+          fixture('component-test/app.js', {
             replace: {
               component: 'foo',
               componentInvocation: 'Foo',
@@ -34,7 +34,7 @@ describe('Blueprint: component-test', function () {
     it('component-test x-foo --unit', function () {
       return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], (_file) => {
         expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-          fixture('component-test/rfc232-unit.js')
+          fixture('component-test/unit.js')
         );
       });
     });
@@ -61,7 +61,7 @@ describe('Blueprint: component-test', function () {
     it('component-test foo --unit', function () {
       return emberGenerateDestroy(['component-test', 'foo', '--unit'], (_file) => {
         expect(_file('tests/unit/components/foo-test.js')).to.equal(
-          fixture('component-test/rfc232-unit-addon.js')
+          fixture('component-test/addon-unit.js')
         );
       });
     });
@@ -77,7 +77,7 @@ describe('Blueprint: component-test', function () {
         ['component-test', 'foo', '--in-repo-addon=my-addon'],
         (_file) => {
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/rfc232.js', {
+            fixture('component-test/app.js', {
               replace: {
                 component: 'foo',
                 componentInvocation: 'Foo',
@@ -93,7 +93,7 @@ describe('Blueprint: component-test', function () {
         ['component-test', 'x-foo', '--in-repo-addon=my-addon', '--unit'],
         (_file) => {
           expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-            fixture('component-test/rfc232-unit.js')
+            fixture('component-test/unit.js')
           );
         }
       );
