@@ -102,16 +102,6 @@ export const DEPRECATIONS = {
       ).toLowerCase()}-from-ember`,
     });
   },
-  DEPRECATE_COMPONENT_TEMPLATE_RESOLVING: deprecation({
-    id: 'component-template-resolving',
-    url: 'https://deprecations.emberjs.com/id/component-template-resolving',
-    until: '6.0.0',
-    for: 'ember-source',
-    since: {
-      available: '5.10.0',
-      enabled: '5.10.0',
-    },
-  }),
   DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS: deprecation({
     id: 'deprecate-array-prototype-extensions',
     url: 'https://deprecations.emberjs.com/id/deprecate-array-prototype-extensions',
