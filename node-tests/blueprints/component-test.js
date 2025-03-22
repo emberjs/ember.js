@@ -271,6 +271,12 @@ describe('Blueprint: component', function () {
         }
       );
     });
+  });
+
+  describe('in app (default test setup)', function () {
+    beforeEach(function () {
+      return emberNew();
+    });
 
     it('component foo --strict', function () {
       return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
@@ -410,6 +416,64 @@ describe('Blueprint: component', function () {
       });
     });
 
+    it('component foo/x-foo', function () {
+      return emberGenerateDestroy(['component', 'foo/x-foo'], (_file) => {
+        expect(_file('addon/components/foo/x-foo.js')).to.not.exist;
+
+        expect(_file('addon/components/foo/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('app/components/foo/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/components/foo/x-foo';"
+        );
+
+        expect(_file('app/templates/components/foo/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo --dummy', function () {
+      return emberGenerateDestroy(['component', 'x-foo', '--dummy'], (_file) => {
+        expect(_file('tests/dummy/app/components/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/dummy/app/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('app/components/x-foo.js')).to.not.exist;
+        expect(_file('app/components/x-foo.hbs')).to.not.exist;
+        expect(_file('app/templates/components/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.not.exist;
+      });
+    });
+
+    it('component foo/x-foo --dummy', function () {
+      return emberGenerateDestroy(['component', 'foo/x-foo', '--dummy'], (_file) => {
+        expect(_file('tests/dummy/app/components/foo/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/dummy/app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
+        expect(_file('tests/dummy/app/templates/components/foo/x-foo.hbs')).to.not.exist;
+
+        expect(_file('app/components/foo/x-foo.js')).to.not.exist;
+        expect(_file('app/components/foo/x-foo.hbs')).to.not.exist;
+        expect(_file('app/templates/components/foo/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/integration/components/foo/x-foo-test.js')).to.not.exist;
+      });
+    });
+  });
+
+  describe('in addon (default test setup)', function () {
+    beforeEach(function () {
+      return emberNew({ target: 'addon' });
+    });
+
     it('component foo --strict', function () {
       return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
         expect(_file('addon/components/foo.js')).to.not.exist;
@@ -465,58 +529,6 @@ describe('Blueprint: component', function () {
           );
         }
       );
-    });
-
-    it('component foo/x-foo', function () {
-      return emberGenerateDestroy(['component', 'foo/x-foo'], (_file) => {
-        expect(_file('addon/components/foo/x-foo.js')).to.not.exist;
-
-        expect(_file('addon/components/foo/x-foo.hbs')).to.equal('{{yield}}');
-
-        expect(_file('app/components/foo/x-foo.js')).to.contain(
-          "export { default } from 'my-addon/components/foo/x-foo';"
-        );
-
-        expect(_file('app/templates/components/foo/x-foo.js')).to.not.exist;
-
-        expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo/x-foo',
-              componentInvocation: 'Foo::XFoo',
-            },
-          })
-        );
-      });
-    });
-
-    it('component x-foo --dummy', function () {
-      return emberGenerateDestroy(['component', 'x-foo', '--dummy'], (_file) => {
-        expect(_file('tests/dummy/app/components/x-foo.js')).to.not.exist;
-
-        expect(_file('tests/dummy/app/components/x-foo.hbs')).to.equal('{{yield}}');
-
-        expect(_file('app/components/x-foo.js')).to.not.exist;
-        expect(_file('app/components/x-foo.hbs')).to.not.exist;
-        expect(_file('app/templates/components/x-foo.js')).to.not.exist;
-
-        expect(_file('tests/integration/components/x-foo-test.js')).to.not.exist;
-      });
-    });
-
-    it('component foo/x-foo --dummy', function () {
-      return emberGenerateDestroy(['component', 'foo/x-foo', '--dummy'], (_file) => {
-        expect(_file('tests/dummy/app/components/foo/x-foo.js')).to.not.exist;
-
-        expect(_file('tests/dummy/app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
-        expect(_file('tests/dummy/app/templates/components/foo/x-foo.hbs')).to.not.exist;
-
-        expect(_file('app/components/foo/x-foo.js')).to.not.exist;
-        expect(_file('app/components/foo/x-foo.hbs')).to.not.exist;
-        expect(_file('app/templates/components/foo/x-foo.js')).to.not.exist;
-
-        expect(_file('tests/integration/components/foo/x-foo-test.js')).to.not.exist;
-      });
     });
   });
 
