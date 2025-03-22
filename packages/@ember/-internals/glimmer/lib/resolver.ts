@@ -1,4 +1,4 @@
-import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
+import type { InternalFactory, InternalOwner } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -44,7 +44,6 @@ import { default as uniqueId } from './helpers/unique-id';
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -56,29 +55,6 @@ function componentFor(
 ): Nullable<InternalFactory<object> | object> {
   let fullName = `component:${name}` as const;
   return owner.factoryFor(fullName) || null;
-}
-
-function layoutFor(
-  name: string,
-  owner: InternalOwner,
-  options?: RegisterOptions
-): Nullable<Template> {
-  if (DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved) {
-    return null;
-  }
-
-  let templateFullName = `template:components/${name}` as const;
-
-  let result = (owner.lookup(templateFullName, options) as Template) || null;
-
-  if (result) {
-    deprecateUntil(
-      `Components with separately resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts. Tried to lookup '${templateFullName}'.`,
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING
-    );
-  }
-
-  return result;
 }
 
 type LookupResult =
@@ -95,11 +71,7 @@ type LookupResult =
       layout: TemplateFactory;
     };
 
-function lookupComponentPair(
-  owner: InternalOwner,
-  name: string,
-  options?: RegisterOptions
-): Nullable<LookupResult> {
+function lookupComponentPair(owner: InternalOwner, name: string): Nullable<LookupResult> {
   let component = componentFor(name, owner);
 
   if (isFactory(component) && component.class) {
@@ -110,12 +82,10 @@ function lookupComponentPair(
     }
   }
 
-  let layout = layoutFor(name, owner, options);
-
-  if (component === null && layout === null) {
+  if (component === null) {
     return null;
   } else {
-    return { component, layout } as LookupResult;
+    return { component, layout: null } as LookupResult;
   }
 }
 
