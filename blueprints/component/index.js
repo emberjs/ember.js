@@ -162,9 +162,16 @@ module.exports = {
       });
     }
     if (this.options.componentAuthoringFormat === 'strict') {
-      const strictFilesToRemove = this.options.isTypeScriptProject || this.options.typescript ? '.gjs' : '.gts';
+      const strictFilesToRemove =
+        this.options.isTypeScriptProject || this.options.typescript ? '.gjs' : '.gts';
       files = files.filter(
-        (file) => !(file.endsWith('.js') || file.endsWith('.ts') || file.endsWith('.hbs') || file.endsWith(strictFilesToRemove))
+        (file) =>
+          !(
+            file.endsWith('.js') ||
+            file.endsWith('.ts') ||
+            file.endsWith('.hbs') ||
+            file.endsWith(strictFilesToRemove)
+          )
       );
     } else {
       files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
