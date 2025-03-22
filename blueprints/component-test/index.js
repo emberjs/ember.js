@@ -77,9 +77,9 @@ module.exports = useTestFrameworkDetector({
     let files = this._super.files.apply(this, arguments);
 
     if (this.options.componentAuthoringFormat === 'strict') {
-      files = files.filter((file) => !(file.endsWith('.js') || file.endsWith('.ts')));
-    }
-    if (this.options.componentAuthoringFormat === 'loose') {
+      const strictFilesToRemove = this.options.isTypeScriptProject || this.options.typescript ? '.gjs' : '.gts';
+      files = files.filter((file) => !(file.endsWith('.js') || file.endsWith('.ts') || strictFilesToRemove));
+    } else {
       files = files.filter((file) => !(file.endsWith('.gjs') || file.endsWith('.gts')));
     }
 
