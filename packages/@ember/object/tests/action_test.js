@@ -1,7 +1,6 @@
 import { Component } from '@ember/-internals/glimmer';
 import EmberObject, { action } from '@ember/object';
-import { moduleFor, RenderingTestCase, strip, testUnless } from 'internal-test-helpers';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 
 moduleFor(
   '@action decorator',
@@ -47,60 +46,6 @@ moduleFor(
 
       assert.equal(typeof bar.actions.foo, 'function', 'bar has foo action');
       assert.equal(typeof bar.actions.bar, 'function', 'bar has bar action');
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} actions are properly merged through traditional and ES6 prototype hierarchy`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      assert.expect(5);
-
-      let FooComponent = Component.extend({
-        actions: {
-          foo() {
-            assert.ok(true, 'foo called!');
-          },
-        },
-      });
-
-      class BarComponent extends FooComponent {
-        @action
-        bar() {
-          assert.ok(true, 'bar called!');
-        }
-      }
-
-      let BazComponent = BarComponent.extend({
-        actions: {
-          baz() {
-            assert.ok(true, 'baz called!');
-          },
-        },
-      });
-
-      class QuxComponent extends BazComponent {
-        @action
-        qux() {
-          assert.ok(true, 'qux called!');
-        }
-      }
-
-      this.registerComponent('qux-component', {
-        ComponentClass: QuxComponent,
-        template: strip`
-          <button {{action 'foo'}}>Click Foo!</button>
-          <button {{action 'bar'}}>Click Bar!</button>
-          <button {{action 'baz'}}>Click Baz!</button>
-          <button {{action 'qux'}}>Click Qux!</button>
-        `,
-      });
-
-      this.render('{{qux-component}}');
-
-      this.$('button').click();
     }
 
     '@test action decorator super works with native class methods'(assert) {

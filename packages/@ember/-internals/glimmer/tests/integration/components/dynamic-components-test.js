@@ -1,11 +1,10 @@
 import { DEBUG } from '@glimmer/env';
-import { moduleFor, RenderingTestCase, strip, runTask, testUnless } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: dynamic components',
@@ -428,59 +427,6 @@ moduleFor(
       runTask(() => set(this.context, 'location', 'Caracas'));
 
       this.assertText('foo-bar Caracas Caracas arepas!');
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} component helper with actions`](assert) {
-      this.registerComponent('inner-component', {
-        template: 'inner-component {{yield}}',
-        ComponentClass: Component.extend({
-          classNames: 'inner-component',
-          didInsertElement() {
-            // trigger action on click in absence of app's EventDispatcher
-            let sendAction = (this.eventHandler = () => {
-              if (this.somethingClicked) {
-                this.somethingClicked();
-              }
-            });
-            this.element.addEventListener('click', sendAction);
-          },
-          willDestroyElement() {
-            this.element.removeEventListener('click', this.eventHandler);
-          },
-        }),
-      });
-
-      expectDeprecation(
-        /Usage of the `\(action\)` helper is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
-      let actionTriggered = 0;
-      this.registerComponent('outer-component', {
-        template:
-          '{{#component this.componentName somethingClicked=(action "mappedAction")}}arepas!{{/component}}',
-        ComponentClass: Component.extend({
-          classNames: 'outer-component',
-          componentName: 'inner-component',
-          actions: {
-            mappedAction() {
-              actionTriggered++;
-            },
-          },
-        }),
-      });
-
-      this.render('{{outer-component}}');
-
-      assert.equal(actionTriggered, 0, 'action was not triggered');
-
-      runTask(() => {
-        this.$('.inner-component').click();
-      });
-
-      assert.equal(actionTriggered, 1, 'action was triggered');
     }
 
     ['@test nested component helpers']() {

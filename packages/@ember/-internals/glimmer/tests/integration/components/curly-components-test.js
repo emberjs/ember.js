@@ -7,7 +7,6 @@ import {
   equalsElement,
   runTask,
   runLoopSettled,
-  testUnless,
 } from 'internal-test-helpers';
 
 import { action } from '@ember/object';
@@ -22,7 +21,6 @@ import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
-import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Components test: curly components',
@@ -3154,75 +3152,6 @@ moduleFor(
       this.render(`{{foo-bar foo=this.foo bar=this.bar}}`, { foo: 1, bar: 3 });
 
       runTask(() => set(this.context, 'foo', 5));
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} returning \`true\` from an action does not bubble if \`target\` is not specified (GH#14275)`](
-      assert
-    ) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
-      this.registerComponent('display-toggle', {
-        ComponentClass: Component.extend({
-          actions: {
-            show() {
-              assert.ok(true, 'display-toggle show action was called');
-              return true;
-            },
-          },
-        }),
-
-        template: `<button {{action 'show'}}>Show</button>`,
-      });
-
-      this.render(`{{display-toggle}}`, {
-        send() {
-          assert.notOk(true, 'send should not be called when action is not "subscribed" to');
-        },
-      });
-
-      this.assertText('Show');
-
-      runTask(() => this.$('button').click());
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} returning \`true\` from an action bubbles to the \`target\` if specified`](assert) {
-      assert.expect(5);
-
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-
-      this.registerComponent('display-toggle', {
-        ComponentClass: Component.extend({
-          actions: {
-            show() {
-              assert.ok(true, 'display-toggle show action was called');
-              return true;
-            },
-          },
-        }),
-
-        template: `<button {{action 'show'}}>Show</button>`,
-      });
-
-      this.render(`{{display-toggle target=this}}`, {
-        send(actionName) {
-          assert.ok(true, 'send should be called when action is "subscribed" to');
-          assert.equal(actionName, 'show');
-        },
-      });
-
-      this.assertText('Show');
-
-      runTask(() => this.$('button').click());
     }
 
     ['@test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)'](
