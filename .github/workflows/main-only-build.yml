@@ -1,9 +1,5 @@
-name: Size
+name: "Build on #main"
 
-# read-write repo token
-# access to secrets
-#
-# https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
 on:
   push:
     branches:
