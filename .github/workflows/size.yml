@@ -10,15 +10,12 @@ on:
         type: string
   pull_request: {}
 
-env:
-  TURBO_API: http://127.0.0.1:9080
-  TURBO_TOKEN: this-is-not-a-secret
-  TURBO_TEAM: myself
-
 jobs:
   compare_sizes:
     name: 'Compare Sizes and Comment'
     runs-on: 'ubuntu-latest'
+    permissions:
+      pull-requests: write
 
     steps:
       - name: '[DEBUG] Dump GitHub context'
