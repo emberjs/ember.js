@@ -28,6 +28,10 @@ jobs:
           name: pr
           run-id: ${{ github.event.workflow_run.id }}
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: sizes-main
+
       - name: "[PR] Get sizes for development outputs"
         id: dev
         run: |
@@ -43,13 +47,7 @@ jobs:
       - name: "[Main] Get sizes for development outputs"
         id: main-dev
         run: |
-          cd dist
-          dust --ignore_hidden \
-              --reverse --apparent-size \
-              --filter ".+.js$" \
-              --no-percent-bars \
-              --only-file \
-              --full-paths > out.txt
+          cd main/
 
           echo 'sizes<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do

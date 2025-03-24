@@ -1,0 +1,41 @@
+name: Size
+
+# read-write repo token
+# access to secrets
+#
+# https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: 'Build'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: sudo snap install dust
+      - run: pnpm build
+
+      - name: "Get sizes for development outputs"
+        id: main-dev
+        run: |
+          mkdir -p main
+          cd dist
+          dust --ignore_hidden \
+              --reverse --apparent-size \
+              --filter ".+.js$" \
+              --no-percent-bars \
+              --only-file \
+              --full-paths > out.txt
+          cp out.txt ../main/
+
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sizes-main
+          path: main/
+          overwrite: true
