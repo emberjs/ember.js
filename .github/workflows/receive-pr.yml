@@ -1,0 +1,29 @@
+# https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
+name: Receive PR
+
+# read-only repo token
+# no access to secrets
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+
+      - name: Save PR number
+        run: |
+          mkdir -p ./pr
+          echo ${{ github.event.number }} > ./pr/NR
+
+      - name: Save dist output
+        run: mv dist pr/dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr
+          path: pr/

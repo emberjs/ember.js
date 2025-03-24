@@ -1,19 +1,14 @@
 name: Size
 
+# read-write repo token
+# access to secrets
+#
+# https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
 on:
-  workflow_dispatch:
-    inputs:
-      BRANCH:
-        description: Branch to checkout
-        required: false
-        default: 'main'
-        type: string
-  pull_request:
-
-# https://github.com/mshick/add-pr-comment/issues/67#issuecomment-1523288799
-permissions:
-  pull-requests: write
-  issues: write
+  workflow_run:
+    workflows: ["Receive PR"]
+    types:
+      - completed
 
 jobs:
   compare_sizes:
@@ -21,23 +16,23 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - name: '[DEBUG] Dump GitHub context'
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.BRANCH }}
+          ref: main
       - uses: ./.github/actions/setup
 
       - run: pnpm build
       - run: sudo snap install dust
 
-      - name: "Get sizes for development outputs"
+      - uses: actions/download-artifact@v4
+        with:
+          name: pr
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: "[PR] Get sizes for development outputs"
         id: dev
         run: |
-          cd dist
+          cd pr/dist
           dust --ignore_hidden \
               --reverse --apparent-size \
               --filter ".+.js$" \
@@ -51,16 +46,6 @@ jobs:
           done <<< $(cat out.txt)
           echo 'EOF' >> $GITHUB_OUTPUT
           cat out.txt
-
-      - name: "[Main] Build"
-        run: |
-          git remote -v
-          git fetch origin
-          git checkout main
-          git clean -Xfd
-          git clean -fd
-          pnpm install
-          pnpm build
 
       - name: "[Main] Get sizes for development outputs"
         id: main-dev
