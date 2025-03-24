@@ -1,4 +1,9 @@
 # https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
+#
+# Do a build
+# Measure assets sizes
+# Upload artifact
+# Consumed by size.yml for comparison
 name: Receive PR
 
 # read-only repo token
@@ -14,14 +19,24 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: pnpm build
+      - run: sudo snap install dust
 
       - name: Save PR number
         run: |
           mkdir -p ./pr
           echo ${{ github.event.number }} > ./pr/NR
 
-      - name: Save dist output
-        run: mv dist pr/dist
+      - name: "Get sizes for development outputs"
+        id: dev
+        run: |
+          cd dist
+          dust --ignore_hidden \
+              --reverse --apparent-size \
+              --filter ".+.js$" \
+              --no-percent-bars \
+              --only-file \
+              --full-paths > pr/out.txt
+
 
       - uses: actions/upload-artifact@v4
         with:

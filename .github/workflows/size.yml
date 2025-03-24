@@ -20,9 +20,8 @@ jobs:
         with:
           ref: main
       - uses: ./.github/actions/setup
-
-      - run: pnpm build
       - run: sudo snap install dust
+      - run: pnpm build
 
       - uses: actions/download-artifact@v4
         with:
@@ -32,13 +31,7 @@ jobs:
       - name: "[PR] Get sizes for development outputs"
         id: dev
         run: |
-          cd pr/dist
-          dust --ignore_hidden \
-              --reverse --apparent-size \
-              --filter ".+.js$" \
-              --no-percent-bars \
-              --only-file \
-              --full-paths > out.txt
+          cd pr/
 
           echo 'sizes<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
