@@ -1,0 +1,119 @@
+name: Size
+
+on:
+  workflow_dispatch:
+    inputs:
+      BRANCH:
+        description: Branch to checkout
+        required: false
+        default: 'main'
+        type: string
+  pull_request: {}
+
+env:
+  TURBO_API: http://127.0.0.1:9080
+  TURBO_TOKEN: this-is-not-a-secret
+  TURBO_TEAM: myself
+
+jobs:
+  compare_sizes:
+    name: 'Compare Sizes and Comment'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: '[DEBUG] Dump GitHub context'
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH }}
+      - uses: ./.github/actions/setup
+
+      - run: pnpm build
+      - run: sudo snap install dust
+
+      - name: "Get sizes for development outputs"
+        id: dev
+        run: |
+          cd dist
+          dust --ignore_hidden \
+              --reverse --apparent-size \
+              --filter ".+.js$" \
+              --no-percent-bars \
+              --only-file \
+              --full-paths > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "[Main] Build"
+        run: |
+          git remote -v
+          git fetch origin
+          git checkout main
+          git clean -Xfd
+          git clean -fd
+          pnpm install
+          pnpm build
+
+      - name: "[Main] Get sizes for development outputs"
+        id: main-dev
+        run: |
+          cd dist
+          dust --ignore_hidden \
+              --reverse --apparent-size \
+              --filter ".+.js$" \
+              --no-percent-bars \
+              --only-file \
+              --full-paths > out.txt
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      #########################
+      # Intended Layout:
+      #
+      #  |      | This PR | Main |
+      #  | Dev  |   x1    |  y1  |
+      #  | Prod |   x2    |  y2  |
+      #
+      #  NOTE: we we don't have a prod build for this library
+      #        because we currently expect non-compiler usage
+      #        (so consumers should have terser or similar properly configured for DCE)
+      #
+      #########################
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
+            <tbody>
+            <tr><td>Dev</td><td>
+
+            ```
+            ${{ steps.dev.outputs.sizes }}
+            ```
+
+            </td><td>
+
+            ```
+            ${{ steps.main-dev.outputs.sizes }}
+            ```
+
+            </td></tr>
+            </tbody></table>
+
+
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
