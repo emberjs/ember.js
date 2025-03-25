@@ -32,6 +32,7 @@ jobs:
       - uses: dawidd6/action-download-artifact@v9
         with:
           run_id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
+          workflow: size-pr.yml
           path: pr
 
       - uses: dawidd6/action-download-artifact@v9
