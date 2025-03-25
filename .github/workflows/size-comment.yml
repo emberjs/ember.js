@@ -26,7 +26,10 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          run-id: pr-${{ inputs.RUN_ID || github.event.workflow_run.id }}
+          run-id: ''
+      - run: ls -la
+        # with:
+        #   run-id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
 
       - uses: actions/download-artifact@v4
         with:
