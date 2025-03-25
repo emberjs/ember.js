@@ -54,13 +54,13 @@ jobs:
       - name: "[PR] Get path of size output txt file"
         id: find-pr-txt
         run: |
-          filePath=$(ag -g out\.txt -l)
+          filePath=$(ag -u -g out\.txt -l)
           echo "txtPath=$filePath" >> $GITHUB_OUTPUT
 
       - name: "[PR] Get PR number"
         id: find-pr-number
         run: |
-          filePath=$(ag -g NR -l)
+          filePath=$(ag -u -g NR -l)
           contents=$(cat $filePath)
           echo $filePath
           echo $contents
