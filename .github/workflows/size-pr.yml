@@ -35,7 +35,7 @@ jobs:
               --filter ".+.js$" \
               --no-percent-bars \
               --only-file \
-              --full-paths > pr/out.txt
+              --full-paths > ../pr/out.txt
 
 
       - uses: actions/upload-artifact@v4
