@@ -27,7 +27,10 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
+      # better `du`
       - run: sudo snap install dust
+      # easy file finding
+      - run: sudo apt install silversearcher-ag
 
       - uses: dawidd6/action-download-artifact@v9
         with:
@@ -43,9 +46,10 @@ jobs:
           workflow: size-main.yml
           if_no_artifact_found: fail
 
-      - run: |
+      - name: "Debug artifacts' files"
+        run: |
           ls -la ./main
-          ls -la ./pr
+          ls -la ./pr/**
 
       - name: "[PR] Get path of size output txt file"
         id: find-pr-txt
