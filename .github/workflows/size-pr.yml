@@ -36,7 +36,7 @@ jobs:
               --only-dir \
               --depth 20 \
             > out.txt
-          cp out.txt ../pr/
+          cp out.txt ../../pr/
 
 
       - uses: actions/upload-artifact@v4
