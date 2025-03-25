@@ -31,12 +31,16 @@ jobs:
 
       - uses: dawidd6/action-download-artifact@v9
         with:
+          path: pr
           run_id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
-      - run: ls -la
 
-      - uses: actions/download-artifact@v4
+      - uses: dawidd6/action-download-artifact@v9
         with:
           name: sizes-main
+          path: main
+          workflow: size-main.yml
+
+      - run: ls -la
 
       - name: "[PR] Get sizes for development outputs"
         id: dev
