@@ -46,7 +46,7 @@ jobs:
           workflow: size-main.yml
           if_no_artifact_found: fail
 
-      - name: "Debug artifacts' files"
+      - name: "[Debug] artifacts' files"
         run: |
           ls -la ./main
           ls -la ./pr/**
@@ -55,19 +55,19 @@ jobs:
         id: find-pr-txt
         run: echo "txtPath=$(ag -g out\.txt -l)" >> $GITHUB_OUTPUT
 
+      - name: "[PR] Get PR number"
+        id: find-pr-number
+        run: echo "prNumber=$(cat $(ag -g NR -l))" >> $GITHUB_OUTPUT
+
       - name: "[PR] Get sizes for development outputs"
         id: dev
         run: |
-          cat ${{ steps.find-pr-txt.txtPath }}
+          cat ${{ steps.find-pr-txt.outputs.txtPath }}
           echo 'sizes<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
               echo "$line" >> $GITHUB_OUTPUT
-          done <<< $(cat ${{ steps.find-pr-txt.txtPath }})
+          done <<< $(cat ${{ steps.find-pr-txt.outputs.txtPath }})
           echo 'EOF' >> $GITHUB_OUTPUT
-
-      - name: "[PR]: Get PR Number"
-        id: pr-number
-        run: echo "number=$(cat pr/NR)" >> $GITHUB_OUTPUT
 
       - name: "[Main] Get sizes for development outputs"
         id: main-dev
@@ -80,6 +80,18 @@ jobs:
               echo "$line" >> $GITHUB_OUTPUT
           done <<< $(cat out.txt)
           echo 'EOF' >> $GITHUB_OUTPUT
+
+
+      - name: "[Debug] collected data from artifacts"
+        run: |
+          echo "PR number"
+          echo -e "${{ steps.find-pr-number.outputs.prNumber }}"
+
+          echo "Main out.txt"
+          echo -e "${{ steps.main-dev.outputs.sizes }}"
+
+          echo "PR out.txt"
+          echo -e "${{ steps.dev.outputs.sizes }}"
 
       #########################
       # Intended Layout:
@@ -95,7 +107,7 @@ jobs:
       #########################
       - uses: mshick/add-pr-comment@v2
         with:
-          issue: ${{ steps.pr-number.outputs.number }}
+          issue: ${{ steps.find-pr-number.outputs.prNumber }}
           message: |
             <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
             <tbody>
