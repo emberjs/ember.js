@@ -4,7 +4,7 @@
 # Measure assets sizes
 # Upload artifact
 # Consumed by size.yml for comparison
-name: Receive PR
+name: "Size: PR"
 
 # read-only repo token
 # no access to secrets
@@ -42,3 +42,4 @@ jobs:
         with:
           name: pr
           path: pr/
+          overwrite: true

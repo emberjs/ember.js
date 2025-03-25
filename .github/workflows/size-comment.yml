@@ -1,4 +1,4 @@
-name: Size
+name: "Size: Comment"
 
 # read-write repo token
 # access to secrets
@@ -6,7 +6,7 @@ name: Size
 # https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
 on:
   workflow_run:
-    workflows: ["Receive PR"]
+    workflows: ["Size: PR"]
     types:
       - completed
 
@@ -16,12 +16,7 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: ./.github/actions/setup
       - run: sudo snap install dust
-      - run: pnpm build
 
       - uses: actions/download-artifact@v4
         with:
@@ -43,6 +38,10 @@ jobs:
           done <<< $(cat out.txt)
           echo 'EOF' >> $GITHUB_OUTPUT
           cat out.txt
+
+      - name: "[PR]: Get PR Number"
+        id: pr-number
+        run: echo "number=$(cat pr/NR)" >> $GITHUB_OUTPUT
 
       - name: "[Main] Get sizes for development outputs"
         id: main-dev
@@ -70,6 +69,7 @@ jobs:
       #########################
       - uses: mshick/add-pr-comment@v2
         with:
+          issue: ${{ steps.pr-number.outputs.number }}
           message: |
             <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
             <tbody>

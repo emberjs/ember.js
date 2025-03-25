@@ -1,4 +1,4 @@
-name: "on #main"
+name: "Size: main"
 
 on:
   push:
