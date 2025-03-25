@@ -155,7 +155,7 @@ if (DEBUG) {
   BUILTIN_HELPERS['-disallow-dynamic-resolution'] = disallowDynamicResolution;
 }
 
-// With the implementation of [RFC #1006](https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifer was removed. It was the
+// With the implementation of RFC #1006 (https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper), the `action` modifer was removed. It was the
 // only built-in keyword modifier, so this object is currently empty.
 const BUILTIN_KEYWORD_MODIFIERS: Record<string, ModifierDefinitionState> = {};
 
