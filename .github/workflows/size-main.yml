@@ -27,7 +27,7 @@ jobs:
               --only-dir \
               --depth 20 \
             > out.txt
-          cp out.txt ../main/
+          cp out.txt ../../main/
 
 
       - uses: actions/upload-artifact@v4
