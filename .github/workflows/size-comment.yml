@@ -16,6 +16,11 @@ on:
     types:
       - completed
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   compare_sizes:
     name: 'Compare Sizes and Comment'
@@ -24,12 +29,10 @@ jobs:
     steps:
       - run: sudo snap install dust
 
-      - uses: actions/download-artifact@v4
+      - uses: dawidd6/action-download-artifact@v9
         with:
-          run-id: ''
+          run_id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
       - run: ls -la
-        # with:
-        #   run-id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
 
       - uses: actions/download-artifact@v4
         with:
