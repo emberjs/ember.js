@@ -20,14 +20,14 @@ jobs:
         id: main-dev
         run: |
           mkdir -p main
-          cd dist
+          cd dist/packages
           dust --ignore_hidden \
               --reverse --apparent-size \
-              --filter ".+.js$" \
               --no-percent-bars \
-              --only-file \
-              --full-paths > out.txt
-          cp out.txt ../main/
+              --only-dir \
+              --depth 20 \
+            > out.txt
+          cp out.txt ../../main/
 
 
       - uses: actions/upload-artifact@v4
