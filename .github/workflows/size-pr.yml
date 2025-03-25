@@ -35,6 +35,7 @@ jobs:
               --filter ".+.js$" \
               --no-percent-bars \
               --only-file \
+              --depth 20 \
               --full-paths > out.txt
           cp out.txt ../pr/
 
