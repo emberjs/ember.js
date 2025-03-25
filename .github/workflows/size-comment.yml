@@ -29,8 +29,6 @@ jobs:
     steps:
       # better `du`
       - run: sudo snap install dust
-      # easy file finding
-      - run: sudo apt install silversearcher-ag
 
       - uses: dawidd6/action-download-artifact@v9
         with:
@@ -54,9 +52,8 @@ jobs:
       - name: "[PR] Get path of size output txt file"
         id: find-pr-txt
         run: |
-          set +e
           cd pr/
-          filePath=$(ag -u -g /out.txt -l)
+          filePath=$(find . -name "out.txt")
           echo $filePath
           echo "txtPath=pr/$filePath" >> $GITHUB_OUTPUT
 
@@ -64,7 +61,7 @@ jobs:
         id: find-pr-number
         run: |
           cd pr/
-          filePath=$(ag -u -g NR -l)
+          filePath=$(find . -name "NR")
           contents=$(cat $filePath)
           echo $filePath
           echo $contents
