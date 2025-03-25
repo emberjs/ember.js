@@ -5,6 +5,12 @@ name: "Size: Comment"
 #
 # https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
 on:
+  workflow_dispatch:
+    inputs:
+      RUN_ID:
+        description: Which workflow run to get artifacts from
+        required: true
+        type: string
   workflow_run:
     workflows: ["Size: PR"]
     types:
@@ -20,7 +26,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          run_id: pr-${{ github.event.workflow_run.id }}
+          run_id: pr-${{ inputs.RUN_ID || github.event.workflow_run.id }}
 
       - uses: actions/download-artifact@v4
         with:
