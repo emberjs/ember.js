@@ -54,6 +54,7 @@ jobs:
       - name: "[PR] Get path of size output txt file"
         id: find-pr-txt
         run: |
+          set +e
           cd pr/
           filePath=$(ag -u -g /out.txt -l)
           echo $filePath
