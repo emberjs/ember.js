@@ -53,11 +53,18 @@ jobs:
 
       - name: "[PR] Get path of size output txt file"
         id: find-pr-txt
-        run: echo "txtPath=$(ag -g out\.txt -l)" >> $GITHUB_OUTPUT
+        run: |
+          filePath=$(ag -g out\.txt -l)
+          echo "txtPath=$filePath" >> $GITHUB_OUTPUT
 
       - name: "[PR] Get PR number"
         id: find-pr-number
-        run: echo "prNumber=$(cat $(ag -g NR -l))" >> $GITHUB_OUTPUT
+        run: |
+          filePath=$(ag -g NR -l)
+          contents=$(cat $filePath)
+          echo $filePath
+          echo $contents
+          echo "prNumber=$contents" >> $GITHUB_OUTPUT
 
       - name: "[PR] Get sizes for development outputs"
         id: dev
