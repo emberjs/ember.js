@@ -91,12 +91,10 @@ export default class InternalComponent {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected isSupportedArgument(_name: string): boolean {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onUnsupportedArgument(_name: string): void {}
 
   toString(): string {

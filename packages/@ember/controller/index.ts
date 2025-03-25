@@ -311,8 +311,8 @@ const ControllerMixin = Mixin.create(ActionHandler, {
   @uses Ember.ControllerMixin
   @public
 */
-interface Controller<T = unknown> extends FrameworkObject, ControllerMixin<T> {}
-class Controller<T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
+interface Controller<_T = unknown> extends FrameworkObject, ControllerMixin<_T> {}
+class Controller<_T = unknown> extends FrameworkObject.extend(ControllerMixin) {}
 
 /**
   Creates a property that lazily looks up another controller in the container.
@@ -390,5 +390,5 @@ export { Controller as default, ControllerMixin };
   Then `@inject` can check that the service is registered correctly, and APIs
   like `owner.lookup('controller:example')` can return `ExampleController`.
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, Controller | undefined> {}

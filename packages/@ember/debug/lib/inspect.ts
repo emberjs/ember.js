@@ -1,5 +1,4 @@
-import { _WeakSet as WeakSet } from '@glimmer/util';
-import { assert } from '@ember/debug';
+import { assert } from './assert';
 const { toString: objectToString } = Object.prototype;
 const { toString: functionToString } = Function.prototype;
 const { isArray } = Array;

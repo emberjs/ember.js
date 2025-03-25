@@ -3,11 +3,11 @@ export {
   autoComputed,
   isComputed,
   ComputedProperty,
-  ComputedDecorator,
-  ComputedPropertyGetter,
-  ComputedPropertyObj,
-  ComputedPropertySetter,
-  ComputedPropertyCallback,
+  type ComputedDecorator,
+  type ComputedPropertyGetter,
+  type ComputedPropertyObj,
+  type ComputedPropertySetter,
+  type ComputedPropertyCallback,
 } from './lib/computed';
 export { getCachedValueFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
@@ -17,7 +17,7 @@ export {
   _getPath,
   get,
   _getProp,
-  HasUnknownProperty,
+  type HasUnknownProperty,
   hasUnknownProperty,
 } from './lib/property_get';
 export { set, _setProp, trySet } from './lib/property_set';
@@ -37,15 +37,15 @@ export {
   changeProperties,
   endPropertyChanges,
   notifyPropertyChange,
-  PropertyDidChange,
+  type PropertyDidChange,
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty, defineDecorator, defineValue } from './lib/properties';
 export {
-  ExtendedMethodDecorator,
-  DecoratorPropertyDescriptor,
+  type ExtendedMethodDecorator,
+  type DecoratorPropertyDescriptor,
   ComputedDescriptor,
-  ElementDescriptor,
+  type ElementDescriptor,
   isElementDescriptor,
   nativeDescDecorator,
   descriptorForDecorator,

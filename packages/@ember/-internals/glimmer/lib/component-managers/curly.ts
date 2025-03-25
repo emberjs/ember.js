@@ -6,6 +6,7 @@ import {
 } from '@ember/-internals/owner';
 import { enumerableSymbol, guidFor } from '@ember/-internals/utils';
 import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -17,7 +18,6 @@ import type {
   ElementOperations,
   Environment,
   InternalComponentCapabilities,
-  Option,
   PreparedArguments,
   TemplateFactory,
   VMArguments,
@@ -28,7 +28,8 @@ import type {
 import type { Reference } from '@glimmer/reference';
 import { childRefFor, createComputeRef, createPrimitiveRef, valueForRef } from '@glimmer/reference';
 import { reifyPositional } from '@glimmer/runtime';
-import { EMPTY_ARRAY, unwrapTemplate } from '@glimmer/util';
+import { EMPTY_ARRAY } from '@glimmer/util';
+import { unwrapTemplate } from './unwrap-template';
 import {
   beginTrackFrame,
   beginUntrackFrame,
@@ -154,7 +155,7 @@ export default class CurlyComponentManager
     return this.templateFor(bucket.component);
   }
 
-  getTagName(state: ComponentStateBucket): Option<string> {
+  getTagName(state: ComponentStateBucket): Nullable<string> {
     let { component, hasWrappedElement } = state;
 
     if (!hasWrappedElement) {
@@ -168,7 +169,7 @@ export default class CurlyComponentManager
     return CURLY_CAPABILITIES;
   }
 
-  prepareArgs(ComponentClass: ComponentFactory, args: VMArguments): Option<PreparedArguments> {
+  prepareArgs(ComponentClass: ComponentFactory, args: VMArguments): Nullable<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
       assert(
         '[BUG] cannot pass both __ARGS__ and positional arguments',
@@ -260,6 +261,7 @@ export default class CurlyComponentManager
 
     beginTrackFrame();
     let props = processComponentArgs(capturedArgs);
+    props[ARGS] = capturedArgs;
     let argsTag = endTrackFrame();
 
     // Alias `id` argument to `elementId` property on the component instance.
@@ -467,7 +469,7 @@ export default class CurlyComponentManager
     }
   }
 
-  getDestroyable(bucket: ComponentStateBucket): Option<Destroyable> {
+  getDestroyable(bucket: ComponentStateBucket): Nullable<Destroyable> {
     return bucket;
   }
 }

@@ -2,7 +2,7 @@ import EmberObject from '@ember/object';
 import { A } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
@@ -136,20 +136,20 @@ moduleFor(
     }
 
     '@test tracked properties that are uninitialized do not throw an error'() {
-      let CountComponent = Component.extend({
-        count: tracked(),
+      class CountComponent extends Component {
+        @tracked count;
 
-        increment() {
+        increment = () => {
           if (!this.count) {
             this.count = 0;
           }
           this.count++;
-        },
-      });
+        };
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -162,17 +162,17 @@ moduleFor(
     }
 
     '@test tracked properties rerender when updated'() {
-      let CountComponent = Component.extend({
-        count: tracked({ value: 0 }),
+      class CountComponent extends Component {
+        @tracked count = 0;
 
-        increment() {
+        increment = () => {
           this.count++;
-        },
-      });
+        };
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -187,19 +187,19 @@ moduleFor(
     '@test tracked properties rerender when updated outside of a runloop'(assert) {
       let done = assert.async();
 
-      let CountComponent = Component.extend({
-        count: tracked({ value: 0 }),
+      class CountComponent extends Component {
+        @tracked count = 0;
 
-        increment() {
+        increment = () => {
           setTimeout(() => {
             this.count++;
           }, 100);
-        },
-      });
+        };
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -216,21 +216,19 @@ moduleFor(
     }
 
     '@test nested tracked properties rerender when updated'() {
-      let Counter = EmberObject.extend({
-        count: tracked({ value: 0 }),
-      });
+      class Counter {
+        @tracked count = 0;
+      }
 
-      let CountComponent = Component.extend({
-        counter: Counter.create(),
+      class CountComponent extends Component {
+        counter = new Counter();
 
-        increment() {
-          this.counter.count++;
-        },
-      });
+        increment = () => this.counter.count++;
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.counter.count}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.counter.count}}</button>',
       });
 
       this.render('<Counter />');
@@ -243,18 +241,16 @@ moduleFor(
     }
 
     '@test array properties rerender when updated'() {
-      let NumListComponent = Component.extend({
-        numbers: tracked({ initializer: () => A([1, 2, 3]) }),
+      class NumListComponent extends Component {
+        @tracked numbers = A([1, 2, 3]);
 
-        addNumber() {
-          this.numbers.pushObject(4);
-        },
-      });
+        addNumber = () => this.numbers.pushObject(4);
+      }
 
       this.registerComponent('num-list', {
         ComponentClass: NumListComponent,
         template: strip`
-            <button {{action this.addNumber}}>
+            <button {{on "click" this.addNumber}}>
               {{#each this.numbers as |num|}}{{num}}{{/each}}
             </button>
           `,
@@ -270,23 +266,19 @@ moduleFor(
     }
 
     '@test getters update when dependent properties are invalidated'() {
-      let CountComponent = Component.extend({
-        count: tracked({ value: 0 }),
+      class CountComponent extends Component {
+        @tracked count = 0;
 
-        countAlias: descriptor({
-          get() {
-            return this.count;
-          },
-        }),
+        get countAlias() {
+          return this.count;
+        }
 
-        increment() {
-          this.count++;
-        },
-      });
+        increment = () => this.count++;
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -299,31 +291,28 @@ moduleFor(
     }
 
     '@test getters update when dependent computeds are invalidated'() {
-      let CountComponent = Component.extend({
-        _count: 0,
+      class CountComponent extends Component {
+        @tracked _count = 0;
 
-        count: computed({
+        @computed({
           get() {
             return this._count;
           },
-
-          set(key, value) {
+          set(_key, value) {
             return (this._count = value);
           },
-        }),
+        })
+        count;
 
         get countAlias() {
           return this.count;
-        },
-
-        increment() {
-          this.set('count', this.count + 1);
-        },
-      });
+        }
+        increment = () => this.set('count', this.count + 1);
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -340,27 +329,23 @@ moduleFor(
     }
 
     '@test nested getters update when dependent properties are invalidated'() {
-      let Counter = EmberObject.extend({
-        count: tracked({ value: 0 }),
+      class Counter {
+        @tracked count = 0;
 
-        countAlias: descriptor({
-          get() {
-            return this.count;
-          },
-        }),
-      });
+        get countAlias() {
+          return this.count;
+        }
+      }
 
-      let CountComponent = Component.extend({
-        counter: Counter.create(),
+      class CountComponent extends Component {
+        counter = new Counter();
 
-        increment() {
-          this.counter.count++;
-        },
-      });
+        increment = () => this.counter.count++;
+      }
 
       this.registerComponent('counter', {
         ComponentClass: CountComponent,
-        template: '<button {{action this.increment}}>{{this.counter.countAlias}}</button>',
+        template: '<button {{on "click" this.increment}}>{{this.counter.countAlias}}</button>',
       });
 
       this.render('<Counter />');
@@ -373,27 +358,25 @@ moduleFor(
     }
 
     '@test tracked object passed down through components updates correctly'(assert) {
-      let Person = EmberObject.extend({
-        first: tracked({ value: 'Rob' }),
-        last: tracked({ value: 'Jackson' }),
+      class Person {
+        @tracked first = 'Rob';
+        @tracked last = 'Jackson';
 
-        full: descriptor({
-          get() {
-            return `${this.first} ${this.last}`;
-          },
-        }),
-      });
+        get full() {
+          return `${this.first} ${this.last}`;
+        }
+      }
 
-      let ParentComponent = Component.extend({
-        person: Person.create(),
-      });
+      class ParentComponent extends Component {
+        person = new Person();
+      }
 
-      let ChildComponent = Component.extend({
-        updatePerson() {
+      class ChildComponent extends Component {
+        updatePerson = () => {
           this.person.first = 'Kris';
           this.person.last = 'Selden';
-        },
-      });
+        };
+      }
 
       this.registerComponent('parent', {
         ComponentClass: ParentComponent,
@@ -407,7 +390,7 @@ moduleFor(
         ComponentClass: ChildComponent,
         template: strip`
             <div id="child">{{this.person.full}}</div>
-            <button onclick={{action this.updatePerson}}></button>
+            <button onclick={{this.updatePerson}}></button>
           `,
       });
 
@@ -423,26 +406,23 @@ moduleFor(
     }
 
     '@test yielded getters update correctly'() {
-      let PersonComponent = Component.extend({
-        first: tracked({ value: 'Rob' }),
-        last: tracked({ value: 'Jackson' }),
+      class PersonComponent extends Component {
+        @tracked first = 'Rob';
+        @tracked last = 'Jackson';
 
-        full: descriptor({
-          get() {
-            return `${this.first} ${this.last}`;
-          },
-        }),
-
-        updatePerson() {
+        get full() {
+          return `${this.first} ${this.last}`;
+        }
+        updatePerson = () => {
           this.first = 'Kris';
           this.last = 'Selden';
-        },
-      });
+        };
+      }
 
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            {{yield this.full (action this.updatePerson)}}
+            {{yield this.full this.updatePerson}}
           `,
       });
 
@@ -462,30 +442,27 @@ moduleFor(
     }
 
     '@test yielded nested getters update correctly'() {
-      let Person = EmberObject.extend({
-        first: tracked({ value: 'Rob' }),
-        last: tracked({ value: 'Jackson' }),
+      class Person {
+        @tracked first = 'Rob';
+        @tracked last = 'Jackson';
 
-        full: descriptor({
-          get() {
-            return `${this.first} ${this.last}`;
-          },
-        }),
-      });
+        get full() {
+          return `${this.first} ${this.last}`;
+        }
+      }
+      class PersonComponent extends Component {
+        person = new Person();
 
-      let PersonComponent = Component.extend({
-        person: Person.create(),
-
-        updatePerson() {
+        updatePerson = () => {
           this.person.first = 'Kris';
           this.person.last = 'Selden';
-        },
-      });
+        };
+      }
 
       this.registerComponent('person', {
         ComponentClass: PersonComponent,
         template: strip`
-            {{yield this.person (action this.updatePerson)}}
+            {{yield this.person this.updatePerson}}
           `,
       });
 
@@ -605,9 +582,9 @@ moduleFor(
           return this.args.count + this.count;
         }
 
-        updateInnerCount() {
+        updateInnerCount = () => {
           this.count++;
-        }
+        };
       }
 
       this.registerComponent('outer', {
@@ -617,7 +594,7 @@ moduleFor(
 
       this.registerComponent('inner', {
         ComponentClass: InnerComponent,
-        template: '<button {{action this.updateInnerCount}}>{{this.combinedCounts}}</button>',
+        template: '<button {{on "click" this.updateInnerCount}}>{{this.combinedCounts}}</button>',
       });
 
       this.render('<Outer @count={{this.count}}/>', {

@@ -1,4 +1,5 @@
 import { FrameworkObject } from '@ember/object/-internals';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 import { inject as metalInject } from '@ember/-internals/metal';
 
@@ -16,6 +17,7 @@ import { inject as metalInject } from '@ember/-internals/metal';
          the property's name
   @return {ComputedDecorator} injection decorator instance
   @public
+  @deprecated Please import `service` instead.
 */
 export function inject(name: string): PropertyDecorator;
 export function inject(...args: [ElementDescriptor[0], ElementDescriptor[1]]): void;
@@ -24,6 +26,11 @@ export function inject(): PropertyDecorator;
 export function inject(
   ...args: [] | [name: string] | ElementDescriptor
 ): PropertyDecorator | DecoratorPropertyDescriptor | void {
+  deprecateUntil(
+    'Importing `inject` from `@ember/service` is deprecated. Please import `service` instead.',
+    DEPRECATIONS.DEPRECATE_IMPORT_INJECT
+  );
+
   return metalInject('service', ...args);
 }
 
@@ -121,5 +128,5 @@ export default class Service extends FrameworkObject {
 // that would be for end users, because there is no actual contract to that
 // effect with Ember -- and in the future this choice would allow us to have
 // registered services which have no base class.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Registry extends Record<string, object | undefined> {}

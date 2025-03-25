@@ -96,3 +96,5 @@
   @for @ember/helper
   @since 2.1.0
  */
+
+export {};

@@ -82,20 +82,22 @@ moduleFor(
 
       this.addTemplate('parent.index', '{{foo-bar}}');
 
+      let FooBar = Component.extend({
+        routerService: service('router'),
+        layout: this.compile('foo-bar'),
+        init() {
+          this._super(...arguments);
+          componentInstance = this;
+        },
+        actions: {
+          transitionToSister() {
+            get(this, 'routerService').transitionTo('parent.sister');
+          },
+        },
+      });
+
       this.addComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          routerService: service('router'),
-          init() {
-            this._super(...arguments);
-            componentInstance = this;
-          },
-          actions: {
-            transitionToSister() {
-              get(this, 'routerService').transitionTo('parent.sister');
-            },
-          },
-        }),
-        template: `foo-bar`,
+        ComponentClass: FooBar,
       });
 
       this.render('{{foo-bar}}');

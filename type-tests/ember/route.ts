@@ -1,7 +1,7 @@
 import Route from '@ember/routing/route';
 import Array from '@ember/array';
 import Ember from 'ember'; // currently needed for Transition
-import Transition from '@ember/routing/transition';
+import type Transition from '@ember/routing/transition';
 import { expectTypeOf } from 'expect-type';
 import { service } from '@ember/service';
 import RouterService from '@ember/routing/router-service';

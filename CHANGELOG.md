@@ -1,6 +1,134 @@
 # Ember Changelog
 
-## v5.4.0-beta.1 (September 18, 2023)
+## v6.4.0-beta.1 (March 17, 2025)
+
+- [#20842](https://github.com/emberjs/ember.js/pull/20842) [BREAKING] Drop support for TypeScript 4.9 to allow for glimmer-vm upgrade. 
+  * Ember now tests against TypeScript 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7. 
+  Per the rolling support window, following [Semantic Versioning for TypeScript Types](https://www.semver-ts.org/),
+  the supported range of TypeScript versions across two Ember LTS releases must 
+  always overlap.
+  For more examples, see the [Stability heading in this blog post](https://blog.emberjs.com/stable-typescript-types-in-ember-5-1/).
+  * We now require consumers use `verbatimModuleSyntax`.
+- [#20842](https://github.com/emberjs/ember.js/pull/20842) / [#20864](https://github.com/emberjs/ember.js/pull/20864) Upgrade glimmer-vm.
+- [#20872](https://github.com/emberjs/ember.js/pull/20872) [BUGFIX] Fix `{{debugger}}` via upgrade @glimmer/runtime.
+- [#20850](https://github.com/emberjs/ember.js/pull/20850) [BUGFIX] Fix source maps in published packages.
+- [#20867](https://github.com/emberjs/ember.js/pull/20867) [BUGFIX] Fix LOG_VERSIONS.
+- [#20852](https://github.com/emberjs/ember.js/pull/20852) [CLEANUP] Remove ember-auto-import as a dependency.
+- [#20863](https://github.com/emberjs/ember.js/pull/20863) [CLEANUP] Cleanup "octane edition" code
+- [#20856](https://github.com/emberjs/ember.js/pull/20856) [DOCS] Restore @glimmer/component API docs and test against classes and modules generated in api docs to prevent future missing docs.
+
+## v6.3.0 (March 17, 2025)
+
+- [#20800](https://github.com/emberjs/ember.js/pull/20800) [FEATURE] Support use of template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
+- [#20526](https://github.com/emberjs/ember.js/pull/20526) / [#20820](https://github.com/emberjs/ember.js/pull/20820) [DEPRECATION] Deprecate importing `inject` from `@ember/service`. The export is renamed to `service` per [RFC #0752](https://rfcs.emberjs.com/id/0752-inject-service/).
+- [#20817](https://github.com/emberjs/ember.js/pull/20817) Clean up `deprecate-implicit-route-model` deprecation. It was deprecated until 6.0. 
+- [#20825](https://github.com/emberjs/ember.js/pull/20825) Remove the `helper` wrapper from the helper generator. [Plain functions as helpers](https://guides.emberjs.com/release/components/helper-functions/#toc_global-helper-functions) have been supported since v4.5.
+
+## v6.2.0 (February 03, 2025)
+
+- [#20798](https://github.com/emberjs/ember.js/pull/20798) [CLEANUP] Remove old code that supported old ember-test-helpers
+- [#20809](https://github.com/emberjs/ember.js/pull/20809) [CLEANUP] Remove long enabled `EMBER_TYPESCRIPT_BLUEPRINTS` feature flag
+- [#20811](https://github.com/emberjs/ember.js/pull/20811) Fix typescript@next support
+
+## v6.1.0 (December 23, 2024)
+
+- [#20782](https://github.com/emberjs/ember.js/pull/20782) [BUGFIX] Fixes Ember keyword shadowing: keywords should always be superseded by in-scope lexical variables
+- [#20787](https://github.com/emberjs/ember.js/pull/20787) Publish ember-source as v2 addon
+
+## v6.0.1 (November 15, 2024)
+
+- [#20792](https://github.com/emberjs/ember.js/pull/20792) [BUGFIX] Fix importing ember-source/types
+
+## v6.0.0 (November 11, 2024)
+ 
+- [BREAKING] Features and APIs that were deprecated until v6.0 will now throw exceptions and the related code will be removed imminently. For a list of deprecations, see the [Deprecation Guide](https://deprecations.emberjs.com/v5.x).
+- [#20731](https://github.com/emberjs/ember.js/pull/20731) [BUGFIX] Bump `import Ember from 'ember'` barrel file deprecations until 7.0.0
+- [#20779](https://github.com/emberjs/ember.js/pull/20779) / [#20791](https://github.com/emberjs/ember.js/pull/20791) [CLEANUP] Update browser support per RFC #685. Support is now Chrome >= 109, Edge >= 128 Firefox >= 115, Safari >= 15.6, ChromeAndroid >= 130, FirefoxAndroid >= 130
+- [#20773](https://github.com/emberjs/ember.js/pull/20773) [CLEANUP] Remove deprecated features from component blueprint per [RFC #995](https://rfcs.emberjs.com/id/0995-deprecate-non-colocated-components).
+- [#20730](https://github.com/emberjs/ember.js/pull/20730) [CLEANUP] Remove support for EXTEND_PROTOTYPES
+- [#20732](https://github.com/emberjs/ember.js/pull/20732) [TYPES] Directly assign a boolean value in deprecated-features
+- [#20753](https://github.com/emberjs/ember.js/pull/20753) [INTERNAL] Update tagging strategy: ember-source tags will now be v1.2.3-ember-source instead of v1.2.3
+- [#20744](https://github.com/emberjs/ember.js/pull/20744) Add v2 addon metadata
+
+## v5.12.0 (September 30, 2024)
+
+- [#20746](https://github.com/emberjs/ember.js/pull/20746) [BUGFIX] Upgrade glimmer-vm for some perf improvements
+- [#20714](https://github.com/emberjs/ember.js/pull/20714) [BUGFIX] Break eager cycle for "deprecate" function
+
+## v5.11.1 (September 23, 2024)
+
+- [#20734](https://github.com/emberjs/ember.js/pull/20734) Circularity fixes
+
+## v5.11.0 (August 19, 2024)
+
+- [#20716](https://github.com/emberjs/ember.js/pull/20716) [BREAKING] Drop Node 16 support
+- [#20704](https://github.com/emberjs/ember.js/pull/20704) Remove `Component` suffix from blueprints to facilitate `<template>`
+
+## v5.10.2 (August 6, 2024)
+
+- [#20726](https://github.com/emberjs/ember.js/pull/20726) [BUGFIX] Fix test waiters by removing unintentional duplication from ember-testing bundle
+- [#20715](https://github.com/emberjs/ember.js/pull/20715) [BUGFIX] Don't publish empty modules
+
+## v5.10.1 (July 12, 2024)
+ 
+- [#20720](https://github.com/emberjs/ember.js/pull/20720) [BUGFIX] Fix deprecation guide url for array prototype extensions deprecation
+
+## v5.10.0 (July 8, 2024)
+
+- [#20702](https://github.com/emberjs/ember.js/pull/20702) [DEPRECATION] Deprecate array prototype extensions per [RFC #848](https://rfcs.emberjs.com/id/0848-deprecate-array-prototype-extensions/).
+- [#20660](https://github.com/emberjs/ember.js/pull/20660) [DEPRECATION] Deprecate non-colocated component template resolution per [RFC #995](https://rfcs.emberjs.com/id/0995-deprecate-non-colocated-components).
+- [#20675](https://github.com/emberjs/ember.js/pull/20675) [INTERNAL] Build reform
+- [#20683](https://github.com/emberjs/ember.js/pull/20683) [CLEANUP] Remove application-template-wrapper optional feature support
+- [#20685](https://github.com/emberjs/ember.js/pull/20685) [CLEANUP] Remove support for non-glimmer template-only components
+- [#20681](https://github.com/emberjs/ember.js/pull/20681) Update ember-cli-babel
+
+## v5.9.0 (June 3, 2024)
+
+- [#20653](https://github.com/emberjs/ember.js/pull/20653) [DEPRECATION] Deprecate `(action)` and `{{action}}` in templates per [RFC #1006](https://rfcs.emberjs.com/id/1006-deprecate-action-template-helper).
+- [#20669](https://github.com/emberjs/ember.js/pull/20669) [FEATURE] Make deprecations throw when the `until` for `ember-source` has passed per [RFC #0830](https://rfcs.emberjs.com/id/0830-evolving-embers-major-version-process).
+- [#20656](https://github.com/emberjs/ember.js/pull/20656) / [#20664](https://github.com/emberjs/ember.js/pull/20664) [BUGFIX] Upgrade router_js to support `exactOptionalPropertyTypes`
+- [#20658](https://github.com/emberjs/ember.js/pull/20658) Upgrade glimmer-vm to v0.92
+- [#20678](https://github.com/emberjs/ember.js/pull/20678) Address a missed deprecation introduced in #20658
+
+## v5.8.0 (April 15, 2024)
+
+- [#20672](https://github.com/emberjs/ember.js/pull/20672) [BUGFIX] Restore `{{this.attrs.foo}}` deprecation from the 3.x era. The API was accidentally not removed in 4.0 but the deprecation was removed.
+
+## v5.7.0 (March 4, 2024)
+
+- [#20639](https://github.com/emberjs/ember.js/pull/20639) [FEATURE] Add an optional feature "no-implicit-route-model" to allow the removal of the implicit loading of a model per [RFC #774](https://rfcs.emberjs.com/id/0774-implicit-record-route-loading).
+- [#20597](https://github.com/emberjs/ember.js/pull/20597) [FEATURE] Add explicit support TS 5.1, 5.2, and 5.3
+- [#20645](https://github.com/emberjs/ember.js/pull/20645) [BUGFIX] Make sure the `component-class` blueprint generates a signature in a TS project
+- [#20224](https://github.com/emberjs/ember.js/pull/20224) Integrate types for the `warn` method
+- [#20579](https://github.com/emberjs/ember.js/pull/20579) Mark `cached` as a `MethodDecorator` instead of `PropertyDecorator`
+- [#20609](https://github.com/emberjs/ember.js/pull/20609) Bump all glimmer-vm dependencies to 0.87.1
+- [#20619](https://github.com/emberjs/ember.js/pull/20619) [CLEANUP] Cleanup incorrect module usage
+- [#20620](https://github.com/emberjs/ember.js/pull/20620) [CLEANUP] Remove final eager consumption of AMD loader
+
+## v5.6.0 (January 22, 2024)
+
+- [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] An addon re-export should always be a JavaScript file
+- [#20603](https://github.com/emberjs/ember.js/pull/20603) [BUGFIX] Internal templates should be strictMode
+- [#20605](https://github.com/emberjs/ember.js/pull/20605) [BUGFIX] Move babel-plugin-ember-template-compilation to dependencies
+- [#20570](https://github.com/emberjs/ember.js/pull/20570) [CLEANUP] Remove all traces of named outlets code
+- [#20561](https://github.com/emberjs/ember.js/pull/20561) Upgrade the Glimmer VM from 0.84.3 to 0.85.13
+
+## v5.4.1 (January 22, 2024)
+
+- [#20575](https://github.com/emberjs/ember.js/pull/20575) [BUGFIX] Update backburner.js to 2.4.2
+- [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] Blueprints: An addon re-export should always be a JavaScript file
+
+## v4.12.4 (January 22, 2024)
+
+- [#20595](https://github.com/emberjs/ember.js/pull/20595) [BUGFIX] Blueprints: An addon re-export should always be a JavaScript file
+
+## v5.5.0 (December 11, 2023)
+
+- [#20575](https://github.com/emberjs/ember.js/pull/20575) [BUGFIX] Update backburner.js to 2.4.2
+- [#20578](https://github.com/emberjs/ember.js/pull/20578) [BUGFIX] Deprecate outlet `TemplateFactory` support
+- [#20559](https://github.com/emberjs/ember.js/pull/20559) [INTERNAL] Switch to pnpm
+
+## v5.4.0 (October 30, 2023)
 
 - [#20521](https://github.com/emberjs/ember.js/pull/20521) [FEATURE] Add TypeScript support for looking up controllers in DI registry
 - [#20529](https://github.com/emberjs/ember.js/pull/20529) [BUGFIX] Don't rethrow string errors in handleTransitionReject

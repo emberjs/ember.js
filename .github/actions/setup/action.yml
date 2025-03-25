@@ -1,0 +1,41 @@
+name: Setup node and pnpm
+description: Setup node and install dependencies using pnpm
+inputs:
+  use_lockfile:
+    description: 'Whether to use the lockfile vs latest floating dependencies'
+    required: false
+    default: true
+runs:
+  using: 'composite'
+  steps:
+    - uses: pnpm/action-setup@v4
+      name: Install pnpm
+      with:
+        run_install: false
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+        registry-url: 'https://registry.npmjs.org'
+        cache: pnpm
+    - uses: actions/cache@v4
+      name: Setup cache for puppeteer
+      with:
+        # See .puppeteerrc.cjs, where we set this as the place puppeteer
+        # installs the browser. It needs to be cached the same as our pnpm
+        # packages are because it won't get reinstalled if our modules are
+        # cached.
+        path: .puppeteer-cache
+        key: ${{ runner.os }}-puppeteer-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: Disable AppArmor
+      # Ubuntu >= 23 has AppArmor enabled by default, which breaks Puppeteer.
+      # See https://github.com/puppeteer/puppeteer/issues/12818 "No usable sandbox!"
+      # this is taken from the solution used in Puppeteer's own CI: https://github.com/puppeteer/puppeteer/pull/13196
+      # The alternative is to pin Ubuntu 22 or to use aa-exec to disable AppArmor for commands that need Puppeteer.
+      # This is also suggested by Chromium https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
+      run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+      shell: bash
+
+    - run: pnpm install ${{ fromJSON('{"false":"--no-lockfile", "true":"--frozen-lockfile"}')[inputs.use_lockfile] }}
+      shell: bash

@@ -2,7 +2,7 @@
 
 const path = require('path');
 
-const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 const { modulePrefixForProject } = require('../-utils');
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -13,7 +13,7 @@ module.exports = useTestFrameworkDetector({
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    maybePolyfillTypeScriptBlueprints(this);
+    typescriptBlueprintPolyfill(this);
   },
 
   fileMapTokens() {

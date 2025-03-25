@@ -1,8 +1,8 @@
-/* globals global, window, self */
+/* globals window, self */
 declare const mainContext: object | undefined;
 
 // from lodash to catch fake globals
-function checkGlobal(value: any | null | undefined): value is object {
+function checkGlobal(value: any | null | undefined): object | undefined {
   return value && value.Object === Object ? value : undefined;
 }
 
@@ -10,6 +10,8 @@ function checkGlobal(value: any | null | undefined): value is object {
 function checkElementIdShadowing(value: any | null | undefined) {
   return value && value.nodeType === undefined ? value : undefined;
 }
+
+declare const global: unknown;
 
 // export real global
 export default checkGlobal(checkElementIdShadowing(typeof global === 'object' && global)) ||

@@ -19,6 +19,7 @@ export const RECOMPUTE_TAG = Symbol('RECOMPUTE_TAG');
 // Signature type utilities
 type GetOr<T, K, Else> = K extends keyof T ? T[K] : Else;
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type Args<S> = GetOr<S, 'Args', {}>;
 
 type DefaultPositional = unknown[];
@@ -126,7 +127,7 @@ export default class Helper<S = unknown> extends FrameworkObject {
 
   // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
   // here to preserve the type param.
-  private declare [SIGNATURE]: S;
+  declare private [SIGNATURE]: S;
 
   init(properties: object | undefined) {
     super.init(properties);
@@ -371,7 +372,6 @@ export function helper<S>(
 export function helper(
   helperFn: (positional: unknown[], named: object) => unknown
   // At the implementation site, we don't care about the actual underlying type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): FunctionBasedHelper<any> {
   // SAFETY: this is completely lies, in two ways:
   //

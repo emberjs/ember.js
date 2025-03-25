@@ -1,4 +1,9 @@
-import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  AutobootApplicationTestCase,
+  runTask,
+  defineComponent,
+} from 'internal-test-helpers';
 import Application from '@ember/application';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
@@ -140,15 +145,18 @@ moduleFor(
 
         this.add(
           'component:foo-bar',
-          Component.extend({
-            wowza() {
-              assert.ok(true, 'fired the event!');
-            },
-          })
+          defineComponent(
+            {},
+            `<div id='wowza-thingy'></div>`,
+            Component.extend({
+              wowza() {
+                assert.ok(true, 'fired the event!');
+              },
+            })
+          )
         );
 
         this.addTemplate('application', `{{foo-bar}}`);
-        this.addTemplate('components/foo-bar', `<div id='wowza-thingy'></div>`);
       });
 
       this.$('#wowza-thingy').trigger('wowza');
@@ -172,15 +180,18 @@ moduleFor(
 
         this.add(
           'component:foo-bar',
-          Component.extend({
-            jerky() {
-              assert.ok(true, 'fired the event!');
-            },
-          })
+          defineComponent(
+            {},
+            `<div id='herky-thingy'></div>`,
+            Component.extend({
+              jerky() {
+                assert.ok(true, 'fired the event!');
+              },
+            })
+          )
         );
 
         this.addTemplate('application', `{{foo-bar}}`);
-        this.addTemplate('components/foo-bar', `<div id='herky-thingy'></div>`);
       });
 
       this.$('#herky-thingy').trigger('herky');

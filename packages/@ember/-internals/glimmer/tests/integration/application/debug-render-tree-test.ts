@@ -17,17 +17,19 @@ import type EngineInstance from '@ember/engine/instance';
 import type { CapturedRenderNode } from '@glimmer/interfaces';
 import { componentCapabilities, setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
-import { expect } from '@glimmer/util';
 import type { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
+import templateOnly from '@ember/component/template-only';
 
 interface CapturedBounds {
   parentElement: SimpleElement;
   firstNode: SimpleNode;
   lastNode: SimpleNode;
 }
+
+function anyFunc() {}
 
 function compileTemplate(templateSource: string, options: Partial<EmberPrecompileOptions>) {
   return compile(templateSource, options);
@@ -53,19 +55,6 @@ if (ENV._DEBUG_RENDER_TREE) {
   moduleFor(
     'Application test: debug render tree',
     class extends ApplicationTestCase {
-      _TEMPLATE_ONLY_GLIMMER_COMPONENTS: boolean;
-
-      constructor(assert: QUnit['assert']) {
-        super(assert);
-        this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
-      }
-
-      teardown() {
-        super.teardown();
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-      }
-
       async '@test routes'() {
         this.addTemplate('index', 'Index');
         this.addTemplate('foo', 'Foo {{outlet}}');
@@ -99,7 +88,10 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'index',
-            args: { positional: [], named: { model: undefined } },
+            args: {
+              positional: [],
+              named: { controller: this.controllerFor('index'), model: undefined },
+            },
             instance: this.controllerFor('index'),
             template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
@@ -113,7 +105,10 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'foo',
-            args: { positional: [], named: { model: undefined } },
+            args: {
+              positional: [],
+              named: { controller: this.controllerFor('foo'), model: undefined },
+            },
             instance: this.controllerFor('foo'),
             template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
@@ -121,7 +116,10 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'foo.index',
-                args: { positional: [], named: { model: undefined } },
+                args: {
+                  positional: [],
+                  named: { controller: this.controllerFor('foo.index'), model: undefined },
+                },
                 instance: this.controllerFor('foo.index'),
                 template: 'my-app/templates/foo/index.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
@@ -137,7 +135,10 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'foo',
-            args: { positional: [], named: { model: undefined } },
+            args: {
+              positional: [],
+              named: { controller: this.controllerFor('foo'), model: undefined },
+            },
             instance: this.controllerFor('foo'),
             template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
@@ -145,7 +146,10 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'foo.inner',
-                args: { positional: [], named: { model: 'wow' } },
+                args: {
+                  positional: [],
+                  named: { controller: this.controllerFor('foo.inner'), model: 'wow' },
+                },
                 instance: this.controllerFor('foo.inner'),
                 template: 'my-app/templates/foo/inner.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
@@ -161,7 +165,10 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'foo',
-            args: { positional: [], named: { model: undefined } },
+            args: {
+              positional: [],
+              named: { controller: this.controllerFor('foo'), model: undefined },
+            },
             instance: this.controllerFor('foo'),
             template: 'my-app/templates/foo.hbs',
             bounds: this.elementBounds(this.element!),
@@ -169,7 +176,10 @@ if (ENV._DEBUG_RENDER_TREE) {
               this.outlet({
                 type: 'route-template',
                 name: 'foo.inner',
-                args: { positional: [], named: { model: 'zomg' } },
+                args: {
+                  positional: [],
+                  named: { controller: this.controllerFor('foo.inner'), model: 'zomg' },
+                },
                 instance: this.controllerFor('foo.inner'),
                 template: 'my-app/templates/foo/inner.hbs',
                 bounds: this.nodeBounds(this.element!.lastChild),
@@ -215,10 +225,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'template:components/inspect-model',
-                compileTemplate('{{@model}}', {
-                  moduleName: 'foo/components/inspect-model.hbs',
-                })
+                'component:inspect-model',
+                setComponentTemplate(
+                  compileTemplate('{{@model}}', {
+                    moduleName: 'foo/components/inspect-model.hbs',
+                  }),
+                  templateOnly()
+                )
               );
             }
 
@@ -253,10 +266,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 )
               );
               this.register(
-                'template:components/inspect-model',
-                compileTemplate('{{@model}}', {
-                  moduleName: 'bar/components/inspect-model.hbs',
-                })
+                'component:inspect-model',
+                setComponentTemplate(
+                  compileTemplate('{{@model}}', {
+                    moduleName: 'bar/components/inspect-model.hbs',
+                  }),
+                  templateOnly()
+                )
               );
             }
 
@@ -619,10 +635,13 @@ if (ENV._DEBUG_RENDER_TREE) {
                 })
               );
               this.register(
-                'template:components/hello',
-                compileTemplate('<span>Hello {{@message}}</span>', {
-                  moduleName: 'foo/components/hello.hbs',
-                })
+                'component:hello',
+                setComponentTemplate(
+                  compileTemplate('<span>Hello {{@message}}</span>', {
+                    moduleName: 'foo/components/hello.hbs',
+                  }),
+                  templateOnlyComponent()
+                )
               );
             }
 
@@ -644,7 +663,10 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'index',
-            args: { positional: [], named: { model: undefined } },
+            args: {
+              positional: [],
+              named: { controller: this.controllerFor('index'), model: undefined },
+            },
             instance: this.controllerFor('index'),
             template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
@@ -666,7 +688,13 @@ if (ENV._DEBUG_RENDER_TREE) {
               {
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: {
+                  positional: [],
+                  named: {
+                    controller: instance!.lookup('controller:application'),
+                    model: undefined,
+                  },
+                },
                 instance: instance!.lookup('controller:application'),
                 template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
@@ -674,7 +702,10 @@ if (ENV._DEBUG_RENDER_TREE) {
                   this.outlet({
                     type: 'route-template',
                     name: 'index',
-                    args: { positional: [], named: { model: undefined } },
+                    args: {
+                      positional: [],
+                      named: { controller: instance!.lookup('controller:index'), model: undefined },
+                    },
                     instance: instance!.lookup('controller:index'),
                     template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
@@ -704,7 +735,13 @@ if (ENV._DEBUG_RENDER_TREE) {
               {
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: {
+                  positional: [],
+                  named: {
+                    controller: instance!.lookup('controller:application'),
+                    model: undefined,
+                  },
+                },
                 instance: instance!.lookup('controller:application'),
                 template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
@@ -712,7 +749,10 @@ if (ENV._DEBUG_RENDER_TREE) {
                   this.outlet({
                     type: 'route-template',
                     name: 'index',
-                    args: { positional: [], named: { model: undefined } },
+                    args: {
+                      positional: [],
+                      named: { controller: instance!.lookup('controller:index'), model: undefined },
+                    },
                     instance: instance!.lookup('controller:index'),
                     template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
@@ -751,7 +791,13 @@ if (ENV._DEBUG_RENDER_TREE) {
               {
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
+                args: {
+                  positional: [],
+                  named: {
+                    controller: instance!.lookup('controller:application'),
+                    model: undefined,
+                  },
+                },
                 instance: instance!.lookup('controller:application'),
                 template: 'foo/templates/application.hbs',
                 bounds: this.elementBounds(this.element!),
@@ -759,7 +805,10 @@ if (ENV._DEBUG_RENDER_TREE) {
                   this.outlet({
                     type: 'route-template',
                     name: 'index',
-                    args: { positional: [], named: { model: undefined } },
+                    args: {
+                      positional: [],
+                      named: { controller: instance!.lookup('controller:index'), model: undefined },
+                    },
                     instance: instance!.lookup('controller:index'),
                     template: 'foo/templates/index.hbs',
                     bounds: this.nodeBounds(this.element!.firstChild),
@@ -777,7 +826,10 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.outlet({
             type: 'route-template',
             name: 'index',
-            args: { positional: [], named: { model: undefined } },
+            args: {
+              positional: [],
+              named: { controller: this.controllerFor('index'), model: undefined },
+            },
             instance: this.controllerFor('index'),
             template: 'my-app/templates/index.hbs',
             bounds: this.elementBounds(this.element!),
@@ -786,7 +838,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         ]);
       }
 
-      async '@test template-only components'() {
+      async [`@test template-only components`]() {
         this.addTemplate(
           'application',
           strip`
@@ -811,7 +863,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -827,7 +879,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -836,7 +888,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -852,7 +904,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -884,7 +936,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -900,7 +952,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -909,7 +961,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -925,7 +977,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: null,
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -947,7 +999,7 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.addComponent('hello-world', {
           ComponentClass: setComponentTemplate(
             compileTemplate('{{@name}}', { moduleName: 'my-app/components/hello-world.hbs' }),
-            templateOnlyComponent()
+            templateOnlyComponent('my-app/components/hello-world', 'HelloWorld')
           ),
         });
 
@@ -1032,7 +1084,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1048,7 +1100,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1057,7 +1109,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1073,7 +1125,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1117,7 +1169,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1133,7 +1185,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1142,7 +1194,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'second' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'second',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.lastChild),
             children: [],
           },
@@ -1158,7 +1210,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             name: 'hello-world',
             args: { positional: [], named: { name: 'first' } },
             instance: (instance: Record<string, string>) => instance['name'] === 'first',
-            template: 'my-app/templates/components/hello-world.hbs',
+            template: '(unknown template module)',
             bounds: this.nodeBounds(this.element!.firstChild),
             children: [],
           },
@@ -1183,6 +1235,54 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let inputToString = /<Input:ember[0-9]+>/;
 
+        const firstModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1191,12 +1291,60 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: [...firstModifiers],
           },
         ]);
 
         runTask(() => target.set('showSecond', true));
 
+        const secondModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1205,7 +1353,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: [...firstModifiers],
           },
           {
             type: 'component',
@@ -1214,7 +1362,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.lastChild),
-            children: [],
+            children: [...secondModifiers],
           },
         ]);
 
@@ -1228,7 +1376,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: object) => inputToString.test(instance.toString()),
             template: 'packages/@ember/-internals/glimmer/lib/templates/input.hbs',
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: [...firstModifiers],
           },
         ]);
       }
@@ -1247,7 +1395,59 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         await this.visit('/');
 
-        let textareaNode = (value: string, node: Node | null): ExpectedRenderNode => {
+        const firstModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ];
+
+        let textareaNode = (
+          value: string,
+          node: Node | null,
+          children: ExpectedRenderNode['children']
+        ): ExpectedRenderNode => {
           return {
             type: 'component',
             name: 'textarea',
@@ -1255,26 +1455,74 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['value'] === value,
             bounds: this.nodeBounds(node),
             template: 'packages/@ember/-internals/glimmer/lib/templates/textarea.hbs',
-            children: [],
+            children,
           };
         };
 
-        this.assertRenderTree([textareaNode('first', this.element!.firstChild)]);
+        this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
 
         runTask(() => {
           this.controllerFor('application')!.set('showSecond', true);
         });
 
+        const secondModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['change', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['input', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['keyup', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['paste', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            template: null,
+            args: { named: {}, positional: ['cut', anyFunc] },
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
-          textareaNode('first', this.element!.firstChild),
-          textareaNode('second', this.element!.lastChild),
+          textareaNode('first', this.element!.firstChild, firstModifiers),
+          textareaNode('second', this.element!.lastChild, secondModifiers),
         ]);
 
         runTask(() => {
           this.controllerFor('application')!.set('showSecond', false);
         });
 
-        this.assertRenderTree([textareaNode('first', this.element!.firstChild)]);
+        this.assertRenderTree([textareaNode('first', this.element!.firstChild, firstModifiers)]);
       }
 
       async '@test <LinkTo> components'() {
@@ -1298,6 +1546,18 @@ if (ENV._DEBUG_RENDER_TREE) {
 
         let template = `packages/@ember/-internals/glimmer/lib/templates/link-to.hbs`;
 
+        const firstModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['click', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.firstChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1306,7 +1566,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
             template,
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: firstModifiers,
           },
         ]);
 
@@ -1314,6 +1574,18 @@ if (ENV._DEBUG_RENDER_TREE) {
           this.controllerFor('application')!.set('showSecond', true);
         });
 
+        const secondModifiers: ExpectedRenderNode['children'] = [
+          {
+            type: 'modifier',
+            name: 'on',
+            instance: null,
+            args: { named: {}, positional: ['click', anyFunc] },
+            template: null,
+            bounds: this.nodeBounds(this.element!.lastChild),
+            children: [],
+          },
+        ];
+
         this.assertRenderTree([
           {
             type: 'component',
@@ -1322,7 +1594,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
             template,
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: firstModifiers,
           },
           {
             type: 'component',
@@ -1331,7 +1603,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'bar',
             template,
             bounds: this.nodeBounds(this.element!.lastChild),
-            children: [],
+            children: secondModifiers,
           },
         ]);
 
@@ -1347,7 +1619,7 @@ if (ENV._DEBUG_RENDER_TREE) {
             instance: (instance: Record<string, string>) => instance['route'] === 'foo',
             template,
             bounds: this.nodeBounds(this.element!.firstChild),
-            children: [],
+            children: firstModifiers,
           },
         ]);
       }
@@ -1387,11 +1659,12 @@ if (ENV._DEBUG_RENDER_TREE) {
       }
 
       nodeBounds(node: Node | null): CapturedBounds {
+        if (!node?.parentNode) {
+          throw new Error('BUG: detached node');
+        }
+
         return {
-          parentElement: expect(
-            node?.parentNode,
-            'BUG: detached node'
-          ) as unknown as SimpleNode as SimpleElement,
+          parentElement: node.parentNode as unknown as SimpleElement,
           firstNode: node as unknown as SimpleNode,
           lastNode: node as unknown as SimpleNode,
         };
@@ -1408,22 +1681,21 @@ if (ENV._DEBUG_RENDER_TREE) {
       assertRenderTree(expected: ExpectedRenderNode[]): void {
         let outlet = 'packages/@ember/-internals/glimmer/lib/templates/outlet.hbs';
         let actual = captureRenderTree(this.owner);
+        let controller = this.controllerFor('application');
         let wrapped: ExpectedRenderNode[] = [
           this.outlet({
             type: 'route-template',
             name: '-top-level',
-            args: { positional: [], named: {} },
+            args: { positional: [], named: { controller: undefined, model: undefined } },
             instance: undefined,
             template: outlet,
-            bounds: ENV._APPLICATION_TEMPLATE_WRAPPER
-              ? this.nodeBounds(this.element)
-              : this.elementBounds(this.element!),
+            bounds: this.elementBounds(this.element!),
             children: [
               this.outlet({
                 type: 'route-template',
                 name: 'application',
-                args: { positional: [], named: { model: undefined } },
-                instance: this.controllerFor('application'),
+                args: { positional: [], named: { controller, model: undefined } },
+                instance: controller,
                 template: this.owner.hasRegistration('template:application')
                   ? 'my-app/templates/application.hbs'
                   : outlet,
@@ -1496,11 +1768,65 @@ if (ENV._DEBUG_RENDER_TREE) {
         }
       }
 
+      assertArgs<Named, Positional>(
+        actual: { named: Named; positional: Positional },
+        expected: { named: Named; positional: Positional },
+        path: string
+      ): void {
+        this.assertNamedArgs(actual.named, expected.named, `${path} (named)`);
+        this.assertPositionalArgs(actual.positional, expected.positional, `${path} (positional)`);
+      }
+
+      assertNamedArgs<T>(actual: T, expected: T, path: string) {
+        this.assert.deepEqual(actual, expected, path);
+      }
+
+      assertPositionalArgs<T>(actual: T, expected: T, path: string) {
+        assert(`actual must be an array`, Array.isArray(actual));
+        assert(`expected must be an array`, Array.isArray(expected));
+
+        this.assert.strictEqual(actual.length, expected.length, `${path} length`);
+
+        for (let i = 0; i < actual.length; i++) {
+          let actualItem = actual[i];
+          let expectedItem = expected[i];
+
+          if (typeof actualItem === 'function') {
+            this.assert.strictEqual(
+              typeof actualItem,
+              typeof expectedItem,
+              `${path} function @ ${i}`
+            );
+            continue;
+          }
+
+          this.assert.deepEqual(actualItem, expectedItem, `${path} @ ${i}`);
+        }
+      }
+
       assertProperty<T>(actual: T, expected: Expected<T>, deep: boolean, path: string): void {
         if (isExpectedFunc(expected)) {
           this.assert.ok(expected(actual), `Matching ${path}, got ${actual}`);
         } else if (deep) {
-          this.assert.deepEqual(actual, expected, `Matching ${path}`);
+          if (
+            typeof actual === 'object' &&
+            actual !== null &&
+            Object.keys(actual).length === 2 &&
+            'named' in actual &&
+            'positional' in actual
+          ) {
+            // We have can't compare functions
+            this.assertArgs(
+              actual,
+              // SAFETY: these types are getting in the way more than helping,
+              //         there doesn't seem to be a way to correlate the shape via narrowing of actual
+              //         to the shape of expected
+              expected as unknown as { named: unknown; positional: unknown },
+              path
+            );
+          } else {
+            this.assert.deepEqual(actual, expected, `Matching ${path}`);
+          }
         } else {
           this.assert.strictEqual(actual, expected, `Matching ${path}`);
         }

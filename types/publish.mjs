@@ -98,34 +98,25 @@ ${MODULES_PLACEHOLDER}
 
 const TYPES_DIR = path.join('types', 'stable');
 
-// These modules need to be copied over *and* post-processed: they need to be
-// locally-importable as regular modules, but `tsc` will not move them over
-// itself, but unlike some modules which need to be left unchanged (e.g. the
-// `*-ext.d.ts` modules) these still need the module wrapper added.
-const HAND_COPIED_BUT_NEEDS_POSTPROCESSING = [
-  'ember/version.d.ts',
-  '@ember/-internals/glimmer/lib/templates/empty.d.ts',
-  '@ember/-internals/glimmer/lib/templates/input.d.ts',
-  '@ember/-internals/glimmer/lib/templates/link-to.d.ts',
-  '@ember/-internals/glimmer/lib/templates/outlet.d.ts',
-  '@ember/-internals/glimmer/lib/templates/root.d.ts',
-  '@ember/-internals/glimmer/lib/templates/textarea.d.ts',
-];
-
 async function main() {
   await fs.rm(TYPES_DIR, { recursive: true, force: true });
   await fs.mkdir(TYPES_DIR, { recursive: true });
 
-  doOrDie(() => spawnSync('yarn', ['tsc', '--project', 'tsconfig/publish-types.json']));
+  doOrDie(() => spawnSync('pnpm', ['tsc', '--project', 'tsconfig/publish-types.json']));
+
+  // We're deprecating the barrel file, so this is temporary. The Ember global is a namespace,
+  // and namespaces can't be both exported and used as a type with the same semantics and
+  // capabilities as when defined in the original file -- so we're going to LIE and
+  // pretend that the barrel file is the index file (which is the same behavior as
+  // prior to the deprecation)
+  await fs.cp(path.join(TYPES_DIR, 'ember/barrel.d.ts'), path.join(TYPES_DIR, 'ember/index.d.ts'));
 
   let remappedLocationExcludes = await doOrDie(copyHandwrittenDefinitions);
   let sideEffectExcludes = await doOrDie(copyRemappedLocationModules);
 
   // The majority of those items should be excluded entirely, but in some cases
   // we still need to post-process them.
-  let excludes = remappedLocationExcludes
-    .concat(sideEffectExcludes)
-    .filter((excluded) => !HAND_COPIED_BUT_NEEDS_POSTPROCESSING.includes(excluded));
+  let excludes = remappedLocationExcludes.concat(sideEffectExcludes);
 
   // This is rooted in the `TYPES_DIR` so that the result is just the names of
   // the modules, as generated directly from the tsconfig above. These must
@@ -154,6 +145,17 @@ async function main() {
 
   // Make the generated types easier to read!
   spawnSync('prettier', ['--write', 'types/stable/**/*.ts']);
+
+  // @glimmer/component publishes as a separate package. We need to build its
+  // types after building the ember-source types.
+  doOrDie(() => {
+    let result = spawnSync('pnpm', ['tsc'], { cwd: 'packages/@glimmer/component' });
+    if (result.status !== 0) {
+      console.log(`@glimmer/component types build failed:`);
+      console.error(result.output.toString());
+      process.exit(1);
+    }
+  });
 
   process.exit(status === 'success' ? 0 : 1);
 }
@@ -204,6 +206,7 @@ async function copyHandwrittenDefinitions() {
   let definitionModules = glob
     .sync('**/*.d.ts', {
       cwd: inputDir,
+      ignore: ['**/node_modules/**'],
     })
     .filter((moduleName) => !REMAPPED_LOCATION_MODULES.some(({ input }) => input === moduleName));
 

@@ -1,22 +1,27 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, DynamicScope } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/interfaces';
+import type {
+  CapturedArguments,
+  CurriedComponent,
+  DynamicScope,
+  Template,
+} from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import {
   childRefFromParts,
   createComputeRef,
+  createConstRef,
   createDebugAliasRef,
   valueForRef,
 } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import type { OutletDefinitionState } from '../component-managers/outlet';
-import { OutletComponentDefinition } from '../component-managers/outlet';
+import { hasInternalComponentManager } from '@glimmer/manager';
+import { OutletComponent, type OutletDefinitionState } from '../component-managers/outlet';
+import { makeRouteTemplate } from '../component-managers/route-template';
 import { internalHelper } from '../helpers/internal-helper';
-import { isTemplateFactory } from '../template';
 import type { OutletState } from '../utils/outlet';
 
 /**
@@ -53,23 +58,90 @@ export const outletHelper = internalHelper(
 
     let outletRef = createComputeRef(() => {
       let state = valueForRef(scope.get('outletState') as Reference<OutletState | undefined>);
-      let outlets = state !== undefined ? state.outlets : undefined;
-
-      return outlets !== undefined ? outlets['main'] : undefined;
+      return state?.outlets?.main;
     });
 
     let lastState: OutletDefinitionState | null = null;
-    let definition: CurriedValue | null = null;
+    let outlet: CurriedValue | null = null;
 
     return createComputeRef(() => {
       let outletState = valueForRef(outletRef);
       let state = stateFor(outletRef, outletState);
 
-      if (!validate(state, lastState)) {
+      // This code is deliberately using the behavior in glimmer-vm where in
+      // <@Component />, the component is considered stabled via `===`, and
+      // will continue to re-render in-place as long as the `===` holds, but
+      // when it changes to a different object, it teardown the old component
+      // (running destructors, etc), and render the component in its place (or
+      // nothing if the new value is nullish. Here we are carefully exploiting
+      // that fact, and returns the same stable object so long as it is the
+      // same route, but return a different one when the route changes. On the
+      // other hand, changing the model only intentionally do not teardown the
+      // component and instead re-render in-place.
+      if (!isStable(state, lastState)) {
         lastState = state;
 
         if (state !== null) {
+          // If we are crossing an engine mount point, this is how the owner
+          // gets switched.
+          let outletOwner = outletState?.render?.owner ?? owner;
+
           let named = dict<Reference>();
+
+          // Here we either have a raw template that needs to be normalized,
+          // or a component that we can render as-is. `RouteTemplate` upgrades
+          // the template into a component so we can have a unified code path.
+          // We still store the original `template` value, because we rely on
+          // its identity for the stability check, and the `RouteTemplate`
+          // wrapper doesn't dedup for us.
+          let template = state.template;
+          let component: object;
+
+          if (hasInternalComponentManager(template)) {
+            component = template;
+          } else {
+            if (DEBUG) {
+              // We don't appear to have a standard way or a brand to check, but for the
+              // purpose of avoiding obvious user errors, this probably gets you close
+              // enough.
+              let isTemplate = (template: unknown): template is Template => {
+                if (template === null || typeof template !== 'object') {
+                  return false;
+                } else {
+                  let t = template as Partial<Template>;
+                  return t.result === 'ok' || t.result === 'error';
+                }
+              };
+
+              // We made it past the `TemplateFactory` instantiation before
+              // getting here, so either we got unlucky where the invalid type
+              // happens to be a function that didn't mind taking owner as an
+              // argument, or this was directly set by something like test
+              // helpers.
+              if (!isTemplate(template)) {
+                let label: string;
+
+                try {
+                  label = `\`${String(template)}\``;
+                } catch {
+                  label = 'an unknown object';
+                }
+
+                assert(
+                  `Failed to render the \`${state.name}\` route: expected ` +
+                    `a component or Template object, but got ${label}.`
+                );
+              }
+            }
+
+            component = makeRouteTemplate(outletOwner, state.name, template as Template);
+          }
+
+          // Component is stable for the lifetime of the outlet
+          named['Component'] = createConstRef(component, '@Component');
+
+          // Controller is stable for the lifetime of the outlet
+          named['controller'] = createConstRef(state.controller, '@controller');
 
           // Create a ref for the model
           let modelRef = childRefFromParts(outletRef, ['render', 'model']);
@@ -96,52 +168,53 @@ export const outletHelper = internalHelper(
           }
 
           let args = createCapturedArgs(named, EMPTY_POSITIONAL);
-          definition = curry(
-            CurriedType.Component,
-            new OutletComponentDefinition(state),
-            outletState?.render?.owner ?? owner,
+
+          // Package up everything
+          outlet = curry(
+            0 as CurriedComponent,
+            new OutletComponent(owner, state),
+            outletOwner,
             args,
             true
           );
         } else {
-          definition = null;
+          outlet = null;
         }
       }
 
-      return definition;
+      return outlet;
     });
   }
 );
 
-function stateFor(ref: Reference, outlet: OutletState | undefined): OutletDefinitionState | null {
+function stateFor(
+  ref: Reference<OutletState | undefined>,
+  outlet: OutletState | undefined
+): OutletDefinitionState | null {
   if (outlet === undefined) return null;
   let render = outlet.render;
   if (render === undefined) return null;
   let template = render.template;
-  if (template === undefined) return null;
-
-  // this guard can be removed once @ember/test-helpers@1.6.0 has "aged out"
-  // and is no longer considered supported
-  if (isTemplateFactory(template)) {
-    template = template(render.owner);
-  }
+  // The type doesn't actually allow for `null`, but if we make it past this
+  // point it is really important that we have _something_ to render. We could
+  // assert, but that is probably overly strict for very little to gain.
+  if (template === undefined || template === null) return null;
 
   return {
     ref,
     name: render.name,
-    outlet: render.outlet,
     template,
     controller: render.controller,
-    model: render.model,
   };
 }
 
-function validate(state: OutletDefinitionState | null, lastState: OutletDefinitionState | null) {
-  if (state === null) {
-    return lastState === null;
-  }
-  if (lastState === null) {
+function isStable(
+  state: OutletDefinitionState | null,
+  lastState: OutletDefinitionState | null
+): boolean {
+  if (state === null || lastState === null) {
     return false;
   }
+
   return state.template === lastState.template && state.controller === lastState.controller;
 }

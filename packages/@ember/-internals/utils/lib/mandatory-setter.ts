@@ -1,6 +1,5 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet as WeakSet } from '@glimmer/util';
 import type { Tag } from '@glimmer/validator';
 import lookupDescriptor from './lookup-descriptor';
 

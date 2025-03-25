@@ -157,7 +157,7 @@ export default abstract class AbstractTestCase {
   }
 
   assertElement(
-    node: HTMLElement,
+    node: Element,
     {
       ElementType = HTMLElement,
       tagName,
@@ -178,7 +178,7 @@ export default abstract class AbstractTestCase {
   }
 
   assertComponentElement(
-    node: HTMLElement,
+    node: ChildNode | null,
     {
       ElementType = HTMLElement,
       tagName = 'div',
@@ -191,6 +191,11 @@ export default abstract class AbstractTestCase {
       content?: unknown;
     }
   ) {
+    if (node === null || !(node?.nodeType === 1 && node instanceof Element)) {
+      this.assert.ok(false, `Expected a ${ElementType.name}, but got ${String(node)}`);
+      return;
+    }
+
     attrs = Object.assign(
       {},
       { id: regex(/^ember\d*$/), class: classes('ember-view') },

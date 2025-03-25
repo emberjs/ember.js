@@ -1,37 +1,37 @@
 import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
-import Backburner, { Timer, type DeferredActionQueues } from 'backburner.js';
+import Backburner, { type Timer, type DeferredActionQueues } from 'backburner.js';
 import type { AnyFn } from '@ember/-internals/utility-types';
 
-export { Timer };
+export type { Timer };
 
 // Partial types from https://medium.com/codex/currying-in-typescript-ca5226c85b85
 
 type PartialParams<P extends any[]> = P extends [infer First, ...infer Rest]
   ? [] | [First] | [First, ...PartialParams<Rest>]
   : // This is necessary to handle optional tuple values
-  Required<P> extends [infer First, ...infer Rest]
-  ? [] | [First | undefined] | [First | undefined, ...PartialParams<Partial<Rest>>]
-  : [];
+    Required<P> extends [infer First, ...infer Rest]
+    ? [] | [First | undefined] | [First | undefined, ...PartialParams<Partial<Rest>>]
+    : [];
 
 type RemainingParams<PartialParams extends any[], All extends any[]> = PartialParams extends [
   infer First,
-  ...infer Rest
+  ...infer Rest,
 ]
   ? All extends [infer AllFirst, ...infer AllRest]
     ? First extends AllFirst
       ? RemainingParams<Rest, AllRest>
       : never
     : // This is necessary to handle optional tuple values
-    Required<All> extends [infer AllFirst, ...infer AllRest]
-    ? First extends AllFirst | undefined
-      ? Partial<RemainingParams<Rest, AllRest>>
+      Required<All> extends [infer AllFirst, ...infer AllRest]
+      ? First extends AllFirst | undefined
+        ? Partial<RemainingParams<Rest, AllRest>>
+        : never
       : never
-    : never
   : PartialParams extends []
-  ? All
-  : never;
+    ? All
+    : never;
 
 let currentRunLoop: DeferredActionQueues | null = null;
 export function _getCurrentRunLoop() {
@@ -45,12 +45,12 @@ function onBegin(current: DeferredActionQueues) {
 function onEnd(_current: DeferredActionQueues, next: DeferredActionQueues) {
   currentRunLoop = next;
 
-  flushAsyncObservers();
+  flushAsyncObservers(schedule);
 }
 
 function flush(queueName: string, next: () => void) {
   if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-    flushAsyncObservers();
+    flushAsyncObservers(schedule);
   }
 
   next();
@@ -274,7 +274,7 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
 export function bind<
   T,
   F extends (this: T, ...args: any[]) => any,
-  A extends PartialParams<Parameters<F>>
+  A extends PartialParams<Parameters<F>>,
 >(
   target: T,
   method: F,
@@ -287,7 +287,7 @@ export function bind<F extends AnyFn, A extends PartialParams<Parameters<F>>>(
 export function bind<
   T,
   U extends keyof T,
-  A extends T[U] extends AnyFn ? PartialParams<Parameters<T[U]>> : []
+  A extends T[U] extends AnyFn ? PartialParams<Parameters<T[U]>> : [],
 >(
   target: T,
   method: U,
@@ -868,7 +868,7 @@ export function debounce<T, U extends keyof T>(
   ...args: [
     ...args: T[U] extends AnyFn ? Parameters<T[U]> : [],
     wait: string | number,
-    immediate?: boolean
+    immediate?: boolean,
   ]
 ): Timer;
 export function debounce(...args: any[]) {
@@ -934,7 +934,7 @@ export function throttle<T, U extends keyof T>(
   ...args: [
     ...args: T[U] extends AnyFn ? Parameters<T[U]> : [],
     wait?: string | number,
-    immediate?: boolean
+    immediate?: boolean,
   ]
 ): Timer;
 export function throttle(...args: any[]): Timer {

@@ -7,7 +7,7 @@ const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
 const SilentError = require('silent-error');
 
-const maybePolyfillTypeScriptBlueprints = require('../-maybe-polyfill-typescript-blueprints');
+const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 
 module.exports = {
   description: 'Generates a route and a template, and registers the route with the router.',
@@ -33,7 +33,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    maybePolyfillTypeScriptBlueprints(this);
+    typescriptBlueprintPolyfill(this);
   },
 
   fileMapTokens: function () {

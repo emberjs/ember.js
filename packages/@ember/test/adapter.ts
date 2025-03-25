@@ -1,3 +1,1 @@
-import { Adapter } from 'ember-testing';
-
-export default Adapter;
+export { Adapter as default } from 'ember-testing';

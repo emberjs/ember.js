@@ -1,0 +1,39 @@
+{
+  "name": "ember-template-compiler",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./minimal": "./minimal.ts",
+    "./-internal": "./lib/system/-internal.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@ember/application": "workspace:*",
+    "@ember/array": "workspace:*",
+    "@ember/canary-features": "workspace:*",
+    "@ember/component": "workspace:*",
+    "@ember/controller": "workspace:*",
+    "@ember/debug": "workspace:*",
+    "@ember/destroyable": "workspace:*",
+    "@ember/engine": "workspace:*",
+    "@ember/enumerable": "workspace:*",
+    "@ember/instrumentation": "workspace:*",
+    "@ember/object": "workspace:*",
+    "@ember/routing": "workspace:*",
+    "@ember/runloop": "workspace:*",
+    "@ember/service": "workspace:*",
+    "@ember/template-compilation": "workspace:*",
+    "@ember/template-compiler": "workspace:*",
+    "@ember/utils": "workspace:*",
+    "@glimmer/compiler": "0.94.10",
+    "@glimmer/env": "^0.1.7",
+    "@glimmer/manager": "0.94.9",
+    "@glimmer/runtime": "0.94.10",
+    "@glimmer/syntax": "0.94.9",
+    "@glimmer/validator": "0.94.8",
+    "backburner.js": "^2.7.0",
+    "ember": "workspace:*",
+    "internal-test-helpers": "workspace:*"
+  }
+}

@@ -17,13 +17,12 @@ import { assert } from '@ember/debug';
 import Enumerable from '@ember/enumerable';
 import MutableEnumerable from '@ember/enumerable/mutable';
 import { compare, typeOf } from '@ember/utils';
-import { ENV } from '@ember/-internals/environment';
 import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
 
-export { default as makeArray } from './lib/make-array';
+export { default as makeArray } from './make';
 
 export type EmberArrayLike<T> = EmberArray<T> | NativeArray<T>;
 
@@ -1858,11 +1857,7 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
 
 /**
   Creates an `Ember.NativeArray` from an Array-like object.
-  Does not modify the original object's contents. `A()` is not needed if
-  `EmberENV.EXTEND_PROTOTYPES` is `true` (the default value). However,
-  it is recommended that you use `A()` when creating addons for
-  ember or when you can not guarantee that `EmberENV.EXTEND_PROTOTYPES`
-  will be `true`.
+  Does not modify the original object's contents.
 
   Example
 
@@ -2061,10 +2056,7 @@ interface MutableArrayWithoutNative<T>
 
 /**
   The NativeArray mixin contains the properties needed to make the native
-  Array support MutableArray and all of its dependent APIs. Unless you
-  have `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Array` set to
-  false, this will be applied automatically. Otherwise you can apply the mixin
-  at anytime by calling `Ember.NativeArray.apply(Array.prototype)`.
+  Array support MutableArray and all of its dependent APIs.
 
   @class Ember.NativeArray
   @uses MutableArray
@@ -2101,34 +2093,20 @@ NativeArray = NativeArray.without(...ignore);
 
 let A: <T>(arr?: Array<T>) => NativeArray<T>;
 
-if (ENV.EXTEND_PROTOTYPES.Array) {
-  NativeArray.apply(Array.prototype, true);
+A = function <T>(this: unknown, arr?: Array<T>) {
+  assert(
+    'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
+    !(this instanceof A)
+  );
 
-  A = function <T>(this: unknown, arr?: Array<T>) {
-    assert(
-      'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
-      !(this instanceof A)
-    );
-
-    // SAFTEY: Since we are extending prototypes all true native arrays are Ember NativeArrays
-    return (arr || []) as NativeArray<T>;
-  };
-} else {
-  A = function <T>(this: unknown, arr?: Array<T>) {
-    assert(
-      'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
-      !(this instanceof A)
-    );
-
-    if (isEmberArray(arr)) {
-      // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
-      return arr as unknown as NativeArray<T>;
-    } else {
-      // SAFETY: This will return an NativeArray but TS can't infer that.
-      return NativeArray.apply(arr ?? []) as NativeArray<T>;
-    }
-  };
-}
+  if (isEmberArray(arr)) {
+    // SAFETY: If it's a true native array and it is also an EmberArray then it should be an Ember NativeArray
+    return arr as unknown as NativeArray<T>;
+  } else {
+    // SAFETY: This will return an NativeArray but TS can't infer that.
+    return NativeArray.apply(arr ?? []) as NativeArray<T>;
+  }
+};
 
 export { A, NativeArray, MutableArray };
 

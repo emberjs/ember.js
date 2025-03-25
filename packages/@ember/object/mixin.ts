@@ -7,7 +7,6 @@ import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { guidFor, observerListenerMetaFor, ROOT, wrap } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet } from '@glimmer/util';
 import {
   type ComputedDecorator,
   type ComputedPropertyGetter,
@@ -450,7 +449,7 @@ export function mixin(obj: object, ...args: any[]) {
   return obj;
 }
 
-const MIXINS = new _WeakSet();
+const MIXINS = new WeakSet();
 
 /**
   The `Mixin` class allows you to create mixins, whose properties can be

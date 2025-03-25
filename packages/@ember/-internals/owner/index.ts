@@ -18,7 +18,7 @@ import { getOwner as glimmerGetOwner, setOwner as glimmerSetOwner } from '@glimm
  */
 export type FullName<
   Type extends string = string,
-  Name extends string = string
+  Name extends string = string,
 > = `${Type}:${Name}`;
 
 /**
@@ -71,7 +71,7 @@ export type FullName<
   @for @ember/owner
   @private
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DIRegistry {}
 
 // Convenience utility for pulling a specific factory manager off `DIRegistry`
@@ -538,7 +538,8 @@ export function isFactory(obj: unknown): obj is InternalFactory<object> {
 // we document it there for the sake of public API docs and for TS consumption,
 // while having the richer `InternalOwner` representation for Ember itself.
 export function getOwner(object: object): InternalOwner | undefined {
-  return glimmerGetOwner(object);
+  // SAFETY: this is a convention. From the glimmer perspective, the owner really can be any object.
+  return glimmerGetOwner(object) as InternalOwner;
 }
 
 /**

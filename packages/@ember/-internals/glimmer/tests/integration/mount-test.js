@@ -1,12 +1,13 @@
 import {
   moduleFor,
   ApplicationTestCase,
+  defineComponent,
   ModuleBasedTestResolver,
   RenderingTestCase,
   runTask,
 } from 'internal-test-helpers';
 
-import { DEBUG } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import { set } from '@ember/object';
 import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
@@ -14,6 +15,7 @@ import Engine, { getEngineParent } from '@ember/engine';
 
 import { backtrackingMessageFor } from '../utils/debug-stack';
 import { compile, Component } from '../utils/helpers';
+import { setComponentTemplate } from '@glimmer/manager';
 
 moduleFor(
   '{{mount}} single param assertion',
@@ -141,21 +143,33 @@ moduleFor(
         },
       });
 
-      this.engineRegistrations['template:components/component-with-backtracking-set'] = compile(
-        '[component {{person.name}}]',
-        {
-          moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
-        }
-      );
-      this.engineRegistrations['component:component-with-backtracking-set'] = Component.extend({
+      let ComponentWithBacktrackingSet = Component.extend({
         init() {
           this._super(...arguments);
           this.set('person.name', 'Ben');
         },
       });
 
+      setComponentTemplate(
+        compile('[component {{this.person.name}}]', {
+          moduleName: 'my-app/templates/components/component-with-backtracking-set.hbs',
+        }),
+        ComponentWithBacktrackingSet
+      );
+
+      this.engineRegistrations['component:component-with-backtracking-set'] =
+        ComponentWithBacktrackingSet;
+
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['application', 'route-with-mount', 'chat', 'this.person.name'],
+        includeTopLevel: 'outlet',
+        renderTree: [
+          '{{outlet}} for application',
+          'application',
+          '{{outlet}} for route-with-mount',
+          'route-with-mount',
+          'chat',
+          'this.person.name',
+        ],
       });
 
       await this.visit('/');
@@ -279,19 +293,17 @@ moduleFor(
             );
             this.register(
               'component:tagless-component',
-              Component.extend({
-                tagName: '',
-                init() {
-                  this._super(...arguments);
-                  component = this;
-                },
-              })
-            );
-            this.register(
-              'template:components/tagless-component',
-              compile('Tagless Component', {
-                moduleName: 'my-app/templates/components/tagless-component.hbs',
-              })
+              defineComponent(
+                {},
+                'Tagless Component',
+                Component.extend({
+                  tagName: '',
+                  init() {
+                    this._super(...arguments);
+                    component = this;
+                  },
+                })
+              )
             );
           },
         })

@@ -10,10 +10,11 @@
       "packages/ember-testing/lib",
       "node_modules/rsvp/lib",
       "packages/@ember",
-      "packages/@ember/-internals"
+      "packages/@ember/-internals",
+      "packages/@glimmer"
     ],
     "exclude": "vendor",
-    "outdir":   "docs",
+    "outdir": "docs",
     "preprocessor": "bin/feature-flag-yuidoc-filter"
   }
 }

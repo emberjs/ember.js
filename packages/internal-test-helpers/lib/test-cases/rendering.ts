@@ -1,18 +1,20 @@
+import type { Renderer } from '@ember/-internals/glimmer';
+import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
+import { EventDispatcher } from '@ember/-internals/views';
+import Component, { setComponentTemplate } from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
 import { compile } from 'ember-template-compiler';
-import { EventDispatcher } from '@ember/-internals/views';
-import type { Renderer } from '@ember/-internals/glimmer';
-import Component from '@ember/component';
-import { helper, Helper, _resetRenderers } from '@ember/-internals/glimmer';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 
-import AbstractTestCase from './abstract';
-import buildOwner from '../build-owner';
-import { runAppend, runDestroy, runTask } from '../run';
 import type { InternalFactory } from '@ember/-internals/owner';
-import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
+import templateOnly from '@ember/component/template-only';
 import type EngineInstance from '@ember/engine/instance';
+import type { BootOptions, EngineInstanceOptions } from '@ember/engine/instance';
+import buildOwner from '../build-owner';
+import { define } from '../module-for';
+import { runAppend, runDestroy, runTask } from '../run';
+import AbstractTestCase from './abstract';
 
 const TextNode = window.Text;
 
@@ -101,15 +103,31 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     }
   }
 
-  addComponent(name: string, { ComponentClass = null, template = null }) {
+  addComponent(
+    name: string,
+    { ComponentClass = null, template = null, resolveableTemplate = null }
+  ) {
     if (ComponentClass) {
-      this.resolver.add(`component:${name}`, ComponentClass);
+      let localClass = ComponentClass as typeof Component;
+
+      this.resolver.add(`component:${name}`, localClass);
+
+      if (typeof template === 'string') {
+        setComponentTemplate(this.compile(template), ComponentClass ? localClass : templateOnly());
+      }
+
+      return;
     }
 
     if (typeof template === 'string') {
+      let toComponent = setComponentTemplate(this.compile(template), templateOnly());
+      this.resolver.add(`component:${name}`, toComponent);
+    }
+
+    if (typeof resolveableTemplate === 'string') {
       this.resolver.add(
         `template:components/${name}`,
-        this.compile(template, {
+        this.compile(resolveableTemplate, {
           moduleName: `components/${name}`,
         })
       );
@@ -155,7 +173,15 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     runAppend(this.component);
   }
 
+  renderComponent(component: object, options: { expect: string }) {
+    this.registerComponent('root', { ComponentClass: component });
+    this.render('<Root />');
+    this.assertHTML(options.expect);
+    this.assertStableRerender();
+  }
+
   rerender() {
+    this.#assertNotAwaiting('rerender');
     this.component!.rerender();
   }
 
@@ -176,17 +202,78 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     this.owner.register(`helper:${name}`, definition);
   }
 
-  registerComponent(name: string, { ComponentClass = Component, template = null }) {
+  #awaiting = false;
+
+  #assertNotAwaiting(from: string) {
+    if (this.#awaiting) {
+      throw new Error(
+        `Cannot call '${from}' while awaiting a component module. Make sure to await 'this.renderComponentModule()'`
+      );
+    }
+  }
+
+  override assertHTML(html: string): void {
+    this.#assertNotAwaiting('assertHTML');
+    super.assertHTML(html);
+  }
+
+  async renderComponentModule<T extends object>(callback: () => T): Promise<void> {
+    let { owner } = this;
+
+    this.#awaiting = true;
+    let component = await define(callback);
+    this.#awaiting = false;
+
+    owner.register(`component:test-component`, component);
+
+    this.render(`<TestComponent />`, component);
+  }
+
+  async registerComponentModule<T extends object>(name: string, callback: () => T): Promise<T> {
+    let { owner } = this;
+    let component = await define(callback);
+
+    owner.register(`component:${name}`, component);
+
+    return component;
+  }
+
+  registerComponent(
+    name: string,
+    {
+      ComponentClass = Component,
+      template = null,
+      resolveableTemplate = null,
+    }: {
+      ComponentClass?: object | null;
+      template?: string | null;
+      resolveableTemplate?: string | null;
+    }
+  ) {
     let { owner } = this;
 
     if (ComponentClass) {
+      // We cannot set templates multiple times on a class
+      if (ComponentClass === Component) {
+        ComponentClass = class extends Component {};
+      }
+
       owner.register(`component:${name}`, ComponentClass);
+
+      if (typeof template === 'string') {
+        setComponentTemplate(this.compile(template), ComponentClass);
+      }
     }
 
     if (typeof template === 'string') {
+      let toComponent = setComponentTemplate(this.compile(template), templateOnly());
+      this.resolver.add(`component:${name}`, toComponent);
+    }
+
+    if (typeof resolveableTemplate === 'string') {
       owner.register(
         `template:components/${name}`,
-        this.compile(template, {
+        this.compile(resolveableTemplate, {
           moduleName: `my-app/templates/components/${name}.hbs`,
         })
       );

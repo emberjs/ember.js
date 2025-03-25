@@ -1,5 +1,6 @@
 module.exports = {
-  test_page: 'tests/index.html?hidepassed',
+  test_page: 'index.html',
+  cwd: 'dist',
   timeout: 540,
   parallel: 4,
   disable_watching: true,

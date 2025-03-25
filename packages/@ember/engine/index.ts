@@ -1,4 +1,4 @@
-export { getEngineParent, setEngineParent } from './lib/engine-parent';
+export { getEngineParent, setEngineParent } from './parent';
 
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
@@ -53,7 +53,7 @@ export interface Initializer<T> {
   @uses RegistryProxyMixin
   @public
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Engine extends RegistryProxyMixin {}
 class Engine extends Namespace.extend(RegistryProxyMixin) {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
@@ -428,7 +428,7 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
 
   _runInitializer<
     B extends 'initializers' | 'instanceInitializers',
-    T extends B extends 'initializers' ? Engine : EngineInstance
+    T extends B extends 'initializers' ? Engine : EngineInstance,
   >(bucketName: B, cb: (name: string, initializer: Initializer<T> | undefined) => void) {
     let initializersByName = get(this.constructor, bucketName) as Record<string, Initializer<T>>;
     let initializers = props(initializersByName);
@@ -470,7 +470,7 @@ function resolverFor(namespace: Engine) {
 /** @internal */
 export function buildInitializerMethod<
   B extends 'initializers' | 'instanceInitializers',
-  T extends B extends 'initializers' ? Engine : EngineInstance
+  T extends B extends 'initializers' ? Engine : EngineInstance,
 >(bucketName: B, humanName: string) {
   return function (this: typeof Engine, initializer: Initializer<T>) {
     // If this is the first initializer being added to a subclass, we are going to reopen the class

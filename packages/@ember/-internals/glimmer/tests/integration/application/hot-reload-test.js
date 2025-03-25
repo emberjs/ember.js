@@ -1,9 +1,15 @@
 import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { ENV } from '@ember/-internals/environment';
 import Service, { service } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
-import { expect } from '@glimmer/util';
+
+function expect(value) {
+  if (!value) {
+    throw new Error(`value missing`);
+  }
+
+  return value;
+}
 
 // This simuates what the template hot-reloading would do in development mode
 // to avoid regressions
@@ -13,11 +19,6 @@ moduleFor(
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
-      this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;
-      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
-
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
-      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
 
       let didCreateReloader = (reloader) => {
         this.reloader = reloader;
@@ -77,12 +78,6 @@ moduleFor(
           },
         })
       );
-    }
-
-    teardown() {
-      super.teardown();
-      ENV._APPLICATION_TEMPLATE_WRAPPER = this._APPLICATION_TEMPLATE_WRAPPER;
-      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
     }
 
     hotReload(name, template) {

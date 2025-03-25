@@ -7,27 +7,28 @@ import {
 } from '@ember/-internals/metal';
 import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
-import { BucketCache } from '@ember/routing/-internals';
+import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
-import { isEmpty, typeOf } from '@ember/utils';
+import { typeOf } from '@ember/utils';
 import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
-import { assert, deprecate, info, isTesting } from '@ember/debug';
+import { assert, info, isTesting } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { once } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { Template, TemplateFactory } from '@glimmer/interfaces';
+import { hasInternalComponentManager } from '@glimmer/manager';
+import type { RenderState } from '@ember/-internals/glimmer';
+import type { TemplateFactory } from '@glimmer/interfaces';
 import type { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import { PARAMS_SYMBOL, STATE_SYMBOL } from 'router_js';
-import type { QueryParam } from '@ember/routing/router';
-import EmberRouter from '@ember/routing/router';
-import { generateController } from '@ember/routing/-internals';
+import type { QueryParam, default as EmberRouter } from '@ember/routing/router';
+import { default as generateController } from './lib/generate_controller';
 import type { ExpandedControllerQueryParam, NamedRouteArgs } from './lib/utils';
 import {
   calculateCacheKey,
@@ -59,18 +60,8 @@ type RouteTransitionState = TransitionState<Route> & {
 type MaybeParameters<T> = T extends AnyFn ? Parameters<T> : unknown[];
 type MaybeReturnType<T> = T extends AnyFn ? ReturnType<T> : unknown;
 
-interface StoreLike {
-  find(type: string, value: unknown): unknown;
-}
-
-function isStoreLike(store: unknown): store is StoreLike {
-  return (
-    typeof store === 'object' && store !== null && typeof (store as StoreLike).find === 'function'
-  );
-}
-
-export const ROUTE_CONNECTIONS = new WeakMap();
 const RENDER = Symbol('render');
+const RENDER_STATE = Symbol('render-state');
 
 /**
 @module @ember/routing/route
@@ -290,14 +281,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     if (owner) {
       let router = owner.lookup('router:main');
       let bucketCache = owner.lookup(P`-bucket-cache:main`);
-
-      assert(
-        'ROUTER BUG: Expected route injections to be defined on the route. This is an internal bug, please open an issue on Github if you see this message!',
-        router instanceof EmberRouter && bucketCache instanceof BucketCache
-      );
-
-      this._router = router;
-      this._bucketCache = bucketCache;
+      this._router = router as EmberRouter;
+      this._bucketCache = bucketCache as BucketCache;
       this._topLevelViewTemplate = owner.lookup('template:-outlet');
       this._environment = owner.lookup('-environment:main');
     }
@@ -735,6 +720,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
 
     @property _optionsForQueryParam
   */
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   _optionsForQueryParam(qp: QueryParam): {} {
     const queryParams = get(this, 'queryParams');
     return (
@@ -807,7 +793,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @method enter
   */
   enter(transition: Transition) {
-    ROUTE_CONNECTIONS.set(this, []);
+    this[RENDER_STATE] = undefined;
     this.activate(transition);
     this.trigger('activate', transition);
   }
@@ -1193,7 +1179,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     params: Record<string, unknown>,
     transition: Transition
   ): Model | PromiseLike<Model> | undefined {
-    let name, sawParams, value;
+    let name, sawParams;
     // SAFETY: Since `_qp` is protected we can't infer the type
     let queryParams = (get(this, '_qp') as Route<Model>['_qp']).map;
 
@@ -1205,7 +1191,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       let match = prop.match(/^(.*)_id$/);
       if (match !== null) {
         name = match[1];
-        value = params[prop];
       }
       sawParams = true;
     }
@@ -1226,7 +1211,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
       }
     }
 
-    return this.findModel(name, value);
+    return undefined;
   }
 
   /**
@@ -1240,34 +1225,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
    */
   deserialize(_params: Record<string, unknown>, transition: Transition) {
     return this.model(this._paramsFor(this.routeName, _params), transition);
-  }
-
-  /**
-
-    @method findModel
-    @param {String} type the model type
-    @param {Object} value the value passed to find
-    @private
-  */
-  findModel(type: string, value: unknown) {
-    deprecate(
-      `The implicit model loading behavior for routes is deprecated. ` +
-        `Please define an explicit model hook for ${this.fullRouteName}.`,
-      false,
-      {
-        id: 'deprecate-implicit-route-model',
-        for: 'ember-source',
-        since: { available: '5.3.0', enabled: '5.3.0' },
-        until: '6.0.0',
-        url: 'https://deprecations.emberjs.com/v5.x/#toc_deprecate-implicit-route-model',
-      }
-    );
-
-    const store = 'store' in this ? this.store : get(this, '_store');
-    assert('Expected route to have a store with a find method', isStoreLike(store));
-
-    // SAFETY: We don't actually know it will return this, but this code path is also deprecated.
-    return store.find(type, value) as Model | PromiseLike<Model> | undefined;
   }
 
   /**
@@ -1503,26 +1460,15 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     return route?.currentModel;
   }
 
-  /**
-    `this[RENDER]` is used to render a template into a region of another template
-    (indicated by an `{{outlet}}`).
+  [RENDER_STATE]: RenderState | undefined = undefined;
 
+  /**
+    `this[RENDER]` is used to set up the rendering option for the outlet state.
     @method this[RENDER]
-    @param {String} name the name of the template to render
-    @param {Object} [options] the options
-    @param {String} [options.into] the template to render into,
-                    referenced by name. Defaults to the parent template
-    @param {String} [options.outlet] the outlet inside `options.into` to render into.
-                    Defaults to 'main'
-    @param {String|Object} [options.controller] the controller to use for this template,
-                    referenced by name or as a controller instance. Defaults to the Route's paired controller
-    @param {Object} [options.model] the model object to set on `options.controller`.
-                    Defaults to the return value of the Route's model hook
     @private
    */
-  [RENDER](name?: string, options?: PartialRenderOptions) {
-    let renderOptions = buildRenderOptions(this, name, options);
-    ROUTE_CONNECTIONS.get(this).push(renderOptions);
+  [RENDER]() {
+    this[RENDER_STATE] = buildRenderState(this);
     once(this._router, '_setOutlets');
   }
 
@@ -1536,9 +1482,8 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     @method teardownViews
   */
   teardownViews() {
-    let connections = ROUTE_CONNECTIONS.get(this);
-    if (connections !== undefined && connections.length > 0) {
-      ROUTE_CONNECTIONS.set(this, []);
+    if (this[RENDER_STATE]) {
+      this[RENDER_STATE] = undefined;
       once(this._router, '_setOutlets');
     }
   }
@@ -1841,149 +1786,96 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   >;
 }
 
-function parentRoute(route: Route) {
-  let routeInfo = routeInfoFor(route, route._router._routerMicrolib.state!.routeInfos, -1);
-  return routeInfo && routeInfo.route;
+export function getRenderState(route: Route): RenderState | undefined {
+  return route[RENDER_STATE];
 }
 
-function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offset = 0) {
-  if (!routeInfos) {
-    return;
-  }
-
-  let current: Route | undefined;
-  for (let i = 0; i < routeInfos.length; i++) {
-    let routeInfo = routeInfos[i];
-    assert('has current routeInfo', routeInfo);
-    current = routeInfo.route;
-    if (current === route) {
-      return routeInfos[i + offset];
-    }
-  }
-
-  return;
-}
-
-function buildRenderOptions(
-  route: Route,
-  nameOrOptions?: string | PartialRenderOptions,
-  options?: PartialRenderOptions
-): RenderOptions {
-  let isDefaultRender = !nameOrOptions && !options;
-  let _name: string;
-  if (!isDefaultRender) {
-    if (typeof nameOrOptions === 'object' && !options) {
-      _name = route.templateName || route.routeName;
-      options = nameOrOptions;
-    } else {
-      assert(
-        'The name in the given arguments is undefined or empty string',
-        !isEmpty(nameOrOptions)
-      );
-      // SAFETY: the check for `nameOrOptions` above should be validating this,
-      // and as of TS 5.1.0-dev.2023-0417 it is *not*. This cast can go away if
-      // TS validates it correctly *or* if we refactor this entire function to
-      // be less wildly dynamic in its argument handling.
-      _name = nameOrOptions as string;
-    }
-  }
-  assert(
-    'You passed undefined as the outlet name.',
-    isDefaultRender || !(options && 'outlet' in options && options.outlet === undefined)
-  );
-
+function buildRenderState(route: Route): RenderState {
   let owner = getOwner(route);
   assert('Route is unexpectedly missing an owner', owner);
-  let name, templateName, into, outlet, model;
-  let controller;
 
-  if (options) {
-    into = options.into && options.into.replace(/\//g, '.');
-    outlet = options.outlet;
-    controller = options.controller;
-    model = options.model;
-  }
-  outlet = outlet || 'main';
+  let name = route.routeName;
 
-  if (isDefaultRender) {
-    name = route.routeName;
-    templateName = route.templateName || name;
-  } else {
-    name = _name!.replace(/\//g, '.');
-    templateName = name;
-  }
-
-  if (controller === undefined) {
-    if (isDefaultRender) {
-      controller = route.controllerName || owner.lookup(`controller:${name}`);
-    } else {
-      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
-    }
-  }
-
-  if (typeof controller === 'string') {
-    let controllerName = controller;
-    controller = owner.lookup(`controller:${controllerName}`);
-    assert(
-      `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
-      isDefaultRender || controller !== undefined
-    );
-  }
-
+  let controller = owner.lookup(`controller:${route.controllerName || name}`);
   assert('Expected an instance of controller', controller instanceof Controller);
 
-  if (model === undefined) {
-    model = route.currentModel;
+  let model = route.currentModel;
+
+  let templateFactoryOrComponent = owner.lookup(`template:${route.templateName || name}`) as
+    | TemplateFactory
+    | object // This is meant to be a component
+    | undefined;
+
+  // Now we support either a component or a template to be returned by this
+  // resolver call, but if it's a `TemplateFactory`, we need to instantiate
+  // it into a `Template`, since that's what `RenderState` wants. We can't
+  // easily change it, it's intimate API used by @ember/test-helpers and the
+  // like. We could compatibly allow `Template` | `TemplateFactory`, and that's
+  // what it used to do but we _just_ went through deprecations to get that
+  // removed. It's also not ideal since once you mix the two types, they are
+  // not exactly easy to tell apart.
+  //
+  // It may also be tempting to just normalize `Template` into `RouteTemplate`
+  // here, and we could. However, this is not the only entrypoint where this
+  // `RenderState` is made – @ember/test-helpers punches through an impressive
+  // amount of private API to set it directly, and this feature would also be
+  // useful for them. So, even if we had normalized here, we'd still have to
+  // check and do that again during render anyway.
+  let template: object;
+
+  if (templateFactoryOrComponent) {
+    if (hasInternalComponentManager(templateFactoryOrComponent)) {
+      template = templateFactoryOrComponent;
+    } else {
+      if (DEBUG && typeof templateFactoryOrComponent !== 'function') {
+        let label: string;
+
+        try {
+          label = `\`${String(templateFactoryOrComponent)}\``;
+        } catch {
+          label = 'an unknown object';
+        }
+
+        assert(
+          `Failed to render the ${name} route, expected ` +
+            `\`template:${route.templateName || name}\` to resolve into ` +
+            `a component or a \`TemplateFactory\`, got: ${label}. ` +
+            `Most likely an improperly defined class or an invalid module export.`
+        );
+      }
+
+      template = (templateFactoryOrComponent as TemplateFactory)(owner);
+    }
   } else {
-    controller.set('model', model);
+    // default `{{outlet}}`
+    template = route._topLevelViewTemplate(owner);
   }
 
-  let template = owner.lookup(`template:${templateName}`) as TemplateFactory;
-  assert(
-    `Could not find "${templateName}" template, view, or component.`,
-    isDefaultRender || template !== undefined
-  );
-
-  let parent: any;
-  if (into && (parent = parentRoute(route)) && into === parent.routeName) {
-    into = undefined;
-  }
-
-  let renderOptions: RenderOptions = {
+  let render: RenderState = {
     owner,
-    into,
-    outlet,
     name,
     controller,
     model,
-    template: template !== undefined ? template(owner) : route._topLevelViewTemplate(owner),
+    template,
   };
 
   if (DEBUG) {
     let LOG_VIEW_LOOKUPS = get(route._router, 'namespace.LOG_VIEW_LOOKUPS');
-    if (LOG_VIEW_LOOKUPS && !template) {
+    // This is covered by tests and the existing code was deliberately
+    // targeting the value prior to normalization, but is this message actually
+    // accurate? It seems like we will always default the `{{outlet}}` template
+    // so I'm not sure about "Nothing will be rendered?" (who consumes these
+    // logs anyway? as lookups happen more infrequently now I doubt this is all
+    // that useful)
+    if (LOG_VIEW_LOOKUPS && !templateFactoryOrComponent) {
       info(`Could not find "${name}" template. Nothing will be rendered`, {
         fullName: `template:${name}`,
       });
     }
   }
 
-  return renderOptions;
+  return render;
 }
-
-export interface RenderOptions {
-  owner: Owner;
-  into?: string;
-  outlet: string;
-  name: string;
-  controller: Controller | string | undefined;
-  model: unknown;
-  template: Template;
-}
-
-type PartialRenderOptions = Partial<
-  Pick<RenderOptions, 'into' | 'outlet' | 'controller' | 'model'>
->;
 
 export function getFullQueryParams(router: EmberRouter, state: RouteTransitionState) {
   if (state.fullQueryParams) {
@@ -2206,6 +2098,7 @@ Route.reopen({
     @returns {boolean}
     @private
    */
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     queryParamsDidChange<T>(this: Route<T>, changed: {}, _totalPresent: unknown, removed: {}) {
       // SAFETY: Since `_qp` is protected we can't infer the type
       let qpMap = (get(this, '_qp') as Route<T>['_qp']).map;
@@ -2229,6 +2122,7 @@ Route.reopen({
     finalizeQueryParamChange<T>(
       this: Route<T>,
       params: Record<string, string | null | undefined>,
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       finalParams: {}[],
       transition: Transition
     ) {

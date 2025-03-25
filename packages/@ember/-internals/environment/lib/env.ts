@@ -20,22 +20,17 @@ export const ENV = {
     native object prototypes, a few extra methods in order to provide a more
     friendly API.
 
-    We generally recommend leaving this option set to true however, if you need
-    to turn it off, you can add the configuration property
-    `EXTEND_PROTOTYPES` to `EmberENV` and set it to `false`.
-
-    Note, when disabled (the default configuration for Ember Addons), you will
-    instead have to access all methods and functions from the Ember
-    namespace.
+    The behavior from setting this option to `true` was deprecated in Ember 5.10.
 
     @property EXTEND_PROTOTYPES
     @type Boolean
     @default true
     @for EmberENV
-    @public
+    @private
+    @deprecated in v5.10
   */
   EXTEND_PROTOTYPES: {
-    Array: true,
+    Array: false,
   },
 
   /**
@@ -65,36 +60,6 @@ export const ENV = {
   RAISE_ON_DEPRECATION: false,
 
   STRUCTURED_PROFILE: false,
-
-  /**
-    Whether to insert a `<div class="ember-view" />` wrapper around the
-    application template. See RFC #280.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _APPLICATION_TEMPLATE_WRAPPER
-    @for EmberENV
-    @type Boolean
-    @default true
-    @private
-  */
-  _APPLICATION_TEMPLATE_WRAPPER: true,
-
-  /**
-    Whether to use Glimmer Component semantics (as opposed to the classic "Curly"
-    components semantics) for template-only components. See RFC #278.
-
-    This is not intended to be set directly, as the implementation may change in
-    the future. Use `@ember/optional-features` instead.
-
-    @property _TEMPLATE_ONLY_GLIMMER_COMPONENTS
-    @for EmberENV
-    @type Boolean
-    @default false
-    @private
-  */
-  _TEMPLATE_ONLY_GLIMMER_COMPONENTS: false,
 
   /**
     Whether to perform extra bookkeeping needed to make the `captureRenderTree`
@@ -127,6 +92,31 @@ export const ENV = {
     @private
   */
   _DEBUG_RENDER_TREE: DEBUG,
+
+  /**
+   Whether to force all deprecations to be enabled. This is used internally by
+   Ember to enable deprecations in tests. It is not intended to be set in
+   projects.
+
+   @property _ALL_DEPRECATIONS_ENABLED
+   @for EmberENV
+   @type Boolean
+   @default false
+   @private
+   */
+  _ALL_DEPRECATIONS_ENABLED: false,
+
+  /**
+   Override the version of ember-source used to determine when deprecations "break".
+   This is used internally by Ember to test with deprecated features "removed".
+   This is never intended to be set by projects.
+   @property _OVERRIDE_DEPRECATION_VERSION
+   @for EmberENV
+   @type string | null
+   @default null
+   @private
+   */
+  _OVERRIDE_DEPRECATION_VERSION: null,
 
   /**
     Whether the app defaults to using async observers.
@@ -185,9 +175,14 @@ export const ENV = {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] !== false;
     } else if (defaultValue === false) {
       (ENV as Record<string, unknown>)[flag] = EmberENV[flag] === true;
+    } else {
+      (ENV as Record<string, unknown>)[flag] = EmberENV[flag];
     }
   }
 
+  // TODO: Remove in Ember 6.5. This setting code for EXTEND_PROTOTYPES
+  // should stay for at least an LTS cycle so that users get the explicit
+  // deprecation exception when it breaks in >= 6.0.0.
   let { EXTEND_PROTOTYPES } = EmberENV;
   if (EXTEND_PROTOTYPES !== undefined) {
     if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {

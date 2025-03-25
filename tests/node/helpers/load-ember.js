@@ -1,6 +1,6 @@
 const path = require('path');
 const distPath = path.join(__dirname, '../../../dist');
-const emberPath = path.join(distPath, 'tests/ember');
+const emberPath = path.join(distPath, 'ember.debug.js');
 const templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 // We store the global symbols beforehand so that we can reset the state

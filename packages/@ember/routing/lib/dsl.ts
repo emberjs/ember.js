@@ -1,6 +1,6 @@
 import type { InternalFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
-import type { Option } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import type { MatchCallback } from 'route-recognizer';
 import type { EngineInfo, EngineRouteInfo } from './engines';
 
@@ -9,6 +9,7 @@ let uuid = 0;
 export interface RouteOptions {
   path?: string;
   resetNamespace?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined };
   overrideNameAssertion?: boolean;
 }
@@ -49,6 +50,7 @@ export interface DSLImplOptions {
 
 export default class DSLImpl implements DSL {
   parent: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
   matches: Array<Object | undefined>;
   enableLoadingSubstates: boolean;
   explicitIndex = false;
@@ -67,7 +69,7 @@ export default class DSLImpl implements DSL {
   route(name: string, options: RouteOptions, callback: DSLCallback): void;
   route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback): void {
     let options: RouteOptions;
-    let callback: Option<DSLCallback> = null;
+    let callback: Nullable<DSLCallback> = null;
 
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (isCallback(_options)) {
@@ -128,6 +130,7 @@ export default class DSLImpl implements DSL {
     url: string,
     name: string,
     callback?: MatchCallback,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     serialize?: (model: {}, params: string[]) => { [key: string]: unknown | undefined }
   ): void {
     let parts = name.split('.');

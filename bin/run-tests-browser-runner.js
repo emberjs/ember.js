@@ -65,7 +65,17 @@ module.exports = class BrowserRunner {
   }
 
   async newBrowser() {
-    let browser = await puppeteer.launch({ dumpio: true });
+    let browser = await puppeteer.launch({
+      dumpio: true,
+      headless: 'new',
+      userDataDir: '/tmp/new-profile',
+      args: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-software-rasterizer',
+        '--mute-audio',
+      ],
+    });
     return browser;
   }
 

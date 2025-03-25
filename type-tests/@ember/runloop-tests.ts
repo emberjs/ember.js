@@ -16,7 +16,7 @@ import {
   _backburner,
 } from '@ember/runloop';
 import EmberObject, { action } from '@ember/object';
-import { AnyFn, MethodsOf } from '@ember/-internals/utility-types';
+import type { AnyFn, MethodsOf } from '@ember/-internals/utility-types';
 import { expectTypeOf } from 'expect-type';
 
 function testRun() {

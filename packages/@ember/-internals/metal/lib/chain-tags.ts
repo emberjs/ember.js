@@ -2,7 +2,6 @@ import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isObject } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { _WeakSet } from '@glimmer/util';
 import type { Tag, TagMeta } from '@glimmer/validator';
 import {
   combine,
@@ -11,10 +10,10 @@ import {
   updateTag,
   validateTag,
 } from '@glimmer/validator';
-import { objectAt } from './array';
+import { objectAt } from './object-at';
 import { tagForProperty } from './tags';
 
-export const CHAIN_PASS_THROUGH = new _WeakSet();
+export const CHAIN_PASS_THROUGH = new WeakSet();
 
 export function finishLazyChains(meta: Meta, key: string, value: any) {
   let lazyTags = meta.readableLazyChainsFor(key);
@@ -72,7 +71,6 @@ function getChainTags(
   // prevent closures
   let segment: string, descriptor: any;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     let lastSegmentEnd = segmentEnd + 1;
     segmentEnd = path.indexOf('.', lastSegmentEnd);
@@ -128,6 +126,7 @@ function getChainTags(
 
           // If the key is an alias, we need to bootstrap it
           if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             item[segment];
           }
         }
@@ -152,6 +151,7 @@ function getChainTags(
       // bootstrap the alias. This is because aliases, unlike other CPs, should
       // always be in sync with the aliased value.
       if (CHAIN_PASS_THROUGH.has(descriptor)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         current[segment];
       }
       break;

@@ -1,6 +1,6 @@
 import { set } from '@ember/object';
 import { DEBUG } from '@glimmer/env';
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
 
 moduleFor(
@@ -20,6 +20,14 @@ moduleFor(
           },
         }),
       });
+    }
+
+    '@test fn can be shadowed'() {
+      let First = defineComponent(
+        { fn: boundFn, boundFn, id, invoke },
+        `[{{invoke (fn id 1)}}]{{#let boundFn as |fn|}}[{{invoke (fn id 2)}}{{/let}}]`
+      );
+      this.renderComponent(First, { expect: `[bound:1][bound:2]` });
     }
 
     '@test updates when arguments change'() {
@@ -135,9 +143,12 @@ moduleFor(
     }
 
     '@test can use `this` if bound prior to passing to fn'(assert) {
-      this.render(`{{stash stashedFn=(fn (action this.myFunc) this.arg1)}}`, {
+      this.render(`{{stash stashedFn=(fn this.myFunc2 this.arg1)}}`, {
         myFunc(arg1) {
           return `arg1: ${arg1}, arg2: ${this.arg2}`;
+        },
+        get myFunc2() {
+          return this.myFunc.bind(this);
         },
 
         arg1: 'foo',
@@ -206,3 +217,13 @@ moduleFor(
     }
   }
 );
+
+function invoke(fn) {
+  return fn();
+}
+
+function boundFn(fn, ...args) {
+  return () => fn(...args.map((arg) => `bound:${arg}`));
+}
+
+let id = (arg) => arg;

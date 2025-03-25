@@ -1,14 +1,12 @@
 import { privatize as P } from '@ember/-internals/container';
-import type {
-  BootEnvironment,
-  OutletState as GlimmerOutletState,
-  OutletView,
-} from '@ember/-internals/glimmer';
+import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
-import { BucketCache, DSL, RouterState } from '@ember/routing/-internals';
-import type { DSLCallback, EngineRouteInfo } from '@ember/routing/-internals';
+import { default as BucketCache } from './lib/cache';
+import { default as DSL, type DSLCallback } from './lib/dsl';
+import RouterState from './lib/router_state';
+import type { EngineRouteInfo } from './lib/engines';
 import {
   calculateCacheKey,
   extractRouteArgs,
@@ -28,13 +26,13 @@ import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import type { QueryParamMeta, RenderOptions } from '@ember/routing/route';
-import type Route from '@ember/routing/route';
 import {
+  type QueryParamMeta,
+  type default as Route,
   defaultSerialize,
   getFullQueryParams,
+  getRenderState,
   hasDefaultSerialize,
-  ROUTE_CONNECTIONS,
 } from '@ember/routing/route';
 import type {
   InternalRouteInfo,
@@ -105,27 +103,13 @@ if (DEBUG) {
   };
 }
 
-interface RenderOutletState {
-  name: string;
-  outlet: string;
-}
-
-interface NestedOutletState {
-  [key: string]: OutletState;
-}
-
-interface OutletState<T extends RenderOutletState = RenderOutletState> {
-  render: T;
-  outlets: NestedOutletState;
-  wasUsed?: boolean;
-}
-
 export interface QueryParam {
   prop: string;
   urlKey: string;
   type: string;
   route: Route;
   parts?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   values: {} | null;
   scopedPropertyName: string;
   scope: string;
@@ -616,26 +600,36 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       return;
     }
 
-    let defaultParentState: OutletState | undefined;
-    let liveRoutes = null;
+    let root: OutletState | null = null;
+    let parent: OutletState | null = null;
 
     for (let routeInfo of routeInfos) {
       let route = routeInfo.route!;
-      let connections = ROUTE_CONNECTIONS.get(route);
-      let ownState: OutletState;
-      if (connections.length === 0) {
-        ownState = representEmptyRoute(liveRoutes, defaultParentState, route);
-      } else {
-        for (let j = 0; j < connections.length; j++) {
-          let appended = appendLiveRoute(liveRoutes, defaultParentState, connections[j]);
-          liveRoutes = appended.liveRoutes;
-          let { name, outlet } = appended.ownState.render;
-          if (name === route.routeName || outlet === 'main') {
-            ownState = appended.ownState;
-          }
+      let render = getRenderState(route);
+
+      if (render) {
+        let state: OutletState = {
+          render,
+          outlets: {
+            main: undefined,
+          },
+        };
+
+        if (parent) {
+          parent.outlets.main = state;
+        } else {
+          root = state;
         }
+
+        parent = state;
+      } else {
+        // It used to be that we would create a stub entry and keep traversing,
+        // but I don't think that is necessary anymore – if a parent route did
+        // not render, then the child routes have nowhere to render into these
+        // days. That wasn't always the case since in the past any route can
+        // render into any other route's outlets.
+        break;
       }
-      defaultParentState = ownState!;
     }
 
     // when a transitionTo happens after the validation phase
@@ -643,7 +637,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     // when no routes are active. However, it will get called
     // again with the correct values during the next turn of
     // the runloop
-    if (!liveRoutes) {
+    if (root === null) {
       return;
     }
 
@@ -668,7 +662,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       assert('[BUG] unexpectedly missing `template:-outlet`', template !== undefined);
 
       this._toplevelView = OutletView.create({ environment, template, application });
-      this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
+      this._toplevelView.setOutletState(root);
 
       // TODO(SAFETY): At least one test runs without this set correctly. At a
       // later time, update the test to configure this correctly. The test ID:
@@ -684,7 +678,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
         instance.didCreateRootView(this._toplevelView as any);
       }
     } else {
-      this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
+      this._toplevelView.setOutletState(root);
     }
   }
 
@@ -1075,6 +1069,7 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     targetRouteName: string,
     models: ModelFor<Route>[],
     queryParams: Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     _queryParams: {}
   ) {
     // merge in any queryParams from the active transition which could include
@@ -1813,80 +1808,6 @@ function forEachQueryParam(
     let qp = qpCache.map[key];
 
     callback(key, value, qp);
-  }
-}
-
-function findLiveRoute(liveRoutes: OutletState | null, name: string) {
-  if (!liveRoutes) {
-    return;
-  }
-  let stack = [liveRoutes];
-  while (stack.length > 0) {
-    let test = stack.shift()!;
-    if (test.render.name === name) {
-      return test;
-    }
-    let outlets = test.outlets;
-    for (let outletName in outlets) {
-      stack.push(outlets[outletName]!);
-    }
-  }
-
-  return;
-}
-
-function appendLiveRoute(
-  liveRoutes: OutletState | null,
-  defaultParentState: OutletState | undefined,
-  renderOptions: RenderOptions
-) {
-  let ownState: OutletState = {
-    render: renderOptions,
-    outlets: Object.create(null),
-    wasUsed: false,
-  };
-  let target: OutletState | undefined;
-  if (renderOptions.into) {
-    target = findLiveRoute(liveRoutes, renderOptions.into);
-  } else {
-    target = defaultParentState;
-  }
-  if (target) {
-    set(target.outlets, renderOptions.outlet, ownState);
-  } else {
-    liveRoutes = ownState;
-  }
-
-  return {
-    liveRoutes,
-    ownState,
-  };
-}
-
-function representEmptyRoute(
-  liveRoutes: OutletState | null,
-  defaultParentState: OutletState | undefined,
-  { routeName }: Route
-): OutletState {
-  // the route didn't render anything
-  let alreadyAppended = findLiveRoute(liveRoutes, routeName);
-  if (alreadyAppended) {
-    // But some other route has already rendered our default
-    // template, so that becomes the default target for any
-    // children we may have.
-    return alreadyAppended;
-  } else {
-    // Create an entry to represent our default template name,
-    // just so other routes can target it and inherit its place
-    // in the outlet hierarchy.
-    defaultParentState!.outlets['main'] = {
-      render: {
-        name: routeName,
-        outlet: 'main',
-      },
-      outlets: {},
-    };
-    return defaultParentState!;
   }
 }
 

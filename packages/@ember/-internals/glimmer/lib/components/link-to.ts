@@ -2,19 +2,21 @@ import type Route from '@ember/routing/route';
 import type { RouterState, RoutingService } from '@ember/routing/-internals';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, debugFreeze, inspect, warn } from '@ember/debug';
-import { getEngineParent } from '@ember/engine';
-import EngineInstance from '@ember/engine/instance';
+import { getEngineParent } from '@ember/engine/parent';
+import type EngineInstance from '@ember/engine/instance';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { action } from '@ember/object';
 import { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import type { Maybe, Option } from '@glimmer/interfaces';
+import type { Maybe } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type { Transition } from 'router_js';
 import LinkToTemplate from '../templates/link-to';
 import InternalComponent, { type OpaqueInternalComponentConstructor, opaquify } from './internal';
 import { type Opaque } from '@ember/-internals/utility-types';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 const EMPTY_ARRAY: {}[] = [];
 const EMPTY_QUERY_PARAMS = {};
 
@@ -31,7 +33,8 @@ function isPresent<T>(value: Maybe<T>): value is T {
 
 interface QueryParams {
   isQueryParams: true;
-  values: Option<{}>;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  values: Nullable<{}>;
 }
 
 function isQueryParams(value: unknown): value is QueryParams {
@@ -278,7 +281,7 @@ class _LinkTo extends InternalComponent {
     return 'LinkTo';
   }
 
-  @service('-routing') private declare routing: RoutingService<Route>;
+  @service('-routing') declare private routing: RoutingService<Route>;
 
   validateArguments(): void {
     assert(
@@ -433,6 +436,7 @@ class _LinkTo extends InternalComponent {
   }
 
   // TODO: not sure why generateURL takes {}[] instead of unknown[]
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   private get models(): {}[] {
     if ('models' in this.args.named) {
       let models = this.named('models');
@@ -444,6 +448,7 @@ class _LinkTo extends InternalComponent {
 
       return models;
     } else if ('model' in this.args.named) {
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       return [this.named('model') as {}];
     } else {
       return EMPTY_ARRAY;
@@ -473,7 +478,7 @@ class _LinkTo extends InternalComponent {
     return this.isActiveForState(this.routing.currentState as Maybe<RouterState>);
   }
 
-  private get willBeActive(): Option<boolean> {
+  private get willBeActive(): Nullable<boolean> {
     let current = this.routing.currentState;
     let target = this.routing.targetState;
 
@@ -493,13 +498,13 @@ class _LinkTo extends InternalComponent {
   }
 
   private get isEngine(): boolean {
-    let owner = this.owner;
-    return owner instanceof EngineInstance && getEngineParent(owner) !== undefined;
+    let owner = this.owner as EngineInstance;
+    return getEngineParent(owner) !== undefined;
   }
 
   private get engineMountPoint(): string | undefined {
-    let owner = this.owner;
-    return owner instanceof EngineInstance ? owner.mountPoint : undefined;
+    let owner = this.owner as EngineInstance;
+    return owner.mountPoint;
   }
 
   private classFor(state: 'active' | 'loading' | 'disabled'): string {
@@ -585,7 +590,7 @@ class _LinkTo extends InternalComponent {
 
 let { prototype } = _LinkTo;
 
-let descriptorFor = (target: object, property: string): Option<PropertyDescriptor> => {
+let descriptorFor = (target: object, property: string): Nullable<PropertyDescriptor> => {
   if (target) {
     return (
       Object.getOwnPropertyDescriptor(target, property) ||
@@ -622,11 +627,13 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
     superModelsDescriptor && typeof superModelsDescriptor.get === 'function'
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   let superModelsGetter = superModelsDescriptor.get as (this: _LinkTo) => {}[];
 
   Object.defineProperty(prototype, 'models', {
     configurable: true,
     enumerable: false,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     get: function models(this: _LinkTo): {}[] {
       let models = superModelsGetter.call(this);
 
@@ -647,11 +654,13 @@ let descriptorFor = (target: object, property: string): Option<PropertyDescripto
     superQueryDescriptor && typeof superQueryDescriptor.get === 'function'
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   let superQueryGetter = superQueryDescriptor.get as (this: _LinkTo) => {};
 
   Object.defineProperty(prototype, 'query', {
     configurable: true,
     enumerable: false,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     get: function query(this: _LinkTo): {} {
       if ('query' in this.args.named) {
         let qp = superQueryGetter.call(this);

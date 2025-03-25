@@ -1,5 +1,5 @@
 import { precompile } from '@glimmer/compiler';
-import type { Option } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import type { AST, ASTPlugin } from '@glimmer/syntax';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { compileOptions } from '../../index';
@@ -10,16 +10,16 @@ export default abstract class extends AbstractTestCase {
   }
 }
 
-function ast(template: string): AST.Program {
-  let program: Option<AST.Program> = null;
+function ast(template: string): AST.Template {
+  let program: Nullable<AST.Template> = null;
 
   function extractProgram(): ASTPlugin {
     return {
       name: 'extract-program',
 
       visitor: {
-        Program: {
-          exit(node: AST.Program): void {
+        Template: {
+          exit(node: AST.Template): void {
             program = clone(node);
           },
         },

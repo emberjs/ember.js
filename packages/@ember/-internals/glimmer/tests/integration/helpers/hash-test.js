@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, defineComponent, moduleFor, runTask } from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
 
@@ -15,6 +15,21 @@ moduleFor(
       runTask(() => this.rerender());
 
       this.assertText('Sergio');
+    }
+
+    ['@test can be shadowed']() {
+      let hash = (obj) =>
+        Object.entries(obj)
+          .map(([key, value]) => `hash:${key}=${value}`)
+          .join(',');
+      let Root = defineComponent(
+        { hash, shadowHash: hash },
+        `({{hash apple='red' banana='yellow'}}) ({{#let shadowHash as |hash|}}{{hash apple='green'}}{{/let}})`
+      );
+
+      this.renderComponent(Root, {
+        expect: '(hash:apple=red,hash:banana=yellow) (hash:apple=green)',
+      });
     }
 
     ['@test can have more than one key-value']() {
@@ -213,93 +228,6 @@ moduleFor(
       runTask(() => {
         set(this.context, 'firstName', 'Godfrey');
         set(this.context, 'lastName', 'Chan');
-      });
-
-      this.assertText('Godfrey Chan');
-    }
-
-    ['@test works with computeds on non-defined properties']() {
-      let instance;
-
-      let FooBarComponent = Component.extend({
-        init() {
-          this._super(...arguments);
-
-          expectDeprecation(() => {
-            set(this.hash, 'lastName', 'Hietala');
-          }, /You set the '.*' property on a {{hash}} object/);
-
-          instance = this;
-        },
-
-        fullName: computed('hash.firstName', 'hash.lastName', function () {
-          return `${this.hash.firstName} ${this.hash.lastName}`;
-        }),
-      });
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{this.fullName}}`,
-      });
-
-      this.render(`{{foo-bar hash=(hash firstName=this.firstName)}}`, {
-        firstName: 'Chad',
-        lastName: 'Hietala',
-      });
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => {
-        set(this.context, 'firstName', 'Godfrey');
-      });
-
-      // needs to be separate task because of the way classic components update args
-      runTask(() => {
-        expectDeprecation(() => {
-          set(instance.hash, 'lastName', 'Chan');
-        }, /You set the '.*' property on a {{hash}} object/);
-      });
-
-      this.assertText('Godfrey Chan');
-    }
-
-    ['@test works when properties are set dynamically']() {
-      let fooBarInstance;
-      let FooBarComponent = Component.extend({
-        init() {
-          this._super();
-          fooBarInstance = this;
-        },
-      });
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: FooBarComponent,
-        template: `{{this.hash.firstName}} {{this.hash.lastName}}`,
-      });
-
-      this.render(`{{foo-bar hash=(hash firstName=this.firstName)}}`, {
-        firstName: 'Chad',
-      });
-
-      this.assertText('Chad ');
-
-      runTask(() => {
-        expectDeprecation(() => {
-          set(fooBarInstance.hash, 'lastName', 'Hietala');
-        }, /You set the '.*' property on a {{hash}} object/);
-      });
-
-      this.assertText('Chad Hietala');
-
-      runTask(() => {
-        expectDeprecation(() => {
-          set(fooBarInstance.hash, 'firstName', 'Godfrey');
-          set(fooBarInstance.hash, 'lastName', 'Chan');
-        }, /You set the '.*' property on a {{hash}} object/);
       });
 
       this.assertText('Godfrey Chan');

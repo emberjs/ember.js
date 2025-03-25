@@ -1,0 +1,12 @@
+{
+  "name": "@ember/test",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./adapter": "./adapter.ts"
+  },
+  "dependencies": {
+    "ember-testing": "workspace:*"
+  }
+}

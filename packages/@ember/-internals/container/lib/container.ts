@@ -18,6 +18,10 @@ interface LeakTracking {
   reset(): void;
 }
 
+// node exposes this. I'm not pulling in the whole @types/node because it
+// doesn't work with isolatedModules
+declare const gc: undefined | (() => void);
+
 let leakTracking: LeakTracking;
 let containers: WeakSet<Container>;
 if (DEBUG) {
@@ -32,7 +36,6 @@ if (DEBUG) {
         containers = new WeakSet<Container>();
         return {
           hasContainers() {
-            // @ts-expect-error We just checked if it is definied
             gc();
             return GetWeakSetValues(containers).length > 0;
           },
@@ -45,7 +48,7 @@ if (DEBUG) {
         };
       })();
     }
-  } catch (e) {
+  } catch (_e) {
     // ignore
   }
 }
@@ -490,7 +493,7 @@ export function setFactoryFor<T extends object, C extends FactoryClass | object>
 
 export class InternalFactoryManager<
   T extends object,
-  C extends FactoryClass | object = FactoryClass
+  C extends FactoryClass | object = FactoryClass,
 > implements FactoryManager<T>
 {
   readonly container: Container;

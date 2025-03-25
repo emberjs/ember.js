@@ -51,21 +51,24 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
     this.template('application', '<h1>Hello world</h1>\n{{outlet}}');
     this.template('a', '<h2>Welcome to {{x-foo page="A"}}</h2>');
     this.template('b', '<h2>{{x-foo page="B"}}</h2>');
-    this.template('components/x-foo', 'Page {{this.page}}');
 
     let initCalled = false;
     let didInsertElementCalled = false;
 
-    this.component('x-foo', {
-      tagName: 'span',
-      init: function () {
-        this._super();
-        initCalled = true;
+    this.component(
+      'x-foo',
+      {
+        tagName: 'span',
+        init: function () {
+          this._super();
+          initCalled = true;
+        },
+        didInsertElement: function () {
+          didInsertElementCalled = true;
+        },
       },
-      didInsertElement: function () {
-        didInsertElementCalled = true;
-      },
-    });
+      'Page {{this.page}}'
+    );
 
     let App = this.createApplication();
 
@@ -337,8 +340,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function (hooks) {
 
   QUnit.test('FastBoot: tagless components can render', function (assert) {
     this.template('application', "<div class='my-context'>{{my-component}}</div>");
-    this.component('my-component', { tagName: '' });
-    this.template('components/my-component', '<h1>hello world</h1>');
+    this.component('my-component', { tagName: '' }, '<h1>hello world</h1>');
 
     let App = this.createApplication();
 

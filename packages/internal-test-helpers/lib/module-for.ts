@@ -28,6 +28,23 @@ const ASSERT_DESTROYABLES = (() => {
   return assertDestroyables !== null;
 })();
 
+export function moduleForDevelopment<T extends AbstractTestCase, M extends Generator>(
+  description: string,
+  TestClass: TestClass<T>,
+  ...mixins: Mixin<M>[]
+) {
+  // @ts-expect-error Our tests run in vite, vite supports this
+  if (import.meta.env.MODE === 'development') {
+    moduleFor(description, TestClass, ...mixins);
+  }
+}
+
+export async function define<T>(callback: () => T): Promise<T> {
+  const result = callback();
+  await Promise.resolve();
+  return result;
+}
+
 export default function moduleFor<T extends AbstractTestCase, M extends Generator>(
   description: string,
   TestClass: TestClass<T>,

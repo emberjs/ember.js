@@ -1,0 +1,14 @@
+{
+  "name": "@ember/modifier",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./on": "./on.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "@glimmer/manager": "0.94.9",
+    "@glimmer/runtime": "0.94.10"
+  }
+}

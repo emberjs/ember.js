@@ -15,12 +15,13 @@
     "declarationMap": false,
     "declarationDir": "../types/stable"
   },
-  "include": [
-    "../packages/**/*.ts"
-  ],
+  "include": ["../packages/**/*.ts"],
   "exclude": [
     "../**/type-tests",
     "../**/tests",
-    "../**/internal-test-helpers"
+    "../**/internal-test-helpers",
+
+    // @glimmer/component publishes as its own real package
+    "../**/@glimmer/component"
   ]
 }

@@ -19,10 +19,9 @@ import {
 } from '@ember/-internals/metal';
 import Mixin, { applyMixin } from '@ember/object/mixin';
 import { ActionHandler } from '@ember/-internals/runtime';
-import { makeArray } from '@ember/array';
+import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { _WeakSet as WeakSet } from '@glimmer/util';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
@@ -768,13 +767,13 @@ class CoreObject {
     C extends typeof CoreObject,
     I extends InstanceType<C>,
     K extends keyof I,
-    Args extends Array<Partial<{ [Key in K]: I[Key] }>>
+    Args extends Array<Partial<{ [Key in K]: I[Key] }>>,
   >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args>;
   static create<
     C extends typeof CoreObject,
     I extends InstanceType<C>,
     K extends keyof I,
-    Args extends Array<Partial<{ [Key in K]: I[Key] }>>
+    Args extends Array<Partial<{ [Key in K]: I[Key] }>>,
   >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args> {
     let props = args[0];
     let instance: InstanceType<C>;

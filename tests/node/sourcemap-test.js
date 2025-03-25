@@ -2,7 +2,7 @@ const fs = require('fs');
 
 QUnit.module('sourcemap validation', function () {
   QUnit.test(`ember.js has only a single sourcemaps comment`, function (assert) {
-    let jsPath = `dist/tests/ember.js`;
+    let jsPath = `dist/ember.debug.js`;
     assert.ok(fs.existsSync(jsPath));
 
     let contents = fs.readFileSync(jsPath, 'utf-8');

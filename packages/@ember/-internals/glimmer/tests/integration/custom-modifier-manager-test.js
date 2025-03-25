@@ -271,8 +271,8 @@ class ModifierManagerTest extends RenderingTestCase {
       }
     );
 
-    let expectedMessage = backtrackingMessageFor('name', 'Person', {
-      renderTree: ['\\(instance of a `foo-bar` modifier\\)'],
+    let expectedMessage = backtrackingMessageFor('name', Person.name, {
+      renderTree: [],
       includeTopLevel: false,
     });
 

@@ -1,8 +1,9 @@
-import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask, testUnless } from 'internal-test-helpers';
 
 import { set, get } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
+import { DEPRECATIONS } from '../../../../deprecations';
 
 moduleFor(
   'Helpers test: {{readonly}}',
@@ -36,8 +37,15 @@ moduleFor(
       // No U-R
     }
 
-    '@test passing an action to {{readonly}} avoids mutable cell wrapping'(assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} passing an action to {{readonly}} avoids mutable cell wrapping`](assert) {
+      expectDeprecation(
+        /Usage of the `\(action\)` helper is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+
+      assert.expect(5);
       let outer, inner;
 
       this.registerComponent('x-inner', {

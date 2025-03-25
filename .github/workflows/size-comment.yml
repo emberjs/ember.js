@@ -1,0 +1,94 @@
+name: "Size: Comment"
+
+# read-write repo token
+# access to secrets
+#
+# https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/
+on:
+  workflow_run:
+    workflows: ["Size: PR"]
+    types:
+      - completed
+
+jobs:
+  compare_sizes:
+    name: 'Compare Sizes and Comment'
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - run: sudo snap install dust
+
+      - uses: actions/download-artifact@v4
+        with:
+          run_id: pr-${{ github.event.workflow_run.id }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sizes-main
+
+      - name: "[PR] Get sizes for development outputs"
+        id: dev
+        run: |
+          cd pr/
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      - name: "[PR]: Get PR Number"
+        id: pr-number
+        run: echo "number=$(cat pr/NR)" >> $GITHUB_OUTPUT
+
+      - name: "[Main] Get sizes for development outputs"
+        id: main-dev
+        run: |
+          cd main/
+
+          echo 'sizes<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat out.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+          cat out.txt
+
+      #########################
+      # Intended Layout:
+      #
+      #  |      | This PR | Main |
+      #  | Dev  |   x1    |  y1  |
+      #  | Prod |   x2    |  y2  |
+      #
+      #  NOTE: we we don't have a prod build for this library
+      #        because we currently expect non-compiler usage
+      #        (so consumers should have terser or similar properly configured for DCE)
+      #
+      #########################
+      - uses: mshick/add-pr-comment@v2
+        with:
+          issue: ${{ steps.pr-number.outputs.number }}
+          message: |
+            <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
+            <tbody>
+            <tr><td>Dev</td><td>
+
+            ```
+            ${{ steps.dev.outputs.sizes }}
+            ```
+
+            </td><td>
+
+            ```
+            ${{ steps.main-dev.outputs.sizes }}
+            ```
+
+            </td></tr>
+            </tbody></table>
+
+
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

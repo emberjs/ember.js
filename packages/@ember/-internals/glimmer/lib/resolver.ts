@@ -1,20 +1,17 @@
-import { privatize as P } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
 import type { InternalFactory, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import { isFactory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import type {
-  CompileTimeResolver,
+  ClassicResolver,
   HelperDefinitionState,
   ModifierDefinitionState,
-  Option,
   ResolvedComponentDefinition,
-  RuntimeResolver,
   Template,
   TemplateFactory,
 } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
 import {
   getComponentTemplate,
   getInternalComponentManager,
@@ -30,7 +27,6 @@ import {
   templateOnlyComponent,
   TEMPLATE_ONLY_COMPONENT_MANAGER,
 } from '@glimmer/runtime';
-import { _WeakSet } from '@glimmer/util';
 import { isCurlyManager } from './component-managers/curly';
 import { CLASSIC_HELPER_MANAGER, isClassicHelper } from './helper';
 import { default as disallowDynamicResolution } from './helpers/-disallow-dynamic-resolution';
@@ -48,6 +44,7 @@ import { default as uniqueId } from './helpers/unique-id';
 import actionModifier from './modifiers/action';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
+import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -56,7 +53,7 @@ function instrumentationPayload(name: string) {
 function componentFor(
   name: string,
   owner: InternalOwner
-): Option<InternalFactory<object> | object> {
+): Nullable<InternalFactory<object> | object> {
   let fullName = `component:${name}` as const;
   return owner.factoryFor(fullName) || null;
 }
@@ -65,10 +62,23 @@ function layoutFor(
   name: string,
   owner: InternalOwner,
   options?: RegisterOptions
-): Option<Template> {
+): Nullable<Template> {
+  if (DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved) {
+    return null;
+  }
+
   let templateFullName = `template:components/${name}` as const;
 
-  return (owner.lookup(templateFullName, options) as Template) || null;
+  let result = (owner.lookup(templateFullName, options) as Template) || null;
+
+  if (result) {
+    deprecateUntil(
+      `Components with separately resolved templates are deprecated. Migrate to either co-located js/ts + hbs files or to gjs/gts. Tried to lookup '${templateFullName}'.`,
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING
+    );
+  }
+
+  return result;
 }
 
 type LookupResult =
@@ -89,7 +99,7 @@ function lookupComponentPair(
   owner: InternalOwner,
   name: string,
   options?: RegisterOptions
-): Option<LookupResult> {
+): Nullable<LookupResult> {
   let component = componentFor(name, owner);
 
   if (isFactory(component) && component.class) {
@@ -157,18 +167,16 @@ const BUILTIN_MODIFIERS: Record<string, object> = {
   on,
 };
 
-const CLASSIC_HELPER_MANAGER_ASSOCIATED = new _WeakSet();
+const CLASSIC_HELPER_MANAGER_ASSOCIATED = new WeakSet();
 
-export default class ResolverImpl
-  implements RuntimeResolver<InternalOwner>, CompileTimeResolver<InternalOwner>
-{
+export default class ResolverImpl implements ClassicResolver<InternalOwner> {
   private componentDefinitionCache: Map<object, ResolvedComponentDefinition | null> = new Map();
 
   lookupPartial(): null {
     return null;
   }
 
-  lookupHelper(name: string, owner: InternalOwner): Option<HelperDefinitionState> {
+  lookupHelper(name: string, owner: InternalOwner): Nullable<HelperDefinitionState> {
     assert(
       `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
       !(BUILTIN_HELPERS[name] && owner.hasRegistration(`helper:${name}`))
@@ -217,7 +225,7 @@ export default class ResolverImpl
     return BUILTIN_KEYWORD_HELPERS[name] ?? null;
   }
 
-  lookupModifier(name: string, owner: InternalOwner): Option<ModifierDefinitionState> {
+  lookupModifier(name: string, owner: InternalOwner): Nullable<ModifierDefinitionState> {
     let builtin = BUILTIN_MODIFIERS[name];
 
     if (builtin !== undefined) {
@@ -272,25 +280,14 @@ export default class ResolverImpl
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
-    let definition: Option<ResolvedComponentDefinition> = null;
+    let definition: Nullable<ResolvedComponentDefinition> = null;
 
     if (pair.component === null) {
-      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        definition = {
-          state: templateOnlyComponent(undefined, name),
-          manager: TEMPLATE_ONLY_COMPONENT_MANAGER,
-          template,
-        };
-      } else {
-        let factory = owner.factoryFor(P`component:-default`)!;
-        let manager = getInternalComponentManager(factory.class as object);
-
-        definition = {
-          state: factory,
-          manager,
-          template,
-        };
-      }
+      definition = {
+        state: templateOnlyComponent(undefined, name),
+        manager: TEMPLATE_ONLY_COMPONENT_MANAGER,
+        template,
+      };
     } else {
       let factory = pair.component;
       assert(`missing component class ${name}`, factory.class !== undefined);

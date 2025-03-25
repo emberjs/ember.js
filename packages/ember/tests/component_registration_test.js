@@ -2,9 +2,16 @@ import Application from '@ember/application';
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { ENV } from '@ember/-internals/environment';
+import {
+  moduleFor,
+  testUnless,
+  ApplicationTestCase,
+  defineComponent,
+  expectDeprecation,
+} from 'internal-test-helpers';
 import { DEBUG } from '@glimmer/env';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import templateOnly from '@ember/component/template-only';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -14,43 +21,19 @@ moduleFor(
       return super.createApplication(options, Application.extend());
     }
 
-    ['@test The helper becomes the body of the component'](assert) {
-      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        assert.expect(0);
-        return;
-      }
-
-      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
-      this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
-
-      return this.visit('/').then(() => {
-        this.assertText('Hello world hello world');
-        this.assertComponentElement(this.element.firstElementChild, {
-          tagName: 'div',
-          content: '<p>hello world</p>',
-        });
+    ['@test The helper becomes the body of the component']() {
+      this.addComponent('expand-it', {
+        ComponentClass: templateOnly(),
+        template: '<p>hello {{yield}}</p>',
       });
-    }
-
-    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)'](
-      assert
-    ) {
-      if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        assert.expect(0);
-        return;
-      }
-
-      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello world <p>hello world</p>');
-        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = false;
       });
     }
 
     ['@test If a component is registered, it is used'](assert) {
-      this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', `Hello world {{#expand-it}}world{{/expand-it}}`);
 
       this.application.instanceInitializer({
@@ -58,9 +41,13 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:expand-it',
-            Component.extend({
-              classNames: 'testing123',
-            })
+            defineComponent(
+              {},
+              `<p>hello {{yield}}</p>`,
+              Component.extend({
+                classNames: 'testing123',
+              })
+            )
           );
         },
       });
@@ -97,9 +84,15 @@ moduleFor(
       });
     }
 
-    ['@test Late-registered components can be rendered with template registered on the container'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+    )} Late-registered components can be rendered with template registered on the container`](
       assert
     ) {
+      expectDeprecation(
+        /resolved templates/,
+        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+      );
       this.addTemplate(
         'application',
         `<div id='wrapper'>hello world {{sally-rutherford}}-{{#sally-rutherford}}!!!{{/sally-rutherford}}</div>`
@@ -131,9 +124,16 @@ moduleFor(
       });
     }
 
-    ['@test Late-registered components can be rendered with ONLY the template registered on the container'](
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
+    )} Late-registered components can be rendered with ONLY the template registered on the container`](
       assert
     ) {
+      expectDeprecation(
+        /resolved templates/,
+        DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
+      );
+
       this.addTemplate(
         'application',
         `<div id='wrapper'>hello world {{borf-snorlax}}-{{#borf-snorlax}}!!!{{/borf-snorlax}}</div>`

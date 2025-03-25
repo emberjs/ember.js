@@ -16,8 +16,6 @@ moduleFor(
       let outletState = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'application',
           controller: undefined,
           template: undefined,
@@ -37,8 +35,6 @@ moduleFor(
       let outletState = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'application',
           controller: undefined,
           template: undefined,
@@ -57,8 +53,6 @@ moduleFor(
       outletState = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'application',
           controller: {},
           template: this.owner.lookup('template:application')(this.owner),
@@ -76,8 +70,6 @@ moduleFor(
       outletState.outlets.main = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'index',
           controller: {},
           template: this.owner.lookup('template:index')(this.owner),
@@ -95,8 +87,6 @@ moduleFor(
       let outletState = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'application',
           controller: {},
           template: this.owner.lookup('template:application')(this.owner),
@@ -116,8 +106,6 @@ moduleFor(
       outletState.outlets.main = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'index',
           controller: {},
           template: this.owner.lookup('template:index')(this.owner),
@@ -146,8 +134,6 @@ moduleFor(
       let outletState = {
         render: {
           owner: this.owner,
-          into: undefined,
-          outlet: 'main',
           name: 'outer',
           controller: {},
           template: this.owner.lookup('template:outer')(this.owner),
@@ -156,8 +142,6 @@ moduleFor(
           main: {
             render: {
               owner: this.owner,
-              into: undefined,
-              outlet: 'main',
               name: 'inner',
               controller: {},
               template: this.owner.lookup('template:inner')(this.owner),

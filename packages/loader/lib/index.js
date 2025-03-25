@@ -8,12 +8,12 @@ var define, require;
     typeof globalThis !== 'undefined'
       ? globalThis
       : typeof self !== 'undefined'
-      ? self
-      : typeof window !== 'undefined'
-      ? window
-      : typeof global !== 'undefined'
-      ? global
-      : null;
+        ? self
+        : typeof window !== 'undefined'
+          ? window
+          : typeof global !== 'undefined'
+            ? global
+            : null;
 
   if (globalObj === null) {
     throw new Error('unable to locate global object');
@@ -72,7 +72,10 @@ var define, require;
       }
     }
 
-    callback.apply(this, reified);
+    var result = callback.apply(this, reified);
+    if (!deps.includes('exports') || result !== undefined) {
+      exports = seen[name] = result;
+    }
 
     return exports;
   }

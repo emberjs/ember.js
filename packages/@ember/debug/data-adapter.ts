@@ -149,7 +149,11 @@ class RecordsWatcher<T> {
 class TypeWatcher {
   declare cache: Cache<void>;
 
-  constructor(records: unknown[], onChange: () => void, public release: () => void) {
+  constructor(
+    records: unknown[],
+    onChange: () => void,
+    public release: () => void
+  ) {
     let hasBeenAccessed = false;
 
     this.cache = createCache(() => {

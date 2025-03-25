@@ -9,10 +9,11 @@
   without adding a wrapping `<div>` (or any of the other element customization behaviors of [@ember/component](/ember/release/classes/Component)).
   Specifically, this means that the template will be rendered as "outer HTML".
 
-  In general, this method will be used by build time tooling and would not be directly written in an application. However,
-  at times it may be useful to use directly to leverage the "outer HTML" semantics mentioned above. For example, if an addon would like
-  to use these semantics for its templates but cannot be certain it will only be consumed by applications that have enabled the
-  `template-only-glimmer-components` optional feature.
+  In apps, this method will usually be inserted by build-time tooling the handles converting `.hbs` files into component Javascript modules and
+  would not be directly written by the application author.
+
+  Addons may want to use this method directly to ensure that a template-only component is treated consistently in all Ember versions (Ember versions
+  before 4.0 have a "template-only-glimmer-components" optional feature that causes a standalone `.hbs` file to be interpreted differently).
 
   @example
 
@@ -33,34 +34,11 @@ import { type Opaque } from '@ember/-internals/utility-types';
 import { templateOnlyComponent as glimmerTemplateOnlyComponent } from '@glimmer/runtime';
 
 /**
- * Template-only components have no backing class instance, so this in their
+ * Template-only components have no backing class instance, so `this` in their
  * templates is null. This means that you can only reference passed in arguments
- * via named argument syntax (e.g. `{{@arg}}`):
- *
- * ```hbs
- * {{!--
- *   This does not work, since `this` does not exist
- * --}}
- * <label for="title">Title</label>
- * <Input @value={{this.value}} id="title" />
- * ```
- *
- * Additionally, the mut helper generally can't be used for the same reason:
- *
- * ```hbs
- * {{!-- This does not work --}}
- * <input
- *   value={{this.value}}
- *   onkeyup={{action (mut this.value) target="value"}}
- * />
- * ```
- *
- * Since Octane, a template-only component shares a subset of features that are
- * available in `@glimmer/component`. Such component can be seamlessly
- * "upgraded" to a Glimmer component, when you add a JavaScript file alongside
- * the template.
+ * (e.g. `{{@arg}}`).
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TemplateOnlyComponent<S = unknown> extends Opaque<S> {}
 
 /**

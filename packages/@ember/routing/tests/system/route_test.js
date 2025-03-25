@@ -1,7 +1,6 @@
 import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
-import EmberObject from '@ember/object';
 import EmberRoute from '@ember/routing/route';
 import ObjectProxy from '@ember/object/proxy';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -22,51 +21,6 @@ moduleFor(
       route = routeOne = routeTwo = lookupHash = undefined;
     }
 
-    ['@test default store utilizes the container to acquire the model factory'](assert) {
-      assert.expect(5);
-
-      let Post = EmberObject.extend();
-      let post = {};
-
-      Post.reopenClass({
-        find() {
-          return post;
-        },
-      });
-
-      let ownerOptions = {
-        ownerOptions: {
-          hasRegistration() {
-            return true;
-          },
-          factoryFor(fullName) {
-            assert.equal(fullName, 'model:post', 'correct factory was looked up');
-
-            return {
-              class: Post,
-              create() {
-                return Post.create();
-              },
-            };
-          },
-        },
-      };
-
-      let owner = buildOwner(ownerOptions);
-      setOwner(route, owner);
-
-      expectDeprecation(
-        () =>
-          ignoreAssertion(() => {
-            assert.equal(route.model({ post_id: 1 }), post);
-            assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
-          }),
-        /The implicit model loading behavior for routes is deprecated./
-      );
-
-      runDestroy(owner);
-    }
-
     ['@test default store can be overridden'](assert) {
       runDestroy(route);
 
@@ -81,86 +35,6 @@ moduleFor(
 
       route.store.find();
       assert.true(calledFind, 'store.find was called');
-    }
-
-    ["@test assert if 'store.find' method is not found"]() {
-      runDestroy(route);
-
-      let owner = buildOwner();
-      let Post = EmberObject.extend();
-
-      owner.register(
-        'route:index',
-        EmberRoute.extend({
-          routeName: 'index',
-        })
-      );
-      owner.register('model:post', Post);
-
-      route = owner.lookup('route:index');
-
-      ignoreDeprecation(() =>
-        expectAssertion(function () {
-          route.findModel('post', 1);
-        }, `You used the dynamic segment \`post_id\` in your route ` +
-          `\`index\` for which Ember requires you provide a ` +
-          `data-loading implementation. Commonly, that is done by ` +
-          `adding a model hook implementation on the route ` +
-          `(\`model({post_id}) {\`) or by injecting an implemention of ` +
-          `a data store: \`@service store;\`.\n\n` +
-          `Rarely, applications may attempt to use a legacy behavior where ` +
-          `the model class (in this case \`post\`) is resolved and the ` +
-          `\`find\` method on that class is invoked to load data. In this ` +
-          `application, a model of \`post\` was found but it did not ` +
-          `provide a \`find\` method. You should not add a \`find\` ` +
-          `method to your model. Instead, please implement an appropriate ` +
-          `\`model\` hook on the \`index\` route.`)
-      );
-
-      runDestroy(owner);
-    }
-
-    ['@test asserts if model class is not found']() {
-      runDestroy(route);
-
-      let owner = buildOwner();
-      owner.register(
-        'route:index',
-        EmberRoute.extend({
-          routeName: 'index',
-        })
-      );
-
-      route = owner.lookup('route:index');
-
-      ignoreDeprecation(() =>
-        expectAssertion(function () {
-          route.model({ post_id: 1 });
-        }, `You used the dynamic segment \`post_id\` in your route ` +
-          `\`index\` for which Ember requires you provide a ` +
-          `data-loading implementation. Commonly, that is done by ` +
-          `adding a model hook implementation on the route ` +
-          `(\`model({post_id}) {\`) or by injecting an implemention of ` +
-          `a data store: \`@service store;\`.`)
-      );
-
-      runDestroy(owner);
-    }
-
-    ["@test 'store' does not need to be injected"](assert) {
-      runDestroy(route);
-
-      let owner = buildOwner();
-
-      owner.register('route:index', EmberRoute);
-
-      route = owner.lookup('route:index');
-
-      ignoreDeprecation(() => ignoreAssertion(() => route.model({ post_id: 1 })));
-
-      assert.ok(true, 'no error was raised');
-
-      runDestroy(owner);
     }
 
     ["@test modelFor doesn't require the router"](assert) {

@@ -1,6 +1,5 @@
 import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 
-import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import Route from '@ember/routing/route';
 import { service } from '@ember/service';
@@ -9,33 +8,12 @@ import { tracked } from '@ember/-internals/metal';
 import { set } from '@ember/object';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
+import { template } from '@ember/template-compiler';
 
 moduleFor(
   'Application test: rendering',
   class extends ApplicationTestCase {
-    constructor() {
-      super(...arguments);
-      this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;
-    }
-
-    teardown() {
-      super.teardown();
-      ENV._APPLICATION_TEMPLATE_WRAPPER = this._APPLICATION_TEMPLATE_WRAPPER;
-    }
-
-    ['@test it can render the application template with a wrapper']() {
-      ENV._APPLICATION_TEMPLATE_WRAPPER = true;
-
-      this.addTemplate('application', 'Hello world!');
-
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.element, { content: 'Hello world!' });
-      });
-    }
-
     ['@test it can render the application template without a wrapper']() {
-      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
-
       this.addTemplate('application', 'Hello world!');
 
       return this.visit('/').then(() => {
@@ -536,7 +514,14 @@ moduleFor(
       this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['application', 'routeWithError', '@model.name'],
+        includeTopLevel: 'outlet',
+        renderTree: [
+          '{{outlet}} for application',
+          'application',
+          '{{outlet}} for routeWithError',
+          'routeWithError',
+          '@model.name',
+        ],
       });
 
       await this.visit('/');
@@ -575,6 +560,89 @@ moduleFor(
         .then(() => {
           this.assertText('first');
         });
+    }
+
+    async ['@test it can use a component as the route template'](assert) {
+      this.router.map(function () {
+        this.route('example');
+      });
+
+      this.add(
+        'route:example',
+        Route.extend({
+          model() {
+            return {
+              message: 'I am the model',
+            };
+          },
+        })
+      );
+
+      this.add(
+        'controller:example',
+        class extends Controller {
+          message = 'I am the controller';
+        }
+      );
+
+      this.add(
+        'template:example',
+        class extends Component {
+          message = 'I am the component';
+
+          static {
+            template(
+              `<div data-test="model">{{@model.message}}</div>
+               <div data-test="controller">{{@controller.message}}</div>
+               <div data-test="component">{{this.message}}</div>`,
+              {
+                component: this,
+              }
+            );
+          }
+        }
+      );
+
+      await this.visit('/example');
+
+      assert.strictEqual(this.$('[data-test="model"]').nodes[0]?.innerText, 'I am the model');
+      assert.strictEqual(
+        this.$('[data-test="controller"]').nodes[0]?.innerText,
+        'I am the controller'
+      );
+      assert.strictEqual(
+        this.$('[data-test="component"]').nodes[0]?.innerText,
+        'I am the component'
+      );
+    }
+
+    async ['@test can switch between component-defined routes']() {
+      this.router.map(function () {
+        this.route('first');
+        this.route('second');
+      });
+      this.add('template:first', template('First'));
+      this.add('template:second', template('Second'));
+      await this.visit('/first');
+      this.assertText('First');
+      await this.visit('/second');
+      this.assertText('Second');
+    }
+
+    async ['@test can switch from component-defined route to template-defined route']() {
+      this.router.map(function () {
+        this.route('first');
+        this.route('second');
+      });
+      this.add('template:first', template('First'));
+      this.addTemplate(
+        'second',
+        'Second sees {{#if @component}}A Component{{else}}No Component{{/if}}'
+      );
+      await this.visit('/first');
+      this.assertText('First');
+      await this.visit('/second');
+      this.assertText('Second sees No Component');
     }
   }
 );

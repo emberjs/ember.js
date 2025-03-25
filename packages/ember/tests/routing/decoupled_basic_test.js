@@ -6,6 +6,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import HistoryLocation from '@ember/routing/history-location';
 import Controller from '@ember/controller';
+import { DEPRECATIONS } from '@ember/-internals/deprecations';
 import EmberObject, { set } from '@ember/object';
 import {
   moduleFor,
@@ -14,6 +15,7 @@ import {
   ModuleBasedTestResolver,
   runDestroy,
   runTask,
+  testUnless,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { addObserver } from '@ember/-internals/metal';
@@ -201,28 +203,21 @@ moduleFor(
     }
 
     ["@test The Special page returning an error invokes SpecialRoute's error handler"](assert) {
+      assert.expect(2);
+
       this.router.map(function () {
         this.route('home', { path: '/' });
-        this.route('special', { path: '/specials/:menu_item_id' });
+        this.route('special', { path: '/specials/:menu_item' });
       });
 
-      let menuItem, promise, resolve;
-
-      let MenuItem = EmberObject.extend();
-      MenuItem.reopenClass({
-        find(id) {
-          menuItem = MenuItem.create({ id: id });
-          promise = new RSVP.Promise((res) => (resolve = res));
-
-          return promise;
-        },
-      });
-
-      this.add('model:menu_item', MenuItem);
+      let resolve;
 
       this.add(
         'route:special',
         Route.extend({
+          model() {
+            return new RSVP.Promise((res) => (resolve = res));
+          },
           setup() {
             throw new Error('Setup error');
           },
@@ -239,11 +234,9 @@ moduleFor(
         })
       );
 
-      ignoreDeprecation(() => {
-        runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
-      });
+      runTask(() => handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
 
-      resolve(menuItem);
+      resolve();
     }
 
     ["@test ApplicationRoute's default error handler can be overridden"](assert) {
@@ -302,9 +295,13 @@ moduleFor(
       return promise;
     }
 
-    async ['@test Events are triggered on the controller if a matching action name is implemented'](
-      assert
-    ) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events are triggered on the controller if a matching action name is implemented`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let done = assert.async();
 
       this.router.map(function () {
@@ -348,9 +345,13 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@test Events are triggered on the current state when defined in `actions` object'](
-      assert
-    ) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events are triggered on the current state when defined in \`actions\` object`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let done = assert.async();
 
       this.router.map(function () {
@@ -384,9 +385,15 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events defined in \`actions\` object are triggered on the current state when routes are nested`](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let done = assert.async();
 
       this.router.map(function () {
@@ -427,8 +434,14 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    ['@test Events can be handled by inherited event handlers'](assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Events can be handled by inherited event handlers`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+      assert.expect(5);
 
       let SuperRoute = Route.extend({
         actions: {
@@ -477,9 +490,15 @@ moduleFor(
       });
     }
 
-    async ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Actions are not triggered on the controller if a matching action name is implemented as a method`](
       assert
     ) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let done = assert.async();
 
       this.router.map(function () {
@@ -523,7 +542,13 @@ moduleFor(
       document.getElementById('qunit-fixture').querySelector('a').click();
     }
 
-    async ['@test actions can be triggered with multiple arguments'](assert) {
+    async [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} actions can be triggered with multiple arguments`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
       let done = assert.async();
       this.router.map(function () {
         this.route('root', { path: '/' }, function () {
@@ -962,15 +987,15 @@ moduleFor(
       let rootURL = '/blahzorz';
       this.add(
         'location:history-test',
-        HistoryLocation.extend({
-          rootURL: 'this is not the URL you are looking for',
-          history: {
+        class extends HistoryLocation {
+          rootURL = 'this is not the URL you are looking for';
+          history = {
             pushState() {},
-          },
+          };
           initState() {
             assert.equal(this.get('rootURL'), rootURL);
-          },
-        })
+          }
+        }
       );
 
       this.router.reopen({
@@ -1221,8 +1246,14 @@ moduleFor(
       return this.visit('/nork').then(() => this.visit('/dork'));
     }
 
-    ['@test Actions can be handled by inherited action handlers'](assert) {
-      assert.expect(4);
+    [`${testUnless(
+      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
+    )} Actions can be handled by inherited action handlers`](assert) {
+      expectDeprecation(
+        /Usage of the `\{\{action\}\}` modifier is deprecated./,
+        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
+      );
+      assert.expect(5);
 
       let SuperRoute = Route.extend({
         actions: {

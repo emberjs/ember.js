@@ -1,0 +1,12 @@
+{
+  "name": "@ember/template",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ember/-internals": "workspace:*",
+    "expect-type": "^0.15.0"
+  }
+}

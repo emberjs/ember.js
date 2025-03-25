@@ -4,7 +4,6 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const setupPodConfig = blueprintHelpers.setupPodConfig;
 const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -13,12 +12,9 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
-const setupTestEnvironment = require('../helpers/setup-test-environment');
-const enableOctane = setupTestEnvironment.enableOctane;
-
 const glimmerComponentContents = `import Component from '@glimmer/component';
 
-export default class FooComponent extends Component {}
+export default class Foo extends Component {}
 `;
 
 const emberComponentContents = `import Component from '@ember/component';
@@ -34,9 +30,7 @@ export default templateOnly();
 describe('Blueprint: component', function () {
   setupTestHooks(this);
 
-  describe('in app - octane', function () {
-    enableOctane();
-
+  describe('in app', function () {
     beforeEach(function () {
       return emberNew()
         .then(() =>
@@ -64,35 +58,6 @@ describe('Blueprint: component', function () {
       });
     });
 
-    // classic default
-    it('component foo --component-structure=classic --component-class=@ember/component', function () {
-      return emberGenerateDestroy(
-        [
-          'component',
-          'foo',
-          '--component-structure',
-          'classic',
-          '--component-class',
-          '@ember/component',
-        ],
-        (_file) => {
-          expect(_file('app/components/foo.js')).to.equal(emberComponentContents);
-
-          expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo',
-                componentInvocation: 'Foo',
-              },
-            })
-          );
-        }
-      );
-    });
-
-    // Octane default
     it('component foo --component-structure=flat --component-class=@glimmer/component', function () {
       return emberGenerateDestroy(
         [
@@ -143,24 +108,6 @@ describe('Blueprint: component', function () {
         ['component', '--component-structure', 'nested', 'foo'],
         (_file) => {
           expect(_file('app/components/foo/index.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/components/foo-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo',
-                componentInvocation: 'Foo',
-              },
-            })
-          );
-        }
-      );
-    });
-
-    it('component foo --component-structure=classic', function () {
-      return emberGenerateDestroy(
-        ['component', '--component-structure', 'classic', 'foo'],
-        (_file) => {
-          expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo-test.js')).to.equal(
             fixture('component-test/default-template.js', {
@@ -308,7 +255,7 @@ describe('Blueprint: component', function () {
         ['component', 'foo/x-foo', '--component-class', '@glimmer/component'],
         (_file) => {
           expect(_file('app/components/foo/x-foo.js')).to.equal(
-            glimmerComponentContents.replace('FooComponent', 'FooXFooComponent')
+            glimmerComponentContents.replace('Foo', 'FooXFoo')
           );
           expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
@@ -323,164 +270,9 @@ describe('Blueprint: component', function () {
         }
       );
     });
-
-    describe('with podModulePrefix', function () {
-      beforeEach(function () {
-        setupPodConfig({ podModulePrefix: true });
-      });
-
-      it('component foo --pod', function () {
-        return emberGenerateDestroy(['component', 'foo', '--pod'], (_file) => {
-          expect(_file('app/pods/components/foo/template.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/pods/components/foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo',
-                componentInvocation: 'Foo',
-              },
-            })
-          );
-        });
-      });
-
-      it('component x-foo --pod', function () {
-        return emberGenerateDestroy(['component', 'x-foo', '--pod'], (_file) => {
-          expect(_file('app/pods/components/x-foo/template.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/pods/components/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'x-foo',
-                componentInvocation: 'XFoo',
-              },
-            })
-          );
-        });
-      });
-
-      it('component foo/x-foo --pod', function () {
-        return emberGenerateDestroy(['component', 'foo/x-foo', '--pod'], (_file) => {
-          expect(_file('app/pods/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/pods/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo/x-foo',
-                componentInvocation: 'Foo::XFoo',
-              },
-            })
-          );
-        });
-      });
-
-      it('component x-foo --pod --path foo', function () {
-        return emberGenerateDestroy(['component', 'x-foo', '--pod', '--path', 'foo'], (_file) => {
-          expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'x-foo',
-                componentInvocation: 'XFoo',
-                path: 'foo/',
-              },
-            })
-          );
-        });
-      });
-
-      it('component foo/x-foo --pod --path bar', function () {
-        return emberGenerateDestroy(
-          ['component', 'foo/x-foo', '--pod', '--path', 'bar'],
-          (_file) => {
-            expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
-            expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-              fixture('component-test/default-template.js', {
-                replace: {
-                  component: 'foo/x-foo',
-                  componentInvocation: 'Foo::XFoo',
-                  path: 'bar/',
-                },
-              })
-            );
-          }
-        );
-      });
-
-      it('component x-foo --pod --path bar/foo', function () {
-        return emberGenerateDestroy(
-          ['component', 'x-foo', '--pod', '--path', 'bar/foo'],
-          (_file) => {
-            expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-            expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-              fixture('component-test/default-template.js', {
-                replace: {
-                  component: 'x-foo',
-                  componentInvocation: 'XFoo',
-                  path: 'bar/foo/',
-                },
-              })
-            );
-          }
-        );
-      });
-
-      it('component foo/x-foo --pod --path bar/baz', function () {
-        return emberGenerateDestroy(
-          ['component', 'foo/x-foo', '--pod', '--path', 'bar/baz'],
-          (_file) => {
-            expect(_file('app/pods/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
-            expect(_file('tests/integration/pods/bar/baz/foo/x-foo/component-test.js')).to.equal(
-              fixture('component-test/default-template.js', {
-                replace: {
-                  component: 'foo/x-foo',
-                  componentInvocation: 'Foo::XFoo',
-                  path: 'bar/baz/',
-                },
-              })
-            );
-          }
-        );
-      });
-
-      it('component x-foo --pod -no-path', function () {
-        return emberGenerateDestroy(['component', 'x-foo', '--pod', '-no-path'], (_file) => {
-          expect(_file('app/pods/x-foo/template.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/pods/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'x-foo',
-                componentInvocation: 'XFoo',
-              },
-            })
-          );
-        });
-      });
-
-      it('component foo/x-foo --pod -no-path', function () {
-        return emberGenerateDestroy(['component', 'foo/x-foo', '--pod', '-no-path'], (_file) => {
-          expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
-          expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'foo/x-foo',
-                componentInvocation: 'Foo::XFoo',
-              },
-            })
-          );
-        });
-      });
-    });
   });
 
-  describe('in addon - octane', function () {
-    enableOctane();
-
+  describe('in addon', function () {
     beforeEach(function () {
       return emberNew({ target: 'addon' })
         .then(() =>
@@ -592,9 +384,7 @@ describe('Blueprint: component', function () {
     });
   });
 
-  describe('in in-repo-addon - octane', function () {
-    enableOctane();
-
+  describe('in in-repo-addon', function () {
     beforeEach(function () {
       return emberNew({ target: 'in-repo-addon' })
         .then(() =>

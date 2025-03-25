@@ -1,7 +1,6 @@
 import type { EmberArrayLike } from '@ember/array';
-import { _WeakSet } from '@glimmer/util';
 
-const EMBER_ARRAYS = new _WeakSet();
+const EMBER_ARRAYS = new WeakSet();
 
 export function setEmberArray(obj: object) {
   EMBER_ARRAYS.add(obj);

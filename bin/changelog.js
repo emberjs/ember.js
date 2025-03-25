@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console, n/shebang */
+/* eslint-disable no-console */
 
 'use strict';
 
 /*
  * This script generates the template a changelog by comparing a current version
- * with master. Run this, copy what's logged into the `CHANGELOG.md` and update
+ * with main. Run this, copy what's logged into the `CHANGELOG.md` and update
  * the top section based on the changes listed in "Community Contributions"
  *
  * Usage:
@@ -125,7 +125,7 @@ async function getCommitMessage(commitInfo) {
           '..origin/main --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit',
         { encoding: 'utf8' }
       );
-    } catch (e) {
+    } catch {
       // ignored
     }
   }

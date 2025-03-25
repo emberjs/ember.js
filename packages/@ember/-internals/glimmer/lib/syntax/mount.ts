@@ -4,8 +4,8 @@
 import type { InternalOwner } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import type { CapturedArguments, Option } from '@glimmer/interfaces';
-import { CurriedType } from '@glimmer/interfaces';
+import type { Nullable } from '@ember/-internals/utility-types';
+import type { CapturedArguments, CurriedComponent } from '@glimmer/interfaces';
 import type { Reference } from '@glimmer/reference';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
 import type { CurriedValue } from '@glimmer/runtime';
@@ -56,7 +56,7 @@ import { internalHelper } from '../helpers/internal-helper';
 export const mountHelper = internalHelper(
   (args: CapturedArguments, owner?: InternalOwner): Reference<CurriedValue | null> => {
     assert('{{mount}} must be used within a component that has an owner', owner);
-    let nameRef = args.positional[0] as Reference<Option<string>>;
+    let nameRef = args.positional[0] as Reference<Nullable<string>>;
     let captured: CapturedArguments | null;
 
     assert(
@@ -94,7 +94,7 @@ export const mountHelper = internalHelper(
         );
 
         lastName = name;
-        lastDef = curry(CurriedType.Component, new MountDefinition(name), owner, captured, true);
+        lastDef = curry(0 as CurriedComponent, new MountDefinition(name), owner, captured, true);
 
         return lastDef;
       } else {

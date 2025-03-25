@@ -7,12 +7,12 @@ import { RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
-import { ENGINE_PARENT, getEngineParent, setEngineParent } from './lib/engine-parent';
+import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
 import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
 import type { InternalOwner } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
-import Engine from '@ember/engine';
+import type Engine from '@ember/engine';
 import type Application from '@ember/application';
 import type { BootEnvironment } from '@ember/-internals/glimmer';
 import type { SimpleElement } from '@simple-dom/interface';
@@ -62,7 +62,6 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
   // This is effectively an "abstract" method: it defines the contract a
   // subclass (e.g. `ApplicationInstance`) must follow to implement this
   // behavior, but an `EngineInstance` has no behavior of its own here.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static setupRegistry(_registry: Registry, _options?: BootOptions) {}
 
   /**
@@ -200,15 +199,13 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
     @return {EngineInstance,Error}
   */
   buildChildEngineInstance(name: string, options: EngineInstanceOptions = {}): EngineInstance {
-    let ChildEngine = this.lookup(`engine:${name}`);
+    let ChildEngine = this.lookup(`engine:${name}`) as Engine;
 
     if (!ChildEngine) {
       throw new Error(
         `You attempted to mount the engine '${name}', but it is not registered with its parent.`
       );
     }
-
-    assert('expected an Engine', ChildEngine instanceof Engine);
 
     let engineInstance = ChildEngine.buildInstance(options);
 

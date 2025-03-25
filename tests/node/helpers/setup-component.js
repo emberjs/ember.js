@@ -53,8 +53,6 @@ function setupComponentTest() {
   this._outletState = {
     render: {
       owner: module.owner || undefined,
-      into: undefined,
-      outlet: 'main',
       name: 'application',
       controller: module,
       model: undefined,
@@ -83,8 +81,6 @@ function render(_template) {
 
   let stateToRender = {
     owner: this.owner,
-    into: undefined,
-    outlet: 'main',
     name: 'index',
     controller: this,
     model: undefined,

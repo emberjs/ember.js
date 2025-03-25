@@ -1,15 +1,18 @@
 name: Nightly TypeScript Run
 
+permissions:
+  contents: read
+
 jobs:
   ts-next:
     name: typescript@next
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: volta-cli/action@v4
-      - run: yarn install --frozen-lockfile --non-interactive
-      - run: yarn add -D typescript@next
-      - run: yarn type-check
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+      - run: pnpm add --save-dev typescript@next --workspace-root
+      - run: pnpm type-check
   notify:
     name: Notify Discord
     runs-on: ubuntu-latest

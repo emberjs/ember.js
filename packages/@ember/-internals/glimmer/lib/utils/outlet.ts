@@ -1,23 +1,13 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import type { Template, TemplateFactory } from '@glimmer/interfaces';
+import type { Template } from '@glimmer/interfaces';
 
 export interface RenderState {
   /**
-   * Not sure why this is here, we use the owner of the template for lookups.
-   *
-   * Maybe this is for the render helper?
+   * This is usually inherited from the parent (all the way up to the app
+   * instance). However, engines uses this to swap out the owner when crossing
+   * a mount point.
    */
   owner: InternalOwner;
-
-  /**
-   * The name of the parent outlet state.
-   */
-  into: string | undefined;
-
-  /*
-   * The outlet name in the parent outlet state's outlets.
-   */
-  outlet: string;
 
   /**
    * The name of the route/template
@@ -35,29 +25,27 @@ export interface RenderState {
   model: unknown;
 
   /**
-   * template (the layout of the outlet component)
+   * The route's template – this is either a Template or a component, and it
+   * gets normalized during the render process.
    */
-  template: Template | TemplateFactory | undefined;
-}
-
-export interface Outlets {
-  [name: string]: OutletState | undefined;
+  template: Template | object | undefined;
 }
 
 export interface OutletState {
-  /**
-   * Nested outlet connections.
-   */
-  outlets: Outlets;
-
   /**
    * Represents what was rendered into this outlet.
    */
   render: RenderState | undefined;
 
   /**
-   * Has to do with render helper and orphan outlets.
-   * Whether outlet state was rendered.
+   * Represents what, if any, should be rendered into the next {{outlet}} found
+   * at this level.
+   *
+   * This used to be a dictionary of children outlets, including the {{outlet}}
+   * "main" outlet any {{outlet "named"}} named outlets. Since named outlets
+   * are not a thing anymore, this can now just be a single`child`.
    */
-  wasUsed?: boolean;
+  outlets: {
+    main: OutletState | undefined;
+  };
 }

@@ -13,7 +13,7 @@ import Mixin from '@ember/object/mixin';
   @class Enumerable
   @private
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface Enumerable {}
 const Enumerable = Mixin.create();
 

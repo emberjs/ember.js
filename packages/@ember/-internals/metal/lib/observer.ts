@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
-import { schedule } from '@ember/runloop';
+import type { schedule } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
 import type { Tag } from '@glimmer/validator';
 import { CURRENT_TAG, tagMetaFor, validateTag, valueForTag } from '@glimmer/validator';
@@ -187,7 +187,7 @@ export function revalidateObservers(target: object) {
 
 let lastKnownRevision = 0;
 
-export function flushAsyncObservers(shouldSchedule = true) {
+export function flushAsyncObservers(_schedule: typeof schedule | false) {
   let currentRevision = valueForTag(CURRENT_TAG);
   if (lastKnownRevision === currentRevision) {
     return;
@@ -213,8 +213,8 @@ export function flushAsyncObservers(shouldSchedule = true) {
           }
         };
 
-        if (shouldSchedule) {
-          schedule('actions', sendObserver);
+        if (_schedule) {
+          _schedule('actions', sendObserver);
         } else {
           sendObserver();
         }

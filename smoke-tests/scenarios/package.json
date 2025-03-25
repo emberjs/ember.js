@@ -1,0 +1,22 @@
+{
+  "name": "ember-source-scenarios",
+  "private": true,
+  "devDependencies": {
+    "@embroider/compat": "npm:@embroider/compat@latest",
+    "@embroider/core": "npm:@embroider/core@latest",
+    "@embroider/webpack": "npm:@embroider/webpack@latest",
+    "@swc-node/register": "^1.6.8",
+    "@swc/core": "^1.4.17",
+    "@swc/types": "^0.1.6",
+    "@types/node": "^20.12.7",
+    "qunit": "^2.20.1",
+    "scenario-tester": "^4.0.0",
+    "typescript": "5.1",
+    "webpack": "^5.91.0"
+  },
+  "scripts": {
+    "test": "qunit --require @swc-node/register *-test.ts",
+    "test:list": "scenario-tester list --require @swc-node/register --files=*-test.ts",
+    "test:output": "scenario-tester output --require @swc-node/register --files=*-test.ts"
+  }
+}

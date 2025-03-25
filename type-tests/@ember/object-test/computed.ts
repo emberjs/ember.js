@@ -57,7 +57,7 @@ class Person extends EmberObject {
     return `${this.get('firstName')} ${this.get('lastName')}`;
   }
 
-  @computed('fullName').readOnly()
+  @(computed('fullName').readOnly())
   get fullNameReadonly() {
     return this.get('fullName');
   }
@@ -73,7 +73,7 @@ class Person extends EmberObject {
     this.set('lastName', last);
   }
 
-  @computed().meta({ foo: 'bar' }).readOnly()
+  @(computed().meta({ foo: 'bar' }).readOnly())
   get combinators() {
     return this.get('firstName');
   }
