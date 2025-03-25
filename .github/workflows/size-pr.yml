@@ -40,6 +40,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pr
+          name: pr-${{ github.event.workflow_run.id }}
           path: pr/
           overwrite: true
