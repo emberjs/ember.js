@@ -29,14 +29,13 @@ jobs:
       - name: "Get sizes for development outputs"
         id: dev
         run: |
-          cd dist
+          cd dist/packages
           dust --ignore_hidden \
               --reverse --apparent-size \
-              --filter ".+.js$" \
               --no-percent-bars \
-              --only-file \
+              --only-dir \
               --depth 20 \
-              --full-paths > out.txt
+            > out.txt
           cp out.txt ../pr/
 
 
