@@ -34,28 +34,32 @@ jobs:
           run_id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
           workflow: size-pr.yml
           path: pr
+          if_no_artifact_found: fail
 
       - uses: dawidd6/action-download-artifact@v9
         with:
           name: sizes-main
           path: main
           workflow: size-main.yml
+          if_no_artifact_found: fail
 
       - run: |
           ls -la ./main
           ls -la ./pr
 
+      - name: "[PR] Get path of size output txt file"
+        id: find-pr-txt
+        run: echo "txtPath=$(ag -g out\.txt -l)" >> $GITHUB_OUTPUT
+
       - name: "[PR] Get sizes for development outputs"
         id: dev
         run: |
-          cd pr/
-
+          cat ${{ steps.find-pr-txt.txtPath }}
           echo 'sizes<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
               echo "$line" >> $GITHUB_OUTPUT
-          done <<< $(cat out.txt)
+          done <<< $(cat ${{ steps.find-pr-txt.txtPath }})
           echo 'EOF' >> $GITHUB_OUTPUT
-          cat out.txt
 
       - name: "[PR]: Get PR Number"
         id: pr-number
@@ -65,13 +69,13 @@ jobs:
         id: main-dev
         run: |
           cd main/
+          cat out.txt
 
           echo 'sizes<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
               echo "$line" >> $GITHUB_OUTPUT
           done <<< $(cat out.txt)
           echo 'EOF' >> $GITHUB_OUTPUT
-          cat out.txt
 
       #########################
       # Intended Layout:
