@@ -24,7 +24,7 @@ jobs:
       - name: Save PR number
         run: |
           mkdir -p ./pr
-          echo ${{ github.event.number }} > ./pr/NR
+          echo "${{ github.event.number }}" > ./pr/NR
 
       - name: "Get sizes for development outputs"
         id: dev
