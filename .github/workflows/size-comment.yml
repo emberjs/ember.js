@@ -91,8 +91,8 @@ jobs:
 
       - name: "[Dev] calculate diff"
         run: |
-          diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }}
-          echo $?
+          # diff exits with status 1 if there is a diff
+          set +x
           diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt
           cat dev-diff.txt
 
