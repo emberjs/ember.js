@@ -91,6 +91,8 @@ jobs:
 
       - name: "[Dev] calculate diff"
         run: |
+          diff main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }}
+          echo $?
           diff main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt
           cat dev-diff.txt
 
