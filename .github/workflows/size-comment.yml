@@ -91,9 +91,9 @@ jobs:
 
       - name: "[Dev] calculate diff"
         run: |
-          diff main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }}
+          diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }}
           echo $?
-          diff main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt
+          diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt
           cat dev-diff.txt
 
       - name: "[Dev] store diff in GITHUB_OUTPUT"
