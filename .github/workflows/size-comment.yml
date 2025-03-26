@@ -90,11 +90,9 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: "[Dev] calculate diff"
-        shell: bash
         run: |
           # diff exits with status 1 if there is a diff
-          set +x
-          diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt
+          diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt || echo "Differences exist"
           cat dev-diff.txt
 
       - name: "[Dev] store diff in GITHUB_OUTPUT"
