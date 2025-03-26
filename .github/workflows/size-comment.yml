@@ -90,6 +90,7 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: "[Dev] calculate diff"
+        shell: bash
         run: |
           # diff exits with status 1 if there is a diff
           set +x
