@@ -137,6 +137,8 @@ jobs:
           message: |
             <details><summary>Development Assets</summary>
 
+            Diff
+
             ```diff
             ${{ steps.dev-diff.outputs.diff }}
             ```
