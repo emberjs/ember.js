@@ -137,9 +137,13 @@ jobs:
           message: |
             <details><summary>Development Assets</summary>
 
+            Diff
+
             ```diff
             ${{ steps.dev-diff.outputs.diff }}
             ```
+
+            Details
 
             <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
             <tbody>
