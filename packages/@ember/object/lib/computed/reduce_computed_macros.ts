@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
+import { autoComputed, isDecoratorCall } from '@ember/-internals/metal';
 import { computed, get } from '@ember/object';
 import { compare } from '@ember/utils';
 import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
@@ -104,7 +104,7 @@ function multiArrayMacro(
 export function sum(dependentKey: string) {
   assert(
     'You attempted to use @sum as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return reduceMacro(dependentKey, (sum: number, item: number) => sum + item, 0, 'sum');
@@ -168,7 +168,7 @@ export function sum(dependentKey: string) {
 export function max(dependentKey: string) {
   assert(
     'You attempted to use @max as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
@@ -231,7 +231,7 @@ export function max(dependentKey: string) {
 export function min(dependentKey: string) {
   assert(
     'You attempted to use @min as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
@@ -328,7 +328,7 @@ export function map(
 ): PropertyDecorator {
   assert(
     'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   assert(
@@ -412,7 +412,7 @@ export function map(
 export function mapBy(dependentKey: string, propertyKey: string) {
   assert(
     'You attempted to use @mapBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   assert(
@@ -554,7 +554,7 @@ export function filter(
 ): PropertyDecorator {
   assert(
     'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   assert(
@@ -636,7 +636,7 @@ export function filter(
 export function filterBy(dependentKey: string, propertyKey: string, value?: unknown) {
   assert(
     'You attempted to use @filterBy as a decorator directly, but it requires atleast `dependentKey` and `propertyKey` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   assert(
@@ -696,7 +696,7 @@ export function uniq(
 ): PropertyDecorator {
   assert(
     'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   let args = [dependentKey, ...additionalDependentKeys];
@@ -765,7 +765,7 @@ export function uniq(
 export function uniqBy(dependentKey: string, propertyKey: string) {
   assert(
     'You attempted to use @uniqBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   assert(
@@ -864,7 +864,7 @@ export let union = uniq;
 export function intersect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
     'You attempted to use @intersect as a decorator directly, but it requires atleast one dependent key parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   let args = [dependentKey, ...additionalDependentKeys];
@@ -953,7 +953,7 @@ export function intersect(dependentKey: string, ...additionalDependentKeys: stri
 export function setDiff(setAProperty: string, setBProperty: string) {
   assert(
     'You attempted to use @setDiff as a decorator directly, but it requires atleast one dependent key parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   assert('`setDiff` computed macro requires exactly two dependent arrays.', arguments.length === 2);
@@ -1011,7 +1011,7 @@ export function setDiff(setAProperty: string, setBProperty: string) {
 export function collect(dependentKey: string, ...additionalDependentKeys: string[]) {
   assert(
     'You attempted to use @collect as a decorator directly, but it requires atleast one dependent key parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   let dependentKeys = [dependentKey, ...additionalDependentKeys];
@@ -1188,7 +1188,7 @@ export function sort(
 ): PropertyDecorator {
   assert(
     'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   if (DEBUG) {

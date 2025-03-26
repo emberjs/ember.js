@@ -16,7 +16,7 @@ import type { ExtendedMethodDecorator } from './decorator';
 import {
   ComputedDescriptor,
   descriptorForDecorator,
-  isElementDescriptor,
+  isDecoratorCall,
   makeComputedDecorator,
 } from './decorator';
 import { defineProperty } from './properties';
@@ -28,7 +28,7 @@ export type AliasDecorator = ExtendedMethodDecorator & PropertyDecorator & Alias
 export default function alias(altKey: string): AliasDecorator {
   assert(
     'You attempted to use @alias as a decorator directly, but it requires a `altKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
+    !isDecoratorCall(Array.prototype.slice.call(arguments))
   );
 
   // SAFETY: We passed in the impl for this class
