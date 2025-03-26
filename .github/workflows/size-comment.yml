@@ -96,7 +96,7 @@ jobs:
           echo "---------"
           cat dev-diff.txt
           echo "---------"
-          echo 'diff<<EOF' >> $GITHUB_OUTPUT
+          echo 'diffText<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
               echo "$line" >> $GITHUB_OUTPUT
           done <<< $(cat ./dev-diff.txt)
@@ -116,7 +116,7 @@ jobs:
           echo -e "${{ steps.dev.outputs.sizes }}"
 
           echo "Dev diff"
-          echo -e "${{ steps.dev-diff.outputs.diff }}"
+          echo -e "${{ steps.dev-diff.outputs.diffText }}"
 
 
       #########################
@@ -140,7 +140,7 @@ jobs:
             Diff
 
             ```diff
-            ${{ steps.dev-diff.outputs.diff }}
+            ${{ steps.dev-diff.outputs.diffText }}
             ```
 
             Details
