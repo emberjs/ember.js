@@ -143,6 +143,8 @@ jobs:
             ${{ steps.dev-diff.outputs.diff }}
             ```
 
+            Details
+
             <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
             <tbody>
             <tr><td>Dev</td><td>
