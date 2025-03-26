@@ -89,6 +89,17 @@ jobs:
           done <<< $(cat out.txt)
           echo 'EOF' >> $GITHUB_OUTPUT
 
+      - name: "[Dev] calculate diff"
+        id: dev-diff
+        run: |
+          diff main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }}) > dev-diff.txt
+          echo 'diff<<EOF' >> $GITHUB_OUTPUT
+          while IFS= read -r line; do
+              echo "$line" >> $GITHUB_OUTPUT
+          done <<< $(cat ./dev-diff.txt)
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+
 
       - name: "[Debug] collected data from artifacts"
         run: |
@@ -100,6 +111,10 @@ jobs:
 
           echo "PR out.txt"
           echo -e "${{ steps.dev.outputs.sizes }}"
+
+          echo "Dev diff"
+          echo -e "${{ steps.dev-diff.outputs.diff }}"
+
 
       #########################
       # Intended Layout:
@@ -117,6 +132,12 @@ jobs:
         with:
           issue: ${{ steps.find-pr-number.outputs.prNumber }}
           message: |
+            <details><summary>Development Assets</summary>
+
+            ```diff
+            ${{ steps.dev-diff.outputs.diff }}
+            ```
+
             <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
             <tbody>
             <tr><td>Dev</td><td>
@@ -133,6 +154,7 @@ jobs:
 
             </td></tr>
             </tbody></table>
+            </details>
 
 
 
