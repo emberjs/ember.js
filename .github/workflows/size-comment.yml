@@ -90,12 +90,13 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: "[Dev] calculate diff"
-        id: dev-diff
         run: |
           diff main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt
-          echo "---------"
           cat dev-diff.txt
-          echo "---------"
+
+      - name: "[Dev] store diff in GITHUB_OUTPUT"
+        id: dev-diff
+        run: |
           echo 'diffText<<EOF' >> $GITHUB_OUTPUT
           while IFS= read -r line; do
               echo "$line" >> $GITHUB_OUTPUT
