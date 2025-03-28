@@ -1,7 +1,6 @@
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
-import { testUnless, moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
-import { DEPRECATIONS } from '@ember/-internals/deprecations';
+import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 
 moduleFor(
   'Application Lifecycle - Component Context',
@@ -181,85 +180,6 @@ moduleFor(
       return this.visit('/').then(() => {
         let text = getTextOf(this.element.querySelector('#wrapper'));
         assert.equal(text, 'Some text inserted', 'The component is composed correctly');
-      });
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Components trigger actions in the parents context when called from within a block`](assert) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      this.addTemplate(
-        'application',
-        `
-      <div id='wrapper'>
-        {{#my-component}}
-          <a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>
-        {{/my-component}}
-      </div>
-    `
-      );
-
-      this.add(
-        'controller:application',
-        Controller.extend({
-          actions: {
-            fizzbuzz() {
-              assert.ok(true, 'action triggered on parent');
-            },
-          },
-        })
-      );
-      this.addComponent('my-component', {
-        ComponentClass: Component.extend({}),
-      });
-
-      return this.visit('/').then(() => {
-        this.$('#fizzbuzz', '#wrapper').click();
-      });
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} Components trigger actions in the components context when called from within its template`](
-      assert
-    ) {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      this.addTemplate(
-        'application',
-        `
-      <div id='wrapper'>{{#my-component}}{{text}}{{/my-component}}</div>
-    `
-      );
-
-      this.add(
-        'controller:application',
-        Controller.extend({
-          actions: {
-            fizzbuzz() {
-              assert.ok(false, 'action on the wrong context');
-            },
-          },
-        })
-      );
-      this.addComponent('my-component', {
-        ComponentClass: Component.extend({
-          actions: {
-            fizzbuzz() {
-              assert.ok(true, 'action triggered on component');
-            },
-          },
-        }),
-        template: `<a href='#' id='fizzbuzz' {{action 'fizzbuzz'}}>Fizzbuzz</a>`,
-      });
-
-      return this.visit('/').then(() => {
-        this.$('#fizzbuzz', '#wrapper').click();
       });
     }
   }

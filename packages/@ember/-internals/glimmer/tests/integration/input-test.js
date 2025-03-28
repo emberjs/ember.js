@@ -1,5 +1,4 @@
-import { testUnless, RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
-import { DEPRECATIONS } from '../../../deprecations';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
@@ -200,32 +199,6 @@ moduleFor(
       this.setComponentValue('hola');
 
       this.assertValue('hola', 'Value is used');
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} GH18211 input checked attribute, without a value, works with the action helper`]() {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      this.render(`<input type="checkbox" checked {{action "someAction"}}>`, {
-        actions: { someAction() {} },
-      });
-      this.assertPropertyHasValue('checked', true);
-    }
-
-    [`${testUnless(
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isRemoved
-    )} GH18211 input checked attribute, with a value, works with the action helper`]() {
-      expectDeprecation(
-        /Usage of the `\{\{action\}\}` modifier is deprecated./,
-        DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION.isEnabled
-      );
-      this.render(`<input type="checkbox" checked={{true}} {{action "someAction"}}>`, {
-        actions: { someAction() {} },
-      });
-      this.assertPropertyHasValue('checked', true);
     }
 
     ['@test GH18211 input checked attribute, without a value, works with attributes with values']() {

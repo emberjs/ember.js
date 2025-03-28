@@ -1,21 +1,11 @@
 import type { InternalOwner } from '@ember/-internals/owner';
-import { DEPRECATIONS, deprecateUntil } from '@ember/-internals/deprecations';
-import { uuid } from '@ember/-internals/utils';
-import { ActionManager, EventDispatcher, isSimpleClick } from '@ember/-internals/views';
+import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { registerDestructor } from '@glimmer/destroyable';
-import { DEBUG } from '@glimmer/env';
-import type {
-  CapturedArguments,
-  CapturedNamedArguments,
-  CapturedPositionalArguments,
-  InternalModifierManager,
-} from '@glimmer/interfaces';
-import { setInternalModifierManager } from '@glimmer/manager';
+import type { CapturedNamedArguments, CapturedPositionalArguments } from '@glimmer/interfaces';
 import { isInvokableRef, updateRef, valueForRef } from '@glimmer/reference';
-import type { UpdatableTag } from '@glimmer/validator';
 import { createUpdatableTag } from '@glimmer/validator';
 import type { SimpleElement } from '@simple-dom/interface';
 
@@ -180,115 +170,3 @@ export class ActionState {
     return shouldBubble;
   }
 }
-
-class ActionModifierManager implements InternalModifierManager<ActionState, object> {
-  create(
-    owner: InternalOwner,
-    element: SimpleElement,
-    _state: object,
-    { named, positional }: CapturedArguments
-  ): ActionState {
-    let actionArgs: any[] = [];
-    // The first two arguments are (1) `this` and (2) the action name.
-    // Everything else is a param.
-    for (let i = 2; i < positional.length; i++) {
-      actionArgs.push(positional[i]);
-    }
-
-    let actionId = uuid();
-
-    return new ActionState(element, owner, actionId, actionArgs, named, positional);
-  }
-
-  getDebugInstance(): unknown {
-    return null;
-  }
-
-  getDebugName(): string {
-    return 'action';
-  }
-
-  install(actionState: ActionState): void {
-    deprecateUntil(
-      `Usage of the \`{{action}}\` modifier is deprecated. Migrate to native functions and function invocation.`,
-      DEPRECATIONS.DEPRECATE_TEMPLATE_ACTION
-    );
-    let { element, actionId, positional } = actionState;
-
-    let actionName;
-    let actionNameRef: any;
-    let implicitTarget;
-
-    if (positional.length > 1) {
-      implicitTarget = positional[0];
-      actionNameRef = positional[1];
-
-      if (isInvokableRef(actionNameRef)) {
-        actionName = actionNameRef;
-      } else {
-        actionName = valueForRef(actionNameRef);
-
-        if (DEBUG) {
-          let actionPath = actionNameRef.debugLabel;
-          let actionPathParts = actionPath.split('.');
-          let actionLabel = actionPathParts[actionPathParts.length - 1];
-
-          assert(
-            'You specified a quoteless path, `' +
-              actionPath +
-              '`, to the ' +
-              '{{action}} helper which did not resolve to an action name (a ' +
-              'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
-              '{{action "' +
-              actionLabel +
-              '"}}).',
-            typeof actionName === 'string' || typeof actionName === 'function'
-          );
-        }
-      }
-    }
-
-    actionState.actionName = actionName;
-    actionState.implicitTarget = implicitTarget;
-
-    this.ensureEventSetup(actionState);
-    ActionHelper.registerAction(actionState);
-
-    element.setAttribute('data-ember-action', '');
-    element.setAttribute(`data-ember-action-${actionId}`, String(actionId));
-  }
-
-  update(actionState: ActionState): void {
-    let { positional } = actionState;
-    let actionNameRef = positional[1];
-    assert('Expected at least one positional arg', actionNameRef);
-
-    if (!isInvokableRef(actionNameRef)) {
-      actionState.actionName = valueForRef(actionNameRef);
-    }
-
-    let newEventName = actionState.getEventName();
-    if (newEventName !== actionState.eventName) {
-      this.ensureEventSetup(actionState);
-      actionState.eventName = actionState.getEventName();
-    }
-  }
-
-  ensureEventSetup(actionState: ActionState): void {
-    let dispatcher = actionState.owner.lookup('event_dispatcher:main');
-    assert('Expected dispatcher to be an EventDispatcher', dispatcher instanceof EventDispatcher);
-    dispatcher?.setupHandlerForEmberEvent(actionState.eventName);
-  }
-
-  getTag(actionState: ActionState): UpdatableTag {
-    return actionState.tag;
-  }
-
-  getDestroyable(actionState: ActionState): object {
-    return actionState;
-  }
-}
-
-const ACTION_MODIFIER_MANAGER = new ActionModifierManager();
-
-export default setInternalModifierManager(ACTION_MODIFIER_MANAGER, {});
