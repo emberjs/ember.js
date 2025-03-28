@@ -3,14 +3,11 @@ import {
   RenderingTestCase,
   strip,
   runTask,
-  testUnless,
-  expectDeprecation,
 } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
 import { Component, compile } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 import { setComponentTemplate } from '@glimmer/manager';
 
 class AbstractAppendTest extends RenderingTestCase {
@@ -286,15 +283,8 @@ class AbstractAppendTest extends RenderingTestCase {
     );
   }
 
-  [`${testUnless(
-    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-  )} lifecycle hooks during component append`](assert) {
+  ['@test lifecycle hooks during component append'](assert) {
     let hooks = [];
-
-    expectDeprecation(
-      /resolved templates/,
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-    );
 
     let oldRegisterComponent = this.registerComponent;
     let componentsByName = {};
@@ -539,15 +529,8 @@ class AbstractAppendTest extends RenderingTestCase {
     );
   }
 
-  [`${testUnless(
-    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-  )} appending, updating and destroying a single component`](assert) {
+  ['@test appending, updating and destroying a single component'](assert) {
     let willDestroyCalled = 0;
-
-    expectDeprecation(
-      /separately resolved templates/,
-      DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isEnabled
-    );
 
     this.registerComponent('x-parent', {
       ComponentClass: Component.extend({
@@ -652,9 +635,7 @@ class AbstractAppendTest extends RenderingTestCase {
     assert.equal(renderer._roots.length, 0, 'released the root component');
   }
 
-  [`${testUnless(
-    DEPRECATIONS.DEPRECATE_COMPONENT_TEMPLATE_RESOLVING.isRemoved
-  )} appending, updating and destroying multiple components`](assert) {
+  ['@test appending, updating and destroying multiple components'](assert) {
     let willDestroyCalled = 0;
 
     this.registerComponent('x-first', {
