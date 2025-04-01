@@ -5,12 +5,10 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: initializer', function () {
@@ -18,14 +16,7 @@ describe('Blueprint: initializer', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew();
     });
 
     it('initializer foo', function () {
@@ -87,14 +78,7 @@ describe('Blueprint: initializer', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon' });
     });
 
     it('initializer foo', function () {
@@ -150,14 +134,7 @@ describe('Blueprint: initializer', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('initializer foo --in-repo-addon=my-addon', function () {

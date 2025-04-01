@@ -4,12 +4,10 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: initializer-test', function () {
@@ -20,39 +18,11 @@ describe('Blueprint: initializer-test', function () {
       return emberNew();
     });
 
-    describe('with ember-cli-qunit@4.1.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-      });
-
-      it('initializer-test foo', function () {
-        return emberGenerateDestroy(['initializer-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/default.js')
-          );
-        });
-      });
-    });
-
-    describe('with ember-cli-qunit@4.2.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-qunit', '4.2.0');
-      });
-
-      it('initializer-test foo', function () {
-        return emberGenerateDestroy(['initializer-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/rfc232.js')
-          );
-        });
+    it('initializer-test foo', function () {
+      return emberGenerateDestroy(['initializer-test', 'foo'], (_file) => {
+        expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
+          fixture('initializer-test/app.js')
+        );
       });
     });
   });
@@ -62,21 +32,11 @@ describe('Blueprint: initializer-test', function () {
       return emberNew({ target: 'addon' });
     });
 
-    describe('with ember-cli-qunit@4.1.0', function () {
-      beforeEach(function () {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-      });
-
-      it('initializer-test foo', function () {
-        return emberGenerateDestroy(['initializer-test', 'foo'], (_file) => {
-          expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/dummy.js')
-          );
-        });
+    it('initializer-test foo', function () {
+      return emberGenerateDestroy(['initializer-test', 'foo'], (_file) => {
+        expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
+          fixture('initializer-test/addon.js')
+        );
       });
     });
   });

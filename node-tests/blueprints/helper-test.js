@@ -5,12 +5,10 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
-const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
-const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: helper', function () {
@@ -18,20 +16,14 @@ describe('Blueprint: helper', function () {
 
   describe('in app', function () {
     beforeEach(function () {
-      return emberNew().then(() => {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-      });
+      return emberNew();
     });
 
     it('helper foo/bar-baz', function () {
       return emberGenerateDestroy(['helper', 'foo/bar-baz'], (_file) => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/nested.js')
         );
       });
     });
@@ -43,7 +35,7 @@ describe('Blueprint: helper', function () {
 
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/nested.js')
         );
       });
     });
@@ -52,7 +44,7 @@ describe('Blueprint: helper', function () {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], (_file) => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/nested.js')
         );
       });
     });
@@ -64,7 +56,7 @@ describe('Blueprint: helper', function () {
 
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/nested.js')
         );
       });
     });
@@ -78,7 +70,7 @@ describe('Blueprint: helper', function () {
         return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], (_file) => {
           expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/integration.js')
+            fixture('helper-test/nested.js')
           );
         });
       });
@@ -90,7 +82,7 @@ describe('Blueprint: helper', function () {
 
           expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/integration.js')
+            fixture('helper-test/nested.js')
           );
         });
       });
@@ -99,13 +91,7 @@ describe('Blueprint: helper', function () {
 
   describe('in addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'addon' }).then(() => {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-      });
+      return emberNew({ target: 'addon' });
     });
 
     it('helper foo/bar-baz', function () {
@@ -113,7 +99,7 @@ describe('Blueprint: helper', function () {
         expect(_file('addon/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/addon-nested.js')
         );
       });
     });
@@ -127,7 +113,7 @@ describe('Blueprint: helper', function () {
         expect(_file('addon/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/addon-nested.js')
         );
       });
     });
@@ -157,13 +143,7 @@ describe('Blueprint: helper', function () {
 
   describe('in in-repo-addon', function () {
     beforeEach(function () {
-      return emberNew({ target: 'in-repo-addon' }).then(() => {
-        modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]);
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-      });
+      return emberNew({ target: 'in-repo-addon' });
     });
 
     it('helper foo/bar-baz --in-repo-addon=my-addon', function () {
@@ -177,7 +157,7 @@ describe('Blueprint: helper', function () {
             fixture('helper/helper-addon.js')
           );
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/integration.js')
+            fixture('helper-test/nested.js')
           );
         }
       );
@@ -198,7 +178,7 @@ describe('Blueprint: helper', function () {
             fixture('helper/helper-addon.js')
           );
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/integration.js')
+            fixture('helper-test/nested.js')
           );
         }
       );

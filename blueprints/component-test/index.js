@@ -8,14 +8,13 @@ const semver = require('semver');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 const { modulePrefixForProject } = require('../-utils');
-const useTestFrameworkDetector = require('../test-framework-detector');
 
 function invocationFor(options) {
   let parts = options.entity.name.split('/');
   return parts.map((p) => stringUtil.classify(p)).join('::');
 }
 
-module.exports = useTestFrameworkDetector({
+module.exports = {
   description: 'Generates a component integration or unit test.',
 
   shouldTransformTypeScript: true,
@@ -118,4 +117,4 @@ module.exports = useTestFrameworkDetector({
       ]);
     }
   },
-});
+};
