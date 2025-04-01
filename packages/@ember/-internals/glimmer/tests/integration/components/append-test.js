@@ -1,9 +1,4 @@
-import {
-  moduleFor,
-  RenderingTestCase,
-  strip,
-  runTask,
-} from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
@@ -549,7 +544,7 @@ class AbstractAppendTest extends RenderingTestCase {
         tagName: '',
       }),
 
-      resolveableTemplate: '[child: {{this.bar}}]{{yield}}',
+      template: '[child: {{this.bar}}]{{yield}}',
     });
 
     let XParent;
