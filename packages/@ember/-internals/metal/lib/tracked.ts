@@ -8,6 +8,11 @@ import { CHAIN_PASS_THROUGH } from './chain-tags';
 import type { ExtendedMethodDecorator, DecoratorPropertyDescriptor } from './decorator';
 import { COMPUTED_SETTERS, isElementDescriptor, setClassicDecorator } from './decorator';
 import { SELF_TAG } from './tags';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from './decorator-util';
 
 /**
   @decorator
@@ -82,6 +87,11 @@ export function tracked(
   desc: DecoratorPropertyDescriptor
 ): DecoratorPropertyDescriptor;
 export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorPropertyDescriptor {
+  if (isModernDecoratorArgs(args)) {
+    // TODO: cast is a lie, keeping the public types unchanged for now
+    return tracked2023(args) as unknown as DecoratorPropertyDescriptor;
+  }
+
   assert(
     `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
     !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
@@ -120,10 +130,18 @@ export function tracked(...args: any[]): ExtendedMethodDecorator | DecoratorProp
       _meta?: any,
       isClassicDecorator?: boolean
     ): DecoratorPropertyDescriptor {
-      assert(
-        `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
-        isClassicDecorator
-      );
+      let args = Array.from(arguments);
+      if (isModernDecoratorArgs(args)) {
+        assert(
+          `You attempted to set a default value for ${args[1].name?.toString()} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+          isClassicDecorator
+        );
+      } else {
+        assert(
+          `You attempted to set a default value for ${key} with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
+          isClassicDecorator
+        );
+      }
 
       let fieldDesc = {
         initializer: initializer || (() => value),
@@ -201,5 +219,38 @@ export class TrackedDescriptor {
 
   set(obj: object, _key: string, value: unknown): void {
     this._set.call(obj, value);
+  }
+}
+
+function tracked2023(args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+  switch (dec.kind) {
+    case 'field':
+      dec.context.addInitializer(function (this: any) {
+        let initial = this[dec.context.name];
+        Object.defineProperty(
+          this,
+          dec.context.name,
+          descriptorForField([
+            this,
+            dec.context.name as string,
+            { initializer: () => initial },
+          ]) as any
+        );
+      });
+      return;
+    case 'accessor':
+      return {
+        get(this: object) {
+          consumeTag(tagFor(this, dec.context.name));
+          return dec.value.get.call(this);
+        },
+        set(this: object, value: unknown) {
+          dirtyTagFor(this, dec.context.name);
+          return dec.value.set.call(this, value);
+        },
+      };
+    default:
+      throw new Error(`unimplemented: tracked on ${dec.kind} ${dec.context.name?.toString()}`);
   }
 }
