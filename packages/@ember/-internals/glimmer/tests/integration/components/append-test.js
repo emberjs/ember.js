@@ -1,16 +1,8 @@
-import {
-  moduleFor,
-  RenderingTestCase,
-  strip,
-  runTask,
-  testUnless,
-  expectDeprecation,
-} from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/object';
 
 import { Component, compile } from '../../utils/helpers';
-import { DEPRECATIONS } from '../../../../deprecations';
 import { setComponentTemplate } from '@glimmer/manager';
 
 class AbstractAppendTest extends RenderingTestCase {
