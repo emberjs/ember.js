@@ -29,6 +29,12 @@ module.exports = {
       name: 'reset-namespace',
       type: Boolean,
     },
+    {
+      name: 'route-authoring-format',
+      type: ['loose', 'strict'],
+      default: 'loose',
+      aliases: [{ loose: 'loose' }, { strict: 'strict' }],
+    },
   ],
 
   init() {
@@ -78,6 +84,15 @@ module.exports = {
         return 'app';
       },
     };
+  },
+
+  files() {
+    const files = this._super.files.apply(this, arguments);
+    const extensionToRemove = this.options.routeAuthoringFormat === 'strict' ? '.hbs' : '.gts';
+
+    return files.filter((file) => {
+      return !file.endsWith(extensionToRemove);
+    });
   },
 
   locals: function (options) {
