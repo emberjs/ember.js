@@ -130,6 +130,7 @@ module.exports = useTestFrameworkDetector({
       selfCloseComponent,
       friendlyTestDescription,
       hbsImportStatement,
+      pkgName: options.project.pkg.name,
     };
   },
 
