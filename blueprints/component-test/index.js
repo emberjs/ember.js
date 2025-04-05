@@ -129,6 +129,7 @@ module.exports = {
       selfCloseComponent,
       friendlyTestDescription,
       hbsImportStatement,
+      pkgName: options.project.pkg.name,
     };
   },
 
