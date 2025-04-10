@@ -2,9 +2,7 @@
 
 const path = require('path');
 
-const useTestFrameworkDetector = require('../test-framework-detector');
-
-module.exports = useTestFrameworkDetector({
+module.exports = {
   description: 'Generates a mixin unit test.',
 
   fileMapTokens() {
@@ -24,4 +22,4 @@ module.exports = useTestFrameworkDetector({
       friendlyTestName: ['Unit', 'Mixin', options.entity.name].join(' | '),
     };
   },
-});
+};

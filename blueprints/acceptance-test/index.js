@@ -7,9 +7,8 @@ const stringUtils = require('ember-cli-string-utils');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 const { modulePrefixForProject } = require('../-utils');
-const useTestFrameworkDetector = require('../test-framework-detector');
 
-module.exports = useTestFrameworkDetector({
+module.exports = {
   description: 'Generates an acceptance test for a feature.',
 
   shouldTransformTypeScript: true,
@@ -42,4 +41,4 @@ module.exports = useTestFrameworkDetector({
       destroyAppExists,
     };
   },
-});
+};
