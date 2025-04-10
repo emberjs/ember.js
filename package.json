@@ -244,6 +244,7 @@
       "@ember/debug/container-debug-adapter.js": "ember-source/@ember/debug/container-debug-adapter.js",
       "@ember/debug/data-adapter.js": "ember-source/@ember/debug/data-adapter.js",
       "@ember/debug/index.js": "ember-source/@ember/debug/index.js",
+      "@ember/debug/inspector-support.js": "ember-source/@ember/debug/inspector-support.js",
       "@ember/debug/lib/assert.js": "ember-source/@ember/debug/lib/assert.js",
       "@ember/debug/lib/capture-render-tree.js": "ember-source/@ember/debug/lib/capture-render-tree.js",
       "@ember/debug/lib/deprecate.js": "ember-source/@ember/debug/lib/deprecate.js",
