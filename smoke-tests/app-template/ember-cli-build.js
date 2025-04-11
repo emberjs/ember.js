@@ -5,7 +5,7 @@ const { maybeEmbroider } = require('@embroider/test-setup');
 
 module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
-    // Add options here
+    /* SCENARIO_INSERTION_TARGET */
   });
 
   // Use `app.import` to add additional libraries to the generated

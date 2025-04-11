@@ -100,18 +100,27 @@ jobs:
           - name: "Production build, with optional features"
             BUILD: "production"
             ENABLE_OPTIONAL_FEATURES: "true"
+          - name: "Stable decorators"
+            VITE_STABLE_DECORATORS: "true"
 
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - name: build
         run: pnpm vite build --mode=${{ matrix.BUILD || 'development' }}
+        env:
+          ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
+          OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
+          ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
+          RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+          VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
       - name: test
         env:
           ALL_DEPRECATIONS_ENABLED: ${{ matrix.ALL_DEPRECATIONS_ENABLED }}
           OVERRIDE_DEPRECATION_VERSION: ${{ matrix.OVERRIDE_DEPRECATION_VERSION }}
           ENABLE_OPTIONAL_FEATURES: ${{ matrix.ENABLE_OPTIONAL_FEATURES }}
           RAISE_ON_DEPRECATION: ${{ matrix.RAISE_ON_DEPRECATION }}
+          VITE_STABLE_DECORATORS: ${{ matrix.VITE_STABLE_DECORATORS }}
 
         run: pnpm test
 

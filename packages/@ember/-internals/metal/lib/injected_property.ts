@@ -5,6 +5,11 @@ import { computed } from './computed';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from './decorator';
 import { isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
+import {
+  type Decorator,
+  identifyModernDecoratorArgs,
+  isModernDecoratorArgs,
+} from './decorator-util';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
 
@@ -49,6 +54,10 @@ function inject(
   let elementDescriptor;
   let name: string | undefined;
 
+  if (isModernDecoratorArgs(args)) {
+    return inject2023(type, undefined, args);
+  }
+
   if (isElementDescriptor(args)) {
     elementDescriptor = args;
   } else if (typeof args[0] === 'string') {
@@ -85,6 +94,52 @@ function inject(
     return decorator(elementDescriptor[0], elementDescriptor[1], elementDescriptor[2]);
   } else {
     return decorator;
+  }
+}
+
+function inject2023(type: string, name: string | undefined, args: Parameters<Decorator>) {
+  const dec = identifyModernDecoratorArgs(args);
+
+  function getInjection(this: any) {
+    let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
+
+    assert(
+      `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+      Boolean(owner)
+    );
+
+    return owner.lookup(`${type}:${name || (dec.context.name as string)}`);
+  }
+
+  if (DEBUG) {
+    DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
+      type,
+      name,
+    });
+  }
+
+  switch (dec.kind) {
+    case 'field':
+      dec.context.addInitializer(function (this: any) {
+        Object.defineProperty(this, dec.context.name, {
+          get: getInjection,
+          set(this: object, value: unknown) {
+            Object.defineProperty(this, dec.context.name, { value });
+          },
+        });
+      });
+      return;
+    case 'accessor':
+      return {
+        get: getInjection,
+        set(this: object, value: unknown) {
+          Object.defineProperty(this, dec.context.name, { value });
+        },
+      };
+    default:
+      throw new Error(
+        `The @service decorator does not support ${dec.kind} ${dec.context.name?.toString()}`
+      );
   }
 }
 
