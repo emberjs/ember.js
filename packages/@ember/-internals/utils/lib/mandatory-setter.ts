@@ -9,6 +9,8 @@ export let setupMandatorySetter:
 export let teardownMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
 export let setWithMandatorySetter: ((obj: object, keyName: string, value: any) => void) | undefined;
 
+export let isMandatorySetter: ((obj: object, keyName: string) => boolean) | undefined;
+
 type PropertyDescriptorWithMeta = PropertyDescriptor & { hadOwnProperty?: boolean };
 
 function isElementKey(key: string | number | symbol) {
@@ -91,6 +93,11 @@ if (DEBUG) {
         );
       },
     });
+  };
+
+  isMandatorySetter = function (obj: object, keyName: string) {
+    let setters = MANDATORY_SETTERS.get(obj);
+    return setters !== undefined && setters[keyName] !== undefined;
   };
 
   teardownMandatorySetter = function (obj: object, keyName: string | symbol) {
