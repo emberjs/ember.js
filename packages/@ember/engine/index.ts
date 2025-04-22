@@ -472,7 +472,7 @@ export function buildInitializerMethod<
   B extends 'initializers' | 'instanceInitializers',
   T extends B extends 'initializers' ? Engine : EngineInstance,
 >(bucketName: B, humanName: string) {
-  if (bucketName === '__proto__' || bucketName === 'constructor' || bucketName === 'prototype') {
+  if (bucketName !== 'initializers' && bucketName !== 'instanceInitializers') {
     throw new Error(`Invalid bucketName: ${bucketName}`);
   }
   return function (this: typeof Engine, initializer: Initializer<T>) {
