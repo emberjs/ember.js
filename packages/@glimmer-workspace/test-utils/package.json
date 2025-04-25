@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "name": "@glimmer-workspace/test-utils",
+  "version": "0.92.0",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/util": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*",
+    "eslint": "^9.20.1"
+  }
+}

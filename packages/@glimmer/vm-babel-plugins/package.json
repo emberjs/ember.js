@@ -1,0 +1,42 @@
+{
+  "name": "@glimmer/vm-babel-plugins",
+  "version": "0.93.4",
+  "license": "MIT",
+  "description": "Compiles out VM assertion and deprecation utilities and debug tooling based on environment",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/vm-babel-plugins"
+  },
+  "author": "Tom Dale <tom@tomdale.net>",
+  "private": false,
+  "type": "module",
+  "main": "./index.js",
+  "exports": "./index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "rollup -c rollup.config.mjs",
+    "test": "mocha",
+    "test:publint": "publint"
+  },
+  "dependencies": {
+    "babel-plugin-debug-macros": "^0.3.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer-workspace/env": "workspace:*",
+    "@types/node": "^22.13.4",
+    "babel-plugin-tester": "^11.0.4",
+    "eslint": "^9.20.1",
+    "mocha": "^10.2.0",
+    "publint": "^0.3.2",
+    "rollup": "^4.2.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

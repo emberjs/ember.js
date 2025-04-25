@@ -6,8 +6,7 @@
   test suite.
 */
 
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as Compiler from './packages/ember-template-compiler/minimal.ts'
 
 export default {
   plugins: [
@@ -27,10 +26,7 @@ export default {
     [
       'babel-plugin-ember-template-compilation',
       {
-        compilerPath: resolve(
-          dirname(fileURLToPath(import.meta.url)),
-          './broccoli/glimmer-template-compiler'
-        ),
+        compiler: Compiler,
       },
     ],
   ],

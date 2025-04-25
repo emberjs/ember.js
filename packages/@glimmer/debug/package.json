@@ -1,0 +1,24 @@
+{
+  "name": "@glimmer/debug",
+  "private": true,
+  "version": "0.92.0",
+  "license": "MIT",
+  "description": "Utilities for helping make working in the vm easier. these should be inlined and stripped for ember usage.",
+  "sideEffects": false,
+  "type": "module",
+  "exports": "./index.ts",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/reference": "workspace:*",
+    "@glimmer/util": "workspace:*",
+    "@glimmer/vm": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/constants": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
+    "eslint": "^9.20.1",
+    "typescript": "^5.7.3"
+  }
+}

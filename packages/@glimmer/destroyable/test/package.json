@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "@glimmer-test/destroyable",
+  "version": "0.92.0",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/destroyable": "workspace:*",
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/util": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*"
+  }
+}

@@ -1,4 +1,4 @@
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase } from '../index';
 
 moduleFor(
   'internal-test-helpers',

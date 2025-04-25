@@ -1,0 +1,33 @@
+import type {
+  ClassicResolver,
+  HelperDefinitionState,
+  ModifierDefinitionState,
+  Nullable,
+  ResolvedComponentDefinition,
+} from '@glimmer/interfaces';
+
+import type { TestJitRuntimeResolver } from './resolver';
+
+export default class JitCompileTimeLookup implements ClassicResolver {
+  constructor(private resolver: TestJitRuntimeResolver) {}
+
+  lookupHelper(name: string): Nullable<HelperDefinitionState> {
+    return this.resolver.lookupHelper(name);
+  }
+
+  lookupModifier(name: string): Nullable<ModifierDefinitionState> {
+    return this.resolver.lookupModifier(name);
+  }
+
+  lookupComponent(name: string, owner?: object): Nullable<ResolvedComponentDefinition> {
+    return this.resolver.lookupComponent(name, owner);
+  }
+
+  lookupBuiltInHelper(name: string): Nullable<HelperDefinitionState> {
+    return this.resolver.lookupHelper(`$keyword.${name}`);
+  }
+
+  lookupBuiltInModifier(_name: string): Nullable<ModifierDefinitionState> {
+    return null;
+  }
+}

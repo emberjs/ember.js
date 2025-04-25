@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "name": "@glimmer-test/compiler",
+  "version": "0.92.0",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/compiler": "workspace:*",
+    "@glimmer/interfaces": "workspace:*",
+    "@glimmer/syntax": "workspace:*",
+    "@glimmer/util": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/constants": "workspace:*"
+  }
+}
