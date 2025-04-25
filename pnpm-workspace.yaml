@@ -2,4 +2,6 @@ packages:
   - 'packages/*'
   - 'packages/@ember/*'
   - 'packages/@glimmer/*'
+  - 'packages/@glimmer-workspace/*'
+  - 'packages/@types/*'
   - 'smoke-tests/*'
