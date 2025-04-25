@@ -11,20 +11,8 @@
   "author": "Tom Dale <tom@tomdale.net>",
   "private": false,
   "type": "module",
-  "exports": "./index.ts",
-  "publishConfig": {
-    "access": "public",
-    "exports": {
-      ".": {
-        "development": {
-          "default": "./dist/dev/index.js"
-        },
-        "default": {
-          "default": "./dist/prod/index.js"
-        }
-      }
-    }
-  },
+  "main": "./index.js",
+  "exports": "./index.js",
   "files": [
     "dist"
   ],
@@ -37,6 +25,7 @@
     "babel-plugin-debug-macros": "^0.3.4"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.4",
     "@glimmer-workspace/build-support": "workspace:*",
     "@glimmer-workspace/env": "workspace:*",
     "@types/node": "^22.13.4",

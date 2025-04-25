@@ -7,8 +7,8 @@ declare global {
 }
 
 // All of these flags are expected to become constant `false` in production builds.
-export const LOCAL_DEBUG = !!(import.meta.env.VM_LOCAL_DEV && !hasFlag('disable_local_debug'));
-export const LOCAL_TRACE_LOGGING = !!(
+export const LOCAL_DEBUG = Boolean(import.meta.env.VM_LOCAL_DEV && !hasFlag('disable_local_debug'));
+export const LOCAL_TRACE_LOGGING = Boolean(
   import.meta.env.VM_LOCAL_DEV && hasFlag('enable_trace_logging')
 );
 export const LOCAL_EXPLAIN_LOGGING =

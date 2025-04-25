@@ -220,16 +220,6 @@ export function exposedDependencies() {
     'dag-map': require.resolve('dag-map/dag-map.js'),
     router_js: require.resolve('router_js/dist/modules/index.js'),
     'route-recognizer': require.resolve('route-recognizer/dist/route-recognizer.es.js'),
-    ...walkGlimmerDeps([
-      '@glimmer/node',
-      '@simple-dom/document',
-      '@glimmer/manager',
-      '@glimmer/destroyable',
-      '@glimmer/owner',
-      '@glimmer/opcode-compiler',
-      '@glimmer/runtime',
-      '@glimmer/validator',
-    ]),
   };
 }
 
@@ -245,43 +235,11 @@ export function hiddenDependencies() {
       findFromProject('@glimmer/syntax', '@handlebars/parser'),
       'module'
     ).path,
-    ...walkGlimmerDeps(['@glimmer/compiler']),
     'decorator-transforms/runtime': resolve(
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
   };
-}
-
-function walkGlimmerDeps(packageNames) {
-  let seen = new Set();
-  let entrypoints = {};
-  let queue = packageNames.map((name) => findFromProject(name));
-  let pkg;
-
-  while ((pkg = queue.pop()) !== undefined) {
-    if (seen.has(pkg)) {
-      continue;
-    }
-    seen.add(pkg);
-
-    if (!pkg.name.startsWith('@glimmer/') && !pkg.name.startsWith('@simple-dom/')) {
-      continue;
-    }
-
-    let pkgModule = entrypoint(pkg, 'module');
-
-    if (pkgModule && existsSync(pkgModule.path)) {
-      entrypoints[pkg.name] = pkgModule.path;
-    }
-
-    let dependencies = pkg.dependencies;
-    if (dependencies) {
-      queue.push(...dependencies);
-    }
-  }
-
-  return entrypoints;
 }
 
 function findFromProject(...names) {
