@@ -1,0 +1,25 @@
+{
+  "name": "@glimmer-workspace/repo-metadata",
+  "private": true,
+  "version": "0.92.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./metadata.json": "./metadata.json"
+  },
+  "scripts": {},
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "execa": "^9.5.2",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@pnpm/types": "^1000.1.1",
+    "@pnpm/workspace.find-packages": "^1000.0.10",
+    "@types/node": "^22.13.4",
+    "pkg-entry-points": "^1.1.1"
+  }
+}
