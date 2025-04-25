@@ -10,6 +10,8 @@ import {
   resolvePackages,
   exposedDependencies,
   hiddenDependencies,
+  inline,
+  replacements,
 } from './rollup.config.mjs';
 
 const require = createRequire(import.meta.url);
@@ -36,6 +38,8 @@ export default defineConfig(({ mode }) => {
         extensions: ['.js', '.ts'],
         configFile: resolve(dirname(fileURLToPath(import.meta.url)), './babel.test.config.mjs'),
       }),
+      inline(),
+      ...replacements('dev'),
       resolvePackages({ ...exposedDependencies(), ...hiddenDependencies() }),
       viteResolverBug(),
       version(),

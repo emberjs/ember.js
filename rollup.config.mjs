@@ -6,6 +6,10 @@ import glob from 'glob';
 import * as resolveExports from 'resolve.exports';
 import { babel } from '@rollup/plugin-babel';
 import sharedBabelConfig from './babel.config.mjs';
+import replace from '@rollup/plugin-replace';
+import * as insert from 'rollup-plugin-insert';
+
+
 
 // eslint-disable-next-line no-redeclare
 const require = createRequire(import.meta.url);
@@ -575,4 +579,139 @@ function handleRollupWarnings(level, log, handler) {
     default:
       handler(level, log);
   }
+}
+
+const INLINE_PREFIX = '\0inline:';
+
+/**
+ * @returns {import("rollup").Plugin}
+ */
+export const inline = () => {
+  return {
+    name: 'inline',
+
+    async resolveId(source, importer, options) {
+      if (source.endsWith('?inline')) {
+        const path = source.slice(0, -7);
+        const resolved = await this.resolve(path, importer, options);
+
+        if (resolved && !resolved.external) {
+          await this.load(resolved);
+          return INLINE_PREFIX + resolved.id;
+        }
+      }
+    },
+
+    async load(id) {
+      if (id.startsWith(INLINE_PREFIX)) {
+        const path = id.slice(INLINE_PREFIX.length);
+        const code = readFileSync(path, 'utf8');
+
+        return Promise.resolve({
+          code: `export default ${JSON.stringify(code)};`,
+        });
+      }
+    },
+  };
+};
+
+export const EXTERNAL_OPTIONS = [
+  [
+    'is',
+    [
+      'tslib',
+      '@glimmer/local-debug-flags',
+      '@glimmer/constants',
+      '@glimmer/debug',
+      '@glimmer/debug-util',
+    ],
+    'inline',
+  ],
+  ['is', ['@handlebars/parser', 'simple-html-tokenizer', 'babel-plugin-debug-macros'], 'external'],
+  ['startsWith', ['.', '/', '#', '@babel/runtime/', process.cwd().replace(/\\/gu, '/')], 'inline'],
+  ['startsWith', ['@glimmer/', '@simple-dom/', '@babel/', 'node:'], 'external'],
+];
+
+/**
+ * The package should be inlined into the output. In this situation, the `external` function should
+ * return `false`. This is the default behavior.
+ */
+const INLINE = false;
+
+/**
+ * The package should be treated as an external dependency. In this situation, the `external` function
+ * should return `true`. This is unusual and should be used when:
+ *
+ * - The package is a "helper library" (such as tslib) that we don't want to make a real dependency
+ *   of the published package.
+ * - (for now) The package doesn't have good support for ESM (i.e. `type: module` in package.json)
+ *   but rollup will handle it for us.
+ */
+const EXTERNAL = true;
+
+
+
+export function matchExternals(id) {
+  id = id.replace(/\\/gu, '/');
+  for (const [operator, prefixes, kind] of EXTERNAL_OPTIONS) {
+    const result = match(id, operator, prefixes);
+
+    if (result) {
+      return kind === 'inline' ? INLINE : EXTERNAL;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * @template {string[]} Prefixes
+ * @param {string} id
+ * @param {'is' | 'startsWith'} operator
+ * @param {Prefixes} prefixes
+ */
+function match(id, operator, prefixes) {
+  return prefixes.some((prefix) => {
+    switch (operator) {
+      case 'is':
+        return id === prefix;
+      case 'startsWith':
+        return id.startsWith(prefix);
+    }
+  });
+}
+
+export function replacements(env) {
+  return env === 'prod'
+    ? [
+        replace({
+          preventAssignment: true,
+          values: {
+            // Intended to be left in the build during publish
+            // currently compiled away to `@glimmer/debug`
+            'import.meta.env.MODE': '"production"',
+            'import.meta.env.DEV': 'false',
+            'import.meta.env.PROD': 'true',
+            // Not exposed at publish, compiled away
+            'import.meta.env.VM_LOCAL_DEV': 'false',
+          },
+        }),
+      ]
+    : [
+        replace({
+          preventAssignment: true,
+          values: {
+            'import.meta.env.MODE': '"development"',
+            'import.meta.env.DEV': 'DEBUG',
+            'import.meta.env.PROD': '!DEBUG',
+            'import.meta.env.VM_LOCAL_DEV': 'false',
+          },
+        }),
+        insert.transform((_magicString, code, _id) => {
+          if (code.includes('DEBUG')) {
+            return `import { DEBUG } from '@glimmer/env';\n` + code;
+          }
+          return code;
+        }),
+      ];
 }
