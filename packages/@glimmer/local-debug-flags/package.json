@@ -1,0 +1,13 @@
+{
+  "name": "@glimmer/local-debug-flags",
+  "version": "0.92.0",
+  "license": "MIT",
+  "description": "Helpers for debugging during local development. These get stripped from published builds. This package should not be published.",
+  "type": "module",
+  "private": true,
+  "exports": "./index.ts",
+  "scripts": {},
+  "devDependencies": {
+    "eslint": "^9.20.1"
+  }
+}

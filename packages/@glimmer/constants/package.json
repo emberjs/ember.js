@@ -1,0 +1,21 @@
+{
+  "name": "@glimmer/constants",
+  "private": true,
+  "version": "0.92.0",
+  "license": "MIT",
+  "description": "Constant values and functions that should be inlined and stripped from published builds. This package should not be published.",
+  "type": "module",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {},
+  "dependencies": {
+    "@glimmer/interfaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer/debug-util": "workspace:*",
+    "@glimmer/local-debug-flags": "workspace:*",
+    "eslint": "^9.20.1",
+    "publint": "^0.3.2",
+    "typescript": "^5.7.3"
+  }
+}

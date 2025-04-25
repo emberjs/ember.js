@@ -1,0 +1,49 @@
+{
+  "name": "@glimmer/validator",
+  "version": "0.94.8",
+  "license": "MIT",
+  "description": "Objects used to track values and their dirtiness in Glimmer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glimmerjs/glimmer-vm.git",
+    "directory": "packages/@glimmer/validator"
+  },
+  "type": "module",
+  "exports": "./index.ts",
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "development": {
+          "types": "./dist/dev/index.d.ts",
+          "default": "./dist/dev/index.js"
+        },
+        "default": {
+          "types": "./dist/prod/index.d.ts",
+          "default": "./dist/prod/index.js"
+        }
+      }
+    },
+    "types": "dist/dev/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "rollup -c rollup.config.mjs",
+    "test:publint": "publint"
+  },
+  "dependencies": {
+    "@glimmer/global-context": "workspace:*",
+    "@glimmer/interfaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@glimmer-workspace/build-support": "workspace:*",
+    "@glimmer-workspace/env": "workspace:*",
+    "@glimmer/debug-util": "workspace:*",
+    "eslint": "^9.20.1",
+    "publint": "^0.3.2",
+    "rollup": "^4.34.8",
+    "typescript": "^5.7.3"
+  }
+}
