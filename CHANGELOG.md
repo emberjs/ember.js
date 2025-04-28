@@ -1,11 +1,6 @@
 # Ember Changelog
 
-## v6.4.0-beta.2 (March 24, 2025)
-
-- [#20877](https://github.com/emberjs/ember.js/pull/20877) Re-add support for TypeScript configuration moduleResolution=node10
-
-## v6.4.0-beta.1 (March 17, 2025)
-
+## v6.4.0 (April 28, 2025)
 - [#20842](https://github.com/emberjs/ember.js/pull/20842) [BREAKING] Drop support for TypeScript 4.9 to allow for glimmer-vm upgrade. 
   * Ember now tests against TypeScript 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7. 
   Per the rolling support window, following [Semantic Versioning for TypeScript Types](https://www.semver-ts.org/),
