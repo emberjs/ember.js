@@ -1,6 +1,14 @@
 # Ember Changelog
 
+## v6.5.0-beta.1 (April 28, 2025)
+
+- [#20862](https://github.com/emberjs/ember.js/pull/20862) [FEATURE] Add blueprints to generate strict components (template tag) with `--strict` or `--tt` per [RFC #0779](https://rfcs.emberjs.com/id/0779-first-class-component-templates).
+- [#20813](https://github.com/emberjs/ember.js/pull/20686) / [#20813](https://github.com/emberjs/ember.js/pull/20813) [DEPRECATION] Deprecate `import Ember from 'ember'` per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
+- [#20880](https://github.com/emberjs/ember.js/pull/20880) [CLEANUP] Remove the `ember-cli-qunit` tests
+- [#20891](https://github.com/emberjs/ember.js/pull/20891) [CLEANUP] Remove DEPRECATE_COMPONENT_TEMPLATE_RESOLVING deprecation
+
 ## v6.4.0 (April 28, 2025)
+
 - [#20842](https://github.com/emberjs/ember.js/pull/20842) [BREAKING] Drop support for TypeScript 4.9 to allow for glimmer-vm upgrade. 
   * Ember now tests against TypeScript 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7. 
   Per the rolling support window, following [Semantic Versioning for TypeScript Types](https://www.semver-ts.org/),
