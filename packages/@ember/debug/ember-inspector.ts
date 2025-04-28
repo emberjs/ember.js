@@ -50,10 +50,8 @@ import { ENV } from '@ember/-internals/environment';
 
 export function setupInspectorSupport() {
   if (typeof window !== 'undefined' && window.addEventListener) {
-    window.addEventListener(
-      'ember-inspector-debug-request',
-      () => {
-        const event = new CustomEvent('ember-inspector-debug-response', {
+    function send() {
+      const event = new CustomEvent('ember-inspector-debug-response', {
           detail: {
             utils: {
               libraries,
@@ -126,8 +124,12 @@ export function setupInspectorSupport() {
           },
         });
         window.dispatchEvent(event);
-      },
+    }
+    window.addEventListener(
+      'ember-inspector-debug-request',
+      () => send(),
       false
     );
+    send();
   }
 }
