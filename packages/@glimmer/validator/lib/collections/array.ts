@@ -49,39 +49,11 @@ function convertToInt(prop: number | string | symbol): number | null {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class TrackedArray<T = unknown> {
-  /**
-   * Creates an array from an iterable object.
-   * @param iterable An iterable object to convert to an array.
-   */
-  static from<T>(iterable: Iterable<T> | ArrayLike<T>): TrackedArray<T>;
+  #options: { equals: (a: T, b: T) => boolean; description: string | undefined; };
 
-  /**
-   * Creates an array from an iterable object.
-   * @param iterable An iterable object to convert to an array.
-   * @param mapfn A mapping function to call on every element of the array.
-   * @param thisArg Value of 'this' used to invoke the mapfn.
-   */
-  static from<T, U>(
-    iterable: Iterable<T> | ArrayLike<T>,
-    mapfn: (v: T, k: number) => U,
-    thisArg?: unknown
-  ): TrackedArray<U>;
+  constructor(arr: T[], options: { equals: (a: T, b: T) => boolean; description: string | undefined }) {
+    this.#options = options;
 
-  static from<T, U>(
-    iterable: Iterable<T> | ArrayLike<T>,
-    mapfn?: (v: T, k: number) => U,
-    thisArg?: unknown
-  ): TrackedArray<T> | TrackedArray<U> {
-    return mapfn
-      ? new TrackedArray(Array.from(iterable, mapfn, thisArg))
-      : new TrackedArray(Array.from(iterable));
-  }
-
-  static of<T>(...arr: T[]): TrackedArray<T> {
-    return new TrackedArray(arr);
-  }
-
-  constructor(arr: T[] = []) {
     const clone = arr.slice();
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
@@ -217,3 +189,13 @@ export interface TrackedArray<T = unknown> extends Array<T> {}
 
 // Ensure instanceof works correctly
 Object.setPrototypeOf(TrackedArray.prototype, Array.prototype);
+
+export function trackedArray<T = unknown>(
+  data?: T[],
+  options?: { equals?: (a: T, b: T) => boolean; description?: string }
+): TrackedArray<T> {
+  return new TrackedArray(data ?? [], {
+    equals: options?.equals ?? Object.is,
+    description: options?.description,
+  });
+}
