@@ -431,13 +431,15 @@ export class RenderTest implements IRenderTest {
     inTransaction(result.env, () => destroy(result));
   }
 
-  private assertEachCompareResults(items) {
+  private assertEachCompareResults(
+    items: (number | string | [string | number, string | number])[]
+  ) {
     [...(this.element as unknown as HTMLElement).querySelectorAll('.test-item')].forEach(
       (el, index) => {
         let key = Array.isArray(items[index]) ? items[index][0] : index;
         let value = Array.isArray(items[index]) ? items[index][1] : items[index];
 
-        QUnit.assert.equal(el.innerText, `${key}.${value}`);
+        QUnit.assert.equal(el.textContent, `${key}.${value}`);
       }
     );
   }
@@ -447,7 +449,7 @@ export class RenderTest implements IRenderTest {
     shouldUpdate = true,
     message?: string
   ) {
-    let instance;
+    let instance: TestComponent | undefined;
     let count = 0;
 
     class TestComponent extends Klass {
@@ -477,6 +479,10 @@ export class RenderTest implements IRenderTest {
 
     QUnit.assert.equal(count, 1, `The count is 1`);
 
+    if (!instance) {
+      throw new Error('The instance is not defined');
+    }
+
     instance.update();
 
     this.rerender();
@@ -493,10 +499,10 @@ export class RenderTest implements IRenderTest {
   protected assertEachInReactivity(
     Klass: new (...args: any[]) => { collection: number[]; update: () => void }
   ) {
-    let instance: TestComponent;
+    let instance: TestComponent | undefined;
 
     class TestComponent extends Klass {
-      constructor(...args) {
+      constructor(...args: unknown[]) {
         super(...args);
         // eslint-disable-next-line
         instance = this;
@@ -520,6 +526,10 @@ export class RenderTest implements IRenderTest {
 
     this.renderComponent(comp);
 
+    if (!instance) {
+      throw new Error('The instance is not defined');
+    }
+
     let { collection } = instance;
 
     this.assertEachCompareResults(
@@ -538,7 +548,7 @@ export class RenderTest implements IRenderTest {
   protected assertEachReactivity(
     Klass: new (...args: any[]) => { collection: number[]; update: () => void }
   ) {
-    let instance: TestComponent;
+    let instance: TestComponent | undefined;
 
     class TestComponent extends Klass {
       constructor(...args: any[]) {
@@ -564,6 +574,10 @@ export class RenderTest implements IRenderTest {
     );
 
     this.renderComponent(comp);
+
+    if (!instance) {
+      throw new Error('The instance is not defined');
+    }
 
     this.assertEachCompareResults(Array.from(instance.collection).map((v, i) => [i, v]));
 

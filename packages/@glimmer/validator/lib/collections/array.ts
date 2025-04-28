@@ -49,9 +49,12 @@ function convertToInt(prop: number | string | symbol): number | null {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class TrackedArray<T = unknown> {
-  #options: { equals: (a: T, b: T) => boolean; description: string | undefined; };
+  #options: { equals: (a: T, b: T) => boolean; description: string | undefined };
 
-  constructor(arr: T[], options: { equals: (a: T, b: T) => boolean; description: string | undefined }) {
+  constructor(
+    arr: T[],
+    options: { equals: (a: T, b: T) => boolean; description: string | undefined }
+  ) {
     this.#options = options;
 
     const clone = arr.slice();
@@ -124,7 +127,11 @@ export class TrackedArray<T = unknown> {
       },
 
       set(target, prop, value /*, _receiver */) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+        let isUnchanged = self.#options.equals((target as any)[prop], value);
+        if (isUnchanged) return true;
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         (target as any)[prop] = value;
 
         const index = convertToInt(prop);

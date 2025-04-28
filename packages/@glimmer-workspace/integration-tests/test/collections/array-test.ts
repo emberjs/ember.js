@@ -1,5 +1,5 @@
-import { trackedArray } from '@glimmer/validator';
 import type { Dict, Owner } from '@glimmer/interfaces';
+import { trackedArray } from '@glimmer/validator';
 import {
   GlimmerishComponent as Component,
   jitSuite,
@@ -183,6 +183,46 @@ class TrackedArrayTest extends RenderTest {
 
       this.assertReactivity(
         class extends Component {
+          arr = trackedArray(['foo', 'bar'], { equals: () => false });
+
+          get value() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            return this.arr[method](() => {
+              /* no op */
+            });
+          }
+
+          update() {
+            this.arr[0] = 'bar';
+          }
+        },
+        true,
+        `[[${method} individual index via reference equality (no Object.is) -- tracked-built-ins behavior]]`
+      );
+
+      this.assertReactivity(
+        class extends Component {
+          arr = trackedArray([{ foo: 'bar' }], { equals: (a, b) => a.foo === b.foo });
+
+          get value() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            return this.arr[method](() => {
+              /* no op */
+            });
+          }
+
+          update() {
+            this.arr[0] = { foo: 'bar' };
+          }
+        },
+        false,
+        `[[${method} no-op assign via custom equals]]`
+      );
+
+      this.assertReactivity(
+        class extends Component {
           arr = trackedArray(['foo', 'bar']);
 
           get value() {
@@ -204,26 +244,8 @@ class TrackedArrayTest extends RenderTest {
   }
 
   @test
-  ARRAY_SETTER_METHODS() {
-    ARRAY_SETTER_METHODS.forEach((method) => {
-      this.assertReactivity(
-        class extends Component {
-          arr = trackedArray(['foo', 'bar']);
-
-          get value() {
-            return this.arr[0];
-          }
-
-          update() {
-            // @ts-expect-error -- this can't be represented easily in TS, and we
-            // don't actually care that it is; we're *just* testing reactivity.
-            this.arr[method](undefined);
-          }
-        },
-        true,
-        `[[${method} individual index]]`
-      );
-
+  'Mutating collection set methods + default equals'() {
+    ['fill', 'pop', 'push', 'sort', 'unshift', 'splice'].forEach((method) => {
       this.assertReactivity(
         class extends Component {
           arr = trackedArray(['foo', 'bar']);
@@ -241,8 +263,73 @@ class TrackedArrayTest extends RenderTest {
           }
         },
         true,
-
         `[[${method} collection tag]]`
+      );
+    });
+  }
+
+  @test
+  'copyWithin with no arguments does not cause a change'() {
+    this.assertReactivity(
+      class extends Component {
+        arr = trackedArray(['foo', 'bar']);
+
+        get value() {
+          return void this.arr.forEach(() => {
+            /* no op */
+          });
+        }
+
+        update() {
+          // @ts-expect-error -- this can't be represented easily in TS, and we
+          // don't actually care that it is; we're *just* testing reactivity.
+          this.arr.copyWithin(undefined);
+        }
+      },
+      false,
+      `[[copyWithin with no args collection tag]]`
+    );
+  }
+
+  @test
+  ARRAY_SETTER_METHODS() {
+    ARRAY_SETTER_METHODS.forEach((method) => {
+      this.assertReactivity(
+        class extends Component {
+          arr = trackedArray(['foo', 'bar'], { equals: () => false });
+
+          get value() {
+            return this.arr[0];
+          }
+
+          update() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            this.arr[method](undefined);
+          }
+        },
+        true,
+        `[[${method} individual index via reference equality (no Object.is) -- tracked-built-ins behavior]]`
+      );
+
+      this.assertReactivity(
+        class extends Component {
+          arr = trackedArray(['foo', 'bar'], { equals: () => false });
+
+          get value() {
+            return void this.arr.forEach(() => {
+              /* no op */
+            });
+          }
+
+          update() {
+            // @ts-expect-error -- this can't be represented easily in TS, and we
+            // don't actually care that it is; we're *just* testing reactivity.
+            this.arr[method](undefined);
+          }
+        },
+        true,
+        `[[${method} collection tag via reference equality (no Object.is) -- tracked-built-ins behavior]]`
       );
     });
   }
