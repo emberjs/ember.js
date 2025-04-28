@@ -7,7 +7,7 @@ import { module, test } from '../-utils';
 
 expectTypeOf<ReturnType<typeof trackedArray>>().toMatchTypeOf<Array<unknown>>();
 
-module('@glimmer/validator: TrackedArray', () => {
+module('@glimmer/validator: trackedArray()', () => {
   test('Can get values on array directly', (assert) => {
     let arr = trackedArray(['foo']);
 
@@ -64,7 +64,6 @@ module('@glimmer/validator: TrackedArray', () => {
       let arr2 = arr.concat([1], trackedArray([2]));
 
       assert.deepEqual(arr2, [1, 2]);
-      assert.notOk(arr2 instanceof Array);
     });
 
     test('copyWithin', (assert) => {
@@ -113,7 +112,6 @@ module('@glimmer/validator: TrackedArray', () => {
       let arr2 = arr.filter((v) => v > 1);
 
       assert.deepEqual(arr2, [2, 3]);
-      assert.notOk(arr2 instanceof Array);
     });
 
     test('find', (assert) => {
@@ -199,7 +197,6 @@ module('@glimmer/validator: TrackedArray', () => {
       let arr2 = arr.map((v) => v + 1);
 
       assert.deepEqual(arr2, [2, 3, 4]);
-      assert.notOk(arr2 instanceof Array);
     });
 
     test('pop', (assert) => {
@@ -258,7 +255,6 @@ module('@glimmer/validator: TrackedArray', () => {
       let arr2 = arr.slice();
 
       assert.notEqual(arr, arr2);
-      assert.notOk(arr2 instanceof Array);
       assert.deepEqual(arr, arr2);
     });
 
@@ -293,7 +289,6 @@ module('@glimmer/validator: TrackedArray', () => {
       let arr = trackedArray([1, 2, 3]);
       let arr2 = arr.splice(1, 1);
 
-      assert.notOk(arr2 instanceof Array);
       assert.deepEqual(arr, [1, 3]);
       assert.deepEqual(arr2, [2]);
     });

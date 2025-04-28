@@ -1,4 +1,5 @@
-import { TrackedArray } from '@glimmer/validator';
+import { trackedArray } from '@glimmer/validator';
+import type { Dict, Owner } from '@glimmer/interfaces';
 import {
   GlimmerishComponent as Component,
   jitSuite,
@@ -42,13 +43,13 @@ const ARRAY_SETTER_METHODS = [
 ];
 
 class TrackedArrayTest extends RenderTest {
-  static suiteName = `TrackedArray (rendering)`;
+  static suiteName = `trackedArray() (rendering)`;
 
   @test
   'getting and setting an index'() {
     this.assertReactivity(
       class extends Component {
-        arr = new TrackedArray(['foo']);
+        arr = trackedArray(['foo']);
 
         get value() {
           return this.arr[0];
@@ -65,10 +66,10 @@ class TrackedArrayTest extends RenderTest {
   'Can push into a newly created TrackedArray during construction'() {
     this.assertReactivity(
       class extends Component {
-        arr = new TrackedArray<string>();
+        arr = trackedArray();
 
-        constructor(...args: unknown[]) {
-          super(...args);
+        constructor(owner: Owner, args: Dict) {
+          super(owner, args);
           this.arr.push('hello');
         }
 
@@ -87,10 +88,10 @@ class TrackedArrayTest extends RenderTest {
   'Can unshift into a newly created TrackedArray during construction'() {
     this.assertReactivity(
       class extends Component {
-        arr = new TrackedArray<string>();
+        arr = trackedArray();
 
-        constructor(...args: unknown[]) {
-          super(...args);
+        constructor(owner: Owner, args: Dict) {
+          super(owner, args);
           this.arr.unshift('hello');
         }
 
@@ -109,7 +110,7 @@ class TrackedArrayTest extends RenderTest {
   '{{each}} works with new items'() {
     this.assertEachReactivity(
       class extends Component {
-        collection = new TrackedArray([1, 2, 3]);
+        collection = trackedArray([1, 2, 3]);
 
         update() {
           this.collection.push(4);
@@ -122,7 +123,7 @@ class TrackedArrayTest extends RenderTest {
   '{{each}} works when updating old items'() {
     this.assertEachReactivity(
       class extends Component {
-        collection = new TrackedArray([1, 2, 3]);
+        collection = trackedArray([1, 2, 3]);
 
         update() {
           this.collection[2] = 5;
@@ -135,7 +136,7 @@ class TrackedArrayTest extends RenderTest {
   '{{each-in}} works with new items'() {
     this.assertEachInReactivity(
       class extends Component {
-        collection = new TrackedArray([1, 2, 3]);
+        collection = trackedArray([1, 2, 3]);
 
         update() {
           this.collection.push(4);
@@ -148,7 +149,7 @@ class TrackedArrayTest extends RenderTest {
   '{{each-in}} works when updating old items'() {
     this.assertEachInReactivity(
       class extends Component {
-        collection = new TrackedArray([1, 2, 3]);
+        collection = trackedArray([1, 2, 3]);
 
         update() {
           this.collection[2] = 5;
@@ -162,7 +163,7 @@ class TrackedArrayTest extends RenderTest {
     ARRAY_GETTER_METHODS.forEach((method) => {
       this.assertReactivity(
         class extends Component {
-          arr = new TrackedArray(['foo', 'bar']);
+          arr = trackedArray(['foo', 'bar']);
 
           get value() {
             // @ts-expect-error -- this can't be represented easily in TS, and we
@@ -182,7 +183,7 @@ class TrackedArrayTest extends RenderTest {
 
       this.assertReactivity(
         class extends Component {
-          arr = new TrackedArray(['foo', 'bar']);
+          arr = trackedArray(['foo', 'bar']);
 
           get value() {
             // @ts-expect-error -- this can't be represented easily in TS, and we
@@ -207,7 +208,7 @@ class TrackedArrayTest extends RenderTest {
     ARRAY_SETTER_METHODS.forEach((method) => {
       this.assertReactivity(
         class extends Component {
-          arr = new TrackedArray(['foo', 'bar']);
+          arr = trackedArray(['foo', 'bar']);
 
           get value() {
             return this.arr[0];
@@ -225,7 +226,7 @@ class TrackedArrayTest extends RenderTest {
 
       this.assertReactivity(
         class extends Component {
-          arr = new TrackedArray(['foo', 'bar']);
+          arr = trackedArray(['foo', 'bar']);
 
           get value() {
             return void this.arr.forEach(() => {
