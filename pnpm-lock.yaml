@@ -194,8 +194,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0(@babel/core@7.26.9)
       ember-cli:
-        specifier: ^6.3.0-beta.3
-        version: 6.3.0-beta.3(handlebars@4.7.8)(underscore@1.13.7)
+        specifier: ^6.3.0
+        version: 6.3.1(handlebars@4.7.8)(underscore@1.13.7)
       ember-cli-blueprint-test-helpers:
         specifier: ^0.19.2
         version: 0.19.2
@@ -204,7 +204,7 @@ importers:
         version: 2.1.0
       ember-cli-dependency-checker:
         specifier: ^3.3.1
-        version: 3.3.3(ember-cli@6.3.0-beta.3(handlebars@4.7.8)(underscore@1.13.7))
+        version: 3.3.3(ember-cli@6.3.1(handlebars@4.7.8)(underscore@1.13.7))
       ember-cli-yuidoc:
         specifier: ^0.9.1
         version: 0.9.1
@@ -5835,8 +5835,8 @@ packages:
     engines: {node: '>= 18'}
     hasBin: true
 
-  ember-cli@6.3.0-beta.3:
-    resolution: {integrity: sha512-YnsRt7Y8jK5hxMhDzRxulZFrq4K3EjwIdAQS9cRhJL/gJGLRjqcug8yBm8vfVip8uP7mEMPg+1gCgrib3Tkk/g==}
+  ember-cli@6.3.1:
+    resolution: {integrity: sha512-RtQ78/zl8qUbqaBNIY3+wzcoxVxPkr0zwfU/JycY6Wd4JRviBL9bAkWrfSQqy+xTxou5fV7BPxjekDvoBaB1yw==}
     engines: {node: '>= 18'}
     hasBin: true
 
@@ -15412,10 +15412,10 @@ snapshots:
       resolve: 1.22.10
       semver: 5.7.2
 
-  ember-cli-dependency-checker@3.3.3(ember-cli@6.3.0-beta.3(handlebars@4.7.8)(underscore@1.13.7)):
+  ember-cli-dependency-checker@3.3.3(ember-cli@6.3.1(handlebars@4.7.8)(underscore@1.13.7)):
     dependencies:
       chalk: 2.4.2
-      ember-cli: 6.3.0-beta.3(handlebars@4.7.8)(underscore@1.13.7)
+      ember-cli: 6.3.1(handlebars@4.7.8)(underscore@1.13.7)
       find-yarn-workspace-root: 2.0.0
       is-git-url: 1.0.0
       resolve: 1.22.10
@@ -15706,7 +15706,7 @@ snapshots:
       - walrus
       - whiskers
 
-  ember-cli@6.3.0-beta.3(handlebars@4.7.8)(underscore@1.13.7):
+  ember-cli@6.3.1(handlebars@4.7.8)(underscore@1.13.7):
     dependencies:
       '@pnpm/find-workspace-dir': 7.0.3
       babel-remove-types: 1.0.1
