@@ -31,6 +31,25 @@ describe('Blueprint: component-test', function () {
       });
     });
 
+    it('component-test foo --strict', function () {
+      return emberGenerateDestroy(['component-test', 'foo', '--strict'], (_file) => {
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs')
+        );
+      });
+    });
+
+    it('component-test foo --strict --typescript', function () {
+      return emberGenerateDestroy(
+        ['component-test', 'foo', '--strict', '--typescript'],
+        (_file) => {
+          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+            fixture('component-test/app.gts')
+          );
+        }
+      );
+    });
+
     it('component-test x-foo --unit', function () {
       return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], (_file) => {
         expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
@@ -64,6 +83,25 @@ describe('Blueprint: component-test', function () {
           fixture('component-test/addon-unit.js')
         );
       });
+    });
+
+    it('component-test foo --strict', function () {
+      return emberGenerateDestroy(['component-test', 'foo', '--strict'], (_file) => {
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/addon.gjs')
+        );
+      });
+    });
+
+    it('component-test foo --strict --typescript', function () {
+      return emberGenerateDestroy(
+        ['component-test', 'foo', '--strict', '--typescript'],
+        (_file) => {
+          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+            fixture('component-test/addon.gts')
+          );
+        }
+      );
     });
   });
 

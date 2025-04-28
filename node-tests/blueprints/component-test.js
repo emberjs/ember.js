@@ -3,6 +3,7 @@
 const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -261,6 +262,68 @@ describe('Blueprint: component', function () {
         }
       );
     });
+
+    it('component foo --strict', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
+        expect(_file('app/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
+
+        expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+          fixture('component-test/app.gjs')
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component'],
+        (_file) => {
+          expect(_file('app/components/foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs')
+          );
+
+          expect(_file('tests/integration/components/foo-test.gjs')).to.equal(
+            fixture('component-test/app.gjs')
+          );
+        }
+      );
+    });
+
+    it('component foo --strict --component-class=@ember/component', async function () {
+      await expect(
+        emberGenerate(['component', 'foo', '--strict', '--component-class=@ember/component'])
+      ).to.be.rejectedWith(
+        'The "@ember/component" component class cannot be used in combination with the "--strict" flag'
+      );
+    });
+
+    it('component foo --strict --typescript', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict', '--typescript'], (_file) => {
+        expect(_file('app/components/foo.gts')).to.equal(
+          fixture('component/template-only-component.gts')
+        );
+
+        expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+          fixture('component-test/app.gts')
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component --typescript', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component', '--typescript'],
+        (_file) => {
+          expect(_file('app/components/foo.gts')).to.equal(
+            fixture('component/glimmer-component.gts')
+          );
+
+          expect(_file('tests/integration/components/foo-test.gts')).to.equal(
+            fixture('component-test/app.gts')
+          );
+        }
+      );
+    });
   });
 
   describe('in addon', function () {
@@ -313,6 +376,63 @@ describe('Blueprint: component', function () {
           })
         );
       });
+    });
+
+    it('component foo --strict', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict'], (_file) => {
+        expect(_file('addon/components/foo.js')).to.not.exist;
+        expect(_file('addon/components/foo.gjs')).to.equal(
+          fixture('component/template-only-component.gjs')
+        );
+
+        expect(_file('app/components/foo.js')).to.contain(
+          "export { default } from 'my-addon/components/foo';"
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component'],
+        (_file) => {
+          expect(_file('addon/components/foo.js')).to.not.exist;
+          expect(_file('addon/components/foo.gjs')).to.equal(
+            fixture('component/glimmer-component.gjs')
+          );
+
+          expect(_file('app/components/foo.js')).to.contain(
+            "export { default } from 'my-addon/components/foo';"
+          );
+        }
+      );
+    });
+
+    it('component foo --strict --typescript', function () {
+      return emberGenerateDestroy(['component', 'foo', '--strict', '--typescript'], (_file) => {
+        expect(_file('addon/components/foo.ts')).to.not.exist;
+        expect(_file('addon/components/foo.gts')).to.equal(
+          fixture('component/template-only-component.gts')
+        );
+
+        expect(_file('app/components/foo.js')).to.contain(
+          "export { default } from 'my-addon/components/foo';"
+        );
+      });
+    });
+
+    it('component foo --strict --component-class=@glimmer/component --typescript', function () {
+      return emberGenerateDestroy(
+        ['component', 'foo', '--strict', '--component-class=@glimmer/component', '--typescript'],
+        (_file) => {
+          expect(_file('addon/components/foo.gts')).to.equal(
+            fixture('component/glimmer-component.gts')
+          );
+
+          expect(_file('app/components/foo.js')).to.contain(
+            "export { default } from 'my-addon/components/foo';"
+          );
+        }
+      );
     });
 
     it('component foo/x-foo', function () {

@@ -36,54 +36,49 @@ describe('Blueprint: template', function () {
       });
     });
 
-    describe('with usePods', function () {
-      beforeEach(function () {
-        setupPodConfig({ usePods: true });
-      });
-
+    describe('with --pod', function () {
       it('template foo', function () {
-        return emberGenerateDestroy(['template', 'foo'], (_file) => {
+        return emberGenerateDestroy(['template', 'foo', '--pod'], (_file) => {
           expect(_file('app/foo/template.hbs')).to.equal('');
         });
       });
 
       it('template foo.hbs', function () {
-        return emberGenerateDestroy(['template', 'foo.hbs'], (_file) => {
+        return emberGenerateDestroy(['template', 'foo.hbs', '--pod'], (_file) => {
           expect(_file('app/foo.hbs/template.hbs')).to.not.exist;
           expect(_file('app/foo/template.hbs')).to.equal('');
         });
       });
 
       it('template foo/bar', function () {
-        return emberGenerateDestroy(['template', 'foo/bar'], (_file) => {
+        return emberGenerateDestroy(['template', 'foo/bar', '--pod'], (_file) => {
           expect(_file('app/foo/bar/template.hbs')).to.equal('');
         });
       });
     });
 
-    describe('with usePods + podModulePrefix', function () {
+    describe('with --pods + podModulePrefix', function () {
       beforeEach(function () {
         setupPodConfig({
-          usePods: true,
           podModulePrefix: true,
         });
       });
 
       it('template foo', function () {
-        return emberGenerateDestroy(['template', 'foo'], (_file) => {
+        return emberGenerateDestroy(['template', 'foo', '--pod'], (_file) => {
           expect(_file('app/pods/foo/template.hbs')).to.equal('');
         });
       });
 
       it('template foo.hbs', function () {
-        return emberGenerateDestroy(['template', 'foo.hbs'], (_file) => {
+        return emberGenerateDestroy(['template', 'foo.hbs', '--pod'], (_file) => {
           expect(_file('app/pods/foo.hbs/template.hbs')).to.not.exist;
           expect(_file('app/pods/foo/template.hbs')).to.equal('');
         });
       });
 
       it('template foo/bar', function () {
-        return emberGenerateDestroy(['template', 'foo/bar'], (_file) => {
+        return emberGenerateDestroy(['template', 'foo/bar', '--pod'], (_file) => {
           expect(_file('app/pods/foo/bar/template.hbs')).to.equal('');
         });
       });
