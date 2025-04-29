@@ -11,7 +11,7 @@
   "author": "Tom Dale <tom@tomdale.net>",
   "private": false,
   "type": "module",
-  "exports": "./index.ts",
+  "exports": "./index.js",
   "publishConfig": {
     "access": "public",
     "exports": {
