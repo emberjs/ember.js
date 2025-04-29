@@ -48,7 +48,7 @@ function convertToInt(prop: number | string | symbol): number | null {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-export class TrackedArray<T = unknown> {
+class TrackedArray<T = unknown> {
   #options: { equals: (a: T, b: T) => boolean; description: string | undefined };
 
   constructor(
@@ -192,7 +192,7 @@ export class TrackedArray<T = unknown> {
 //
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface TrackedArray<T = unknown> extends Array<T> {}
+interface TrackedArray<T = unknown> extends Array<T> {}
 
 // Ensure instanceof works correctly
 Object.setPrototypeOf(TrackedArray.prototype, Array.prototype);
