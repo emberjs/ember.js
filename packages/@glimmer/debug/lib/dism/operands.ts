@@ -9,7 +9,7 @@ import type {
   OperandType,
 } from './operand-types';
 
-import { decodeCurry, decodePrimitive, decodeRegister } from '../debug';
+import { decodeCurry, decodePrimitive, decodeRegister } from '../decoders';
 
 interface DisassemblyState {
   readonly offset: number;

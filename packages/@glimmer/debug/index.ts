@@ -1,6 +1,5 @@
 export type { DebugOp, SomeDisassembledOperand } from './lib/debug';
-export { debugOp, describeOpcode, logOpcodeSlice } from './lib/debug';
-export { describeOp } from './lib/dism/opcode';
+export { debugOp, describeOpcode, logOpcodeSlice, describeOp } from './lib/debug';
 export {
   buildEnum,
   buildMetas,

@@ -15,7 +15,7 @@ import { $fp, $pc } from '@glimmer/vm';
 
 import type { Fragment } from '../render/fragment';
 
-import { decodeRegister } from '../debug';
+import { decodeRegister } from '../decoders';
 import { value } from '../render/basic';
 import { array } from '../render/combinators';
 import { as, frag } from '../render/fragment';

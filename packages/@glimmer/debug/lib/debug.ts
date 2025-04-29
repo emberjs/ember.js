@@ -23,11 +23,28 @@ import { $fp, $pc, $ra, $s0, $s1, $sp, $t0, $t1, $v0 } from '@glimmer/vm';
 import type { Primitive, RegisterName } from './dism/dism';
 import type { NormalizedOperand, OperandType, ShorthandOperand } from './dism/operand-types';
 
-import { describeOp } from './dism/opcode';
 import { OPERANDS } from './dism/operands';
 import { opcodeMetadata } from './opcode-metadata';
-import { frag } from './render/fragment';
+import { frag, type Fragment, as, type IntoFragment } from './render/fragment';
 import { DebugLogger } from './render/logger';
+import { SerializeBlockContext } from './dism/opcode';
+import { join } from './render/basic';
+
+export function describeOp(
+  op: RuntimeOp,
+  program: Program,
+  meta: Nullable<BlockMetadata>
+): Fragment {
+  const { name, params } = debugOp(program, op, meta);
+
+  const block = new SerializeBlockContext(meta?.symbols ?? null);
+
+  let args: IntoFragment[] = Object.entries(params).map(
+    ([p, v]) => frag`${as.attrName(p)}=${block.serialize(v)}`
+  );
+
+  return frag`(${join([as.kw(name), ...args], ' ')})`;
+}
 
 export function logOpcodeSlice(context: CompilationContext, start: number, end: number) {
   if (LOCAL_TRACE_LOGGING) {
@@ -404,49 +421,4 @@ function fromRaw(operands: Dict<RawDisassembledOperand>): Dict<SomeDisassembledO
   return Object.fromEntries(
     Object.entries(operands).map(([name, raw]) => [name, DisassembledOperand.of(raw)])
   );
-}
-
-export function decodeCurry(curry: number): 'component' | 'helper' | 'modifier' {
-  switch (curry) {
-    case CURRIED_COMPONENT:
-      return 'component';
-    case CURRIED_HELPER:
-      return 'helper';
-    case CURRIED_MODIFIER:
-      return 'modifier';
-    default:
-      throw Error(`Unexpected curry value: ${curry}`);
-  }
-}
-
-export function decodeRegister(register: number): RegisterName {
-  switch (register) {
-    case $pc:
-      return '$pc';
-    case $ra:
-      return '$ra';
-    case $fp:
-      return '$fp';
-    case $sp:
-      return '$sp';
-    case $s0:
-      return '$s0';
-    case $s1:
-      return '$s1';
-    case $t0:
-      return '$t0';
-    case $t1:
-      return '$t1';
-    case $v0:
-      return '$v0';
-    default:
-      return `$bug${register}`;
-  }
-}
-
-export function decodePrimitive(primitive: number, constants: ProgramConstants): Primitive {
-  if (primitive >= 0) {
-    return constants.getValue(decodeHandle(primitive));
-  }
-  return decodeImmediate(primitive);
 }

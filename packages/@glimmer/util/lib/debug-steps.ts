@@ -3,7 +3,7 @@
 import { expect, localAssert } from '@glimmer/debug-util';
 import { LOCAL_DEBUG, LOCAL_TRACE_LOGGING } from '@glimmer/local-debug-flags';
 
-import { LOCAL_LOGGER } from '../index';
+import { LOCAL_LOGGER } from './local-logger';
 
 export let beginTestSteps: (() => void) | undefined;
 export let endTestSteps: (() => void) | undefined;

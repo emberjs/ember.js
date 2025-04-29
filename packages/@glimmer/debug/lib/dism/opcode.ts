@@ -1,14 +1,11 @@
 import type { ClassifiedLocalDebug, ClassifiedLocalDebugFor } from '@glimmer/debug-util';
 import type {
   AppendingBlock,
-  BlockMetadata,
   BlockSymbolNames,
   Cursor,
   NamedArguments,
   Nullable,
   PositionalArguments,
-  Program,
-  RuntimeOp,
   VMArguments,
 } from '@glimmer/interfaces';
 import { dev, exhausted, getLocalDebugType } from '@glimmer/debug-util';
@@ -19,26 +16,9 @@ import type { ValueRefOptions } from '../render/basic';
 import type { IntoFragment } from '../render/fragment';
 import type { RegisterName, SomeDisassembledOperand } from './dism';
 
-import { debugOp } from '../debug';
 import { empty, join, unknownValue, value } from '../render/basic';
 import { array } from '../render/combinators';
 import { as, frag, Fragment } from '../render/fragment';
-
-export function describeOp(
-  op: RuntimeOp,
-  program: Program,
-  meta: Nullable<BlockMetadata>
-): Fragment {
-  const { name, params } = debugOp(program, op, meta);
-
-  const block = new SerializeBlockContext(meta?.symbols ?? null);
-
-  let args: IntoFragment[] = Object.entries(params).map(
-    ([p, v]) => frag`${as.attrName(p)}=${block.serialize(v)}`
-  );
-
-  return frag`(${join([as.kw(name), ...args], ' ')})`;
-}
 
 export class SerializeBlockContext {
   readonly #symbols: Nullable<BlockSymbolNames>;
