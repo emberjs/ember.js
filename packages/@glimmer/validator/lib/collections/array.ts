@@ -200,7 +200,7 @@ Object.setPrototypeOf(TrackedArray.prototype, Array.prototype);
 export function trackedArray<T = unknown>(
   data?: T[],
   options?: { equals?: (a: T, b: T) => boolean; description?: string }
-): TrackedArray<T> {
+): Array<T> {
   return new TrackedArray(data ?? [], {
     equals: options?.equals ?? Object.is,
     description: options?.description,
