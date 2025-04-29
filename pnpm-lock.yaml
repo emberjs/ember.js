@@ -188,8 +188,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(@babel/core@7.26.9)
       babel-plugin-ember-template-compilation:
-        specifier: ^2.1.1
-        version: 2.3.0
+        specifier: 3.0.0-alpha.4
+        version: 3.0.0-alpha.4
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -4146,6 +4146,9 @@ packages:
   '@glimmer/syntax@0.92.3':
     resolution: {integrity: sha512-7wPKQmULyXCYf0KvbPmfrs/skPISH2QGR9atCnmDWnHyLv5SSZVLm1P0Ctrpta6+Ci3uGQb7hGk0IjsLEavcYQ==}
 
+  '@glimmer/syntax@0.94.9':
+    resolution: {integrity: sha512-OBw8DqMzKO4LX4kJBhwfTUqtpbd7O9amQXNTfb1aS7pufio5Vu5Qi6mRTfdFj6RyJ//aSI/l0kxWt6beYW0Apg==}
+
   '@glimmer/tracking@1.1.2':
     resolution: {integrity: sha512-cyV32zsHh+CnftuRX84ALZpd2rpbDrhLhJnTXn9W//QpqdRZ5rdMsxSY9fOsj0CKEc706tmEU299oNnDc0d7tA==}
 
@@ -4160,6 +4163,9 @@ packages:
 
   '@glimmer/util@0.94.7':
     resolution: {integrity: sha512-zJdmxYe6tu0RE6SPZHxbuQn5XJgEwx/NrXMbXfKgq+4msA33LLNHJXR27/LTlHEmCi544zlFxMUgRCJWTAaVtQ==}
+
+  '@glimmer/util@0.94.8':
+    resolution: {integrity: sha512-HfCKeZ74clF9BsPDBOqK/yRNa/ke6niXFPM6zRn9OVYw+ZAidLs7V8He/xljUHlLRL322kaZZY8XxRW7ALEwyg==}
 
   '@glimmer/validator@0.44.0':
     resolution: {integrity: sha512-i01plR0EgFVz69GDrEuFgq1NheIjZcyTy3c7q+w7d096ddPVeVcRzU3LKaqCfovvLJ+6lJx40j45ecycASUUyw==}
@@ -4181,6 +4187,9 @@ packages:
 
   '@glimmer/wire-format@0.94.7':
     resolution: {integrity: sha512-BjXSfe6kHdIcPcyg0eqkDsOsgBIXdHXvMnip00KqoOThCKUVxA/bv5Ny0sQg4q5/JnIVf3eIs5M/ZTThdotlLQ==}
+
+  '@glimmer/wire-format@0.94.8':
+    resolution: {integrity: sha512-A+Cp5m6vZMAEu0Kg/YwU2dJZXyYxVJs2zI57d3CP6NctmX7FsT8WjViiRUmt5abVmMmRH5b8BUovqY6GSMAdrw==}
 
   '@gwhitney/detect-indent@7.0.1':
     resolution: {integrity: sha512-7bQW+gkKa2kKZPeJf6+c6gFK9ARxQfn+FKy9ScTBppyKRWH2KzsmweXUoklqeEiHiNVWaeP5csIdsNq6w7QhzA==}
@@ -5593,6 +5602,10 @@ packages:
   babel-plugin-ember-template-compilation@2.3.0:
     resolution: {integrity: sha512-4ZrKVSqdw5PxEKRbqfOpPhrrNBDG3mFPhyT6N1Oyyem81ZIkCvNo7TPKvlTHeFxqb6HtUvCACP/pzFpZ74J4pg==}
     engines: {node: '>= 12.*'}
+
+  babel-plugin-ember-template-compilation@3.0.0-alpha.4:
+    resolution: {integrity: sha512-l9PbzD1QU0+ibmtq3REDujcbW+uerPpBUVseOqRlT8QwLDtcAjiUsob23FQEPKFmFY5QP54Ub3AhUT+fCsmCbA==}
+    engines: {node: '>= 18.*'}
 
   babel-plugin-htmlbars-inline-precompile@5.3.1:
     resolution: {integrity: sha512-QWjjFgSKtSRIcsBhJmEwS2laIdrA6na8HAlc/pEAhjHgQsah/gMiBFRZvbQTy//hWxR4BMwV7/Mya7q5H8uHeA==}
@@ -8110,6 +8123,9 @@ packages:
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
+
+  import-meta-resolve@4.1.0:
+    resolution: {integrity: sha512-I6fiaX09Xivtk+THaMfAwnA3MVA5Big1WHF1Dfx9hFuvNIWpXnorlkzhcQf6ehrqQiiZECRt1poOAkPmer3ruw==}
 
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
@@ -13372,6 +13388,14 @@ snapshots:
       '@handlebars/parser': 2.0.0
       simple-html-tokenizer: 0.5.11
 
+  '@glimmer/syntax@0.94.9':
+    dependencies:
+      '@glimmer/interfaces': 0.94.6
+      '@glimmer/util': 0.94.8
+      '@glimmer/wire-format': 0.94.8
+      '@handlebars/parser': 2.0.0
+      simple-html-tokenizer: 0.5.11
+
   '@glimmer/tracking@1.1.2':
     dependencies:
       '@glimmer/env': 0.1.7
@@ -13394,6 +13418,10 @@ snapshots:
       '@glimmer/interfaces': 0.92.3
 
   '@glimmer/util@0.94.7':
+    dependencies:
+      '@glimmer/interfaces': 0.94.6
+
+  '@glimmer/util@0.94.8':
     dependencies:
       '@glimmer/interfaces': 0.94.6
 
@@ -13424,6 +13452,10 @@ snapshots:
       '@glimmer/util': 0.92.3
 
   '@glimmer/wire-format@0.94.7':
+    dependencies:
+      '@glimmer/interfaces': 0.94.6
+
+  '@glimmer/wire-format@0.94.8':
     dependencies:
       '@glimmer/interfaces': 0.94.6
 
@@ -15135,6 +15167,12 @@ snapshots:
     dependencies:
       '@glimmer/syntax': 0.84.3
       babel-import-util: 3.0.0
+
+  babel-plugin-ember-template-compilation@3.0.0-alpha.4:
+    dependencies:
+      '@glimmer/syntax': 0.94.9
+      babel-import-util: 3.0.0
+      import-meta-resolve: 4.1.0
 
   babel-plugin-htmlbars-inline-precompile@5.3.1:
     dependencies:
@@ -18860,6 +18898,8 @@ snapshots:
     dependencies:
       parent-module: 1.0.1
       resolve-from: 4.0.0
+
+  import-meta-resolve@4.1.0: {}
 
   imurmurhash@0.1.4: {}
 
