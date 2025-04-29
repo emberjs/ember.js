@@ -415,7 +415,7 @@ function defaultMessage(value: unknown, expected: string): string {
   return `Got ${value}, expected:\n${expected}`;
 }
 
-/*@__PURE__*/
+/*@__NO_SIDE_EFFECTS__*/
 export function check<T>(
   value: unknown,
   checker: Checker<T>,
