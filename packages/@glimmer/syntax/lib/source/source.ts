@@ -77,7 +77,7 @@ export class Source {
       if (seenLines === line - 1) {
         if (seenChars + column > nextLine) return nextLine;
 
-        if (import.meta.env.DEV) {
+        if (import.meta.env?.DEV) {
           let roundTrip = this.hbsPosFor(seenChars + column);
           localAssert(roundTrip !== null, `the returned offset failed to round-trip`);
           localAssert(
