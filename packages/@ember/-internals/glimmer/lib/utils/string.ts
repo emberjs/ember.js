@@ -38,7 +38,7 @@ import type { SafeString as GlimmerSafeString } from '@glimmer/runtime';
   @public
  */
 export class SafeString implements GlimmerSafeString {
-  private __string: string;
+  private readonly __string: string;
 
   constructor(string: string) {
     this.__string = string;
@@ -65,57 +65,6 @@ export class SafeString implements GlimmerSafeString {
   toHTML(): string {
     return this.toString();
   }
-}
-
-const escape = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#x27;',
-  '`': '&#x60;',
-  '=': '&#x3D;',
-};
-
-const possible = /[&<>"'`=]/;
-const badChars = /[&<>"'`=]/g;
-
-function escapeChar(chr: keyof typeof escape) {
-  return escape[chr];
-}
-
-export function escapeExpression(string: unknown): string {
-  let s: string;
-  if (typeof string !== 'string') {
-    // don't escape SafeStrings, since they're already safe
-    if (isHTMLSafe(string)) {
-      return string.toHTML();
-    } else if (string === null || string === undefined) {
-      return '';
-    } else if (!string) {
-      return String(string);
-    }
-
-    // Force a string conversion as this will be done by the append regardless and
-    // the regex test will do this transparently behind the scenes, causing issues if
-    // an object's to string has escaped characters in it.
-    s = String(string);
-  } else {
-    s = string;
-  }
-
-  if (!possible.test(s)) {
-    return s;
-  }
-
-  // SAFETY: this is technically a lie, but it's a true lie as long as the
-  // invariant it depends on is upheld: `escapeChar` will always return a string
-  // as long as its input is one of the characters in `escape`, and it will only
-  // be called if it matches one of the characters in the `badChar` regex, which
-  // is hand-maintained to match the set escaped. (It would be nice if TS could
-  // "see" into the regex to see how this works, but that'd be quite a lot of
-  // extra fanciness.)
-  return s.replace(badChars, escapeChar as (s: string) => string);
 }
 
 /**
@@ -177,6 +126,10 @@ export function htmlSafe(str: string): SafeString {
 */
 export function isHTMLSafe(str: unknown): str is SafeString {
   return (
-    str !== null && typeof str === 'object' && 'toHTML' in str && typeof str.toHTML === 'function'
+    // SAFETY: cast `as SafeString` only present to make this check "legal"; we
+    // can further improve this by changing the behavior to do an `in` check
+    // instead, but that's worth landing as a separate change for bisecting if
+    // it happens to have an impact on e.g. perf.
+    str !== null && typeof str === 'object' && typeof (str as SafeString).toHTML === 'function'
   );
 }
