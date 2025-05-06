@@ -21,46 +21,63 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    async '@test can derive the template string from tracked'() {
+    async '@test can derive the template string from tracked'(assert: Assert) {
       class State {
         @tracked str = `hello there`;
 
         get component() {
+          assert.step('get component');
           return template(this.str);
         }
       }
       let state = new State();
 
-      this.render('<this.state.component />', { state });
+      await this.renderComponentModule(() => {
+        return template('<state.component />', { scope: () => ({ state }) });
+      });
 
       this.assertHTML('hello there');
       this.assertStableRerender();
+      assert.verifySteps(['get component']);
 
       runTask(() => (state.str += '!'));
 
       this.assertHTML('hello there!');
       this.assertStableRerender();
+      assert.verifySteps(['get component']);
     }
 
-    async '@test can have tracked data in the scope bag - and changes to that scope bag dont re-compile'() {
+    async '@test can have tracked data in the scope bag - and changes to that scope bag dont re-compile'(
+      assert: Assert
+    ) {
       class State {
         @tracked str = `hello there`;
 
         get component() {
-          return template(`{{greeting}}`, { scope: () => ({ greeting: this.str }) });
+          assert.step('get component');
+          return template(`{{greeting}}`, {
+            scope: () => {
+              assert.step('scope()');
+              return { greeting: this.str };
+            },
+          });
         }
       }
       let state = new State();
 
-      this.render('<this.state.component />', { state });
+      await this.renderComponentModule(() => {
+        return template('<state.component />', { scope: () => ({ state }) });
+      });
 
       this.assertHTML('hello there');
       this.assertStableRerender();
+      assert.verifySteps(['get component', 'scope()']);
 
       runTask(() => (state.str += '!'));
 
       this.assertHTML('hello there!');
       this.assertStableRerender();
+      assert.verifySteps(['scope()']);
     }
 
     async '@test Can use a custom helper in scope (in append position)'() {
