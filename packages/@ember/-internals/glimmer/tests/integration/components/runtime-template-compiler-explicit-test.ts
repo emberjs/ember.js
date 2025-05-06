@@ -1,3 +1,4 @@
+import { tracked } from '@ember/-internals/metal';
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -17,6 +18,48 @@ moduleFor(
       });
 
       this.assertHTML('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    async '@test can derive the template string from tracked'() {
+      class State {
+        @tracked str = `hello there`;
+
+        get component() {
+          return template(this.str);
+        }
+      }
+      let state = new State();
+
+      this.render('<this.state.component />', { state });
+
+      this.assertHTML('hello there');
+      this.assertStableRerender();
+
+      state.str += '!';
+
+      this.assertHTML('hello there!');
+      this.assertStableRerender();
+    }
+
+    async '@test can have tracked data in the scope bag - and changes to that scope bag dont re-compile'() {
+      class State {
+        @tracked str = `hello there`;
+
+        get component() {
+          return template(`{{greeting}}`, { scope: () => ({ greeting: this.str }) });
+        }
+      }
+      let state = new State();
+
+      this.render('<this.state.component />', { state });
+
+      this.assertHTML('hello there');
+      this.assertStableRerender();
+
+      state.str += '!';
+
+      this.assertHTML('hello there!');
       this.assertStableRerender();
     }
 

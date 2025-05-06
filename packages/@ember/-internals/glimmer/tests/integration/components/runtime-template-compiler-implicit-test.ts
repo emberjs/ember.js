@@ -1,3 +1,4 @@
+import { tracked } from '@ember/-internals/metal';
 import { template } from '@ember/template-compiler/runtime';
 import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -7,6 +8,42 @@ import { fn } from '@ember/helper';
 moduleFor(
   'Strict Mode - Runtime Template Compiler (implicit)',
   class extends RenderingTestCase {
+    async '@test can have in-scope tracked data'() {
+      class State {
+        @tracked str = `hello there`;
+
+        get component() {
+          let getStr = () => this.str;
+
+          hide(getStr);
+
+          return template(`{{ (getStr) }}`, {
+            eval() {
+              return eval(arguments[0]);
+            },
+          });
+        }
+      }
+
+      let state = new State();
+
+      await this.renderComponentModule(() => {
+        return template('<state.component />', {
+          eval() {
+            return eval(arguments[0]);
+          },
+        });
+      });
+
+      this.assertHTML('hello there');
+      this.assertStableRerender();
+
+      state.str += '!';
+
+      this.assertHTML('hello there!');
+      this.assertStableRerender();
+    }
+
     async '@test Can use a component in scope'() {
       await this.renderComponentModule(() => {
         let Foo = template('Hello, world!', {
