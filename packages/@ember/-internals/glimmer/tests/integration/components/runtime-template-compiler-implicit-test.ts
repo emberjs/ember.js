@@ -8,12 +8,17 @@ import { fn } from '@ember/helper';
 moduleFor(
   'Strict Mode - Runtime Template Compiler (implicit)',
   class extends RenderingTestCase {
-    async '@test can have in-scope tracked data'() {
+    async '@test can have in-scope tracked data'(assert: Assert) {
       class State {
         @tracked str = `hello there`;
 
         get component() {
-          let getStr = () => this.str;
+          assert.step('get component');
+
+          let getStr = () => {
+            assert.step('getStr()');
+            return this.str;
+          };
 
           hide(getStr);
 
@@ -30,6 +35,7 @@ moduleFor(
       await this.renderComponentModule(() => {
         return template('<state.component />', {
           eval() {
+            assert.step('eval');
             return eval(arguments[0]);
           },
         });
@@ -37,11 +43,21 @@ moduleFor(
 
       this.assertHTML('hello there');
       this.assertStableRerender();
+      assert.verifySteps([
+        // for every value in the component, for eevry node traversed in the compiler
+        'eval', // precompileJSON -> ... ElementNode ->  ... -> lexicalScope -> isScope('state', ...)
+        'eval', // "..."
+        'eval', // "..."
+        'eval', // creating the templateFactory
+        'get component',
+        'getStr()',
+      ]);
 
       runTask(() => (state.str += '!'));
 
       this.assertHTML('hello there!');
       this.assertStableRerender();
+      assert.verifySteps(['getStr()']);
     }
 
     async '@test Can use a component in scope'() {
