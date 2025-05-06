@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "6.4.0-alpha.1",
+  "version": "6.6.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -128,7 +128,7 @@
     "babel-plugin-ember-template-compilation": "3.0.0-alpha.4",
     "dag-map": "^2.0.2",
     "decorator-transforms": "2.0.0",
-    "ember-cli": "^4.10.0",
+    "ember-cli": "^6.3.0",
     "ember-cli-blueprint-test-helpers": "^0.19.2",
     "ember-cli-browserstack": "^2.0.1",
     "ember-cli-dependency-checker": "^3.3.1",

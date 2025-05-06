@@ -1,6 +1,30 @@
 # Ember Changelog
 
-## v6.3.0-beta.1 (February 03, 2025)
+## v6.5.0-beta.1 (April 28, 2025)
+
+- [#20862](https://github.com/emberjs/ember.js/pull/20862) [FEATURE] Add blueprints to generate strict components (template tag) with `--strict` or `--tt` per [RFC #0779](https://rfcs.emberjs.com/id/0779-first-class-component-templates).
+- [#20813](https://github.com/emberjs/ember.js/pull/20686) / [#20813](https://github.com/emberjs/ember.js/pull/20813) [DEPRECATION] Deprecate `import Ember from 'ember'` per [RFC #1003](https://rfcs.emberjs.com/id/1003-deprecation-import-ember-from-ember).
+- [#20880](https://github.com/emberjs/ember.js/pull/20880) [CLEANUP] Remove the `ember-cli-qunit` tests
+- [#20891](https://github.com/emberjs/ember.js/pull/20891) [CLEANUP] Remove DEPRECATE_COMPONENT_TEMPLATE_RESOLVING deprecation
+
+## v6.4.0 (April 28, 2025)
+
+- [#20842](https://github.com/emberjs/ember.js/pull/20842) [BREAKING] Drop support for TypeScript 4.9 to allow for glimmer-vm upgrade. 
+  * Ember now tests against TypeScript 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7. 
+  Per the rolling support window, following [Semantic Versioning for TypeScript Types](https://www.semver-ts.org/),
+  the supported range of TypeScript versions across two Ember LTS releases must 
+  always overlap.
+  For more examples, see the [Stability heading in this blog post](https://blog.emberjs.com/stable-typescript-types-in-ember-5-1/).
+  * We now require consumers use `verbatimModuleSyntax`.
+- [#20842](https://github.com/emberjs/ember.js/pull/20842) / [#20864](https://github.com/emberjs/ember.js/pull/20864) Upgrade glimmer-vm.
+- [#20872](https://github.com/emberjs/ember.js/pull/20872) [BUGFIX] Fix `{{debugger}}` via upgrade @glimmer/runtime.
+- [#20850](https://github.com/emberjs/ember.js/pull/20850) [BUGFIX] Fix source maps in published packages.
+- [#20867](https://github.com/emberjs/ember.js/pull/20867) [BUGFIX] Fix LOG_VERSIONS.
+- [#20852](https://github.com/emberjs/ember.js/pull/20852) [CLEANUP] Remove ember-auto-import as a dependency.
+- [#20863](https://github.com/emberjs/ember.js/pull/20863) [CLEANUP] Cleanup "octane edition" code
+- [#20856](https://github.com/emberjs/ember.js/pull/20856) [DOCS] Restore @glimmer/component API docs and test against classes and modules generated in api docs to prevent future missing docs.
+
+## v6.3.0 (March 17, 2025)
 
 - [#20800](https://github.com/emberjs/ember.js/pull/20800) [FEATURE] Support use of template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
 - [#20526](https://github.com/emberjs/ember.js/pull/20526) / [#20820](https://github.com/emberjs/ember.js/pull/20820) [DEPRECATION] Deprecate importing `inject` from `@ember/service`. The export is renamed to `service` per [RFC #0752](https://rfcs.emberjs.com/id/0752-inject-service/).

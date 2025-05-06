@@ -4,9 +4,8 @@ const path = require('path');
 
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 const { modulePrefixForProject } = require('../-utils');
-const useTestFrameworkDetector = require('../test-framework-detector');
 
-module.exports = useTestFrameworkDetector({
+module.exports = {
   description: 'Generates a util unit test.',
 
   shouldTransformTypeScript: true,
@@ -33,4 +32,4 @@ module.exports = useTestFrameworkDetector({
       modulePrefix: modulePrefixForProject(options.project),
     };
   },
-});
+};

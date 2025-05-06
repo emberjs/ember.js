@@ -95,33 +95,13 @@ export const DEPRECATIONS = {
     return deprecation({
       id: `deprecate-import-${dasherize(importName).toLowerCase()}-from-ember`,
       for: 'ember-source',
-      since: { available: '5.10.0' },
+      since: { available: '5.10.0', enabled: '6.5.0' },
       until: '7.0.0',
       url: `https://deprecations.emberjs.com/id/import-${dasherize(
         importName
       ).toLowerCase()}-from-ember`,
     });
   },
-  DEPRECATE_TEMPLATE_ACTION: deprecation({
-    id: 'template-action',
-    url: 'https://deprecations.emberjs.com/id/template-action',
-    until: '6.0.0',
-    for: 'ember-source',
-    since: {
-      available: '5.9.0',
-      enabled: '5.9.0',
-    },
-  }),
-  DEPRECATE_COMPONENT_TEMPLATE_RESOLVING: deprecation({
-    id: 'component-template-resolving',
-    url: 'https://deprecations.emberjs.com/id/component-template-resolving',
-    until: '6.0.0',
-    for: 'ember-source',
-    since: {
-      available: '5.10.0',
-      enabled: '5.10.0',
-    },
-  }),
   DEPRECATE_ARRAY_PROTOTYPE_EXTENSIONS: deprecation({
     id: 'deprecate-array-prototype-extensions',
     url: 'https://deprecations.emberjs.com/id/deprecate-array-prototype-extensions',

@@ -211,6 +211,12 @@ export default [
     ],
   },
   {
+    files: ['bin/changelog.js'],
+    rules: {
+      'n/hashbang': 'off',
+    },
+  },
+  {
     files: [
       '**/rollup.config.mjs',
       '**/babel.config.mjs',

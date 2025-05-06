@@ -6,9 +6,7 @@ const semver = require('semver');
 const typescriptBlueprintPolyfill = require('ember-cli-typescript-blueprint-polyfill');
 const { modulePrefixForProject } = require('../-utils');
 
-const useTestFrameworkDetector = require('../test-framework-detector');
-
-module.exports = useTestFrameworkDetector({
+module.exports = {
   description: 'Generates a helper integration test.',
 
   shouldTransformTypeScript: true,
@@ -64,4 +62,4 @@ module.exports = useTestFrameworkDetector({
       ]);
     }
   },
-});
+};

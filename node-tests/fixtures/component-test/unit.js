@@ -1,15 +1,11 @@
-import { moduleForComponent, test } from 'ember-qunit';
+import { module, test } from 'qunit';
+import { setupTest } from 'my-app/tests/helpers';
 
-moduleForComponent('x-foo', 'Unit | Component | x-foo', {
-  // Specify the other units that are required for this test
-  // needs: ['component:foo', 'helper:bar'],
-  unit: true,
-});
+module('Unit | Component | x-foo', function (hooks) {
+  setupTest(hooks);
 
-test('it renders', function (assert) {
-  // Creates the component instance
-  /*let component =*/ this.subject();
-  // Renders the component to the page
-  this.render();
-  assert.strictEqual(this.$().text().trim(), '');
+  test('it exists', function (assert) {
+    let component = this.owner.factoryFor('component:x-foo').create();
+    assert.ok(component);
+  });
 });
