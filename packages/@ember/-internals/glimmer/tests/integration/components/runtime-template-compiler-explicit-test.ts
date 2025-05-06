@@ -1,6 +1,6 @@
 import { tracked } from '@ember/-internals/metal';
 import { template } from '@ember/template-compiler/runtime';
-import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
+import { RenderingTestCase, defineSimpleModifier, moduleFor, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { on } from '@ember/modifier/on';
 import { fn } from '@ember/helper';
@@ -36,7 +36,7 @@ moduleFor(
       this.assertHTML('hello there');
       this.assertStableRerender();
 
-      state.str += '!';
+      runTask(() => (state.str += '!'));
 
       this.assertHTML('hello there!');
       this.assertStableRerender();
@@ -57,7 +57,7 @@ moduleFor(
       this.assertHTML('hello there');
       this.assertStableRerender();
 
-      state.str += '!';
+      runTask(() => (state.str += '!'));
 
       this.assertHTML('hello there!');
       this.assertStableRerender();
