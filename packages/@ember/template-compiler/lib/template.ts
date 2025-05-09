@@ -242,10 +242,12 @@ export function template(
   const normalizedOptions = compileOptions(options);
   const component = normalizedOptions.component ?? templateOnly();
 
-  const source = glimmerPrecompile(templateString, normalizedOptions);
-  const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
+  queueMicrotask(() => {
+    const source = glimmerPrecompile(templateString, normalizedOptions);
+    const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
 
-  setComponentTemplate(template, component);
+    setComponentTemplate(template, component);
+  });
 
   return component;
 }
