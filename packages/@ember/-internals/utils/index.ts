@@ -32,4 +32,5 @@ export {
   setupMandatorySetter,
   teardownMandatorySetter,
   setWithMandatorySetter,
+  isMandatorySetter,
 } from './lib/mandatory-setter';
