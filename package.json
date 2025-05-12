@@ -124,7 +124,7 @@
     "ast-types": "^0.14.2",
     "auto-dist-tag": "^2.1.1",
     "babel-plugin-debug-macros": "1.0.0",
-    "babel-plugin-ember-template-compilation": "^2.1.1",
+    "babel-plugin-ember-template-compilation": "^2.4.1",
     "dag-map": "^2.0.2",
     "decorator-transforms": "2.0.0",
     "ember-cli": "^6.3.0",

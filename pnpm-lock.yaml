@@ -185,8 +185,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(@babel/core@7.26.9)
       babel-plugin-ember-template-compilation:
-        specifier: ^2.1.1
-        version: 2.3.0
+        specifier: ^2.4.1
+        version: 2.4.1
       dag-map:
         specifier: ^2.0.2
         version: 2.0.2
@@ -4509,6 +4509,10 @@ packages:
     resolution: {integrity: sha512-4YNPkuVsxAW5lnSTa6cn4Wk49RX6GAB6vX+M6LqEtN0YePqoFczv1/x0EyLK/o+4E1j9jEuYj5Su7IEPab5JHQ==}
     engines: {node: '>= 12.*'}
 
+  babel-import-util@3.0.1:
+    resolution: {integrity: sha512-2copPaWQFUrzooJVIVZA/Oppx/S/KOoZ4Uhr+XWEQDMZ8Rvq/0SNQpbdIyMBJ8IELWt10dewuJw+tX4XjOo7Rg==}
+    engines: {node: '>= 12.*'}
+
   babel-loader@8.4.1:
     resolution: {integrity: sha512-nXzRChX+Z1GoE6yWavBQg6jDslyFF3SDjl2paADuoQtQW10JqShJt62R6eJQ5m/pjJFDT8xgKIWSP85OY8eXeA==}
     engines: {node: '>= 8.9'}
@@ -4545,6 +4549,10 @@ packages:
 
   babel-plugin-ember-template-compilation@2.3.0:
     resolution: {integrity: sha512-4ZrKVSqdw5PxEKRbqfOpPhrrNBDG3mFPhyT6N1Oyyem81ZIkCvNo7TPKvlTHeFxqb6HtUvCACP/pzFpZ74J4pg==}
+    engines: {node: '>= 12.*'}
+
+  babel-plugin-ember-template-compilation@2.4.1:
+    resolution: {integrity: sha512-n+ktQ3JeyWrpRutSyPn2PsHeH+A94SVm+iUoogzf9VUqpP47FfWem24gpQXhn+p6+x5/BpuFJXMLXWt7ZoYAKA==}
     engines: {node: '>= 12.*'}
 
   babel-plugin-htmlbars-inline-precompile@5.3.1:
@@ -13855,6 +13863,8 @@ snapshots:
 
   babel-import-util@3.0.0: {}
 
+  babel-import-util@3.0.1: {}
+
   babel-loader@8.4.1(@babel/core@7.26.9)(webpack@5.98.0(@swc/core@1.11.1)):
     dependencies:
       '@babel/core': 7.26.9(supports-color@8.1.1)
@@ -13911,6 +13921,11 @@ snapshots:
     dependencies:
       '@glimmer/syntax': 0.84.3
       babel-import-util: 3.0.0
+
+  babel-plugin-ember-template-compilation@2.4.1:
+    dependencies:
+      '@glimmer/syntax': 0.94.9
+      babel-import-util: 3.0.1
 
   babel-plugin-htmlbars-inline-precompile@5.3.1:
     dependencies:
