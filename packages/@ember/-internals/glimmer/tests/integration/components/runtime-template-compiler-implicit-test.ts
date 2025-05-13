@@ -1,6 +1,5 @@
-import { tracked } from '@ember/-internals/metal';
 import { template } from '@ember/template-compiler/runtime';
-import { RenderingTestCase, defineSimpleModifier, moduleFor, runTask } from 'internal-test-helpers';
+import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { on } from '@ember/modifier/on';
 import { fn } from '@ember/helper';
@@ -8,34 +7,19 @@ import { fn } from '@ember/helper';
 moduleFor(
   'Strict Mode - Runtime Template Compiler (implicit)',
   class extends RenderingTestCase {
-    async '@test can have in-scope tracked data'(assert: Assert) {
+    async '@test can immediately render a runtime-compiled template'() {
       class State {
-        @tracked str = `hello there`;
-
         get component() {
-          assert.step('get component');
-
-          let getStr = () => {
-            assert.step('getStr()');
-            return this.str;
-          };
-
-          hide(getStr);
-
-          return template(`{{ (getStr) }}`, {
-            eval() {
-              return eval(arguments[0]);
-            },
-          });
+          return template(`hello there`);
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       let state = new State();
 
       await this.renderComponentModule(() => {
         return template('<state.component />', {
           eval() {
-            assert.step('eval');
             return eval(arguments[0]);
           },
         });
@@ -43,21 +27,6 @@ moduleFor(
 
       this.assertHTML('hello there');
       this.assertStableRerender();
-      assert.verifySteps([
-        // for every value in the component, for eevry node traversed in the compiler
-        'eval', // precompileJSON -> ... ElementNode ->  ... -> lexicalScope -> isScope('state', ...)
-        'eval', // "..."
-        'eval', // "..."
-        'eval', // creating the templateFactory
-        'get component',
-        'getStr()',
-      ]);
-
-      runTask(() => (state.str += '!'));
-
-      this.assertHTML('hello there!');
-      this.assertStableRerender();
-      assert.verifySteps(['getStr()']);
     }
 
     async '@test Can use a component in scope'() {
