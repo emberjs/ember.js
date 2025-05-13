@@ -7,6 +7,28 @@ import { fn } from '@ember/helper';
 moduleFor(
   'Strict Mode - Runtime Template Compiler (implicit)',
   class extends RenderingTestCase {
+    async '@test can immediately render a runtime-compiled template'() {
+      class State {
+        get component() {
+          return template(`hello there`);
+        }
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      let state = new State();
+
+      await this.renderComponentModule(() => {
+        return template('<state.component />', {
+          eval() {
+            return eval(arguments[0]);
+          },
+        });
+      });
+
+      this.assertHTML('hello there');
+      this.assertStableRerender();
+    }
+
     async '@test Can use a component in scope'() {
       await this.renderComponentModule(() => {
         let Foo = template('Hello, world!', {
