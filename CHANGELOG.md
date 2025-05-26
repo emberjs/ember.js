@@ -1,5 +1,9 @@
 # Ember Changelog
 
+## v6.5.0-beta.2 (May 26, 2025)
+
+- [#20835](https://github.com/emberjs/ember.js/pull/20835) [FEATURE] Add a `--route-authoring-format` option to the route generator to generate template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
+
 ## v6.5.0-beta.1 (April 28, 2025)
 
 - [#20862](https://github.com/emberjs/ember.js/pull/20862) [FEATURE] Add blueprints to generate strict components (template tag) with `--strict` or `--tt` per [RFC #0779](https://rfcs.emberjs.com/id/0779-first-class-component-templates).
