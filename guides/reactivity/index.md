@@ -12,6 +12,8 @@
    maintaining a _coherent_ data model.
 4. [Reactive Abstractions](./reactive-abstractions.md): A description of the implementation of
    a number of reactive abstractions, and how they satisfy the laws of reactivity.
+5. [Autotracked Rendering](./autotracked-rendering.md): An overview of the
+   details of how rendering and autotracking interplay.
 
 ### Pseudocode
 
