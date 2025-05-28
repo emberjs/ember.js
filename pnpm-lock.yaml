@@ -21,54 +21,6 @@ importers:
       '@embroider/addon-shim':
         specifier: ^1.9.0
         version: 1.9.0
-      '@glimmer/compiler':
-        specifier: 0.94.10
-        version: 0.94.10
-      '@glimmer/destroyable':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/global-context':
-        specifier: 0.93.4
-        version: 0.93.4
-      '@glimmer/interfaces':
-        specifier: 0.94.6
-        version: 0.94.6
-      '@glimmer/manager':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/node':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/opcode-compiler':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/owner':
-        specifier: 0.93.4
-        version: 0.93.4
-      '@glimmer/program':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/reference':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/runtime':
-        specifier: 0.94.10
-        version: 0.94.10
-      '@glimmer/syntax':
-        specifier: 0.94.9
-        version: 0.94.9
-      '@glimmer/util':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/vm':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/vm-babel-plugins':
-        specifier: 0.93.4
-        version: 0.93.4(@babel/core@7.26.9)
       '@simple-dom/interface':
         specifier: ^1.4.0
         version: 1.4.0
@@ -151,9 +103,57 @@ importers:
       '@eslint/js':
         specifier: ^9.21.0
         version: 9.21.0
+      '@glimmer/compiler':
+        specifier: 0.94.10
+        version: 0.94.10
       '@glimmer/component':
         specifier: workspace:^
         version: link:packages/@glimmer/component
+      '@glimmer/destroyable':
+        specifier: 0.94.8
+        version: 0.94.8
+      '@glimmer/global-context':
+        specifier: 0.93.4
+        version: 0.93.4
+      '@glimmer/interfaces':
+        specifier: 0.94.6
+        version: 0.94.6
+      '@glimmer/manager':
+        specifier: 0.94.9
+        version: 0.94.9
+      '@glimmer/node':
+        specifier: 0.94.9
+        version: 0.94.9
+      '@glimmer/opcode-compiler':
+        specifier: 0.94.9
+        version: 0.94.9
+      '@glimmer/owner':
+        specifier: 0.93.4
+        version: 0.93.4
+      '@glimmer/program':
+        specifier: 0.94.9
+        version: 0.94.9
+      '@glimmer/reference':
+        specifier: 0.94.8
+        version: 0.94.8
+      '@glimmer/runtime':
+        specifier: 0.94.10
+        version: 0.94.10
+      '@glimmer/syntax':
+        specifier: 0.94.9
+        version: 0.94.9
+      '@glimmer/util':
+        specifier: 0.94.8
+        version: 0.94.8
+      '@glimmer/validator':
+        specifier: 0.94.8
+        version: 0.94.8
+      '@glimmer/vm':
+        specifier: 0.94.8
+        version: 0.94.8
+      '@glimmer/vm-babel-plugins':
+        specifier: 0.93.4
+        version: 0.93.4(@babel/core@7.26.9)
       '@rollup/plugin-babel':
         specifier: ^6.0.4
         version: 6.0.4(@babel/core@7.26.9)(rollup@4.34.8)
