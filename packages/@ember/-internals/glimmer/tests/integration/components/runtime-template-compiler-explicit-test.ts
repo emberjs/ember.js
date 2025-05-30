@@ -57,7 +57,6 @@ moduleFor(
           assert.step('get component');
           return template(`{{greeting}}`, {
             scope: () => {
-              assert.step('scope()');
               return { greeting: this.str };
             },
           });
@@ -69,15 +68,14 @@ moduleFor(
         return template('<state.component />', { scope: () => ({ state }) });
       });
 
+      assert.verifySteps(['get component']);
       this.assertHTML('hello there');
       this.assertStableRerender();
-      assert.verifySteps(['get component', 'scope()']);
 
       runTask(() => (state.str += '!'));
-
+      assert.verifySteps([]);
       this.assertHTML('hello there!');
       this.assertStableRerender();
-      assert.verifySteps(['scope()']);
     }
 
     async '@test Can use a custom helper in scope (in append position)'() {
