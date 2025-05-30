@@ -412,6 +412,9 @@ importers:
       '@glimmer/local-debug-babel-plugin':
         specifier: workspace:*
         version: link:../../@glimmer/local-debug-babel-plugin
+      '@rollup/plugin-babel':
+        specifier: ^6.0.4
+        version: 6.0.4(@babel/core@7.26.0)(@types/babel__core@7.20.5)(rollup@4.34.8)
       '@rollup/plugin-commonjs':
         specifier: ^28.0.2
         version: 28.0.2(rollup@4.34.8)
@@ -681,6 +684,8 @@ importers:
       '@glimmer/wire-format':
         specifier: workspace:*
         version: link:../../../@glimmer/wire-format
+
+  packages/@glimmer-workspace/swc-strip-glimmer-debug: {}
 
   packages/@glimmer-workspace/test-utils:
     dependencies:
@@ -3159,6 +3164,19 @@ packages:
     resolution: {integrity: sha512-aBSREisdsGH890S2rQqK82qmQYU3uFpSH8wcZWHgHzl3LfzsxAKbLNiAG9mO8v1Y0UICBeClICxPJvyr0rcuxg==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@rollup/plugin-babel@6.0.4':
+    resolution: {integrity: sha512-YF7Y52kFdFT/xVSuVdjkV5ZdX/3YtmX0QulG+x0taQOtJdHYzVU61aSSkAgVJ7NOv6qPkIYiJSgSWWN/DM5sGw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0
+      '@types/babel__core': ^7.1.9
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      '@types/babel__core':
+        optional: true
+      rollup:
+        optional: true
 
   '@rollup/plugin-commonjs@28.0.2':
     resolution: {integrity: sha512-BEFI2EDqzl+vA1rl97IDRZ61AIwGH093d9nz8+dThxJNH8oSoB7MjWvPCX3dkaK1/RCJ/1v/R1XB15FuSs0fQw==}
@@ -12082,6 +12100,17 @@ snapshots:
       tar-fs: 3.0.6
       unbzip2-stream: 1.4.3
       yargs: 17.7.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@rollup/plugin-babel@6.0.4(@babel/core@7.26.0)(@types/babel__core@7.20.5)(rollup@4.34.8)':
+    dependencies:
+      '@babel/core': 7.26.0
+      '@babel/helper-module-imports': 7.25.9
+      '@rollup/pluginutils': 5.1.4(rollup@4.34.8)
+    optionalDependencies:
+      '@types/babel__core': 7.20.5
+      rollup: 4.34.8
     transitivePeerDependencies:
       - supports-color
 
