@@ -1,3 +1,4 @@
+import { untrack } from '@glimmer/validator';
 import templateOnly, { type TemplateOnlyComponent } from '@ember/component/template-only';
 import { precompile as glimmerPrecompile } from '@glimmer/compiler';
 import type { SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
@@ -236,18 +237,21 @@ export function template(
   templateString: string,
   providedOptions?: BaseTemplateOptions | BaseClassTemplateOptions<any>
 ): object {
+  // When figuring out how to compile the template, we don't want to engage
+  // with auto-tracking in a way that would cause the template
+  // to be re-rendered when the intended-to-be-lazily-accessesd scope bag's contents changes.
+  //
+  // This is why we use our reactivity-evading utility untrack() here
   const options: EmberPrecompileOptions = { strictMode: true, ...providedOptions };
-  const evaluate = buildEvaluator(options);
+  const evaluate = untrack(() => buildEvaluator(options));
 
-  const normalizedOptions = compileOptions(options);
+  const normalizedOptions = untrack(() => compileOptions(options));
   const component = normalizedOptions.component ?? templateOnly();
 
-  queueMicrotask(() => {
-    const source = glimmerPrecompile(templateString, normalizedOptions);
-    const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
+  const source = glimmerPrecompile(templateString, normalizedOptions);
+  const template = templateFactory(evaluate(`(${source})`) as SerializedTemplateWithLazyBlock);
 
-    setComponentTemplate(template, component);
-  });
+  setComponentTemplate(template, component);
 
   return component;
 }
@@ -264,15 +268,15 @@ function buildEvaluator(options: Partial<EmberPrecompileOptions> | undefined) {
   if (options.eval) {
     return options.eval;
   } else {
-    const scope = options.scope?.();
+    let scope = options.scope?.();
 
     if (!scope) {
       return evaluator;
     }
 
     return (source: string) => {
-      const argNames = Object.keys(scope);
-      const argValues = Object.values(scope);
+      const argNames = Object.keys(scope ?? {});
+      const argValues = Object.values(scope ?? {});
 
       return new Function(...argNames, `return (${source})`)(...argValues);
     };

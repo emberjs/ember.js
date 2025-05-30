@@ -1,5 +1,6 @@
+import { tracked } from '@ember/-internals/metal';
 import { template } from '@ember/template-compiler/runtime';
-import { RenderingTestCase, defineSimpleModifier, moduleFor } from 'internal-test-helpers';
+import { RenderingTestCase, defineSimpleModifier, moduleFor, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { on } from '@ember/modifier/on';
 import { fn } from '@ember/helper';
@@ -17,6 +18,63 @@ moduleFor(
       });
 
       this.assertHTML('Hello, world!');
+      this.assertStableRerender();
+    }
+
+    async '@test can derive the template string from tracked'(assert: Assert) {
+      class State {
+        @tracked str = `hello there`;
+
+        get component() {
+          assert.step('get component');
+          return template(this.str);
+        }
+      }
+      let state = new State();
+
+      await this.renderComponentModule(() => {
+        return template('<state.component />', { scope: () => ({ state }) });
+      });
+
+      this.assertHTML('hello there');
+      this.assertStableRerender();
+      assert.verifySteps(['get component']);
+
+      runTask(() => (state.str += '!'));
+
+      this.assertHTML('hello there!');
+      this.assertStableRerender();
+      assert.verifySteps(['get component']);
+    }
+
+    async '@test can have tracked data in the scope bag - and changes to that scope bag dont re-compile'(
+      assert: Assert
+    ) {
+      class State {
+        @tracked str = `hello there`;
+
+        get component() {
+          assert.step('get component');
+          return template(`{{greeting}}`, {
+            scope: () => {
+              return { greeting: this.str };
+            },
+          });
+        }
+      }
+      let state = new State();
+
+      await this.renderComponentModule(() => {
+        return template('<state.component />', { scope: () => ({ state }) });
+      });
+
+      assert.verifySteps(['get component']);
+      this.assertHTML('hello there');
+      this.assertStableRerender();
+
+      runTask(() => (state.str += '!'));
+      assert.verifySteps([]);
+      this.assertHTML('hello there!');
       this.assertStableRerender();
     }
 
