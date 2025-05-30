@@ -163,21 +163,6 @@ export default class EventDispatcher extends EmberObject {
       !rootElement.classList.contains(ROOT_ELEMENT_CLASS)
     );
     assert(
-      'You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application',
-      (() => {
-        let target = rootElement.parentNode;
-        while (target instanceof Element) {
-          if (target.classList.contains(ROOT_ELEMENT_CLASS)) {
-            return false;
-          }
-
-          target = target.parentNode;
-        }
-
-        return true;
-      })()
-    );
-    assert(
       'You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application',
       !rootElement.querySelector(ROOT_ELEMENT_SELECTOR)
     );
