@@ -685,8 +685,6 @@ importers:
         specifier: workspace:*
         version: link:../../../@glimmer/wire-format
 
-  packages/@glimmer-workspace/swc-strip-glimmer-debug: {}
-
   packages/@glimmer-workspace/test-utils:
     dependencies:
       '@glimmer/interfaces':
