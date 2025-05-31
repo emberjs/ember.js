@@ -170,10 +170,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: ['install_dependencies']
     timeout-minutes: 10
-    # TEMPORARY: Allow this job to fail due to pnpm ecosystem peer dependency conflicts
-    # in @pnpm/* internal packages (versions 1000.x.x). Issue: https://github.com/pnpm/pnpm/issues/9422
-    # Remove 'continue-on-error' when pnpm resolves their internal peer dependency conflicts.
-    continue-on-error: true
 
     steps:
       - uses: wyvox/action@v1
