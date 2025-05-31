@@ -15,19 +15,6 @@
       }
     },
     {
-      "root": ".meta-updater",
-      "name": "@glimmer-workspace/meta-updater",
-      "version": "0.92.0",
-      "type": "commonjs",
-      "private": true,
-      "repo-meta": {
-        "built": false
-      },
-      "entryPoints": {
-        ".": [[["default"], "./main.mjs"]]
-      }
-    },
-    {
       "root": "bin",
       "name": "@glimmer-workspace/bin",
       "version": "0.92.0",
