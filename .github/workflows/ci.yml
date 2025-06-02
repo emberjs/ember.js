@@ -29,7 +29,6 @@ jobs:
           node-version: 22.13.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm turbo prepack
-      - run: node ./bin/build-verify.mjs
 
   lint:
     name: Linting

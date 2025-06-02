@@ -48,7 +48,6 @@ try {
 const packages: WorkspacePackage[] = pnpmPackages.map((pkg) => {
   // Read the actual package.json to get all fields including repo-meta
   const packageJsonPath = join(pkg.path, 'package.json');
-
   if (!existsSync(packageJsonPath)) {
     console.error(chalk.red(`Missing package.json at ${packageJsonPath}`));
     throw new Error(`Missing package.json at ${packageJsonPath}`);

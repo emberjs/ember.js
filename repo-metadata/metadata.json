@@ -27,7 +27,6 @@
         "env": ["node", "console"]
       },
       "entryPoints": {
-        "./build-verify.mjs": [[["default"], "./build-verify.mjs"]],
         "./clean.mjs": [[["default"], "./clean.mjs"]],
         "./opcodes/opcodes.schema.json": [[["default"], "./opcodes/opcodes.schema.json"]],
         "./opcodes.json": [[["default"], "./opcodes.json"]],
