@@ -603,6 +603,7 @@ Reflect.set(Ember, 'RSVP', _RSVP);
 
 interface EmberHandlebars {
   template: typeof template;
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   Utils: {};
   compile?: typeof compile;
   precompile?: typeof precompile;
