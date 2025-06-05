@@ -14,8 +14,9 @@ moduleFor(
         }
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       let state = new State();
+
+      hide(state);
 
       await this.renderComponentModule(() => {
         return template('<state.component />', {
