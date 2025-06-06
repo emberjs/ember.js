@@ -894,20 +894,6 @@ class Component<S = unknown>
     return this.__dispatcher;
   }
 
-  on<Target>(
-    name: string,
-    target: Target,
-    method: string | ((this: Target, ...args: any[]) => void)
-  ): this;
-  on(name: string, method: ((...args: any[]) => void) | string): this;
-  on(name: string, target: any, method?: any) {
-    this._dispatcher?.setupHandlerForEmberEvent(name);
-    // The `on` method here comes from the Evented mixin. Since this mixin
-    // is applied to the parent of this class, however, we are still able
-    // to use `super`.
-    return super.on(name, target, method);
-  }
-
   // Changed to `rerender` on init
   _rerender() {
     dirtyTag(this[DIRTY_TAG]);

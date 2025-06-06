@@ -263,9 +263,6 @@ d('@ember/object/computed', emberObjectComputed);
 import * as emberObjectCore from '@ember/object/core';
 d('@ember/object/core', emberObjectCore);
 
-import * as emberObjectEvented from '@ember/object/evented';
-d('@ember/object/evented', emberObjectEvented);
-
 import * as emberObjectEvents from '@ember/object/events';
 d('@ember/object/events', emberObjectEvents);
 

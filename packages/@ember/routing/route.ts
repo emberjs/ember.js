@@ -9,7 +9,6 @@ import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
-import Evented from '@ember/object/evented';
 import { A as emberA } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { typeOf } from '@ember/utils';
@@ -74,11 +73,10 @@ const RENDER_STATE = Symbol('render-state');
   @class Route
   @extends EmberObject
   @uses ActionHandler
-  @uses Evented
   @since 1.0.0
   @public
 */
-interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
+interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -252,7 +250,7 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler, Evented {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) implements IRoute {
+class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implements IRoute {
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we
@@ -769,7 +767,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   */
   exit(transition?: Transition) {
     this.deactivate(transition);
-    this.trigger('deactivate', transition);
     this.teardownViews();
   }
 
@@ -795,48 +792,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
   enter(transition: Transition) {
     this[RENDER_STATE] = undefined;
     this.activate(transition);
-    this.trigger('activate', transition);
   }
-
-  /**
-    This event is triggered when the router enters the route. It is
-    not executed when the model for the route changes.
-
-    ```app/routes/application.js
-    import { on } from '@ember/object/evented';
-    import Route from '@ember/routing/route';
-
-    export default Route.extend({
-      collectAnalytics: on('activate', function(){
-        collectAnalytics();
-      })
-    });
-    ```
-
-    @event activate
-    @since 1.9.0
-    @public
-  */
-
-  /**
-    This event is triggered when the router completely exits this
-    route. It is not executed when the model for the route changes.
-
-    ```app/routes/index.js
-    import { on } from '@ember/object/evented';
-    import Route from '@ember/routing/route';
-
-    export default Route.extend({
-      trackPageLeaveAnalytics: on('deactivate', function(){
-        trackPageLeaveAnalytics();
-      })
-    });
-    ```
-
-    @event deactivate
-    @since 1.9.0
-    @public
-  */
 
   /**
     This hook is executed when the router completely exits this route. It is
@@ -1488,6 +1444,7 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) 
     }
   }
 
+  // TODO: Revisit the docs
   /**
     Allows you to produce custom metadata for the route.
     The return value of this method will be attached to

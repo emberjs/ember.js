@@ -1,5 +1,4 @@
-import { on, addListener, removeListener, sendEvent, hasListeners } from '..';
-import Mixin from '@ember/object/mixin';
+import { addListener, removeListener, sendEvent, hasListeners } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -137,63 +136,6 @@ moduleFor(
 
       addListener(obj, 'event!', F);
       assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
-    }
-
-    ['@test a listener can be added as part of a mixin'](assert) {
-      let triggered = 0;
-      let MyMixin = Mixin.create({
-        foo1: on('bar', function () {
-          triggered++;
-        }),
-
-        foo2: on('bar', function () {
-          triggered++;
-        }),
-      });
-
-      let obj = {};
-      MyMixin.apply(obj);
-
-      sendEvent(obj, 'bar');
-      assert.equal(triggered, 2, 'should invoke listeners');
-    }
-
-    [`@test 'on' asserts for invalid arguments`]() {
-      expectAssertion(() => {
-        Mixin.create({
-          foo1: on('bar'),
-        });
-      }, 'on expects function as last argument');
-
-      expectAssertion(() => {
-        Mixin.create({
-          foo1: on(function () {}),
-        });
-      }, 'on called without valid event names');
-    }
-
-    ['@test a listener added as part of a mixin may be overridden'](assert) {
-      let triggered = 0;
-      let FirstMixin = Mixin.create({
-        foo: on('bar', function () {
-          triggered++;
-        }),
-      });
-      let SecondMixin = Mixin.create({
-        foo: on('baz', function () {
-          triggered++;
-        }),
-      });
-
-      let obj = {};
-      FirstMixin.apply(obj);
-      SecondMixin.apply(obj);
-
-      sendEvent(obj, 'bar');
-      assert.equal(triggered, 0, 'should not invoke from overridden property');
-
-      sendEvent(obj, 'baz');
-      assert.equal(triggered, 1, 'should invoke from subclass property');
     }
   }
 );

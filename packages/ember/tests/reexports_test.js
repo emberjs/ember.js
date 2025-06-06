@@ -80,7 +80,6 @@ import * as test21 from '@ember/object';
 import * as test22 from '@ember/object/compat';
 import * as test23 from '@ember/object/computed';
 import * as test24 from '@ember/object/core';
-import * as test25 from '@ember/object/evented';
 import * as test26 from '@ember/object/events';
 import * as test27 from '@ember/object/internals';
 import * as test28 from '@ember/object/mixin';
@@ -213,8 +212,6 @@ let allExports = [
   ['ComputedProperty', '@ember/object/computed', 'default', test23],
   ['expandProperties', '@ember/object/computed', 'expandProperties', test23],
   ['CoreObject', '@ember/object/core', 'default', test24],
-  ['Evented', '@ember/object/evented', 'default', test25],
-  ['on', '@ember/object/evented', 'on', test25],
   ['addListener', '@ember/object/events', 'addListener', test26],
   ['removeListener', '@ember/object/events', 'removeListener', test26],
   ['sendEvent', '@ember/object/events', 'sendEvent', test26],

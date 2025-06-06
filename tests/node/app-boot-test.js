@@ -108,30 +108,4 @@ QUnit.module('App Boot', function (hooks) {
 
     return this.all(promises);
   });
-
-  QUnit.test('lifecycle hooks disabled', function (assert) {
-    assert.expect(1);
-
-    this.template('application', "{{my-component foo='bar'}}{{outlet}}");
-
-    this.component('my-component', {
-      didReceiveAttrs() {
-        assert.ok(true, 'should trigger didReceiveAttrs hook');
-      },
-      willRender() {
-        assert.ok(false, 'should not trigger willRender hook');
-      },
-      didRender() {
-        assert.ok(false, 'should not trigger didRender hook');
-      },
-      willInsertElement() {
-        assert.ok(false, 'should not trigger willInsertElement hook');
-      },
-      didInsertElement() {
-        assert.ok(false, 'should not trigger didInsertElement hook');
-      },
-    });
-
-    return this.renderToHTML('/');
-  });
 });
