@@ -242,4 +242,4 @@ class InsertAtTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('instertAt', InsertAtTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('instertAt', InsertAtTests, 'MutableArray', 'NativeArray');

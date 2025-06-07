@@ -47,7 +47,6 @@ import {
 import {
   RegistryProxyMixin,
   ContainerProxyMixin,
-  _ProxyMixin as internalProxyMixin,
   RSVP as _RSVP,
   Comparable as InternalComparable,
   ActionHandler as InternalActionHandler,
@@ -75,7 +74,6 @@ import EmberArray, {
   makeArray as emberMakeArray,
 } from '@ember/array';
 import EmberMutableArray from '@ember/array/mutable';
-import EmberArrayProxy from '@ember/array/proxy';
 import EmberApplication, {
   getOwner as applicationGetOwner,
   setOwner as applicationSetOwner,
@@ -97,8 +95,6 @@ import {
   addObserver as emberAddObserver,
   removeObserver as emberRemoveObserver,
 } from '@ember/object/observers';
-import EmberObjectProxy from '@ember/object/proxy';
-import EmberPromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import EmberHashLocation from '@ember/routing/hash-location';
 import EmberHistoryLocation from '@ember/routing/history-location';
 import EmberNoneLocation from '@ember/routing/none-location';
@@ -184,7 +180,6 @@ namespace Ember {
 
   // ****@ember/-internals/runtime****
   export const _ContainerProxyMixin = ContainerProxyMixin;
-  export const _ProxyMixin = internalProxyMixin;
   export const _RegistryProxyMixin = RegistryProxyMixin;
   export const ActionHandler = InternalActionHandler;
   export type ActionHandler = InternalActionHandler;
@@ -232,10 +227,6 @@ namespace Ember {
   // ****@ember/array/mutable****
   export const MutableArray = EmberMutableArray;
   export type MutableArray<T> = EmberMutableArray<T>;
-
-  // ****@ember/array/proxy****
-  export const ArrayProxy = EmberArrayProxy;
-  export type ArrayProxy<T> = EmberArrayProxy<T>;
 
   // ****@ember/canary-features****
   export const FEATURES = { isEnabled, ...EmberFEATURES };
@@ -366,14 +357,6 @@ namespace Ember {
   // ****@ember/object/observers****
   export const addObserver = emberAddObserver;
   export const removeObserver = emberRemoveObserver;
-
-  // ****@ember/object/promise-proxy-mixin****
-  export const PromiseProxyMixin = EmberPromiseProxyMixin;
-  export type PromiseProxyMixin<T> = EmberPromiseProxyMixin<T>;
-
-  // ****@ember/object/proxy****
-  export const ObjectProxy = EmberObjectProxy;
-  export type ObjectProxy = EmberObjectProxy;
 
   // ****@ember/routing/-internals****
   export const RouterDSL = EmberRouterDSL;

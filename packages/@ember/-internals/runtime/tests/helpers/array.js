@@ -1,4 +1,3 @@
-import ArrayProxy from '@ember/array/proxy';
 import EmberArray, { A as emberA } from '@ember/array';
 import MutableArray from '@ember/array/mutable';
 import { generateGuid, guidFor } from '@ember/-internals/utils';
@@ -8,7 +7,7 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import EmberObject, { get, computed } from '@ember/object';
+import EmberObject, { computed } from '@ember/object';
 import { moduleFor } from 'internal-test-helpers';
 
 export function newFixture(cnt) {
@@ -150,20 +149,6 @@ class NativeArrayHelpers extends AbstractArrayHelper {
   }
 }
 
-class ArrayProxyHelpers extends AbstractArrayHelper {
-  newObject(ary) {
-    return ArrayProxy.create({ content: emberA(super.newObject(ary)) });
-  }
-
-  mutate(obj) {
-    obj.pushObject(get(obj, 'length') + 1);
-  }
-
-  toArray(obj) {
-    return obj.toArray ? obj.toArray() : obj.slice();
-  }
-}
-
 /*
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
@@ -259,9 +244,6 @@ export function runArrayTests(name, Tests, ...types) {
   if (types.length > 0) {
     types.forEach((type) => {
       switch (type) {
-        case 'ArrayProxy':
-          moduleFor(`ArrayProxy: ${name}`, Tests, ArrayProxyHelpers);
-          break;
         case 'EmberArray':
           moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
           break;
@@ -276,7 +258,6 @@ export function runArrayTests(name, Tests, ...types) {
       }
     });
   } else {
-    moduleFor(`ArrayProxy: ${name}`, Tests, ArrayProxyHelpers);
     moduleFor(`EmberArray: ${name}`, Tests, EmberArrayHelpers);
     moduleFor(`MutableArray: ${name}`, Tests, MutableArrayHelpers);
     moduleFor(`NativeArray: ${name}`, Tests, NativeArrayHelpers);

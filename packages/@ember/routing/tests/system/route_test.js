@@ -2,7 +2,6 @@ import { setOwner } from '@ember/-internals/owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import Service, { service } from '@ember/service';
 import EmberRoute from '@ember/routing/route';
-import ObjectProxy from '@ember/object/proxy';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 let route, routeOne, routeTwo, lookupHash;
@@ -200,12 +199,6 @@ moduleFor(
       let model = { post_id: 3 };
 
       assert.deepEqual(route.serialize(model, ['post_id']), { post_id: 3 }, 'serialized correctly');
-    }
-
-    ['@test returns model.id if model is a Proxy'](assert) {
-      let model = ObjectProxy.create({ content: { id: 3 } });
-
-      assert.deepEqual(route.serialize(model, ['id']), { id: 3 }, 'serialized Proxy correctly');
     }
 
     ['@test returns undefined if model is not set'](assert) {

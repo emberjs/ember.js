@@ -114,4 +114,4 @@ class UnshiftObjectsTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('unshiftObjects', UnshiftObjectsTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('unshiftObjects', UnshiftObjectsTests, 'MutableArray', 'NativeArray');

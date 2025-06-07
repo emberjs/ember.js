@@ -103,4 +103,4 @@ class PopObjectTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('popObject', PopObjectTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('popObject', PopObjectTests, 'MutableArray', 'NativeArray');

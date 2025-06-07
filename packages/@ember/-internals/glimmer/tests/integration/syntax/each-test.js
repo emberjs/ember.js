@@ -1,9 +1,8 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { notifyPropertyChange } from '@ember/-internals/metal';
-import { get, set, computed } from '@ember/object';
+import { get, set } from '@ember/object';
 import { A as emberA } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
 import { RSVP } from '@ember/-internals/runtime';
 
 import { Component, htmlSafe } from '../../utils/helpers';
@@ -160,8 +159,6 @@ const TRUTHY_CASES = [
   emberA(['hello']),
   makeSet(['hello']),
   new ForEachable(['hello']),
-  ArrayProxy.create({ content: ['hello'] }),
-  ArrayProxy.create({ content: emberA(['hello']) }),
   new ArrayIterable(['hello']),
 ];
 
@@ -175,8 +172,6 @@ const FALSY_CASES = [
   emberA([]),
   makeSet([]),
   new ForEachable([]),
-  ArrayProxy.create({ content: [] }),
-  ArrayProxy.create({ content: emberA([]) }),
   new ArrayIterable([]),
 ];
 
@@ -1069,49 +1064,6 @@ moduleFor(
     createList(items) {
       let iterable = new ArrayIterable(items);
       return { list: iterable, delegate: iterable };
-    }
-  }
-);
-
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, modifying itself',
-  class extends EachTest {
-    createList(items) {
-      let proxty = ArrayProxy.create({ content: emberA(items) });
-      return { list: proxty, delegate: proxty };
-    }
-  }
-);
-
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, replacing its content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return {
-        list: wrapped,
-        delegate: ArrayProxy.create({ content: wrapped }),
-      };
-    }
-  }
-);
-
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = class extends ArrayProxy {
-        @computed('wrappedItems.[]')
-        get arrangedContent() {
-          // Slice the items to ensure that updates must be propogated
-          return this.wrappedItems.slice();
-        }
-      }.create({
-        wrappedItems: wrapped,
-      });
-
-      return { list: proxy, delegate: wrapped };
     }
   }
 );

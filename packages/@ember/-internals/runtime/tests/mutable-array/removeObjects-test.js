@@ -235,4 +235,4 @@ class RemoveObjectsTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('removeObjects', RemoveObjectsTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('removeObjects', RemoveObjectsTests, 'MutableArray', 'NativeArray');

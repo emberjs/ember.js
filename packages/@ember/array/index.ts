@@ -21,6 +21,7 @@ import Observable from '@ember/object/observable';
 import type { MethodNamesOf, MethodParams, MethodReturns } from '@ember/-internals/utility-types';
 import type { ComputedPropertyCallback } from '@ember/-internals/metal';
 import { isEmberArray, setEmberArray } from '@ember/array/-internals';
+import { destroyObservers } from '@ember/-internals/metal/lib/observer';
 
 export { default as makeArray } from './make';
 
@@ -150,11 +151,9 @@ function insertAt<T>(array: MutableArray<T>, index: number, item: T) {
 
   ```javascript
   import { isArray } from '@ember/array';
-  import ArrayProxy from '@ember/array/proxy';
 
   isArray();                                      // false
   isArray([]);                                    // true
-  isArray(ArrayProxy.create({ content: [] }));    // true
   ```
 
   @method isArray
@@ -219,11 +218,6 @@ function mapBy<T>(this: EmberArray<T>, key: string) {
   This mixin implements Observer-friendly Array-like behavior. It is not a
   concrete implementation, but it can be used up by other classes that want
   to appear like arrays.
-
-  For example, ArrayProxy is a concrete class that can be instantiated to
-  implement array-like behavior. This class uses the Array Mixin by way of
-  the MutableArray mixin, which allows observable changes to be made to the
-  underlying array.
 
   This mixin defines methods specifically for collections that provide
   index-ordered access to their contents. When you are designing code that
@@ -1463,7 +1457,6 @@ const EmberArray = Mixin.create(Enumerable, {
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
   It builds upon the Array mixin and adds methods to modify the array.
-  One concrete implementations of this class include ArrayProxy.
 
   It is important to use the methods in this class to modify arrays so that
   changes are observable. This allows the binding system in Ember to function
@@ -1852,6 +1845,10 @@ const MutableArray = Mixin.create(EmberArray, MutableEnumerable, {
     objects.forEach((obj) => this.addObject(obj));
     endPropertyChanges();
     return this;
+  },
+
+  destroy() {
+    destroyObservers(this);
   },
 });
 

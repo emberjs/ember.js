@@ -117,4 +117,4 @@ class ShiftObjectTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('shiftObject', ShiftObjectTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('shiftObject', ShiftObjectTests, 'MutableArray', 'NativeArray');

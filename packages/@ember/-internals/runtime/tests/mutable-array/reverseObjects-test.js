@@ -37,4 +37,4 @@ class ReverseObjectsTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('reverseObjects', ReverseObjectsTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('reverseObjects', ReverseObjectsTests, 'MutableArray', 'NativeArray');

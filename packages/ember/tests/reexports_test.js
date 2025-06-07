@@ -60,7 +60,6 @@ import * as test1 from '@ember/application/instance';
 import * as test2 from '@ember/application/namespace';
 import * as test3 from '@ember/array';
 import * as test4 from '@ember/array/mutable';
-import * as test5 from '@ember/array/proxy';
 import * as test6 from '@ember/canary-features';
 import * as test7 from '@ember/component';
 import * as test8 from '@ember/component/helper';
@@ -85,8 +84,6 @@ import * as test27 from '@ember/object/internals';
 import * as test28 from '@ember/object/mixin';
 import * as test29 from '@ember/object/observable';
 import * as test30 from '@ember/object/observers';
-import * as test31 from '@ember/object/promise-proxy-mixin';
-import * as test32 from '@ember/object/proxy';
 import * as test33 from '@ember/routing/hash-location';
 import * as test34 from '@ember/routing/history-location';
 import * as test35 from '@ember/routing/none-location';
@@ -131,7 +128,6 @@ let allExports = [
   ['isArray', '@ember/array', 'isArray', test3],
   ['makeArray', '@ember/array', 'makeArray', test3],
   ['MutableArray', '@ember/array/mutable', 'default', test4],
-  ['ArrayProxy', '@ember/array/proxy', 'default', test5],
   ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled', test6],
   ['Component', '@ember/component', 'default', test7],
   ['_componentManagerCapabilities', '@ember/component', 'capabilities', test7],
@@ -221,8 +217,6 @@ let allExports = [
   ['Observable', '@ember/object/observable', 'default', test29],
   ['addObserver', '@ember/object/observers', 'addObserver', test30],
   ['removeObserver', '@ember/object/observers', 'removeObserver', test30],
-  ['PromiseProxyMixin', '@ember/object/promise-proxy-mixin', 'default', test31],
-  ['ObjectProxy', '@ember/object/proxy', 'default', test32],
   ['HashLocation', '@ember/routing/hash-location', 'default', test33],
   ['HistoryLocation', '@ember/routing/history-location', 'default', test34],
   ['NoneLocation', '@ember/routing/none-location', 'default', test35],
@@ -342,7 +336,6 @@ let allExports = [
   ['Comparable', '@ember/-internals/runtime', null, test57],
   ['ActionHandler', '@ember/-internals/runtime', null, test57],
   ['MutableEnumerable', '@ember/-internals/runtime', null, test57],
-  ['_ProxyMixin', '@ember/-internals/runtime', null, test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
   ['generateControllerFactory', '@ember/-internals/routing', null, test58],
   ['generateController', '@ember/-internals/routing', null, test58],
