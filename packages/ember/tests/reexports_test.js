@@ -333,7 +333,6 @@ let allExports = [
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
   ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
   ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
-  ['Comparable', '@ember/-internals/runtime', null, test57],
   ['ActionHandler', '@ember/-internals/runtime', null, test57],
   ['MutableEnumerable', '@ember/-internals/runtime', null, test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
