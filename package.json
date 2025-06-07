@@ -217,7 +217,6 @@
       "@ember/-internals/views/lib/compat/fallback-view-registry.js": "ember-source/@ember/-internals/views/lib/compat/fallback-view-registry.js",
       "@ember/-internals/views/lib/component_lookup.js": "ember-source/@ember/-internals/views/lib/component_lookup.js",
       "@ember/-internals/views/lib/mixins/action_support.js": "ember-source/@ember/-internals/views/lib/mixins/action_support.js",
-      "@ember/-internals/views/lib/mixins/child_views_support.js": "ember-source/@ember/-internals/views/lib/mixins/child_views_support.js",
       "@ember/-internals/views/lib/mixins/class_names_support.js": "ember-source/@ember/-internals/views/lib/mixins/class_names_support.js",
       "@ember/-internals/views/lib/mixins/view_state_support.js": "ember-source/@ember/-internals/views/lib/mixins/view_state_support.js",
       "@ember/-internals/views/lib/mixins/view_support.js": "ember-source/@ember/-internals/views/lib/mixins/view_support.js",

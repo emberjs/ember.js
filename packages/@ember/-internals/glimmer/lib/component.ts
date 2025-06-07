@@ -1,13 +1,15 @@
-import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import type { View } from '@ember/-internals/glimmer/lib/renderer';
+import { get, nativeDescDecorator, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
   ActionSupport,
-  ChildViewsSupport,
+  addChildView,
   ClassNamesSupport,
   CoreView,
   EventDispatcher,
+  getChildViews,
   getViewElement,
   ViewMixin,
   ViewStateSupport,
@@ -775,7 +777,6 @@ declare const SIGNATURE: unique symbol;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Component<S = unknown>
   extends CoreView,
-    ChildViewsSupport,
     ViewStateSupport,
     ClassNamesSupport,
     TargetActionSupport,
@@ -785,7 +786,6 @@ interface Component<S = unknown>
 
 class Component<S = unknown>
   extends CoreView.extend(
-    ChildViewsSupport,
     ViewStateSupport,
     ClassNamesSupport,
     TargetActionSupport,
@@ -1131,6 +1131,27 @@ class Component<S = unknown>
     @public
     */
   declare ariaRole?: string;
+
+  /**
+    Array of child views. You should never edit this array directly.
+
+    @property childViews
+    @type Array
+    @default []
+    @private
+  */
+  // @ts-expect-error TODO: Fix these types
+  @nativeDescDecorator({
+    configurable: false,
+    enumerable: false,
+  })
+  get childViews() {
+    return getChildViews(this);
+  }
+
+  appendChild(view: View) {
+    addChildView(this, view);
+  }
 
   static isComponentFactory = true;
 

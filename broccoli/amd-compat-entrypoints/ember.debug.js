@@ -113,12 +113,6 @@ d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponen
 import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
 d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
 
-import * as emberinternalsViewsLibMixinsChildViewsSupport from '@ember/-internals/views/lib/mixins/child_views_support';
-d(
-  '@ember/-internals/views/lib/mixins/child_views_support',
-  emberinternalsViewsLibMixinsChildViewsSupport
-);
-
 import * as emberinternalsViewsLibMixinsClassNamesSupport from '@ember/-internals/views/lib/mixins/class_names_support';
 d(
   '@ember/-internals/views/lib/mixins/class_names_support',
