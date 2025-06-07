@@ -239,7 +239,7 @@ export default class CurlyComponentManager
   /*
    * This hook is responsible for actually instantiating the component instance.
    * It also is where we perform additional bookkeeping to support legacy
-   * features like exposed by view mixins like ChildViewSupport, ActionSupport,
+   * features like exposed by view mixins like ChildViewSupport,
    * etc.
    */
   create(

@@ -7,10 +7,8 @@ import {
 } from '@ember/-internals/metal';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
-import { TargetActionSupport } from '@ember/-internals/runtime';
 import type { ViewStates } from '@ember/-internals/views';
 import {
-  ActionSupport,
   addChildView,
   CoreView,
   EventDispatcher,
@@ -789,22 +787,14 @@ declare const SIGNATURE: unique symbol;
 
   @class Component
   @extends Ember.CoreView
-  @uses Ember.TargetActionSupport
-  @uses Ember.ActionSupport
   @public
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Component<S = unknown>
-  extends CoreView,
-    TargetActionSupport,
-    ActionSupport,
-    ComponentMethods {}
+interface Component<S = unknown> extends CoreView, ComponentMethods {}
 
 class Component<S = unknown>
   extends CoreView.extend(
-    TargetActionSupport,
-    ActionSupport,
     {
       // These need to be overridable via extend/create but should still
       // have a default. Defining them here is the best way to achieve that.

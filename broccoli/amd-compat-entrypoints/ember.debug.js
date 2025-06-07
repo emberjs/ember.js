@@ -68,12 +68,6 @@ d(
   emberinternalsRuntimeLibMixinsRegistryProxy
 );
 
-import * as emberinternalsRuntimeLibMixinsTargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
-d(
-  '@ember/-internals/runtime/lib/mixins/target_action_support',
-  emberinternalsRuntimeLibMixinsTargetActionSupport
-);
-
 import * as emberinternalsStringIndex from '@ember/-internals/string/index';
 d('@ember/-internals/string/index', emberinternalsStringIndex);
 
@@ -97,9 +91,6 @@ d(
 
 import * as emberinternalsViewsLibComponentLookup from '@ember/-internals/views/lib/component_lookup';
 d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponentLookup);
-
-import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
-d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
 
 import * as emberinternalsViewsLibSystemActionManager from '@ember/-internals/views/lib/system/action_manager';
 d('@ember/-internals/views/lib/system/action_manager', emberinternalsViewsLibSystemActionManager);

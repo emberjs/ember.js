@@ -496,7 +496,6 @@ module.exports = {
     'transitionTo',
     'transitionToRoute',
     'trigger',
-    'triggerAction',
     'trySet',
     'typeOf',
     'typeWatchers',

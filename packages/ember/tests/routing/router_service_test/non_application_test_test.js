@@ -110,7 +110,7 @@ moduleFor(
       this.render('{{foo-bar}}');
 
       run(function () {
-        componentInstance.send('transitionToSister');
+        componentInstance.transitionToSister();
       });
 
       assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
