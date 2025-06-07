@@ -749,21 +749,15 @@ moduleFor(
       );
 
       this.setSingleQPController('application', 'foo', 1, {
+        router: service(),
+
         increment: action(function () {
           this.incrementProperty('foo');
-          this.send('refreshRoute');
+          this.router.refresh();
         }),
       });
 
-      this.add(
-        'route:application',
-        class extends Route {
-          @action
-          refreshRoute() {
-            this.refresh();
-          }
-        }
-      );
+      this.add('route:application', class extends Route {});
 
       await this.visitAndAssert('/');
       assert.equal(getTextOf(document.getElementById('test-value')), '1');

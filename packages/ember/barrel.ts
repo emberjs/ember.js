@@ -44,12 +44,7 @@ import {
   sendEvent as emberSendEvent,
 } from '@ember/object/events';
 
-import {
-  RegistryProxyMixin,
-  ContainerProxyMixin,
-  RSVP as _RSVP,
-  ActionHandler as InternalActionHandler,
-} from '@ember/-internals/runtime';
+import { RegistryProxyMixin, ContainerProxyMixin, RSVP as _RSVP } from '@ember/-internals/runtime';
 import {
   componentCapabilities,
   modifierCapabilities,
@@ -180,8 +175,6 @@ namespace Ember {
   // ****@ember/-internals/runtime****
   export const _ContainerProxyMixin = ContainerProxyMixin;
   export const _RegistryProxyMixin = RegistryProxyMixin;
-  export const ActionHandler = InternalActionHandler;
-  export type ActionHandler = InternalActionHandler;
 
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;

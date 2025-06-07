@@ -18,7 +18,6 @@ import {
   hasUnknownProperty,
 } from '@ember/-internals/metal';
 import Mixin, { applyMixin } from '@ember/object/mixin';
-import { ActionHandler } from '@ember/-internals/runtime';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -104,11 +103,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
       assert(
         'EmberObject.create no longer supports defining methods that call _super.',
         !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-      );
-      assert(
-        '`actions` must be provided at extend time, not at create time, ' +
-          'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
-        !(keyName === 'actions' && ActionHandler.detect(obj))
       );
 
       let possibleDesc = descriptorForProperty(obj, keyName, m);

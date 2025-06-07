@@ -203,7 +203,6 @@
       "@ember/-internals/routing/index.js": "ember-source/@ember/-internals/routing/index.js",
       "@ember/-internals/runtime/index.js": "ember-source/@ember/-internals/runtime/index.js",
       "@ember/-internals/runtime/lib/ext/rsvp.js": "ember-source/@ember/-internals/runtime/lib/ext/rsvp.js",
-      "@ember/-internals/runtime/lib/mixins/action_handler.js": "ember-source/@ember/-internals/runtime/lib/mixins/action_handler.js",
       "@ember/-internals/runtime/lib/mixins/container_proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/container_proxy.js",
       "@ember/-internals/runtime/lib/mixins/registry_proxy.js": "ember-source/@ember/-internals/runtime/lib/mixins/registry_proxy.js",
       "@ember/-internals/runtime/lib/mixins/target_action_support.js": "ember-source/@ember/-internals/runtime/lib/mixins/target_action_support.js",

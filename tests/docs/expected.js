@@ -54,7 +54,6 @@ module.exports = {
     'abort',
     'acceptsModelName',
     'action',
-    'actions',
     'activate',
     'adapter',
     'addListener',

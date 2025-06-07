@@ -56,12 +56,6 @@ d('@ember/-internals/runtime/index', emberinternalsRuntimeIndex);
 import * as emberinternalsRuntimeLibExtRsvp from '@ember/-internals/runtime/lib/ext/rsvp';
 d('@ember/-internals/runtime/lib/ext/rsvp', emberinternalsRuntimeLibExtRsvp);
 
-import * as emberinternalsRuntimeLibMixinsActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
-d(
-  '@ember/-internals/runtime/lib/mixins/action_handler',
-  emberinternalsRuntimeLibMixinsActionHandler
-);
-
 import * as emberinternalsRuntimeLibMixinsContainerProxy from '@ember/-internals/runtime/lib/mixins/container_proxy';
 d(
   '@ember/-internals/runtime/lib/mixins/container_proxy',

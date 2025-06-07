@@ -10,7 +10,6 @@ import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
 import { A as emberA } from '@ember/array';
-import { ActionHandler } from '@ember/-internals/runtime';
 import { typeOf } from '@ember/utils';
 import { lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -72,11 +71,10 @@ const RENDER_STATE = Symbol('render-state');
 
   @class Route
   @extends EmberObject
-  @uses ActionHandler
   @since 1.0.0
   @public
 */
-interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
+interface Route<Model = unknown> extends IRoute<Model> {
   /**
     The `willTransition` action is fired at the beginning of any
     attempted transition with a `Transition` object as the sole
@@ -250,7 +248,7 @@ interface Route<Model = unknown> extends IRoute<Model>, ActionHandler {
   error?(error: Error, transition: Transition): boolean | void;
 }
 
-class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implements IRoute {
+class Route<Model = unknown> extends EmberObject implements IRoute {
   static isRouteFactory = true;
 
   // These properties will end up appearing in the public interface because we

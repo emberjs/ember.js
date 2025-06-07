@@ -5,7 +5,6 @@ import { inject as metalInject } from '@ember/-internals/metal';
 import type { DecoratorPropertyDescriptor, ElementDescriptor } from '@ember/-internals/metal';
 import Mixin from '@ember/object/mixin';
 import type { RouteArgs } from '@ember/routing/-internals';
-import { ActionHandler } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import type { Transition } from 'router_js';
 
@@ -24,10 +23,9 @@ const MODEL = symbol('MODEL');
 /**
   @class ControllerMixin
   @namespace Ember
-  @uses Ember.ActionHandler
   @private
 */
-interface ControllerMixin<T> extends ActionHandler {
+interface ControllerMixin<T> {
   /** @internal */
   _qpDelegate: unknown | null;
 
@@ -230,7 +228,10 @@ interface ControllerMixin<T> extends ActionHandler {
   */
   replaceRoute(...args: RouteArgs): Transition;
 }
-const ControllerMixin = Mixin.create(ActionHandler, {
+const ControllerMixin = Mixin.create({
+  // Support the action hash which is still used internally
+  mergedProperties: ['actions'],
+
   /* ducktype as a controller */
   isController: true,
 
