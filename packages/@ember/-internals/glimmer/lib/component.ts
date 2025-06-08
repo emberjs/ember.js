@@ -8,6 +8,7 @@ import {
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
+import type { ViewStates } from '@ember/-internals/views';
 import {
   ActionSupport,
   addChildView,
@@ -16,7 +17,6 @@ import {
   getChildViews,
   getViewElement,
   ViewMixin,
-  ViewStateSupport,
 } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -775,14 +775,12 @@ declare const SIGNATURE: unique symbol;
   @uses Ember.TargetActionSupport
   @uses Ember.ActionSupport
   @uses Ember.ViewMixin
-  @uses Ember.ViewStateSupport
   @public
 */
 // This type param is used in the class, so must appear here.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Component<S = unknown>
   extends CoreView,
-    ViewStateSupport,
     TargetActionSupport,
     ActionSupport,
     ViewMixin,
@@ -790,7 +788,6 @@ interface Component<S = unknown>
 
 class Component<S = unknown>
   extends CoreView.extend(
-    ViewStateSupport,
     TargetActionSupport,
     ActionSupport,
     ViewMixin,
@@ -1226,6 +1223,19 @@ class Component<S = unknown>
 
   appendChild(view: View) {
     addChildView(this, view);
+  }
+
+  _transitionTo(this: Component, state: keyof typeof ViewStates) {
+    let priorState = this._currentState;
+    let currentState = (this._currentState = this._states[state]);
+    this._state = state;
+
+    if (priorState && priorState.exit) {
+      priorState.exit(this);
+    }
+    if (currentState.enter) {
+      currentState.enter(this);
+    }
   }
 
   static isComponentFactory = true;
