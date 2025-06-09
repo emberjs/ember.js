@@ -263,7 +263,6 @@
       "@ember/object/lib/computed/computed_macros.js": "ember-source/@ember/object/lib/computed/computed_macros.js",
       "@ember/object/lib/computed/reduce_computed_macros.js": "ember-source/@ember/object/lib/computed/reduce_computed_macros.js",
       "@ember/object/mixin.js": "ember-source/@ember/object/mixin.js",
-      "@ember/object/observable.js": "ember-source/@ember/object/observable.js",
       "@ember/object/observers.js": "ember-source/@ember/object/observers.js",
       "@ember/owner/index.js": "ember-source/@ember/owner/index.js",
       "@ember/renderer/index.js": "ember-source/@ember/renderer/index.js",

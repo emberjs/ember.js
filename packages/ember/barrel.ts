@@ -78,7 +78,6 @@ import EmberEnumerable from '@ember/enumerable';
 import EmberMutableEnumerable from '@ember/enumerable/mutable';
 import EmberCoreObject from '@ember/object/core';
 import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
-import EmberObservable from '@ember/object/observable';
 import {
   addObserver as emberAddObserver,
   removeObserver as emberRemoveObserver,
@@ -324,10 +323,6 @@ namespace Ember {
   export const Mixin = EmberMixin;
   export type Mixin = EmberMixin;
   export const mixin = emberMixin;
-
-  // ****@ember/object/observable****
-  export const Observable = EmberObservable;
-  export type Observable = EmberObservable;
 
   // ****@ember/object/observers****
   export const addObserver = emberAddObserver;

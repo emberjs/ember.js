@@ -193,8 +193,6 @@ const myNs = Ember.Namespace.extend({});
 expectTypeOf(new Ember.NoneLocation()).toEqualTypeOf<Ember.NoneLocation>();
 // Ember.Object
 new Ember.Object();
-// Ember.Observable
-Ember.Object.extend(Ember.Observable, {});
 // Ember.Route
 new Ember.Route(owner);
 // Ember.Router

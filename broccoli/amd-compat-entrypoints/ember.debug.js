@@ -227,9 +227,6 @@ d('@ember/object/lib/computed/computed_macros', emberObjectLibComputedComputedMa
 import * as emberObjectMixin from '@ember/object/mixin';
 d('@ember/object/mixin', emberObjectMixin);
 
-import * as emberObjectObservable from '@ember/object/observable';
-d('@ember/object/observable', emberObjectObservable);
-
 import * as emberObjectObservers from '@ember/object/observers';
 d('@ember/object/observers', emberObjectObservers);
 
