@@ -148,13 +148,13 @@ moduleFor(
 
     ['@test should yield hash of an array of internal properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
           this.model = { personOne: 'Chad' };
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -187,13 +187,13 @@ moduleFor(
 
     ['@test should yield hash of an array of internal and external properties']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
           this.model = { personOne: 'Chad' };
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -232,7 +232,7 @@ moduleFor(
     }
 
     ['@test should render when passing as argument to a component invocation']() {
-      let FooBarComponent = Component.extend({});
+      let FooBarComponent = class extends Component {};
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -259,12 +259,12 @@ moduleFor(
 
     ['@test should return an entirely new array when any argument change']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super();
+          super.init();
           fooBarInstance = this;
-        },
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

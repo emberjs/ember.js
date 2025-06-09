@@ -19,16 +19,17 @@ moduleFor(
 
       this.add(
         'service:filters',
-        Service.extend({
-          shared: true,
-        })
+        class extends Service {
+          shared = true;
+        }
       );
 
       this.add(
         'controller:home',
-        Controller.extend({
-          filters: service(),
-        })
+        class extends Controller {
+          @service
+          filters;
+        }
       );
 
       this.add(

@@ -43,12 +43,12 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         template: '{{this.number}}',
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           willDestroy() {
-            this._super();
+            super.willDestroy();
             destroyedChildrenCount++;
-          },
-        }),
+          }
+        },
       });
 
       this.render(

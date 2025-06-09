@@ -11,7 +11,7 @@ moduleFor(
   class extends ApplicationTestCase {
     // This is necessary for this.application.instanceInitializer to not leak between tests
     createApplication(options) {
-      return super.createApplication(options, Application.extend());
+      return super.createApplication(options, class extends Application {});
     }
 
     ['@test The helper becomes the body of the component']() {
@@ -37,9 +37,9 @@ moduleFor(
             defineComponent(
               {},
               `<p>hello {{yield}}</p>`,
-              Component.extend({
-                classNames: 'testing123',
-              })
+              class extends Component {
+                classNames = ['testing123'];
+              }
             )
           );
         },
@@ -59,10 +59,10 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-hero',
-            Component.extend({
-              classNames: 'testing123',
-              layout: compile('watch him as he GOES'),
-            })
+            class extends Component {
+              classNames = ['testing123'];
+              layout = compile('watch him as he GOES');
+            }
           );
         },
       });
@@ -91,9 +91,9 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'controller:application',
-            Controller.extend({
-              text: 'outer',
-            })
+            class extends Controller {
+              text = 'outer';
+            }
           );
         },
       });
@@ -102,10 +102,10 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-component',
-            Component.extend({
-              text: 'inner',
-              layoutName: 'foo-bar-baz',
-            })
+            class extends Component {
+              text = 'inner';
+              layoutName = 'foo-bar-baz';
+            }
           );
         },
       });
@@ -130,9 +130,9 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'controller:application',
-            Controller.extend({
-              text: 'outer',
-            })
+            class extends Controller {
+              text = 'outer';
+            }
           );
         },
       });
@@ -141,11 +141,11 @@ moduleFor(
         initialize(applicationInstance) {
           applicationInstance.register(
             'component:my-component',
-            Component.extend({
-              text: 'inner',
-              layoutName: 'foo-bar-baz',
-              layout: compile('{{this.text}}-{{yield}}'),
-            })
+            class extends Component {
+              text = 'inner';
+              layoutName = 'foo-bar-baz';
+              layout = compile('{{this.text}}-{{yield}}');
+            }
           );
         },
       });

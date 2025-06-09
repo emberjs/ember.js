@@ -11,11 +11,12 @@ moduleFor(
     async ['@test Service can be injected and is resolved'](assert) {
       this.add(
         'controller:application',
-        Controller.extend({
-          myService: service('my-service'),
-        })
+        class extends Controller {
+          @service('my-service')
+          myService;
+        }
       );
-      let MyService = Service.extend();
+      let MyService = class extends Service {};
       this.add('service:my-service', MyService);
       this.addTemplate('application', '');
 
@@ -59,15 +60,17 @@ moduleFor(
     async ['@test Service can be injected and is resolved without calling `get`'](assert) {
       this.add(
         'controller:application',
-        Controller.extend({
-          myService: service('my-service'),
-        })
+        class extends Controller {
+          @service('my-service')
+          myService;
+        }
       );
-      let MyService = Service.extend({
-        name: computed(function () {
+      let MyService = class extends Service {
+        @computed
+        get name() {
           return 'The service name';
-        }),
-      });
+        }
+      };
       this.add('service:my-service', MyService);
       this.addTemplate('application', '');
 

@@ -25,16 +25,16 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             appomg: {
               defaultValue: 'applol',
             },
-          },
+          };
           model(/* params */) {
             appModelCount++;
-          },
-        })
+          }
+        }
       );
 
       this.setSingleQPController('index', 'omg', undefined, {
@@ -45,17 +45,15 @@ moduleFor(
       let indexModelCount = 0;
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             omg: {
               refreshModel: true,
             },
-          },
-          actions: {
-            [actionName]: function () {
-              return loadingReturn;
-            },
-          },
+          };
+          [actionName] = action(function () {
+            return loadingReturn;
+          });
           model(params) {
             indexModelCount++;
             if (indexModelCount === 2) {
@@ -71,8 +69,8 @@ moduleFor(
                 "Model hook reruns even if the previous one didn't finish"
               );
             }
-          },
-        })
+          }
+        }
       );
 
       await this.visit('/');
@@ -118,12 +116,13 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             this.router.transitionTo('parent.sibling');
-          },
-        })
+          }
+        }
       );
 
       this.setSingleQPController('parent');
@@ -155,21 +154,22 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           afterModel() {
             this.router.transitionTo('parent.sibling');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'controller:parent',
-        Controller.extend({
-          queryParams: ['array', 'string'],
-          array: [],
-          string: '',
-        })
+        class extends Controller {
+          queryParams = ['array', 'string'];
+          array = [];
+          string = '';
+        }
       );
 
       // `/parent/child?array=["one",2]&string=hello`
@@ -219,11 +219,11 @@ moduleFor(
 
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: [{ foo: 'other_foo', bar: { as: 'other_bar' } }],
-          foo: 'FOO',
-          bar: 'BAR',
-        })
+        class extends Controller {
+          queryParams = [{ foo: 'other_foo', bar: { as: 'other_bar' } }];
+          foo = 'FOO';
+          bar = 'BAR';
+        }
       );
 
       await this.visitAndAssert('/');
@@ -250,9 +250,9 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          serializeQueryParamKey: dasherize,
-        })
+        class extends Route {
+          serializeQueryParamKey = dasherize;
+        }
       );
 
       this.setSingleQPController('index', 'funTimes', '');
@@ -313,11 +313,11 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { foo: 'bar' });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/');
@@ -334,11 +334,11 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { foo: 'bar', id: 'baz' });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/baz');
@@ -355,11 +355,11 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { foo: 'baz', id: 'boo' });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/boo?foo=baz');
@@ -385,15 +385,15 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             assert.equal(
               controller.get('foo'),
               'YEAH',
               "controller's foo QP property set before setupController called"
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/?foo=YEAH');
@@ -406,15 +406,15 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             assert.equal(
               controller.get('faz'),
               'YEAH',
               "controller's foo QP property set before setupController called"
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/?foo=YEAH');
@@ -431,15 +431,15 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(/* params, transition */) {
             assert.deepEqual(
               this.paramsFor('index'),
               { something: 'baz', foo: 'bar' },
               'could retrieve params for index'
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/baz');
@@ -456,15 +456,15 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(/* params, transition */) {
             assert.deepEqual(
               this.paramsFor('index'),
               { something: 'baz', foo: 'boo' },
               'could retrieve params for index'
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/baz?foo=boo');
@@ -481,15 +481,15 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(/* params, transition */) {
             assert.deepEqual(
               this.paramsFor('index'),
               { something: 'baz', foo: false },
               'could retrieve params for index'
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/baz');
@@ -506,15 +506,15 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(/* params, transition */) {
             assert.deepEqual(
               this.paramsFor('index'),
               { something: 'baz', foo: false },
               'could retrieve params for index'
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/baz?foo=false');
@@ -528,23 +528,23 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { appomg: 'applol' });
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { omg: 'lol' });
             assert.deepEqual(this.paramsFor('application'), {
               appomg: 'applol',
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/');
@@ -560,23 +560,23 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { appomg: 'appyes' });
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { omg: 'yes' });
             assert.deepEqual(this.paramsFor('application'), {
               appomg: 'appyes',
             });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/?appomg=appyes&omg=yes');
@@ -593,22 +593,22 @@ moduleFor(
       let appModelCount = 0;
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model(/* params, transition */) {
             appModelCount++;
-          },
-        })
+          }
+        }
       );
 
       let indexModelCount = 0;
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             omg: {
               refreshModel: true,
             },
-          },
+          };
           model(params) {
             indexModelCount++;
 
@@ -617,8 +617,8 @@ moduleFor(
             } else if (indexModelCount === 2) {
               assert.deepEqual(params, { omg: 'lex' }, 'params are correct on second pass');
             }
-          },
-        })
+          }
+        }
       );
 
       await this.visitAndAssert('/');
@@ -641,23 +641,23 @@ moduleFor(
       let appModelCount = 0;
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model(/* params */) {
             appModelCount++;
-          },
-        })
+          }
+        }
       );
 
       let indexModelCount = 0;
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             omg: {
               refreshModel: true,
               replace: true,
             },
-          },
+          };
           model(params) {
             indexModelCount++;
 
@@ -666,8 +666,8 @@ moduleFor(
             } else if (indexModelCount === 2) {
               assert.deepEqual(params, { omg: 'lex' }, 'params are correct on second pass');
             }
-          },
-        })
+          }
+        }
       );
 
       await this.visitAndAssert('/');
@@ -691,19 +691,19 @@ moduleFor(
       let refreshCount = 0;
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             alex: {
               refreshModel: true,
             },
             steely: {
               refreshModel: true,
             },
-          },
+          };
           refresh() {
             refreshCount++;
-          },
-        })
+          }
+        }
       );
 
       await this.visitAndAssert('/');
@@ -725,16 +725,16 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             omg: {
               refreshModel: true,
             },
-          },
+          };
           refresh() {
             assert.ok(false);
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/?appomg=hello&omg=world');
@@ -791,22 +791,22 @@ moduleFor(
       let appModelCount = 0;
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model(/* params */) {
             appModelCount++;
-          },
-        })
+          }
+        }
       );
 
       let indexModelCount = 0;
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: EmberObject.create({
+        class extends Route {
+          queryParams = EmberObject.create({
             unknownProperty() {
               return { refreshModel: true };
             },
-          }),
+          });
           model(params) {
             indexModelCount++;
 
@@ -815,8 +815,8 @@ moduleFor(
             } else if (indexModelCount === 2) {
               assert.deepEqual(params, { omg: 'lex' });
             }
-          },
-        })
+          }
+        }
       );
 
       await this.visitAndAssert('/');
@@ -840,12 +840,12 @@ moduleFor(
       let indexModelCount = 0;
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             omg: {
               refreshModel: true,
             },
-          },
+          };
           model(params) {
             indexModelCount++;
 
@@ -857,8 +857,8 @@ moduleFor(
             }
 
             assert.deepEqual(params, { omg: data }, 'index#model receives right data');
-          },
-        })
+          }
+        }
       );
 
       await this.visitAndAssert('/?omg=foo');
@@ -877,13 +877,13 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             alex: {
               replace: true,
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visitAndAssert('/');
@@ -901,20 +901,20 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          queryParams: [{ commitBy: 'commit_by' }],
-        })
+        class extends Controller {
+          queryParams = [{ commitBy: 'commit_by' }];
+        }
       );
 
       this.add(
         'route:application',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             commitBy: {
               replace: true,
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visitAndAssert('/');
@@ -932,25 +932,25 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          queryParams: ['alex', 'steely'],
-          alex: 'matchneer',
-          steely: 'dan',
-        })
+        class extends Controller {
+          queryParams = ['alex', 'steely'];
+          alex = 'matchneer';
+          steely = 'dan';
+        }
       );
 
       this.add(
         'route:application',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             alex: {
               replace: true,
             },
             steely: {
               replace: false,
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1012,14 +1012,14 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
-          queryParams: EmberObject.create({
+        class extends Route {
+          queryParams = EmberObject.create({
             unknownProperty(/* keyName */) {
               // We are simulating all qps requiring refresh
               return { replace: true };
             },
-          }),
-        })
+          });
+        }
       );
 
       await this.visitAndAssert('/');
@@ -1041,17 +1041,16 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             assert.ok(true, 'setupController called');
             controller.set('omg', 'OVERRIDE');
-          },
-          actions: {
-            queryParamsDidChange() {
-              assert.ok(false, "queryParamsDidChange shouldn't fire");
-            },
-          },
-        })
+          }
+          @action
+          queryParamsDidChange() {
+            assert.ok(false, "queryParamsDidChange shouldn't fire");
+          }
+        }
       );
 
       await this.visitAndAssert('/about');
@@ -1071,17 +1070,16 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           setupController(controller) {
             assert.ok(true, 'setupController called');
             controller.set('omg', ['OVERRIDE']);
-          },
-          actions: {
-            queryParamsDidChange() {
-              assert.ok(false, "queryParamsDidChange shouldn't fire");
-            },
-          },
-        })
+          }
+          @action
+          queryParamsDidChange() {
+            assert.ok(false, "queryParamsDidChange shouldn't fire");
+          }
+        }
       );
 
       await this.visitAndAssert('/about');
@@ -1156,11 +1154,11 @@ moduleFor(
     async ['@test transitionTo supports query params (multiple)']() {
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['foo', 'bar'],
-          foo: 'lol',
-          bar: 'wat',
-        })
+        class extends Controller {
+          queryParams = ['foo', 'bar'];
+          foo = 'lol';
+          bar = 'wat';
+        }
       );
 
       await this.visitAndAssert('/');
@@ -1194,13 +1192,13 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             foo: {
               defaultValue: '123',
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1217,11 +1215,11 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.equal(params.foo, true, 'model hook received foo as boolean true');
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/?foo=true').then(() => {
@@ -1238,10 +1236,10 @@ moduleFor(
 
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: '',
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = '';
+        }
       );
 
       return this.visit('/?foo=').then(() => {
@@ -1359,11 +1357,11 @@ moduleFor(
       let modelCount = 0;
       this.add(
         'route:home',
-        Route.extend({
+        class extends Route {
           model() {
             modelCount++;
-          },
-        })
+          }
+        }
       );
 
       this.setSingleQPController('home', 'foo', emberA([1]));
@@ -1395,12 +1393,12 @@ moduleFor(
 
       this.add(
         'route:other',
-        Route.extend({
+        class extends Route {
           model(p, trans) {
             let m = peekMeta(trans[PARAMS_SYMBOL].application);
             assert.ok(m === null, "A meta object isn't constructed for this params POJO");
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -1478,24 +1476,24 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model(/* p, trans */) {
             return { woot: true };
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:index',
-        Route.extend({
+        class extends Route {
           setupController(controller, model) {
             assert.deepEqual(
               model,
               { woot: true },
               'index route inherited model route from parent route'
             );
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/');
@@ -1631,13 +1629,13 @@ moduleFor(
 
       this.add(
         'route:constructor',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             foo: {
               defaultValue: '123',
             },
-          },
-        })
+          };
+        }
       );
 
       await this.visit('/');
@@ -1726,18 +1724,17 @@ moduleFor(
 
       this.add(
         `controller:home`,
-        Controller.extend({
-          queryParams: ['foo'],
+        class extends Controller {
+          queryParams = ['foo'];
           get foo() {
             return this.bar;
-          },
-
+          }
           set foo(value) {
             this.bar = value;
-          },
+          }
 
-          bar: tracked(),
-        })
+          @tracked bar;
+        }
       );
 
       await this.visitAndAssert('/');
@@ -1769,31 +1766,31 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service router;
           redirect() {
             this.router.transitionTo('grandparent.parent.child', 1);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:grandparent.parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             return Promise.resolve();
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'controller:grandparent.parent',
-        Controller.extend({
-          queryParams: ['foo', 'bar'],
+        class extends Controller {
+          queryParams = ['foo', 'bar'];
 
-          foo: 'FOO',
-          bar: 'BAR',
-        })
+          foo = 'FOO';
+          bar = 'BAR';
+        }
       );
 
       await this.visit('/');

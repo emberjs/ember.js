@@ -24,11 +24,11 @@ moduleFor(
     ['@test it can access the model provided by the route via @model']() {
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return ['red', 'yellow', 'blue'];
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -56,11 +56,11 @@ moduleFor(
     ['@test it can access the model provided by the route via this.model']() {
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return ['red', 'yellow', 'blue'];
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -92,11 +92,11 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return { color };
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -157,11 +157,11 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return new Model(color);
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -213,11 +213,11 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return color;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -270,11 +270,11 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model({ color }) {
             return color;
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -338,11 +338,11 @@ moduleFor(
       // The "favorite" route will inherit the model
       this.add(
         'route:lists.colors',
-        Route.extend({
+        class extends Route {
           model() {
             return ['red', 'yellow', 'blue'];
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -405,11 +405,11 @@ moduleFor(
 
       this.add(
         'route:color',
-        Route.extend({
+        class extends Route {
           model(params) {
             return params.color;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('color', 'color: {{@model}}');
@@ -434,16 +434,16 @@ moduleFor(
 
       this.add(
         'controller:a',
-        Controller.extend({
-          value: 'a',
-        })
+        class extends Controller {
+          value = 'a';
+        }
       );
 
       this.add(
         'controller:b',
-        Controller.extend({
-          value: 'b',
-        })
+        class extends Controller {
+          value = 'b';
+        }
       );
 
       this.addTemplate('a', '{{this.value}}');
@@ -476,13 +476,14 @@ moduleFor(
 
       this.add(
         'route:index',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
 
           activate() {
             this.router.transitionTo('a');
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('a', 'Hello from A!');
@@ -499,7 +500,7 @@ moduleFor(
 
       this.add(
         'route:routeWithError',
-        Route.extend({
+        class extends Route {
           model() {
             return {
               name: 'Alex',
@@ -507,8 +508,8 @@ moduleFor(
                 return `Person (${this.name})`;
               },
             };
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
@@ -527,12 +528,12 @@ moduleFor(
       await this.visit('/');
 
       this.addComponent('foo', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
             this._super(...arguments);
             this.set('person.name', 'Ben');
-          },
-        }),
+          }
+        },
         template: 'Hi {{this.person.name}} from component',
       });
 
@@ -569,13 +570,13 @@ moduleFor(
 
       this.add(
         'route:example',
-        Route.extend({
+        class extends Route {
           model() {
             return {
               message: 'I am the model',
             };
-          },
-        })
+          }
+        }
       );
 
       this.add(

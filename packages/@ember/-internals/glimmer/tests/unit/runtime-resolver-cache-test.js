@@ -67,7 +67,7 @@ moduleFor(
       // static layout
       this.registerComponent('component-one', { template: 'One' });
       this.registerComponent('component-two', {
-        ComponentClass: Component.extend(),
+        ComponentClass: class extends Component {},
         template: 'Two',
       });
 

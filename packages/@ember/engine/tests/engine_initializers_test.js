@@ -26,9 +26,9 @@ moduleFor(
     }
 
     ["@test initializers require proper 'name' and 'initialize' properties"]() {
-      MyEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      MyEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       expectAssertion(() => {
         run(() => {
@@ -44,9 +44,9 @@ moduleFor(
     }
 
     ['@test initializers are passed an Engine'](assert) {
-      MyEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      MyEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       MyEngine.initializer({
         name: 'initializer',
@@ -62,9 +62,9 @@ moduleFor(
     ['@test initializers can be registered in a specified order'](assert) {
       let order = [];
 
-      MyEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      MyEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
       MyEngine.initializer({
         name: 'fourth',
         after: 'third',
@@ -122,9 +122,9 @@ moduleFor(
     ['@test initializers can be registered in a specified order as an array'](assert) {
       let order = [];
 
-      MyEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      MyEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       MyEngine.initializer({
         name: 'third',
@@ -183,9 +183,9 @@ moduleFor(
     ['@test initializers can have multiple dependencies'](assert) {
       let order = [];
 
-      MyEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      MyEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       let a = {
         name: 'a',
@@ -240,9 +240,9 @@ moduleFor(
     ['@test initializers set on Engine subclasses are not shared between engines'](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let FirstEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       FirstEngine.initializer({
         name: 'first',
@@ -251,9 +251,9 @@ moduleFor(
         },
       });
 
-      let SecondEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let SecondEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       SecondEngine.initializer({
         name: 'second',
@@ -286,9 +286,9 @@ moduleFor(
     ['@test initializers are concatenated'](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let FirstEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       FirstEngine.initializer({
         name: 'first',
@@ -297,7 +297,7 @@ moduleFor(
         },
       });
 
-      let SecondEngine = FirstEngine.extend();
+      let SecondEngine = class extends FirstEngine {};
 
       SecondEngine.initializer({
         name: 'second',
@@ -343,9 +343,9 @@ moduleFor(
     ['@test initializers are per-engine'](assert) {
       assert.expect(2);
 
-      let FirstEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let FirstEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       FirstEngine.initializer({
         name: 'abc',
@@ -359,9 +359,9 @@ moduleFor(
         });
       });
 
-      let SecondEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let SecondEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
       SecondEngine.instanceInitializer({
         name: 'abc',
         initialize() {},
@@ -373,9 +373,9 @@ moduleFor(
     ['@test initializers are executed in their own context'](assert) {
       assert.expect(1);
 
-      MyEngine = Engine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      MyEngine = class extends Engine {
+        Resolver = ModuleBasedTestResolver;
+      };
 
       MyEngine.initializer({
         name: 'coolInitializer',

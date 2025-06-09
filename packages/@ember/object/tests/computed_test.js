@@ -18,63 +18,68 @@ moduleFor(
   'EmberObject computed property',
   class extends AbstractTestCase {
     ['@test computed property on instance'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
           return 'FOO';
-        }),
-      });
+        }
+      };
 
       testGet(assert, 'FOO', MyClass.create(), 'foo');
     }
 
     ['@test computed property on subclass'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
           return 'FOO';
-        }),
-      });
+        }
+      };
 
-      let Subclass = MyClass.extend({
-        foo: computed(function () {
+      let Subclass = class extends MyClass {
+        @computed
+        get foo() {
           return 'BAR';
-        }),
-      });
+        }
+      };
 
       testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
     ['@test replacing computed property with regular val'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
           return 'FOO';
-        }),
-      });
+        }
+      };
 
-      let Subclass = MyClass.extend({
-        foo: 'BAR',
-      });
+      let Subclass = class extends MyClass {
+        foo = 'BAR';
+      };
 
       testGet(assert, 'BAR', Subclass.create(), 'foo');
     }
 
     ['@test complex dependent keys'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = class extends EmberObject {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'bar', { baz: 'BIFF' });
-        },
+        }
 
-        count: 0,
+        count = 0;
 
-        foo: computed('bar.baz', function () {
+        @computed('bar.baz')
+        get foo() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
-        }),
-      });
+        }
+      };
 
-      let Subclass = MyClass.extend({
-        count: 20,
-      });
+      let Subclass = class extends MyClass {
+        count = 20;
+      };
 
       let obj1 = MyClass.create();
       let obj2 = Subclass.create();
@@ -94,33 +99,35 @@ moduleFor(
     }
 
     ['@test complex dependent keys changing complex dependent keys'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = class extends EmberObject {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'bar', { baz: 'BIFF' });
-        },
+        }
 
-        count: 0,
+        count = 0;
 
-        foo: computed('bar.baz', function () {
+        @computed('bar.baz')
+        get foo() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
-        }),
-      });
+        }
+      };
 
-      let Subclass = MyClass.extend({
+      let Subclass = class extends MyClass {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'bar2', { baz: 'BIFF2' });
-        },
+        }
 
-        count: 0,
+        count = 0;
 
-        foo: computed('bar2.baz', function () {
+        @computed('bar2.baz')
+        get foo() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar2'), 'baz') + ' ' + get(this, 'count');
-        }),
-      });
+        }
+      };
 
       let obj2 = Subclass.create();
 
@@ -144,11 +151,14 @@ moduleFor(
         'metadata saved on the computed property can be retrieved'
       );
 
-      let ClassWithNoMetadata = EmberObject.extend({
-        computedProperty: computed(function () {}),
+      let ClassWithNoMetadata = class extends EmberObject {
+        @computed
+        get computedProperty() {
+          return undefined;
+        }
 
-        staticProperty: 12,
-      });
+        staticProperty = 12;
+      };
 
       assert.equal(
         typeof ClassWithNoMetadata.metaForProperty('computedProperty'),
@@ -300,17 +310,19 @@ moduleFor(
         });
       }
 
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
           return 'FOO';
-        }),
-      });
+        }
+      };
 
-      let SubClass = MyClass.extend({
-        foo: macro(function () {
-          return this._super();
-        }),
-      });
+      let SubClass = class extends MyClass {
+        @macro
+        get foo() {
+          return super.foo;
+        }
+      };
 
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
@@ -322,17 +334,19 @@ moduleFor(
         });
       }
 
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
           return 'FOO';
-        }),
-      });
+        }
+      };
 
-      let SubClass = MyClass.extend({
-        foo: macro(function () {
-          return this._super();
-        }),
-      });
+      let SubClass = class extends MyClass {
+        @macro
+        get foo() {
+          return super.foo;
+        }
+      };
 
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
     }
@@ -356,19 +370,18 @@ moduleFor(
     }
 
     ['@test native getters and setters work'](assert) {
-      let MyClass = EmberObject.extend({
-        bar: 123,
+      let MyClass = class extends EmberObject {
+        bar = 123;
 
-        foo: computed({
-          get() {
-            return this.bar;
-          },
+        @computed
+        get foo() {
+          return this.bar;
+        }
 
-          set(key, value) {
-            this.bar = value;
-          },
-        }),
-      });
+        set foo(value) {
+          this.bar = value;
+        }
+      };
 
       let instance = MyClass.create();
 
@@ -430,18 +443,22 @@ moduleFor(
     }
 
     ['@test @each works on array with falsy values'](assert) {
-      let obj = EmberObject.extend({
-        falsy: [null, undefined, false, '', 0, {}],
-        truthy: [true, 'foo', 123],
+      let obj = class extends EmberObject {
+        falsy = [null, undefined, false, '', 0, {}];
+        truthy = [true, 'foo', 123];
 
-        falsyComputed: computed('falsy.@each.foo', () => {
+        @computed('falsy.@each.foo')
+        get falsyComputed() {
           assert.ok(true, 'falsy computed');
-        }),
+          return false;
+        }
 
-        truthyComputed: computed('truthy.@each.foo', () => {
+        @computed('truthy.@each.foo')
+        get truthyComputed() {
           assert.ok(true, 'truthy computed');
-        }),
-      }).create();
+          return true;
+        }
+      }.create();
 
       // should throw no errors
       obj.falsyComputed;
@@ -495,15 +512,21 @@ moduleFor(
     ['@test lazy computation cannot cause infinite cycles'](assert) {
       // This is based off a real world bug found in ember-cp-validations:
       // https://github.com/offirgolan/ember-cp-validations/issues/659
-      let CycleObject = EmberObject.extend({
-        foo: computed(function () {
-          return EmberObject.extend({
-            parent: this,
-            alias: alias('parent.foo'),
-          }).create();
-        }),
-        bar: computed('foo.alias', () => {}),
-      });
+      let CycleObject = class extends EmberObject {
+        @computed
+        get foo() {
+          return class extends EmberObject {
+            parent = this;
+            @alias('parent.foo')
+            alias;
+          }.create();
+        }
+
+        @computed('foo.alias')
+        get bar() {
+          return true;
+        }
+      };
 
       let obj = CycleObject.create();
 

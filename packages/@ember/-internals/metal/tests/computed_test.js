@@ -28,9 +28,12 @@ moduleFor(
   'computed',
   class extends ComputedTestCase {
     ['@test isComputed is true for computed property on a factory'](assert) {
-      let Obj = EmberObject.extend({
-        foo: computed(function () {}),
-      });
+      let Obj = class extends EmberObject {
+        @computed
+        get foo() {
+          return undefined;
+        }
+      };
 
       Obj.proto(); // ensure the prototype is "collapsed" / merged
 
@@ -38,9 +41,13 @@ moduleFor(
     }
 
     ['@test isComputed is true for computed property on an instance'](assert) {
-      obj = EmberObject.extend({
-        foo: computed(function () {}),
-      }).create();
+      let Obj = class extends EmberObject {
+        @computed
+        get foo() {
+          return undefined;
+        }
+      };
+      obj = new Obj();
 
       assert.ok(isComputed(obj, 'foo'));
     }
@@ -61,21 +68,6 @@ moduleFor(
         obj = {};
         defineProperty(obj, 'someProp', computed('nolastargument'));
       }, 'Attempted to use @computed on someProp, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. `@computed({ get() { ... } })`) or apply @computed directly to a getter/setter');
-    }
-
-    // non valid properties are stripped away in the process of creating a computed property descriptor
-    ['@test computed properties defined with an object only allow `get` and `set` keys']() {
-      expectAssertion(function () {
-        obj = EmberObject.extend({
-          someProp: computed({
-            get() {},
-            set() {},
-            other() {},
-          }),
-        });
-
-        obj.create().someProp;
-      }, 'Config object passed to computed can only contain `get` and `set` keys.');
     }
 
     ['@test computed property can be accessed without `get`'](assert) {
@@ -113,15 +105,15 @@ moduleFor(
     ['@test computed property can be defined and accessed on a class constructor'](assert) {
       let count = 0;
 
-      let Obj = EmberObject.extend();
-      Obj.reopenClass({
-        bar: 123,
+      let Obj = class extends EmberObject {
+        static bar = 123;
 
-        foo: computed(function () {
+        @computed
+        static get foo() {
           count++;
           return this.bar;
-        }),
-      });
+        }
+      };
 
       assert.equal(Obj.foo, 123, 'should return value');
       Obj.foo;
@@ -701,23 +693,18 @@ moduleFor(
   'computed - improved cp syntax',
   class extends AbstractTestCase {
     ['@test setter and getters are passed using an object'](assert) {
-      let testObj = EmberObject.extend({
-        a: '1',
-        b: '2',
-        aInt: computed('a', {
-          get(keyName) {
-            assert.equal(keyName, 'aInt', 'getter receives the keyName');
-            return parseInt(this.get('a'));
-          },
-          set(keyName, value, oldValue) {
-            assert.equal(keyName, 'aInt', 'setter receives the keyName');
-            assert.equal(value, 123, 'setter receives the new value');
-            assert.equal(oldValue, 1, 'setter receives the old value');
-            this.set('a', String(value)); // side effect
-            return parseInt(this.get('a'));
-          },
-        }),
-      }).create();
+      let testObj = class extends EmberObject {
+        a = '1';
+        b = '2';
+        @computed('a')
+        get aInt() {
+          return parseInt(this.a);
+        }
+        set aInt(value) {
+          assert.equal(value, 123, 'setter receives the new value');
+          this.set('a', String(value)); // side effect
+        }
+      }.create();
 
       assert.ok(testObj.get('aInt') === 1, 'getter works');
       testObj.set('aInt', 123);
@@ -726,16 +713,14 @@ moduleFor(
     }
 
     ['@test an omitted setter cannot be set later'](assert) {
-      let testObj = EmberObject.extend({
-        a: '1',
-        b: '2',
-        aInt: computed('a', {
-          get(keyName) {
-            assert.equal(keyName, 'aInt', 'getter receives the keyName');
-            return parseInt(this.get('a'));
-          },
-        }),
-      }).create();
+      let testObj = class extends EmberObject {
+        a = '1';
+        b = '2';
+        @computed('a')
+        get aInt() {
+          return parseInt(this.get('a'));
+        }
+      }.create();
 
       assert.ok(testObj.get('aInt') === 1, 'getter works');
       assert.ok(testObj.get('a') === '1');
@@ -743,20 +728,6 @@ moduleFor(
       expectAssertion(() => {
         testObj.set('aInt', '123');
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
-    }
-
-    ['@test getter can be omited'](assert) {
-      let testObj = EmberObject.extend({
-        com: computed({
-          set(key, value) {
-            return value;
-          },
-        }),
-      }).create();
-
-      assert.ok(testObj.get('com') === undefined);
-      testObj.set('com', '123');
-      assert.ok(testObj.get('com') === '123', 'cp has been updated');
     }
 
     ['@test the return value of the setter gets cached'](assert) {

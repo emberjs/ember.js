@@ -1177,15 +1177,15 @@ moduleFor(
 
       this.add(
         'route:about',
-        Route.extend({
+        class extends Route {
           model() {
             return [
               { id: 'yehuda', name: 'Yehuda Katz' },
               { id: 'tom', name: 'Tom Dale' },
               { id: 'erik', name: 'Erik Brynroflsson' },
             ];
-          },
-        })
+          }
+        }
       );
 
       await this.visit('/about');

@@ -14,17 +14,17 @@ moduleFor(
 
       this.add(
         'location:test',
-        NoneLocation.extend({
+        class extends NoneLocation {
           setURL(path) {
             testCase.state.push(path);
             this.set('path', path);
-          },
+          }
 
           replaceURL(path) {
             testCase.state.splice(testCase.state.length - 1, 1, path);
             this.set('path', path);
-          },
-        })
+          }
+        }
       );
     }
 

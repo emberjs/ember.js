@@ -4,7 +4,7 @@ import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { get } from '@ember/object';
+import { action, get } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 
@@ -19,17 +19,17 @@ moduleFor(
 
       this.add(
         'location:test',
-        NoneLocation.extend({
+        class extends NoneLocation {
           setURL(path) {
             testCase.state.push(path);
             this.set('path', path);
-          },
+          }
 
           replaceURL(path) {
             testCase.state.splice(testCase.state.length - 1, 1, path);
             this.set('path', path);
-          },
-        })
+          }
+        }
       );
     }
 
@@ -102,18 +102,18 @@ moduleFor(
       this.addTemplate('parent.index', '{{foo-bar}}');
 
       this.addComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          routerService: service('router'),
+        ComponentClass: class extends Component {
+          @service('router')
+          routerService;
           init() {
-            this._super();
+            super.init();
             componentInstance = this;
-          },
-          actions: {
-            transitionToSister() {
-              get(this, 'routerService').transitionTo('parent.sister');
-            },
-          },
-        }),
+          }
+          @action
+          transitionToSister() {
+            get(this, 'routerService').transitionTo('parent.sister');
+          }
+        },
         template: `foo-bar`,
       });
 
@@ -134,18 +134,18 @@ moduleFor(
       this.addTemplate('parent.index', '{{foo-bar}}');
 
       this.addComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          routerService: service('router'),
+        ComponentClass: class extends Component {
+          @service('router')
+          routerService;
           init() {
-            this._super();
+            super.init();
             componentInstance = this;
-          },
-          actions: {
-            transitionToSister() {
-              get(this, 'routerService').transitionTo('/sister');
-            },
-          },
-        }),
+          }
+          @action
+          transitionToSister() {
+            get(this, 'routerService').transitionTo('/sister');
+          }
+        },
         template: `foo-bar`,
       });
 
@@ -168,18 +168,18 @@ moduleFor(
       this.addTemplate('dynamic', '{{@model.contents}}');
 
       this.addComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          routerService: service('router'),
+        ComponentClass: class extends Component {
+          @service('router')
+          routerService;
           init() {
-            this._super();
+            super.init();
             componentInstance = this;
-          },
-          actions: {
-            transitionToDynamic() {
-              get(this, 'routerService').transitionTo('dynamic', dynamicModel);
-            },
-          },
-        }),
+          }
+          @action
+          transitionToDynamic() {
+            get(this, 'routerService').transitionTo('dynamic', dynamicModel);
+          }
+        },
         template: `foo-bar`,
       });
 
@@ -202,29 +202,29 @@ moduleFor(
 
       this.add(
         'route:dynamic',
-        Route.extend({
+        class extends Route {
           model() {
             return dynamicModel;
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate('parent.index', '{{foo-bar}}');
       this.addTemplate('dynamic', '{{@model.contents}}');
 
       this.addComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          routerService: service('router'),
+        ComponentClass: class extends Component {
+          @service('router')
+          routerService;
           init() {
-            this._super();
+            super.init();
             componentInstance = this;
-          },
-          actions: {
-            transitionToDynamic() {
-              get(this, 'routerService').transitionTo('dynamic', 1);
-            },
-          },
-        }),
+          }
+          @action
+          transitionToDynamic() {
+            get(this, 'routerService').transitionTo('dynamic', 1);
+          }
+        },
         template: `foo-bar`,
       });
 
@@ -371,16 +371,17 @@ moduleFor(
 
       this.add(
         'route:parent',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           beforeModel() {
             // in this call `url_sort` will be scoped (`parent.child:url_sort`)
             // when passed into `_hydrateUnsuppliedQueryParams`
             this.router.transitionTo('parent.child', {
               queryParams: { url_sort: 'ASC' },
             });
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -405,12 +406,13 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           beforeModel() {
             this.router.transitionTo('parent');
-          },
-        })
+          }
+        }
       );
       this.add(
         'controller:parent',

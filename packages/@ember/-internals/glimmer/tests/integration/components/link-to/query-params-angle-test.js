@@ -17,11 +17,11 @@ moduleFor(
 
       this.add(
         'controller:index',
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: '123',
-          bar: 'yes',
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = '123';
+          bar = 'yes';
+        }
       );
     }
 

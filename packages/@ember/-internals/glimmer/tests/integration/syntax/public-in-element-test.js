@@ -161,15 +161,15 @@ moduleFor(
       let someElement = document.createElement('div');
 
       this.registerComponent('modal-display', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           didInsertElement() {
             hooks.push('didInsertElement');
-          },
+          }
 
           willDestroyElement() {
             hooks.push('willDestroyElement');
-          },
-        }),
+          }
+        },
 
         template: `{{this.text}}`,
       });

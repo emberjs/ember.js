@@ -161,7 +161,12 @@ moduleFor(
     constructor(...args) {
       super(...args);
 
-      this.resolver.add('router:main', Router.extend(this.routerOptions));
+      this.resolver.add(
+        'router:main',
+        class extends Router {
+          location = 'none';
+        }
+      );
 
       this.router.map(function () {
         this.route('dynamicWithChild', { path: '/dynamic-with-child/:dynamic_id' }, function () {
