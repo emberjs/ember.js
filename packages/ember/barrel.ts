@@ -15,10 +15,7 @@ import { FEATURES as EmberFEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert as emberAssert, captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner.js';
-import EmberController, {
-  inject as injectController,
-  ControllerMixin as EmberControllerMixin,
-} from '@ember/controller';
+import EmberController, { inject as injectController } from '@ember/controller';
 import EmberService, { service } from '@ember/service';
 
 import EmberObject, {
@@ -217,8 +214,6 @@ namespace Ember {
   // ****@ember/controller****
   export const Controller = EmberController;
   export type Controller<T = unknown> = EmberController<T>;
-  export const ControllerMixin = EmberControllerMixin;
-  export type ControllerMixin<T> = EmberControllerMixin<T>;
 
   // ****@ember/debug****
   export const _captureRenderTree = captureRenderTree;

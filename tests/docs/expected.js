@@ -495,6 +495,7 @@ module.exports = {
     'ApplicationInstance',
     'ApplicationInstance.BootOptions',
     'Component',
+    'Controller',
     'ComputedProperty',
     'ContainerDebugAdapter',
     'CoreObject',

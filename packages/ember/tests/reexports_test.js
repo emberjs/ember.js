@@ -129,7 +129,6 @@ let allExports = [
   ['Helper.helper', '@ember/component/helper', 'helper', test8],
   ['_templateOnlyComponent', '@ember/component/template-only', 'default', test9],
   ['Controller', '@ember/controller', 'default', test10],
-  ['ControllerMixin', '@ember/controller', 'ControllerMixin', test10],
   ['inject.controller', '@ember/controller', 'inject', test10],
   ['deprecateFunc', '@ember/debug', 'deprecateFunc', test11],
   ['deprecate', '@ember/debug', 'deprecate', test11],
