@@ -1,5 +1,10 @@
 # Ember Changelog
 
+## v6.6.0-beta.1 (June 9, 2025)
+
+- [#20627](https://github.com/emberjs/ember.js/pull/20627) [CLEANUP] Remove `escapeExpression` from `@ember/template`
+- [#20909](https://github.com/emberjs/ember.js/pull/20909) Remove microtask in runtime compiler
+
 ## v6.5.0 (June 9, 2025)
 
 - [#20835](https://github.com/emberjs/ember.js/pull/20835) [FEATURE] Add a `--route-authoring-format` option to the route generator to generate template-tag components as route templates per [RFC #1046](https://rfcs.emberjs.com/id/1046-template-tag-in-routes).
