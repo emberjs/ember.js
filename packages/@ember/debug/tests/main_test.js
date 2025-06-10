@@ -238,7 +238,7 @@ moduleForDevelopment(
 
     ['@test assert does not throw if second argument is an object'](assert) {
       assert.expect(1);
-      let Igor = EmberObject.extend();
+      let Igor = class extends EmberObject {};
 
       emberAssert('is truthy', Igor);
       emberAssert('is truthy', Igor.create());

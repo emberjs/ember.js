@@ -5,9 +5,9 @@ moduleFor(
   'system/object/detect',
   class extends AbstractTestCase {
     ['@test detect detects classes correctly'](assert) {
-      let A = EmberObject.extend();
-      let B = A.extend();
-      let C = A.extend();
+      let A = class extends EmberObject {};
+      let B = class extends A {};
+      let C = class extends A {};
 
       assert.ok(EmberObject.detect(EmberObject), 'EmberObject is an EmberObject class');
       assert.ok(EmberObject.detect(A), 'A is an EmberObject class');

@@ -20,9 +20,9 @@ moduleFor(
       let application = super.createApplication(...arguments);
       this.add(
         'router:main',
-        Router.extend({
-          location: 'none',
-        })
+        class extends Router {
+          location = 'none';
+        }
       );
       return application;
     }
@@ -35,14 +35,14 @@ moduleFor(
       runTask(() => {
         this.createApplication();
 
-        let SettingRoute = Route.extend({
+        let SettingRoute = class extends Route {
           setupController() {
             this.controller.set('selectedMenuItem', menuItem);
-          },
+          }
           deactivate() {
             this.controller.set('selectedMenuItem', null);
-          },
-        });
+          }
+        };
         this.add('route:index', SettingRoute);
         this.add('route:application', SettingRoute);
       });
@@ -97,9 +97,9 @@ moduleFor(
       let application = super.createApplication(...arguments);
       this.add(
         'router:main',
-        Router.extend({
-          location: 'none',
-        })
+        class extends Router {
+          location = 'none';
+        }
       );
       return application;
     }
@@ -129,7 +129,7 @@ moduleFor(
     [`@test initializers can augment an applications customEvents hash`](assert) {
       assert.expect(1);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.initializer({
         name: 'customize-things',
@@ -148,11 +148,11 @@ moduleFor(
           defineComponent(
             {},
             `<div id='wowza-thingy'></div>`,
-            Component.extend({
+            class extends Component {
               wowza() {
                 assert.ok(true, 'fired the event!');
-              },
-            })
+              }
+            }
           )
         );
 
@@ -165,7 +165,7 @@ moduleFor(
     [`@test instanceInitializers can augment an the customEvents hash`](assert) {
       assert.expect(1);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'customize-things',
@@ -183,11 +183,11 @@ moduleFor(
           defineComponent(
             {},
             `<div id='herky-thingy'></div>`,
-            Component.extend({
+            class extends Component {
               jerky() {
                 assert.ok(true, 'fired the event!');
-              },
-            })
+              }
+            }
           )
         );
 

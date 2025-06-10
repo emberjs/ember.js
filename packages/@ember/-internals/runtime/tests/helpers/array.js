@@ -31,12 +31,12 @@ export function newObjectsFixture(cnt) {
   return ret;
 }
 
-const ArrayTestsObserverClass = EmberObject.extend({
+const ArrayTestsObserverClass = class extends EmberObject {
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
     this.isEnabled = true;
     this.reset();
-  },
+  }
 
   reset() {
     this._keys = {};
@@ -44,7 +44,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
     this._before = null;
     this._after = null;
     return this;
-  },
+  }
 
   observe(obj, ...keys) {
     if (obj.addObserver) {
@@ -57,7 +57,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
       this.isEnabled = false;
     }
     return this;
-  },
+  }
 
   observeArray(obj) {
     addArrayObserver(obj, this, {
@@ -65,7 +65,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
       didChange: 'arrayDidChange',
     });
     return this;
-  },
+  }
 
   stopObserveArray(obj) {
     removeArrayObserver(obj, this, {
@@ -73,7 +73,7 @@ const ArrayTestsObserverClass = EmberObject.extend({
       didChange: 'arrayDidChange',
     });
     return this;
-  },
+  }
 
   propertyDidChange(target, key, value) {
     if (this._keys[key] === undefined) {
@@ -81,17 +81,17 @@ const ArrayTestsObserverClass = EmberObject.extend({
     }
     this._keys[key]++;
     this._values[key] = value;
-  },
+  }
 
   arrayWillChange() {
     this.assert.equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
-  },
+  }
 
   arrayDidChange() {
     this.assert.equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
-  },
+  }
 
   validate(key, value) {
     if (!this.isEnabled) {
@@ -107,12 +107,12 @@ const ArrayTestsObserverClass = EmberObject.extend({
     } else {
       return true;
     }
-  },
+  }
 
   timesCalled(key) {
     return this._keys[key] || 0;
-  },
-});
+  }
+};
 
 class AbstractArrayHelper {
   beforeEach(assert) {

@@ -1,6 +1,7 @@
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
+import { action } from '@ember/object';
 import { service } from '@ember/service';
 
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
@@ -48,21 +49,21 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           setupController() {
             step(assert, 2, 'ApplicationRoute#setupController');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:turtle',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'TurtleRoute#model');
             return turtleDeferred.promise;
-          },
-        })
+          }
+        }
       );
       this.addTemplate('turtle', 'TURTLE');
       this.addTemplate('loading', 'LOADING');
@@ -92,19 +93,19 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return appDeferred.promise;
-          },
-        })
+          }
+        }
       );
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           setupController() {
             assert.ok(false, `shouldn't get here`);
-          },
-        })
+          }
+        }
       );
 
       let promise = this.visit('/').then(() => {
@@ -130,11 +131,11 @@ moduleFor(
       });
       this.add(
         'route:dummy',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
       this.addTemplate('dummy', 'DUMMY');
 
@@ -166,20 +167,20 @@ moduleFor(
 
       this.add(
         'route:dummy',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'DummyRoute#model');
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           setupController() {
             step(assert, 2, 'LoadingRoute#setupController');
-          },
-        })
+          }
+        }
       );
       this.addTemplate('dummy', 'DUMMY');
 
@@ -205,12 +206,12 @@ moduleFor(
 
       this.add(
         'route:dummy',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'DummyRoute#model');
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -224,11 +225,11 @@ moduleFor(
 
       this.add(
         'route:loading',
-        Route.extend({
+        class extends Route {
           setupController() {
             step(assert, 2, 'LoadingRoute#setupController');
-          },
-        })
+          }
+        }
       );
       this.addTemplate('dummy', 'DUMMY');
 
@@ -280,12 +281,12 @@ moduleFor(
 
       this.add(
         'route:parent.child',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'ChildRoute#model');
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
@@ -299,11 +300,11 @@ moduleFor(
 
       this.add(
         'route:parent.child_loading',
-        Route.extend({
+        class extends Route {
           setupController() {
             step(assert, 2, 'ChildLoadingRoute#setupController');
-          },
-        })
+          }
+        }
       );
       this.addTemplate('parent', 'PARENT {{outlet}}');
 
@@ -358,20 +359,20 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return appDeferred.promise;
-          },
-        })
+          }
+        }
       );
       let loadingRouteEntered = false;
       this.add(
         'route:application_loading',
-        Route.extend({
+        class extends Route {
           setupController() {
             loadingRouteEntered = true;
-          },
-        })
+          }
+        }
       );
 
       let promise = this.visit('/').then(() => {
@@ -396,11 +397,11 @@ moduleFor(
       );
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           model() {
             return appDeferred.promise;
-          },
-        })
+          }
+        }
       );
 
       let promise = this.visit('/').then(() => {
@@ -432,11 +433,11 @@ moduleFor(
 
       this.add(
         'route:foo.bar',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -472,11 +473,11 @@ moduleFor(
 
       this.add(
         'route:bar',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -515,11 +516,11 @@ moduleFor(
 
       this.add(
         'route:foo.bar',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       let promise = this.visit('/foo/bar').then(() => {
@@ -553,13 +554,13 @@ moduleFor(
 
       this.add(
         'route:foo.bar',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-        })
+          }
+        }
       );
 
       await this.visit('/');
@@ -587,19 +588,19 @@ moduleFor(
 
       this.add(
         'route:foo.index',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
       this.add(
         'route:foo',
-        Route.extend({
+        class extends Route {
           model() {
             return true;
-          },
-        })
+          }
+        }
       );
 
       let promise = this.visit('/foo').then(() => {
@@ -630,21 +631,21 @@ moduleFor(
 
       this.add(
         'route:foo.index',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-        })
+          }
+        }
       );
       this.add(
         'route:foo',
-        Route.extend({
+        class extends Route {
           model() {
             return true;
-          },
-        })
+          }
+        }
       );
 
       await this.visit('/');
@@ -666,18 +667,18 @@ moduleFor(
       this.addTemplate('index', '<div id="index">INDEX</div>');
       this.add(
         'route:application',
-        Route.extend({
+        class extends Route {
           init() {
-            this._super(...arguments);
-          },
+            super.init(...arguments);
+          }
           model() {
             if (reject) {
               return RSVP.reject({ msg: 'BAD NEWS BEARS' });
             } else {
               return {};
             }
-          },
-        })
+          }
+        }
       );
 
       this.addTemplate(
@@ -740,11 +741,11 @@ moduleFor(
 
       this.add(
         'route:mom',
-        Route.extend({
+        class extends Route {
           model() {
             return momDeferred.promise;
-          },
-        })
+          }
+        }
       );
 
       let promise = runTask(() => this.visit('/grandma/mom')).then(() => {
@@ -780,31 +781,30 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
-          actions: {
-            loading() {
-              assert.ok(true, 'loading action received on ApplicationRoute');
-            },
-          },
-        })
+        class extends Route {
+          @action
+          loading() {
+            assert.ok(true, 'loading action received on ApplicationRoute');
+          }
+        }
       );
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             return sallyDeferred.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:grandma.puppies',
-        Route.extend({
+        class extends Route {
           model() {
             return puppiesDeferred.promise;
-          },
-        })
+          }
+        }
       );
 
       let promise = this.visit('/grandma/mom/sally');
@@ -841,20 +841,19 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error() {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              return true;
-            },
-          },
-        })
+          }
+          @action
+          error() {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            return true;
+          }
+        }
       );
 
       await this.visit('/grandma/mom/sally');
@@ -870,19 +869,18 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error(err) {
-              // returns undefined which is falsey
-              throw err;
-            },
-          },
-        })
+          }
+          @action
+          error(err) {
+            // returns undefined which is falsey
+            throw err;
+          }
+        }
       );
 
       await assert.rejects(
@@ -901,34 +899,34 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error(err) {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              handledError = err;
-              this.router.transitionTo('mom.this-route-throws');
+          }
+          @action
+          error(err) {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            handledError = err;
+            this.router.transitionTo('mom.this-route-throws');
 
-              return false;
-            },
-          },
-        })
+            return false;
+          }
+        }
       );
 
       this.add(
         'route:mom.this-route-throws',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 3, 'MomThisRouteThrows#model');
             throw handledError;
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(
@@ -945,20 +943,19 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error() {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              return true;
-            },
-          },
-        })
+          }
+          @action
+          error() {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            return true;
+          }
+        }
       );
 
       await assert.rejects(
@@ -977,34 +974,33 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
-          router: service(),
+        class extends Route {
+          @service
+          router;
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error(err) {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              handledError = err;
-              this.router.transitionTo('mom.this-route-throws');
-
-              return false;
-            },
-          },
-        })
+          }
+          @action
+          error(err) {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            handledError = err;
+            this.router.transitionTo('mom.this-route-throws');
+            return false;
+          }
+        }
       );
 
       this.add(
         'route:mom.this-route-throws',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 3, 'MomThisRouteThrows#model');
             return RSVP.reject(handledError);
-          },
-        })
+          }
+        }
       );
 
       await assert.rejects(
@@ -1026,20 +1022,19 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error() {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              return true;
-            },
-          },
-        })
+          }
+          @action
+          error() {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            return true;
+          }
+        }
       );
 
       await this.visit('/grandma/mom/sally');
@@ -1068,35 +1063,35 @@ moduleFor(
 
       this.add(
         'route:grandma',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'GrandmaRoute#model');
             return grandmaDeferred.promise;
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:mom',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 2, 'MomRoute#model');
             return {};
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 3, 'SallyRoute#model');
             return sallyDeferred.promise;
-          },
+          }
           setupController() {
             step(assert, 4, 'SallyRoute#setupController');
-          },
-        })
+          }
+        }
       );
 
       let promise = runTask(() => this.visit('/grandma/mom/sally')).then(() => {
@@ -1134,20 +1129,20 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           setupController() {
             step(assert, 1, 'SallyRoute#setupController');
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:grandma.puppies',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       await this.visit('/grandma/mom/sally');
@@ -1173,21 +1168,20 @@ moduleFor(
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error(err) {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              assert.equal(err.msg, 'did it broke?', `it didn't break`);
-              return false;
-            },
-          },
-        })
+          }
+          @action
+          error(err) {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            assert.equal(err.msg, 'did it broke?', `it didn't break`);
+            return false;
+          }
+        }
       );
 
       return this.visit('/grandma/mom/sally');
@@ -1198,38 +1192,35 @@ moduleFor(
 
       this.add(
         'route:mom',
-        Route.extend({
-          actions: {
-            error(err) {
-              step(assert, 3, 'MomRoute#actions.error');
-              assert.equal(
-                err,
-                handledError,
-                `error handled and rebubbled is handleable at higher route`
-              );
-            },
-          },
-        })
+        class extends Route {
+          @action
+          error(err) {
+            step(assert, 3, 'MomRoute#actions.error');
+            assert.equal(
+              err,
+              handledError,
+              `error handled and rebubbled is handleable at higher route`
+            );
+          }
+        }
       );
 
       this.add(
         'route:mom.sally',
-        Route.extend({
+        class extends Route {
           model() {
             step(assert, 1, 'MomSallyRoute#model');
             return RSVP.reject({
               msg: 'did it broke?',
             });
-          },
-          actions: {
-            error(err) {
-              step(assert, 2, 'MomSallyRoute#actions.error');
-              handledError = err;
-
-              return true;
-            },
-          },
-        })
+          }
+          @action
+          error(err) {
+            step(assert, 2, 'MomSallyRoute#actions.error');
+            handledError = err;
+            return true;
+          }
+        }
       );
 
       return this.visit('/grandma/mom/sally');
@@ -1243,30 +1234,31 @@ moduleFor(
 
       this.add(
         'route:grandma',
-        Route.extend({
-          router: service(),
-          beforeModel: function () {
+        class extends Route {
+          @service
+          router;
+          beforeModel() {
             this.router.transitionTo('memere', 1);
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'route:memere',
-        Route.extend({
-          queryParams: {
+        class extends Route {
+          queryParams = {
             test: { defaultValue: 1 },
-          },
-        })
+          };
+        }
       );
 
       this.add(
         'route:memere.index',
-        Route.extend({
+        class extends Route {
           model() {
             return deferred.promise;
-          },
-        })
+          }
+        }
       );
 
       let promise = runTask(() => this.visit('/grandma')).then(() => {

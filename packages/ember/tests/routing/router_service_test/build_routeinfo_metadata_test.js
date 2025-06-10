@@ -9,10 +9,11 @@ moduleFor(
       assert.expect(4);
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
@@ -22,17 +23,17 @@ moduleFor(
               assert.equal(transition.to.name, 'parent.index');
               assert.equal(transition.to.metadata, 'parent-index-page');
             });
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent.index`,
-        Route.extend({
+        class extends Route {
           buildRouteInfoMetadata() {
             return 'parent-index-page';
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/');
@@ -41,13 +42,14 @@ moduleFor(
     '@test hierarchical metadata'(assert) {
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service
+          router;
           buildRouteInfoMetadata() {
             return 'application-shell';
-          },
+          }
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
@@ -66,26 +68,26 @@ moduleFor(
               assert.equal(transition.to.parent.parent.name, 'application');
               assert.equal(transition.to.parent.parent.metadata, 'application-shell');
             });
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent`,
-        Route.extend({
+        class extends Route {
           buildRouteInfoMetadata() {
             return 'parent-page';
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent.index`,
-        Route.extend({
+        class extends Route {
           buildRouteInfoMetadata() {
             return 'parent-index-page';
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/');
@@ -94,10 +96,11 @@ moduleFor(
     '@test metadata can be complex objects'(assert) {
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               assert.equal(transition.to.name, 'parent.index');
@@ -110,22 +113,22 @@ moduleFor(
               assert.equal(transition.to.metadata.name, 'parent-index-page');
               assert.equal(transition.to.metadata.title('PARENT'), 'My Name is PARENT');
             });
-          },
-        })
+          }
+        }
       );
 
-      this.add(`route:parent`, Route.extend({}));
+      this.add(`route:parent`, class extends Route {});
 
       this.add(
         `route:parent.index`,
-        Route.extend({
+        class extends Route {
           buildRouteInfoMetadata() {
             return {
               name: 'parent-index-page',
               title: (name) => `My Name is ${name}`,
             };
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/');
@@ -135,10 +138,11 @@ moduleFor(
       assert.expect(12);
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeWillChange', (transition) => {
               if (transition.to.name === 'parent.index') {
@@ -163,34 +167,34 @@ moduleFor(
                 assert.equal(transition.to.metadata.title('CHILD'), 'My Name is CHILD!!');
               }
             });
-          },
-        })
+          }
+        }
       );
 
-      this.add(`route:parent`, Route.extend({}));
+      this.add(`route:parent`, class extends Route {});
 
       this.add(
         `route:parent.index`,
-        Route.extend({
+        class extends Route {
           buildRouteInfoMetadata() {
             return {
               name: 'parent-index-page',
               title: (name) => `My Name is ${name}`,
             };
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent.child`,
-        Route.extend({
+        class extends Route {
           buildRouteInfoMetadata() {
             return {
               name: 'parent-child-page',
               title: (name) => `My Name is ${name}!!`,
             };
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {
@@ -202,10 +206,11 @@ moduleFor(
       assert.expect(6);
       this.add(
         `route:application`,
-        Route.extend({
-          router: service('router'),
+        class extends Route {
+          @service
+          router;
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
 
             this.router.on('routeDidChange', (transition) => {
               if (transition.to.name === 'parent.index') {
@@ -227,40 +232,40 @@ moduleFor(
                 );
               }
             });
-          },
-        })
+          }
+        }
       );
 
-      this.add(`route:parent`, Route.extend({}));
+      this.add(`route:parent`, class extends Route {});
 
       this.add(
         `route:parent.index`,
-        Route.extend({
+        class extends Route {
           model() {
             return { name: 'INDEX' };
-          },
+          }
           buildRouteInfoMetadata() {
             return {
               name: 'parent-index-page',
               title: (model) => `My Name is ${model.name}`,
             };
-          },
-        })
+          }
+        }
       );
 
       this.add(
         `route:parent.child`,
-        Route.extend({
+        class extends Route {
           model() {
             return { name: 'CHILD' };
-          },
+          }
           buildRouteInfoMetadata() {
             return {
               name: 'parent-child-page',
               title: (model) => `My Name is ${model.name}!!`,
             };
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/').then(() => {

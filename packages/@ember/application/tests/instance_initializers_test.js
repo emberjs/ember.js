@@ -38,7 +38,7 @@ moduleFor(
     }
 
     [`@test initializers require proper 'name' and 'initialize' properties`]() {
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       expectAssertion(() => {
         MyApplication.instanceInitializer({ name: 'initializer' });
@@ -52,7 +52,7 @@ moduleFor(
     }
 
     [`@test initializers are passed an app instance`](assert) {
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'initializer',
@@ -69,7 +69,7 @@ moduleFor(
 
     [`@test initializers can be registered in a specified order`](assert) {
       let order = [];
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'fourth',
@@ -126,7 +126,7 @@ moduleFor(
 
     [`@test initializers can be registered in a specified order as an array`](assert) {
       let order = [];
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'third',
@@ -183,7 +183,7 @@ moduleFor(
 
     [`@test initializers can have multiple dependencies`](assert) {
       let order = [];
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
       let a = {
         name: 'a',
         before: 'b',
@@ -236,7 +236,7 @@ moduleFor(
     [`@test initializers set on Application subclasses should not be shared between apps`](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstApp = Application.extend();
+      let FirstApp = class extends Application {};
 
       FirstApp.instanceInitializer({
         name: 'first',
@@ -245,7 +245,7 @@ moduleFor(
         },
       });
 
-      let SecondApp = Application.extend();
+      let SecondApp = class extends Application {};
       SecondApp.instanceInitializer({
         name: 'second',
         initialize() {
@@ -267,7 +267,7 @@ moduleFor(
     [`@test initializers are concatenated`](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstApp = Application.extend();
+      let FirstApp = class extends Application {};
 
       FirstApp.instanceInitializer({
         name: 'first',
@@ -276,7 +276,7 @@ moduleFor(
         },
       });
 
-      let SecondApp = FirstApp.extend();
+      let SecondApp = class extends FirstApp {};
       SecondApp.instanceInitializer({
         name: 'second',
         initialize() {
@@ -311,7 +311,7 @@ moduleFor(
     [`@test initializers are per-app`](assert) {
       assert.expect(2);
 
-      let FirstApp = Application.extend();
+      let FirstApp = class extends Application {};
       FirstApp.instanceInitializer({
         name: 'abc',
         initialize() {},
@@ -326,7 +326,7 @@ moduleFor(
 
       runTask(() => this.createApplication({}, FirstApp));
 
-      let SecondApp = Application.extend();
+      let SecondApp = class extends Application {};
       SecondApp.instanceInitializer({
         name: 'abc',
         initialize() {},
@@ -340,12 +340,12 @@ moduleFor(
     [`@test initializers are run before ready hook`](assert) {
       assert.expect(2);
 
-      let MyApplication = Application.extend({
+      let MyApplication = class extends Application {
         ready() {
           assert.ok(true, 'ready is called');
           readyWasCalled = false;
-        },
-      });
+        }
+      };
       let readyWasCalled = false;
 
       MyApplication.instanceInitializer({
@@ -361,7 +361,7 @@ moduleFor(
     [`@test initializers are executed in their own context`](assert) {
       assert.expect(1);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'coolInitializer',
@@ -377,7 +377,7 @@ moduleFor(
     [`@test initializers get an instance on app reset`](assert) {
       assert.expect(2);
 
-      let MyApplication = Application.extend();
+      let MyApplication = class extends Application {};
 
       MyApplication.instanceInitializer({
         name: 'giveMeAnInstance',

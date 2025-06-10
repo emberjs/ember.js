@@ -26,22 +26,22 @@ moduleFor(
 
       this.add(
         'service:reloader',
-        Service.extend({
+        class extends Service {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.revisions = {};
             this.callbacks = [];
 
             didCreateReloader(this);
-          },
+          }
 
           onReload(callback) {
             this.callbacks.push(callback);
-          },
+          }
 
           revisionFor(name) {
             return this.revisions[name];
-          },
+          }
 
           invalidate(name) {
             let revision = this.revisions[name];
@@ -53,19 +53,20 @@ moduleFor(
             this.revisions[name] = ++revision;
 
             this.callbacks.forEach((callback) => callback());
-          },
-        })
+          }
+        }
       );
 
       this.add(
         'helper:hot-reload',
-        Helper.extend({
-          reloader: service(),
+        class extends Helper {
+          @service
+          reloader;
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.reloader.onReload(() => this.recompute());
-          },
+          }
 
           compute([name]) {
             let revision = this.reloader.revisionFor(name);
@@ -75,8 +76,8 @@ moduleFor(
             } else {
               return `${name}--hot-reload-${revision}`;
             }
-          },
-        })
+          }
+        }
       );
     }
 
@@ -177,24 +178,24 @@ moduleFor(
       let id = 0;
 
       this.addComponent('x-foo', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.set('id', id++);
-          },
-        }),
+          }
+        },
         template: 'x-foo: {{@name}} ({{this.id}})',
       });
 
       this.addComponent('x-bar', {
-        ComponentClass: Component.extend({
-          tagName: '',
+        ComponentClass: class extends Component {
+          tagName = '';
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.set('id', id++);
-          },
-        }),
+          }
+        },
         template: 'x-bar ({{this.id}})',
       });
 

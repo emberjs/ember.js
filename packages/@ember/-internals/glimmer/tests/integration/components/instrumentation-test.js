@@ -56,28 +56,28 @@ moduleFor(
     ['@test it should receive an instrumentation event for both initial render and updates']() {
       let testCase = this;
 
-      let BaseClass = Component.extend({
-        tagName: '',
+      let BaseClass = class extends Component {
+        tagName = '';
 
         willRender() {
           testCase.expected.before.push(this);
           testCase.expected.after.unshift(this);
-        },
-      });
+        }
+      };
 
       this.registerComponent('x-bar', {
         template: '[x-bar: {{this.bar}}] {{yield}}',
-        ComponentClass: BaseClass.extend(),
+        ComponentClass: class extends BaseClass {},
       });
 
       this.registerComponent('x-baz', {
         template: '[x-baz: {{this.baz}}]',
-        ComponentClass: BaseClass.extend(),
+        ComponentClass: class extends BaseClass {},
       });
 
       this.registerComponent('x-bat', {
         template: '[x-bat: {{this.bat}}]',
-        ComponentClass: BaseClass.extend(),
+        ComponentClass: class extends BaseClass {},
       });
 
       this.render(

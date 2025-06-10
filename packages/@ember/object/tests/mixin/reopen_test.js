@@ -20,15 +20,15 @@ moduleFor(
     ['@test using reopen() and calling _super where there is not a super function does not cause infinite recursion'](
       assert
     ) {
-      let Taco = EmberObject.extend({
+      let Taco = class extends EmberObject {
         createBreakfast() {
           // There is no original createBreakfast function.
           // Calling the wrapped _super function here
           // used to end in an infinite call loop
           this._super(...arguments);
           return 'Breakfast!';
-        },
-      });
+        }
+      };
 
       Taco.reopen({
         createBreakfast() {

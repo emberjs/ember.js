@@ -225,11 +225,11 @@ moduleFor(
 
       this.add(
         'route:dynamic',
-        Route.extend({
+        class extends Route {
           model() {
             return dynamicModel;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/')
@@ -277,11 +277,11 @@ moduleFor(
 
       this.add(
         'route:dynamic',
-        Route.extend({
+        class extends Route {
           model() {
             return dynamicModel;
-          },
-        })
+          }
+        }
       );
 
       return this.visit('/')

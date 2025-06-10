@@ -1,4 +1,5 @@
 import { service } from '@ember/service';
+import { action } from '@ember/object';
 import { readOnly } from '@ember/object/computed';
 import { Component } from '@ember/-internals/glimmer';
 import Route from '@ember/routing/route';
@@ -9,11 +10,12 @@ import { RSVP } from '@ember/-internals/runtime';
 let results = [];
 let ROUTE_NAMES = ['index', 'child', 'sister', 'brother', 'loading'];
 
-let InstrumentedRoute = Route.extend({
-  routerService: service('router'),
+let InstrumentedRoute = class extends Route {
+  @service('router')
+  routerService;
 
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
     let service = get(this, 'routerService');
     service.on('routeWillChange', (transition) => {
       results.push([
@@ -33,7 +35,7 @@ let InstrumentedRoute = Route.extend({
         service.get('currentURL'),
       ]);
     });
-  },
+  }
 
   activate() {
     let service = get(this, 'routerService');
@@ -42,7 +44,7 @@ let InstrumentedRoute = Route.extend({
       `${this.routeName} activate`,
       service.get('currentURL'),
     ]);
-  },
+  }
 
   redirect() {
     let service = get(this, 'routerService');
@@ -51,7 +53,7 @@ let InstrumentedRoute = Route.extend({
       `${this.routeName} redirect`,
       service.get('currentURL'),
     ]);
-  },
+  }
 
   beforeModel() {
     let service = get(this, 'routerService');
@@ -60,7 +62,7 @@ let InstrumentedRoute = Route.extend({
       `${this.routeName} beforeModel`,
       service.get('currentURL'),
     ]);
-  },
+  }
 
   model() {
     let service = get(this, 'routerService');
@@ -72,7 +74,7 @@ let InstrumentedRoute = Route.extend({
     return new RSVP.Promise((resolve) => {
       setTimeout(resolve, 200);
     });
-  },
+  }
 
   afterModel() {
     let service = get(this, 'routerService');
@@ -81,31 +83,32 @@ let InstrumentedRoute = Route.extend({
       `${this.routeName} afterModel`,
       service.get('currentURL'),
     ]);
-  },
+  }
 
-  actions: {
-    willTransition(transition) {
-      let service = get(this, 'routerService');
-      results.push([
-        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
-        `${this.routeName} willTransition: ${transition.from && transition.from.name} - ${
-          transition.to.name
-        }`,
-        service.get('currentURL'),
-      ]);
-      return true;
-    },
-    didTransition() {
-      let service = get(this, 'routerService');
-      results.push([
-        `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
-        `${this.routeName} didTransition`,
-        service.get('currentURL'),
-      ]);
-      return true;
-    },
-  },
-});
+  @action
+  willTransition(transition) {
+    let service = get(this, 'routerService');
+    results.push([
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${this.routeName} willTransition: ${transition.from && transition.from.name} - ${
+        transition.to.name
+      }`,
+      service.get('currentURL'),
+    ]);
+    return true;
+  }
+
+  @action
+  didTransition() {
+    let service = get(this, 'routerService');
+    results.push([
+      `${service.get('currentRouteName')} - ${service.get('currentRoute.name')}`,
+      `${this.routeName} didTransition`,
+      service.get('currentURL'),
+    ]);
+    return true;
+  }
+};
 
 moduleFor(
   'Router Service - currentURL | currentRouteName | currentRoute.name',
@@ -117,16 +120,20 @@ moduleFor(
 
       ROUTE_NAMES.forEach((name) => {
         let routeName = `parent.${name}`;
-        this.add(`route:${routeName}`, InstrumentedRoute.extend());
+        this.add(`route:${routeName}`, class extends InstrumentedRoute {});
         this.addTemplate(routeName, '{{current-url}}');
       });
 
-      let CurrenURLComponent = Component.extend({
-        routerService: service('router'),
-        currentURL: readOnly('routerService.currentURL'),
-        currentRouteName: readOnly('routerService.currentRouteName'),
-        currentRoute: readOnly('routerService.currentRoute'),
-      });
+      let CurrenURLComponent = class extends Component {
+        @service('router')
+        routerService;
+        @readOnly('routerService.currentURL')
+        currentURL;
+        @readOnly('routerService.currentRouteName')
+        currentRouteName;
+        @readOnly('routerService.currentRoute')
+        currentRoute;
+      };
 
       this.addComponent('current-url', {
         ComponentClass: CurrenURLComponent,

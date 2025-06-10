@@ -60,9 +60,10 @@ moduleFor(
     '@test nested tracked properties rerender when updated'(assert) {
       let computeCount = 0;
 
-      let Person = EmberObject.extend({
-        name: tracked({ value: 'bob' }),
-      });
+      let Person = class extends EmberObject {
+        @tracked
+        name = 'bob';
+      };
 
       this.registerHelper('hello-world', ([value]) => {
         computeCount++;
@@ -228,16 +229,17 @@ moduleFor(
     '@test nested getters update when dependent properties are invalidated'(assert) {
       let computeCount = 0;
 
-      let Person = EmberObject.extend({
-        first: tracked({ value: 'Rob' }),
-        last: tracked({ value: 'Jackson' }),
+      let Person = class extends EmberObject {
+        @tracked
+        first = 'Rob';
+        @tracked
+        last = 'Jackson';
 
-        full: descriptor({
-          get() {
-            return `${this.first} ${this.last}`;
-          },
-        }),
-      });
+        @descriptor
+        get full() {
+          return `${this.first} ${this.last}`;
+        }
+      };
 
       this.registerHelper('hello-world', ([value]) => {
         computeCount++;
@@ -276,20 +278,22 @@ moduleFor(
       let currentUserService;
       this.registerService(
         'current-user',
-        Service.extend({
-          name: tracked({ value: 'bob' }),
+        class extends Service {
+          @tracked
+          name = 'bob';
 
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             currentUserService = this;
-          },
-        })
+          }
+        }
       );
 
       this.registerComponent('person', {
-        ComponentClass: Component.extend({
-          currentUser: service('current-user'),
-        }),
+        ComponentClass: class extends Component {
+          @service('current-user')
+          currentUser;
+        },
 
         template: strip`
             {{hello-world this.currentUser}}
@@ -323,14 +327,15 @@ moduleFor(
     '@test class based helpers are autotracked'(assert) {
       let computeCount = 0;
 
-      let TrackedClass = EmberObject.extend({
-        value: tracked({ value: 'bob' }),
-      });
+      let TrackedClass = class extends EmberObject {
+        @tracked
+        value = 'bob';
+      };
 
       let trackedInstance = TrackedClass.create();
 
       this.registerComponent('person', {
-        ComponentClass: Component.extend(),
+        ComponentClass: class extends Component {},
         template: strip`{{hello-world}}`,
       });
 
@@ -364,7 +369,9 @@ moduleFor(
       let obj = EmberObject.create({ value: 'bob' });
 
       this.registerComponent('person', {
-        ComponentClass: Component.extend({ obj }),
+        ComponentClass: class extends Component {
+          obj = obj;
+        },
         template: strip`
             {{#each-in this.obj as |key value|}}
               {{value}}-{{key}}

@@ -37,7 +37,7 @@ moduleFor(
     }
 
     ['@test acts like a namespace'](assert) {
-      engine.Foo = EmberObject.extend();
+      engine.Foo = class extends EmberObject {};
       processAllNamespaces();
       assert.equal(getName(engine.Foo), 'TestEngine.Foo', 'Classes pick up their parent namespace');
     }

@@ -73,11 +73,11 @@ moduleFor(
     }
 
     '@test action decorator super works with traditional class methods'(assert) {
-      let FooComponent = Component.extend({
+      let FooComponent = class extends Component {
         foo() {
           assert.ok(true, 'called!');
-        },
-      });
+        }
+      };
 
       class BarComponent extends FooComponent {
         @action
@@ -191,11 +191,12 @@ moduleFor(
     }
 
     '@test action decorator can be used as a classic decorator with strings'(assert) {
-      let FooComponent = Component.extend({
-        foo: action(function () {
+      let FooComponent = class extends Component {
+        @action
+        foo() {
           assert.ok(true, 'called!');
-        }),
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,
@@ -208,11 +209,12 @@ moduleFor(
     }
 
     '@test action decorator can be used as a classic decorator directly'(assert) {
-      let FooComponent = Component.extend({
-        foo: action(function () {
+      let FooComponent = class extends Component {
+        @action
+        foo() {
           assert.ok(true, 'called!');
-        }),
-      });
+        }
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooComponent,

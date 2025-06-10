@@ -601,13 +601,13 @@ moduleFor(
 
     ['@test yielding unbound does not update']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           fooBarInstance = this;
-        },
-        model: { foo: 'bork' },
-      });
+        }
+        model = { foo: 'bork' };
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -633,13 +633,13 @@ moduleFor(
 
     ['@test yielding unbound hash does not update']() {
       let fooBarInstance;
-      let FooBarComponent = Component.extend({
+      let FooBarComponent = class extends Component {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           fooBarInstance = this;
-        },
-        model: { foo: 'bork' },
-      });
+        }
+        model = { foo: 'bork' };
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

@@ -519,21 +519,21 @@ class EachTest extends AbstractEachTest {
   [`@test updating and setting within #each`]() {
     this.makeList([{ value: 1 }, { value: 2 }, { value: 3 }]);
 
-    let FooBarComponent = Component.extend({
+    let FooBarComponent = class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.isEven = true;
         this.tagName = 'li';
-      },
+      }
 
       _isEven() {
         this.set('isEven', this.get('item.value') % 2 === 0);
-      },
+      }
 
       didUpdate() {
         this._isEven();
-      },
-    });
+      }
+    };
 
     this.registerComponent('foo-bar', {
       ComponentClass: FooBarComponent,

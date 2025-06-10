@@ -13,12 +13,12 @@ moduleFor(
 
       let testContext = this;
       this.registerComponent('stash', {
-        ComponentClass: Component.extend({
+        ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             testContext.stashedFn = this.stashedFn;
-          },
-        }),
+          }
+        },
       });
     }
 

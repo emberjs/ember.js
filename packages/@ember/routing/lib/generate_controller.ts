@@ -38,11 +38,11 @@ export function generateControllerFactory(
   //   ((factory): factory is typeof Controller => factory === Controller)(Factory)
   // );
 
-  Factory = Factory.extend({
+  Factory = class extends Factory {
     toString() {
       return `(generated ${controllerName} controller)`;
-    },
-  });
+    }
+  };
 
   let fullName = `controller:${controllerName}` as const;
 
