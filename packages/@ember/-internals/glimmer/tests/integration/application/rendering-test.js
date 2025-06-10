@@ -530,7 +530,7 @@ moduleFor(
       this.addComponent('foo', {
         ComponentClass: class extends Component {
           init() {
-            this._super(...arguments);
+            super.init(...arguments);
             this.set('person.name', 'Ben');
           }
         },
