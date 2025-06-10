@@ -11,10 +11,10 @@ moduleFor(
 
       this.add(
         `controller:${routeName}`,
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: 'wat',
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          foo = 'wat';
+        }
       );
 
       return this.visit('/?foo=YEAH').then(() => {

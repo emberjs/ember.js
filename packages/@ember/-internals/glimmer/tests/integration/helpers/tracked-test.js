@@ -172,29 +172,29 @@ moduleFor(
     }
 
     '@test custom ember array properties rerender when updated'() {
-      let CustomArray = EmberObject.extend(MutableArray, {
+      let CustomArray = class extends EmberObject.extend(MutableArray) {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           this._vals = [1, 2, 3];
-        },
+        }
 
         objectAt(index) {
           return this._vals[index];
-        },
+        }
 
         replace(start, deleteCount, items = []) {
           this._vals.splice(start, deleteCount, ...items);
           notifyPropertyChange(this, '[]');
-        },
+        }
 
         join() {
           return this._vals.join(...arguments);
-        },
+        }
 
         get length() {
           return this._vals.length;
-        },
-      });
+        }
+      };
 
       class NumListComponent extends Component {
         @tracked numbers = CustomArray.create();
@@ -392,7 +392,9 @@ moduleFor(
       let obj = EmberObject.create({ arr: A([1]) });
 
       this.registerComponent('person', {
-        ComponentClass: Component.extend({ obj }),
+        ComponentClass: class extends Component {
+          obj = obj;
+        },
         template: strip`
             {{#each-in this.obj as |key arr|}}
               {{#each arr as |v|}}{{v}}{{/each}}

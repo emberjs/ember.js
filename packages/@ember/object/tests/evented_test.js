@@ -6,11 +6,11 @@ moduleFor(
   'Ember.Evented',
   class extends AbstractTestCase {
     ['@test works properly on proxy-ish objects'](assert) {
-      let eventedProxyObj = CoreObject.extend(EventedMixin, {
+      let eventedProxyObj = class extends CoreObject.extend(EventedMixin) {
         unknownProperty() {
           return true;
-        },
-      }).create();
+        }
+      }.create();
 
       let noop = function () {};
 

@@ -31,17 +31,18 @@ moduleFor(
 
       this.add(
         'controller:application',
-        Controller.extend({
-          myService: service('my-service'),
-        })
+        class extends Controller {
+          @service('my-service')
+          myService;
+        }
       );
-      let MyService = Service.extend(_ProxyMixin, {
+      let MyService = class extends Service.extend(_ProxyMixin) {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
 
           serviceOwner = getOwner(this);
-        },
-      });
+        }
+      };
       this.add('service:my-service', MyService);
       this.addTemplate('application', '');
 

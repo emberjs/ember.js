@@ -27,11 +27,11 @@ import { internalHelper } from './internal-helper';
 
   ```javascript
   // my-child.js
-  export default Component.extend({
+  export default class MyChild extends Component {
     click() {
       this.incrementProperty('childClickCount');
     }
-  });
+  }
   ```
 
   Note that for curly components (`{{my-component}}`) the bindings are already mutable,
@@ -54,11 +54,11 @@ import { internalHelper } from './internal-helper';
 
   ```javascript
   // my-child.js
-  export default Component.extend({
+  export default class MyChild extends Component {
     click() {
       this.get('click-count-change')(this.get('childClickCount') + 1);
     }
-  });
+  }
   ```
 
   The `mut` helper changes the `totalClicks` value to what was provided as the `fn` argument.

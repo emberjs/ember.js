@@ -14,12 +14,12 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = EmberObject.extend(EmberArray, {
-  _content: null,
+const TestArray = class extends EmberObject.extend(EmberArray) {
+  _content = null;
 
   init() {
     this._content = this._content || [];
-  },
+  }
 
   // some methods to modify the array so we can test changes.  Note that
   // arrays can be modified even if they don't implement MutableArray.  The
@@ -29,22 +29,22 @@ const TestArray = EmberObject.extend(EmberArray, {
     arrayContentWillChange(this, idx, 0, 1);
     this._content.push(obj);
     arrayContentDidChange(this, idx, 0, 1);
-  },
+  }
 
   removeFirst() {
     arrayContentWillChange(this, 0, 1, 0);
     this._content.shift();
     arrayContentDidChange(this, 0, 1, 0);
-  },
+  }
 
   objectAt(idx) {
     return this._content[idx];
-  },
+  }
 
-  length: computed(function () {
+  get length() {
     return this._content.length;
-  }),
-});
+  }
+};
 
 moduleFor(
   'Ember.Array',
@@ -80,12 +80,12 @@ moduleFor(
 // CONTENT DID CHANGE
 //
 
-const DummyArray = EmberObject.extend(EmberArray, {
-  length: 0,
+class DummyArray extends EmberObject.extend(EmberArray) {
+  length = 0;
   objectAt(idx) {
     return 'ITEM-' + idx;
-  },
-});
+  }
+}
 
 let obj, observer;
 
@@ -194,17 +194,17 @@ moduleFor(
     beforeEach(assert) {
       obj = DummyArray.create();
 
-      observer = EmberObject.extend({
+      observer = class extends EmberObject {
         arrayWillChange() {
           assert.equal(this._before, null); // should only call once
           this._before = Array.prototype.slice.call(arguments);
-        },
+        }
 
         arrayDidChange() {
           assert.equal(this._after, null); // should only call once
           this._after = Array.prototype.slice.call(arguments);
-        },
-      }).create({
+        }
+      }.create({
         _before: null,
         _after: null,
       });
@@ -342,16 +342,17 @@ moduleFor(
     ['@test should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization'](
       assert
     ) {
-      let obj = EmberObject.extend({
+      let obj = class extends EmberObject {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'resources', emberA());
-        },
+        }
 
-        common: computed('resources.@each.common', function () {
+        @computed('resources.@each.common')
+        get common() {
           return get(objectAt(get(this, 'resources'), 0), 'common');
-        }),
-      }).create();
+        }
+      }.create();
 
       get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
       assert.equal('HI!', get(obj, 'common'));

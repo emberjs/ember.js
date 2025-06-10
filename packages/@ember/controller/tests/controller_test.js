@@ -159,11 +159,11 @@ moduleFor(
 
       owner.register(
         'controller:application',
-        Controller.extend({
+        class extends Controller {
           toString() {
             return 'controller:rip-alley';
-          },
-        })
+          }
+        }
       );
 
       let controller = owner.lookup('controller:application');

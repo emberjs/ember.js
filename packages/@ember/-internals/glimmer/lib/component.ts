@@ -163,14 +163,14 @@ interface ComponentMethods {
     instantiated:
 
     ```javascript
-    export default Component.extend({
+    export default class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         var index = this.get('index');
         this.set('elementId', `component-id${index}`);
       }
-    });
+    }
     ```
 
     @property elementId
@@ -218,8 +218,9 @@ declare const SIGNATURE: unique symbol;
   ```app/components/person-profile.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    displayName: computed('person.title', 'person.firstName', 'person.lastName', function() {
+  export default class extends Component {
+    @computed('person.title', 'person.firstName', 'person.lastName')
+    get displayName() {
       let { title, firstName, lastName } = this.person;
 
       if (title) {
@@ -227,8 +228,8 @@ declare const SIGNATURE: unique symbol;
       } else {
         return `${firstName} ${lastName}`;
       }
-    })
-  });
+    }
+  }
   ```
 
   And then use it in the component's template:
@@ -250,9 +251,9 @@ declare const SIGNATURE: unique symbol;
   ```app/components/emphasized-paragraph.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'em'
-  });
+  export default class extends Component {
+    tagName = 'em';
+  }
   ```
 
   When invoked, this component would produce output that looks something like
@@ -270,9 +271,9 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNames: ['my-class', 'my-other-class']
-  });
+  export default class extends Component {
+    classNames = ['my-class', 'my-other-class'];
+  }
   ```
 
   Invoking this component will produce output that looks like this:
@@ -290,15 +291,16 @@ declare const SIGNATURE: unique symbol;
   import Component from '@ember/component';
   import { computed } from '@ember/object';
 
-  export default Component.extend({
-    classNames: ['my-class', 'my-other-class'],
-    classNameBindings: ['propertyA', 'propertyB'],
+  export default class extends Component {
+    classNames = ['my-class', 'my-other-class'];
+    classNameBindings = ['propertyA', 'propertyB'];
 
-    propertyA: 'from-a',
-    propertyB: computed(function() {
+    propertyA = 'from-a';
+
+    get propertyB {
       if (someLogic) { return 'from-b'; }
-    })
-  });
+    }
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -328,11 +330,11 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['hovered'],
+  export default class extends Component {
+    classNameBindings = ['hovered'];
 
-    hovered: true
-  });
+    hovered = true;
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -350,11 +352,11 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['awesome:so-very-cool'],
+  export default class extends Component {
+    classNameBindings = ['awesome:so-very-cool'];
 
-    awesome: true
-  });
+    awesome = true;
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -369,11 +371,11 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['isUrgent'],
+  export default class extends Component {
+    classNameBindings = ['isUrgent'];
 
-    isUrgent: true
-  });
+    isUrgent = true;
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -389,13 +391,13 @@ declare const SIGNATURE: unique symbol;
   import Component from '@ember/component';
   import EmberObject from '@ember/object';
 
-  export default Component.extend({
-    classNameBindings: ['messages.empty'],
+  export default class extends Component {
+    classNameBindings = ['messages.empty'];
 
-    messages: EmberObject.create({
+    messages = EmberObject.create({
       empty: true
-    })
-  });
+    });
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -411,10 +413,11 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    classNameBindings: ['isEnabled:enabled:disabled'],
-    isEnabled: true
-  });
+  export default class extends Component {
+    classNameBindings = ['isEnabled:enabled:disabled'];
+
+    isEnabled = true;
+  }
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -435,10 +438,11 @@ declare const SIGNATURE: unique symbol;
   import Component from '@ember/component';
 
   // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
-  export default Component.extend({
-    classNameBindings: ['isEnabled::disabled'],
-    isEnabled: true
-  });
+  export default class extends Component {
+    classNameBindings = ['isEnabled::disabled'];
+
+    isEnabled = true;
+  }
   ```
 
   Invoking this component when the `isEnabled` property is true will produce
@@ -474,12 +478,12 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-anchor.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'a',
-    attributeBindings: ['href'],
+  export default class extends Component {
+    tagName = 'a';
+    attributeBindings = ['href'];
 
-    href: 'http://google.com'
-  });
+    href = 'http://google.com';
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -494,12 +498,12 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-anchor.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'a',
-    attributeBindings: ['url:href'],
+  export default class extends Component {
+    tagName = 'a';
+    attributeBindings = ['url:href'];
 
-    url: 'http://google.com'
-  });
+    url = 'http://google.com';
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -532,12 +536,12 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-use.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'use',
-    attributeBindings: ['xlinkHref:xlink:href'],
+  export default class extends Component {
+    tagName = 'use';
+    attributeBindings = ['xlinkHref:xlink:href'];
 
-    xlinkHref: '#triangle'
-  });
+    xlinkHref = '#triangle';
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -552,12 +556,12 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-text-input.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'input',
-    attributeBindings: ['disabled'],
+  export default class extends Component {
+    tagName = 'input';
+    attributeBindings = ['disabled'];
 
-    disabled: false
-  });
+    disabled = false;
+  };
   ```
 
   Invoking this component will produce HTML that looks like:
@@ -572,18 +576,18 @@ declare const SIGNATURE: unique symbol;
   import Component from '@ember/component';
   import { computed } from '@ember/object';
 
-  export default Component.extend({
-    tagName: 'input',
-    attributeBindings: ['disabled'],
+  export default class extends Component {
+    tagName = 'input';
+    attributeBindings = ['disabled'];
 
-    disabled: computed(function() {
+    get disabled() {
       if (someLogic) {
         return true;
       } else {
         return false;
       }
-    })
-  });
+    }
+  };
   ```
 
   To prevent setting an attribute altogether, use `null` or `undefined` as the
@@ -592,11 +596,11 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-text-input.js
   import Component from '@ember/component';
 
-  export default Component.extend({
-    tagName: 'form',
-    attributeBindings: ['novalidate'],
-    novalidate: null
-  });
+  export default class extends Component {
+    tagName = 'form';
+    attributeBindings = ['novalidate'];
+    novalidate = null;
+  };
   ```
 
   Updates to the property of an attribute binding will result in automatic
@@ -627,9 +631,9 @@ declare const SIGNATURE: unique symbol;
     import Component from '@ember/component';
     import layout from '../templates/components/person-profile';
 
-    export default Component.extend({
-      layout
-    });
+    export default class extends Component {
+      layout = layout;
+    }
   ```
 
   If you invoke the component:
@@ -682,7 +686,7 @@ declare const SIGNATURE: unique symbol;
       // `event` is the native click Event
       console.log('clicked on the button');
     };
-  });
+  }
   ```
 
   See the [Guide on Component event
@@ -701,13 +705,13 @@ declare const SIGNATURE: unique symbol;
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
-  export default Component.extend({
+  export default class extends Component {
     click(event) {
       // `event.target` is either the component's element or one of its children
       let tag = event.target.tagName.toLowerCase();
       console.log('clicked on a `<${tag}>` HTML element!');
     }
-  });
+  }
   ```
 
   In this example, whenever the user clicked anywhere inside the component, it
@@ -996,13 +1000,9 @@ class Component<S = unknown>
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    let MyComponent = Component.extend();
-
-    MyComponent.reopenClass({
-      positionalParams: ['name', 'age']
-    });
-
-    export default MyComponent;
+    export default class MyComponent extends Component {
+      static positionalParams = ['name', 'age'];
+    }
     ```
 
     It can then be invoked like this:
@@ -1023,13 +1023,9 @@ class Component<S = unknown>
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    let MyComponent = Component.extend();
-
-    MyComponent.reopenClass({
-      positionalParams: 'names'
-    });
-
-    export default MyComponent;
+    export default class MyComponent extends Component {
+      static positionalParams = 'names';
+    }
     ```
 
     It can then be invoked like this:
@@ -1055,13 +1051,9 @@ class Component<S = unknown>
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    let MyComponent = Component.extend();
-
-    MyComponent.reopenClass({
-      positionalParams: ['name', 'age']
-    });
-
-    export default MyComponent;
+    export default class MyComponent extends Component {
+      static positionalParams = ['name', 'age'];
+    }
     ```
 
     It can then be invoked like this:
@@ -1082,13 +1074,9 @@ class Component<S = unknown>
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    let MyComponent = Component.extend();
-
-    MyComponent.reopenClass({
-      positionalParams: 'names'
-    });
-
-    export default MyComponent;
+    export default class MyComponent extends Component {
+      static positionalParams = 'names';
+    }
     ```
 
     It can then be invoked like this:

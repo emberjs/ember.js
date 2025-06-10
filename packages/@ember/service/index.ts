@@ -59,13 +59,13 @@ export function inject(
   import Route from '@ember/routing/route';
   import { service } from '@ember/service';
 
-  export default Route.extend({
-    authManager: service('auth'),
+  export default class ApplicationRoute extends Route {
+    @service('auth') authManager;
 
     model() {
-      return this.get('authManager').findCurrentUser();
+      return this.authManager.findCurrentUser();
     }
-  });
+  }
   ```
 
   This example will create an `authManager` property on the application route

@@ -31,11 +31,11 @@ moduleFor(
 
       this.registry.register(
         'service:auth',
-        EmberObject.extend({
+        class extends EmberObject {
           willDestroy() {
             assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
-          },
-        })
+          }
+        }
       );
 
       let service = this.instance.lookup('service:auth');
