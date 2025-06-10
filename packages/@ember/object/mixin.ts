@@ -473,9 +473,9 @@ const MIXINS = new WeakSet();
 
   // Mix mixins into classes by passing them as the first arguments to
   // `.extend.`
-  const Comment = EmberObject.extend(EditableMixin, {
-    post: null
-  });
+  class Comment extends EmberObject.extend(EditableMixin) {
+    post = null
+  }
 
   let comment = Comment.create({
     post: somePost

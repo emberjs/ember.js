@@ -3,18 +3,18 @@ import { compare } from '@ember/utils';
 import Comparable from '../../lib/mixins/comparable';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-const Rectangle = EmberObject.extend(Comparable, {
-  length: 0,
-  width: 0,
+class Rectangle extends EmberObject.extend(Comparable) {
+  length = 0;
+  width = 0;
 
   area() {
     return get(this, 'length') * get(this, 'width');
-  },
+  }
 
   compare(a, b) {
     return compare(a.area(), b.area());
-  },
-});
+  }
+}
 
 let r1, r2;
 

@@ -285,9 +285,9 @@ moduleFor(
     }
 
     '@test it can set custom classNames from the invocation'() {
-      let FooBarComponent = Component.extend({
-        classNames: ['foo'],
-      });
+      let FooBarComponent = class extends Component {
+        classNames = ['foo'];
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,

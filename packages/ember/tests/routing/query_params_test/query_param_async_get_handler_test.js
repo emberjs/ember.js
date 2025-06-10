@@ -303,11 +303,11 @@ moduleFor(
 
       this.add(
         'route:example',
-        Route.extend({
+        class extends Route {
           model(params) {
             assert.deepEqual(params, { foo: undefined });
-          },
-        })
+          }
+        }
       );
 
       return this.visitAndAssert('/').then(() => {

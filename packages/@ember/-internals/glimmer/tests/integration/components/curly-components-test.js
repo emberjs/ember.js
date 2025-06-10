@@ -529,9 +529,9 @@ moduleFor(
     }
 
     ['@test it can set custom classNames from the invocation']() {
-      let FooBarComponent = Component.extend({
-        classNames: ['foo'],
-      });
+      let FooBarComponent = class extends Component {
+        classNames = ['foo'];
+      };
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
@@ -2589,10 +2589,10 @@ moduleFor(
 
     ['@test specifying classNames results in correct class'](assert) {
       this.registerComponent('some-clicky-thing', {
-        ComponentClass: Component.extend({
-          tagName: 'button',
-          classNames: ['foo', 'bar'],
-        }),
+        ComponentClass: class extends Component {
+          tagName = 'button';
+          classNames = ['foo', 'bar'];
+        },
       });
 
       this.render(strip`
@@ -2631,10 +2631,10 @@ moduleFor(
 
     ['@test specifying custom concatenatedProperties avoids clobbering']() {
       this.registerComponent('some-clicky-thing', {
-        ComponentClass: Component.extend({
-          concatenatedProperties: ['blahzz'],
-          blahzz: ['blark', 'pory'],
-        }),
+        ComponentClass: class extends Component {
+          concatenatedProperties = ['blahzz'];
+          blahzz = ['blark', 'pory'];
+        },
         template: strip`
         {{#each this.blahzz as |p|}}
           {{p}}

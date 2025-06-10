@@ -1425,20 +1425,21 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
     import EmberRouter from '@ember/routing/router';
     import { service } from '@ember/service';
 
-    let Router = EmberRouter.extend({
-      location: config.locationType,
+    export default class Router extends EmberRouter {
+      location = config.locationType;
 
-      router: service(),
+      @service()
+      router;
 
-      didTransition: function() {
-        this._super(...arguments);
+      didTransition() {
+        super.didTransition(...arguments);
 
         ga('send', 'pageview', {
           page: this.router.currentURL,
           title: this.router.currentRouteName,
         });
       }
-    });
+    }
     ```
 
     @method didTransition

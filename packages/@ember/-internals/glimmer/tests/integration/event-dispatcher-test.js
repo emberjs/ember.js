@@ -154,15 +154,15 @@ moduleFor(
       let browserEvent;
 
       this.registerComponent('x-button', {
-        ComponentClass: Component.extend({
-          tagName: 'button',
+        ComponentClass: class extends Component {
+          tagName = 'button';
           init() {
-            this._super();
+            super.init();
             Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
               this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
             });
-          },
-        }),
+          }
+        },
       });
 
       this.render(`{{x-button}}`);

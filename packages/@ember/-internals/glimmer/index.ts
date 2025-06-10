@@ -9,10 +9,11 @@
 
   ```app/components/person-profile.js
   import Component from '@ember/component';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Component.extend({
-    name: 'Jill'
-  });
+  export default class extends Component {
+    @tracked name = 'Jill'
+  }
   ```
 
   ```app/components/person-profile.hbs

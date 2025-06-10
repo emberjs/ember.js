@@ -655,9 +655,9 @@ export function scheduleOnce(...args: any[]): Timer {
   import Component from '@ember/component';
   import { scheduleOnce } from '@ember/runloop';
 
-  export Component.extend({
+  export default class MyComponent extends Component {
     didInsertElement() {
-      this._super(...arguments);
+      super.didInsertElement();
       scheduleOnce('afterRender', this, 'processChildElements');
     },
 
@@ -668,7 +668,7 @@ export function scheduleOnce(...args: any[]): Timer {
       // `didInsertElement` hook because that gets run
       // before the child elements have been added to the DOM.
     }
-  });
+  }
   ```
 
   One benefit of the above approach compared to using `next` is

@@ -34,10 +34,12 @@ moduleFor(
 
       this.add(
         'controller:dashboard',
-        Controller.extend({
-          filters: service(),
-          queryParams: [{ 'filters.shared': 'shared' }],
-        })
+        class extends Controller {
+          @service
+          filters;
+
+          queryParams = [{ 'filters.shared': 'shared' }];
+        }
       );
 
       this.addTemplate(
