@@ -8,7 +8,6 @@ import EmberObject, {
   computed,
   observer,
 } from '@ember/object';
-import ObjectProxy from '@ember/object/proxy';
 import { isArray, A as emberA, removeAt } from '@ember/array';
 import {
   sum,
@@ -1168,44 +1167,6 @@ class SortWithSortPropertiesTestCase extends AbstractTestCase {
     );
   }
 
-  ['@test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys'](
-    assert
-  ) {
-    let tyrion = {
-      fname: 'Tyrion',
-      lname: 'Lannister',
-    };
-
-    let tyrionInDisguise = ObjectProxy.create({
-      fname: 'Yollo',
-      lname: '',
-      content: tyrion,
-    });
-
-    let items = this.obj.items;
-
-    items.pushObject(tyrion);
-
-    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), [
-      'Cersei',
-      'Jaime',
-      'Tyrion',
-      'Bran',
-      'Robb',
-    ]);
-
-    items.pushObject(tyrionInDisguise);
-
-    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), [
-      'Yollo',
-      'Cersei',
-      'Jaime',
-      'Tyrion',
-      'Bran',
-      'Robb',
-    ]);
-  }
-
   ['@test updating sort properties detaches observers for old sort properties'](assert) {
     let objectToRemove = this.obj.items[3];
 
@@ -1771,44 +1732,6 @@ moduleFor(
         ['Cersei', 'Jaime', 'Bran', 'Robb'],
         'sorted array is updated'
       );
-    }
-
-    ['@test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys'](
-      assert
-    ) {
-      let tyrion = {
-        fname: 'Tyrion',
-        lname: 'Lannister',
-      };
-
-      let tyrionInDisguise = ObjectProxy.create({
-        fname: 'Yollo',
-        lname: '',
-        content: tyrion,
-      });
-
-      let items = obj.get('items');
-
-      items.pushObject(tyrion);
-
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), [
-        'Cersei',
-        'Jaime',
-        'Tyrion',
-        'Bran',
-        'Robb',
-      ]);
-
-      items.pushObject(tyrionInDisguise);
-
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), [
-        'Yollo',
-        'Cersei',
-        'Jaime',
-        'Tyrion',
-        'Bran',
-        'Robb',
-      ]);
     }
 
     ['@test changing item properties specified via @each triggers a resort of the modified item'](

@@ -83,4 +83,4 @@ class AddObjectTest extends AbstractTestCase {
   }
 }
 
-runArrayTests('addObject', AddObjectTest, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('addObject', AddObjectTest, 'MutableArray', 'NativeArray');

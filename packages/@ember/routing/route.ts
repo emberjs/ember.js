@@ -12,7 +12,7 @@ import EmberObject, { computed, get, set, getProperties, setProperties } from '@
 import { A as emberA } from '@ember/array';
 import { ActionHandler } from '@ember/-internals/runtime';
 import { typeOf } from '@ember/utils';
-import { isProxy, lookupDescriptor } from '@ember/-internals/utils';
+import { lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
 import Controller from '@ember/controller';
 import type { ControllerQueryParamType } from '@ember/controller';
@@ -344,8 +344,6 @@ class Route<Model = unknown> extends EmberObject.extend(ActionHandler) implement
         object[name] = get(model, name);
       } else if (/_id$/.test(name)) {
         object[name] = get(model, 'id');
-      } else if (isProxy(model)) {
-        object[name] = get(model, name);
       }
     } else {
       object = getProperties(model, params);

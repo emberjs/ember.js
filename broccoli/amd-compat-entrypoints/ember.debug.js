@@ -56,9 +56,6 @@ d('@ember/-internals/runtime/index', emberinternalsRuntimeIndex);
 import * as emberinternalsRuntimeLibExtRsvp from '@ember/-internals/runtime/lib/ext/rsvp';
 d('@ember/-internals/runtime/lib/ext/rsvp', emberinternalsRuntimeLibExtRsvp);
 
-import * as emberinternalsRuntimeLibMixinsproxy from '@ember/-internals/runtime/lib/mixins/-proxy';
-d('@ember/-internals/runtime/lib/mixins/-proxy', emberinternalsRuntimeLibMixinsproxy);
-
 import * as emberinternalsRuntimeLibMixinsActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
 d(
   '@ember/-internals/runtime/lib/mixins/action_handler',
@@ -176,9 +173,6 @@ d('@ember/array/lib/make-array', emberArrayLibMakeArray);
 import * as emberArrayMutable from '@ember/array/mutable';
 d('@ember/array/mutable', emberArrayMutable);
 
-import * as emberArrayProxy from '@ember/array/proxy';
-d('@ember/array/proxy', emberArrayProxy);
-
 import * as emberCanaryFeaturesIndex from '@ember/canary-features/index';
 d('@ember/canary-features/index', emberCanaryFeaturesIndex);
 
@@ -286,12 +280,6 @@ d('@ember/object/observable', emberObjectObservable);
 
 import * as emberObjectObservers from '@ember/object/observers';
 d('@ember/object/observers', emberObjectObservers);
-
-import * as emberObjectPromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-d('@ember/object/promise-proxy-mixin', emberObjectPromiseProxyMixin);
-
-import * as emberObjectProxy from '@ember/object/proxy';
-d('@ember/object/proxy', emberObjectProxy);
 
 import * as emberOwnerIndex from '@ember/owner/index';
 d('@ember/owner/index', emberOwnerIndex);

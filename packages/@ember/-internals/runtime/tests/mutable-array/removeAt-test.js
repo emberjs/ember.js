@@ -214,4 +214,4 @@ class RemoveAtTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('removeAt', RemoveAtTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('removeAt', RemoveAtTests, 'MutableArray', 'NativeArray');

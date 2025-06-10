@@ -132,10 +132,6 @@ expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.Application
 const a1: Ember.NativeArray<string> = Ember.A([]);
 // @ts-expect-error
 const a2: Ember.Array<string> = {};
-// Ember.ArrayProxy -- we cannot make this type safe with our limited types.
-expectTypeOf(Ember.ArrayProxy.create({ content: [3, 3, 2] })).toMatchTypeOf<
-  Ember.ArrayProxy<unknown>
->();
 // Ember.Component
 const C1 = Ember.Component.extend({ classNames: ['foo'] });
 class C2 extends Ember.Component {
@@ -228,18 +224,8 @@ expectTypeOf(na.clear()).toEqualTypeOf<Ember.NativeArray<number>>();
 expectTypeOf(new Ember.NoneLocation()).toEqualTypeOf<Ember.NoneLocation>();
 // Ember.Object
 new Ember.Object();
-// Ember.ObjectProxy
-expectTypeOf(new Ember.ObjectProxy()).toEqualTypeOf<Ember.ObjectProxy>();
 // Ember.Observable
 Ember.Object.extend(Ember.Observable, {});
-// Ember.PromiseProxyMixin
-interface PPM<T> extends Ember.PromiseProxyMixin<T> {}
-class PPM<T> extends Ember.Object.extend(Ember.PromiseProxyMixin) {
-  foo() {
-    expectTypeOf(this.reason).toEqualTypeOf<unknown>();
-    expectTypeOf(this.isPending).toEqualTypeOf<boolean>();
-  }
-}
 // Ember.Route
 new Ember.Route(owner);
 // Ember.Router

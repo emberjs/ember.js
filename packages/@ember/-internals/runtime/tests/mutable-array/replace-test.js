@@ -258,4 +258,4 @@ class ReplaceTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('replace', ReplaceTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('replace', ReplaceTests, 'MutableArray', 'NativeArray');

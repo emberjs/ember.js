@@ -2,7 +2,6 @@ import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-help
 
 import { get, set } from '@ember/object';
 import { A as emberA, removeAt } from '@ember/array';
-import ObjectProxy from '@ember/object/proxy';
 
 moduleFor(
   'Syntax test: {{#let as}}',
@@ -120,40 +119,6 @@ moduleFor(
       });
 
       this.assertText('-Yehuda-');
-    }
-
-    ['@test can access alias of a proxy']() {
-      this.render(`{{#let this.proxy as |person|}}{{person.name}}{{/let}}`, {
-        proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
-      });
-
-      this.assertText('Tom Dale');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Tom Dale');
-
-      runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
-
-      this.assertText('Yehuda Katz');
-
-      runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
-
-      this.assertText('Godfrey Chan');
-
-      runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
-
-      this.assertText('Stefan Penner');
-
-      runTask(() => set(this.context, 'proxy.content', null));
-
-      this.assertText('');
-
-      runTask(() =>
-        set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
-      );
-
-      this.assertText('Tom Dale');
     }
 
     ['@test can access alias of an array']() {

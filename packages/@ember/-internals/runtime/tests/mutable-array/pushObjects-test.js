@@ -9,4 +9,4 @@ class PushObjectsTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('pushObjects', PushObjectsTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('pushObjects', PushObjectsTests, 'MutableArray', 'NativeArray');

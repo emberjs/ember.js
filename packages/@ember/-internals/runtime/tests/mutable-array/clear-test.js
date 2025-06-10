@@ -71,4 +71,4 @@ class ClearTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('clear', ClearTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('clear', ClearTests, 'MutableArray', 'NativeArray');

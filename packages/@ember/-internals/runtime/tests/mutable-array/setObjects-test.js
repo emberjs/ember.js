@@ -70,4 +70,4 @@ class SetObjectsTests extends AbstractTestCase {
   }
 }
 
-runArrayTests('setObjects', SetObjectsTests, 'MutableArray', 'NativeArray', 'ArrayProxy');
+runArrayTests('setObjects', SetObjectsTests, 'MutableArray', 'NativeArray');

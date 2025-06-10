@@ -5,9 +5,7 @@ import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
-import ObjectProxy from '@ember/object/proxy';
 import { A as emberA, removeAt } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
 
 import { Component } from './helpers';
 
@@ -161,58 +159,6 @@ export class StableFalsyGenerator extends FalsyGenerator {
   }
 }
 
-class ObjectProxyGenerator extends AbstractGenerator {
-  generate(value, idx) {
-    // This is inconsistent with our usual to-bool policy, but the current proxy implementation
-    // simply uses !!content to determine truthiness
-    if (value) {
-      return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(
-          value
-        )}\` truthy [${idx}]`]() {
-          this.renderValues(ObjectProxy.create({ content: value }));
-
-          this.assertText('T1');
-
-          runTask(() => this.rerender());
-
-          this.assertText('T1');
-
-          runTask(() => set(this.context, 'cond1.content', this.falsyValue));
-
-          this.assertText('F1');
-
-          runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
-
-          this.assertText('T1');
-        },
-      };
-    } else {
-      return {
-        [`@test it should consider an object proxy with \`${JSON.stringify(
-          value
-        )}\` falsy [${idx}]`]() {
-          this.renderValues(ObjectProxy.create({ content: value }));
-
-          this.assertText('F1');
-
-          runTask(() => this.rerender());
-
-          this.assertText('F1');
-
-          runTask(() => set(this.context, 'cond1.content', this.truthyValue));
-
-          this.assertText('T1');
-
-          runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
-
-          this.assertText('F1');
-        },
-      };
-    }
-  }
-}
-
 // Testing behaviors shared across all conditionals, i.e. {{#if}}, {{#unless}},
 // {{#each}}, {{#each-in}}, (if) and (unless)
 export class BasicConditionalsTest extends AbstractConditionalsTest {
@@ -245,46 +191,6 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
   }
 }
 
-// Testing behaviors related to ember objects, object proxies, etc
-export const ObjectTestCases = {
-  ['@test it considers object proxies without content falsy']() {
-    this.renderValues(
-      ObjectProxy.create({ content: {} }),
-      ObjectProxy.create({ content: EmberObject.create() }),
-      ObjectProxy.create({ content: null })
-    );
-
-    this.assertText('T1T2F3');
-
-    runTask(() => this.rerender());
-
-    this.assertText('T1T2F3');
-
-    runTask(() => {
-      set(this.context, 'cond1.content', null);
-      set(this.context, 'cond2.content', null);
-    });
-
-    this.assertText('F1F2F3');
-
-    runTask(() => {
-      set(this.context, 'cond1.content', EmberObject.create());
-      set(this.context, 'cond2.content', {});
-      set(this.context, 'cond3.content', { foo: 'bar' });
-    });
-
-    this.assertText('T1T2T3');
-
-    runTask(() => {
-      set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
-      set(this.context, 'cond2', ObjectProxy.create({ content: EmberObject.create() }));
-      set(this.context, 'cond3', ObjectProxy.create({ content: null }));
-    });
-
-    this.assertText('T1T2F3');
-  },
-};
-
 // Testing behaviors related to arrays and array proxies
 export const ArrayTestCases = {
   ['@test it considers empty arrays falsy']() {
@@ -314,71 +220,6 @@ export const ArrayTestCases = {
 
     this.assertText('T1F2');
   },
-
-  ['@test it considers array proxies without content falsy']() {
-    this.renderValues(
-      ArrayProxy.create({ content: emberA(['hello']) }),
-      ArrayProxy.create({ content: null })
-    );
-
-    this.assertText('T1F2');
-
-    runTask(() => this.rerender());
-
-    this.assertText('T1F2');
-
-    runTask(() => {
-      set(this.context, 'cond1.content', null);
-      set(this.context, 'cond2.content', null);
-    });
-
-    this.assertText('F1F2');
-
-    runTask(() => {
-      set(this.context, 'cond1.content', emberA(['hello']));
-      set(this.context, 'cond2.content', emberA([1]));
-    });
-
-    this.assertText('T1T2');
-
-    runTask(() => {
-      set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
-      set(this.context, 'cond2', ArrayProxy.create({ content: null }));
-    });
-
-    this.assertText('T1F2');
-  },
-
-  ['@test it considers array proxies with empty arrays falsy']() {
-    this.renderValues(
-      ArrayProxy.create({ content: emberA(['hello']) }),
-      ArrayProxy.create({ content: emberA() })
-    );
-
-    this.assertText('T1F2');
-
-    runTask(() => this.rerender());
-
-    this.assertText('T1F2');
-
-    runTask(() => removeAt(get(this.context, 'cond1.content'), 0));
-
-    this.assertText('F1F2');
-
-    runTask(() => {
-      get(this.context, 'cond1.content').pushObject('hello');
-      get(this.context, 'cond2.content').pushObjects([1]);
-    });
-
-    this.assertText('T1T2');
-
-    runTask(() => {
-      set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
-      set(this.context, 'cond2', ArrayProxy.create({ content: emberA() }));
-    });
-
-    this.assertText('T1F2');
-  },
 };
 
 const IfUnlessWithTestCases = [
@@ -396,7 +237,6 @@ const IfUnlessWithTestCases = [
     { foo: 'bar' },
     EmberObject.create(),
     EmberObject.create({ foo: 'bar' }),
-    ObjectProxy.create({ content: true }),
     Object,
     function () {},
     async function () {},
@@ -408,51 +248,7 @@ const IfUnlessWithTestCases = [
     htmlSafe(' '),
   ]),
 
-  new StableFalsyGenerator([
-    false,
-    null,
-    undefined,
-    '',
-    0,
-    [],
-    emberA(),
-    ObjectProxy.create({ content: undefined }),
-    htmlSafe(''),
-  ]),
-
-  new ObjectProxyGenerator([
-    true,
-    ' ',
-    'hello',
-    'false',
-    'null',
-    'undefined',
-    1,
-    ['hello'],
-    emberA(['hello']),
-    ArrayProxy.create({ content: ['hello'] }),
-    ArrayProxy.create({ content: [] }),
-    {},
-    { foo: 'bar' },
-    EmberObject.create(),
-    EmberObject.create({ foo: 'bar' }),
-    ObjectProxy.create({ content: true }),
-    ObjectProxy.create({ content: undefined }),
-    new String('hello'),
-    new String(''),
-    new Boolean(true),
-    new Boolean(false),
-    new Date(),
-    false,
-    null,
-    undefined,
-    '',
-    0,
-    [],
-    emberA(),
-  ]),
-
-  ObjectTestCases,
+  new StableFalsyGenerator([false, null, undefined, '', 0, [], emberA(), htmlSafe('')]),
 
   ArrayTestCases,
 ];
