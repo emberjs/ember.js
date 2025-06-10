@@ -62,9 +62,6 @@ d(
   emberinternalsRuntimeLibMixinsActionHandler
 );
 
-import * as emberinternalsRuntimeLibMixinsComparable from '@ember/-internals/runtime/lib/mixins/comparable';
-d('@ember/-internals/runtime/lib/mixins/comparable', emberinternalsRuntimeLibMixinsComparable);
-
 import * as emberinternalsRuntimeLibMixinsContainerProxy from '@ember/-internals/runtime/lib/mixins/container_proxy';
 d(
   '@ember/-internals/runtime/lib/mixins/container_proxy',

@@ -48,7 +48,6 @@ import {
   RegistryProxyMixin,
   ContainerProxyMixin,
   RSVP as _RSVP,
-  Comparable as InternalComparable,
   ActionHandler as InternalActionHandler,
 } from '@ember/-internals/runtime';
 import {
@@ -183,8 +182,6 @@ namespace Ember {
   export const _RegistryProxyMixin = RegistryProxyMixin;
   export const ActionHandler = InternalActionHandler;
   export type ActionHandler = InternalActionHandler;
-  export const Comparable = InternalComparable;
-  export type Comparable = InternalComparable;
 
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;
