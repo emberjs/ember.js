@@ -80,13 +80,6 @@ const o2 = O2.create({
   name: 'foo',
   age: 3,
 });
-// on
-class O3 extends Ember.Object {
-  name = 'foo';
-  nameWatcher = Ember.on('init', () => {});
-  nameWatcher2 = Ember.on('destroy', () => {});
-}
-const o3 = O3.create();
 // removeListener
 Ember.removeListener(O2, 'create', null, () => {});
 Ember.removeListener(O2, 'create', null, 'create');
@@ -187,13 +180,6 @@ e1.register('data:foo', {}, { instantiate: false });
 // Ember.EngineInstance
 const ei1 = new Ember.EngineInstance();
 ei1.lookup('data:foo');
-// Ember.Evented
-interface OE1 extends Ember.Evented {}
-class OE1 extends Ember.Object.extend(Ember.Evented) {}
-const oe1 = OE1.create();
-oe1.trigger('foo');
-oe1.on('bar', () => {});
-oe1.on('bar', { foo() {} }, () => {});
 // Ember.HashLocation
 const hl = new Ember.HashLocation();
 expectTypeOf(hl).toEqualTypeOf<Ember.HashLocation>();

@@ -30,7 +30,7 @@ export {
 } from './lib/array';
 export { arrayContentWillChange, arrayContentDidChange } from './lib/array_events';
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
-export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
+export { addListener, hasListeners, removeListener, sendEvent } from './lib/events';
 
 export {
   beginPropertyChanges,

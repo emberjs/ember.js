@@ -91,7 +91,6 @@ import EmberEngineInstance from '@ember/engine/instance';
 import EmberEnumerable from '@ember/enumerable';
 import EmberMutableEnumerable from '@ember/enumerable/mutable';
 import EmberCoreObject from '@ember/object/core';
-import EmberEvented, { on as emberOn } from '@ember/object/evented';
 import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
 import EmberObservable from '@ember/object/observable';
 import {
@@ -349,11 +348,6 @@ namespace Ember {
   // ****@ember/object/core****
   export const CoreObject = EmberCoreObject;
   export type CoreObject = EmberCoreObject;
-
-  // ****@ember/object/evented****
-  export const Evented = EmberEvented;
-  export type Evented = EmberEvented;
-  export const on = emberOn;
 
   // ****@ember/object/events****
   export const addListener = emberAddListener;

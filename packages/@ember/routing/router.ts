@@ -22,7 +22,6 @@ import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/utils';
-import Evented from '@ember/object/evented';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -50,6 +49,7 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
+import { sendEvent } from '@ember/-internals/metal';
 
 /**
 @module @ember/routing/router
@@ -132,10 +132,9 @@ const { slice } = Array.prototype;
 
   @class EmberRouter
   @extends EmberObject
-  @uses Evented
   @public
 */
-class EmberRouter extends EmberObject.extend(Evented) implements Evented {
+class EmberRouter extends EmberObject {
   /**
    Represents the URL of the root of the application, often '/'. This prefix is
     assumed on all routes defined on this router.
@@ -193,14 +192,6 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
   _slowTransitionTimer: Timer | null = null;
 
   private namespace: any;
-
-  // Begin Evented
-  declare on: (name: string, method: ((...args: any[]) => void) | string) => this;
-  declare one: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare trigger: (name: string, ...args: any[]) => unknown;
-  declare off: (name: string, method: string | ((...args: any[]) => void)) => this;
-  declare has: (name: string) => boolean;
-  // End Evented
 
   // Set with reopenClass
   private static dslCallbacks?: DSLCallback[];
@@ -415,12 +406,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       }
 
       routeWillChange(transition: Transition) {
-        router.trigger('routeWillChange', transition);
+        sendEvent(router, 'routeWillChange', [transition]);
 
         if (DEBUG) {
           freezeRouteInfo(transition);
         }
-        router._routerService.trigger('routeWillChange', transition);
+        sendEvent(router._routerService, 'routeWillChange', [transition]);
 
         // in case of intermediate transition we update the current route
         // to make router.currentRoute.name consistent with router.currentRouteName
@@ -433,12 +424,12 @@ class EmberRouter extends EmberObject.extend(Evented) implements Evented {
       routeDidChange(transition: Transition) {
         router.set('currentRoute', transition.to);
         once(() => {
-          router.trigger('routeDidChange', transition);
+          sendEvent(router, 'routeDidChange', [transition]);
 
           if (DEBUG) {
             freezeRouteInfo(transition);
           }
-          router._routerService.trigger('routeDidChange', transition);
+          sendEvent(router._routerService, 'routeDidChange', [transition]);
         });
       }
 

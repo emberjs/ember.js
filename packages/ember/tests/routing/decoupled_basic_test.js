@@ -879,9 +879,7 @@ moduleFor(
     }
 
     ['@test `activate` event fires on the route'](assert) {
-      assert.expect(4);
-
-      let eventFired = 0;
+      assert.expect(2);
 
       this.router.map(function () {
         this.route('nork');
@@ -890,15 +888,6 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
-
-            this.on('activate', function (transition) {
-              assert.equal(++eventFired, 1, 'activate event is fired once');
-              assert.ok(transition, 'transition is passed to activate event');
-            });
-          }
-
           activate(transition) {
             assert.ok(true, 'activate hook is called');
             assert.ok(transition, 'transition is passed to activate hook');
@@ -910,9 +899,7 @@ moduleFor(
     }
 
     ['@test `deactivate` event fires on the route'](assert) {
-      assert.expect(4);
-
-      let eventFired = 0;
+      assert.expect(2);
 
       this.router.map(function () {
         this.route('nork');
@@ -922,15 +909,6 @@ moduleFor(
       this.add(
         'route:nork',
         class extends Route {
-          init() {
-            super.init(...arguments);
-
-            this.on('deactivate', function (transition) {
-              assert.equal(++eventFired, 1, 'deactivate event is fired once');
-              assert.ok(transition, 'transition is passed');
-            });
-          }
-
           deactivate(transition) {
             assert.ok(true, 'deactivate hook is called');
             assert.ok(transition, 'transition is passed');

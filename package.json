@@ -267,7 +267,6 @@
       "@ember/object/compat.js": "ember-source/@ember/object/compat.js",
       "@ember/object/computed.js": "ember-source/@ember/object/computed.js",
       "@ember/object/core.js": "ember-source/@ember/object/core.js",
-      "@ember/object/evented.js": "ember-source/@ember/object/evented.js",
       "@ember/object/events.js": "ember-source/@ember/object/events.js",
       "@ember/object/index.js": "ember-source/@ember/object/index.js",
       "@ember/object/internals.js": "ember-source/@ember/object/internals.js",

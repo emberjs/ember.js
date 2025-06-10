@@ -14,7 +14,6 @@ import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
-import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
 import EmberObject, { set, get, computed, observer } from '@ember/object';
 import { A as emberA } from '@ember/array';
@@ -3157,52 +3156,6 @@ moduleFor(
       this.render(`{{foo-bar foo=this.foo bar=this.bar}}`, { foo: 1, bar: 3 });
 
       runTask(() => set(this.context, 'foo', 5));
-    }
-
-    ['@test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)'](
-      assert
-    ) {
-      assert.expect(3);
-
-      let payload = ['arbitrary', 'event', 'data'];
-
-      this.registerComponent('evented-component', {
-        ComponentClass: Component.extend({
-          someTruthyProperty: true,
-
-          init() {
-            this._super(...arguments);
-            this.trigger('someMethod', ...payload);
-            this.trigger('someTruthyProperty', ...payload);
-          },
-
-          someMethod(...data) {
-            assert.deepEqual(
-              data,
-              payload,
-              'the method `someMethod` should be called, when `someMethod` is triggered'
-            );
-          },
-
-          listenerForSomeMethod: on('someMethod', function (...data) {
-            assert.deepEqual(
-              data,
-              payload,
-              'the listener `listenerForSomeMethod` should be called, when `someMethod` is triggered'
-            );
-          }),
-
-          listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
-            assert.deepEqual(
-              data,
-              payload,
-              'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered'
-            );
-          }),
-        }),
-      });
-
-      this.render(`{{evented-component}}`);
     }
 
     ['@test component yielding in an {{#each}} has correct block values after rerendering (GH#14284)']() {

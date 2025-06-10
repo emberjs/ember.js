@@ -1,7 +1,6 @@
 import EmberObject, { computed, observer } from '@ember/object';
 import {
   defineProperty,
-  on,
   addObserver,
   removeObserver,
   addListener,
@@ -276,6 +275,7 @@ moduleFor(
       SubEmberObject.metaForProperty('foo');
     }
 
+    // TODO: Revisit this
     '@test observes / removeObserver on / removeListener interop'(assert) {
       let fooDidChangeBase = 0;
       let fooDidChangeA = 0;
@@ -288,9 +288,9 @@ moduleFor(
           fooDidChangeBase++;
         }),
 
-        onSomeEvent: on('someEvent', function () {
+        onSomeEvent() {
           someEventBase++;
-        }),
+        },
       }) {
         init() {
           super.init();
@@ -340,11 +340,6 @@ moduleFor(
         assert.equal(fooDidChangeA, 1);
         assert.equal(fooDidChangeB, 0);
 
-        sendEvent(a, 'someEvent');
-        assert.equal(someEventBase, 1);
-        assert.equal(someEventA, 1);
-        assert.equal(someEventB, 0);
-
         let b = B.create();
         b.set('foo', 'something');
         await runLoopSettled();
@@ -352,11 +347,6 @@ moduleFor(
         assert.equal(fooDidChangeBase, 1);
         assert.equal(fooDidChangeA, 1);
         assert.equal(fooDidChangeB, 0);
-
-        sendEvent(b, 'someEvent');
-        assert.equal(someEventBase, 1);
-        assert.equal(someEventA, 1);
-        assert.equal(someEventB, 0);
 
         a.destroy();
         b.destroy();
