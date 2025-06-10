@@ -2,12 +2,6 @@ import type Owner from '@ember/owner';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
-const top = (<T>(x?: T): T => x!)();
-type Top = typeof top;
-declare function expectTypeNativeArrayTop(x: Ember.NativeArray<Top>): void;
-// A
-expectTypeNativeArrayTop(Ember.A());
-expectTypeOf(Ember.A([1, 2])).toEqualTypeOf<Ember.NativeArray<number>>();
 // addListener
 Ember.addListener({ a: 'foo' }, 'event', {}, () => {});
 Ember.addListener({ a: 'foo' }, 'event', {}, 'a');
@@ -105,7 +99,6 @@ expectTypeOf(Ember.setProperties(O2.create(), { name: 'bar' }).name).toEqualType
 expectTypeOf(Ember.trySet(O2, 'nam', '')).toEqualTypeOf<string | undefined>();
 // typeOf
 expectTypeOf(Ember.typeOf('')).toBeString();
-expectTypeOf(Ember.typeOf(Ember.A())).toBeString();
 // warn
 Ember.warn('be caseful!');
 Ember.warn('be caseful!', { id: 'some-warning' });
@@ -128,10 +121,6 @@ expectTypeOf(Ember.Application.create()).toEqualTypeOf<Ember.Application>();
 // Ember.ApplicationInstance
 expectTypeOf(new Ember.ApplicationInstance()).toEqualTypeOf<Ember.ApplicationInstance>();
 expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.ApplicationInstance>();
-// Ember.Array
-const a1: Ember.NativeArray<string> = Ember.A([]);
-// @ts-expect-error
-const a2: Ember.Array<string> = {};
 // Ember.Component
 const C1 = Ember.Component.extend({ classNames: ['foo'] });
 class C2 extends Ember.Component {
@@ -198,28 +187,8 @@ class UsesMixin extends Ember.Object {
     expectTypeOf(this.foo).toBeString();
   }
 }
-// Ember.MutableArray
-const ma1: Ember.NativeArray<string> = Ember.A(['money', 'in', 'the', 'bananna', 'stand']);
-expectTypeOf(ma1.addObject('!')).toMatchTypeOf(ma1);
-// TODO: Ideally we'd mark the value as being invalid
-ma1.filterBy('');
-expectTypeOf(ma1.firstObject).toEqualTypeOf<string | undefined>();
-expectTypeOf(ma1.lastObject).toEqualTypeOf<string | undefined>();
-const ma2: Ember.NativeArray<{ name: string }> = Ember.A([
-  { name: 'chris' },
-  { name: 'dan' },
-  { name: 'james' },
-]);
-expectTypeOf(ma2.filterBy('name', 'chris')).toEqualTypeOf<Ember.NativeArray<{ name: string }>>();
-// Ember.MutableEnumerable
-const me1 = Ember.A(['foo', undefined, null]);
-expectTypeOf(me1.compact()).toEqualTypeOf<Ember.NativeArray<string>>();
 // Ember.Namespace
 const myNs = Ember.Namespace.extend({});
-// Ember.NativeArray
-const na: Ember.NativeArray<number> = Ember.A([2, 3, 4]);
-expectTypeOf(na).toEqualTypeOf<Ember.NativeArray<number>>();
-expectTypeOf(na.clear()).toEqualTypeOf<Ember.NativeArray<number>>();
 // Ember.NoneLocation
 expectTypeOf(new Ember.NoneLocation()).toEqualTypeOf<Ember.NoneLocation>();
 // Ember.Object

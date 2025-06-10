@@ -2,7 +2,7 @@ import { computed, isElementDescriptor, alias, expandProperties } from '@ember/-
 import { get, set } from '@ember/object';
 import type { DeprecationOptions } from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
-import { isEmpty, isNone } from '@ember/utils';
+import { isNone } from '@ember/utils';
 
 /**
 @module @ember/object
@@ -55,101 +55,6 @@ function generateComputedWithPredicate(name: string, predicate: (value: unknown)
 
     return computedFunc;
   };
-}
-
-/**
-  A computed property macro that returns true if the value of the dependent
-  property is null, an empty string, empty array, or empty function.
-
-  Example:
-
-  ```javascript
-  import { set } from '@ember/object';
-  import { empty } from '@ember/object/computed';
-
-  class ToDoList {
-    constructor(todos) {
-      set(this, 'todos', todos);
-    }
-
-    @empty('todos') isDone;
-  }
-
-  let todoList = new ToDoList(
-    ['Unit Test', 'Documentation', 'Release']
-  );
-
-  todoList.isDone; // false
-  set(todoList, 'todos', []);
-  todoList.isDone; // true
-  ```
-
-  @since 1.6.0
-  @method empty
-  @static
-  @for @ember/object/computed
-  @param {String} dependentKey
-  @return {ComputedProperty} computed property which returns true if the value
-  of the dependent property is null, an empty string, empty array, or empty
-  function and false if the underlying value is not empty.
-
-  @public
-*/
-export function empty(dependentKey: string) {
-  assert(
-    'You attempted to use @empty as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
-  );
-
-  return computed(`${dependentKey}.length`, function () {
-    return isEmpty(get(this, dependentKey));
-  });
-}
-
-/**
-  A computed property that returns true if the value of the dependent property
-  is NOT null, an empty string, empty array, or empty function.
-
-  Example:
-
-  ```javascript
-  import { set } from '@ember/object';
-  import { notEmpty } from '@ember/object/computed';
-
-  class Hamster {
-    constructor(backpack) {
-      set(this, 'backpack', backpack);
-    }
-
-    @notEmpty('backpack') hasStuff
-  }
-
-  let hamster = new Hamster(
-    ['Food', 'Sleeping Bag', 'Tent']
-  );
-
-  hamster.hasStuff; // true
-  set(hamster, 'backpack', []);
-  hamster.hasStuff; // false
-  ```
-
-  @method notEmpty
-  @static
-  @for @ember/object/computed
-  @param {String} dependentKey
-  @return {ComputedProperty} computed property which returns true if original
-  value for property is not empty.
-  @public
-*/
-export function notEmpty(dependentKey: string) {
-  assert(
-    'You attempted to use @notEmpty as a decorator directly, but it requires a `dependentKey` parameter',
-    !isElementDescriptor(Array.prototype.slice.call(arguments))
-  );
-
-  return computed(`${dependentKey}.length`, function () {
-    return !isEmpty(get(this, dependentKey));
-  });
 }
 
 /**

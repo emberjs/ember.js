@@ -230,6 +230,7 @@ export function exposedDependencies() {
       '@glimmer/runtime',
       '@glimmer/validator',
     ]),
+    'tracked-built-ins': require.resolve('tracked-built-ins/index'),
   };
 }
 
@@ -250,6 +251,10 @@ export function hiddenDependencies() {
       findFromProject('decorator-transforms').root,
       'dist/runtime.js'
     ),
+    'ember-tracked-storage-polyfill': entrypoint(
+      findFromProject('ember-tracked-storage-polyfill'),
+      'module'
+    ).path,
   };
 }
 

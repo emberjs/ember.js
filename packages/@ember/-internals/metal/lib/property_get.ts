@@ -2,7 +2,6 @@
 @module @ember/object
 */
 import { symbol } from '@ember/-internals/utils';
-import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, isTracking, tagFor, track } from '@glimmer/validator';
@@ -127,7 +126,7 @@ export function _getProp(obj: unknown, keyName: string) {
     if (isTracking()) {
       consumeTag(tagFor(obj, keyName));
 
-      if (Array.isArray(value) || isEmberArray(value)) {
+      if (Array.isArray(value)) {
         // Add the tag of the returned value if it is an array, since arrays
         // should always cause updates if they are consumed and then changed
         consumeTag(tagFor(value, '[]'));

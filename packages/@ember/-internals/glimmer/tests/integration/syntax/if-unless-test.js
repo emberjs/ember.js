@@ -1,6 +1,5 @@
 import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
-import { A as emberA } from '@ember/array';
 import { set } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
@@ -60,7 +59,7 @@ moduleFor(
       {{else}}
         Nothing Here!
       {{/if}}`,
-        { cond: true, numbers: emberA([1, 2, 3]) }
+        { cond: true, numbers: [1, 2, 3] }
       );
 
       this.assertText('123');

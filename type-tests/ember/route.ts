@@ -31,8 +31,8 @@ class Test extends Route {
   }
 
   afterModel(posts: Posts, transition: Transition) {
-    if (posts.firstObject) {
-      this.router.transitionTo('post.show', posts.firstObject);
+    if (posts[0]) {
+      this.router.transitionTo('post.show', posts[0]);
     }
   }
 

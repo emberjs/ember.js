@@ -122,17 +122,11 @@ d('@ember/application/lib/lazy_load', emberApplicationLibLazyLoad);
 import * as emberApplicationNamespace from '@ember/application/namespace';
 d('@ember/application/namespace', emberApplicationNamespace);
 
-import * as emberArrayinternals from '@ember/array/-internals';
-d('@ember/array/-internals', emberArrayinternals);
-
 import * as emberArrayIndex from '@ember/array/index';
 d('@ember/array/index', emberArrayIndex);
 
 import * as emberArrayLibMakeArray from '@ember/array/lib/make-array';
 d('@ember/array/lib/make-array', emberArrayLibMakeArray);
-
-import * as emberArrayMutable from '@ember/array/mutable';
-d('@ember/array/mutable', emberArrayMutable);
 
 import * as emberCanaryFeaturesIndex from '@ember/canary-features/index';
 d('@ember/canary-features/index', emberCanaryFeaturesIndex);
@@ -229,9 +223,6 @@ d('@ember/object/internals', emberObjectInternals);
 
 import * as emberObjectLibComputedComputedMacros from '@ember/object/lib/computed/computed_macros';
 d('@ember/object/lib/computed/computed_macros', emberObjectLibComputedComputedMacros);
-
-import * as emberObjectLibComputedReduceComputedMacros from '@ember/object/lib/computed/reduce_computed_macros';
-d('@ember/object/lib/computed/reduce_computed_macros', emberObjectLibComputedReduceComputedMacros);
 
 import * as emberObjectMixin from '@ember/object/mixin';
 d('@ember/object/mixin', emberObjectMixin);

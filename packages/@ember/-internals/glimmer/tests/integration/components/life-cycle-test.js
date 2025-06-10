@@ -2,10 +2,10 @@ import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { tracked } from 'tracked-built-ins';
 
 class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {
@@ -1433,7 +1433,7 @@ moduleFor(
         template: NestedTemplate,
       });
 
-      let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
+      let array = tracked([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
       this.render(
         strip`
@@ -1456,8 +1456,8 @@ moduleFor(
       this.assertText('1AB2AB3AB4AB5AB6AB7AB');
 
       runTask(() => {
-        array.removeAt(2);
-        array.removeAt(2);
+        array.splice(2, 1);
+        array.splice(2, 1);
         set(this.context, 'model.shouldShow', false);
       });
 

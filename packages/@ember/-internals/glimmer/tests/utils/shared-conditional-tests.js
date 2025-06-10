@@ -5,9 +5,10 @@ import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
-import { A as emberA, removeAt } from '@ember/array';
+import { removeAt } from '@ember/array';
 
 import { Component } from './helpers';
+import { tracked } from 'tracked-built-ins';
 
 class AbstractConditionalsTest extends RenderingTestCase {
   get truthyValue() {
@@ -194,7 +195,7 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
 // Testing behaviors related to arrays and array proxies
 export const ArrayTestCases = {
   ['@test it considers empty arrays falsy']() {
-    this.renderValues(emberA(['hello']), emberA());
+    this.renderValues(tracked(['hello']), tracked([]));
 
     this.assertText('T1F2');
 
@@ -207,15 +208,15 @@ export const ArrayTestCases = {
     this.assertText('F1F2');
 
     runTask(() => {
-      get(this.context, 'cond1').pushObject('hello');
-      get(this.context, 'cond2').pushObjects([1]);
+      get(this.context, 'cond1').push('hello');
+      get(this.context, 'cond2').push(1);
     });
 
     this.assertText('T1T2');
 
     runTask(() => {
-      set(this.context, 'cond1', emberA(['hello']));
-      set(this.context, 'cond2', emberA());
+      set(this.context, 'cond1', ['hello']);
+      set(this.context, 'cond2', []);
     });
 
     this.assertText('T1F2');
@@ -232,7 +233,6 @@ const IfUnlessWithTestCases = [
     'undefined',
     1,
     ['hello'],
-    emberA(['hello']),
     {},
     { foo: 'bar' },
     EmberObject.create(),
@@ -248,7 +248,7 @@ const IfUnlessWithTestCases = [
     htmlSafe(' '),
   ]),
 
-  new StableFalsyGenerator([false, null, undefined, '', 0, [], emberA(), htmlSafe('')]),
+  new StableFalsyGenerator([false, null, undefined, '', 0, [], htmlSafe('')]),
 
   ArrayTestCases,
 ];

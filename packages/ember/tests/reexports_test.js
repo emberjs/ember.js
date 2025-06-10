@@ -58,8 +58,6 @@ moduleFor('ember reexports', ReExportTests);
 import * as test0 from '@ember/application';
 import * as test1 from '@ember/application/instance';
 import * as test2 from '@ember/application/namespace';
-import * as test3 from '@ember/array';
-import * as test4 from '@ember/array/mutable';
 import * as test6 from '@ember/canary-features';
 import * as test7 from '@ember/component';
 import * as test8 from '@ember/component/helper';
@@ -122,12 +120,6 @@ let allExports = [
   ['setOwner', '@ember/application', 'setOwner', test0],
   ['ApplicationInstance', '@ember/application/instance', 'default', test1],
   ['Namespace', '@ember/application/namespace', 'default', test2],
-  ['Array', '@ember/array', 'default', test3],
-  ['A', '@ember/array', 'A', test3],
-  ['NativeArray', '@ember/array', 'NativeArray', test3],
-  ['isArray', '@ember/array', 'isArray', test3],
-  ['makeArray', '@ember/array', 'makeArray', test3],
-  ['MutableArray', '@ember/array/mutable', 'default', test4],
   ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled', test6],
   ['Component', '@ember/component', 'default', test7],
   ['_componentManagerCapabilities', '@ember/component', 'capabilities', test7],

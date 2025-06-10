@@ -61,13 +61,7 @@ import EmberContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import EmberDataAdapter from '@ember/debug/data-adapter';
 import { run as emberRun } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
-import EmberArray, {
-  A as EmberA,
-  NativeArray as EmberNativeArray,
-  isArray as emberIsArray,
-  makeArray as emberMakeArray,
-} from '@ember/array';
-import EmberMutableArray from '@ember/array/mutable';
+import { isArray as emberIsArray, makeArray as emberMakeArray } from '@ember/array';
 import EmberApplication, {
   getOwner as applicationGetOwner,
   setOwner as applicationSetOwner,
@@ -206,17 +200,8 @@ namespace Ember {
   export type Namespace = EmberNamespace;
 
   // ****@ember/array****
-  export const A = EmberA;
-  export const Array = EmberArray;
-  export type Array<T> = EmberArray<T>;
-  export const NativeArray = EmberNativeArray;
-  export type NativeArray<T> = EmberNativeArray<T>;
   export const isArray = emberIsArray;
   export const makeArray = emberMakeArray;
-
-  // ****@ember/array/mutable****
-  export const MutableArray = EmberMutableArray;
-  export type MutableArray<T> = EmberMutableArray<T>;
 
   // ****@ember/canary-features****
   export const FEATURES = { isEnabled, ...EmberFEATURES };

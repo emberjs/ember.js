@@ -9,7 +9,6 @@ import type Owner from '@ember/owner';
 import { getOwner } from '@ember/-internals/owner';
 import type { default as BucketCache } from './lib/cache';
 import EmberObject, { computed, get, set, getProperties, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/utils';
 import { lookupDescriptor } from '@ember/-internals/utils';
 import type { AnyFn } from '@ember/-internals/utility-types';
@@ -1884,7 +1883,7 @@ function getQueryParamsFor(route: Route, state: RouteTransitionState): Record<st
 function copyDefaultValue<T>(value: T): T {
   if (Array.isArray(value)) {
     // SAFETY: We lost the type data about the array if we don't cast.
-    return emberA(value.slice()) as unknown as T;
+    return value.slice() as T;
   }
   return value;
 }
@@ -1946,6 +1945,7 @@ function mergeEachQueryParams(
 
 function addQueryParamsObservers(controller: any, propNames: string[]) {
   propNames.forEach((prop) => {
+    // TODO: Handle the case where it has a descriptor (such as tracked or computed)
     if (descriptorForProperty(controller, prop) === undefined) {
       let desc = lookupDescriptor(controller, prop);
 
@@ -1958,10 +1958,55 @@ function addQueryParamsObservers(controller: any, propNames: string[]) {
             set: desc.set,
           })
         );
+      } else {
+        const current = controller[prop];
+        controller[`___${prop}`] = current;
+        defineProperty(
+          controller,
+          prop,
+          dependentKeyCompat({
+            get: () => {
+              if (Array.isArray(controller[`___${prop}`])) {
+                return new Proxy(controller[`___${prop}`], {
+                  get: (target, key, receiver) => {
+                    if (
+                      [
+                        'copyWithin',
+                        'fill',
+                        'pop',
+                        'push',
+                        'reverse',
+                        'shift',
+                        'sort',
+                        'splice',
+                        'unshift',
+                      ].includes(key as string)
+                    ) {
+                      let original = target[key];
+                      return (...args: any[]) => {
+                        let result = original.apply(target, args);
+                        controller._qpChanged(controller, `${prop}.[]`);
+                        return result;
+                      };
+                    }
+                    return Reflect.get(target, key, receiver);
+                  },
+                  getPrototypeOf() {
+                    return Array.prototype;
+                  },
+                });
+              }
+              return controller[`___${prop}`];
+            },
+            set: (value) => {
+              controller[`___${prop}`] = value;
+            },
+          })
+        );
       }
     }
 
-    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
+    addObserver(controller, prop, controller, controller._qpChanged, false);
   });
 }
 

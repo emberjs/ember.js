@@ -1,12 +1,8 @@
-import { objectAt } from '@ember/-internals/metal';
-import type EmberArray from '@ember/array';
-import { isEmberArray } from '@ember/array/-internals';
 import { isObject } from '@ember/-internals/utils';
 import type { Nullable } from '@ember/-internals/utility-types';
 import type { IteratorDelegate } from '@glimmer/reference';
 import { consumeTag, isTracking, tagFor } from '@glimmer/validator';
 import { EachInWrapper } from '../helpers/each-in';
-import type { NativeArray } from '@ember/array';
 
 export default function toIterator(iterable: unknown): Nullable<IteratorDelegate> {
   if (iterable instanceof EachInWrapper) {
@@ -21,7 +17,7 @@ function toEachInIterator(iterable: unknown) {
     return null;
   }
 
-  if (Array.isArray(iterable) || isEmberArray(iterable)) {
+  if (Array.isArray(iterable)) {
     return ObjectIterator.fromIndexable(iterable);
   } else if (isNativeIterable(iterable)) {
     return MapLikeNativeIterator.from(iterable as Iterable<[unknown, unknown]>);
@@ -39,8 +35,6 @@ function toEachIterator(iterable: unknown) {
 
   if (Array.isArray(iterable)) {
     return ArrayIterator.from(iterable);
-  } else if (isEmberArray(iterable)) {
-    return EmberArrayIterator.from(iterable);
   } else if (isNativeIterable(iterable)) {
     return ArrayLikeNativeIterator.from(iterable);
   } else if (hasForEach(iterable)) {
@@ -98,20 +92,6 @@ class ArrayIterator extends BoundedIterator {
 
   valueFor(position: number): unknown {
     return this.array[position];
-  }
-}
-
-class EmberArrayIterator extends BoundedIterator {
-  static from(iterable: EmberArray<unknown> | NativeArray<unknown>) {
-    return iterable.length > 0 ? new this(iterable) : null;
-  }
-
-  constructor(private array: EmberArray<unknown> | NativeArray<unknown>) {
-    super(array.length);
-  }
-
-  valueFor(position: number): unknown {
-    return objectAt(this.array as any, position);
   }
 }
 

@@ -99,12 +99,14 @@
     "ember-cli-typescript-blueprint-polyfill": "^0.1.0",
     "ember-cli-version-checker": "^5.1.2",
     "ember-router-generator": "^2.0.0",
+    "ember-tracked-storage-polyfill": "^1.0.0",
     "inflection": "^2.0.1",
     "route-recognizer": "^0.3.4",
     "router_js": "^8.0.5",
     "semver": "^7.5.2",
     "silent-error": "^1.1.1",
-    "simple-html-tokenizer": "^0.5.11"
+    "simple-html-tokenizer": "^0.5.11",
+    "tracked-built-ins": "^4.0.0"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.731.0",
@@ -221,11 +223,9 @@
       "@ember/application/instance.js": "ember-source/@ember/application/instance.js",
       "@ember/application/lib/lazy_load.js": "ember-source/@ember/application/lib/lazy_load.js",
       "@ember/application/namespace.js": "ember-source/@ember/application/namespace.js",
-      "@ember/array/-internals.js": "ember-source/@ember/array/-internals.js",
       "@ember/array/index.js": "ember-source/@ember/array/index.js",
       "@ember/array/lib/make-array.js": "ember-source/@ember/array/lib/make-array.js",
       "@ember/array/make.js": "ember-source/@ember/array/make.js",
-      "@ember/array/mutable.js": "ember-source/@ember/array/mutable.js",
       "@ember/canary-features/index.js": "ember-source/@ember/canary-features/index.js",
       "@ember/component/helper.js": "ember-source/@ember/component/helper.js",
       "@ember/component/index.js": "ember-source/@ember/component/index.js",
@@ -373,7 +373,8 @@
       "ember/version.js": "ember-source/ember/version.js",
       "route-recognizer/index.js": "ember-source/route-recognizer/index.js",
       "router_js/index.js": "ember-source/router_js/index.js",
-      "rsvp/index.js": "ember-source/rsvp/index.js"
+      "rsvp/index.js": "ember-source/rsvp/index.js",
+      "tracked-built-ins/index.js": "ember-source/tracked-built-ins/index.js"
     }
   },
   "typesVersions": {
