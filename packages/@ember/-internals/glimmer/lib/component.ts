@@ -1,12 +1,16 @@
 import type { View } from '@ember/-internals/glimmer/lib/renderer';
-import { get, nativeDescDecorator, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
+import {
+  descriptorForProperty,
+  get,
+  nativeDescDecorator,
+  PROPERTY_DID_CHANGE,
+} from '@ember/-internals/metal';
 import type { PropertyDidChange } from '@ember/-internals/metal/lib/property_events';
 import { getOwner } from '@ember/-internals/owner';
 import { TargetActionSupport } from '@ember/-internals/runtime';
 import {
   ActionSupport,
   addChildView,
-  ClassNamesSupport,
   CoreView,
   EventDispatcher,
   getChildViews,
@@ -33,6 +37,8 @@ import {
 
 // Keep track of which component classes have already been processed for lazy event setup.
 let lazyEventsProcessed = new WeakMap<EventDispatcher, WeakSet<object>>();
+
+const EMPTY_ARRAY = Object.freeze([]);
 
 /**
 @module @ember/component
@@ -767,7 +773,6 @@ declare const SIGNATURE: unique symbol;
   @class Component
   @extends Ember.CoreView
   @uses Ember.TargetActionSupport
-  @uses Ember.ClassNamesSupport
   @uses Ember.ActionSupport
   @uses Ember.ViewMixin
   @uses Ember.ViewStateSupport
@@ -778,7 +783,6 @@ declare const SIGNATURE: unique symbol;
 interface Component<S = unknown>
   extends CoreView,
     ViewStateSupport,
-    ClassNamesSupport,
     TargetActionSupport,
     ActionSupport,
     ViewMixin,
@@ -787,7 +791,6 @@ interface Component<S = unknown>
 class Component<S = unknown>
   extends CoreView.extend(
     ViewStateSupport,
-    ClassNamesSupport,
     TargetActionSupport,
     ActionSupport,
     ViewMixin,
@@ -800,7 +803,12 @@ class Component<S = unknown>
       didUpdateAttrs() {},
       willRender() {},
       willUpdate() {},
-    } as ComponentMethods
+    } as ComponentMethods,
+    {
+      concatenatedProperties: ['classNames', 'classNameBindings'],
+      classNames: EMPTY_ARRAY,
+      classNameBindings: EMPTY_ARRAY,
+    }
   )
   implements PropertyDidChange
 {
@@ -815,6 +823,77 @@ class Component<S = unknown>
 
   declare [IS_DISPATCHING_ATTRS]: boolean;
   declare [DIRTY_TAG]: DirtyableTag;
+
+  /**
+    Standard CSS class names to apply to the view's outer element. This
+    property automatically inherits any class names defined by the view's
+    superclasses as well.
+
+    @property classNames
+    @type Array
+    @default ['ember-view']
+    @public
+  */
+  declare classNames: string[];
+
+  /**
+    A list of properties of the view to apply as class names. If the property
+    is a string value, the value of that string will be applied as a class
+    name.
+
+    ```javascript
+    // Applies the 'high' class to the view element
+    import Component from '@ember/component';
+    Component.extend({
+      classNameBindings: ['priority'],
+      priority: 'high'
+    });
+    ```
+
+    If the value of the property is a Boolean, the name of that property is
+    added as a dasherized class name.
+
+    ```javascript
+    // Applies the 'is-urgent' class to the view element
+    import Component from '@ember/component';
+    Component.extend({
+      classNameBindings: ['isUrgent'],
+      isUrgent: true
+    });
+    ```
+
+    If you would prefer to use a custom value instead of the dasherized
+    property name, you can pass a binding like this:
+
+    ```javascript
+    // Applies the 'urgent' class to the view element
+    import Component from '@ember/component';
+    Component.extend({
+      classNameBindings: ['isUrgent:urgent'],
+      isUrgent: true
+    });
+    ```
+
+    If you would like to specify a class that should only be added when the
+    property is false, you can declare a binding like this:
+
+    ```javascript
+    // Applies the 'disabled' class to the view element
+    import Component from '@ember/component';
+    Component.extend({
+      classNameBindings: ['isEnabled::disabled'],
+      isEnabled: false
+    });
+    ```
+
+    This list of properties is inherited from the component's superclasses as well.
+
+    @property classNameBindings
+    @type Array
+    @default []
+    @public
+  */
+  declare classNameBindings: string[];
 
   init(properties?: object | undefined) {
     super.init(properties);
@@ -869,6 +948,16 @@ class Component<S = unknown>
         !eventNames.length
       );
     }
+
+    assert(
+      `Only arrays are allowed for 'classNameBindings'`,
+      descriptorForProperty(this, 'classNameBindings') === undefined &&
+        Array.isArray(this.classNameBindings)
+    );
+    assert(
+      `Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`,
+      descriptorForProperty(this, 'classNames') === undefined && Array.isArray(this.classNames)
+    );
   }
 
   __dispatcher?: EventDispatcher | null;
