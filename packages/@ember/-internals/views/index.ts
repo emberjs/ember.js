@@ -18,7 +18,6 @@ export {
 export { default as EventDispatcher } from './lib/system/event_dispatcher';
 export { default as ComponentLookup } from './lib/component_lookup';
 export { default as CoreView } from './lib/views/core_view';
-export { default as ClassNamesSupport } from './lib/mixins/class_names_support';
 export { default as ViewStateSupport } from './lib/mixins/view_state_support';
 export { default as ViewMixin } from './lib/mixins/view_support';
 export { default as ActionSupport } from './lib/mixins/action_support';
