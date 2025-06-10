@@ -1101,12 +1101,13 @@ moduleFor(
   class extends EachTest {
     createList(items) {
       let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        arrangedContent: computed('wrappedItems.[]', function () {
+      let proxy = class extends ArrayProxy {
+        @computed('wrappedItems.[]')
+        get arrangedContent() {
           // Slice the items to ensure that updates must be propogated
           return this.wrappedItems.slice();
-        }),
-      }).create({
+        }
+      }.create({
         wrappedItems: wrapped,
       });
 

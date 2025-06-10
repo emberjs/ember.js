@@ -95,13 +95,13 @@ moduleFor(
     async [`@test inheriting an observer of the alias from the prototype then
     redefining the alias on the instance to another property dependent on same key
     does not call the observer twice`](assert) {
-      let obj1 = EmberObject.extend({
-        foo: null,
-        bar: alias('foo'),
-        baz: alias('foo'),
+      let obj1 = class extends EmberObject {
+        foo = null;
+        @alias('foo') bar;
+        @alias('foo') baz;
 
-        incrementCount,
-      });
+        incrementCount = incrementCount;
+      };
 
       addObserver(obj1.prototype, 'baz', null, 'incrementCount');
 

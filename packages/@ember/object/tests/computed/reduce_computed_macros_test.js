@@ -33,12 +33,15 @@ moduleFor(
   'map',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        mapped: map('array.@each.v', (item) => item.v),
-        mappedObjects: map('arrayObjects.@each.v', (item) => ({
+      obj = class extends EmberObject {
+        @map('array.@each.v', (item) => item.v)
+        mapped;
+
+        @map('arrayObjects.@each.v', (item) => ({
           name: item.v.name,
-        })),
-      }).create({
+        }))
+        mappedObjects;
+      }.create({
         arrayObjects: emberA([{ v: { name: 'Robert' } }, { v: { name: 'Leanna' } }]),
 
         array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
@@ -70,9 +73,10 @@ moduleFor(
     ['@test it maps simple unshifted properties'](assert) {
       let array = emberA();
 
-      obj = EmberObject.extend({
-        mapped: map('array', (item) => item.toUpperCase()),
-      }).create({
+      obj = class extends EmberObject {
+        @map('array', (item) => item.toUpperCase())
+        mapped;
+      }.create({
         array,
       });
 
@@ -90,15 +94,17 @@ moduleFor(
     }
 
     ['@test it has the correct `this`'](assert) {
-      obj = EmberObject.extend({
-        mapped: map('array', function (item) {
+      obj = class extends EmberObject {
+        @map('array', function (item) {
           assert.equal(this, obj, 'should have correct context');
           return this.upperCase(item);
-        }),
+        })
+        mapped;
+
         upperCase(string) {
           return string.toUpperCase();
-        },
-      }).create({
+        }
+      }.create({
         array: ['a', 'b', 'c'],
       });
 
@@ -112,9 +118,10 @@ moduleFor(
     ['@test it passes the index to the callback'](assert) {
       let array = ['a', 'b', 'c'];
 
-      obj = EmberObject.extend({
-        mapped: map('array', (item, index) => index),
-      }).create({
+      obj = class extends EmberObject {
+        @map('array', (item, index) => index)
+        mapped;
+      }.create({
         array,
       });
 
@@ -147,9 +154,10 @@ moduleFor(
       let array = emberA();
       let cObj = { v: 'c' };
 
-      obj = EmberObject.extend({
-        mapped: map('array.@each.v', (item) => get(item, 'v').toUpperCase()),
-      }).create({
+      obj = class extends EmberObject {
+        @map('array.@each.v', (item) => get(item, 'v').toUpperCase())
+        mapped;
+      }.create({
         array,
       });
 
@@ -168,11 +176,12 @@ moduleFor(
     }
 
     ['@test it updates if additional dependent keys are modified'](assert) {
-      obj = EmberObject.extend({
-        mapped: map('array', ['key'], function (item) {
+      obj = class extends EmberObject {
+        @map('array', ['key'], function (item) {
           return item[this.key];
-        }),
-      }).create({
+        })
+        mapped;
+      }.create({
         key: 'name',
         array: emberA([{ name: 'Cercei', house: 'Lannister' }]),
       });
@@ -215,9 +224,10 @@ moduleFor(
   'mapBy',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        mapped: mapBy('array', 'v'),
-      }).create({
+      obj = class extends EmberObject {
+        @mapBy('array', 'v')
+        mapped;
+      }.create({
         array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
       });
     }
@@ -263,9 +273,10 @@ moduleFor(
   'filter',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        filtered: filter('array', (item) => item % 2 === 0),
-      }).create({
+      obj = class extends EmberObject {
+        @filter('array', (item) => item % 2 === 0)
+        filtered;
+      }.create({
         array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
       });
     }
@@ -289,9 +300,10 @@ moduleFor(
     }
 
     ['@test it passes the index to the callback'](assert) {
-      obj = EmberObject.extend({
-        filtered: filter('array', (item, index) => index === 1),
-      }).create({
+      obj = class extends EmberObject {
+        @filter('array', (item, index) => index === 1)
+        filtered;
+      }.create({
         array: ['a', 'b', 'c'],
       });
 
@@ -299,15 +311,17 @@ moduleFor(
     }
 
     ['@test it has the correct `this`'](assert) {
-      obj = EmberObject.extend({
-        filtered: filter('array', function (item, index) {
+      obj = class extends EmberObject {
+        @filter('array', function (item, index) {
           assert.equal(this, obj);
           return this.isOne(index);
-        }),
+        })
+        filtered;
+
         isOne(value) {
           return value === 1;
-        },
-      }).create({
+        }
+      }.create({
         array: ['a', 'b', 'c'],
       });
 
@@ -315,9 +329,10 @@ moduleFor(
     }
 
     ['@test it passes the array to the callback'](assert) {
-      obj = EmberObject.extend({
-        filtered: filter('array', (item, index, array) => index === get(array, 'length') - 2),
-      }).create({
+      obj = class extends EmberObject {
+        @filter('array', (item, index, array) => index === get(array, 'length') - 2)
+        filtered;
+      }.create({
         array: emberA(['a', 'b', 'c']),
       });
 
@@ -424,11 +439,10 @@ moduleFor(
     ['@test it updates properly on @each with {} dependencies'](assert) {
       let item = EmberObject.create({ prop: true });
 
-      obj = EmberObject.extend({
-        filtered: filter('items.@each.{prop}', function (item) {
-          return item.get('prop') === true;
-        }),
-      }).create({
+      obj = class extends EmberObject {
+        @filter('items.@each.{prop}', (item) => item.get('prop') === true)
+        filtered;
+      }.create({
         items: emberA([item]),
       });
 
@@ -440,11 +454,12 @@ moduleFor(
     }
 
     ['@test it updates if additional dependent keys are modified'](assert) {
-      obj = EmberObject.extend({
-        filtered: filter('array', ['modulo'], function (item) {
+      obj = class extends EmberObject {
+        @filter('array', ['modulo'], function (item) {
           return item % this.modulo === 0;
-        }),
-      }).create({
+        })
+        filtered;
+      }.create({
         modulo: 2,
         array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
       });
@@ -487,11 +502,14 @@ moduleFor(
   'filterBy',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        a1s: filterBy('array', 'a', 1),
-        as: filterBy('array', 'a'),
-        bs: filterBy('array', 'b'),
-      }).create({
+      obj = class extends EmberObject {
+        @filterBy('array', 'a', 1)
+        a1s;
+        @filterBy('array', 'a')
+        as;
+        @filterBy('array', 'b')
+        bs;
+      }.create({
         array: emberA([
           { name: 'one', a: 1, b: false },
           { name: 'two', a: 2, b: false },
@@ -610,10 +628,12 @@ moduleFor(
     }
 
     ['@test properties values can be replaced'](assert) {
-      obj = EmberObject.extend({
-        a1s: filterBy('array', 'a', 1),
-        a1bs: filterBy('a1s', 'b'),
-      }).create({
+      obj = class extends EmberObject {
+        @filterBy('array', 'a', 1)
+        a1s;
+        @filterBy('a1s', 'b')
+        a1bs;
+      }.create({
         array: [],
       });
 
@@ -644,9 +664,10 @@ moduleFor(
     `CP macro \`${name}\``,
     class extends AbstractTestCase {
       beforeEach() {
-        obj = EmberObject.extend({
-          union: macro('array', 'array2', 'array3'),
-        }).create({
+        obj = class extends EmberObject {
+          @macro('array', 'array2', 'array3')
+          union;
+        }.create({
           array: emberA([1, 2, 3, 4, 5, 6]),
           array2: emberA([4, 5, 6, 7, 8, 9, 4, 5, 6, 7, 8, 9]),
           array3: emberA([1, 8, 10]),
@@ -739,10 +760,11 @@ moduleFor(
   'CP Macro `uniqBy`',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        list: null,
-        uniqueById: uniqBy('list', 'id'),
-      }).create({
+      obj = class extends EmberObject {
+        list = null;
+        @uniqBy('list', 'id')
+        uniqueById;
+      }.create({
         list: emberA([
           { id: 1, value: 'one' },
           { id: 2, value: 'two' },
@@ -768,10 +790,11 @@ moduleFor(
     }
 
     ['@test it does not share state among instances'](assert) {
-      let MyObject = EmberObject.extend({
-        list: [],
-        uniqueByName: uniqBy('list', 'name'),
-      });
+      let MyObject = class extends EmberObject {
+        list = [];
+        @uniqBy('list', 'name')
+        uniqueByName;
+      };
       let a = MyObject.create({
         list: [{ name: 'bob' }, { name: 'mitch' }, { name: 'mitch' }],
       });
@@ -811,10 +834,11 @@ moduleFor(
     }
 
     ['@test it returns an empty array when computed on a non-array'](assert) {
-      let MyObject = EmberObject.extend({
-        list: null,
-        uniq: uniqBy('list', 'name'),
-      });
+      let MyObject = class extends EmberObject {
+        list = null;
+        @uniqBy('list', 'name')
+        uniq;
+      };
       let a = MyObject.create({ list: 'not an array' });
 
       assert.deepEqual(a.get('uniq'), []);
@@ -826,9 +850,10 @@ moduleFor(
   'CP Macro `intersect`',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        intersection: intersect('array', 'array2', 'array3'),
-      }).create({
+      obj = class extends EmberObject {
+        @intersect('array', 'array2', 'array3')
+        intersection;
+      }.create({
         array: emberA([1, 2, 3, 4, 5, 6]),
         array2: emberA([3, 3, 3, 4, 5]),
         array3: emberA([3, 5, 6, 7, 8]),
@@ -902,9 +927,10 @@ moduleFor(
   'setDiff',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        diff: setDiff('array', 'array2'),
-      }).create({
+      obj = class extends EmberObject {
+        @setDiff('array', 'array2')
+        diff;
+      }.create({
         array: emberA([1, 2, 3, 4, 5, 6, 7]),
         array2: emberA([3, 4, 5, 10]),
       });
@@ -923,9 +949,11 @@ moduleFor(
     ['@test it asserts if given fewer or more than two dependent properties']() {
       expectAssertion(
         function () {
-          EmberObject.extend({
-            diff: setDiff('array'),
-          }).create({
+          let TestClass = class extends EmberObject {
+            @setDiff('array')
+            diff;
+          };
+          TestClass.create({
             array: emberA([1, 2, 3, 4, 5, 6, 7]),
             array2: emberA([3, 4, 5]),
           });
@@ -936,9 +964,11 @@ moduleFor(
 
       expectAssertion(
         function () {
-          EmberObject.extend({
-            diff: setDiff('array', 'array2', 'array3'),
-          }).create({
+          let TestClass = class extends EmberObject {
+            @setDiff('array', 'array2', 'array3')
+            diff;
+          };
+          TestClass.create({
             array: emberA([1, 2, 3, 4, 5, 6, 7]),
             array2: emberA([3, 4, 5]),
             array3: emberA([7]),
@@ -1511,9 +1541,10 @@ moduleFor(
 
       let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-      return EmberObject.extend({
-        sortedItems: sort('items', 'itemSorting'),
-      }).create({
+      return class extends EmberObject {
+        @sort('items', 'itemSorting')
+        sortedItems;
+      }.create({
         itemSorting,
         items,
       });
@@ -1578,9 +1609,10 @@ moduleFor(
   'sort - sort function',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        sortedItems: sort('items.@each.fname', sortByLnameFname),
-      }).create({
+      obj = class extends EmberObject {
+        @sort('items.@each.fname', sortByLnameFname)
+        sortedItems;
+      }.create({
         items: emberA([
           { fname: 'Jaime', lname: 'Lannister', age: 34 },
           { fname: 'Cersei', lname: 'Lannister', age: 34 },
@@ -1595,15 +1627,16 @@ moduleFor(
     }
 
     ['@test sort has correct `this`'](assert) {
-      let obj = EmberObject.extend({
-        sortedItems: sort('items.@each.fname', function (a, b) {
+      let obj = class extends EmberObject {
+        @sort('items.@each.fname', function (a, b) {
           assert.equal(this, obj, 'expected the object to be `this`');
           return this.sortByLastName(a, b);
-        }),
+        })
+        sortedItems;
         sortByLastName(a, b) {
           return sortByFnameAsc(a, b);
-        },
-      }).create({
+        }
+      }.create({
         items: emberA([
           { fname: 'Jaime', lname: 'Lannister', age: 34 },
           { fname: 'Cersei', lname: 'Lannister', age: 34 },
@@ -1801,11 +1834,12 @@ moduleFor(
     }
 
     ['@test sort updates if additional dependent keys are present'](assert) {
-      obj = EmberObject.extend({
-        sortedItems: sort('items', ['sortFunction'], function () {
+      obj = class extends EmberObject {
+        @sort('items', ['sortFunction'], function () {
           return this.sortFunction(...arguments);
-        }),
-      }).create({
+        })
+        sortedItems;
+      }.create({
         sortFunction: sortByLnameFname,
         items: emberA([
           { fname: 'Jaime', lname: 'Lannister', age: 34 },
@@ -1862,10 +1896,11 @@ moduleFor(
   'sort - stability',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        sortProps: ['count', 'name'],
-        sortedItems: sort('items', 'sortProps'),
-      }).create({
+      obj = class extends EmberObject {
+        sortProps = ['count', 'name'];
+        @sort('items', 'sortProps')
+        sortedItems;
+      }.create({
         items: [
           { name: 'A', count: 1, thing: 4 },
           { name: 'B', count: 1, thing: 3 },
@@ -1894,11 +1929,13 @@ moduleFor(
   'sort - concurrency',
   class extends AbstractTestCase {
     beforeEach() {
-      klass = EmberObject.extend({
-        sortProps: ['count'],
-        sortedItems: sort('items', 'sortProps'),
-        customSortedItems: sort('items.@each.count', (a, b) => a.count - b.count),
-      });
+      klass = class extends EmberObject {
+        sortProps = ['count'];
+        @sort('items', 'sortProps')
+        sortedItems;
+        @sort('items.@each.count', (a, b) => a.count - b.count)
+        customSortedItems;
+      };
       obj = klass.create({
         items: emberA([
           { name: 'A', count: 1, thing: 4, id: 1 },
@@ -2047,9 +2084,10 @@ moduleFor(
   'max',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        max: max('items'),
-      }).create({
+      obj = class extends EmberObject {
+        @max('items')
+        max;
+      }.create({
         items: emberA([1, 2, 3]),
       });
     }
@@ -2096,9 +2134,10 @@ moduleFor(
   'min',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        min: min('items'),
-      }).create({
+      obj = class extends EmberObject {
+        @min('items')
+        min;
+      }.create({
         items: emberA([1, 2, 3]),
       });
     }
@@ -2145,15 +2184,20 @@ moduleFor(
   'Ember.arrayComputed - mixed sugar',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        lannisters: filterBy('items', 'lname', 'Lannister'),
-        lannisterSorting: emberA(['fname']),
-        sortedLannisters: sort('lannisters', 'lannisterSorting'),
+      obj = class extends EmberObject {
+        @filterBy('items', 'lname', 'Lannister')
+        lannisters;
+        lannisterSorting = emberA(['fname']);
+        @sort('lannisters', 'lannisterSorting')
+        sortedLannisters;
 
-        starks: filterBy('items', 'lname', 'Stark'),
-        starkAges: mapBy('starks', 'age'),
-        oldestStarkAge: max('starkAges'),
-      }).create({
+        @filterBy('items', 'lname', 'Stark')
+        starks;
+        @mapBy('starks', 'age')
+        starkAges;
+        @max('starkAges')
+        oldestStarkAge;
+      }.create({
         items: emberA([
           { fname: 'Jaime', lname: 'Lannister', age: 34 },
           { fname: 'Cersei', lname: 'Lannister', age: 34 },
@@ -2224,10 +2268,12 @@ moduleFor(
   'Ember.arrayComputed - chains',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        sorted: sort('todos.@each.priority', priorityComparator),
-        filtered: filter('sorted.@each.priority', evenPriorities),
-      }).create({
+      obj = class extends EmberObject {
+        @sort('todos.@each.priority', priorityComparator)
+        sorted;
+        @filter('sorted.@each.priority', evenPriorities)
+        filtered;
+      }.create({
         todos: emberA([todo('E', 4), todo('D', 3), todo('C', 2), todo('B', 1), todo('A', 0)]),
       });
     }
@@ -2280,11 +2326,14 @@ moduleFor(
   class extends AbstractTestCase {
     beforeEach() {
       userFnCalls = 0;
-      obj = EmberObject.extend({
-        mapped: mapBy('array', 'v'),
-        max: max('mapped'),
-        maxDidChange: observer('max', () => userFnCalls++),
-      }).create({
+      obj = class extends EmberObject {
+        @mapBy('array', 'v')
+        mapped;
+        @max('mapped')
+        max;
+        @observer('max', () => userFnCalls++)
+        maxDidChange;
+      }.create({
         array: emberA([{ v: 1 }, { v: 3 }, { v: 2 }, { v: 1 }]),
       });
     }
@@ -2314,9 +2363,10 @@ moduleFor(
   'sum',
   class extends AbstractTestCase {
     beforeEach() {
-      obj = EmberObject.extend({
-        total: sum('array'),
-      }).create({
+      obj = class extends EmberObject {
+        @sum('array')
+        total;
+      }.create({
         array: emberA([1, 2, 3]),
       });
     }

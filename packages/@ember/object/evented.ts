@@ -14,12 +14,12 @@ export { on } from '@ember/-internals/metal';
   import EmberObject from '@ember/object';
   import Evented from '@ember/object/evented';
 
-  export default EmberObject.extend(Evented, {
+  export default class Person extends EmberObject.extend(Evented) {
     greet() {
       // ...
       this.trigger('greet');
     }
-  });
+  }
   ```
 
   ```javascript

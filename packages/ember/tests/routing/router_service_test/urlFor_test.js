@@ -59,10 +59,10 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-          sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = ['sort'];
+          sort = 'ASC';
+        }
       );
 
       let queryParams = this.buildQueryParams({ sort: 'ASC' });
@@ -81,10 +81,10 @@ moduleFor(
 
       this.add(
         'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort', 'foo'],
-          sort: 'ASC',
-        })
+        class extends Controller {
+          queryParams = ['sort', 'foo'];
+          sort = 'ASC';
+        }
       );
 
       return this.visit('/child/?sort=DESC').then(() => {

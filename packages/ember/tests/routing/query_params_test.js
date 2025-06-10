@@ -757,13 +757,12 @@ moduleFor(
 
       this.add(
         'route:application',
-        Route.extend({
-          actions: {
-            refreshRoute() {
-              this.refresh();
-            },
-          },
-        })
+        class extends Route {
+          @action
+          refreshRoute() {
+            this.refresh();
+          }
+        }
       );
 
       await this.visitAndAssert('/');
@@ -1655,10 +1654,10 @@ moduleFor(
 
       this.add(
         `controller:home`,
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: tracked(),
-        })
+        class extends Controller {
+          queryParams = ['foo'];
+          @tracked foo;
+        }
       );
 
       await this.visitAndAssert('/');
