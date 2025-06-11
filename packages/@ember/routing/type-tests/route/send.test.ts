@@ -5,10 +5,6 @@ import Route from '@ember/routing/route';
 class MyRoute extends Route {
   @action
   topLevel(_foo: number, _opt?: boolean) {}
-
-  actions = {
-    nested(_foo: string, _opt?: number) {},
-  };
 }
 
 // NOTE: This is invalid, but acceptable for type tests
@@ -21,10 +17,3 @@ route.send('topLevel', 1, true);
 route.send('topLevel');
 // @ts-expect-error Invalid argument
 route.send('topLevel', false);
-
-route.send('nested', 'val');
-route.send('nested', 'val', 2);
-// @ts-expect-error Requires argument
-route.send('nested');
-// @ts-expect-error Invalid argument
-route.send('nested', false);

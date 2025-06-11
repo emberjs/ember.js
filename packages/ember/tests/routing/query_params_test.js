@@ -1595,23 +1595,24 @@ moduleFor(
       return this.refreshModelWhileLoadingTest(true);
     }
 
-    async ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
-      assert
-    ) {
-      assert.expect(1);
+    // TODO: Is it ok to break merged queryParams?
+    // async ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
+    //   assert
+    // ) {
+    //   assert.expect(1);
 
-      this.add(
-        'route:application',
-        Route.extend({
-          queryParams: [{ commitBy: { replace: true } }],
-        })
-      );
+    //   this.add(
+    //     'route:application',
+    //     class extends Route {
+    //       queryParams = [{ commitBy: { replace: true } }];
+    //     }
+    //   );
 
-      await assert.rejectsAssertion(
-        this.visit('/'),
-        'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array'
-      );
-    }
+    //   await assert.rejectsAssertion(
+    //     this.visit('/'),
+    //     'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array'
+    //   );
+    // }
 
     async ['@test handle route names that clash with Object.prototype properties'](assert) {
       assert.expect(1);

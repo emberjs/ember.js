@@ -23,8 +23,7 @@ import type { default as EmberLocation, UpdateCallback } from '@ember/routing/lo
 export default class NoneLocation extends EmberObject implements EmberLocation {
   updateCallback?: UpdateCallback;
 
-  // Set in reopen so it can be overwritten with extend
-  declare path: string;
+  path = '';
 
   /**
     Will be pre-pended to path.
@@ -33,12 +32,9 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @property rootURL
     @default '/'
   */
-  // Set in reopen so it can be overwritten with extend
-  declare rootURL: string;
+  rootURL = '/';
 
   initState(): void {
-    this._super(...arguments);
-
     let { rootURL } = this;
 
     // This assert doesn't have anything to do with state initialization,
@@ -126,8 +122,3 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     return rootURL + url;
   }
 }
-
-NoneLocation.reopen({
-  path: '',
-  rootURL: '/',
-});

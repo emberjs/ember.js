@@ -18,11 +18,23 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
   }
 
   reopenController(name, options) {
-    this.application.resolveRegistration(`controller:${name}`).reopen(options);
+    let controller = this.resolver.resolve(`controller:${name}`);
+    for (let [key, value] of Object.entries(options)) {
+      controller = class extends controller {
+        [key] = value;
+      };
+    }
+    this.resolver.add(`controller:${name}`, controller);
   }
 
   reopenRoute(name, options) {
-    this.application.resolveRegistration(`route:${name}`).reopen(options);
+    let route = this.resolver.resolve(`route:${name}`);
+    for (let [key, value] of Object.entries(options)) {
+      route = class extends route {
+        [key] = value;
+      };
+    }
+    this.resolver.add(`route:${name}`, route);
   }
 
   async queryParamsStickyTest1(urlPrefix) {
@@ -160,7 +172,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     this.setupApplication();
 
     this.reopenController(articleLookup, {
-      queryParams: { q: { scope: 'controller' } },
+      queryParams: [{ q: { scope: 'controller' } }, 'z'],
     });
 
     await this.visitApplication();
@@ -269,6 +281,7 @@ class ModelDependentQPTestCase extends QueryParamTestCase {
     assert.equal(commentsCtrl.get('page'), 1);
     assert.equal(this.controller.get('q'), 'wat');
 
+    window.billy = true;
     await this.transitionTo(commentsLookup, 'a-1');
     this.assertCurrentPath(`${urlPrefix}/a-1/comments`);
     assert.equal(commentsCtrl.get('page'), 1);
@@ -321,21 +334,20 @@ moduleFor(
         }
       );
 
-      this.add(
-        'controller:article',
-        Controller.extend({
-          queryParams: ['q', 'z'],
-          q: 'wat',
-          z: 0,
-        })
-      );
+      window.controller = class extends Controller {
+        queryParams = ['q', 'z'];
+        q = 'wat';
+        z = 0;
+      };
+
+      this.add('controller:article', window.controller);
 
       this.add(
         'controller:comments',
-        Controller.extend({
-          queryParams: 'page',
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
       );
 
       this.addTemplate(
@@ -434,19 +446,19 @@ moduleFor(
 
       this.add(
         'controller:site.article',
-        Controller.extend({
-          queryParams: ['q', 'z'],
-          q: 'wat',
-          z: 0,
-        })
+        class extends Controller {
+          queryParams = ['q', 'z'];
+          q = 'wat';
+          z = 0;
+        }
       );
 
       this.add(
         'controller:site.article.comments',
-        Controller.extend({
-          queryParams: 'page',
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
       );
 
       this.addTemplate(
@@ -581,27 +593,27 @@ moduleFor(
 
       this.add(
         'controller:site',
-        Controller.extend({
-          queryParams: ['country'],
-          country: 'au',
-        })
+        class extends Controller {
+          queryParams = ['country'];
+          country = 'au';
+        }
       );
 
       this.add(
         'controller:site.article',
-        Controller.extend({
-          queryParams: ['q', 'z'],
-          q: 'wat',
-          z: 0,
-        })
+        class extends Controller {
+          queryParams = ['q', 'z'];
+          q = 'wat';
+          z = 0;
+        }
       );
 
       this.add(
         'controller:site.article.comments',
-        Controller.extend({
-          queryParams: ['page'],
-          page: 1,
-        })
+        class extends Controller {
+          queryParams = ['page'];
+          page = 1;
+        }
       );
 
       this.addTemplate(

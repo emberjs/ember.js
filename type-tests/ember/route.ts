@@ -89,8 +89,3 @@ class WithBadReturningBeforeAndModelHooks extends Route {
   }
 }
 
-class HasActionHandler extends Route {
-  methodUsingActionHandler() {
-    expectTypeOf(this.actions).toEqualTypeOf<Record<string, (...args: any[]) => any>>();
-  }
-}

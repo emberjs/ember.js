@@ -75,7 +75,6 @@ module.exports = function (hooks) {
     this.template = registerTemplate;
     this.component = registerComponent;
     this.controller = registerController;
-    this.route = registerRoute;
     this.service = registerService;
     this.routes = registerRoutes;
     this.registry = {};
@@ -179,14 +178,6 @@ function registerComponent(name, componentProps, templateContents) {
 function registerController(name, controllerProps) {
   let controller = this.Ember.Controller.extend(controllerProps);
   this.register('controller:' + name, controller);
-}
-
-function registerRoute(name, routeProps) {
-  let route = this.Ember.Route.extend({
-    router: this.Ember.inject.service('router'),
-    ...routeProps,
-  });
-  this.register('route:' + name, route);
 }
 
 function registerService(name, serviceProps) {

@@ -35,7 +35,4 @@ const co3 = CoreObject.create({ foo: '123', bar: 456 });
 expectTypeOf(CoreObject.extend({ baz: 6 }).create()).not.toHaveProperty('baz');
 
 // NOTE: This is marked as @internal and will not be publicly available
-CoreObject.reopen({ baz: 6 });
-
-// NOTE: This is marked as @internal and will not be publicly available
 CoreObject.reopenClass({ baz: 6 });

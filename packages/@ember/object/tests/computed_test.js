@@ -215,10 +215,6 @@ moduleFor(
         baz: computed(function () {}),
       });
 
-      SubClass.reopen({
-        bat: computed(function () {}).meta({ iAmBat: true }),
-      });
-
       let list = [];
 
       MyClass.eachComputedProperty(function (name) {
@@ -235,17 +231,12 @@ moduleFor(
 
       SubClass.eachComputedProperty(function (name, meta) {
         list.push(name);
-
-        if (name === 'bat') {
-          assert.deepEqual(meta, { iAmBat: true });
-        } else {
-          assert.deepEqual(meta, {});
-        }
+        assert.deepEqual(meta, {});
       });
 
       assert.deepEqual(
         list.sort(),
-        ['bar', 'bat', 'baz', 'foo', 'qux'],
+        ['bar', 'baz', 'foo', 'qux'],
         'all inherited properties are included'
       );
     }
@@ -269,10 +260,6 @@ moduleFor(
 
       assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
-      MyClass.reopen({
-        baz: computed(K),
-      });
-
       MyClass.create().destroy(); // force apply mixins
 
       list = [];
@@ -281,11 +268,7 @@ moduleFor(
         list.push(name);
       });
 
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo', 'baz'].sort(),
-        'expected three computed properties'
-      );
+      assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
       defineProperty(MyClass.prototype, 'qux', computed(K));
 
@@ -297,8 +280,8 @@ moduleFor(
 
       assert.deepEqual(
         list.sort(),
-        ['bar', 'foo', 'baz', 'qux'].sort(),
-        'expected four computed properties'
+        ['bar', 'foo', 'qux'].sort(),
+        'expected three computed properties'
       );
     }
 

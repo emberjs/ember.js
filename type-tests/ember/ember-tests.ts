@@ -57,9 +57,6 @@ class Tom extends Person1 {
 const tom = Tom.create();
 tom.helloWorld();
 
-const PersonReopened = Person1.reopen({ isPerson: true });
-PersonReopened.create().get('isPerson');
-
 class Todo extends Ember.Object {
   isDone = false;
 }

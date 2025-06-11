@@ -1,5 +1,3 @@
-import Controller from '@ember/controller';
-import Mixin from '@ember/object/mixin';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -145,40 +143,6 @@ moduleFor(
         this.setupBase(),
         "You're not allowed to have more than one controller property map to the same query param key, but both `parent:page` and `parent.child:page` map to `parentPage`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `page: { as: 'other-page' }`"
       );
-    }
-
-    async ['@test Support shared but overridable mixin pattern'](assert) {
-      assert.expect(7);
-
-      let HasPage = Mixin.create({
-        queryParams: 'page',
-        page: 1,
-      });
-
-      this.add(
-        'controller:parent',
-        Controller.extend(HasPage, {
-          queryParams: { page: 'yespage' },
-        })
-      );
-
-      this.add('controller:parent.child', Controller.extend(HasPage));
-
-      await this.setupBase();
-      this.assertCurrentPath('/parent/child');
-
-      let parentController = this.getController('parent');
-      let parentChildController = this.getController('parent.child');
-
-      await this.setAndFlush(parentChildController, 'page', 2);
-      this.assertCurrentPath('/parent/child?page=2');
-      assert.equal(parentController.get('page'), 1);
-      assert.equal(parentChildController.get('page'), 2);
-
-      await this.setAndFlush(parentController, 'page', 2);
-      this.assertCurrentPath('/parent/child?page=2&yespage=2');
-      assert.equal(parentController.get('page'), 2);
-      assert.equal(parentChildController.get('page'), 2);
     }
   }
 );

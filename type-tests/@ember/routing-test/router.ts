@@ -7,7 +7,7 @@ import type { RouteInfoWithAttributes } from '@ember/routing/route-info';
 
 import { expectTypeOf } from 'expect-type';
 
-const AppRouter = Router.extend({});
+const AppRouter = class extends Router {};
 
 AppRouter.map(function () {
   this.route('index', { path: '/' });
