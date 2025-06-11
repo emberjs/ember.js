@@ -19,14 +19,18 @@ jobs:
       - name: "Get sizes for development outputs"
         id: main-dev
         run: |
+          ./bin/minify-folder.sh ./dist/packages/
           mkdir -p main
           cd dist/packages
+
           dust --ignore_hidden \
-              --reverse --apparent-size \
+              --reverse \
+              --apparent-size \
               --no-percent-bars \
               --only-dir \
-              --depth 20 \
-            > out.txt
+              --depth 0 \
+              --filter '@(ember|glimmer).+\.min\.js$' \
+            > out.min.txt
           cp out.txt ../../main/
 
 
