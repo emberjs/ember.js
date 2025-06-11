@@ -18,11 +18,17 @@ import AbstractTestCase from './abstract';
 
 const TextNode = window.Text;
 
+class BaseComponent extends Component {
+  tagName = '';
+  layoutName = '-top-level';
+}
+
 export default abstract class RenderingTestCase extends AbstractTestCase {
   owner: EngineInstance;
   renderer: Renderer;
   element: HTMLElement;
   component: any;
+  BaseComponent = BaseComponent;
 
   constructor(assert: QUnit['assert']) {
     super(assert);
@@ -151,7 +157,7 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     return this.component;
   }
 
-  render(templateStr: string, context = {}) {
+  renderWithClass<K extends new () => Component>(templateStr: string, klass: K) {
     let { owner } = this;
 
     owner.register(
@@ -161,16 +167,24 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
       })
     );
 
-    let attrs = Object.assign({}, context, {
-      tagName: '',
-      layoutName: '-top-level',
-    });
-
-    owner.register('component:-top-level', Component.extend(attrs));
+    owner.register('component:-top-level', klass);
 
     this.component = owner.lookup('component:-top-level');
 
     runAppend(this.component);
+  }
+
+  render(templateStr: string, context = {}) {
+    let ComponentClass = BaseComponent;
+
+    for (const [key, value] of Object.entries(context)) {
+      ComponentClass = class extends ComponentClass {
+        // @ts-expect-error This is not guaranteed safe
+        [key] = value;
+      };
+    }
+
+    this.renderWithClass(templateStr, ComponentClass);
   }
 
   renderComponent(component: object, options: { expect: string }) {

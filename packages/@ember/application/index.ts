@@ -279,6 +279,7 @@ class Application extends Engine {
   */
   declare eventDispatcher: EventDispatcher | null;
 
+  // TODO: Update this comment
   /**
     The DOM events for which the event dispatcher should listen.
 

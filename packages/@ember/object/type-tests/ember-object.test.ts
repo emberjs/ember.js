@@ -46,9 +46,6 @@ expectTypeOf(p2b.firstName).toEqualTypeOf<string>();
 const p2c = Person.create({}, {}, { firstName: 'string' });
 expectTypeOf(p2c.firstName).toEqualTypeOf<string>();
 
-// NOTE: This is marked as @internal and will not be publicly available
-Person.extend({ fullName: 6 });
-
 class MyComponent extends EmberObject {
   foo = 'bar';
 

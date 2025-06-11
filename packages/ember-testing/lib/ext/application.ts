@@ -56,7 +56,7 @@ TestableAppPrototype.originalMethods = {};
   location to 'none', so that the window's location will not be modified
   (preventing both accidental leaking of state between tests and interference
   with your testing framework). `setupForTesting` should only be called after
-  setting a custom `router` class (for example `App.Router = Router.extend(`).
+  setting a custom `router` class.
 
   Example:
 

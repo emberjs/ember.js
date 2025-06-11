@@ -300,18 +300,6 @@ class Controller<T = unknown> extends FrameworkObject.extend({
   }
   ```
 
-  Classic Class Example:
-
-  ```app/controllers/post.js
-  import Controller, {
-    inject as controller
-  } from '@ember/controller';
-
-  export default Controller.extend({
-    posts: controller()
-  });
-  ```
-
   This example will create a `posts` property on the `post` controller that
   looks up the `posts` controller in the container, making it easy to reference
   other controllers.

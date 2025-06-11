@@ -97,16 +97,14 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setSingleQPController
   */
-  setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar', options = {}) {
+  setSingleQPController(routeName: string, param = 'foo', defaultValue = 'bar') {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: [param],
-          [param]: defaultValue,
-        },
-        options
-      )
+      class extends Controller {
+        queryParams = [param];
+        // @ts-expect-error This is not guaranteed safe
+        [param] = defaultValue;
+      }
     );
   }
 
@@ -116,24 +114,18 @@ export default abstract class QueryParamTestCase extends ApplicationTestCase {
     @public
     @method setMappedQPController
   */
-  setMappedQPController(
-    routeName: string,
-    prop = 'page',
-    urlKey = 'parentPage',
-    defaultValue = 1,
-    options = {}
-  ) {
+  setMappedQPController(routeName: string, prop = 'page', urlKey = 'parentPage', defaultValue = 1) {
     this.add(
       `controller:${routeName}`,
-      Controller.extend(
-        {
-          queryParams: {
+      class extends Controller {
+        queryParams = [
+          {
             [prop]: urlKey,
           },
-          [prop]: defaultValue,
-        },
-        options
-      )
+        ];
+        // @ts-expect-error This is not guaranteed safe
+        [prop] = defaultValue;
+      }
     );
   }
 }

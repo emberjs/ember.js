@@ -57,7 +57,7 @@ import { compare, isBlank, isEmpty, isEqual, isNone, isPresent, typeOf } from '@
   expectTypeOf(typeOf(/abc/)).toBeString();
   expectTypeOf(typeOf(new Date())).toBeString();
   expectTypeOf(typeOf(new FileList())).toBeString();
-  expectTypeOf(typeOf(EmberObject.extend())).toBeString();
+  expectTypeOf(typeOf(class extends EmberObject {})).toBeString();
   expectTypeOf(typeOf(EmberObject.create())).toBeString();
   expectTypeOf(typeOf(new Error('teamocil'))).toBeString();
   expectTypeOf(typeOf({ justAPojo: true })).toBeString();

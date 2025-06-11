@@ -40,16 +40,15 @@ moduleFor(
     }
 
     ['@test calls computed property setters'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed({
-          get() {
-            return "this is not the value you're looking for";
-          },
-          set(key, value) {
-            return value;
-          },
-        }),
-      });
+      let MyClass = class extends EmberObject {
+        @computed
+        get foo() {
+          return this._foo;
+        }
+        set foo(value) {
+          this._foo = value;
+        }
+      };
 
       let o = MyClass.create({ foo: 'bar' });
       assert.equal(get(o, 'foo'), 'bar');

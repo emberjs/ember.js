@@ -159,22 +159,6 @@ moduleFor(
       });
     }
 
-    ['@test using mixins'](assert) {
-      let Mixin1 = Mixin.create({
-        property1: 'data-1',
-      });
-
-      let Mixin2 = Mixin.create({
-        property2: 'data-2',
-      });
-
-      class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
-
-      let myObject = MyObject.create();
-      assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
-      assert.equal(myObject.property2, 'data-2', 'includes the second mixin');
-    }
-
     ['@test using instanceof'](assert) {
       class MyObject extends EmberObject {}
 

@@ -198,8 +198,8 @@ new Ember.Router();
 new Ember.Service();
 // Ember.Test
 if (Ember.Test) {
-  new Ember.Test.Adapter();
-  new Ember.Test.QUnitAdapter();
+  Ember.Test.Adapter.asyncStart;
+  Ember.Test.QUnitAdapter.asyncStart;
   // Ember.Test
   expectTypeOf(Ember.Test.checkWaiters()).toEqualTypeOf<boolean>();
 }

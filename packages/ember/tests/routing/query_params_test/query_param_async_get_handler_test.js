@@ -301,9 +301,7 @@ moduleFor(
         "<LinkTo @route='example' @query={{hash foo=undefined}} id='the-link'>Example</LinkTo>"
       );
 
-      this.setSingleQPController('example', 'foo', undefined, {
-        foo: undefined,
-      });
+      this.setSingleQPController('example', 'foo', undefined);
 
       this.add(
         'route:example',
