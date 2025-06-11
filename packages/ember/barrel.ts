@@ -23,7 +23,6 @@ import EmberObject, {
   computed as emberComputed,
   defineProperty as emberDefineProperty,
   notifyPropertyChange as emberNotifyPropertyChange,
-  observer as emberObserver,
   get as emberGet,
   getProperties as emberGetProperties,
   set as emberSet,
@@ -275,7 +274,6 @@ namespace Ember {
   export const get = emberGet;
   export const getProperties = emberGetProperties;
   export const notifyPropertyChange = emberNotifyPropertyChange;
-  export const observer = emberObserver;
   export const set = emberSet;
   export const trySet = emberTrySet;
   export const setProperties = emberSetProperties;

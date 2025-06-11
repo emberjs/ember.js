@@ -187,7 +187,6 @@ let allExports = [
   ['get', '@ember/object', 'get', test21],
   ['getProperties', '@ember/object', 'getProperties', test21],
   ['notifyPropertyChange', '@ember/object', 'notifyPropertyChange', test21],
-  ['observer', '@ember/object', 'observer', test21],
   ['set', '@ember/object', 'set', test21],
   ['setProperties', '@ember/object', 'setProperties', test21],
   ['trySet', '@ember/object', 'trySet', test21],
