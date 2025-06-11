@@ -56,12 +56,6 @@ d('@ember/-internals/runtime/index', emberinternalsRuntimeIndex);
 import * as emberinternalsRuntimeLibExtRsvp from '@ember/-internals/runtime/lib/ext/rsvp';
 d('@ember/-internals/runtime/lib/ext/rsvp', emberinternalsRuntimeLibExtRsvp);
 
-import * as emberinternalsRuntimeLibMixinsActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
-d(
-  '@ember/-internals/runtime/lib/mixins/action_handler',
-  emberinternalsRuntimeLibMixinsActionHandler
-);
-
 import * as emberinternalsRuntimeLibMixinsContainerProxy from '@ember/-internals/runtime/lib/mixins/container_proxy';
 d(
   '@ember/-internals/runtime/lib/mixins/container_proxy',
@@ -72,12 +66,6 @@ import * as emberinternalsRuntimeLibMixinsRegistryProxy from '@ember/-internals/
 d(
   '@ember/-internals/runtime/lib/mixins/registry_proxy',
   emberinternalsRuntimeLibMixinsRegistryProxy
-);
-
-import * as emberinternalsRuntimeLibMixinsTargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
-d(
-  '@ember/-internals/runtime/lib/mixins/target_action_support',
-  emberinternalsRuntimeLibMixinsTargetActionSupport
 );
 
 import * as emberinternalsStringIndex from '@ember/-internals/string/index';
@@ -103,9 +91,6 @@ d(
 
 import * as emberinternalsViewsLibComponentLookup from '@ember/-internals/views/lib/component_lookup';
 d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponentLookup);
-
-import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
-d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
 
 import * as emberinternalsViewsLibSystemActionManager from '@ember/-internals/views/lib/system/action_manager';
 d('@ember/-internals/views/lib/system/action_manager', emberinternalsViewsLibSystemActionManager);

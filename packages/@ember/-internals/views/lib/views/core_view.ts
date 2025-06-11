@@ -1,6 +1,5 @@
 import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import { inject } from '@ember/-internals/metal';
-import { ActionHandler } from '@ember/-internals/runtime';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
@@ -17,12 +16,12 @@ import states from './states';
   @namespace Ember
   @extends EmberObject
   @deprecated Use `Component` instead.
-  @uses Ember.ActionHandler
   @private
 */
 
-interface CoreView extends ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(ActionHandler) {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface CoreView extends View {}
+class CoreView extends FrameworkObject {
   isView = true;
 
   declare _states: typeof states;
