@@ -171,20 +171,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
   Ember Object Model. `CoreObject` should generally not be used directly,
   instead you should use `EmberObject`.
 
-  ## Usage
-
-  You can define a class by extending from `CoreObject` using the `extend`
-  method:
-
-  ```js
-  const Person = CoreObject.extend({
-    name: 'Tomster',
-  });
-  ```
-
-  For detailed usage, see the [Object Model](https://guides.emberjs.com/release/object-model/)
-  section of the guides.
-
   ## Usage with Native Classes
 
   Native JavaScript `class` syntax can be used to extend from any `CoreObject`

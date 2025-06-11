@@ -645,14 +645,7 @@ declare const SIGNATURE: unique symbol;
   @extends Ember.CoreView
   @public
 */
-class Component<S = unknown>
-  extends CoreView.extend({
-    concatenatedProperties: ['attributeBindings', 'classNames', 'classNameBindings'],
-    classNames: EMPTY_ARRAY,
-    classNameBindings: EMPTY_ARRAY,
-  })
-  implements PropertyDidChange
-{
+class Component<S = unknown> extends CoreView implements PropertyDidChange {
   isComponent = true;
 
   // SAFETY: this has no runtime existence whatsoever; it is a "phantom type"
@@ -665,6 +658,8 @@ class Component<S = unknown>
   declare [IS_DISPATCHING_ATTRS]: boolean;
   declare [DIRTY_TAG]: DirtyableTag;
 
+  concatenatedProperties = ['attributeBindings', 'classNames', 'classNameBindings'];
+
   /**
     Standard CSS class names to apply to the view's outer element. This
     property automatically inherits any class names defined by the view's
@@ -675,7 +670,7 @@ class Component<S = unknown>
     @default ['ember-view']
     @public
   */
-  declare classNames: string[];
+  classNames: string[] = EMPTY_ARRAY as unknown as string[];
 
   /**
     A list of properties of the view to apply as class names. If the property
@@ -685,10 +680,10 @@ class Component<S = unknown>
     ```javascript
     // Applies the 'high' class to the view element
     import Component from '@ember/component';
-    Component.extend({
-      classNameBindings: ['priority'],
-      priority: 'high'
-    });
+    export default class extends Component {
+      classNameBindings = ['priority'];
+      priority = 'high';
+    }
     ```
 
     If the value of the property is a Boolean, the name of that property is
@@ -697,10 +692,10 @@ class Component<S = unknown>
     ```javascript
     // Applies the 'is-urgent' class to the view element
     import Component from '@ember/component';
-    Component.extend({
-      classNameBindings: ['isUrgent'],
-      isUrgent: true
-    });
+    export default class extends Component {
+      classNameBindings = ['isUrgent'];
+      isUrgent = true;
+    }
     ```
 
     If you would prefer to use a custom value instead of the dasherized
@@ -709,10 +704,10 @@ class Component<S = unknown>
     ```javascript
     // Applies the 'urgent' class to the view element
     import Component from '@ember/component';
-    Component.extend({
-      classNameBindings: ['isUrgent:urgent'],
-      isUrgent: true
-    });
+    export default class extends Component {
+      classNameBindings = ['isUrgent:urgent'];
+      isUrgent = true;
+    }
     ```
 
     If you would like to specify a class that should only be added when the
@@ -721,10 +716,10 @@ class Component<S = unknown>
     ```javascript
     // Applies the 'disabled' class to the view element
     import Component from '@ember/component';
-    Component.extend({
-      classNameBindings: ['isEnabled::disabled'],
-      isEnabled: false
-    });
+    export default class extends Component {
+      classNameBindings = ['isEnabled::disabled'];
+      isEnabled = false;
+    }
     ```
 
     This list of properties is inherited from the component's superclasses as well.
@@ -734,7 +729,7 @@ class Component<S = unknown>
     @default []
     @public
   */
-  declare classNameBindings: string[];
+  classNameBindings: string[] = EMPTY_ARRAY as unknown as string[];
 
   init(properties?: object | undefined) {
     super.init(properties);
@@ -938,10 +933,10 @@ class Component<S = unknown>
    ```app/components/my-component.js
    import Component from '@ember/component';
 
-   export default Component.extend({
-      attributeBindings: ['priority'],
-      priority: 'high'
-    });
+   export default class extends Component {
+      attributeBindings = ['priority'];
+      priority = 'high'
+    }
    ```
 
    If the value of the property is a Boolean, the attribute is treated as
@@ -953,10 +948,10 @@ class Component<S = unknown>
    ```app/components/my-component.js
    import Component from '@ember/component';
 
-   export default Component.extend({
-      attributeBindings: ['visible'],
-      visible: true
-    });
+   export default class extends Component {
+      attributeBindings = ['visible'];
+      visible = true
+    }
    ```
 
    If you would prefer to use a custom value instead of the property name,
@@ -966,10 +961,10 @@ class Component<S = unknown>
    ```app/components/my-component.js
    import Component from '@ember/component';
 
-   export default Component.extend({
-      attributeBindings: ['isVisible:visible'],
-      isVisible: true
-    });
+   export default class extends Component {
+      attributeBindings = ['isVisible:visible'];
+      isVisible = true
+    }
    ```
 
    This list of attributes is inherited from the component's superclasses,
@@ -1350,13 +1345,13 @@ class Component<S = unknown>
    ```app/components/my-component.js
    import Component from '@ember/component';
 
-   export default Component.extend({
+   export default class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
         let index = this.get('index');
         this.set('elementId', 'component-id' + index);
       }
-    });
+    }
    ```
 
    @property elementId

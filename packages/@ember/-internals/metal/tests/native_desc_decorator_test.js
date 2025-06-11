@@ -1,6 +1,4 @@
-import EmberObject from '@ember/object';
 import { defineProperty, nativeDescDecorator } from '..';
-import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let classes = [
@@ -61,90 +59,6 @@ let classes = [
 
     source() {
       return this.proto;
-    }
-  },
-
-  class {
-    static module(title) {
-      return `${title}: in EmberObject.extend()`;
-    }
-
-    constructor() {
-      this.klass = null;
-      this.props = {};
-    }
-
-    install(key, desc) {
-      this.props[key] = desc;
-    }
-
-    set(key, value) {
-      this.props[key] = value;
-    }
-
-    finalize() {
-      this.klass = EmberObject.extend(this.props);
-      return this.klass.create();
-    }
-
-    source() {
-      return this.klass.prototype;
-    }
-  },
-
-  class {
-    static module(title) {
-      return `${title}: in EmberObject.extend() through a mixin`;
-    }
-
-    constructor() {
-      this.klass = null;
-      this.props = {};
-    }
-
-    install(key, desc) {
-      this.props[key] = desc;
-    }
-
-    set(key, value) {
-      this.props[key] = value;
-    }
-
-    finalize() {
-      this.klass = EmberObject.extend(Mixin.create(this.props));
-      return this.klass.create();
-    }
-
-    source() {
-      return this.klass.prototype;
-    }
-  },
-
-  class {
-    static module(title) {
-      return `${title}: inherited from another EmberObject super class`;
-    }
-
-    constructor() {
-      this.superklass = null;
-      this.props = {};
-    }
-
-    install(key, desc) {
-      this.props[key] = desc;
-    }
-
-    set(key, value) {
-      this.props[key] = value;
-    }
-
-    finalize() {
-      this.superklass = EmberObject.extend(this.props);
-      return this.superklass.extend().create();
-    }
-
-    source() {
-      return this.superklass.prototype;
     }
   },
 ];

@@ -505,8 +505,8 @@ namespace Ember {
   export declare let Handlebars: EmberHandlebars;
   export declare let Test:
     | (NonNullable<typeof EmberTestingImpl>['Test'] & {
-        Adapter: NonNullable<typeof EmberTestingImpl>['Adapter'];
-        QUnitAdapter: NonNullable<typeof EmberTestingImpl>['QUnitAdapter'];
+        Adapter: InstanceType<NonNullable<typeof EmberTestingImpl>['Adapter']>;
+        QUnitAdapter: InstanceType<NonNullable<typeof EmberTestingImpl>['QUnitAdapter']>;
       })
     | undefined;
   export declare let setupForTesting:

@@ -136,9 +136,12 @@ moduleFor(
     }
 
     ['@test can retrieve metadata for a computed property'](assert) {
-      let MyClass = EmberObject.extend({
-        computedProperty: computed(function () {}).meta({ key: 'keyValue' }),
-      });
+      class MyClass extends EmberObject {
+        @(computed().meta({ key: 'keyValue' }))
+        get computedProperty() {
+          return undefined;
+        }
+      }
 
       assert.equal(
         get(MyClass.metaForProperty('computedProperty'), 'key'),

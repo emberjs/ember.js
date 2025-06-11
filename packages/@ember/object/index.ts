@@ -274,9 +274,9 @@ class EmberObject extends CoreObject {
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    export default Component.extend({
+    export default class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         // the following are equivalent:
 
@@ -287,12 +287,12 @@ class EmberObject extends CoreObject {
         this.addObserver('foo', (...args) => {
           this.fooDidChange(...args);
         });
-      },
+      }
 
       fooDidChange() {
         // your custom logic code
       }
-    });
+    }
     ```
 
     ### Observer Methods
@@ -302,16 +302,16 @@ class EmberObject extends CoreObject {
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    export default Component.extend({
+    export default class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.addObserver('foo', this, 'fooDidChange');
-      },
+      }
 
       fooDidChange(sender, key, value, rev) {
         // your code
       }
-    });
+    }
     ```
 
     The `sender` is the object that changed. The `key` is the property that

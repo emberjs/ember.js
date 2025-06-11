@@ -30,10 +30,8 @@ expectTypeOf(person.extra).toBeNumber();
 class PersonWithStatics extends EmberObject {
   static isPerson = true;
 }
-const PersonWithStatics2 = PersonWithStatics.extend({});
-class PersonWithStatics3 extends PersonWithStatics {}
-class PersonWithStatics4 extends PersonWithStatics2 {}
+class PersonWithStatics2 extends PersonWithStatics {}
+class PersonWithStatics3 extends PersonWithStatics2 {}
 expectTypeOf(PersonWithStatics.isPerson).toBeBoolean();
 expectTypeOf(PersonWithStatics2.isPerson).toBeBoolean();
 expectTypeOf(PersonWithStatics3.isPerson).toBeBoolean();
-expectTypeOf(PersonWithStatics4.isPerson).toBeBoolean();

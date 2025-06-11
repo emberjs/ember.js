@@ -82,19 +82,3 @@ const person2 = Person.create({
 
 expectTypeOf(person2.get('firstName')).toEqualTypeOf<string>();
 expectTypeOf(person2.get('fullName')).toEqualTypeOf<string>();
-
-const person3 = Person.extend({
-  firstName: 'Fred',
-  fullName: 'Fred Smith',
-}).create();
-
-expectTypeOf(person3.get('firstName')).toEqualTypeOf<string>();
-expectTypeOf(person3.get('fullName')).toEqualTypeOf<string>();
-
-const person4 = Person.extend({
-  firstName: Ember.computed(() => 'Fred'),
-  fullName: Ember.computed(() => 'Fred Smith'),
-}).create();
-
-expectTypeOf(person4.get('firstName')).toEqualTypeOf<string>();
-expectTypeOf(person4.get('fullName')).toEqualTypeOf<string>();

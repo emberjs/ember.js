@@ -79,7 +79,7 @@ export interface DIRegistry {}
 /**
   @private
  */
-type ResolveFactoryManager<Type extends string, Name extends string> = Type extends ValidType
+export type ResolveFactoryManager<Type extends string, Name extends string> = Type extends ValidType
   ? Name extends ValidName<Type>
     ? DIRegistry[Type][Name] extends infer RegistryEntry extends object
       ? FactoryManager<RegistryEntry>
@@ -89,7 +89,7 @@ type ResolveFactoryManager<Type extends string, Name extends string> = Type exte
 
 type FactoryManagerDefault = FactoryManager<object> | undefined;
 
-type Lookup<Type extends string, Name extends string> = Type extends ValidType
+export type Lookup<Type extends string, Name extends string> = Type extends ValidType
   ? Name extends ValidName<Type>
     ? DIRegistry[Type][Name]
     : unknown
@@ -104,6 +104,7 @@ type Lookup<Type extends string, Name extends string> = Type extends ValidType
   @private
  */
 interface BasicRegistry {
+  // TODO: Update this comment
   /**
     Registers a factory that can be used for dependency injection (with
     `inject`) or for service lookup. Each factory is registered with
