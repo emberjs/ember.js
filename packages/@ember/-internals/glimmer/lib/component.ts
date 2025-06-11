@@ -1395,7 +1395,7 @@ class Component<S = unknown>
    @method rerender
    @public
    */
-  rerender() {
+  rerender(): void {
     return this._currentState.rerender(this);
   }
 
