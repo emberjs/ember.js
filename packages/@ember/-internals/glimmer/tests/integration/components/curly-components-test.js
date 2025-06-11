@@ -6,7 +6,6 @@ import {
   equalTokens,
   equalsElement,
   runTask,
-  runLoopSettled,
 } from 'internal-test-helpers';
 
 import { tracked as trackedBuiltIn } from 'tracked-built-ins';
@@ -17,7 +16,7 @@ import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
-import EmberObject, { set, get, computed, observer } from '@ember/object';
+import EmberObject, { set, get, computed } from '@ember/object';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -3094,44 +3093,6 @@ moduleFor(
       this.render(`{{foo-bar}}`);
 
       this.assertText('things');
-    }
-
-    async ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
-      let barCopyDidChangeCount = 0;
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          init() {
-            this._super(...arguments);
-            this.didInit = true;
-          },
-
-          didReceiveAttrs() {
-            assert.ok(this.didInit, 'expected init to have run before didReceiveAttrs');
-            this.set('barCopy', this.attrs.bar.value + 1);
-          },
-
-          barCopyDidChange: observer('barCopy', () => {
-            barCopyDidChangeCount++;
-          }),
-        }),
-
-        template: '{{this.bar}}-{{this.barCopy}}',
-      });
-
-      await this.render(`{{foo-bar bar=this.bar}}`, { bar: 3 });
-
-      this.assertText('3-4');
-
-      assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
-
-      set(this.context, 'bar', 7);
-
-      await runLoopSettled();
-
-      this.assertText('7-8');
-
-      assert.strictEqual(barCopyDidChangeCount, 2, 'expected observer firing for: barCopy');
     }
 
     ['@test overriding didReceiveAttrs does not trigger deprecation'](assert) {

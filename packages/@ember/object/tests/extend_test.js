@@ -1,6 +1,5 @@
-import { computed } from '@ember/object';
-import EmberObject, { observer } from '@ember/object';
-import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import EmberObject from '@ember/object';
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject.extend',
@@ -92,36 +91,37 @@ moduleFor(
       );
     }
 
-    async ['@test Overriding a computed property with an observer'](assert) {
-      let Parent = EmberObject.extend({
-        foo: computed(function () {
-          return 'FOO';
-        }),
-      });
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // async ['@test Overriding a computed property with an observer'](assert) {
+    //   let Parent = EmberObject.extend({
+    //     foo: computed(function () {
+    //       return 'FOO';
+    //     }),
+    //   });
 
-      let seen = [];
+    //   let seen = [];
 
-      let Child = Parent.extend({
-        foo: observer('bar', function () {
-          seen.push(this.get('bar'));
-        }),
-      });
+    //   let Child = Parent.extend({
+    //     foo: observer('bar', function () {
+    //       seen.push(this.get('bar'));
+    //     }),
+    //   });
 
-      let child = Child.create({ bar: 0 });
+    //   let child = Child.create({ bar: 0 });
 
-      assert.deepEqual(seen, []);
+    //   assert.deepEqual(seen, []);
 
-      child.set('bar', 1);
-      await runLoopSettled();
+    //   child.set('bar', 1);
+    //   await runLoopSettled();
 
-      assert.deepEqual(seen, [1]);
+    //   assert.deepEqual(seen, [1]);
 
-      child.set('bar', 2);
-      await runLoopSettled();
+    //   child.set('bar', 2);
+    //   await runLoopSettled();
 
-      assert.deepEqual(seen, [1, 2]);
+    //   assert.deepEqual(seen, [1, 2]);
 
-      child.destroy();
-    }
+    //   child.destroy();
+    // }
   }
 );

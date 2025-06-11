@@ -4,7 +4,7 @@ import { addObserver } from '@ember/object/observers';
 import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject, { computed, observer } from '@ember/object';
+import EmberObject, { computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
@@ -55,28 +55,29 @@ moduleFor(
       assert.equal(o.get('foo'), 'bar');
     }
 
-    ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
-      if (DEBUG) {
-        let MyClass = EmberObject.extend({
-          foo: null,
-          bar: null,
-          fooDidChange: observer('foo', function () {}),
-        });
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
+    //   if (DEBUG) {
+    //     let MyClass = EmberObject.extend({
+    //       foo: null,
+    //       bar: null,
+    //       fooDidChange: observer('foo', function () {}),
+    //     });
 
-        let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('foo'), 'bar');
+    //     let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+    //     assert.equal(o.get('foo'), 'bar');
 
-        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
-        assert.ok(descriptor.set, 'Mandatory setter was setup');
+    //     let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+    //     assert.ok(descriptor.set, 'Mandatory setter was setup');
 
-        descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
-        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+    //     descriptor = Object.getOwnPropertyDescriptor(o, 'bar');
+    //     assert.ok(!descriptor.set, 'Mandatory setter was not setup');
 
-        o.destroy();
-      } else {
-        assert.expect(0);
-      }
-    }
+    //     o.destroy();
+    //   } else {
+    //     assert.expect(0);
+    //   }
+    // }
 
     ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
       if (DEBUG) {
@@ -128,27 +129,28 @@ moduleFor(
       }
     }
 
-    ['@test does not sets up separate mandatory setters on getters'](assert) {
-      if (DEBUG) {
-        let MyClass = EmberObject.extend({
-          get foo() {
-            return 'bar';
-          },
-          fooDidChange: observer('foo', function () {}),
-        });
+    // TODO: Determine if there's anything useful to test here with observer helper gone
+    // ['@test does not sets up separate mandatory setters on getters'](assert) {
+    //   if (DEBUG) {
+    //     let MyClass = EmberObject.extend({
+    //       get foo() {
+    //         return 'bar';
+    //       },
+    //       fooDidChange: observer('foo', function () {}),
+    //     });
 
-        let o = MyClass.create({});
-        assert.equal(o.get('foo'), 'bar');
+    //     let o = MyClass.create({});
+    //     assert.equal(o.get('foo'), 'bar');
 
-        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
-        assert.ok(!descriptor, 'Mandatory setter was not setup');
+    //     let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+    //     assert.ok(!descriptor, 'Mandatory setter was not setup');
 
-        // cleanup
-        o.destroy();
-      } else {
-        assert.expect(0);
-      }
-    }
+    //     // cleanup
+    //     o.destroy();
+    //   } else {
+    //     assert.expect(0);
+    //   }
+    // }
 
     ['@test does not sets up separate mandatory setters on arrays'](assert) {
       if (DEBUG) {

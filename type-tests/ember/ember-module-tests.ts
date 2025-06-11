@@ -66,9 +66,6 @@ expectTypeOf(Ember.isPresent([])).toEqualTypeOf<boolean>();
 class O2 extends Ember.Object {
   name = 'foo';
   age = 3;
-
-  nameWatcher = Ember.observer('name', () => {});
-  nameWatcher2 = Ember.observer('name', 'fullName', () => {});
 }
 const o2 = O2.create({
   name: 'foo',

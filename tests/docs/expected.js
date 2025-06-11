@@ -318,7 +318,6 @@ module.exports = {
     'not',
     'notifyPropertyChange',
     'observeModelType',
-    'observer',
     'off',
     'on',
     'once',

@@ -1,11 +1,7 @@
 import { notifyPropertyChange } from '@ember/-internals/metal';
-import { alias, oneWay as reads } from '@ember/object/computed';
-import EmberObject, { defineProperty, get, set, computed, observer } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import EmberObject, { get, set, computed } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-
-function K() {
-  return this;
-}
 
 function testGet(assert, expect, x, y) {
   assert.equal(get(x, y), expect);
@@ -174,116 +170,119 @@ moduleFor(
       }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
     }
 
-    ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
-      assert
-    ) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {}),
+    // TODO: Determine if there's anything worth testing here now that observer helper is gone
+    // ['@test overriding a computed property with null removes it from eachComputedProperty iteration'](
+    //   assert
+    // ) {
+    //   let MyClass = EmberObject.extend({
+    //     foo: computed(function () {}),
 
-        fooDidChange: observer('foo', function () {}),
+    //     fooDidChange: observer('foo', function () {}),
 
-        bar: computed(function () {}),
-      });
+    //     bar: computed(function () {}),
+    //   });
 
-      let SubClass = MyClass.extend({
-        foo: null,
-      });
+    //   let SubClass = MyClass.extend({
+    //     foo: null,
+    //   });
 
-      let list = [];
+    //   let list = [];
 
-      SubClass.eachComputedProperty((name) => list.push(name));
+    //   SubClass.eachComputedProperty((name) => list.push(name));
 
-      assert.deepEqual(
-        list.sort(),
-        ['bar'],
-        'overridding with null removes from eachComputedProperty listing'
-      );
-    }
+    //   assert.deepEqual(
+    //     list.sort(),
+    //     ['bar'],
+    //     'overridding with null removes from eachComputedProperty listing'
+    //   );
+    // }
 
-    ['@test can iterate over a list of computed properties for a class'](assert) {
-      let MyClass = EmberObject.extend({
-        foo: computed(function () {}),
+    // TODO: Determine if there's anything worth testing here now that observer helper is gone
+    // ['@test can iterate over a list of computed properties for a class'](assert) {
+    //   let MyClass = EmberObject.extend({
+    //     foo: computed(function () {}),
 
-        fooDidChange: observer('foo', function () {}),
+    //     fooDidChange: observer('foo', function () {}),
 
-        bar: computed(function () {}),
+    //     bar: computed(function () {}),
 
-        qux: alias('foo'),
-      });
+    //     qux: alias('foo'),
+    //   });
 
-      let SubClass = MyClass.extend({
-        baz: computed(function () {}),
-      });
+    //   let SubClass = MyClass.extend({
+    //     baz: computed(function () {}),
+    //   });
 
-      let list = [];
+    //   let list = [];
 
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
+    //   MyClass.eachComputedProperty(function (name) {
+    //     list.push(name);
+    //   });
 
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo', 'qux'],
-        'watched and unwatched computed properties are iterated'
-      );
+    //   assert.deepEqual(
+    //     list.sort(),
+    //     ['bar', 'foo', 'qux'],
+    //     'watched and unwatched computed properties are iterated'
+    //   );
 
-      list = [];
+    //   list = [];
 
-      SubClass.eachComputedProperty(function (name, meta) {
-        list.push(name);
-        assert.deepEqual(meta, {});
-      });
+    //   SubClass.eachComputedProperty(function (name, meta) {
+    //     list.push(name);
+    //     assert.deepEqual(meta, {});
+    //   });
 
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'baz', 'foo', 'qux'],
-        'all inherited properties are included'
-      );
-    }
+    //   assert.deepEqual(
+    //     list.sort(),
+    //     ['bar', 'baz', 'foo', 'qux'],
+    //     'all inherited properties are included'
+    //   );
+    // }
 
-    ['@test list of properties updates when an additional property is added (such cache busting)'](
-      assert
-    ) {
-      let MyClass = EmberObject.extend({
-        foo: computed(K),
+    // TODO: Determine if there's anything worth testing here now that observer helper is gone
+    // ['@test list of properties updates when an additional property is added (such cache busting)'](
+    //   assert
+    // ) {
+    //   let MyClass = EmberObject.extend({
+    //     foo: computed(K),
 
-        fooDidChange: observer('foo', function () {}),
+    //     fooDidChange: observer('foo', function () {}),
 
-        bar: computed(K),
-      });
+    //     bar: computed(K),
+    //   });
 
-      let list = [];
+    //   let list = [];
 
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
+    //   MyClass.eachComputedProperty(function (name) {
+    //     list.push(name);
+    //   });
 
-      assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
+    //   assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
-      MyClass.create().destroy(); // force apply mixins
+    //   MyClass.create().destroy(); // force apply mixins
 
-      list = [];
+    //   list = [];
 
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
+    //   MyClass.eachComputedProperty(function (name) {
+    //     list.push(name);
+    //   });
 
-      assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
+    //   assert.deepEqual(list.sort(), ['bar', 'foo'].sort(), 'expected two computed properties');
 
-      defineProperty(MyClass.prototype, 'qux', computed(K));
+    //   defineProperty(MyClass.prototype, 'qux', computed(K));
 
-      list = [];
+    //   list = [];
 
-      MyClass.eachComputedProperty(function (name) {
-        list.push(name);
-      });
+    //   MyClass.eachComputedProperty(function (name) {
+    //     list.push(name);
+    //   });
 
-      assert.deepEqual(
-        list.sort(),
-        ['bar', 'foo', 'qux'].sort(),
-        'expected three computed properties'
-      );
-    }
+    //   assert.deepEqual(
+    //     list.sort(),
+    //     ['bar', 'foo', 'qux'].sort(),
+    //     'expected three computed properties'
+    //   );
+    // }
 
     ['@test Calling _super in call outside the immediate function of a CP getter works'](assert) {
       function macro(callback) {
@@ -331,24 +330,6 @@ moduleFor(
       };
 
       assert.ok(get(SubClass.create(), 'foo'), 'FOO', 'super value is fetched');
-    }
-
-    ['@test observing prop installed with computed macro reads and overriding it in create() works'](
-      assert
-    ) {
-      let Obj = EmberObject.extend({
-        name: reads('model.name'),
-        nameDidChange: observer('name', function () {}),
-      });
-
-      let obj1 = Obj.create({ name: '1' });
-      let obj2 = Obj.create({ name: '2' });
-
-      assert.equal(obj1.get('name'), '1');
-      assert.equal(obj2.get('name'), '2');
-
-      obj1.destroy();
-      obj2.destroy();
     }
 
     ['@test native getters and setters work'](assert) {
