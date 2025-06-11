@@ -19,7 +19,6 @@
     "@ember/application": "workspace:*",
     "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
-    "@ember/enumerable": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/service": "workspace:*",
     "@ember/utils": "workspace:*",

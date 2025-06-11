@@ -71,8 +71,6 @@ import EmberComponent, { Input as EmberInput } from '@ember/component';
 import EmberHelper from '@ember/component/helper';
 import EmberEngine from '@ember/engine';
 import EmberEngineInstance from '@ember/engine/instance';
-import EmberEnumerable from '@ember/enumerable';
-import EmberMutableEnumerable from '@ember/enumerable/mutable';
 import EmberCoreObject from '@ember/object/core';
 import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
 import {
@@ -257,14 +255,6 @@ namespace Ember {
   // ****@ember/engine/instance****
   export const EngineInstance = EmberEngineInstance;
   export type EngineInstance = EmberEngineInstance;
-
-  // ****@ember/enumerable****
-  export const Enumerable = EmberEnumerable;
-  export type Enumerable = EmberEnumerable;
-
-  // ****@ember/enumerable/mutable****
-  export const MutableEnumerable = EmberMutableEnumerable;
-  export type MutableEnumerable = EmberMutableEnumerable;
 
   // ****@ember/instrumentation****
   /** @private */

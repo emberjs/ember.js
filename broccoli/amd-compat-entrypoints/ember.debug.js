@@ -185,12 +185,6 @@ d('@ember/engine/instance', emberEngineInstance);
 import * as emberEngineLibEngineParent from '@ember/engine/lib/engine-parent';
 d('@ember/engine/lib/engine-parent', emberEngineLibEngineParent);
 
-import * as emberEnumerableIndex from '@ember/enumerable/index';
-d('@ember/enumerable/index', emberEnumerableIndex);
-
-import * as emberEnumerableMutable from '@ember/enumerable/mutable';
-d('@ember/enumerable/mutable', emberEnumerableMutable);
-
 import * as emberHelperIndex from '@ember/helper/index';
 d('@ember/helper/index', emberHelperIndex);
 

@@ -69,7 +69,6 @@ import * as test13 from '@ember/debug/data-adapter';
 import * as test14 from '@ember/destroyable';
 import * as test15 from '@ember/engine';
 import * as test16 from '@ember/engine/instance';
-import * as test17 from '@ember/enumerable';
 import * as test18 from '@ember/instrumentation';
 import * as test19 from '@ember/modifier';
 import * as test20 from '@ember/helper';
@@ -165,7 +164,6 @@ let allExports = [
   ['_unregisterDestructor', '@ember/destroyable', 'unregisterDestructor', test14],
   ['Engine', '@ember/engine', 'default', test15],
   ['EngineInstance', '@ember/engine/instance', 'default', test16],
-  ['Enumerable', '@ember/enumerable', 'default', test17],
   ['instrument', '@ember/instrumentation', 'instrument', test18],
   ['subscribe', '@ember/instrumentation', 'subscribe', test18],
   ['Instrumentation.instrument', '@ember/instrumentation', 'instrument', test18],
@@ -322,7 +320,6 @@ let allExports = [
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
   ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
   ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
-  ['MutableEnumerable', '@ember/-internals/runtime', null, test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
   ['generateControllerFactory', '@ember/-internals/routing', null, test58],
   ['generateController', '@ember/-internals/routing', null, test58],

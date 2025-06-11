@@ -337,9 +337,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/helper':
         specifier: workspace:*
         version: link:../helper
@@ -539,9 +536,6 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -653,9 +647,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -773,39 +764,6 @@ importers:
         specifier: ^8.0.5
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
-  packages/@ember/enumerable:
-    dependencies:
-      '@ember/-internals':
-        specifier: workspace:*
-        version: link:../-internals
-      '@ember/array':
-        specifier: workspace:*
-        version: link:../array
-      '@ember/debug':
-        specifier: workspace:*
-        version: link:../debug
-      '@ember/object':
-        specifier: workspace:*
-        version: link:../object
-      '@glimmer/destroyable':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
-      '@glimmer/owner':
-        specifier: 0.93.4
-        version: 0.93.4
-      '@glimmer/util':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
-      internal-test-helpers:
-        specifier: workspace:*
-        version: link:../../internal-test-helpers
-
   packages/@ember/helper:
     dependencies:
       '@ember/-internals':
@@ -883,9 +841,6 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/runloop':
         specifier: workspace:*
         version: link:../runloop
@@ -983,9 +938,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -1199,9 +1151,6 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -1262,9 +1211,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../instrumentation
@@ -1349,9 +1295,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../@ember/engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../@ember/enumerable
       '@ember/helper':
         specifier: workspace:*
         version: link:../@ember/helper
@@ -1475,9 +1418,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../@ember/engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../@ember/enumerable
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../@ember/instrumentation
@@ -1628,9 +1568,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../@ember/engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../@ember/enumerable
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../@ember/instrumentation
