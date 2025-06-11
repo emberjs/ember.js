@@ -41,7 +41,7 @@ import {
   sendEvent as emberSendEvent,
 } from '@ember/object/events';
 
-import { RegistryProxyMixin, RSVP as _RSVP } from '@ember/-internals/runtime';
+import { RSVP as _RSVP } from '@ember/-internals/runtime';
 import {
   componentCapabilities,
   modifierCapabilities,
@@ -159,9 +159,6 @@ namespace Ember {
   export const endPropertyChanges = metal.endPropertyChanges;
   export const hasListeners = metal.hasListeners;
   export const libraries = metal.libraries;
-
-  // ****@ember/-internals/runtime****
-  export const _RegistryProxyMixin = RegistryProxyMixin;
 
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;

@@ -10,8 +10,13 @@ import type { Container } from '@ember/-internals/container';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
-import { RegistryProxyMixin } from '@ember/-internals/runtime';
-import type { ContainerProxy, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
+import type {
+  ContainerProxy,
+  FactoryClass,
+  InternalFactory,
+  InternalOwner,
+  RegisterOptions,
+} from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
@@ -42,7 +47,6 @@ export interface EngineInstanceOptions {
   @public
   @class EngineInstance
   @extends EmberObject
-  @uses RegistryProxyMixin
 */
 
 // TODO: Update this comment
@@ -53,11 +57,9 @@ export interface EngineInstanceOptions {
 // clauses for `InternalOwner` and `Owner` is to keep us honest: if this stops
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
-interface EngineInstance extends RegistryProxyMixin, InternalOwner, Owner {}
-class EngineInstance
-  extends EmberObject.extend(RegistryProxyMixin)
-  implements ContainerProxy, InternalOwner, Owner
-{
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface EngineInstance extends Owner {}
+class EngineInstance extends EmberObject implements ContainerProxy, InternalOwner, Owner {
   /**
    @private
    @method setupRegistry
@@ -175,23 +177,6 @@ class EngineInstance
   }
 
   /**
-   Unregister a factory.
-
-   Overrides `RegistryProxy#unregister` in order to clear any cached instances
-   of the unregistered factory.
-
-   @public
-   @method unregister
-   @param {String} fullName
-   */
-  unregister(fullName: FullName) {
-    this.__container__.reset(fullName);
-
-    // We overwrote this method from RegistryProxyMixin.
-    this.__registry__.unregister(fullName);
-  }
-
-  /**
     Build a new `EngineInstance` that's a child of this instance.
 
     Engines must be registered by name with their parent engine
@@ -287,6 +272,92 @@ class EngineInstance
     }
 
     return super.destroy();
+  }
+
+  // Registry Proxy
+  // Duplicated with Engine
+
+  declare __registry__: Registry;
+
+  resolveRegistration(fullName: string) {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    return this.__registry__.resolve(fullName);
+  }
+
+  /**
+   Registers a factory for later injection.
+
+   @private
+   @method register
+   @param {String} fullName
+   @param {Function} factory
+   @param {Object} options
+   */
+  register<T extends object, C extends FactoryClass | object>(
+    fullName: FullName,
+    factory: InternalFactory<T, C>,
+    options: RegisterOptions & { instantiate: true }
+  ): void;
+  register(fullName: FullName, factory: object, options?: RegisterOptions): void;
+  register(...args: Parameters<Registry['register']>) {
+    return this.__registry__.register(...args);
+  }
+
+  /**
+   Unregister a factory.
+
+   Also clears any cached instances of the unregistered factory.
+
+   @public
+   @method unregister
+   @param {String} fullName
+   */
+  unregister(fullName: FullName) {
+    this.__container__.reset(fullName);
+
+    // We overwrote this method from RegistryProxyMixin.
+    this.__registry__.unregister(fullName);
+  }
+
+  /**
+   Given a fullName check if the registry is aware of its factory
+   or singleton instance.
+
+   @private
+   @method hasRegistration
+   @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] the fullname of the request source (used for local lookups)
+   @return {Boolean}
+   */
+  hasRegistration(fullName: FullName): boolean {
+    return this.__registry__.has(fullName);
+  }
+
+  registeredOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
+    optionName: K
+  ): RegisterOptions[K] | undefined {
+    return this.__registry__.getOption(fullName, optionName);
+  }
+
+  registerOptions(fullName: FullName, options: RegisterOptions) {
+    return this.__registry__.options(fullName, options);
+  }
+
+  registeredOptions(fullName: FullName): RegisterOptions | undefined {
+    return this.__registry__.getOptions(fullName);
+  }
+
+  /**
+   Allow registering options for all factories of a type.
+   */
+  registerOptionsForType(type: string, options: RegisterOptions) {
+    return this.__registry__.optionsForType(type, options);
+  }
+
+  registeredOptionsForType(type: string): RegisterOptions | undefined {
+    return this.__registry__.getOptionsForType(type);
   }
 }
 

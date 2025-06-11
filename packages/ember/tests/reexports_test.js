@@ -104,7 +104,6 @@ import * as test53 from '@ember/-internals/error-handling';
 import * as test54 from '@ember/-internals/meta';
 import * as test55 from '@ember/-internals/views';
 import * as test56 from '@ember/-internals/glimmer';
-import * as test57 from '@ember/-internals/runtime';
 import * as test58 from '@ember/-internals/routing';
 import * as test59 from 'backburner.js';
 import * as test60 from 'rsvp';
@@ -318,7 +317,6 @@ let allExports = [
     test56,
   ],
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
-  ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
   ['generateControllerFactory', '@ember/-internals/routing', null, test58],
   ['generateController', '@ember/-internals/routing', null, test58],
