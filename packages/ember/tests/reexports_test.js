@@ -69,7 +69,6 @@ import * as test13 from '@ember/debug/data-adapter';
 import * as test14 from '@ember/destroyable';
 import * as test15 from '@ember/engine';
 import * as test16 from '@ember/engine/instance';
-import * as test17 from '@ember/enumerable';
 import * as test18 from '@ember/instrumentation';
 import * as test19 from '@ember/modifier';
 import * as test20 from '@ember/helper';
@@ -80,7 +79,6 @@ import * as test24 from '@ember/object/core';
 import * as test26 from '@ember/object/events';
 import * as test27 from '@ember/object/internals';
 import * as test28 from '@ember/object/mixin';
-import * as test29 from '@ember/object/observable';
 import * as test30 from '@ember/object/observers';
 import * as test33 from '@ember/routing/hash-location';
 import * as test34 from '@ember/routing/history-location';
@@ -106,7 +104,6 @@ import * as test53 from '@ember/-internals/error-handling';
 import * as test54 from '@ember/-internals/meta';
 import * as test55 from '@ember/-internals/views';
 import * as test56 from '@ember/-internals/glimmer';
-import * as test57 from '@ember/-internals/runtime';
 import * as test58 from '@ember/-internals/routing';
 import * as test59 from 'backburner.js';
 import * as test60 from 'rsvp';
@@ -130,7 +127,6 @@ let allExports = [
   ['Helper.helper', '@ember/component/helper', 'helper', test8],
   ['_templateOnlyComponent', '@ember/component/template-only', 'default', test9],
   ['Controller', '@ember/controller', 'default', test10],
-  ['ControllerMixin', '@ember/controller', 'ControllerMixin', test10],
   ['inject.controller', '@ember/controller', 'inject', test10],
   ['deprecateFunc', '@ember/debug', 'deprecateFunc', test11],
   ['deprecate', '@ember/debug', 'deprecate', test11],
@@ -167,7 +163,6 @@ let allExports = [
   ['_unregisterDestructor', '@ember/destroyable', 'unregisterDestructor', test14],
   ['Engine', '@ember/engine', 'default', test15],
   ['EngineInstance', '@ember/engine/instance', 'default', test16],
-  ['Enumerable', '@ember/enumerable', 'default', test17],
   ['instrument', '@ember/instrumentation', 'instrument', test18],
   ['subscribe', '@ember/instrumentation', 'subscribe', test18],
   ['Instrumentation.instrument', '@ember/instrumentation', 'instrument', test18],
@@ -206,7 +201,6 @@ let allExports = [
   ['cacheFor', '@ember/object/internals', 'cacheFor', test27],
   ['guidFor', '@ember/object/internals', 'guidFor', test27],
   ['Mixin', '@ember/object/mixin', 'default', test28],
-  ['Observable', '@ember/object/observable', 'default', test29],
   ['addObserver', '@ember/object/observers', 'addObserver', test30],
   ['removeObserver', '@ember/object/observers', 'removeObserver', test30],
   ['HashLocation', '@ember/routing/hash-location', 'default', test33],
@@ -323,9 +317,6 @@ let allExports = [
     test56,
   ],
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
-  ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
-  ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
-  ['MutableEnumerable', '@ember/-internals/runtime', null, test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
   ['generateControllerFactory', '@ember/-internals/routing', null, test58],
   ['generateController', '@ember/-internals/routing', null, test58],

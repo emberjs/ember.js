@@ -88,8 +88,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     return getHash(this.location);
   }
 
-  init(): void {
-    this._super(...arguments);
+  init(properties: object | undefined): void {
+    super.init(properties);
 
     let base = document.querySelector('base');
     let baseURL = '';

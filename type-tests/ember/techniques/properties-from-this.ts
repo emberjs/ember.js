@@ -1,7 +1,6 @@
 /**
  * These tests validate that the method of pulling property types off of this
- * continues to work. We use this technique in the critical Observable interface
- * that serves to implement a lot of Ember.CoreObject's functionality
+ * continues to work.
  */
 
 import { expectTypeOf } from 'expect-type';

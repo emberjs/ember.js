@@ -14,7 +14,8 @@ import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from '@ember/routing/-internals';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';
-import { RegistryProxyMixin } from '@ember/-internals/runtime';
+import type { FullName, RegisterOptions } from '@ember/owner';
+import type { FactoryClass, InternalFactory } from '@ember/-internals/owner';
 
 function props(obj: object) {
   let properties = [];
@@ -50,12 +51,9 @@ export interface Initializer<T> {
 
   @class Engine
   @extends Ember.Namespace
-  @uses RegistryProxyMixin
   @public
 */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface Engine extends RegistryProxyMixin {}
-class Engine extends Namespace.extend(RegistryProxyMixin) {
+class Engine extends Namespace {
   static initializers: Record<string, Initializer<Engine>> = Object.create(null);
   static instanceInitializers: Record<string, Initializer<EngineInstance>> = Object.create(null);
 
@@ -442,6 +440,79 @@ class Engine extends Namespace.extend(RegistryProxyMixin) {
     }
 
     graph.topsort(cb);
+  }
+
+  // Registry Proxy
+  // Duplicated with EngineInstance
+
+  declare __registry__: Registry;
+
+  resolveRegistration(fullName: string) {
+    assert('fullName must be a proper full name', this.__registry__.isValidFullName(fullName));
+    return this.__registry__.resolve(fullName);
+  }
+
+  register<T extends object, C extends FactoryClass | object>(
+    fullName: FullName,
+    factory: InternalFactory<T, C>,
+    options: RegisterOptions & { instantiate: true }
+  ): void;
+  register(fullName: FullName, factory: object, options?: RegisterOptions): void;
+  register<T extends object, C extends FactoryClass | object>(
+    fullName: FullName,
+    factory: InternalFactory<T, C>,
+    options?: RegisterOptions
+  ): void;
+  register(...args: Parameters<Registry['register']>) {
+    return this.__registry__.register(...args);
+  }
+
+  /**
+   Unregister a fullName
+   */
+  unregister(fullName: FullName) {
+    this.__registry__.unregister(fullName);
+  }
+
+  /**
+   Given a fullName check if the registry is aware of its factory
+   or singleton instance.
+
+   @private
+   @method hasRegistration
+   @param {String} fullName
+   @param {Object} [options]
+   @param {String} [options.source] the fullname of the request source (used for local lookups)
+   @return {Boolean}
+   */
+  hasRegistration(fullName: FullName): boolean {
+    return this.__registry__.has(fullName);
+  }
+
+  registeredOption<K extends keyof RegisterOptions>(
+    fullName: FullName,
+    optionName: K
+  ): RegisterOptions[K] | undefined {
+    return this.__registry__.getOption(fullName, optionName);
+  }
+
+  registerOptions(fullName: FullName, options: RegisterOptions) {
+    return this.__registry__.options(fullName, options);
+  }
+
+  registeredOptions(fullName: FullName): RegisterOptions | undefined {
+    return this.__registry__.getOptions(fullName);
+  }
+
+  /**
+   Allow registering options for all factories of a type.
+   */
+  registerOptionsForType(type: string, options: RegisterOptions) {
+    return this.__registry__.optionsForType(type, options);
+  }
+
+  registeredOptionsForType(type: string): RegisterOptions | undefined {
+    return this.__registry__.getOptionsForType(type);
   }
 }
 

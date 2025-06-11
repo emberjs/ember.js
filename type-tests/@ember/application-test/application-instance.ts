@@ -24,8 +24,8 @@ appInstance.register('templates:foo/bar', hbs`<h1>Hello World</h1>`, {
   singleton: true,
   instantiate: true,
 });
+// @ts-expect-error
 appInstance.register('templates:foo/bar', hbs`<h1>Hello World</h1>`, {
-  // @ts-expect-error
   singleton: 'true',
   instantiate: true,
 });

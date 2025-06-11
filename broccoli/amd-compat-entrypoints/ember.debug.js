@@ -56,18 +56,6 @@ d('@ember/-internals/runtime/index', emberinternalsRuntimeIndex);
 import * as emberinternalsRuntimeLibExtRsvp from '@ember/-internals/runtime/lib/ext/rsvp';
 d('@ember/-internals/runtime/lib/ext/rsvp', emberinternalsRuntimeLibExtRsvp);
 
-import * as emberinternalsRuntimeLibMixinsContainerProxy from '@ember/-internals/runtime/lib/mixins/container_proxy';
-d(
-  '@ember/-internals/runtime/lib/mixins/container_proxy',
-  emberinternalsRuntimeLibMixinsContainerProxy
-);
-
-import * as emberinternalsRuntimeLibMixinsRegistryProxy from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-d(
-  '@ember/-internals/runtime/lib/mixins/registry_proxy',
-  emberinternalsRuntimeLibMixinsRegistryProxy
-);
-
 import * as emberinternalsStringIndex from '@ember/-internals/string/index';
 d('@ember/-internals/string/index', emberinternalsStringIndex);
 
@@ -185,12 +173,6 @@ d('@ember/engine/instance', emberEngineInstance);
 import * as emberEngineLibEngineParent from '@ember/engine/lib/engine-parent';
 d('@ember/engine/lib/engine-parent', emberEngineLibEngineParent);
 
-import * as emberEnumerableIndex from '@ember/enumerable/index';
-d('@ember/enumerable/index', emberEnumerableIndex);
-
-import * as emberEnumerableMutable from '@ember/enumerable/mutable';
-d('@ember/enumerable/mutable', emberEnumerableMutable);
-
 import * as emberHelperIndex from '@ember/helper/index';
 d('@ember/helper/index', emberHelperIndex);
 
@@ -226,9 +208,6 @@ d('@ember/object/lib/computed/computed_macros', emberObjectLibComputedComputedMa
 
 import * as emberObjectMixin from '@ember/object/mixin';
 d('@ember/object/mixin', emberObjectMixin);
-
-import * as emberObjectObservable from '@ember/object/observable';
-d('@ember/object/observable', emberObjectObservable);
 
 import * as emberObjectObservers from '@ember/object/observers';
 d('@ember/object/observers', emberObjectObservers);

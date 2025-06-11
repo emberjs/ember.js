@@ -15,10 +15,7 @@ import { FEATURES as EmberFEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert as emberAssert, captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner.js';
-import EmberController, {
-  inject as injectController,
-  ControllerMixin as EmberControllerMixin,
-} from '@ember/controller';
+import EmberController, { inject as injectController } from '@ember/controller';
 import EmberService, { service } from '@ember/service';
 
 import EmberObject, {
@@ -44,7 +41,7 @@ import {
   sendEvent as emberSendEvent,
 } from '@ember/object/events';
 
-import { RegistryProxyMixin, ContainerProxyMixin, RSVP as _RSVP } from '@ember/-internals/runtime';
+import { RSVP as _RSVP } from '@ember/-internals/runtime';
 import {
   componentCapabilities,
   modifierCapabilities,
@@ -74,11 +71,8 @@ import EmberComponent, { Input as EmberInput } from '@ember/component';
 import EmberHelper from '@ember/component/helper';
 import EmberEngine from '@ember/engine';
 import EmberEngineInstance from '@ember/engine/instance';
-import EmberEnumerable from '@ember/enumerable';
-import EmberMutableEnumerable from '@ember/enumerable/mutable';
 import EmberCoreObject from '@ember/object/core';
 import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
-import EmberObservable from '@ember/object/observable';
 import {
   addObserver as emberAddObserver,
   removeObserver as emberRemoveObserver,
@@ -166,10 +160,6 @@ namespace Ember {
   export const hasListeners = metal.hasListeners;
   export const libraries = metal.libraries;
 
-  // ****@ember/-internals/runtime****
-  export const _ContainerProxyMixin = ContainerProxyMixin;
-  export const _RegistryProxyMixin = RegistryProxyMixin;
-
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;
   export const EventDispatcher = views.EventDispatcher;
@@ -218,8 +208,6 @@ namespace Ember {
   // ****@ember/controller****
   export const Controller = EmberController;
   export type Controller<T = unknown> = EmberController<T>;
-  export const ControllerMixin = EmberControllerMixin;
-  export type ControllerMixin<T> = EmberControllerMixin<T>;
 
   // ****@ember/debug****
   export const _captureRenderTree = captureRenderTree;
@@ -263,14 +251,6 @@ namespace Ember {
   // ****@ember/engine/instance****
   export const EngineInstance = EmberEngineInstance;
   export type EngineInstance = EmberEngineInstance;
-
-  // ****@ember/enumerable****
-  export const Enumerable = EmberEnumerable;
-  export type Enumerable = EmberEnumerable;
-
-  // ****@ember/enumerable/mutable****
-  export const MutableEnumerable = EmberMutableEnumerable;
-  export type MutableEnumerable = EmberMutableEnumerable;
 
   // ****@ember/instrumentation****
   /** @private */
@@ -324,10 +304,6 @@ namespace Ember {
   export const Mixin = EmberMixin;
   export type Mixin = EmberMixin;
   export const mixin = emberMixin;
-
-  // ****@ember/object/observable****
-  export const Observable = EmberObservable;
-  export type Observable = EmberObservable;
 
   // ****@ember/object/observers****
   export const addObserver = emberAddObserver;
