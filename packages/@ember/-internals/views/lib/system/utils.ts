@@ -207,22 +207,6 @@ export function getViewBoundingClientRect(view: View): ClientRect | DOMRect {
   return range.getBoundingClientRect();
 }
 
-/**
-  Determines if the element matches the specified selector.
-
-  @private
-  @method matches
-  @param {DOMElement} el
-  @param {String} selector
-*/
-export const elMatches: typeof Element.prototype.matches | undefined =
-  typeof Element !== 'undefined' ? Element.prototype.matches : undefined;
-
-export function matches(el: Element, selector: string): boolean {
-  assert('cannot call `matches` in fastboot mode', elMatches !== undefined);
-  return elMatches.call(el, selector);
-}
-
 export function contains(a: Node, b: Node): boolean {
   if (a.contains !== undefined) {
     return a.contains(b);
