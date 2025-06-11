@@ -1,7 +1,6 @@
 /* eslint-disable no-new-wrappers */
 
 import { typeOf } from '@ember/utils';
-import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import { expectTypeOf } from 'expect-type';
 
@@ -29,8 +28,6 @@ typeOf(101); // 'number'
 typeOf(new Number(101)); // 'number'
 typeOf(true); // 'boolean'
 typeOf(new Boolean(true)); // 'boolean'
-typeOf(A); // 'function'
-typeOf(A()); // 'array'
 typeOf([1, 2, 90]); // 'array'
 typeOf(/abc/); // 'regexp'
 typeOf(new Date()); // 'date'

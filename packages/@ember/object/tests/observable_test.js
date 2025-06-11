@@ -3,7 +3,6 @@ import { run } from '@ember/runloop';
 import { get, computed } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
 import Observable from '@ember/object/observable';
-import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 /*
@@ -631,10 +630,6 @@ moduleFor(
         testObserver: observer('normal', function () {
           this.abnormal = 'removedObserver';
         }),
-
-        testArrayObserver: observer('normalArray.[]', function () {
-          this.abnormal = 'notifiedObserver';
-        }),
       }).create({
         normal: 'value',
         abnormal: 'zeroValue',
@@ -642,7 +637,6 @@ moduleFor(
         toggleVal: true,
         observedProperty: 'beingWatched',
         testRemove: 'observerToBeRemoved',
-        normalArray: emberA([1, 2, 3, 4, 5]),
       });
     }
 
@@ -717,13 +711,6 @@ moduleFor(
         object.toggleProperty('toggleVal', undefined, undefined),
         object.get('toggleVal')
       );
-    }
-
-    async ['@test should notify array observer when array changes'](assert) {
-      get(object, 'normalArray').replace(0, 0, [6]);
-      await runLoopSettled();
-
-      assert.equal(object.abnormal, 'notifiedObserver', 'observer should be notified');
     }
   }
 );

@@ -4,9 +4,7 @@ import { _backburner, next } from '@ember/runloop';
 import { get } from '@ember/object';
 import { dasherize } from '@ember/-internals/string';
 import Namespace from '@ember/application/namespace';
-import type { NativeArray } from '@ember/array';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
 import type { Cache } from '@glimmer/validator';
 import { consumeTag, createCache, getValue, tagFor, untrack } from '@glimmer/validator';
 import type ContainerDebugAdapter from '@ember/debug/container-debug-adapter';
@@ -33,7 +31,7 @@ type WrappedType<N extends string = string> = {
 type WrappedRecord<T> = {
   object: T;
   columnValues: object;
-  searchKeywords: NativeArray<unknown>;
+  searchKeywords: unknown[];
   filterValues: object;
   color: RecordColor | null;
 };
@@ -95,7 +93,7 @@ class RecordsWatcher<T> {
   }
 
   constructor(
-    records: NativeArray<T>,
+    records: T[],
     recordsAdded: RecordCallback<T>,
     recordsUpdated: RecordCallback<T>,
     recordsRemoved: RecordCallback<T>,
@@ -220,7 +218,7 @@ class TypeWatcher {
   @public
 */
 export default class DataAdapter<T> extends EmberObject {
-  releaseMethods = emberA<() => void>();
+  releaseMethods: Array<() => void> = [];
   recordsWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   typeWatchers: Map<unknown, { release: () => void; revalidate: () => void }> = new Map();
   flushWatchers: (() => void) | null = null;
@@ -320,7 +318,7 @@ export default class DataAdapter<T> extends EmberObject {
     name: string;
     desc: string;
   }> {
-    return emberA();
+    return [];
   }
 
   /**
@@ -342,7 +340,7 @@ export default class DataAdapter<T> extends EmberObject {
     typesUpdated: (types: WrappedType[]) => void
   ) {
     let modelTypes = this.getModelTypes();
-    let releaseMethods = emberA<() => void>();
+    let releaseMethods: Array<() => void> = [];
     let typesToSend;
 
     typesToSend = modelTypes.map((type) => {
@@ -356,9 +354,12 @@ export default class DataAdapter<T> extends EmberObject {
 
     let release = () => {
       releaseMethods.forEach((fn) => fn());
-      this.releaseMethods.removeObject(release);
+      const index = this.releaseMethods.indexOf(release);
+      if (index > -1) {
+        this.releaseMethods.splice(index, 1);
+      }
     };
-    this.releaseMethods.pushObject(release);
+    this.releaseMethods.push(release);
     return release;
   }
 
@@ -485,7 +486,7 @@ export default class DataAdapter<T> extends EmberObject {
      desc: {String} Humanized description (what would show in a table column name).
   */
   columnsForType(_klass: unknown): Column[] {
-    return emberA();
+    return [];
   }
 
   /**
@@ -612,8 +613,8 @@ export default class DataAdapter<T> extends EmberObject {
      This array will be observed for changes,
      so it should update when new records are added/removed.
   */
-  getRecords(_klass: unknown, _name: string): NativeArray<T> {
-    return emberA();
+  getRecords(_klass: unknown, _name: string): T[] {
+    return [];
   }
 
   /**
@@ -656,7 +657,7 @@ export default class DataAdapter<T> extends EmberObject {
     @return {Array} Relevant keywords for search.
   */
   getRecordKeywords(_record: T) {
-    return emberA();
+    return [];
   }
 
   /**

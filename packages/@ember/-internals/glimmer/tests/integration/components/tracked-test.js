@@ -1,10 +1,10 @@
 import EmberObject from '@ember/object';
-import { A } from '@ember/array';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
+import { TrackedArray } from 'tracked-built-ins';
 
 moduleFor(
   'Component Tracked Properties',
@@ -189,9 +189,9 @@ moduleFor(
 
     '@test array properties rerender when updated'() {
       class NumListComponent extends Component {
-        @tracked numbers = A([1, 2, 3]);
+        @tracked numbers = new TrackedArray([1, 2, 3]);
 
-        addNumber = () => this.numbers.pushObject(4);
+        addNumber = () => this.numbers.push(4);
       }
 
       this.registerComponent('num-list', {

@@ -3,9 +3,10 @@ import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'inter
 
 import { isEmpty } from '@ember/utils';
 import { action } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
+
+import { tracked } from 'tracked-built-ins';
 
 moduleFor(
   'Components test: contextual components',
@@ -1160,7 +1161,7 @@ moduleFor(
       });
 
       this.render('{{component (component "my-link") params=this.allParams}}', {
-        allParams: emberA(['a', 'b']),
+        allParams: tracked(['a', 'b']),
       });
 
       this.assertText('ab');
@@ -1169,23 +1170,23 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').pushObject('c'));
+      runTask(() => this.context.get('allParams').push('c'));
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').popObject());
+      runTask(() => this.context.get('allParams').pop());
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').clear());
+      runTask(() => this.context.get('allParams').splice(0, 2));
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', ['1', '2']));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', ['a', 'b']));
 
       this.assertText('ab');
     }
@@ -1201,7 +1202,7 @@ moduleFor(
       this.render(
         '{{#let (hash link=(component "my-link")) as |c|}}{{c.link params=this.allParams}}{{/let}}',
         {
-          allParams: emberA(['a', 'b']),
+          allParams: tracked(['a', 'b']),
         }
       );
 
@@ -1211,23 +1212,23 @@ moduleFor(
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').pushObject('c'));
+      runTask(() => this.context.get('allParams').push('c'));
 
       this.assertText('abc');
 
-      runTask(() => this.context.get('allParams').popObject());
+      runTask(() => this.context.get('allParams').pop());
 
       this.assertText('ab');
 
-      runTask(() => this.context.get('allParams').clear());
+      runTask(() => this.context.get('allParams').splice(0, 3));
 
       this.assertText('');
 
-      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', ['1', '2']));
 
       this.assertText('12');
 
-      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', ['a', 'b']));
 
       this.assertText('ab');
     }

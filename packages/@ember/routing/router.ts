@@ -1,5 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import type { BootEnvironment, OutletState, OutletView } from '@ember/-internals/glimmer';
+import { sendEvent } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
 import type { default as Owner, FactoryManager } from '@ember/owner';
 import { getOwner } from '@ember/owner';
@@ -20,7 +21,6 @@ import type {
 } from '@ember/routing/location';
 import type RouterService from '@ember/routing/router-service';
 import EmberObject from '@ember/object';
-import { A as emberA } from '@ember/array';
 import { typeOf } from '@ember/utils';
 import { assert, info } from '@ember/debug';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
@@ -49,7 +49,7 @@ import type { QueryParams } from 'route-recognizer';
 import type { AnyFn, MethodNamesOf, OmitFirst } from '@ember/-internals/utility-types';
 import type { Template } from '@glimmer/interfaces';
 import type ApplicationInstance from '@ember/application/instance';
-import { sendEvent } from '@ember/-internals/metal';
+import { makeArray } from '@ember/array';
 
 /**
 @module @ember/routing/router
@@ -999,7 +999,7 @@ class EmberRouter extends EmberObject {
     } else if (defaultType === 'number') {
       return Number(value).valueOf();
     } else if (defaultType === 'array') {
-      return emberA(JSON.parse(value as string));
+      return makeArray(JSON.parse(value as string));
     }
     return value;
   }
