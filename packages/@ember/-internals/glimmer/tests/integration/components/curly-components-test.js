@@ -3212,9 +3212,9 @@ moduleFor(
 
       expectAssertion(() => {
         this.registerComponent('foo-bar', {
-          ComponentClass: MyComponent.reopenClass({
-            positionalParams: ['myVar'],
-          }),
+          ComponentClass: class extends MyComponent {
+            static positionalParams = ['myVar'];
+          },
           template:
             'MyVar1: {{attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{attrs.myVar2}}',
         });
@@ -3227,9 +3227,9 @@ moduleFor(
 
       expectDeprecation(() => {
         this.registerComponent('foo-bar', {
-          ComponentClass: MyComponent.reopenClass({
-            positionalParams: ['myVar'],
-          }),
+          ComponentClass: class extends MyComponent {
+            static positionalParams = ['myVar'];
+          },
           template:
             'MyVar1: {{this.attrs.myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{this.attrs.myVar2}}',
         });
@@ -3244,9 +3244,9 @@ moduleFor(
       let MyComponent = class extends Component {};
 
       this.registerComponent('foo-bar', {
-        ComponentClass: MyComponent.reopenClass({
-          positionalParams: ['myVar'],
-        }),
+        ComponentClass: class extends MyComponent {
+          static positionalParams = ['myVar'];
+        },
         template: 'MyVar1: {{@myVar}} {{this.myVar}} MyVar2: {{this.myVar2}} {{@myVar2}}',
       });
 

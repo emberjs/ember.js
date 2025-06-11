@@ -143,6 +143,8 @@ moduleFor(
 
       let instance;
       let FooBarComponent = class extends Component {
+        static positionalParams = ['firstPositional'];
+
         init() {
           super.init(...arguments);
           instance = this;
@@ -165,10 +167,6 @@ moduleFor(
           assert.equal(rootSecond, attrSecond, 'root property matches attrs value');
         }
       };
-
-      FooBarComponent.reopenClass({
-        positionalParams: ['firstPositional'],
-      });
 
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 

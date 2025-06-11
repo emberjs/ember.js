@@ -1,4 +1,4 @@
-import { computed, get } from '@ember/object';
+import { computed } from '@ember/object';
 import EmberObject, { observer } from '@ember/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -87,36 +87,6 @@ moduleFor(
       );
       assert.deepEqual(
         yetAnother.get('things'),
-        ['foo', 'baz'],
-        "subclass should have base class' and its own"
-      );
-    }
-
-    ['@test With concatenatedProperties class properties'](assert) {
-      let SomeClass = EmberObject.extend();
-      SomeClass.reopenClass({
-        concatenatedProperties: ['things'],
-        things: 'foo',
-      });
-      let AnotherClass = SomeClass.extend();
-      AnotherClass.reopenClass({ things: 'bar' });
-      let YetAnotherClass = SomeClass.extend();
-      YetAnotherClass.reopenClass({ things: 'baz' });
-      let some = SomeClass.create();
-      let another = AnotherClass.create();
-      let yetAnother = YetAnotherClass.create();
-      assert.deepEqual(
-        get(some.constructor, 'things'),
-        ['foo'],
-        'base class should have just its value'
-      );
-      assert.deepEqual(
-        get(another.constructor, 'things'),
-        ['foo', 'bar'],
-        "subclass should have base class' and its own"
-      );
-      assert.deepEqual(
-        get(yetAnother.constructor, 'things'),
         ['foo', 'baz'],
         "subclass should have base class' and its own"
       );

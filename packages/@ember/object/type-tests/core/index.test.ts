@@ -33,6 +33,3 @@ const co3 = CoreObject.create({ foo: '123', bar: 456 });
 // Note: we don't provide type creation via `.extend`. People should use native
 // classes instead.
 expectTypeOf(CoreObject.extend({ baz: 6 }).create()).not.toHaveProperty('baz');
-
-// NOTE: This is marked as @internal and will not be publicly available
-CoreObject.reopenClass({ baz: 6 });

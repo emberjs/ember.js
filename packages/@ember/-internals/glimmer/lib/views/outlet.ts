@@ -37,10 +37,6 @@ export default class OutletView {
     };
   }
 
-  static reopenClass(injections: any): void {
-    Object.assign(this, injections);
-  }
-
   static create(options: {
     environment: BootEnvironment;
     application: InternalOwner;
