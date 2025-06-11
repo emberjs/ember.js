@@ -1,6 +1,6 @@
-import { get } from '@ember/object';
-import EmberObject from '@ember/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { computed } from '@ember/object';
+import EmberObject, { observer } from '@ember/object';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject.extend',
@@ -92,43 +92,12 @@ moduleFor(
       );
     }
 
-    ['@test With concatenatedProperties class properties'](assert) {
-      let SomeClass = EmberObject.extend();
-      SomeClass.reopenClass({
-        concatenatedProperties: ['things'],
-        things: 'foo',
+    async ['@test Overriding a computed property with an observer'](assert) {
+      let Parent = EmberObject.extend({
+        foo: computed(function () {
+          return 'FOO';
+        }),
       });
-      let AnotherClass = SomeClass.extend();
-      AnotherClass.reopenClass({ things: 'bar' });
-      let YetAnotherClass = SomeClass.extend();
-      YetAnotherClass.reopenClass({ things: 'baz' });
-      let some = SomeClass.create();
-      let another = AnotherClass.create();
-      let yetAnother = YetAnotherClass.create();
-      assert.deepEqual(
-        get(some.constructor, 'things'),
-        ['foo'],
-        'base class should have just its value'
-      );
-      assert.deepEqual(
-        get(another.constructor, 'things'),
-        ['foo', 'bar'],
-        "subclass should have base class' and its own"
-      );
-      assert.deepEqual(
-        get(yetAnother.constructor, 'things'),
-        ['foo', 'baz'],
-        "subclass should have base class' and its own"
-      );
-    }
-
-    // TODO: Determine if there's anything useful to test here with observer helper gone
-    // async ['@test Overriding a computed property with an observer'](assert) {
-    //   let Parent = EmberObject.extend({
-    //     foo: computed(function () {
-    //       return 'FOO';
-    //     }),
-    //   });
 
     //   let seen = [];
 

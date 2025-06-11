@@ -17,7 +17,7 @@ import {
   DEBUG_INJECTION_FUNCTIONS,
   hasUnknownProperty,
 } from '@ember/-internals/metal';
-import Mixin, { applyMixin } from '@ember/object/mixin';
+import Mixin from '@ember/object/mixin';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -793,71 +793,6 @@ class CoreObject {
     // SAFETY: The `initialize` call is responsible to merge the prototype chain
     // so that this holds.
     return instance as InstanceType<C> & MergeArray<Args>;
-  }
-
-  /**
-    Augments a constructor's own properties and functions:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const MyObject = EmberObject.extend({
-      name: 'an object'
-    });
-
-    MyObject.reopenClass({
-      canBuild: false
-    });
-
-    MyObject.canBuild; // false
-    o = MyObject.create();
-    ```
-
-    In other words, this creates static properties and functions for the class.
-    These are only available on the class and not on any instance of that class.
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Person = EmberObject.extend({
-      name: '',
-      sayHello() {
-        alert(`Hello. My name is ${this.get('name')}`);
-      }
-    });
-
-    Person.reopenClass({
-      species: 'Homo sapiens',
-
-      createPerson(name) {
-        return Person.create({ name });
-      }
-    });
-
-    let tom = Person.create({
-      name: 'Tom Dale'
-    });
-    let yehuda = Person.createPerson('Yehuda Katz');
-
-    tom.sayHello(); // "Hello. My name is Tom Dale"
-    yehuda.sayHello(); // "Hello. My name is Yehuda Katz"
-    alert(Person.species); // "Homo sapiens"
-    ```
-
-    Note that `species` and `createPerson` are *not* valid on the `tom` and `yehuda`
-    variables. They are only valid on `Person`.
-
-    @method reopenClass
-    @for @ember/object
-    @static
-    @public
-  */
-  static reopenClass<C extends typeof CoreObject>(
-    this: C,
-    ...mixins: Array<Mixin | Record<string, unknown>>
-  ): C {
-    applyMixin(this, mixins);
-    return this;
   }
 
   static detect(obj: unknown) {

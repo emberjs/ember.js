@@ -1085,7 +1085,7 @@ class Component<S = unknown>
     @property positionalParams
     @since 1.13.0
     */
-  declare static positionalParams: string | string[];
+  static positionalParams: string | string[];
 
   /**
     Layout can be used to wrap content in a component.
@@ -1595,11 +1595,6 @@ class Component<S = unknown>
     return '@ember/component';
   }
 }
-
-// We continue to use reopenClass here so that positionalParams can be overridden with reopenClass in subclasses.
-Component.reopenClass({
-  positionalParams: [],
-});
 
 setInternalComponentManager(CURLY_COMPONENT_MANAGER, Component);
 

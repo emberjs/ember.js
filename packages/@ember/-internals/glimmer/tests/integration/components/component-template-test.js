@@ -62,14 +62,7 @@ moduleFor(
         return;
       }
 
-      let Thing = setComponentTemplate(
-        compile('hello'),
-        Component.extend().reopenClass({
-          toString() {
-            return 'Thing';
-          },
-        })
-      );
+      let Thing = setComponentTemplate(compile('hello'), Component.extend());
 
       assert.throws(() => {
         setComponentTemplate(compile('foo'), Thing);

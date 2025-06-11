@@ -393,7 +393,7 @@ function updateObserversAndListeners(obj: object, key: string, fn: Function, add
   }
 }
 
-export function applyMixin(
+function applyMixin(
   obj: Record<string, any>,
   mixins: Array<Mixin | Record<string, unknown>>,
   _hideKeys = false

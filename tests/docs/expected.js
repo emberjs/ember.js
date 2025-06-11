@@ -374,7 +374,6 @@ module.exports = {
     'removeTestHelpers',
     'renderSettled',
     'reopen',
-    'reopenClass',
     'replaceRoute',
     'replaceState',
     'replaceURL',

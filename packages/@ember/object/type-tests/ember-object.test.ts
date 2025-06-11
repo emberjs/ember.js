@@ -49,9 +49,6 @@ expectTypeOf(p2c.firstName).toEqualTypeOf<string>();
 // NOTE: This is marked as @internal and will not be publicly available
 Person.extend({ fullName: 6 });
 
-// NOTE: This is marked as @internal and will not be publicly available
-Person.reopenClass({ fullName: 6 });
-
 class MyComponent extends EmberObject {
   foo = 'bar';
 

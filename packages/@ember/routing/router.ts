@@ -192,7 +192,7 @@ class EmberRouter extends EmberObject {
 
   private namespace: any;
 
-  // Set with reopenClass
+  // Set by `map`
   private static dslCallbacks?: DSLCallback[];
 
   /**
@@ -236,8 +236,6 @@ class EmberRouter extends EmberObject {
   static map(callback: DSLCallback) {
     if (!this.dslCallbacks) {
       this.dslCallbacks = [];
-      // FIXME: Can we remove this?
-      this.reopenClass({ dslCallbacks: this.dslCallbacks });
     }
 
     this.dslCallbacks.push(callback);
