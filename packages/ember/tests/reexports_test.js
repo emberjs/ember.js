@@ -319,7 +319,6 @@ let allExports = [
   ],
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
   ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
-  ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
   ['generateControllerFactory', '@ember/-internals/routing', null, test58],
   ['generateController', '@ember/-internals/routing', null, test58],

@@ -41,7 +41,7 @@ import {
   sendEvent as emberSendEvent,
 } from '@ember/object/events';
 
-import { RegistryProxyMixin, ContainerProxyMixin, RSVP as _RSVP } from '@ember/-internals/runtime';
+import { RegistryProxyMixin, RSVP as _RSVP } from '@ember/-internals/runtime';
 import {
   componentCapabilities,
   modifierCapabilities,
@@ -161,7 +161,6 @@ namespace Ember {
   export const libraries = metal.libraries;
 
   // ****@ember/-internals/runtime****
-  export const _ContainerProxyMixin = ContainerProxyMixin;
   export const _RegistryProxyMixin = RegistryProxyMixin;
 
   // ****@ember/-internals/view****

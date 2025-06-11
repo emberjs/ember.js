@@ -1,5 +1,5 @@
 module.exports = function buildOwner(Ember, resolver) {
-  let Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
+  let Owner = Ember.Object.extend(Ember._RegistryProxyMixin);
 
   let namespace = Ember.Object.create({
     Resolver: {

@@ -3,13 +3,15 @@
 */
 
 import EmberObject from '@ember/object';
+import { schedule, join } from '@ember/runloop';
 import { RSVP } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
+import type { Container } from '@ember/-internals/container';
 import { Registry, privatize as P } from '@ember/-internals/container';
 import { guidFor } from '@ember/-internals/utils';
 import { ENGINE_PARENT, getEngineParent, setEngineParent } from './parent';
-import { ContainerProxyMixin, RegistryProxyMixin } from '@ember/-internals/runtime';
-import type { InternalOwner } from '@ember/-internals/owner';
+import { RegistryProxyMixin } from '@ember/-internals/runtime';
+import type { ContainerProxy, InternalOwner, RegisterOptions } from '@ember/-internals/owner';
 import type Owner from '@ember/-internals/owner';
 import { type FullName, isFactory } from '@ember/-internals/owner';
 import type Engine from '@ember/engine';
@@ -41,9 +43,9 @@ export interface EngineInstanceOptions {
   @class EngineInstance
   @extends EmberObject
   @uses RegistryProxyMixin
-  @uses ContainerProxyMixin
 */
 
+// TODO: Update this comment
 // Note on types: since `EngineInstance` uses `RegistryProxyMixin` and
 // `ContainerProxyMixin`, which respectively implement the same `RegistryMixin`
 // and `ContainerMixin` types used to define `InternalOwner`, this is the same
@@ -51,8 +53,11 @@ export interface EngineInstanceOptions {
 // clauses for `InternalOwner` and `Owner` is to keep us honest: if this stops
 // type checking, we have broken part of our public API contract. Medium-term,
 // the goal here is to `EngineInstance` simple be `Owner`.
-interface EngineInstance extends RegistryProxyMixin, ContainerProxyMixin, InternalOwner, Owner {}
-class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin) {
+interface EngineInstance extends RegistryProxyMixin, InternalOwner, Owner {}
+class EngineInstance
+  extends EmberObject.extend(RegistryProxyMixin)
+  implements ContainerProxy, InternalOwner, Owner
+{
   /**
    @private
    @method setupRegistry
@@ -256,6 +261,47 @@ class EngineInstance extends EmberObject.extend(RegistryProxyMixin, ContainerPro
       this.register(key, singleton, { instantiate: false });
     });
   }
+
+  // Container Proxy
+
+  /**
+   The container stores state.
+
+   @private
+   @property {Ember.Container} __container__
+   */
+  declare __container__: Container;
+
+  ownerInjection() {
+    return this.__container__.ownerInjection();
+  }
+
+  destroy() {
+    let container = this.__container__;
+
+    if (container) {
+      join(() => {
+        container.destroy();
+        schedule('destroy', container, 'finalizeDestroy');
+      });
+    }
+
+    return super.destroy();
+  }
 }
+
+// MEGAHAX: This is really nasty, but if we don't define the functions this way, we need to provide types.
+// If we provide types, for reasons I don't understand, they somehow break the interface.
+// Adding the methods this way allows us to keep the types defined by the interface.
+
+// @ts-expect-error This is a huge hack to avoid type issues.
+EngineInstance.prototype.lookup = function lookup(fullName: FullName, options?: RegisterOptions) {
+  return this.__container__.lookup(fullName, options);
+};
+
+// @ts-expect-error This is a huge hack to avoid type issues
+EngineInstance.prototype.factoryFor = function factoryFor(fullName: FullName) {
+  return this.__container__.factoryFor(fullName);
+};
 
 export default EngineInstance;
