@@ -408,14 +408,6 @@ moduleFor(
       // Only string listeners are allowed for prototypes
       addListener(B.prototype, 'someEvent', null, 'onSomeEvent');
 
-      B.reopen({
-        init() {
-          calls.push('reopen init before _super');
-          this._super(...arguments);
-          calls.push('reopen init after _super');
-        },
-      });
-
       let C = class extends B {
         init() {
           calls.push('C init before _super');
@@ -469,7 +461,6 @@ moduleFor(
       assert.deepEqual(calls, [
         'D init before super.init',
         'C init before _super',
-        'reopen init before _super',
         'B init before super.init',
         'Mixin2 init before _super',
         'Mixin1 init before _super',
@@ -477,7 +468,6 @@ moduleFor(
         'Mixin1 init after _super',
         'Mixin2 init after _super',
         'B init after super.init',
-        'reopen init after _super',
         'C init after _super',
         'D init after super.init',
       ]);

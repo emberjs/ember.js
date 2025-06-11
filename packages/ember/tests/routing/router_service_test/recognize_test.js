@@ -31,11 +31,26 @@ moduleFor(
       });
     }
 
-    '@test respects the usage of a different rootURL'(assert) {
-      this.router.reopen({
-        rootURL: '/app/',
+    '@test returns `null` if URL is not recognized'(assert) {
+      return this.visit('/').then(() => {
+        let routeInfo = this.routerService.recognize('/foo');
+        assert.equal(routeInfo, null);
       });
+    }
+  }
+);
 
+moduleFor(
+  'Router Service - recognize',
+  class extends RouterTestCase {
+    get routerOptions() {
+      return {
+        ...super.routerOptions,
+        rootURL: '/app/',
+      };
+    }
+
+    '@test respects the usage of a different rootURL'(assert) {
       return this.visit('/app').then(() => {
         let routeInfo = this.routerService.recognize('/app/child/');
         assert.ok(routeInfo);
@@ -50,21 +65,10 @@ moduleFor(
       this.addTemplate('parent', 'Parent');
       this.addTemplate('dynamic-with-child.child', 'Dynamic Child');
 
-      this.router.reopen({
-        rootURL: '/app/',
-      });
-
       return this.visit('/app').then(() => {
         expectAssertion(() => {
           this.routerService.recognize('/dynamic-with-child/123/1?a=b');
         }, 'You must pass a url that begins with the application\'s rootURL "/app/"');
-      });
-    }
-
-    '@test returns `null` if URL is not recognized'(assert) {
-      return this.visit('/').then(() => {
-        let routeInfo = this.routerService.recognize('/foo');
-        assert.equal(routeInfo, null);
       });
     }
   }
@@ -136,36 +140,6 @@ moduleFor(
         });
     }
 
-    '@test respects the usage of a different rootURL'(assert) {
-      this.router.reopen({
-        rootURL: '/app/',
-      });
-
-      return this.visit('/app')
-        .then(() => {
-          return this.routerService.recognizeAndLoad('/app/child/');
-        })
-        .then((routeInfoWithAttributes) => {
-          assert.ok(routeInfoWithAttributes);
-          let { name, localName, parent } = routeInfoWithAttributes;
-          assert.equal(name, 'parent.child');
-          assert.equal(localName, 'child');
-          assert.equal(parent.name, 'parent');
-        });
-    }
-
-    '@test must include rootURL'() {
-      this.router.reopen({
-        rootURL: '/app/',
-      });
-
-      return this.visit('/app').then(() => {
-        expectAssertion(() => {
-          this.routerService.recognizeAndLoad('/dynamic-with-child/123/1?a=b');
-        }, 'You must pass a url that begins with the application\'s rootURL "/app/"');
-      });
-    }
-
     '@test rejects if url is not recognized'(assert) {
       this.addTemplate('parent', 'Parent{{outlet}}');
       this.addTemplate('parent.child', 'Child');
@@ -216,6 +190,40 @@ moduleFor(
             assert.equal(err.message, 'Unhandled');
           }
         );
+    }
+  }
+);
+
+moduleFor(
+  'Router Service - recognizeAndLoad',
+  class extends RouterTestCase {
+    get routerOptions() {
+      return {
+        ...super.routerOptions,
+        rootURL: '/app/',
+      };
+    }
+
+    '@test respects the usage of a different rootURL'(assert) {
+      return this.visit('/app')
+        .then(() => {
+          return this.routerService.recognizeAndLoad('/app/child/');
+        })
+        .then((routeInfoWithAttributes) => {
+          assert.ok(routeInfoWithAttributes);
+          let { name, localName, parent } = routeInfoWithAttributes;
+          assert.equal(name, 'parent.child');
+          assert.equal(localName, 'child');
+          assert.equal(parent.name, 'parent');
+        });
+    }
+
+    '@test must include rootURL'() {
+      return this.visit('/app').then(() => {
+        expectAssertion(() => {
+          this.routerService.recognizeAndLoad('/dynamic-with-child/123/1?a=b');
+        }, 'You must pass a url that begins with the application\'s rootURL "/app/"');
+      });
     }
   }
 );

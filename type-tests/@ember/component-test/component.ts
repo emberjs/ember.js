@@ -123,11 +123,6 @@ Component.extend({
   },
 });
 
-Component.reopen({
-  attributeBindings: ['metadata:data-my-metadata'],
-  metadata: '',
-});
-
 interface MySig {
   Args: {
     Named: {

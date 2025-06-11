@@ -185,7 +185,7 @@ moduleFor(
         EmberObject.create({
           foo: computed(function () {}),
         });
-      }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
+      }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() before calling create().');
     }
 
     ['@test throws if you try to call _super in a method']() {

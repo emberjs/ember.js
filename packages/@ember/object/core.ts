@@ -96,7 +96,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
 
       assert(
         'EmberObject.create no longer supports defining computed ' +
-          'properties. Define computed properties using extend() or reopen() ' +
+          'properties. Define computed properties using extend() ' +
           'before calling create().',
         !isClassicDecorator(value)
       );
@@ -305,11 +305,6 @@ class CoreObject {
     if (DEBUG && self !== this) {
       return self;
     }
-  }
-
-  reopen(...args: Array<Mixin | Record<string, unknown>>): this {
-    applyMixin(this, args);
-    return this;
   }
 
   /**
@@ -801,60 +796,6 @@ class CoreObject {
   }
 
   /**
-    Augments a constructor's prototype with additional
-    properties and functions:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const MyObject = EmberObject.extend({
-      name: 'an object'
-    });
-
-    o = MyObject.create();
-    o.get('name'); // 'an object'
-
-    MyObject.reopen({
-      say(msg) {
-        console.log(msg);
-      }
-    });
-
-    o2 = MyObject.create();
-    o2.say('hello'); // logs "hello"
-
-    o.say('goodbye'); // logs "goodbye"
-    ```
-
-    To add functions and properties to the constructor itself,
-    see `reopenClass`
-
-    @method reopen
-    @for @ember/object
-    @static
-    @public
-  */
-  static reopen<C extends typeof CoreObject>(this: C, ...args: any[]): C {
-    this.willReopen();
-    reopen.apply(this.PrototypeMixin, args);
-    return this;
-  }
-
-  static willReopen() {
-    let p = this.prototype;
-    if (wasApplied.has(p)) {
-      wasApplied.delete(p);
-
-      // If the base mixin already exists and was applied, create a new mixin to
-      // make sure that it gets properly applied. Reusing the same mixin after
-      // the first `proto` call will cause it to get skipped.
-      if (prototypeMixinMap.has(this)) {
-        prototypeMixinMap.set(this, Mixin.create(this.PrototypeMixin));
-      }
-    }
-  }
-
-  /**
     Augments a constructor's own properties and functions:
 
     ```javascript
@@ -905,10 +846,6 @@ class CoreObject {
 
     Note that `species` and `createPerson` are *not* valid on the `tom` and `yehuda`
     variables. They are only valid on `Person`.
-
-    To add functions and properties to instances of
-    a constructor by extending the constructor's prototype
-    see `reopen`
 
     @method reopenClass
     @for @ember/object

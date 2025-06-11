@@ -354,10 +354,6 @@ class Application extends Engine {
       ...
     });
 
-    App.Router.reopen({
-      location: 'none'
-    });
-
     App.Router.map({
       ...
     });
@@ -388,6 +384,7 @@ class Application extends Engine {
     @default true
     @private
   */
+  // TODO: We should kill this
   declare _globalsMode: boolean;
 
   /**
