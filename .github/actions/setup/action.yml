@@ -5,6 +5,11 @@ inputs:
     description: 'Whether to use the lockfile vs latest floating dependencies'
     required: false
     default: true
+
+  node-version:
+    description: 'The node version to use'
+    required: false
+    default: 18
 runs:
   using: 'composite'
   steps:
@@ -15,7 +20,7 @@ runs:
     - name: Install Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: '${{ inputs.node-version }}'
         registry-url: 'https://registry.npmjs.org'
         cache: pnpm
     - uses: actions/cache@v4

@@ -13,22 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: sudo snap install dust
+        with:
+          node-version: 22
       - run: pnpm build
 
-      - name: "Get sizes for development outputs"
+      - name: "Get estimated sizes for production outputs"
         id: main-dev
         run: |
           mkdir -p main
-          cd dist/packages
-          dust --ignore_hidden \
-              --reverse --apparent-size \
-              --no-percent-bars \
-              --only-dir \
-              --depth 20 \
-            > out.txt
-          cp out.txt ../../main/
-
+          node ./bin/minify-assets.mjs > ./main/out.txt
 
       - uses: actions/upload-artifact@v4
         with:
