@@ -23,7 +23,7 @@ expectTypeOf(controller.target).toEqualTypeOf<unknown | undefined>();
 
 expectTypeOf(controller.model).toEqualTypeOf<Foo>();
 
-expectTypeOf(controller.concatenatedProperties).toEqualTypeOf<string[] | string | undefined>();
+expectTypeOf(controller.concatenatedProperties).toEqualTypeOf<string[]>();
 
 expectTypeOf(controller.queryParams).toEqualTypeOf<
   Readonly<

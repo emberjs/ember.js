@@ -24,9 +24,9 @@ const MODEL = Symbol('MODEL');
   @extends EmberObject
   @public
 */
-class Controller<T = unknown> extends FrameworkObject.extend({
-  concatenatedProperties: ['queryParams'],
-}) {
+class Controller<T = unknown> extends FrameworkObject {
+  concatenatedProperties = ['queryParams'];
+
   /**
    This property is updated to various different callback functions depending on
    the current "state" of the backing route. It is used by

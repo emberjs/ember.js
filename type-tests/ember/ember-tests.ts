@@ -134,8 +134,3 @@ const mix1 = Ember.Mixin.create({
 const mix2 = Ember.Mixin.create({
   bar: 2,
 });
-
-const component1 = Ember.Component.extend(mix1, mix2, {
-  lyft: Ember.inject.service(),
-  cars: Ember.computed('lyft.cars').readOnly(),
-});

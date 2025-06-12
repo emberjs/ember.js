@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { Helper } from '@ember/-internals/glimmer';
 import Service, { service } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
@@ -279,12 +280,15 @@ moduleFor(
         template: strip`{{hello-world}}`,
       });
 
-      this.registerHelper('hello-world', {
-        compute() {
-          computeCount++;
-          return `${trackedInstance.value}-value`;
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          compute() {
+            computeCount++;
+            return `${trackedInstance.value}-value`;
+          }
+        }
+      );
 
       this.render('<Person/>');
 

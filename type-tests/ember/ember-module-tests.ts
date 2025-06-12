@@ -119,7 +119,9 @@ expectTypeOf(Ember.Application.create()).toEqualTypeOf<Ember.Application>();
 expectTypeOf(new Ember.ApplicationInstance()).toEqualTypeOf<Ember.ApplicationInstance>();
 expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.ApplicationInstance>();
 // Ember.Component
-const C1 = Ember.Component.extend({ classNames: ['foo'] });
+const C1 = class extends Ember.Component {
+  classNames = ['foo'];
+};
 class C2 extends Ember.Component {
   classNames = ['foo'];
 }
@@ -185,7 +187,7 @@ class UsesMixin extends Ember.Object {
   }
 }
 // Ember.Namespace
-const myNs = Ember.Namespace.extend({});
+const myNs = class extends Ember.Namespace {};
 // Ember.NoneLocation
 expectTypeOf(new Ember.NoneLocation()).toEqualTypeOf<Ember.NoneLocation>();
 // Ember.Object

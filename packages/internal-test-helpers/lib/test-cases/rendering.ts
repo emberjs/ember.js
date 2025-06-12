@@ -1,5 +1,5 @@
 import type { Renderer } from '@ember/-internals/glimmer';
-import { _resetRenderers, helper, Helper } from '@ember/-internals/glimmer';
+import { _resetRenderers, helper } from '@ember/-internals/glimmer';
 import { EventDispatcher } from '@ember/-internals/views';
 import Component, { setComponentTemplate } from '@ember/component';
 import type { EmberPrecompileOptions } from 'ember-template-compiler';
@@ -15,6 +15,7 @@ import buildOwner from '../build-owner';
 import { define } from '../module-for';
 import { runAppend, runDestroy, runTask } from '../run';
 import AbstractTestCase from './abstract';
+import { typeOf } from '@ember/utils';
 
 const TextNode = window.Text;
 
@@ -203,10 +204,10 @@ export default abstract class RenderingTestCase extends AbstractTestCase {
     name: string,
     funcOrClassBody: (positional: P, named: N) => T | Record<string, unknown>
   ) {
-    if (typeof funcOrClassBody === 'function') {
+    if (typeOf(funcOrClassBody) === 'class') {
+      this.owner.register(`helper:${name}`, funcOrClassBody);
+    } else if (typeof funcOrClassBody === 'function') {
       this.owner.register(`helper:${name}`, helper(funcOrClassBody));
-    } else if (typeof funcOrClassBody === 'object' && funcOrClassBody !== null) {
-      this.owner.register(`helper:${name}`, Helper.extend(funcOrClassBody));
     } else {
       throw new Error(`Cannot register ${funcOrClassBody} as a helper`);
     }

@@ -75,6 +75,7 @@ module.exports = function (hooks) {
     this.template = registerTemplate;
     this.component = registerComponent;
     this.controller = registerController;
+    this.route = registerRoute;
     this.service = registerService;
     this.routes = registerRoutes;
     this.registry = {};
@@ -168,21 +169,59 @@ function registerTemplate(name, template) {
 }
 
 function registerComponent(name, componentProps, templateContents) {
-  let component = this.setComponentTemplate(
-    this.compile(templateContents),
-    componentProps ? this.Ember.Component.extend(componentProps) : this.templateOnlyComponent()
-  );
+  let componentClass;
+  if (typeof componentProps === 'function') {
+    componentClass = componentProps;
+  } else if (componentProps) {
+    componentClass = class extends this.Ember.Component {};
+    for (const [key, value] of Object.entries(componentProps)) {
+      componentClass = class extends componentClass {
+        [key] = value;
+      };
+    }
+  } else {
+    componentClass = this.templateOnlyComponent();
+  }
+  let component = this.setComponentTemplate(this.compile(templateContents), componentClass);
   this.register('component:' + name, component);
 }
 
 function registerController(name, controllerProps) {
-  let controller = this.Ember.Controller.extend(controllerProps);
-  this.register('controller:' + name, controller);
+  let controllerClass = class extends this.Ember.Controller {};
+  for (const [key, value] of Object.entries(controllerProps)) {
+    controllerClass = class extends controllerClass {
+      [key] = value;
+    };
+  }
+  this.register('controller:' + name, controllerClass);
+}
+
+function registerRoute(name, routeProps) {
+  let routeClass;
+  if (typeof routeProps === 'function') {
+    routeClass = routeProps;
+  } else {
+    let routeClass = class extends this.Ember.Route {
+      // FIXME: I don't think this works
+      // router = this.Ember.inject.service('router');
+    };
+    for (const [key, value] of Object.entries(routeProps)) {
+      routeClass = class extends routeClass {
+        [key] = value;
+      };
+    }
+  }
+  this.register('route:' + name, routeClass);
 }
 
 function registerService(name, serviceProps) {
-  let service = this.Ember.Object.extend(serviceProps);
-  this.register('service:' + name, service);
+  let serviceClass = class extends this.Ember.Object {};
+  for (const [key, value] of Object.entries(serviceProps)) {
+    serviceClass = class extends serviceClass {
+      [key] = value;
+    };
+  }
+  this.register('service:' + name, serviceClass);
 }
 
 function registerRoutes(cb) {
