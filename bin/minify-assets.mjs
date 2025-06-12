@@ -74,9 +74,9 @@ function totalGz(dataset) {
   return dataset.reduce((a, b) => a + b[2], 0);
 }
 
-function totalBr(dataset) {
-  return dataset.reduce((a, b) => a + b[3], 0);
-}
+// function totalBr(dataset) {
+//   return dataset.reduce((a, b) => a + b[3], 0);
+// }
 
 import { buildMacros } from '@embroider/macros/babel';
 
