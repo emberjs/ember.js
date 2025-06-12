@@ -27,9 +27,6 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      # better `du`
-      - run: sudo snap install dust
-
       - uses: dawidd6/action-download-artifact@v9
         with:
           run_id: ${{ inputs.RUN_ID || github.event.workflow_run.id }}
@@ -67,7 +64,7 @@ jobs:
           echo $contents
           echo "prNumber=$contents" >> $GITHUB_OUTPUT
 
-      - name: "[PR] Get sizes for development outputs"
+      - name: "[PR] Get sizes"
         id: dev
         run: |
           cat ${{ steps.find-pr-txt.outputs.txtPath }}
@@ -77,7 +74,7 @@ jobs:
           done <<< $(cat ${{ steps.find-pr-txt.outputs.txtPath }})
           echo 'EOF' >> $GITHUB_OUTPUT
 
-      - name: "[Main] Get sizes for development outputs"
+      - name: "[Main] Get sizes"
         id: main-dev
         run: |
           cd main/
@@ -89,13 +86,13 @@ jobs:
           done <<< $(cat out.txt)
           echo 'EOF' >> $GITHUB_OUTPUT
 
-      - name: "[Dev] calculate diff"
+      - name: "calculate diff"
         run: |
           # diff exits with status 1 if there is a diff
           diff -u main/out.txt ${{ steps.find-pr-txt.outputs.txtPath }} > dev-diff.txt || echo "Differences exist"
           cat dev-diff.txt
 
-      - name: "[Dev] store diff in GITHUB_OUTPUT"
+      - name: "store diff in GITHUB_OUTPUT"
         id: dev-diff
         run: |
           echo 'diffText<<EOF' >> $GITHUB_OUTPUT
@@ -106,7 +103,7 @@ jobs:
 
 
 
-      - name: "[Debug] collected data from artifacts"
+      - name: "collected data from artifacts"
         run: |
           echo "PR number"
           echo -e "${{ steps.find-pr-number.outputs.prNumber }}"
@@ -124,20 +121,16 @@ jobs:
       #########################
       # Intended Layout:
       #
-      #  |      | This PR | Main |
-      #  | Dev  |   x1    |  y1  |
-      #  | Prod |   x2    |  y2  |
-      #
-      #  NOTE: we we don't have a prod build for this library
-      #        because we currently expect non-compiler usage
-      #        (so consumers should have terser or similar properly configured for DCE)
+      #  | This PR | Main |
+      #  |   x1    |  y1  |
+      #  |   x2    |  y2  |
       #
       #########################
       - uses: mshick/add-pr-comment@v2
         with:
           issue: ${{ steps.find-pr-number.outputs.prNumber }}
           message: |
-            <details><summary>Development Assets</summary>
+            <details><summary>Estimated Asset Sizes</summary>
 
             Diff
 
@@ -147,9 +140,9 @@ jobs:
 
             Details
 
-            <table><thead><tr><th></th><th>This PR</th><th>main</th></tr></thead>
+            <table><thead><tr><th>This PR</th><th>main</th></tr></thead>
             <tbody>
-            <tr><td>Dev</td><td>
+            <tr><td>
 
             ```
             ${{ steps.dev.outputs.sizes }}
