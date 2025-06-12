@@ -17,7 +17,6 @@ import {
   DEBUG_INJECTION_FUNCTIONS,
   hasUnknownProperty,
 } from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -53,7 +52,6 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
 }
 
 const wasApplied = new WeakSet();
-const prototypeMixinMap = new WeakMap();
 
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 
@@ -72,12 +70,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
     assert(
       'EmberObject.create only accepts objects.',
       typeof properties === 'object' && properties !== null
-    );
-
-    assert(
-      'EmberObject.create no longer supports mixing in other ' +
-        'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
     );
 
     let concatenatedProperties = obj.concatenatedProperties;
@@ -755,16 +747,6 @@ class CoreObject {
     });
   }
 
-  static get PrototypeMixin() {
-    let prototypeMixin = prototypeMixinMap.get(this);
-    if (prototypeMixin === undefined) {
-      prototypeMixin = Mixin.create();
-      prototypeMixin.ownerConstructor = this;
-      prototypeMixinMap.set(this, prototypeMixin);
-    }
-    return prototypeMixin;
-  }
-
   static get superclass() {
     let c = Object.getPrototypeOf(this);
     return c !== Function.prototype ? c : undefined;
@@ -777,12 +759,6 @@ class CoreObject {
       let parent = this.superclass;
       if (parent) {
         parent.proto();
-      }
-
-      // If the prototype mixin exists, apply it. In the case of native classes,
-      // it will not exist (unless the class has been reopened).
-      if (prototypeMixinMap.has(this)) {
-        this.PrototypeMixin.apply(p);
       }
     }
     return p;
@@ -806,12 +782,6 @@ function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, un
   let initProperties: Record<string, unknown> = {};
 
   for (let properties of props) {
-    assert(
-      'EmberObject.create no longer supports mixing in other ' +
-        'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
-    );
-
     let keyNames = Object.keys(properties);
 
     for (let j = 0, k = keyNames.length; j < k; j++) {
