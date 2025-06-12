@@ -119,9 +119,9 @@ for (const pkg of packages) {
     writeFileSync(minFileName, result.code);
 
     let compressed = brotli.compress(result.code, {
-      mode: 1, // 0 = generic, 1 = text, 2 = font (WOFF2)
+      // mode: 1, // 0 = generic, 1 = text, 2 = font (WOFF2)
       quality: 11, // 0 - 11
-      lgwin: 22, // window size
+      // lgwin: 22, // window size
     });
 
     // console.log(brotli.decompress(brotli.compress(result.code)).length, result.code.length);
@@ -162,12 +162,12 @@ function printTable(data) {
 }
 
 printTable([
-  ['', 'Min', 'Gzip', 'Brotli'],
+  ['', 'Min', 'Gzip' /* 'Brotli' */],
   [
     'Total',
     size(Object.values(min).reduce((a, b) => a + b, 0)),
     size(Object.values(gzip).reduce((a, b) => a + b, 0)),
-    size(Object.values(br).reduce((a, b) => a + b, 0)),
+    // size(Object.values(br).reduce((a, b) => a + b, 0)),
   ],
 ]);
 
@@ -187,33 +187,33 @@ for (const pkg of packages.filter((p) => p.startsWith('@glimmer'))) {
 }
 
 printTable([
-  ['@ember/*', 'Min', 'Gzip', 'Brotli'],
+  ['@ember/*', 'Min', 'Gzip' /*  'Brotli' */],
   [
     'Total',
     size(totalMin(packageData.ember)),
     size(totalGz(packageData.ember)),
-    size(totalBr(packageData.ember)),
+    // size(totalBr(packageData.ember)),
   ],
   ...packageData.ember.map((x) => [
     x[0].replace('@ember/', ''),
     size(x[1]),
     size(x[2]),
-    size(x[3]),
+    // size(x[3]),
   ]),
 ]);
 
 printTable([
-  ['@glimmer/*', 'Min', 'Gzip', 'Brotli'],
+  ['@glimmer/*', 'Min', 'Gzip' /* 'Brotli' */],
   [
     'Total',
     size(totalMin(packageData.glimmer)),
     size(totalGz(packageData.glimmer)),
-    size(totalBr(packageData.glimmer)),
+    // size(totalBr(packageData.glimmer)),
   ],
   ...packageData.glimmer.map((x) => [
     x[0].replace('@glimmer/', ''),
     size(x[1]),
     size(x[2]),
-    size(x[3]),
+    // size(x[3]),
   ]),
 ]);
