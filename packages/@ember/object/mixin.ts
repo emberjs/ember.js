@@ -611,29 +611,6 @@ export default class Mixin {
   }
 
   /**
-    @method reopen
-    @param arguments*
-    @private
-    @internal
-  */
-  reopen(...args: Array<Mixin | Record<string, unknown>>): this {
-    if (args.length === 0) {
-      return this;
-    }
-
-    if (this.properties) {
-      let currentMixin = new Mixin(undefined, this.properties);
-      this.properties = undefined;
-      this.mixins = [currentMixin];
-    } else if (!this.mixins) {
-      this.mixins = [];
-    }
-
-    this.mixins = this.mixins.concat(buildMixinsArray(args) as Mixin[]);
-    return this;
-  }
-
-  /**
     @method apply
     @param obj
     @return applied object

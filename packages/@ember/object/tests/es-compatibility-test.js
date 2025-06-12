@@ -1,6 +1,5 @@
 import EmberObject, { computed, set } from '@ember/object';
 import { defineProperty, addObserver, addListener, sendEvent } from '@ember/-internals/metal';
-import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
@@ -343,23 +342,7 @@ moduleFor(
         }
       }
 
-      let Mixin1 = Mixin.create({
-        init() {
-          calls.push('Mixin1 init before _super');
-          this._super(...arguments);
-          calls.push('Mixin1 init after _super');
-        },
-      });
-
-      let Mixin2 = Mixin.create({
-        init() {
-          calls.push('Mixin2 init before _super');
-          this._super(...arguments);
-          calls.push('Mixin2 init after _super');
-        },
-      });
-
-      class B extends A.extend(Mixin1, Mixin2) {
+      class B extends A {
         init() {
           calls.push('B init before super.init');
           super.init(...arguments);
@@ -446,11 +429,7 @@ moduleFor(
         'D init before super.init',
         'C init before _super',
         'B init before super.init',
-        'Mixin2 init before _super',
-        'Mixin1 init before _super',
         'A init',
-        'Mixin1 init after _super',
-        'Mixin2 init after _super',
         'B init after super.init',
         'C init after _super',
         'D init after super.init',

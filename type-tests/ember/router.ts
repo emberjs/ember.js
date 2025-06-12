@@ -2,7 +2,7 @@ import RouterService from '@ember/routing/router-service';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
-const AppRouter = Ember.Router.extend({});
+class AppRouter extends Ember.Router {}
 
 AppRouter.map(function () {
   this.route('index', { path: '/' });

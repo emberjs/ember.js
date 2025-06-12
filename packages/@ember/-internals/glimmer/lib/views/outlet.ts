@@ -25,18 +25,6 @@ export interface BootEnvironment {
 const TOP_LEVEL_NAME = '-top-level';
 
 export default class OutletView {
-  static extend(injections: any): typeof OutletView {
-    return class extends OutletView {
-      static create(options: any) {
-        if (options) {
-          return super.create(Object.assign({}, injections, options));
-        } else {
-          return super.create(injections);
-        }
-      }
-    };
-  }
-
   static create(options: {
     environment: BootEnvironment;
     application: InternalOwner;

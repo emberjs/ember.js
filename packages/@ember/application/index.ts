@@ -502,7 +502,7 @@ class Application extends Engine {
     // Create subclass of Router for this Application instance.
     // This is to ensure that someone reopening `App.Router` does not
     // tamper with the default `Router`.
-    this.Router = (this.Router || Router).extend() as typeof Router;
+    this.Router = class extends (this.Router || Router) {};
 
     this._buildDeprecatedInstance();
   }

@@ -88,18 +88,8 @@ const person2 = Person.create({
   fullName: 'Fred Smith',
 });
 
-const person3 = Person.extend({
-  firstName: 'Fred',
-  fullName: 'Fred Smith',
-}).create();
-
-const person4 = Person.extend({
-  firstName: computed(() => 'Fred'),
-  fullName: computed(() => 'Fred Smith'),
-}).create();
-
-expectTypeOf(person4.firstName).toEqualTypeOf<string>();
-expectTypeOf(person4.fullName).toEqualTypeOf<string>();
+expectTypeOf(person2.get('firstName')).toEqualTypeOf<string>();
+expectTypeOf(person2.get('fullName')).toEqualTypeOf<string>();
 
 // computed property macros
 class Bar extends EmberObject {

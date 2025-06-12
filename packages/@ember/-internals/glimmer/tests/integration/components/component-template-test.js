@@ -70,7 +70,7 @@ moduleFor(
     //   }, /Cannot call `setComponentTemplate` multiple times on the same class \(`Class`\)/);
     // }
 
-    '@test templates set with setComponentTemplate are inherited (EmberObject.extend())'() {
+    '@test templates set with setComponentTemplate are inherited (extends EmberObject)'() {
       let Parent = setComponentTemplate(compile('hello'), class extends Component {});
 
       this.registerComponent('foo-bar', {

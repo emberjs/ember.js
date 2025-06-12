@@ -24,8 +24,6 @@ import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
-type EmberClassConstructor<T> = new (owner?: Owner) => T;
-
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
   : unknown; // TODO: Is this correct?
@@ -53,7 +51,6 @@ function hasToStringExtension(val: unknown): val is HasToStringExtension {
     typeof (val as HasToStringExtension).toStringExtension === 'function'
   );
 }
-const reopen = Mixin.prototype.reopen;
 
 const wasApplied = new WeakSet();
 const prototypeMixinMap = new WeakMap();
@@ -593,121 +590,17 @@ class CoreObject {
   }
 
   /**
-    Creates a new subclass.
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Person = EmberObject.extend({
-      say(thing) {
-        alert(thing);
-       }
-    });
-    ```
-
-    This defines a new subclass of EmberObject: `Person`. It contains one method: `say()`.
-
-    You can also create a subclass from any existing class by calling its `extend()` method.
-    For example, you might want to create a subclass of Ember's built-in `Component` class:
-
-    ```javascript
-    import Component from '@ember/component';
-
-    const PersonComponent = Component.extend({
-      tagName: 'li',
-      classNameBindings: ['isAdministrator']
-    });
-    ```
-
-    When defining a subclass, you can override methods but still access the
-    implementation of your parent class by calling the special `_super()` method:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Person = EmberObject.extend({
-      say(thing) {
-        let name = this.get('name');
-        alert(`${name} says: ${thing}`);
-      }
-    });
-
-    const Soldier = Person.extend({
-      say(thing) {
-        this._super(`${thing}, sir!`);
-      },
-      march(numberOfHours) {
-        alert(`${this.get('name')} marches for ${numberOfHours} hours.`);
-      }
-    });
-
-    let yehuda = Soldier.create({
-      name: 'Yehuda Katz'
-    });
-
-    yehuda.say('Yes');  // alerts "Yehuda Katz says: Yes, sir!"
-    ```
-
-    The `create()` on line #17 creates an *instance* of the `Soldier` class.
-    The `extend()` on line #8 creates a *subclass* of `Person`. Any instance
-    of the `Person` class will *not* have the `march()` method.
-
-    You can also pass `Mixin` classes to add additional properties to the subclass.
-
-    ```javascript
-    import EmberObject from '@ember/object';
-    import Mixin from '@ember/object/mixin';
-
-    const Person = EmberObject.extend({
-      say(thing) {
-        alert(`${this.get('name')} says: ${thing}`);
-      }
-    });
-
-    const SingingMixin = Mixin.create({
-      sing(thing) {
-        alert(`${this.get('name')} sings: la la la ${thing}`);
-      }
-    });
-
-    const BroadwayStar = Person.extend(SingingMixin, {
-      dance() {
-        alert(`${this.get('name')} dances: tap tap tap tap `);
-      }
-    });
-    ```
-
-    The `BroadwayStar` class contains three methods: `say()`, `sing()`, and `dance()`.
-
-    @method extend
-    @static
-    @for @ember/object
-    @param {Mixin} [mixins]* One or more Mixin classes
-    @param {Object} [arguments]* Object containing values to use within the new class
-    @public
-  */
-  static extend<Statics, Instance, M extends Array<unknown>>(
-    this: Statics & EmberClassConstructor<Instance>,
-    ...mixins: M
-  ): Readonly<Statics> & EmberClassConstructor<Instance> & MergeArray<M>;
-  static extend(...mixins: any[]) {
-    let Class = class extends this {};
-    reopen.apply(Class.PrototypeMixin, mixins);
-    return Class;
-  }
-
-  /**
     Creates an instance of a class. Accepts either no arguments, or an object
     containing values to initialize the newly instantiated object with.
 
     ```javascript
     import EmberObject from '@ember/object';
 
-    const Person = EmberObject.extend({
+    class Person extends EmberObject {
       helloWorld() {
         alert(`Hi, my name is ${this.get('name')}`);
       }
-    });
+    }
 
     let tom = Person.create({
       name: 'Tom Dale'
@@ -716,8 +609,7 @@ class CoreObject {
     tom.helloWorld(); // alerts "Hi, my name is Tom Dale".
     ```
 
-    `create` will call the `init` function if defined during
-    `AnyObject.extend`
+    `create` will call the `init` function if defined.
 
     If no arguments are passed to `create`, it will not set values to the new
     instance during initialization:
