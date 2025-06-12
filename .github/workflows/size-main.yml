@@ -19,7 +19,7 @@ jobs:
         id: main-dev
         run: |
           mkdir -p main
-          node ./bin/minify-assets.sh > ./main/out.txt
+          node ./bin/minify-assets.mjs > ./main/out.txt
 
       - uses: actions/upload-artifact@v4
         with:

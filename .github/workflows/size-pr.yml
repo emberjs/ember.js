@@ -27,7 +27,7 @@ jobs:
 
       - name: "Get estimated sizes for production outputs"
         id: dev
-        run: node ./bin/minify-assets.sh > ./pr/out.txt
+        run: node ./bin/minify-assets.mjs > ./pr/out.txt
 
 
       - uses: actions/upload-artifact@v4
