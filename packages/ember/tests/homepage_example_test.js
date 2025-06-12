@@ -1,7 +1,8 @@
 import Route from '@ember/routing/route';
-import EmberObject, { computed } from '@ember/object';
+import { computed } from '@ember/object';
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import CoreObject from '@ember/object/core';
 
 moduleFor(
   'The example renders correctly',
@@ -13,12 +14,12 @@ moduleFor(
         '<h1>People</h1><ul>{{#each @model as |person|}}<li>Hello, <b>{{person.fullName}}</b>!</li>{{/each}}</ul>'
       );
 
-      let Person = class extends EmberObject {
+      let Person = class extends CoreObject {
         firstName = null;
         lastName = null;
         @computed('firstName', 'lastName')
         get fullName() {
-          return `${this.get('firstName')} ${this.get('lastName')}`;
+          return `${this.firstName} ${this.lastName}`;
         }
       };
 

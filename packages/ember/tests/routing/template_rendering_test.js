@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
@@ -208,7 +208,7 @@ moduleFor(
         'route:page',
         class extends Route {
           model(params) {
-            return EmberObject.create({ name: params.name });
+            return CoreObject.create({ name: params.name });
           }
         }
       );
@@ -240,7 +240,7 @@ moduleFor(
       assert.equal(insertionCount, 1, 'view should have inserted only once');
       let router = this.applicationInstance.lookup('router:main');
 
-      await run(() => router.transitionTo('page', EmberObject.create({ name: 'third' })));
+      await run(() => router.transitionTo('page', CoreObject.create({ name: 'third' })));
 
       assert.equal(getTextOf(rootElement.querySelector('p')), 'third');
       assert.equal(insertionCount, 1, 'view should still have inserted only once');

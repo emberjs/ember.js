@@ -16,7 +16,8 @@ import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
-import EmberObject, { set, get, computed } from '@ember/object';
+import { set, get, computed } from '@ember/object';
+import CoreObject from '@ember/object/core';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -2493,7 +2494,7 @@ moduleFor(
       this.registerComponent('x-outer', {
         ComponentClass: class extends Component {
           value = 1;
-          wrapper = EmberObject.create({ content: null });
+          wrapper = CoreObject.create({ content: null });
         },
         template:
           '<div id="outer-value">{{this.wrapper.content}}</div> {{x-inner value=this.value wrapper=this.wrapper}}',
@@ -2502,7 +2503,7 @@ moduleFor(
       this.registerComponent('x-inner', {
         ComponentClass: class extends Component {
           didReceiveAttrs() {
-            this.get('wrapper').set('content', this.get('value'));
+            set(this.wrapper, 'content', this.value);
           }
           value = null;
         },

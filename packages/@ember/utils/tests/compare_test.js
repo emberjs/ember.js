@@ -1,5 +1,5 @@
 import { compare, typeOf } from '@ember/utils';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let data = [];
@@ -20,7 +20,7 @@ moduleFor(
       data[9] = [1, 2, 3];
       data[10] = [1, 3];
       data[11] = { a: 'hash' };
-      data[12] = EmberObject.create();
+      data[12] = CoreObject.create();
       data[13] = function (a) {
         return a;
       };

@@ -1,4 +1,5 @@
-import EmberObject, { computed } from '@ember/object';
+import { computed } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { tracked } from '@ember/-internals/metal';
 import { dependentKeyCompat } from '@ember/object/compat';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -32,7 +33,7 @@ moduleFor(
     }
 
     '@test it works with classic classes'(assert) {
-      let Person = class extends EmberObject {
+      let Person = class extends CoreObject {
         @tracked
         firstName = 'Tom';
         @tracked

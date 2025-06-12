@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
-import EmberObject, { action, get, computed } from '@ember/object';
+import { action, get, computed } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { RSVP } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
@@ -814,7 +815,7 @@ moduleFor(
       this.add(
         'route:index',
         class extends Route {
-          queryParams = EmberObject.create({
+          queryParams = CoreObject.create({
             unknownProperty() {
               return { refreshModel: true };
             },
@@ -1025,7 +1026,7 @@ moduleFor(
       this.add(
         'route:application',
         class extends Route {
-          queryParams = EmberObject.create({
+          queryParams = CoreObject.create({
             unknownProperty(/* keyName */) {
               // We are simulating all qps requiring refresh
               return { replace: true };

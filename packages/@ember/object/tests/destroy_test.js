@@ -1,13 +1,14 @@
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   '@ember/-internals/runtime/system/object/destroy_test',
   class extends AbstractTestCase {
     ['@test should schedule objects to be destroyed at the end of the run loop'](assert) {
-      let obj = EmberObject.create();
+      let obj = CoreObject.create();
       let meta;
 
       run(() => {

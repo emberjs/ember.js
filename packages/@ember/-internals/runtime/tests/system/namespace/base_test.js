@@ -3,6 +3,7 @@ import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor, getName } from '@ember/-internals/utils';
 import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Namespace from '@ember/application/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -75,8 +76,8 @@ moduleFor(
           name: 'CustomNamespaceB',
         }));
 
-        nsA.Foo = class extends EmberObject {};
-        nsB.Foo = class extends EmberObject {};
+        nsA.Foo = class extends CoreObject {};
+        nsB.Foo = class extends CoreObject {};
 
         Namespace.processAll();
 
@@ -100,8 +101,8 @@ moduleFor(
 
       let namespace = (lookup.NS = Namespace.create());
 
-      namespace.ClassA = class extends EmberObject {};
-      namespace.ClassB = class extends EmberObject {};
+      namespace.ClassA = class extends CoreObject {};
+      namespace.ClassB = class extends CoreObject {};
 
       Namespace.processAll();
 

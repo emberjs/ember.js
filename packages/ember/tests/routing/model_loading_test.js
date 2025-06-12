@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { action, computed, set } from '@ember/object';
@@ -337,7 +337,7 @@ moduleFor(
         'route:special',
         class extends Route {
           model(params) {
-            return EmberObject.create({
+            return CoreObject.create({
               menuItemId: params.menu_item_id,
             });
           }
@@ -354,7 +354,7 @@ moduleFor(
     }
 
     ['@test The Specials Page defaults to looking models up via `find`']() {
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           return MenuItem.create({ id });
         }
@@ -389,7 +389,7 @@ moduleFor(
         this.route('special', { path: '/specials/:menu_item_id' });
       });
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           return MenuItem.create({ id: id });
         }
@@ -427,7 +427,7 @@ moduleFor(
       let menuItem;
       let rootElement;
 
-      let MenuItem = class extends EmberObject {
+      let MenuItem = class extends CoreObject {
         static find(id) {
           menuItem = MenuItem.create({ id: id });
           return menuItem;
@@ -827,7 +827,7 @@ moduleFor(
 
     ['@test Route model hook finds the same model as a manual find'](assert) {
       let post;
-      let Post = class extends EmberObject {
+      let Post = class extends CoreObject {
         static find() {
           post = this;
           return {};

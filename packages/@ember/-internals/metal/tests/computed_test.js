@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { meta as metaFor } from '@ember/-internals/meta';
 import {
   computed,
@@ -28,7 +28,7 @@ moduleFor(
   'computed',
   class extends ComputedTestCase {
     ['@test isComputed is true for computed property on a factory'](assert) {
-      let Obj = class extends EmberObject {
+      let Obj = class extends CoreObject {
         @computed
         get foo() {
           return undefined;
@@ -41,7 +41,7 @@ moduleFor(
     }
 
     ['@test isComputed is true for computed property on an instance'](assert) {
-      let Obj = class extends EmberObject {
+      let Obj = class extends CoreObject {
         @computed
         get foo() {
           return undefined;
@@ -105,7 +105,7 @@ moduleFor(
     ['@test computed property can be defined and accessed on a class constructor'](assert) {
       let count = 0;
 
-      let Obj = class extends EmberObject {
+      let Obj = class extends CoreObject {
         static bar = 123;
 
         @computed
@@ -693,7 +693,7 @@ moduleFor(
   'computed - improved cp syntax',
   class extends AbstractTestCase {
     ['@test setter and getters are passed using an object'](assert) {
-      let testObj = class extends EmberObject {
+      let testObj = class extends CoreObject {
         a = '1';
         b = '2';
         @computed('a')
@@ -702,31 +702,31 @@ moduleFor(
         }
         set aInt(value) {
           assert.equal(value, 123, 'setter receives the new value');
-          this.set('a', String(value)); // side effect
+          set(this, 'a', String(value)); // side effect
         }
       }.create();
 
-      assert.ok(testObj.get('aInt') === 1, 'getter works');
-      testObj.set('aInt', 123);
-      assert.ok(testObj.get('a') === '123', 'setter works');
-      assert.ok(testObj.get('aInt') === 123, 'cp has been updated too');
+      assert.ok(testObj.aInt === 1, 'getter works');
+      set(testObj, 'aInt', 123);
+      assert.ok(testObj.a === '123', 'setter works');
+      assert.ok(testObj.aInt === 123, 'cp has been updated too');
     }
 
     ['@test an omitted setter cannot be set later'](assert) {
-      let testObj = class extends EmberObject {
+      let testObj = class extends CoreObject {
         a = '1';
         b = '2';
         @computed('a')
         get aInt() {
-          return parseInt(this.get('a'));
+          return parseInt(this.a);
         }
       }.create();
 
-      assert.ok(testObj.get('aInt') === 1, 'getter works');
-      assert.ok(testObj.get('a') === '1');
+      assert.ok(testObj.aInt === 1, 'getter works');
+      assert.ok(testObj.a === '1');
 
       expectAssertion(() => {
-        testObj.set('aInt', '123');
+        set(testObj, 'aInt', '123');
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
   }

@@ -9,7 +9,8 @@ import {
 
 import { Component } from '@ember/-internals/glimmer';
 import { setModifierManager, modifierCapabilities } from '@glimmer/manager';
-import EmberObject, { set } from '@ember/object';
+import { set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { tracked } from '@ember/-internals/metal';
 import { backtrackingMessageFor } from '../utils/debug-stack';
 
@@ -42,7 +43,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         didInsertElement() {}
         didUpdate() {}
         willDestroyElement() {}
@@ -68,7 +69,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         didInsertElement() {}
         didUpdate() {}
         willDestroyElement() {}
@@ -110,7 +111,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         didInsertElement() {}
         didUpdate() {}
         willDestroyElement() {}
@@ -148,7 +149,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         didInsertElement() {}
         didUpdate() {}
         willDestroyElement() {}
@@ -164,7 +165,7 @@ class ModifierManagerTest extends RenderingTestCase {
           positional[0];
 
           assert.equal(this.element.tagName, 'H1');
-          this.set('savedElement', this.element);
+          set(this, 'savedElement', this.element);
         }
         didUpdate() {
           assert.equal(this.element, this.savedElement);
@@ -184,7 +185,7 @@ class ModifierManagerTest extends RenderingTestCase {
   }
 
   '@test lifecycle hooks are autotracked by default'(assert) {
-    let TrackedClass = class extends EmberObject {
+    let TrackedClass = class extends CoreObject {
       @tracked
       count = 0;
     };
@@ -199,7 +200,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         didInsertElement() {}
         didUpdate() {}
         willDestroyElement() {}
@@ -251,7 +252,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new this.CustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         static create() {
           return new this();
         }
@@ -300,7 +301,7 @@ class ModifierManagerTest extends RenderingTestCase {
       (owner) => {
         return new OverrideCustomModifierManager(owner);
       },
-      class extends EmberObject {
+      class extends CoreObject {
         didInsertElement() {
           assert.step('didInsertElement');
         }
@@ -361,7 +362,7 @@ moduleFor(
         (owner) => {
           return new this.CustomModifierManager(owner);
         },
-        class extends EmberObject {
+        class extends CoreObject {
           didInsertElement() {}
           didUpdate() {}
           willDestroyElement() {}
@@ -417,7 +418,7 @@ moduleFor(
         (owner) => {
           return new this.CustomModifierManager(owner);
         },
-        class extends EmberObject {
+        class extends CoreObject {
           didInsertElement() {}
           didUpdate() {}
           willDestroyElement() {}
@@ -578,7 +579,7 @@ moduleFor(
         (owner) => {
           return new CustomModifierManager(owner);
         },
-        class extends EmberObject {
+        class extends CoreObject {
           didInsertElement() {
             assert.ok(false);
           }
