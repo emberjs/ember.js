@@ -1,4 +1,5 @@
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 /*
@@ -23,7 +24,7 @@ moduleFor(
   'EmberObject Concatenated Properties',
   class extends AbstractTestCase {
     beforeEach() {
-      klass = EmberObject.extend({
+      klass = CoreObject.extend({
         concatenatedProperties: ['values', 'functions'],
         values: ['a', 'b', 'c'],
         functions: [K],

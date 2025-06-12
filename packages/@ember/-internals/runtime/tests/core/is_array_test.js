@@ -1,6 +1,6 @@
 import { A as emberA, isArray } from '@ember/array';
 import ArrayProxy from '@ember/array/proxy';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -37,7 +37,7 @@ moduleFor(
     '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(
       assert
     ) {
-      let instance = class extends EmberObject {
+      let instance = class extends CoreObject {
         // intentionally returning non-null / non-undefined
         unknownProperty() {
           return false;

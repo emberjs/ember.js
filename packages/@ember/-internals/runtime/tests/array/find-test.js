@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 
@@ -39,7 +39,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first object of property matches'() {
     let ary, obj;
 
-    ary = [{ foo: 'foo', bar: 'BAZ' }, EmberObject.create({ foo: 'foo', bar: 'bar' })];
+    ary = [{ foo: 'foo', bar: 'BAZ' }, CoreObject.create({ foo: 'foo', bar: 'bar' })];
 
     obj = this.newObject(ary);
 
@@ -50,7 +50,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first object with truthy prop'() {
     let ary, obj;
 
-    ary = [{ foo: 'foo', bar: false }, EmberObject.create({ foo: 'bar', bar: true })];
+    ary = [{ foo: 'foo', bar: false }, CoreObject.create({ foo: 'bar', bar: true })];
 
     obj = this.newObject(ary);
 
@@ -62,7 +62,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first null property match'() {
     let ary, obj;
 
-    ary = [{ foo: null, bar: 'BAZ' }, EmberObject.create({ foo: null, bar: null })];
+    ary = [{ foo: null, bar: 'BAZ' }, CoreObject.create({ foo: null, bar: null })];
 
     obj = this.newObject(ary);
 
@@ -73,7 +73,7 @@ class FindByTests extends AbstractTestCase {
   '@test should return first undefined property match'() {
     let ary, obj;
 
-    ary = [{ foo: undefined, bar: 'BAZ' }, EmberObject.create({})];
+    ary = [{ foo: undefined, bar: 'BAZ' }, CoreObject.create({})];
 
     obj = this.newObject(ary);
 

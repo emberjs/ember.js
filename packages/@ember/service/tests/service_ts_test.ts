@@ -1,5 +1,5 @@
 import Service, { inject, service } from '@ember/service';
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import {
   AbstractTestCase,
   buildOwner,
@@ -25,7 +25,7 @@ moduleFor(
 
       class MainService extends Service {}
 
-      class Foo extends EmberObject {
+      class Foo extends CoreObject {
         @inject('main') declare main: MainService;
       }
 
@@ -51,7 +51,7 @@ moduleFor(
 
       class MainService extends Service {}
 
-      class Foo extends EmberObject {
+      class Foo extends CoreObject {
         @inject declare main: MainService;
       }
 
@@ -75,7 +75,7 @@ moduleFor(
 
       class MainService extends Service {}
 
-      class Foo extends EmberObject {
+      class Foo extends CoreObject {
         @service('main') declare main: MainService;
       }
 
@@ -94,7 +94,7 @@ moduleFor(
 
       class MainService extends Service {}
 
-      class Foo extends EmberObject {
+      class Foo extends CoreObject {
         @service declare main: MainService;
       }
 

@@ -4,6 +4,7 @@ import ArrayProxy from '@ember/array/proxy';
 import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -656,7 +657,7 @@ moduleFor(
     }
 
     '@test computed properties can depend on nested args'() {
-      let foo = EmberObject.create({
+      let foo = CoreObject.create({
         text: 'hello!',
       });
 
@@ -678,10 +679,10 @@ moduleFor(
 
       this.assertText('hello!');
 
-      runTask(() => foo.set('text', 'hello world!'));
+      runTask(() => set(foo, 'text', 'hello world!'));
       this.assertText('hello world!');
 
-      runTask(() => foo.set('text', 'hello!'));
+      runTask(() => set(foo, 'text', 'hello!'));
       this.assertText('hello!');
     }
 

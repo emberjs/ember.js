@@ -4,19 +4,20 @@ import { addObserver } from '@ember/object/observers';
 import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject, { computed, observer } from '@ember/object';
+import { computed, get, observer } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { alias } from '@ember/object/computed';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
 
 moduleFor(
-  'EmberObject.create',
+  'CoreObject.create',
   class extends AbstractTestCase {
     ['@test simple properties are set'](assert) {
       expectNoDeprecation();
 
-      let o = EmberObject.create({ ohai: 'there' });
-      assert.equal(o.get('ohai'), 'there');
+      let o = CoreObject.create({ ohai: 'there' });
+      assert.equal(get(o, 'ohai'), 'there');
     }
 
     ['@test explicit injection does not raise deprecation'](assert) {
@@ -27,7 +28,7 @@ moduleFor(
       class FooService extends Service {
         bar = 'foo';
       }
-      class FooObject extends EmberObject {
+      class FooObject extends CoreObject {
         @service foo;
       }
       owner.register('service:foo', FooService);
@@ -40,7 +41,7 @@ moduleFor(
     }
 
     ['@test calls computed property setters'](assert) {
-      let MyClass = EmberObject.extend({
+      let MyClass = CoreObject.extend({
         foo: computed({
           get() {
             return "this is not the value you're looking for";
@@ -52,19 +53,19 @@ moduleFor(
       });
 
       let o = MyClass.create({ foo: 'bar' });
-      assert.equal(o.get('foo'), 'bar');
+      assert.equal(get(o, 'foo'), 'bar');
     }
 
     ['@test sets up mandatory setters for simple properties watched with observers'](assert) {
       if (DEBUG) {
-        let MyClass = EmberObject.extend({
+        let MyClass = CoreObject.extend({
           foo: null,
           bar: null,
           fooDidChange: observer('foo', function () {}),
         });
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('foo'), 'bar');
+        assert.equal(get(o, 'foo'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -80,7 +81,7 @@ moduleFor(
 
     ['@test sets up mandatory setters for simple properties watched with computeds'](assert) {
       if (DEBUG) {
-        let MyClass = class extends EmberObject {
+        let MyClass = class extends CoreObject {
           foo = null;
           bar = null;
           @computed('foo')
@@ -90,7 +91,7 @@ moduleFor(
         };
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('fooAlias'), 'bar');
+        assert.equal(get(o, 'fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -106,7 +107,7 @@ moduleFor(
 
     ['@test sets up mandatory setters for simple properties watched with aliases'](assert) {
       if (DEBUG) {
-        let MyClass = class extends EmberObject {
+        let MyClass = class extends CoreObject {
           foo = null;
           bar = null;
           @alias('foo')
@@ -114,7 +115,7 @@ moduleFor(
         };
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('fooAlias'), 'bar');
+        assert.equal(get(o, 'fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -130,7 +131,7 @@ moduleFor(
 
     ['@test does not sets up separate mandatory setters on getters'](assert) {
       if (DEBUG) {
-        let MyClass = EmberObject.extend({
+        let MyClass = CoreObject.extend({
           get foo() {
             return 'bar';
           },
@@ -138,7 +139,7 @@ moduleFor(
         });
 
         let o = MyClass.create({});
-        assert.equal(o.get('foo'), 'bar');
+        assert.equal(get(o, 'foo'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(!descriptor, 'Mandatory setter was not setup');
@@ -168,7 +169,7 @@ moduleFor(
     ['@test calls setUnknownProperty if undefined'](assert) {
       let setUnknownPropertyCalled = false;
 
-      let MyClass = class extends EmberObject {
+      let MyClass = class extends CoreObject {
         setUnknownProperty(/* key, value */) {
           setUnknownPropertyCalled = true;
         }
@@ -180,7 +181,7 @@ moduleFor(
 
     ['@test throws if you try to define a computed property']() {
       expectAssertion(function () {
-        EmberObject.create({
+        CoreObject.create({
           foo: computed(function () {}),
         });
       }, 'EmberObject.create no longer supports defining computed properties. Define computed properties using extend() or reopen() before calling create().');
@@ -188,7 +189,7 @@ moduleFor(
 
     ['@test throws if you try to call _super in a method']() {
       expectAssertion(function () {
-        EmberObject.create({
+        CoreObject.create({
           foo() {
             this._super(...arguments);
           },
@@ -204,30 +205,30 @@ moduleFor(
       });
 
       expectAssertion(function () {
-        EmberObject.create(myMixin);
+        CoreObject.create(myMixin);
       }, 'EmberObject.create no longer supports mixing in other definitions, use .extend & .create separately instead.');
     }
 
-    ['@test inherits properties from passed in EmberObject'](assert) {
-      let baseObj = EmberObject.create({ foo: 'bar' });
-      let secondaryObj = EmberObject.create(baseObj);
+    ['@test inherits properties from passed in CoreObject'](assert) {
+      let baseObj = CoreObject.create({ foo: 'bar' });
+      let secondaryObj = CoreObject.create(baseObj);
 
       assert.equal(
         secondaryObj.foo,
         baseObj.foo,
-        'Em.O.create inherits properties from EmberObject parameter'
+        'Em.O.create inherits properties from CoreObject parameter'
       );
     }
 
     ['@test throws if you try to pass anything a string as a parameter']() {
       let expected = 'EmberObject.create only accepts objects.';
 
-      expectAssertion(() => EmberObject.create('some-string'), expected);
+      expectAssertion(() => CoreObject.create('some-string'), expected);
     }
 
-    ['@test EmberObject.create can take undefined as a parameter'](assert) {
-      let o = EmberObject.create(undefined);
-      assert.deepEqual(EmberObject.create(), o);
+    ['@test CoreObject.create can take undefined as a parameter'](assert) {
+      let o = CoreObject.create(undefined);
+      assert.deepEqual(CoreObject.create(), o);
     }
 
     ['@test can use getOwner in a proxy init GH#16484'](assert) {
@@ -235,7 +236,7 @@ moduleFor(
       let options = {};
       setOwner(options, owner);
 
-      let ProxyClass = class extends EmberObject {
+      let ProxyClass = class extends CoreObject {
         init() {
           super.init(...arguments);
           let localOwner = getOwner(this);
@@ -257,7 +258,7 @@ moduleFor(
       let container = registry.container();
       container.owner = {};
 
-      registry.register('component:foo-bar', EmberObject);
+      registry.register('component:foo-bar', CoreObject);
 
       let componentFactory = container.factoryFor('component:foo-bar');
       let instance = componentFactory.create();
@@ -274,7 +275,7 @@ moduleFor(
       let container = registry.container();
       container.owner = {};
 
-      registry.register('component:foo-bar', EmberObject);
+      registry.register('component:foo-bar', CoreObject);
 
       let instance = container.lookup('component:foo-bar');
 

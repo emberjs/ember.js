@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { NativeArray } from '@ember/array';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
@@ -13,10 +13,10 @@ class InvokeTests extends AbstractTestCase {
     cnt = 0;
     ary = [
       { foo: F },
-      EmberObject.create({ foo: F }),
+      CoreObject.create({ foo: F }),
 
       // NOTE: does not impl foo - invoke should just skip
-      EmberObject.create({ bar: F }),
+      CoreObject.create({ bar: F }),
 
       { foo: F },
     ];

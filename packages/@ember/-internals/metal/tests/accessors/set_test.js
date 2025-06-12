@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { get, set, trySet, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -145,7 +145,7 @@ moduleFor(
     }
 
     ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {
-      let ParentClass = class extends EmberObject {
+      let ParentClass = class extends CoreObject {
         @computed
         get prop() {
           return this._val;
@@ -171,7 +171,7 @@ moduleFor(
     ['@test should respect prototypical inheritance when subclasses override CPs with native classes'](
       assert
     ) {
-      class ParentClass extends EmberObject {
+      class ParentClass extends CoreObject {
         @computed
         set prop(val) {
           assert.ok(false, 'incorrect setter called');

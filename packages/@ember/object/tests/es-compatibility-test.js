@@ -1,4 +1,5 @@
-import EmberObject, { computed, observer } from '@ember/object';
+import EmberObject, { computed, observer, set } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import {
   defineProperty,
   on,
@@ -17,7 +18,7 @@ moduleFor(
     ['@test extending an Ember.Object'](assert) {
       let calls = [];
 
-      class MyObject extends EmberObject {
+      class MyObject extends CoreObject {
         constructor() {
           calls.push('constructor');
           super(...arguments);
@@ -54,7 +55,7 @@ moduleFor(
     ['@test normal method super'](assert) {
       let calls = [];
 
-      let Foo = class extends EmberObject {
+      let Foo = class extends CoreObject {
         method() {
           calls.push('foo');
         }
@@ -112,7 +113,7 @@ moduleFor(
     ['@test static method super'](assert) {
       let calls;
 
-      let Foo = class extends EmberObject {
+      let Foo = class extends CoreObject {
         static method() {
           calls.push('foo');
         }
@@ -176,7 +177,7 @@ moduleFor(
         property2: 'data-2',
       });
 
-      class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
+      class MyObject extends CoreObject.extend(Mixin1, Mixin2) {}
 
       let myObject = MyObject.create();
       assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
@@ -184,16 +185,16 @@ moduleFor(
     }
 
     ['@test using instanceof'](assert) {
-      class MyObject extends EmberObject {}
+      class MyObject extends CoreObject {}
 
       let myObject = MyObject.create();
 
       assert.ok(myObject instanceof MyObject);
-      assert.ok(myObject instanceof EmberObject);
+      assert.ok(myObject instanceof CoreObject);
     }
 
-    ['@test using Ember.Object#detect'](assert) {
-      let Parent = class extends EmberObject {};
+    ['@test using CoreObject#detect'](assert) {
+      let Parent = class extends CoreObject {};
       class Child extends Parent {}
       let Grandchild = class extends Child {};
 
@@ -201,10 +202,10 @@ moduleFor(
       assert.ok(Child.detect(Grandchild), 'Child.detect(Grandchild)');
     }
 
-    ['@test extending an ES subclass of EmberObject'](assert) {
+    ['@test extending an ES subclass of CoreObject'](assert) {
       let calls = [];
 
-      class SubEmberObject extends EmberObject {
+      class SubCoreObject extends CoreObject {
         constructor() {
           calls.push('constructor');
           super(...arguments);
@@ -216,16 +217,16 @@ moduleFor(
         }
       }
 
-      class MyObject extends SubEmberObject {}
+      class MyObject extends SubCoreObject {}
 
       MyObject.create();
       assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
     }
 
-    ['@test calling extend on an ES subclass of EmberObject'](assert) {
+    ['@test calling extend on an ES subclass of CoreObject'](assert) {
       let calls = [];
 
-      class SubEmberObject extends EmberObject {
+      class SubCoreObject extends CoreObject {
         constructor() {
           calls.push('before constructor');
           super(...arguments);
@@ -239,7 +240,7 @@ moduleFor(
         }
       }
 
-      let MyObject = class extends SubEmberObject {};
+      let MyObject = class extends SubCoreObject {};
 
       MyObject.create();
       assert.deepEqual(
@@ -260,10 +261,10 @@ moduleFor(
     ['@test calling metaForProperty on a native class works'](assert) {
       assert.expect(0);
 
-      class SubEmberObject extends EmberObject {}
+      class SubCoreObject extends CoreObject {}
 
       defineProperty(
-        SubEmberObject.prototype,
+        SubCoreObject.prototype,
         'foo',
         computed('foo', {
           get() {
@@ -273,7 +274,7 @@ moduleFor(
       );
 
       // able to get meta without throwing an error
-      SubEmberObject.metaForProperty('foo');
+      SubCoreObject.metaForProperty('foo');
     }
 
     '@test observes / removeObserver on / removeListener interop'(assert) {
@@ -283,7 +284,7 @@ moduleFor(
       let someEventBase = 0;
       let someEventA = 0;
       let someEventB = 0;
-      class A extends EmberObject.extend({
+      class A extends CoreObject.extend({
         fooDidChange: observer('foo', function () {
           fooDidChangeBase++;
         }),
@@ -332,7 +333,7 @@ moduleFor(
       assert.equal(someEventB, 0);
 
       let a = A.create();
-      a.set('foo', 'something');
+      set(a, 'foo', 'something');
 
       // TODO: Generator transpilation code doesn't play nice with class definitions/hoisting
       return runLoopSettled().then(async () => {
@@ -346,7 +347,7 @@ moduleFor(
         assert.equal(someEventB, 0);
 
         let b = B.create();
-        b.set('foo', 'something');
+        set(B, 'foo', 'something');
         await runLoopSettled();
 
         assert.equal(fooDidChangeBase, 1);

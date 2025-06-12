@@ -16,7 +16,8 @@ import {
   and,
   or,
 } from '@ember/object/computed';
-import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
+import { get, set, computed, defineProperty } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { A as emberA } from '@ember/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -24,7 +25,7 @@ moduleFor(
   'CP macros',
   class extends AbstractTestCase {
     ['@test empty part 1/2'](assert) {
-      let obj = class extends EmberObject {
+      let obj = class extends CoreObject {
         bestLannister = null;
         lannisters = null;
 
@@ -45,7 +46,7 @@ moduleFor(
     }
 
     ['@test notEmpty part 1/2'](assert) {
-      let obj = class extends EmberObject {
+      let obj = class extends CoreObject {
         bestLannister = null;
         lannisters = null;
 

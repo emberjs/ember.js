@@ -1,4 +1,5 @@
-import EmberObject, { get } from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import Mixin, { mixin } from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -102,7 +103,7 @@ moduleFor(
     }
 
     ['@test mergedProperties should exist even if not explicitly set on create'](assert) {
-      let AnObj = class extends EmberObject {
+      let AnObj = class extends CoreObject {
         mergedProperties = ['options'];
         options = {
           a: 'a',
@@ -123,7 +124,7 @@ moduleFor(
     }
 
     ['@test defining mergedProperties at create time should not modify the prototype'](assert) {
-      let AnObj = class extends EmberObject {
+      let AnObj = class extends CoreObject {
         mergedProperties = ['options'];
         options = {
           a: 1,

@@ -4,8 +4,8 @@ import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'int
 
 import { set, computed } from '@ember/object';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import EmberObject from '@ember/object';
 import { readOnly } from '@ember/object/computed';
+import CoreObject from '@ember/object/core';
 import ObjectProxy from '@ember/object/proxy';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
@@ -291,10 +291,10 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   ['@test it can render a computed property']() {
-    let Formatter = class extends EmberObject {
+    let Formatter = class extends CoreObject {
       @computed('message')
       get formattedMessage() {
-        return this.get('message').toUpperCase();
+        return this.message.toUpperCase();
       }
     };
 
@@ -318,10 +318,10 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   ['@test it can render a computed property with nested dependency']() {
-    let Formatter = class extends EmberObject {
+    let Formatter = class extends CoreObject {
       @computed('messenger.message')
       get formattedMessage() {
-        return this.get('messenger.message').toUpperCase();
+        return this.messenger.message.toUpperCase();
       }
     };
 
@@ -612,7 +612,7 @@ class DynamicContentTest extends RenderingTestCase {
   }
 
   ['@test it can render a readOnly property of a path']() {
-    let Messenger = class extends EmberObject {
+    let Messenger = class extends CoreObject {
       @readOnly('a.b.c')
       message;
     };

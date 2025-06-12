@@ -1,14 +1,15 @@
 import { compare, typeOf } from '@ember/utils';
-import EmberObject from '@ember/object';
+import { get } from '@ember/object';
+import CoreObject from '@ember/object/core';
 import { Comparable } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let data = [];
-let Comp = EmberObject.extend(Comparable);
+let Comp = CoreObject.extend(Comparable);
 
 Comp.reopenClass({
   compare(obj) {
-    return obj.get('val');
+    return get(obj, 'val');
   },
 });
 
@@ -28,7 +29,7 @@ moduleFor(
       data[9] = [1, 2, 3];
       data[10] = [1, 3];
       data[11] = { a: 'hash' };
-      data[12] = EmberObject.create();
+      data[12] = CoreObject.create();
       data[13] = function (a) {
         return a;
       };
