@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "6.7.0-alpha.1.nvp-asset-sizes+ad603139",
+  "version": "6.7.0-alpha.1",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -401,10 +401,5 @@
       ]
     }
   },
-  "packageManager": "pnpm@10.5.0",
-  "_originalVersion": "6.7.0-alpha.1",
-  "_versionPreviouslyCalculated": true,
-  "publishConfig": {
-    "tag": "alpha"
-  }
+  "packageManager": "pnpm@10.5.0"
 }
