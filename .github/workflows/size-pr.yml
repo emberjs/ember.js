@@ -19,24 +19,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: pnpm build
-      - run: sudo snap install dust
 
       - name: Save PR number
         run: |
           mkdir -p ./pr
           echo "${{ github.event.number }}" > ./pr/NR
 
-      - name: "Get sizes for development outputs"
+      - name: "Get estimated sizes for production outputs"
         id: dev
-        run: |
-          cd dist/packages
-          dust --ignore_hidden \
-              --reverse --apparent-size \
-              --no-percent-bars \
-              --only-dir \
-              --depth 20 \
-            > out.txt
-          cp out.txt ../../pr/
+        run: node ./bin/minify-assets.sh > ./pr/out.txt
 
 
       - uses: actions/upload-artifact@v4

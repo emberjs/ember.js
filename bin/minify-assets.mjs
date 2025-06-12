@@ -59,7 +59,29 @@ let min = {};
 let br = {};
 let gzip = {};
 
+let packageData = {
+  ember: [
+    /* pkg, min, gz, br */
+  ],
+  glimmer: [],
+};
+
+function totalMin(dataset) {
+  return dataset.reduce((a, b) => a + b[1], 0);
+}
+
+function totalGz(dataset) {
+  return dataset.reduce((a, b) => a + b[2], 0);
+}
+
+function totalBr(dataset) {
+  return dataset.reduce((a, b) => a + b[3], 0);
+}
+
 import { buildMacros } from '@embroider/macros/babel';
+
+process.env.NODE_ENV = 'production';
+process.env.EMBER_ENV = 'production';
 
 const macros = buildMacros();
 let babelOptions = {
@@ -126,28 +148,72 @@ for (const pkg of packages) {
   }
 }
 
-let totalMin = Object.values(min).reduce((a, b) => a + b, 0);
-let totalGz = Object.values(gzip).reduce((a, b) => a + b, 0);
-let totalBr = Object.values(br).reduce((a, b) => a + b, 0);
-
-let data = [
-  ['Package', 'Min', 'Gzip', 'Brotli'],
-  ['Total', size(totalMin), size(totalGz), size(totalBr)],
-];
-for (const pkg of packages) {
-  let minSize = size(min[pkg]);
-  let brSize = size(br[pkg]);
-  let gzSize = size(gzip[pkg]);
-
-  data.push([pkg, minSize, gzSize, brSize]);
-}
-
 import { table } from 'table';
 
-console.info(
-  table(data, {
-    drawHorizontalLine: (lineIndex, rowCount) => {
-      return lineIndex === 0 || lineIndex === 1 || lineIndex === 2 || lineIndex === rowCount;
-    },
-  })
-);
+function printTable(data) {
+  // eslint-disable-next-line no-console
+  console.info(
+    table(data, {
+      drawHorizontalLine: (lineIndex, rowCount) => {
+        return lineIndex === 0 || lineIndex === 1 || lineIndex === 2 || lineIndex === rowCount;
+      },
+    })
+  );
+}
+
+printTable([
+  ['', 'Min', 'Gzip', 'Brotli'],
+  [
+    'Total',
+    size(Object.values(min).reduce((a, b) => a + b, 0)),
+    size(Object.values(gzip).reduce((a, b) => a + b, 0)),
+    size(Object.values(br).reduce((a, b) => a + b, 0)),
+  ],
+]);
+
+for (const pkg of packages.filter((p) => p.startsWith('@ember'))) {
+  let minSize = min[pkg];
+  let brSize = br[pkg];
+  let gzSize = gzip[pkg];
+
+  packageData.ember.push([pkg, minSize, gzSize, brSize]);
+}
+for (const pkg of packages.filter((p) => p.startsWith('@glimmer'))) {
+  let minSize = min[pkg];
+  let brSize = br[pkg];
+  let gzSize = gzip[pkg];
+
+  packageData.glimmer.push([pkg, minSize, gzSize, brSize]);
+}
+
+printTable([
+  ['@ember/*', 'Min', 'Gzip', 'Brotli'],
+  [
+    'Total',
+    size(totalMin(packageData.ember)),
+    size(totalGz(packageData.ember)),
+    size(totalBr(packageData.ember)),
+  ],
+  ...packageData.ember.map((x) => [
+    x[0].replace('@ember/', ''),
+    size(x[1]),
+    size(x[2]),
+    size(x[3]),
+  ]),
+]);
+
+printTable([
+  ['@glimmer/*', 'Min', 'Gzip', 'Brotli'],
+  [
+    'Total',
+    size(totalMin(packageData.glimmer)),
+    size(totalGz(packageData.glimmer)),
+    size(totalBr(packageData.glimmer)),
+  ],
+  ...packageData.glimmer.map((x) => [
+    x[0].replace('@glimmer/', ''),
+    size(x[1]),
+    size(x[2]),
+    size(x[3]),
+  ]),
+]);
