@@ -23,18 +23,6 @@ if (DEBUG) {
   };
 }
 
-export interface HasUnknownProperty {
-  unknownProperty: (keyName: string) => any;
-}
-
-export function hasUnknownProperty(val: unknown): val is HasUnknownProperty {
-  return (
-    typeof val === 'object' &&
-    val !== null &&
-    typeof (val as HasUnknownProperty).unknownProperty === 'function'
-  );
-}
-
 interface MaybeHasIsDestroyed {
   isDestroyed?: boolean;
 }
@@ -48,8 +36,7 @@ interface MaybeHasIsDestroyed {
 
 /**
   Gets the value of a property on an object. If the property is computed,
-  the function will be invoked. If the property is not defined but the
-  object implements the `unknownProperty` method then that will be invoked.
+  the function will be invoked.
 
   ```javascript
   import { get } from '@ember/object';
@@ -61,10 +48,7 @@ interface MaybeHasIsDestroyed {
   know for sure is private. (Properties beginning with an underscore '_'
   are considered private.)
 
-  On all newer browsers, you only need to use this method to retrieve
-  properties if the property might not be defined on the object and you want
-  to respect the `unknownProperty` handler. Otherwise you can ignore this
-  method.
+  On all newer browsers, this is not necessary.
 
   Note that if the object itself is `undefined`, this method will throw
   an error.
@@ -114,15 +98,6 @@ export function _getProp(obj: unknown, keyName: string) {
       value = (obj as any)[keyName];
     }
 
-    if (
-      value === undefined &&
-      typeof obj === 'object' &&
-      !(keyName in obj) &&
-      hasUnknownProperty(obj)
-    ) {
-      value = obj.unknownProperty(keyName);
-    }
-
     if (isTracking()) {
       consumeTag(tagFor(obj, keyName));
 
@@ -165,8 +140,6 @@ _getProp('foo' as any, 'a');
 _getProp('foo' as any, 1 as any);
 _getProp({}, 'a');
 _getProp({}, 1 as any);
-_getProp({ unknownProperty() {} }, 'a');
-_getProp({ unknownProperty() {} }, 1 as any);
 
 get({}, 'foo');
 get({}, 'foo.bar');

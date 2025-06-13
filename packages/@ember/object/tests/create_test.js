@@ -1,5 +1,5 @@
 import { getFactoryFor, Registry } from '@ember/-internals/container';
-import { getOwner, setOwner } from '@ember/-internals/owner';
+import { getOwner } from '@ember/-internals/owner';
 import { addObserver } from '@ember/object/observers';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
@@ -166,19 +166,6 @@ moduleFor(
       }
     }
 
-    ['@test calls setUnknownProperty if undefined'](assert) {
-      let setUnknownPropertyCalled = false;
-
-      let MyClass = class extends CoreObject {
-        setUnknownProperty(/* key, value */) {
-          setUnknownPropertyCalled = true;
-        }
-      };
-
-      MyClass.create({ foo: 'bar' });
-      assert.ok(setUnknownPropertyCalled, 'setUnknownProperty was called');
-    }
-
     ['@test throws if you try to define a computed property']() {
       expectAssertion(function () {
         CoreObject.create({
@@ -217,26 +204,6 @@ moduleFor(
     ['@test CoreObject.create can take undefined as a parameter'](assert) {
       let o = CoreObject.create(undefined);
       assert.deepEqual(CoreObject.create(), o);
-    }
-
-    ['@test can use getOwner in a proxy init GH#16484'](assert) {
-      let owner = {};
-      let options = {};
-      setOwner(options, owner);
-
-      let ProxyClass = class extends CoreObject {
-        init() {
-          super.init(...arguments);
-          let localOwner = getOwner(this);
-
-          assert.equal(localOwner, owner, 'should be able to `getOwner` in init');
-        }
-        unknownProperty() {
-          return undefined;
-        }
-      };
-
-      ProxyClass.create(options);
     }
 
     ['@test does not create enumerable properties for owner and init factory when created by the container factory'](

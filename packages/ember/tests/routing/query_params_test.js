@@ -1,7 +1,6 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
 import { action, get, computed, set } from '@ember/object';
-import CoreObject from '@ember/object/core';
 import { RSVP } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
@@ -815,11 +814,7 @@ moduleFor(
       this.add(
         'route:index',
         class extends Route {
-          queryParams = CoreObject.create({
-            unknownProperty() {
-              return { refreshModel: true };
-            },
-          });
+          queryParams = { omg: { refreshModel: true } };
           model(params) {
             indexModelCount++;
 
@@ -1026,12 +1021,9 @@ moduleFor(
       this.add(
         'route:application',
         class extends Route {
-          queryParams = CoreObject.create({
-            unknownProperty(/* keyName */) {
-              // We are simulating all qps requiring refresh
-              return { replace: true };
-            },
-          });
+          queryParams = {
+            alex: { replace: true },
+          };
         }
       );
 

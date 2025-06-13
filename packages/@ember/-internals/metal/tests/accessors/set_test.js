@@ -43,26 +43,6 @@ moduleFor(
       assert.deepEqual(arr, ['first', 'lol']);
     }
 
-    ['@test should call setUnknownProperty if defined and value is undefined'](assert) {
-      let obj = {
-        count: 0,
-
-        unknownProperty() {
-          assert.ok(false, 'should not invoke unknownProperty if setUnknownProperty is defined');
-        },
-
-        setUnknownProperty(key, value) {
-          assert.equal(key, 'foo', 'should pass key');
-          assert.equal(value, 'BAR', 'should pass key');
-          this.count++;
-          return 'FOO';
-        },
-      };
-
-      assert.equal(set(obj, 'foo', 'BAR'), 'BAR', 'should return set value');
-      assert.equal(obj.count, 1, 'should have invoked');
-    }
-
     ['@test warn on attempts to call set with undefined as object']() {
       expectAssertion(
         () => set(undefined, 'aProperty', 'BAM'),

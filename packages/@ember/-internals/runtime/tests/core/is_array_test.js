@@ -1,5 +1,4 @@
 import { isArray } from '@ember/array';
-import CoreObject from '@ember/object/core';
 import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -29,19 +28,6 @@ moduleFor(
       assert.equal(isArray(global), false, 'global');
       assert.equal(isArray(fn), false, 'function() {}');
       assert.equal(isArray(asyncFn), false, 'async function() {}');
-    }
-
-    '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(
-      assert
-    ) {
-      let instance = class extends CoreObject {
-        // intentionally returning non-null / non-undefined
-        unknownProperty() {
-          return false;
-        }
-      }.create();
-
-      assert.equal(isArray(instance), false);
     }
 
     ['@test Ember.isArray(fileList)'](assert) {

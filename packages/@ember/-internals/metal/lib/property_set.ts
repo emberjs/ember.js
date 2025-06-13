@@ -8,7 +8,6 @@ import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_
 
 interface ExtendedObject {
   isDestroyed?: boolean;
-  setUnknownProperty?: (keyName: string, value: any) => any;
 }
 
 /**
@@ -17,10 +16,6 @@ interface ExtendedObject {
 /**
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change.
-  If the specified property is not defined on the object and the object
-  implements the `setUnknownProperty` method, then instead of setting the
-  value of the property on the object, its `setUnknownProperty` handler
-  will be invoked with the two parameters `keyName` and `value`.
 
   ```javascript
   import { set } from '@ember/object';
@@ -80,24 +75,14 @@ export function _setProp(obj: object, keyName: string, value: any) {
     currentValue = (obj as any)[keyName];
   }
 
-  if (
-    currentValue === undefined &&
-    'object' === typeof obj &&
-    !(keyName in obj) &&
-    typeof (obj as ExtendedObject).setUnknownProperty === 'function'
-  ) {
-    /* unknown property */
-    (obj as ExtendedObject).setUnknownProperty!(keyName, value);
+  if (DEBUG) {
+    setWithMandatorySetter!(obj, keyName, value);
   } else {
-    if (DEBUG) {
-      setWithMandatorySetter!(obj, keyName, value);
-    } else {
-      (obj as any)[keyName] = value;
-    }
+    (obj as any)[keyName] = value;
+  }
 
-    if (currentValue !== value) {
-      notifyPropertyChange(obj, keyName);
-    }
+  if (currentValue !== value) {
+    notifyPropertyChange(obj, keyName);
   }
 
   return value;

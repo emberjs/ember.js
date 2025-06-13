@@ -1622,13 +1622,6 @@ class Route<Model = unknown> extends EmberObject implements IRoute {
         continue;
       }
 
-      // to support the dubious feature of using unknownProperty
-      // on queryParams configuration
-      if (propName === 'unknownProperty' || propName === '_super') {
-        // possible todo: issue deprecation warning?
-        continue;
-      }
-
       let desc = combinedQueryParameterConfiguration[propName];
       assert(`[BUG] missing query parameter configuration for ${propName}`, desc);
 

@@ -4,18 +4,16 @@
 
 import { getFactoryFor, setFactoryFor } from '@ember/-internals/container';
 import { type default as Owner, getOwner } from '@ember/-internals/owner';
-import { guidFor, isInternalSymbol } from '@ember/-internals/utils';
+import { guidFor } from '@ember/-internals/utils';
 import { meta } from '@ember/-internals/meta';
-import type { ComputedProperty, HasUnknownProperty } from '@ember/-internals/metal';
+import type { ComputedProperty } from '@ember/-internals/metal';
 import {
-  PROXY_CONTENT,
   sendEvent,
   activateObserver,
   defineProperty,
   descriptorForProperty,
   isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
-  hasUnknownProperty,
 } from '@ember/-internals/metal';
 import makeArray from '@ember/array/make';
 import { assert } from '@ember/debug';
@@ -26,18 +24,6 @@ import { OWNER } from '@glimmer/owner';
 type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
   ? T & MergeArray<Rest>
   : unknown; // TODO: Is this correct?
-
-interface HasSetUnknownProperty {
-  setUnknownProperty: (keyName: string, value: any) => any;
-}
-
-function hasSetUnknownProperty(val: unknown): val is HasSetUnknownProperty {
-  return (
-    typeof val === 'object' &&
-    val !== null &&
-    typeof (val as HasSetUnknownProperty).setUnknownProperty === 'function'
-  );
-}
 
 interface HasToStringExtension {
   toStringExtension: () => void;
@@ -123,8 +109,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
 
       if (isDescriptor) {
         possibleDesc.set(obj, keyName, value);
-      } else if (hasSetUnknownProperty(obj) && !(keyName in obj)) {
-        obj.setUnknownProperty(keyName, value);
       } else {
         if (DEBUG) {
           defineProperty(obj, keyName, null, value, m); // setup mandatory setter
@@ -211,57 +195,7 @@ class CoreObject {
     // prepare prototype...
     (this.constructor as typeof CoreObject).proto();
 
-    let self;
-    if (DEBUG && hasUnknownProperty(this)) {
-      let messageFor = (obj: unknown, property: unknown) => {
-        return (
-          `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
-          `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
-          `to access computed properties. However, in this case, the object in question\n` +
-          `is a special kind of Ember object (a proxy). Therefore, it is still necessary\n` +
-          `to use \`.get('${String(property)}')\` in this case.\n\n` +
-          `If you encountered this error because of third-party code that you don't control,\n` +
-          `there is more information at https://github.com/emberjs/ember.js/issues/16148, and\n` +
-          `you can help us improve this error message by telling us more about what happened in\n` +
-          `this situation.`
-        );
-      };
-
-      /* globals Proxy Reflect */
-      self = new Proxy(this, {
-        get(target: typeof this & HasUnknownProperty, property, receiver) {
-          if (property === PROXY_CONTENT) {
-            return target;
-          } else if (
-            // init called will be set on the proxy, not the target, so get with the receiver
-            !initCalled!.has(receiver) ||
-            typeof property === 'symbol' ||
-            isInternalSymbol(property) ||
-            property === 'toJSON' ||
-            property === 'toString' ||
-            property === 'toStringExtension' ||
-            property === 'didDefineProperty' ||
-            property === 'willWatchProperty' ||
-            property === 'didUnwatchProperty' ||
-            property === 'didAddListener' ||
-            property === 'didRemoveListener' ||
-            property === 'isDescriptor' ||
-            property === '_onLookup' ||
-            property in target
-          ) {
-            return Reflect.get(target, property, receiver);
-          }
-
-          let value = target.unknownProperty.call(receiver, property);
-
-          if (typeof value !== 'function') {
-            assert(messageFor(receiver, property), value === undefined || value === null);
-          }
-        },
-      });
-    } else {
-      self = this;
-    }
+    let self = this;
 
     const destroyable = self;
     registerDestructor(self, ensureDestroyCalled, true);
