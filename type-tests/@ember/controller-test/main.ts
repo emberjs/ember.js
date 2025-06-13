@@ -1,4 +1,5 @@
 import Controller, { inject } from '@ember/controller';
+import { set } from '@ember/object';
 
 class MyController extends Controller {
   queryParams = ['category'];
@@ -9,6 +10,6 @@ class MyController extends Controller {
   @inject('second') declare second: Controller;
 
   toggleBody() {
-    this.toggleProperty('isExpanded');
+    set(this, 'isExpanded', !this.isExpanded);
   }
 }

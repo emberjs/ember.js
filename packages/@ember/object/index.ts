@@ -1,9 +1,7 @@
 import { assert } from '@ember/debug';
 import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
-import { isElementDescriptor, setClassicDecorator, get, set } from '@ember/-internals/metal';
-import { getFactoryFor } from '@ember/-internals/container';
+import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
 import CoreObject from '@ember/object/core';
-import { peekMeta } from '@ember/-internals/meta';
 
 export {
   notifyPropertyChange,
@@ -27,89 +25,7 @@ export {
   @extends CoreObject
   @public
 */
-class EmberObject extends CoreObject {
-  // NOT TYPE SAFE!
-  /**
-    Set the value of a property to the current value plus some amount.
-
-    ```javascript
-    person.incrementProperty('age');
-    team.incrementProperty('score', 2);
-    ```
-
-    @method incrementProperty
-    @param {String} keyName The name of the property to increment
-    @param {Number} increment The amount to increment by. Defaults to 1
-    @return {Number} The new property value
-    @public
-  */
-  incrementProperty(keyName: keyof this & string, increment = 1): number {
-    assert(
-      'Must pass a numeric value to incrementProperty',
-      !isNaN(parseFloat(String(increment))) && isFinite(increment)
-    );
-    return set(this, keyName, (parseFloat(get(this, keyName) as string) || 0) + increment);
-  }
-  // NOT TYPE SAFE!
-  /**
-    Set the value of a property to the current value minus some amount.
-
-    ```javascript
-    player.decrementProperty('lives');
-    orc.decrementProperty('health', 5);
-    ```
-
-    @method decrementProperty
-    @param {String} keyName The name of the property to decrement
-    @param {Number} decrement The amount to decrement by. Defaults to 1
-    @return {Number} The new property value
-    @public
-  */
-  decrementProperty(keyName: keyof this & string, decrement = 1): number {
-    assert(
-      'Must pass a numeric value to decrementProperty',
-      (typeof decrement === 'number' || !isNaN(parseFloat(decrement))) && isFinite(decrement)
-    );
-    return set(this, keyName, ((get(this, keyName) as number) || 0) - decrement);
-  }
-  // NOT TYPE SAFE!
-  /**
-    Set the value of a boolean property to the opposite of its
-    current value.
-
-    ```javascript
-    starship.toggleProperty('warpDriveEngaged');
-    ```
-
-    @method toggleProperty
-    @param {String} keyName The name of the property to toggle
-    @return {Boolean} The new property value
-    @public
-  */
-  toggleProperty(keyName: keyof this & string): boolean {
-    return set(this, keyName, !get(this, keyName));
-  }
-  /**
-    Returns the cached value of a computed property, if it exists.
-    This allows you to inspect the value of a computed property
-    without accidentally invoking it if it is intended to be
-    generated lazily.
-
-    @method cacheFor
-    @param {String} keyName
-    @return {Object} The cached value of the computed property, if any
-    @public
-  */
-  cacheFor(keyName: keyof this & string): unknown {
-    let meta = peekMeta(this);
-    return meta !== null ? meta.valueFor(keyName) : undefined;
-  }
-
-  get _debugContainerKey() {
-    let factory = getFactoryFor(this);
-    return factory !== undefined && factory.fullName;
-  }
-}
+class EmberObject extends CoreObject {}
 
 export default EmberObject;
 

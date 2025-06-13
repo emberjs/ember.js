@@ -779,7 +779,7 @@ moduleFor(
         ComponentClass: class extends Component {
           @action
           changeValue() {
-            this.incrementProperty('myProp');
+            set(this, 'myProp', this.myProp + 1);
           }
         },
         template: strip`

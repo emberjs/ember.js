@@ -752,7 +752,7 @@ moduleFor(
         router: service(),
 
         increment: action(function () {
-          this.incrementProperty('foo');
+          set(this, 'foo', this.foo + 1);
           this.router.refresh();
         }),
       });

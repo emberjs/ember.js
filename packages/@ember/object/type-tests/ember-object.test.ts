@@ -37,20 +37,6 @@ const p = new Person(owner);
 
 expectTypeOf(p.firstName).toEqualTypeOf<string>();
 
-expectTypeOf(p.incrementProperty('age')).toEqualTypeOf<number>();
-expectTypeOf(p.incrementProperty('age', 2)).toEqualTypeOf<number>();
-// @ts-expect-error must increment by a value
-p.incrementProperty('age', 'foo');
-
-expectTypeOf(p.decrementProperty('age')).toEqualTypeOf<number>();
-expectTypeOf(p.decrementProperty('age', 2)).toEqualTypeOf<number>();
-// @ts-expect-error must decrement by a value
-p.decrementProperty('age', 'foo');
-
-expectTypeOf(p.toggleProperty('age')).toEqualTypeOf<boolean>();
-
-expectTypeOf(p.cacheFor('age')).toEqualTypeOf<unknown>();
-
 const p2 = Person.create({ firstName: 'string' });
 expectTypeOf(p2.firstName).toEqualTypeOf<string>();
 

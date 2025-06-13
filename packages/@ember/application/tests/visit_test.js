@@ -7,7 +7,7 @@ import {
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
 import EmberObject from '@ember/object';
-import { get } from '@ember/object';
+import { get, set } from '@ember/object';
 import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
 import { action } from '@ember/object';
@@ -651,7 +651,7 @@ moduleFor(
         value = 0;
 
         increment() {
-          this.incrementProperty('value');
+          set(this, 'value', this.value + 1);
         }
       };
 
