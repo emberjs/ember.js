@@ -161,59 +161,68 @@ function printTable(data) {
   );
 }
 
-printTable([
-  ['', 'Min', 'Gzip' /* 'Brotli' */],
-  [
-    'Total',
-    size(Object.values(min).reduce((a, b) => a + b, 0)),
-    size(Object.values(gzip).reduce((a, b) => a + b, 0)),
-    // size(Object.values(br).reduce((a, b) => a + b, 0)),
-  ],
-]);
+try {
+  printTable([
+    ['', 'Min', 'Gzip' /* 'Brotli' */],
+    [
+      'Total',
+      size(Object.values(min).reduce((a, b) => a + b, 0)),
+      size(Object.values(gzip).reduce((a, b) => a + b, 0)),
+      // size(Object.values(br).reduce((a, b) => a + b, 0)),
+    ],
+  ]);
 
-for (const pkg of packages.filter((p) => p.startsWith('@ember'))) {
-  let minSize = min[pkg];
-  let brSize = br[pkg];
-  let gzSize = gzip[pkg];
+  for (const pkg of packages.filter((p) => p.startsWith('@ember'))) {
+    let minSize = min[pkg];
+    let brSize = br[pkg];
+    let gzSize = gzip[pkg];
 
-  packageData.ember.push([pkg, minSize, gzSize, brSize]);
+    packageData.ember.push([pkg, minSize, gzSize, brSize]);
+  }
+  for (const pkg of packages.filter((p) => p.startsWith('@glimmer'))) {
+    let minSize = min[pkg];
+    let brSize = br[pkg];
+    let gzSize = gzip[pkg];
+
+    packageData.glimmer.push([pkg, minSize, gzSize, brSize]);
+  }
+
+  printTable([
+    ['@ember/*', 'Min', 'Gzip' /*  'Brotli' */],
+    [
+      'Total',
+      size(totalMin(packageData.ember)),
+      size(totalGz(packageData.ember)),
+      // size(totalBr(packageData.ember)),
+    ],
+    ...packageData.ember.map((x) => [
+      x[0].replace('@ember/', ''),
+      size(x[1]),
+      size(x[2]),
+      // size(x[3]),
+    ]),
+  ]);
+
+  printTable([
+    ['@glimmer/*', 'Min', 'Gzip' /* 'Brotli' */],
+    [
+      'Total',
+      size(totalMin(packageData.glimmer)),
+      size(totalGz(packageData.glimmer)),
+      // size(totalBr(packageData.glimmer)),
+    ],
+    ...packageData.glimmer.map((x) => [
+      x[0].replace('@glimmer/', ''),
+      size(x[1]),
+      size(x[2]),
+      // size(x[3]),
+    ]),
+  ]);
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.log({
+    glimmer: packageData.glimmer,
+    ember: packageData.ember,
+  });
+  throw e;
 }
-for (const pkg of packages.filter((p) => p.startsWith('@glimmer'))) {
-  let minSize = min[pkg];
-  let brSize = br[pkg];
-  let gzSize = gzip[pkg];
-
-  packageData.glimmer.push([pkg, minSize, gzSize, brSize]);
-}
-
-printTable([
-  ['@ember/*', 'Min', 'Gzip' /*  'Brotli' */],
-  [
-    'Total',
-    size(totalMin(packageData.ember)),
-    size(totalGz(packageData.ember)),
-    // size(totalBr(packageData.ember)),
-  ],
-  ...packageData.ember.map((x) => [
-    x[0].replace('@ember/', ''),
-    size(x[1]),
-    size(x[2]),
-    // size(x[3]),
-  ]),
-]);
-
-printTable([
-  ['@glimmer/*', 'Min', 'Gzip' /* 'Brotli' */],
-  [
-    'Total',
-    size(totalMin(packageData.glimmer)),
-    size(totalGz(packageData.glimmer)),
-    // size(totalBr(packageData.glimmer)),
-  ],
-  ...packageData.glimmer.map((x) => [
-    x[0].replace('@glimmer/', ''),
-    size(x[1]),
-    size(x[2]),
-    // size(x[3]),
-  ]),
-]);
