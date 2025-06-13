@@ -16,7 +16,6 @@ let controller = new Controller<Foo>(owner);
 expectTypeOf(controller).toEqualTypeOf<Controller<Foo>>();
 
 // Has observable methods
-expectTypeOf(controller.get).toBeFunction();
 expectTypeOf(controller.set).toBeFunction();
 
 expectTypeOf(controller.target).toEqualTypeOf<unknown | undefined>();

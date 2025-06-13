@@ -42,7 +42,7 @@ moduleFor(
         trololol: true,
       });
 
-      assert.equal(Subclass.create().get('trololol'), true, 'reopen works');
+      assert.equal(get(Subclass.create(), 'trololol'), true, 'reopen works');
     }
   }
 );

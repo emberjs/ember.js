@@ -6,7 +6,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 function testGet(assert, expect, x, y) {
   assert.equal(get(x, y), expect);
   assert.equal(get(x, y), expect);
-  assert.equal(x.get(y), expect);
+  assert.equal(get(x, y), expect);
 }
 
 moduleFor(

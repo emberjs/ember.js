@@ -7,6 +7,7 @@ import {
 } from 'internal-test-helpers';
 import { service } from '@ember/service';
 import EmberObject from '@ember/object';
+import { get } from '@ember/object';
 import { RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
 import { action } from '@ember/object';
@@ -687,8 +688,8 @@ moduleFor(
             }
 
             click() {
-              this.get('isolatedCounter').increment();
-              this.get('sharedCounter').increment();
+              get(this, 'isolatedCounter').increment();
+              get(this, 'sharedCounter').increment();
             }
           }
         )
@@ -706,7 +707,7 @@ moduleFor(
 
             @action
             incrementCounter() {
-              this.get('counter').increment();
+              get(this, 'counter').increment();
             }
 
             init() {

@@ -5,6 +5,7 @@ import {
   defineComponent,
 } from 'internal-test-helpers';
 import Application from '@ember/application';
+import { get, set } from '@ember/object';
 import Route from '@ember/routing/route';
 import Router from '@ember/routing/router';
 import { Component } from '@ember/-internals/glimmer';
@@ -37,10 +38,10 @@ moduleFor(
 
         let SettingRoute = class extends Route {
           setupController() {
-            this.controller.set('selectedMenuItem', menuItem);
+            set(this.controller, 'selectedMenuItem', menuItem);
           }
           deactivate() {
-            this.controller.set('selectedMenuItem', null);
+            set(this.controller, 'selectedMenuItem', null);
           }
         };
         this.add('route:index', SettingRoute);
@@ -64,28 +65,28 @@ moduleFor(
       assert
     ) {
       let { indexController, applicationController } = this;
-      assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
+      assert.equal(get(indexController, 'selectedMenuItem'), this.menuItem);
+      assert.equal(get(applicationController, 'selectedMenuItem'), this.menuItem);
 
       this.application.reset();
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      assert.equal(get(indexController, 'selectedMenuItem'), null);
+      assert.equal(get(applicationController, 'selectedMenuItem'), null);
     }
 
     [`@test Destroying the application resets the router before the appInstance is destroyed`](
       assert
     ) {
       let { indexController, applicationController } = this;
-      assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
-      assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
+      assert.equal(get(indexController, 'selectedMenuItem'), this.menuItem);
+      assert.equal(get(applicationController, 'selectedMenuItem'), this.menuItem);
 
       runTask(() => {
         this.application.destroy();
       });
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      assert.equal(get(indexController, 'selectedMenuItem'), null);
+      assert.equal(get(applicationController, 'selectedMenuItem'), null);
     }
   }
 );

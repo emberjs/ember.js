@@ -2,7 +2,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 import { compile } from 'ember-template-compiler';
-import EmberObject from '@ember/object';
+import EmberObject, { get, set } from '@ember/object';
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
 
@@ -136,7 +136,7 @@ moduleFor(
       this.registerComponent('x-inner', {
         ComponentClass: class extends Component {
           didReceiveAttrs() {
-            this.get('wrapper').set('content', this.get('value'));
+            set(get(this, 'wrapper'), 'content', get(this, 'value'));
           }
           value = null;
         },

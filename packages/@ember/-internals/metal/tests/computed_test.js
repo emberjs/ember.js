@@ -706,10 +706,10 @@ moduleFor(
         }
       }.create();
 
-      assert.ok(testObj.get('aInt') === 1, 'getter works');
+      assert.ok(get(testObj, 'aInt') === 1, 'getter works');
       testObj.set('aInt', 123);
-      assert.ok(testObj.get('a') === '123', 'setter works');
-      assert.ok(testObj.get('aInt') === 123, 'cp has been updated too');
+      assert.ok(get(testObj, 'a') === '123', 'setter works');
+      assert.ok(get(testObj, 'aInt') === 123, 'cp has been updated too');
     }
 
     ['@test an omitted setter cannot be set later'](assert) {
@@ -718,12 +718,12 @@ moduleFor(
         b = '2';
         @computed('a')
         get aInt() {
-          return parseInt(this.get('a'));
+          return parseInt(get(this, 'a'));
         }
       }.create();
 
-      assert.ok(testObj.get('aInt') === 1, 'getter works');
-      assert.ok(testObj.get('a') === '1');
+      assert.ok(get(testObj, 'aInt') === 1, 'getter works');
+      assert.ok(get(testObj, 'a') === '1');
 
       expectAssertion(() => {
         testObj.set('aInt', '123');
@@ -745,7 +745,7 @@ moduleFor(
       }).create();
 
       testObj.set('sampleCP', 'abcd');
-      assert.ok(testObj.get('sampleCP') === 'set-value', 'The return value of the CP was cached');
+      assert.ok(get(testObj, 'sampleCP') === 'set-value', 'The return value of the CP was cached');
     }
   }
 );

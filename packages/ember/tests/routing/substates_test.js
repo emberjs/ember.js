@@ -1,7 +1,7 @@
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 import Controller from '@ember/controller';
-import { action } from '@ember/object';
+import { action, get, set } from '@ember/object';
 import { service } from '@ember/service';
 
 import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
@@ -35,7 +35,7 @@ moduleFor(
     get currentPath() {
       let currentPath;
       expectDeprecation(() => {
-        currentPath = this.getController('application').get('currentPath');
+        currentPath = get(this.getController('application'), 'currentPath');
       }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
       return currentPath;
     }
@@ -1268,7 +1268,7 @@ moduleFor(
 
       assert.equal(this.appRouter.currentPath, 'memere.loading', 'Initial route should be loading');
 
-      memereController.set('test', 3);
+      set(memereController, 'test', 3);
 
       assert.equal(
         this.appRouter.currentPath,
@@ -1277,7 +1277,7 @@ moduleFor(
       );
 
       assert.equal(
-        memereController.get('test'),
+        get(memereController, 'test'),
         3,
         'Controller query param value should have changed'
       );

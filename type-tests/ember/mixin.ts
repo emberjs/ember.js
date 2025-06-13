@@ -8,7 +8,7 @@ interface EditableMixin extends Ember.Mixin {
 
 const EditableMixin = Ember.Mixin.create({
   edit(this: EditableMixin & Ember.Object) {
-    this.get('controller');
+    Ember.get(this, 'controller');
     console.log('starting to edit');
     this.set('isEditing', true);
   },

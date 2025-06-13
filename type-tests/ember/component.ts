@@ -39,7 +39,7 @@ class Bindings extends Ember.Component {
 
   @Ember.computed()
   get propertyB() {
-    if (!this.get('propertyA')) {
+    if (!this.propertyA) {
       return 'from-b';
     }
   }

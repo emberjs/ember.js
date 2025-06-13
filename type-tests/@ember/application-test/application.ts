@@ -21,7 +21,7 @@ BaseApp.initializer({
 BaseApp.instanceInitializer({
   name: 'my-instance-initializer',
   initialize(app) {
-    (app.lookup('foo:bar') as Obj).get('foo');
+    (app.lookup('foo:bar') as Obj).foo;
   },
 });
 

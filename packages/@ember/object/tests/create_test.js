@@ -4,7 +4,7 @@ import { addObserver } from '@ember/object/observers';
 import Mixin from '@ember/object/mixin';
 import Service, { service } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import EmberObject, { computed } from '@ember/object';
+import EmberObject, { computed, get } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { buildOwner, moduleFor, runDestroy, AbstractTestCase } from 'internal-test-helpers';
 import { destroy } from '@glimmer/destroyable';
@@ -16,7 +16,7 @@ moduleFor(
       expectNoDeprecation();
 
       let o = EmberObject.create({ ohai: 'there' });
-      assert.equal(o.get('ohai'), 'there');
+      assert.equal(get(o, 'ohai'), 'there');
     }
 
     ['@test explicit injection does not raise deprecation'](assert) {
@@ -52,7 +52,7 @@ moduleFor(
       });
 
       let o = MyClass.create({ foo: 'bar' });
-      assert.equal(o.get('foo'), 'bar');
+      assert.equal(get(o, 'foo'), 'bar');
     }
 
     // TODO: Determine if there's anything useful to test here with observer helper gone
@@ -91,7 +91,7 @@ moduleFor(
         };
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('fooAlias'), 'bar');
+        assert.equal(get(o, 'fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');
@@ -115,7 +115,7 @@ moduleFor(
         };
 
         let o = MyClass.create({ foo: 'bar', bar: 'baz' });
-        assert.equal(o.get('fooAlias'), 'bar');
+        assert.equal(get(o, 'fooAlias'), 'bar');
 
         let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
         assert.ok(descriptor.set, 'Mandatory setter was setup');

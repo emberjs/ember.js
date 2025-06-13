@@ -531,7 +531,7 @@ moduleFor(
         ComponentClass: class extends Component {
           init() {
             super.init(...arguments);
-            this.set('person.name', 'Ben');
+            set(this, 'person.name', 'Ben');
           }
         },
         template: 'Hi {{this.person.name}} from component',

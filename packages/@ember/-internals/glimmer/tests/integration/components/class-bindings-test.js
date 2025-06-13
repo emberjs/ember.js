@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
-import { set, computed } from '@ember/object';
+import { get, set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 
@@ -394,11 +394,11 @@ moduleFor(
 
           let bindings = (this.classNameBindings = this.classNameBindings.slice());
 
-          if (this.get('bindIsEnabled')) {
+          if (get(this, 'bindIsEnabled')) {
             bindings.push('isEnabled:enabled');
           }
 
-          if (this.get('bindIsHappy')) {
+          if (get(this, 'bindIsHappy')) {
             bindings.push('isHappy:happy:sad');
           }
         }

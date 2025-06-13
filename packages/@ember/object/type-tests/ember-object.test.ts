@@ -37,11 +37,6 @@ const p = new Person(owner);
 
 expectTypeOf(p.firstName).toEqualTypeOf<string>();
 
-// get not preferred for TS only returns unknown
-expectTypeOf(p.get('firstName')).toBeString();
-// Also returns unknown for invalid properties
-expectTypeOf(p.get('invalid')).toEqualTypeOf<unknown>();
-
 expectTypeOf(p.incrementProperty('age')).toEqualTypeOf<number>();
 expectTypeOf(p.incrementProperty('age', 2)).toEqualTypeOf<number>();
 // @ts-expect-error must increment by a value
@@ -55,16 +50,6 @@ p.decrementProperty('age', 'foo');
 expectTypeOf(p.toggleProperty('age')).toEqualTypeOf<boolean>();
 
 expectTypeOf(p.cacheFor('age')).toEqualTypeOf<unknown>();
-
-// get is not preferred for TS and only returns unknown
-const getPropertiesResult = p.getProperties('firstName', 'lastName', 'invalid');
-expectTypeOf(getPropertiesResult).toEqualTypeOf<{
-  firstName: unknown;
-  lastName: unknown;
-  invalid: unknown;
-}>();
-// @ts-expect-error doesn't have unknown properties
-getPropertiesResult.unknown;
 
 expectTypeOf(p.set('firstName', 'Joe')).toBeString();
 expectTypeOf(p.set('invalid', 1)).toEqualTypeOf<number>();

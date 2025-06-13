@@ -1,6 +1,6 @@
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
-import { set } from '@ember/object';
+import { get, set } from '@ember/object';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { service } from '@ember/service';
 
@@ -19,7 +19,7 @@ moduleFor(
         assert.deepEqual(queryParams, {});
         assert.deepEqual(paramNames, []);
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.index');
+        assert.equal(get(this.routerService, 'currentRouteName'), 'parent.index');
       });
     }
 
@@ -35,7 +35,7 @@ moduleFor(
         assert.deepEqual(queryParams, {});
         assert.deepEqual(paramNames, []);
 
-        assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+        assert.equal(get(this.routerService, 'currentRouteName'), 'parent.child');
       });
     }
 
@@ -57,7 +57,7 @@ moduleFor(
           assert.equal(name, 'parent.sister');
           assert.equal(localName, 'sister');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+          assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
         });
     }
 
@@ -93,7 +93,7 @@ moduleFor(
           assert.equal(name, 'parent.child');
           assert.equal(localName, 'child');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.child');
+          assert.equal(get(this.routerService, 'currentRouteName'), 'parent.child');
 
           return this.visit('/sister');
         })
@@ -103,7 +103,7 @@ moduleFor(
           assert.equal(name, 'parent.sister');
           assert.equal(localName, 'sister');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
+          assert.equal(get(this.routerService, 'currentRouteName'), 'parent.sister');
 
           return this.visit('/brother');
         })
@@ -113,7 +113,7 @@ moduleFor(
           assert.equal(name, 'parent.brother');
           assert.equal(localName, 'brother');
 
-          assert.equal(this.routerService.get('currentRouteName'), 'parent.brother');
+          assert.equal(get(this.routerService, 'currentRouteName'), 'parent.brother');
         });
     }
 
@@ -121,7 +121,7 @@ moduleFor(
       assert.expect(1);
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('rootURL'), '/');
+        assert.equal(get(this.routerService, 'rootURL'), '/');
       });
     }
 
@@ -139,7 +139,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        assert.equal(this.routerService.get('rootURL'), '/homepage');
+        assert.equal(get(this.routerService, 'rootURL'), '/homepage');
       });
     }
 
@@ -147,7 +147,7 @@ moduleFor(
       assert.expect(2);
 
       return this.visit('/').then(() => {
-        let location = this.routerService.get('location');
+        let location = get(this.routerService, 'location');
         assert.ok(location);
         assert.ok(location instanceof NoneLocation);
       });

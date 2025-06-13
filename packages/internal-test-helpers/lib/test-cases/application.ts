@@ -1,5 +1,6 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
+import { get } from '@ember/object';
 import Router from '@ember/routing/router';
 
 import { runTask, runLoopSettled } from '../run';
@@ -42,7 +43,7 @@ export default abstract class ApplicationTestCase extends TestResolverApplicatio
   }
 
   get currentURL() {
-    return this.appRouter.get('currentURL');
+    return get(this.appRouter, 'currentURL');
   }
 
   async transitionTo() {

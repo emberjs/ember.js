@@ -79,14 +79,14 @@ moduleFor(
       let some = SomeClass.create();
       let another = AnotherClass.create();
       let yetAnother = YetAnotherClass.create();
-      assert.deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
+      assert.deepEqual(get(some, 'things'), ['foo'], 'base class should have just its value');
       assert.deepEqual(
-        another.get('things'),
+        get(another, 'things'),
         ['foo', 'bar'],
         "subclass should have base class' and its own"
       );
       assert.deepEqual(
-        yetAnother.get('things'),
+        get(yetAnother, 'things'),
         ['foo', 'baz'],
         "subclass should have base class' and its own"
       );

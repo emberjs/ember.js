@@ -25,7 +25,7 @@ class CurrentUserEmailHelper extends Ember.Helper {
   declare session: SessionService;
 
   compute(): string {
-    return this.get('session').get('currentUser').get('email');
+    return this.session.currentUser.email;
   }
 }
 

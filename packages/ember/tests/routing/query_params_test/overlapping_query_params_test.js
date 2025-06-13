@@ -1,4 +1,5 @@
 import Controller from '@ember/controller';
+import { get } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { QueryParamTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 
@@ -172,13 +173,13 @@ moduleFor(
 
       await this.setAndFlush(parentChildController, 'page', 2);
       this.assertCurrentPath('/parent/child?page=2');
-      assert.equal(parentController.get('page'), 1);
-      assert.equal(parentChildController.get('page'), 2);
+      assert.equal(get(parentController, 'page'), 1);
+      assert.equal(get(parentChildController, 'page'), 2);
 
       await this.setAndFlush(parentController, 'page', 2);
       this.assertCurrentPath('/parent/child?page=2&yespage=2');
-      assert.equal(parentController.get('page'), 2);
-      assert.equal(parentChildController.get('page'), 2);
+      assert.equal(get(parentController, 'page'), 2);
+      assert.equal(get(parentChildController, 'page'), 2);
     }
   }
 );

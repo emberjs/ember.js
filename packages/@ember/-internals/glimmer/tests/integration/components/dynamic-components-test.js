@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { set, computed } from '@ember/object';
+import { get, set, computed } from '@ember/object';
 
 import { Component } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -168,7 +168,7 @@ moduleFor(
         init() {
           super.init();
           instance = this;
-          this.set('message', 'hello');
+          set(this, 'message', 'hello');
         }
       };
 
@@ -224,7 +224,7 @@ moduleFor(
         ComponentClass: class extends Component {
           willDestroy() {
             super.willDestroy();
-            destroyed[this.get('id')]++;
+            destroyed[get(this, 'id')]++;
           }
         },
       });
@@ -382,7 +382,7 @@ moduleFor(
         ComponentClass: class extends Component {
           init() {
             super.init(...arguments);
-            this.set('locationCopy', this.get('location'));
+            set(this, 'locationCopy', get(this, 'location'));
           }
         },
       });
@@ -392,7 +392,7 @@ moduleFor(
         ComponentClass: class extends Component {
           init() {
             super.init(...arguments);
-            this.set('locationCopy', this.get('location'));
+            set(this, 'locationCopy', get(this, 'location'));
           }
         },
       });
@@ -402,7 +402,7 @@ moduleFor(
         ComponentClass: class extends Component {
           @computed('location')
           get componentName() {
-            if (this.get('location') === 'Caracas') {
+            if (get(this, 'location') === 'Caracas') {
               return 'foo-bar';
             } else {
               return 'foo-bar-baz';
@@ -526,7 +526,7 @@ moduleFor(
           willRender() {
             // store internally available name to ensure that the name available in `this.attrs.name`
             // matches the template lookup name
-            set(this, 'internalName', this.get('name'));
+            set(this, 'internalName', get(this, 'name'));
           }
         },
       });
@@ -705,17 +705,17 @@ moduleFor(
 
       this.assertText('Foo4');
 
-      runTask(() => this.context.set('user1', 'Bar'));
+      runTask(() => set(this.context, 'user1', 'Bar'));
 
       this.assertText('Bar4');
 
-      runTask(() => this.context.set('user2', '5'));
+      runTask(() => set(this.context, 'user2', '5'));
 
       this.assertText('Bar5');
 
       runTask(() => {
-        this.context.set('user1', 'Foo');
-        this.context.set('user2', 4);
+        set(this.context, 'user1', 'Foo');
+        set(this.context, 'user2', 4);
       });
 
       this.assertText('Foo4');
@@ -741,7 +741,7 @@ moduleFor(
         ComponentClass: class extends Component {
           init() {
             super.init(...arguments);
-            this.set('person.name', 'Ben');
+            set(this, 'person.name', 'Ben');
           }
         },
         template: '{{this.person.name}}',
