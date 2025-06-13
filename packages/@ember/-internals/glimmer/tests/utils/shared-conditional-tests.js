@@ -6,6 +6,7 @@ import { htmlSafe } from '@ember/-internals/glimmer';
 import { get, set } from '@ember/object';
 import EmberObject from '@ember/object';
 import { removeAt } from '@ember/array';
+import { Helper } from '@ember/-internals/glimmer';
 
 import { Component } from './helpers';
 import { tracked } from 'tracked-built-ins';
@@ -376,19 +377,25 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
       assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
     };
 
-    this.registerHelper('x-truthy', {
-      compute() {
-        truthyEvaluated = true;
-        return 'T';
-      },
-    });
+    this.registerHelper(
+      'x-truthy',
+      class extends Helper {
+        compute() {
+          truthyEvaluated = true;
+          return 'T';
+        }
+      }
+    );
 
-    this.registerHelper('x-falsy', {
-      compute() {
-        falsyEvaluated = true;
-        return 'F';
-      },
-    });
+    this.registerHelper(
+      'x-falsy',
+      class extends Helper {
+        compute() {
+          falsyEvaluated = true;
+          return 'F';
+        }
+      }
+    );
 
     let template = this.wrappedTemplateFor({
       cond: 'this.cond',
@@ -717,19 +724,25 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
       assert.ok(!falsyEvaluated, 'x-falsy is not evaluated');
     };
 
-    this.registerHelper('x-truthy', {
-      compute() {
-        truthyEvaluated = true;
-        return 'T';
-      },
-    });
+    this.registerHelper(
+      'x-truthy',
+      class extends Helper {
+        compute() {
+          truthyEvaluated = true;
+          return 'T';
+        }
+      }
+    );
 
-    this.registerHelper('x-falsy', {
-      compute() {
-        falsyEvaluated = true;
-        return 'F';
-      },
-    });
+    this.registerHelper(
+      'x-falsy',
+      class extends Helper {
+        compute() {
+          falsyEvaluated = true;
+          return 'F';
+        }
+      }
+    );
 
     let template = this.wrappedTemplateFor({
       cond: 'this.cond',

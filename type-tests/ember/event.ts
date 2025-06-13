@@ -1,13 +1,5 @@
 import Ember from 'ember';
 
-function testObserver() {
-  Ember.Object.extend({
-    valueObserver: Ember.observer('value', () => {
-      // Executes whenever the "value" property changes
-    }),
-  });
-}
-
 function testListener() {
   class TestListener extends Ember.Component {
     init() {

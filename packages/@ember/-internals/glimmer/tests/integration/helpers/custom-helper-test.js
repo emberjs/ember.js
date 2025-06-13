@@ -16,7 +16,12 @@ moduleFor(
     ['@test it cannot override built-in syntax']() {
       this.registerHelper('array', () => 'Nope');
       expectAssertion(() => {
-        this.render(`{{array this.foo 'LOL'}}`, { foo: true });
+        this.render(
+          `{{array this.foo 'LOL'}}`,
+          class extends Helper {
+            foo = true;
+          }
+        );
       }, /You attempted to overwrite the built-in helper "array" which is not allowed. Please rename the helper./);
     }
 
@@ -49,17 +54,23 @@ moduleFor(
     }
 
     ['@test it can resolve custom class-based helpers with or without dashes']() {
-      this.registerHelper('hello', {
-        compute() {
-          return 'hello';
-        },
-      });
+      this.registerHelper(
+        'hello',
+        class extends Helper {
+          compute() {
+            return 'hello';
+          }
+        }
+      );
 
-      this.registerHelper('hello-world', {
-        compute() {
-          return 'hello world';
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          compute() {
+            return 'hello world';
+          }
+        }
+      );
 
       this.render('{{hello}} | {{hello-world}}');
 
@@ -71,9 +82,12 @@ moduleFor(
     }
 
     ['@test throws if `this._super` is not called from `init`']() {
-      this.registerHelper('hello-world', {
-        init() {},
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          init() {}
+        }
+      );
 
       expectAssertion(() => {
         this.render('{{hello-world}}');
@@ -85,19 +99,22 @@ moduleFor(
       let computeCount = 0;
       let helper;
 
-      this.registerHelper('hello-world', {
-        init() {
-          this._super(...arguments);
-          helper = this;
-        },
-        compute() {
-          return ++computeCount;
-        },
-        destroy() {
-          destroyCount++;
-          this._super();
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            helper = this;
+          }
+          compute() {
+            return ++computeCount;
+          }
+          destroy() {
+            destroyCount++;
+            super.destroy(...arguments);
+          }
+        }
+      );
 
       this.render('{{hello-world}}');
 
@@ -118,24 +135,27 @@ moduleFor(
       let hooks = [];
       let helper;
 
-      this.registerHelper('hello-world', {
-        init() {
-          this._super(...arguments);
-          hooks.push('init');
-          helper = this;
-        },
-        compute() {
-          hooks.push('compute');
-        },
-        willDestroy() {
-          hooks.push('willDestroy');
-          this._super();
-        },
-        destroy() {
-          hooks.push('destroy');
-          this._super();
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            hooks.push('init');
+            helper = this;
+          }
+          compute() {
+            hooks.push('compute');
+          }
+          willDestroy() {
+            hooks.push('willDestroy');
+            super.willDestroy(...arguments);
+          }
+          destroy() {
+            hooks.push('destroy');
+            super.destroy(...arguments);
+          }
+        }
+      );
 
       this.render('{{#if this.show}}{{hello-world}}{{/if}}', {
         show: true,
@@ -161,19 +181,22 @@ moduleFor(
       let computeCount = 0;
       let helper;
 
-      this.registerHelper('hello-world', {
-        init() {
-          this._super(...arguments);
-          helper = this;
-        },
-        compute() {
-          return ++computeCount;
-        },
-        destroy() {
-          destroyCount++;
-          this._super();
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            helper = this;
+          }
+          compute() {
+            return ++computeCount;
+          }
+          destroy() {
+            destroyCount++;
+            super.destroy(...arguments);
+          }
+        }
+      );
 
       this.render('{{hello-world "whut"}}');
 
@@ -198,19 +221,22 @@ moduleFor(
       let computeCount = 0;
       let helper;
 
-      this.registerHelper('hello-world', {
-        init() {
-          this._super(...arguments);
-          helper = this;
-        },
-        compute() {
-          return ++computeCount;
-        },
-        destroy() {
-          destroyCount++;
-          this._super();
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            helper = this;
+          }
+          compute() {
+            return ++computeCount;
+          }
+          destroy() {
+            destroyCount++;
+            super.destroy(...arguments);
+          }
+        }
+      );
 
       this.render('{{hello-world "whut"}}');
 
@@ -290,16 +316,19 @@ moduleFor(
       let createCount = 0;
       let computeCount = 0;
 
-      this.registerHelper('hello-world', {
-        init() {
-          this._super(...arguments);
-          createCount++;
-        },
-        compute([value]) {
-          computeCount++;
-          return `${value}-value`;
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            createCount++;
+          }
+          compute([value]) {
+            computeCount++;
+            return `${value}-value`;
+          }
+        }
+      );
 
       this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
@@ -361,11 +390,14 @@ moduleFor(
     }
 
     ['@test class-based helper receives params, hash']() {
-      this.registerHelper('hello-world', {
-        compute(_params, _hash) {
-          return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
-        },
-      });
+      this.registerHelper(
+        'hello-world',
+        class extends Helper {
+          compute(_params, _hash) {
+            return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
+          }
+        }
+      );
 
       this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
@@ -394,11 +426,14 @@ moduleFor(
     }
 
     ['@test class-based helper usable in subexpressions']() {
-      this.registerHelper('join-words', {
-        compute(params) {
-          return params.join(' ');
-        },
-      });
+      this.registerHelper(
+        'join-words',
+        class extends Helper {
+          compute(params) {
+            return params.join(' ');
+          }
+        }
+      );
 
       this.render(
         `{{join-words "Who"
@@ -470,9 +505,12 @@ moduleFor(
         return;
       }
 
-      this.registerHelper('some-helper', {
-        compute() {},
-      });
+      this.registerHelper(
+        'some-helper',
+        class extends Helper {
+          compute() {}
+        }
+      );
 
       assert.throws(() => {
         this.render(`{{#some-helper}}{{/some-helper}}`);
@@ -498,9 +536,12 @@ moduleFor(
         return;
       }
 
-      this.registerHelper('some-helper', {
-        compute() {},
-      });
+      this.registerHelper(
+        'some-helper',
+        class extends Helper {
+          compute() {}
+        }
+      );
 
       assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
@@ -510,15 +551,18 @@ moduleFor(
     ['@test class-based helper is torn down'](assert) {
       let destroyCalled = 0;
 
-      this.registerHelper('some-helper', {
-        destroy() {
-          destroyCalled++;
-          this._super(...arguments);
-        },
-        compute() {
-          return 'must define a compute';
-        },
-      });
+      this.registerHelper(
+        'some-helper',
+        class extends Helper {
+          destroy() {
+            destroyCalled++;
+            super.destroy(...arguments);
+          }
+          compute() {
+            return 'must define a compute';
+          }
+        }
+      );
 
       this.render(`{{some-helper}}`);
 
@@ -531,21 +575,27 @@ moduleFor(
       let helper;
       let phrase = 'overcomes by';
 
-      this.registerHelper('dynamic-segment', {
-        init() {
-          this._super(...arguments);
-          helper = this;
-        },
-        compute() {
-          return phrase;
-        },
-      });
+      this.registerHelper(
+        'dynamic-segment',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            helper = this;
+          }
+          compute() {
+            return phrase;
+          }
+        }
+      );
 
-      this.registerHelper('join-words', {
-        compute(params) {
-          return params.join(' ');
-        },
-      });
+      this.registerHelper(
+        'join-words',
+        class extends Helper {
+          compute(params) {
+            return params.join(' ');
+          }
+        }
+      );
 
       this.render(
         `{{join-words "Who"
@@ -578,21 +628,27 @@ moduleFor(
       let helper;
       let phrase = 'overcomes by';
 
-      this.registerHelper('dynamic-segment', {
-        init() {
-          this._super(...arguments);
-          helper = this;
-        },
-        compute() {
-          return phrase;
-        },
-      });
+      this.registerHelper(
+        'dynamic-segment',
+        class extends Helper {
+          init() {
+            super.init(...arguments);
+            helper = this;
+          }
+          compute() {
+            return phrase;
+          }
+        }
+      );
 
-      this.registerHelper('join-words', {
-        compute(params) {
-          return params.join(' ');
-        },
-      });
+      this.registerHelper(
+        'join-words',
+        class extends Helper {
+          compute(params) {
+            return params.join(' ');
+          }
+        }
+      );
 
       this.registerComponent('some-component', {
         template: '{{@first}} {{@second}} {{@third}} {{@fourth}} {{@fifth}}',
@@ -628,25 +684,31 @@ moduleFor(
     ['@test class-based helper used in subexpression is destroyed'](assert) {
       let destroyCount = 0;
 
-      this.registerHelper('dynamic-segment', {
-        phrase: 'overcomes by',
-        init() {
-          this._super(...arguments);
-        },
-        compute() {
-          return this.phrase;
-        },
-        destroy() {
-          destroyCount++;
-          this._super(...arguments);
-        },
-      });
+      this.registerHelper(
+        'dynamic-segment',
+        class extends Helper {
+          phrase = 'overcomes by';
+          init() {
+            super.init(...arguments);
+          }
+          compute() {
+            return this.phrase;
+          }
+          destroy() {
+            destroyCount++;
+            super.destroy(...arguments);
+          }
+        }
+      );
 
-      this.registerHelper('join-words', {
-        compute(params) {
-          return params.join(' ');
-        },
-      });
+      this.registerHelper(
+        'join-words',
+        class extends Helper {
+          compute(params) {
+            return params.join(' ');
+          }
+        }
+      );
 
       this.render(
         `{{join-words "Who"
@@ -678,12 +740,15 @@ moduleFor(
     ['@test class-based helper can be invoked manually via `owner.factoryFor(...).create().compute()'](
       assert
     ) {
-      this.registerHelper('some-helper', {
-        compute() {
-          assert.ok(true, 'some-helper helper invoked');
-          return 'lolol';
-        },
-      });
+      this.registerHelper(
+        'some-helper',
+        class extends Helper {
+          compute() {
+            assert.ok(true, 'some-helper helper invoked');
+            return 'lolol';
+          }
+        }
+      );
 
       let instance = this.owner.factoryFor('helper:some-helper').create();
 
@@ -834,9 +899,12 @@ if (DEBUG) {
 
         let compute = this.buildCompute();
 
-        this.registerHelper('test-helper', {
-          compute,
-        });
+        this.registerHelper(
+          'test-helper',
+          class extends Helper {
+            compute = compute;
+          }
+        );
       }
     }
   );

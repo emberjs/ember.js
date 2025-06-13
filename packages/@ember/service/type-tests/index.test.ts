@@ -28,11 +28,3 @@ class Foo extends EmberObject {
   @service declare baz: BazService;
 }
 new Foo(owner);
-
-const Legacy = EmberObject.extend({
-  main: inject('main'),
-  foo: inject(),
-  bar: service('bar'),
-  baz: service(),
-});
-Legacy.create();

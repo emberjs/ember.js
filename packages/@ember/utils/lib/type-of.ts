@@ -56,7 +56,7 @@ const { toString } = Object.prototype;
       | 'regexp'      | An instance of RegExp                                |
       | 'date'        | An instance of Date                                  |
       | 'filelist'    | An instance of FileList                              |
-      | 'class'       | An Ember class (created using EmberObject.extend())  |
+      | 'class'       | An Ember class (subclass of EmberObject)             |
       | 'instance'    | An Ember object instance                             |
       | 'error'       | An instance of the Error object                      |
       | 'object'      | A JavaScript object not inheriting from EmberObject  |
@@ -83,7 +83,7 @@ const { toString } = Object.prototype;
   typeOf(/abc/);                  // 'regexp'
   typeOf(new Date());             // 'date'
   typeOf(event.target.files);     // 'filelist'
-  typeOf(EmberObject.extend());   // 'class'
+  typeOf(class extends EmberObject {});   // 'class'
   typeOf(EmberObject.create());   // 'instance'
   typeOf(new Error('teamocil'));  // 'error'
 

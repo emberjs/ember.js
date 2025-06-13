@@ -34,7 +34,7 @@ moduleFor(
         _document = _document;
 
         ready() {
-          this._super();
+          super.ready();
           readyWasCalled++;
         }
       };

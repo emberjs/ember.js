@@ -23,9 +23,16 @@ import { ROUTER } from '@ember/routing/router-service';
   @class RoutingService
 */
 export default class RoutingService<R extends Route> extends Service {
+  @readOnly('router.targetState')
   declare targetState: EmberRouter['targetState'];
+
+  @readOnly('router.currentState')
   declare currentState: EmberRouter['currentState'];
+
+  @readOnly('router.currentRouteName')
   declare currentRouteName: EmberRouter['currentRouteName'];
+
+  @readOnly('router.currentPath')
   declare currentPath: EmberRouter['currentPath'];
 
   [ROUTER]?: EmberRouter;
@@ -127,13 +134,6 @@ export default class RoutingService<R extends Route> extends Service {
     return routerState.isActiveIntent(routeName, contexts, queryParams);
   }
 }
-
-RoutingService.reopen({
-  targetState: readOnly('router.targetState'),
-  currentState: readOnly('router.currentState'),
-  currentRouteName: readOnly('router.currentRouteName'),
-  currentPath: readOnly('router.currentPath'),
-});
 
 function numberOfContextsAcceptedByHandler(handlerName: string, handlerInfos: any[]) {
   let req = 0;

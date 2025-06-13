@@ -2,7 +2,6 @@ import AbstractApplicationTestCase from './abstract-application';
 import type Resolver from '../test-resolver';
 import { ModuleBasedResolver } from '../test-resolver';
 import Component, { setComponentTemplate } from '@ember/component';
-import { Component as InternalGlimmerComponent } from '@ember/-internals/glimmer';
 import type { InternalFactory } from '@ember/-internals/owner';
 import templateOnly from '@ember/component/template-only';
 
@@ -49,16 +48,10 @@ export default abstract class TestResolverApplicationTestCase extends AbstractAp
       //
       // We'll want to clean thsi up over time, and probably phase out `addComponent` entirely,
       // and expclusively use `add` w/ `defineComponent`
-      if (ComponentClass === Component) {
-        ComponentClass = class extends Component {};
-      }
 
-      if (ComponentClass === InternalGlimmerComponent) {
-        ComponentClass = class extends InternalGlimmerComponent {};
-      }
-
-      if ('extend' in ComponentClass) {
-        ComponentClass = (ComponentClass as any).extend({});
+      if (typeof ComponentClass === 'function') {
+        // @ts-expect-error Testing for function isn't really sufficient, but it works for our case
+        ComponentClass = class extends ComponentClass {};
       }
 
       if ((ComponentClass as any).moduleName === '@glimmer/component/template-only') {

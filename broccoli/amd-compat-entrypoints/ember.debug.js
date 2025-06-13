@@ -206,9 +206,6 @@ d('@ember/object/internals', emberObjectInternals);
 import * as emberObjectLibComputedComputedMacros from '@ember/object/lib/computed/computed_macros';
 d('@ember/object/lib/computed/computed_macros', emberObjectLibComputedComputedMacros);
 
-import * as emberObjectMixin from '@ember/object/mixin';
-d('@ember/object/mixin', emberObjectMixin);
-
 import * as emberObjectObservers from '@ember/object/observers';
 d('@ember/object/observers', emberObjectObservers);
 

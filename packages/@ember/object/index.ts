@@ -1,9 +1,7 @@
 import { assert } from '@ember/debug';
-import { ENV } from '@ember/-internals/environment';
 import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
 import {
   isElementDescriptor,
-  expandProperties,
   setClassicDecorator,
   hasListeners,
   beginPropertyChanges,
@@ -17,8 +15,6 @@ import {
   setProperties,
 } from '@ember/-internals/metal';
 import { getFactoryFor } from '@ember/-internals/container';
-import { setObservers } from '@ember/-internals/utils';
-import type { AnyFn } from '@ember/-internals/utility-types';
 import CoreObject from '@ember/object/core';
 import { peekMeta } from '@ember/-internals/meta';
 
@@ -278,9 +274,9 @@ class EmberObject extends CoreObject {
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    export default Component.extend({
+    export default class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
 
         // the following are equivalent:
 
@@ -291,12 +287,12 @@ class EmberObject extends CoreObject {
         this.addObserver('foo', (...args) => {
           this.fooDidChange(...args);
         });
-      },
+      }
 
       fooDidChange() {
         // your custom logic code
       }
-    });
+    }
     ```
 
     ### Observer Methods
@@ -306,16 +302,16 @@ class EmberObject extends CoreObject {
     ```app/components/my-component.js
     import Component from '@ember/component';
 
-    export default Component.extend({
+    export default class extends Component {
       init() {
-        this._super(...arguments);
+        super.init(...arguments);
         this.addObserver('foo', this, 'fooDidChange');
-      },
+      }
 
       fooDidChange(sender, key, value, rev) {
         // your code
       }
-    });
+    }
     ```
 
     The `sender` is the object that changed. The `key` is the property that
@@ -659,86 +655,3 @@ export function action(
 
 // SAFETY: TS types are weird with decorators. This should work.
 setClassicDecorator(action as ExtendedMethodDecorator);
-
-// ..........................................................
-// OBSERVER HELPER
-//
-
-type ObserverDefinition<T extends AnyFn> = {
-  dependentKeys: string[];
-  fn: T;
-  sync: boolean;
-};
-
-/**
-  Specify a method that observes property changes.
-
-  ```javascript
-  import EmberObject from '@ember/object';
-  import { observer } from '@ember/object';
-
-  export default EmberObject.extend({
-    valueObserver: observer('value', function() {
-      // Executes whenever the "value" property changes
-    })
-  });
-  ```
-
-  Also available as `Function.prototype.observes` if prototype extensions are
-  enabled.
-
-  @method observer
-  @for @ember/object
-  @param {String} propertyNames*
-  @param {Function} func
-  @return func
-  @public
-  @static
-*/
-export function observer<T extends AnyFn>(
-  ...args:
-    | [propertyName: string, ...additionalPropertyNames: string[], func: T]
-    | [ObserverDefinition<T>]
-): T {
-  let funcOrDef = args.pop();
-
-  assert(
-    'observer must be provided a function or an observer definition',
-    typeof funcOrDef === 'function' || (typeof funcOrDef === 'object' && funcOrDef !== null)
-  );
-
-  let func: T;
-  let dependentKeys: string[];
-  let sync: boolean;
-
-  if (typeof funcOrDef === 'function') {
-    func = funcOrDef;
-    dependentKeys = args as string[];
-    sync = !ENV._DEFAULT_ASYNC_OBSERVERS;
-  } else {
-    func = funcOrDef.fn;
-    dependentKeys = funcOrDef.dependentKeys;
-    sync = funcOrDef.sync;
-  }
-
-  assert('observer called without a function', typeof func === 'function');
-  assert(
-    'observer called without valid path',
-    Array.isArray(dependentKeys) &&
-      dependentKeys.length > 0 &&
-      dependentKeys.every((p) => typeof p === 'string' && Boolean(p.length))
-  );
-  assert('observer called without sync', typeof sync === 'boolean');
-
-  let paths: string[] = [];
-
-  for (let dependentKey of dependentKeys) {
-    expandProperties(dependentKey, (path: string) => paths.push(path));
-  }
-
-  setObservers(func as Function, {
-    paths,
-    sync,
-  });
-  return func;
-}

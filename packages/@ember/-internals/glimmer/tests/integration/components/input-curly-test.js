@@ -152,12 +152,16 @@ moduleFor(
     ['@test sends an action with `{{input enter=this.foo}}` when <enter> is pressed'](assert) {
       assert.expect(2);
 
-      this.render(`{{input enter=this.foo}}`, {
-        foo: action(function (value, event) {
-          assert.ok(true, 'action was triggered');
-          assert.ok(event instanceof Event, 'Native event was passed');
-        }),
-      });
+      this.renderWithClass(
+        `{{input enter=this.foo}}`,
+        class extends this.BaseComponent {
+          @action
+          foo(value, event) {
+            assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof Event, 'Native event was passed');
+          }
+        }
+      );
 
       this.triggerEvent('keyup', {
         key: 'Enter',

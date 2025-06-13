@@ -24,13 +24,13 @@ class FirstController extends Controller {
     return '';
   }
 }
-const SecondController = Controller.extend({
-  foo: 'bar',
+class SecondController extends Controller {
+  foo = 'bar';
 
   second() {
     return '';
-  },
-});
+  }
+}
 
 declare module '@ember/controller' {
   interface Registry {

@@ -236,19 +236,6 @@ if (DEBUG) {
     freely added for documentation and debugging purposes without worries of
     incuring any performance penalty.
 
-    ```javascript
-    import Component from '@ember/component';
-    import { runInDebug } from '@ember/debug';
-
-    runInDebug(() => {
-      Component.reopen({
-        didInsertElement() {
-          console.log("I'm happy");
-        }
-      });
-    });
-    ```
-
     @method runInDebug
     @for @ember/debug
     @static

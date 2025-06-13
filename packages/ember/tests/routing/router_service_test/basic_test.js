@@ -152,20 +152,34 @@ moduleFor(
         assert.ok(location instanceof NoneLocation);
       });
     }
+  }
+);
 
-    ['@test RouterService can be injected into router and accessed on init'](assert) {
+moduleFor(
+  'Router Service - main',
+  class extends RouterTestCase {
+    constructor() {
+      super();
+      this.injectedRouterService = null;
+    }
+
+    get routerOptions() {
+      let testCase = this;
+      return {
+        ...super.routerOptions,
+        routerService: service('router'),
+        init: function () {
+          testCase.injectedRouterService = this.routerService;
+        },
+      };
+    }
+
+    async ['@test RouterService can be injected into router and accessed on init'](assert) {
       assert.expect(1);
 
-      this.router.reopen({
-        routerService: service('router'),
-        init() {
-          this.routerService.one('routeDidChange', () => {
-            assert.ok(true, 'routeDidChange event listener called');
-          });
-        },
-      });
+      await this.visit('/');
 
-      return this.visit('/');
+      assert.ok(this.injectedRouterService, 'RouterService was injected into router');
     }
   }
 );

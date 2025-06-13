@@ -481,7 +481,6 @@ export class Meta {
     1. A meta has been flattened (listener has been called)
     2. The meta is a prototype meta with children who have inherited its
        listeners
-    3. A new listener is subsequently added to the meta (e.g. via `.reopen()`)
 
     This is a very rare occurrence, so while the counter is global it shouldn't
     be updated very often in practice.

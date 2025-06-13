@@ -1,7 +1,8 @@
 import EmberApplication from '@ember/application';
 import setupForTesting from '../setup_for_testing';
 import { helpers } from '../test/helpers';
-import TestPromise, { resolve, getLastPromise } from '../test/promise';
+import TestPromise from '../test/promise';
+import { resolve, getLastPromise } from '../test/promise';
 import run from '../test/run';
 import { invokeInjectHelpersCallbacks } from '../test/on_inject_helpers';
 import { asyncStart, asyncEnd } from '../test/adapter';
@@ -14,164 +15,152 @@ export interface TestableApp extends Application {
   testHelpers: Record<string, (...args: unknown[]) => unknown>;
   originalMethods: Record<string, (...args: unknown[]) => unknown>;
   setupForTesting(): void;
-  helperContainer: object | null;
+  helperContainer: Record<string, unknown> | null;
   injectTestHelpers(helperContainer: unknown): void;
   removeTestHelpers(): void;
 }
 
-EmberApplication.reopen({
-  /**
-   This property contains the testing helpers for the current application. These
-   are created once you call `injectTestHelpers` on your `Application`
-   instance. The included helpers are also available on the `window` object by
-   default, but can be used from this object on the individual application also.
+const TestableAppPrototype = EmberApplication.prototype as TestableApp;
 
-    @property testHelpers
-    @type {Object}
-    @default {}
-    @public
-  */
-  testHelpers: {},
+/**
+ This property contains the testing helpers for the current application. These
+  are created once you call `injectTestHelpers` on your `Application`
+  instance. The included helpers are also available on the `window` object by
+  default, but can be used from this object on the individual application also.
 
-  /**
-   This property will contain the original methods that were registered
-   on the `helperContainer` before `injectTestHelpers` is called.
-
-   When `removeTestHelpers` is called, these methods are restored to the
-   `helperContainer`.
-
-    @property originalMethods
-    @type {Object}
-    @default {}
-    @private
-    @since 1.3.0
-  */
-  originalMethods: {},
-
-  /**
-  This property indicates whether or not this application is currently in
-  testing mode. This is set when `setupForTesting` is called on the current
-  application.
-
-  @property testing
-  @type {Boolean}
-  @default false
-  @since 1.3.0
+  @property testHelpers
+  @type {Object}
+  @default {}
   @public
-  */
-  testing: false,
+*/
+TestableAppPrototype.testHelpers = {};
 
-  /**
-    This hook defers the readiness of the application, so that you can start
-    the app when your tests are ready to run. It also sets the router's
-    location to 'none', so that the window's location will not be modified
-    (preventing both accidental leaking of state between tests and interference
-    with your testing framework). `setupForTesting` should only be called after
-    setting a custom `router` class (for example `App.Router = Router.extend(`).
+/**
+ This property will contain the original methods that were registered
+  on the `helperContainer` before `injectTestHelpers` is called.
 
-    Example:
+  When `removeTestHelpers` is called, these methods are restored to the
+  `helperContainer`.
 
-    ```
-    App.setupForTesting();
-    ```
+  @property originalMethods
+  @type {Object}
+  @default {}
+  @private
+  @since 1.3.0
+*/
+TestableAppPrototype.originalMethods = {};
 
-    @method setupForTesting
-    @public
-  */
-  setupForTesting() {
-    setupForTesting();
+/**
+  This hook defers the readiness of the application, so that you can start
+  the app when your tests are ready to run. It also sets the router's
+  location to 'none', so that the window's location will not be modified
+  (preventing both accidental leaking of state between tests and interference
+  with your testing framework). `setupForTesting` should only be called after
+  setting a custom `router` class.
 
-    this.testing = true;
+  Example:
 
-    this.resolveRegistration('router:main').reopen({
-      location: 'none',
-    });
-  },
+  ```
+  App.setupForTesting();
+  ```
 
-  /**
-    This will be used as the container to inject the test helpers into. By
-    default the helpers are injected into `window`.
+  @method setupForTesting
+  @public
+*/
+TestableAppPrototype.setupForTesting = function (this: TestableApp) {
+  setupForTesting();
 
-    @property helperContainer
-    @type {Object} The object to be used for test helpers.
-    @default window
-    @since 1.2.0
-    @private
-  */
-  helperContainer: null,
+  this.testing = true;
 
-  /**
-    This injects the test helpers into the `helperContainer` object. If an object is provided
-    it will be used as the helperContainer. If `helperContainer` is not set it will default
-    to `window`. If a function of the same name has already been defined it will be cached
-    (so that it can be reset if the helper is removed with `unregisterHelper` or
-    `removeTestHelpers`).
+  const router = this.resolveRegistration('router:main') as any;
+  router.prototype.location = 'none';
+};
 
-    Any callbacks registered with `onInjectHelpers` will be called once the
-    helpers have been injected.
+/**
+  This will be used as the container to inject the test helpers into. By
+  default the helpers are injected into `window`.
 
-    Example:
-    ```
-    App.injectTestHelpers();
-    ```
+  @property helperContainer
+  @type {Object} The object to be used for test helpers.
+  @default window
+  @since 1.2.0
+  @private
+*/
+TestableAppPrototype.helperContainer = null;
 
-    @method injectTestHelpers
-    @public
-  */
-  injectTestHelpers(this: TestableApp, helperContainer: object) {
-    if (helperContainer) {
-      this.helperContainer = helperContainer;
-    } else {
-      this.helperContainer = window;
-    }
+/**
+  This injects the test helpers into the `helperContainer` object. If an object is provided
+  it will be used as the helperContainer. If `helperContainer` is not set it will default
+  to `window`. If a function of the same name has already been defined it will be cached
+  (so that it can be reset if the helper is removed with `unregisterHelper` or
+  `removeTestHelpers`).
 
-    this.reopen({
-      willDestroy(this: TestableApp) {
-        this._super(...arguments);
-        this.removeTestHelpers();
-      },
-    });
+  Any callbacks registered with `onInjectHelpers` will be called once the
+  helpers have been injected.
 
-    this.testHelpers = {};
-    for (let name in helpers) {
-      // SAFETY: It is safe to access a property on an object
-      this.originalMethods[name] = (this.helperContainer as any)[name];
-      // SAFETY: It is not quite as safe to do this, but it _seems_ to be ok.
-      this.testHelpers[name] = (this.helperContainer as any)[name] = helper(this, name);
-      // SAFETY: We checked that it exists
-      protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name]!.meta.wait);
-    }
+  Example:
+  ```
+  App.injectTestHelpers();
+  ```
 
-    invokeInjectHelpersCallbacks(this);
-  },
+  @method injectTestHelpers
+  @public
+*/
+TestableAppPrototype.injectTestHelpers = function (
+  this: TestableApp,
+  helperContainer: Record<string, unknown>
+) {
+  if (helperContainer) {
+    this.helperContainer = helperContainer;
+  } else {
+    this.helperContainer = window as unknown as Record<string, unknown>;
+  }
 
-  /**
-    This removes all helpers that have been registered, and resets and functions
-    that were overridden by the helpers.
+  const originalWillDestroy = this.willDestroy;
+  this.willDestroy = function (this: TestableApp) {
+    originalWillDestroy.call(this);
+    this.removeTestHelpers();
+  };
 
-    Example:
+  this.testHelpers = {};
+  for (let name in helpers) {
+    // SAFETY: It is safe to access a property on an object
+    this.originalMethods[name] = (this.helperContainer as any)[name];
+    // SAFETY: It is not quite as safe to do this, but it _seems_ to be ok.
+    this.testHelpers[name] = (this.helperContainer as any)[name] = helper(this, name);
+    // SAFETY: We checked that it exists
+    protoWrap(TestPromise.prototype, name, helper(this, name), helpers[name]!.meta.wait);
+  }
 
-    ```javascript
-    App.removeTestHelpers();
-    ```
+  invokeInjectHelpersCallbacks(this);
+};
 
-    @public
-    @method removeTestHelpers
-  */
-  removeTestHelpers() {
-    if (!this.helperContainer) {
-      return;
-    }
+/**
+  This removes all helpers that have been registered, and resets and functions
+  that were overridden by the helpers.
 
-    for (let name in helpers) {
-      this.helperContainer[name] = this.originalMethods[name];
-      // SAFETY: This is a weird thing, but it's not technically unsafe here.
-      delete (TestPromise.prototype as any)[name];
-      delete this.testHelpers[name];
-      delete this.originalMethods[name];
-    }
-  },
-});
+  Example:
+
+  ```javascript
+  App.removeTestHelpers();
+  ```
+
+  @public
+  @method removeTestHelpers
+*/
+TestableAppPrototype.removeTestHelpers = function (this: TestableApp) {
+  if (!this.helperContainer) {
+    return;
+  }
+
+  for (let name in helpers) {
+    this.helperContainer[name] = this.originalMethods[name];
+    // SAFETY: This is a weird thing, but it's not technically unsafe here.
+    delete (TestPromise.prototype as any)[name];
+    delete this.testHelpers[name];
+    delete this.originalMethods[name];
+  }
+};
 
 // This method is no longer needed
 // But still here for backwards compatibility

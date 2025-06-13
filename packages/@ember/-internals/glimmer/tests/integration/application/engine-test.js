@@ -8,6 +8,7 @@ import {
 
 import { Component } from '@ember/-internals/glimmer';
 import Route from '@ember/routing/route';
+import EmberRouter from '@ember/routing/router';
 import { RSVP } from '@ember/-internals/runtime';
 import Controller from '@ember/controller';
 import Engine from '@ember/engine';
@@ -17,6 +18,8 @@ import { compile } from '../../utils/helpers';
 import { setComponentTemplate } from '@glimmer/manager';
 import { templateOnlyComponent } from '@glimmer/runtime';
 
+const originalSetupRouter = EmberRouter.prototype.setupRouter;
+
 moduleFor(
   'Application test: engine rendering',
   class extends ApplicationTestCase {
@@ -24,7 +27,7 @@ moduleFor(
       return {
         location: 'none',
         setupRouter() {
-          this._super(...arguments);
+          originalSetupRouter.call(this, ...arguments);
           let getRoute = this._routerMicrolib.getRoute;
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);

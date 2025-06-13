@@ -1,10 +1,8 @@
 import { ENV } from '@ember/-internals/environment';
-import EmberObject, { observer } from '@ember/object';
+import EmberObject from '@ember/object';
 import { get } from '../..';
-import Mixin from '@ember/object/mixin';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { destroy } from '@glimmer/destroyable';
 
 function aget(x, y) {
   return x[y];
@@ -178,30 +176,6 @@ moduleFor(
         () => get(obj, false),
         /The key provided to get must be a string or number, you passed false/
       );
-    }
-
-    // ..........................................................
-    // BUGS
-    //
-
-    ['@test (regression) watched properties on unmodified inherited objects should still return their original value'](
-      assert
-    ) {
-      let MyMixin = Mixin.create({
-        someProperty: 'foo',
-        propertyDidChange: observer('someProperty', () => {}),
-      });
-
-      let baseObject = MyMixin.apply({});
-      let theRealObject = Object.create(baseObject);
-
-      assert.equal(
-        get(theRealObject, 'someProperty'),
-        'foo',
-        'should return the set value, not false'
-      );
-
-      run(() => destroy(baseObject));
     }
   }
 );

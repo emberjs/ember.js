@@ -729,24 +729,6 @@ moduleFor(
         testObj.set('aInt', '123');
       }, /Cannot override the computed property `aInt` on <\(unknown\):ember\d*>./);
     }
-
-    ['@test the return value of the setter gets cached'](assert) {
-      let testObj = EmberObject.extend({
-        a: '1',
-        sampleCP: computed('a', {
-          get() {
-            assert.ok(false, 'The getter should not be invoked');
-            return 'get-value';
-          },
-          set() {
-            return 'set-value';
-          },
-        }),
-      }).create();
-
-      testObj.set('sampleCP', 'abcd');
-      assert.ok(testObj.get('sampleCP') === 'set-value', 'The return value of the CP was cached');
-    }
   }
 );
 

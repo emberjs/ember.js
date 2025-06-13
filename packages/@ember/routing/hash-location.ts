@@ -7,6 +7,7 @@ import { getHash } from './lib/location-utils';
 @module @ember/routing/hash-location
 */
 
+// TODO: Update these docs
 /**
   `HashLocation` implements the location API using the browser's
   hash. At present, it relies on a `hashchange` event existing in the

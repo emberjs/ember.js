@@ -5,13 +5,6 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let NoneTestLocation, location;
 
-function createLocation(options) {
-  if (!options) {
-    options = {};
-  }
-  location = NoneTestLocation.create(options);
-}
-
 moduleFor(
   'NoneLocation',
   class extends AbstractTestCase {
@@ -29,28 +22,28 @@ moduleFor(
     }
 
     ['@test NoneLocation.formatURL() returns the current url always appending rootURL'](assert) {
-      NoneTestLocation.reopen({
+      class TestLocation extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/en/');
-        },
-      });
+        }
+      }
 
-      createLocation();
+      location = TestLocation.create();
 
       assert.equal(location.formatURL('/foo/bar'), '/en/foo/bar');
     }
 
     ['@test NoneLocation.getURL() returns the current path minus rootURL'](assert) {
-      NoneTestLocation.reopen({
+      class TestLocation extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/foo/');
           set(this, 'path', '/foo/bar');
-        },
-      });
+        }
+      }
 
-      createLocation();
+      location = TestLocation.create();
 
       assert.equal(location.getURL(), '/bar');
     }
@@ -58,29 +51,29 @@ moduleFor(
     ['@test NoneLocation.getURL() will remove the rootURL only from the beginning of a url'](
       assert
     ) {
-      NoneTestLocation.reopen({
+      class TestLocation extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/bar/');
           set(this, 'path', '/foo/bar/baz');
-        },
-      });
+        }
+      }
 
-      createLocation();
+      location = TestLocation.create();
 
       assert.equal(location.getURL(), '/foo/bar/baz');
     }
 
     ['@test NoneLocation.getURL() will not remove the rootURL when only a partial match'](assert) {
-      NoneTestLocation.reopen({
+      class TestLocation extends NoneTestLocation {
         init() {
-          this._super(...arguments);
+          super.init(...arguments);
           set(this, 'rootURL', '/bar/');
           set(this, 'path', '/bars/baz');
-        },
-      });
+        }
+      }
 
-      createLocation();
+      location = TestLocation.create();
 
       assert.equal(location.getURL(), '/bars/baz');
     }

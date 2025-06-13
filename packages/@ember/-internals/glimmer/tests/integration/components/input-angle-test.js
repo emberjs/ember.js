@@ -285,12 +285,16 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      this.render(`<Input @enter={{this.foo}} />`, {
-        foo: action(function (value, event) {
-          assert.ok(true, 'action was triggered');
-          assert.ok(event instanceof Event, 'Native event was passed');
-        }),
-      });
+      this.renderWithClass(
+        `<Input @enter={{this.foo}} />`,
+        class extends this.BaseComponent {
+          @action
+          foo(value, event) {
+            assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof Event, 'Native event was passed');
+          }
+        }
+      );
 
       this.triggerEvent('keyup', {
         key: 'Enter',
@@ -317,12 +321,16 @@ moduleFor(
     ) {
       assert.expect(2);
 
-      this.render(`<Input @escape-press={{this.foo}} />`, {
-        foo: action(function (value, event) {
-          assert.ok(true, 'action was triggered');
-          assert.ok(event instanceof Event, 'Native event was passed');
-        }),
-      });
+      this.renderWithClass(
+        `<Input @escape-press={{this.foo}} />`,
+        class extends this.BaseComponent {
+          @action
+          foo(value, event) {
+            assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof Event, 'Native event was passed');
+          }
+        }
+      );
 
       this.triggerEvent('keyup', { key: 'Escape' });
     }

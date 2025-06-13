@@ -209,6 +209,7 @@ export function join(methodOrTarget: any, methodOrArg?: any, ...additionalArgs: 
   return _backburner.join(methodOrTarget, methodOrArg, ...additionalArgs);
 }
 
+// TODO: Update this example
 /**
   Allows you to specify which context to call the specified function in while
   adding the execution of that function to the Ember run loop. This ability

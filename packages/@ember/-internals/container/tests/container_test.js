@@ -432,11 +432,9 @@ moduleFor(
       let Apple = factory();
       let Orange = factory();
 
-      Apple.reopenClass({
-        _lazyInjections() {
-          return [{ specifier: 'orange:main' }, { specifier: 'banana:main' }];
-        },
-      });
+      Apple._lazyInjections = function () {
+        return [{ specifier: 'orange:main' }, { specifier: 'banana:main' }];
+      };
 
       registry.register('apple:main', Apple);
       registry.register('orange:main', Orange);
@@ -459,12 +457,10 @@ moduleFor(
       let Apple = factory();
       let Orange = factory();
 
-      Apple.reopenClass({
-        _lazyInjections: () => {
-          assert.ok(true, 'should call lazy injection method');
-          return [{ specifier: 'orange:main' }];
-        },
-      });
+      Apple._lazyInjections = () => {
+        assert.ok(true, 'should call lazy injection method');
+        return [{ specifier: 'orange:main' }];
+      };
 
       registry.register('apple:main', Apple);
       registry.register('orange:main', Orange);
