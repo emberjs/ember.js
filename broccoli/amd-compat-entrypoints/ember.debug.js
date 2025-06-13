@@ -56,36 +56,6 @@ d('@ember/-internals/runtime/index', emberinternalsRuntimeIndex);
 import * as emberinternalsRuntimeLibExtRsvp from '@ember/-internals/runtime/lib/ext/rsvp';
 d('@ember/-internals/runtime/lib/ext/rsvp', emberinternalsRuntimeLibExtRsvp);
 
-import * as emberinternalsRuntimeLibMixinsproxy from '@ember/-internals/runtime/lib/mixins/-proxy';
-d('@ember/-internals/runtime/lib/mixins/-proxy', emberinternalsRuntimeLibMixinsproxy);
-
-import * as emberinternalsRuntimeLibMixinsActionHandler from '@ember/-internals/runtime/lib/mixins/action_handler';
-d(
-  '@ember/-internals/runtime/lib/mixins/action_handler',
-  emberinternalsRuntimeLibMixinsActionHandler
-);
-
-import * as emberinternalsRuntimeLibMixinsComparable from '@ember/-internals/runtime/lib/mixins/comparable';
-d('@ember/-internals/runtime/lib/mixins/comparable', emberinternalsRuntimeLibMixinsComparable);
-
-import * as emberinternalsRuntimeLibMixinsContainerProxy from '@ember/-internals/runtime/lib/mixins/container_proxy';
-d(
-  '@ember/-internals/runtime/lib/mixins/container_proxy',
-  emberinternalsRuntimeLibMixinsContainerProxy
-);
-
-import * as emberinternalsRuntimeLibMixinsRegistryProxy from '@ember/-internals/runtime/lib/mixins/registry_proxy';
-d(
-  '@ember/-internals/runtime/lib/mixins/registry_proxy',
-  emberinternalsRuntimeLibMixinsRegistryProxy
-);
-
-import * as emberinternalsRuntimeLibMixinsTargetActionSupport from '@ember/-internals/runtime/lib/mixins/target_action_support';
-d(
-  '@ember/-internals/runtime/lib/mixins/target_action_support',
-  emberinternalsRuntimeLibMixinsTargetActionSupport
-);
-
 import * as emberinternalsStringIndex from '@ember/-internals/string/index';
 d('@ember/-internals/string/index', emberinternalsStringIndex);
 
@@ -109,9 +79,6 @@ d(
 
 import * as emberinternalsViewsLibComponentLookup from '@ember/-internals/views/lib/component_lookup';
 d('@ember/-internals/views/lib/component_lookup', emberinternalsViewsLibComponentLookup);
-
-import * as emberinternalsViewsLibMixinsActionSupport from '@ember/-internals/views/lib/mixins/action_support';
-d('@ember/-internals/views/lib/mixins/action_support', emberinternalsViewsLibMixinsActionSupport);
 
 import * as emberinternalsViewsLibSystemActionManager from '@ember/-internals/views/lib/system/action_manager';
 d('@ember/-internals/views/lib/system/action_manager', emberinternalsViewsLibSystemActionManager);
@@ -143,20 +110,11 @@ d('@ember/application/lib/lazy_load', emberApplicationLibLazyLoad);
 import * as emberApplicationNamespace from '@ember/application/namespace';
 d('@ember/application/namespace', emberApplicationNamespace);
 
-import * as emberArrayinternals from '@ember/array/-internals';
-d('@ember/array/-internals', emberArrayinternals);
-
 import * as emberArrayIndex from '@ember/array/index';
 d('@ember/array/index', emberArrayIndex);
 
 import * as emberArrayLibMakeArray from '@ember/array/lib/make-array';
 d('@ember/array/lib/make-array', emberArrayLibMakeArray);
-
-import * as emberArrayMutable from '@ember/array/mutable';
-d('@ember/array/mutable', emberArrayMutable);
-
-import * as emberArrayProxy from '@ember/array/proxy';
-d('@ember/array/proxy', emberArrayProxy);
 
 import * as emberCanaryFeaturesIndex from '@ember/canary-features/index';
 d('@ember/canary-features/index', emberCanaryFeaturesIndex);
@@ -215,12 +173,6 @@ d('@ember/engine/instance', emberEngineInstance);
 import * as emberEngineLibEngineParent from '@ember/engine/lib/engine-parent';
 d('@ember/engine/lib/engine-parent', emberEngineLibEngineParent);
 
-import * as emberEnumerableIndex from '@ember/enumerable/index';
-d('@ember/enumerable/index', emberEnumerableIndex);
-
-import * as emberEnumerableMutable from '@ember/enumerable/mutable';
-d('@ember/enumerable/mutable', emberEnumerableMutable);
-
 import * as emberHelperIndex from '@ember/helper/index';
 d('@ember/helper/index', emberHelperIndex);
 
@@ -242,9 +194,6 @@ d('@ember/object/computed', emberObjectComputed);
 import * as emberObjectCore from '@ember/object/core';
 d('@ember/object/core', emberObjectCore);
 
-import * as emberObjectEvented from '@ember/object/evented';
-d('@ember/object/evented', emberObjectEvented);
-
 import * as emberObjectEvents from '@ember/object/events';
 d('@ember/object/events', emberObjectEvents);
 
@@ -257,23 +206,11 @@ d('@ember/object/internals', emberObjectInternals);
 import * as emberObjectLibComputedComputedMacros from '@ember/object/lib/computed/computed_macros';
 d('@ember/object/lib/computed/computed_macros', emberObjectLibComputedComputedMacros);
 
-import * as emberObjectLibComputedReduceComputedMacros from '@ember/object/lib/computed/reduce_computed_macros';
-d('@ember/object/lib/computed/reduce_computed_macros', emberObjectLibComputedReduceComputedMacros);
-
 import * as emberObjectMixin from '@ember/object/mixin';
 d('@ember/object/mixin', emberObjectMixin);
 
-import * as emberObjectObservable from '@ember/object/observable';
-d('@ember/object/observable', emberObjectObservable);
-
 import * as emberObjectObservers from '@ember/object/observers';
 d('@ember/object/observers', emberObjectObservers);
-
-import * as emberObjectPromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-d('@ember/object/promise-proxy-mixin', emberObjectPromiseProxyMixin);
-
-import * as emberObjectProxy from '@ember/object/proxy';
-d('@ember/object/proxy', emberObjectProxy);
 
 import * as emberOwnerIndex from '@ember/owner/index';
 d('@ember/owner/index', emberOwnerIndex);

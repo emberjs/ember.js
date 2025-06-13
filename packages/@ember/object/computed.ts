@@ -1,8 +1,6 @@
 export { ComputedProperty as default, expandProperties, alias } from '@ember/-internals/metal';
 
 export {
-  empty,
-  notEmpty,
   none,
   not,
   bool,
@@ -19,20 +17,3 @@ export {
   and,
   or,
 } from './lib/computed/computed_macros';
-
-export {
-  sum,
-  min,
-  max,
-  map,
-  sort,
-  setDiff,
-  mapBy,
-  filter,
-  filterBy,
-  uniq,
-  uniqBy,
-  union,
-  intersect,
-  collect,
-} from './lib/computed/reduce_computed_macros';

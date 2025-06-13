@@ -17,13 +17,6 @@ router.transitionTo(
   { queryParams: {} }
 );
 
-const routeWillChangeHandler = () => {};
-expectTypeOf(router.on('routeWillChange', routeWillChangeHandler)).toEqualTypeOf<RouterService>();
-expectTypeOf(router.has('routeWillChange')).toEqualTypeOf<boolean>();
-expectTypeOf(router.off('routeWillChange', routeWillChangeHandler)).toEqualTypeOf<RouterService>();
-expectTypeOf(router.one('routeWillChange', routeWillChangeHandler)).toEqualTypeOf<RouterService>();
-expectTypeOf(router.trigger('routeWillChange', 'boo')).toBeAny();
-
 const transition = router.transitionTo('someRoute');
 
 expectTypeOf(transition.abort()).toEqualTypeOf<Transition>();

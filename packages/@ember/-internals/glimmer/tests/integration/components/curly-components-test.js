@@ -9,15 +9,15 @@ import {
   runLoopSettled,
 } from 'internal-test-helpers';
 
+import { tracked as trackedBuiltIn } from 'tracked-built-ins';
+
 import { action } from '@ember/object';
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { tracked } from '@ember/-internals/metal';
 import { alias } from '@ember/object/computed';
-import { on } from '@ember/object/evented';
 import Service, { service } from '@ember/service';
 import EmberObject, { set, get, computed, observer } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { backtrackingMessageFor } from '../../utils/debug-stack';
@@ -1705,7 +1705,7 @@ moduleFor(
       });
 
       this.render('{{sample-component names=this.things}}', {
-        things: emberA(['Foo', 4, 'Bar']),
+        things: trackedBuiltIn(['Foo', 4, 'Bar']),
       });
 
       this.assertText('Foo4Bar');
@@ -1714,19 +1714,19 @@ moduleFor(
 
       this.assertText('Foo4Bar');
 
-      runTask(() => this.context.get('things').pushObject(5));
+      runTask(() => this.context.get('things').push(5));
 
       this.assertText('Foo4Bar5');
 
-      runTask(() => this.context.get('things').shiftObject());
+      runTask(() => this.context.get('things').shift());
 
       this.assertText('4Bar5');
 
-      runTask(() => this.context.get('things').clear());
+      runTask(() => this.context.get('things').splice(0, 3));
 
       this.assertText('');
 
-      runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
+      runTask(() => this.context.set('things', ['Foo', 4, 'Bar']));
 
       this.assertText('Foo4Bar');
     }
@@ -2564,7 +2564,7 @@ moduleFor(
         template: 'Child: {{this.item}}.',
       });
 
-      let items = emberA(['Tom', 'Dick', 'Harry']);
+      let items = trackedBuiltIn(['Tom', 'Dick', 'Harry']);
 
       this.render('{{non-block items=this.items}}', { items });
 
@@ -2574,15 +2574,15 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      runTask(() => this.context.get('items').pushObject('Sergio'));
+      runTask(() => this.context.get('items').push('Sergio'));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.get('items').shiftObject());
+      runTask(() => this.context.get('items').shift());
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
+      runTask(() => this.context.set('items', ['Tom', 'Dick', 'Harry']));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
     }
@@ -3007,7 +3007,7 @@ moduleFor(
 
           init() {
             super.init(...arguments);
-            this.options = emberA([]);
+            this.options = [];
             this.value = null;
           }
 
@@ -3018,11 +3018,16 @@ moduleFor(
           }
 
           registerOption(option) {
-            this.get('options').addObject(option);
+            if (this.get('options').indexOf(option) === -1) {
+              this.get('options').push(option);
+            }
           }
 
           unregisterOption(option) {
-            this.get('options').removeObject(option);
+            let index = this.get('options').indexOf(option);
+            if (index > -1) {
+              this.get('options').splice(index, 1);
+            }
 
             this.updateValue();
           }
@@ -3157,52 +3162,6 @@ moduleFor(
       this.render(`{{foo-bar foo=this.foo bar=this.bar}}`, { foo: 1, bar: 3 });
 
       runTask(() => set(this.context, 'foo', 5));
-    }
-
-    ['@test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)'](
-      assert
-    ) {
-      assert.expect(3);
-
-      let payload = ['arbitrary', 'event', 'data'];
-
-      this.registerComponent('evented-component', {
-        ComponentClass: Component.extend({
-          someTruthyProperty: true,
-
-          init() {
-            this._super(...arguments);
-            this.trigger('someMethod', ...payload);
-            this.trigger('someTruthyProperty', ...payload);
-          },
-
-          someMethod(...data) {
-            assert.deepEqual(
-              data,
-              payload,
-              'the method `someMethod` should be called, when `someMethod` is triggered'
-            );
-          },
-
-          listenerForSomeMethod: on('someMethod', function (...data) {
-            assert.deepEqual(
-              data,
-              payload,
-              'the listener `listenerForSomeMethod` should be called, when `someMethod` is triggered'
-            );
-          }),
-
-          listenerForSomeTruthyProperty: on('someTruthyProperty', function (...data) {
-            assert.deepEqual(
-              data,
-              payload,
-              'the listener `listenerForSomeTruthyProperty` should be called, when `someTruthyProperty` is triggered'
-            );
-          }),
-        }),
-      });
-
-      this.render(`{{evented-component}}`);
     }
 
     ['@test component yielding in an {{#each}} has correct block values after rerendering (GH#14284)']() {

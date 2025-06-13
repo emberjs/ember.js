@@ -1,12 +1,7 @@
-import type EmberArray from '@ember/array';
-import type MutableArray from '@ember/array/mutable';
-import { assert } from '@ember/debug';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
 
-const EMPTY_ARRAY = Object.freeze([]);
-
-type ObservedArray<T> = (T[] | EmberArray<T>) & ObservedObject;
+type ObservedArray<T> = T[] & ObservedObject;
 
 interface ObservedObject {
   _revalidate?: () => void;
@@ -14,31 +9,11 @@ interface ObservedObject {
 
 export { objectAt } from './object-at';
 
-// Ideally, we'd use MutableArray.detect but for unknown reasons this causes
-// the node tests to fail strangely.
-function isMutableArray<T>(obj: unknown): obj is MutableArray<T> {
-  return obj != null && typeof (obj as MutableArray<T>).replace === 'function';
-}
-
-export function replace<T>(
-  array: T[] | MutableArray<T>,
-  start: number,
-  deleteCount: number,
-  items: readonly T[] = EMPTY_ARRAY as []
-): void {
-  if (isMutableArray(array)) {
-    array.replace(start, deleteCount, items);
-  } else {
-    assert('Can only replace content of a native array or MutableArray', Array.isArray(array));
-    replaceInNativeArray(array, start, deleteCount, items);
-  }
-}
-
 const CHUNK_SIZE = 60000;
 
 // To avoid overflowing the stack, we splice up to CHUNK_SIZE items at a time.
 // See https://code.google.com/p/chromium/issues/detail?id=56588 for more details.
-export function replaceInNativeArray<T>(
+export function replace<T>(
   array: T[],
   start: number,
   deleteCount: number,
@@ -93,7 +68,7 @@ function arrayObserversHelper<T>(
 }
 
 export function addArrayObserver<T>(
-  array: EmberArray<T>,
+  array: T[],
   target: object | Function | null,
   opts: ArrayObserverOptions
 ): ObservedArray<T> {
@@ -101,7 +76,7 @@ export function addArrayObserver<T>(
 }
 
 export function removeArrayObserver<T>(
-  array: T[] | EmberArray<T>,
+  array: T[],
   target: object | Function | null,
   opts: ArrayObserverOptions
 ): ObservedArray<T> {

@@ -1,13 +1,11 @@
 import type Owner from '@ember/owner';
 import type EmberObject from '@ember/object';
-import type Evented from '@ember/object/evented';
 import { default as Location, Registry as LocationRegistry } from '@ember/routing/location';
 import Router from '@ember/routing/router';
 import { expectTypeOf } from 'expect-type';
 import type { Transition } from 'router_js';
 
 expectTypeOf<Router>().toMatchTypeOf<EmberObject>();
-expectTypeOf<Router>().toMatchTypeOf<Evented>();
 
 // NOTE: This is invalid, but acceptable for type tests
 let owner = {} as Owner;

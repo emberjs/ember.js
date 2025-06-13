@@ -2,12 +2,6 @@ import type Owner from '@ember/owner';
 import Ember from 'ember';
 import { expectTypeOf } from 'expect-type';
 
-const top = (<T>(x?: T): T => x!)();
-type Top = typeof top;
-declare function expectTypeNativeArrayTop(x: Ember.NativeArray<Top>): void;
-// A
-expectTypeNativeArrayTop(Ember.A());
-expectTypeOf(Ember.A([1, 2])).toEqualTypeOf<Ember.NativeArray<number>>();
 // addListener
 Ember.addListener({ a: 'foo' }, 'event', {}, () => {});
 Ember.addListener({ a: 'foo' }, 'event', {}, 'a');
@@ -80,13 +74,6 @@ const o2 = O2.create({
   name: 'foo',
   age: 3,
 });
-// on
-class O3 extends Ember.Object {
-  name = 'foo';
-  nameWatcher = Ember.on('init', () => {});
-  nameWatcher2 = Ember.on('destroy', () => {});
-}
-const o3 = O3.create();
 // removeListener
 Ember.removeListener(O2, 'create', null, () => {});
 Ember.removeListener(O2, 'create', null, 'create');
@@ -112,7 +99,6 @@ expectTypeOf(Ember.setProperties(O2.create(), { name: 'bar' }).name).toEqualType
 expectTypeOf(Ember.trySet(O2, 'nam', '')).toEqualTypeOf<string | undefined>();
 // typeOf
 expectTypeOf(Ember.typeOf('')).toBeString();
-expectTypeOf(Ember.typeOf(Ember.A())).toBeString();
 // warn
 Ember.warn('be caseful!');
 Ember.warn('be caseful!', { id: 'some-warning' });
@@ -135,14 +121,6 @@ expectTypeOf(Ember.Application.create()).toEqualTypeOf<Ember.Application>();
 // Ember.ApplicationInstance
 expectTypeOf(new Ember.ApplicationInstance()).toEqualTypeOf<Ember.ApplicationInstance>();
 expectTypeOf(Ember.ApplicationInstance.create()).toEqualTypeOf<Ember.ApplicationInstance>();
-// Ember.Array
-const a1: Ember.NativeArray<string> = Ember.A([]);
-// @ts-expect-error
-const a2: Ember.Array<string> = {};
-// Ember.ArrayProxy -- we cannot make this type safe with our limited types.
-expectTypeOf(Ember.ArrayProxy.create({ content: [3, 3, 2] })).toMatchTypeOf<
-  Ember.ArrayProxy<unknown>
->();
 // Ember.Component
 const C1 = Ember.Component.extend({ classNames: ['foo'] });
 class C2 extends Ember.Component {
@@ -187,13 +165,6 @@ e1.register('data:foo', {}, { instantiate: false });
 // Ember.EngineInstance
 const ei1 = new Ember.EngineInstance();
 ei1.lookup('data:foo');
-// Ember.Evented
-interface OE1 extends Ember.Evented {}
-class OE1 extends Ember.Object.extend(Ember.Evented) {}
-const oe1 = OE1.create();
-oe1.trigger('foo');
-oe1.on('bar', () => {});
-oe1.on('bar', { foo() {} }, () => {});
 // Ember.HashLocation
 const hl = new Ember.HashLocation();
 expectTypeOf(hl).toEqualTypeOf<Ember.HashLocation>();
@@ -216,44 +187,12 @@ class UsesMixin extends Ember.Object {
     expectTypeOf(this.foo).toBeString();
   }
 }
-// Ember.MutableArray
-const ma1: Ember.NativeArray<string> = Ember.A(['money', 'in', 'the', 'bananna', 'stand']);
-expectTypeOf(ma1.addObject('!')).toMatchTypeOf(ma1);
-// TODO: Ideally we'd mark the value as being invalid
-ma1.filterBy('');
-expectTypeOf(ma1.firstObject).toEqualTypeOf<string | undefined>();
-expectTypeOf(ma1.lastObject).toEqualTypeOf<string | undefined>();
-const ma2: Ember.NativeArray<{ name: string }> = Ember.A([
-  { name: 'chris' },
-  { name: 'dan' },
-  { name: 'james' },
-]);
-expectTypeOf(ma2.filterBy('name', 'chris')).toEqualTypeOf<Ember.NativeArray<{ name: string }>>();
-// Ember.MutableEnumerable
-const me1 = Ember.A(['foo', undefined, null]);
-expectTypeOf(me1.compact()).toEqualTypeOf<Ember.NativeArray<string>>();
 // Ember.Namespace
 const myNs = Ember.Namespace.extend({});
-// Ember.NativeArray
-const na: Ember.NativeArray<number> = Ember.A([2, 3, 4]);
-expectTypeOf(na).toEqualTypeOf<Ember.NativeArray<number>>();
-expectTypeOf(na.clear()).toEqualTypeOf<Ember.NativeArray<number>>();
 // Ember.NoneLocation
 expectTypeOf(new Ember.NoneLocation()).toEqualTypeOf<Ember.NoneLocation>();
 // Ember.Object
 new Ember.Object();
-// Ember.ObjectProxy
-expectTypeOf(new Ember.ObjectProxy()).toEqualTypeOf<Ember.ObjectProxy>();
-// Ember.Observable
-Ember.Object.extend(Ember.Observable, {});
-// Ember.PromiseProxyMixin
-interface PPM<T> extends Ember.PromiseProxyMixin<T> {}
-class PPM<T> extends Ember.Object.extend(Ember.PromiseProxyMixin) {
-  foo() {
-    expectTypeOf(this.reason).toEqualTypeOf<unknown>();
-    expectTypeOf(this.isPending).toEqualTypeOf<boolean>();
-  }
-}
 // Ember.Route
 new Ember.Route(owner);
 // Ember.Router

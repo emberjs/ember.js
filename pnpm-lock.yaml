@@ -114,6 +114,9 @@ importers:
       ember-router-generator:
         specifier: ^2.0.0
         version: 2.0.0
+      ember-tracked-storage-polyfill:
+        specifier: ^1.0.0
+        version: 1.0.0
       inflection:
         specifier: ^2.0.1
         version: 2.0.1
@@ -132,6 +135,9 @@ importers:
       simple-html-tokenizer:
         specifier: ^0.5.11
         version: 0.5.11
+      tracked-built-ins:
+        specifier: ^4.0.0
+        version: 4.0.0(@babel/core@7.26.9)
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.731.0
@@ -349,9 +355,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/helper':
         specifier: workspace:*
         version: link:../helper
@@ -460,6 +463,9 @@ importers:
       rsvp:
         specifier: ^4.8.5
         version: 4.8.5
+      tracked-built-ins:
+        specifier: ^4.0.0
+        version: 4.0.0(@babel/core@7.26.9)
     devDependencies:
       '@ember/template-compiler':
         specifier: workspace:*
@@ -548,9 +554,6 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -662,9 +665,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -782,39 +782,6 @@ importers:
         specifier: ^8.0.5
         version: 8.0.6(route-recognizer@0.3.4)(rsvp@4.8.5)
 
-  packages/@ember/enumerable:
-    dependencies:
-      '@ember/-internals':
-        specifier: workspace:*
-        version: link:../-internals
-      '@ember/array':
-        specifier: workspace:*
-        version: link:../array
-      '@ember/debug':
-        specifier: workspace:*
-        version: link:../debug
-      '@ember/object':
-        specifier: workspace:*
-        version: link:../object
-      '@glimmer/destroyable':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/env':
-        specifier: ^0.1.7
-        version: 0.1.7
-      '@glimmer/owner':
-        specifier: 0.93.4
-        version: 0.93.4
-      '@glimmer/util':
-        specifier: 0.94.8
-        version: 0.94.8
-      '@glimmer/validator':
-        specifier: 0.94.8
-        version: 0.94.8
-      internal-test-helpers:
-        specifier: workspace:*
-        version: link:../../internal-test-helpers
-
   packages/@ember/helper:
     dependencies:
       '@ember/-internals':
@@ -892,9 +859,6 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/runloop':
         specifier: workspace:*
         version: link:../runloop
@@ -928,6 +892,10 @@ importers:
       internal-test-helpers:
         specifier: workspace:*
         version: link:../../internal-test-helpers
+    devDependencies:
+      tracked-built-ins:
+        specifier: ^4.0.0
+        version: 4.0.0(@babel/core@7.26.9)
 
   packages/@ember/owner:
     dependencies:
@@ -988,9 +956,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -1204,9 +1169,6 @@ importers:
       '@ember/debug':
         specifier: workspace:*
         version: link:../debug
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/object':
         specifier: workspace:*
         version: link:../object
@@ -1267,9 +1229,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../enumerable
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../instrumentation
@@ -1354,9 +1313,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../@ember/engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../@ember/enumerable
       '@ember/helper':
         specifier: workspace:*
         version: link:../@ember/helper
@@ -1480,9 +1436,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../@ember/engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../@ember/enumerable
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../@ember/instrumentation
@@ -1633,9 +1586,6 @@ importers:
       '@ember/engine':
         specifier: workspace:*
         version: link:../@ember/engine
-      '@ember/enumerable':
-        specifier: workspace:*
-        version: link:../@ember/enumerable
       '@ember/instrumentation':
         specifier: workspace:*
         version: link:../@ember/instrumentation
@@ -5198,6 +5148,10 @@ packages:
   common-path-prefix@3.0.0:
     resolution: {integrity: sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w==}
 
+  common-tags@1.8.2:
+    resolution: {integrity: sha512-gk/Z852D2Wtb//0I+kRFNKKE9dIIVirjoqPoA1wJU+XePVXZfGeBpk45+A1rKO4Q43prqWBNY/MiIeRLbPWUaA==}
+    engines: {node: '>=4.0.0'}
+
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
 
@@ -5799,6 +5753,10 @@ packages:
   ember-cli-get-component-path-option@1.0.0:
     resolution: {integrity: sha512-k47TDwcJ2zPideBCZE8sCiShSxQSpebY2BHcX2DdipMmBox5gsfyVrbKJWIHeSTTKyEUgmBIvQkqTOozEziCZA==}
 
+  ember-cli-htmlbars@5.7.2:
+    resolution: {integrity: sha512-Uj6R+3TtBV5RZoJY14oZn/sNPnc+UgmC8nb5rI4P3fR/gYoyTFIZSXiIM7zl++IpMoIrocxOrgt+mhonKphgGg==}
+    engines: {node: 10.* || >= 12.*}
+
   ember-cli-htmlbars@6.3.0:
     resolution: {integrity: sha512-N9Y80oZfcfWLsqickMfRd9YByVcTGyhYRnYQ2XVPVrp6jyUyOeRWmEAPh7ERSXpp8Ws4hr/JB9QVQrn/yZa+Ag==}
     engines: {node: 12.* || 14.* || >= 16}
@@ -5957,6 +5915,10 @@ packages:
 
   ember-template-tag@2.3.16:
     resolution: {integrity: sha512-G6bIBcT4VnLlBUogkXxEXIzVvdYXhmLe+Io2yJzRYYZeHrdxKa6u2ZHXF4qII298grgqnqGo6tNqqgtD4AAS5g==}
+
+  ember-tracked-storage-polyfill@1.0.0:
+    resolution: {integrity: sha512-eL7lZat68E6P/D7b9UoTB5bB5Oh/0aju0Z7PCMi3aTwhaydRaxloE7TGrTRYU+NdJuyNVZXeGyxFxn2frvd3TA==}
+    engines: {node: 12.* || >= 14}
 
   ember-welcome-page@7.0.2:
     resolution: {integrity: sha512-TyaKxFIRXhODW5BTbqD/by0Gu8Z9B9AA1ki3Bzzm6fOj2b30Qlprtt+XUG52kS0zVNmxYj/WWoT0TsKiU61VOw==}
@@ -9641,6 +9603,9 @@ packages:
   tr46@5.0.0:
     resolution: {integrity: sha512-tk2G5R2KRwBd+ZN0zaEXpmzdKyOYksXwywulIX95MBODjSzMIuQnQ3m8JxgbhnL1LeVo7lqQKsYa1O3Htl7K5g==}
     engines: {node: '>=18'}
+
+  tracked-built-ins@4.0.0:
+    resolution: {integrity: sha512-0Jl43A1SDZd+yYCJvXfgDSn4Wk/zcawkyFTBPqOETU5UJRngnVEnQ8oOjawqPRg6qja3sKjIQ8z6X9xJzcUTUA==}
 
   tree-sync@1.4.0:
     resolution: {integrity: sha512-YvYllqh3qrR5TAYZZTXdspnIhlKAYezPYw11ntmweoceu4VK+keN356phHRIIo1d+RDmLpHZrUlmxga2gc9kSQ==}
@@ -14965,6 +14930,8 @@ snapshots:
 
   common-path-prefix@3.0.0: {}
 
+  common-tags@1.8.2: {}
+
   commondir@1.0.1: {}
 
   component-emitter@1.3.1: {}
@@ -15516,6 +15483,27 @@ snapshots:
       semver: 5.7.2
 
   ember-cli-get-component-path-option@1.0.0: {}
+
+  ember-cli-htmlbars@5.7.2:
+    dependencies:
+      '@ember/edition-utils': 1.2.0
+      babel-plugin-htmlbars-inline-precompile: 5.3.1
+      broccoli-debug: 0.6.5
+      broccoli-persistent-filter: 3.1.3
+      broccoli-plugin: 4.0.7
+      common-tags: 1.8.2
+      ember-cli-babel-plugin-helpers: 1.1.1
+      ember-cli-version-checker: 5.1.2
+      fs-tree-diff: 2.0.1
+      hash-for-dep: 1.5.1
+      heimdalljs-logger: 0.1.10
+      json-stable-stringify: 1.2.1
+      semver: 7.7.1
+      silent-error: 1.1.1
+      strip-bom: 4.0.0
+      walk-sync: 2.2.0
+    transitivePeerDependencies:
+      - supports-color
 
   ember-cli-htmlbars@6.3.0:
     dependencies:
@@ -16098,6 +16086,13 @@ snapshots:
       '@babel/traverse': 7.23.9
       '@babel/types': 7.23.0
       '@glimmer/syntax': 0.88.1
+    transitivePeerDependencies:
+      - supports-color
+
+  ember-tracked-storage-polyfill@1.0.0:
+    dependencies:
+      ember-cli-babel: 7.26.11
+      ember-cli-htmlbars: 5.7.2
     transitivePeerDependencies:
       - supports-color
 
@@ -20578,6 +20573,15 @@ snapshots:
   tr46@5.0.0:
     dependencies:
       punycode: 2.3.1
+
+  tracked-built-ins@4.0.0(@babel/core@7.26.9):
+    dependencies:
+      '@embroider/addon-shim': 1.9.0
+      decorator-transforms: 2.0.0(@babel/core@7.26.9)
+      ember-tracked-storage-polyfill: 1.0.0
+    transitivePeerDependencies:
+      - '@babel/core'
+      - supports-color
 
   tree-sync@1.4.0:
     dependencies:

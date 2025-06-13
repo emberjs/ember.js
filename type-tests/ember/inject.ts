@@ -6,6 +6,7 @@ class AuthService extends Ember.Service {
 }
 
 class ApplicationController extends Ember.Controller {
+  // @ts-expect-error TODO: Should this actually work?
   model = {};
   declare string: string;
   transitionToLogin() {}

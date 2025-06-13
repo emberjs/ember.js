@@ -10,7 +10,6 @@
     "@ember/application": "workspace:*",
     "@ember/array": "workspace:*",
     "@ember/debug": "workspace:*",
-    "@ember/enumerable": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@glimmer/destroyable": "0.94.8",

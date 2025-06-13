@@ -1,7 +1,5 @@
 import {
   alias,
-  empty,
-  notEmpty,
   not,
   bool,
   match,
@@ -16,55 +14,12 @@ import {
   and,
   or,
 } from '@ember/object/computed';
-import EmberObject, { get, set, computed, defineProperty } from '@ember/object';
-import { A as emberA } from '@ember/array';
+import { get, set, computed, defineProperty } from '@ember/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'CP macros',
   class extends AbstractTestCase {
-    ['@test empty part 1/2'](assert) {
-      let obj = class extends EmberObject {
-        bestLannister = null;
-        lannisters = null;
-
-        @empty('bestLannister') bestLannisterUnspecified;
-        @empty('lannisters') noLannistersKnown;
-      }.create({
-        lannisters: emberA(),
-      });
-
-      assert.equal(get(obj, 'bestLannisterUnspecified'), true, 'bestLannister initially empty');
-      assert.equal(get(obj, 'noLannistersKnown'), true, 'lannisters initially empty');
-
-      get(obj, 'lannisters').pushObject('Tyrion');
-      set(obj, 'bestLannister', 'Tyrion');
-
-      assert.equal(get(obj, 'bestLannisterUnspecified'), false, 'empty respects strings');
-      assert.equal(get(obj, 'noLannistersKnown'), false, 'empty respects array mutations');
-    }
-
-    ['@test notEmpty part 1/2'](assert) {
-      let obj = class extends EmberObject {
-        bestLannister = null;
-        lannisters = null;
-
-        @notEmpty('bestLannister') bestLannisterSpecified;
-        @notEmpty('lannisters') LannistersKnown;
-      }.create({
-        lannisters: emberA(),
-      });
-
-      assert.equal(get(obj, 'bestLannisterSpecified'), false, 'bestLannister initially empty');
-      assert.equal(get(obj, 'LannistersKnown'), false, 'lannisters initially empty');
-
-      get(obj, 'lannisters').pushObject('Tyrion');
-      set(obj, 'bestLannister', 'Tyrion');
-
-      assert.equal(get(obj, 'bestLannisterSpecified'), true, 'empty respects strings');
-      assert.equal(get(obj, 'LannistersKnown'), true, 'empty respects array mutations');
-    }
-
     ['@test not'](assert) {
       let obj = { foo: true };
       defineProperty(obj, 'notFoo', not('foo'));
@@ -73,23 +28,6 @@ moduleFor(
       obj = { foo: { bar: true } };
       defineProperty(obj, 'notFoo', not('foo.bar'));
       assert.equal(get(obj, 'notFoo'), false);
-    }
-
-    ['@test empty part 2/2'](assert) {
-      let obj = { foo: [], bar: undefined, baz: null, quz: '' };
-      defineProperty(obj, 'fooEmpty', empty('foo'));
-      defineProperty(obj, 'barEmpty', empty('bar'));
-      defineProperty(obj, 'bazEmpty', empty('baz'));
-      defineProperty(obj, 'quzEmpty', empty('quz'));
-
-      assert.equal(get(obj, 'fooEmpty'), true);
-      set(obj, 'foo', [1]);
-      assert.equal(get(obj, 'fooEmpty'), false);
-      assert.equal(get(obj, 'barEmpty'), true);
-      assert.equal(get(obj, 'bazEmpty'), true);
-      assert.equal(get(obj, 'quzEmpty'), true);
-      set(obj, 'quz', 'asdf');
-      assert.equal(get(obj, 'quzEmpty'), false);
     }
 
     ['@test bool'](assert) {
@@ -173,17 +111,6 @@ moduleFor(
       set(obj, 'name', 'Pierre');
 
       assert.equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
-    }
-
-    ['@test notEmpty part 2/2'](assert) {
-      let obj = { items: [1] };
-      defineProperty(obj, 'hasItems', notEmpty('items'));
-
-      assert.equal(get(obj, 'hasItems'), true, 'is not empty');
-
-      set(obj, 'items', []);
-
-      assert.equal(get(obj, 'hasItems'), false, 'is empty');
     }
 
     ['@test equal'](assert) {

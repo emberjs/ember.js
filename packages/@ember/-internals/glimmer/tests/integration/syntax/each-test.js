@@ -1,9 +1,7 @@
 import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
-import { notifyPropertyChange, on } from '@ember/-internals/metal';
-import { get, set, computed } from '@ember/object';
-import { A as emberA } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
+import { notifyPropertyChange } from '@ember/-internals/metal';
+import { get, set } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
 
 import { Component, htmlSafe } from '../../utils/helpers';
@@ -13,6 +11,7 @@ import {
   FalsyGenerator,
   ArrayTestCases,
 } from '../../utils/shared-conditional-tests';
+import { TrackedArray } from 'tracked-built-ins';
 
 class ArrayDelegate {
   constructor(content, target) {
@@ -157,11 +156,8 @@ class BasicEachTest extends TogglingEachTest {}
 
 const TRUTHY_CASES = [
   ['hello'],
-  emberA(['hello']),
   makeSet(['hello']),
   new ForEachable(['hello']),
-  ArrayProxy.create({ content: ['hello'] }),
-  ArrayProxy.create({ content: emberA(['hello']) }),
   new ArrayIterable(['hello']),
 ];
 
@@ -172,11 +168,8 @@ const FALSY_CASES = [
   '',
   0,
   [],
-  emberA([]),
   makeSet([]),
   new ForEachable([]),
-  ArrayProxy.create({ content: [] }),
-  ArrayProxy.create({ content: emberA([]) }),
   new ArrayIterable([]),
 ];
 
@@ -1026,16 +1019,6 @@ moduleFor(
 );
 
 moduleFor(
-  'Syntax test: {{#each}} with emberA-wrapped arrays',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return { list: wrapped, delegate: wrapped };
-    }
-  }
-);
-
-moduleFor(
   'Syntax test: {{#each}} with native Set',
   class extends EachTest {
     createList(items) {
@@ -1074,65 +1057,6 @@ moduleFor(
 );
 
 moduleFor(
-  'Syntax test: {{#each}} with array proxies, modifying itself',
-  class extends EachTest {
-    createList(items) {
-      let proxty = ArrayProxy.create({ content: emberA(items) });
-      return { list: proxty, delegate: proxty };
-    }
-  }
-);
-
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, replacing its content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      return {
-        list: wrapped,
-        delegate: ArrayProxy.create({ content: wrapped }),
-      };
-    }
-  }
-);
-
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, arrangedContent depends on external content',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = class extends ArrayProxy {
-        @computed('wrappedItems.[]')
-        get arrangedContent() {
-          // Slice the items to ensure that updates must be propogated
-          return this.wrappedItems.slice();
-        }
-      }.create({
-        wrappedItems: wrapped,
-      });
-
-      return { list: proxy, delegate: wrapped };
-    }
-  }
-);
-
-moduleFor(
-  'Syntax test: {{#each}} with array proxies, content is updated after init',
-  class extends EachTest {
-    createList(items) {
-      let wrapped = emberA(items);
-      let proxy = ArrayProxy.extend({
-        setup: on('init', function () {
-          this.set('content', emberA(wrapped));
-        }),
-      }).create();
-
-      return { list: proxy, delegate: wrapped };
-    }
-  }
-);
-
-moduleFor(
   'Syntax test: {{#each as}} undefined path',
   class extends RenderingTestCase {
     ['@test keying off of `undefined` does not render']() {
@@ -1164,8 +1088,8 @@ moduleFor(
 moduleFor(
   'Syntax test: {{#each}} with sparse arrays',
   class extends RenderingTestCase {
-    ['@test it should itterate over holes']() {
-      let sparseArray = [];
+    ['@test it should iterate over holes']() {
+      let sparseArray = new TrackedArray();
       sparseArray[3] = 'foo';
       sparseArray[4] = 'bar';
 
@@ -1174,7 +1098,7 @@ moduleFor(
       {{#each this.list as |value key|}}
         [{{key}}:{{value}}]
       {{/each}}`,
-        { list: emberA(sparseArray) }
+        { list: sparseArray }
       );
 
       this.assertText('[0:][1:][2:][3:foo][4:bar]');
@@ -1183,7 +1107,7 @@ moduleFor(
 
       runTask(() => {
         let list = get(this.context, 'list');
-        list.pushObject('baz');
+        list.push('baz');
       });
 
       this.assertText('[0:][1:][2:][3:foo][4:bar][5:baz]');

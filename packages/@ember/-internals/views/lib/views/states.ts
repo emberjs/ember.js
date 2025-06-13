@@ -45,7 +45,7 @@ const HAS_ELEMENT: Readonly<ViewState> = Object.freeze({
 
   // Handle events from `Ember.EventDispatcher`
   handleEvent(view: Component, eventName: string, event: Event) {
-    if (view.has(eventName)) {
+    if (eventName in view) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
       return flaggedInstrument(`interaction.${eventName}`, { event, view }, () => {

@@ -1,13 +1,10 @@
 import EmberObject from '@ember/object';
-import { A } from '@ember/array';
-import ArrayProxy from '@ember/array/proxy';
-import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import { tracked } from '@ember/-internals/metal';
 import { computed, get, set } from '@ember/object';
-import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
+import { TrackedArray } from 'tracked-built-ins';
 
 moduleFor(
   'Component Tracked Properties',
@@ -83,56 +80,6 @@ moduleFor(
 
       runTask(() => this.context.set('first', 'max'));
       this.assertText('max jackson | max jackson');
-    }
-
-    '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
-      let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
-
-      class LoaderComponent extends GlimmerishComponent {
-        get data() {
-          if (!this._data) {
-            this._data = PromiseArray.create({
-              promise: Promise.resolve([1, 2, 3]),
-            });
-          }
-
-          return this._data;
-        }
-      }
-
-      this.registerComponent('loader', {
-        ComponentClass: LoaderComponent,
-        template: '{{#each this.data as |item|}}{{item}}{{/each}}',
-      });
-
-      this.render('<Loader/>');
-
-      this.assertText('123');
-    }
-
-    '@test creating an array proxy inside a tracking context and immediately updating its content before usage does not trigger backtracking assertion'() {
-      class LoaderComponent extends GlimmerishComponent {
-        get data() {
-          if (!this._data) {
-            this._data = ArrayProxy.create({
-              content: A(),
-            });
-
-            this._data.content.pushObjects([1, 2, 3]);
-          }
-
-          return this._data;
-        }
-      }
-
-      this.registerComponent('loader', {
-        ComponentClass: LoaderComponent,
-        template: '{{#each this.data as |item|}}{{item}}{{/each}}',
-      });
-
-      this.render('<Loader/>');
-
-      this.assertText('123');
     }
 
     '@test tracked properties that are uninitialized do not throw an error'() {
@@ -242,9 +189,9 @@ moduleFor(
 
     '@test array properties rerender when updated'() {
       class NumListComponent extends Component {
-        @tracked numbers = A([1, 2, 3]);
+        @tracked numbers = new TrackedArray([1, 2, 3]);
 
-        addNumber = () => this.numbers.pushObject(4);
+        addNumber = () => this.numbers.push(4);
       }
 
       this.registerComponent('num-list', {

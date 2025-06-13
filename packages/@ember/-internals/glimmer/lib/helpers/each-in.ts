@@ -2,8 +2,6 @@
 @module ember
 */
 import { tagForObject } from '@ember/-internals/metal';
-import { _contentFor } from '@ember/-internals/runtime';
-import { isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import type { CapturedArguments } from '@glimmer/interfaces';
 import { createComputeRef, valueForRef } from '@glimmer/reference';
@@ -175,12 +173,6 @@ export default internalHelper(({ positional }: CapturedArguments) => {
     let iterable = valueForRef(inner);
 
     consumeTag(tagForObject(iterable));
-
-    if (isProxy(iterable)) {
-      // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it
-      // and the proxy's tag is lazy updated on access
-      iterable = _contentFor(iterable);
-    }
 
     return new EachInWrapper(iterable);
   });

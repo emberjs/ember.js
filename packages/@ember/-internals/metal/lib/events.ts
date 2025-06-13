@@ -3,8 +3,6 @@
 */
 import type { Meta } from '@ember/-internals/meta';
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { setListeners } from '@ember/-internals/utils';
-import type { AnyFn } from '@ember/-internals/utility-types';
 import { assert } from '@ember/debug';
 
 /*
@@ -175,46 +173,4 @@ export function hasListeners(obj: object, eventName: string): boolean {
   }
   let matched = meta.matchingListeners(eventName);
   return matched !== undefined && matched.length > 0;
-}
-
-/**
-  Define a property as a function that should be executed when
-  a specified event or events are triggered.
-
-  ``` javascript
-  import EmberObject from '@ember/object';
-  import { on } from '@ember/object/evented';
-  import { sendEvent } from '@ember/object/events';
-
-  let Job = EmberObject.extend({
-    logCompleted: on('completed', function() {
-      console.log('Job completed!');
-    })
-  });
-
-  let job = Job.create();
-
-  sendEvent(job, 'completed'); // Logs 'Job completed!'
- ```
-
-  @method on
-  @static
-  @for @ember/object/evented
-  @param {String} eventNames*
-  @param {Function} func
-  @return {Function} the listener function, passed as last argument to on(...)
-  @public
-*/
-export function on<T extends AnyFn>(...args: [...eventNames: string[], func: T]): T {
-  let func = args.pop();
-  let events = args as string[];
-
-  assert('on expects function as last argument', typeof func === 'function');
-  assert(
-    'on called without valid event names',
-    events.length > 0 && events.every((p) => typeof p === 'string' && p.length > 0)
-  );
-
-  setListeners(func, events);
-  return func;
 }

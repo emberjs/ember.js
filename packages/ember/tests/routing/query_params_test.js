@@ -2,13 +2,13 @@ import Controller from '@ember/controller';
 import { dasherize } from '@ember/-internals/string';
 import EmberObject, { action, get, computed } from '@ember/object';
 import { RSVP } from '@ember/-internals/runtime';
-import { A as emberA } from '@ember/array';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { tracked } from '@ember/-internals/metal';
 import Route from '@ember/routing/route';
 import { PARAMS_SYMBOL } from 'router_js';
 import { service } from '@ember/service';
+import { TrackedArray } from 'tracked-built-ins';
 
 import { QueryParamTestCase, moduleFor, getTextOf, runLoopSettled } from 'internal-test-helpers';
 
@@ -749,21 +749,15 @@ moduleFor(
       );
 
       this.setSingleQPController('application', 'foo', 1, {
+        router: service(),
+
         increment: action(function () {
           this.incrementProperty('foo');
-          this.send('refreshRoute');
+          this.router.refresh();
         }),
       });
 
-      this.add(
-        'route:application',
-        class extends Route {
-          @action
-          refreshRoute() {
-            this.refresh();
-          }
-        }
-      );
+      this.add('route:application', class extends Route {});
 
       await this.visitAndAssert('/');
       assert.equal(getTextOf(document.getElementById('test-value')), '1');
@@ -1300,47 +1294,47 @@ moduleFor(
         this.route('home', { path: '/' });
       });
 
-      this.setSingleQPController('home', 'foo', emberA());
+      this.setSingleQPController('home', 'foo', new TrackedArray());
 
       await this.visitAndAssert('/');
       let controller = this.getController('home');
 
-      controller.foo.pushObject(1);
+      controller.foo.push(1);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.popObject();
+      controller.foo.pop();
       await runLoopSettled();
       this.assertCurrentPath('/');
       assert.deepEqual(controller.foo, []);
 
-      controller.foo.pushObject(1);
+      controller.foo.push(1);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.popObject();
+      controller.foo.pop();
       await runLoopSettled();
       this.assertCurrentPath('/');
       assert.deepEqual(controller.foo, []);
 
-      controller.foo.pushObject(1);
+      controller.foo.push(1);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.pushObject(2);
+      controller.foo.push(2);
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%2C2%5D');
       assert.deepEqual(controller.foo, [1, 2]);
 
-      controller.foo.popObject();
+      controller.foo.pop();
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B1%5D');
       assert.deepEqual(controller.foo, [1]);
 
-      controller.foo.unshiftObject('lol');
+      controller.foo.unshift('lol');
       await runLoopSettled();
       this.assertCurrentPath('/?foo=%5B%22lol%22%2C1%5D');
       assert.deepEqual(controller.foo, ['lol', 1]);
@@ -1363,13 +1357,13 @@ moduleFor(
         }
       );
 
-      this.setSingleQPController('home', 'foo', emberA([1]));
+      this.setSingleQPController('home', 'foo', [1]);
 
       await this.visitAndAssert('/');
       assert.equal(modelCount, 1);
 
       let controller = this.getController('home');
-      await this.setAndFlush(controller, 'model', emberA([1]));
+      await this.setAndFlush(controller, 'model', [1]);
 
       assert.equal(modelCount, 1);
       this.assertCurrentPath('/');
@@ -1422,7 +1416,7 @@ moduleFor(
       assert.deepEqual(controller.get('foo'), [1, 2]);
       this.assertCurrentPath('/home');
 
-      await this.setAndFlush(controller, 'foo', emberA([1, 3]));
+      await this.setAndFlush(controller, 'foo', [1, 3]);
       this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
 
       await this.transitionTo('/home');
@@ -1433,7 +1427,7 @@ moduleFor(
       await this.setAndFlush(controller, 'foo', null);
       this.assertCurrentPath('/home', 'Setting property to null');
 
-      await this.setAndFlush(controller, 'foo', emberA([1, 3]));
+      await this.setAndFlush(controller, 'foo', [1, 3]);
       this.assertCurrentPath('/home?foo=%5B1%2C3%5D');
 
       await this.setAndFlush(controller, 'foo', undefined);

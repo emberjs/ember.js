@@ -149,35 +149,6 @@ moduleFor(
       }
     }
 
-    ['@test event listeners are called when event is triggered'](assert) {
-      let receivedEvent;
-      let browserEvent;
-
-      this.registerComponent('x-button', {
-        ComponentClass: class extends Component {
-          tagName = 'button';
-          init() {
-            super.init();
-            Object.keys(SUPPORTED_EMBER_EVENTS).forEach((browserEvent) => {
-              this.on(SUPPORTED_EMBER_EVENTS[browserEvent], (event) => (receivedEvent = event));
-            });
-          }
-        },
-      });
-
-      this.render(`{{x-button}}`);
-
-      let elementNode = this.$('button');
-      let element = elementNode[0];
-
-      for (browserEvent in SUPPORTED_EMBER_EVENTS) {
-        receivedEvent = null;
-        runTask(() => triggerEvent(elementNode, browserEvent));
-        assert.ok(receivedEvent, `${browserEvent} event was triggered`);
-        assert.strictEqual(receivedEvent.target, element);
-      }
-    }
-
     ['@test events bubble view hierarchy for form elements'](assert) {
       let receivedEvent;
 

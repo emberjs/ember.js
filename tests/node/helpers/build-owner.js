@@ -1,5 +1,18 @@
 module.exports = function buildOwner(Ember, resolver) {
-  let Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
+  // NOTE: This doesn't actually implement all Owner methods, just enough for tests to pass
+  let Owner = class extends Ember.Object {
+    register(...args) {
+      return this.__registry__.register(...args);
+    }
+
+    lookup(fullName, options) {
+      return this.__container__.lookup(fullName, options);
+    }
+
+    factoryFor(fullName) {
+      return this.__container__.factoryFor(fullName);
+    }
+  };
 
   let namespace = Ember.Object.create({
     Resolver: {

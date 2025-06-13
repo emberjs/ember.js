@@ -1,8 +1,7 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { get, set } from '@ember/object';
-import { A as emberA, removeAt } from '@ember/array';
-import ObjectProxy from '@ember/object/proxy';
+import { removeAt } from '@ember/array';
 
 moduleFor(
   'Syntax test: {{#let as}}',
@@ -122,45 +121,11 @@ moduleFor(
       this.assertText('-Yehuda-');
     }
 
-    ['@test can access alias of a proxy']() {
-      this.render(`{{#let this.proxy as |person|}}{{person.name}}{{/let}}`, {
-        proxy: ObjectProxy.create({ content: { name: 'Tom Dale' } }),
-      });
-
-      this.assertText('Tom Dale');
-
-      runTask(() => this.rerender());
-
-      this.assertText('Tom Dale');
-
-      runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
-
-      this.assertText('Yehuda Katz');
-
-      runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
-
-      this.assertText('Godfrey Chan');
-
-      runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
-
-      this.assertText('Stefan Penner');
-
-      runTask(() => set(this.context, 'proxy.content', null));
-
-      this.assertText('');
-
-      runTask(() =>
-        set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
-      );
-
-      this.assertText('Tom Dale');
-    }
-
     ['@test can access alias of an array']() {
       this.render(
         `{{#let this.arrayThing as |words|}}{{#each words as |word|}}{{word}}{{/each}}{{/let}}`,
         {
-          arrayThing: emberA(['Hello', ' ', 'world']),
+          arrayThing: ['Hello', ' ', 'world'],
         }
       );
 
@@ -172,10 +137,10 @@ moduleFor(
 
       runTask(() => {
         let array = get(this.context, 'arrayThing');
-        array.replace(0, 1, ['Goodbye']);
+        array.splice(0, 1, ['Goodbye']);
         removeAt(array, 1);
-        array.insertAt(1, ', ');
-        array.pushObject('!');
+        array.splice(1, 0, ', ');
+        array.push('!');
       });
 
       this.assertText('Goodbye, world!');

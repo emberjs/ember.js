@@ -7,7 +7,6 @@ import {
 } from 'internal-test-helpers';
 
 import { set, get, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
 
 import { Component } from '../../utils/helpers';
 
@@ -42,7 +41,7 @@ moduleFor(
 
     ['@test should be able to use unbound helper in #each helper']() {
       this.render(`<ul>{{#each this.items as |item|}}<li>{{unbound item}}</li>{{/each}}</ul>`, {
-        items: emberA(['a', 'b', 'c', 1, 2, 3]),
+        items: ['a', 'b', 'c', 1, 2, 3],
       });
 
       this.assertText('abc123');
@@ -56,7 +55,7 @@ moduleFor(
       this.render(
         `<ul>{{#each this.items as |item|}}<li>{{unbound item.wham}}</li>{{/each}}</ul>`,
         {
-          items: emberA([{ wham: 'bam' }, { wham: 1 }]),
+          items: [{ wham: 'bam' }, { wham: 1 }],
         }
       );
 
@@ -66,11 +65,11 @@ moduleFor(
 
       this.assertText('bam1');
 
-      runTask(() => this.context.items.setEach('wham', 'HEY'));
+      runTask(() => this.context.items.forEach((i) => (i.wham = 'HEY')));
 
       this.assertText('bam1');
 
-      runTask(() => set(this.context, 'items', emberA([{ wham: 'bam' }, { wham: 1 }])));
+      runTask(() => set(this.context, 'items', [{ wham: 'bam' }, { wham: 1 }]));
 
       this.assertText('bam1');
     }
@@ -110,7 +109,7 @@ moduleFor(
     }
 
     ['@test should property escape unsafe hrefs']() {
-      let unsafeUrls = emberA([
+      let unsafeUrls = [
         {
           name: 'Bob',
           url: 'javascript:bob-is-cool',
@@ -123,7 +122,7 @@ moduleFor(
           name: 'Richard',
           url: 'javascript:richard-is-cool',
         },
-      ]);
+      ];
 
       this.render(
         `<ul>{{#each this.people as |person|}}<li><a href="{{unbound person.url}}">{{person.name}}</a></li>{{/each}}</ul>`,
@@ -152,7 +151,7 @@ moduleFor(
 
       this.assertHTML(escapedHtml);
 
-      runTask(() => this.context.people.setEach('url', 'http://google.com'));
+      runTask(() => this.context.people.forEach((i) => (i.url = 'http://google.com')));
 
       this.assertHTML(escapedHtml);
 
@@ -445,7 +444,7 @@ moduleFor(
       this.render(
         `{{#each this.people as |person|}}{{capitalize person.firstName}} {{unbound (capitalize person.firstName)}}{{/each}}`,
         {
-          people: emberA([
+          people: [
             {
               firstName: 'shooby',
               lastName: 'taylor',
@@ -454,7 +453,7 @@ moduleFor(
               firstName: 'cindy',
               lastName: 'taylor',
             },
-          ]),
+          ],
         }
       );
 
@@ -464,25 +463,21 @@ moduleFor(
 
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
 
-      runTask(() => this.context.people.setEach('firstName', 'chad'));
+      runTask(() => this.context.people.forEach((i) => set(i, 'firstName', 'chad')));
 
       this.assertText('CHAD SHOOBYCHAD CINDY');
 
       runTask(() =>
-        set(
-          this.context,
-          'people',
-          emberA([
-            {
-              firstName: 'shooby',
-              lastName: 'taylor',
-            },
-            {
-              firstName: 'cindy',
-              lastName: 'taylor',
-            },
-          ])
-        )
+        set(this.context, 'people', [
+          {
+            firstName: 'shooby',
+            lastName: 'taylor',
+          },
+          {
+            firstName: 'cindy',
+            lastName: 'taylor',
+          },
+        ])
       );
 
       this.assertText('SHOOBY SHOOBYCINDY CINDY');

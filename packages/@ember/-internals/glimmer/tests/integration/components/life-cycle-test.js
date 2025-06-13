@@ -2,10 +2,10 @@ import { classes, moduleFor, RenderingTestCase, runTask, strip } from 'internal-
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/object';
-import { A as emberA } from '@ember/array';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { tracked } from 'tracked-built-ins';
 
 class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {
@@ -174,8 +174,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
         assertNoElement('init', this);
         assertState('init', 'preRender', this);
 
-        this.on('init', () => pushHook('on(init)'));
-
         schedule('afterRender', () => {
           this.isInitialRender = false;
         });
@@ -336,19 +334,16 @@ class LifeCycleHooksTest extends RenderingTestCase {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'on(init)'],
         ['the-top', 'didReceiveAttrs'],
         ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'on(init)'],
         ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'on(init)'],
         ['the-bottom', 'didReceiveAttrs'],
         ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
@@ -368,15 +363,12 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [
         // Sync hooks
         ['the-top', 'init'],
-        ['the-top', 'on(init)'],
         ['the-top', 'didReceiveAttrs'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'on(init)'],
         ['the-middle', 'didReceiveAttrs'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'on(init)'],
         ['the-bottom', 'didReceiveAttrs'],
       ],
     });
@@ -576,25 +568,21 @@ class LifeCycleHooksTest extends RenderingTestCase {
         // Sync hooks
 
         ['the-parent', 'init'],
-        ['the-parent', 'on(init)'],
         ['the-parent', 'didReceiveAttrs'],
         ['the-parent', 'willRender'],
         ['the-parent', 'willInsertElement'],
 
         ['the-first-child', 'init'],
-        ['the-first-child', 'on(init)'],
         ['the-first-child', 'didReceiveAttrs'],
         ['the-first-child', 'willRender'],
         ['the-first-child', 'willInsertElement'],
 
         ['the-second-child', 'init'],
-        ['the-second-child', 'on(init)'],
         ['the-second-child', 'didReceiveAttrs'],
         ['the-second-child', 'willRender'],
         ['the-second-child', 'willInsertElement'],
 
         ['the-last-child', 'init'],
-        ['the-last-child', 'on(init)'],
         ['the-last-child', 'didReceiveAttrs'],
         ['the-last-child', 'willRender'],
         ['the-last-child', 'willInsertElement'],
@@ -618,19 +606,15 @@ class LifeCycleHooksTest extends RenderingTestCase {
         // Sync hooks
 
         ['the-parent', 'init'],
-        ['the-parent', 'on(init)'],
         ['the-parent', 'didReceiveAttrs'],
 
         ['the-first-child', 'init'],
-        ['the-first-child', 'on(init)'],
         ['the-first-child', 'didReceiveAttrs'],
 
         ['the-second-child', 'init'],
-        ['the-second-child', 'on(init)'],
         ['the-second-child', 'didReceiveAttrs'],
 
         ['the-last-child', 'init'],
-        ['the-last-child', 'on(init)'],
         ['the-last-child', 'didReceiveAttrs'],
       ],
     });
@@ -890,19 +874,16 @@ class LifeCycleHooksTest extends RenderingTestCase {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'on(init)'],
         ['the-top', 'didReceiveAttrs'],
         ['the-top', 'willRender'],
         ['the-top', 'willInsertElement'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'on(init)'],
         ['the-middle', 'didReceiveAttrs'],
         ['the-middle', 'willRender'],
         ['the-middle', 'willInsertElement'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'on(init)'],
         ['the-bottom', 'didReceiveAttrs'],
         ['the-bottom', 'willRender'],
         ['the-bottom', 'willInsertElement'],
@@ -923,15 +904,12 @@ class LifeCycleHooksTest extends RenderingTestCase {
         // Sync hooks
 
         ['the-top', 'init'],
-        ['the-top', 'on(init)'],
         ['the-top', 'didReceiveAttrs'],
 
         ['the-middle', 'init'],
-        ['the-middle', 'on(init)'],
         ['the-middle', 'didReceiveAttrs'],
 
         ['the-bottom', 'init'],
-        ['the-bottom', 'on(init)'],
         ['the-bottom', 'didReceiveAttrs'],
       ],
     });
@@ -1071,17 +1049,12 @@ class LifeCycleHooksTest extends RenderingTestCase {
     let initialHooks = () => {
       let ret = [
         ['an-item', 'init'],
-        ['an-item', 'on(init)'],
         ['an-item', 'didReceiveAttrs'],
       ];
       if (this.isInteractive) {
         ret.push(['an-item', 'willRender'], ['an-item', 'willInsertElement']);
       }
-      ret.push(
-        ['nested-item', 'init'],
-        ['nested-item', 'on(init)'],
-        ['nested-item', 'didReceiveAttrs']
-      );
+      ret.push(['nested-item', 'init'], ['nested-item', 'didReceiveAttrs']);
       if (this.isInteractive) {
         ret.push(['nested-item', 'willRender'], ['nested-item', 'willInsertElement']);
       }
@@ -1177,13 +1150,11 @@ class LifeCycleHooksTest extends RenderingTestCase {
         ['nested-item', 'willClearRender'],
 
         ['no-items', 'init'],
-        ['no-items', 'on(init)'],
         ['no-items', 'didReceiveAttrs'],
         ['no-items', 'willRender'],
         ['no-items', 'willInsertElement'],
 
         ['nested-item', 'init'],
-        ['nested-item', 'on(init)'],
         ['nested-item', 'didReceiveAttrs'],
         ['nested-item', 'willRender'],
         ['nested-item', 'willInsertElement'],
@@ -1218,11 +1189,9 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
       nonInteractive: [
         ['no-items', 'init'],
-        ['no-items', 'on(init)'],
         ['no-items', 'didReceiveAttrs'],
 
         ['nested-item', 'init'],
-        ['nested-item', 'on(init)'],
         ['nested-item', 'didReceiveAttrs'],
 
         ['an-item', 'willDestroy'],
@@ -1464,7 +1433,7 @@ moduleFor(
         template: NestedTemplate,
       });
 
-      let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
+      let array = tracked([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }]);
 
       this.render(
         strip`
@@ -1487,8 +1456,8 @@ moduleFor(
       this.assertText('1AB2AB3AB4AB5AB6AB7AB');
 
       runTask(() => {
-        array.removeAt(2);
-        array.removeAt(2);
+        array.splice(2, 1);
+        array.splice(2, 1);
         set(this.context, 'model.shouldShow', false);
       });
 

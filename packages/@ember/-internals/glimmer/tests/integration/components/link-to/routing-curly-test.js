@@ -5,7 +5,6 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA } from '@ember/array';
 import { RSVP } from '@ember/-internals/runtime';
 import Route from '@ember/routing/route';
 import NoneLocation from '@ember/routing/none-location';
@@ -13,6 +12,7 @@ import { service } from '@ember/service';
 import Engine from '@ember/engine';
 import { DEBUG } from '@glimmer/env';
 import { compile } from '../../../utils/helpers';
+import { tracked } from 'tracked-built-ins';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -1447,7 +1447,7 @@ moduleFor(
             controller = this;
           }
 
-          routeNames = emberA(['foo', 'bar', 'rar']);
+          routeNames = tracked(['foo', 'bar', 'rar']);
           route1 = 'bar';
           route2 = 'foo';
         }
@@ -1490,7 +1490,7 @@ moduleFor(
 
       linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-      runTask(() => controller.routeNames.shiftObject());
+      runTask(() => controller.routeNames.shift());
 
       linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
     }

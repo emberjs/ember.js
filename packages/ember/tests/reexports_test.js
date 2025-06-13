@@ -58,9 +58,6 @@ moduleFor('ember reexports', ReExportTests);
 import * as test0 from '@ember/application';
 import * as test1 from '@ember/application/instance';
 import * as test2 from '@ember/application/namespace';
-import * as test3 from '@ember/array';
-import * as test4 from '@ember/array/mutable';
-import * as test5 from '@ember/array/proxy';
 import * as test6 from '@ember/canary-features';
 import * as test7 from '@ember/component';
 import * as test8 from '@ember/component/helper';
@@ -72,7 +69,6 @@ import * as test13 from '@ember/debug/data-adapter';
 import * as test14 from '@ember/destroyable';
 import * as test15 from '@ember/engine';
 import * as test16 from '@ember/engine/instance';
-import * as test17 from '@ember/enumerable';
 import * as test18 from '@ember/instrumentation';
 import * as test19 from '@ember/modifier';
 import * as test20 from '@ember/helper';
@@ -80,14 +76,10 @@ import * as test21 from '@ember/object';
 import * as test22 from '@ember/object/compat';
 import * as test23 from '@ember/object/computed';
 import * as test24 from '@ember/object/core';
-import * as test25 from '@ember/object/evented';
 import * as test26 from '@ember/object/events';
 import * as test27 from '@ember/object/internals';
 import * as test28 from '@ember/object/mixin';
-import * as test29 from '@ember/object/observable';
 import * as test30 from '@ember/object/observers';
-import * as test31 from '@ember/object/promise-proxy-mixin';
-import * as test32 from '@ember/object/proxy';
 import * as test33 from '@ember/routing/hash-location';
 import * as test34 from '@ember/routing/history-location';
 import * as test35 from '@ember/routing/none-location';
@@ -112,7 +104,6 @@ import * as test53 from '@ember/-internals/error-handling';
 import * as test54 from '@ember/-internals/meta';
 import * as test55 from '@ember/-internals/views';
 import * as test56 from '@ember/-internals/glimmer';
-import * as test57 from '@ember/-internals/runtime';
 import * as test58 from '@ember/-internals/routing';
 import * as test59 from 'backburner.js';
 import * as test60 from 'rsvp';
@@ -126,13 +117,6 @@ let allExports = [
   ['setOwner', '@ember/application', 'setOwner', test0],
   ['ApplicationInstance', '@ember/application/instance', 'default', test1],
   ['Namespace', '@ember/application/namespace', 'default', test2],
-  ['Array', '@ember/array', 'default', test3],
-  ['A', '@ember/array', 'A', test3],
-  ['NativeArray', '@ember/array', 'NativeArray', test3],
-  ['isArray', '@ember/array', 'isArray', test3],
-  ['makeArray', '@ember/array', 'makeArray', test3],
-  ['MutableArray', '@ember/array/mutable', 'default', test4],
-  ['ArrayProxy', '@ember/array/proxy', 'default', test5],
   ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled', test6],
   ['Component', '@ember/component', 'default', test7],
   ['_componentManagerCapabilities', '@ember/component', 'capabilities', test7],
@@ -143,7 +127,6 @@ let allExports = [
   ['Helper.helper', '@ember/component/helper', 'helper', test8],
   ['_templateOnlyComponent', '@ember/component/template-only', 'default', test9],
   ['Controller', '@ember/controller', 'default', test10],
-  ['ControllerMixin', '@ember/controller', 'ControllerMixin', test10],
   ['inject.controller', '@ember/controller', 'inject', test10],
   ['deprecateFunc', '@ember/debug', 'deprecateFunc', test11],
   ['deprecate', '@ember/debug', 'deprecate', test11],
@@ -180,7 +163,6 @@ let allExports = [
   ['_unregisterDestructor', '@ember/destroyable', 'unregisterDestructor', test14],
   ['Engine', '@ember/engine', 'default', test15],
   ['EngineInstance', '@ember/engine/instance', 'default', test16],
-  ['Enumerable', '@ember/enumerable', 'default', test17],
   ['instrument', '@ember/instrumentation', 'instrument', test18],
   ['subscribe', '@ember/instrumentation', 'subscribe', test18],
   ['Instrumentation.instrument', '@ember/instrumentation', 'instrument', test18],
@@ -213,19 +195,14 @@ let allExports = [
   ['ComputedProperty', '@ember/object/computed', 'default', test23],
   ['expandProperties', '@ember/object/computed', 'expandProperties', test23],
   ['CoreObject', '@ember/object/core', 'default', test24],
-  ['Evented', '@ember/object/evented', 'default', test25],
-  ['on', '@ember/object/evented', 'on', test25],
   ['addListener', '@ember/object/events', 'addListener', test26],
   ['removeListener', '@ember/object/events', 'removeListener', test26],
   ['sendEvent', '@ember/object/events', 'sendEvent', test26],
   ['cacheFor', '@ember/object/internals', 'cacheFor', test27],
   ['guidFor', '@ember/object/internals', 'guidFor', test27],
   ['Mixin', '@ember/object/mixin', 'default', test28],
-  ['Observable', '@ember/object/observable', 'default', test29],
   ['addObserver', '@ember/object/observers', 'addObserver', test30],
   ['removeObserver', '@ember/object/observers', 'removeObserver', test30],
-  ['PromiseProxyMixin', '@ember/object/promise-proxy-mixin', 'default', test31],
-  ['ObjectProxy', '@ember/object/proxy', 'default', test32],
   ['HashLocation', '@ember/routing/hash-location', 'default', test33],
   ['HistoryLocation', '@ember/routing/history-location', 'default', test34],
   ['NoneLocation', '@ember/routing/none-location', 'default', test35],
@@ -340,12 +317,6 @@ let allExports = [
     test56,
   ],
   ['_Input', '@ember/-internals/glimmer', 'Input', test56],
-  ['_RegistryProxyMixin', '@ember/-internals/runtime', 'RegistryProxyMixin', test57],
-  ['_ContainerProxyMixin', '@ember/-internals/runtime', 'ContainerProxyMixin', test57],
-  ['Comparable', '@ember/-internals/runtime', null, test57],
-  ['ActionHandler', '@ember/-internals/runtime', null, test57],
-  ['MutableEnumerable', '@ember/-internals/runtime', null, test57],
-  ['_ProxyMixin', '@ember/-internals/runtime', null, test57],
   ['controllerFor', '@ember/-internals/routing', null, test58],
   ['generateControllerFactory', '@ember/-internals/routing', null, test58],
   ['generateController', '@ember/-internals/routing', null, test58],

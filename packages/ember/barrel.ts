@@ -15,10 +15,7 @@ import { FEATURES as EmberFEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert as emberAssert, captureRenderTree } from '@ember/debug';
 import Backburner from 'backburner.js';
-import EmberController, {
-  inject as injectController,
-  ControllerMixin as EmberControllerMixin,
-} from '@ember/controller';
+import EmberController, { inject as injectController } from '@ember/controller';
 import EmberService, { service } from '@ember/service';
 
 import EmberObject, {
@@ -44,14 +41,7 @@ import {
   sendEvent as emberSendEvent,
 } from '@ember/object/events';
 
-import {
-  RegistryProxyMixin,
-  ContainerProxyMixin,
-  _ProxyMixin as internalProxyMixin,
-  RSVP as _RSVP,
-  Comparable as InternalComparable,
-  ActionHandler as InternalActionHandler,
-} from '@ember/-internals/runtime';
+import { RSVP as _RSVP } from '@ember/-internals/runtime';
 import {
   componentCapabilities,
   modifierCapabilities,
@@ -68,14 +58,7 @@ import EmberContainerDebugAdapter from '@ember/debug/container-debug-adapter';
 import EmberDataAdapter from '@ember/debug/data-adapter';
 import { run as emberRun } from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
-import EmberArray, {
-  A as EmberA,
-  NativeArray as EmberNativeArray,
-  isArray as emberIsArray,
-  makeArray as emberMakeArray,
-} from '@ember/array';
-import EmberMutableArray from '@ember/array/mutable';
-import EmberArrayProxy from '@ember/array/proxy';
+import { isArray as emberIsArray, makeArray as emberMakeArray } from '@ember/array';
 import EmberApplication, {
   getOwner as applicationGetOwner,
   setOwner as applicationSetOwner,
@@ -88,18 +71,12 @@ import EmberComponent, { Input as EmberInput } from '@ember/component';
 import EmberHelper from '@ember/component/helper';
 import EmberEngine from '@ember/engine';
 import EmberEngineInstance from '@ember/engine/instance';
-import EmberEnumerable from '@ember/enumerable';
-import EmberMutableEnumerable from '@ember/enumerable/mutable';
 import EmberCoreObject from '@ember/object/core';
-import EmberEvented, { on as emberOn } from '@ember/object/evented';
 import EmberMixin, { mixin as emberMixin } from '@ember/object/mixin';
-import EmberObservable from '@ember/object/observable';
 import {
   addObserver as emberAddObserver,
   removeObserver as emberRemoveObserver,
 } from '@ember/object/observers';
-import EmberObjectProxy from '@ember/object/proxy';
-import EmberPromiseProxyMixin from '@ember/object/promise-proxy-mixin';
 import EmberHashLocation from '@ember/routing/hash-location';
 import EmberHistoryLocation from '@ember/routing/history-location';
 import EmberNoneLocation from '@ember/routing/none-location';
@@ -183,15 +160,6 @@ namespace Ember {
   export const hasListeners = metal.hasListeners;
   export const libraries = metal.libraries;
 
-  // ****@ember/-internals/runtime****
-  export const _ContainerProxyMixin = ContainerProxyMixin;
-  export const _ProxyMixin = internalProxyMixin;
-  export const _RegistryProxyMixin = RegistryProxyMixin;
-  export const ActionHandler = InternalActionHandler;
-  export type ActionHandler = InternalActionHandler;
-  export const Comparable = InternalComparable;
-  export type Comparable = InternalComparable;
-
   // ****@ember/-internals/view****
   export const ComponentLookup = views.ComponentLookup;
   export const EventDispatcher = views.EventDispatcher;
@@ -222,21 +190,8 @@ namespace Ember {
   export type Namespace = EmberNamespace;
 
   // ****@ember/array****
-  export const A = EmberA;
-  export const Array = EmberArray;
-  export type Array<T> = EmberArray<T>;
-  export const NativeArray = EmberNativeArray;
-  export type NativeArray<T> = EmberNativeArray<T>;
   export const isArray = emberIsArray;
   export const makeArray = emberMakeArray;
-
-  // ****@ember/array/mutable****
-  export const MutableArray = EmberMutableArray;
-  export type MutableArray<T> = EmberMutableArray<T>;
-
-  // ****@ember/array/proxy****
-  export const ArrayProxy = EmberArrayProxy;
-  export type ArrayProxy<T> = EmberArrayProxy<T>;
 
   // ****@ember/canary-features****
   export const FEATURES = { isEnabled, ...EmberFEATURES };
@@ -253,8 +208,6 @@ namespace Ember {
   // ****@ember/controller****
   export const Controller = EmberController;
   export type Controller<T = unknown> = EmberController<T>;
-  export const ControllerMixin = EmberControllerMixin;
-  export type ControllerMixin<T> = EmberControllerMixin<T>;
 
   // ****@ember/debug****
   export const _captureRenderTree = captureRenderTree;
@@ -299,14 +252,6 @@ namespace Ember {
   export const EngineInstance = EmberEngineInstance;
   export type EngineInstance = EmberEngineInstance;
 
-  // ****@ember/enumerable****
-  export const Enumerable = EmberEnumerable;
-  export type Enumerable = EmberEnumerable;
-
-  // ****@ember/enumerable/mutable****
-  export const MutableEnumerable = EmberMutableEnumerable;
-  export type MutableEnumerable = EmberMutableEnumerable;
-
   // ****@ember/instrumentation****
   /** @private */
   export const instrument = instrumentation.instrument;
@@ -350,11 +295,6 @@ namespace Ember {
   export const CoreObject = EmberCoreObject;
   export type CoreObject = EmberCoreObject;
 
-  // ****@ember/object/evented****
-  export const Evented = EmberEvented;
-  export type Evented = EmberEvented;
-  export const on = emberOn;
-
   // ****@ember/object/events****
   export const addListener = emberAddListener;
   export const removeListener = emberRemoveListener;
@@ -365,21 +305,9 @@ namespace Ember {
   export type Mixin = EmberMixin;
   export const mixin = emberMixin;
 
-  // ****@ember/object/observable****
-  export const Observable = EmberObservable;
-  export type Observable = EmberObservable;
-
   // ****@ember/object/observers****
   export const addObserver = emberAddObserver;
   export const removeObserver = emberRemoveObserver;
-
-  // ****@ember/object/promise-proxy-mixin****
-  export const PromiseProxyMixin = EmberPromiseProxyMixin;
-  export type PromiseProxyMixin<T> = EmberPromiseProxyMixin<T>;
-
-  // ****@ember/object/proxy****
-  export const ObjectProxy = EmberObjectProxy;
-  export type ObjectProxy = EmberObjectProxy;
 
   // ****@ember/routing/-internals****
   export const RouterDSL = EmberRouterDSL;

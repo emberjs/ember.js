@@ -31,8 +31,8 @@ class Test extends Route {
   }
 
   afterModel(posts: Posts, transition: Transition) {
-    if (posts.firstObject) {
-      this.router.transitionTo('post.show', posts.firstObject);
+    if (posts[0]) {
+      this.router.transitionTo('post.show', posts[0]);
     }
   }
 
@@ -87,14 +87,6 @@ class WithBadReturningBeforeAndModelHooks extends Route {
     // @ts-expect-error
     return "returning anything else is nonsensical (if 'legal')";
   }
-}
-
-class HasEvented extends Route {
-  methodUsingEvented() {
-    this.on('some-event', this, 'aMethod');
-  }
-
-  aMethod() {}
 }
 
 class HasActionHandler extends Route {

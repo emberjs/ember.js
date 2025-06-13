@@ -1,7 +1,5 @@
 import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
 import { inject } from '@ember/-internals/metal';
-import { ActionHandler } from '@ember/-internals/runtime';
-import Evented from '@ember/object/evented';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
 import states from './states';
@@ -18,22 +16,18 @@ import states from './states';
   @namespace Ember
   @extends EmberObject
   @deprecated Use `Component` instead.
-  @uses Evented
-  @uses Ember.ActionHandler
   @private
 */
 
-interface CoreView extends Evented, ActionHandler, View {}
-class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface CoreView extends View {}
+class CoreView extends FrameworkObject {
   isView = true;
 
   declare _states: typeof states;
 
   declare _state: keyof typeof states;
   declare _currentState: ViewState;
-
-  _superTrigger?: Evented['trigger'];
-  _superHas?: Evented['has'];
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -48,15 +42,6 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
 
   init(properties: object | undefined) {
     super.init(properties);
-
-    // Handle methods from Evented
-    // The native class inheritance will not work for mixins. To work around this,
-    // we copy the existing trigger and has methods provided by the mixin and swap in the
-    // new ones from our class.
-    this._superTrigger = this.trigger;
-    this.trigger = this._trigger;
-    this._superHas = this.has;
-    this.has = this._has;
 
     this.parentView ??= null;
 
@@ -82,18 +67,11 @@ class CoreView extends FrameworkObject.extend(Evented, ActionHandler) {
     @param name {String}
     @private
   */
-  // Changed to `trigger` on init
-  _trigger(name: string, ...args: any[]) {
-    this._superTrigger!(name, ...args);
+  trigger(name: string, ...args: any[]) {
     let method = (this as any)[name];
     if (typeof method === 'function') {
       return method.apply(this, args);
     }
-  }
-
-  // Changed to `has` on init
-  _has(name: string) {
-    return typeof (this as any)[name] === 'function' || this._superHas!(name);
   }
 
   static isViewFactory = true;

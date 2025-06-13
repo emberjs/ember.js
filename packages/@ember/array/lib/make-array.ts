@@ -9,17 +9,12 @@ const { isArray } = Array;
 
  ```javascript
  import { makeArray } from '@ember/array';
- import ArrayProxy from '@ember/array/proxy';
 
  makeArray();            // []
  makeArray(null);        // []
  makeArray(undefined);   // []
  makeArray('lindsay');   // ['lindsay']
  makeArray([1, 2, 42]);  // [1, 2, 42]
-
- let proxy = ArrayProxy.create({ content: [] });
-
- makeArray(proxy) === proxy;  // false
  ```
 
  @method makeArray

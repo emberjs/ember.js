@@ -56,7 +56,6 @@ class AbstractAppendTest extends RenderingTestCase {
           }
           componentsByName[name] = this;
           pushHook('init');
-          this.on('init', () => pushHook('on(init)'));
         }
 
         didReceiveAttrs() {
@@ -148,12 +147,10 @@ class AbstractAppendTest extends RenderingTestCase {
       hooks,
       [
         ['x-parent', 'init'],
-        ['x-parent', 'on(init)'],
         ['x-parent', 'didReceiveAttrs'],
         ['x-parent', 'willRender'],
         ['x-parent', 'willInsertElement'],
         ['x-child', 'init'],
-        ['x-child', 'on(init)'],
         ['x-child', 'didReceiveAttrs'],
         ['x-child', 'willRender'],
         ['x-child', 'willInsertElement'],
@@ -299,7 +296,6 @@ class AbstractAppendTest extends RenderingTestCase {
             }
             componentsByName[name] = this;
             pushHook('init');
-            this.on('init', () => pushHook('on(init)'));
           }
 
           didReceiveAttrs() {
@@ -380,14 +376,7 @@ class AbstractAppendTest extends RenderingTestCase {
 
     this.component = XParent.create({ foo: 'zomg' });
 
-    assert.deepEqual(
-      hooks,
-      [
-        ['x-parent', 'init'],
-        ['x-parent', 'on(init)'],
-      ],
-      'creation of x-parent'
-    );
+    assert.deepEqual(hooks, [['x-parent', 'init']], 'creation of x-parent');
 
     hooks.length = 0;
 
@@ -399,7 +388,6 @@ class AbstractAppendTest extends RenderingTestCase {
         ['x-parent', 'willInsertElement'],
 
         ['x-child', 'init'],
-        ['x-child', 'on(init)'],
         ['x-child', 'didReceiveAttrs'],
         ['x-child', 'willRender'],
         ['x-child', 'willInsertElement'],

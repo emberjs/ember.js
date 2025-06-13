@@ -6,12 +6,7 @@ import { assert } from '@ember/debug';
 import { autoComputed, isElementDescriptor } from '@ember/-internals/metal';
 import { computed, get } from '@ember/object';
 import { compare } from '@ember/utils';
-import EmberArray, { A as emberA, uniqBy as uniqByArray } from '@ember/array';
-import type { NativeArray } from '@ember/array';
-
-function isNativeOrEmberArray(obj: unknown): obj is unknown[] | EmberArray<unknown> {
-  return Array.isArray(obj) || EmberArray.detect(obj);
-}
+import { uniqBy as uniqByArray } from '@ember/array';
 
 function reduceMacro(
   dependentKey: string,
@@ -36,7 +31,7 @@ function reduceMacro(
 function arrayMacro(
   dependentKey: string,
   additionalDependentKeys: string[],
-  callback: (value: unknown[] | EmberArray<unknown>) => unknown[] | NativeArray<unknown>
+  callback: (value: unknown[]) => unknown[]
 ) {
   // This is a bit ugly
   let propertyName: string;
@@ -49,10 +44,10 @@ function arrayMacro(
 
   return computed(dependentKey, ...additionalDependentKeys, function () {
     let value = get(this, propertyName);
-    if (isNativeOrEmberArray(value)) {
-      return emberA(callback.call(this, value));
+    if (Array.isArray(value)) {
+      return callback.call(this, value);
     } else {
-      return emberA();
+      return [];
     }
   }).readOnly() as PropertyDecorator;
 }
@@ -69,7 +64,7 @@ function multiArrayMacro(
   let dependentKeys = _dependentKeys.map((key) => `${key}.[]`);
 
   return computed(...dependentKeys, function () {
-    return emberA(callback.call(this, _dependentKeys));
+    return callback.call(this, _dependentKeys);
   }).readOnly() as PropertyDecorator;
 }
 
@@ -356,8 +351,7 @@ export function map(
   assert('[BUG] Missing callback', cCallback);
 
   return arrayMacro(dependentKey, additionalDependentKeys, function (this: unknown, value) {
-    // This is so dumb...
-    return Array.isArray(value) ? value.map(cCallback, this) : value.map(cCallback, this);
+    return value.map(cCallback, this);
   });
 }
 
@@ -538,19 +532,19 @@ export function mapBy(dependentKey: string, propertyKey: string) {
 */
 export function filter(
   dependentKey: string,
-  callback: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
+  callback: (value: unknown, index: number, array: unknown[]) => unknown
 ): PropertyDecorator;
 export function filter(
   dependentKey: string,
   additionalDependentKeys: string[],
-  callback: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
+  callback: (value: unknown, index: number, array: unknown[]) => unknown
 ): PropertyDecorator;
 export function filter(
   dependentKey: string,
   additionalDependentKeysOrCallback:
     | string[]
-    | ((value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown),
-  callback?: (value: unknown, index: number, array: unknown[] | EmberArray<unknown>) => unknown
+    | ((value: unknown, index: number, array: unknown[]) => unknown),
+  callback?: (value: unknown, index: number, array: unknown[]) => unknown
 ): PropertyDecorator {
   assert(
     'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
@@ -583,17 +577,12 @@ export function filter(
   return arrayMacro(
     dependentKey,
     additionalDependentKeys,
-    function (this: unknown, value: unknown[] | EmberArray<unknown>) {
+    function (this: unknown, value: unknown[]) {
       // This is a really silly way to keep TS happy
-      return Array.isArray(value)
-        ? value.filter(
-            cCallback as (value: unknown, index: number, array: unknown[]) => unknown,
-            this
-          )
-        : value.filter(
-            cCallback as (value: unknown, index: number, array: EmberArray<unknown>) => unknown,
-            this
-          );
+      return value.filter(
+        cCallback as (value: unknown, index: number, array: unknown[]) => unknown,
+        this
+      );
     }
   );
 }
@@ -704,12 +693,12 @@ export function uniq(
   return multiArrayMacro(
     args,
     function (this: unknown, dependentKeys) {
-      let uniq = emberA();
+      let uniq: unknown[] = [];
       let seen = new Set();
 
       dependentKeys.forEach((dependentKey) => {
         let value = get(this, dependentKey);
-        if (isNativeOrEmberArray(value)) {
+        if (Array.isArray(value)) {
           value.forEach((item: unknown) => {
             if (!seen.has(item)) {
               seen.add(item);
@@ -775,7 +764,7 @@ export function uniqBy(dependentKey: string, propertyKey: string) {
 
   return computed(`${dependentKey}.[]`, function () {
     let list = get(this, dependentKey);
-    return isNativeOrEmberArray(list) ? uniqByArray(list, propertyKey) : emberA();
+    return Array.isArray(list) ? uniqByArray(list, propertyKey) : [];
   }).readOnly() as PropertyDecorator;
 }
 
@@ -901,7 +890,7 @@ export function intersect(dependentKey: string, ...additionalDependentKeys: stri
         return true;
       });
 
-      return emberA(results);
+      return results;
     },
     'intersect'
   );
@@ -966,10 +955,10 @@ export function setDiff(setAProperty: string, setBProperty: string) {
     let setA = get(this, setAProperty);
     let setB = get(this, setBProperty);
 
-    if (!isNativeOrEmberArray(setA)) {
-      return emberA();
+    if (!Array.isArray(setA)) {
+      return [];
     }
-    if (!isNativeOrEmberArray(setB)) {
+    if (!Array.isArray(setB)) {
       return setA;
     }
 
@@ -1024,7 +1013,7 @@ export function collect(dependentKey: string, ...additionalDependentKeys: string
         return val === undefined ? null : val;
       });
 
-      return emberA(res);
+      return res;
     },
     'collect'
   );
@@ -1250,8 +1239,8 @@ function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDeco
 
     assert(
       `The sort definition for '${key}' on ${this} must be a function or an array of strings`,
-      (function (arr: unknown): arr is string[] | EmberArray<string> {
-        return isNativeOrEmberArray(arr) && arr.every((s) => typeof s === 'string');
+      (function (arr: unknown): arr is string[] {
+        return Array.isArray(arr) && arr.every((s) => typeof s === 'string');
       })(sortProperties)
     );
 
@@ -1259,12 +1248,12 @@ function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDeco
     let normalizedSortProperties = normalizeSortProperties(sortProperties);
 
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
-    if (!isNativeOrEmberArray(items)) {
-      return emberA();
+    if (!Array.isArray(items)) {
+      return [];
     }
 
     if (normalizedSortProperties.length === 0) {
-      return emberA(items.slice());
+      return items.slice();
     } else {
       return sortByNormalizedSortProperties(items, normalizedSortProperties);
     }
@@ -1273,7 +1262,7 @@ function propertySort(itemsKey: string, sortPropertiesKey: string): PropertyDeco
   return cp as PropertyDecorator;
 }
 
-function normalizeSortProperties(sortProperties: string[] | EmberArray<string>) {
+function normalizeSortProperties(sortProperties: string[]) {
   let callback = (p: string): [prop: string, direction: string] => {
     let [prop, direction] = p.split(':');
     direction = direction || 'asc';
@@ -1281,25 +1270,20 @@ function normalizeSortProperties(sortProperties: string[] | EmberArray<string>) 
     // SAFETY: There will always be at least one value returned by split
     return [prop!, direction];
   };
-  // This nonsense is necessary since technically the two map implementations diverge.
-  return Array.isArray(sortProperties)
-    ? sortProperties.map(callback)
-    : sortProperties.map(callback);
+  return sortProperties.map(callback);
 }
 
 function sortByNormalizedSortProperties(
-  items: unknown[] | EmberArray<unknown>,
+  items: unknown[],
   normalizedSortProperties: [prop: string, direction: string][]
 ) {
-  return emberA(
-    items.slice().sort((itemA: unknown, itemB: unknown) => {
-      for (let [prop, direction] of normalizedSortProperties) {
-        let result = compare(get(itemA, prop), get(itemB, prop));
-        if (result !== 0) {
-          return direction === 'desc' ? -1 * result : result;
-        }
+  return items.slice().sort((itemA: unknown, itemB: unknown) => {
+    for (let [prop, direction] of normalizedSortProperties) {
+      let result = compare(get(itemA, prop), get(itemB, prop));
+      if (result !== 0) {
+        return direction === 'desc' ? -1 * result : result;
       }
-      return 0;
-    })
-  );
+    }
+    return 0;
+  });
 }

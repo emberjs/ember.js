@@ -350,13 +350,13 @@ export default class EventDispatcher extends EmberObject {
 
   destroy() {
     if (this._didSetup === false) {
-      return;
+      return this;
     }
 
     let rootElement = this._sanitizedRootElement;
 
     if (!rootElement) {
-      return;
+      return this;
     }
 
     for (let event in this._eventHandlers) {
@@ -365,7 +365,7 @@ export default class EventDispatcher extends EmberObject {
 
     rootElement.classList.remove(ROOT_ELEMENT_CLASS);
 
-    return this._super(...arguments);
+    return super.destroy();
   }
 
   toString() {

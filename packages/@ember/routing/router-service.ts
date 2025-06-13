@@ -1,8 +1,8 @@
 /**
  * @module @ember/routing/router-service
  */
+import { addListener, removeListener, hasListeners, sendEvent } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import Evented from '@ember/object/evented';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -55,14 +55,41 @@ function cleanURL(url: string, rootURL: string) {
    @extends Service
    @class RouterService
  */
-interface RouterService extends Evented {
+interface RouterService {
   on(
     eventName: 'routeWillChange' | 'routeDidChange',
     callback: (transition: Transition) => void
   ): this;
 }
-class RouterService extends Service.extend(Evented) {
+class RouterService extends Service {
   [ROUTER]?: EmberRouter;
+
+  // Start Evented Functionality
+
+  on(name: string, target: object, method?: string | Function) {
+    addListener(this, name, target, method);
+    return this;
+  }
+
+  one(name: string, target: object, method?: string | Function) {
+    addListener(this, name, target, method, true);
+    return this;
+  }
+
+  trigger(name: string, ...args: any[]) {
+    sendEvent(this, name, args);
+  }
+
+  off(name: string, target: object, method?: string | Function) {
+    removeListener(this, name, target, method);
+    return this;
+  }
+
+  has(name: string) {
+    return hasListeners(this, name);
+  }
+
+  // End Evented Functionality
 
   get _router(): EmberRouter {
     let router = this[ROUTER];

@@ -3,35 +3,19 @@ import {
   alias,
   or,
   and,
-  filter,
   equal,
-  empty,
-  filterBy,
-  notEmpty,
   none,
   not,
-  min,
-  max,
   gt,
   gte,
   lt,
   lte,
   readOnly,
   reads,
-  setDiff,
-  sort,
-  intersect,
-  mapBy,
   match,
-  map,
   oneWay,
-  sum,
-  union,
-  uniqBy,
-  uniq,
   deprecatingAlias,
   bool,
-  collect,
 } from '@ember/object/computed';
 import { expectTypeOf } from 'expect-type';
 
@@ -165,12 +149,6 @@ class Bar extends EmberObject {
   @bool('firstName') declare boolTest2: boolean;
 
   // @ts-expect-error
-  @collect declare collectTest0: unknown[];
-  // @ts-expect-error
-  @collect() declare collectTest1: unknown[];
-  @collect('firstName') declare collectTest2: string[];
-
-  // @ts-expect-error
   @deprecatingAlias declare deprecatingAliasTest0: string;
   // @ts-expect-error
   @deprecatingAlias() declare deprecatingAliasTest1: string;
@@ -185,37 +163,12 @@ class Bar extends EmberObject {
   declare deprecatingAliasTest3: string;
 
   // @ts-expect-error
-  @empty declare emptyTest0: boolean;
-  // @ts-expect-error
-  @empty() declare emptyTest1: boolean;
-  @empty('firstName') declare emptyTest2: boolean;
-
-  // @ts-expect-error
   @equal declare equalTest0: boolean;
   // @ts-expect-error
   @equal() declare equalTest1: boolean;
   // @ts-expect-error
   @equal('firstName') declare equalTest2: boolean;
   @equal('firstName', 'lastName') declare equalTest3: boolean;
-
-  // @ts-expect-error
-  @filter declare filterTest1: string[];
-  // @ts-expect-error
-  @filter() declare filterTest2: string[];
-  // @ts-expect-error
-  @filter('firstName') declare filterTest3: string[];
-  @filter('firstName', Boolean) declare filterTest4: string[];
-  // @ts-expect-error
-  @filter('firstName', 'secondName', (x) => x) declare filterTest5: string[];
-  @filter('firstName', ['secondName'], Boolean) declare filterTest6: string[];
-
-  // @ts-expect-error
-  @filterBy declare filterByTest1: unknown[];
-  // @ts-expect-error
-  @filterBy() declare filterByTest2: unknown[];
-  // @ts-expect-error
-  @filterBy('firstName') declare filterByTest3: string[];
-  @filterBy('firstName', 'id') declare filterByTest4: string[];
 
   // @ts-expect-error
   @gt declare gtTest1: boolean;
@@ -234,13 +187,6 @@ class Bar extends EmberObject {
   @gte('firstName', 3) declare gteTest4: boolean;
 
   // @ts-expect-error
-  @intersect declare intersectTest1: any;
-  // @ts-expect-error
-  @intersect() declare intersectTest2: any;
-  @intersect('firstName') declare intersectTest3: any;
-  @intersect('firstName', 'lastName') declare intersectTest4: any;
-
-  // @ts-expect-error
   @lt declare ltTest1: boolean;
   // @ts-expect-error
   @lt() declare ltTest2: boolean;
@@ -257,22 +203,6 @@ class Bar extends EmberObject {
   @lte('firstName', 3) declare lteTest4: boolean;
 
   // @ts-expect-error
-  @map declare mapTest1: string[];
-  // @ts-expect-error
-  @map() declare mapTest2: string[];
-  // @ts-expect-error
-  @map('firstName') declare mapTest3: string[];
-  @map('firstName', (x) => x) declare mapTest4: string[];
-
-  // @ts-expect-error
-  @mapBy declare mapByTest1: any[];
-  // @ts-expect-error
-  @mapBy() declare mapByTest2: any[];
-  // @ts-expect-error
-  @mapBy('firstName') declare mapByTest3: any[];
-  @mapBy('firstName', 'id') declare mapByTest4: any[];
-
-  // @ts-expect-error
   @match declare matchTest1: boolean;
   // @ts-expect-error
   @match() declare matchTest2: boolean;
@@ -281,22 +211,6 @@ class Bar extends EmberObject {
   // @ts-expect-error
   @match('firstName', 'abc') declare matchTest4: boolean;
   @match('firstName', /\s+/) declare matchTest5: boolean;
-
-  // @ts-expect-error
-  @max declare maxTest1: number;
-  // @ts-expect-error
-  @max() declare maxTest2: number;
-  @max('values') declare maxTest3: number;
-  // @ts-expect-error
-  @max('values', 'a') declare maxTest4: number;
-
-  // @ts-expect-error
-  @min declare minTest1: number;
-  // @ts-expect-error
-  @min() declare minTest2: number;
-  @min('values') declare minTest3: number;
-  // @ts-expect-error
-  @min('values', 'a') declare minTest4: number;
 
   // @ts-expect-error
   @none declare noneTest1: number;
@@ -313,14 +227,6 @@ class Bar extends EmberObject {
   @not('values') declare notTest3: number;
   // @ts-expect-error
   @not('values', 'a') declare notTest4: number;
-
-  // @ts-expect-error
-  @notEmpty declare notEmptyTest1: boolean;
-  // @ts-expect-error
-  @notEmpty() declare notEmptyTest2: boolean;
-  @notEmpty('firstName') declare notEmptyTest3: boolean;
-  // @ts-expect-error
-  @notEmpty('firstName', 'a') declare notEmptyTest4: boolean;
 
   // @ts-expect-error
   @oneWay declare oneWayTest1: boolean;
@@ -350,57 +256,4 @@ class Bar extends EmberObject {
   @reads('firstName') declare readsTest3: boolean;
   // @ts-expect-error
   @reads('firstName', 'a') declare readsTest4: boolean;
-
-  // @ts-expect-error
-  @setDiff declare setDiffTest1: number;
-  // @ts-expect-error
-  @setDiff() declare setDiffTest2: number;
-  // @ts-expect-error
-  @setDiff('values') declare setDiffTest3: number;
-  @setDiff('values', 'otherThing') declare setDiffTest4: number;
-  // @ts-expect-error
-  @setDiff('values', 'otherThing', 'a') declare setDiffTest5: number;
-
-  // @ts-expect-error
-  @sort declare sortTest1: number;
-  // @ts-expect-error
-  @sort() declare sortTest2: number;
-  // @ts-expect-error
-  @sort('values') declare sortTest3: number;
-  @sort('values', 'id') declare sortTest4: number;
-  // @ts-expect-error
-  @sort('values', 'id', 'a') declare sortTest5: number;
-  @sort('values', (a: number, b: number) => a - b) declare sortTest6: number;
-  @sort('values', ['id'], (a: number, b: number) => a - b) declare sortTest7: number;
-  // @ts-expect-error
-  @sort('values', 'id', (a, b) => a - b) declare sortTest8: number;
-  // @ts-expect-error
-  @sort(['id'], (a, b) => a - b) declare sortTest9: number;
-
-  // @ts-expect-error
-  @sum declare sumTest1: number;
-  // @ts-expect-error
-  @sum() declare sumTest2: number;
-  @sum('values') declare sumTest3: number;
-
-  // @ts-expect-error
-  @union declare unionTest1: never;
-  // @ts-expect-error
-  @union() declare unionTest2: [];
-  @union('firstName') declare unionTest3: string[];
-  @union('firstName', 'lastName') declare unionTest4: string[];
-
-  // @ts-expect-error
-  @uniq declare uniqTest1: number;
-  // @ts-expect-error
-  @uniq() declare uniqTest2: number;
-  @uniq('values') declare uniqTest3: number;
-
-  // @ts-expect-error
-  @uniqBy declare uniqByTest1: number;
-  // @ts-expect-error
-  @uniqBy() declare uniqByTest2: number;
-  // @ts-expect-error
-  @uniqBy('values') declare uniqByTest3: number;
-  @uniqBy('values', 'id') declare uniqByTest4: number;
 }

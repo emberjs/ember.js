@@ -1,5 +1,4 @@
 import { meta as metaFor } from '@ember/-internals/meta';
-import { isEmberArray } from '@ember/array/-internals';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { consumeTag, dirtyTagFor, tagFor, trackedData } from '@glimmer/validator';
@@ -159,7 +158,7 @@ function descriptorForField([target, key, desc]: ElementDescriptor): DecoratorPr
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
-    if (Array.isArray(value) || isEmberArray(value)) {
+    if (Array.isArray(value)) {
       consumeTag(tagFor(value, '[]'));
     }
 

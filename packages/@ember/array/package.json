@@ -5,7 +5,6 @@
   "exports": {
     ".": "./index.ts",
     "./-internals": "./-internals.ts",
-    "./proxy": "./proxy.ts",
     "./make": "./make.ts",
     "./mutable": "./mutable.ts"
   },
@@ -13,7 +12,6 @@
     "@ember/-internals": "workspace:*",
     "@ember/application": "workspace:*",
     "@ember/debug": "workspace:*",
-    "@ember/enumerable": "workspace:*",
     "@ember/object": "workspace:*",
     "@ember/runloop": "workspace:*",
     "@ember/utils": "workspace:*",

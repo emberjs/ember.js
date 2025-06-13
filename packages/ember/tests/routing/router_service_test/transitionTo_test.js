@@ -109,8 +109,7 @@ moduleFor(
             super.init();
             componentInstance = this;
           }
-          @action
-          transitionToSister() {
+          @action transitionToSister() {
             get(this, 'routerService').transitionTo('parent.sister');
           }
         },
@@ -119,7 +118,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         run(function () {
-          componentInstance.send('transitionToSister');
+          componentInstance.transitionToSister();
         });
 
         assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
@@ -151,7 +150,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         run(function () {
-          componentInstance.send('transitionToSister');
+          componentInstance.transitionToSister();
         });
 
         assert.equal(this.routerService.get('currentRouteName'), 'parent.sister');
@@ -186,7 +185,7 @@ moduleFor(
       await this.visit('/');
 
       run(function () {
-        componentInstance.send('transitionToDynamic');
+        componentInstance.transitionToDynamic();
       });
 
       assert.equal(this.routerService.get('currentRouteName'), 'dynamic');
@@ -231,7 +230,7 @@ moduleFor(
       await this.visit('/');
 
       run(function () {
-        componentInstance.send('transitionToDynamic');
+        componentInstance.transitionToDynamic();
       });
 
       assert.equal(this.routerService.get('currentRouteName'), 'dynamic');

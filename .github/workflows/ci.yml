@@ -6,6 +6,7 @@ on:
       - main
       - beta
       - release
+      - next
       # release branches
       - release*
       - lts*
@@ -238,8 +239,8 @@ jobs:
         blueprint-test,
         browser-test,
       ]
-    # Only run on pushes to branches that are not from the cron workflow
-    if: github.event_name == 'push' && contains(github.ref, 'cron') != true
+    # Only run on pushes to branches that are not from the cron workflow or the next branch
+    if: github.event_name == 'push' && contains(github.ref, 'cron') != true && contains(github.ref, 'next') != true
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
