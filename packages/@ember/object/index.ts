@@ -1,14 +1,6 @@
 import { assert } from '@ember/debug';
 import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
-import {
-  isElementDescriptor,
-  setClassicDecorator,
-  hasListeners,
-  addObserver,
-  removeObserver,
-  get,
-  set,
-} from '@ember/-internals/metal';
+import { isElementDescriptor, setClassicDecorator, get, set } from '@ember/-internals/metal';
 import { getFactoryFor } from '@ember/-internals/container';
 import CoreObject from '@ember/object/core';
 import { peekMeta } from '@ember/-internals/meta';
@@ -24,10 +16,6 @@ export {
   trySet,
 } from '@ember/-internals/metal';
 
-type ObserverMethod<Target, Sender> =
-  | (keyof Target & string)
-  | ((this: Target, sender: Sender, key: string, value: any, rev: number) => void);
-
 /**
 @module @ember/object
 */
@@ -40,149 +28,6 @@ type ObserverMethod<Target, Sender> =
   @public
 */
 class EmberObject extends CoreObject {
-  /**
-    Adds an observer on a property.
-
-    This is the core method used to register an observer for a property.
-
-    Once you call this method, any time the key's value is set, your observer
-    will be notified. Note that the observers are triggered any time the
-    value is set, regardless of whether it has actually changed. Your
-    observer should be prepared to handle that.
-
-    There are two common invocation patterns for `.addObserver()`:
-
-    - Passing two arguments:
-      - the name of the property to observe (as a string)
-      - the function to invoke (an actual function)
-    - Passing three arguments:
-      - the name of the property to observe (as a string)
-      - the target object (will be used to look up and invoke a
-        function on)
-      - the name of the function to invoke on the target object
-        (as a string).
-
-    ```app/components/my-component.js
-    import Component from '@ember/component';
-
-    export default Component.extend({
-      init() {
-        this._super(...arguments);
-
-        // the following are equivalent:
-
-        // using three arguments
-        this.addObserver('foo', this, 'fooDidChange');
-
-        // using two arguments
-        this.addObserver('foo', (...args) => {
-          this.fooDidChange(...args);
-        });
-      },
-
-      fooDidChange() {
-        // your custom logic code
-      }
-    });
-    ```
-
-    ### Observer Methods
-
-    Observer methods have the following signature:
-
-    ```app/components/my-component.js
-    import Component from '@ember/component';
-
-    export default Component.extend({
-      init() {
-        this._super(...arguments);
-        this.addObserver('foo', this, 'fooDidChange');
-      },
-
-      fooDidChange(sender, key, value, rev) {
-        // your code
-      }
-    });
-    ```
-
-    The `sender` is the object that changed. The `key` is the property that
-    changes. The `value` property is currently reserved and unused. The `rev`
-    is the last property revision of the object when it changed, which you can
-    use to detect if the key value has really changed or not.
-
-    Usually you will not need the value or revision parameters at
-    the end. In this case, it is common to write observer methods that take
-    only a sender and key value as parameters or, if you aren't interested in
-    any of these values, to write an observer that has no parameters at all.
-
-    @method addObserver
-    @param {String} key The key to observe
-    @param {Object} target The target object to invoke
-    @param {String|Function} method The method to invoke
-    @param {Boolean} sync Whether the observer is sync or not
-    @return {Observable}
-    @public
-  */
-  addObserver<Target extends object | Function | null>(
-    key: keyof this & string,
-    target: Target,
-    method: ObserverMethod<Target, this>
-  ): this;
-  addObserver(key: keyof this & string, method: ObserverMethod<this, this>): this;
-  addObserver<Target extends object | Function | null>(
-    key: string,
-    target: Target,
-    method?: ObserverMethod<Target, this>,
-    sync?: boolean
-  ) {
-    addObserver(this, key, target, method, sync);
-    return this;
-  }
-
-  /**
-    Remove an observer you have previously registered on this object. Pass
-    the same key, target, and method you passed to `addObserver()` and your
-    target will no longer receive notifications.
-
-    @method removeObserver
-    @param {String} key The key to observe
-    @param {Object} target The target object to invoke
-    @param {String|Function} method The method to invoke
-    @param {Boolean} sync Whether the observer is async or not
-    @return {Observable}
-    @public
-   */
-  removeObserver<Target extends object | Function | null>(
-    key: keyof this & string,
-    target: Target,
-    method: ObserverMethod<Target, this>
-  ): this;
-  removeObserver(key: keyof this & string, method: ObserverMethod<this, this>): this;
-  removeObserver<Target extends object | Function | null>(
-    key: string,
-    target: Target,
-    method?: string | Function,
-    sync?: boolean
-  ) {
-    removeObserver(this, key, target, method, sync);
-    return this;
-  }
-
-  /**
-    Returns `true` if the object currently has observers registered for a
-    particular key. You can use this method to potentially defer performing
-    an expensive action until someone begins observing a particular property
-    on the object.
-
-    @method hasObserverFor
-    @param {String} key Key to check
-    @return {Boolean}
-    @private
-  */
-  hasObserverFor(key: string) {
-    return hasListeners(this, `${key}:change`);
-  }
-
   // NOT TYPE SAFE!
   /**
     Set the value of a property to the current value plus some amount.

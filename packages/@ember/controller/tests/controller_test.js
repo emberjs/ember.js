@@ -37,33 +37,6 @@ moduleFor(
       runTask(() => this.$('button').click());
       this.assertText('2');
     }
-
-    async '@test model can be observed with sync observers'(assert) {
-      let observerRunCount = 0;
-
-      this.add(
-        'controller:index',
-        class extends Controller {
-          constructor() {
-            super(...arguments);
-            this.model = 0;
-
-            this.addObserver('model', this, () => observerRunCount++, true);
-          }
-
-          @action
-          update() {
-            this.model++;
-          }
-        }
-      );
-
-      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.model}}</button>');
-
-      await this.visit('/');
-      runTask(() => this.$('button').click());
-      assert.equal(observerRunCount, 1, 'observer ran exactly once');
-    }
   }
 );
 

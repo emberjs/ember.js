@@ -231,7 +231,6 @@ module.exports = {
     'hash',
     'hashSettled',
     'hasListeners',
-    'hasObserverFor',
     'hasRegistration',
     'hasRoute',
     'helper',
