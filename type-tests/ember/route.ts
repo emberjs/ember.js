@@ -38,7 +38,7 @@ class Test extends Route {
   }
 
   setupController(controller: Ember.Controller, model: {}) {
-    this._super(controller, model);
+    super.setupController(controller, model);
     set(this.controllerFor('application'), 'model', model);
   }
 

@@ -5,8 +5,8 @@ import { removeObserver, addObserver } from '@ember/object/observers';
 class MyComponent extends EmberObject {
   foo = 'bar';
 
-  init() {
-    this._super.apply(this);
+  init(properties?: object) {
+    super.init(properties);
     addObserver(this, 'foo', this, 'fooDidChange');
     addObserver(this, 'foo', this, this.fooDidChange);
     removeObserver(this, 'foo', this, 'fooDidChange');

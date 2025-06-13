@@ -4,8 +4,8 @@ import { expectTypeOf } from 'expect-type';
 class MyComponent extends Ember.Component {
   foo = 'bar';
 
-  init() {
-    this._super();
+  init(properties?: object) {
+    super.init();
     Ember.addObserver(this, 'foo', this, 'fooDidChange');
     Ember.addObserver(this, 'foo', this, this.fooDidChange);
     Ember.removeObserver(this, 'foo', this, 'fooDidChange');

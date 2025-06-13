@@ -5,14 +5,14 @@ import { expectTypeOf } from 'expect-type';
 class LifetimeHooks extends Object {
   resource: {} | undefined;
 
-  init() {
-    this._super();
+  init(properties?: object) {
+    super.init(properties);
     this.resource = {};
   }
 
   willDestroy() {
     this.resource = undefined;
-    this._super();
+    super.willDestroy();
   }
 }
 

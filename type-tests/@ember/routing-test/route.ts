@@ -119,7 +119,7 @@ declare module '@ember/controller' {
 
 class SetupControllerTest extends Route {
   setupController(controller: Controller, model: {}, transition: Transition) {
-    this._super(controller, model);
+    super.setupController(controller, model);
     set(this.controllerFor('application'), 'model', model);
     transition.abort();
   }

@@ -201,10 +201,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
   @class CoreObject
   @public
 */
-interface CoreObject {
-  /** @internal */
-  _super(...args: any[]): any;
-}
 class CoreObject {
   /** @internal */
   [OWNER]?: Owner;
