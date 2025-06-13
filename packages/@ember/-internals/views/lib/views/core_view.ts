@@ -1,4 +1,5 @@
 import type { Renderer, View } from '@ember/-internals/glimmer/lib/renderer';
+import { getFactoryFor } from '@ember/-internals/container';
 import { inject } from '@ember/-internals/metal';
 import { FrameworkObject } from '@ember/object/-internals';
 import type { ViewState } from './states';
@@ -47,6 +48,11 @@ class CoreView extends FrameworkObject {
 
     this._state = 'preRender';
     this._currentState = this._states.preRender;
+  }
+
+  get _debugContainerKey() {
+    let factory = getFactoryFor(this);
+    return factory !== undefined && factory.fullName;
   }
 
   @inject('renderer', '-dom')

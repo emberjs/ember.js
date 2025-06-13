@@ -1,9 +1,7 @@
 import { assert } from '@ember/debug';
 import type { ElementDescriptor, ExtendedMethodDecorator } from '@ember/-internals/metal';
 import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
-import { getFactoryFor } from '@ember/-internals/container';
 import CoreObject from '@ember/object/core';
-import { peekMeta } from '@ember/-internals/meta';
 
 export {
   notifyPropertyChange,
@@ -27,28 +25,7 @@ export {
   @extends CoreObject
   @public
 */
-class EmberObject extends CoreObject {
-  /**
-    Returns the cached value of a computed property, if it exists.
-    This allows you to inspect the value of a computed property
-    without accidentally invoking it if it is intended to be
-    generated lazily.
-
-    @method cacheFor
-    @param {String} keyName
-    @return {Object} The cached value of the computed property, if any
-    @public
-  */
-  cacheFor(keyName: keyof this & string): unknown {
-    let meta = peekMeta(this);
-    return meta !== null ? meta.valueFor(keyName) : undefined;
-  }
-
-  get _debugContainerKey() {
-    let factory = getFactoryFor(this);
-    return factory !== undefined && factory.fullName;
-  }
-}
+class EmberObject extends CoreObject {}
 
 export default EmberObject;
 

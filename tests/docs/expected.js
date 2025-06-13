@@ -88,7 +88,6 @@ module.exports = {
     'buildRouteInfoMetadata',
     'cache',
     'cached',
-    'cacheFor',
     'canCatalogEntriesByType',
     'cancel',
     'cancelRouterSetup',

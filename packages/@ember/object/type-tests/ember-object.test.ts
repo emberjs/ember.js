@@ -37,8 +37,6 @@ const p = new Person(owner);
 
 expectTypeOf(p.firstName).toEqualTypeOf<string>();
 
-expectTypeOf(p.cacheFor('age')).toEqualTypeOf<unknown>();
-
 const p2 = Person.create({ firstName: 'string' });
 expectTypeOf(p2.firstName).toEqualTypeOf<string>();
 
