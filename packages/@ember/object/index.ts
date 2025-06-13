@@ -95,20 +95,6 @@ export default EmberObject;
 
 const BINDINGS_MAP = new WeakMap();
 
-interface HasProto {
-  constructor: {
-    proto(): void;
-  };
-}
-
-function hasProto(obj: unknown): obj is HasProto {
-  return (
-    obj != null &&
-    (obj as any).constructor !== undefined &&
-    typeof ((obj as any).constructor as any).proto === 'function'
-  );
-}
-
 interface HasActions {
   actions: Record<string | symbol, unknown>;
 }
@@ -118,10 +104,6 @@ function setupAction(
   key: string | symbol,
   actionFn: Function
 ): TypedPropertyDescriptor<unknown> {
-  if (hasProto(target)) {
-    target.constructor.proto();
-  }
-
   if (!Object.prototype.hasOwnProperty.call(target, 'actions')) {
     let parentActions = target.actions;
     // we need to assign because of the way mixins copy actions down when inheriting
