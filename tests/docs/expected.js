@@ -289,7 +289,6 @@ module.exports = {
     'match',
     'matches',
     'max',
-    'mergedProperties',
     'meta',
     'metadata',
     'metaForProperty',

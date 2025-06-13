@@ -59,7 +59,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
     );
 
     let concatenatedProperties = obj.concatenatedProperties;
-    let mergedProperties = obj.mergedProperties;
 
     let keyNames = Object.keys(properties);
 
@@ -95,15 +94,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
           } else {
             value = makeArray(value);
           }
-        }
-
-        if (
-          mergedProperties !== undefined &&
-          mergedProperties.length > 0 &&
-          mergedProperties.includes(keyName)
-        ) {
-          let baseValue = (obj as any)[keyName];
-          value = Object.assign({}, baseValue, value);
         }
       }
 
@@ -315,81 +305,6 @@ class CoreObject {
     mislead your users to think they can override the property in a subclass).
 
     @property concatenatedProperties
-    @type Array
-    @default null
-    @public
-  */
-
-  /**
-    Defines the properties that will be merged from the superclass
-    (instead of overridden).
-
-    By default, when you extend an Ember class a property defined in
-    the subclass overrides a property with the same name that is defined
-    in the superclass. However, there are some cases where it is preferable
-    to build up a property's value by merging the superclass property value
-    with the subclass property's value. An example of this in use within Ember
-    is the `queryParams` property of routes.
-
-    Here is some sample code showing the difference between a merged
-    property and a normal one:
-
-    ```javascript
-    import EmberObject from '@ember/object';
-
-    const Bar = EmberObject.extend({
-      // Configure which properties are to be merged
-      mergedProperties: ['mergedProperty'],
-
-      someNonMergedProperty: {
-        nonMerged: 'superclass value of nonMerged'
-      },
-      mergedProperty: {
-        page: { replace: false },
-        limit: { replace: true }
-      }
-    });
-
-    const FooBar = Bar.extend({
-      someNonMergedProperty: {
-        completelyNonMerged: 'subclass value of nonMerged'
-      },
-      mergedProperty: {
-        limit: { replace: false }
-      }
-    });
-
-    let fooBar = FooBar.create();
-
-    fooBar.get('someNonMergedProperty');
-    // => { completelyNonMerged: 'subclass value of nonMerged' }
-    //
-    // Note the entire object, including the nonMerged property of
-    // the superclass object, has been replaced
-
-    fooBar.get('mergedProperty');
-    // => {
-    //   page: {replace: false},
-    //   limit: {replace: false}
-    // }
-    //
-    // Note the page remains from the superclass, and the
-    // `limit` property's value of `false` has been merged from
-    // the subclass.
-    ```
-
-    This behavior is not available during object `create` calls. It is only
-    available at `extend` time.
-
-    In `Route` the `queryParams` property is merged.
-
-    This feature is available for you to use throughout the Ember object model,
-    although typical app developers are likely to use it infrequently. Since
-    it changes expectations about behavior of properties, you should properly
-    document its usage in each individual merged property (to not
-    mislead your users to think they can override the property in a subclass).
-
-    @property mergedProperties
     @type Array
     @default null
     @public
@@ -705,7 +620,6 @@ class CoreObject {
   static _lazyInjections?: () => void;
 
   declare concatenatedProperties?: string[] | string;
-  declare mergedProperties?: unknown[];
 }
 
 function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, unknown>>) {
