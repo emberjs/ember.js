@@ -21,10 +21,6 @@ import { DEBUG } from '@glimmer/env';
 import { destroy, isDestroying, isDestroyed, registerDestructor } from '@glimmer/destroyable';
 import { OWNER } from '@glimmer/owner';
 
-type MergeArray<Arr extends any[]> = Arr extends [infer T, ...infer Rest]
-  ? T & MergeArray<Rest>
-  : unknown; // TODO: Is this correct?
-
 interface HasToStringExtension {
   toStringExtension: () => void;
 }
@@ -129,10 +125,7 @@ function initialize(obj: CoreObject, properties?: unknown) {
 }
 
 /**
-  `CoreObject` is the base class for all Ember constructs. It establishes a
-  class system based on Ember's Mixin system, and provides the basis for the
-  Ember Object Model. `CoreObject` should generally not be used directly,
-  instead you should use `EmberObject`.
+  `CoreObject` is the base class for all Ember constructs.
 
   ## Usage with Native Classes
 
@@ -157,20 +150,6 @@ function initialize(obj: CoreObject, properties?: unknown) {
     which do _not_ extend from `EmberObject` or `CoreObject`. Ember features,
     such as computed properties and decorators, will still work with base-less
     classes.
-  * Instead of using `this._super()`, you must use standard `super` syntax in
-    native classes. See the [MDN docs on classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Super_class_calls_with_super)
-    for more details.
-  * Native classes support using [constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Constructor)
-    to set up newly-created instances. Ember uses these to, among other things,
-    support features that need to retrieve other entities by name, like Service
-    injection and `getOwner`. To ensure your custom instance setup logic takes
-    place after this important work is done, avoid using the `constructor` in
-    favor of `init`.
-  * Properties passed to `create` will be available on the instance by the time
-    `init` runs, so any code that requires these values should work at that
-    time.
-  * Using native classes, and switching back to the old Ember Object model is
-    fully supported.
 
   @class CoreObject
   @public
@@ -466,20 +445,11 @@ class CoreObject {
     @param [arguments]*
     @public
   */
-  static create<C extends typeof CoreObject>(this: C): InstanceType<C>;
   static create<
     C extends typeof CoreObject,
     I extends InstanceType<C>,
     K extends keyof I,
-    Args extends Array<Partial<{ [Key in K]: I[Key] }>>,
-  >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args>;
-  static create<
-    C extends typeof CoreObject,
-    I extends InstanceType<C>,
-    K extends keyof I,
-    Args extends Array<Partial<{ [Key in K]: I[Key] }>>,
-  >(this: C, ...args: Args): InstanceType<C> & MergeArray<Args> {
-    let props = args[0];
+  >(this: C, props?: Partial<{ [Key in K]: I[Key] }>): InstanceType<C> {
     let instance: InstanceType<C>;
 
     if (props !== undefined) {
@@ -499,15 +469,11 @@ class CoreObject {
       instance = new this() as InstanceType<C>;
     }
 
-    if (args.length <= 1) {
-      initialize(instance, props);
-    } else {
-      initialize(instance, flattenProps.apply(this, args));
-    }
+    initialize(instance, props);
 
     // SAFETY: The `initialize` call is responsible to merge the prototype chain
     // so that this holds.
-    return instance as InstanceType<C> & MergeArray<Args>;
+    return instance as InstanceType<C>;
   }
 
   static detect(obj: unknown) {
@@ -620,22 +586,6 @@ class CoreObject {
   static _lazyInjections?: () => void;
 
   declare concatenatedProperties?: string[] | string;
-}
-
-function flattenProps(this: typeof CoreObject, ...props: Array<Record<string, unknown>>) {
-  let initProperties: Record<string, unknown> = {};
-
-  for (let properties of props) {
-    let keyNames = Object.keys(properties);
-
-    for (let j = 0, k = keyNames.length; j < k; j++) {
-      let keyName = keyNames[j]!;
-      let value = properties[keyName];
-      initProperties[keyName] = value;
-    }
-  }
-
-  return initProperties;
 }
 
 if (DEBUG) {
